@@ -106,6 +106,89 @@ fn unsubscribe_live_throughput(state: tauri::State<'_, AppState>) {
     });
 }
 
+
+/// Point the usage tracker at its store in the app-data directory.
+fn init_usage_tracker(app: &tauri::App) {
+    let store = app
+        .path()
+        .app_data_dir()
+        .map(|dir| {
+            let _ = std::fs::create_dir_all(&dir);
+            dir.join("data-usage.json")
+        })
+        .unwrap_or_else(|_| std::path::PathBuf::from("data-usage.json"));
+    let state = app.state::<AppState>();
+    *state.usage.lock().unwrap() = Some(UsageTracker::new(store));
+}
+
+/// Accumulate data usage into daily buckets every 30s.
+fn spawn_usage_sampler(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        loop {
+            {
+                let state = handle.state::<AppState>();
+                let mut networks = state.networks.lock().unwrap();
+                networks.refresh(true);
+                let mut usage = state.usage.lock().unwrap();
+                if let Some(tracker) = usage.as_mut() {
+                    tracker.sample(&networks);
+                }
+            }
+            tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+        }
+    });
+}
+
+/// Emit live throughput at 1 Hz while the UI is subscribed.
+fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        let mut sampler = ThroughputSampler::new();
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            let state = handle.state::<AppState>();
+            if state.throughput_subscribers.load(Ordering::Relaxed) == 0 {
+                continue;
+            }
+            let sample = sampler.sample();
+            let _ = handle.emit("live-throughput", &sample);
+        }
+    });
+}
+
+/// Watch the kernel routing table and nudge the UI the moment connectivity
+/// changes (cable pulled, Wi-Fi joined) instead of waiting for the next poll.
+/// Linux-only; other platforms rely on the UI's polling interval.
+fn spawn_route_monitor(handle: tauri::AppHandle) {
+    if !cfg!(target_os = "linux") {
+        return;
+    }
+    tauri::async_runtime::spawn(async move {
+        use tokio::io::{AsyncBufReadExt, BufReader};
+
+        let Ok(mut child) = tokio::process::Command::new("ip")
+            .args(["monitor", "route"])
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn()
+        else {
+            return;
+        };
+        let Some(stdout) = child.stdout.take() else {
+            return;
+        };
+
+        let mut lines = BufReader::new(stdout).lines();
+        let mut last_emit = std::time::Instant::now() - std::time::Duration::from_secs(10);
+
+        while let Ok(Some(_)) = lines.next_line().await {
+            if last_emit.elapsed() >= std::time::Duration::from_millis(800) {
+                last_emit = std::time::Instant::now();
+                let _ = handle.emit("network-changed", &());
+            }
+        }
+    });
+}
+
 pub fn run() {
     tauri::Builder::default()
         .manage(AppState {
@@ -116,52 +199,10 @@ pub fn run() {
         })
         .setup(|app| {
             let handle = app.handle().clone();
-
-            // Data usage: init store in app-data dir, sample every 30s.
-            let store = app
-                .path()
-                .app_data_dir()
-                .map(|dir| {
-                    let _ = std::fs::create_dir_all(&dir);
-                    dir.join("data-usage.json")
-                })
-                .unwrap_or_else(|_| std::path::PathBuf::from("data-usage.json"));
-            {
-                let state = app.state::<AppState>();
-                *state.usage.lock().unwrap() = Some(UsageTracker::new(store));
-            }
-
-            let usage_handle = handle.clone();
-            tauri::async_runtime::spawn(async move {
-                loop {
-                    {
-                        let state = usage_handle.state::<AppState>();
-                        let mut networks = state.networks.lock().unwrap();
-                        networks.refresh(true);
-                        let mut usage = state.usage.lock().unwrap();
-                        if let Some(tracker) = usage.as_mut() {
-                            tracker.sample(&networks);
-                        }
-                    }
-                    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-                }
-            });
-
-            // Live throughput: 1 Hz sampler, emitted only while subscribed.
-            let throughput_handle = handle.clone();
-            tauri::async_runtime::spawn(async move {
-                let mut sampler = ThroughputSampler::new();
-                loop {
-                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                    let state = throughput_handle.state::<AppState>();
-                    if state.throughput_subscribers.load(Ordering::Relaxed) == 0 {
-                        continue;
-                    }
-                    let sample = sampler.sample();
-                    let _ = throughput_handle.emit("live-throughput", &sample);
-                }
-            });
-
+            init_usage_tracker(app);
+            spawn_usage_sampler(handle.clone());
+            spawn_throughput_broadcaster(handle.clone());
+            spawn_route_monitor(handle);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

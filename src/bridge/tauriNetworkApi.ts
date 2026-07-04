@@ -48,6 +48,8 @@ const tauriNetworkApi: NetworkAPI = {
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>
     subscribeEvent('speed-test-progress', callback),
 
+  onNetworkChanged: (callback: () => void) => subscribeEvent('network-changed', callback),
+
   subscribeLiveThroughput: () => invoke<void>('subscribe_live_throughput'),
   unsubscribeLiveThroughput: () => invoke<void>('unsubscribe_live_throughput'),
   onLiveThroughput: (callback: (throughput: LiveThroughput) => void) =>

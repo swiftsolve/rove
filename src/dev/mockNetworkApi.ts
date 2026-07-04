@@ -240,6 +240,7 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(900)
       return { ...MOCK_DEVICE_SCAN, scannedAt: Date.now() }
     },
+    onNetworkChanged: () => () => undefined,
     getDataUsage: async () => {
       await delay(200)
       const day = 86_400_000
