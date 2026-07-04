@@ -7,23 +7,36 @@ const REFRESH_INTERVAL_MS = 10_000
 interface UseDataUsageResult {
   readonly usage: DataUsageSummary
   readonly isLoading: boolean
+  readonly error: string | null
 }
 
 export function useDataUsage(enabled: boolean): UseDataUsageResult {
   const [usage, setUsage] = useState<DataUsageSummary>(createEmptyDataUsage)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!enabled || !window.networkAPI?.getDataUsage) return
+    if (!enabled) return
+    const api = window.networkAPI
+    if (!api?.getDataUsage) {
+      // No bridge: stop the spinner and say so rather than hang on "Loading…".
+      setIsLoading(false)
+      setError('Unable to reach the backend for data usage.')
+      return
+    }
 
     let disposed = false
 
     const refresh = async (): Promise<void> => {
       try {
-        const summary = await window.networkAPI.getDataUsage()
-        if (!disposed) setUsage(summary)
+        const summary = await api.getDataUsage()
+        if (!disposed) {
+          setUsage(summary)
+          setError(null)
+        }
       } catch {
-        // Keep showing the last summary.
+        // Keep showing the last summary, but surface that the refresh failed.
+        if (!disposed) setError('Failed to load data usage.')
       } finally {
         if (!disposed) setIsLoading(false)
       }
@@ -38,5 +51,5 @@ export function useDataUsage(enabled: boolean): UseDataUsageResult {
     }
   }, [enabled])
 
-  return { usage, isLoading }
+  return { usage, isLoading, error }
 }

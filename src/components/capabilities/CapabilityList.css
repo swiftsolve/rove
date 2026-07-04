@@ -18,12 +18,12 @@
   outline: none;
 }
 
-.capability-row:first-child {
-  padding-top: 0;
-}
-
-.capability-row:last-child {
-  padding-bottom: 0;
+/* Every row keeps the same symmetric vertical padding — no first/last special
+   casing — so both the spacing between rows and each row's hover highlight read
+   identically. The section body's own padding supplies the outer breathing room. */
+.capability-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .capability-row-main {

@@ -1,14 +1,9 @@
-import { useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
-import ConnectionCard, { canRunSpeedTest } from '@/components/connection/ConnectionCard'
+import ConnectionCard from '@/components/connection/ConnectionCard'
 import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
-import SpeedTestSection from '@/components/speed-test/SpeedTestSection'
-import CapabilityList from '@/components/capabilities/CapabilityList'
-import CapabilityDetails from '@/components/capabilities/CapabilityDetails'
-import SpeedHistory from '@/components/speed-test/SpeedHistory'
 import './HomeView.css'
 
 interface HomeViewProps {
@@ -16,36 +11,11 @@ interface HomeViewProps {
 }
 
 export default function HomeView({ info }: HomeViewProps): JSX.Element {
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
   const isConnected = isConnectedNetwork(info)
-  const {
-    internetSpeed,
-    capabilities,
-    testing,
-    progress,
-    error: speedTestError,
-    runTest,
-    cancelTest,
-  } = useSpeedTest()
-
+  // A speed test can be started from the Speed tab and keeps running across tab
+  // switches, so the live panel still reflects it while you're on Home.
+  const { testing } = useSpeedTest()
   const { throughput: liveThroughput, history: liveHistory } = useLiveThroughput(isConnected)
-
-  const hasRunTest = internetSpeed != null
-
-  if (historyOpen) {
-    return <SpeedHistory onBack={() => setHistoryOpen(false)} />
-  }
-
-  if (detailsOpen && internetSpeed) {
-    return (
-      <CapabilityDetails
-        capabilities={capabilities}
-        speed={internetSpeed}
-        onBack={() => setDetailsOpen(false)}
-      />
-    )
-  }
 
   return (
     <div className="view-page">
@@ -68,24 +38,6 @@ export default function HomeView({ info }: HomeViewProps): JSX.Element {
           linkCapacityMbps={getLinkCapacityMbps(info)}
         />
       )}
-
-      <SpeedTestSection
-        internetSpeed={internetSpeed}
-        linkCapacityMbps={getLinkCapacityMbps(info)}
-        testing={testing}
-        canTest={canRunSpeedTest(info)}
-        error={speedTestError}
-        progress={progress}
-        onRunTest={runTest}
-        onCancelTest={cancelTest}
-        onOpenHistory={() => setHistoryOpen(true)}
-      />
-
-      <CapabilityList
-        capabilities={capabilities}
-        hasRunTest={hasRunTest}
-        onOpenDetails={() => setDetailsOpen(true)}
-      />
     </div>
   )
 }

@@ -61,11 +61,14 @@
   --section-header-h: 50px;
   --section-body: var(--section-pad);
 
+  /* One 2px-based spacing scale — every gap/pad/margin should be one of these. */
+  --gap-2xs: 2px;
   --gap-xs: 4px;
+  --gap-tight: 6px;
   --gap-sm: 8px;
   --gap-md: 12px;
-  --gap-lg: 16px;
   --gap-stack: 14px;
+  --gap-lg: 16px;
   --row-py: 8px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -78,6 +81,7 @@
   /* Kept as an alias so any lingering references resolve to Questrial too. */
   --font-mono: var(--font-numeric);
 
+  --text-micro: 10px;
   --text-caption: 11px;
   --text-small: 12px;
   --text-body: 13px;
@@ -178,7 +182,7 @@ button:focus-visible {
 
 /** Labels above values — e.g. Download, IP address */
 .field-label {
-  font-size: 10.5px;
+  font-size: var(--text-micro);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
   text-transform: uppercase;

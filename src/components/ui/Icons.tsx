@@ -13,12 +13,14 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Cctv,
   Cloud,
   Compass,
   Cpu,
   Copy,
   Download,
   EthernetPort,
+  HardDrive,
   Minus,
   Play,
   RotateCw,
@@ -37,10 +39,12 @@ import {
   Router,
   Server,
   Smartphone,
+  Speaker,
   Printer,
   Sparkles,
   Square,
   Stethoscope,
+  Tablet,
   Trash2,
   Tv,
   Video,
@@ -92,6 +96,12 @@ export const ComputerIcon = make(Laptop, 16)
 export const TvIcon = make(Tv, 16)
 export const PrinterIcon = make(Printer, 16)
 export const ChipIcon = make(Cpu, 16)
+export const HelpIcon = make(HelpCircle, 16)
+export const NasIcon = make(HardDrive, 16)
+export const TabletIcon = make(Tablet, 16)
+export const ConsoleIcon = make(Gamepad2, 16)
+export const CameraIcon = make(Cctv, 16)
+export const SpeakerIcon = make(Speaker, 16)
 export const UnknownDeviceIcon = make(HelpCircle, 16)
 export const TrashIcon = make(Trash2, 16)
 export const StopIcon = make(Square, 14)

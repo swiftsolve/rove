@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { networkInfoEqual } from '@/components/connection/network-info-equal'
+import { getNetworkApi } from '@/bridge/networkApi'
 
 const REFRESH_INTERVAL_MS = 15_000
 const NETWORK_INFO_TIMEOUT_MS = 10_000
@@ -57,7 +58,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
 
     try {
       const data = await withTimeout(
-        window.networkAPI.getNetworkInfo(),
+        getNetworkApi().getNetworkInfo(),
         NETWORK_INFO_TIMEOUT_MS,
         'Network detection timed out. Check your connection and try again.',
       )
@@ -84,8 +85,9 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   // The backend watches the routing table — refresh the moment it nudges us
   // (cable pulled, Wi-Fi joined) instead of waiting out the poll interval.
   useEffect(() => {
-    if (!window.networkAPI?.onNetworkChanged) return
-    return window.networkAPI.onNetworkChanged(() => void refresh(true))
+    const api = window.networkAPI
+    if (!api?.onNetworkChanged) return
+    return api.onNetworkChanged(() => void refresh(true))
   }, [refresh])
 
   return { info, error, isLoading, refresh: () => refresh(false), setError }

@@ -32,6 +32,10 @@
 
 /* ---- Week chart ---- */
 
+.usage-chart-wrap {
+  position: relative;
+}
+
 .usage-chart {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -43,15 +47,73 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: var(--gap-sm);
   min-width: 0;
+  padding-top: var(--gap-tight);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.usage-day.active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Fade the other columns so the hovered one stands out. */
+.usage-day.dimmed {
+  opacity: 0.4;
+}
+
+/* ---- Hover tooltip ---- */
+
+.usage-tooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  min-width: 116px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-hi);
+  box-shadow: var(--shadow-raised);
+  pointer-events: none;
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.usage-tooltip-day {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.usage-tooltip-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.usage-tooltip-value {
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.usage-tooltip-dir {
+  font-size: var(--text-micro);
+  color: var(--text-tertiary);
 }
 
 .usage-bars {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 3px;
+  gap: var(--gap-xs);
   width: 100%;
 }
 
@@ -64,7 +126,7 @@
 .usage-bar.up { background: var(--series-up); }
 
 .usage-day-label {
-  font-size: 10px;
+  font-size: var(--text-micro);
   color: var(--text-tertiary);
   white-space: nowrap;
 }

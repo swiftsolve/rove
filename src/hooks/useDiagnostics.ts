@@ -8,11 +8,12 @@ interface UseDiagnosticsResult {
   readonly run: () => Promise<void>
 }
 
-export function useDiagnostics(enabled: boolean): UseDiagnosticsResult {
+export function useDiagnostics(enabled: boolean, networkKey?: string | null): UseDiagnosticsResult {
   const { data, isBusy, error, reload } = useBackendResource(
     window.networkAPI?.runDiagnostics,
     enabled,
     'Diagnostics failed',
+    { resetKey: networkKey },
   )
   return { diagnostics: data, isRunning: isBusy, error, run: reload }
 }

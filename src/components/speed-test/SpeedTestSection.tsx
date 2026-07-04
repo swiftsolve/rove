@@ -2,12 +2,26 @@ import { memo } from 'react'
 import type { SpeedResult, SpeedTestProgress } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, isDisplayableMbps, splitSpeedMbps } from '@/lib/format'
 import Section from '@/components/ui/Section'
-import { HistoryIcon, PlayIcon, RefreshIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
+import {
+  EthernetIcon,
+  HistoryIcon,
+  PlayIcon,
+  RefreshIcon,
+  SpeedIcon,
+  StopIcon,
+  WifiIcon,
+} from '@/components/ui/Icons'
 import './SpeedTestSection.css'
+
+export interface SpeedTestConnection {
+  readonly type: 'wifi' | 'ethernet'
+  readonly name: string | null
+}
 
 interface SpeedTestSectionProps {
   readonly internetSpeed: SpeedResult | null
   readonly linkCapacityMbps: number | null
+  readonly connection: SpeedTestConnection | null
   readonly testing: boolean
   readonly canTest: boolean
   readonly error: string | null
@@ -15,6 +29,16 @@ interface SpeedTestSectionProps {
   readonly onRunTest: () => void
   readonly onCancelTest: () => void
   readonly onOpenHistory: () => void
+}
+
+function ConnectionTag({ connection }: { readonly connection: SpeedTestConnection }): JSX.Element {
+  const label = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
+  return (
+    <span className={`bench-conn conn-${connection.type}`}>
+      {connection.type === 'wifi' ? <WifiIcon size={12} /> : <EthernetIcon size={12} />}
+      {label}
+    </span>
+  )
 }
 
 function SpeedCell({ mbps }: { readonly mbps: number | null | undefined }): JSX.Element {
@@ -56,6 +80,7 @@ function TestProgress({ progress }: { readonly progress: SpeedTestProgress }): J
 function SpeedTestSection({
   internetSpeed,
   linkCapacityMbps,
+  connection,
   testing,
   canTest,
   error,
@@ -164,9 +189,17 @@ function SpeedTestSection({
           {testing ? (
             <TestProgress progress={progress} />
           ) : (
-            linkCapacityMbps != null && (
+            (connection != null || linkCapacityMbps != null) && (
               <p className="text-meta bench-footnote">
-                Adapter link speed · <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
+                {connection != null && <ConnectionTag connection={connection} />}
+                {connection != null && linkCapacityMbps != null && (
+                  <span className="bench-footnote-sep">·</span>
+                )}
+                {linkCapacityMbps != null && (
+                  <span>
+                    Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
+                  </span>
+                )}
               </p>
             )
           )}

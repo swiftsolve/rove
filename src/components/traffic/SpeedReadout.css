@@ -6,8 +6,8 @@
 .speed-readout-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  gap: var(--gap-tight);
+  margin-bottom: var(--gap-sm);
 }
 
 .speed-readout-key {

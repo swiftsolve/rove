@@ -43,6 +43,37 @@ function nextIdleState(
   return { isIdle: false, lowSince: null }
 }
 
+/**
+ * Shared, reference-counted backend subscription. `subscribeLiveThroughput` /
+ * `unsubscribeLiveThroughput` are global backend commands with no ref-count of
+ * their own, so N consumers (or React 18 StrictMode's mount/unmount/remount)
+ * must not each toggle it — the first attach subscribes, the last detach
+ * unsubscribes. Because the backend tracks a subscriber *count*, the net of
+ * subscribe/unsubscribe calls is order-independent.
+ */
+let backendRefCount = 0
+
+function attachThroughput(
+  api: NonNullable<Window['networkAPI']>,
+  onUpdate: (t: LiveThroughput) => void,
+): () => void {
+  const detachEvents = api.onLiveThroughput(onUpdate)
+  backendRefCount += 1
+  if (backendRefCount === 1) {
+    void api.subscribeLiveThroughput()
+  }
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    detachEvents()
+    backendRefCount -= 1
+    if (backendRefCount === 0) {
+      void api.unsubscribeLiveThroughput()
+    }
+  }
+}
+
 export interface LiveThroughputState {
   readonly throughput: LiveThroughput
   readonly history: ThroughputHistory
@@ -60,7 +91,8 @@ export function useLiveThroughput(enabled: boolean): LiveThroughputState {
   const idleRef = useRef<IdleTracker>({ isIdle: true, lowSince: null })
 
   useEffect(() => {
-    if (!enabled || !window.networkAPI?.subscribeLiveThroughput) return
+    const api = window.networkAPI
+    if (!enabled || !api?.subscribeLiveThroughput) return
 
     const handleUpdate = (update: LiveThroughput): void => {
       const throughput = {
@@ -88,12 +120,10 @@ export function useLiveThroughput(enabled: boolean): LiveThroughputState {
       })
     }
 
-    const unsubscribeEvents = window.networkAPI.onLiveThroughput(handleUpdate)
-    void window.networkAPI.subscribeLiveThroughput()
+    const detach = attachThroughput(api, handleUpdate)
 
     return () => {
-      unsubscribeEvents()
-      void window.networkAPI.unsubscribeLiveThroughput()
+      detach()
       idleRef.current = { isIdle: true, lowSince: null }
       setState(INITIAL_STATE)
     }

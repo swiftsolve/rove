@@ -55,7 +55,7 @@
 .iface-state {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--gap-tight);
   flex-shrink: 0;
   text-transform: capitalize;
 }

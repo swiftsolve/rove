@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { splitSpeedMbps } from '@/lib/format'
 import './SpeedReadout.css'
 
@@ -10,7 +11,7 @@ interface SpeedReadoutProps {
   readonly compact?: boolean
 }
 
-export default function SpeedReadout({
+function SpeedReadout({
   label,
   mbps,
   series,
@@ -35,3 +36,5 @@ export default function SpeedReadout({
     </div>
   )
 }
+
+export default memo(SpeedReadout)

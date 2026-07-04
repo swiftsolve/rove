@@ -1,0 +1,45 @@
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-bubble {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 60;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s;
+  pointer-events: none;
+}
+
+/* Pin to the trigger's near edge and grow inward, away from the window edge. */
+.tooltip-right .tooltip-bubble {
+  right: 0;
+}
+.tooltip-left .tooltip-bubble {
+  left: 0;
+}
+
+.tooltip-wrap:hover .tooltip-bubble,
+.tooltip-wrap:focus-within .tooltip-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

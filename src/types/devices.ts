@@ -1,9 +1,14 @@
 export const LAN_DEVICE_KINDS = [
   'router',
+  'nas',
   'computer',
+  'tablet',
   'phone',
+  'console',
   'tv',
   'printer',
+  'camera',
+  'speaker',
   'iot',
   'unknown',
 ] as const
@@ -13,10 +18,15 @@ export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 
 export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
   router: 'Network',
+  nas: 'NAS / Server',
   computer: 'Computer',
+  tablet: 'Tablet',
   phone: 'Mobile',
+  console: 'Game console',
   tv: 'TV / Media',
   printer: 'Printer',
+  camera: 'Camera',
+  speaker: 'Speaker',
   iot: 'Smart home',
   unknown: 'Unknown',
 }
