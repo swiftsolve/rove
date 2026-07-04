@@ -1,0 +1,83 @@
+.usage-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+}
+
+.usage-metric-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.usage-key {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.usage-key.down { background: var(--series-down); }
+.usage-key.up { background: var(--series-up); }
+
+.usage-session {
+  margin-top: var(--gap-md);
+}
+
+.usage-inline-icon {
+  vertical-align: -1px;
+  color: var(--text-tertiary);
+}
+
+/* ---- Week chart ---- */
+
+.usage-chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-xs) 0;
+}
+
+.usage-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.usage-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+}
+
+.usage-bar {
+  width: 9px;
+  border-radius: 2px 2px 1px 1px;
+}
+
+.usage-bar.down { background: var(--series-down); }
+.usage-bar.up { background: var(--series-up); }
+
+.usage-day-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.usage-day-label.today {
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.usage-week-total {
+  margin-top: var(--gap-md);
+}
+
+.usage-note {
+  padding: 0 2px;
+}

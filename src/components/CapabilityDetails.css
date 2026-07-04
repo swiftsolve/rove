@@ -1,0 +1,75 @@
+.cap-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.cap-detail {
+  padding: var(--section-body);
+}
+
+.cap-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.cap-detail-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.cap-detail-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.cap-detail-summary {
+  margin: 8px 0 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* All four requirements shown as a compact metric grid — your value colours red
+   only when it misses the threshold, which stays a small muted line. */
+.cap-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm);
+  margin-top: 14px;
+}
+
+.cap-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cap-metric-label {
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.cap-metric-value {
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cap-metric.fail .cap-metric-value {
+  color: var(--negative);
+}
+
+.cap-metric-need {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
