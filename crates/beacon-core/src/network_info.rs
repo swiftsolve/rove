@@ -1,6 +1,25 @@
 use crate::shell::{first_int, first_match, try_run};
 use crate::types::{ConnectionDetails, NetworkInfo};
 use regex_lite::Regex;
+use std::sync::LazyLock;
+
+macro_rules! static_regex {
+    ($name:ident, $pattern:literal) => {
+        static $name: LazyLock<Regex> = LazyLock::new(|| Regex::new($pattern).unwrap());
+    };
+}
+
+static_regex!(IW_SIGNAL, r"signal:\s*(-?\d+)");
+static_regex!(IW_SSID, r"SSID:\s*(.+)");
+static_regex!(IW_FREQ, r"freq:\s*(\d+)");
+static_regex!(IW_CHANNEL, r"channel\s+(\d+)");
+static_regex!(IW_CHANNEL_FREQ, r"channel\s+\d+\s+\((\d+)");
+static_regex!(ETHTOOL_SPEED, r"Speed:\s*(\d+)");
+static_regex!(ETHTOOL_DUPLEX, r"Duplex:\s*(\w+)");
+static_regex!(NETSH_SSID, r"SSID\s*:\s*(.+)");
+static_regex!(NETSH_SIGNAL, r"Signal\s*:\s*(\d+)%");
+static_regex!(NETSH_CHANNEL, r"Channel\s*:\s*(\d+)");
+static_regex!(NETSH_AUTH, r"Authentication\s*:\s*(.+)");
 
 pub async fn default_gateway() -> Option<String> {
     if cfg!(target_os = "windows") {
@@ -92,21 +111,16 @@ async fn linux_wifi_details(iface: &str) -> ConnectionDetails {
     }
 
     if let Some(out) = try_run(&format!("iw dev {iface} link 2>/dev/null")).await {
-        let re_sig = Regex::new(r"signal:\s*(-?\d+)").unwrap();
-        let re_ssid = Regex::new(r"SSID:\s*(.+)").unwrap();
-        let re_freq = Regex::new(r"freq:\s*(\d+)").unwrap();
-        d.signal_dbm = d.signal_dbm.or(first_int(&out, &re_sig));
+        d.signal_dbm = d.signal_dbm.or(first_int(&out, &IW_SIGNAL));
         if d.ssid.is_none() {
-            d.ssid = first_match(&out, &re_ssid).map(|s| s.trim().to_string());
+            d.ssid = first_match(&out, &IW_SSID).map(|s| s.trim().to_string());
         }
-        d.frequency = d.frequency.or(first_int(&out, &re_freq));
+        d.frequency = d.frequency.or(first_int(&out, &IW_FREQ));
     }
 
     if let Some(out) = try_run(&format!("iw dev {iface} info 2>/dev/null")).await {
-        let re_chan = Regex::new(r"channel\s+(\d+)").unwrap();
-        let re_freq = Regex::new(r"channel\s+\d+\s+\((\d+)").unwrap();
-        d.channel = d.channel.or(first_int(&out, &re_chan));
-        d.frequency = d.frequency.or(first_int(&out, &re_freq));
+        d.channel = d.channel.or(first_int(&out, &IW_CHANNEL));
+        d.frequency = d.frequency.or(first_int(&out, &IW_CHANNEL_FREQ));
     }
 
     if d.ssid.is_none() {
@@ -125,10 +139,8 @@ async fn linux_ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
 
     if let Some(out) = try_run(&format!("ethtool {iface} 2>/dev/null")).await {
-        let re_speed = Regex::new(r"Speed:\s*(\d+)").unwrap();
-        let re_duplex = Regex::new(r"Duplex:\s*(\w+)").unwrap();
-        d.link_speed_mbps = first_int(&out, &re_speed);
-        d.duplex = first_match(&out, &re_duplex);
+        d.link_speed_mbps = first_int(&out, &ETHTOOL_SPEED);
+        d.duplex = first_match(&out, &ETHTOOL_DUPLEX);
     }
     // /sys fallback when ethtool is missing
     if d.link_speed_mbps.is_none() {
@@ -177,15 +189,11 @@ async fn windows_wifi_details() -> ConnectionDetails {
     let Some(out) = try_run("netsh wlan show interfaces").await else {
         return ConnectionDetails::default();
     };
-    let re_ssid = Regex::new(r"SSID\s*:\s*(.+)").unwrap();
-    let re_sig = Regex::new(r"Signal\s*:\s*(\d+)%").unwrap();
-    let re_chan = Regex::new(r"Channel\s*:\s*(\d+)").unwrap();
-    let re_auth = Regex::new(r"Authentication\s*:\s*(.+)").unwrap();
     finalize_wifi(ConnectionDetails {
-        ssid: first_match(&out, &re_ssid).map(|s| s.trim().to_string()),
-        signal_strength: first_int(&out, &re_sig),
-        channel: first_int(&out, &re_chan),
-        security: first_match(&out, &re_auth).map(|s| s.trim().to_string()),
+        ssid: first_match(&out, &NETSH_SSID).map(|s| s.trim().to_string()),
+        signal_strength: first_int(&out, &NETSH_SIGNAL),
+        channel: first_int(&out, &NETSH_CHANNEL),
+        security: first_match(&out, &NETSH_AUTH).map(|s| s.trim().to_string()),
         ..Default::default()
     })
 }

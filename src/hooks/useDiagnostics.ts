@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkDiagnostics } from '@/types'
+import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface UseDiagnosticsResult {
   readonly diagnostics: NetworkDiagnostics | null
@@ -9,32 +9,10 @@ interface UseDiagnosticsResult {
 }
 
 export function useDiagnostics(enabled: boolean): UseDiagnosticsResult {
-  const [diagnostics, setDiagnostics] = useState<NetworkDiagnostics | null>(null)
-  const [isRunning, setIsRunning] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const autoRunDoneRef = useRef(false)
-
-  const run = useCallback(async (): Promise<void> => {
-    if (!window.networkAPI?.runDiagnostics) return
-
-    setIsRunning(true)
-    setError(null)
-
-    try {
-      const result = await window.networkAPI.runDiagnostics()
-      setDiagnostics(result)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Diagnostics failed')
-    } finally {
-      setIsRunning(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!enabled || autoRunDoneRef.current) return
-    autoRunDoneRef.current = true
-    void run()
-  }, [enabled, run])
-
-  return { diagnostics, isRunning, error, run }
+  const { data, isBusy, error, reload } = useBackendResource(
+    window.networkAPI?.runDiagnostics,
+    enabled,
+    'Diagnostics failed',
+  )
+  return { diagnostics: data, isRunning: isBusy, error, run: reload }
 }

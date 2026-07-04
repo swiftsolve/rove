@@ -81,5 +81,12 @@ export function useNetworkInfo(): UseNetworkInfoResult {
     return () => window.clearInterval(intervalId)
   }, [refresh])
 
+  // The backend watches the routing table — refresh the moment it nudges us
+  // (cable pulled, Wi-Fi joined) instead of waiting out the poll interval.
+  useEffect(() => {
+    if (!window.networkAPI?.onNetworkChanged) return
+    return window.networkAPI.onNetworkChanged(() => void refresh(true))
+  }, [refresh])
+
   return { info, error, isLoading, refresh: () => refresh(false), setError }
 }

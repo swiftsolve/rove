@@ -18,6 +18,8 @@ export interface NetworkAPI {
   runSpeedTest(): Promise<SpeedTestResult>
   cancelSpeedTest(): Promise<void>
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
+  /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
+  onNetworkChanged(callback: () => void): Unsubscribe
   subscribeLiveThroughput(): Promise<void>
   unsubscribeLiveThroughput(): Promise<void>
   onLiveThroughput(callback: (throughput: LiveThroughput) => void): Unsubscribe

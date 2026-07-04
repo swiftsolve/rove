@@ -7,17 +7,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 const RETAIN_DAYS: usize = 30;
 const SUMMARY_DAYS: i64 = 7;
 
-/// Local calendar date key ("2026-07-03") for a day `offset` days from today.
-fn date_key(offset_days: i64) -> String {
-    // Days since epoch in local time via libc-free approximation: use chrono-less
-    // arithmetic on the local offset obtained from the `date` of the system clock.
-    // We format through time crate-free logic: read from std::process is overkill;
-    // derive from SystemTime UTC and the TZ offset captured at startup.
-    local_date_key(offset_days)
-}
-
-// Minimal local-date support without pulling chrono: compute using the
-// captured local-UTC offset (seconds). Good enough for day bucketing.
+// Local dates without pulling in chrono: apply the local-UTC offset
+// (captured once at startup) to the UNIX clock, then bucket by day.
 static LOCAL_OFFSET_SECS: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
 
 fn local_offset_secs() -> i64 {
@@ -185,7 +176,7 @@ impl UsageTracker {
     pub fn summary(&self, networks: &sysinfo::Networks) -> DataUsageSummary {
         let days = (1 - SUMMARY_DAYS..=0)
             .map(|offset| {
-                let key = date_key(offset);
+                let key = local_date_key(offset);
                 let bucket = self.data.days.get(&key).copied().unwrap_or_default();
                 DailyUsage { date: key, rx_bytes: bucket.rx, tx_bytes: bucket.tx }
             })

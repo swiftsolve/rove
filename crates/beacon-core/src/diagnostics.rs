@@ -2,6 +2,10 @@ use crate::network_info::{default_gateway, default_interface, dns_servers};
 use crate::shell::{try_run_timeout};
 use crate::types::{NetworkDiagnostics, PingStats};
 use regex_lite::Regex;
+use std::sync::LazyLock;
+
+static PING_TIME: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap());
 use std::time::Duration;
 
 /// Ping a host and derive avg / jitter / loss, like the Electron measurer.
@@ -13,11 +17,10 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     };
     let out = try_run_timeout(&cmd, Duration::from_secs(20)).await?;
 
-    let re_time = Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap();
     let times: Vec<f64> = out
         .lines()
         .filter_map(|line| {
-            re_time
+            PING_TIME
                 .captures(line)
                 .and_then(|c| c.get(1))
                 .and_then(|m| m.as_str().parse().ok())
