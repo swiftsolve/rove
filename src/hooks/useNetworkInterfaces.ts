@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { NetworkInterfaceSummary } from '@shared/types'
+import type { NetworkInterfaceSummary } from '@/types'
 
 interface UseNetworkInterfacesResult {
   readonly interfaces: readonly NetworkInterfaceSummary[]

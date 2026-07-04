@@ -1,9 +1,9 @@
-import type { NetworkDiagnostics } from '@shared/types'
-import { FAILED_PING } from '@shared/types'
-import DataRow from '../components/ui/DataRow'
-import Section from '../components/ui/Section'
-import { DnsIcon, RefreshIcon, RouterIcon } from '../components/Icons'
-import { formatLatencyMs } from '../utils/format'
+import type { NetworkDiagnostics } from '@/types'
+import { FAILED_PING } from '@/types'
+import DataRow from '@/components/ui/DataRow'
+import Section from '@/components/ui/Section'
+import { DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
+import { formatLatencyMs } from '@/lib/format'
 import './DiagnosticsView.css'
 
 interface DiagnosticsViewProps {

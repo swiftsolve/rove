@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ArrowLeftIcon } from '../Icons'
+import { ArrowLeftIcon } from '@/components/ui/Icons'
 import './Subpage.css'
 
 interface SubpageProps {

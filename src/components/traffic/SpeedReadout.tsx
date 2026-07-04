@@ -1,4 +1,4 @@
-import { splitSpeedMbps } from '../../utils/format'
+import { splitSpeedMbps } from '@/lib/format'
 import './SpeedReadout.css'
 
 export type SpeedSeries = 'down' | 'up'

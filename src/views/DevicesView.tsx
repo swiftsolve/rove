@@ -1,5 +1,5 @@
-import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@shared/types'
-import { LAN_DEVICE_KIND_LABELS } from '@shared/types'
+import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
+import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import {
   ChipIcon,
   ComputerIcon,
@@ -9,7 +9,7 @@ import {
   RouterIcon,
   TvIcon,
   UnknownDeviceIcon,
-} from '../components/Icons'
+} from '@/components/ui/Icons'
 import './DevicesView.css'
 
 interface DevicesViewProps {

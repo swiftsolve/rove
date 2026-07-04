@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { DataUsageSummary } from '@shared/types'
-import { createEmptyDataUsage } from '@shared/types'
+import type { DataUsageSummary } from '@/types'
+import { createEmptyDataUsage } from '@/types'
 
 const REFRESH_INTERVAL_MS = 10_000
 

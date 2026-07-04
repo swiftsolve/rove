@@ -7,20 +7,31 @@ discovery, connection diagnostics, and data-usage tracking. Tauri (Rust) + React
 
 ```
 beacon/
-├── src/                  React UI (Vite). Talks to the backend through
-│   │                     `window.networkAPI` — see src/bridge/tauriNetworkApi.ts
-│   └── dev/              Browser mock bridge for UI work without a backend
-├── shared/types/         TypeScript contracts shared by UI and bridge
-├── crates/beacon-core/   All platform services in pure Rust (no Tauri/GTK deps —
-│                         compiles and tests anywhere):
-│                         network_info, interfaces, devices, diagnostics,
-│                         speed, live_throughput, data_usage, oui
-└── src-tauri/            Thin Tauri shell: one #[tauri::command] per service,
-                          events for progress/throughput, window config
+├── src/                        React UI (Vite)
+│   ├── main.tsx, App.tsx       entry + shell (header, nav, view switching)
+│   ├── views/                  one file per page: Home, Interfaces, Devices,
+│   │                           Usage, Diagnostics
+│   ├── components/
+│   │   ├── ui/                 app-agnostic chrome: Section, DataRow, Subpage,
+│   │   │                       TabBar, Icons (lucide re-exports)
+│   │   ├── connection/         connection card + display helpers
+│   │   ├── traffic/            live throughput panel, chart, readouts
+│   │   ├── speed-test/         speed test section + history (+ storage)
+│   │   └── capabilities/       capability list, details, meter, icon, rating
+│   ├── hooks/                  data hooks over window.networkAPI
+│   ├── lib/                    generic helpers (format, chart geometry)
+│   ├── types/                  the UI↔backend contract (Rust mirrors these
+│   │                           shapes in beacon-core/src/types.rs, camelCase)
+│   ├── bridge/                 Tauri implementation of the contract
+│   ├── navigation/             tab definitions
+│   └── dev/                    browser mock bridge (npm run dev without Tauri)
+├── crates/beacon-core/         all platform services in pure Rust (no Tauri/GTK
+│                               deps — compiles and tests anywhere): network_info,
+│                               interfaces, devices, diagnostics, speed,
+│                               live_throughput, data_usage, oui, shell
+└── src-tauri/                  thin Tauri shell: one #[tauri::command] per
+                                service, events for progress/throughput
 ```
-
-Serialized field names are camelCase on the wire, so the Rust types mirror
-`shared/types/*.ts` exactly.
 
 ## Development
 

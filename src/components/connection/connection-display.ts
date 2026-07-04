@@ -1,5 +1,5 @@
-import type { NetworkInfo } from '@shared/types'
-import { isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@shared/types'
+import type { NetworkInfo } from '@/types'
+import { isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
 
 export type ConnectionDisplayVariant = 'wifi' | 'ethernet' | 'disconnected'
 

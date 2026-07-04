@@ -1,4 +1,4 @@
-import type { CapabilityId } from '@shared/types'
+import type { CapabilityId } from '@/types'
 import {
   BrowsingIcon,
   CloudGamingIcon,
@@ -8,7 +8,7 @@ import {
   HdStreamIcon,
   LiveStreamIcon,
   VideoCallIcon,
-} from '../Icons'
+} from '@/components/ui/Icons'
 
 interface CapabilityIconProps {
   readonly id: CapabilityId

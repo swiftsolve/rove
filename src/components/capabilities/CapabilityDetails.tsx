@@ -1,8 +1,8 @@
-import type { CapabilityRating, SpeedResult } from '@shared/types'
-import { explainCapability } from '../utils/capability-detail'
-import CapabilityIcon from './visual/CapabilityIcon'
-import CapabilityMeter from './visual/CapabilityMeter'
-import Subpage from './ui/Subpage'
+import type { CapabilityRating, SpeedResult } from '@/types'
+import { explainCapability } from '@/components/capabilities/capability-detail'
+import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
+import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
+import Subpage from '@/components/ui/Subpage'
 import './CapabilityDetails.css'
 
 interface CapabilityDetailsProps {

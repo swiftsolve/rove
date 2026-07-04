@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { LanDeviceScan } from '@shared/types'
+import type { LanDeviceScan } from '@/types'
 
 interface UseDevicesResult {
   readonly scan: LanDeviceScan | null

@@ -1,7 +1,7 @@
-import type { NetworkInterfaceSummary } from '@shared/types'
-import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '../components/Icons'
-import DataRow from '../components/ui/DataRow'
-import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '../utils/format'
+import type { NetworkInterfaceSummary } from '@/types'
+import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui/Icons'
+import DataRow from '@/components/ui/DataRow'
+import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
 
 interface InterfacesViewProps {

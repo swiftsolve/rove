@@ -1,7 +1,7 @@
-import type { DailyUsage, DataUsageSummary } from '@shared/types'
-import { formatBytes, splitBytes } from '../utils/format'
-import Section from '../components/ui/Section'
-import { ArrowDownIcon, ArrowUpIcon, UsageIcon } from '../components/Icons'
+import type { DailyUsage, DataUsageSummary } from '@/types'
+import { formatBytes, splitBytes } from '@/lib/format'
+import Section from '@/components/ui/Section'
+import { ArrowDownIcon, ArrowUpIcon, UsageIcon } from '@/components/ui/Icons'
 import './UsageView.css'
 
 interface UsageViewProps {
