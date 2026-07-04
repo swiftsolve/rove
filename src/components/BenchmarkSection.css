@@ -1,0 +1,86 @@
+.bench-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-lg);
+}
+
+.bench-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.bench-progress-message {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.bench-progress-pct {
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+}
+
+.bench-progress-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--bg-inset);
+  overflow: hidden;
+}
+
+.bench-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+.bench-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bench-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+}
+
+.bench-substats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-lg);
+  margin-top: var(--gap-lg);
+}
+
+.bench-substat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bench-substat-value {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.bench-hero-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bench-empty {
+  font-size: var(--text-display-sm);
+}
+
+.bench-footnote {
+  margin-top: var(--gap-md);
+  font-size: var(--text-caption);
+}

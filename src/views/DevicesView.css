@@ -1,0 +1,206 @@
+.devices-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.devices-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+}
+
+.devices-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.devices-count {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.devices-subnet {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Recessive caption, tucked up under the header instead of floating mid-page. */
+.devices-hint {
+  margin: calc(var(--gap-stack) * -0.5) 0 0;
+  max-width: 44ch;
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-stack);
+}
+
+.device-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  padding: var(--section-header-y) var(--section-header-x);
+}
+
+.device-row-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.device-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.device-row.gateway .device-row-icon {
+  color: var(--positive);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+/* Known device kinds get a quiet tint so categories scan at a glance;
+   unknown stays neutral. Gateway's green wins via the rule above. */
+.device-row:not(.gateway) .device-row-icon.kind-computer,
+.device-row:not(.gateway) .device-row-icon.kind-phone {
+  color: var(--series-down);
+  background: rgba(106, 160, 255, 0.1);
+}
+
+.device-row:not(.gateway) .device-row-icon.kind-tv,
+.device-row:not(.gateway) .device-row-icon.kind-printer {
+  color: var(--series-up);
+  background: rgba(179, 157, 255, 0.1);
+}
+
+.device-row:not(.gateway) .device-row-icon.kind-iot {
+  color: var(--warning);
+  background: rgba(245, 196, 81, 0.1);
+}
+
+.device-row:not(.gateway) .device-row-icon.kind-router {
+  color: var(--positive);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.device-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.device-row-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Keep the name on one line so a tag never pushes it to wrap. */
+.device-row-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-row .iface-tag {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.device-row.gateway .iface-tag:not(.muted) {
+  color: var(--positive);
+}
+
+.device-row-mac {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+
+/* Randomized note, set off from the MAC by a small dot. */
+.device-row-random {
+  position: relative;
+  padding-left: 11px;
+  letter-spacing: 0;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.device-row-random::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  transform: translateY(-50%);
+}
+
+.device-row-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.device-row-ip {
+  color: var(--text-secondary);
+}
+
+.device-row-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+.device-row-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.device-row-state.reachable {
+  color: var(--positive);
+}

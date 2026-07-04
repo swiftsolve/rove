@@ -1,0 +1,89 @@
+.capability-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  padding: var(--row-py) 8px;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+.capability-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capability-row:first-child {
+  padding-top: 0;
+}
+
+.capability-row:last-child {
+  padding-bottom: 0;
+}
+
+.capability-row + .capability-row {
+  padding-top: calc(var(--row-py) + 2px);
+}
+
+.capability-row-main {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
+}
+
+.capability-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.capability-name {
+  font-weight: var(--weight-medium);
+}
+
+.capability-desc {
+  font-size: var(--text-caption);
+}
+
+/* Icon chip tinted by the capability's level, so the rating reads at a glance
+   from the icon, the meter bars, and the label together. */
+.capability-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.capability-row.level-excellent .capability-icon-tile { color: var(--positive); }
+.capability-row.level-good .capability-icon-tile { color: #7fd88a; }
+.capability-row.level-fair .capability-icon-tile { color: var(--warning); }
+.capability-row.level-poor .capability-icon-tile { color: #f0a35e; }
+.capability-row.level-unsupported .capability-icon-tile { color: var(--text-tertiary); }
+
+/* Chevron stays out of the way until you hover/focus the row — its space is
+   always reserved, so nothing shifts when it fades in. */
+.capability-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.capability-row:hover .capability-chevron,
+.capability-row:focus-visible .capability-chevron {
+  opacity: 0.6;
+  transform: translateX(0);
+}

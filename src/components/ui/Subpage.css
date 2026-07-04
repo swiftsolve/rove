@@ -1,0 +1,49 @@
+.subpage {
+  display: flex;
+  flex-direction: column;
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+.subpage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  padding-bottom: var(--gap-sm);
+}
+
+.subpage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px 6px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.subpage-back:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.subpage-action {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.subpage-intro {
+  padding: 0 2px var(--gap-md);
+}
+
+.subpage-title {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}

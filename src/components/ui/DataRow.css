@@ -1,0 +1,27 @@
+.data-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-lg);
+  padding: var(--row-py) 0;
+}
+
+.data-row .field-label {
+  flex-shrink: 0;
+}
+
+.data-row .text-value {
+  text-align: right;
+}
+
+.data-row:first-child {
+  padding-top: 0;
+}
+
+.data-row:last-child {
+  padding-bottom: 0;
+}
+
+.data-row + .text-hint {
+  margin-top: var(--gap-sm);
+}

@@ -1,0 +1,146 @@
+.conn-card {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
+.conn-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-md);
+  width: 100%;
+  min-height: var(--section-header-min);
+  padding: var(--section-header-y) var(--section-header-x);
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+.conn-strip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+  border-radius: var(--radius);
+}
+
+.conn-strip:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.conn-strip-icon,
+.conn-chevron,
+.signal-meter {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.conn-strip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+}
+
+.conn-card.wifi .conn-strip-icon {
+  color: var(--series-down);
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.conn-card.ethernet .conn-strip-icon {
+  color: var(--positive);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.conn-card.disconnected .conn-strip-icon {
+  color: var(--negative);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.conn-strip-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+.conn-strip-title,
+.conn-strip-sub,
+.conn-strip-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conn-strip-sub {
+  color: var(--text-secondary);
+}
+
+.conn-chevron {
+  color: var(--text-tertiary);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.conn-chevron.open {
+  transform: rotate(180deg);
+}
+
+.conn-details-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-normal) var(--ease-out);
+}
+
+.conn-details-wrap.open {
+  grid-template-rows: 1fr;
+}
+
+.conn-details {
+  overflow: hidden;
+  padding: 0 var(--section-body);
+}
+
+.conn-details-wrap.open .conn-details {
+  padding: var(--gap-md) var(--section-body) var(--section-body);
+}
+
+.signal-meter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--positive);
+}
+
+.signal-meter.sig-good { color: var(--positive); }
+.signal-meter.sig-fair { color: var(--warning); }
+.signal-meter.sig-weak { color: var(--negative); }
+
+.signal-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.signal-bar {
+  width: 3px;
+  border-radius: 99px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.signal-bar:nth-child(1) { height: 6px; }
+.signal-bar:nth-child(2) { height: 8px; }
+.signal-bar:nth-child(3) { height: 10px; }
+.signal-bar:nth-child(4) { height: 12px; }
+
+.signal-bar.on {
+  background: currentColor;
+}
+
+.signal-meter-label {
+  white-space: nowrap;
+}

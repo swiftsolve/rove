@@ -1,0 +1,71 @@
+.ui-section {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  contain: content;
+}
+
+.ui-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  /* Fixed height so a header with a button isn't taller than a title-only one —
+     keeps the title's vertical position identical across every widget. */
+  height: var(--section-header-h);
+  padding: 0 var(--section-header-x);
+}
+
+.ui-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.ui-section-header .section-title {
+  line-height: 1.2;
+}
+
+.ui-section-action {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ui-section-body {
+  padding: var(--gap-sm) var(--section-body) var(--section-body);
+}
+
+.ui-section-body > .text-hint:first-child:last-child {
+  margin: 0;
+}
+
+.ui-section-body.is-loading {
+  position: relative;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.section-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.section-loading .spinner {
+  width: 18px;
+  height: 18px;
+}

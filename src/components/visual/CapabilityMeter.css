@@ -1,0 +1,44 @@
+.capability-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.capability-meter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.capability-seg {
+  width: 3px;
+  border-radius: 99px;
+  /* Inactive bars are a faded tint of the level colour, so the meter reads as
+     one monochrome unit rather than colour-on-grey. */
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.capability-seg:nth-child(1) { height: 6px; }
+.capability-seg:nth-child(2) { height: 8px; }
+.capability-seg:nth-child(3) { height: 10px; }
+.capability-seg:nth-child(4) { height: 12px; }
+
+.capability-seg.on {
+  background: currentColor;
+}
+
+.capability-level {
+  /* No fixed width — the label sits right next to the bars instead of being
+     pushed to a far right-aligned column. */
+  white-space: nowrap;
+}
+
+.capability-status.level-excellent { color: var(--positive); }
+.capability-status.level-good { color: #7fd88a; }
+.capability-status.level-fair { color: var(--warning); }
+.capability-status.level-poor { color: #f0a35e; }
+.capability-status.level-unsupported { color: var(--text-tertiary); }

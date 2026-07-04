@@ -1,0 +1,72 @@
+.interface-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-stack);
+}
+
+/* Interface cards are entity headers (icon tile + name), like the connection
+   card — they need more room around the tile than a plain section title. */
+.iface-panel .ui-section-header {
+  height: auto;
+  padding: var(--section-header-y) var(--section-header-x);
+}
+
+.iface-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.iface-panel.wifi .iface-panel-icon {
+  color: var(--series-down);
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.iface-panel.ethernet .iface-panel-icon {
+  color: var(--positive);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.iface-panel-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iface-tag {
+  color: var(--text-tertiary);
+}
+
+.iface-tag.muted {
+  opacity: 0.7;
+}
+
+.iface-panel.default .iface-tag:not(.muted) {
+  color: var(--positive);
+}
+
+.iface-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+}
+
+.iface-state-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.iface-state.up {
+  color: var(--positive);
+}

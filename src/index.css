@@ -1,0 +1,376 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./assets/fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Questrial';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/Questrial-Regular.woff2') format('woff2');
+}
+
+:root {
+  /* Surfaces — a genuine elevation ladder rather than one flat panel colour */
+  --bg-app: #0a0b0e;
+  --bg-app-2: #0c0d11;
+  --bg-panel: #141519;
+  --bg-panel-hi: #191a1f;
+  --bg-inset: #0e0f13;
+  --bg-hover: #202127;
+
+  /* Hairlines — panels read as real surfaces lit from above */
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.11);
+  --hairline-top: rgba(255, 255, 255, 0.05);
+
+  --text-primary: #f5f6f8;
+  --text-secondary: #a4a7b2;
+  --text-tertiary: #71747f;
+
+  --accent: #5b8cff;
+  --accent-hover: #6f9bff;
+  --accent-press: #4d7ef0;
+  --accent-muted: rgba(91, 140, 255, 0.14);
+
+  --positive: #43d6a0;
+  --warning: #f5c451;
+  --negative: #f77b7b;
+
+  --series-down: #6aa0ff;
+  --series-up: #b39dff;
+
+  /* Soft lift so panels read as raised surfaces on the near-black backdrop —
+     depth from shadow rather than hard outlines. */
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.22);
+  --shadow-raised: 0 12px 32px rgba(0, 0, 0, 0.45);
+
+  --radius: 13px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+
+  --section-header-y: 12px;
+  --section-header-x: 16px;
+  --section-header-min: 42px;
+  --section-header-h: 46px;
+  --section-body: 16px;
+
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+  --gap-stack: 14px;
+  --row-py: 8px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 140ms;
+  --duration-normal: 220ms;
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-numeric: 'Questrial', ui-sans-serif, system-ui, sans-serif;
+  /* Kept as an alias so any lingering references resolve to Questrial too. */
+  --font-mono: var(--font-numeric);
+
+  --text-caption: 11px;
+  --text-small: 12px;
+  --text-body: 13px;
+  --text-section: 14px;
+  --text-title: 17px;
+  --text-display-sm: 28px;
+  --text-display: 28px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.45;
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  font-optical-sizing: auto;
+  font-feature-settings: 'cv11' 1, 'ss01' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  cursor: default;
+  height: 100%;
+  overflow: hidden;
+}
+
+.num,
+.data-row-value,
+.metric-value {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.35);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  white-space: nowrap;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ---- Typography ---- */
+
+/** Panel headings — e.g. Live usage, Speed test */
+.section-title {
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/** Labels above values — e.g. Download, IP address */
+.field-label {
+  font-size: 10.5px;
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.text-title {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.text-body {
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.text-secondary {
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.text-muted {
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+.text-hint {
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.text-value {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+/* Semantic value states — encode health in colour, only where it's earned */
+.val-good { color: var(--positive); }
+.val-warn { color: var(--warning); }
+.val-bad { color: var(--negative); }
+
+.text-meta {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.metric {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.metric-value {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-display);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.metric-unit {
+  font-family: var(--font);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  color: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+.metric-compact .metric-value {
+  font-size: var(--text-display-sm);
+}
+
+/* ---- Layout ---- */
+
+/** Centered empty state inside a section body */
+.section-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 12px 8px 8px;
+}
+
+.section-placeholder-icon {
+  color: var(--text-tertiary);
+}
+
+.section-placeholder .text-hint {
+  max-width: 264px;
+}
+
+.view-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-stack);
+}
+
+.view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  min-height: 32px;
+  padding: 0 2px;
+}
+
+.panel-head-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.row-list > :first-child {
+  padding-top: 0;
+}
+
+.row-list > :last-child {
+  padding-bottom: 0;
+}
+
+.view-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 140px;
+  padding: var(--gap-lg);
+}
+
+.view-empty p {
+  color: var(--text-tertiary);
+}
+
+.surface {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Considered entrance: content settles in with a light stagger on mount / tab change */
+.view-page > * {
+  animation: fade-up var(--duration-normal) var(--ease-out) both;
+}
+.view-page > *:nth-child(2) { animation-delay: 45ms; }
+.view-page > *:nth-child(3) { animation-delay: 90ms; }
+.view-page > *:nth-child(4) { animation-delay: 135ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
