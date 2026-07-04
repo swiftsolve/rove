@@ -62,6 +62,17 @@ pub async fn default_interface() -> Option<String> {
 }
 
 pub async fn dns_servers() -> Vec<String> {
+    if cfg!(target_os = "windows") {
+        if let Some(out) = try_run(
+            "powershell -NoProfile -Command \"(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses | Select-Object -Unique\"",
+        )
+        .await
+        {
+            return out.lines().map(str::trim).filter(|l| !l.is_empty()).map(String::from).collect();
+        }
+        return Vec::new();
+    }
+    // Linux and macOS both keep the active resolvers in resolv.conf.
     if let Some(out) =
         try_run("grep '^nameserver' /etc/resolv.conf 2>/dev/null | awk '{print $2}'").await
     {
@@ -198,12 +209,39 @@ async fn windows_wifi_details() -> ConnectionDetails {
     })
 }
 
+async fn windows_ethernet_details(iface: &str) -> ConnectionDetails {
+    let out = try_run(&format!(
+        "powershell -NoProfile -Command \"(Get-NetAdapter -Name '{iface}').LinkSpeed\""
+    ))
+    .await;
+    ConnectionDetails {
+        link_speed_mbps: out.as_deref().and_then(parse_link_speed),
+        ..Default::default()
+    }
+}
+
+/// "2.5 Gbps" / "1 Gbps" / "100 Mbps" → Mbps.
+fn parse_link_speed(text: &str) -> Option<i64> {
+    let text = text.trim();
+    let value: f64 = text
+        .split_whitespace()
+        .next()?
+        .parse()
+        .ok()?;
+    if text.to_lowercase().contains("gbps") {
+        Some((value * 1000.0) as i64)
+    } else {
+        Some(value as i64)
+    }
+}
+
 pub async fn connection_details(iface: &str, connection_type: &str) -> ConnectionDetails {
     match (std::env::consts::OS, connection_type) {
         ("linux", "wifi") => linux_wifi_details(iface).await,
         ("linux", _) => linux_ethernet_details(iface).await,
         ("macos", "wifi") => mac_wifi_details().await,
         ("windows", "wifi") => windows_wifi_details().await,
+        ("windows", _) => windows_ethernet_details(iface).await,
         _ => ConnectionDetails::default(),
     }
 }

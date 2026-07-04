@@ -149,7 +149,21 @@ npm run tauri:build   # .deb ~5 MB, AppImage, dmg (macOS), nsis (Windows)
 
 ## Platform support
 
-Linux is fully implemented (`ip`/`iw`/`nmcli`/`getent`/sysfs). macOS and
-Windows paths are ported from the original implementation (`airport`,
-`netsh`, PowerShell, `arp -a`) with graceful degradation where a tool is
-unavailable — values render as “—” rather than failing.
+All services run on Linux, macOS and Windows. Each looks for the native tool
+for the job and degrades gracefully (missing values render as “—”):
+
+| | Linux | macOS | Windows |
+|---|---|---|---|
+| Default route / interface | `ip route` | `route -n get` | `Get-NetRoute` |
+| Wi-Fi details | `nmcli`, `iw` | `airport -I` | `netsh wlan` |
+| Link speed | `ethtool`, sysfs | — | `Get-NetAdapter` |
+| DNS servers | `resolv.conf` | `resolv.conf` | `Get-DnsClientServerAddress` |
+| Neighbor table | `ip neigh` | `arp -a` | `arp -a` |
+| Reverse hostnames | `getent` | `dscacheutil` | `System.Net.Dns` |
+| Interface state | sysfs | `ifconfig` | `Get-NetAdapter` |
+| mDNS, sweep, speed test, throughput, usage | pure Rust everywhere | ✓ | ✓ |
+
+Platform branches are runtime `cfg!()` checks, so every path typechecks on
+every OS; CI (`.github/workflows/build.yml`) builds all three bundles. The
+instant network-change monitor (`ip monitor route`) is Linux-only — macOS and
+Windows fall back to the 15 s poll.

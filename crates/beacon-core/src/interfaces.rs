@@ -16,10 +16,18 @@ pub async fn address_of(name: &str) -> (Option<String>, Option<String>) {
 /// Cross-platform base list; Linux gets full detail from `ip -j addr` + /sys.
 pub async fn list() -> Vec<InterfaceSummary> {
     if cfg!(target_os = "linux") {
-        linux_list().await
-    } else {
-        generic_list()
+        return linux_list().await;
     }
+    let (mut list, states, default) =
+        tokio::join!(async { generic_list() }, probe_states(), crate::network_info::default_interface());
+    for iface in &mut list {
+        if let Some(state) = states.get(&iface.name) {
+            iface.oper_state = state.clone();
+        }
+        iface.is_default = default.as_deref() == Some(iface.name.as_str());
+    }
+    sort(&mut list);
+    list
 }
 
 async fn linux_list() -> Vec<InterfaceSummary> {
@@ -78,6 +86,40 @@ async fn linux_list() -> Vec<InterfaceSummary> {
 
     sort(&mut result);
     result
+}
+
+/// Best-effort oper-state probe for macOS/Windows, one shell call per list.
+async fn probe_states() -> std::collections::HashMap<String, String> {
+    let mut states = std::collections::HashMap::new();
+    if cfg!(target_os = "macos") {
+        // "en0: flags=8863<UP,...> ... status: active" blocks from ifconfig -a
+        if let Some(out) = crate::shell::try_run("ifconfig -a 2>/dev/null").await {
+            let mut current = String::new();
+            for line in out.lines() {
+                if !line.starts_with(char::is_whitespace) {
+                    current = line.split(':').next().unwrap_or("").to_string();
+                } else if let Some(status) = line.trim().strip_prefix("status: ") {
+                    let state = if status.trim() == "active" { "up" } else { "down" };
+                    states.insert(current.clone(), state.to_string());
+                }
+            }
+        }
+    } else if cfg!(target_os = "windows") {
+        // "Name Status" pairs from Get-NetAdapter
+        if let Some(out) = crate::shell::try_run(
+            "powershell -NoProfile -Command \"Get-NetAdapter | ForEach-Object { $_.Name + '|' + $_.Status }\"",
+        )
+        .await
+        {
+            for line in out.lines() {
+                if let Some((name, status)) = line.trim().split_once('|') {
+                    let state = if status.eq_ignore_ascii_case("up") { "up" } else { "down" };
+                    states.insert(name.to_string(), state.to_string());
+                }
+            }
+        }
+    }
+    states
 }
 
 /// Non-Linux fallback via sysinfo: names, MACs and first IPv4.

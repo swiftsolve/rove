@@ -22,10 +22,15 @@ fn is_meaningful(host: &str) -> bool {
 }
 
 pub async fn resolve(ip: &str) -> Option<String> {
-    let cmd = if cfg!(target_os = "windows") {
-        format!("powershell -NoProfile -Command \"[System.Net.Dns]::GetHostEntry('{ip}').HostName\"")
-    } else {
-        format!("timeout 1 getent hosts {ip} | awk '{{print $2; exit}}'")
+    let cmd = match std::env::consts::OS {
+        "windows" => format!(
+            "powershell -NoProfile -Command \"[System.Net.Dns]::GetHostEntry('{ip}').HostName\""
+        ),
+        // macOS has no getent; dscacheutil queries the same resolver stack.
+        "macos" => format!(
+            "dscacheutil -q host -a ip_address {ip} | awk '/^name:/ {{print $2; exit}}'"
+        ),
+        _ => format!("timeout 1 getent hosts {ip} | awk '{{print $2; exit}}'"),
     };
     let out = try_run(&cmd).await?;
     let host = trim_suffix(out.trim());
@@ -40,5 +45,14 @@ pub fn local_machine_name() -> Option<String> {
         .filter(|s| !s.is_empty())
         .or_else(|| std::env::var("COMPUTERNAME").ok())
         .or_else(|| std::env::var("HOSTNAME").ok())
+        .or_else(|| {
+            // macOS and most Unixes: the plain `hostname` binary.
+            std::process::Command::new("hostname")
+                .output()
+                .ok()
+                .and_then(|o| String::from_utf8(o.stdout).ok())
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        })
         .map(|h| trim_suffix(&h))
 }
