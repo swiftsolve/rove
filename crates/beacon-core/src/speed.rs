@@ -60,10 +60,13 @@ async fn download_stream(
 }
 
 pub async fn measure_download(cancel: &AtomicBool) -> f64 {
-    let client = reqwest::Client::builder()
+    let Ok(client) = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
         .build()
-        .unwrap_or_default();
+    else {
+        eprintln!("Beacon: could not build HTTP client for download test");
+        return 0.0;
+    };
     let start = Instant::now();
     let deadline = start + WINDOW;
 
@@ -91,10 +94,13 @@ async fn upload_stream(client: &reqwest::Client, deadline: Instant, cancel: &Ato
 }
 
 pub async fn measure_upload(cancel: &AtomicBool) -> f64 {
-    let client = reqwest::Client::builder()
+    let Ok(client) = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
         .build()
-        .unwrap_or_default();
+    else {
+        eprintln!("Beacon: could not build HTTP client for upload test");
+        return 0.0;
+    };
     let start = Instant::now();
     let deadline = start + WINDOW;
 

@@ -10,6 +10,11 @@ use std::time::Duration;
 
 /// Ping a host and derive avg / jitter / loss, like the Electron measurer.
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
+    // `host` is interpolated into a shell command; callers pass gateway/DNS
+    // addresses from the kernel, but validate defensively all the same.
+    if !crate::net_util::is_shell_safe_ip(host) {
+        return None;
+    }
     let cmd = if cfg!(target_os = "windows") {
         format!("ping -n {count} -w 1000 {host}")
     } else {

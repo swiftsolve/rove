@@ -13,3 +13,4 @@ futures-util = "0.3"
 rand = "0.8"
 regex-lite = "0.1"
 mdns-sd = "0.13"
+rusqlite = { version = "0.32", features = ["bundled"] }

@@ -236,6 +236,11 @@ fn parse_link_speed(text: &str) -> Option<i64> {
 }
 
 pub async fn connection_details(iface: &str, connection_type: &str) -> ConnectionDetails {
+    // Every platform branch below interpolates `iface` into a shell command;
+    // refuse anything that isn't a well-formed interface name.
+    if !crate::net_util::is_shell_safe_iface(iface) {
+        return ConnectionDetails::default();
+    }
     match (std::env::consts::OS, connection_type) {
         ("linux", "wifi") => linux_wifi_details(iface).await,
         ("linux", _) => linux_ethernet_details(iface).await,
@@ -256,6 +261,27 @@ pub fn infer_connection_type(name: &str) -> &'static str {
     } else {
         "ethernet"
     }
+}
+
+/// The public (WAN) IP as seen by an external echo service. Uses the shared
+/// reqwest stack rather than shelling out to `curl` (which isn't present on a
+/// stock Windows or minimal Linux install and would bypass our TLS config).
+pub async fn public_ip() -> Option<String> {
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .ok()?;
+    let ip = client
+        .get("https://api.ipify.org")
+        .send()
+        .await
+        .ok()?
+        .text()
+        .await
+        .ok()?
+        .trim()
+        .to_string();
+    (!ip.is_empty() && ip.parse::<std::net::IpAddr>().is_ok()).then_some(ip)
 }
 
 pub async fn network_info() -> NetworkInfo {

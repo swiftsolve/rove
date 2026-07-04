@@ -1,43 +1,63 @@
+use crate::store::Store;
 use crate::types::{DailyUsage, DataUsageSummary};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const RETAIN_DAYS: usize = 30;
 const SUMMARY_DAYS: i64 = 7;
 
-// Local dates without pulling in chrono: apply the local-UTC offset
-// (captured once at startup) to the UNIX clock, then bucket by day.
-static LOCAL_OFFSET_SECS: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
+/// `meta` key holding the epoch-ms of the first-ever usage sample.
+const FIRST_SAMPLE_KEY: &str = "usage_first_sample_at";
+
+// Local dates without pulling in chrono: apply the local-UTC offset to the
+// UNIX clock, then bucket by day. The offset is cached but re-derived at most
+// hourly so a machine that crosses a DST boundary (or changes timezone) while
+// running starts bucketing into the correct day within the hour.
+static LOCAL_OFFSET: std::sync::Mutex<Option<(i64, u64)>> = std::sync::Mutex::new(None);
+const OFFSET_TTL_SECS: u64 = 3600;
 
 fn local_offset_secs() -> i64 {
-    *LOCAL_OFFSET_SECS.get_or_init(|| {
-        // Windows: minutes from UTC via PowerShell; Unix: `date +%z`.
-        if cfg!(target_os = "windows") {
-            return std::process::Command::new("powershell")
-                .args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"])
-                .output()
-                .ok()
-                .and_then(|o| String::from_utf8(o.stdout).ok())
-                .and_then(|s| s.trim().parse::<f64>().ok())
-                .map(|minutes| (minutes * 60.0) as i64)
-                .unwrap_or(0);
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let mut cached = LOCAL_OFFSET.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((offset, computed_at)) = *cached {
+        if now.saturating_sub(computed_at) < OFFSET_TTL_SECS {
+            return offset;
         }
-        std::process::Command::new("date")
-            .arg("+%z")
+    }
+    let offset = compute_local_offset_secs();
+    *cached = Some((offset, now));
+    offset
+}
+
+fn compute_local_offset_secs() -> i64 {
+    // Windows: minutes from UTC via PowerShell; Unix: `date +%z`.
+    if cfg!(target_os = "windows") {
+        return std::process::Command::new("powershell")
+            .args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"])
             .output()
             .ok()
             .and_then(|o| String::from_utf8(o.stdout).ok())
-            .and_then(|s| {
-                let s = s.trim();
-                let sign = if s.starts_with('-') { -1 } else { 1 };
-                let h: i64 = s.get(1..3)?.parse().ok()?;
-                let m: i64 = s.get(3..5)?.parse().ok()?;
-                Some(sign * (h * 3600 + m * 60))
-            })
-            .unwrap_or(0)
-    })
+            .and_then(|s| s.trim().parse::<f64>().ok())
+            .map(|minutes| (minutes * 60.0) as i64)
+            .unwrap_or(0);
+    }
+    std::process::Command::new("date")
+        .arg("+%z")
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .and_then(|s| {
+            let s = s.trim();
+            let sign = if s.starts_with('-') { -1 } else { 1 };
+            let h: i64 = s.get(1..3)?.parse().ok()?;
+            let m: i64 = s.get(3..5)?.parse().ok()?;
+            Some(sign * (h * 3600 + m * 60))
+        })
+        .unwrap_or(0)
 }
 
 pub fn local_date_key(offset_days: i64) -> String {
@@ -66,31 +86,30 @@ fn civil_from_days(z: i64) -> String {
     format!("{y:04}-{m:02}-{d:02}")
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Copy)]
-struct DayBucket {
+#[derive(Default, Clone, Copy)]
+struct ByteCounts {
     rx: u64,
     tx: u64,
 }
 
-#[derive(Serialize, Deserialize, Default)]
-struct Persisted {
-    days: HashMap<String, DayBucket>,
-    first_sample_at: Option<u64>,
-}
-
+/// Turns per-interface cumulative counters into daily deltas, persisting each
+/// tick into the shared [`Store`]. The only in-memory state is `last_bytes`,
+/// the previous reading needed to compute a delta; everything durable lives in
+/// the database.
 pub struct UsageTracker {
-    store_path: PathBuf,
-    data: Persisted,
-    last_bytes: HashMap<String, DayBucket>,
+    store: Arc<Store>,
+    last_bytes: HashMap<String, ByteCounts>,
+    first_sample_recorded: bool,
 }
 
 impl UsageTracker {
-    pub fn new(store_path: PathBuf) -> Self {
-        let data = std::fs::read_to_string(&store_path)
+    pub fn new(store: Arc<Store>) -> Self {
+        let first_sample_recorded = store
+            .get_meta_u64(FIRST_SAMPLE_KEY)
             .ok()
-            .and_then(|raw| serde_json::from_str(&raw).ok())
-            .unwrap_or_default();
-        Self { store_path, data, last_bytes: HashMap::new() }
+            .flatten()
+            .is_some();
+        Self { store, last_bytes: HashMap::new(), first_sample_recorded }
     }
 
     /// One 30s tick: accumulate per-interface deltas into today's bucket.
@@ -105,42 +124,31 @@ impl UsageTracker {
             let rx = data.total_received();
             let tx = data.total_transmitted();
             if let Some(last) = self.last_bytes.get(name) {
-                rx_delta += if rx >= last.rx { rx - last.rx } else { rx };
-                tx_delta += if tx >= last.tx { tx - last.tx } else { tx };
+                // On a counter decrease (reboot, driver reload, re-enumeration)
+                // credit nothing rather than the full new reading — the latter
+                // would dump a phantom multi-GB spike into today's bucket.
+                rx_delta += rx.saturating_sub(last.rx);
+                tx_delta += tx.saturating_sub(last.tx);
             }
-            self.last_bytes.insert(name.clone(), DayBucket { rx, tx });
+            self.last_bytes.insert(name.clone(), ByteCounts { rx, tx });
         }
 
-        if self.data.first_sample_at.is_none() {
-            self.data.first_sample_at = Some(crate::net_util::now_ms());
+        if !self.first_sample_recorded {
+            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::net_util::now_ms()) {
+                eprintln!("Beacon: failed to record first-sample timestamp: {e}");
+            }
+            self.first_sample_recorded = true;
         }
         if rx_delta == 0 && tx_delta == 0 {
             return;
         }
 
         let key = local_date_key(0);
-        let bucket = self.data.days.entry(key).or_default();
-        bucket.rx += rx_delta;
-        bucket.tx += tx_delta;
-
-        self.prune();
-        self.persist();
-    }
-
-    fn prune(&mut self) {
-        if self.data.days.len() <= RETAIN_DAYS {
-            return;
+        if let Err(e) = self.store.add_usage(&key, rx_delta, tx_delta) {
+            eprintln!("Beacon: failed to persist data usage for {key}: {e}");
         }
-        let mut keys: Vec<String> = self.data.days.keys().cloned().collect();
-        keys.sort();
-        for key in keys.into_iter().take(self.data.days.len() - RETAIN_DAYS) {
-            self.data.days.remove(&key);
-        }
-    }
-
-    fn persist(&self) {
-        if let Ok(json) = serde_json::to_string(&self.data) {
-            let _ = std::fs::write(&self.store_path, json);
+        if let Err(e) = self.store.prune_usage(RETAIN_DAYS) {
+            eprintln!("Beacon: failed to prune old usage rows: {e}");
         }
     }
 
@@ -184,8 +192,8 @@ impl UsageTracker {
         let days = (1 - SUMMARY_DAYS..=0)
             .map(|offset| {
                 let key = local_date_key(offset);
-                let bucket = self.data.days.get(&key).copied().unwrap_or_default();
-                DailyUsage { date: key, rx_bytes: bucket.rx, tx_bytes: bucket.tx }
+                let (rx, tx) = self.store.usage_day(&key).unwrap_or((0, 0));
+                DailyUsage { date: key, rx_bytes: rx, tx_bytes: tx }
             })
             .collect();
 
@@ -195,7 +203,7 @@ impl UsageTracker {
             days,
             boot_rx_bytes: boot_rx,
             boot_tx_bytes: boot_tx,
-            tracking_since: self.data.first_sample_at,
+            tracking_since: self.store.get_meta_u64(FIRST_SAMPLE_KEY).ok().flatten(),
         }
     }
 }
