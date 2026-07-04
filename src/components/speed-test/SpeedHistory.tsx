@@ -1,35 +1,98 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { splitSpeedMbps, formatLatencyMs } from '@/lib/format'
 import {
   clearSpeedHistory,
   formatHistoryTimestamp,
-  loadSpeedHistory,
+  getSpeedHistory,
   type SpeedHistoryEntry,
 } from '@/components/speed-test/speed-history'
 import Subpage from '@/components/ui/Subpage'
-import { HistoryIcon, TrashIcon } from '@/components/ui/Icons'
+import { EthernetIcon, GlobeIcon, HistoryIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
 
 interface SpeedHistoryProps {
   readonly onBack: () => void
 }
 
-function speedText(mbps: number): string {
-  const { value, unit } = splitSpeedMbps(mbps)
-  return `${value} ${unit}`
+function ConnectionBadge({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Element {
+  const { connectionType, networkName } = entry
+  const Icon =
+    connectionType === 'wifi' ? WifiIcon : connectionType === 'ethernet' ? EthernetIcon : GlobeIcon
+  const fallback =
+    connectionType === 'wifi' ? 'Wi‑Fi' : connectionType === 'ethernet' ? 'Ethernet' : 'Unknown'
+
+  return (
+    <span className={`history-conn conn-${connectionType}`}>
+      <Icon size={13} />
+      <span className="history-conn-name">{networkName ?? fallback}</span>
+    </span>
+  )
 }
 
-function pingText(entry: SpeedHistoryEntry): string {
-  return Number.isFinite(entry.latencyMs) && entry.latencyMs < 999
-    ? formatLatencyMs(entry.latencyMs)
-    : '—'
+function Metric({
+  label,
+  value,
+  unit,
+}: {
+  readonly label: string
+  readonly value: string
+  readonly unit?: string
+}): JSX.Element {
+  return (
+    <div className="history-metric">
+      <span className="field-label">{label}</span>
+      <span className="history-metric-value num">
+        {value}
+        {unit && <span className="history-metric-unit"> {unit}</span>}
+      </span>
+    </div>
+  )
+}
+
+function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Element {
+  const download = splitSpeedMbps(entry.downloadMbps)
+  const upload = splitSpeedMbps(entry.uploadMbps)
+  const validPing = Number.isFinite(entry.latencyMs) && entry.latencyMs < 999
+
+  return (
+    <div className="history-card surface">
+      <div className="history-card-head">
+        <ConnectionBadge entry={entry} />
+        <span className="history-card-time">{formatHistoryTimestamp(entry.timestamp)}</span>
+      </div>
+
+      <div className="history-card-metrics">
+        <Metric label="Download" value={download.value} unit={download.unit} />
+        <Metric label="Upload" value={upload.value} unit={upload.unit} />
+        <Metric
+          label="Ping"
+          value={validPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
+          unit={validPing ? 'ms' : undefined}
+        />
+      </div>
+
+      <div className="history-card-sub num">
+        Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'} · {entry.packetLoss}% loss
+      </div>
+    </div>
+  )
 }
 
 export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element {
-  const [entries, setEntries] = useState<readonly SpeedHistoryEntry[]>(loadSpeedHistory)
+  const [entries, setEntries] = useState<readonly SpeedHistoryEntry[]>([])
+
+  useEffect(() => {
+    let active = true
+    void getSpeedHistory().then((loaded) => {
+      if (active) setEntries(loaded)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const handleClear = (): void => {
-    clearSpeedHistory()
+    void clearSpeedHistory()
     setEntries([])
   }
 
@@ -53,30 +116,16 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
       }
     >
       {entries.length === 0 ? (
-        <div className="surface">
-          <div className="section-placeholder history-empty">
-            <HistoryIcon size={24} className="section-placeholder-icon" />
-            <p className="text-hint">
-              No tests recorded yet. Results appear here each time you run a speed test.
-            </p>
-          </div>
+        <div className="view-empty">
+          <HistoryIcon size={28} className="section-placeholder-icon" />
+          <p className="text-hint history-empty-text">
+            No tests recorded yet. Results appear here each time you run a speed test.
+          </p>
         </div>
       ) : (
-        <div className="surface history-table">
-          <div className="history-row history-head" aria-hidden>
-            <span className="field-label">When</span>
-            <span className="field-label history-cell">Download</span>
-            <span className="field-label history-cell">Upload</span>
-            <span className="field-label history-cell history-cell-ping">Ping</span>
-          </div>
-
-          {entries.map((entry) => (
-            <div key={entry.timestamp} className="history-row">
-              <span className="history-when">{formatHistoryTimestamp(entry.timestamp)}</span>
-              <span className="history-cell num">{speedText(entry.downloadMbps)}</span>
-              <span className="history-cell num">{speedText(entry.uploadMbps)}</span>
-              <span className="history-cell history-cell-ping num">{pingText(entry)}</span>
-            </div>
+        <div className="history-list">
+          {entries.map((entry, index) => (
+            <HistoryCard key={`${entry.timestamp}-${index}`} entry={entry} />
           ))}
         </div>
       )}

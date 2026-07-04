@@ -1,15 +1,25 @@
 import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import {
+  CameraIcon,
   ChipIcon,
   ComputerIcon,
+  ConsoleIcon,
   DeviceIcon,
+  HelpIcon,
+  NasIcon,
   PrinterIcon,
   RefreshIcon,
   RouterIcon,
+  SpeakerIcon,
+  TabletIcon,
   TvIcon,
   UnknownDeviceIcon,
 } from '@/components/ui/Icons'
+import { Tooltip } from '@/components/ui/Tooltip'
+
+const SCAN_HINT =
+  "Beacon actively scans your subnet; a device that blocks pings and doesn't announce itself may still be missed. Your router's admin page is the authoritative list."
 import './DevicesView.css'
 
 interface DevicesViewProps {
@@ -27,10 +37,15 @@ function deviceName(device: LanDevice): string {
 
 const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
   router: RouterIcon,
+  nas: NasIcon,
   computer: ComputerIcon,
+  tablet: TabletIcon,
   phone: DeviceIcon,
+  console: ConsoleIcon,
   tv: TvIcon,
   printer: PrinterIcon,
+  camera: CameraIcon,
+  speaker: SpeakerIcon,
   iot: ChipIcon,
   unknown: UnknownDeviceIcon,
 }
@@ -48,15 +63,16 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
           <KindIcon kind={device.kind} />
         </span>
         <div className="device-row-text">
-          <div className="device-row-title">
-            <span className="text-title device-row-name">{deviceName(device)}</span>
-            {device.isGateway && <span className="text-meta iface-tag">Gateway</span>}
-            {!device.isGateway && device.kind !== 'unknown' && (
-              <span className="text-meta iface-tag muted">
+          <span className="text-title device-row-name">{deviceName(device)}</span>
+          {device.isGateway ? (
+            <span className="text-meta device-row-kind gateway">Gateway</span>
+          ) : (
+            device.kind !== 'unknown' && (
+              <span className="text-meta device-row-kind">
                 {LAN_DEVICE_KIND_LABELS[device.kind]}
               </span>
-            )}
-          </div>
+            )
+          )}
           <span className="text-meta device-row-mac">
             <span className="device-row-mac-addr">{device.mac.toUpperCase()}</span>
             {device.isRandomizedMac && !device.isGateway && !device.isSelf && (
@@ -68,7 +84,6 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         </div>
       </div>
       <div className="device-row-meta">
-        <span className="device-row-ip num">{device.ip}</span>
         <span
           className={`device-row-state ${device.reachable ? 'reachable' : 'stale'}`}
           title={device.reachable ? 'Reachable' : 'Cached (may be offline)'}
@@ -76,6 +91,7 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
           <span className="device-row-dot" aria-hidden />
           {device.reachable ? 'Online' : 'Cached'}
         </span>
+        <span className="device-row-ip num">{device.ip}</span>
       </div>
     </section>
   )
@@ -93,9 +109,6 @@ export default function DevicesView({
   return (
     <div className="view-page">
       <div className="devices-header">
-        <span className="devices-header-icon">
-          <DeviceIcon size={17} />
-        </span>
         <div className="devices-header-text">
           <span className="devices-count">
             {devices.length > 0
@@ -109,16 +122,27 @@ export default function DevicesView({
             </span>
           )}
         </div>
-        <button
-          type="button"
-          className="btn-icon btn-icon-secondary"
-          onClick={onRescan}
-          disabled={isScanning}
-          title="Scan again"
-          aria-label="Scan again"
-        >
-          {rescanning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
-        </button>
+        <div className="devices-header-actions">
+          <Tooltip content={SCAN_HINT}>
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              aria-label="About device scanning"
+            >
+              <HelpIcon size={16} />
+            </button>
+          </Tooltip>
+          <button
+            type="button"
+            className="btn-icon btn-icon-secondary"
+            onClick={onRescan}
+            disabled={isScanning}
+            title="Scan again"
+            aria-label="Scan again"
+          >
+            {rescanning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+          </button>
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -136,15 +160,11 @@ export default function DevicesView({
           </button>
         </div>
       ) : (
-        <>
-          <p className="devices-hint">
-            Beacon actively scans your subnet; a device that blocks pings and doesn't announce itself may still be missed. Your router's admin page is the authoritative list.</p>
-          <div className="device-list">
-            {devices.map((device) => (
-              <DeviceRow key={device.mac} device={device} />
-            ))}
-          </div>
-        </>
+        <div className="device-list">
+          {devices.map((device) => (
+            <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
+          ))}
+        </div>
       )}
     </div>
   )

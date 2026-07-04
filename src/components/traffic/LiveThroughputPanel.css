@@ -6,15 +6,19 @@
 }
 
 .live-chart-wrap {
-  padding: var(--gap-sm) var(--gap-sm) var(--gap-xs);
-  border-radius: var(--radius-sm);
+  /* Fill the whole bottom of the card: bleed left/right/bottom out past the
+     section body's padding to the card edges. The card's overflow:hidden rounds
+     the bottom corners; the top stays rounded where it meets the readouts. */
+  margin: 0 calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  padding: var(--gap-sm);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: var(--bg-inset);
 }
 
 .live-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--gap-tight);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);

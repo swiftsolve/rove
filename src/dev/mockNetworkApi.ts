@@ -16,6 +16,7 @@ import type {
   NetworkDiagnostics,
   NetworkInfo,
   NetworkInterfaceSummary,
+  SpeedHistoryEntry,
   SpeedResult,
   SpeedTestProgress,
   SpeedTestResult,
@@ -128,6 +129,26 @@ const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
   },
 ]
 
+const MOCK_HISTORY_KEY = 'beacon.speed-history.v1'
+
+function readMockHistory(): readonly SpeedHistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(MOCK_HISTORY_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? (parsed as SpeedHistoryEntry[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeMockHistory(entries: readonly SpeedHistoryEntry[]): void {
+  try {
+    localStorage.setItem(MOCK_HISTORY_KEY, JSON.stringify(entries))
+  } catch {
+    // ignore — dev-only best effort
+  }
+}
+
 // Captured from a real `ip neigh` scan on this network so the mock mirrors production output.
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
   subnet: '192.168.2.0/24',
@@ -144,6 +165,11 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     { ip: '192.168.2.21', hostname: null, kind: 'iot', mac: '08:3a:8d:ac:04:d0', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
     { ip: '192.168.2.24', hostname: 'iPhone-15', kind: 'phone', mac: 'ec:b5:fa:18:97:79', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
     { ip: '192.168.2.25', hostname: null, kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.2.30', hostname: 'DiskStation', kind: 'nas', mac: '00:11:32:aa:bb:cc', vendor: 'Synology Incorporated', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.2.31', hostname: 'Johns-iPad', kind: 'tablet', mac: 'a4:c3:f0:11:22:33', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.2.32', hostname: 'Xbox-Living-Room', kind: 'console', mac: '7c:ed:8d:44:55:66', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.2.33', hostname: 'Front-Door-Cam', kind: 'camera', mac: 'ec:71:db:77:88:99', vendor: 'Reolink', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: false },
+    { ip: '192.168.2.34', hostname: 'Kitchen-Sonos', kind: 'speaker', mac: '68:57:2d:aa:0b:0c', vendor: 'Sonos', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
   ],
 }
 
@@ -289,9 +315,39 @@ function createMockNetworkApi(): NetworkAPI {
     cancelSpeedTest: async () => {
       cancelled = true
     },
+    // History persists in localStorage under the same key the real app used,
+    // so browser dev keeps working without a database behind it.
+    getSpeedHistory: async () => readMockHistory(),
+    saveSpeedResult: async (entry: SpeedHistoryEntry) => {
+      writeMockHistory([entry, ...readMockHistory()].slice(0, 50))
+    },
+    importSpeedHistory: async (entries: readonly SpeedHistoryEntry[]) => {
+      writeMockHistory([...entries, ...readMockHistory()].slice(0, 50))
+    },
+    clearSpeedHistory: async () => {
+      try {
+        localStorage.removeItem(MOCK_HISTORY_KEY)
+      } catch {
+        // ignore
+      }
+    },
+    getKnownDevices: async () =>
+      MOCK_DEVICE_SCAN.devices
+        .filter((device) => device.mac.length > 0)
+        .map((device) => ({
+          mac: device.mac,
+          ip: device.ip,
+          hostname: device.hostname,
+          vendor: device.vendor,
+          kind: device.kind,
+          firstSeen: Date.now() - 3 * 86_400_000,
+          lastSeen: Date.now(),
+        })),
     onSpeedTestProgress: (callback): Unsubscribe => {
       progressListeners.add(callback)
-      return () => progressListeners.delete(callback)
+      return () => {
+        progressListeners.delete(callback)
+      }
     },
     subscribeLiveThroughput: live.subscribeLiveThroughput,
     unsubscribeLiveThroughput: live.unsubscribeLiveThroughput,

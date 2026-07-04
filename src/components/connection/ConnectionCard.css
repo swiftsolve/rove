@@ -113,7 +113,7 @@
 .signal-meter {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--gap-sm);
   color: var(--positive);
 }
 

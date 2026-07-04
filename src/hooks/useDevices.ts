@@ -8,11 +8,12 @@ interface UseDevicesResult {
   readonly rescan: () => Promise<void>
 }
 
-export function useDevices(enabled: boolean): UseDevicesResult {
+export function useDevices(enabled: boolean, networkKey?: string | null): UseDevicesResult {
   const { data, isBusy, error, reload } = useBackendResource(
     window.networkAPI?.getDevices,
     enabled,
     'Failed to scan for devices',
+    { resetKey: networkKey },
   )
   return { scan: data, isScanning: isBusy, error, rescan: reload }
 }

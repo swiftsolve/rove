@@ -8,6 +8,7 @@ import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { CloseIcon, MinimizeIcon, WifiIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
 import HomeView from '@/views/HomeView'
+import SpeedView from '@/views/SpeedView'
 import InterfacesView from '@/views/InterfacesView'
 import DevicesView from '@/views/DevicesView'
 import UsageView from '@/views/UsageView'
@@ -93,6 +94,9 @@ export default function App(): JSX.Element {
   const { info, error, isLoading, refresh } = useNetworkInfo()
 
   const isConnected = info ? isConnectedNetwork(info) : false
+  // Identity of the current network — when it changes, tab data caches keyed on
+  // it are invalidated so we never show the previous network's devices/results.
+  const networkKey = info ? `${info.interfaceName ?? ''}|${info.ipAddress ?? ''}` : null
   const {
     interfaces,
     isLoading: interfacesLoading,
@@ -104,25 +108,20 @@ export default function App(): JSX.Element {
     isScanning: devicesScanning,
     error: devicesError,
     rescan: rescanDevices,
-  } = useDevices(activeTab === 'devices')
-  const { usage, isLoading: usageLoading } = useDataUsage(activeTab === 'usage')
+  } = useDevices(activeTab === 'devices', networkKey)
+  const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(activeTab === 'usage')
   const {
     diagnostics,
     isRunning: diagnosticsRunning,
     error: diagnosticsError,
     run: runDiagnostics,
-  } = useDiagnostics(activeTab === 'diagnostics')
+  } = useDiagnostics(activeTab === 'diagnostics', networkKey)
 
-  if (!info) {
-    return (
-      <LoadingScreen
-        error={isLoading ? null : error}
-        onRetry={() => void refresh()}
-      />
-    )
-  }
-
-  const statusLabel = isConnected ? formatConnectionType(info.connectionType) : 'Offline'
+  // Home and Speed can't render without network info; the other tabs can.
+  // Show the loading/error state only in the content area (not full-screen) so
+  // the window chrome and tabs stay usable even before info arrives.
+  const needsInfo = activeTab === 'home' || activeTab === 'speed'
+  const statusLabel = !info ? 'Connecting…' : isConnected ? formatConnectionType(info.connectionType) : 'Offline'
 
   return (
     <div className="app-shell">
@@ -134,10 +133,16 @@ export default function App(): JSX.Element {
         <div className="app-col">
           <div className="app">
             <section className="app-scroll" aria-label="Main content">
-            {error && <div className="error-banner">{error}</div>}
+            {error && info && <div className="error-banner">{error}</div>}
 
             <main className="app-main">
-              {activeTab === 'home' && <HomeView info={info} />}
+              {!info && needsInfo && (
+                <LoadingScreen error={isLoading ? null : error} onRetry={() => void refresh()} />
+              )}
+
+              {info && activeTab === 'home' && <HomeView info={info} />}
+
+              {info && activeTab === 'speed' && <SpeedView info={info} />}
 
               {activeTab === 'interfaces' && (
                 <InterfacesView
@@ -157,7 +162,9 @@ export default function App(): JSX.Element {
                 />
               )}
 
-              {activeTab === 'usage' && <UsageView usage={usage} isLoading={usageLoading} />}
+              {activeTab === 'usage' && (
+                <UsageView usage={usage} isLoading={usageLoading} error={usageError} />
+              )}
 
               {activeTab === 'diagnostics' && (
                 <DiagnosticsView

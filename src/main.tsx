@@ -4,6 +4,7 @@ import App from './App'
 import './index.css'
 
 import { installTauriBridge, isTauri } from '@/bridge/tauriNetworkApi'
+import { migrateLegacySpeedHistory } from '@/components/speed-test/speed-history'
 
 if (isTauri()) {
   installTauriBridge()
@@ -12,6 +13,9 @@ if (isTauri()) {
   const { installMockNetworkApiIfNeeded } = await import('./dev/mockNetworkApi')
   installMockNetworkApiIfNeeded()
 }
+
+// Move any speed-test history left in localStorage into the database, once.
+void migrateLegacySpeedHistory()
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

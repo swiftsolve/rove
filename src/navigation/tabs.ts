@@ -1,7 +1,14 @@
 import type { JSX } from 'react'
-import { ActivityIcon, DeviceIcon, HomeIcon, LayersIcon, UsageIcon } from '@/components/ui/Icons'
+import {
+  ActivityIcon,
+  DeviceIcon,
+  HomeIcon,
+  LayersIcon,
+  SpeedIcon,
+  UsageIcon,
+} from '@/components/ui/Icons'
 
-export const APP_TABS = ['home', 'interfaces', 'devices', 'usage', 'diagnostics'] as const
+export const APP_TABS = ['home', 'speed', 'interfaces', 'devices', 'usage', 'diagnostics'] as const
 
 export type AppTab = (typeof APP_TABS)[number]
 
@@ -18,6 +25,7 @@ export interface TabDefinition {
 
 export const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
+  { id: 'speed', label: 'Speed', Icon: SpeedIcon },
   { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'devices', label: 'Devices', Icon: DeviceIcon },
   { id: 'usage', label: 'Usage', Icon: UsageIcon },

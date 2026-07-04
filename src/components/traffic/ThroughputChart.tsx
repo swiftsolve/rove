@@ -36,23 +36,22 @@ export default function ThroughputChart({
   const gradientId = useId().replace(/:/g, '')
   const upGradientId = `${gradientId}-up`
 
-  const maxValue = resolveChartScale(download, upload, {
-    linkCapacityMbps,
-    speedTestRunning,
-  })
-
-  const { downPaths, upPaths } = useMemo(() => {
-    const safeDownload = download.map(sanitizeRate)
-    const safeUpload = upload.map(sanitizeRate)
-
+  // Scale + path geometry recompute together, only when the inputs change —
+  // not on every 1 Hz render.
+  const { maxValue, downPaths, upPaths } = useMemo(() => {
+    const max = resolveChartScale(download, upload, { linkCapacityMbps, speedTestRunning })
     return {
-      downPaths: buildChartPaths(safeDownload, CHART_WIDTH, CHART_HEIGHT, maxValue),
-      upPaths: buildChartPaths(safeUpload, CHART_WIDTH, CHART_HEIGHT, maxValue),
+      maxValue: max,
+      downPaths: buildChartPaths(download.map(sanitizeRate), CHART_WIDTH, CHART_HEIGHT, max),
+      upPaths: buildChartPaths(upload.map(sanitizeRate), CHART_WIDTH, CHART_HEIGHT, max),
     }
-  }, [download, upload, maxValue])
+  }, [download, upload, linkCapacityMbps, speedTestRunning])
 
   const latestDown = downPaths.points.at(-1)
   const latestUp = upPaths.points.at(-1)
+
+  const currentDown = sanitizeRate(download.at(-1) ?? 0)
+  const currentUp = sanitizeRate(upload.at(-1) ?? 0)
 
   return (
     <div className="tp-chart">
@@ -62,7 +61,7 @@ export default function ThroughputChart({
           viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
           preserveAspectRatio="none"
           role="img"
-          aria-label="Download and upload throughput over time"
+          aria-label={`Throughput over time. Currently ${currentDown.toFixed(1)} megabits per second down, ${currentUp.toFixed(1)} up`}
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">

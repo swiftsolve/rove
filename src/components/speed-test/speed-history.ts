@@ -1,13 +1,13 @@
-import type { SpeedResult } from '@/types'
+import type { SpeedHistoryEntry, SpeedResult, SpeedRunContext } from '@/types'
+import { getNetworkApi } from '@/bridge/networkApi'
 
-export interface SpeedHistoryEntry extends SpeedResult {
-  readonly timestamp: number
-}
+// Re-exported so existing imports from this module keep resolving.
+export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
 
-const STORAGE_KEY = 'beacon.speed-history.v1'
-const MAX_ENTRIES = 50
+/** localStorage key used before history moved into the local database. */
+const LEGACY_STORAGE_KEY = 'beacon.speed-history.v1'
 
-function isEntry(value: unknown): value is SpeedHistoryEntry {
+function hasCoreFields(value: unknown): value is SpeedResult & { readonly timestamp: number } {
   if (typeof value !== 'object' || value == null) return false
   const entry = value as Record<string, unknown>
   return (
@@ -17,33 +17,68 @@ function isEntry(value: unknown): value is SpeedHistoryEntry {
   )
 }
 
+/** Fill in fields absent from entries saved by older versions. */
+function normalize(value: SpeedResult & { readonly timestamp: number }): SpeedHistoryEntry {
+  const raw = value as unknown as Record<string, unknown>
+  return {
+    ...value,
+    connectionType: typeof raw.connectionType === 'string' ? raw.connectionType : 'unknown',
+    networkName: typeof raw.networkName === 'string' ? raw.networkName : null,
+  }
+}
+
 /** Past speed test results, newest first. */
-export function loadSpeedHistory(): readonly SpeedHistoryEntry[] {
+export async function getSpeedHistory(): Promise<readonly SpeedHistoryEntry[]> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed.filter(isEntry) : []
+    return await getNetworkApi().getSpeedHistory()
   } catch {
     return []
   }
 }
 
-export function appendSpeedHistory(result: SpeedResult): void {
-  const entry: SpeedHistoryEntry = { ...result, timestamp: Date.now() }
-  const entries = [entry, ...loadSpeedHistory()].slice(0, MAX_ENTRIES)
+export async function saveSpeedResult(
+  result: SpeedResult,
+  context: SpeedRunContext,
+): Promise<void> {
+  const entry: SpeedHistoryEntry = { ...result, ...context, timestamp: Date.now() }
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+    await getNetworkApi().saveSpeedResult(entry)
   } catch {
-    // Storage full or unavailable — history is best-effort.
+    // Persistence is best-effort — a failed write shouldn't surface an error.
   }
 }
 
-export function clearSpeedHistory(): void {
+export async function clearSpeedHistory(): Promise<void> {
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    await getNetworkApi().clearSpeedHistory()
   } catch {
-    // Ignore — nothing to clear.
+    // Ignore — nothing the user can do about a failed clear.
+  }
+}
+
+/**
+ * One-time move of any results still sitting in localStorage into the database,
+ * then drop the old key. Safe to call on every startup: it no-ops once the key
+ * is gone.
+ */
+export async function migrateLegacySpeedHistory(): Promise<void> {
+  let raw: string | null = null
+  try {
+    raw = localStorage.getItem(LEGACY_STORAGE_KEY)
+  } catch {
+    return
+  }
+  if (!raw) return
+
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    const entries = Array.isArray(parsed) ? parsed.filter(hasCoreFields).map(normalize) : []
+    if (entries.length > 0) {
+      await getNetworkApi().importSpeedHistory(entries)
+    }
+    localStorage.removeItem(LEGACY_STORAGE_KEY)
+  } catch {
+    // Leave the key in place so a later run can retry the import.
   }
 }
 

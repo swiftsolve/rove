@@ -2,18 +2,10 @@
   display: flex;
   align-items: center;
   gap: var(--gap-md);
-}
-
-.devices-header-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  background: var(--bg-inset);
-  color: var(--text-secondary);
+  /* Lift the header (and its tooltip) above the device list, which is a later
+     sibling and would otherwise paint over a tooltip that drops into it. */
+  position: relative;
+  z-index: 20;
 }
 
 .devices-header-text {
@@ -25,10 +17,9 @@
 }
 
 .devices-count {
-  font-size: var(--text-title);
+  font-size: var(--text-section);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
-  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
@@ -40,13 +31,11 @@
   color: var(--text-tertiary);
 }
 
-/* Recessive caption, tucked up under the header instead of floating mid-page. */
-.devices-hint {
-  margin: calc(var(--gap-stack) * -0.5) 0 0;
-  max-width: 44ch;
-  font-size: var(--text-caption);
-  line-height: 1.5;
-  color: var(--text-tertiary);
+/* Keep the help and refresh controls grouped tightly at the header's end. */
+.devices-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .device-list {
@@ -68,6 +57,9 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+  /* Take the width the meta column doesn't, so the name has room to breathe
+     before it needs to wrap. */
+  flex: 1;
 }
 
 .device-row-icon {
@@ -90,18 +82,23 @@
 /* Known device kinds get a quiet tint so categories scan at a glance;
    unknown stays neutral. Gateway's green wins via the rule above. */
 .device-row:not(.gateway) .device-row-icon.kind-computer,
+.device-row:not(.gateway) .device-row-icon.kind-nas,
+.device-row:not(.gateway) .device-row-icon.kind-tablet,
 .device-row:not(.gateway) .device-row-icon.kind-phone {
   color: var(--series-down);
   background: rgba(106, 160, 255, 0.1);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-tv,
+.device-row:not(.gateway) .device-row-icon.kind-console,
 .device-row:not(.gateway) .device-row-icon.kind-printer {
   color: var(--series-up);
   background: rgba(179, 157, 255, 0.1);
 }
 
-.device-row:not(.gateway) .device-row-icon.kind-iot {
+.device-row:not(.gateway) .device-row-icon.kind-iot,
+.device-row:not(.gateway) .device-row-icon.kind-camera,
+.device-row:not(.gateway) .device-row-icon.kind-speaker {
   color: var(--warning);
   background: rgba(245, 196, 81, 0.1);
 }
@@ -114,38 +111,36 @@
 .device-row-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--gap-xs);
   min-width: 0;
 }
 
-.device-row-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-/* Keep the name on one line so a tag never pushes it to wrap. */
+/* Let a long name use up to two lines rather than truncating; the card grows
+   to fit. */
 .device-row-name {
   min-width: 0;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
-.device-row .iface-tag {
-  white-space: nowrap;
-  flex-shrink: 0;
+/* Device category as a subtitle line beneath the name — a step brighter than
+   the MAC so the hierarchy reads name › type › address. */
+.device-row-kind {
+  color: var(--text-secondary);
 }
 
-.device-row.gateway .iface-tag:not(.muted) {
+.device-row-kind.gateway {
   color: var(--positive);
 }
 
 .device-row-mac {
   display: inline-flex;
   align-items: baseline;
-  gap: 9px;
+  gap: var(--gap-sm);
   min-width: 0;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -155,7 +150,7 @@
 /* Randomized note, set off from the MAC by a small dot. */
 .device-row-random {
   position: relative;
-  padding-left: 11px;
+  padding-left: var(--gap-md);
   letter-spacing: 0;
   color: var(--text-tertiary);
   white-space: nowrap;
@@ -178,7 +173,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
+  gap: var(--gap-xs);
   flex-shrink: 0;
 }
 
@@ -189,9 +184,9 @@
 .device-row-state {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--gap-tight);
   color: var(--text-tertiary);
-  font-size: 0.78rem;
+  font-size: var(--text-small);
 }
 
 .device-row-dot {

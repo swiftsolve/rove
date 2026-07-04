@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { LiveThroughput } from '@/types'
 import type { ThroughputHistory } from '@/components/traffic/throughput-history'
 import Section from '@/components/ui/Section'
@@ -13,7 +14,7 @@ interface LiveThroughputPanelProps {
   readonly linkCapacityMbps?: number | null
 }
 
-export default function LiveThroughputPanel({
+function LiveThroughputPanel({
   throughput,
   history,
   speedTestRunning = false,
@@ -42,3 +43,5 @@ export default function LiveThroughputPanel({
     </Section>
   )
 }
+
+export default memo(LiveThroughputPanel)

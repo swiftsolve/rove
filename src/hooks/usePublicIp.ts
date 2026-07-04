@@ -14,7 +14,8 @@ export function usePublicIp(enabled: boolean, refetchKey: string | null): Public
 
   useEffect(() => {
     if (!enabled || !window.networkAPI?.getPublicIp) {
-      setState({ publicIp: null, isLoading: false })
+      // Keep the last known value rather than flashing to "—" on a blip.
+      setState((prev) => ({ publicIp: prev.publicIp, isLoading: false }))
       return
     }
 
@@ -27,7 +28,8 @@ export function usePublicIp(enabled: boolean, refetchKey: string | null): Public
         if (!cancelled) setState({ publicIp: ip, isLoading: false })
       })
       .catch(() => {
-        if (!cancelled) setState({ publicIp: null, isLoading: false })
+        // Preserve the previous IP on a transient failure — it rarely changes.
+        if (!cancelled) setState((prev) => ({ publicIp: prev.publicIp, isLoading: false }))
       })
 
     return () => {

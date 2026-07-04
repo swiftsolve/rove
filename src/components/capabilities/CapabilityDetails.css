@@ -11,7 +11,7 @@
 .cap-detail-head {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--gap-sm);
 }
 
 .cap-detail-icon {
@@ -45,12 +45,12 @@
 .cap-metric {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--gap-2xs);
   min-width: 0;
 }
 
 .cap-metric-label {
-  font-size: 10px;
+  font-size: var(--text-micro);
   font-weight: var(--weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -69,7 +69,7 @@
 }
 
 .cap-metric-need {
-  font-size: 10px;
+  font-size: var(--text-micro);
   color: var(--text-tertiary);
   white-space: nowrap;
 }

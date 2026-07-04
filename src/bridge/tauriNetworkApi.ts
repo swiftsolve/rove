@@ -8,12 +8,14 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
   DataUsageSummary,
+  KnownDevice,
   LanDeviceScan,
   LiveThroughput,
   NetworkAPI,
   NetworkDiagnostics,
   NetworkInfo,
   NetworkInterfaceSummary,
+  SpeedHistoryEntry,
   SpeedTestProgress,
   SpeedTestResult,
   Unsubscribe,
@@ -44,6 +46,12 @@ const tauriNetworkApi: NetworkAPI = {
   runSpeedTest: () => invoke<SpeedTestResult>('run_speed_test'),
   cancelSpeedTest: () => invoke<void>('cancel_speed_test'),
   getDataUsage: () => invoke<DataUsageSummary>('get_data_usage'),
+  getSpeedHistory: () => invoke<readonly SpeedHistoryEntry[]>('get_speed_history'),
+  saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
+  importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>
+    invoke<void>('import_speed_history', { entries }),
+  clearSpeedHistory: () => invoke<void>('clear_speed_history'),
+  getKnownDevices: () => invoke<readonly KnownDevice[]>('get_known_devices'),
 
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>
     subscribeEvent('speed-test-progress', callback),

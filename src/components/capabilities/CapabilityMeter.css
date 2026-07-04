@@ -1,7 +1,7 @@
 .capability-status {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--gap-sm);
   flex-shrink: 0;
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);

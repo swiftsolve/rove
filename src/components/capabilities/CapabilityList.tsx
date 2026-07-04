@@ -53,7 +53,7 @@ export default function CapabilityList({
           </p>
         </div>
       ) : (
-        <div className="row-list">
+        <div className="capability-list">
           {capabilities.map((capability) => (
             <CapabilityRow key={capability.id} capability={capability} onOpen={onOpenDetails} />
           ))}

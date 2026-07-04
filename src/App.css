@@ -89,7 +89,7 @@
 .status-bar-brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--gap-sm);
   -webkit-app-region: drag;
 }
 
@@ -181,8 +181,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 7px 14px;
+  gap: var(--gap-tight);
+  padding: var(--gap-sm) var(--gap-stack);
   background: var(--accent);
   color: #fff;
   border-radius: var(--radius-sm);
@@ -305,7 +305,7 @@
 
 .error-banner,
 .inline-error {
-  padding: 9px 11px;
+  padding: var(--gap-sm) var(--gap-md);
   border-radius: var(--radius-sm);
   background: rgba(248, 113, 113, 0.08);
   color: var(--negative);

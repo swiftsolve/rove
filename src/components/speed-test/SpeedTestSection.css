@@ -73,7 +73,7 @@
 .bench-hero-cell {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--gap-sm);
 }
 
 .bench-empty {
@@ -81,6 +81,25 @@
 }
 
 .bench-footnote {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-top: var(--gap-md);
   font-size: var(--text-caption);
+}
+
+.bench-conn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.bench-conn.conn-wifi svg { color: var(--series-down); }
+.bench-conn.conn-ethernet svg { color: var(--positive); }
+
+.bench-footnote-sep {
+  color: var(--text-tertiary);
 }

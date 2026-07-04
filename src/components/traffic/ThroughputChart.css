@@ -39,7 +39,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  font-size: 10px;
+  font-size: var(--text-micro);
   line-height: 1;
   color: var(--text-tertiary);
   pointer-events: none;
@@ -58,6 +58,6 @@
   justify-content: space-between;
   margin-top: 6px;
   padding-right: 30px;
-  font-size: 10px;
+  font-size: var(--text-micro);
   color: var(--text-tertiary);
 }
