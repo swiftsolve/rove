@@ -51,6 +51,9 @@ fn trim_host_suffix(host: &str) -> String {
 }
 
 fn is_meaningful_hostname(host: &str) -> bool {
+    if host == "_gateway" || host == "gateway" {
+        return false; // systemd-resolved synthetic name, not a real hostname
+    }
     let stripped: String = host.chars().filter(|c| *c != '-' && *c != '_').collect();
     !(stripped.len() == 12 && stripped.chars().all(|c| c.is_ascii_hexdigit()))
 }
@@ -59,7 +62,7 @@ async fn resolve_hostname(ip: &str) -> Option<String> {
     let cmd = if cfg!(target_os = "windows") {
         format!("powershell -NoProfile -Command \"[System.Net.Dns]::GetHostEntry('{ip}').HostName\"")
     } else {
-        format!("timeout 0.6 getent hosts {ip} | awk '{{print $2; exit}}'")
+        format!("timeout 1 getent hosts {ip} | awk '{{print $2; exit}}'")
     };
     let out = try_run(&cmd).await?;
     let host = trim_host_suffix(out.trim());
@@ -85,12 +88,12 @@ fn kind_from_hostname(host: &str) -> Option<&'static str> {
 
 fn kind_from_vendor(vendor: &str) -> Option<&'static str> {
     let patterns: [(&str, &str); 6] = [
+        (r"(?i)kasa|vesync|cosori|espressif|tuya|sonoff|nest|amazon|google|ring|wyze|philips hue|shelly|sonos", "iot"),
+        (r"(?i)brother|canon|epson|lexmark", "printer"),
+        (r"(?i)roku|vizio|lg elec|hisense|tcl|sony|nintendo|chromecast", "tv"),
         (r"(?i)zyxel|tp-link|ubiquiti|netgear|mikrotik|asus|router|d-link|aruba|cisco", "router"),
         (r"(?i)raspberry|intel|dell|lenovo|hp\b|framework|gigabyte|msi", "computer"),
         (r"(?i)apple|samsung|xiaomi|oneplus|huawei|oppo|motorola", "phone"),
-        (r"(?i)roku|vizio|lg elec|hisense|tcl|sony|nintendo|chromecast", "tv"),
-        (r"(?i)brother|canon|epson|lexmark", "printer"),
-        (r"(?i)espressif|tuya|sonoff|nest|amazon|google|ring|wyze|philips hue|shelly|sonos", "iot"),
     ];
     for (pattern, kind) in patterns {
         if Regex::new(pattern).unwrap().is_match(vendor) {
@@ -100,12 +103,30 @@ fn kind_from_vendor(vendor: &str) -> Option<&'static str> {
     None
 }
 
-fn classify(vendor: Option<&str>, hostname: Option<&str>, is_gateway: bool, is_self: bool) -> String {
+fn classify(
+    vendor: Option<&str>,
+    hostname: Option<&str>,
+    mdns: Option<&crate::mdns::MdnsHit>,
+    is_gateway: bool,
+    is_self: bool,
+) -> String {
     if is_gateway {
         return "router".into();
     }
     if is_self {
         return "computer".into();
+    }
+    // Devices announce what they are over mDNS — the strongest signal.
+    if let Some(kind) = mdns.and_then(|hit| hit.kind) {
+        return kind.into();
+    }
+    // The advertised hardware model ("MacBookPro18,3", "AppleTV6,2") is
+    // near-definitive where present.
+    if let Some(kind) = mdns
+        .and_then(|hit| hit.model.as_deref())
+        .and_then(kind_from_model)
+    {
+        return kind.into();
     }
     if let Some(kind) = hostname.and_then(kind_from_hostname) {
         return kind.into();
@@ -113,7 +134,25 @@ fn classify(vendor: Option<&str>, hostname: Option<&str>, is_gateway: bool, is_s
     if let Some(kind) = vendor.and_then(kind_from_vendor) {
         return kind.into();
     }
+    if let Some(kind) = mdns.and_then(|hit| hit.kind_hint) {
+        return kind.into();
+    }
     "unknown".into()
+}
+
+fn kind_from_model(model: &str) -> Option<&'static str> {
+    let patterns: [(&str, &str); 4] = [
+        (r"(?i)macbook|imac|macmini|macpro|windows|surface", "computer"),
+        (r"(?i)appletv|shield|chromecast|bravia|roku", "tv"),
+        (r"(?i)iphone|ipad|pixel|galaxy", "phone"),
+        (r"(?i)hue|bridge|plug|bulb|sensor|thermostat", "iot"),
+    ];
+    for (pattern, kind) in patterns {
+        if Regex::new(pattern).unwrap().is_match(model) {
+            return Some(kind);
+        }
+    }
+    None
 }
 
 async fn subnet_of(iface: &str) -> Option<String> {
@@ -150,13 +189,65 @@ fn in_subnet(ip: &str, subnet: &str) -> bool {
     (u32::from(ip) & mask) == (u32::from(net) & mask)
 }
 
+
+/// Actively probe every host in the subnet so idle devices enter the
+/// neighbor table. The ARP exchange triggered by the probe registers a
+/// device even when it drops ICMP. Capped to /24-sized ranges.
+async fn sweep(subnet: &str) {
+    use futures_util::StreamExt;
+
+    let Some((network, prefix)) = subnet.split_once('/') else {
+        return;
+    };
+    let (Ok(network), Ok(prefix)) = (network.parse::<std::net::Ipv4Addr>(), prefix.parse::<u32>())
+    else {
+        return;
+    };
+    if prefix < 24 || prefix > 30 {
+        return; // too large to sweep politely / too small to matter
+    }
+
+    let base = u32::from(network);
+    let hosts = (1u32..(1 << (32 - prefix)) - 1).map(move |offset| {
+        std::net::Ipv4Addr::from(base + offset).to_string()
+    });
+
+    futures_util::stream::iter(hosts)
+        .map(|ip| async move {
+            let cmd = if cfg!(target_os = "windows") {
+                format!("ping -n 1 -w 700 {ip}")
+            } else {
+                format!("ping -c 1 -W 1 {ip}")
+            };
+            let _ = crate::shell::try_run_timeout(&cmd, std::time::Duration::from_secs(3)).await;
+        })
+        .buffer_unordered(64)
+        .collect::<Vec<()>>()
+        .await;
+}
+
 pub async fn scan() -> LanDeviceScan {
-    let (raw, gateway, iface) = tokio::join!(neighbors(), default_gateway(), default_interface());
+    let (gateway, iface) = tokio::join!(default_gateway(), default_interface());
 
     let subnet = match &iface {
         Some(name) if cfg!(target_os = "linux") => subnet_of(name).await,
         _ => None,
     };
+
+    // Wake idle devices into the neighbor table while mDNS listens for
+    // service announcements; both finish within the same window.
+    let mdns_hits = match &subnet {
+        Some(subnet) => {
+            let (hits, ()) = tokio::join!(
+                crate::mdns::discover(std::time::Duration::from_millis(3200)),
+                sweep(subnet)
+            );
+            hits
+        }
+        None => crate::mdns::discover(std::time::Duration::from_millis(3200)).await,
+    };
+
+    let raw = neighbors().await;
 
     let (self_ip, self_mac) = match &iface {
         Some(name) => crate::interfaces::address_of(name).await,
@@ -177,8 +268,12 @@ pub async fn scan() -> LanDeviceScan {
             let vendor = lookup_vendor(&n.mac).map(String::from);
             let is_gateway = gateway.as_deref() == Some(n.ip.as_str());
             let is_self = self_ip.as_deref() == Some(n.ip.as_str());
+            let mdns = mdns_hits.get(&n.ip);
+            let hostname = mdns
+                .and_then(|hit| hit.name.clone())
+                .or(hostname);
             LanDevice {
-                kind: classify(vendor.as_deref(), hostname.as_deref(), is_gateway, is_self),
+                kind: classify(vendor.as_deref(), hostname.as_deref(), mdns, is_gateway, is_self),
                 is_randomized_mac: is_randomized_mac(&n.mac),
                 vendor,
                 hostname,

@@ -70,7 +70,7 @@ function StatusBar({
   readonly label: string
 }): JSX.Element {
   return (
-    <header className="status-bar">
+    <header className="status-bar" data-tauri-drag-region>
       <div className="status-bar-left">
         <div className="status-bar-brand">
           <span className="brand-mark" aria-hidden>
