@@ -106,7 +106,7 @@
 /* Full-width separator between the header strip and the expanded details.
    Border sits on the edge-to-edge element; content is inset via padding. */
 .conn-details-wrap.open .conn-details {
-  padding: var(--section-header-y) var(--section-body) var(--section-body);
+  padding: var(--section-header-y) var(--section-body);
   border-top: 1px solid var(--border);
 }
 
