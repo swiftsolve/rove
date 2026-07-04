@@ -1,6 +1,6 @@
 import { memo } from 'react'
-import type { AppTab } from '../navigation/tabs'
-import { TAB_DEFINITIONS } from '../navigation/tabs'
+import type { AppTab } from '@/navigation/tabs'
+import { TAB_DEFINITIONS } from '@/navigation/tabs'
 import './TabBar.css'
 
 interface TabBarProps {

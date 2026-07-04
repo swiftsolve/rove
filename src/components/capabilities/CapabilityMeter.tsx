@@ -1,5 +1,5 @@
-import type { CapabilityLevel } from '@shared/types'
-import { CAPABILITY_LEVEL_LABELS } from '@shared/types'
+import type { CapabilityLevel } from '@/types'
+import { CAPABILITY_LEVEL_LABELS } from '@/types'
 import './CapabilityMeter.css'
 
 const LEVEL_CLASS: Record<CapabilityLevel, string> = {

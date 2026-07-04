@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@shared/types'
-import { appendSpeedHistory } from '../utils/speed-history'
+import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@/types'
+import { appendSpeedHistory } from '@/components/speed-test/speed-history'
 
 const INITIAL_PROGRESS = {
   phase: 'idle',

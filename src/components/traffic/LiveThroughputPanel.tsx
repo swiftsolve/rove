@@ -1,9 +1,9 @@
-import type { LiveThroughput } from '@shared/types'
-import type { ThroughputHistory } from '../utils/throughput-history'
-import Section from './ui/Section'
-import SpeedReadout from './ui/SpeedReadout'
-import ThroughputChart from './ThroughputChart'
-import { ActivityIcon } from './Icons'
+import type { LiveThroughput } from '@/types'
+import type { ThroughputHistory } from '@/components/traffic/throughput-history'
+import Section from '@/components/ui/Section'
+import SpeedReadout from '@/components/traffic/SpeedReadout'
+import ThroughputChart from '@/components/traffic/ThroughputChart'
+import { ActivityIcon } from '@/components/ui/Icons'
 import './LiveThroughputPanel.css'
 
 interface LiveThroughputPanelProps {

@@ -1,4 +1,4 @@
-import type { NetworkInfo } from '@shared/types'
+import type { NetworkInfo } from '@/types'
 
 export function networkInfoEqual(
   previous: NetworkInfo | null,

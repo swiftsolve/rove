@@ -1,11 +1,11 @@
-import type { CapabilityRating } from '@shared/types'
-import CapabilityIcon from './visual/CapabilityIcon'
-import CapabilityMeter from './visual/CapabilityMeter'
-import Section from './ui/Section'
-import { ChevronRightIcon, ZapIcon } from './Icons'
-import './CapabilitiesGrid.css'
+import type { CapabilityRating } from '@/types'
+import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
+import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
+import Section from '@/components/ui/Section'
+import { ChevronRightIcon, ZapIcon } from '@/components/ui/Icons'
+import './CapabilityList.css'
 
-interface CapabilitiesGridProps {
+interface CapabilityListProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly hasRunTest: boolean
   readonly onOpenDetails: () => void
@@ -35,11 +35,11 @@ function CapabilityRow({
   )
 }
 
-export default function CapabilitiesGrid({
+export default function CapabilityList({
   capabilities,
   hasRunTest,
   onOpenDetails,
-}: CapabilitiesGridProps): JSX.Element {
+}: CapabilityListProps): JSX.Element {
   return (
     <Section title="Capabilities" icon={<ZapIcon size={15} />}>
       {!hasRunTest ? (

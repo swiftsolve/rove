@@ -1,8 +1,8 @@
 import { useId, useMemo } from 'react'
-import { sanitizeRate } from '@shared/types'
-import { resolveChartScale } from '../utils/chart-scale'
-import { buildChartPaths } from '../utils/chart-path'
-import { formatChartWindowLabel } from '../utils/throughput-history'
+import { sanitizeRate } from '@/types'
+import { resolveChartScale } from '@/lib/chart-scale'
+import { buildChartPaths } from '@/lib/chart-path'
+import { formatChartWindowLabel } from '@/components/traffic/throughput-history'
 import './ThroughputChart.css'
 
 const CHART_WIDTH = 360

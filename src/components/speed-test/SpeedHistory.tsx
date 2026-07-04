@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { splitSpeedMbps, formatLatencyMs } from '../utils/format'
+import { splitSpeedMbps, formatLatencyMs } from '@/lib/format'
 import {
   clearSpeedHistory,
   formatHistoryTimestamp,
   loadSpeedHistory,
   type SpeedHistoryEntry,
-} from '../utils/speed-history'
-import Subpage from './ui/Subpage'
-import { HistoryIcon, TrashIcon } from './Icons'
+} from '@/components/speed-test/speed-history'
+import Subpage from '@/components/ui/Subpage'
+import { HistoryIcon, TrashIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
 
 interface SpeedHistoryProps {

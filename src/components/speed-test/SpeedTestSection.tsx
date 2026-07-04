@@ -1,11 +1,11 @@
 import { memo } from 'react'
-import type { SpeedResult, SpeedTestProgress } from '@shared/types'
-import { formatLatencyMs, formatSpeedMbps, isDisplayableMbps, splitSpeedMbps } from '../utils/format'
-import Section from './ui/Section'
-import { HistoryIcon, PlayIcon, RefreshIcon, SpeedIcon, StopIcon } from './Icons'
-import './BenchmarkSection.css'
+import type { SpeedResult, SpeedTestProgress } from '@/types'
+import { formatLatencyMs, formatSpeedMbps, isDisplayableMbps, splitSpeedMbps } from '@/lib/format'
+import Section from '@/components/ui/Section'
+import { HistoryIcon, PlayIcon, RefreshIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
+import './SpeedTestSection.css'
 
-interface BenchmarkSectionProps {
+interface SpeedTestSectionProps {
   readonly internetSpeed: SpeedResult | null
   readonly linkCapacityMbps: number | null
   readonly testing: boolean
@@ -53,7 +53,7 @@ function TestProgress({ progress }: { readonly progress: SpeedTestProgress }): J
   )
 }
 
-function BenchmarkSection({
+function SpeedTestSection({
   internetSpeed,
   linkCapacityMbps,
   testing,
@@ -63,7 +63,7 @@ function BenchmarkSection({
   onRunTest,
   onCancelTest,
   onOpenHistory,
-}: BenchmarkSectionProps): JSX.Element {
+}: SpeedTestSectionProps): JSX.Element {
   const hasResults = internetSpeed != null
   const pingText =
     internetSpeed && Number.isFinite(internetSpeed.latencyMs) && internetSpeed.latencyMs < 999
@@ -176,4 +176,4 @@ function BenchmarkSection({
   )
 }
 
-export default memo(BenchmarkSection)
+export default memo(SpeedTestSection)

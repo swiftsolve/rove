@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { ActivityIcon, DeviceIcon, HomeIcon, LayersIcon, UsageIcon } from '../components/Icons'
+import { ActivityIcon, DeviceIcon, HomeIcon, LayersIcon, UsageIcon } from '@/components/ui/Icons'
 
 export const APP_TABS = ['home', 'interfaces', 'devices', 'usage', 'diagnostics'] as const
 

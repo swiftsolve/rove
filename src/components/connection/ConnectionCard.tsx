@@ -1,9 +1,9 @@
 import { memo, useState } from 'react'
-import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@shared/types'
-import { isConnectedNetwork, isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@shared/types'
-import { getConnectionDisplay } from '../utils/connection-display'
-import { networkInfoEqual } from '../utils/network-info-equal'
-import { usePublicIp } from '../hooks/usePublicIp'
+import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
+import { isConnectedNetwork, isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
+import { getConnectionDisplay } from '@/components/connection/connection-display'
+import { networkInfoEqual } from '@/components/connection/network-info-equal'
+import { usePublicIp } from '@/hooks/usePublicIp'
 import {
   formatBand,
   formatChannel,
@@ -13,9 +13,9 @@ import {
   formatSpeedMbps,
   formatWifiSignal,
   formatWifiStandard,
-} from '../utils/format'
-import DataRow from './ui/DataRow'
-import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from './Icons'
+} from '@/lib/format'
+import DataRow from '@/components/ui/DataRow'
+import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from '@/components/ui/Icons'
 import './ConnectionCard.css'
 
 interface ConnectionCardProps {

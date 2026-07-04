@@ -18,7 +18,7 @@ import type {
   SpeedTestResult,
   Unsubscribe,
   WindowControls,
-} from '@shared/types'
+} from '@/types'
 
 function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsubscribe {
   let disposed = false

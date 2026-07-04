@@ -1,4 +1,4 @@
-import { isValidRate, sanitizeRate } from '@shared/types'
+import { isValidRate, sanitizeRate } from '@/types'
 
 export function formatSpeedMbps(mbps: number): string {
   if (!isValidRate(mbps)) return '—'

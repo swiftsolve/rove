@@ -1,4 +1,4 @@
-import type { SpeedResult } from '@shared/types'
+import type { SpeedResult } from '@/types'
 
 export interface SpeedHistoryEntry extends SpeedResult {
   readonly timestamp: number

@@ -1,4 +1,4 @@
-import { sanitizeRate } from '@shared/types'
+import { sanitizeRate } from '@/types'
 
 const MIN_SCALE_MBPS = 10
 const HEADROOM = 1.2

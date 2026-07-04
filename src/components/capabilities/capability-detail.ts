@@ -1,6 +1,6 @@
-import type { CapabilityId, CapabilityLevel, SpeedResult } from '@shared/types'
-import { CAPABILITY_DEFINITIONS } from '@shared/types'
-import { formatLatencyMs, formatSpeedMbps } from './format'
+import type { CapabilityId, CapabilityLevel, SpeedResult } from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
+import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 
 export interface RequirementCheck {
   readonly label: string

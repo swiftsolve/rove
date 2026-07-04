@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import type { NetworkInfo } from '@shared/types'
-import { getLinkCapacityMbps, isConnectedNetwork } from '@shared/types'
-import { useLiveThroughput } from '../hooks/useLiveThroughput'
-import { useSpeedTest } from '../hooks/useSpeedTest'
-import ConnectionCard, { canRunSpeedTest } from '../components/ConnectionCard'
-import LiveThroughputPanel from '../components/LiveThroughputPanel'
-import BenchmarkSection from '../components/BenchmarkSection'
-import CapabilitiesGrid from '../components/CapabilitiesGrid'
-import CapabilityDetails from '../components/CapabilityDetails'
-import SpeedHistory from '../components/SpeedHistory'
+import type { NetworkInfo } from '@/types'
+import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
+import { useLiveThroughput } from '@/hooks/useLiveThroughput'
+import { useSpeedTest } from '@/hooks/useSpeedTest'
+import ConnectionCard, { canRunSpeedTest } from '@/components/connection/ConnectionCard'
+import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
+import SpeedTestSection from '@/components/speed-test/SpeedTestSection'
+import CapabilityList from '@/components/capabilities/CapabilityList'
+import CapabilityDetails from '@/components/capabilities/CapabilityDetails'
+import SpeedHistory from '@/components/speed-test/SpeedHistory'
 import './HomeView.css'
 
 interface HomeViewProps {
@@ -69,7 +69,7 @@ export default function HomeView({ info }: HomeViewProps): JSX.Element {
         />
       )}
 
-      <BenchmarkSection
+      <SpeedTestSection
         internetSpeed={internetSpeed}
         linkCapacityMbps={getLinkCapacityMbps(info)}
         testing={testing}
@@ -81,7 +81,7 @@ export default function HomeView({ info }: HomeViewProps): JSX.Element {
         onOpenHistory={() => setHistoryOpen(true)}
       />
 
-      <CapabilitiesGrid
+      <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
         onOpenDetails={() => setDetailsOpen(true)}

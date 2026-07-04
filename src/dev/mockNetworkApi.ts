@@ -21,8 +21,8 @@ import type {
   SpeedTestResult,
   Unsubscribe,
   WindowControls,
-} from '@shared/types'
-import { CAPABILITY_DEFINITIONS } from '@shared/types'
+} from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { NetworkDiagnostics } from '@shared/types'
+import type { NetworkDiagnostics } from '@/types'
 
 interface UseDiagnosticsResult {
   readonly diagnostics: NetworkDiagnostics | null

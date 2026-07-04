@@ -1,4 +1,4 @@
-import { sanitizeRate } from '@shared/types'
+import { sanitizeRate } from '@/types'
 
 /** One minute of history at one sample per second. */
 export const THROUGHPUT_HISTORY_LENGTH = 60

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { NetworkInfo } from '@shared/types'
-import { networkInfoEqual } from '../utils/network-info-equal'
+import type { NetworkInfo } from '@/types'
+import { networkInfoEqual } from '@/components/connection/network-info-equal'
 
 const REFRESH_INTERVAL_MS = 15_000
 const NETWORK_INFO_TIMEOUT_MS = 10_000

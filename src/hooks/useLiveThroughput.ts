@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import type { LiveThroughput } from '@shared/types'
-import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@shared/types'
+import type { LiveThroughput } from '@/types'
+import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@/types'
 import {
   appendThroughputHistory,
   EMPTY_THROUGHPUT_HISTORY,
   type ThroughputHistory,
-} from '../utils/throughput-history'
+} from '@/components/traffic/throughput-history'
 
 /** Hysteresis keeps the idle badge from flickering on background noise. */
 const IDLE_ENTER_MBPS = 0.08
