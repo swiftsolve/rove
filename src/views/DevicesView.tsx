@@ -138,9 +138,7 @@ export default function DevicesView({
       ) : (
         <>
           <p className="devices-hint">
-            Recently seen on this network — idle devices may not appear until they send traffic.
-            Your router&apos;s admin page is the authoritative list.
-          </p>
+            Beacon actively scans your subnet; a device that blocks pings and doesn't announce itself may still be missed. Your router's admin page is the authoritative list.</p>
           <div className="device-list">
             {devices.map((device) => (
               <DeviceRow key={device.mac} device={device} />
