@@ -8,6 +8,7 @@
 mod classify;
 mod hostname;
 mod neighbors;
+mod probe;
 mod subnet;
 mod sweep;
 
@@ -15,12 +16,18 @@ use crate::mdns;
 use crate::network_info::{default_gateway, default_interface};
 use crate::oui::{is_randomized_mac, lookup_vendor};
 use crate::types::{LanDevice, LanDeviceScan};
+use futures_util::StreamExt;
 use neighbors::RawNeighbor;
 use std::time::Duration;
 
 /// How long the sweep + mDNS window lasts. Both run concurrently, so this is
 /// also (roughly) the total added latency of a scan.
 const DISCOVERY_WINDOW: Duration = Duration::from_millis(3200);
+
+/// Cap on concurrent reverse-DNS lookups. Each spawns a subprocess
+/// (`getent`/`dscacheutil`/PowerShell), so an unbounded fan-out over a full
+/// `/24` would pile hundreds of processes on top of the sweep and probe.
+const HOSTNAME_CONCURRENCY: usize = 16;
 
 pub async fn scan() -> LanDeviceScan {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
@@ -30,12 +37,18 @@ pub async fn scan() -> LanDeviceScan {
         None => None,
     };
 
-    let mdns_hits = match &subnet {
+    // The sweep and TCP probe both wake idle hosts into the neighbor table; the
+    // probe additionally reaches ICMP-filtering hosts and reports open ports.
+    let (mdns_hits, open_ports) = match &subnet {
         Some(subnet) => {
-            let (hits, ()) = tokio::join!(mdns::discover(DISCOVERY_WINDOW), sweep::sweep(subnet));
-            hits
+            let (hits, (), ports) = tokio::join!(
+                mdns::discover(DISCOVERY_WINDOW),
+                sweep::sweep(subnet),
+                probe::probe(subnet),
+            );
+            (hits, ports)
         }
-        None => mdns::discover(DISCOVERY_WINDOW).await,
+        None => (mdns::discover(DISCOVERY_WINDOW).await, std::collections::HashMap::new()),
     };
 
     let (self_ip, self_mac) = match &interface {
@@ -49,14 +62,28 @@ pub async fn scan() -> LanDeviceScan {
         .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true))
         .collect();
 
-    let hostnames =
-        futures_util::future::join_all(in_scope.iter().map(|n| hostname::resolve(&n.ip))).await;
+    // `buffered` preserves order, so the results stay aligned with `in_scope`
+    // for the `zip` below, while capping concurrent subprocess spawns. Each
+    // future owns its address so nothing is borrowed across the buffer.
+    let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
+    let hostnames: Vec<Option<String>> = futures_util::stream::iter(ips)
+        .map(|ip| async move { hostname::resolve(&ip).await })
+        .buffered(HOSTNAME_CONCURRENCY)
+        .collect()
+        .await;
 
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()
         .zip(hostnames)
         .map(|(neighbor, hostname)| {
-            build_device(neighbor, hostname, &mdns_hits, gateway.as_deref(), self_ip.as_deref())
+            build_device(
+                neighbor,
+                hostname,
+                &mdns_hits,
+                &open_ports,
+                gateway.as_deref(),
+                self_ip.as_deref(),
+            )
         })
         .collect();
 
@@ -77,6 +104,7 @@ fn build_device(
     neighbor: RawNeighbor,
     resolved_hostname: Option<String>,
     mdns_hits: &std::collections::HashMap<String, mdns::MdnsHit>,
+    open_ports: &std::collections::HashMap<String, Vec<u16>>,
     gateway: Option<&str>,
     self_ip: Option<&str>,
 ) -> LanDevice {
@@ -84,12 +112,13 @@ fn build_device(
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
     let mdns = mdns_hits.get(&neighbor.ip);
+    let ports = open_ports.get(&neighbor.ip).map(Vec::as_slice).unwrap_or(&[]);
 
     // A friendly mDNS name ("Living room clock") beats a reverse-DNS hostname.
     let hostname = mdns.and_then(|hit| hit.name.clone()).or(resolved_hostname);
 
     LanDevice {
-        kind: classify::classify(vendor.as_deref(), hostname.as_deref(), mdns, is_gateway, is_self),
+        kind: classify::classify(vendor.as_deref(), hostname.as_deref(), mdns, ports, is_gateway, is_self),
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         vendor,
         hostname,

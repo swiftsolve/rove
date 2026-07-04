@@ -22,6 +22,10 @@ fn is_meaningful(host: &str) -> bool {
 }
 
 pub async fn resolve(ip: &str) -> Option<String> {
+    // The address goes into a shell command — only ever pass a validated IP.
+    if !crate::net_util::is_shell_safe_ip(ip) {
+        return None;
+    }
     let cmd = match std::env::consts::OS {
         "windows" => format!(
             "powershell -NoProfile -Command \"[System.Net.Dns]::GetHostEntry('{ip}').HostName\""

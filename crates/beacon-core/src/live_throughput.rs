@@ -28,6 +28,15 @@ impl ThroughputSampler {
         }
     }
 
+    /// Reset the timing/counter baseline without emitting a sample. Call this
+    /// when the UI (re)subscribes after an idle gap: it discards the bytes that
+    /// accumulated while nobody was listening, so the next `sample()` reflects
+    /// one real interval instead of reporting the whole gap as a false spike.
+    pub fn prime(&mut self) {
+        self.networks.refresh(true);
+        self.last_sample = Some(std::time::Instant::now());
+    }
+
     fn smooth(previous: f64, next: f64) -> f64 {
         if previous <= 0.0 {
             (next * 10.0).round() / 10.0

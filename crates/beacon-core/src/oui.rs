@@ -1,145 +1,139 @@
-/// MAC OUI → vendor. Generated from the Electron app's table (125 prefixes).
+//! MAC OUI → vendor lookup, backed by the full IEEE registry.
+//!
+//! The table is the Wireshark `manuf` list (MA-L/MA-M/MA-S assignments),
+//! trimmed to `<bits>\t<hexprefix>\t<vendor>` rows and embedded at compile
+//! time. `bits` is the assignment size (24, 28, or 36) and `hexprefix` is the
+//! significant leading nibbles (`bits / 4` of them), uppercase. IEEE hands out
+//! blocks at three granularities, so a lookup tries the most specific first.
+use std::collections::HashMap;
+use std::sync::OnceLock;
+
+static OUI_DATA: &str = include_str!("../data/oui.tsv");
+
+struct OuiTable {
+    /// 24-bit assignments (MA-L), keyed by the first 6 nibbles.
+    b24: HashMap<u32, &'static str>,
+    /// 28-bit assignments (MA-M), keyed by the first 7 nibbles.
+    b28: HashMap<u32, &'static str>,
+    /// 36-bit assignments (MA-S), keyed by the first 9 nibbles.
+    b36: HashMap<u64, &'static str>,
+}
+
+fn table() -> &'static OuiTable {
+    static TABLE: OnceLock<OuiTable> = OnceLock::new();
+    TABLE.get_or_init(|| {
+        let mut t = OuiTable {
+            b24: HashMap::new(),
+            b28: HashMap::new(),
+            b36: HashMap::new(),
+        };
+        for line in OUI_DATA.lines() {
+            let mut fields = line.splitn(3, '\t');
+            let (Some(bits), Some(prefix), Some(vendor)) =
+                (fields.next(), fields.next(), fields.next())
+            else {
+                continue;
+            };
+            match bits {
+                "24" => {
+                    if let Ok(key) = u32::from_str_radix(prefix, 16) {
+                        t.b24.insert(key, vendor);
+                    }
+                }
+                "28" => {
+                    if let Ok(key) = u32::from_str_radix(prefix, 16) {
+                        t.b28.insert(key, vendor);
+                    }
+                }
+                "36" => {
+                    if let Ok(key) = u64::from_str_radix(prefix, 16) {
+                        t.b36.insert(key, vendor);
+                    }
+                }
+                _ => {}
+            }
+        }
+        t
+    })
+}
+
+/// Resolve a MAC to its registered vendor, preferring the most specific IEEE
+/// assignment (36-bit, then 28-bit, then the 24-bit OUI). Returns `None` for
+/// unregistered or unparseable prefixes — a randomized MAC will almost never
+/// match, but callers should still gate on [`is_randomized_mac`].
 pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
-    let normalized: String = mac
+    let hex: String = mac
         .chars()
         .filter(|c| c.is_ascii_hexdigit())
-        .take(6)
+        .take(9)
         .collect::<String>()
         .to_uppercase();
-    match normalized.as_str() {
-        "A4C3F0" => Some("Apple"),
-        "ECB5FA" => Some("Apple"),
-        "F0766F" => Some("Apple"),
-        "3C0754" => Some("Apple"),
-        "D0817A" => Some("Apple"),
-        "5CF370" => Some("Samsung"),
-        "083D88" => Some("Samsung"),
-        "1096E4" => Some("Samsung"),
-        "E8508B" => Some("Samsung"),
-        "3C5AB4" => Some("Google"),
-        "F4F5D8" => Some("Google"),
-        "1CF29A" => Some("Google"),
-        "FCA183" => Some("Amazon"),
-        "68F728" => Some("Amazon"),
-        "44650D" => Some("Amazon"),
-        "B827EB" => Some("Raspberry Pi"),
-        "DCA632" => Some("Raspberry Pi"),
-        "E45F01" => Some("Raspberry Pi"),
-        "3C5282" => Some("Intel"),
-        "0838E6" => Some("Intel"),
-        "7C7A91" => Some("Intel"),
-        "BCD5ED" => Some("Router (Zyxel)"),
-        "C86000" => Some("ASUS"),
-        "2C4D54" => Some("ASUS"),
-        "9C5C8E" => Some("ASUS"),
-        "00156D" => Some("Ubiquiti"),
-        "FCECDA" => Some("Ubiquiti"),
-        "245A4C" => Some("TP-Link"),
-        "5091E3" => Some("TP-Link"),
-        "E894F6" => Some("TP-Link"),
-        "C025E9" => Some("TP-Link"),
-        "84D47E" => Some("Cisco"),
-        "00238C" => Some("Netgear"),
-        "18B430" => Some("Nest"),
-        "50C7BF" => Some("TP-Link (Kasa)"),
-        "68C63A" => Some("Espressif"),
-        "2462AB" => Some("Espressif"),
-        "7CDFA1" => Some("Espressif"),
-        "246F28" => Some("Espressif"),
-        "9C8C6E" => Some("Samsung"),
-        "D48A39" => Some("Samsung"),
-        "80656D" => Some("Samsung"),
-        "F8042E" => Some("Samsung"),
-        "28395E" => Some("Samsung"),
-        "A8DB03" => Some("Samsung"),
-        "64B5C6" => Some("Xiaomi"),
-        "78024E" => Some("Xiaomi"),
-        "9C2EA1" => Some("Xiaomi"),
-        "04D3B0" => Some("Intel"),
-        "A0510B" => Some("Intel"),
-        "F8633F" => Some("Intel"),
-        "14ABC5" => Some("Intel"),
-        "DC7196" => Some("Intel"),
-        "E4B318" => Some("Intel"),
-        "606720" => Some("Intel"),
-        "94E6F7" => Some("Intel"),
-        "A44CC8" => Some("Dell"),
-        "18DBF2" => Some("Dell"),
-        "F8BC12" => Some("Dell"),
-        "98E743" => Some("Dell"),
-        "C8F750" => Some("Dell"),
-        "3010B3" => Some("Lenovo"),
-        "68F5F8" => Some("Lenovo"),
-        "E86A64" => Some("LG Electronics"),
-        "10683F" => Some("LG Electronics"),
-        "CC2D8C" => Some("LG Electronics"),
-        "F02475" => Some("Apple"),
-        "9C207B" => Some("Apple"),
-        "68AB1E" => Some("Apple"),
-        "A8667F" => Some("Apple"),
-        "087045" => Some("Apple"),
-        "DC2B2A" => Some("Apple"),
-        "68DBCA" => Some("Apple"),
-        "90B21F" => Some("Apple"),
-        "7CBB8A" => Some("Nintendo"),
-        "98B6E9" => Some("Nintendo"),
-        "0CFE45" => Some("Sony"),
-        "00D9D1" => Some("Sony"),
-        "78C881" => Some("Sony"),
-        "B00594" => Some("Roku"),
-        "D83134" => Some("Roku"),
-        "AC3A7A" => Some("Roku"),
-        "308D99" => Some("HP"),
-        "9457A5" => Some("HP"),
-        "E4E749" => Some("HP"),
-        "008092" => Some("Brother"),
-        "3C2AF4" => Some("Brother"),
-        "9C305B" => Some("Canon"),
-        "00BBC1" => Some("Canon"),
-        "50DCE7" => Some("Amazon"),
-        "AC63BE" => Some("Amazon"),
-        "74C246" => Some("Amazon"),
-        "F0272D" => Some("Amazon"),
-        "D073D5" => Some("Philips Hue"),
-        "001788" => Some("Philips Hue"),
-        "ECFABC" => Some("Espressif"),
-        "BCDDC2" => Some("Espressif"),
-        "483FDA" => Some("Espressif"),
-        "CC50E3" => Some("Espressif"),
-        "8CAAB5" => Some("Espressif"),
-        "C44F33" => Some("Tuya"),
-        "10D561" => Some("Tuya"),
-        "68572D" => Some("Sonos"),
-        "347E5C" => Some("Sonos"),
-        "949F3E" => Some("Sonos"),
-        "00166C" => Some("Ring"),
-        "341513" => Some("Ring"),
-        "744401" => Some("Netgear"),
-        "A040A0" => Some("Netgear"),
-        "9C3DCF" => Some("Netgear"),
-        "E4F4C6" => Some("Netgear"),
-        "14CC20" => Some("TP-Link"),
-        "98DAC4" => Some("TP-Link"),
-        "60A4B7" => Some("TP-Link"),
-        "D80D17" => Some("TP-Link"),
-        "788A20" => Some("Ubiquiti"),
-        "24A43C" => Some("Ubiquiti"),
-        "DC9FDB" => Some("Ubiquiti"),
-        "B4FBE4" => Some("Ubiquiti"),
-        "4C5E0C" => Some("MikroTik"),
-        "64D154" => Some("MikroTik"),
-        "E48D8C" => Some("MikroTik"),
-        "00A0C5" => Some("Zyxel"),
-        "4C9EFF" => Some("Zyxel"),
-        "A0E4CB" => Some("Zyxel"),
-        "1C3BF3" => Some("TP-Link (Kasa)"),
-        "083A8D" => Some("Vesync (Cosori)"),
-        _ => None,
+    if hex.len() < 6 {
+        return None;
     }
+    let t = table();
+    if hex.len() >= 9 {
+        if let Ok(key) = u64::from_str_radix(&hex[..9], 16) {
+            if let Some(vendor) = t.b36.get(&key) {
+                return Some(vendor);
+            }
+        }
+    }
+    if hex.len() >= 7 {
+        if let Ok(key) = u32::from_str_radix(&hex[..7], 16) {
+            if let Some(vendor) = t.b28.get(&key) {
+                return Some(vendor);
+            }
+        }
+    }
+    let key = u32::from_str_radix(&hex[..6], 16).ok()?;
+    t.b24.get(&key).copied()
 }
 
 /// Locally-administered bit set → privacy-randomized MAC.
 pub fn is_randomized_mac(mac: &str) -> bool {
     let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(2).collect();
     u8::from_str_radix(&hex, 16).map(|b| b & 0x02 != 0).unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolves_a_common_24_bit_oui() {
+        // B8:27:EB is the Raspberry Pi Foundation MA-L block.
+        assert!(lookup_vendor("b8:27:eb:11:22:33")
+            .unwrap()
+            .to_lowercase()
+            .contains("raspberry"));
+    }
+
+    #[test]
+    fn prefers_more_specific_assignments() {
+        // 00:55:DA is a shared MA-L carved into /28 MA-M blocks; the 28-bit
+        // match must win over any 24-bit fallback.
+        let shinko = lookup_vendor("00:55:da:0f:00:01");
+        let koolpos = lookup_vendor("00:55:da:1f:00:01");
+        assert!(shinko.is_some());
+        assert!(koolpos.is_some());
+        assert_ne!(shinko, koolpos);
+    }
+
+    #[test]
+    fn unregistered_prefix_returns_none() {
+        assert_eq!(lookup_vendor("02:00:00:00:00:00"), None);
+    }
+
+    #[test]
+    fn tolerates_dashes_and_short_input() {
+        assert!(lookup_vendor("B8-27-EB-00-00-00").is_some());
+        assert_eq!(lookup_vendor("b8:27"), None); // too few nibbles
+    }
+
+    #[test]
+    fn detects_randomized_mac() {
+        assert!(is_randomized_mac("a2:00:00:00:00:00")); // 0xA2 & 0x02 == set
+        assert!(!is_randomized_mac("b8:27:eb:00:00:00"));
+    }
 }

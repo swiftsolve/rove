@@ -10,19 +10,33 @@ use std::time::Duration;
 /// when nothing better is known — the TXT model record usually settles it.
 const SERVICE_KINDS: &[(&str, &str, bool)] = &[
     ("_ipp._tcp.local.", "printer", true),
+    ("_ipps._tcp.local.", "printer", true),
     ("_printer._tcp.local.", "printer", true),
     ("_pdl-datastream._tcp.local.", "printer", true),
+    ("_scanner._tcp.local.", "printer", true),
+    ("_uscan._tcp.local.", "printer", true),
+    ("_uscans._tcp.local.", "printer", true),
     ("_googlecast._tcp.local.", "tv", true),
     ("_androidtvremote2._tcp.local.", "tv", true),
+    ("_androidtvremote._tcp.local.", "tv", true),
+    ("_roku-rcp._tcp.local.", "tv", true),
+    ("_nvstream._tcp.local.", "tv", true),
     ("_hap._tcp.local.", "iot", true),
     ("_matter._tcp.local.", "iot", true),
     ("_esphomelib._tcp.local.", "iot", true),
     ("_shelly._tcp.local.", "iot", true),
+    ("_sonos._tcp.local.", "speaker", true),
+    ("_axis-video._tcp.local.", "camera", true),
     ("_workstation._tcp.local.", "computer", true),
     ("_smb._tcp.local.", "computer", true),
+    ("_afpovertcp._tcp.local.", "computer", true),
+    ("_sftp-ssh._tcp.local.", "computer", true),
     ("_raop._tcp.local.", "tv", false),
     ("_airplay._tcp.local.", "tv", false),
     ("_spotify-connect._tcp.local.", "tv", false),
+    ("_amzn-wplay._tcp.local.", "tv", false),
+    ("_ssh._tcp.local.", "computer", false),
+    ("_daap._tcp.local.", "computer", false),
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -49,9 +63,12 @@ fn is_human_name(name: &str) -> bool {
 fn kind_rank(kind: &str) -> u8 {
     match kind {
         "printer" => 0,
-        "iot" => 1,
-        "computer" => 2, // beats tv: a Mac advertising AirPlay is a computer
-        "tv" => 3,
+        "camera" => 1,
+        "speaker" => 2,
+        "nas" => 3,
+        "iot" => 4,
+        "computer" => 5, // beats tv: a Mac advertising AirPlay is a computer
+        "tv" => 6,
         _ => 9,
     }
 }
@@ -104,12 +121,14 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     .get_property_val_str("fn")
                     .map(String::from)
                     .or_else(|| instance_name(info.get_fullname()))
+                    .map(|n| crate::net_util::sanitize_display(&n))
                     .filter(|n| is_human_name(n));
                 let model = info
                     .get_property_val_str("am")
                     .or_else(|| info.get_property_val_str("model"))
                     .or_else(|| info.get_property_val_str("md"))
-                    .map(String::from);
+                    .map(crate::net_util::sanitize_display)
+                    .filter(|m| !m.is_empty());
 
                 for addr in info.get_addresses() {
                     if !addr.is_ipv4() {

@@ -12,4 +12,5 @@ pub mod network_info;
 pub mod oui;
 pub mod shell;
 pub mod speed;
+pub mod store;
 pub mod types;

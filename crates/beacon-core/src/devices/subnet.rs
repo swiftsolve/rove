@@ -23,6 +23,9 @@ pub async fn subnet_of(interface: &str) -> Option<String> {
 }
 
 async fn linux_subnet_of(interface: &str) -> Option<String> {
+    if !crate::net_util::is_shell_safe_iface(interface) {
+        return None;
+    }
     let out = try_run(&format!("ip -j addr show {interface} 2>/dev/null")).await?;
     let parsed: Vec<serde_json::Value> = serde_json::from_str(&out).ok()?;
     let addr = parsed
