@@ -1,8 +1,9 @@
 .capability-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--gap-sm);
+  gap: var(--gap-md);
+  /* Negative margin lets the hover highlight bleed into the section padding
+     while the content stays aligned to the 16px edge. */
   padding: var(--row-py) 8px;
   margin: 0 -8px;
   width: calc(100% + 16px);
@@ -11,8 +12,10 @@
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
-.capability-row:hover {
+.capability-row:hover,
+.capability-row:focus-visible {
   background: rgba(255, 255, 255, 0.03);
+  outline: none;
 }
 
 .capability-row:first-child {
@@ -23,14 +26,10 @@
   padding-bottom: 0;
 }
 
-.capability-row + .capability-row {
-  padding-top: calc(var(--row-py) + 2px);
-}
-
 .capability-row-main {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   min-width: 0;
   flex: 1;
 }
@@ -38,16 +37,24 @@
 .capability-row-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
+}
+
+.capability-name,
+.capability-desc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .capability-name {
   font-weight: var(--weight-medium);
+  line-height: 1.35;
 }
 
 .capability-desc {
   font-size: var(--text-caption);
+  line-height: 1.3;
 }
 
 /* Icon chip tinted by the capability's level, so the rating reads at a glance
@@ -56,8 +63,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
@@ -70,20 +77,25 @@
 .capability-row.level-poor .capability-icon-tile { color: #f0a35e; }
 .capability-row.level-unsupported .capability-icon-tile { color: var(--text-tertiary); }
 
-/* Chevron stays out of the way until you hover/focus the row — its space is
-   always reserved, so nothing shifts when it fades in. */
+/* Meter + chevron are one right-aligned unit, so every row's rating column
+   lines up regardless of name/description length. */
+.capability-row-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Always faintly present (so the right edge is consistent and the rows read
+   as tappable), brightening on hover/focus. */
 .capability-chevron {
   flex-shrink: 0;
   color: var(--text-tertiary);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition:
-    opacity var(--duration-fast) var(--ease-in-out),
-    transform var(--duration-fast) var(--ease-in-out);
+  opacity: 0.3;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
 .capability-row:hover .capability-chevron,
 .capability-row:focus-visible .capability-chevron {
-  opacity: 0.6;
-  transform: translateX(0);
+  opacity: 0.7;
 }
