@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@/types'
 import { appendSpeedHistory } from '@/components/speed-test/speed-history'
 
@@ -16,7 +16,15 @@ interface SpeedTestState {
   readonly error: string | null
 }
 
-const INITIAL_STATE: SpeedTestState = {
+interface UseSpeedTestResult extends SpeedTestState {
+  readonly runTest: () => Promise<void>
+  readonly cancelTest: () => void
+}
+
+// A module-level store, not component state: the last result and an in-flight
+// test must survive the Home view unmounting when you switch tabs, so they're
+// still there when you switch back.
+let state: SpeedTestState = {
   internetSpeed: null,
   capabilities: [],
   testing: false,
@@ -24,58 +32,68 @@ const INITIAL_STATE: SpeedTestState = {
   error: null,
 }
 
-interface UseSpeedTestResult extends SpeedTestState {
-  readonly runTest: () => Promise<void>
-  readonly cancelTest: () => void
+const listeners = new Set<() => void>()
+
+function setState(next: SpeedTestState): void {
+  state = next
+  for (const listener of listeners) listener()
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
 }
 
 function isCancellation(cause: unknown): boolean {
   return cause instanceof Error && cause.message.includes('SPEED_TEST_CANCELLED')
 }
 
-export function useSpeedTest(): UseSpeedTestResult {
-  const [state, setState] = useState<SpeedTestState>(INITIAL_STATE)
+async function runTest(): Promise<void> {
+  if (state.testing) return
 
-  const runTest = useCallback(async (): Promise<void> => {
-    setState((current) => ({
-      ...current,
-      testing: true,
+  setState({
+    ...state,
+    testing: true,
+    error: null,
+    progress: { phase: 'internet', message: 'Starting speed test…', progress: 0 },
+  })
+
+  const unsubscribe = window.networkAPI.onSpeedTestProgress((progress) => {
+    setState({ ...state, progress })
+  })
+
+  try {
+    const result = await window.networkAPI.runSpeedTest()
+    appendSpeedHistory(result.internet)
+    setState({
+      ...state,
+      internetSpeed: result.internet,
+      capabilities: result.capabilities,
+      progress: { phase: 'complete', message: 'Done', progress: 100 },
       error: null,
-      progress: { phase: 'internet', message: 'Starting speed test…', progress: 0 },
-    }))
-
-    const unsubscribe = window.networkAPI.onSpeedTestProgress((progress) => {
-      setState((current) => ({ ...current, progress }))
     })
+  } catch (cause) {
+    setState({
+      ...state,
+      // A user-initiated stop is not an error — just return to the previous state.
+      error: isCancellation(cause)
+        ? null
+        : 'Speed test failed. Check your connection and try again.',
+      progress: INITIAL_PROGRESS,
+    })
+  } finally {
+    unsubscribe()
+    setState({ ...state, testing: false })
+  }
+}
 
-    try {
-      const result = await window.networkAPI.runSpeedTest()
-      appendSpeedHistory(result.internet)
-      setState((current) => ({
-        ...current,
-        internetSpeed: result.internet,
-        capabilities: result.capabilities,
-        progress: { phase: 'complete', message: 'Done', progress: 100 },
-        error: null,
-      }))
-    } catch (cause) {
-      setState((current) => ({
-        ...current,
-        // A user-initiated stop is not an error — just return to the previous state.
-        error: isCancellation(cause)
-          ? null
-          : 'Speed test failed. Check your connection and try again.',
-        progress: INITIAL_PROGRESS,
-      }))
-    } finally {
-      unsubscribe()
-      setState((current) => ({ ...current, testing: false }))
-    }
-  }, [])
+function cancelTest(): void {
+  void window.networkAPI.cancelSpeedTest()
+}
 
-  const cancelTest = useCallback((): void => {
-    void window.networkAPI.cancelSpeedTest()
-  }, [])
-
-  return { ...state, runTest, cancelTest }
+export function useSpeedTest(): UseSpeedTestResult {
+  const snapshot = useSyncExternalStore(subscribe, () => state)
+  return { ...snapshot, runTest, cancelTest }
 }
