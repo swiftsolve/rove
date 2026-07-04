@@ -13,9 +13,16 @@ static LOCAL_OFFSET_SECS: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
 
 fn local_offset_secs() -> i64 {
     *LOCAL_OFFSET_SECS.get_or_init(|| {
-        // `date +%z` → "+0500" / "-0400"; works on Linux & macOS. Windows: 0 (UTC bucketing).
+        // Windows: minutes from UTC via PowerShell; Unix: `date +%z`.
         if cfg!(target_os = "windows") {
-            return 0;
+            return std::process::Command::new("powershell")
+                .args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"])
+                .output()
+                .ok()
+                .and_then(|o| String::from_utf8(o.stdout).ok())
+                .and_then(|s| s.trim().parse::<f64>().ok())
+                .map(|minutes| (minutes * 60.0) as i64)
+                .unwrap_or(0);
         }
         std::process::Command::new("date")
             .arg("+%z")

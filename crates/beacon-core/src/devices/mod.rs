@@ -26,8 +26,8 @@ pub async fn scan() -> LanDeviceScan {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
 
     let subnet = match &interface {
-        Some(name) if cfg!(target_os = "linux") => subnet::subnet_of(name).await,
-        _ => None,
+        Some(name) => subnet::subnet_of(name).await,
+        None => None,
     };
 
     let mdns_hits = match &subnet {
