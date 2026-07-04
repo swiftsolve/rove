@@ -1,6 +1,6 @@
 import { memo, useState } from 'react'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
-import { isConnectedNetwork, isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
+import { isConnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
 import { getConnectionDisplay } from '@/components/connection/connection-display'
 import { networkInfoEqual } from '@/components/connection/network-info-equal'
 import { usePublicIp } from '@/hooks/usePublicIp'
@@ -88,10 +88,30 @@ function EthernetExtras({ info }: { readonly info: EthernetNetworkInfo }): JSX.E
   )
 }
 
+const EXPANDED_KEY = 'beacon.connection-details-expanded'
+
 function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
-  const [expanded, setExpanded] = useState(
-    () => isDisconnectedNetwork(info) || isWifiNetwork(info),
-  )
+  // Persisted so the choice survives tab switches (which unmount this card)
+  // and restarts. Defaults to collapsed rather than auto-expanding.
+  const [expanded, setExpanded] = useState(() => {
+    try {
+      return localStorage.getItem(EXPANDED_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  const toggleExpanded = (): void => {
+    setExpanded((open) => {
+      const next = !open
+      try {
+        localStorage.setItem(EXPANDED_KEY, String(next))
+      } catch {
+        // Storage unavailable — remember for this session only.
+      }
+      return next
+    })
+  }
   const display = getConnectionDisplay(info)
   const { publicIp, isLoading: publicIpLoading } = usePublicIp(
     isConnectedNetwork(info),
@@ -112,7 +132,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
       <button
         type="button"
         className="conn-strip"
-        onClick={() => setExpanded((open) => !open)}
+        onClick={toggleExpanded}
         aria-expanded={expanded}
         aria-label={detailsLabel}
       >

@@ -29,8 +29,10 @@ function CapabilityRow({
           <span className="text-hint capability-desc">{capability.description}</span>
         </div>
       </div>
-      <CapabilityMeter level={capability.level} showLabel={false} />
-      <ChevronRightIcon size={16} className="capability-chevron" />
+      <div className="capability-row-status">
+        <CapabilityMeter level={capability.level} showLabel={false} />
+        <ChevronRightIcon size={16} className="capability-chevron" />
+      </div>
     </button>
   )
 }
