@@ -101,11 +101,13 @@
 
 .conn-details {
   overflow: hidden;
-  padding: 0 var(--section-body);
+  margin: 0 var(--section-body);
 }
 
+/* Separator between the header strip and the expanded details. */
 .conn-details-wrap.open .conn-details {
-  padding: var(--gap-md) var(--section-body) var(--section-body);
+  padding: var(--gap-md) 0 var(--section-body);
+  border-top: 1px solid var(--border);
 }
 
 .signal-meter {
