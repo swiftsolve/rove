@@ -138,7 +138,8 @@ pub fn run() {
                         let state = usage_handle.state::<AppState>();
                         let mut networks = state.networks.lock().unwrap();
                         networks.refresh(true);
-                        if let Some(tracker) = state.usage.lock().unwrap().as_mut() {
+                        let mut usage = state.usage.lock().unwrap();
+                        if let Some(tracker) = usage.as_mut() {
                             tracker.sample(&networks);
                         }
                     }
