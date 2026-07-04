@@ -132,6 +132,8 @@ pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
         "00A0C5" => Some("Zyxel"),
         "4C9EFF" => Some("Zyxel"),
         "A0E4CB" => Some("Zyxel"),
+        "1C3BF3" => Some("TP-Link (Kasa)"),
+        "083A8D" => Some("Vesync (Cosori)"),
         _ => None,
     }
 }

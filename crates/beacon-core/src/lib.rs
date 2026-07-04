@@ -6,6 +6,7 @@ pub mod devices;
 pub mod diagnostics;
 pub mod interfaces;
 pub mod live_throughput;
+pub mod mdns;
 pub mod net_util;
 pub mod network_info;
 pub mod oui;
