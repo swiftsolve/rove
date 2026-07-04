@@ -64,3 +64,8 @@ Linux is fully implemented (`ip`/`iw`/`nmcli`/`getent`/sysfs). macOS and
 Windows paths are ported from the original implementation (`airport`,
 `netsh`, PowerShell, `arp -a`) with graceful degradation where a tool is
 unavailable — values render as “—” rather than failing.
+
+> **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
+> VS Code from snap), unset its library path first or the binary picks up
+> snap's glibc and crashes at startup:
+> `env -u LD_LIBRARY_PATH -u GTK_PATH npm run tauri:dev`

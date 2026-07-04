@@ -3,7 +3,6 @@ use crate::oui::{is_randomized_mac, lookup_vendor};
 use crate::shell::try_run;
 use crate::types::{LanDevice, LanDeviceScan};
 use regex_lite::Regex;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 struct RawNeighbor {
     ip: String,
