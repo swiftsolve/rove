@@ -53,11 +53,13 @@
   --radius-sm: 8px;
   --radius-xs: 5px;
 
-  --section-header-y: 12px;
-  --section-header-x: 16px;
+  /* One padding value on every axis so cards read as evenly inset (16px). */
+  --section-pad: 16px;
+  --section-header-y: var(--section-pad);
+  --section-header-x: var(--section-pad);
   --section-header-min: 42px;
-  --section-header-h: 46px;
-  --section-body: 16px;
+  --section-header-h: 50px;
+  --section-body: var(--section-pad);
 
   --gap-xs: 4px;
   --gap-sm: 8px;
