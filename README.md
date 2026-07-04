@@ -3,7 +3,90 @@
 A fast, minimal desktop network monitor — live traffic, speed tests, LAN device
 discovery, connection diagnostics, and data-usage tracking. Tauri (Rust) + React.
 
-## Architecture
+## How it works
+
+Beacon is two programs talking over a thin, typed bridge:
+
+```
+┌───────────────────────────┐        invoke("get_devices")         ┌──────────────────────────┐
+│  React UI (system webview)│ ────────────────────────────────────▶│  Rust backend (Tauri)    │
+│  views · hooks · charts   │                                      │  src-tauri: commands     │
+│                           │ ◀──────────────────────────────────── │  beacon-core: services   │
+└───────────────────────────┘   events: live-throughput,           └──────────────────────────┘
+                                speed-test-progress, network-changed          │
+                                                                    kernel & OS tools:
+                                                                    /sys, /proc, ip, iw, nmcli,
+                                                                    getent, ping, mDNS, HTTPS
+```
+
+- **Request/response** — each UI data need is one Tauri *command* (`get_network_info`,
+  `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
+  around a pure-Rust service in `crates/beacon-core`.
+- **Push** — three *events* flow the other way: `live-throughput` (1 Hz while the
+  Home tab is subscribed), `speed-test-progress`, and `network-changed` (the
+  backend watches `ip monitor route` and nudges the UI within ~1 s of a cable
+  pull or Wi-Fi join, so state never waits on the 15 s poll).
+- **The contract** — TypeScript types in `src/types/` define every payload; the
+  Rust structs in `crates/beacon-core/src/types.rs` mirror them field-for-field
+  (serde renames everything to camelCase on the wire). The UI never knows it's
+  talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
+  `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
+  which is why `npm run dev` works in a plain browser for UI work.
+
+### What each feature actually measures
+
+**Connection card / network info.** The kernel routing table is the source of
+truth: `ip route show default` names the interface your traffic really uses
+(so LAN↔Wi-Fi switches are always right), then per-medium tools fill in detail —
+`iw`/`nmcli` for SSID, band, channel, signal; `ethtool`/sysfs for link speed and
+duplex. DNS comes from `resolv.conf`.
+
+**Live traffic.** A 1 Hz sampler reads the kernel's cumulative per-interface
+byte counters (via `sysinfo`), converts deltas to Mbps, smooths them with an
+exponential moving average, and emits an event. Virtual interfaces (docker,
+veth, vpn…) are excluded.
+
+**Devices.** A four-step pipeline (`crates/beacon-core/src/devices/`):
+1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
+   not the ICMP reply but the ARP exchange it forces: idle devices enter the
+   kernel neighbor table even if they block ping.
+2. *mDNS* — concurrently, listen ~3 s for service announcements (`_googlecast`,
+   `_ipp`, `_hap`, `_raop`, …). Devices literally say what they are, often with
+   a friendly name and hardware model.
+3. *Neighbor table* — `ip neigh` (or `arp -a`) is then read as the ground truth
+   of who exists.
+4. *Enrich & classify* — each host gets a vendor (MAC OUI table), a hostname
+   (reverse DNS/mDNS, junk names filtered), and a best-effort kind. Signals are
+   ranked by trust: role flags → mDNS service type → mDNS hardware model →
+   hostname patterns → vendor patterns → weak mDNS hints → "unknown".
+   A device that blocks ping *and* announces nothing can still hide — the
+   router's admin page stays authoritative.
+
+**Speed test.** Saturates the link ~6 s per direction: parallel HTTPS streams
+from public test endpoints (download) and random-payload POSTs (upload), then
+10 pings to 1.1.1.1 for latency/jitter/loss. Progress streams as events; a
+cancel command aborts between and within phases (streams poll a shared flag).
+Results feed the capability ratings (can this connection do 4K, cloud gaming…)
+against per-activity thresholds. Fair warning: at multi-gigabit rates one test
+moves 1–2 GB — that's inherent to how throughput measurement works.
+
+**Data usage.** Every 30 s the backend accumulates counter deltas into per-day
+buckets persisted in the app-data dir (survives restarts; counters themselves
+reset at boot, which the delta logic handles). The "since boot" totals shown in
+the UI are read straight from `/sys/class/net/*/statistics` at query time —
+kernel truth, no bookkeeping.
+
+**Diagnostics.** Pings your default gateway (latency / jitter / packet loss)
+and lists the DNS servers in use.
+
+### Security model
+
+Tauri v2 is deny-by-default: the webview can only call what
+`src-tauri/capabilities/default.json` grants (our commands, event listening,
+and the frameless-window controls). There is no Node runtime in the UI process
+and the backend is memory-safe Rust.
+
+## Layout
 
 ```
 beacon/
@@ -19,18 +102,18 @@ beacon/
 │   │   ├── speed-test/         speed test section + history (+ storage)
 │   │   └── capabilities/       capability list, details, meter, icon, rating
 │   ├── hooks/                  data hooks over window.networkAPI
+│   │                           (useBackendResource is the shared fetch shape)
 │   ├── lib/                    generic helpers (format, chart geometry)
-│   ├── types/                  the UI↔backend contract (Rust mirrors these
-│   │                           shapes in beacon-core/src/types.rs, camelCase)
+│   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
 │   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/beacon-core/         all platform services in pure Rust (no Tauri/GTK
 │                               deps — compiles and tests anywhere): network_info,
-│                               interfaces, devices, diagnostics, speed,
+│                               interfaces, devices/, diagnostics, speed, mdns,
 │                               live_throughput, data_usage, oui, shell
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
-                                service, events for progress/throughput
+                                service, events, capabilities, window config
 ```
 
 ## Development
@@ -47,15 +130,21 @@ Then:
 
 ```bash
 npm install
-npm run tauri:dev     # run the desktop app (hot-reloads the UI)
-npm run dev           # UI only, in a browser, against the mock bridge
+npm run tauri:dev            # run the desktop app (hot-reloads the UI)
+npm run dev                  # UI only, in a browser, against the mock bridge
 cargo check -p beacon-core   # typecheck the service layer alone
+cargo run -p beacon-core --example scan   # print a live LAN scan
 ```
+
+> **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
+> VS Code from snap), unset its library path first or the binary picks up
+> snap's glibc and crashes at startup:
+> `env -u LD_LIBRARY_PATH -u GTK_PATH npm run tauri:dev`
 
 ## Release build
 
 ```bash
-npm run tauri:build   # AppImage + deb (Linux), dmg (macOS), nsis (Windows)
+npm run tauri:build   # .deb ~5 MB, AppImage, dmg (macOS), nsis (Windows)
 ```
 
 ## Platform support
@@ -64,8 +153,3 @@ Linux is fully implemented (`ip`/`iw`/`nmcli`/`getent`/sysfs). macOS and
 Windows paths are ported from the original implementation (`airport`,
 `netsh`, PowerShell, `arp -a`) with graceful degradation where a tool is
 unavailable — values render as “—” rather than failing.
-
-> **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
-> VS Code from snap), unset its library path first or the binary picks up
-> snap's glibc and crashes at startup:
-> `env -u LD_LIBRARY_PATH -u GTK_PATH npm run tauri:dev`
