@@ -78,8 +78,14 @@ export function useNetworkInfo(): UseNetworkInfoResult {
 
   useEffect(() => {
     void refresh(false)
-    const intervalId = window.setInterval(() => void refresh(true), REFRESH_INTERVAL_MS)
-    return () => window.clearInterval(intervalId)
+    let active = true
+    const intervalId = window.setInterval(() => {
+      if (active) void refresh(true)
+    }, REFRESH_INTERVAL_MS)
+    return () => {
+      active = false
+      window.clearInterval(intervalId)
+    }
   }, [refresh])
 
   // The backend watches the routing table — refresh the moment it nudges us
@@ -87,7 +93,14 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   useEffect(() => {
     const api = window.networkAPI
     if (!api?.onNetworkChanged) return
-    return api.onNetworkChanged(() => void refresh(true))
+    let active = true
+    const detach = api.onNetworkChanged(() => {
+      if (active) void refresh(true)
+    })
+    return () => {
+      active = false
+      detach()
+    }
   }, [refresh])
 
   return { info, error, isLoading, refresh: () => refresh(false), setError }

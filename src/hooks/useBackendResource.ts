@@ -76,6 +76,11 @@ export function useBackendResource<T>(
     if (!refetchOnEnable && hasRunRef.current) return
     hasRunRef.current = true
     void reload()
+
+    return () => {
+      // Drop any in-flight fetch so it can't setState after disable/unmount.
+      reloadSeqRef.current += 1
+    }
   }, [enabled, refetchOnEnable, reload, resetKey])
 
   return { data, isBusy, error, reload }

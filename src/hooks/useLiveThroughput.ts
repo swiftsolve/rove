@@ -48,10 +48,10 @@ function nextIdleState(
  * `unsubscribeLiveThroughput` are global backend commands with no ref-count of
  * their own, so N consumers (or React 18 StrictMode's mount/unmount/remount)
  * must not each toggle it — the first attach subscribes, the last detach
- * unsubscribes. Because the backend tracks a subscriber *count*, the net of
- * subscribe/unsubscribe calls is order-independent.
+ * unsubscribes.
  */
 let backendRefCount = 0
+const activeDetaches = new Set<() => void>()
 
 function attachThroughput(
   api: NonNullable<Window['networkAPI']>,
@@ -63,7 +63,7 @@ function attachThroughput(
     void api.subscribeLiveThroughput()
   }
   let released = false
-  return () => {
+  const release = (): void => {
     if (released) return
     released = true
     detachEvents()
@@ -72,6 +72,21 @@ function attachThroughput(
       void api.unsubscribeLiveThroughput()
     }
   }
+  activeDetaches.add(release)
+  return () => {
+    activeDetaches.delete(release)
+    release()
+  }
+}
+
+// Vite HMR re-evaluates this module without tearing down the Rust backend or
+// the Tauri event listeners registered by the previous bundle — release them all.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    for (const detach of activeDetaches) detach()
+    activeDetaches.clear()
+    backendRefCount = 0
+  })
 }
 
 export interface LiveThroughputState {
@@ -102,7 +117,11 @@ export function useLiveThroughput(enabled: boolean): LiveThroughputState {
     const api = window.networkAPI
     if (!enabled || !api?.subscribeLiveThroughput) return
 
+    let active = true
+
     const handleUpdate = (update: LiveThroughput): void => {
+      if (!active) return
+
       const throughput = {
         downloadMbps: sanitizeRate(update.downloadMbps),
         uploadMbps: sanitizeRate(update.uploadMbps),
@@ -135,7 +154,10 @@ export function useLiveThroughput(enabled: boolean): LiveThroughputState {
 
     // Keep the accumulated history in the module cache on unmount so navigating
     // away and back doesn't blank the chart.
-    return detach
+    return () => {
+      active = false
+      detach()
+    }
   }, [enabled])
 
   return state
