@@ -2,13 +2,15 @@ import type { CapabilityRating } from '@/types'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Section from '@/components/ui/Section'
-import { ChevronRightIcon, ZapIcon } from '@/components/ui/Icons'
+import { ChevronRightIcon, PlayIcon, ZapIcon } from '@/components/ui/Icons'
 import './CapabilityList.css'
 
 interface CapabilityListProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly hasRunTest: boolean
+  readonly canRunTest: boolean
   readonly onOpenDetails: () => void
+  readonly onRunTest: () => void
 }
 
 function CapabilityRow({
@@ -40,17 +42,31 @@ function CapabilityRow({
 export default function CapabilityList({
   capabilities,
   hasRunTest,
+  canRunTest,
   onOpenDetails,
+  onRunTest,
 }: CapabilityListProps): JSX.Element {
   return (
-    <Section title="Capabilities" icon={<ZapIcon size={15} />}>
+    <Section
+      title="Capabilities"
+      icon={<ZapIcon size={15} />}
+      className="capability-list-section"
+    >
       {!hasRunTest ? (
         <div className="section-placeholder">
           <ZapIcon size={24} className="section-placeholder-icon" />
           <p className="text-hint">
-            Run a speed test to see how well your connection handles streaming, gaming, and
-            video calls.
+            Run a speed test to see what your connection can handle.
           </p>
+          <button
+            type="button"
+            className="btn-primary capability-run-btn"
+            onClick={onRunTest}
+            disabled={!canRunTest}
+          >
+            <PlayIcon size={13} />
+            Run speed test
+          </button>
         </div>
       ) : (
         <div className="capability-list">

@@ -2,16 +2,9 @@ import { memo, useEffect, useRef, useState } from 'react'
 import type { SpeedResult, SpeedTestProgress } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import Section from '@/components/ui/Section'
-import { Tooltip } from '@/components/ui/Tooltip'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { useCountUp } from '@/hooks/useCountUp'
-import {
-  EthernetIcon,
-  PlayIcon,
-  RefreshIcon,
-  SpeedIcon,
-  StopIcon,
-  WifiIcon,
-} from '@/components/ui/Icons'
+import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedTestSection.css'
 
 export interface SpeedTestConnection {
@@ -31,17 +24,14 @@ interface SpeedTestSectionProps {
   /** Live (running-peak) throughput to show in the cells while a test runs. */
   readonly liveDownloadMbps: number
   readonly liveUploadMbps: number
-  readonly onRunTest: () => void
-  readonly onCancelTest: () => void
 }
 
 function ConnectionTag({ connection }: { readonly connection: SpeedTestConnection }): JSX.Element {
   const name = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
-  const label = connection.band ? `${name} · ${connection.band}` : name
   return (
     <span className={`bench-conn conn-${connection.type}`}>
       {connection.type === 'wifi' ? <WifiIcon size={12} /> : <EthernetIcon size={12} />}
-      {label}
+      <InlineMeta items={[name, connection.band]} />
     </span>
   )
 }
@@ -202,8 +192,6 @@ function SpeedTestSection({
   progress,
   liveDownloadMbps,
   liveUploadMbps,
-  onRunTest,
-  onCancelTest,
 }: SpeedTestSectionProps): JSX.Element {
   const hasResults = internetSpeed != null
   // While testing, show live (peak) throughput once a direction's phase has begun
@@ -229,46 +217,7 @@ function SpeedTestSection({
   const lossText = internetSpeed ? `${internetSpeed.packetLoss}%` : '—'
 
   return (
-    <Section
-      title="Speed test"
-      icon={<SpeedIcon size={15} />}
-      action={
-        <div className="bench-actions">
-          <Tooltip
-            content={
-              testing
-                ? 'Stop test'
-                : !canTest
-                  ? 'Connect to a network first'
-                  : hasResults
-                    ? 'Test again'
-                    : 'Run test'
-            }
-          >
-            {testing ? (
-              <button
-                type="button"
-                className="btn-icon btn-icon-stop"
-                onClick={onCancelTest}
-                aria-label="Stop test"
-              >
-                <StopIcon size={13} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn-icon btn-icon-primary"
-                onClick={onRunTest}
-                disabled={!canTest}
-                aria-label={hasResults ? 'Test again' : 'Run test'}
-              >
-                {hasResults ? <RefreshIcon size={16} /> : <PlayIcon size={16} />}
-              </button>
-            )}
-          </Tooltip>
-        </div>
-      }
-    >
+    <Section title="Speed test" icon={<SpeedIcon size={15} />}>
       {error && <p className="inline-error">{error}</p>}
 
       {!canTest && !testing && (

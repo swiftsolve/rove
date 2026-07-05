@@ -68,8 +68,9 @@
   --gap-tight: 6px;
   --gap-sm: 8px;
   --gap-md: 12px;
-  --gap-stack: 14px;
+  --gap-stack: 10px;
   --gap-lg: 16px;
+  --gap-xl: 20px;
   --row-py: 8px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -206,6 +207,36 @@ button:focus-visible {
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.25;
+}
+
+/** Page header: an edge-to-edge divider below the title, separating the header
+    from the section stack. Negative side margins cancel the content column's
+    11px inset so the line runs full width; the inset is restored as padding so
+    the title stays aligned with the cards. The negative top margin cancels the
+    scroll area's top padding so the header owns a symmetric vertical rhythm. */
+.view-header {
+  margin: calc(-1 * var(--gap-md)) -11px 0;
+  padding: var(--gap-md) 11px var(--gap-md);
+  border-bottom: 1px solid var(--border);
+}
+
+/** Nav-matched glyph in a rounded chip, sitting to the left of a page title.
+    Vertically centred against the title/subtitle block so it lines up with the
+    action button on the right; the subtitle stays in the text column, under the
+    title. */
+.view-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  /* Match the selected nav item's chip so the page icon and its rail counterpart
+     read as the same control (see .nav-item: 38px box, 10px radius). */
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .text-body {

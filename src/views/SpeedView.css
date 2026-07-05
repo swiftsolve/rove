@@ -16,9 +16,50 @@
 
 
 .speed-header-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
   font-size: var(--text-caption);
   color: var(--text-tertiary);
   min-height: calc(var(--text-caption) * 1.35);
+}
+
+/* "View history" reads as a quiet pill link after the "Updated …" meta:
+   subtle at rest, picking up the accent tint on hover. Negative left margin
+   pulls the pill's padding back so it sits a natural distance from the dot. */
+.speed-history-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: -3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.speed-history-link:hover {
+  color: var(--accent);
+}
+
+/* Underline only the label on hover (not the clock glyph), so the link reads
+   as a link while the pill tint carries the accent. */
+.speed-history-link:hover .speed-history-link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Nudge the clock glyph up a hair so it sits optically centred on the text. */
+.speed-history-link svg {
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.speed-history-link:hover svg {
+  color: var(--accent);
 }
 
 .speed-header-sub.show {
@@ -33,4 +74,14 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Stop variant of the header's Run test button, shown while a test runs. */
+.speed-run-btn.is-stop {
+  color: var(--negative);
+}
+
+.speed-run-btn.is-stop:hover:not(:disabled) {
+  background: rgba(247, 123, 123, 0.14);
+  color: var(--negative);
 }

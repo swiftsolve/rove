@@ -55,19 +55,6 @@
   fill: var(--accent);
 }
 
-/* Pin the action button into the card's top-right corner with the same 16px
-   inset as the right edge — centring it in the fixed-height header left it
-   closer to the top (~9px) than the right (16px). Absolute so the title's
-   position is untouched; .ui-section (contain: content) is the containing box. */
-.bench-actions {
-  position: absolute;
-  top: var(--section-body);
-  right: var(--section-body);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .bench-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;

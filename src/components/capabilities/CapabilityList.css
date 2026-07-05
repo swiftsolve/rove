@@ -1,5 +1,14 @@
 @import './capability-icon-tile.css';
 
+/* Give the header icon the same tinted-chip look as the capability row tiles. */
+.capability-list-section .ui-section-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  color: var(--positive);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
 .capability-row {
   display: flex;
   align-items: center;
@@ -80,6 +89,10 @@
   color: var(--text-tertiary);
   opacity: 0.3;
   transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.capability-run-btn {
+  margin-top: var(--gap-2xs);
 }
 
 .capability-row:hover .capability-chevron,

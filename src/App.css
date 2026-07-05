@@ -46,7 +46,9 @@
   /* Reserve the scrollbar's space on the trailing edge only, so content doesn't
      jump when it appears and the left/right insets stay visually equal. */
   scrollbar-gutter: stable;
-  padding: var(--gap-lg) var(--gap-md) 20px;
+  /* Left/right inset matches the nav rail's 11px so the content sits the same
+     distance from the window edge as the nav icons do. */
+  padding: var(--gap-md) 11px var(--gap-xl);
 }
 
 .loading-screen {
@@ -79,8 +81,10 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  min-height: var(--section-header-min);
-  padding: var(--section-header-y) var(--section-header-x);
+  min-height: 56px;
+  /* Left inset aligns the brand mark with the nav rail below; right inset keeps
+     the window controls at the standard header edge. */
+  padding: 0 var(--section-header-x) 0 16px;
   background: var(--bg-app-2);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
@@ -97,15 +101,14 @@
   -webkit-app-region: drag;
 }
 
-.brand-mark {
+/* Brand mark, moved from the nav rail into the title bar. Just the glyph in the
+   accent color — no tile behind it. */
+.status-bar-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: var(--accent);
-  color: #fff;
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .brand-name {
@@ -187,19 +190,21 @@
   justify-content: center;
   gap: var(--gap-tight);
   padding: var(--gap-sm) var(--gap-stack);
-  background: var(--accent);
-  color: #fff;
+  background: transparent;
+  color: var(--accent);
   border-radius: var(--radius-sm);
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   transition:
     background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out),
     transform var(--duration-fast) var(--ease-in-out);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-muted);
+  color: var(--accent-hover);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -274,12 +279,13 @@
 }
 
 .btn-icon-primary {
-  background: var(--accent);
-  color: #fff;
+  background: transparent;
+  color: var(--accent);
 }
 
 .btn-icon-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-muted);
+  color: var(--accent-hover);
 }
 
 .btn-icon-secondary {

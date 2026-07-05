@@ -2,6 +2,7 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recha
 import type { DailyUsage, DataUsageSummary } from '@/types'
 import { formatBytes, splitBytes } from '@/lib/format'
 import Section from '@/components/ui/Section'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
 import { ArrowDownIcon, ArrowUpIcon, HelpIcon, UsageIcon } from '@/components/ui/Icons'
 import './UsageView.css'
@@ -209,7 +210,10 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
 
   return (
     <div className="view-page">
-      <div className="usage-header">
+      <div className="view-header usage-header">
+        <span className="view-header-icon">
+          <UsageIcon size={18} />
+        </span>
         <div className="usage-header-text">
           <span className="view-header-title">Usage</span>
           <span className={`usage-header-sub${!(isLoading && !hasData) ? ' show' : ''}`}>
@@ -244,10 +248,19 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
               <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
             </div>
             <p className="text-meta usage-session">
-              Since boot · <ArrowDownIcon size={11} className="usage-inline-icon" />{' '}
-              <span className="num">{formatBytes(usage.bootRxBytes)}</span> ·{' '}
-              <ArrowUpIcon size={11} className="usage-inline-icon" />{' '}
-              <span className="num">{formatBytes(usage.bootTxBytes)}</span>
+              <InlineMeta
+                items={[
+                  'Since boot',
+                  <>
+                    <ArrowDownIcon size={11} className="usage-inline-icon" />{' '}
+                    <span className="num">{formatBytes(usage.bootRxBytes)}</span>
+                  </>,
+                  <>
+                    <ArrowUpIcon size={11} className="usage-inline-icon" />{' '}
+                    <span className="num">{formatBytes(usage.bootTxBytes)}</span>
+                  </>,
+                ]}
+              />
             </p>
           </Section>
 
@@ -255,8 +268,17 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
             <div className="usage-chart-panel">
               <WeekChart days={usage.days} />
               <p className="text-meta usage-week-total">
-                Week total · <span className="num">{formatBytes(weekRx)}</span> down ·{' '}
-                <span className="num">{formatBytes(weekTx)}</span> up
+                <InlineMeta
+                  items={[
+                    'Week total',
+                    <>
+                      <span className="num">{formatBytes(weekRx)}</span> down
+                    </>,
+                    <>
+                      <span className="num">{formatBytes(weekTx)}</span> up
+                    </>,
+                  ]}
+                />
               </p>
             </div>
           </Section>

@@ -1,24 +1,47 @@
-import type { NetworkInfo } from '@/types'
+import type { DataUsageSummary, NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
-import ConnectionCard from '@/components/connection/ConnectionCard'
+import ConnectionCard, { canRunSpeedTest } from '@/components/connection/ConnectionCard'
 import CapabilityStrip from '@/components/capabilities/CapabilityStrip'
+import HomeStats from '@/components/home/HomeStats'
 import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
 import './HomeView.css'
 
 interface HomeViewProps {
   readonly info: NetworkInfo
+  readonly usage: DataUsageSummary
+  readonly usageLoading: boolean
+  readonly deviceCount: number | null
+  readonly deviceOnline: number | null
   readonly onOpenCapabilities: () => void
+  /** Switch to the Speed tab (where the running test's UI lives). */
+  readonly onRunSpeedTest: () => void
+  readonly onOpenUsage: () => void
+  readonly onOpenDevices: () => void
 }
 
-export default function HomeView({ info, onOpenCapabilities }: HomeViewProps): JSX.Element {
+export default function HomeView({
+  info,
+  usage,
+  usageLoading,
+  deviceCount,
+  deviceOnline,
+  onOpenCapabilities,
+  onRunSpeedTest,
+  onOpenUsage,
+  onOpenDevices,
+}: HomeViewProps): JSX.Element {
   const isConnected = isConnectedNetwork(info)
   // A speed test can be started from the Speed tab and keeps running across tab
   // switches, so the live panel still reflects it while you're on Home.
-  const { testing, capabilities, internetSpeed } = useSpeedTest()
+  const { testing, capabilities, runTest } = useSpeedTest()
   const { throughput: liveThroughput, history: liveHistory } = useLiveThroughput(isConnected)
-  const hasRunTest = internetSpeed != null
+
+  const handleRunTest = (): void => {
+    onRunSpeedTest() // jump to the Speed tab so the progress is visible
+    void runTest()
+  }
 
   return (
     <div className="view-page">
@@ -42,9 +65,24 @@ export default function HomeView({ info, onOpenCapabilities }: HomeViewProps): J
         />
       )}
 
-      {hasRunTest && (
-        <CapabilityStrip capabilities={capabilities} onOpenDetails={onOpenCapabilities} />
+      {(isConnected || capabilities.length > 0) && (
+        <CapabilityStrip
+          capabilities={capabilities}
+          canRunTest={canRunSpeedTest(info)}
+          testing={testing}
+          onOpenDetails={onOpenCapabilities}
+          onRunTest={handleRunTest}
+        />
       )}
+
+      <HomeStats
+        usage={usage}
+        usageLoading={usageLoading}
+        deviceCount={deviceCount}
+        deviceOnline={deviceOnline}
+        onOpenUsage={onOpenUsage}
+        onOpenDevices={onOpenDevices}
+      />
     </div>
   )
 }

@@ -34,3 +34,8 @@
   transform: translateY(-1px);
 }
 
+/* Run-test CTA in the empty state: a touch more air above the button. */
+.capability-run-btn {
+  margin-top: var(--gap-2xs);
+}
+

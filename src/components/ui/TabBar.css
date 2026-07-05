@@ -1,10 +1,12 @@
-.seg-control {
+.nav-rail {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
-  /* Match the center panel's inset (16px top, 12px sides) so the first nav item
-     lines up with the first content card and the rails feel balanced. */
-  padding: var(--gap-lg) var(--gap-md);
+  align-items: center;
+  gap: var(--gap-md);
+  /* Narrow icon-only rail. Horizontal padding is symmetric so the active pill
+     and the left accent bar read as evenly inset; top padding matches the
+     content area's so the first nav item aligns with the first widget. */
+  padding: var(--gap-md) 11px;
   background: var(--bg-app-2);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
@@ -13,48 +15,55 @@
   z-index: 100;
 }
 
-.seg-item {
+.nav-items {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: var(--gap-md);
+}
+
+.nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 68px;
-  /* Compact tap targets; horizontal padding stays tight so the label isn't
-     cramped against the pill edges. */
-  padding: var(--gap-sm) 3px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-micro);
-  font-weight: var(--weight-medium);
-  letter-spacing: -0.01em;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   color: var(--text-tertiary);
   transition:
     color var(--duration-fast) var(--ease-in-out),
     background var(--duration-fast) var(--ease-in-out);
 }
 
-.seg-icon {
+.nav-icon {
   flex-shrink: 0;
-  opacity: 0.9;
 }
 
-.seg-label {
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.seg-item:hover:not(.active) {
+.nav-item:hover:not(.active) {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.seg-item.active {
+.nav-item.active {
   background: var(--accent-muted);
   color: var(--accent);
-  font-weight: var(--weight-semibold);
 }
 
-.seg-item:focus-visible {
+/* Vertical accent bar hugging the rail's left edge next to the active item. */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.nav-item:focus-visible {
   outline: 1px solid var(--accent);
-  outline-offset: -1px;
+  outline-offset: 2px;
 }
