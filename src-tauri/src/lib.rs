@@ -368,10 +368,10 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
     let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &quit])?;
 
-    let icon = app
-        .default_window_icon()
-        .cloned()
-        .ok_or("no default window icon to use for the tray")?;
+    // A dedicated tray glyph: the bare Rss mark in accent blue on a transparent
+    // background — no rounded tile — so it sits flush in the menu bar / taskbar
+    // like other native tray icons rather than showing the boxed app icon.
+    let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
 
     TrayIconBuilder::with_id("main")
         .icon(icon)
@@ -392,6 +392,8 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState {
             speed_cancel: Mutex::new(None),
             usage: Mutex::new(None),

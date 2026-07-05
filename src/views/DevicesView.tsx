@@ -6,6 +6,7 @@ import {
   ComputerIcon,
   ConsoleIcon,
   DeviceIcon,
+  DevicesIcon,
   HelpIcon,
   NasIcon,
   PrinterIcon,
@@ -114,7 +115,7 @@ export default function DevicesView({
     <div className="view-page">
       <div className="view-header devices-header">
         <span className="view-header-icon">
-          <DeviceIcon size={18} />
+          <DevicesIcon size={18} />
         </span>
         <div className="devices-header-text">
           <span className="view-header-title">

@@ -9,6 +9,8 @@ import {
 import Subpage from '@/components/ui/Subpage'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
+import DirectionIcon from '@/components/ui/DirectionIcon'
+import type { SpeedSeries } from '@/components/traffic/SpeedReadout'
 import { EthernetIcon, GlobeIcon, HistoryIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
 
@@ -35,14 +37,19 @@ function Metric({
   label,
   value,
   unit,
+  series,
 }: {
   readonly label: string
   readonly value: string
   readonly unit?: string
+  readonly series?: SpeedSeries
 }): JSX.Element {
   return (
     <div className="history-metric">
-      <span className="field-label">{label}</span>
+      <span className="history-metric-label">
+        {series && <DirectionIcon series={series} size={13} />}
+        <span className="field-label">{label}</span>
+      </span>
       <span className="history-metric-value num">
         {value}
         {unit && <span className="history-metric-unit"> {unit}</span>}
@@ -64,8 +71,8 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
       </div>
 
       <div className="history-card-metrics">
-        <Metric label="Download" value={download.value} unit={download.unit} />
-        <Metric label="Upload" value={upload.value} unit={upload.unit} />
+        <Metric label="Download" value={download.value} unit={download.unit} series="down" />
+        <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
         <Metric
           label="Ping"
           value={validPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}

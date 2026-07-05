@@ -189,9 +189,7 @@ export default function SpeedView({
       <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
-        canRunTest={canRunSpeedTest(info)}
         onOpenDetails={() => setDetailsOpen(true)}
-        onRunTest={() => void runTest()}
       />
     </div>
   )

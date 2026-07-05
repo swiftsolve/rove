@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { splitSpeedMbps } from '@/lib/format'
 import { useCountUp } from '@/hooks/useCountUp'
+import DirectionIcon from '@/components/ui/DirectionIcon'
 import './SpeedReadout.css'
 
 export type SpeedSeries = 'down' | 'up'
@@ -25,7 +26,7 @@ function SpeedReadout({
   return (
     <div className={`speed-readout ${series}`}>
       <div className="speed-readout-label">
-        <span className={`speed-readout-key ${series}`} aria-hidden />
+        <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
       </div>
 

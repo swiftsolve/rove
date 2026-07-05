@@ -20,18 +20,18 @@ export default function Subpage({
 }: SubpageProps): JSX.Element {
   return (
     <div className="subpage">
-      <header className="subpage-head">
-        <div className="subpage-intro">
-          <button
-            type="button"
-            className="subpage-back"
-            onClick={onBack}
-            aria-label="Back"
-          >
-            <ArrowLeftIcon size={16} />
-          </button>
-          <h1 className="subpage-title">{title}</h1>
-          {description != null && <p className="subpage-desc text-hint">{description}</p>}
+      <header className="view-header subpage-head">
+        <button
+          type="button"
+          className="subpage-back"
+          onClick={onBack}
+          aria-label="Back"
+        >
+          <ArrowLeftIcon size={18} />
+        </button>
+        <div className="subpage-text">
+          <h1 className="view-header-title">{title}</h1>
+          {description != null && <p className="subpage-desc">{description}</p>}
         </div>
         {action != null && <div className="subpage-action">{action}</div>}
       </header>

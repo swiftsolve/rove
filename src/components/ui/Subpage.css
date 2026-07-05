@@ -1,41 +1,30 @@
 .subpage {
   display: flex;
   flex-direction: column;
+  gap: var(--gap-stack);
   animation: fade-in var(--duration-normal) var(--ease-out);
 }
 
+/* Mirror the top-level view header: chip on the left, title + subtitle, an
+   optional action, and the edge-to-edge divider (from .view-header) below. */
 .subpage-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--gap-md);
-  padding-bottom: var(--gap-md);
-}
-
-.subpage-intro {
-  flex: 1;
-  min-width: 0;
-  padding: 0 2px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: var(--gap-tight);
-  row-gap: 2px;
   align-items: center;
+  gap: var(--gap-md);
 }
 
+/* Chip-styled back button occupying the page icon's slot, so the subpage header
+   reads like the top-level views (see .view-header-icon: 38px box, 10px radius). */
 .subpage-back {
-  grid-column: 1;
-  grid-row: 1;
-  align-self: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  margin-left: -4px;
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
   transition:
     color var(--duration-fast) var(--ease-in-out),
     background var(--duration-fast) var(--ease-in-out);
@@ -46,23 +35,22 @@
   background: var(--bg-hover);
 }
 
+.subpage-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  min-width: 0;
+  flex: 1;
+}
+
+.subpage-desc {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
 .subpage-action {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-}
-
-.subpage-title {
-  grid-column: 2;
-  grid-row: 1;
-  font-size: var(--text-title);
-  font-weight: var(--weight-semibold);
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  min-width: 0;
-}
-
-.subpage-desc {
-  grid-column: 2;
-  grid-row: 2;
 }

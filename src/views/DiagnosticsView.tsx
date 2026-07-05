@@ -3,7 +3,7 @@ import { FAILED_PING } from '@/types'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { ActivityIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
+import { ConnectionIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
 import './DiagnosticsView.css'
 
@@ -46,7 +46,7 @@ export default function DiagnosticsView({
     <div className="view-page">
       <div className="view-header diag-header">
         <span className="view-header-icon">
-          <ActivityIcon size={18} />
+          <ConnectionIcon size={18} />
         </span>
         <div className="diag-header-text">
           <span className="view-header-title">Connection</span>
@@ -114,8 +114,8 @@ export default function DiagnosticsView({
           </Section>
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list">
-            {diagnostics?.dnsServers.length ? (
-              diagnostics.dnsServers.map((server) => (
+            {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (
+              (diagnostics?.dnsServers ?? []).map((server) => (
                 <DataRow key={server} label="Server" value={server} />
               ))
             ) : (

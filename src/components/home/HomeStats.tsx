@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import type { DataUsageSummary } from '@/types'
 import { splitBytes } from '@/lib/format'
-import { ChevronRightIcon, DeviceIcon, UsageIcon } from '@/components/ui/Icons'
+import { ChevronRightIcon, DevicesIcon, UsageIcon } from '@/components/ui/Icons'
+import DirectionIcon from '@/components/ui/DirectionIcon'
 import './HomeStats.css'
 
 interface StatCardProps {
@@ -39,7 +40,11 @@ function StatReadout({ label, keyClass, value, unit }: StatReadoutProps): JSX.El
   return (
     <div className="home-usage-readout">
       <div className="home-usage-readout-label">
-        <span className={`home-usage-key ${keyClass}`} aria-hidden />
+        {keyClass === 'online' ? (
+          <span className="home-usage-key online" aria-hidden />
+        ) : (
+          <DirectionIcon series={keyClass} />
+        )}
         <span className="field-label">{label}</span>
       </div>
       <div className="metric metric-compact num">
@@ -55,6 +60,7 @@ interface HomeStatsProps {
   readonly usageLoading: boolean
   readonly deviceCount: number | null
   readonly deviceOnline: number | null
+  readonly devicesLoading: boolean
   readonly onOpenUsage: () => void
   readonly onOpenDevices: () => void
 }
@@ -64,6 +70,7 @@ export default function HomeStats({
   usageLoading,
   deviceCount,
   deviceOnline,
+  devicesLoading,
   onOpenUsage,
   onOpenDevices,
 }: HomeStatsProps): JSX.Element {
@@ -97,10 +104,14 @@ export default function HomeStats({
         onOpen={onOpenUsage}
       />
       <StatCard
-        icon={<DeviceIcon size={15} />}
+        icon={<DevicesIcon size={15} />}
         label="Devices"
         body={
-          hasDevices ? (
+          devicesLoading && !hasDevices ? (
+            <div className="home-stat-loading" aria-hidden>
+              <div className="spinner" />
+            </div>
+          ) : hasDevices ? (
             <div className="home-usage-single" aria-hidden>
               <StatReadout
                 label="Online"
@@ -116,9 +127,11 @@ export default function HomeStats({
           )
         }
         ariaLabel={
-          hasDevices
-            ? `${deviceOnline != null ? `${deviceOnline} of ` : ''}${deviceCount} devices online. Open Devices.`
-            : 'Devices. Open Devices.'
+          devicesLoading && !hasDevices
+            ? 'Devices loading. Open Devices.'
+            : hasDevices
+              ? `${deviceOnline != null ? `${deviceOnline} of ` : ''}${deviceCount} devices online. Open Devices.`
+              : 'Devices. Open Devices.'
         }
         onOpen={onOpenDevices}
       />

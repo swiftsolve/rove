@@ -95,14 +95,6 @@
   flex-shrink: 0;
 }
 
-.home-usage-key.down {
-  background: var(--series-down);
-}
-
-.home-usage-key.up {
-  background: var(--series-up);
-}
-
 .home-usage-key.online {
   background: var(--positive);
 }
@@ -110,4 +102,15 @@
 /* Devices card: a single readout, sharing the usage card's top offset. */
 .home-usage-single {
   margin-top: var(--gap-md);
+}
+
+.home-stat-loading {
+  display: flex;
+  align-items: center;
+  margin-top: var(--gap-md);
+}
+
+.home-stat-loading .spinner {
+  width: 18px;
+  height: 18px;
 }

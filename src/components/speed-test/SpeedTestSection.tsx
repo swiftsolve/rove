@@ -3,6 +3,7 @@ import type { SpeedResult, SpeedTestProgress } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import Section from '@/components/ui/Section'
 import { InlineMeta } from '@/components/ui/DotSeparator'
+import DirectionIcon from '@/components/ui/DirectionIcon'
 import { useCountUp } from '@/hooks/useCountUp'
 import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedTestSection.css'
@@ -36,14 +37,20 @@ function ConnectionTag({ connection }: { readonly connection: SpeedTestConnectio
   )
 }
 
-function SpeedCell({ mbps }: { readonly mbps: number | null }): JSX.Element {
+function SpeedCell({
+  mbps,
+  placeholder = false,
+}: {
+  readonly mbps: number | null
+  readonly placeholder?: boolean
+}): JSX.Element {
   const animated = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animated)
 
   return (
-    <div className="metric num">
-      <span className="metric-value">{value}</span>
-      <span className="metric-unit">{unit}</span>
+    <div className={`metric num${placeholder ? ' is-empty' : ''}`}>
+      <span className="metric-value">{placeholder ? '…' : value}</span>
+      {!placeholder && <span className="metric-unit">{unit}</span>}
     </div>
   )
 }
@@ -194,6 +201,10 @@ function SpeedTestSection({
   liveUploadMbps,
 }: SpeedTestSectionProps): JSX.Element {
   const hasResults = internetSpeed != null
+  // Empty state: connected and idle, but no test has run yet. We still lay out
+  // the full metric grid with placeholder values so the empty and filled states
+  // share the same structure.
+  const isEmpty = !hasResults && !testing
   // While testing, show live (peak) throughput once a direction's phase has begun
   // (download at 15%, upload at 55%); otherwise show 0 so unset cells read as zero.
   const downloadCell = testing
@@ -209,57 +220,68 @@ function SpeedTestSection({
   const pingText =
     internetSpeed && Number.isFinite(internetSpeed.latencyMs) && internetSpeed.latencyMs < 999
       ? formatLatencyMs(internetSpeed.latencyMs)
-      : '—'
+      : isEmpty
+        ? '…'
+        : '—'
   const jitterText =
     internetSpeed && Number.isFinite(internetSpeed.jitterMs) && internetSpeed.jitterMs < 999
       ? formatLatencyMs(internetSpeed.jitterMs)
-      : '—'
-  const lossText = internetSpeed ? `${internetSpeed.packetLoss}%` : '—'
+      : isEmpty
+        ? '…'
+        : '—'
+  const lossText = internetSpeed ? `${internetSpeed.packetLoss}%` : isEmpty ? '…' : '—'
 
   return (
-    <Section title="Speed test" icon={<SpeedIcon size={15} />}>
+    <Section
+      title="Speed test"
+      icon={<SpeedIcon size={15} />}
+      action={isEmpty && canTest ? <span className="text-meta">No tests yet</span> : undefined}
+    >
       {error && <p className="inline-error">{error}</p>}
 
-      {!canTest && !testing && (
+      {!canTest && !testing ? (
         <div className="section-placeholder">
           <SpeedIcon size={24} className="section-placeholder-icon" />
           <p className="text-hint">Connect to Wi‑Fi or Ethernet to run a speed test.</p>
         </div>
-      )}
-
-      {!hasResults && !testing && canTest && (
-        <div className="section-placeholder">
-          <SpeedIcon size={24} className="section-placeholder-icon" />
-          <p className="text-hint">Measure your real download and upload speeds to the internet.</p>
-        </div>
-      )}
-
-      {(hasResults || testing) && (
+      ) : (
         <>
           <div className="bench-hero">
             <div className="bench-hero-cell">
-              <span className="field-label">Download</span>
-              <SpeedCell mbps={downloadCell} />
+              <div className="bench-hero-label">
+                <DirectionIcon series="down" />
+                <span className="field-label">Download</span>
+              </div>
+              <SpeedCell mbps={downloadCell} placeholder={isEmpty} />
             </div>
             <div className="bench-hero-cell">
-              <span className="field-label">Upload</span>
-              <SpeedCell mbps={uploadCell} />
+              <div className="bench-hero-label">
+                <DirectionIcon series="up" />
+                <span className="field-label">Upload</span>
+              </div>
+              <SpeedCell mbps={uploadCell} placeholder={isEmpty} />
             </div>
           </div>
 
-          {hasResults && !testing && (
+          {!testing && (
             <div className="bench-substats">
               <div className="bench-substat">
                 <span className="field-label">Ping</span>
-                <span className="bench-substat-value num">{pingText}</span>
+                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+                  {pingText}
+                </span>
               </div>
               <div className="bench-substat">
                 <span className="field-label">Jitter</span>
-                <span className="bench-substat-value num">{jitterText}</span>
+                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+                  {jitterText}
+                </span>
               </div>
               <div className="bench-substat">
                 <span className="field-label">Loss</span>
-                <span className="bench-substat-value num">{lossText}</span>
+                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+                  {lossText}
+                </span>
               </div>
             </div>
           )}
@@ -267,6 +289,7 @@ function SpeedTestSection({
           {testing ? (
             <TestProgress progress={progress} />
           ) : (
+            hasResults &&
             (connection != null || linkCapacityMbps != null) && (
               <div className="bench-footer">
                 <p className="text-meta bench-footnote">

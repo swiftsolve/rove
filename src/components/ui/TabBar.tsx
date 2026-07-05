@@ -1,6 +1,13 @@
-import { memo } from 'react'
+import { memo, type JSX } from 'react'
 import type { AppTab } from '@/navigation/tabs'
-import { TAB_DEFINITIONS } from '@/navigation/tabs'
+import {
+  ConnectionIcon,
+  DevicesIcon,
+  HomeIcon,
+  LayersIcon,
+  SpeedIcon,
+  UsageIcon,
+} from '@/components/ui/Icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import './TabBar.css'
 
@@ -9,7 +16,27 @@ interface TabBarProps {
   readonly onChange: (tab: AppTab) => void
 }
 
-function TabBar({ activeTab, onChange }: TabBarProps): JSX.Element {
+interface TabIconProps {
+  readonly size?: number
+  readonly className?: string
+}
+
+interface TabDefinition {
+  readonly id: AppTab
+  readonly label: string
+  readonly Icon: (props: TabIconProps) => JSX.Element
+}
+
+const TAB_DEFINITIONS: readonly TabDefinition[] = [
+  { id: 'home', label: 'Home', Icon: HomeIcon },
+  { id: 'speed', label: 'Speed', Icon: SpeedIcon },
+  { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
+  { id: 'devices', label: 'Devices', Icon: DevicesIcon },
+  { id: 'usage', label: 'Usage', Icon: UsageIcon },
+  { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
+]
+
+export default memo(function TabBar({ activeTab, onChange }: TabBarProps) {
   return (
     <nav className="nav-rail" aria-label="Main navigation">
       <div className="nav-items">
@@ -33,6 +60,4 @@ function TabBar({ activeTab, onChange }: TabBarProps): JSX.Element {
       </div>
     </nav>
   )
-}
-
-export default memo(TabBar)
+})

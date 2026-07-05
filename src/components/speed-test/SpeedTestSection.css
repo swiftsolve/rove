@@ -80,10 +80,26 @@
   color: var(--text-primary);
 }
 
+/* Empty state: metric grid laid out but no test has run — mute the placeholder
+   values so the labels lead and the "…" reads as pending, not zeroed. */
+.bench-substat-value.is-empty {
+  color: var(--text-tertiary);
+}
+
+.metric.is-empty .metric-value {
+  color: var(--text-tertiary);
+}
+
 .bench-hero-cell {
   display: flex;
   flex-direction: column;
   gap: var(--gap-sm);
+}
+
+.bench-hero-label {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
 }
 
 .bench-empty {

@@ -22,22 +22,48 @@
         "maximizable": false,
         "fullscreen": false,
         "decorations": false,
-        "backgroundColor": "#0a0b0e"
+        "transparent": true,
+        "shadow": true
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["appimage", "deb", "dmg", "nsis"],
+    "targets": ["appimage", "deb", "dmg", "nsis", "msi"],
+    "createUpdaterArtifacts": true,
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.png"],
     "category": "Utility",
     "linux": {
       "deb": {
-        "depends": ["libayatana-appindicator3-1"]
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libgtk-3-0",
+          "libayatana-appindicator3-1",
+          "iproute2",
+          "iputils-ping"
+        ]
+      },
+      "rpm": {
+        "depends": [
+          "webkit2gtk4.1",
+          "gtk3",
+          "libayatana-appindicator-gtk3",
+          "iproute",
+          "iputils"
+        ]
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENGM0E1QkI2QTA3NzBFMUQKUldRZERuZWd0bHM2enpsYXRuUXVNQ3QxTk8zbXdHc1o2czNSKzU1Rjl4NElzOGRMS2t3c1NETG0K",
+      "endpoints": [
+        "https://github.com/swiftsolve/beacon/releases/latest/download/latest.json"
+      ]
     }
   }
 }

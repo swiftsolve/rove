@@ -21,9 +21,19 @@
   padding-bottom: var(--gap-md);
 }
 
+/* Tinted chip behind the glyph — the same treatment the capability rows use,
+   colour-keyed to the level (glyph in the level colour, background a faint tint
+   of it). */
 .cap-detail-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   color: var(--text-tertiary);
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .cap-detail-icon.level-excellent { color: var(--positive); }
@@ -60,15 +70,24 @@
 }
 
 /* Verdict: the plain-language summary paired with a colour-keyed status, on the
-   darkest panel so it reads as the card's closing takeaway. */
+   darkest panel so it reads as the card's closing takeaway. Framed on three
+   sides (not the top) with the metrics section's inset colour, so the near-black
+   block is contained within — rather than bleeding to — the card edge, reading
+   as seamless with the section right above it. */
 .cap-detail-verdict {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-md);
   margin: 0 calc(-1 * var(--section-header-x));
-  padding: var(--gap-md) var(--section-header-x);
+  /* Trim the horizontal padding by the border width so the content stays aligned
+     with the metrics grid above (14px from the card edge). */
+  padding: var(--gap-md) calc(var(--section-header-x) - 1px) var(--gap-md);
   background: var(--bg-app);
+  border: 1px solid var(--bg-inset);
+  border-top: 0;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
 }
 
 .cap-detail-summary {

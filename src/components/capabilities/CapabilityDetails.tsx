@@ -35,11 +35,9 @@ function CapabilityDetailCard({
   return (
     <section className="cap-detail surface">
       <header className="cap-detail-head">
-        <CapabilityIcon
-          id={capability.id}
-          size={17}
-          className={`cap-detail-icon level-${capability.level}`}
-        />
+        <span className={`cap-detail-icon level-${capability.level}`}>
+          <CapabilityIcon id={capability.id} size={16} />
+        </span>
         <div className="cap-detail-headtext">
           <span className="cap-detail-name">{capability.label}</span>
           <span className="cap-detail-desc">{capability.description}</span>

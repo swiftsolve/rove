@@ -10,21 +10,6 @@
   margin-bottom: var(--gap-sm);
 }
 
-.speed-readout-key {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.speed-readout-key.down {
-  background: var(--series-down);
-}
-
-.speed-readout-key.up {
-  background: var(--series-up);
-}
-
 .speed-readout .metric-value {
   color: var(--text-primary);
 }
