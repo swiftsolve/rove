@@ -1,6 +1,6 @@
 {
   "name": "beacon",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Beacon — a desktop app for Wi-Fi and Ethernet network monitoring",
   "private": true,
   "type": "module",
