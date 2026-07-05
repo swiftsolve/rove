@@ -2,20 +2,16 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { invoke } from '@tauri-apps/api/core'
 import App from './App'
-import TrayPopover from '@/components/tray/TrayPopover'
 import './index.css'
 
 import { installTauriBridge, isTauri } from '@/bridge/tauriNetworkApi'
 import { migrateLegacySpeedHistory } from '@/components/speed-test/speed-history'
 
-// The tray popover is the same bundle loaded at `#/tray` in a second window.
-const isTrayPopover = window.location.hash.replace(/^#\/?/, '') === 'tray'
-
 // TEMP DIAGNOSTIC: forward any early JS error to the backend terminal and make
 // it visible on-screen instead of rendering a blank window.
 function reportDiag(msg: string): void {
   try {
-    void invoke('__diag', { msg: `[${isTrayPopover ? 'popover' : 'main'}] ${msg}` })
+    void invoke('__diag', { msg })
   } catch {
     /* not in Tauri */
   }
@@ -34,10 +30,7 @@ if (isTauri()) {
 }
 
 // Move any speed-test history left in localStorage into the database, once.
-// Only the main window owns that migration — the popover just reads live data.
-if (!isTrayPopover) {
-  void migrateLegacySpeedHistory()
-}
+void migrateLegacySpeedHistory()
 
 class DiagBoundary extends React.Component<
   { children: React.ReactNode },
@@ -72,6 +65,8 @@ class DiagBoundary extends React.Component<
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <DiagBoundary>{isTrayPopover ? <TrayPopover /> : <App />}</DiagBoundary>
+    <DiagBoundary>
+      <App />
+    </DiagBoundary>
   </React.StrictMode>,
 )

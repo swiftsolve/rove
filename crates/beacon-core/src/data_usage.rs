@@ -132,6 +132,10 @@ impl UsageTracker {
             }
             self.last_bytes.insert(name.clone(), ByteCounts { rx, tx });
         }
+        // Drop counters for interfaces that disappeared (Docker/VPN churn) so
+        // `last_bytes` doesn't grow without bound across a long session.
+        self.last_bytes
+            .retain(|name, _| networks.contains_key(name) && !crate::net_util::is_virtual_interface(name));
 
         if !self.first_sample_recorded {
             if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::net_util::now_ms()) {

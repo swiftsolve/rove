@@ -5,7 +5,7 @@ use beacon_core::{
     store::{KnownDevice, SpeedHistoryRecord, Store},
     types::*,
 };
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{
     menu::{Menu, MenuItem},
@@ -17,7 +17,10 @@ struct AppState {
     speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
     usage: Mutex<Option<UsageTracker>>,
     networks: Mutex<sysinfo::Networks>,
-    throughput_subscribers: AtomicUsize,
+    /// True while any UI consumer wants 1 Hz live-throughput samples. The
+    /// frontend ref-counts and toggles this; a bool avoids counter drift if
+    /// subscribe/unsubscribe calls ever get out of sync (e.g. Vite HMR).
+    throughput_active: AtomicBool,
     /// True once the system tray icon is live. Gates the close-to-tray
     /// behaviour: if the tray never came up (e.g. a Linux desktop with no
     /// StatusNotifier host), closing the window must actually quit so the user
@@ -153,31 +156,12 @@ fn get_known_devices(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<KnownDev
 
 #[tauri::command]
 fn subscribe_live_throughput(state: tauri::State<'_, AppState>) {
-    state.throughput_subscribers.fetch_add(1, Ordering::Relaxed);
+    state.throughput_active.store(true, Ordering::Relaxed);
 }
 
 #[tauri::command]
 fn unsubscribe_live_throughput(state: tauri::State<'_, AppState>) {
-    let subscribers = &state.throughput_subscribers;
-    let _ = subscribers.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| {
-        Some(n.saturating_sub(1))
-    });
-}
-
-/// Popover "Open Beacon": surface the main window and dismiss the popover.
-#[tauri::command]
-fn open_main_window(app: tauri::AppHandle) {
-    show_main_window(&app);
-    if let Some(popover) = app.get_webview_window("popover") {
-        let _ = popover.close();
-    }
-}
-
-/// Popover "Quit": exit the process for real (the only true way out once the
-/// window close button hides to tray).
-#[tauri::command]
-fn quit_app(app: tauri::AppHandle) {
-    app.exit(0);
+    state.throughput_active.store(false, Ordering::Relaxed);
 }
 
 /// TEMP DIAGNOSTIC: surface frontend errors in the dev terminal.
@@ -279,7 +263,7 @@ fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
         loop {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
             let state = handle.state::<AppState>();
-            let active = state.throughput_subscribers.load(Ordering::Relaxed) > 0;
+            let active = state.throughput_active.load(Ordering::Relaxed);
             if !active {
                 was_active = false;
                 continue;
@@ -398,7 +382,7 @@ pub fn run() {
             speed_cancel: Mutex::new(None),
             usage: Mutex::new(None),
             networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
-            throughput_subscribers: AtomicUsize::new(0),
+            throughput_active: AtomicBool::new(false),
             tray_active: AtomicBool::new(false),
         })
         .setup(|app| {
@@ -429,13 +413,6 @@ pub fn run() {
                     api.prevent_close();
                 }
             }
-            // The popover is a transient panel: dismiss it as soon as it loses
-            // focus (click elsewhere, switch apps), like a native menu. Closing
-            // (not hiding) means the next open builds a fresh, properly-painted
-            // webview — hidden-then-reshown webviews render blank on Wayland.
-            tauri::WindowEvent::Focused(false) if window.label() == "popover" => {
-                let _ = window.close();
-            }
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
@@ -454,8 +431,6 @@ pub fn run() {
             get_known_devices,
             subscribe_live_throughput,
             unsubscribe_live_throughput,
-            open_main_window,
-            quit_app,
             __diag,
         ])
         .run(tauri::generate_context!())
