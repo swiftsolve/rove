@@ -61,7 +61,6 @@ function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
           <span key={i} className={`signal-bar${i < filled ? ' on' : ''}`} />
         ))}
       </span>
-      <span className="text-meta signal-meter-label">{label}</span>
     </div>
   )
 }
@@ -69,7 +68,12 @@ function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
 function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
   return (
     <>
-      <DataRow label="Signal" value={formatWifiSignal(info.signalStrength, info.signalDbm)} />
+      <DataRow label="Signal">
+        <span className="signal-detail">
+          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
+          {formatWifiSignal(info.signalStrength, info.signalDbm)}
+        </span>
+      </DataRow>
       <DataRow label="Band" value={formatBand(info.frequency)} />
       <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
       <DataRow label="Security" value={formatDisplayValue(info.security)} />

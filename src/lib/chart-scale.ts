@@ -3,6 +3,9 @@ import { sanitizeRate } from '@/types'
 const MIN_SCALE_MBPS = 10
 const HEADROOM = 1.2
 const RECENT_PEAK_WINDOW = 20
+/** Short tail window — when it stays well below the longer peak, traffic has settled. */
+const TAIL_PEAK_WINDOW = 5
+const SETTLED_RATIO = 0.25
 
 /** Snap scale to readable axis steps so labels do not flicker. */
 export function roundNiceScale(mbps: number): number {
@@ -22,16 +25,40 @@ export function roundNiceScale(mbps: number): number {
   return Math.ceil(safe / 1000) * 1000
 }
 
-function recentPeak(download: readonly number[], upload: readonly number[]): number {
+function peakInWindow(
+  download: readonly number[],
+  upload: readonly number[],
+  window: number,
+): number {
   const count = download.length
   if (count === 0) return 0
 
-  const from = Math.max(0, count - RECENT_PEAK_WINDOW)
+  const from = Math.max(0, count - window)
   let peak = 0
   for (let index = from; index < count; index += 1) {
     peak = Math.max(peak, sanitizeRate(download[index] ?? 0), sanitizeRate(upload[index] ?? 0))
   }
   return peak
+}
+
+/** Peak for axis scaling — drops stale bursts once recent traffic has settled. */
+function trafficPeak(download: readonly number[], upload: readonly number[]): number {
+  const recent = peakInWindow(download, upload, RECENT_PEAK_WINDOW)
+  if (recent === 0) return 0
+
+  const tail = peakInWindow(download, upload, TAIL_PEAK_WINDOW)
+  const current = Math.max(
+    sanitizeRate(download.at(-1) ?? 0),
+    sanitizeRate(upload.at(-1) ?? 0),
+  )
+
+  // After a speed test or counter spike the 20 s window still holds the burst
+  // even though live traffic has returned to normal — scale to what's on the wire now.
+  if (tail < recent * SETTLED_RATIO && current < recent * SETTLED_RATIO) {
+    return Math.max(tail, current)
+  }
+
+  return recent
 }
 
 interface ResolveChartScaleOptions {
@@ -51,7 +78,7 @@ export function resolveChartScale(
   const { linkCapacityMbps, speedTestRunning = false } = options
   const hasLink = linkCapacityMbps != null && linkCapacityMbps > 0
   const linkScale = hasLink ? roundNiceScale(linkCapacityMbps) : null
-  const recent = recentPeak(download, upload)
+  const recent = trafficPeak(download, upload)
 
   if (speedTestRunning && linkScale != null) {
     return linkScale

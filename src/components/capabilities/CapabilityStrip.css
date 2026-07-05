@@ -1,0 +1,36 @@
+@import './capability-icon-tile.css';
+
+/* Top-placement tooltips must not be clipped by the section card. */
+.capability-strip-section.ui-section {
+  overflow: visible;
+}
+
+.capability-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Bleed past section body padding so icons span the full card width,
+     same pattern as live-chart-wrap. */
+  margin: 0 calc(-1 * var(--section-body));
+  padding: 0 var(--section-body);
+}
+
+.capability-strip > .tooltip-wrap {
+  flex: 0 0 auto;
+}
+
+.capability-strip-item {
+  width: 34px;
+  height: 34px;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.capability-strip-item:hover,
+.capability-strip-item:focus-visible {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  outline: none;
+  transform: translateY(-1px);
+}
+

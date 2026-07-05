@@ -1,6 +1,7 @@
 import type { NetworkInterfaceSummary } from '@/types'
 import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui/Icons'
 import DataRow from '@/components/ui/DataRow'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
 
@@ -54,6 +55,24 @@ function InterfacePanel({ iface }: { readonly iface: NetworkInterfaceSummary }):
   )
 }
 
+/** "1 Wi‑Fi · 1 Ethernet · 2 Virtual" — a per-category count of the interfaces. */
+function interfaceTypeSummary(interfaces: readonly NetworkInterfaceSummary[]): string {
+  const counts = { wifi: 0, ethernet: 0, virtual: 0, other: 0 }
+  for (const iface of interfaces) {
+    if (iface.isVirtual) counts.virtual++
+    else if (iface.connectionType === 'wifi') counts.wifi++
+    else if (iface.connectionType === 'ethernet') counts.ethernet++
+    else counts.other++
+  }
+
+  const parts: string[] = []
+  if (counts.wifi > 0) parts.push(`${counts.wifi} Wi‑Fi`)
+  if (counts.ethernet > 0) parts.push(`${counts.ethernet} Ethernet`)
+  if (counts.virtual > 0) parts.push(`${counts.virtual} Virtual`)
+  if (counts.other > 0) parts.push(`${counts.other} Other`)
+  return parts.join(' · ')
+}
+
 export default function InterfacesView({
   interfaces,
   isLoading,
@@ -64,21 +83,28 @@ export default function InterfacesView({
 
   return (
     <div className="view-page">
-      <div className="view-toolbar">
-        <span className="text-meta">
-          {interfaces.length > 0 &&
-            `${interfaces.length} ${interfaces.length === 1 ? 'interface' : 'interfaces'}`}
-        </span>
-        <button
-          type="button"
-          className="btn-icon btn-icon-secondary"
-          onClick={onRefresh}
-          disabled={isLoading}
-          title="Refresh"
-          aria-label="Refresh"
-        >
-          {refreshing ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
-        </button>
+      <div className="iface-header">
+        <div className="iface-header-text">
+          <span className="view-header-title">
+            {interfaces.length > 0
+              ? `${interfaces.length} ${interfaces.length === 1 ? 'interface' : 'interfaces'}`
+              : 'Interfaces'}
+          </span>
+          {interfaces.length > 0 && (
+            <span className="iface-header-sub">{interfaceTypeSummary(interfaces)}</span>
+          )}
+        </div>
+        <Tooltip content="Refresh">
+          <button
+            type="button"
+            className="btn-icon btn-icon-secondary"
+            onClick={onRefresh}
+            disabled={isLoading}
+            aria-label="Refresh"
+          >
+            {refreshing ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+          </button>
+        </Tooltip>
       </div>
 
       {error && <div className="error-banner">{error}</div>}

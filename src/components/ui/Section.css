@@ -43,7 +43,9 @@
 }
 
 .ui-section-body {
-  padding: var(--gap-sm) var(--section-body) var(--section-body);
+  /* A little top padding gives the content a touch more room below the title
+     than the title has above it — a slightly grounded heading. */
+  padding: var(--gap-xs) var(--section-body) var(--section-body);
 }
 
 .ui-section-body > .text-hint:first-child:last-child {

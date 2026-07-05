@@ -136,3 +136,28 @@ export function formatBytes(bytes: number): string {
   const { value, unit } = splitBytes(bytes)
   return `${value} ${unit}`
 }
+
+const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
+
+/** Absolute timestamp, e.g. "Jul 4, 8:30 PM" — matches speed history cards. */
+export function formatDateTime(timestamp: number): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(timestamp))
+}
+
+/** Relative timestamp for recent times; absolute date after 24 h. */
+export function formatTimeAgo(timestamp: number): string {
+  const elapsed = Date.now() - timestamp
+  if (elapsed >= TIME_AGO_RELATIVE_MS) return formatDateTime(timestamp)
+
+  const seconds = Math.round(elapsed / 1000)
+  if (seconds < 45) return 'just now'
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.round(minutes / 60)
+  return `${hours} h ago`
+}

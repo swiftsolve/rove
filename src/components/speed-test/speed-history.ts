@@ -24,6 +24,8 @@ function normalize(value: SpeedResult & { readonly timestamp: number }): SpeedHi
     ...value,
     connectionType: typeof raw.connectionType === 'string' ? raw.connectionType : 'unknown',
     networkName: typeof raw.networkName === 'string' ? raw.networkName : null,
+    linkSpeedMbps: typeof raw.linkSpeedMbps === 'number' ? raw.linkSpeedMbps : null,
+    frequency: typeof raw.frequency === 'number' ? raw.frequency : null,
   }
 }
 
@@ -82,11 +84,4 @@ export async function migrateLegacySpeedHistory(): Promise<void> {
   }
 }
 
-export function formatHistoryTimestamp(timestamp: number): string {
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(timestamp))
-}
+export { formatDateTime as formatHistoryTimestamp } from '@/lib/format'

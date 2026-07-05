@@ -1,3 +1,54 @@
+.diag-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  position: relative;
+  z-index: 20;
+}
+
+.diag-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  min-width: 0;
+  flex: 1;
+}
+
+
+.diag-header-sub {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  min-height: calc(var(--text-caption) * 1.35);
+}
+
+.diag-header-sub.show {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+.diag-header-status {
+  color: var(--text-tertiary);
+}
+
+.diag-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .diag-warning {
   margin-top: var(--gap-sm);
+}
+
+/* Tighter row rhythm for the Router readout — less vertical air between each
+   label/value pair than the default 8px. First/last stay flush to the body. */
+.diag-router .data-row {
+  padding: var(--gap-xs) 0;
+}
+
+.diag-router .data-row:first-child {
+  padding-top: 0;
+}
+
+.diag-router .data-row:last-child {
+  padding-bottom: 0;
 }

@@ -58,21 +58,32 @@ function KindIcon({ kind }: { readonly kind: LanDeviceKind }): JSX.Element {
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
   return (
     <section className={`ui-section device-row ${device.isGateway ? 'gateway' : ''}`}>
-      <div className="device-row-main">
-        <span className={`device-row-icon kind-${device.kind}`}>
-          <KindIcon kind={device.kind} />
-        </span>
-        <div className="device-row-text">
+      <span className={`device-row-icon kind-${device.kind}`}>
+        <KindIcon kind={device.kind} />
+      </span>
+      <div className="device-row-body">
+        <div className="device-row-top">
           <span className="text-title device-row-name">{deviceName(device)}</span>
-          {device.isGateway ? (
-            <span className="text-meta device-row-kind gateway">Gateway</span>
-          ) : (
-            device.kind !== 'unknown' && (
-              <span className="text-meta device-row-kind">
-                {LAN_DEVICE_KIND_LABELS[device.kind]}
-              </span>
-            )
-          )}
+          <span
+            className={`device-row-state ${device.reachable ? 'reachable' : 'stale'}`}
+            title={device.reachable ? 'Reachable' : 'Cached (may be offline)'}
+          >
+            <span className="device-row-dot" aria-hidden />
+            {device.reachable ? 'Online' : 'Cached'}
+          </span>
+        </div>
+
+        {device.isGateway ? (
+          <span className="text-meta device-row-kind gateway">Gateway</span>
+        ) : (
+          device.kind !== 'unknown' && (
+            <span className="text-meta device-row-kind">
+              {LAN_DEVICE_KIND_LABELS[device.kind]}
+            </span>
+          )
+        )}
+
+        <div className="device-row-bottom">
           <span className="text-meta device-row-mac">
             <span className="device-row-mac-addr">{device.mac.toUpperCase()}</span>
             {device.isRandomizedMac && !device.isGateway && !device.isSelf && (
@@ -81,17 +92,8 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
               </span>
             )}
           </span>
+          <span className="device-row-ip num">{device.ip}</span>
         </div>
-      </div>
-      <div className="device-row-meta">
-        <span
-          className={`device-row-state ${device.reachable ? 'reachable' : 'stale'}`}
-          title={device.reachable ? 'Reachable' : 'Cached (may be offline)'}
-        >
-          <span className="device-row-dot" aria-hidden />
-          {device.reachable ? 'Online' : 'Cached'}
-        </span>
-        <span className="device-row-ip num">{device.ip}</span>
       </div>
     </section>
   )
@@ -104,23 +106,31 @@ export default function DevicesView({
   onRescan,
 }: DevicesViewProps): JSX.Element {
   const devices = scan?.devices ?? []
+  const hasDevices = devices.length > 0
+  const subnet = scan?.subnet ?? null
   const rescanning = isScanning && devices.length > 0
 
   return (
     <div className="view-page">
       <div className="devices-header">
         <div className="devices-header-text">
-          <span className="devices-count">
-            {devices.length > 0
+          <span className="view-header-title">
+            {hasDevices
               ? `${devices.length} ${devices.length === 1 ? 'device' : 'devices'}`
               : 'Devices'}
           </span>
-          {devices.length > 0 && scan?.subnet && (
-            <span className="devices-subnet">
-              <span className="field-label">Subnet</span>
-              <span className="num">{scan.subnet}</span>
-            </span>
-          )}
+          {/* Always rendered so the title keeps its position; the subnet fades in
+             once the scan resolves, and a scanning hint fills the slot until then. */}
+          <span className={`devices-subnet${hasDevices && subnet ? ' show' : ''}`}>
+            {hasDevices && subnet ? (
+              <>
+                <span className="field-label">Subnet</span>
+                <span className="num">{subnet}</span>
+              </>
+            ) : (
+              <span className="devices-subnet-status">{isScanning ? 'Scanning…' : ' '}</span>
+            )}
+          </span>
         </div>
         <div className="devices-header-actions">
           <Tooltip content={SCAN_HINT}>
@@ -132,16 +142,17 @@ export default function DevicesView({
               <HelpIcon size={16} />
             </button>
           </Tooltip>
-          <button
-            type="button"
-            className="btn-icon btn-icon-secondary"
-            onClick={onRescan}
-            disabled={isScanning}
-            title="Scan again"
-            aria-label="Scan again"
-          >
-            {rescanning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
-          </button>
+          <Tooltip content="Scan again">
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              onClick={onRescan}
+              disabled={isScanning}
+              aria-label="Scan again"
+            >
+              {rescanning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+            </button>
+          </Tooltip>
         </div>
       </div>
 

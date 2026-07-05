@@ -19,9 +19,9 @@ function CapabilityRow({
   readonly onOpen: () => void
 }): JSX.Element {
   return (
-    <button type="button" className={`capability-row level-${capability.level}`} onClick={onOpen}>
+    <button type="button" className="capability-row" onClick={onOpen}>
       <div className="capability-row-main">
-        <span className="capability-icon-tile">
+        <span className={`capability-icon-tile level-${capability.level}`}>
           <CapabilityIcon id={capability.id} size={17} />
         </span>
         <div className="capability-row-text">

@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { splitSpeedMbps } from '@/lib/format'
+import { useCountUp } from '@/hooks/useCountUp'
 import './SpeedReadout.css'
 
 export type SpeedSeries = 'down' | 'up'
@@ -17,7 +18,9 @@ function SpeedReadout({
   series,
   compact = false,
 }: SpeedReadoutProps): JSX.Element {
-  const { value, unit } = splitSpeedMbps(mbps)
+  const animated = useCountUp(mbps)
+  const { value, unit } = splitSpeedMbps(animated)
+  const actual = splitSpeedMbps(mbps)
 
   return (
     <div className={`speed-readout ${series}`}>
@@ -28,7 +31,7 @@ function SpeedReadout({
 
       <div
         className={`metric num ${compact ? 'metric-compact' : ''}`}
-        aria-label={`${label}: ${value} ${unit}`}
+        aria-label={`${label}: ${actual.value} ${actual.unit}`}
       >
         <span className="metric-value">{value}</span>
         <span className="metric-unit">{unit}</span>

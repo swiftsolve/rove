@@ -12,6 +12,7 @@ macro_rules! static_regex {
 static_regex!(IW_SIGNAL, r"signal:\s*(-?\d+)");
 static_regex!(IW_SSID, r"SSID:\s*(.+)");
 static_regex!(IW_FREQ, r"freq:\s*(\d+)");
+static_regex!(IW_TX_BITRATE, r"tx bitrate:\s*([\d.]+)\s*MBit/s");
 static_regex!(IW_CHANNEL, r"channel\s+(\d+)");
 static_regex!(IW_CHANNEL_FREQ, r"channel\s+\d+\s+\((\d+)");
 static_regex!(ETHTOOL_SPEED, r"Speed:\s*(\d+)");
@@ -127,6 +128,12 @@ async fn linux_wifi_details(iface: &str) -> ConnectionDetails {
             d.ssid = first_match(&out, &IW_SSID).map(|s| s.trim().to_string());
         }
         d.frequency = d.frequency.or(first_int(&out, &IW_FREQ));
+        if d.link_speed_mbps.is_none() {
+            d.link_speed_mbps = first_match(&out, &IW_TX_BITRATE)
+                .and_then(|s| s.parse::<f64>().ok())
+                .map(|mbps| mbps.round() as i64)
+                .filter(|v| *v > 0);
+        }
     }
 
     if let Some(out) = try_run(&format!("iw dev {iface} info 2>/dev/null")).await {

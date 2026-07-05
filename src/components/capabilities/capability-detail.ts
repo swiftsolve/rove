@@ -30,24 +30,29 @@ function activityPhrase(label: string): string {
     .join(' ')
 }
 
+function metricPhrase(words: readonly string[]): string {
+  const phrase = listPhrase(words)
+  return phrase.charAt(0).toUpperCase() + phrase.slice(1)
+}
+
 function summarize(level: CapabilityLevel, label: string, failing: readonly string[]): string {
   const activity = activityPhrase(label)
 
   switch (level) {
     case 'excellent':
-      return `Your connection comfortably exceeds what ${activity} needs.`
+      return `Well above what ${activity} needs.`
     case 'good':
-      return `Your connection meets what ${activity} needs.`
+      return `Meets ${activity} requirements.`
     case 'fair':
       return failing.length > 0
-        ? `This should work, but your ${listPhrase(failing)} ${failing.length > 1 ? 'are' : 'is'} below the recommended level.`
-        : `This should work, though with little headroom.`
+        ? `${metricPhrase(failing)} below recommended.`
+        : `Works, but with little headroom.`
     case 'poor':
       return failing.length > 0
-        ? `Your ${listPhrase(failing)} ${failing.length > 1 ? 'are' : 'is'} below what ${activity} needs, so it may struggle.`
-        : `Your connection falls short of what ${activity} needs.`
+        ? `${metricPhrase(failing)} too low for ${activity}.`
+        : `Below what ${activity} needs.`
     case 'unsupported':
-      return `Your connection doesn't have the bandwidth or latency for ${activity}.`
+      return `Not enough for ${activity}.`
   }
 }
 

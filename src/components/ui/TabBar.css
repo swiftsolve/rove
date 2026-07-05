@@ -1,15 +1,16 @@
 .seg-control {
   display: flex;
   flex-direction: column;
-  /* Same 14px rhythm the content column stacks its cards at (--gap-stack), so
-     the sidebar and main panel share one vertical cadence. */
-  gap: var(--gap-stack);
+  gap: var(--gap-sm);
   /* Match the center panel's inset (16px top, 12px sides) so the first nav item
      lines up with the first content card and the rails feel balanced. */
   padding: var(--gap-lg) var(--gap-md);
   background: var(--bg-app-2);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
+  /* Sidebar chrome stays above the content column, like the title bar. */
+  position: relative;
+  z-index: 100;
 }
 
 .seg-item {
@@ -19,11 +20,9 @@
   justify-content: center;
   gap: 6px;
   width: 68px;
-  /* Hug the icon+label so the hover/active highlight doesn't balloon past the
-     content — half the 14px inter-item gap, a clean 2:1 rhythm. Without this the
-     highlight's 10px padding made hovered items look bloated and the spacing
-     read differently hovered vs. not. */
-  padding: 7px 3px;
+  /* Compact tap targets; horizontal padding stays tight so the label isn't
+     cramped against the pill edges. */
+  padding: var(--gap-sm) 3px;
   border-radius: var(--radius-sm);
   font-size: var(--text-micro);
   font-weight: var(--weight-medium);
@@ -56,6 +55,6 @@
 }
 
 .seg-item:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 1px solid var(--accent);
   outline-offset: -1px;
 }

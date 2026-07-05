@@ -5,35 +5,17 @@
 
 .tp-chart-plot {
   position: relative;
-  padding: 4px 30px 2px 0;
+  height: 80px;
 }
 
-.tp-chart-svg {
-  display: block;
-  width: 100%;
-  height: 72px;
-  shape-rendering: geometricPrecision;
-}
-
-.tp-gridline {
-  stroke: var(--border-strong);
-  stroke-width: 1;
-  stroke-opacity: 0.15;
-  vector-effect: non-scaling-stroke;
-}
-
-.tp-baseline {
-  stroke: var(--border-strong);
-  stroke-width: 1;
-  stroke-opacity: 0.2;
-  vector-effect: non-scaling-stroke;
-}
-
+/* Scale labels rendered as HTML rather than recharts ticks — recharts' own
+   tick labels ghost/duplicate when the domain changes. Inset matches the
+   AreaChart margin ({ top: 4, bottom: 4 }) so ticks line up with the plot. */
 .tp-chart-scale {
   position: absolute;
   top: 4px;
   right: 0;
-  height: 72px;
+  bottom: 4px;
   width: 26px;
   display: flex;
   flex-direction: column;
@@ -49,15 +31,19 @@
   transform: translateY(-50%);
 }
 
+/* Centre the last label on the bottom edge (the y=0 baseline), mirroring the
+   first label's -50% on the top edge, so it lines up with the reference line. */
 .tp-chart-scale span:last-child {
   transform: translateY(50%);
 }
 
+/* Matches .tp-chart-scale exactly so the x and y labels read as one set. */
 .tp-chart-axis {
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
-  padding-right: 30px;
+  padding-right: 26px;
   font-size: var(--text-micro);
+  line-height: 1;
   color: var(--text-tertiary);
 }

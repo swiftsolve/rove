@@ -21,17 +21,20 @@ export default function Subpage({
   return (
     <div className="subpage">
       <header className="subpage-head">
-        <button type="button" className="subpage-back" onClick={onBack}>
-          <ArrowLeftIcon size={16} />
-          Back
-        </button>
+        <div className="subpage-intro">
+          <button
+            type="button"
+            className="subpage-back"
+            onClick={onBack}
+            aria-label="Back"
+          >
+            <ArrowLeftIcon size={16} />
+          </button>
+          <h1 className="subpage-title">{title}</h1>
+          {description != null && <p className="subpage-desc text-hint">{description}</p>}
+        </div>
         {action != null && <div className="subpage-action">{action}</div>}
       </header>
-
-      <div className="subpage-intro">
-        <h1 className="subpage-title">{title}</h1>
-        {description != null && <p className="text-hint">{description}</p>}
-      </div>
 
       {children}
     </div>

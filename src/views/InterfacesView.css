@@ -1,3 +1,26 @@
+/* Page header matching the Devices view: a count as the title with a per-type
+   breakdown beneath it, and the action button aligned to the right. */
+.iface-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.iface-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  min-width: 0;
+  flex: 1;
+}
+
+
+.iface-header-sub {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
 .interface-list {
   display: flex;
   flex-direction: column;
@@ -8,7 +31,23 @@
    card — they need more room around the tile than a plain section title. */
 .iface-panel .ui-section-header {
   height: auto;
-  padding: var(--section-header-y) var(--section-header-x);
+  /* Trim the bottom pad: with no divider, the header pad + body pad stacked into
+     too big a gap below the name. */
+  padding: var(--section-header-y) var(--section-header-x) var(--gap-sm);
+  /* Entity cards read as one unit — no divider between the name and its fields. */
+  border-bottom: none;
+}
+
+/* No divider here, so the header sets most of the gap above the fields; a small
+   top pad adds a little breathing room between the name and the first label. */
+.iface-panel .ui-section-body {
+  padding-top: var(--gap-tight);
+}
+
+/* Interface cards carry only a few fields, so the default 8px row padding
+   leaves too much air between values. Tighten just these rows. */
+.iface-panel .data-row {
+  padding: var(--gap-xs) 0;
 }
 
 .iface-panel-icon {
@@ -38,6 +77,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Match the widget-title size (e.g. "Live traffic"), not the larger text-title.
+   The compound selector outranks the .text-title utility regardless of CSS
+   load order. */
+.iface-panel-name.text-title {
+  font-size: var(--text-section);
 }
 
 .iface-tag {

@@ -1,8 +1,15 @@
+/* Full-bleed inset panel at the card bottom — same treatment as live throughput chart. */
+.bench-progress,
+.bench-footer {
+  margin: var(--gap-lg) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  padding: var(--section-body);
+  background: var(--bg-inset);
+}
+
 .bench-progress {
   display: flex;
   flex-direction: column;
   gap: var(--gap-sm);
-  margin-top: var(--gap-lg);
 }
 
 .bench-progress-head {
@@ -26,20 +33,36 @@
 
 .bench-progress-track {
   width: 100%;
-  height: 4px;
-  border-radius: 99px;
-  background: var(--bg-inset);
-  overflow: hidden;
 }
 
-.bench-progress-fill {
-  height: 100%;
-  border-radius: 99px;
-  background: var(--accent);
-  transition: width var(--duration-normal) var(--ease-out);
+/* Material-style wavy progress: a scrolling squiggle with a dot at its end. */
+.wavy-progress {
+  display: block;
+  width: 100%;
+  height: 16px;
+  line-height: 0;
 }
 
+.wavy-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wavy-dot {
+  fill: var(--accent);
+}
+
+/* Pin the action button into the card's top-right corner with the same 16px
+   inset as the right edge — centring it in the fixed-height header left it
+   closer to the top (~9px) than the right (16px). Absolute so the title's
+   position is untouched; .ui-section (contain: content) is the containing box. */
 .bench-actions {
+  position: absolute;
+  top: var(--section-body);
+  right: var(--section-body);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -80,13 +103,25 @@
   font-size: var(--text-display-sm);
 }
 
+/* Footer strip under the results: connection left, link speed right. */
+.bench-footer {
+  display: flex;
+  align-items: center;
+}
+
 .bench-footnote {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: var(--gap-md);
+  justify-content: space-between;
+  gap: var(--gap-md);
+  width: 100%;
+  min-width: 0;
   font-size: var(--text-caption);
+}
+
+.bench-footnote-link {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .bench-conn {
@@ -99,7 +134,3 @@
 
 .bench-conn.conn-wifi svg { color: var(--series-down); }
 .bench-conn.conn-ethernet svg { color: var(--positive); }
-
-.bench-footnote-sep {
-  color: var(--text-tertiary);
-}
