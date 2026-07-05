@@ -3,19 +3,22 @@ import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
 import ConnectionCard from '@/components/connection/ConnectionCard'
+import CapabilityStrip from '@/components/capabilities/CapabilityStrip'
 import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
 import './HomeView.css'
 
 interface HomeViewProps {
   readonly info: NetworkInfo
+  readonly onOpenCapabilities: () => void
 }
 
-export default function HomeView({ info }: HomeViewProps): JSX.Element {
+export default function HomeView({ info, onOpenCapabilities }: HomeViewProps): JSX.Element {
   const isConnected = isConnectedNetwork(info)
   // A speed test can be started from the Speed tab and keeps running across tab
   // switches, so the live panel still reflects it while you're on Home.
-  const { testing } = useSpeedTest()
+  const { testing, capabilities, internetSpeed } = useSpeedTest()
   const { throughput: liveThroughput, history: liveHistory } = useLiveThroughput(isConnected)
+  const hasRunTest = internetSpeed != null
 
   return (
     <div className="view-page">
@@ -37,6 +40,10 @@ export default function HomeView({ info }: HomeViewProps): JSX.Element {
           speedTestRunning={testing}
           linkCapacityMbps={getLinkCapacityMbps(info)}
         />
+      )}
+
+      {hasRunTest && (
+        <CapabilityStrip capabilities={capabilities} onOpenDetails={onOpenCapabilities} />
       )}
     </div>
   )

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/capability/2",
   "identifier": "default",
-  "description": "Main window: events for progress/throughput, frameless window controls",
-  "windows": ["main"],
+  "description": "Main window + tray popover: events for progress/throughput, frameless window controls",
+  "windows": ["main", "popover"],
   "permissions": [
     "core:default",
     "core:event:default",

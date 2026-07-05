@@ -16,5 +16,9 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    watch: {
+      // The Rust build output isn't source; watching it exhausts inotify.
+      ignored: ['**/target/**', '**/src-tauri/target/**'],
+    },
   },
 })

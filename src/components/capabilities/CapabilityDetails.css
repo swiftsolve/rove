@@ -1,66 +1,96 @@
 .cap-detail-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-md);
+  gap: var(--gap-lg);
 }
 
 .cap-detail {
-  padding: var(--section-body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--section-header-y) var(--section-header-x) 0;
+}
+
+/* Title row + summary share the card's top padding; the metrics sit in the
+   inset panel below, matching connection-card details and speed-test substats. */
+.cap-detail-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  padding-bottom: var(--gap-md);
 }
 
 .cap-detail-head {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--gap-tight);
 }
 
 .cap-detail-icon {
-  color: var(--text-tertiary);
   flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.cap-detail-icon.level-excellent { color: var(--positive); }
+.cap-detail-icon.level-good { color: #7fd88a; }
+.cap-detail-icon.level-fair { color: var(--warning); }
+.cap-detail-icon.level-poor { color: #f0a35e; }
+.cap-detail-icon.level-unsupported { color: var(--text-tertiary); }
+
+.cap-detail-head .capability-status {
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--gap-tight);
+}
+
+/* Bars sit at the bottom of the 12px meter box; nudge up to match label center
+   (same fix as ConnectionCard .signal-detail .signal-bars). */
+.cap-detail-head .capability-status .capability-meter {
+  transform: translateY(-2px);
 }
 
 .cap-detail-name {
   flex: 1;
   min-width: 0;
-  font-size: var(--text-body);
+  font-size: var(--text-section);
   font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .cap-detail-summary {
-  margin: 8px 0 0;
   font-size: var(--text-small);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
-/* All four requirements shown as a compact metric grid — your value colours red
+/* All four requirements in a compact metric grid — your value colours red
    only when it misses the threshold, which stays a small muted line. */
 .cap-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--gap-sm);
-  margin-top: 14px;
+  gap: var(--gap-md) var(--gap-sm);
+  margin: 0 calc(-1 * var(--section-header-x));
+  padding: var(--gap-md) var(--section-header-x);
+  background: var(--bg-inset);
 }
 
 .cap-metric {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-2xs);
+  gap: var(--gap-tight);
   min-width: 0;
 }
 
-.cap-metric-label {
-  font-size: var(--text-micro);
-  font-weight: var(--weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-tertiary);
+.cap-metric .field-label {
+  line-height: 1.15;
 }
 
 .cap-metric-value {
-  font-size: var(--text-small);
+  font-size: var(--text-body);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
+  line-height: 1.25;
   white-space: nowrap;
 }
 
@@ -69,7 +99,8 @@
 }
 
 .cap-metric-need {
-  font-size: var(--text-micro);
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
+  line-height: 1.2;
   white-space: nowrap;
 }

@@ -2,6 +2,7 @@ import type { NetworkDiagnostics } from '@/types'
 import { FAILED_PING } from '@/types'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
 import './DiagnosticsView.css'
@@ -38,9 +39,39 @@ export default function DiagnosticsView({
   onRun,
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
+  const hasDiagnostics = diagnostics != null
+  const refreshing = isRunning && hasDiagnostics
 
   return (
     <div className="view-page">
+      <div className="diag-header">
+        <div className="diag-header-text">
+          <span className="view-header-title">Connection</span>
+          <span className={`diag-header-sub${hasDiagnostics && !isRunning ? ' show' : ''}`}>
+            {isRunning ? (
+              <span className="diag-header-status">Checking…</span>
+            ) : hasDiagnostics ? (
+              'Router latency and DNS servers'
+            ) : (
+              <span className="diag-header-status">&nbsp;</span>
+            )}
+          </span>
+        </div>
+        <div className="diag-header-actions">
+          <Tooltip content="Run again">
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              onClick={onRun}
+              disabled={isRunning}
+              aria-label="Run again"
+            >
+              {refreshing ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+
       {error && <div className="error-banner">{error}</div>}
 
       {isRunning && !diagnostics ? (
@@ -53,25 +84,8 @@ export default function DiagnosticsView({
           <Section
             title="Router"
             icon={<RouterIcon size={15} />}
-            bodyClassName={isRunning ? 'is-loading row-list' : 'row-list'}
-            action={
-              <button
-                type="button"
-                className="btn-icon btn-icon-secondary"
-                onClick={onRun}
-                disabled={isRunning}
-                title="Test again"
-                aria-label="Test again"
-              >
-                {isRunning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
-              </button>
-            }
+            bodyClassName="row-list diag-router"
           >
-            {isRunning && (
-              <div className="section-loading">
-                <div className="spinner" />
-              </div>
-            )}
             <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
             <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
             <DataRow label="Latency">

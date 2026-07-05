@@ -4,11 +4,7 @@
 }
 
 .tooltip-bubble {
-  position: absolute;
-  top: calc(100% + 6px);
-  z-index: 60;
   width: max-content;
-  max-width: 260px;
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   background: var(--bg-panel-hi);
@@ -19,6 +15,12 @@
   line-height: 1.5;
   text-align: left;
   white-space: normal;
+  pointer-events: none;
+}
+
+.tooltip-bubble-portal {
+  position: fixed;
+  z-index: 9999;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-3px);
@@ -26,19 +28,9 @@
     opacity 0.12s ease,
     transform 0.12s ease,
     visibility 0.12s;
-  pointer-events: none;
 }
 
-/* Pin to the trigger's near edge and grow inward, away from the window edge. */
-.tooltip-right .tooltip-bubble {
-  right: 0;
-}
-.tooltip-left .tooltip-bubble {
-  left: 0;
-}
-
-.tooltip-wrap:hover .tooltip-bubble,
-.tooltip-wrap:focus-within .tooltip-bubble {
+.tooltip-bubble-portal.is-visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);

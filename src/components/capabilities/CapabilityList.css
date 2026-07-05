@@ -1,3 +1,5 @@
+@import './capability-icon-tile.css';
+
 .capability-row {
   display: flex;
   align-items: center;
@@ -57,25 +59,10 @@
   line-height: 1.3;
 }
 
-/* Icon chip tinted by the capability's level, so the rating reads at a glance
-   from the icon, the meter bars, and the label together. */
 .capability-icon-tile {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 32px;
   height: 32px;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor 14%, transparent);
 }
-
-.capability-row.level-excellent .capability-icon-tile { color: var(--positive); }
-.capability-row.level-good .capability-icon-tile { color: #7fd88a; }
-.capability-row.level-fair .capability-icon-tile { color: var(--warning); }
-.capability-row.level-poor .capability-icon-tile { color: #f0a35e; }
-.capability-row.level-unsupported .capability-icon-tile { color: var(--text-tertiary); }
 
 /* Meter + chevron are one right-aligned unit, so every row's rating column
    lines up regardless of name/description length. */

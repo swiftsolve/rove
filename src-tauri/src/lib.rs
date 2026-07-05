@@ -7,13 +7,22 @@ use beacon_core::{
 };
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
-use tauri::{Emitter, Manager};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::TrayIconBuilder,
+    Emitter, Manager,
+};
 
 struct AppState {
     speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
     usage: Mutex<Option<UsageTracker>>,
     networks: Mutex<sysinfo::Networks>,
     throughput_subscribers: AtomicUsize,
+    /// True once the system tray icon is live. Gates the close-to-tray
+    /// behaviour: if the tray never came up (e.g. a Linux desktop with no
+    /// StatusNotifier host), closing the window must actually quit so the user
+    /// isn't left with an invisible, unreachable process.
+    tray_active: AtomicBool,
 }
 
 /// Lock a mutex, recovering the guard on poison instead of panicking. A single
@@ -153,6 +162,28 @@ fn unsubscribe_live_throughput(state: tauri::State<'_, AppState>) {
     let _ = subscribers.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| {
         Some(n.saturating_sub(1))
     });
+}
+
+/// Popover "Open Beacon": surface the main window and dismiss the popover.
+#[tauri::command]
+fn open_main_window(app: tauri::AppHandle) {
+    show_main_window(&app);
+    if let Some(popover) = app.get_webview_window("popover") {
+        let _ = popover.close();
+    }
+}
+
+/// Popover "Quit": exit the process for real (the only true way out once the
+/// window close button hides to tray).
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
+/// TEMP DIAGNOSTIC: surface frontend errors in the dev terminal.
+#[tauri::command]
+fn __diag(msg: String) {
+    eprintln!("Beacon[js]: {msg}");
 }
 
 
@@ -318,6 +349,47 @@ fn spawn_route_monitor(handle: tauri::AppHandle) {
     });
 }
 
+/// Reveal the main window and pull it to the foreground.
+fn show_main_window(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+/// Build the system tray icon and its menu. The menu (Open / Quit) is the whole
+/// interaction: it's a native menu, so it renders identically and reliably on
+/// Windows, macOS and every Linux desktop — no custom webview panel to paint.
+/// Returns an error if the platform can't host a tray, letting the caller fall
+/// back to quit-on-close.
+fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let open = MenuItem::with_id(app, "open", "Open Beacon", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&open, &quit])?;
+
+    let icon = app
+        .default_window_icon()
+        .cloned()
+        .ok_or("no default window icon to use for the tray")?;
+
+    TrayIconBuilder::with_id("main")
+        .icon(icon)
+        .tooltip("Beacon")
+        .menu(&menu)
+        // Show the menu on a left-click too (not just right-click), so a single
+        // click always surfaces Open / Quit on every platform.
+        .show_menu_on_left_click(true)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "open" => show_main_window(app),
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .build(app)?;
+
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .manage(AppState {
@@ -325,14 +397,44 @@ pub fn run() {
             usage: Mutex::new(None),
             networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
             throughput_subscribers: AtomicUsize::new(0),
+            tray_active: AtomicBool::new(false),
         })
         .setup(|app| {
             let handle = app.handle().clone();
             init_store(app);
             spawn_usage_sampler(handle.clone());
             spawn_throughput_broadcaster(handle.clone());
-            spawn_route_monitor(handle);
+            spawn_route_monitor(handle.clone());
+
+            // If the tray comes up, closing the window will hide to tray;
+            // otherwise we leave close-to-quit intact so the app stays reachable.
+            match build_tray(&handle) {
+                Ok(()) => app.state::<AppState>().tray_active.store(true, Ordering::Relaxed),
+                Err(err) => eprintln!(
+                    "Beacon: system tray unavailable ({err}); the window close button will quit the app"
+                ),
+            }
+
             Ok(())
+        })
+        .on_window_event(|window, event| match event {
+            // Main window's close button hides to tray (when the tray is live)
+            // instead of quitting the app.
+            tauri::WindowEvent::CloseRequested { api, .. } if window.label() == "main" => {
+                let app = window.app_handle();
+                if app.state::<AppState>().tray_active.load(Ordering::Relaxed) {
+                    let _ = window.hide();
+                    api.prevent_close();
+                }
+            }
+            // The popover is a transient panel: dismiss it as soon as it loses
+            // focus (click elsewhere, switch apps), like a native menu. Closing
+            // (not hiding) means the next open builds a fresh, properly-painted
+            // webview — hidden-then-reshown webviews render blank on Wayland.
+            tauri::WindowEvent::Focused(false) if window.label() == "popover" => {
+                let _ = window.close();
+            }
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             get_network_info,
@@ -350,6 +452,9 @@ pub fn run() {
             get_known_devices,
             subscribe_live_throughput,
             unsubscribe_live_throughput,
+            open_main_window,
+            quit_app,
+            __diag,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Beacon");

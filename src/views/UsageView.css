@@ -1,3 +1,35 @@
+.usage-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  position: relative;
+  z-index: 20;
+}
+
+.usage-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  min-width: 0;
+  flex: 1;
+}
+
+.usage-header-sub {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  min-height: calc(var(--text-caption) * 1.35);
+}
+
+.usage-header-sub.show {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+.usage-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .usage-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -32,114 +64,19 @@
 
 /* ---- Week chart ---- */
 
+/* Full-bleed darker panel that fills the bottom of the card, matching the live
+   traffic chart: bleed left/right/bottom past the section body padding to the
+   card edges; the card's overflow:hidden rounds the bottom corners. */
+.usage-chart-panel {
+  margin: 0 calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  padding: var(--section-body);
+  background: var(--bg-inset);
+}
+
 .usage-chart-wrap {
   position: relative;
 }
 
-.usage-chart {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: var(--gap-sm);
-  padding: var(--gap-sm) var(--gap-xs) 0;
-}
-
-.usage-day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gap-sm);
-  min-width: 0;
-  padding-top: var(--gap-tight);
-  border-radius: var(--radius-sm);
-  cursor: default;
-  transition:
-    background var(--duration-fast) var(--ease-in-out),
-    opacity var(--duration-fast) var(--ease-in-out);
-}
-
-.usage-day.active {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* Fade the other columns so the hovered one stands out. */
-.usage-day.dimmed {
-  opacity: 0.4;
-}
-
-/* ---- Hover tooltip ---- */
-
-.usage-tooltip {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 10px;
-  min-width: 116px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-panel-hi);
-  box-shadow: var(--shadow-raised);
-  pointer-events: none;
-  animation: fade-in var(--duration-fast) var(--ease-out);
-}
-
-.usage-tooltip-day {
-  font-size: var(--text-caption);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.usage-tooltip-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.usage-tooltip-value {
-  font-size: var(--text-small);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
-}
-
-.usage-tooltip-dir {
-  font-size: var(--text-micro);
-  color: var(--text-tertiary);
-}
-
-.usage-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: var(--gap-xs);
-  width: 100%;
-}
-
-.usage-bar {
-  width: 9px;
-  border-radius: 2px 2px 1px 1px;
-}
-
-.usage-bar.down { background: var(--series-down); }
-.usage-bar.up { background: var(--series-up); }
-
-.usage-day-label {
-  font-size: var(--text-micro);
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
-
-.usage-day-label.today {
-  color: var(--text-secondary);
-  font-weight: var(--weight-medium);
-}
-
 .usage-week-total {
   margin-top: var(--gap-md);
-}
-
-.usage-note {
-  padding: 0 2px;
 }

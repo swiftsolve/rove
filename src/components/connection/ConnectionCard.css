@@ -17,8 +17,8 @@
 }
 
 .conn-strip:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -3px;
+  outline: 1px solid var(--accent);
+  outline-offset: -2px;
   border-radius: var(--radius);
 }
 
@@ -28,7 +28,7 @@
 
 .conn-strip-icon,
 .conn-chevron,
-.signal-meter {
+.conn-strip > .signal-meter {
   align-self: center;
   flex-shrink: 0;
 }
@@ -103,11 +103,16 @@
   overflow: hidden;
 }
 
-/* Full-width separator between the header strip and the expanded details.
-   Border sits on the edge-to-edge element; content is inset via padding. */
+/* Dark inset panel below the header — same treatment as live-chart-wrap /
+   bench-footer: full card width, square top edge, card overflow rounds bottom. */
 .conn-details-wrap.open .conn-details {
   padding: var(--section-header-y) var(--section-body);
-  border-top: 1px solid var(--border);
+  background: var(--bg-inset);
+}
+
+/* Match the tighter row rhythm of the interface cards' fields. */
+.conn-details .data-row {
+  padding: var(--gap-xs) 0;
 }
 
 .signal-meter {
@@ -143,6 +148,17 @@
   background: currentColor;
 }
 
-.signal-meter-label {
-  white-space: nowrap;
+/* Expanded "Signal" row: the meter bars sit alongside the status text, so the
+   quality reads inside the details rather than beside the header title.
+   Block flex (not inline-flex) avoids extra line-box strut height inside
+   .text-value, which otherwise misaligns the bars with the label text. */
+.signal-detail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-sm);
+}
+
+.signal-detail .signal-bars {
+  transform: translateY(-2px);
 }

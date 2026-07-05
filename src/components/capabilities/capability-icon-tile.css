@@ -1,0 +1,16 @@
+/* Shared tinted icon chip — level class sets the accent color. */
+.capability-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.capability-icon-tile.level-excellent { color: var(--positive); }
+.capability-icon-tile.level-good { color: #7fd88a; }
+.capability-icon-tile.level-fair { color: var(--warning); }
+.capability-icon-tile.level-poor { color: #f0a35e; }
+.capability-icon-tile.level-unsupported { color: var(--text-tertiary); }

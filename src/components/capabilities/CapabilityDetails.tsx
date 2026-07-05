@@ -3,11 +3,13 @@ import { explainCapability } from '@/components/capabilities/capability-detail'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Subpage from '@/components/ui/Subpage'
+import { formatTimeAgo } from '@/lib/format'
 import './CapabilityDetails.css'
 
 interface CapabilityDetailsProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly speed: SpeedResult
+  readonly completedAt: number | null
   readonly onBack: () => void
 }
 
@@ -22,18 +24,24 @@ function CapabilityDetailCard({
 
   return (
     <section className="cap-detail surface">
-      <header className="cap-detail-head">
-        <CapabilityIcon id={capability.id} size={16} className="cap-detail-icon" />
-        <span className="cap-detail-name">{capability.label}</span>
-        <CapabilityMeter level={capability.level} />
-      </header>
+      <div className="cap-detail-intro">
+        <header className="cap-detail-head">
+          <CapabilityIcon
+            id={capability.id}
+            size={17}
+            className={`cap-detail-icon level-${capability.level}`}
+          />
+          <span className="cap-detail-name">{capability.label}</span>
+          <CapabilityMeter level={capability.level} />
+        </header>
 
-      <p className="cap-detail-summary">{summary}</p>
+        <p className="cap-detail-summary">{summary}</p>
+      </div>
 
       <div className="cap-metrics">
         {checks.map((check) => (
           <div key={check.label} className={`cap-metric ${check.pass ? 'pass' : 'fail'}`}>
-            <span className="cap-metric-label">{check.label}</span>
+            <span className="field-label">{check.label}</span>
             <span className="cap-metric-value num">{check.have}</span>
             <span className="cap-metric-need">{check.need}</span>
           </div>
@@ -46,12 +54,15 @@ function CapabilityDetailCard({
 export default function CapabilityDetails({
   capabilities,
   speed,
+  completedAt,
   onBack,
 }: CapabilityDetailsProps): JSX.Element {
   return (
     <Subpage
       title="Capabilities"
-      description="How your last speed test measured up against what each activity needs."
+      description={
+        completedAt != null ? `Updated ${formatTimeAgo(completedAt)}` : undefined
+      }
       onBack={onBack}
     >
       <div className="cap-detail-list">

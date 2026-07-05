@@ -84,6 +84,10 @@
   background: var(--bg-app-2);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
+  /* Chrome sits above the scrollable content so nothing (buttons, tooltips,
+     escaped absolutes) can ever paint over the title bar. */
+  position: relative;
+  z-index: 100;
 }
 
 .status-bar-brand {

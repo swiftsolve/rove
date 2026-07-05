@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { DailyUsage, DataUsageSummary } from '@/types'
 import { formatBytes, splitBytes } from '@/lib/format'
 import Section from '@/components/ui/Section'
-import { ArrowDownIcon, ArrowUpIcon, UsageIcon } from '@/components/ui/Icons'
+import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
+import { ArrowDownIcon, ArrowUpIcon, HelpIcon, UsageIcon } from '@/components/ui/Icons'
 import './UsageView.css'
+
+const USAGE_INFO_HINT =
+  'Usage is measured while Beacon is running, across all physical network interfaces.'
 
 interface UsageViewProps {
   readonly usage: DataUsageSummary
@@ -11,8 +15,12 @@ interface UsageViewProps {
   readonly error?: string | null
 }
 
-const CHART_HEIGHT = 96
-const MIN_BAR_PX = 2
+interface UsageDatum {
+  readonly key: string
+  readonly label: string
+  readonly down: number
+  readonly up: number
+}
 
 function dayLabel(dateKey: string, isLast: boolean): string {
   if (isLast) return 'Today'
@@ -47,42 +55,98 @@ function BytesMetric({
   )
 }
 
-function ChartTooltip({
-  day,
-  isToday,
-  leftPercent,
+function UsageTooltip({
+  active,
+  payload,
 }: {
-  readonly day: DailyUsage
-  readonly isToday: boolean
-  readonly leftPercent: number
-}): JSX.Element {
-  // Keep the popup inside the chart even for the edge columns.
-  const clamped = Math.min(Math.max(leftPercent, 20), 80)
+  readonly active?: boolean
+  readonly payload?: ReadonlyArray<{ readonly payload: UsageDatum }>
+}): JSX.Element | null {
+  const point = active ? payload?.[0]?.payload : undefined
+  if (!point) return null
+  // Nothing transferred that day — skip the tooltip rather than showing "0 B / 0 B".
+  if (point.down === 0 && point.up === 0) return null
 
   return (
-    <div className="usage-tooltip" style={{ left: `${clamped}%` }} aria-hidden>
-      <div className="usage-tooltip-day">{dayLabel(day.date, isToday)}</div>
-      <div className="usage-tooltip-row">
-        <span className="usage-key down" aria-hidden />
-        <span className="usage-tooltip-value num">{formatBytes(day.rxBytes)}</span>
-        <span className="usage-tooltip-dir">down</span>
+    <div className="chart-tip">
+      <div className="chart-tip-title">{point.label}</div>
+      <div className="chart-tip-row">
+        <span className="chart-tip-dot down" aria-hidden />
+        <span className="chart-tip-label">Download</span>
+        <span className="chart-tip-value num">{formatBytes(point.down)}</span>
       </div>
-      <div className="usage-tooltip-row">
-        <span className="usage-key up" aria-hidden />
-        <span className="usage-tooltip-value num">{formatBytes(day.txBytes)}</span>
-        <span className="usage-tooltip-dir">up</span>
+      <div className="chart-tip-row">
+        <span className="chart-tip-dot up" aria-hidden />
+        <span className="chart-tip-label">Upload</span>
+        <span className="chart-tip-value num">{formatBytes(point.up)}</span>
       </div>
     </div>
   )
 }
 
-function WeekChart({ days }: { readonly days: readonly DailyUsage[] }): JSX.Element {
-  const [hovered, setHovered] = useState<number | null>(null)
-  const peak = Math.max(...days.map((day) => Math.max(day.rxBytes, day.txBytes)), 1)
-  const scale = (bytes: number): number =>
-    bytes <= 0 ? 0 : Math.max((bytes / peak) * CHART_HEIGHT, MIN_BAR_PX)
+/** X-axis tick that emphasises "Today". */
+function DayTick({
+  x,
+  y,
+  payload,
+}: {
+  readonly x?: number
+  readonly y?: number
+  readonly payload?: { readonly value?: string }
+}): JSX.Element {
+  const value = payload?.value ?? ''
+  const isToday = value === 'Today'
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={12}
+      textAnchor="middle"
+      fill={isToday ? 'var(--text-secondary)' : 'var(--text-tertiary)'}
+      fontSize={10}
+      fontWeight={isToday ? 500 : 400}
+    >
+      {value}
+    </text>
+  )
+}
 
-  const hoveredDay = hovered != null ? days[hovered] : undefined
+/** Hovered-bar highlight: the bar itself, capped with a dot at its top — the
+ *  same marker language as the line charts' endpoint dots, rather than a grey
+ *  box behind the whole day. Paired with `cursor={false}` so there's no pill. */
+const renderActiveBar =
+  (color: string) =>
+  ({
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+  }: {
+    readonly x?: number
+    readonly y?: number
+    readonly width?: number
+    readonly height?: number
+  }): JSX.Element => (
+    <g>
+      <rect x={x} y={y} width={width} height={height} rx={2} ry={2} fill={color} />
+      <circle
+        cx={x + width / 2}
+        cy={y}
+        r={3}
+        fill={color}
+        stroke="var(--text-primary)"
+        strokeWidth={1.5}
+      />
+    </g>
+  )
+
+function WeekChart({ days }: { readonly days: readonly DailyUsage[] }): JSX.Element {
+  const data: UsageDatum[] = days.map((day, index) => ({
+    key: day.date,
+    label: dayLabel(day.date, index === days.length - 1),
+    down: day.rxBytes,
+    up: day.txBytes,
+  }))
 
   const chartLabel =
     'Data used per day, last 7 days. ' +
@@ -94,32 +158,40 @@ function WeekChart({ days }: { readonly days: readonly DailyUsage[] }): JSX.Elem
       .join('. ')
 
   return (
-    <div className="usage-chart-wrap" onMouseLeave={() => setHovered(null)}>
-      {hovered != null && hoveredDay && (
-        <ChartTooltip
-          day={hoveredDay}
-          isToday={hovered === days.length - 1}
-          leftPercent={((hovered + 0.5) / days.length) * 100}
-        />
-      )}
-
-      <div className="usage-chart" role="img" aria-label={chartLabel}>
-        {days.map((day, index) => (
-          <div
-            key={day.date}
-            className={`usage-day${hovered === index ? ' active' : ''}${hovered != null && hovered !== index ? ' dimmed' : ''}`}
-            onMouseEnter={() => setHovered(index)}
-          >
-            <div className="usage-bars" style={{ height: CHART_HEIGHT }}>
-              <span className="usage-bar down" style={{ height: scale(day.rxBytes) }} />
-              <span className="usage-bar up" style={{ height: scale(day.txBytes) }} />
-            </div>
-            <span className={`usage-day-label${index === days.length - 1 ? ' today' : ''}`}>
-              {dayLabel(day.date, index === days.length - 1)}
-            </span>
-          </div>
-        ))}
-      </div>
+    <div className="usage-chart-wrap" role="img" aria-label={chartLabel}>
+      <ResponsiveContainer width="100%" height={124}>
+        <BarChart
+          data={data}
+          margin={{ top: 8, right: 4, bottom: 0, left: 4 }}
+          barCategoryGap="26%"
+          barGap={3}
+        >
+          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={<DayTick />} interval={0} />
+          <YAxis hide domain={[0, 'dataMax']} />
+          <Tooltip
+            content={<UsageTooltip />}
+            cursor={false}
+            wrapperStyle={{ outline: 'none' }}
+            isAnimationActive={false}
+          />
+          <Bar
+            dataKey="down"
+            fill="var(--series-down)"
+            radius={[2, 2, 1, 1]}
+            maxBarSize={9}
+            isAnimationActive={false}
+            activeBar={renderActiveBar('var(--series-down)')}
+          />
+          <Bar
+            dataKey="up"
+            fill="var(--series-up)"
+            radius={[2, 2, 1, 1]}
+            maxBarSize={9}
+            isAnimationActive={false}
+            activeBar={renderActiveBar('var(--series-up)')}
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   )
 }
@@ -128,43 +200,68 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
   const today = usage.days[usage.days.length - 1]
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)
   const weekTx = usage.days.reduce((sum, day) => sum + day.txBytes, 0)
+  const hasData = usage.days.length > 0
 
-  if (isLoading && usage.days.length === 0) {
-    return (
-      <div className="view-empty">
-        <div className="spinner" />
-        <p className="text-muted">Loading usage…</p>
-      </div>
-    )
-  }
+  const subtitle =
+    isLoading && !hasData
+      ? 'Loading…'
+      : 'Download and upload across all interfaces'
 
   return (
     <div className="view-page">
-      {error && <div className="error-banner" role="alert">{error}</div>}
-      <Section title="Today" icon={<UsageIcon size={15} />}>
-        <div className="usage-hero">
-          <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
-          <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
+      <div className="usage-header">
+        <div className="usage-header-text">
+          <span className="view-header-title">Usage</span>
+          <span className={`usage-header-sub${!(isLoading && !hasData) ? ' show' : ''}`}>
+            {subtitle}
+          </span>
         </div>
-        <p className="text-meta usage-session">
-          Since boot · <ArrowDownIcon size={11} className="usage-inline-icon" />{' '}
-          <span className="num">{formatBytes(usage.bootRxBytes)}</span> ·{' '}
-          <ArrowUpIcon size={11} className="usage-inline-icon" />{' '}
-          <span className="num">{formatBytes(usage.bootTxBytes)}</span>
-        </p>
-      </Section>
+        <div className="usage-header-actions">
+          <UiTooltip content={USAGE_INFO_HINT}>
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              aria-label="About usage measurement"
+            >
+              <HelpIcon size={16} />
+            </button>
+          </UiTooltip>
+        </div>
+      </div>
 
-      <Section title="Last 7 days">
-        <WeekChart days={usage.days} />
-        <p className="text-meta usage-week-total">
-          Week total · <span className="num">{formatBytes(weekRx)}</span> down ·{' '}
-          <span className="num">{formatBytes(weekTx)}</span> up
-        </p>
-      </Section>
+      {error && <div className="error-banner" role="alert">{error}</div>}
 
-      <p className="text-hint usage-note">
-        Usage is measured while Beacon is running, across all physical network interfaces.
-      </p>
+      {isLoading && !hasData ? (
+        <div className="view-empty">
+          <div className="spinner" />
+          <p className="text-muted">Loading usage…</p>
+        </div>
+      ) : (
+        <>
+          <Section title="Today" icon={<UsageIcon size={15} />}>
+            <div className="usage-hero">
+              <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
+              <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
+            </div>
+            <p className="text-meta usage-session">
+              Since boot · <ArrowDownIcon size={11} className="usage-inline-icon" />{' '}
+              <span className="num">{formatBytes(usage.bootRxBytes)}</span> ·{' '}
+              <ArrowUpIcon size={11} className="usage-inline-icon" />{' '}
+              <span className="num">{formatBytes(usage.bootTxBytes)}</span>
+            </p>
+          </Section>
+
+          <Section title="Last 7 days">
+            <div className="usage-chart-panel">
+              <WeekChart days={usage.days} />
+              <p className="text-meta usage-week-total">
+                Week total · <span className="num">{formatBytes(weekRx)}</span> down ·{' '}
+                <span className="num">{formatBytes(weekTx)}</span> up
+              </p>
+            </div>
+          </Section>
+        </>
+      )}
     </div>
   )
 }

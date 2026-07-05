@@ -11,23 +11,29 @@
 .devices-header-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--gap-tight);
   min-width: 0;
   flex: 1;
 }
 
-.devices-count {
-  font-size: var(--text-section);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  line-height: 1.2;
-}
 
 .devices-subnet {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
   font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  /* Reserve the line's height even while it only holds the scanning hint, so
+     the title above never shifts when the subnet resolves. */
+  min-height: calc(var(--text-caption) * 1.35);
+}
+
+/* Fade the subnet in the moment it resolves (class toggles on → animation runs). */
+.devices-subnet.show {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+.devices-subnet-status {
   color: var(--text-tertiary);
 }
 
@@ -46,20 +52,37 @@
 
 .device-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--gap-md);
+  /* Icon pinned to the top-left; the body column fills the rest. */
+  align-items: flex-start;
+  gap: 12px;
   padding: var(--section-header-y) var(--section-header-x);
 }
 
-.device-row-main {
+.device-row-body {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: var(--gap-xs);
   min-width: 0;
-  /* Take the width the meta column doesn't, so the name has room to breathe
-     before it needs to wrap. */
   flex: 1;
+}
+
+/* Top row: name on the left, online/cached status aligned to the right. */
+.device-row-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  /* A touch more air below the (larger) name so the type subtitle doesn't read
+     cramped against it — on top of the body's base 4px row gap. */
+  margin-bottom: var(--gap-2xs);
+}
+
+/* Bottom row: MAC on the left, IP pinned to the bottom-right. */
+.device-row-bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
 }
 
 .device-row-icon {
@@ -108,23 +131,24 @@
   background: rgba(52, 211, 153, 0.1);
 }
 
-.device-row-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  min-width: 0;
-}
-
 /* Let a long name use up to two lines rather than truncating; the card grows
-   to fit. */
+   to fit. Takes the row width the status doesn't. */
 .device-row-name {
   min-width: 0;
+  flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
+}
+
+/* Match the widget-title size (e.g. "Capabilities"), not the larger text-title.
+   The compound selector outranks the .text-title utility regardless of CSS
+   load order. */
+.device-row-name.text-title {
+  font-size: var(--text-section);
 }
 
 /* Device category as a subtitle line beneath the name — a step brighter than
@@ -169,21 +193,15 @@
   transform: translateY(-50%);
 }
 
-.device-row-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--gap-xs);
-  flex-shrink: 0;
-}
-
 .device-row-ip {
+  flex-shrink: 0;
   color: var(--text-secondary);
 }
 
 .device-row-state {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   gap: var(--gap-tight);
   color: var(--text-tertiary);
   font-size: var(--text-small);

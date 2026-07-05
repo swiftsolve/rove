@@ -86,9 +86,17 @@ const INITIAL_STATE: LiveThroughputState = {
   isIdle: true,
 }
 
+/**
+ * Persisted at module scope so the live chart keeps its accumulated history when
+ * Home unmounts on a tab switch and remounts on return — otherwise the graph
+ * would blank out and slowly refill from empty each time you come back.
+ */
+let cachedState: LiveThroughputState = INITIAL_STATE
+let cachedIdle: IdleTracker = { isIdle: true, lowSince: null }
+
 export function useLiveThroughput(enabled: boolean): LiveThroughputState {
-  const [state, setState] = useState<LiveThroughputState>(INITIAL_STATE)
-  const idleRef = useRef<IdleTracker>({ isIdle: true, lowSince: null })
+  const [state, setState] = useState<LiveThroughputState>(() => cachedState)
+  const idleRef = useRef<IdleTracker>(cachedIdle)
 
   useEffect(() => {
     const api = window.networkAPI
@@ -115,18 +123,19 @@ export function useLiveThroughput(enabled: boolean): LiveThroughputState {
           throughput.timestamp,
         )
         idleRef.current = idle
+        cachedIdle = idle
 
-        return { throughput, history, isIdle: idle.isIdle }
+        const next = { throughput, history, isIdle: idle.isIdle }
+        cachedState = next
+        return next
       })
     }
 
     const detach = attachThroughput(api, handleUpdate)
 
-    return () => {
-      detach()
-      idleRef.current = { isIdle: true, lowSince: null }
-      setState(INITIAL_STATE)
-    }
+    // Keep the accumulated history in the module cache on unmount so navigating
+    // away and back doesn't blank the chart.
+    return detach
   }, [enabled])
 
   return state

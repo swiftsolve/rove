@@ -91,6 +91,7 @@ function StatusBar({
 
 export default function App(): JSX.Element {
   const [activeTab, setActiveTab] = useState<AppTab>('home')
+  const [speedOpenDetails, setSpeedOpenDetails] = useState(false)
   const { info, error, isLoading, refresh } = useNetworkInfo()
 
   const isConnected = info ? isConnectedNetwork(info) : false
@@ -140,9 +141,23 @@ export default function App(): JSX.Element {
                 <LoadingScreen error={isLoading ? null : error} onRetry={() => void refresh()} />
               )}
 
-              {info && activeTab === 'home' && <HomeView info={info} />}
+              {info && activeTab === 'home' && (
+                <HomeView
+                  info={info}
+                  onOpenCapabilities={() => {
+                    setSpeedOpenDetails(true)
+                    setActiveTab('speed')
+                  }}
+                />
+              )}
 
-              {info && activeTab === 'speed' && <SpeedView info={info} />}
+              {info && activeTab === 'speed' && (
+                <SpeedView
+                  info={info}
+                  openDetailsInitially={speedOpenDetails}
+                  onDetailsOpened={() => setSpeedOpenDetails(false)}
+                />
+              )}
 
               {activeTab === 'interfaces' && (
                 <InterfacesView

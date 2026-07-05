@@ -7,6 +7,7 @@ import {
   type SpeedHistoryEntry,
 } from '@/components/speed-test/speed-history'
 import Subpage from '@/components/ui/Subpage'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { EthernetIcon, GlobeIcon, HistoryIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
 
@@ -103,15 +104,16 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
       onBack={onBack}
       action={
         entries.length > 0 ? (
-          <button
-            type="button"
-            className="btn-icon btn-icon-secondary"
-            onClick={handleClear}
-            title="Clear history"
-            aria-label="Clear history"
-          >
-            <TrashIcon size={15} />
-          </button>
+          <Tooltip content="Clear history">
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              onClick={handleClear}
+              aria-label="Clear history"
+            >
+              <TrashIcon size={15} />
+            </button>
+          </Tooltip>
         ) : undefined
       }
     >

@@ -6,8 +6,8 @@ export const CHART_WINDOW_MS = THROUGHPUT_HISTORY_LENGTH * 1_000
 
 export function formatChartWindowLabel(): string {
   const seconds = CHART_WINDOW_MS / 1000
-  if (seconds >= 120 && seconds % 60 === 0) return `−${seconds / 60}m`
-  return `−${seconds}s`
+  if (seconds >= 120 && seconds % 60 === 0) return `${seconds / 60}m ago`
+  return `${seconds}s ago`
 }
 
 export interface ThroughputHistory {

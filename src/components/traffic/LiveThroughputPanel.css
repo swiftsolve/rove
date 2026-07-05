@@ -8,10 +8,11 @@
 .live-chart-wrap {
   /* Fill the whole bottom of the card: bleed left/right/bottom out past the
      section body's padding to the card edges. The card's overflow:hidden rounds
-     the bottom corners; the top stays rounded where it meets the readouts. */
+     the bottom corners; the top edge stays square where it meets the readouts. */
   margin: 0 calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
-  padding: var(--gap-sm);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  /* Inset the graph + labels by the card's own padding so they line up with the
+     title and readouts above, even though the panel background is full-bleed. */
+  padding: var(--section-body);
   background: var(--bg-inset);
 }
 
@@ -25,7 +26,7 @@
 }
 
 .live-badge.live {
-  color: var(--series-down);
+  color: var(--positive);
 }
 
 .live-badge.live::before {
@@ -38,11 +39,3 @@
   animation: status-pulse 2s ease-in-out infinite;
 }
 
-.live-panel .tp-chart-plot {
-  padding-top: 4px;
-  padding-right: 30px;
-}
-
-.live-panel .tp-chart-scale {
-  top: 4px;
-}
