@@ -342,12 +342,40 @@ fn show_main_window(app: &tauri::AppHandle) {
     }
 }
 
+/// Install a GLib log handler that drops warnings from the
+/// `libayatana-appindicator` domain, silencing the library's runtime
+/// deprecation notice without affecting any other log output. Idempotent in
+/// practice — `build_tray` is only called once — but installing twice would
+/// merely stack a second identical filter.
+#[cfg(target_os = "linux")]
+fn suppress_appindicator_deprecation_warning() {
+    glib::log_set_handler(
+        Some("libayatana-appindicator"),
+        glib::LogLevels::LEVEL_WARNING,
+        false, // not fatal
+        false, // no recursion
+        |_domain, _level, _message| {
+            // Intentionally swallow: the deprecation targets upstream, not us.
+        },
+    );
+}
+
 /// Build the system tray icon and its menu. The menu (Open / Quit) is the whole
 /// interaction: it's a native menu, so it renders identically and reliably on
 /// Windows, macOS and every Linux desktop — no custom webview panel to paint.
 /// Returns an error if the platform can't host a tray, letting the caller fall
 /// back to quit-on-close.
 fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    // On Linux, tray-icon drives libayatana-appindicator3 (the GTK variant),
+    // which prints a deprecation WARNING to stderr the first time it's touched:
+    //   "libayatana-appindicator is deprecated. Please use
+    //    libayatana-appindicator-glib in newly written code."
+    // That advice targets upstream tao/tray-icon, not us — there's no glib-only
+    // tray API exposed here — so the message is pure noise. Swallow just that
+    // one log domain's warnings (everything else still prints normally).
+    #[cfg(target_os = "linux")]
+    suppress_appindicator_deprecation_warning();
+
     let open = MenuItem::with_id(app, "open", "Open Beacon", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &quit])?;
@@ -375,6 +403,31 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
 }
 
 pub fn run() {
+    // WebKitGTK's GPU-accelerated compositor stalls on the NVIDIA proprietary
+    // driver: it waits on a frame callback the driver never delivers, so the
+    // webview paints its first frame and then only repaints on input — async
+    // DOM updates (a network scan finishing, live data arriving) never reach the
+    // screen, and at worst the whole window looks frozen on launch. The fix,
+    // verified on NVIDIA + Wayland, is two env settings that must go together:
+    //
+    //   * WEBKIT_DISABLE_COMPOSITING_MODE — drop off the accelerated compositor
+    //     so repaints flush synchronously instead of waiting on that callback.
+    //   * GDK_BACKEND=x11 — the non-composited path doesn't work under the GTK
+    //     Wayland backend (it freezes); running on XWayland makes it work.
+    //
+    // The window is also opaque (`transparent: false` in tauri.conf.json): with
+    // the compositor off, a transparent window comes up only intermittently.
+    // Both vars respect an explicit override and are no-ops on macOS/Windows.
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
+            std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+        }
+        if std::env::var_os("GDK_BACKEND").is_none() {
+            std::env::set_var("GDK_BACKEND", "x11");
+        }
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())

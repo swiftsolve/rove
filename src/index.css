@@ -52,8 +52,6 @@
   --radius: 13px;
   --radius-sm: 8px;
   --radius-xs: 5px;
-  /* Outer window corner radius for the frameless, transparent shell. */
-  --radius-window: 12px;
 
   /* One padding value on every axis so cards read as evenly inset, matching the
      14px gap the cards stack at (--gap-stack). */
