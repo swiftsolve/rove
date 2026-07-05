@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { checkForUpdates } from '@/lib/updater'
 import { isConnectedNetwork } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
@@ -94,6 +95,11 @@ export default function App(): JSX.Element {
   const [speedOpenDetails, setSpeedOpenDetails] = useState(false)
   const { info, error, isLoading, refresh } = useNetworkInfo()
 
+  // Check for a newer signed release once, shortly after launch.
+  useEffect(() => {
+    void checkForUpdates()
+  }, [])
+
   const isConnected = info ? isConnectedNetwork(info) : false
   // Identity of the current network — when it changes, tab data caches keyed on
   // it are invalidated so we never show the previous network's devices/results.
@@ -154,6 +160,7 @@ export default function App(): JSX.Element {
                   usageLoading={usageLoading}
                   deviceCount={deviceCount}
                   deviceOnline={deviceOnline}
+                  devicesLoading={devicesScanning}
                   onOpenCapabilities={() => {
                     setSpeedOpenDetails(true)
                     setActiveTab('speed')

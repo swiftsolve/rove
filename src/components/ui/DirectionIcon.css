@@ -1,0 +1,13 @@
+.direction-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.direction-icon.down {
+  color: var(--series-down);
+}
+
+.direction-icon.up {
+  color: var(--series-up);
+}

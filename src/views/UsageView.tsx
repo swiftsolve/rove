@@ -4,7 +4,8 @@ import { formatBytes, splitBytes } from '@/lib/format'
 import Section from '@/components/ui/Section'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
-import { ArrowDownIcon, ArrowUpIcon, HelpIcon, UsageIcon } from '@/components/ui/Icons'
+import { ArrowDownIcon, ArrowUpIcon, HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/ui/Icons'
+import DirectionIcon from '@/components/ui/DirectionIcon'
 import './UsageView.css'
 
 const USAGE_INFO_HINT =
@@ -45,7 +46,7 @@ function BytesMetric({
   return (
     <div className="usage-metric">
       <div className="usage-metric-label">
-        <span className={`usage-key ${series}`} aria-hidden />
+        <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
       </div>
       <div className="metric num" aria-label={`${label}: ${value} ${unit}`}>
@@ -72,12 +73,12 @@ function UsageTooltip({
     <div className="chart-tip">
       <div className="chart-tip-title">{point.label}</div>
       <div className="chart-tip-row">
-        <span className="chart-tip-dot down" aria-hidden />
+        <DirectionIcon series="down" size={13} />
         <span className="chart-tip-label">Download</span>
         <span className="chart-tip-value num">{formatBytes(point.down)}</span>
       </div>
       <div className="chart-tip-row">
-        <span className="chart-tip-dot up" aria-hidden />
+        <DirectionIcon series="up" size={13} />
         <span className="chart-tip-label">Upload</span>
         <span className="chart-tip-value num">{formatBytes(point.up)}</span>
       </div>
@@ -242,12 +243,12 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
         </div>
       ) : (
         <>
-          <Section title="Today" icon={<UsageIcon size={15} />}>
+          <Section title="Today" icon={<TodayIcon size={15} />}>
             <div className="usage-hero">
               <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
               <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
             </div>
-            <p className="text-meta usage-session">
+            <p className="text-meta usage-footer">
               <InlineMeta
                 items={[
                   'Since boot',
@@ -264,23 +265,21 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
             </p>
           </Section>
 
-          <Section title="Last 7 days">
-            <div className="usage-chart-panel">
-              <WeekChart days={usage.days} />
-              <p className="text-meta usage-week-total">
-                <InlineMeta
-                  items={[
-                    'Week total',
-                    <>
-                      <span className="num">{formatBytes(weekRx)}</span> down
-                    </>,
-                    <>
-                      <span className="num">{formatBytes(weekTx)}</span> up
-                    </>,
-                  ]}
-                />
-              </p>
-            </div>
+          <Section title="Last 7 days" icon={<WeekIcon size={15} />}>
+            <WeekChart days={usage.days} />
+            <p className="text-meta usage-footer">
+              <InlineMeta
+                items={[
+                  'Week total',
+                  <>
+                    <span className="num">{formatBytes(weekRx)}</span> down
+                  </>,
+                  <>
+                    <span className="num">{formatBytes(weekTx)}</span> up
+                  </>,
+                ]}
+              />
+            </p>
           </Section>
         </>
       )}

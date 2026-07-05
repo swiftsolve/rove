@@ -43,40 +43,24 @@
   margin-bottom: 4px;
 }
 
-.usage-key {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.usage-key.down { background: var(--series-down); }
-.usage-key.up { background: var(--series-up); }
-
-.usage-session {
-  margin-top: var(--gap-md);
-}
-
 .usage-inline-icon {
   vertical-align: -1px;
   color: var(--text-tertiary);
 }
 
-/* ---- Week chart ---- */
-
-/* Full-bleed darker panel that fills the bottom of the card, matching the live
-   traffic chart: bleed left/right/bottom past the section body padding to the
-   card edges; the card's overflow:hidden rounds the bottom corners. */
-.usage-chart-panel {
-  margin: 0 calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
-  padding: var(--section-body);
+/* Footer strip: the summary meta on its own panel, one shade darker than the
+   card, bleeding to the card's left/right/bottom edges (the card's
+   overflow:hidden rounds the bottom corners). A hairline separates it from the
+   content above. Used by both the Today and Last-7-days cards. */
+.usage-footer {
+  margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  padding: var(--gap-sm) var(--section-body);
   background: var(--bg-inset);
+  border-top: 1px solid var(--border);
 }
+
+/* ---- Week chart ---- */
 
 .usage-chart-wrap {
   position: relative;
-}
-
-.usage-week-total {
-  margin-top: var(--gap-md);
 }

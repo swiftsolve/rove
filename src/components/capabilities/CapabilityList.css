@@ -1,14 +1,5 @@
 @import './capability-icon-tile.css';
 
-/* Give the header icon the same tinted-chip look as the capability row tiles. */
-.capability-list-section .ui-section-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  color: var(--positive);
-  background: color-mix(in srgb, currentColor 14%, transparent);
-}
-
 .capability-row {
   display: flex;
   align-items: center;
@@ -91,11 +82,27 @@
   transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
-.capability-run-btn {
-  margin-top: var(--gap-2xs);
-}
-
 .capability-row:hover .capability-chevron,
 .capability-row:focus-visible .capability-chevron {
   opacity: 0.7;
+}
+
+/* Empty state: headline use-cases previewed before any test runs. Non-interactive
+   and muted, with a trailing "…" where the rating meter will land. */
+.capability-row.is-empty {
+  cursor: default;
+}
+
+.capability-row.is-empty:hover {
+  background: transparent;
+}
+
+.capability-icon-tile.level-empty {
+  color: var(--text-tertiary);
+}
+
+.capability-empty-value {
+  flex-shrink: 0;
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
 }

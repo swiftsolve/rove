@@ -2,6 +2,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Rounded window: the shell owns the app background and clips every child to
+     the corner radius. The window itself is transparent (Tauri: transparent +
+     macOSPrivateApi), so the area outside this radius reveals the desktop —
+     giving true rounded corners on macOS, Windows and Linux alike. */
+  background: var(--bg-app);
+  border-radius: var(--radius-window);
+  /* Hairline edge so the rounded shell stays crisp against light wallpapers
+     now that the OS no longer draws a window frame. */
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 

@@ -10,10 +10,12 @@ import {
   ArrowLeft,
   ArrowUp,
   BarChart3,
+  CalendarRange,
   Check,
   ChevronDown,
   ChevronRight,
   Cctv,
+  Clock,
   Cloud,
   Compass,
   Cpu,
@@ -22,6 +24,7 @@ import {
   EthernetPort,
   HardDrive,
   Minus,
+  MonitorSmartphone,
   Play,
   RotateCw,
   Gamepad2,
@@ -83,17 +86,21 @@ export const HomeIcon = make(House, 18)
 export const LayersIcon = make(Layers, 18)
 export const DiagnosticsIcon = make(Stethoscope, 18)
 export const DeviceIcon = make(Smartphone, 18)
+export const DevicesIcon = make(MonitorSmartphone, 18)
 export const RouterIcon = make(Router, 18)
 export const CloudIcon = make(Cloud, 18)
 export const GlobeIcon = make(Globe, 18)
 export const IpIcon = make(Network, 18)
 export const GatewayIcon = make(Waypoints, 18)
+export const ConnectionIcon = make(Waypoints, 18)
 export const SpeedIcon = make(Gauge, 18)
 export const PulseIcon = make(Activity, 18)
 export const DnsIcon = make(Server, 18)
 export const SparkleIcon = make(Sparkles, 18)
 export const HistoryIcon = make(History, 16)
 export const UsageIcon = make(BarChart3, 18)
+export const TodayIcon = make(Clock, 18)
+export const WeekIcon = make(CalendarRange, 18)
 export const ComputerIcon = make(Laptop, 16)
 export const TvIcon = make(Tv, 16)
 export const PrinterIcon = make(Printer, 16)

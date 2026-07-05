@@ -52,6 +52,8 @@
   --radius: 13px;
   --radius-sm: 8px;
   --radius-xs: 5px;
+  /* Outer window corner radius for the frameless, transparent shell. */
+  --radius-window: 12px;
 
   /* One padding value on every axis so cards read as evenly inset, matching the
      14px gap the cards stack at (--gap-stack). */
@@ -110,7 +112,10 @@ html {
 
 body {
   font-family: var(--font);
-  background: var(--bg-app);
+  /* Transparent so the window's rounded corners (clipped on .app-shell) reveal
+     the desktop behind them instead of a square opaque backdrop. The app's
+     background lives on .app-shell. */
+  background: transparent;
   color: var(--text-primary);
   line-height: 1.45;
   font-size: var(--text-body);
@@ -438,16 +443,6 @@ button:focus-visible {
   align-items: center;
   gap: var(--gap-sm);
 }
-
-.chart-tip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.chart-tip-dot.down { background: var(--series-down); }
-.chart-tip-dot.up { background: var(--series-up); }
 
 .chart-tip-label {
   font-size: var(--text-small);

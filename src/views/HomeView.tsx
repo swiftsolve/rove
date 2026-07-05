@@ -14,6 +14,7 @@ interface HomeViewProps {
   readonly usageLoading: boolean
   readonly deviceCount: number | null
   readonly deviceOnline: number | null
+  readonly devicesLoading: boolean
   readonly onOpenCapabilities: () => void
   /** Switch to the Speed tab (where the running test's UI lives). */
   readonly onRunSpeedTest: () => void
@@ -27,6 +28,7 @@ export default function HomeView({
   usageLoading,
   deviceCount,
   deviceOnline,
+  devicesLoading,
   onOpenCapabilities,
   onRunSpeedTest,
   onOpenUsage,
@@ -80,6 +82,7 @@ export default function HomeView({
         usageLoading={usageLoading}
         deviceCount={deviceCount}
         deviceOnline={deviceOnline}
+        devicesLoading={devicesLoading}
         onOpenUsage={onOpenUsage}
         onOpenDevices={onOpenDevices}
       />

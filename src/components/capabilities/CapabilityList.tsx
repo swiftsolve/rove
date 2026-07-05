@@ -1,17 +1,23 @@
-import type { CapabilityRating } from '@/types'
+import type { CapabilityId, CapabilityRating } from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Section from '@/components/ui/Section'
-import { ChevronRightIcon, PlayIcon, ZapIcon } from '@/components/ui/Icons'
+import { ChevronRightIcon, ZapIcon } from '@/components/ui/Icons'
 import './CapabilityList.css'
 
 interface CapabilityListProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly hasRunTest: boolean
-  readonly canRunTest: boolean
   readonly onOpenDetails: () => void
-  readonly onRunTest: () => void
 }
+
+// A few headline use-cases previewed in the empty state before any test runs —
+// the full breakdown appears once results come in.
+const PREVIEW_IDS: readonly CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
+const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
+  (id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!,
+)
 
 function CapabilityRow({
   capability,
@@ -42,31 +48,29 @@ function CapabilityRow({
 export default function CapabilityList({
   capabilities,
   hasRunTest,
-  canRunTest,
   onOpenDetails,
-  onRunTest,
 }: CapabilityListProps): JSX.Element {
   return (
     <Section
       title="Capabilities"
       icon={<ZapIcon size={15} />}
-      className="capability-list-section"
+      action={!hasRunTest ? <span className="text-meta">Available after first test</span> : undefined}
     >
       {!hasRunTest ? (
-        <div className="section-placeholder">
-          <ZapIcon size={24} className="section-placeholder-icon" />
-          <p className="text-hint">
-            Run a speed test to see what your connection can handle.
-          </p>
-          <button
-            type="button"
-            className="btn-primary capability-run-btn"
-            onClick={onRunTest}
-            disabled={!canRunTest}
-          >
-            <PlayIcon size={13} />
-            Run speed test
-          </button>
+        <div className="capability-list is-empty">
+          {PREVIEW_CAPABILITIES.map((definition) => (
+            <div key={definition.id} className="capability-row is-empty">
+              <div className="capability-row-main">
+                <span className="capability-icon-tile level-empty">
+                  <CapabilityIcon id={definition.id} size={17} />
+                </span>
+                <div className="capability-row-text">
+                  <span className="text-body capability-name">{definition.label}</span>
+                </div>
+              </div>
+              <span className="capability-empty-value">…</span>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="capability-list">
