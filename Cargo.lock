@@ -120,6 +120,7 @@ name = "beacon"
 version = "0.0.1"
 dependencies = [
  "beacon-core",
+ "glib",
  "serde",
  "serde_json",
  "sysinfo",
