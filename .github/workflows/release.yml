@@ -21,7 +21,7 @@ jobs:
             args: ''
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Linux system deps
         if: matrix.platform == 'ubuntu-22.04'
@@ -30,9 +30,9 @@ jobs:
           sudo apt-get install -y build-essential libwebkit2gtk-4.1-dev \
             libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
@@ -43,6 +43,51 @@ jobs:
 
       - run: npm ci
 
+      # Enable macOS code signing only when a certificate secret is present.
+      # If it's absent, we fall back to an unsigned build so the release still
+      # publishes (Gatekeeper warning) instead of failing the whole job.
+      - name: Determine macOS signing
+        id: macsign
+        shell: bash
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        run: |
+          if [ "${{ matrix.platform }}" = "macos-latest" ] && [ -n "$APPLE_CERTIFICATE" ]; then
+            echo "sign=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::macOS code signing enabled"
+          else
+            echo "sign=false" >> "$GITHUB_OUTPUT"
+            [ "${{ matrix.platform }}" = "macos-latest" ] && \
+              echo "::warning::APPLE_CERTIFICATE not set — producing an unsigned macOS build"
+          fi
+
+      # Fail fast with a clear message if the certificate secret is set but
+      # malformed (bad base64, wrong password, or missing private key), rather
+      # than dying deep inside tauri-action's `security import`.
+      - name: Validate macOS certificate
+        if: steps.macsign.outputs.sign == 'true'
+        shell: bash
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if ! echo "$APPLE_CERTIFICATE" | base64 --decode > cert.p12 2>/dev/null; then
+            echo "::error::APPLE_CERTIFICATE is not valid base64 — re-encode the .p12 as a single line (base64 -i cert.p12 -o cert.b64)"
+            exit 1
+          fi
+          if ! openssl pkcs12 -info -in cert.p12 -noout -passin pass:"$APPLE_CERTIFICATE_PASSWORD" 2>/dev/null; then
+            echo "::error::Could not open the .p12 — APPLE_CERTIFICATE_PASSWORD is wrong or the export is not a valid PKCS#12 file"
+            rm -f cert.p12
+            exit 1
+          fi
+          if ! openssl pkcs12 -in cert.p12 -nocerts -noout -passin pass:"$APPLE_CERTIFICATE_PASSWORD" 2>/dev/null; then
+            echo "::error::The .p12 has no private key — re-export BOTH the certificate and its private key from Keychain Access"
+            rm -f cert.p12
+            exit 1
+          fi
+          rm -f cert.p12
+          echo "::notice::APPLE_CERTIFICATE validated (valid .p12 with private key)"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,12 +95,14 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # --- macOS code signing + notarization (removes Gatekeeper warning) ---
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Gated on the flag above: blank when disabled, which makes
+          # tauri-action skip signing/notarization entirely.
+          APPLE_CERTIFICATE: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_SIGNING_IDENTITY: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_SIGNING_IDENTITY || '' }}
+          APPLE_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_TEAM_ID || '' }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Beacon ${{ github.ref_name }}'
