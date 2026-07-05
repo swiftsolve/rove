@@ -7,6 +7,7 @@ import {
   type SpeedHistoryEntry,
 } from '@/components/speed-test/speed-history'
 import Subpage from '@/components/ui/Subpage'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { EthernetIcon, GlobeIcon, HistoryIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
@@ -73,7 +74,12 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
       </div>
 
       <div className="history-card-sub num">
-        Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'} · {entry.packetLoss}% loss
+        <InlineMeta
+          items={[
+            <>Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
+            <>{entry.packetLoss}% loss</>,
+          ]}
+        />
       </div>
     </div>
   )

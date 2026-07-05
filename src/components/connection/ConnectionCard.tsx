@@ -11,10 +11,10 @@ import {
   formatDuplex,
   formatSignalStrength,
   formatSpeedMbps,
-  formatWifiSignal,
   formatWifiStandard,
 } from '@/lib/format'
 import DataRow from '@/components/ui/DataRow'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from '@/components/ui/Icons'
 import './ConnectionCard.css'
 
@@ -71,7 +71,20 @@ function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
       <DataRow label="Signal">
         <span className="signal-detail">
           {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
-          {formatWifiSignal(info.signalStrength, info.signalDbm)}
+          {info.signalStrength != null && Number.isFinite(info.signalStrength) ? (
+            <InlineMeta
+              items={[
+                formatSignalStrength(info.signalStrength),
+                info.signalDbm != null
+                  ? `${info.signalStrength}% (${info.signalDbm} dBm)`
+                  : `${info.signalStrength}%`,
+              ]}
+            />
+          ) : info.signalDbm != null && Number.isFinite(info.signalDbm) ? (
+            `${info.signalDbm} dBm`
+          ) : (
+            '—'
+          )}
         </span>
       </DataRow>
       <DataRow label="Band" value={formatBand(info.frequency)} />
@@ -128,7 +141,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
   const subBits = isWifiNetwork(info)
     ? [info.ipAddress, formatBand(info.frequency)]
     : [info.ipAddress, linkSpeed]
-  const subLine = subBits.filter(Boolean).join(' · ') || display.subtitle
+  const subItems = subBits.filter(Boolean)
   const detailsLabel = expanded ? 'Hide connection details' : 'Show connection details'
 
   return (
@@ -145,7 +158,11 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
         </div>
         <div className="conn-strip-text">
           <div className="text-title conn-strip-title">{display.title}</div>
-          <div className="text-secondary conn-strip-sub">{subLine}</div>
+          {subItems.length > 0 ? (
+            <InlineMeta className="text-secondary conn-strip-sub" items={subItems} />
+          ) : (
+            <div className="text-secondary conn-strip-sub">{display.subtitle}</div>
+          )}
         </div>
         {isWifiNetwork(info) && info.signalStrength != null && (
           <SignalMeter strength={info.signalStrength} />

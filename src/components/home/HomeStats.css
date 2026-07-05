@@ -1,0 +1,113 @@
+/* Two half-width stat widgets sitting side by side in the Home stack. */
+.home-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-stack);
+}
+
+.home-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  padding: var(--section-body);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+.home-stat:hover {
+  box-shadow: var(--shadow-raised);
+}
+
+.home-stat:active {
+  transform: translateY(1px);
+}
+
+.home-stat-head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.home-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Push the caret to the far edge; always visible, brightening on hover. */
+.home-stat-caret {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  transition: color 120ms ease;
+}
+
+.home-stat:hover .home-stat-caret,
+.home-stat:focus-visible .home-stat-caret {
+  color: var(--text-secondary);
+}
+
+/* Line 2: the big value + unit. */
+.home-stat-metric {
+  margin-top: var(--gap-2xs);
+}
+
+/* Line 3: the detail line below the value. */
+.home-stat-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Down/up split on the usage card: two labelled readouts, mirroring the
+   Live traffic panel (colour-keyed label above a compact value). */
+.home-usage-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  width: 100%;
+  /* Match the Live traffic panel's breathing room between title and readouts
+     (~18px total, vs the 8px the tighter card gap would give on its own). */
+  margin-top: var(--gap-md);
+}
+
+.home-usage-readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.home-usage-readout-label {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+}
+
+.home-usage-key {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.home-usage-key.down {
+  background: var(--series-down);
+}
+
+.home-usage-key.up {
+  background: var(--series-up);
+}
+
+.home-usage-key.online {
+  background: var(--positive);
+}
+
+/* Devices card: a single readout, sharing the usage card's top offset. */
+.home-usage-single {
+  margin-top: var(--gap-md);
+}

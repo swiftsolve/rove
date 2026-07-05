@@ -45,6 +45,7 @@ import {
   Square,
   Stethoscope,
   Tablet,
+  TriangleAlert,
   Trash2,
   Tv,
   Video,
@@ -67,6 +68,7 @@ function make(Base: LucideIcon, defaultSize: number) {
 }
 
 export const WifiIcon = make(Wifi, 20)
+export const BrandIcon = make(Radio, 20)
 export const EthernetIcon = make(EthernetPort, 20)
 export const OfflineIcon = make(WifiOff, 20)
 export const ActivityIcon = make(Activity, 18)
@@ -113,6 +115,7 @@ export const MinimizeIcon = make(Minus, 15)
 export const MaximizeIcon = make(Square, 13)
 export const RestoreIcon = make(Copy, 13)
 export const CloseIcon = make(X, 15)
+export const AlertIcon = make(TriangleAlert, 16)
 
 // Capability icons
 export const BrowsingIcon = make(Compass, 22)

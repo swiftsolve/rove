@@ -5,7 +5,7 @@ import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
 import { useDataUsage } from '@/hooks/useDataUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
-import { CloseIcon, MinimizeIcon, WifiIcon } from '@/components/ui/Icons'
+import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
 import HomeView from '@/views/HomeView'
 import SpeedView from '@/views/SpeedView'
@@ -74,8 +74,8 @@ function StatusBar({
     <header className="status-bar" data-tauri-drag-region>
       <div className="status-bar-left">
         <div className="status-bar-brand">
-          <span className="brand-mark" aria-hidden>
-            <WifiIcon size={14} />
+          <span className="status-bar-logo" aria-hidden>
+            <BrandIcon size={18} />
           </span>
           <span className="brand-name">Beacon</span>
         </div>
@@ -109,8 +109,14 @@ export default function App(): JSX.Element {
     isScanning: devicesScanning,
     error: devicesError,
     rescan: rescanDevices,
-  } = useDevices(activeTab === 'devices', networkKey)
-  const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(activeTab === 'usage')
+  } = useDevices(activeTab === 'devices' || activeTab === 'home', networkKey)
+  const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(
+    activeTab === 'usage' || activeTab === 'home',
+  )
+  const deviceCount = deviceScan ? deviceScan.devices.length : null
+  const deviceOnline = deviceScan
+    ? deviceScan.devices.filter((device) => device.reachable).length
+    : null
   const {
     diagnostics,
     isRunning: diagnosticsRunning,
@@ -144,10 +150,17 @@ export default function App(): JSX.Element {
               {info && activeTab === 'home' && (
                 <HomeView
                   info={info}
+                  usage={usage}
+                  usageLoading={usageLoading}
+                  deviceCount={deviceCount}
+                  deviceOnline={deviceOnline}
                   onOpenCapabilities={() => {
                     setSpeedOpenDetails(true)
                     setActiveTab('speed')
                   }}
+                  onRunSpeedTest={() => setActiveTab('speed')}
+                  onOpenUsage={() => setActiveTab('usage')}
+                  onOpenDevices={() => setActiveTab('devices')}
                 />
               )}
 

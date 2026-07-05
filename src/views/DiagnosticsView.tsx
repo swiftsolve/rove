@@ -3,7 +3,7 @@ import { FAILED_PING } from '@/types'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
+import { ActivityIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
 import './DiagnosticsView.css'
 
@@ -44,7 +44,10 @@ export default function DiagnosticsView({
 
   return (
     <div className="view-page">
-      <div className="diag-header">
+      <div className="view-header diag-header">
+        <span className="view-header-icon">
+          <ActivityIcon size={18} />
+        </span>
         <div className="diag-header-text">
           <span className="view-header-title">Connection</span>
           <span className={`diag-header-sub${hasDiagnostics && !isRunning ? ' show' : ''}`}>

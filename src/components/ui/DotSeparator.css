@@ -1,0 +1,33 @@
+.inline-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inline-meta-item {
+  min-width: 0;
+}
+
+.sep-dot {
+  flex-shrink: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+/* Truncation contexts: keep metadata on one line inside narrow strips. */
+.conn-strip-sub.inline-meta,
+.iface-header-sub.inline-meta {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.conn-strip-sub.inline-meta .inline-meta-item:first-child {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

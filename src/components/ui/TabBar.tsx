@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import type { AppTab } from '@/navigation/tabs'
 import { TAB_DEFINITIONS } from '@/navigation/tabs'
+import { Tooltip } from '@/components/ui/Tooltip'
 import './TabBar.css'
 
 interface TabBarProps {
@@ -10,23 +11,26 @@ interface TabBarProps {
 
 function TabBar({ activeTab, onChange }: TabBarProps): JSX.Element {
   return (
-    <nav className="seg-control" aria-label="Main navigation">
-      {TAB_DEFINITIONS.map((tab) => {
-        const active = tab.id === activeTab
+    <nav className="nav-rail" aria-label="Main navigation">
+      <div className="nav-items">
+        {TAB_DEFINITIONS.map((tab) => {
+          const active = tab.id === activeTab
 
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            className={`seg-item ${active ? 'active' : ''}`}
-            onClick={() => onChange(tab.id)}
-            aria-current={active ? 'page' : undefined}
-          >
-            <tab.Icon size={16} className="seg-icon" />
-            <span className="seg-label">{tab.label}</span>
-          </button>
-        )
-      })}
+          return (
+            <Tooltip key={tab.id} content={tab.label} placement="right">
+              <button
+                type="button"
+                className={`nav-item ${active ? 'active' : ''}`}
+                onClick={() => onChange(tab.id)}
+                aria-current={active ? 'page' : undefined}
+                aria-label={tab.label}
+              >
+                <tab.Icon size={18} className="nav-icon" />
+              </button>
+            </Tooltip>
+          )
+        })}
+      </div>
     </nav>
   )
 }

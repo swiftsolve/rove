@@ -4,6 +4,9 @@
   gap: var(--gap-lg);
 }
 
+/* Three-tier card: an intro row (icon + name/description + bars) on the panel
+   surface, a metrics grid on an inset panel, and the verdict on the darkest
+   panel at the very bottom — a clear elevation ladder top to bottom. */
 .cap-detail {
   display: flex;
   flex-direction: column;
@@ -11,19 +14,11 @@
   padding: var(--section-header-y) var(--section-header-x) 0;
 }
 
-/* Title row + summary share the card's top padding; the metrics sit in the
-   inset panel below, matching connection-card details and speed-test substats. */
-.cap-detail-intro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-sm);
-  padding-bottom: var(--gap-md);
-}
-
 .cap-detail-head {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--gap-sm);
+  padding-bottom: var(--gap-md);
 }
 
 .cap-detail-icon {
@@ -37,32 +32,93 @@
 .cap-detail-icon.level-poor { color: #f0a35e; }
 .cap-detail-icon.level-unsupported { color: var(--text-tertiary); }
 
-.cap-detail-head .capability-status {
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: var(--gap-tight);
+/* Bars sit at the bottom of the 12px meter box; nudge up to sit optically
+   centred against the two-line title block. */
+.cap-detail-head .capability-meter {
+  transform: translateY(-1px);
 }
 
-/* Bars sit at the bottom of the 12px meter box; nudge up to match label center
-   (same fix as ConnectionCard .signal-detail .signal-bars). */
-.cap-detail-head .capability-status .capability-meter {
-  transform: translateY(-2px);
+.cap-detail-headtext {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .cap-detail-name {
-  flex: 1;
-  min-width: 0;
   font-size: var(--text-section);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
+.cap-detail-desc {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  line-height: 1.3;
+}
+
+/* Verdict: the plain-language summary paired with a colour-keyed status, on the
+   darkest panel so it reads as the card's closing takeaway. */
+.cap-detail-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  margin: 0 calc(-1 * var(--section-header-x));
+  padding: var(--gap-md) var(--section-header-x);
+  background: var(--bg-app);
+}
+
 .cap-detail-summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-xs);
   font-size: var(--text-small);
   color: var(--text-secondary);
   line-height: 1.45;
 }
+
+/* Verdict glyph, moved to the left beside the summary; colour-keyed to the
+   level and nudged down to sit against the summary's first line. */
+.cap-verdict-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cap-verdict-icon.level-excellent { color: var(--positive); }
+.cap-verdict-icon.level-good { color: #7fd88a; }
+.cap-verdict-icon.level-fair { color: var(--warning); }
+.cap-verdict-icon.level-poor { color: #f0a35e; }
+.cap-verdict-icon.level-unsupported { color: var(--text-tertiary); }
+
+.cap-verdict-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  flex-shrink: 0;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+/* Colour-keyed status dot (inherits the level colour from the label). */
+.cap-verdict-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.cap-verdict-status.level-excellent { color: var(--positive); }
+.cap-verdict-status.level-good { color: #7fd88a; }
+.cap-verdict-status.level-fair { color: var(--warning); }
+.cap-verdict-status.level-poor { color: #f0a35e; }
+.cap-verdict-status.level-unsupported { color: var(--text-tertiary); }
 
 /* All four requirements in a compact metric grid — your value colours red
    only when it misses the threshold, which stays a small muted line. */

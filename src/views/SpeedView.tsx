@@ -11,7 +11,8 @@ import CapabilityList from '@/components/capabilities/CapabilityList'
 import CapabilityDetails from '@/components/capabilities/CapabilityDetails'
 import SpeedHistory from '@/components/speed-test/SpeedHistory'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { HistoryIcon } from '@/components/ui/Icons'
+import { DotSeparator } from '@/components/ui/DotSeparator'
+import { HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
 import { formatBand, formatTimeAgo } from '@/lib/format'
 import './SpeedView.css'
 
@@ -52,6 +53,7 @@ export default function SpeedView({
   } = useSpeedTest()
 
   const hasRunTest = internetSpeed != null
+  const canTest = canRunSpeedTest(info)
   const liveConnection = connectionFromNetworkInfo(info)
 
   useEffect(() => {
@@ -106,30 +108,69 @@ export default function SpeedView({
 
   return (
     <div className="view-page">
-      <div className="speed-header">
+      <div className="view-header speed-header">
+        <span className="view-header-icon">
+          <SpeedIcon size={18} />
+        </span>
         <div className="speed-header-text">
           <span className="view-header-title">Speed</span>
           <span className={`speed-header-sub${completedAt != null && !testing ? ' show' : ''}`}>
             {testing ? (
               <span className="speed-header-status">Testing…</span>
             ) : completedAt != null ? (
-              <>Updated {formatTimeAgo(completedAt)}</>
+              <>
+                Updated {formatTimeAgo(completedAt)}
+                <DotSeparator />
+                <button
+                  type="button"
+                  className="speed-history-link"
+                  onClick={() => setHistoryOpen(true)}
+                >
+                  <HistoryIcon size={13} />
+                  <span className="speed-history-link-text">View history</span>
+                </button>
+              </>
             ) : (
               'Measure your download and upload speeds'
             )}
           </span>
         </div>
         <div className="speed-header-actions">
-          <Tooltip content="View past speed tests">
+          {testing ? (
+            <Tooltip content="Stop test">
+              <button
+                type="button"
+                className="btn-primary speed-run-btn is-stop"
+                onClick={cancelTest}
+                aria-label="Stop test"
+              >
+                <StopIcon size={12} />
+                Stop
+              </button>
+            </Tooltip>
+          ) : canTest ? (
             <button
               type="button"
-              className="btn-icon btn-icon-secondary"
-              onClick={() => setHistoryOpen(true)}
-              aria-label="View speed test history"
+              className="btn-primary speed-run-btn"
+              onClick={() => void runTest()}
+              aria-label={hasRunTest ? 'Test again' : 'Run test'}
             >
-              <HistoryIcon size={16} />
+              <PlayIcon size={13} />
+              {hasRunTest ? 'Test again' : 'Run test'}
             </button>
-          </Tooltip>
+          ) : (
+            <Tooltip content="Connect to a network first">
+              <button
+                type="button"
+                className="btn-primary speed-run-btn"
+                disabled
+                aria-label="Run test"
+              >
+                <PlayIcon size={13} />
+                Run test
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
 
@@ -138,19 +179,19 @@ export default function SpeedView({
         linkCapacityMbps={footerLinkCapacityMbps}
         connection={footerConnection}
         testing={testing}
-        canTest={canRunSpeedTest(info)}
+        canTest={canTest}
         error={speedTestError}
         progress={progress}
         liveDownloadMbps={peaks.down}
         liveUploadMbps={peaks.up}
-        onRunTest={runTest}
-        onCancelTest={cancelTest}
       />
 
       <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
+        canRunTest={canRunSpeedTest(info)}
         onOpenDetails={() => setDetailsOpen(true)}
+        onRunTest={() => void runTest()}
       />
     </div>
   )

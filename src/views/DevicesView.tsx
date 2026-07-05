@@ -112,7 +112,10 @@ export default function DevicesView({
 
   return (
     <div className="view-page">
-      <div className="devices-header">
+      <div className="view-header devices-header">
+        <span className="view-header-icon">
+          <DeviceIcon size={18} />
+        </span>
         <div className="devices-header-text">
           <span className="view-header-title">
             {hasDevices

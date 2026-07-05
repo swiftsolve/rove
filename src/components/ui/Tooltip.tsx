@@ -15,8 +15,8 @@ import { createPortal } from 'react-dom'
 import './Tooltip.css'
 
 interface TooltipProps {
-  /** Text shown on hover / keyboard focus. */
-  readonly content: string
+  /** Label shown on hover / keyboard focus. */
+  readonly content: ReactNode
   /** The trigger element (usually an icon button). */
   readonly children: ReactNode
   /**
@@ -26,10 +26,12 @@ interface TooltipProps {
    */
   readonly align?: 'left' | 'right'
   /**
-   * Whether the bubble opens below (default) or above the trigger. Use `top`
-   * for triggers near the bottom of the viewport so the bubble isn't clipped.
+   * Where the bubble opens relative to the trigger. `top`/`bottom` stack the
+   * bubble vertically (honouring `align` for horizontal edge); `left`/`right`
+   * place it beside the trigger, vertically centred — used by the icon rail.
+   * Each side flips to its opposite when it would spill out of the viewport.
    */
-  readonly placement?: 'top' | 'bottom'
+  readonly placement?: 'top' | 'bottom' | 'left' | 'right'
 }
 
 const GAP = 6
@@ -41,10 +43,30 @@ function computePosition(
   bubbleWidth: number,
   bubbleHeight: number,
   align: 'left' | 'right',
-  placement: 'top' | 'bottom',
+  placement: 'top' | 'bottom' | 'left' | 'right',
 ): { top: number; left: number } {
   const vw = window.innerWidth
   const vh = window.innerHeight
+
+  // Side placement: bubble sits beside the trigger, vertically centred, and
+  // flips to the opposite side if it would overflow the viewport edge.
+  if (placement === 'left' || placement === 'right') {
+    let side = placement
+    if (placement === 'right' && triggerRect.right + GAP + bubbleWidth > vw - VIEWPORT_PAD) {
+      side = 'left'
+    } else if (placement === 'left' && triggerRect.left - GAP - bubbleWidth < VIEWPORT_PAD) {
+      side = 'right'
+    }
+
+    const left =
+      side === 'right' ? triggerRect.right + GAP : triggerRect.left - GAP - bubbleWidth
+    const top = triggerRect.top + triggerRect.height / 2 - bubbleHeight / 2
+
+    return {
+      left: Math.max(VIEWPORT_PAD, Math.min(left, vw - bubbleWidth - VIEWPORT_PAD)),
+      top: Math.max(VIEWPORT_PAD, Math.min(top, vh - bubbleHeight - VIEWPORT_PAD)),
+    }
+  }
 
   let effectiveAlign = align
   let effectivePlacement = placement

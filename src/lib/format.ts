@@ -82,20 +82,6 @@ export function formatDisplayValue(value: string | null | undefined): string {
   return value?.trim() ? value : '—'
 }
 
-export function formatWifiSignal(
-  strength: number | null,
-  dbm: number | null,
-): string {
-  if (strength != null && Number.isFinite(strength)) {
-    const label = formatSignalStrength(strength)
-    return dbm != null ? `${label} · ${strength}% (${dbm} dBm)` : `${label} · ${strength}%`
-  }
-  if (dbm != null && Number.isFinite(dbm)) {
-    return `${dbm} dBm`
-  }
-  return '—'
-}
-
 export function formatDuplex(duplex: string | null | undefined): string | null {
   if (!duplex) return null
   if (duplex === 'full') return 'Full duplex'

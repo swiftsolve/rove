@@ -1,6 +1,7 @@
 import type { NetworkInterfaceSummary } from '@/types'
 import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui/Icons'
 import DataRow from '@/components/ui/DataRow'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
@@ -55,8 +56,8 @@ function InterfacePanel({ iface }: { readonly iface: NetworkInterfaceSummary }):
   )
 }
 
-/** "1 Wi‑Fi · 1 Ethernet · 2 Virtual" — a per-category count of the interfaces. */
-function interfaceTypeSummary(interfaces: readonly NetworkInterfaceSummary[]): string {
+/** Per-category counts, e.g. ["1 Wi‑Fi", "1 Ethernet", "2 Virtual"]. */
+function interfaceTypeSummaryParts(interfaces: readonly NetworkInterfaceSummary[]): string[] {
   const counts = { wifi: 0, ethernet: 0, virtual: 0, other: 0 }
   for (const iface of interfaces) {
     if (iface.isVirtual) counts.virtual++
@@ -70,7 +71,7 @@ function interfaceTypeSummary(interfaces: readonly NetworkInterfaceSummary[]): s
   if (counts.ethernet > 0) parts.push(`${counts.ethernet} Ethernet`)
   if (counts.virtual > 0) parts.push(`${counts.virtual} Virtual`)
   if (counts.other > 0) parts.push(`${counts.other} Other`)
-  return parts.join(' · ')
+  return parts
 }
 
 export default function InterfacesView({
@@ -83,7 +84,10 @@ export default function InterfacesView({
 
   return (
     <div className="view-page">
-      <div className="iface-header">
+      <div className="view-header iface-header">
+        <span className="view-header-icon">
+          <LayersIcon size={18} />
+        </span>
         <div className="iface-header-text">
           <span className="view-header-title">
             {interfaces.length > 0
@@ -91,7 +95,10 @@ export default function InterfacesView({
               : 'Interfaces'}
           </span>
           {interfaces.length > 0 && (
-            <span className="iface-header-sub">{interfaceTypeSummary(interfaces)}</span>
+            <InlineMeta
+              className="iface-header-sub"
+              items={interfaceTypeSummaryParts(interfaces)}
+            />
           )}
         </div>
         <Tooltip content="Refresh">
