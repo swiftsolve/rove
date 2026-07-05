@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { checkForUpdates } from '@/lib/updater'
+import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
 import { isConnectedNetwork } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
@@ -8,6 +8,7 @@ import { useDataUsage } from '@/hooks/useDataUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
+import UpdateDialog from '@/components/ui/UpdateDialog'
 import HomeView from '@/views/HomeView'
 import SpeedView from '@/views/SpeedView'
 import InterfacesView from '@/views/InterfacesView'
@@ -93,11 +94,14 @@ function StatusBar({
 export default function App(): JSX.Element {
   const [activeTab, setActiveTab] = useState<AppTab>('home')
   const [speedOpenDetails, setSpeedOpenDetails] = useState(false)
+  const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const { info, error, isLoading, refresh } = useNetworkInfo()
 
-  // Check for a newer signed release once, shortly after launch.
+  // Check for a newer signed release once, shortly after launch. If one is
+  // found, surface it via a non-blocking modal (never window.confirm, which
+  // freezes the webview on Linux/WebKitGTK).
   useEffect(() => {
-    void checkForUpdates()
+    void checkForUpdates().then(setPendingUpdate)
   }, [])
 
   const isConnected = info ? isConnectedNetwork(info) : false
@@ -138,6 +142,9 @@ export default function App(): JSX.Element {
 
   return (
     <div className="app-shell">
+      {pendingUpdate && (
+        <UpdateDialog update={pendingUpdate} onDismiss={() => setPendingUpdate(null)} />
+      )}
       <StatusBar connected={isConnected} label={statusLabel} />
 
       <div className="app-lower">
