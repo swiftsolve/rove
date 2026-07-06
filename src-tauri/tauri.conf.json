@@ -45,7 +45,12 @@
           "libayatana-appindicator3-1",
           "iproute2",
           "iputils-ping"
-        ]
+        ],
+        "files": {
+          "/etc/apparmor.d/beacon": "linux/beacon.apparmor"
+        },
+        "postInstallScript": "linux/postinst.sh",
+        "preRemoveScript": "linux/prerm.sh"
       },
       "rpm": {
         "depends": [
@@ -54,7 +59,12 @@
           "libayatana-appindicator-gtk3",
           "iproute",
           "iputils"
-        ]
+        ],
+        "files": {
+          "/etc/apparmor.d/beacon": "linux/beacon.apparmor"
+        },
+        "postInstallScript": "linux/postinst.sh",
+        "preRemoveScript": "linux/prerm.sh"
       }
     }
   },

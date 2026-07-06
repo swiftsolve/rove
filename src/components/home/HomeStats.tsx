@@ -3,6 +3,7 @@ import type { DataUsageSummary } from '@/types'
 import { splitBytes } from '@/lib/format'
 import { ChevronRightIcon, DevicesIcon, UsageIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
+import { Spinner } from '@/components/ui/Spinner'
 import './HomeStats.css'
 
 interface StatCardProps {
@@ -109,7 +110,7 @@ export default function HomeStats({
         body={
           devicesLoading && !hasDevices ? (
             <div className="home-stat-loading" aria-hidden>
-              <div className="spinner" />
+              <Spinner size={20} />
             </div>
           ) : hasDevices ? (
             <div className="home-usage-single" aria-hidden>

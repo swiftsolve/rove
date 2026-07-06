@@ -35,6 +35,64 @@ fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
+/// Per-user log directory, following each platform's convention. Chosen so a
+/// user (or we, when debugging) can find `beacon.log.<date>` without root.
+fn log_dir() -> Option<std::path::PathBuf> {
+    #[cfg(target_os = "windows")]
+    {
+        std::env::var_os("LOCALAPPDATA")
+            .map(|d| std::path::PathBuf::from(d).join("beacon").join("logs"))
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join("Library/Logs/beacon"))
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        if let Some(state) = std::env::var_os("XDG_STATE_HOME") {
+            return Some(std::path::PathBuf::from(state).join("beacon"));
+        }
+        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".local/state/beacon"))
+    }
+}
+
+/// Start file logging into a daily-rolled `beacon.log` under [`log_dir`]. The
+/// returned guard flushes the non-blocking writer on drop, so the caller must
+/// hold it for the process's lifetime. Level defaults to `info`; override with
+/// the `BEACON_LOG` env var (e.g. `BEACON_LOG=debug`). Best-effort — returns
+/// `None` if the log dir can't be created rather than failing startup.
+fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
+    let dir = log_dir()?;
+    std::fs::create_dir_all(&dir).ok()?;
+
+    let (writer, guard) = tracing_appender::non_blocking(tracing_appender::rolling::daily(
+        &dir,
+        "beacon.log",
+    ));
+    let filter = tracing_subscriber::EnvFilter::try_from_env("BEACON_LOG")
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
+
+    let ok = tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_writer(writer)
+        .with_ansi(false)
+        .with_target(false)
+        .try_init()
+        .is_ok();
+    ok.then_some(guard)
+}
+
+/// Route panics to the log file (in addition to the default stderr handler), so
+/// a crash leaves a durable breadcrumb even when the app was launched from a
+/// desktop menu with no visible console.
+fn install_panic_logger() {
+    let default = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        tracing::error!(target: "panic", "{info}");
+        default(info);
+    }));
+}
+
 #[tauri::command]
 async fn get_network_info() -> NetworkInfo {
     beacon_core::network_info::network_info().await
@@ -47,7 +105,16 @@ async fn get_interfaces() -> Vec<InterfaceSummary> {
 
 #[tauri::command]
 async fn get_devices(store: tauri::State<'_, Arc<Store>>) -> Result<LanDeviceScan, ()> {
+    tracing::info!("device scan started");
+    let started = std::time::Instant::now();
     let scan = beacon_core::devices::scan().await;
+    tracing::info!(
+        devices = scan.devices.len(),
+        subnet = ?scan.subnet,
+        interface = ?scan.interface_name,
+        elapsed_ms = started.elapsed().as_millis() as u64,
+        "device scan finished"
+    );
     let _ = store.record_devices(&scan.devices, beacon_core::net_util::now_ms() as i64);
     Ok(scan)
 }
@@ -186,7 +253,7 @@ fn init_store(app: &tauri::App) {
     let store = match Store::open(&data_dir.join("beacon.db")) {
         Ok(store) => Arc::new(store),
         Err(err) => {
-            eprintln!("Beacon: failed to open database: {err}");
+            tracing::error!("failed to open database: {err}");
             return;
         }
     };
@@ -248,7 +315,7 @@ fn spawn_usage_sampler(handle: tauri::AppHandle) {
                 }
             }));
             if outcome.is_err() {
-                eprintln!("Beacon: usage sampler tick panicked; continuing");
+                tracing::error!("usage sampler tick panicked; continuing");
             }
             tokio::time::sleep(std::time::Duration::from_secs(30)).await;
         }
@@ -301,7 +368,7 @@ fn spawn_route_monitor(handle: tauri::AppHandle) {
                 .kill_on_drop(true) // don't leave `ip monitor` orphaned on exit
                 .spawn();
             let Ok(mut child) = spawned else {
-                eprintln!("Beacon: could not start `ip monitor route`; relying on polling");
+                tracing::warn!("could not start `ip monitor route`; relying on polling");
                 return;
             };
             let Some(stdout) = child.stdout.take() else {
@@ -403,30 +470,46 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
 }
 
 pub fn run() {
-    // WebKitGTK's GPU-accelerated compositor stalls on the NVIDIA proprietary
-    // driver: it waits on a frame callback the driver never delivers, so the
-    // webview paints its first frame and then only repaints on input — async
-    // DOM updates (a network scan finishing, live data arriving) never reach the
-    // screen, and at worst the whole window looks frozen on launch. The fix,
-    // verified on NVIDIA + Wayland, is two env settings that must go together:
-    //
-    //   * WEBKIT_DISABLE_COMPOSITING_MODE — drop off the accelerated compositor
-    //     so repaints flush synchronously instead of waiting on that callback.
-    //   * GDK_BACKEND=x11 — the non-composited path doesn't work under the GTK
-    //     Wayland backend (it freezes); running on XWayland makes it work.
-    //
-    // The window is also opaque (`transparent: false` in tauri.conf.json): with
-    // the compositor off, a transparent window comes up only intermittently.
-    // Both vars respect an explicit override and are no-ops on macOS/Windows.
+    // File logging first, so everything below — including a panic during setup —
+    // lands in the log. The guard flushes on drop, so it must outlive the app;
+    // hold it until `run()` returns.
+    let _log_guard = init_logging();
+    install_panic_logger();
+    tracing::info!(version = env!("CARGO_PKG_VERSION"), "Beacon starting");
+    // Capture the desktop/render environment up front: this is exactly the
+    // context (GDK backend, Wayland socket, and the AppArmor label that governs
+    // whether WebKit's sandboxed WebProcess can start) that has caused the
+    // blank-window / freeze issues, so a future report can be diagnosed from the
+    // log alone.
     #[cfg(target_os = "linux")]
-    {
-        if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
-            std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-        }
-        if std::env::var_os("GDK_BACKEND").is_none() {
-            std::env::set_var("GDK_BACKEND", "x11");
-        }
-    }
+    tracing::info!(
+        gdk_backend = ?std::env::var("GDK_BACKEND").ok(),
+        wayland_display = ?std::env::var("WAYLAND_DISPLAY").ok(),
+        session_type = ?std::env::var("XDG_SESSION_TYPE").ok(),
+        apparmor = ?std::fs::read_to_string("/proc/self/attr/current")
+            .ok()
+            .map(|s| s.trim().to_string()),
+        "linux desktop environment"
+    );
+
+    // WebKitGTK + the NVIDIA proprietary driver have a long history of render
+    // stalls (the webview paints one frame then only repaints on input, so an
+    // async network scan finishing never reaches the screen). An older workaround
+    // forced GDK_BACKEND=x11 + WEBKIT_DISABLE_COMPOSITING_MODE. On current
+    // WebKitGTK (2.52, the system lib the .deb/.rpm link against) that is
+    // *inverted*: the native Wayland backend renders correctly, and forcing
+    // x11/XWayland is what freezes. The regression only showed on the packaged
+    // app because the desktop-menu (systemd user-manager) launch doesn't set
+    // GDK_BACKEND, so the old override kicked in; a terminal launch that already
+    // exports GDK_BACKEND=wayland was unaffected. The bundled AppImage escapes it
+    // by shipping its own older GTK/WebKit stack.
+    //
+    // So: don't force a backend — let GTK pick the session-native one (Wayland on
+    // a Wayland session, X11 on an X11 session), which is what works. A user on a
+    // stack that still needs the old path can set GDK_BACKEND / the WEBKIT_* vars
+    // explicitly in the environment; GTK/WebKit honour those directly, no code
+    // needed. The window is opaque (`transparent: false` in tauri.conf.json),
+    // which the non-composited path also relied on and which is harmless here.
 
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -449,8 +532,8 @@ pub fn run() {
             // otherwise we leave close-to-quit intact so the app stays reachable.
             match build_tray(&handle) {
                 Ok(()) => app.state::<AppState>().tray_active.store(true, Ordering::Relaxed),
-                Err(err) => eprintln!(
-                    "Beacon: system tray unavailable ({err}); the window close button will quit the app"
+                Err(err) => tracing::warn!(
+                    "system tray unavailable ({err}); the window close button will quit the app"
                 ),
             }
 

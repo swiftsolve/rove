@@ -1,0 +1,24 @@
+# AppArmor profile for Beacon.
+#
+# Ubuntu 24.04+ (kernel.apparmor_restrict_unprivileged_userns=1) blocks
+# unprivileged user-namespace creation for processes that aren't covered by a
+# profile granting it. WebKitGTK's WebProcess sandbox (bubblewrap) needs an
+# unprivileged userns, so without this profile the WebProcess is killed the
+# moment Beacon is launched from the desktop/app-menu (a confined context) and
+# the window renders its chrome but leaves the web content blank. A terminal
+# launch happens to run in a context that already allows userns, which is why
+# the bug only showed for the packaged, menu-launched app.
+#
+# This profile does not confine Beacon (flags=(unconfined)); it exists solely
+# to grant the `userns` permission, matching the pattern Ubuntu ships for
+# browsers and other WebKit/Chromium apps in /etc/apparmor.d/.
+abi <abi/4.0>,
+
+include <tunables/global>
+
+profile beacon /usr/bin/beacon flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/beacon>
+}

@@ -3,6 +3,7 @@ import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { Spinner } from '@/components/ui/Spinner'
 import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
 
@@ -118,7 +119,7 @@ export default function InterfacesView({
 
       {isLoading && interfaces.length === 0 ? (
         <div className="view-empty">
-          <div className="spinner" />
+          <Spinner />
           <p className="text-muted">Loading network interfaces…</p>
         </div>
       ) : interfaces.length === 0 ? (
