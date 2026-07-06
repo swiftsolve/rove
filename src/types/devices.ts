@@ -41,6 +41,8 @@ export interface LanDevice {
   readonly vendor: string | null
   /** Reverse-DNS/mDNS hostname (suffix trimmed), or null when unresolvable. */
   readonly hostname: string | null
+  /** Hardware model from mDNS/UPnP (e.g. "MacBookPro18,3"), or null. */
+  readonly model: string | null
   /** True when the MAC is locally administered (privacy-randomized). */
   readonly isRandomizedMac: boolean
   /** This device is the default gateway (router). */

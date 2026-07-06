@@ -364,6 +364,7 @@ mod tests {
             mac: "aa:bb:cc:dd:ee:ff".into(),
             vendor: Some("Acme".into()),
             hostname: Some("nas".into()),
+            model: None,
             kind: "computer".into(),
             is_randomized_mac: false,
             is_gateway: false,
