@@ -6,6 +6,7 @@ import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
 import { ArrowDownIcon, ArrowUpIcon, HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
+import { Spinner } from '@/components/ui/Spinner'
 import './UsageView.css'
 
 const USAGE_INFO_HINT =
@@ -238,7 +239,7 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
 
       {isLoading && !hasData ? (
         <div className="view-empty">
-          <div className="spinner" />
+          <Spinner />
           <p className="text-muted">Loading usage…</p>
         </div>
       ) : (

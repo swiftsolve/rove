@@ -5,6 +5,7 @@ import Section from '@/components/ui/Section'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { ConnectionIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
+import { Spinner } from '@/components/ui/Spinner'
 import './DiagnosticsView.css'
 
 interface DiagnosticsViewProps {
@@ -79,7 +80,7 @@ export default function DiagnosticsView({
 
       {isRunning && !diagnostics ? (
         <div className="view-empty">
-          <div className="spinner" />
+          <Spinner />
           <p className="text-muted">Checking your connection…</p>
         </div>
       ) : (
