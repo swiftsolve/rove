@@ -6,9 +6,29 @@
 //! device on their own, so unambiguous cases are unchanged; the voting only
 //! matters when weaker signals disagree, letting corroboration beat a lone
 //! noisy guess. Role flags (gateway/self) still short-circuit outright.
+use crate::devices::banner::BannerHit;
+use crate::devices::ssdp::SsdpHit;
 use crate::mdns::MdnsHit;
 use regex_lite::Regex;
 use std::sync::LazyLock;
+
+/// Every identity signal gathered for one host. Bundled into a struct so new
+/// sources (SSDP, HTTP banners, …) extend the classifier without reshuffling a
+/// long positional argument list. All fields default to "absent".
+#[derive(Default)]
+pub struct Signals<'a> {
+    /// Vendor from the MAC OUI table.
+    pub vendor: Option<&'a str>,
+    /// Best display name so far (mDNS/SSDP/NetBIOS/reverse-DNS).
+    pub hostname: Option<&'a str>,
+    pub mdns: Option<&'a MdnsHit>,
+    pub ssdp: Option<&'a SsdpHit>,
+    pub banner: Option<&'a BannerHit>,
+    /// Open TCP ports observed by the probe.
+    pub open_ports: &'a [u16],
+    pub is_gateway: bool,
+    pub is_self: bool,
+}
 
 struct KindPatterns(Vec<(Regex, &'static str)>);
 
@@ -134,6 +154,19 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     ])
 });
 
+/// UPnP `deviceType` URNs map fairly directly to a kind. MediaRenderer/DIAL are
+/// almost always a TV or AV box; ZonePlayer is Sonos; the WAN/IGD types are the
+/// router (usually already decided by the gateway flag); MediaServer leans NAS.
+static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
+    KindPatterns::new(&[
+        (r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice", "router"),
+        (r"(?i)Printer", "printer"),
+        (r"(?i)ZonePlayer", "speaker"),
+        (r"(?i)MediaRenderer|dial", "tv"),
+        (r"(?i)MediaServer", "nas"),
+    ])
+});
+
 /// A listening service that all but names the device type: 9100/631 are print
 /// protocols; 8009/8060 are Chromecast/Roku; 32400 is a Plex media server (an
 /// always-on NAS-class box); 1400 is Sonos; 62078 (lockdownd) is iOS-only.
@@ -174,8 +207,16 @@ fn weak_port_kind(ports: &[u16]) -> Option<&'static str> {
 const W_MDNS_STRONG: i32 = 100;
 const W_MDNS_MODEL: i32 = 60;
 const W_STRONG_PORT: i32 = 55;
+/// A UPnP `deviceType` is reliable for printers/routers but ambiguous for the
+/// media types (a MediaRenderer might be a TV or a soundbar), so it sits below
+/// the strong-port vote and can't override a definitive mDNS service.
+const W_SSDP_TYPE: i32 = 50;
 const W_HOSTNAME: i32 = 40;
 const W_VENDOR: i32 = 25;
+/// An HTTP `Server` header or page `<title>` is corroboration, not proof — many
+/// devices share an httpd string and titles are often generic ("Login"), so it
+/// weighs a little under a hostname/vendor match.
+const W_BANNER: i32 = 22;
 const W_MDNS_HINT: i32 = 15;
 const W_WEAK_PORT: i32 = 12;
 
@@ -192,30 +233,56 @@ fn kind_index(kind: &str) -> Option<usize> {
     KIND_NAMES.iter().position(|&k| k == kind)
 }
 
-pub fn classify(
-    vendor: Option<&str>,
-    hostname: Option<&str>,
-    mdns: Option<&MdnsHit>,
-    open_ports: &[u16],
-    is_gateway: bool,
-    is_self: bool,
-) -> String {
-    if is_gateway {
+pub fn classify(s: &Signals) -> String {
+    if s.is_gateway {
         return "router".into();
     }
-    if is_self {
+    if s.is_self {
         return "computer".into();
     }
 
-    let votes: [(Option<&str>, i32); 7] = [
+    let Signals { vendor, hostname, mdns, ssdp, banner, open_ports, .. } = *s;
+
+    let votes: [(Option<&str>, i32); 13] = [
         (mdns.and_then(|hit| hit.kind), W_MDNS_STRONG),
         (
             mdns.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
             W_MDNS_MODEL,
         ),
         (strong_port_kind(open_ports), W_STRONG_PORT),
+        // SSDP casts the same shapes of vote as mDNS/hostname/vendor, from the
+        // UPnP description: an explicit device type, plus model/name/vendor text
+        // run through the existing regex tables.
+        (
+            ssdp.and_then(|hit| hit.device_type.as_deref()).and_then(|t| SSDP_TYPE_KINDS.matches(t)),
+            W_SSDP_TYPE,
+        ),
+        (
+            ssdp.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
+            W_MDNS_MODEL,
+        ),
         (hostname.and_then(|h| HOSTNAME_KINDS.matches(h)), W_HOSTNAME),
+        (
+            ssdp.and_then(|hit| hit.name.as_deref()).and_then(|n| HOSTNAME_KINDS.matches(n)),
+            W_HOSTNAME,
+        ),
         (vendor.and_then(|v| VENDOR_KINDS.matches(v)), W_VENDOR),
+        (
+            ssdp.and_then(|hit| hit.manufacturer.as_deref()).and_then(|m| VENDOR_KINDS.matches(m)),
+            W_VENDOR,
+        ),
+        // HTTP banner: the page title reads like a device name, the Server
+        // header like a vendor/product string — match both against the tables.
+        (
+            banner.and_then(|b| b.title.as_deref()).and_then(|t| HOSTNAME_KINDS.matches(t)),
+            W_BANNER,
+        ),
+        (
+            banner
+                .and_then(|b| b.identity())
+                .and_then(|t| VENDOR_KINDS.matches(&t).or_else(|| HOSTNAME_KINDS.matches(&t))),
+            W_BANNER,
+        ),
         (mdns.and_then(|hit| hit.kind_hint), W_MDNS_HINT),
         (weak_port_kind(open_ports), W_WEAK_PORT),
     ];
@@ -257,49 +324,76 @@ mod tests {
         MdnsHit { kind: Some(kind), ..Default::default() }
     }
 
+    /// Classify from a partial set of signals — unspecified sources default to
+    /// absent, keeping each test focused on the signals under test.
+    fn kind(sig: Signals) -> String {
+        classify(&sig)
+    }
+
     #[test]
     fn jetdirect_port_types_a_printer_without_any_other_signal() {
-        assert_eq!(classify(None, None, None, &[80, 9100], false, false), "printer");
+        assert_eq!(kind(Signals { open_ports: &[80, 9100], ..Default::default() }), "printer");
     }
 
     #[test]
     fn hostname_beats_a_merely_ambiguous_port() {
         // SSH alone would lean "computer", but a clear hostname outweighs it.
         assert_eq!(
-            classify(None, Some("Living-Room-AppleTV"), None, &[22], false, false),
+            kind(Signals {
+                hostname: Some("Living-Room-AppleTV"),
+                open_ports: &[22],
+                ..Default::default()
+            }),
             "tv"
         );
     }
 
     #[test]
     fn ambiguous_ports_are_a_last_resort_over_unknown() {
-        assert_eq!(classify(None, None, None, &[22], false, false), "computer");
-        assert_eq!(classify(None, None, None, &[], false, false), "unknown");
+        assert_eq!(kind(Signals { open_ports: &[22], ..Default::default() }), "computer");
+        assert_eq!(kind(Signals::default()), "unknown");
     }
 
     #[test]
     fn role_flags_short_circuit_everything() {
-        assert_eq!(classify(None, None, None, &[9100], true, false), "router");
-        assert_eq!(classify(None, None, None, &[9100], false, true), "computer");
+        assert_eq!(
+            kind(Signals { open_ports: &[9100], is_gateway: true, ..Default::default() }),
+            "router"
+        );
+        assert_eq!(
+            kind(Signals { open_ports: &[9100], is_self: true, ..Default::default() }),
+            "computer"
+        );
     }
 
     #[test]
     fn a_strong_mdns_service_outvotes_a_disagreeing_vendor() {
         assert_eq!(
-            classify(Some("Google"), None, Some(&strong("tv")), &[], false, false),
+            kind(Signals {
+                vendor: Some("Google"),
+                mdns: Some(&strong("tv")),
+                ..Default::default()
+            }),
             "tv"
         );
     }
 
     #[test]
     fn android_tv_hostname_is_a_tv_not_a_phone() {
-        assert_eq!(classify(None, Some("android-tv-livingroom"), None, &[], false, false), "tv");
+        assert_eq!(
+            kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
+            "tv"
+        );
     }
 
     #[test]
     fn a_persons_name_does_not_trip_iot_substrings() {
         assert_eq!(
-            classify(Some("Apple, Inc."), Some("Camerons-MacBook-Pro"), None, &[], false, false),
+            kind(Signals {
+                vendor: Some("Apple, Inc."),
+                hostname: Some("Camerons-MacBook-Pro"),
+                ..Default::default()
+            }),
             "computer"
         );
     }
@@ -307,11 +401,23 @@ mod tests {
     #[test]
     fn nas_is_distinguished_from_a_plain_computer() {
         assert_eq!(
-            classify(Some("Synology Incorporated"), Some("DiskStation"), None, &[445], false, false),
+            kind(Signals {
+                vendor: Some("Synology Incorporated"),
+                hostname: Some("DiskStation"),
+                open_ports: &[445],
+                ..Default::default()
+            }),
             "nas"
         );
         // A Plex media server port also reads as NAS-class.
-        assert_eq!(classify(None, Some("media-server"), None, &[32400], false, false), "nas");
+        assert_eq!(
+            kind(Signals {
+                hostname: Some("media-server"),
+                open_ports: &[32400],
+                ..Default::default()
+            }),
+            "nas"
+        );
     }
 
     #[test]
@@ -320,33 +426,131 @@ mod tests {
         // The tablet-specific model/hostname must outweigh the generic phone lean.
         let ipad = MdnsHit { model: Some("iPad13,4".into()), ..Default::default() };
         assert_eq!(
-            classify(Some("Apple, Inc."), Some("Johns-iPad"), Some(&ipad), &[62078], false, false),
+            kind(Signals {
+                vendor: Some("Apple, Inc."),
+                hostname: Some("Johns-iPad"),
+                mdns: Some(&ipad),
+                open_ports: &[62078],
+                ..Default::default()
+            }),
             "tablet"
         );
         // A plain iPhone still classifies as phone.
         assert_eq!(
-            classify(Some("Apple, Inc."), Some("Johns-iPhone"), None, &[62078], false, false),
+            kind(Signals {
+                vendor: Some("Apple, Inc."),
+                hostname: Some("Johns-iPhone"),
+                open_ports: &[62078],
+                ..Default::default()
+            }),
             "phone"
         );
     }
 
     #[test]
     fn game_consoles_get_their_own_kind() {
-        assert_eq!(classify(None, Some("Xbox-Living-Room"), None, &[], false, false), "console");
-        assert_eq!(classify(Some("Nintendo Co., Ltd."), Some("Switch"), None, &[], false, false), "console");
+        assert_eq!(
+            kind(Signals { hostname: Some("Xbox-Living-Room"), ..Default::default() }),
+            "console"
+        );
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Nintendo Co., Ltd."),
+                hostname: Some("Switch"),
+                ..Default::default()
+            }),
+            "console"
+        );
     }
 
     #[test]
     fn cameras_and_speakers_split_out_from_iot() {
         assert_eq!(
-            classify(Some("Reolink"), Some("Front-Door-Cam"), None, &[554], false, false),
+            kind(Signals {
+                vendor: Some("Reolink"),
+                hostname: Some("Front-Door-Cam"),
+                open_ports: &[554],
+                ..Default::default()
+            }),
             "camera"
         );
         assert_eq!(
-            classify(Some("Sonos, Inc."), Some("Kitchen-Sonos"), None, &[1400], false, false),
+            kind(Signals {
+                vendor: Some("Sonos, Inc."),
+                hostname: Some("Kitchen-Sonos"),
+                open_ports: &[1400],
+                ..Default::default()
+            }),
             "speaker"
         );
         // A generic smart plug is still plain IoT.
-        assert_eq!(classify(Some("Espressif Inc."), Some("smartplug-1"), None, &[], false, false), "iot");
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Espressif Inc."),
+                hostname: Some("smartplug-1"),
+                ..Default::default()
+            }),
+            "iot"
+        );
+    }
+
+    #[test]
+    fn ssdp_device_type_types_a_silent_media_renderer() {
+        // A TV that drops ping and announces nothing over mDNS, but answers SSDP.
+        let ssdp = SsdpHit {
+            device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()),
+            ..Default::default()
+        };
+        assert_eq!(kind(Signals { ssdp: Some(&ssdp), ..Default::default() }), "tv");
+    }
+
+    #[test]
+    fn ssdp_model_and_name_corroborate_a_printer() {
+        let ssdp = SsdpHit {
+            name: Some("Office LaserJet".into()),
+            model: Some("HP LaserJet Pro".into()),
+            manufacturer: Some("Hewlett-Packard".into()),
+            device_type: Some("urn:schemas-upnp-org:device:Printer:1".into()),
+        };
+        assert_eq!(
+            kind(Signals { ssdp: Some(&ssdp), open_ports: &[80], ..Default::default() }),
+            "printer"
+        );
+    }
+
+    #[test]
+    fn a_definitive_mdns_service_still_outvotes_an_ambiguous_ssdp_type() {
+        // MediaRenderer leans TV, but a Sonos mDNS service is definitive speaker.
+        let ssdp = SsdpHit {
+            device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            kind(Signals {
+                mdns: Some(&strong("speaker")),
+                ssdp: Some(&ssdp),
+                ..Default::default()
+            }),
+            "speaker"
+        );
+    }
+
+    #[test]
+    fn http_banner_title_types_a_silent_router_web_ui() {
+        // A device that only exposes an HTTP admin page — no mDNS/SSDP/hostname.
+        let banner = BannerHit { server: Some("lighttpd".into()), title: Some("NETGEAR Router".into()) };
+        assert_eq!(
+            kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
+            "router"
+        );
+    }
+
+    #[test]
+    fn http_banner_corroborates_a_nas() {
+        let banner = BannerHit { server: None, title: Some("Synology DiskStation".into()) };
+        assert_eq!(
+            kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
+            "nas"
+        );
     }
 }

@@ -52,6 +52,9 @@ pub struct LanDevice {
     pub mac: String,
     pub vendor: Option<String>,
     pub hostname: Option<String>,
+    /// Hardware model from mDNS TXT or a UPnP description, e.g. "MacBookPro18,3"
+    /// or "BRAVIA KD-55X". None when no source reported one.
+    pub model: Option<String>,
     pub kind: String,
     pub is_randomized_mac: bool,
     pub is_gateway: bool,
