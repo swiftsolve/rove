@@ -364,56 +364,94 @@ fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
     });
 }
 
-/// Watch the kernel routing table and nudge the UI the moment connectivity
-/// changes (cable pulled, Wi-Fi joined) instead of waiting for the next poll.
-/// Linux-only; other platforms rely on the UI's polling interval.
+/// Watch for connectivity changes and nudge the UI the moment they happen
+/// (cable pulled, Wi-Fi joined) instead of waiting out its polling interval.
+///
+/// Linux streams kernel route events via `ip monitor route`; Windows subscribes
+/// to .NET `NetworkChange` notifications through a long-lived PowerShell. Both
+/// print one line per change, which we debounce into a `network-changed` event.
+/// Other platforms fall back to the UI's polling interval.
 fn spawn_route_monitor(handle: tauri::AppHandle) {
-    if !cfg!(target_os = "linux") {
-        return;
-    }
-    tauri::async_runtime::spawn(async move {
-        use tokio::io::{AsyncBufReadExt, BufReader};
-        use std::time::Duration;
+    #[cfg(target_os = "linux")]
+    tauri::async_runtime::spawn(monitor_connectivity(handle, || {
+        let mut cmd = tokio::process::Command::new("ip");
+        cmd.args(["monitor", "route"]);
+        cmd
+    }));
 
-        let mut backoff = Duration::from_secs(1);
-        loop {
-            let spawned = tokio::process::Command::new("ip")
-                .args(["monitor", "route"])
-                .stdout(std::process::Stdio::piped())
+    #[cfg(target_os = "windows")]
+    tauri::async_runtime::spawn(monitor_connectivity(handle, || {
+        let mut cmd = tokio::process::Command::new("powershell");
+        cmd.args(["-NoProfile", "-NonInteractive", "-Command", WINDOWS_NET_MONITOR]);
+        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW: no console flash
+        cmd
+    }));
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    let _ = handle;
+}
+
+/// PowerShell that blocks on .NET network-change notifications and prints one
+/// line per change. `NetworkAddressChanged` is the one that matters for an
+/// Ethernet ↔ Wi-Fi swap (the default route's address is reassigned);
+/// availability changes are folded in for good measure. Pending events are
+/// drained so a burst collapses to a single line, matching the Rust-side
+/// debounce below.
+#[cfg(target_os = "windows")]
+const WINDOWS_NET_MONITOR: &str = "\
+Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAddressChanged -SourceIdentifier BeaconAddr | Out-Null; \
+Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAvailabilityChanged -SourceIdentifier BeaconAvail | Out-Null; \
+while ($true) { Wait-Event | Out-Null; Get-Event | Remove-Event; [Console]::Out.WriteLine('network-changed'); [Console]::Out.Flush() }";
+
+/// Read change lines from a spawned monitor child, emitting a debounced
+/// `network-changed` per line and respawning it (with backoff) if it dies.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+async fn monitor_connectivity<F>(handle: tauri::AppHandle, spawn: F)
+where
+    F: Fn() -> tokio::process::Command,
+{
+    use std::time::Duration;
+    use tokio::io::{AsyncBufReadExt, BufReader};
+
+    let mut backoff = Duration::from_secs(1);
+    loop {
+        let spawned = {
+            let mut cmd = spawn();
+            cmd.stdout(std::process::Stdio::piped())
                 .stderr(std::process::Stdio::null())
-                .kill_on_drop(true) // don't leave `ip monitor` orphaned on exit
-                .spawn();
-            let Ok(mut child) = spawned else {
-                tracing::warn!("could not start `ip monitor route`; relying on polling");
-                return;
-            };
-            let Some(stdout) = child.stdout.take() else {
-                return;
-            };
+                .kill_on_drop(true); // don't leave the monitor orphaned on exit
+            cmd.spawn()
+        };
+        let Ok(mut child) = spawned else {
+            tracing::warn!("could not start the network-change monitor; relying on polling");
+            return;
+        };
+        let Some(stdout) = child.stdout.take() else {
+            return;
+        };
 
-            let started = std::time::Instant::now();
-            let mut lines = BufReader::new(stdout).lines();
-            let mut last_emit = started - Duration::from_secs(10);
+        let started = std::time::Instant::now();
+        let mut lines = BufReader::new(stdout).lines();
+        let mut last_emit = started - Duration::from_secs(10);
 
-            while let Ok(Some(_)) = lines.next_line().await {
-                if last_emit.elapsed() >= Duration::from_millis(800) {
-                    last_emit = std::time::Instant::now();
-                    let _ = handle.emit("network-changed", &());
-                }
-            }
-
-            // The monitor exited (transient failure); reap it and respawn. A
-            // monitor that stayed up a while resets the backoff; rapid crashes
-            // escalate it (capped) so we don't spin respawning.
-            let _ = child.kill().await;
-            if started.elapsed() >= Duration::from_secs(60) {
-                backoff = Duration::from_secs(1);
-            } else {
-                tokio::time::sleep(backoff).await;
-                backoff = (backoff * 2).min(Duration::from_secs(30));
+        while let Ok(Some(_)) = lines.next_line().await {
+            if last_emit.elapsed() >= Duration::from_millis(800) {
+                last_emit = std::time::Instant::now();
+                let _ = handle.emit("network-changed", &());
             }
         }
-    });
+
+        // The monitor exited (transient failure); reap it and respawn. One that
+        // stayed up a while resets the backoff; rapid crashes escalate it
+        // (capped) so we don't spin respawning.
+        let _ = child.kill().await;
+        if started.elapsed() >= Duration::from_secs(60) {
+            backoff = Duration::from_secs(1);
+        } else {
+            tokio::time::sleep(backoff).await;
+            backoff = (backoff * 2).min(Duration::from_secs(30));
+        }
+    }
 }
 
 /// Reveal the main window and pull it to the foreground.

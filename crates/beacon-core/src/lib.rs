@@ -10,6 +10,7 @@ pub mod mdns;
 pub mod net_util;
 pub mod network_info;
 pub mod oui;
+pub mod platform;
 pub mod shell;
 pub mod speed;
 pub mod store;

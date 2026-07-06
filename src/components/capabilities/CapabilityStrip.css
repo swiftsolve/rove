@@ -39,3 +39,18 @@
   margin-top: var(--gap-2xs);
 }
 
+/* Header action: "Updated … ago" next to a compact rerun button. */
+.capability-strip-action {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.capability-strip-updated {
+  white-space: nowrap;
+}
+
+.capability-rerun-spin {
+  animation: spin 0.75s linear infinite;
+}
+

@@ -37,7 +37,7 @@ export default function HomeView({
   const isConnected = isConnectedNetwork(info)
   // A speed test can be started from the Speed tab and keeps running across tab
   // switches, so the live panel still reflects it while you're on Home.
-  const { testing, capabilities, runTest } = useSpeedTest()
+  const { testing, capabilities, completedAt, runTest } = useSpeedTest()
   const { throughput: liveThroughput, history: liveHistory } = useLiveThroughput(isConnected)
 
   const handleRunTest = (): void => {
@@ -72,6 +72,7 @@ export default function HomeView({
           capabilities={capabilities}
           canRunTest={canRunSpeedTest(info)}
           testing={testing}
+          completedAt={completedAt}
           onOpenDetails={onOpenCapabilities}
           onRunTest={handleRunTest}
         />

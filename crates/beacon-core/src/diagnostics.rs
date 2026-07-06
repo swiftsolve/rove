@@ -15,11 +15,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     if !crate::net_util::is_shell_safe_ip(host) {
         return None;
     }
-    let cmd = if cfg!(target_os = "windows") {
-        format!("ping -n {count} -w 1000 {host}")
-    } else {
-        format!("ping -c {count} -i 0.2 -W 1 {host} 2>/dev/null")
-    };
+    let cmd = crate::platform::ping_command(host, count, 1000);
     let out = try_run_timeout(&cmd, Duration::from_secs(20)).await?;
 
     let times: Vec<f64> = out

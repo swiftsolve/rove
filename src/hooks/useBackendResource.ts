@@ -40,26 +40,32 @@ export function useBackendResource<T>(
   fetcherRef.current = fetcher
 
   const reloadSeqRef = useRef(0)
+  // Liveness, kept separate from `reloadSeqRef` (which only orders overlapping
+  // loads). Conflating the two is what previously orphaned the initial fetch
+  // under React 18 StrictMode: its simulated unmount bumped the sequence, the
+  // remount was skipped by the `hasRunRef` guard, and the in-flight result was
+  // then dropped — so `isBusy` never cleared and the spinner hung forever.
+  const mountedRef = useRef(true)
 
   const reload = useCallback(async (): Promise<void> => {
     const fetch = fetcherRef.current
     if (!fetch) return
 
     // Guard against overlapping loads resolving out of order: only the latest
-    // call is allowed to write state.
+    // call is allowed to write state, and only while still mounted.
     const seq = ++reloadSeqRef.current
     setIsBusy(true)
     setError(null)
 
     try {
       const result = await fetch()
-      if (seq === reloadSeqRef.current) setData(result)
+      if (seq === reloadSeqRef.current && mountedRef.current) setData(result)
     } catch (cause) {
-      if (seq === reloadSeqRef.current) {
+      if (seq === reloadSeqRef.current && mountedRef.current) {
         setError(cause instanceof Error ? cause.message : errorMessage)
       }
     } finally {
-      if (seq === reloadSeqRef.current) setIsBusy(false)
+      if (seq === reloadSeqRef.current && mountedRef.current) setIsBusy(false)
     }
   }, [errorMessage])
 
@@ -86,15 +92,15 @@ export function useBackendResource<T>(
   }, [enabled, refetchOnEnable, reload, resetKey])
 
   useEffect(() => {
-    // Drop any in-flight fetch on unmount so it can't setState afterward. This
-    // must NOT run on every resetKey/enabled change: when the key merely becomes
-    // known (null → first real key) we deliberately keep the initial fetch in
-    // flight instead of refetching, so invalidating its sequence here would
-    // orphan it — its result would be discarded and `isBusy` would never clear,
-    // leaving the view stuck on its spinner. A real network switch or an
-    // overlapping reload is already superseded by reload()'s own sequence bump.
+    // Mark unmounted so a fetch that resolves afterward can't setState. Using a
+    // dedicated liveness ref (not a sequence bump) is what makes this safe under
+    // StrictMode's mount → unmount → remount: the cleanup flips this false, the
+    // remount flips it true again before the in-flight fetch resolves, so the
+    // initial load still lands instead of being orphaned. A real network switch
+    // or overlapping reload is superseded separately by reload()'s sequence bump.
+    mountedRef.current = true
     return () => {
-      reloadSeqRef.current += 1
+      mountedRef.current = false
     }
   }, [])
 

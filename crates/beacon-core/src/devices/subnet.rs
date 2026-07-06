@@ -1,44 +1,34 @@
 //! IPv4 subnet arithmetic for scoping the scan.
-use crate::shell::try_run;
-use std::net::Ipv4Addr;
+use crate::platform;
+use std::net::{IpAddr, Ipv4Addr};
 
-/// CIDR of the interface's IPv4 network, e.g. "192.168.2.0/24".
+/// CIDR of the interface's IPv4 network, e.g. "192.168.2.0/24". Each OS's
+/// authoritative probe lives in [`crate::platform`]; sysinfo is the fallback.
 pub async fn subnet_of(interface: &str) -> Option<String> {
-    // Linux: `ip -j` is authoritative.
     if cfg!(target_os = "linux") {
-        if let Some(subnet) = linux_subnet_of(interface).await {
-            return Some(subnet);
+        if let Some((ip, prefix)) = platform::linux::subnet_of(interface).await {
+            return Some(to_cidr(ip, prefix));
         }
     }
-    // Everywhere: sysinfo reports each interface's IP networks with prefixes.
+    if cfg!(target_os = "windows") {
+        if let Some((ip, prefix)) = platform::windows::subnet_of(interface).await {
+            return Some(to_cidr(ip, prefix));
+        }
+    }
+    // Fallback everywhere: sysinfo reports each interface's IP networks with prefixes.
     let networks = sysinfo::Networks::new_with_refreshed_list();
     let data = networks.iter().find(|(name, _)| *name == interface)?.1;
     let ip_network = data.ip_networks().iter().find(|n| n.addr.is_ipv4())?;
-    let std::net::IpAddr::V4(ip) = ip_network.addr else {
+    let IpAddr::V4(ip) = ip_network.addr else {
         return None;
     };
-    let prefix = u32::from(ip_network.prefix);
-    let network = Ipv4Addr::from(u32::from(ip) & prefix_mask(prefix));
-    Some(format!("{network}/{prefix}"))
+    Some(to_cidr(ip, u32::from(ip_network.prefix)))
 }
 
-async fn linux_subnet_of(interface: &str) -> Option<String> {
-    if !crate::net_util::is_shell_safe_iface(interface) {
-        return None;
-    }
-    let out = try_run(&format!("ip -j addr show {interface} 2>/dev/null")).await?;
-    let parsed: Vec<serde_json::Value> = serde_json::from_str(&out).ok()?;
-    let addr = parsed
-        .first()?["addr_info"]
-        .as_array()?
-        .iter()
-        .find(|a| a["family"] == "inet")?
-        .clone();
-
-    let ip: Ipv4Addr = addr["local"].as_str()?.parse().ok()?;
-    let prefix = addr["prefixlen"].as_u64()? as u32;
+/// Mask `ip` down to its network address and render as "network/prefix".
+fn to_cidr(ip: Ipv4Addr, prefix: u32) -> String {
     let network = Ipv4Addr::from(u32::from(ip) & prefix_mask(prefix));
-    Some(format!("{network}/{prefix}"))
+    format!("{network}/{prefix}")
 }
 
 /// Whether `ip` belongs to `subnet` ("a.b.c.d/p"). Unparseable input is

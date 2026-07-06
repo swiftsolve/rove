@@ -7,7 +7,6 @@
 //!   4. add this machine, sort gateway → self → by address
 mod classify;
 mod hostname;
-mod neighbors;
 mod probe;
 mod subnet;
 mod sweep;
@@ -15,19 +14,13 @@ mod sweep;
 use crate::mdns;
 use crate::network_info::{default_gateway, default_interface};
 use crate::oui::{is_randomized_mac, lookup_vendor};
+use crate::platform::{neighbor_table, RawNeighbor};
 use crate::types::{LanDevice, LanDeviceScan};
-use futures_util::StreamExt;
-use neighbors::RawNeighbor;
 use std::time::Duration;
 
 /// How long the sweep + mDNS window lasts. Both run concurrently, so this is
 /// also (roughly) the total added latency of a scan.
 const DISCOVERY_WINDOW: Duration = Duration::from_millis(3200);
-
-/// Cap on concurrent reverse-DNS lookups. Each spawns a subprocess
-/// (`getent`/`dscacheutil`/PowerShell), so an unbounded fan-out over a full
-/// `/24` would pile hundreds of processes on top of the sweep and probe.
-const HOSTNAME_CONCURRENCY: usize = 16;
 
 pub async fn scan() -> LanDeviceScan {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
@@ -56,21 +49,15 @@ pub async fn scan() -> LanDeviceScan {
         None => (None, None),
     };
 
-    let in_scope: Vec<RawNeighbor> = neighbors::neighbors()
+    let in_scope: Vec<RawNeighbor> = neighbor_table()
         .await
         .into_iter()
         .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true))
         .collect();
 
-    // `buffered` preserves order, so the results stay aligned with `in_scope`
-    // for the `zip` below, while capping concurrent subprocess spawns. Each
-    // future owns its address so nothing is borrowed across the buffer.
+    // Results stay aligned index-for-index with `in_scope` for the `zip` below.
     let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
-    let hostnames: Vec<Option<String>> = futures_util::stream::iter(ips)
-        .map(|ip| async move { hostname::resolve(&ip).await })
-        .buffered(HOSTNAME_CONCURRENCY)
-        .collect()
-        .await;
+    let hostnames: Vec<Option<String>> = hostname::resolve_many(&ips).await;
 
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()

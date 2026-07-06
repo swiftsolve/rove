@@ -6,6 +6,11 @@ import './SpeedReadout.css'
 
 export type SpeedSeries = 'down' | 'up'
 
+/** Live rates below this are background noise (OS chatter, keepalives). Show them
+ *  as zero rather than letting toFixed(1) round them up to 0.1 Mbps — otherwise
+ *  the readout reads 0.1 when nothing is really downloading or uploading. */
+const LIVE_FLOOR_MBPS = 0.1
+
 interface SpeedReadoutProps {
   readonly label: string
   readonly mbps: number
@@ -19,9 +24,10 @@ function SpeedReadout({
   series,
   compact = false,
 }: SpeedReadoutProps): JSX.Element {
-  const animated = useCountUp(mbps)
+  const shown = mbps < LIVE_FLOOR_MBPS ? 0 : mbps
+  const animated = useCountUp(shown)
   const { value, unit } = splitSpeedMbps(animated)
-  const actual = splitSpeedMbps(mbps)
+  const actual = splitSpeedMbps(shown)
 
   return (
     <div className={`speed-readout ${series}`}>
