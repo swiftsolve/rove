@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
 import { isConnectedNetwork } from '@/types'
+import type { CapabilityId } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
 import { useDataUsage } from '@/hooks/useDataUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
-import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/ui/Icons'
+import { BrandIcon, CloseIcon, MinimizeIcon, OfflineIcon, RefreshIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
 import UpdateDialog from '@/components/ui/UpdateDialog'
 import { Spinner } from '@/components/ui/Spinner'
@@ -27,15 +28,28 @@ function LoadingScreen({
   readonly error: string | null
   readonly onRetry: () => void
 }): JSX.Element {
-  return (
-    <div className="loading-screen">
-      {!error && <Spinner />}
-      <p>{error ?? 'Looking for your network…'}</p>
-      {error && (
-        <button type="button" className="btn-primary" onClick={onRetry}>
+  if (error) {
+    return (
+      <div className="loading-screen loading-screen-error" role="alert">
+        <span className="loading-screen-icon" aria-hidden>
+          <OfflineIcon size={24} />
+        </span>
+        <div className="loading-screen-text">
+          <p className="loading-screen-title">Can’t reach your network</p>
+          <p className="loading-screen-msg">{error}</p>
+        </div>
+        <button type="button" className="btn-secondary loading-screen-retry" onClick={onRetry}>
+          <RefreshIcon size={14} />
           Try again
         </button>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="loading-screen">
+      <Spinner />
+      <p>Looking for your network…</p>
     </div>
   )
 }
@@ -94,9 +108,16 @@ function StatusBar({
 
 export default function App(): JSX.Element {
   const [activeTab, setActiveTab] = useState<AppTab>('home')
-  const [speedOpenDetails, setSpeedOpenDetails] = useState(false)
+  const [speedDetailsTarget, setSpeedDetailsTarget] = useState<CapabilityId | null>(null)
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
+  const scrollRef = useRef<HTMLElement>(null)
   const { info, error, isLoading, refresh } = useNetworkInfo()
+
+  // Reset scroll to the top whenever the tab changes, so a new page never
+  // inherits the previous page's scroll position.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 })
+  }, [activeTab])
 
   // Check for a newer signed release once, shortly after launch. If one is
   // found, surface it via a non-blocking modal (never window.confirm, which
@@ -153,7 +174,7 @@ export default function App(): JSX.Element {
 
         <div className="app-col">
           <div className="app">
-            <section className="app-scroll" aria-label="Main content">
+            <section ref={scrollRef} className="app-scroll" aria-label="Main content">
             {error && info && <div className="error-banner">{error}</div>}
 
             <main className="app-main">
@@ -169,11 +190,12 @@ export default function App(): JSX.Element {
                   deviceCount={deviceCount}
                   deviceOnline={deviceOnline}
                   devicesLoading={devicesScanning}
-                  onOpenCapabilities={() => {
-                    setSpeedOpenDetails(true)
+                  onOpenCapabilities={(capabilityId) => {
+                    setSpeedDetailsTarget(capabilityId)
                     setActiveTab('speed')
                   }}
                   onRunSpeedTest={() => setActiveTab('speed')}
+                  onOpenSpeed={() => setActiveTab('speed')}
                   onOpenUsage={() => setActiveTab('usage')}
                   onOpenDevices={() => setActiveTab('devices')}
                 />
@@ -182,8 +204,8 @@ export default function App(): JSX.Element {
               {info && activeTab === 'speed' && (
                 <SpeedView
                   info={info}
-                  openDetailsInitially={speedOpenDetails}
-                  onDetailsOpened={() => setSpeedOpenDetails(false)}
+                  openDetailsTarget={speedDetailsTarget}
+                  onDetailsOpened={() => setSpeedDetailsTarget(null)}
                 />
               )}
 

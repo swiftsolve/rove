@@ -1,7 +1,9 @@
-/* Two half-width stat widgets sitting side by side in the Home stack. */
+/* Two stat widgets side by side in the Home stack. The usage card carries two
+   numbers, so it gets the wider column; the single-count Devices card takes the
+   narrower one. */
 .home-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 2fr;
   gap: var(--gap-stack);
 }
 
@@ -68,7 +70,7 @@
 .home-usage-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap-lg);
+  gap: var(--gap-sm);
   width: 100%;
   /* Match the Live traffic panel's breathing room between title and readouts
      (~18px total, vs the 8px the tighter card gap would give on its own). */
@@ -77,15 +79,17 @@
 
 .home-usage-readout {
   display: flex;
-  flex-direction: column;
-  gap: var(--gap-sm);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--gap-xs);
   min-width: 0;
 }
 
-.home-usage-readout-label {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-tight);
+/* Two big numbers sit side by side in a half-width card, so the readout value
+   is smaller than a full-width metric to keep both on one line without clipping
+   on narrow windows. */
+.home-usage-readout .metric-compact .metric-value {
+  font-size: var(--text-title);
 }
 
 .home-usage-key {
@@ -99,9 +103,15 @@
   background: var(--positive);
 }
 
-/* Devices card: a single readout, sharing the usage card's top offset. */
+/* Devices card: a single readout, sharing the usage card's top offset. The key
+   dot is small, so give it a touch more room before the count than the usage
+   arrows get. */
 .home-usage-single {
   margin-top: var(--gap-md);
+}
+
+.home-usage-single .home-usage-readout {
+  gap: var(--gap-sm);
 }
 
 /* Fill the card's body and centre the spinner both ways. The card stretches to

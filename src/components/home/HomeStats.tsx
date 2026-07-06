@@ -29,25 +29,21 @@ function StatCard({ icon, label, body, ariaLabel, onOpen }: StatCardProps): JSX.
 }
 
 interface StatReadoutProps {
-  readonly label: string
-  /** Colour of the label's key dot. */
+  /** Colour of the key dot / direction of the arrow. */
   readonly keyClass: 'down' | 'up' | 'online'
   readonly value: string
   readonly unit: string
 }
 
-/** A colour-keyed label above a compact value, matching the Live traffic readouts. */
-function StatReadout({ label, keyClass, value, unit }: StatReadoutProps): JSX.Element {
+/** A direction icon (or key dot) inline with a compact value. */
+function StatReadout({ keyClass, value, unit }: StatReadoutProps): JSX.Element {
   return (
     <div className="home-usage-readout">
-      <div className="home-usage-readout-label">
-        {keyClass === 'online' ? (
-          <span className="home-usage-key online" aria-hidden />
-        ) : (
-          <DirectionIcon series={keyClass} />
-        )}
-        <span className="field-label">{label}</span>
-      </div>
+      {keyClass === 'online' ? (
+        <span className="home-usage-key online" aria-hidden />
+      ) : (
+        <DirectionIcon series={keyClass} size={12} />
+      )}
       <div className="metric metric-compact num">
         <span className="metric-value">{value}</span>
         <span className="metric-unit">{unit}</span>
@@ -90,8 +86,8 @@ export default function HomeStats({
         body={
           usageResolved ? (
             <div className="home-usage-split" aria-hidden>
-              <StatReadout label="Download" keyClass="down" value={down.value} unit={down.unit} />
-              <StatReadout label="Upload" keyClass="up" value={up.value} unit={up.unit} />
+              <StatReadout keyClass="down" value={down.value} unit={down.unit} />
+              <StatReadout keyClass="up" value={up.value} unit={up.unit} />
             </div>
           ) : (
             <div className="metric home-stat-metric" aria-hidden>
@@ -115,10 +111,9 @@ export default function HomeStats({
           ) : hasDevices ? (
             <div className="home-usage-single" aria-hidden>
               <StatReadout
-                label="Online"
                 keyClass="online"
-                value={deviceOnline != null ? `${deviceOnline} / ${deviceCount}` : String(deviceCount)}
-                unit="devices"
+                value={deviceOnline != null ? String(deviceOnline) : String(deviceCount)}
+                unit="online"
               />
             </div>
           ) : (

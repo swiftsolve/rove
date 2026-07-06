@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{
     menu::{Menu, MenuItem},
-    tray::TrayIconBuilder,
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager,
 };
 
@@ -510,13 +510,26 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
         .icon(icon)
         .tooltip("Beacon")
         .menu(&menu)
-        // Show the menu on a left-click too (not just right-click), so a single
-        // click always surfaces Open / Quit on every platform.
-        .show_menu_on_left_click(true)
+        // Left-click opens the app directly; the menu (Open / Quit) is reserved
+        // for right-click. Disabling the built-in left-click menu lets us handle
+        // the left button ourselves in `on_tray_icon_event`.
+        .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => show_main_window(app),
             "quit" => app.exit(0),
             _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            // A completed left-click (button released over the icon) surfaces the
+            // main window. Right-click falls through to the native menu.
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                show_main_window(tray.app_handle());
+            }
         })
         .build(app)?;
 

@@ -77,6 +77,49 @@
   color: var(--text-secondary);
 }
 
+/* Error variant of the first-launch screen: an icon chip, a short heading, the
+   specific reason, and a real button — so a failed detection reads as a
+   recoverable state rather than a stray line of grey text. */
+.loading-screen-error {
+  gap: var(--gap-lg);
+  padding: var(--gap-xl);
+}
+
+.loading-screen-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(247, 123, 123, 0.1);
+  color: var(--negative);
+}
+
+.loading-screen-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+  text-align: center;
+}
+
+.loading-screen-error .loading-screen-title {
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.loading-screen-error .loading-screen-msg {
+  max-width: 260px;
+  /* Override .loading-screen p (0,1,1) for the wrapped reason line. */
+  color: var(--text-tertiary);
+}
+
+.loading-screen-retry {
+  gap: var(--gap-tight);
+}
+
 .spinner {
   width: 22px;
   height: 22px;
