@@ -15,9 +15,36 @@
   padding: 0 var(--section-body);
 }
 
-.capability-strip > .tooltip-wrap {
+.capability-strip > .capability-strip-cell {
   flex: 0 0 auto;
 }
+
+/* Each column: the icon tile with its signal meter centred beneath it. */
+.capability-strip-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+/* A smaller meter than the labelled one in the details list — the strip is a
+   compact glanceable row, so the bars read as an accent under the icon. Keep
+   every dimension on whole pixels (heights, gap) and drop the pill radius to a
+   hairline, or the thin bars blur across subpixel boundaries and read fuzzy. */
+.capability-strip-cell .capability-meter {
+  height: 9px;
+  gap: 2px;
+}
+
+.capability-strip-cell .capability-seg {
+  width: 2px;
+  border-radius: 1px;
+}
+
+.capability-strip-cell .capability-seg:nth-child(1) { height: 3px; }
+.capability-strip-cell .capability-seg:nth-child(2) { height: 5px; }
+.capability-strip-cell .capability-seg:nth-child(3) { height: 7px; }
+.capability-strip-cell .capability-seg:nth-child(4) { height: 9px; }
 
 .capability-strip-item {
   width: 34px;
@@ -39,18 +66,63 @@
   margin-top: var(--gap-2xs);
 }
 
-/* Header action: "Updated … ago" next to a compact rerun button. */
-.capability-strip-action {
+.capability-rerun-spin {
+  animation: spin 0.75s linear infinite;
+}
+
+/* Third row: a dark inset strip flush to the card's bottom edge — full-bleed
+   like ConnectionCard's details / bench-footer. The strip itself isn't
+   clickable; only the link inside it is. */
+.capability-strip-footer {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  justify-content: flex-end;
+  /* Full-bleed to both card edges: the body content box plus the padding on
+     each side, then negative margins pull it out over that padding. */
+  width: calc(100% + 2 * var(--section-body));
+  margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  padding: var(--section-header-y) var(--section-body);
+  background: var(--bg-inset);
+  /* The strip full-bleeds to the card edge, and this section runs
+     `overflow: visible` (so tooltips can escape) — so round the bottom corners
+     ourselves to sit flush inside the card's radius. */
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+/* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and
+   picks up the accent tint and an underline on hover, same affordance as the
+   Speed page's "View history". Only this navigates to the Speed page. */
+.capability-strip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-in-out);
 }
 
 .capability-strip-updated {
-  white-space: nowrap;
+  font-weight: var(--weight-medium);
 }
 
-.capability-rerun-spin {
-  animation: spin 0.75s linear infinite;
+.capability-strip-link svg {
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.capability-strip-link:hover,
+.capability-strip-link:focus-visible,
+.capability-strip-link:hover svg,
+.capability-strip-link:focus-visible svg {
+  color: var(--accent);
+}
+
+.capability-strip-link:hover .capability-strip-updated,
+.capability-strip-link:focus-visible .capability-strip-updated {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 

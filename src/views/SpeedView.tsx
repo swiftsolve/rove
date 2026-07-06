@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { NetworkInfo } from '@/types'
+import type { CapabilityId, NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
@@ -18,7 +18,9 @@ import './SpeedView.css'
 
 interface SpeedViewProps {
   readonly info: NetworkInfo
-  readonly openDetailsInitially?: boolean
+  /** When set, open the capability details page scrolled to this capability
+   *  (used when arriving from the Home strip). */
+  readonly openDetailsTarget?: CapabilityId | null
   readonly onDetailsOpened?: () => void
 }
 
@@ -34,10 +36,11 @@ function connectionFromNetworkInfo(info: NetworkInfo): SpeedTestConnection | nul
 
 export default function SpeedView({
   info,
-  openDetailsInitially = false,
+  openDetailsTarget = null,
   onDetailsOpened,
 }: SpeedViewProps): JSX.Element {
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [detailsTarget, setDetailsTarget] = useState<CapabilityId | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const {
     internetSpeed,
@@ -57,10 +60,11 @@ export default function SpeedView({
   const liveConnection = connectionFromNetworkInfo(info)
 
   useEffect(() => {
-    if (!openDetailsInitially || !hasRunTest) return
+    if (!openDetailsTarget || !hasRunTest) return
+    setDetailsTarget(openDetailsTarget)
     setDetailsOpen(true)
     onDetailsOpened?.()
-  }, [openDetailsInitially, hasRunTest, onDetailsOpened])
+  }, [openDetailsTarget, hasRunTest, onDetailsOpened])
   const footerConnection =
     hasRunTest && runConnection != null ? runConnection : liveConnection
   const footerLinkCapacityMbps =
@@ -101,6 +105,7 @@ export default function SpeedView({
         capabilities={capabilities}
         speed={internetSpeed}
         completedAt={completedAt}
+        targetId={detailsTarget}
         onBack={() => setDetailsOpen(false)}
       />
     )
@@ -189,7 +194,10 @@ export default function SpeedView({
       <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
-        onOpenDetails={() => setDetailsOpen(true)}
+        onOpenDetails={(id) => {
+          setDetailsTarget(id)
+          setDetailsOpen(true)
+        }}
       />
     </div>
   )

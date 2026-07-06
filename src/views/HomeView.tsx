@@ -1,4 +1,4 @@
-import type { DataUsageSummary, NetworkInfo } from '@/types'
+import type { CapabilityId, DataUsageSummary, NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
@@ -15,9 +15,11 @@ interface HomeViewProps {
   readonly deviceCount: number | null
   readonly deviceOnline: number | null
   readonly devicesLoading: boolean
-  readonly onOpenCapabilities: () => void
+  readonly onOpenCapabilities: (capabilityId: CapabilityId) => void
   /** Switch to the Speed tab (where the running test's UI lives). */
   readonly onRunSpeedTest: () => void
+  /** Navigate to the Speed page. */
+  readonly onOpenSpeed: () => void
   readonly onOpenUsage: () => void
   readonly onOpenDevices: () => void
 }
@@ -31,6 +33,7 @@ export default function HomeView({
   devicesLoading,
   onOpenCapabilities,
   onRunSpeedTest,
+  onOpenSpeed,
   onOpenUsage,
   onOpenDevices,
 }: HomeViewProps): JSX.Element {
@@ -75,6 +78,7 @@ export default function HomeView({
           completedAt={completedAt}
           onOpenDetails={onOpenCapabilities}
           onRunTest={handleRunTest}
+          onOpenSpeed={onOpenSpeed}
         />
       )}
 

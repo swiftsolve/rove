@@ -1,15 +1,15 @@
 //! Reverse hostname resolution and hostname hygiene.
-use crate::shell::{try_run, try_run_powershell};
-use futures_util::StreamExt;
+use crate::shell::{try_run_powershell, try_run_timeout};
 use regex_lite::Regex;
 use std::collections::HashMap;
 use std::sync::LazyLock;
+use std::time::Duration;
 
-/// Cap on concurrent per-host reverse-DNS lookups on Unix. Each spawns a
-/// subprocess (`getent`/`dscacheutil`), so an unbounded fan-out over a full
-/// `/24` would pile hundreds of processes on top of the sweep and probe.
-/// Windows sidesteps this entirely — [`resolve_many`] resolves the whole batch
-/// in one PowerShell process.
+/// Cap on concurrent per-host reverse-DNS lookups inside the single Unix batch
+/// process. Each host still needs its own `getent`/`dscacheutil` subprocess, so
+/// this bounds the `xargs -P` fan-out — without it a full `/24` would pile
+/// hundreds of processes on top of the sweep and probe. Windows needs no such
+/// cap: [`resolve_many`] resolves the whole batch in one PowerShell process.
 const UNIX_HOSTNAME_CONCURRENCY: usize = 16;
 
 static HOST_SUFFIX: LazyLock<Regex> =
@@ -30,47 +30,74 @@ fn is_meaningful(host: &str) -> bool {
     !(hex_only.len() == 12 && hex_only.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
-pub async fn resolve(ip: &str) -> Option<String> {
-    // The address goes into a shell command — only ever pass a validated IP.
-    if !crate::net_util::is_shell_safe_ip(ip) {
-        return None;
-    }
-    let out = if std::env::consts::OS == "windows" {
-        try_run_powershell(&format!("[System.Net.Dns]::GetHostEntry('{ip}').HostName")).await?
-    } else {
-        let cmd = match std::env::consts::OS {
-            // macOS has no getent; dscacheutil queries the same resolver stack.
-            "macos" => format!(
-                "dscacheutil -q host -a ip_address {ip} | awk '/^name:/ {{print $2; exit}}'"
-            ),
-            _ => format!("timeout 1 getent hosts {ip} | awk '{{print $2; exit}}'"),
-        };
-        try_run(&cmd).await?
-    };
-    let host = trim_suffix(out.trim());
-    (!host.is_empty() && is_meaningful(&host)).then_some(host)
-}
-
 /// Resolve a batch of addresses to hostnames, aligned index-for-index with
 /// `ips` (unresolved / meaningless names become `None`).
 ///
-/// Windows resolves the entire batch in a *single* PowerShell process that
-/// fires every reverse lookup concurrently (`GetHostEntryAsync`) and waits at
-/// most [`WINDOWS_BATCH_BUDGET_MS`] total — versus one process per host, each
-/// able to block for seconds before failing, which dominated scan latency.
-/// Other platforms fan out bounded concurrent per-host lookups.
+/// Every platform resolves the entire batch in a *single* process rather than
+/// one process per host — each host process could block for seconds before
+/// failing, which dominated scan latency. Windows fires the whole batch
+/// concurrently in-process (`GetHostEntryAsync`); Unix fans out bounded
+/// concurrent `getent`/`dscacheutil` lookups under one `xargs -P` process.
 pub async fn resolve_many(ips: &[String]) -> Vec<Option<String>> {
     if ips.is_empty() {
         return Vec::new();
     }
     if std::env::consts::OS == "windows" {
-        return resolve_many_windows(ips).await;
+        resolve_many_windows(ips).await
+    } else {
+        resolve_many_unix(ips).await
     }
-    futures_util::stream::iter(ips.iter().cloned())
-        .map(|ip| async move { resolve(&ip).await })
-        .buffered(UNIX_HOSTNAME_CONCURRENCY)
-        .collect()
-        .await
+}
+
+/// Total wall-clock budget for a Unix batch. The per-host `getent`/`dscacheutil`
+/// lookups fan out through `xargs -P`, so — unlike the Windows path — there is
+/// no in-process async wait to bound; a tokio timeout caps the whole batch.
+const UNIX_BATCH_BUDGET_MS: u64 = 4000;
+
+async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
+    // Only validated IPs are interpolated into the script; anything else is
+    // dropped (and stays `None` below).
+    let safe: Vec<&str> = ips
+        .iter()
+        .map(String::as_str)
+        .filter(|ip| crate::net_util::is_shell_safe_ip(ip))
+        .collect();
+
+    let mut resolved: HashMap<String, String> = HashMap::new();
+    if !safe.is_empty() {
+        let list = safe.join(" ");
+        // One lookup per IP, fanned out `UNIX_HOSTNAME_CONCURRENCY`-wide inside a
+        // single `sh` process. The per-IP snippet is single-quoted, so it uses
+        // only double quotes internally; the `\$2` reaches the inner `sh`, which
+        // unescapes it to `$2` for awk. Each invocation ends with a plain `if`
+        // (never a bare failing test), so an unresolved host exits 0 — otherwise
+        // `xargs` would report 123 and `capture()` would discard the whole batch.
+        // Emits `ip<TAB>hostname` per resolved IP.
+        let per_ip = if std::env::consts::OS == "macos" {
+            // macOS has no getent; dscacheutil queries the same resolver stack.
+            r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
+        } else {
+            r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
+        };
+        let script = format!(
+            "printf '%s\\n' {list} | xargs -P {UNIX_HOSTNAME_CONCURRENCY} -I@ sh -c '{per_ip}' _ @"
+        );
+        if let Some(out) =
+            try_run_timeout(&script, Duration::from_millis(UNIX_BATCH_BUDGET_MS)).await
+        {
+            for line in out.lines() {
+                let Some((ip, host)) = line.split_once('\t') else {
+                    continue;
+                };
+                let host = trim_suffix(host.trim());
+                if !host.is_empty() && is_meaningful(&host) {
+                    resolved.insert(ip.trim().to_string(), host);
+                }
+            }
+        }
+    }
+
+    ips.iter().map(|ip| resolved.get(ip).cloned()).collect()
 }
 
 /// Total wall-clock budget for a Windows batch of concurrent reverse lookups.

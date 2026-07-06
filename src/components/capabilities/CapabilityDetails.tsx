@@ -1,4 +1,5 @@
-import type { CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
+import { useEffect, useRef } from 'react'
+import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 import { CAPABILITY_LEVEL_LABELS } from '@/types'
 import { explainCapability } from '@/components/capabilities/capability-detail'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
@@ -20,6 +21,8 @@ interface CapabilityDetailsProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly speed: SpeedResult
   readonly completedAt: number | null
+  /** Capability to scroll into view when the page opens (the one just clicked). */
+  readonly targetId?: CapabilityId | null
   readonly onBack: () => void
 }
 
@@ -33,7 +36,7 @@ function CapabilityDetailCard({
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
-    <section className="cap-detail surface">
+    <section className="cap-detail surface" data-capability-id={capability.id}>
       <header className="cap-detail-head">
         <span className={`cap-detail-icon level-${capability.level}`}>
           <CapabilityIcon id={capability.id} size={16} />
@@ -75,8 +78,26 @@ export default function CapabilityDetails({
   capabilities,
   speed,
   completedAt,
+  targetId,
   onBack,
 }: CapabilityDetailsProps): JSX.Element {
+  const listRef = useRef<HTMLDivElement>(null)
+
+  // Smooth-scroll to the capability the user clicked. Runs once on open; the
+  // target card sits below the page header, so scroll it to the top of the
+  // viewport (its scroll-margin leaves a little breathing room). Deferred to the
+  // next frame so the subpage has laid out before the scroll animates.
+  useEffect(() => {
+    if (targetId == null) return
+    const frame = requestAnimationFrame(() => {
+      const card = listRef.current?.querySelector<HTMLElement>(
+        `[data-capability-id="${targetId}"]`,
+      )
+      card?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [targetId])
+
   return (
     <Subpage
       title="Capabilities"
@@ -85,7 +106,7 @@ export default function CapabilityDetails({
       }
       onBack={onBack}
     >
-      <div className="cap-detail-list">
+      <div className="cap-detail-list" ref={listRef}>
         {capabilities.map((capability) => (
           <CapabilityDetailCard key={capability.id} capability={capability} speed={speed} />
         ))}

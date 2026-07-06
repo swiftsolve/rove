@@ -1,10 +1,11 @@
-import type { CapabilityRating } from '@/types'
+import type { CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_LEVEL_LABELS } from '@/types'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
+import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Section from '@/components/ui/Section'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
-import { PlayIcon, RefreshIcon, ZapIcon } from '@/components/ui/Icons'
+import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/ui/Icons'
 import { formatTimeAgo } from '@/lib/format'
 import './CapabilityStrip.css'
 
@@ -15,8 +16,10 @@ interface CapabilityStripProps {
   readonly testing: boolean
   /** Epoch ms the last test finished — null until one completes. */
   readonly completedAt: number | null
-  readonly onOpenDetails: () => void
+  readonly onOpenDetails: (capabilityId: CapabilityId) => void
   readonly onRunTest: () => void
+  /** Navigate to the Speed page. */
+  readonly onOpenSpeed: () => void
 }
 
 export default function CapabilityStrip({
@@ -26,6 +29,7 @@ export default function CapabilityStrip({
   completedAt,
   onOpenDetails,
   onRunTest,
+  onOpenSpeed,
 }: CapabilityStripProps): JSX.Element {
   const hasResults = capabilities.length > 0
 
@@ -36,26 +40,17 @@ export default function CapabilityStrip({
       className="capability-strip-section"
       action={
         hasResults ? (
-          <div className="capability-strip-action">
-            <span className="text-meta capability-strip-updated">
-              {testing
-                ? 'Testing…'
-                : completedAt != null
-                  ? `Updated ${formatTimeAgo(completedAt)}`
-                  : null}
-            </span>
-            <Tooltip content={testing ? 'Speed test running' : 'Run speed test again'}>
-              <button
-                type="button"
-                className="btn-icon btn-icon-secondary"
-                onClick={onRunTest}
-                disabled={!canRunTest || testing}
-                aria-label="Run speed test again"
-              >
-                <RefreshIcon size={14} className={testing ? 'capability-rerun-spin' : undefined} />
-              </button>
-            </Tooltip>
-          </div>
+          <Tooltip content={testing ? 'Speed test running' : 'Run speed test again'}>
+            <button
+              type="button"
+              className="btn-icon btn-icon-secondary"
+              onClick={onRunTest}
+              disabled={!canRunTest || testing}
+              aria-label="Run speed test again"
+            >
+              <RefreshIcon size={14} className={testing ? 'capability-rerun-spin' : undefined} />
+            </button>
+          </Tooltip>
         ) : undefined
       }
     >
@@ -76,30 +71,53 @@ export default function CapabilityStrip({
           </button>
         </div>
       ) : (
-        <div className="capability-strip" role="list">
-          {capabilities.map((capability) => (
-            <Tooltip
-              key={capability.id}
-              content={
-                <InlineMeta
-                  items={[capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]}
-                />
-              }
-              align="left"
-              placement="top"
-            >
+        <>
+          <div className="capability-strip" role="list">
+            {capabilities.map((capability) => (
+              <div className="capability-strip-cell" key={capability.id} role="listitem">
+                <Tooltip
+                  content={
+                    <InlineMeta
+                      items={[capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]}
+                    />
+                  }
+                  align="left"
+                  placement="top"
+                >
+                  <button
+                    type="button"
+                    className={`capability-strip-item capability-icon-tile level-${capability.level}`}
+                    onClick={() => onOpenDetails(capability.id)}
+                    aria-label={`${capability.label}: ${CAPABILITY_LEVEL_LABELS[capability.level]}`}
+                  >
+                    <CapabilityIcon id={capability.id} size={16} />
+                  </button>
+                </Tooltip>
+                <CapabilityMeter level={capability.level} showLabel={false} />
+              </div>
+            ))}
+          </div>
+
+          {testing ? (
+            <div className="capability-strip-footer">
+              <span className="text-meta">Testing…</span>
+            </div>
+          ) : completedAt != null ? (
+            <div className="capability-strip-footer">
               <button
                 type="button"
-                className={`capability-strip-item capability-icon-tile level-${capability.level}`}
-                onClick={onOpenDetails}
-                aria-label={`${capability.label}: ${CAPABILITY_LEVEL_LABELS[capability.level]}`}
-                role="listitem"
+                className="capability-strip-link"
+                onClick={onOpenSpeed}
+                aria-label="Go to speed test"
               >
-                <CapabilityIcon id={capability.id} size={16} />
+                <HistoryIcon size={13} />
+                <span className="capability-strip-updated">
+                  Updated {formatTimeAgo(completedAt)}
+                </span>
               </button>
-            </Tooltip>
-          ))}
-        </div>
+            </div>
+          ) : null}
+        </>
       )}
     </Section>
   )

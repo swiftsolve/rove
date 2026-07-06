@@ -12,6 +12,9 @@
   flex-direction: column;
   overflow: hidden;
   padding: var(--section-header-y) var(--section-header-x) 0;
+  /* When opened by clicking a capability, that card is scrolled to the top of
+     the viewport — leave a little air above it rather than butting the edge. */
+  scroll-margin-top: var(--gap-md);
 }
 
 .cap-detail-head {

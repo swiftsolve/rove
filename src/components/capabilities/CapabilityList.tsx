@@ -9,7 +9,7 @@ import './CapabilityList.css'
 interface CapabilityListProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly hasRunTest: boolean
-  readonly onOpenDetails: () => void
+  readonly onOpenDetails: (capabilityId: CapabilityId) => void
 }
 
 // A few headline use-cases previewed in the empty state before any test runs —
@@ -66,6 +66,7 @@ export default function CapabilityList({
                 </span>
                 <div className="capability-row-text">
                   <span className="text-body capability-name">{definition.label}</span>
+                  <span className="text-hint capability-desc">{definition.description}</span>
                 </div>
               </div>
               <span className="capability-empty-value">…</span>
@@ -75,7 +76,11 @@ export default function CapabilityList({
       ) : (
         <div className="capability-list">
           {capabilities.map((capability) => (
-            <CapabilityRow key={capability.id} capability={capability} onOpen={onOpenDetails} />
+            <CapabilityRow
+              key={capability.id}
+              capability={capability}
+              onOpen={() => onOpenDetails(capability.id)}
+            />
           ))}
         </div>
       )}
