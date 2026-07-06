@@ -61,6 +61,35 @@
   transform: translateY(-1px);
 }
 
+/* While a test is running the strip shows stale results, so mute every tile and
+   meter to grey and drop the interactive affordances until the run completes.
+   These need to outrank the `.capability-status.level-*` / `.capability-icon-tile.level-*`
+   colour rules (both two-class, and loaded later), so match with three classes. */
+.capability-strip--testing .capability-strip-item.capability-icon-tile {
+  color: var(--text-tertiary);
+}
+
+/* Disabled while testing — the bars go dark and dim so they read as inactive,
+   just faintly above the panel. Override the segment fills directly (rather than
+   tinting via currentColor) to keep full control of the greys. */
+.capability-strip--testing .capability-strip-cell .capability-seg {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.capability-strip--testing .capability-strip-cell .capability-seg.on {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.capability-strip--testing .capability-strip-item {
+  cursor: default;
+}
+
+.capability-strip--testing .capability-strip-item:hover,
+.capability-strip--testing .capability-strip-item:focus-visible {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  transform: none;
+}
+
 /* Run-test CTA in the empty state: a touch more air above the button. */
 .capability-run-btn {
   margin-top: var(--gap-2xs);

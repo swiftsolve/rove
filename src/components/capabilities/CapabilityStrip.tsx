@@ -72,13 +72,17 @@ export default function CapabilityStrip({
         </div>
       ) : (
         <>
-          <div className="capability-strip" role="list">
+          <div className={`capability-strip${testing ? ' capability-strip--testing' : ''}`} role="list">
             {capabilities.map((capability) => (
               <div className="capability-strip-cell" key={capability.id} role="listitem">
                 <Tooltip
                   content={
                     <InlineMeta
-                      items={[capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]}
+                      items={
+                        testing
+                          ? [capability.label]
+                          : [capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]
+                      }
                     />
                   }
                   align="left"
@@ -88,6 +92,7 @@ export default function CapabilityStrip({
                     type="button"
                     className={`capability-strip-item capability-icon-tile level-${capability.level}`}
                     onClick={() => onOpenDetails(capability.id)}
+                    disabled={testing}
                     aria-label={`${capability.label}: ${CAPABILITY_LEVEL_LABELS[capability.level]}`}
                   >
                     <CapabilityIcon id={capability.id} size={16} />

@@ -9,6 +9,8 @@ import './CapabilityList.css'
 interface CapabilityListProps {
   readonly capabilities: readonly CapabilityRating[]
   readonly hasRunTest: boolean
+  /** A speed test is currently running — grey out the stale rows until it lands. */
+  readonly testing: boolean
   readonly onOpenDetails: (capabilityId: CapabilityId) => void
 }
 
@@ -21,13 +23,15 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
 
 function CapabilityRow({
   capability,
+  testing,
   onOpen,
 }: {
   readonly capability: CapabilityRating
+  readonly testing: boolean
   readonly onOpen: () => void
 }): JSX.Element {
   return (
-    <button type="button" className="capability-row" onClick={onOpen}>
+    <button type="button" className="capability-row" onClick={onOpen} disabled={testing}>
       <div className="capability-row-main">
         <span className={`capability-icon-tile level-${capability.level}`}>
           <CapabilityIcon id={capability.id} size={17} />
@@ -48,6 +52,7 @@ function CapabilityRow({
 export default function CapabilityList({
   capabilities,
   hasRunTest,
+  testing,
   onOpenDetails,
 }: CapabilityListProps): JSX.Element {
   return (
@@ -74,11 +79,12 @@ export default function CapabilityList({
           ))}
         </div>
       ) : (
-        <div className="capability-list">
+        <div className={`capability-list${testing ? ' capability-list--testing' : ''}`}>
           {capabilities.map((capability) => (
             <CapabilityRow
               key={capability.id}
               capability={capability}
+              testing={testing}
               onOpen={() => onOpenDetails(capability.id)}
             />
           ))}

@@ -87,6 +87,34 @@
   opacity: 0.7;
 }
 
+/* While a test is running the rows show stale results, so mute the tiles and
+   meters to grey and drop the interactive affordances until the run completes.
+   Three-class selectors outrank the `.capability-icon-tile.level-*` /
+   `.capability-status.level-*` colour rules (both two-class, loaded later). */
+.capability-list--testing .capability-row .capability-icon-tile {
+  color: var(--text-tertiary);
+}
+
+/* Disabled while testing — the bars go dark and dim so they read as inactive,
+   just faintly above the panel. Override the segment fills directly (rather than
+   tinting via currentColor) to keep full control of the greys. */
+.capability-list--testing .capability-row .capability-seg {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.capability-list--testing .capability-row .capability-seg.on {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.capability-list--testing .capability-row {
+  cursor: default;
+}
+
+.capability-list--testing .capability-row:hover,
+.capability-list--testing .capability-row:focus-visible {
+  background: transparent;
+}
+
 /* Empty state: headline use-cases previewed before any test runs. Non-interactive
    and muted, with a trailing "…" where the rating meter will land. */
 .capability-row.is-empty {

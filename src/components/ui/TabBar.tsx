@@ -30,10 +30,10 @@ interface TabDefinition {
 const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'speed', label: 'Speed', Icon: SpeedIcon },
-  { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'devices', label: 'Devices', Icon: DevicesIcon },
-  { id: 'usage', label: 'Usage', Icon: UsageIcon },
+  { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
+  { id: 'usage', label: 'Usage', Icon: UsageIcon },
 ]
 
 export default memo(function TabBar({ activeTab, onChange }: TabBarProps) {
