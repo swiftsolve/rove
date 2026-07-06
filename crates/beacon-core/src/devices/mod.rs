@@ -5,9 +5,12 @@
 //!   2. read the kernel neighbor table (the ground truth for who exists)
 //!   3. enrich each host — vendor (OUI), hostname (reverse DNS/mDNS), kind
 //!   4. add this machine, sort gateway → self → by address
+mod banner;
 mod classify;
 mod hostname;
+mod netbios;
 mod probe;
+mod ssdp;
 mod subnet;
 mod sweep;
 
@@ -30,23 +33,35 @@ pub async fn scan() -> LanDeviceScan {
         None => None,
     };
 
-    // The sweep and TCP probe both wake idle hosts into the neighbor table; the
-    // probe additionally reaches ICMP-filtering hosts and reports open ports.
-    let (mdns_hits, open_ports) = match &subnet {
-        Some(subnet) => {
-            let (hits, (), ports) = tokio::join!(
-                mdns::discover(DISCOVERY_WINDOW),
-                sweep::sweep(subnet),
-                probe::probe(subnet),
-            );
-            (hits, ports)
-        }
-        None => (mdns::discover(DISCOVERY_WINDOW).await, std::collections::HashMap::new()),
-    };
-
+    // Resolved up front so the SSDP search can bind to the active interface's
+    // address (right adapter on multi-homed/Windows hosts) and so `self` is
+    // known when devices are built below.
     let (self_ip, self_mac) = match &interface {
         Some(name) => crate::interfaces::address_of(name).await,
         None => (None, None),
+    };
+    let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
+
+    // The sweep and TCP probe both wake idle hosts into the neighbor table; the
+    // probe additionally reaches ICMP-filtering hosts and reports open ports.
+    // mDNS and SSDP listen concurrently for devices that announce themselves.
+    let (mdns_hits, ssdp_hits, open_ports) = match &subnet {
+        Some(subnet) => {
+            let (mdns_hits, ssdp_hits, (), ports) = tokio::join!(
+                mdns::discover(DISCOVERY_WINDOW),
+                ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
+                sweep::sweep(subnet),
+                probe::probe(subnet),
+            );
+            (mdns_hits, ssdp_hits, ports)
+        }
+        None => {
+            let (mdns_hits, ssdp_hits) = tokio::join!(
+                mdns::discover(DISCOVERY_WINDOW),
+                ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
+            );
+            (mdns_hits, ssdp_hits, std::collections::HashMap::new())
+        }
     };
 
     let in_scope: Vec<RawNeighbor> = neighbor_table()
@@ -56,21 +71,27 @@ pub async fn scan() -> LanDeviceScan {
         .collect();
 
     // Results stay aligned index-for-index with `in_scope` for the `zip` below.
+    // Reverse-DNS, HTTP-banner and NetBIOS enrichment are independent — run them
+    // together so their combined latency is one round, not three.
     let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
-    let hostnames: Vec<Option<String>> = hostname::resolve_many(&ips).await;
+    let (hostnames, banner_hits, netbios_hits) = tokio::join!(
+        hostname::resolve_many(&ips),
+        banner::grab(&open_ports),
+        netbios::query_many(&ips),
+    );
 
+    let enrichment = Enrichment {
+        mdns: &mdns_hits,
+        ssdp: &ssdp_hits,
+        banner: &banner_hits,
+        netbios: &netbios_hits,
+        open_ports: &open_ports,
+    };
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()
         .zip(hostnames)
         .map(|(neighbor, hostname)| {
-            build_device(
-                neighbor,
-                hostname,
-                &mdns_hits,
-                &open_ports,
-                gateway.as_deref(),
-                self_ip.as_deref(),
-            )
+            build_device(neighbor, hostname, &enrichment, gateway.as_deref(), self_ip.as_deref())
         })
         .collect();
 
@@ -87,28 +108,61 @@ pub async fn scan() -> LanDeviceScan {
     }
 }
 
+/// The per-scan lookup tables `build_device` draws on, all keyed by device IP.
+/// Bundled so a device is enriched from one value rather than a long argument
+/// list that grows with every new discovery source.
+struct Enrichment<'a> {
+    mdns: &'a std::collections::HashMap<String, mdns::MdnsHit>,
+    ssdp: &'a std::collections::HashMap<String, ssdp::SsdpHit>,
+    banner: &'a std::collections::HashMap<String, banner::BannerHit>,
+    netbios: &'a std::collections::HashMap<String, String>,
+    open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
+}
+
 fn build_device(
     neighbor: RawNeighbor,
     resolved_hostname: Option<String>,
-    mdns_hits: &std::collections::HashMap<String, mdns::MdnsHit>,
-    open_ports: &std::collections::HashMap<String, Vec<u16>>,
+    enrichment: &Enrichment,
     gateway: Option<&str>,
     self_ip: Option<&str>,
 ) -> LanDevice {
     let vendor = lookup_vendor(&neighbor.mac).map(String::from);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
-    let mdns = mdns_hits.get(&neighbor.ip);
-    let ports = open_ports.get(&neighbor.ip).map(Vec::as_slice).unwrap_or(&[]);
+    let mdns = enrichment.mdns.get(&neighbor.ip);
+    let ssdp = enrichment.ssdp.get(&neighbor.ip);
+    let banner = enrichment.banner.get(&neighbor.ip);
+    let ports = enrichment.open_ports.get(&neighbor.ip).map(Vec::as_slice).unwrap_or(&[]);
 
-    // A friendly mDNS name ("Living room clock") beats a reverse-DNS hostname.
-    let hostname = mdns.and_then(|hit| hit.name.clone()).or(resolved_hostname);
+    // Name preference, most human first: a friendly mDNS name, then SSDP's UPnP
+    // friendlyName, then the NetBIOS computer name (real name for Windows/SMB
+    // hosts), falling back to the reverse-DNS hostname.
+    let hostname = mdns
+        .and_then(|hit| hit.name.clone())
+        .or_else(|| ssdp.and_then(|hit| hit.name.clone()))
+        .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned())
+        .or(resolved_hostname);
+
+    // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
+    let model = mdns
+        .and_then(|hit| hit.model.clone())
+        .or_else(|| ssdp.and_then(|hit| hit.model.clone()));
 
     LanDevice {
-        kind: classify::classify(vendor.as_deref(), hostname.as_deref(), mdns, ports, is_gateway, is_self),
+        kind: classify::classify(&classify::Signals {
+            vendor: vendor.as_deref(),
+            hostname: hostname.as_deref(),
+            mdns,
+            ssdp,
+            banner,
+            open_ports: ports,
+            is_gateway,
+            is_self,
+        }),
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         vendor,
         hostname,
+        model,
         is_gateway,
         is_self,
         reachable: neighbor.reachable,
@@ -130,6 +184,7 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         mac: mac.to_string(),
         vendor: lookup_vendor(mac).map(String::from),
         hostname: hostname::local_machine_name(),
+        model: None,
         kind: "computer".into(),
         is_randomized_mac: is_randomized_mac(mac),
         is_gateway: false,

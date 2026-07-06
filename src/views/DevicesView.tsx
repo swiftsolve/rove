@@ -21,7 +21,7 @@ import {
 import { Tooltip } from '@/components/ui/Tooltip'
 
 const SCAN_HINT =
-  "Beacon actively scans your subnet; a device that blocks pings and doesn't announce itself may still be missed. Your router's admin page is the authoritative list."
+  'Beacon scans your subnet and reads mDNS, SSDP/UPnP, NetBIOS and HTTP replies to identify devices. A device that blocks every probe and announces nothing at all can still be missed.'
 import './DevicesView.css'
 
 interface DevicesViewProps {
@@ -78,9 +78,11 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         {device.isGateway ? (
           <span className="text-meta device-row-kind gateway">Gateway</span>
         ) : (
-          device.kind !== 'unknown' && (
+          (device.kind !== 'unknown' || device.model) && (
             <span className="text-meta device-row-kind">
-              {LAN_DEVICE_KIND_LABELS[device.kind]}
+              {device.kind !== 'unknown' && LAN_DEVICE_KIND_LABELS[device.kind]}
+              {device.kind !== 'unknown' && device.model ? ' · ' : ''}
+              {device.model}
             </span>
           )
         )}
