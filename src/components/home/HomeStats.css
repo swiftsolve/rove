@@ -104,10 +104,15 @@
   margin-top: var(--gap-md);
 }
 
+/* Fill the card's body and centre the spinner both ways. The card stretches to
+   match the taller Usage card beside it (grid row stretch), so flex:1 gives the
+   spinner the whole remaining height to centre within. */
 .home-stat-loading {
   display: flex;
+  flex: 1;
   align-items: center;
-  margin-top: var(--gap-md);
+  justify-content: center;
+  min-height: 44px;
 }
 
 .home-stat-loading .spinner {

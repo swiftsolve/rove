@@ -21,11 +21,7 @@ pub async fn sweep(subnet: &str) {
 
     futures_util::stream::iter(hosts)
         .map(|ip| async move {
-            let cmd = if cfg!(target_os = "windows") {
-                format!("ping -n 1 -w 700 {ip}")
-            } else {
-                format!("ping -c 1 -W 1 {ip}")
-            };
+            let cmd = crate::platform::ping_command(&ip, 1, 700);
             let _ = crate::shell::try_run_timeout(&cmd, Duration::from_secs(3)).await;
         })
         .buffer_unordered(CONCURRENT_PROBES)

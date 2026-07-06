@@ -42,6 +42,7 @@ pub struct InterfaceSummary {
     pub mac_address: Option<String>,
     pub speed_mbps: Option<i64>,
     pub is_default: bool,
+    pub is_virtual: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

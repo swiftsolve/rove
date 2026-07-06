@@ -339,6 +339,7 @@ button:focus-visible {
 
 .view-page {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--gap-stack);
 }
@@ -368,8 +369,12 @@ button:focus-visible {
   padding-bottom: 0;
 }
 
+/* Grow to fill the space below the view header so the spinner + text centre
+   vertically in the whole content region, not within a fixed 140px box pinned
+   near the top. The min-height is a floor for the rare case the page is short. */
 .view-empty {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;

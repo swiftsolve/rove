@@ -36,14 +36,7 @@ fn local_offset_secs() -> i64 {
 fn compute_local_offset_secs() -> i64 {
     // Windows: minutes from UTC via PowerShell; Unix: `date +%z`.
     if cfg!(target_os = "windows") {
-        return std::process::Command::new("powershell")
-            .args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"])
-            .output()
-            .ok()
-            .and_then(|o| String::from_utf8(o.stdout).ok())
-            .and_then(|s| s.trim().parse::<f64>().ok())
-            .map(|minutes| (minutes * 60.0) as i64)
-            .unwrap_or(0);
+        return crate::platform::windows::utc_offset_secs().unwrap_or(0);
     }
     std::process::Command::new("date")
         .arg("+%z")
@@ -160,24 +153,8 @@ impl UsageTracker {
     fn boot_totals(networks: &sysinfo::Networks) -> (u64, u64) {
         // /sys is authoritative on Linux; sysinfo totals elsewhere.
         if cfg!(target_os = "linux") {
-            let mut rx = 0u64;
-            let mut tx = 0u64;
-            if let Ok(entries) = std::fs::read_dir("/sys/class/net") {
-                for entry in entries.flatten() {
-                    let name = entry.file_name().to_string_lossy().into_owned();
-                    if crate::net_util::is_virtual_interface(&name) {
-                        continue;
-                    }
-                    let read = |file: &str| -> u64 {
-                        std::fs::read_to_string(entry.path().join("statistics").join(file))
-                            .ok()
-                            .and_then(|raw| raw.trim().parse().ok())
-                            .unwrap_or(0)
-                    };
-                    rx += read("rx_bytes");
-                    tx += read("tx_bytes");
-                }
-                return (rx, tx);
+            if let Some(totals) = crate::platform::linux::boot_totals() {
+                return totals;
             }
         }
         let mut rx = 0u64;

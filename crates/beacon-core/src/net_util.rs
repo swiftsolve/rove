@@ -5,9 +5,29 @@ const VIRTUAL_PREFIXES: [&str; 10] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
 ];
 
+/// Case-insensitive markers for Windows virtual/pseudo adapters that aren't real
+/// hardware: Hyper-V switches, WFP/filter miniports, Wi-Fi Direct radios and
+/// tunnelling pseudo-interfaces. A fallback for when the OS `Virtual` flag can't
+/// be read; none of these substrings occur in a physical NIC's name.
+const VIRTUAL_SUBSTRINGS: [&str; 9] = [
+    "vethernet",
+    "wi-fi direct",
+    "wifi direct",
+    "lightweight filter",
+    "native mac layer",
+    "kernel debug",
+    "teredo",
+    "pseudo-interface",
+    "ip-https",
+];
+
 /// Loopback / container / VPN interfaces that shouldn't count as hardware.
 pub fn is_virtual_interface(name: &str) -> bool {
-    name == "lo" || VIRTUAL_PREFIXES.iter().any(|p| name.starts_with(p))
+    if name == "lo" || VIRTUAL_PREFIXES.iter().any(|p| name.starts_with(p)) {
+        return true;
+    }
+    let lower = name.to_ascii_lowercase();
+    VIRTUAL_SUBSTRINGS.iter().any(|s| lower.contains(s))
 }
 
 pub fn now_ms() -> u64 {
@@ -29,10 +49,13 @@ pub fn is_shell_safe_ip(s: &str) -> bool {
 /// limited to the characters the kernel actually uses. Rejects anything that
 /// could carry shell metacharacters or break PowerShell quoting.
 pub fn is_shell_safe_iface(s: &str) -> bool {
+    // Windows interface names routinely contain spaces ("Ethernet 2", "Local
+    // Area Connection"), so a space is permitted; every genuine shell
+    // metacharacter (quotes, ;, |, &, $, backtick, …) stays rejected.
     !s.is_empty()
-        && s.len() <= 32
+        && s.len() <= 40
         && s.bytes()
-            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@'))
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
 }
 
 /// Strip control characters and bidi overrides from a display string sourced

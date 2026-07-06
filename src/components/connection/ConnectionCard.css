@@ -162,3 +162,12 @@
 .signal-detail .signal-bars {
   transform: translateY(-2px);
 }
+
+/* The Signal value is a flex box (meter + text), so it exposes no text baseline
+   to its .text-value cell. Under the row's default `align-items: baseline`, the
+   browser synthesizes that cell's baseline at its bottom edge and drops the
+   "Signal" label down to meet it — leaving a gap above the label. Centre just
+   this row so the label lines up with the meter instead. */
+.conn-details .data-row:has(.signal-detail) {
+  align-items: center;
+}

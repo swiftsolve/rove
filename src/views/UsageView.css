@@ -30,6 +30,8 @@
   gap: 4px;
 }
 
+/* Today metrics sit on the plain card surface; the section body's top padding
+   is the only gap below the title. */
 .usage-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -48,19 +50,29 @@
   color: var(--text-tertiary);
 }
 
-/* Footer strip: the summary meta on its own panel, one shade darker than the
-   card, bleeding to the card's left/right/bottom edges (the card's
-   overflow:hidden rounds the bottom corners). A hairline separates it from the
-   content above. Used by both the Today and Last-7-days cards. */
+/* Footer strip: the darkest tier of the ladder, one shade darker than the card,
+   with no hairline — the colour step alone separates it. Bleeds to the card's
+   left/right/bottom edges (the card's overflow:hidden rounds the bottom
+   corners). Used by both the Today and Last-7-days cards. */
 .usage-footer {
   margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
   padding: var(--gap-sm) var(--section-body);
-  background: var(--bg-inset);
-  border-top: 1px solid var(--border);
+  background: var(--bg-app);
+}
+
+/* Beneath the chart's inset band the footer sits flush, so the two darker tiers
+   read as one seamless stepped block. */
+.usage-chart-wrap + .usage-footer {
+  margin-top: 0;
 }
 
 /* ---- Week chart ---- */
 
+/* Week chart sits on the inset dark band — the middle tier of the ladder,
+   bleeding to the card's side edges, with breathing room below the title. */
 .usage-chart-wrap {
   position: relative;
+  margin: 0 calc(-1 * var(--section-body));
+  padding: var(--gap-sm) var(--section-body);
+  background: var(--bg-inset);
 }
