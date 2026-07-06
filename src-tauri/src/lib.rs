@@ -95,12 +95,28 @@ fn install_panic_logger() {
 
 #[tauri::command]
 async fn get_network_info() -> NetworkInfo {
-    beacon_core::network_info::network_info().await
+    tracing::info!("network info requested");
+    let started = std::time::Instant::now();
+    let info = beacon_core::network_info::network_info().await;
+    tracing::info!(
+        elapsed_ms = started.elapsed().as_millis() as u64,
+        interface = ?info.interface_name,
+        "network info resolved"
+    );
+    info
 }
 
 #[tauri::command]
 async fn get_interfaces() -> Vec<InterfaceSummary> {
-    beacon_core::interfaces::list().await
+    tracing::info!("interfaces requested");
+    let started = std::time::Instant::now();
+    let list = beacon_core::interfaces::list().await;
+    tracing::info!(
+        count = list.len(),
+        elapsed_ms = started.elapsed().as_millis() as u64,
+        "interfaces resolved"
+    );
+    list
 }
 
 #[tauri::command]

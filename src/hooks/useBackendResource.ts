@@ -83,12 +83,20 @@ export function useBackendResource<T>(
     if (!refetchOnEnable && hasRunRef.current) return
     hasRunRef.current = true
     void reload()
+  }, [enabled, refetchOnEnable, reload, resetKey])
 
+  useEffect(() => {
+    // Drop any in-flight fetch on unmount so it can't setState afterward. This
+    // must NOT run on every resetKey/enabled change: when the key merely becomes
+    // known (null → first real key) we deliberately keep the initial fetch in
+    // flight instead of refetching, so invalidating its sequence here would
+    // orphan it — its result would be discarded and `isBusy` would never clear,
+    // leaving the view stuck on its spinner. A real network switch or an
+    // overlapping reload is already superseded by reload()'s own sequence bump.
     return () => {
-      // Drop any in-flight fetch so it can't setState after disable/unmount.
       reloadSeqRef.current += 1
     }
-  }, [enabled, refetchOnEnable, reload, resetKey])
+  }, [])
 
   return { data, isBusy, error, reload }
 }
