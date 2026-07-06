@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
 import { isConnectedNetwork } from '@/types'
-import type { CapabilityId } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
@@ -18,7 +17,7 @@ import DevicesView from '@/views/DevicesView'
 import UsageView from '@/views/UsageView'
 import DiagnosticsView from '@/views/DiagnosticsView'
 import { formatConnectionType } from '@/lib/format'
-import type { AppTab } from '@/navigation/tabs'
+import { locationKey, useNavigation } from '@/navigation/useNavigation'
 import './App.css'
 
 function LoadingScreen({
@@ -107,17 +106,18 @@ function StatusBar({
 }
 
 export default function App(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<AppTab>('home')
-  const [speedDetailsTarget, setSpeedDetailsTarget] = useState<CapabilityId | null>(null)
+  const { location, navigate, back } = useNavigation()
+  const activeTab = location.tab
+  const screenKey = locationKey(location)
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const scrollRef = useRef<HTMLElement>(null)
   const { info, error, isLoading, refresh } = useNetworkInfo()
 
-  // Reset scroll to the top whenever the tab changes, so a new page never
-  // inherits the previous page's scroll position.
+  // Reset scroll to the top whenever the screen changes (tab or subpage), so a
+  // new page never inherits the previous page's scroll position.
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
-  }, [activeTab])
+  }, [screenKey])
 
   // Check for a newer signed release once, shortly after launch. If one is
   // found, surface it via a non-blocking modal (never window.confirm, which
@@ -170,7 +170,10 @@ export default function App(): JSX.Element {
       <StatusBar connected={isConnected} label={statusLabel} />
 
       <div className="app-lower">
-        <TabBar activeTab={activeTab} onChange={setActiveTab} />
+        <TabBar
+          activeTab={activeTab}
+          onChange={(tab) => navigate({ tab, speedSub: null })}
+        />
 
         <div className="app-col">
           <div className="app">
@@ -190,22 +193,30 @@ export default function App(): JSX.Element {
                   deviceCount={deviceCount}
                   deviceOnline={deviceOnline}
                   devicesLoading={devicesScanning}
-                  onOpenCapabilities={(capabilityId) => {
-                    setSpeedDetailsTarget(capabilityId)
-                    setActiveTab('speed')
-                  }}
-                  onRunSpeedTest={() => setActiveTab('speed')}
-                  onOpenSpeed={() => setActiveTab('speed')}
-                  onOpenUsage={() => setActiveTab('usage')}
-                  onOpenDevices={() => setActiveTab('devices')}
+                  onOpenCapabilities={(capabilityId) =>
+                    navigate({
+                      tab: 'speed',
+                      speedSub: { view: 'details', target: capabilityId },
+                    })
+                  }
+                  onRunSpeedTest={() => navigate({ tab: 'speed', speedSub: null })}
+                  onOpenSpeed={() => navigate({ tab: 'speed', speedSub: null })}
+                  onOpenUsage={() => navigate({ tab: 'usage', speedSub: null })}
+                  onOpenDevices={() => navigate({ tab: 'devices', speedSub: null })}
                 />
               )}
 
               {info && activeTab === 'speed' && (
                 <SpeedView
                   info={info}
-                  openDetailsTarget={speedDetailsTarget}
-                  onDetailsOpened={() => setSpeedDetailsTarget(null)}
+                  sub={location.speedSub}
+                  onOpenDetails={(target) =>
+                    navigate({ tab: 'speed', speedSub: { view: 'details', target } })
+                  }
+                  onOpenHistory={() =>
+                    navigate({ tab: 'speed', speedSub: { view: 'history' } })
+                  }
+                  onBack={back}
                 />
               )}
 
