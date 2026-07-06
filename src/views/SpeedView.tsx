@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CapabilityId, NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
+import type { SpeedSub } from '@/navigation/useNavigation'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
 import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { canRunSpeedTest } from '@/components/connection/ConnectionCard'
@@ -18,10 +19,15 @@ import './SpeedView.css'
 
 interface SpeedViewProps {
   readonly info: NetworkInfo
-  /** When set, open the capability details page scrolled to this capability
-   *  (used when arriving from the Home strip). */
-  readonly openDetailsTarget?: CapabilityId | null
-  readonly onDetailsOpened?: () => void
+  /** The subpage currently layered over the Speed tab, or null for its main
+   *  page. Owned by the app's navigation stack so Back pops the right screen. */
+  readonly sub: SpeedSub | null
+  /** Open the capability details subpage, scrolled to this capability. */
+  readonly onOpenDetails: (target: CapabilityId | null) => void
+  /** Open the speed-test history subpage. */
+  readonly onOpenHistory: () => void
+  /** Return to the previous screen. */
+  readonly onBack: () => void
 }
 
 function connectionFromNetworkInfo(info: NetworkInfo): SpeedTestConnection | null {
@@ -36,12 +42,11 @@ function connectionFromNetworkInfo(info: NetworkInfo): SpeedTestConnection | nul
 
 export default function SpeedView({
   info,
-  openDetailsTarget = null,
-  onDetailsOpened,
+  sub,
+  onOpenDetails,
+  onOpenHistory,
+  onBack,
 }: SpeedViewProps): JSX.Element {
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const [detailsTarget, setDetailsTarget] = useState<CapabilityId | null>(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
   const {
     internetSpeed,
     capabilities,
@@ -59,12 +64,6 @@ export default function SpeedView({
   const canTest = canRunSpeedTest(info)
   const liveConnection = connectionFromNetworkInfo(info)
 
-  useEffect(() => {
-    if (!openDetailsTarget || !hasRunTest) return
-    setDetailsTarget(openDetailsTarget)
-    setDetailsOpen(true)
-    onDetailsOpened?.()
-  }, [openDetailsTarget, hasRunTest, onDetailsOpened])
   const footerConnection =
     hasRunTest && runConnection != null ? runConnection : liveConnection
   const footerLinkCapacityMbps =
@@ -95,18 +94,18 @@ export default function SpeedView({
     )
   }, [testing, live.throughput])
 
-  if (historyOpen) {
-    return <SpeedHistory onBack={() => setHistoryOpen(false)} />
+  if (sub?.view === 'history') {
+    return <SpeedHistory onBack={onBack} />
   }
 
-  if (detailsOpen && internetSpeed) {
+  if (sub?.view === 'details' && internetSpeed) {
     return (
       <CapabilityDetails
         capabilities={capabilities}
         speed={internetSpeed}
         completedAt={completedAt}
-        targetId={detailsTarget}
-        onBack={() => setDetailsOpen(false)}
+        targetId={sub.target}
+        onBack={onBack}
       />
     )
   }
@@ -129,7 +128,7 @@ export default function SpeedView({
                 <button
                   type="button"
                   className="speed-history-link"
-                  onClick={() => setHistoryOpen(true)}
+                  onClick={onOpenHistory}
                 >
                   <HistoryIcon size={13} />
                   <span className="speed-history-link-text">View history</span>
@@ -194,10 +193,8 @@ export default function SpeedView({
       <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
-        onOpenDetails={(id) => {
-          setDetailsTarget(id)
-          setDetailsOpen(true)
-        }}
+        testing={testing}
+        onOpenDetails={onOpenDetails}
       />
     </div>
   )
