@@ -65,12 +65,19 @@ export function useBackendResource<T>(
 
   useEffect(() => {
     // A changed resetKey (e.g. the network switched) invalidates the cache so
-    // we never serve the previous network's data.
+    // we never serve the previous network's data. The initial transition from
+    // "no key yet" to the first real key is NOT a switch — it's the key merely
+    // becoming known (network info finishing loading just after the first fetch
+    // already kicked off) — so it must not clear state or force a redundant
+    // refetch. Only a change between two known keys is a real invalidation.
     if (resetKeyRef.current !== resetKey) {
+      const hadPreviousKey = resetKeyRef.current != null
       resetKeyRef.current = resetKey
-      hasRunRef.current = false
-      setData(null)
-      setError(null)
+      if (hadPreviousKey) {
+        hasRunRef.current = false
+        setData(null)
+        setError(null)
+      }
     }
     if (!enabled) return
     if (!refetchOnEnable && hasRunRef.current) return

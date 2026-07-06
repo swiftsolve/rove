@@ -1,5 +1,6 @@
 import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
+import { Spinner } from '@/components/ui/Spinner'
 import {
   CameraIcon,
   ChipIcon,
@@ -164,7 +165,7 @@ export default function DevicesView({
 
       {isScanning && devices.length === 0 ? (
         <div className="view-empty">
-          <div className="spinner" />
+          <Spinner />
           <p className="text-muted">Scanning your network…</p>
         </div>
       ) : devices.length === 0 ? (

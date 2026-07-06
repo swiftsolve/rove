@@ -9,6 +9,7 @@ import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
 import UpdateDialog from '@/components/ui/UpdateDialog'
+import { Spinner } from '@/components/ui/Spinner'
 import HomeView from '@/views/HomeView'
 import SpeedView from '@/views/SpeedView'
 import InterfacesView from '@/views/InterfacesView'
@@ -28,7 +29,7 @@ function LoadingScreen({
 }): JSX.Element {
   return (
     <div className="loading-screen">
-      {!error && <div className="spinner" />}
+      {!error && <Spinner />}
       <p>{error ?? 'Looking for your network…'}</p>
       {error && (
         <button type="button" className="btn-primary" onClick={onRetry}>
