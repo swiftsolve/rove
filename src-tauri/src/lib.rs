@@ -565,23 +565,31 @@ pub fn run() {
     );
 
     // WebKitGTK + the NVIDIA proprietary driver have a long history of render
-    // stalls (the webview paints one frame then only repaints on input, so an
-    // async network scan finishing never reaches the screen). An older workaround
-    // forced GDK_BACKEND=x11 + WEBKIT_DISABLE_COMPOSITING_MODE. On current
-    // WebKitGTK (2.52, the system lib the .deb/.rpm link against) that is
-    // *inverted*: the native Wayland backend renders correctly, and forcing
-    // x11/XWayland is what freezes. The regression only showed on the packaged
-    // app because the desktop-menu (systemd user-manager) launch doesn't set
-    // GDK_BACKEND, so the old override kicked in; a terminal launch that already
-    // exports GDK_BACKEND=wayland was unaffected. The bundled AppImage escapes it
-    // by shipping its own older GTK/WebKit stack.
+    // stalls: the webview's accelerated compositor paints one frame then waits on
+    // a frame callback the NVIDIA driver never delivers, so it only repaints on
+    // input and an async network scan finishing never reaches the screen — the
+    // window looks hung even though the Rust backend keeps running.
     //
-    // So: don't force a backend — let GTK pick the session-native one (Wayland on
-    // a Wayland session, X11 on an X11 session), which is what works. A user on a
-    // stack that still needs the old path can set GDK_BACKEND / the WEBKIT_* vars
-    // explicitly in the environment; GTK/WebKit honour those directly, no code
-    // needed. The window is opaque (`transparent: false` in tauri.conf.json),
-    // which the non-composited path also relied on and which is harmless here.
+    // The old workaround forced GDK_BACKEND=x11 *and* WEBKIT_DISABLE_COMPOSITING_MODE
+    // together, then a later change dropped both — on the theory WebKitGTK 2.52
+    // renders fine on native Wayland. That holds on many stacks but NOT on NVIDIA:
+    // there the compositor stall is back (reproduced on RTX 20-series, driver 595,
+    // WebKitGTK 2.52.3, Wayland session), so removing the workaround wholesale
+    // regressed those machines.
+    //
+    // The two halves are separable. Forcing x11/XWayland is the half that freezes
+    // on 2.52, so we do NOT touch GDK_BACKEND — GTK picks the session-native
+    // backend, which is what works. Disabling the accelerated compositor is the
+    // half that fixes NVIDIA: repaints then flush synchronously, sidestepping the
+    // never-delivered frame callback, at a small cost to GPU-composited effects we
+    // don't use. So on Linux we set only WEBKIT_DISABLE_COMPOSITING_MODE (unless
+    // the user already set it), and leave the backend alone. The window is opaque
+    // (`transparent: false` in tauri.conf.json), which the non-composited path
+    // relies on and which is harmless here.
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
+        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    }
 
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
