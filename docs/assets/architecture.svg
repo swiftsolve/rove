@@ -1,88 +1,73 @@
-<svg width="900" height="480" viewBox="0 0 900 480" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="516" viewBox="0 0 920 516" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
   <defs>
-    <filter id="card" x="-10%" y="-10%" width="120%" height="135%">
-      <feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#000000" flood-opacity="0.5"/>
-      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
-    </filter>
-    <linearGradient id="accentBar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#5b8cff"/>
-      <stop offset="1" stop-color="#b39dff"/>
+    <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#818cf8"></stop><stop offset="1" stop-color="#c4b5fd"></stop>
     </linearGradient>
-    <marker id="fwd" markerWidth="10" markerHeight="10" refX="6.5" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#5b8cff"/>
-    </marker>
-    <marker id="back" markerWidth="10" markerHeight="10" refX="6.5" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#b39dff"/>
-    </marker>
-    <marker id="mut" markerWidth="10" markerHeight="10" refX="6.5" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#71747f"/>
-    </marker>
+    <linearGradient id="gR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c4b5fd"></stop><stop offset="1" stop-color="#818cf8"></stop>
+    </linearGradient>
+    <clipPath id="clipL"><rect x="48" y="112" width="312" height="232" rx="14"></rect></clipPath>
+    <clipPath id="clipR"><rect x="560" y="112" width="312" height="232" rx="14"></rect></clipPath>
   </defs>
 
-  <!-- backdrop -->
-  <rect width="900" height="480" rx="20" fill="#0a0b0e"/>
+  
+  <rect x="0.5" y="0.5" width="919" height="515" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
 
-  <!-- header -->
-  <text x="40" y="52" font-size="12" font-weight="600" letter-spacing="1.5" fill="#71747f">ARCHITECTURE</text>
-  <text x="40" y="76" font-size="17" font-weight="600" fill="#f5f6f8">Two programs, one thin typed bridge</text>
+  
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">ARCHITECTURE</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">Two programs, one thin typed bridge</text>
 
-  <!-- ============ React UI card ============ -->
-  <g filter="url(#card)">
-    <rect x="40" y="112" width="316" height="214" rx="15" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/>
-  </g>
-  <path d="M55 112 H341 a15 15 0 0 1 15 15 v3 H40 v-3 a15 15 0 0 1 15 -15 Z" fill="url(#accentBar)"/>
-  <text x="64" y="152" font-size="16" font-weight="600" fill="#f5f6f8">React UI</text>
-  <text x="64" y="172" font-size="12" fill="#71747f">system webview · no Node runtime</text>
-  <line x1="64" y1="188" x2="332" y2="188" stroke="#ffffff" stroke-opacity="0.06"/>
-  <g font-size="12.5" fill="#a4a7b2">
-    <text x="64" y="214">views · hooks · charts</text>
-    <text x="64" y="240">window.networkAPI contract</text>
-    <text x="64" y="266">Tauri bridge / browser mock</text>
-  </g>
-  <rect x="64" y="284" width="268" height="28" rx="8" fill="#5b8cff" fill-opacity="0.12"/>
-  <text x="78" y="302" font-size="11.5" fill="#8fb0ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">src/ · Vite · TypeScript</text>
+  
+  <rect x="48.5" y="112.5" width="311" height="231" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="48" y="112" width="312" height="5" fill="url(#gL)" clip-path="url(#clipL)"></rect>
+  <text x="70" y="152" font-size="17" font-weight="700" fill="#f2f2f5">React UI</text>
+  <text x="70" y="172" font-size="12.5" fill="#7c7c8a">system webview · no Node runtime</text>
+  <line x1="70" y1="188" x2="338" y2="188" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="70" y="210" font-size="13.5" fill="#c9c9d4">views · hooks · charts</text>
+  <text x="70" y="232" font-size="13.5" fill="#c9c9d4"><tspan font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#a5b4fc">window.networkAPI</tspan> contract</text>
+  <text x="70" y="254" font-size="13.5" fill="#c9c9d4">Tauri bridge / browser mock</text>
+  <rect x="70.5" y="290.5" width="267" height="31" rx="8" fill="#14141c" stroke="rgba(129,140,248,0.25)"></rect>
+  <text x="84" y="310" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#a5b4fc">src/ · Vite · TypeScript</text>
 
-  <!-- ============ Rust backend card ============ -->
-  <g filter="url(#card)">
-    <rect x="544" y="112" width="316" height="214" rx="15" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/>
-  </g>
-  <path d="M559 112 H845 a15 15 0 0 1 15 15 v3 H544 v-3 a15 15 0 0 1 15 -15 Z" fill="url(#accentBar)"/>
-  <text x="568" y="152" font-size="16" font-weight="600" fill="#f5f6f8">Rust backend</text>
-  <text x="568" y="172" font-size="12" fill="#71747f">Tauri v2 · memory-safe</text>
-  <line x1="568" y1="188" x2="836" y2="188" stroke="#ffffff" stroke-opacity="0.06"/>
-  <g font-size="12.5" fill="#a4a7b2">
-    <text x="568" y="214">src-tauri · #[command] wrappers</text>
-    <text x="568" y="240">rove-core · pure-Rust services</text>
-    <text x="568" y="266">events · capabilities · window</text>
-  </g>
-  <rect x="568" y="284" width="268" height="28" rx="8" fill="#5b8cff" fill-opacity="0.12"/>
-  <text x="582" y="302" font-size="11.5" fill="#8fb0ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">crates/rove-core</text>
+  
+  <rect x="560.5" y="112.5" width="311" height="231" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="560" y="112" width="312" height="5" fill="url(#gR)" clip-path="url(#clipR)"></rect>
+  <text x="582" y="152" font-size="17" font-weight="700" fill="#f2f2f5">Rust backend</text>
+  <text x="582" y="172" font-size="12.5" fill="#7c7c8a">Tauri v2 · memory-safe</text>
+  <line x1="582" y1="188" x2="850" y2="188" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="582" y="210" font-size="13.5" fill="#c9c9d4">src-tauri · <tspan font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#c4b5fd">#[command]</tspan> wrappers</text>
+  <text x="582" y="232" font-size="13.5" fill="#c9c9d4">rove-core · pure-Rust services</text>
+  <text x="582" y="254" font-size="13.5" fill="#c9c9d4">events · capabilities · window</text>
+  <rect x="582.5" y="290.5" width="267" height="31" rx="8" fill="#14141c" stroke="rgba(196,181,253,0.25)"></rect>
+  <text x="596" y="310" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#c4b5fd">crates/rove-core</text>
 
-  <!-- ============ bridge ============ -->
-  <!-- request -->
-  <text x="450" y="168" font-size="10.5" font-weight="500" letter-spacing="0.4" fill="#71747f" text-anchor="middle">REQUEST / RESPONSE</text>
-  <line x1="360" y1="192" x2="540" y2="192" stroke="#5b8cff" stroke-width="1.6" marker-end="url(#fwd)"/>
-  <rect x="404" y="181" width="92" height="22" rx="11" fill="#0a0b0e"/>
-  <rect x="404" y="181" width="92" height="22" rx="11" fill="#5b8cff" fill-opacity="0.16"/>
-  <text x="450" y="196" font-size="11" fill="#8fb0ff" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">invoke()</text>
+  
+  <text x="460" y="180" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">REQUEST / RESPONSE</text>
+  <line x1="366" y1="200" x2="546" y2="200" stroke="#818cf8" stroke-width="2"></line>
+  <polygon points="546,195 554,200 546,205" fill="#818cf8"></polygon>
+  <rect x="418.5" y="188.5" width="83" height="23" rx="12" fill="#1c1c2b" stroke="rgba(129,140,248,0.5)"></rect>
+  <text x="460" y="204" font-family="Menlo, Consolas, monospace" font-size="12" fill="#a5b4fc" text-anchor="middle">invoke()</text>
 
-  <!-- events -->
-  <line x1="540" y1="236" x2="360" y2="236" stroke="#b39dff" stroke-width="1.6" marker-end="url(#back)"/>
-  <rect x="412" y="225" width="76" height="22" rx="11" fill="#0a0b0e"/>
-  <rect x="412" y="225" width="76" height="22" rx="11" fill="#b39dff" fill-opacity="0.16"/>
-  <text x="450" y="240" font-size="11" fill="#c3b2ff" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">events</text>
-  <text x="450" y="264" font-size="10.5" font-weight="500" letter-spacing="0.4" fill="#71747f" text-anchor="middle">PUSH · 3 EVENTS</text>
+  <line x1="374" y1="256" x2="554" y2="256" stroke="#c4b5fd" stroke-width="2"></line>
+  <polygon points="374,251 366,256 374,261" fill="#c4b5fd"></polygon>
+  <rect x="424.5" y="244.5" width="71" height="23" rx="12" fill="#241c2b" stroke="rgba(196,181,253,0.5)"></rect>
+  <text x="460" y="260" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c4b5fd" text-anchor="middle">events</text>
+  <text x="460" y="288" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">PUSH · 3 EVENTS</text>
 
-  <!-- ============ kernel / OS strip ============ -->
-  <g filter="url(#card)">
-    <rect x="40" y="366" width="820" height="82" rx="15" fill="#0e0f13" stroke="#ffffff" stroke-opacity="0.07"/>
-  </g>
-  <text x="64" y="400" font-size="13.5" font-weight="600" fill="#f5f6f8">Kernel &amp; OS tools</text>
-  <text x="64" y="424" font-size="12" fill="#a4a7b2">/sys · /proc · ip · iw · nmcli · getent · ping · mDNS · HTTPS</text>
-  <text x="836" y="400" font-size="11" fill="#71747f" text-anchor="end">live-throughput</text>
-  <text x="836" y="418" font-size="11" fill="#71747f" text-anchor="end">speed-test-progress</text>
-  <text x="836" y="436" font-size="11" fill="#71747f" text-anchor="end">network-changed</text>
+  
+  <line x1="716" y1="344" x2="716" y2="378" stroke="#55556a" stroke-width="2" stroke-dasharray="4 4"></line>
+  <polygon points="711,378 721,378 716,386" fill="#55556a"></polygon>
 
-  <!-- backend → OS -->
-  <line x1="702" y1="326" x2="702" y2="362" stroke="#71747f" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#mut)"/>
+  
+  <rect x="48.5" y="388.5" width="823" height="83" rx="14" fill="#191920" stroke="rgba(255,255,255,0.07)"></rect>
+  <text x="70" y="420" font-size="15" font-weight="700" fill="#f2f2f5">Kernel &amp; OS tools</text>
+  <text x="70" y="444" font-size="13" fill="#9a9aa8">/sys · /proc · ip · iw · nmcli · getent · ping · mDNS · HTTPS</text>
+
+  <text x="850" y="416" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#6b6b78" text-anchor="end">EMITS</text>
+  <rect x="482.5" y="424.5" width="107" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="536" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">live-throughput</text>
+  <rect x="597.5" y="424.5" width="135" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="665" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">speed-test-progress</text>
+  <rect x="740.5" y="424.5" width="109" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="795" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">network-changed</text>
 </svg>
