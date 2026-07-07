@@ -6,7 +6,7 @@ click through in your editor.
 
 > **Companion pages:**
 > - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — a
->   deep dive into the per-OS probes (`ip`/`netsh`/`airport`, byte counters) that
+>   deep dive into the per-OS probes (`ip`/`netsh`/CoreWLAN, byte counters) that
 >   feed everything below.
 > - [How Rove Discovers & Identifies LAN Devices](./device-discovery.md) — the
 >   full device-scan pipeline: the ARP-table trick, TCP/mDNS probing, OUI vendor
@@ -121,7 +121,7 @@ design.
 
 ## 3. Your first Rust function, line by line
 
-Look at `get_public_ip` in `src-tauri/src/lib.rs:143` — the smallest complete
+Look at `get_public_ip` in `src-tauri/src/lib.rs:144` — the smallest complete
 command:
 
 ```rust
@@ -391,11 +391,11 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    object (empty here) — into a message and hands it to the webview's IPC channel
    (Tauri exposes it on `window.__TAURI_INTERNALS__`). This crosses the *process
    boundary*. It returns a `Promise` immediately.
-4. **Rust receives it.** Back in `src-tauri/src/lib.rs:608`, the
+4. **Rust receives it.** Back in `src-tauri/src/lib.rs:632`, the
    `tauri::generate_handler![...]` macro built a dispatcher at compile time: it
    takes the incoming command name string and routes `"get_data_usage"` to your
    `get_data_usage` function.
-5. **The function runs** (`lib.rs:191`):
+5. **The function runs** (`lib.rs:192`):
 
    ```rust
    #[tauri::command]
