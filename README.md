@@ -168,8 +168,8 @@ for the job and degrades gracefully (missing values render as “—”):
 | | Linux | macOS | Windows |
 |---|---|---|---|
 | Default route / interface | `ip route` | `route -n get` | `Get-NetRoute` |
-| Wi-Fi details | `nmcli`, `iw` | `airport -I` | `netsh wlan` |
-| Link speed | `ethtool`, sysfs | — | `Get-NetAdapter` |
+| Wi-Fi details | `nmcli`, `iw` | CoreWLAN, `system_profiler` | `netsh wlan` |
+| Link speed | `ethtool`, sysfs | CoreWLAN (Wi-Fi) | `Get-NetAdapter` |
 | DNS servers | `resolv.conf` | `resolv.conf` | `Get-DnsClientServerAddress` |
 | Neighbor table | `ip neigh` | `arp -a` | `arp -a` |
 | Reverse hostnames | `getent` | `dscacheutil` | `System.Net.Dns` |
@@ -180,3 +180,9 @@ Platform branches are runtime `cfg!()` checks, so every path typechecks on
 every OS; CI (`.github/workflows/build.yml`) builds all three bundles. The
 instant network-change monitor (`ip monitor route`) is Linux-only — macOS and
 Windows fall back to the 15 s poll.
+
+On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
+deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN — including the
+link-speed / transmit rate, which the shell tools no longer expose. The SSID
+sits behind Location Services, so Rove asks for that permission once at startup;
+without it the network name shows as “—” while everything else still resolves.

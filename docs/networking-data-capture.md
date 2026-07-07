@@ -139,9 +139,9 @@ actual command run on each OS.
 | **Default interface** | `ip route show default` (`dev` field) | `Find-NetRoute` → `.InterfaceAlias` | `route -n get default` |
 | **DNS servers** | `/etc/resolv.conf` (`nameserver` lines) | `Get-DnsClientServerAddress` | `/etc/resolv.conf` |
 | **Interface list** | `ip -j addr` (JSON) + `/sys/class/net/*/speed` | `Get-NetAdapter` + `Get-NetIPAddress` | `sysinfo` + `ifconfig -a` states |
-| **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | `netsh wlan show interfaces` | `airport -I` (private framework) |
+| **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | `netsh wlan show interfaces` | CoreWLAN (in-process) + `system_profiler` |
 | **Ethernet details** | `ethtool`, then `/sys/.../speed`, then `nmcli` | `Get-NetAdapter` (LinkSpeed/Duplex) | — |
-| **Link speed** | `/sys/class/net/<if>/speed` | `Get-NetAdapter.LinkSpeed` | (from Wi-Fi probe) |
+| **Link speed** | `/sys/class/net/<if>/speed` | `Get-NetAdapter.LinkSpeed` | CoreWLAN transmit rate (Wi-Fi) |
 | **Subnet / CIDR** | `ip -j addr show <if>` | `Get-NetIPAddress` | (subnet module) |
 | **Neighbor/ARP table** | `ip neigh show` (has state) | `arp -a` | `arp -a` |
 | **Byte counters** | `/sys/class/net/*/statistics` + `sysinfo` | `sysinfo` | `sysinfo` |
@@ -194,9 +194,14 @@ one `ConnectionDetails` struct:
   for exactly this at `windows.rs:298`). netsh doesn't report centre frequency, so
   Rove derives it from band + channel using the 802.11 channel plan
   (`channel_to_frequency`, `windows.rs:166`).
-- **macOS** (`platform/macos.rs:6`): runs Apple's *private*
-  `airport -I` tool (full path into `Apple80211.framework`) and parses its
-  `key: value` output for SSID, RSSI, channel.
+- **macOS** (`platform/macos.rs:12`, `platform/mac_native.rs`): Apple gutted the
+  private `airport -I` tool on macOS 14.4+ (it prints only a deprecation notice)
+  and every shell tool now returns `<redacted>` for the SSID. So Rove reads Wi-Fi
+  *in-process* via **CoreWLAN**: the SSID (gated behind Location Services, which
+  Rove requests once at startup through CoreLocation) and the transmit rate —
+  CoreWLAN is the only remaining source of Wi-Fi link speed. `system_profiler`
+  fills in RSSI/channel/security (cached off the hot path since it takes seconds),
+  with `airport`/`networksetup` kept only as legacy fallbacks.
 
 A shared post-step, `finalize_wifi` (`platform/mod.rs:50`), converts a dBm RSSI
 into a 0–100% bar whenever the OS only gave dBm — so the signal meter looks the
@@ -236,13 +241,17 @@ The clever part (comment at `sweep.rs:1`): **we don't care whether the ping
 succeeds.** The point is that sending *any* packet forces the kernel to do an ARP
 exchange to find the target's MAC — which populates the neighbor table *even for
 hosts that silently drop the ping*. The ping is bait; the ARP entry is the catch.
-A concurrent mDNS listener and a TCP port probe run alongside to catch friendly
-names and reach ICMP-filtering hosts.
+A TCP port probe runs alongside to reach ICMP-filtering hosts, plus two passive
+listeners — **mDNS** and **SSDP/UPnP** — that catch devices announcing their own
+friendly names and models.
 
-Everything then gets enriched: vendor from the MAC's OUI prefix, hostname from
-reverse DNS or mDNS, and a device `kind` classification. The local machine is
-added manually because it never appears in its own neighbor table
-(`add_self_if_missing`, `devices/mod.rs:121`).
+Everything then gets enriched: vendor from the MAC's OUI prefix; hostname from
+whichever source is friendliest (mDNS → SSDP → NetBIOS → reverse DNS); a hardware
+model from mDNS/SSDP; and a device `kind` from a 13-way weighted-vote classifier
+that also folds in HTTP-banner hints. The local machine is added manually because
+it never appears in its own neighbor table (`add_self_if_missing`,
+`devices/mod.rs:174`). The full pipeline — SSDP, HTTP banners, NetBIOS, and the
+classifier — is covered in the [device-discovery page](./device-discovery.md).
 
 ---
 
@@ -296,7 +305,7 @@ times and parsing the RTT out of each reply line with a regex
  platform::  platform::   platform::      generic_interface_list()
   linux       windows      macos          + sysinfo   ← ultimate
    ip/iw/     PowerShell/   ifconfig/                    fallback
-   ethtool    netsh         airport
+   ethtool    netsh         CoreWLAN
       │         │             │
       ▼         ▼             ▼
    shell::try_run  /  try_run_powershell   ← one runner, timeout,
