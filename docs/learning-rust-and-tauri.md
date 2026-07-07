@@ -18,15 +18,9 @@ click through in your editor.
 
 A Tauri app is two worlds glued together:
 
-```
-┌─────────────────────────┐         ┌──────────────────────────┐
-│   FRONTEND (webview)     │  IPC    │   BACKEND (native Rust)   │
-│   React + TypeScript     │ ◄─────► │   your compiled binary    │
-│   src/                   │  JSON   │   src-tauri/ + crates/    │
-│   runs in a browser      │         │   full OS access          │
-│   engine, no OS access   │         │   files, sockets, procs   │
-└─────────────────────────┘         └──────────────────────────┘
-```
+<div align="center">
+  <img src="assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
+</div>
 
 The frontend is literally a web page. It can't open a socket or read `/sys`.
 When it needs something native, it **invokes a command** — sends a JSON message
@@ -391,7 +385,7 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    object (empty here) — into a message and hands it to the webview's IPC channel
    (Tauri exposes it on `window.__TAURI_INTERNALS__`). This crosses the *process
    boundary*. It returns a `Promise` immediately.
-4. **Rust receives it.** Back in `src-tauri/src/lib.rs:632`, the
+4. **Rust receives it.** Back in `src-tauri/src/lib.rs:640`, the
    `tauri::generate_handler![...]` macro built a dispatcher at compile time: it
    takes the incoming command name string and routes `"get_data_usage"` to your
    `get_data_usage` function.
@@ -459,17 +453,182 @@ the last detach turns it off.
 
 ---
 
-## Where to go next
+## 9. Async & tokio — the background loops
 
-That's the foundational tour — IPC, ownership, `Option`/`Result`, structs/traits/
-derive, async, shared-state concurrency, and the full round-trip across the
-boundary, all from Rove's real code. Deeper tracks available:
+Sections 1–8 covered code that runs *when the UI asks*. But Rove also runs work
+*on its own*: sampling usage every 30 s, broadcasting throughput every second,
+watching for cable pulls. These are **long-lived async tasks**, and Tauri bundles
+**tokio** to run them.
 
-1. **Async & tokio deep-dive** — how `spawn_usage_sampler`, the background loops,
-   and the `speed-test-progress` event streaming work (`lib.rs:319-455`).
-2. ~~The Tauri IPC round-trip in full~~ — **done, see Section 8 above.**
-3. **Ownership & borrowing drills** — small exercises using Rove's own types;
-   predict what compiles, then check with `cargo`.
-4. **Traits & generics** — the `monitor_connectivity<F>` generic function
-   (`lib.rs:409`) and how `derive` traits really work under the hood.
-5. **Build & run it** — compile the app and add a tiny new command end-to-end.
+`tauri::async_runtime::spawn(future)` hands a future to tokio's scheduler — think
+`std::thread::spawn`, but the tasks are cheap green tasks multiplexed onto a small
+thread pool, not one OS thread each. `spawn_usage_sampler` (`lib.rs:319`) is the
+simplest shape:
+
+```rust
+tauri::async_runtime::spawn(async move {
+    loop {
+        // ... take a sample ...
+        tokio::time::sleep(Duration::from_secs(30)).await;
+    }
+});
+```
+
+The `.await` on `sleep` is the crucial bit: it **yields** the thread back to the
+runtime for 30 s instead of blocking it, so one thread can host all three loops at
+once. `async move` means the closure *takes ownership* of everything it captures
+(here, the `AppHandle`) — required, because the task outlives the function that
+spawned it, so it can't borrow.
+
+Two production details are worth internalizing:
+
+- **Panic isolation.** The sample tick is wrapped in `catch_unwind`
+  (`lib.rs:324`). A panic inside one 30 s tick is logged and swallowed, so a single
+  bad reading can't kill the loop and silently stop usage tracking for the rest of
+  the session. The loop is a *supervisor*.
+- **The tap pattern (command + event, combined).** `spawn_throughput_broadcaster`
+  (`lib.rs:342`) wakes every second but only emits while an `AtomicBool` flag is
+  set (`lib.rs:349`) — the flag the `subscribe_live_throughput` command flips. On
+  the first tick after (re)subscribing it calls `sampler.prime()` and *skips one
+  emit* (`lib.rs:357`), so the idle gap since the last subscription isn't reported
+  as a single giant Mbps spike. That's the whole "commands turn the stream on;
+  events are the stream" idea from Section 8, in ten lines.
+
+The `speed-test-progress` stream (Section 8's Direction B, but request-scoped
+rather than a standing loop) works the same way: `run_speed_test` (`lib.rs:149`)
+hands the speed engine a closure that emits an event per progress update
+(`lib.rs:168`), so the progress bar fills live while the `await` is still pending.
+
+---
+
+## 10. Traits & generics — one monitor, two operating systems
+
+Rust reaches for **generics** the way other languages reach for interfaces or
+duck typing — but resolved at *compile time*, with zero runtime cost. The route
+monitor is a clean real example. Linux watches `ip monitor route`; Windows blocks
+on a long-lived PowerShell. Both do the *same thing* — spawn a child process,
+read one line per network change, debounce it into a `network-changed` event, and
+respawn the child (with backoff) if it dies. Only *how you spawn the child*
+differs.
+
+So the shared logic is written once, generic over "a thing that makes a command":
+
+```rust
+async fn monitor_connectivity<F>(handle: tauri::AppHandle, spawn: F)
+where
+    F: Fn() -> tokio::process::Command,
+{ ... }
+```
+
+`<F>` declares a type parameter; the `where F: Fn() -> tokio::process::Command`
+clause **bounds** it — `F` can be any type, as long as it's a closure (or fn) that
+takes nothing and returns a `Command`. The two callers pass different closures
+(`lib.rs:376` and `383`), one building an `ip` command, the other a `powershell`
+one. Rust **monomorphizes**: it stamps out a specialized copy of
+`monitor_connectivity` for each concrete `F` at compile time, so there's no
+dynamic dispatch and no boxing — the closure is inlined as if you'd hand-written
+two functions. The `#[cfg(target_os = "…")]` attributes mean only the arm for the
+platform you're building even compiles.
+
+The body is a small lesson in resilient systems code (`lib.rs:416-453`): it reads
+lines with `tokio::io::BufReader`, debounces bursts (`>= 800 ms` between emits so a
+flurry of route changes collapses to one UI nudge), sets `kill_on_drop(true)` so
+the child can't be orphaned when the app exits, and on child death respawns with
+**exponential backoff** — a monitor that stayed up a minute resets the backoff to
+1 s; rapid crashes double it up to a 30 s cap, so a permanently broken monitor
+degrades to occasional retries instead of a busy-loop.
+
+### The other kind of generic: `derive`
+
+Section 6 showed `#[derive(Serialize)]`. That's the *same* trait machinery from
+the other side: `Serialize` is a trait, and `#[derive]` auto-generates the
+`impl Serialize for ConnectionDetails { … }` you'd otherwise hand-write. When
+serde's `to_string` is called on your struct, the compiler already knows — again
+at compile time, monomorphized — exactly how to walk its fields. Traits are the
+one idea behind both "write logic once over many types" (generics) and "many types
+share one behaviour" (`derive`, trait objects).
+
+---
+
+## 11. Ownership & borrowing — read the moves in real code
+
+Section 5 gave the rules. Here are four one-liners from the files above; try to
+predict *why each is written the way it is* before reading the answer.
+
+1. **`cancel.clone()`** in `run_speed_test` (`lib.rs:168`). `cancel` is an
+   `Arc<AtomicBool>`. It's cloned because *two* owners now need it: the closure
+   passed into the speed engine (which polls it to abort mid-stream) and the slot
+   stored in `AppState` (so `cancel_speed_test` can flip it from another command).
+   Cloning an `Arc` doesn't copy the bool — it bumps a reference count and hands
+   back a second handle to the *same* flag. That's how two async tasks share one
+   cancellation signal safely.
+
+2. **`async move`** in every `spawn` (`lib.rs:320`). Without `move`, the closure
+   would *borrow* the `AppHandle` from the enclosing function — but the spawned
+   task outlives that function, so the borrow would dangle. `move` transfers
+   ownership into the task. The compiler *requires* it here; it won't let you spawn
+   a task that borrows a local.
+
+3. **`slot.take()`** in `cancel_speed_test` (`lib.rs:186`). `slot` is a
+   `MutexGuard<Option<Arc<…>>>`. `.take()` moves the `Some(arc)` *out*, leaving
+   `None` behind, so you own the `Arc` and can flip its flag — all without cloning,
+   because you're consuming the stored value, not sharing it.
+
+4. **`Arc::ptr_eq(c, &cancel)`** in `run_speed_test` (`lib.rs:177`). After a run
+   finishes it clears its own cancel slot — but *only if a newer run hasn't already
+   replaced it*. `ptr_eq` compares the two `Arc`s by pointer identity (same
+   allocation?), not by value, which is exactly the "is this still *my* flag"
+   question. A textbook case of borrowing (`&cancel`) to *inspect* without
+   consuming.
+
+The through-line: in Rust you can usually tell a value's lifetime story just by
+reading `clone` / `move` / `&` / `take` at the call site. Nothing is copied or
+shared implicitly.
+
+---
+
+## 12. Build & run it — add a command end-to-end
+
+The real test of the mental model: add a new piece of data to the UI. Every
+command in Rove is the same six edits, following the contract from Sections 6–8.
+Say you want to surface the machine's uptime:
+
+1. **Write the pure logic** in `crates/rove-core/` — a plain
+   `pub async fn uptime_secs() -> Option<u64>`. No Tauri, no `#[command]`; it's
+   unit-testable on its own (`cargo test -p rove-core`).
+2. **Wrap it** in `src-tauri/src/lib.rs` with a thin command:
+
+   ```rust
+   #[tauri::command]
+   async fn get_uptime() -> Option<u64> {
+       rove_core::uptime_secs().await
+   }
+   ```
+3. **Register it** in the `tauri::generate_handler![…]` list (`lib.rs:640`) so the
+   compile-time dispatcher can route `"get_uptime"` to it. Forgetting this step is
+   the classic "command not found" error.
+4. **Declare the type** in `src/types/` and add the method to the `NetworkAPI`
+   interface — the contract both bridge implementations must satisfy.
+5. **Implement the bridge** in `src/bridge/tauriNetworkApi.ts`
+   (`() => invoke<number | null>('get_uptime')`) *and* mirror it in
+   `src/dev/mockNetworkApi.ts` so `npm run dev` keeps working in a plain browser.
+6. **Consume it** from a hook via `useBackendResource` and render it in a view.
+
+Notice what *doesn't* change: the IPC plumbing, the serialization, the event
+system. The architecture from this whole doc — pure core, thin Tauri shell, typed
+contract, swappable bridge — is exactly what makes step 1 the only place real
+thought goes, and steps 2–6 mechanical.
+
+```bash
+npm run tauri:dev            # build + run the desktop app, hot-reloading the UI
+cargo test -p rove-core      # test the pure logic in isolation
+```
+
+---
+
+That's the full tour — IPC, ownership, `Option`/`Result`, structs/traits/derive,
+async and tokio, generics, shared-state concurrency, and the complete round-trip
+across the process boundary, every concept anchored in code you can open and
+run. The companion pages go deeper on the two richest subsystems: the
+[per-OS data capture](./networking-data-capture.md) and the
+[device-discovery pipeline](./device-discovery.md).
