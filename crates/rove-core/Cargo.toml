@@ -15,6 +15,11 @@ regex-lite = "0.1"
 mdns-sd = "0.13"
 rusqlite = { version = "0.32", features = ["bundled"] }
 
+[dev-dependencies]
+# Used only by `examples/gen_oui.rs` to parse the IEEE registry CSVs; never
+# compiled into the shipped binary.
+csv = "1"
+
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.
 [target.'cfg(target_os = "macos")'.dependencies]

@@ -1,10 +1,15 @@
-//! MAC OUI → vendor lookup, backed by the full IEEE registry.
+//! MAC OUI → vendor lookup, backed by the IEEE registry.
 //!
-//! The table is the Wireshark `manuf` list (MA-L/MA-M/MA-S assignments),
-//! trimmed to `<bits>\t<hexprefix>\t<vendor>` rows and embedded at compile
-//! time. `bits` is the assignment size (24, 28, or 36) and `hexprefix` is the
-//! significant leading nibbles (`bits / 4` of them), uppercase. IEEE hands out
-//! blocks at three granularities, so a lookup tries the most specific first.
+//! The table is compiled from the IEEE Registration Authority's public
+//! MA-L/MA-M/MA-S assignment registry, trimmed to `<bits>\t<hexprefix>\t<vendor>`
+//! rows and embedded at compile time. `bits` is the assignment size (24, 28, or
+//! 36) and `hexprefix` is the significant leading nibbles (`bits / 4` of them),
+//! uppercase. IEEE hands out blocks at three granularities, so a lookup tries
+//! the most specific first.
+//!
+//! Regenerate with `cargo run -p rove-core --example gen_oui` (see that file for
+//! the IEEE sources). Sourcing from IEEE rather than Wireshark's GPL-2.0 `manuf`
+//! keeps the bundled table free of copyleft obligations.
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -62,6 +67,13 @@ fn table() -> &'static OuiTable {
 /// unregistered or unparseable prefixes — a randomized MAC will almost never
 /// match, but callers should still gate on [`is_randomized_mac`].
 pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
+    resolve(table(), mac)
+}
+
+/// The precedence logic, split out from the global table so it can be unit
+/// tested against a synthetic table regardless of which assignments the
+/// embedded snapshot happens to contain.
+fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
     let hex: String = mac
         .chars()
         .filter(|c| c.is_ascii_hexdigit())
@@ -71,7 +83,6 @@ pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
     if hex.len() < 6 {
         return None;
     }
-    let t = table();
     if hex.len() >= 9 {
         if let Ok(key) = u64::from_str_radix(&hex[..9], 16) {
             if let Some(vendor) = t.b36.get(&key) {
@@ -111,13 +122,20 @@ mod tests {
 
     #[test]
     fn prefers_more_specific_assignments() {
-        // 00:55:DA is a shared MA-L carved into /28 MA-M blocks; the 28-bit
-        // match must win over any 24-bit fallback.
-        let shinko = lookup_vendor("00:55:da:0f:00:01");
-        let koolpos = lookup_vendor("00:55:da:1f:00:01");
-        assert!(shinko.is_some());
-        assert!(koolpos.is_some());
-        assert_ne!(shinko, koolpos);
+        // 00:55:DA is a shared MA-L carved into /28 MA-M blocks; a 28-bit match
+        // must win over the 24-bit fallback. Built as a synthetic table so the
+        // guarantee holds regardless of which blocks the shipped snapshot has.
+        let mut t = OuiTable {
+            b24: HashMap::new(),
+            b28: HashMap::new(),
+            b36: HashMap::new(),
+        };
+        t.b24.insert(0x0055DA, "Shared MA-L holder");
+        t.b28.insert(0x0055DA1, "KoolPOS Inc.");
+        // 0055DA1.. has an MA-M entry → the finer block wins.
+        assert_eq!(resolve(&t, "00:55:da:1f:00:01"), Some("KoolPOS Inc."));
+        // 0055DA0.. has no MA-M entry → falls back to the 24-bit holder.
+        assert_eq!(resolve(&t, "00:55:da:0f:00:01"), Some("Shared MA-L holder"));
     }
 
     #[test]

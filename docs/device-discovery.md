@@ -223,8 +223,9 @@ grows with every new discovery source.
 ### 4a. Vendor from the MAC — `oui.rs`
 
 The first 24+ bits of a MAC are an IEEE-assigned vendor prefix (OUI). Rove
-embeds the **entire IEEE registry** (the Wireshark `manuf` list) into the binary
-at compile time:
+embeds the **IEEE registry** (regenerated straight from IEEE's public MA-L/MA-M/
+MA-S CSVs by `examples/gen_oui.rs`, so the bundled table carries no copyleft
+obligation) into the binary at compile time:
 
 ```rust
 static OUI_DATA: &str = include_str!("../data/oui.tsv");
