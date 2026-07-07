@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Required so macOS 14+ will reveal the current Wi-Fi network name (SSID),
+         which is otherwise withheld from all APIs. Location is used solely to
+         read the SSID; it is never stored, logged, or transmitted. -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Rove uses your location only to read the name of the Wi-Fi network you're connected to. Your location is never stored or sent anywhere.</string>
+    <key>NSLocationUsageDescription</key>
+    <string>Rove uses your location only to read the name of the Wi-Fi network you're connected to. Your location is never stored or sent anywhere.</string>
+    <!-- Shown on the "find devices on your local network" prompt, triggered by
+         the device scan (mDNS/SSDP/ARP). Nothing leaves your network. -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Rove scans your local network to list the devices connected to it. This never leaves your Mac.</string>
+</dict>
+</plist>

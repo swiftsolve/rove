@@ -6,6 +6,7 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { ConnectionIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
 import { Spinner } from '@/components/ui/Spinner'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import './DiagnosticsView.css'
 
 interface DiagnosticsViewProps {
@@ -41,7 +42,6 @@ export default function DiagnosticsView({
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
   const hasDiagnostics = diagnostics != null
-  const refreshing = isRunning && hasDiagnostics
 
   return (
     <div className="view-page">
@@ -70,7 +70,7 @@ export default function DiagnosticsView({
               disabled={isRunning}
               aria-label="Run again"
             >
-              {refreshing ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+              {isRunning ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
             </button>
           </Tooltip>
         </div>

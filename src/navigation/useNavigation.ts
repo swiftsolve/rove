@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CapabilityId } from '@/types'
 import type { AppTab } from '@/navigation/tabs'
 
@@ -42,7 +42,7 @@ export interface Navigation {
 // We stash the location on `history.state` under a namespaced key rather than
 // owning the whole state object, so we don't clobber anything the webview host
 // might keep there.
-const STATE_KEY = '__beaconNav'
+const STATE_KEY = '__roveNav'
 
 function readLocation(state: unknown): AppLocation | null {
   if (state != null && typeof state === 'object' && STATE_KEY in state) {
@@ -66,37 +66,45 @@ function writeState(location: AppLocation): Record<string, unknown> {
  */
 export function useNavigation(): Navigation {
   const [location, setLocation] = useState<AppLocation>(HOME_LOCATION)
+  // Mirror `location` in a ref so `navigate` can compare against the current
+  // screen without a stale closure — and, crucially, without doing the
+  // pushState side effect inside a setState updater (StrictMode invokes those
+  // twice in dev, which would push two entries and make Back need two presses).
+  const locationRef = useRef<AppLocation>(HOME_LOCATION)
+
+  const applyLocation = useCallback((next: AppLocation): void => {
+    locationRef.current = next
+    setLocation(next)
+  }, [])
 
   // Seed the first history entry with our location (via replaceState, so we
   // don't grow the stack), or adopt one a reload left behind. Runs once.
   useEffect(() => {
     const existing = readLocation(window.history.state)
     if (existing) {
-      setLocation(existing)
+      applyLocation(existing)
     } else {
       window.history.replaceState(writeState(HOME_LOCATION), '')
     }
-  }, [])
+  }, [applyLocation])
 
   // Mirror back/forward — the app's back buttons, the mouse thumb button, and
   // Alt+←/→ all arrive here.
   useEffect(() => {
     const onPop = (event: PopStateEvent): void => {
-      setLocation(readLocation(event.state) ?? HOME_LOCATION)
+      applyLocation(readLocation(event.state) ?? HOME_LOCATION)
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
-  }, [])
+  }, [applyLocation])
 
   const navigate = useCallback((to: AppLocation): void => {
     // Ignore navigations that don't change the screen, so the back stack never
     // fills with duplicate entries (e.g. tapping the already-active tab).
-    setLocation((current) => {
-      if (sameLocation(current, to)) return current
-      window.history.pushState(writeState(to), '')
-      return to
-    })
-  }, [])
+    if (sameLocation(locationRef.current, to)) return
+    window.history.pushState(writeState(to), '')
+    applyLocation(to)
+  }, [applyLocation])
 
   const back = useCallback((): void => {
     window.history.back()

@@ -1,6 +1,6 @@
 //! OS-specific implementations of host and network state.
 //!
-//! Beacon observes the same facts on every platform — the interface list, the
+//! Rove observes the same facts on every platform — the interface list, the
 //! active Wi-Fi/Ethernet details, the LAN subnet, routing and DNS — but each OS
 //! exposes them through different tools (`ip`/`iw` on Linux, `Get-NetAdapter`
 //! /`netsh` on Windows, `ifconfig`/`airport` on macOS). This module collects
@@ -17,6 +17,7 @@
 //! windowless-spawn helper, interface sorting) lives in this file.
 
 pub mod linux;
+pub mod mac_native;
 pub mod macos;
 pub mod windows;
 
@@ -113,7 +114,13 @@ pub struct RawNeighbor {
 }
 
 static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\(?([\d.]+)\)?[^0-9a-fA-F]+([0-9a-fA-F]{1,2}[:-][0-9a-fA-F:-]{13,16})").unwrap()
+    // An IPv4, then (lazily, across whatever separates them) a 6-group MAC. The
+    // separator must be matched with `.*?`, not a non-hex class: BSD `arp -a`
+    // writes "<ip> at <mac>", and the `a` in "at" is itself a hex digit. Octets
+    // are 1–2 hex because BSD zero-strips them ("af:0"); groups may be `:`- or
+    // `-`-separated (Windows uses dashes).
+    Regex::new(r"([0-9]{1,3}(?:\.[0-9]{1,3}){3}).*?([0-9a-fA-F]{1,2}(?:[:-][0-9a-fA-F]{1,2}){5})")
+        .unwrap()
 });
 
 /// The kernel neighbor table. Linux's `ip neigh` carries a reachability state;
@@ -128,32 +135,54 @@ pub async fn neighbor_table() -> Vec<RawNeighbor> {
     arp_neighbors().await
 }
 
-/// Shared `arp -a` parse for the platforms without a stateful neighbor tool.
+/// Shared `arp` parse for the platforms without a stateful neighbor tool. Uses
+/// the numeric table (`-n`) off Windows to skip per-host reverse DNS (the app
+/// resolves names itself) — Windows `arp` doesn't take `-n`.
 async fn arp_neighbors() -> Vec<RawNeighbor> {
-    let Some(out) = try_run("arp -a").await else {
+    let cmd = if cfg!(target_os = "windows") { "arp -a" } else { "arp -an" };
+    let Some(out) = try_run(cmd).await else {
         return Vec::new();
     };
     out.lines()
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
-            Some(RawNeighbor {
-                ip: c[1].to_string(),
-                mac: c[2].to_lowercase().replace('-', ":"),
-                reachable: true,
-            })
+            let mac = normalize_mac(&c[2]);
+            // Drop broadcast and multicast pseudo-neighbors; they aren't devices.
+            if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33")
+            {
+                return None;
+            }
+            Some(RawNeighbor { ip: c[1].to_string(), mac, reachable: true })
         })
         .collect()
+}
+
+/// Lowercase, colon-separated, zero-padded MAC ("8:3a:8d:ac:4:d0" →
+/// "08:3a:8d:ac:04:d0") so BSD's stripped octets match sysinfo/OUI formatting
+/// and dedupe cleanly against the local machine's own address.
+fn normalize_mac(raw: &str) -> String {
+    raw.split([':', '-'])
+        .map(|octet| format!("{:0>2}", octet.to_ascii_lowercase()))
+        .collect::<Vec<_>>()
+        .join(":")
 }
 
 // ---- ping ----------------------------------------------------------------
 
 /// Build the OS-appropriate `ping` command sending `count` probes to `host`.
-/// `win_timeout_ms` is Windows' per-reply wait (`-w`, milliseconds); Unix uses a
-/// fixed 1 s wait (`-W 1`) with 0.2 s spacing (`-i 0.2`) and discards stderr.
-/// `host` must be a validated address — it is interpolated into the command.
-pub fn ping_command(host: &str, count: u32, win_timeout_ms: u32) -> String {
+/// `timeout_ms` is the per-reply wait: Windows spells it `-w` and macOS `-W`,
+/// both in milliseconds; Linux/BSD `-W` is in *seconds*, so there we use a fixed
+/// `-W 1`. All Unix variants space probes 0.2 s apart (`-i 0.2`) and discard
+/// stderr. `host` must be a validated address — it is interpolated in.
+pub fn ping_command(host: &str, count: u32, timeout_ms: u32) -> String {
     if cfg!(target_os = "windows") {
-        format!("ping -n {count} -w {win_timeout_ms} {host}")
+        format!("ping -n {count} -w {timeout_ms} {host}")
+    } else if cfg!(target_os = "macos") {
+        // macOS `ping -W` is the per-reply wait in MILLISECONDS. The Linux `-W 1`
+        // would be a 1 ms deadline that drops every real reply as "out of wait
+        // time", printing no `time=` lines — so latency/jitter/loss came back
+        // empty (100% loss) and every capability rated "unsupported".
+        format!("ping -c {count} -i 0.2 -W {timeout_ms} {host} 2>/dev/null")
     } else {
         format!("ping -c {count} -i 0.2 -W 1 {host} 2>/dev/null")
     }

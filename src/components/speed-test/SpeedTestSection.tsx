@@ -55,28 +55,26 @@ function SpeedCell({
   )
 }
 
-// Material-style "wavy" progress: a scrolling squiggle with a dot at its leading
-// edge. Drawn in real pixels (the container width is measured) so it maps 1:1 —
-// no aspect distortion, which keeps the wave's wavelength honest and the end dot
-// perfectly round. All dimensions below are in px.
+// Material 3 "wavy" determinate progress, matching Android's LinearWavyProgressIndicator:
+// a scrolling squiggle for the active portion with a dot riding its leading edge,
+// a small gap, then a flat track for the remaining portion. Drawn in real
+// pixels (the container width is measured) so it maps 1:1 — no aspect distortion,
+// which keeps the wave's wavelength honest and the caps perfectly round. All
+// dimensions below are in px, mirroring the Android dp defaults.
 const WAVE_HEIGHT = 16
 const WAVE_MID = WAVE_HEIGHT / 2
-const WAVE_AMPLITUDE = 2
-const WAVE_LENGTH = 42 // px per wave
-const WAVE_STROKE = 2.5
-const WAVE_SPEED = 46 // px/second the squiggle scrolls (time-based → constant)
-const WAVE_TAPER = 18 // px over which the amplitude ramps in/out at each end
-const WAVE_MIN_FRACTION = 0.12 // always draw at least this fraction, so 0% still waves
+const WAVE_AMPLITUDE = 2.5
+const WAVE_LENGTH = 40 // px per wave (Android LinearDeterminateWavelength = 40dp)
+const WAVE_STROKE = 3 // active + track thickness
+const WAVE_SPEED = 40 // px/second — Android moves the wave one wavelength per second
+const WAVE_MIN_FRACTION = 0.03 // draw a small sliver even at 0% so the bar reads as live
+const TRACK_GAP = 4 // px gap between the active tip and the track (Android LinearIndicatorTrackGapSize = 4dp)
+const LEAD_DOT_R = WAVE_STROKE + 2 // dot rides the leading edge of the wave
 
-// Amplitude envelope: flat (0) at both ends, full in the middle — so the line
-// runs straight into the start and into the leading dot, like Android's.
-function amplitudeAt(x: number, end: number): number {
-  const ramp = Math.min(x / WAVE_TAPER, (end - x) / WAVE_TAPER, 1)
-  return WAVE_AMPLITUDE * Math.max(0, ramp)
-}
-
-function waveY(x: number, phase: number, end: number): number {
-  return WAVE_MID + amplitudeAt(x, end) * Math.sin(((x + phase) / WAVE_LENGTH) * Math.PI * 2)
+// Full amplitude throughout — the wave stays wavy from the start right up to the
+// rounded cap at the leading edge, like Android's.
+function waveY(x: number, phase: number): number {
+  return WAVE_MID + WAVE_AMPLITUDE * Math.sin(((x + phase) / WAVE_LENGTH) * Math.PI * 2)
 }
 
 // The backend reports progress in coarse steps (mirror them here). Rather than
@@ -138,30 +136,45 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
   const phase = phaseRef.current
   const fraction = Math.max(pctRef.current / 100, WAVE_MIN_FRACTION)
   const end = fraction * width
+  const dotY = WAVE_MID // dot stays steady on the centerline while the wave undulates behind it
+  // Track runs to just inside the right edge so its round cap doesn't clip.
+  const trackEnd = width - WAVE_STROKE / 2
+  // Track starts a gap past the active tip and runs to the end.
+  const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
+  const showTrack = trackEnd - trackStart > 0.5
 
   // Smooth (quadratic through midpoints) squiggle from 0 to the leading edge.
-  // The amplitude envelope flattens the line at both ends.
+  // The wave carries full amplitude all the way, ending on the rounded cap
+  // wherever the wave happens to be — like Android's.
   let active = ''
-  const dotY = WAVE_MID // amplitude tapers to 0 at `end`, so the dot sits on the midline
   if (width > 0) {
     let prevX = 0
-    let prevY = waveY(0, phase, end)
+    let prevY = waveY(0, phase)
     active = `M ${prevX.toFixed(2)} ${prevY.toFixed(2)}`
     for (let x = 3; x <= end; x += 3) {
-      const y = waveY(x, phase, end)
+      const y = waveY(x, phase)
       active += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${((prevX + x) / 2).toFixed(2)} ${((prevY + y) / 2).toFixed(2)}`
       prevX = x
       prevY = y
     }
-    active += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${end.toFixed(2)} ${WAVE_MID.toFixed(2)}`
+    active += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${end.toFixed(2)} ${waveY(end, phase).toFixed(2)}`
   }
 
   return (
     <div ref={wrapRef} className="wavy-progress" aria-hidden>
       {width > 0 && (
         <svg width={width} height={WAVE_HEIGHT} viewBox={`0 0 ${width} ${WAVE_HEIGHT}`}>
+          {showTrack && (
+            <line
+              className="wavy-track"
+              x1={trackStart}
+              y1={WAVE_MID}
+              x2={trackEnd}
+              y2={WAVE_MID}
+            />
+          )}
           <path className="wavy-fill" d={active} />
-          <circle className="wavy-dot" cx={end} cy={dotY} r={WAVE_STROKE} />
+          <circle className="wavy-dot" cx={end} cy={dotY} r={LEAD_DOT_R} />
         </svg>
       )}
     </div>

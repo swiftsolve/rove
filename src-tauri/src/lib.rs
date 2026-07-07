@@ -1,5 +1,5 @@
-//! Thin Tauri shell over beacon-core: each command maps 1:1 to a service.
-use beacon_core::{
+//! Thin Tauri shell over rove-core: each command maps 1:1 to a service.
+use rove_core::{
     data_usage::UsageTracker,
     live_throughput::ThroughputSampler,
     store::{KnownDevice, SpeedHistoryRecord, Store},
@@ -36,30 +36,30 @@ fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 }
 
 /// Per-user log directory, following each platform's convention. Chosen so a
-/// user (or we, when debugging) can find `beacon.log.<date>` without root.
+/// user (or we, when debugging) can find `rove.log.<date>` without root.
 fn log_dir() -> Option<std::path::PathBuf> {
     #[cfg(target_os = "windows")]
     {
         std::env::var_os("LOCALAPPDATA")
-            .map(|d| std::path::PathBuf::from(d).join("beacon").join("logs"))
+            .map(|d| std::path::PathBuf::from(d).join("rove").join("logs"))
     }
     #[cfg(target_os = "macos")]
     {
-        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join("Library/Logs/beacon"))
+        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join("Library/Logs/rove"))
     }
     #[cfg(all(unix, not(target_os = "macos")))]
     {
         if let Some(state) = std::env::var_os("XDG_STATE_HOME") {
-            return Some(std::path::PathBuf::from(state).join("beacon"));
+            return Some(std::path::PathBuf::from(state).join("rove"));
         }
-        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".local/state/beacon"))
+        std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".local/state/rove"))
     }
 }
 
-/// Start file logging into a daily-rolled `beacon.log` under [`log_dir`]. The
+/// Start file logging into a daily-rolled `rove.log` under [`log_dir`]. The
 /// returned guard flushes the non-blocking writer on drop, so the caller must
 /// hold it for the process's lifetime. Level defaults to `info`; override with
-/// the `BEACON_LOG` env var (e.g. `BEACON_LOG=debug`). Best-effort — returns
+/// the `ROVE_LOG` env var (e.g. `ROVE_LOG=debug`). Best-effort — returns
 /// `None` if the log dir can't be created rather than failing startup.
 fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
     let dir = log_dir()?;
@@ -67,9 +67,9 @@ fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
 
     let (writer, guard) = tracing_appender::non_blocking(tracing_appender::rolling::daily(
         &dir,
-        "beacon.log",
+        "rove.log",
     ));
-    let filter = tracing_subscriber::EnvFilter::try_from_env("BEACON_LOG")
+    let filter = tracing_subscriber::EnvFilter::try_from_env("ROVE_LOG")
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
 
     let ok = tracing_subscriber::fmt()
@@ -97,7 +97,7 @@ fn install_panic_logger() {
 async fn get_network_info() -> NetworkInfo {
     tracing::info!("network info requested");
     let started = std::time::Instant::now();
-    let info = beacon_core::network_info::network_info().await;
+    let info = rove_core::network_info::network_info().await;
     tracing::info!(
         elapsed_ms = started.elapsed().as_millis() as u64,
         interface = ?info.interface_name,
@@ -110,7 +110,7 @@ async fn get_network_info() -> NetworkInfo {
 async fn get_interfaces() -> Vec<InterfaceSummary> {
     tracing::info!("interfaces requested");
     let started = std::time::Instant::now();
-    let list = beacon_core::interfaces::list().await;
+    let list = rove_core::interfaces::list().await;
     tracing::info!(
         count = list.len(),
         elapsed_ms = started.elapsed().as_millis() as u64,
@@ -123,7 +123,7 @@ async fn get_interfaces() -> Vec<InterfaceSummary> {
 async fn get_devices(store: tauri::State<'_, Arc<Store>>) -> Result<LanDeviceScan, ()> {
     tracing::info!("device scan started");
     let started = std::time::Instant::now();
-    let scan = beacon_core::devices::scan().await;
+    let scan = rove_core::devices::scan().await;
     tracing::info!(
         devices = scan.devices.len(),
         subnet = ?scan.subnet,
@@ -131,18 +131,18 @@ async fn get_devices(store: tauri::State<'_, Arc<Store>>) -> Result<LanDeviceSca
         elapsed_ms = started.elapsed().as_millis() as u64,
         "device scan finished"
     );
-    let _ = store.record_devices(&scan.devices, beacon_core::net_util::now_ms() as i64);
+    let _ = store.record_devices(&scan.devices, rove_core::net_util::now_ms() as i64);
     Ok(scan)
 }
 
 #[tauri::command]
 async fn run_diagnostics() -> NetworkDiagnostics {
-    beacon_core::diagnostics::run().await
+    rove_core::diagnostics::run().await
 }
 
 #[tauri::command]
 async fn get_public_ip() -> Option<String> {
-    beacon_core::network_info::public_ip().await
+    rove_core::network_info::public_ip().await
 }
 
 #[tauri::command]
@@ -159,13 +159,13 @@ async fn run_speed_test(
         *slot = Some(cancel.clone());
     }
 
-    let link_capacity = beacon_core::network_info::network_info()
+    let link_capacity = rove_core::network_info::network_info()
         .await
         .details
         .link_speed_mbps;
 
     let emitter = app.clone();
-    let result = beacon_core::speed::run(link_capacity, cancel.clone(), move |progress| {
+    let result = rove_core::speed::run(link_capacity, cancel.clone(), move |progress| {
         let _ = emitter.emit("speed-test-progress", &progress);
     })
     .await;
@@ -250,7 +250,7 @@ fn unsubscribe_live_throughput(state: tauri::State<'_, AppState>) {
 /// TEMP DIAGNOSTIC: surface frontend errors in the dev terminal.
 #[tauri::command]
 fn __diag(msg: String) {
-    eprintln!("Beacon[js]: {msg}");
+    eprintln!("Rove[js]: {msg}");
 }
 
 
@@ -266,7 +266,7 @@ fn init_store(app: &tauri::App) {
         })
         .unwrap_or_else(|_| std::path::PathBuf::from("."));
 
-    let store = match Store::open(&data_dir.join("beacon.db")) {
+    let store = match Store::open(&data_dir.join("rove.db")) {
         Ok(store) => Arc::new(store),
         Err(err) => {
             tracing::error!("failed to open database: {err}");
@@ -399,8 +399,8 @@ fn spawn_route_monitor(handle: tauri::AppHandle) {
 /// debounce below.
 #[cfg(target_os = "windows")]
 const WINDOWS_NET_MONITOR: &str = "\
-Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAddressChanged -SourceIdentifier BeaconAddr | Out-Null; \
-Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAvailabilityChanged -SourceIdentifier BeaconAvail | Out-Null; \
+Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAddressChanged -SourceIdentifier RoveAddr | Out-Null; \
+Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAvailabilityChanged -SourceIdentifier RoveAvail | Out-Null; \
 while ($true) { Wait-Event | Out-Null; Get-Event | Remove-Event; [Console]::Out.WriteLine('network-changed'); [Console]::Out.Flush() }";
 
 /// Read change lines from a spawned monitor child, emitting a debounced
@@ -497,18 +497,23 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
     #[cfg(target_os = "linux")]
     suppress_appindicator_deprecation_warning();
 
-    let open = MenuItem::with_id(app, "open", "Open Beacon", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Open Rove", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit Rove", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &quit])?;
 
-    // A dedicated tray glyph: the bare Rss mark in accent blue on a transparent
-    // background — no rounded tile — so it sits flush in the menu bar / taskbar
-    // like other native tray icons rather than showing the boxed app icon.
+    // A dedicated tray glyph: the bare Rove Mark, monochrome on a
+    // transparent background — no rounded tile — so it sits flush in the menu
+    // bar / taskbar like other native tray icons rather than showing the boxed
+    // app icon.
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
 
     TrayIconBuilder::with_id("main")
         .icon(icon)
-        .tooltip("Beacon")
+        // Render as a macOS template image: the system ignores the glyph's own
+        // colour and tints it to match the menu bar, so the mark stays legible
+        // on both light and dark bars. No-op on other platforms.
+        .icon_as_template(true)
+        .tooltip("Rove")
         .menu(&menu)
         // Left-click opens the app directly; the menu (Open / Quit) is reserved
         // for right-click. Disabling the built-in left-click menu lets us handle
@@ -542,7 +547,7 @@ pub fn run() {
     // hold it until `run()` returns.
     let _log_guard = init_logging();
     install_panic_logger();
-    tracing::info!(version = env!("CARGO_PKG_VERSION"), "Beacon starting");
+    tracing::info!(version = env!("CARGO_PKG_VERSION"), "Rove starting");
     // Capture the desktop/render environment up front: this is exactly the
     // context (GDK backend, Wayland socket, and the AppArmor label that governs
     // whether WebKit's sandboxed WebProcess can start) that has caused the
@@ -589,6 +594,12 @@ pub fn run() {
             tray_active: AtomicBool::new(false),
         })
         .setup(|app| {
+            // macOS 14+ withholds the Wi-Fi SSID unless the app holds Location
+            // authorization; prompt once at startup. No-op on other platforms,
+            // and this runs on the main thread as CoreLocation requires.
+            let loc_status = rove_core::platform::mac_native::request_location_permission();
+            tracing::info!(status = loc_status, "location authorization");
+
             let handle = app.handle().clone();
             init_store(app);
             spawn_usage_sampler(handle.clone());
@@ -636,6 +647,17 @@ pub fn run() {
             unsubscribe_live_throughput,
             __diag,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Beacon");
+        // Build (rather than `run`) so we can service run-loop events below.
+        .build(tauri::generate_context!())
+        .expect("error while running Rove")
+        .run(move |_app_handle, _event| {
+            // macOS: once the window is closed to the tray it's hidden but the
+            // Dock icon stays. Clicking it fires `Reopen` (with no visible
+            // windows) rather than creating a window — without this handler the
+            // click does nothing and the app looks stuck. Bring it back.
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                show_main_window(_app_handle);
+            }
+        });
 }

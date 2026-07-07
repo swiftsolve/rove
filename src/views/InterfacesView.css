@@ -10,7 +10,7 @@
 .iface-header-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  gap: var(--gap-xs);
   min-width: 0;
   flex: 1;
 }

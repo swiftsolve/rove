@@ -9,7 +9,7 @@
 .speed-header-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  gap: var(--gap-xs);
   min-width: 0;
   flex: 1;
 }
@@ -52,14 +52,17 @@
   text-underline-offset: 2px;
 }
 
-/* Nudge the clock glyph up a hair so it sits optically centred on the text. */
+/* Share the link's (animating) color so the glyph and label shift together on
+   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+   there's a single color animation rather than two that drift out of sync. */
 .speed-history-link svg {
-  color: var(--text-tertiary);
-  transition: color var(--duration-fast) var(--ease-in-out);
+  color: inherit;
+  opacity: 0.72;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
 .speed-history-link:hover svg {
-  color: var(--accent);
+  opacity: 1;
 }
 
 .speed-header-sub.show {
@@ -74,6 +77,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* The header's Run test button carries a faint accent wash at rest so it reads
+   as a button rather than a bare link, deepening to --accent-muted on hover. */
+.speed-run-btn:not(.is-stop) {
+  background: rgba(91, 140, 255, 0.08);
 }
 
 /* Stop variant of the header's Run test button, shown while a test runs. */

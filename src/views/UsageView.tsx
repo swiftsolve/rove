@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import './UsageView.css'
 
 const USAGE_INFO_HINT =
-  'Usage is measured while Beacon is running, across all physical network interfaces.'
+  'Usage is measured while Rove is running, across all physical network interfaces.'
 
 interface UsageViewProps {
   readonly usage: DataUsageSummary
