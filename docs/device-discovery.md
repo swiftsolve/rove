@@ -228,7 +228,9 @@ MA-S CSVs by `examples/gen_oui.rs`, so the bundled table carries no copyleft
 obligation) into the binary at compile time:
 
 ```rust
-static OUI_DATA: &str = include_str!("../data/oui.tsv");
+// build.rs gzips data/oui.tsv into OUT_DIR; the ~555 KB blob is embedded
+// (vs ~1.8 MB raw) and decompressed once on first lookup.
+static OUI_GZ: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/oui.tsv.gz"));
 ```
 
 IEEE hands out blocks at three sizes — MA-L (24-bit), MA-M (28-bit), MA-S
@@ -238,10 +240,11 @@ be subdivided and resold; the 28-bit match is a different company than the 24-bi
 fallback (there's a test for exactly this at `oui.rs:112`). The table is built
 once, lazily, and cached in a `OnceLock`.
 
-> **Rust note:** `include_str!` bakes the file's contents into the executable as a
-> `&'static str` — no runtime file I/O, no "where did my data file go" deployment
-> problem. The parsed table lives in a `OnceLock` (initialize-once, then shared
-> immutably forever), the idiomatic pattern for expensive global lookup tables.
+> **Rust note:** `include_bytes!` bakes the gzip'd file into the executable — no
+> runtime file I/O, no "where did my data file go" deployment problem. On first
+> lookup it's inflated once and leaked to a `&'static str`, then parsed into a
+> `OnceLock` (initialize-once, then shared immutably forever), the idiomatic
+> pattern for expensive global lookup tables.
 
 ### 4b. Randomized-MAC detection
 
