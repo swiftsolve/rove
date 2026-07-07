@@ -24,7 +24,7 @@ Live traffic · speed tests · LAN device discovery · connection diagnostics ·
 Rove is two programs talking over a thin, typed bridge:
 
 <div align="center">
-  <img src="docs/assets/architecture.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
+  <img src="docs/assets/architecture-v2.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
 </div>
 
 - **Request/response** — each UI data need is one Tauri *command* (`get_network_info`,
@@ -57,7 +57,7 @@ veth, vpn…) are excluded.
 **Devices.** A four-step pipeline (`crates/rove-core/src/devices/`):
 
 <div align="center">
-  <img src="docs/assets/devices-pipeline.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
+  <img src="docs/assets/devices-pipeline-v2.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
 </div>
 
 1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
