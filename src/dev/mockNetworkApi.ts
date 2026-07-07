@@ -129,7 +129,7 @@ const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
   },
 ]
 
-const MOCK_HISTORY_KEY = 'beacon.speed-history.v1'
+const MOCK_HISTORY_KEY = 'rove.speed-history.v1'
 
 function readMockHistory(): readonly SpeedHistoryEntry[] {
   try {
@@ -383,7 +383,7 @@ export function installMockNetworkApiIfNeeded(): boolean {
 
   // eslint-disable-next-line no-console
   console.info(
-    '[beacon] Electron bridge not found — using in-browser mock network data (dev only).',
+    '[rove] Electron bridge not found — using in-browser mock network data (dev only).',
   )
   return true
 }

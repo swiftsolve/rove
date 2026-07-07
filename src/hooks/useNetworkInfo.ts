@@ -60,7 +60,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
       const data = await withTimeout(
         getNetworkApi().getNetworkInfo(),
         NETWORK_INFO_TIMEOUT_MS,
-        'Network detection timed out. Check your connection and try again.',
+        'Network detection timed out.',
       )
 
       setInfo((previous) => (networkInfoEqual(previous, data) ? previous : data))

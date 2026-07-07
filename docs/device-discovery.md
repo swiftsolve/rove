@@ -1,10 +1,10 @@
-# How Beacon Discovers & Identifies LAN Devices
+# How Rove Discovers & Identifies LAN Devices
 
 The Devices screen answers a deceptively hard question: **"what's on my network,
 and what is each thing?"** — without admin rights, without installing a driver,
 and in a couple of seconds. This page walks the whole pipeline, from an empty
 subnet to a labelled list of "Living-Room-AppleTV / tv" entries, using the real
-code in `crates/beacon-core/src/devices/` and its helpers (`mdns.rs`, `oui.rs`).
+code in `crates/rove-core/src/devices/` and its helpers (`mdns.rs`, `oui.rs`).
 
 It doubles as a Rust lesson: this subsystem shows off async concurrency, the
 `HashMap` entry API, weighted scoring over fixed arrays, `spawn_blocking`, and
@@ -26,7 +26,7 @@ Two problems with using it directly:
    plug sitting quietly won't be in it.
 2. **It's bare.** An IP and a MAC tell you nothing about *what* the device is.
 
-So Beacon's job is: (a) **populate** the neighbor table by provoking traffic to
+So Rove's job is: (a) **populate** the neighbor table by provoking traffic to
 every host, then (b) **read** it, then (c) **enrich** each bare entry into an
 identified device. That's the pipeline.
 
@@ -34,7 +34,7 @@ identified device. That's the pipeline.
 
 ## The pipeline at a glance
 
-From `scan()` in `crates/beacon-core/src/devices/mod.rs:25`:
+From `scan()` in `crates/rove-core/src/devices/mod.rs:25`:
 
 ```
 1. Scope     → find my subnet (e.g. 192.168.1.0/24)
@@ -79,7 +79,7 @@ which is how the scan later filters the neighbor table to *just this subnet*
 (so a stale entry from a previous network doesn't leak in).
 
 > **Rust note:** `u32::from(ipv4)` and `Ipv4Addr::from(u32)` are free,
-> lossless conversions — an IPv4 address *is* a `u32`. Beacon leans on this for
+> lossless conversions — an IPv4 address *is* a `u32`. Rove leans on this for
 > all subnet math and for `ip_sort_key` (sorting devices numerically by address).
 
 ---
@@ -90,7 +90,7 @@ This is the clever core. To get a silent host into the neighbor table, you have
 to make your kernel send it a packet — *any* packet — because to send one, the
 kernel must first ARP-resolve the target's MAC, which creates the neighbor
 entry. **You don't care if the host answers.** The ARP resolution already
-happened; the entry is already cached. Beacon does this two complementary ways,
+happened; the entry is already cached. Rove does this two complementary ways,
 plus a passive listener, all at once (`mod.rs:35-45`).
 
 ### 2a. ICMP sweep — `devices/sweep.rs`
@@ -115,7 +115,7 @@ It only runs on `/24`–`/30` subnets (`sweep.rs:14`) — sweeping a `/16` would
 ### 2b. TCP `connect()` probe — `devices/probe.rs`
 
 An ICMP sweep misses hosts that *drop ping* — increasingly the default on phones
-and hardened IoT. So Beacon also tries to open a TCP connection to a short list
+and hardened IoT. So Rove also tries to open a TCP connection to a short list
 of tell-tale ports on every host:
 
 ```rust
@@ -151,7 +151,7 @@ in parallel. Many devices *announce themselves* over multicast DNS (`_ipp._tcp`
 for printers, `_googlecast._tcp` for Chromecasts, `_sonos._tcp` for Sonos…).
 This is the single best identity signal — the device *tells* you what it is,
 often with a friendly name ("Living room clock") and a hardware model
-("MacBookPro18,3"). Beacon browses ~30 service types (`SERVICE_KINDS`,
+("MacBookPro18,3"). Rove browses ~30 service types (`SERVICE_KINDS`,
 `mdns.rs:11`) via the pure-Rust `mdns-sd` crate.
 
 > **Rust note:** `mdns-sd` is blocking, so it runs inside
@@ -177,7 +177,7 @@ identified device (`build_device`, `mod.rs:90`).
 
 ### 4a. Vendor from the MAC — `oui.rs`
 
-The first 24+ bits of a MAC are an IEEE-assigned vendor prefix (OUI). Beacon
+The first 24+ bits of a MAC are an IEEE-assigned vendor prefix (OUI). Rove
 embeds the **entire IEEE registry** (the Wireshark `manuf` list) into the binary
 at compile time:
 
@@ -199,7 +199,7 @@ once, lazily, and cached in a `OnceLock`.
 
 ### 4b. Randomized-MAC detection
 
-Modern phones rotate a *random* MAC per network for privacy. Beacon detects this
+Modern phones rotate a *random* MAC per network for privacy. Rove detects this
 from a single bit — the "locally administered" bit of the first octet
 (`oui.rs:94`):
 

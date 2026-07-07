@@ -1,26 +1,26 @@
-# How Beacon Captures Network Data (per OS)
+# How Rove Captures Network Data (per OS)
 
-Beacon shows you the same facts on every platform — your Wi-Fi signal, the LAN
+Rove shows you the same facts on every platform — your Wi-Fi signal, the LAN
 devices, your gateway, DNS, link speed, live throughput — but **no operating
 system exposes these through a single API**. Each OS has its own tools, output
-formats, and quirks. This page documents *how* Beacon actually gets each piece of
+formats, and quirks. This page documents *how* Rove actually gets each piece of
 data on Linux, Windows, and macOS, and the design patterns that keep it sane.
 
-All the code lives in `crates/beacon-core/`. The OS-specific probes were recently
-consolidated into one place: `crates/beacon-core/src/platform/`, one file per OS.
+All the code lives in `crates/rove-core/`. The OS-specific probes were recently
+consolidated into one place: `crates/rove-core/src/platform/`, one file per OS.
 
 ---
 
 ## 1. The core strategy: shell out, then parse
 
-Beacon's central technique is **shelling out to the OS's own networking tools and
+Rove's central technique is **shelling out to the OS's own networking tools and
 parsing their text output.** It does *not* re-implement `ip`/`netsh`/`ifconfig`;
 it runs them and reads what they print. Two reasons:
 
 - Those tools already have privileged, correct, battle-tested access to the
   kernel's network state. Reimplementing them (raw netlink sockets, WMI COM
   calls, `getifaddrs`) would be far more code and far more fragile.
-- It mirrors how the original Electron version of Beacon worked, so behaviour
+- It mirrors how the original Electron version of Rove worked, so behaviour
   stays consistent.
 
 The one exception is **byte counters** (data usage + live throughput), which come
@@ -29,7 +29,7 @@ shelling out — more on that in §7.
 
 ### The command runner
 
-Every shell-out goes through `crates/beacon-core/src/shell.rs`:
+Every shell-out goes through `crates/rove-core/src/shell.rs`:
 
 ```rust
 pub async fn try_run(command: &str) -> Option<String> {
@@ -58,9 +58,9 @@ console window on screen (`shell.rs:6-16`). No-op on Unix.
 
 ## 2. The safety layer (shell injection)
 
-Because Beacon builds shell command strings that sometimes contain values from
+Because Rove builds shell command strings that sometimes contain values from
 the network (interface names, neighbor IPs), it has to guard against injection.
-Two gatekeepers in `crates/beacon-core/src/net_util.rs`:
+Two gatekeepers in `crates/rove-core/src/net_util.rs`:
 
 - **`is_shell_safe_ip`** (`net_util.rs:44`) — an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
@@ -156,7 +156,7 @@ The rest of this section walks the interesting ones.
 The **Windows** approach is subtle and worth calling out (`platform/windows.rs:16`).
 The naive way — list all `0.0.0.0/0` routes and pick the lowest metric — is
 *wrong*, because an unplugged Ethernet adapter can leave a stale metric-0 default
-route behind, so you'd report a dead link while actually on Wi-Fi. Beacon instead
+route behind, so you'd report a dead link while actually on Wi-Fi. Rove instead
 asks `Find-NetRoute -RemoteIPAddress 8.8.8.8`, which returns the route Windows
 would *actually* use to reach the internet — only over a live interface.
 
@@ -178,7 +178,7 @@ Linux and macOS read the routing table directly (`ip route` / `route -n get`).
 
 ### Wi‑Fi details — the messiest per-OS divergence
 
-Each OS reports Wi-Fi completely differently, and Beacon normalizes them all into
+Each OS reports Wi-Fi completely differently, and Rove normalizes them all into
 one `ConnectionDetails` struct:
 
 - **Linux** (`platform/linux.rs:103`) layers *three* tools because no single one
@@ -192,7 +192,7 @@ one `ConnectionDetails` struct:
   the real connection's, so a naive first-match grabs the wrong channel. The
   parser keys off whole-line `Key : Value` labels to avoid it (there's a unit test
   for exactly this at `windows.rs:298`). netsh doesn't report centre frequency, so
-  Beacon derives it from band + channel using the 802.11 channel plan
+  Rove derives it from band + channel using the 802.11 channel plan
   (`channel_to_frequency`, `windows.rs:166`).
 - **macOS** (`platform/macos.rs:6`): runs Apple's *private*
   `airport -I` tool (full path into `Apple80211.framework`) and parses its
@@ -208,16 +208,16 @@ same everywhere.
 
 > This is a summary. For the full pipeline — TCP/mDNS probing, OUI vendor lookup,
 > reverse-DNS batching, and the weighted-vote device classifier — see the
-> dedicated page: [How Beacon Discovers & Identifies LAN Devices](./device-discovery.md).
+> dedicated page: [How Rove Discovers & Identifies LAN Devices](./device-discovery.md).
 
-The device scanner (`crates/beacon-core/src/devices/mod.rs`) is a small pipeline,
+The device scanner (`crates/rove-core/src/devices/mod.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
 LAN" is the kernel's neighbor table** (the ARP cache on IPv4) — the map of IP →
-MAC the kernel has already resolved. Beacon reads it via `ip neigh show` on Linux
+MAC the kernel has already resolved. Rove reads it via `ip neigh show` on Linux
 (which includes a reachability state) or `arp -a` elsewhere (`platform/mod.rs:122`).
 
 But the ARP cache only holds hosts the machine has *recently talked to* — idle
-devices won't be there. So before reading it, Beacon **actively wakes every host
+devices won't be there. So before reading it, Rove **actively wakes every host
 in the subnet** (`devices/sweep.rs`):
 
 ```rust
@@ -251,18 +251,18 @@ added manually because it never appears in its own neighbor table
 These two are the exception to "shell out" — they read kernel byte counters via
 the `sysinfo` crate, which is cross-platform, so there's very little per-OS code.
 
-- **Live throughput** (`crates/beacon-core/src/live_throughput.rs`): a stateful
+- **Live throughput** (`crates/rove-core/src/live_throughput.rs`): a stateful
   1 Hz sampler. `sysinfo`'s `received()`/`transmitted()` return the *delta* since
   the last refresh, so throughput is `bytes * 8 / 1e6 / elapsed_secs` = Mbps,
   then exponentially smoothed (`SMOOTH_ALPHA = 0.35`) so the chart isn't jagged.
   It sums only physical interfaces (skipping `veth`/`docker`/`tun`/… via
   `is_virtual_interface`).
-- **Data usage** (`crates/beacon-core/src/data_usage.rs`): accumulates those
+- **Data usage** (`crates/rove-core/src/data_usage.rs`): accumulates those
   deltas into daily buckets. It uses `saturating_sub` on the counters so a counter
   *reset* (reboot, driver reload) credits zero rather than dumping a phantom
   multi-GB spike.
 
-The one per-OS wrinkle is the "since-boot total": on **Linux**, Beacon prefers
+The one per-OS wrinkle is the "since-boot total": on **Linux**, Rove prefers
 reading `/sys/class/net/*/statistics/{rx,tx}_bytes` directly
 (`platform/linux.rs:220`, `boot_totals`) because `/sys` is authoritative; on
 Windows/macOS it falls back to summing `sysinfo`'s totals.
@@ -271,7 +271,7 @@ Windows/macOS it falls back to summing `sysinfo`'s totals.
 
 ## 7. Diagnostics & ping
 
-`crates/beacon-core/src/diagnostics.rs` measures gateway health by pinging it 10
+`crates/rove-core/src/diagnostics.rs` measures gateway health by pinging it 10
 times and parsing the RTT out of each reply line with a regex
 (`time=12.3 ms`). From those samples it computes average latency, **jitter**
 (mean absolute difference between consecutive RTTs), and **packet loss**

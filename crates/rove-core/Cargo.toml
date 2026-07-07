@@ -1,0 +1,24 @@
+[package]
+name = "rove-core"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+sysinfo = { version = "0.33", default-features = false, features = ["network", "system"] }
+futures-util = "0.3"
+rand = "0.8"
+regex-lite = "0.1"
+mdns-sd = "0.13"
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
+# in-process via CoreWLAN after requesting CoreLocation authorization.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString"] }
+objc2-core-wlan = { version = "0.3", default-features = false, features = ["std", "CWWiFiClient", "CWInterface"] }
+objc2-core-location = { version = "0.3", default-features = false, features = ["std", "CLLocationManager"] }

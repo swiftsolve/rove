@@ -213,13 +213,19 @@ button:focus-visible {
 }
 
 /** Page header: an edge-to-edge divider below the title, separating the header
-    from the section stack. Negative side margins cancel the content column's
-    11px inset so the line runs full width; the inset is restored as padding so
-    the title stays aligned with the cards. The negative top margin cancels the
-    scroll area's top padding so the header owns a symmetric vertical rhythm. */
+    from the section stack. The divider spans the full content viewport, past the
+    card stack's 11px inset on both sides. Left cancels that inset to reach the
+    viewport's left edge. The right can't just cancel the inset: `.app-scroll`
+    reserves a scrollbar gutter on its trailing edge (scrollbar-gutter: stable)
+    whose width is engine-dependent (~5–15px), so a fixed cancel stops short of —
+    or overshoots — the edge. Instead the right bleeds well past any gutter and
+    lets `.app-scroll`'s overflow clip it exactly at the viewport's right edge, so
+    the divider meets that edge regardless of gutter width. The matching right
+    padding keeps the header's own content aligned with the cards. The negative
+    top margin cancels the scroll area's top padding for a symmetric rhythm. */
 .view-header {
-  margin: calc(-1 * var(--gap-md)) -11px 0;
-  padding: var(--gap-md) 11px var(--gap-md);
+  margin: calc(-1 * var(--gap-md)) -40px 0 -11px;
+  padding: var(--gap-md) 40px var(--gap-md) 11px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -465,12 +471,16 @@ button:focus-visible {
    stagger delay but reverts transform to `none` afterwards — `both` would leave
    an identity-matrix transform that turns every row into a stacking context,
    trapping header tooltips behind later siblings. */
-.view-page > * {
+.view-page > *,
+.subpage > * {
   animation: fade-up var(--duration-normal) var(--ease-out) backwards;
 }
-.view-page > *:nth-child(2) { animation-delay: 45ms; }
-.view-page > *:nth-child(3) { animation-delay: 90ms; }
-.view-page > *:nth-child(4) { animation-delay: 135ms; }
+.view-page > *:nth-child(2),
+.subpage > *:nth-child(2) { animation-delay: 45ms; }
+.view-page > *:nth-child(3),
+.subpage > *:nth-child(3) { animation-delay: 90ms; }
+.view-page > *:nth-child(4),
+.subpage > *:nth-child(4) { animation-delay: 135ms; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

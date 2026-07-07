@@ -3,6 +3,7 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Section from '@/components/ui/Section'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import { ChevronRightIcon, ZapIcon } from '@/components/ui/Icons'
 import './CapabilityList.css'
 
@@ -59,7 +60,15 @@ export default function CapabilityList({
     <Section
       title="Capabilities"
       icon={<ZapIcon size={15} />}
-      action={!hasRunTest ? <span className="text-meta">Available after first test</span> : undefined}
+      action={
+        testing ? (
+          <span className="capability-list-action" aria-label="Speed test running">
+            <ButtonSpinner size={14} />
+          </span>
+        ) : !hasRunTest ? (
+          <span className="text-meta">Available after speed test</span>
+        ) : undefined
+      }
     >
       {!hasRunTest ? (
         <div className="capability-list is-empty">

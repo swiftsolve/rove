@@ -105,7 +105,7 @@ jobs:
           APPLE_TEAM_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_TEAM_ID || '' }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Beacon ${{ github.ref_name }}'
+          releaseName: 'Rove ${{ github.ref_name }}'
           releaseBody: 'Download the installer for your operating system from the assets below.'
           releaseDraft: false
           prerelease: false

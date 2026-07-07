@@ -40,6 +40,7 @@ import {
   Network,
   Radio,
   Router,
+  Search,
   Server,
   Smartphone,
   Speaker,
@@ -71,7 +72,34 @@ function make(Base: LucideIcon, defaultSize: number) {
 }
 
 export const WifiIcon = make(Wifi, 20)
-export const BrandIcon = make(Radio, 20)
+
+/**
+ * The Rove Mark — a filled centre dot inside an open ring. Drawn in
+ * `currentColor` (fill + stroke) so it inherits the accent color from its
+ * container, matching the tray glyph. This is the one brand glyph that isn't a
+ * Lucide alias.
+ */
+export function BrandIcon({ size = 20, className }: IconProps): JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="24" cy="24" r="7.5" fill="currentColor" />
+      <path
+        d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
 export const EthernetIcon = make(EthernetPort, 20)
 export const OfflineIcon = make(WifiOff, 20)
 export const ActivityIcon = make(Activity, 18)
@@ -116,6 +144,7 @@ export const TrashIcon = make(Trash2, 16)
 export const StopIcon = make(Square, 14)
 export const PlayIcon = make(Play, 16)
 export const RefreshIcon = make(RotateCw, 16)
+export const SearchIcon = make(Search, 16)
 
 // Window controls
 export const MinimizeIcon = make(Minus, 15)

@@ -11,7 +11,7 @@
 .devices-header-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  gap: var(--gap-xs);
   min-width: 0;
   flex: 1;
 }
@@ -216,4 +216,14 @@
 
 .device-row-state.reachable {
   color: var(--positive);
+}
+
+.devices-hint {
+  margin-top: 10px;
+  max-width: 40ch;
+  line-height: 1.45;
+  font-size: 12px;
+}
+.device-list > .devices-hint {
+  padding: 0 4px;
 }

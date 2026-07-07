@@ -1,5 +1,14 @@
 @import './capability-icon-tile.css';
 
+/* Busy indicator in the section header while a speed test runs — muted so it
+   reads as a quiet status, matching the "Available after speed test" text it
+   replaces. The spinner inherits this colour via currentColor. */
+.capability-list-action {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-tertiary);
+}
+
 .capability-row {
   display: flex;
   align-items: center;

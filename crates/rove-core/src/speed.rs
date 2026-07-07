@@ -64,7 +64,7 @@ pub async fn measure_download(cancel: &AtomicBool) -> f64 {
         .timeout(Duration::from_secs(15))
         .build()
     else {
-        eprintln!("Beacon: could not build HTTP client for download test");
+        eprintln!("Rove: could not build HTTP client for download test");
         return 0.0;
     };
     let start = Instant::now();
@@ -98,7 +98,7 @@ pub async fn measure_upload(cancel: &AtomicBool) -> f64 {
         .timeout(Duration::from_secs(15))
         .build()
     else {
-        eprintln!("Beacon: could not build HTTP client for upload test");
+        eprintln!("Rove: could not build HTTP client for upload test");
         return 0.0;
     };
     let start = Instant::now();
