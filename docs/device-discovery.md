@@ -6,6 +6,11 @@ and in a couple of seconds. This page walks the whole pipeline, from an empty
 subnet to a labelled list of "Living-Room-AppleTV / tv" entries, using the real
 code in `crates/rove-core/src/devices/` and its helpers (`mdns.rs`, `oui.rs`).
 
+> Rove fuses **seven** unprivileged signal sources — an ICMP sweep, a TCP
+> `connect()` probe, mDNS, SSDP/UPnP, reverse DNS, an HTTP banner grab, and a
+> NetBIOS name query. No single one is complete; each fills gaps the others
+> leave, and a trust-weighted vote reconciles them.
+
 It doubles as a Rust lesson: this subsystem shows off async concurrency, the
 `HashMap` entry API, weighted scoring over fixed arrays, `spawn_blocking`, and
 compile-time-embedded data — all in service of one feature.
@@ -38,17 +43,21 @@ From `scan()` in `crates/rove-core/src/devices/mod.rs:25`:
 
 ```
 1. Scope     → find my subnet (e.g. 192.168.1.0/24)
-2. Provoke   → wake every host so it enters the neighbor table
-   (ICMP sweep ‖ TCP probe ‖ mDNS listen — all concurrent, ~3.2s)
+2. Provoke   → wake every host so it enters the neighbor table, while passive
+   & listeners collect self-announced identities
+   (ICMP sweep ‖ TCP probe ‖ mDNS listen ‖ SSDP listen — all concurrent, ~3.2s)
 3. Read      → the neighbor table = ground-truth list of who exists
-4. Enrich    → per host: vendor (OUI) + hostname (rDNS/mDNS) + kind (classify)
+4. Enrich    → per host, in one concurrent round:
+   vendor (OUI) · hostname (rDNS ‖ HTTP banner ‖ NetBIOS) · kind (classify)
 5. Assemble  → add this machine, sort gateway→self→by-IP, dedupe by MAC
 ```
 
-Steps 2's three probes and the reverse-DNS batch are all `async` and run
-concurrently — the whole scan is bounded by a single `DISCOVERY_WINDOW` of 3.2
-seconds (`mod.rs:23`), not the sum of its parts. That concurrency is the reason
-it feels instant.
+The stage-2 probes/listeners all run concurrently, bounded by a single
+`DISCOVERY_WINDOW` of 3.2 seconds (`mod.rs:25`), not the sum of their parts. The
+stage-4 enrichments that hit the network — reverse DNS, the HTTP banner grab, and
+the NetBIOS query — are likewise fired together in one `tokio::join!`
+(`mod.rs:76`), so their combined latency is one round, not three. That
+concurrency is the reason the whole scan feels instant.
 
 ---
 
@@ -90,8 +99,8 @@ This is the clever core. To get a silent host into the neighbor table, you have
 to make your kernel send it a packet — *any* packet — because to send one, the
 kernel must first ARP-resolve the target's MAC, which creates the neighbor
 entry. **You don't care if the host answers.** The ARP resolution already
-happened; the entry is already cached. Rove does this two complementary ways,
-plus a passive listener, all at once (`mod.rs:35-45`).
+happened; the entry is already cached. Rove does this two complementary active
+ways, plus two passive listeners (mDNS and SSDP), all at once (`mod.rs:48-66`).
 
 ### 2a. ICMP sweep — `devices/sweep.rs`
 
@@ -158,6 +167,37 @@ often with a friendly name ("Living room clock") and a hardware model
 > `tokio::task::spawn_blocking` (`mdns.rs:87`) — the right tool for wrapping
 > synchronous work so it doesn't stall the async runtime's worker threads.
 
+### 2d. SSDP / UPnP discovery — `devices/ssdp.rs`
+
+A second passive-ish source runs alongside mDNS: an SSDP `M-SEARCH`. Many
+consumer devices — smart TVs, media renderers, printers, game consoles, IoT hubs
+— answer SSDP even when they *drop ICMP and refuse every port the TCP probe
+knocks on*, so it both **finds** a few otherwise-invisible hosts and, more often,
+**names** them. Each responder's reply points at a description XML that Rove
+fetches over HTTP (`reqwest`) to read the UPnP `friendlyName`, `modelName`,
+`manufacturer`, and `deviceType`:
+
+```rust
+pub struct SsdpHit {
+    pub name: Option<String>,         // friendlyName — "Living Room TV"
+    pub model: Option<String>,        // modelName    — "BRAVIA KD-55X"
+    pub manufacturer: Option<String>, // "Sony"
+    pub device_type: Option<String>,  // "urn:schemas-upnp-org:device:MediaRenderer:1"
+}
+```
+
+Two engineering details worth noting:
+
+- **It binds the search socket to the active interface's address** (`local_ip`,
+  passed down from `scan()` at `mod.rs:38`) so the multicast `M-SEARCH` leaves
+  the *right* adapter on multi-homed and Windows hosts.
+- **It's bounded against abuse:** at most `MAX_RESPONDERS = 128` descriptions are
+  fetched, `CONCURRENT_FETCHES = 32` at a time with a 1.5 s per-fetch timeout —
+  so a hostile or broken LAN can't fan the HTTP stage out unboundedly.
+
+Like mDNS, it's **pure Rust with no platform branch** — a `tokio` UDP socket plus
+`reqwest`, identical on Linux, macOS, and Windows.
+
 ---
 
 ## Stage 3 — Reading the ground truth
@@ -172,8 +212,11 @@ authoritative "who exists."** The probes were only there to fill it.
 
 ## Stage 4 — Enriching each bare entry
 
-Each neighbor is now `{ip, mac, reachable}`. Three enrichments turn that into an
-identified device (`build_device`, `mod.rs:90`).
+Each neighbor is now `{ip, mac, reachable}`. A cluster of enrichments turns that
+into an identified device (`build_device`, `mod.rs:124`). All the per-scan lookup
+tables are bundled into one `Enrichment` struct (`mod.rs:113`), keyed by device
+IP, so `build_device` draws from a single value rather than an argument list that
+grows with every new discovery source.
 
 ### 4a. Vendor from the MAC — `oui.rs`
 
@@ -231,35 +274,89 @@ Results are then cleaned: `trim_suffix` strips `.local`/`.lan`, and
 `is_meaningful` (`hostname.rs:25`) rejects junk like systemd's synthetic
 `_gateway` and routers that just echo their MAC back as a hostname.
 
-A friendly **mDNS** name always wins over a reverse-DNS name when both exist
-(`mod.rs:105`) — "Living room clock" beats "192-168-1-42".
+### 4d. HTTP banner grab — `banner.rs`
 
-### 4d. Classification — the weighted-vote classifier (`classify.rs`)
-
-This is the crown jewel. Given up to four fuzzy signals — mDNS service/model,
-open ports, hostname keywords, and vendor — decide the device *kind* (phone, tv,
-printer, nas, camera, …). Rather than trust the single strongest signal blindly,
-**every signal casts a weighted vote and the highest total wins** (`classify.rs:195`):
+Reverse DNS often fails for the exact devices you most want named — routers, IP
+cameras, NAS boxes, printers — but those same devices usually run a **web UI**.
+So for every host the TCP probe already found listening on **port 80**, Rove
+issues one `GET /` and scrapes two identity hints at near-zero extra cost
+(`devices/banner.rs`):
 
 ```rust
-let votes: [(Option<&str>, i32); 7] = [
-    (mdns.and_then(|h| h.kind),                          W_MDNS_STRONG), // 100
-    (mdns model → MODEL_KINDS,                           W_MDNS_MODEL),  // 60
-    (strong_port_kind(open_ports),                       W_STRONG_PORT), // 55
-    (hostname → HOSTNAME_KINDS,                          W_HOSTNAME),    // 40
-    (vendor   → VENDOR_KINDS,                            W_VENDOR),      // 25
-    (mdns.and_then(|h| h.kind_hint),                     W_MDNS_HINT),   // 15
-    (weak_port_kind(open_ports),                         W_WEAK_PORT),   // 12
+pub struct BannerHit {
+    pub server: Option<String>, // Server header — "lighttpd/1.4", "RomPager"
+    pub title: Option<String>,  // page <title>  — "NETGEAR Router", "Synology DiskStation"
+}
+```
+
+Only the first 16 KB of the body is read (the `<title>` lives in the `<head>`),
+bounding memory against a host that streams megabytes. **Scope note:** only
+plaintext HTTP is grabbed — LAN HTTPS is almost always a self-signed cert that a
+correct TLS stack rejects, and reading it would mean disabling verification,
+which is deliberately left out to keep Rove's "no danger knobs" posture.
+
+### 4e. NetBIOS name query — `netbios.rs`
+
+Windows and SMB devices frequently have *no* mDNS record and only a
+router-assigned reverse-DNS name — but they answer a **NetBIOS node-status
+request** (NBSTAT) on UDP/137 with their own name table, whose first unique entry
+is the real computer name ("DESKTOP-3F9K2"). Rove sends the wildcard NBSTAT query
+to every in-scope IP over a `tokio` UDP socket (again pure Rust, no platform
+branch), binding an *ephemeral* local port so there's no conflict with the native
+NetBIOS/SMB services on Windows or macOS.
+
+### 4f. Choosing the name — the preference chain
+
+With up to four name sources in hand, `build_device` (`mod.rs:139`) picks the
+most human-friendly one available, in order:
+
+```
+mDNS friendly name  →  SSDP friendlyName  →  NetBIOS computer name  →  reverse-DNS
+```
+
+So "Living room clock" (mDNS) beats "Living Room TV" (SSDP) beats "DESKTOP-3F9K2"
+(NetBIOS) beats "192-168-1-42" (reverse DNS). The **model** string follows a
+parallel chain: mDNS TXT model first (most precise), then SSDP `modelName`.
+
+### 4g. Classification — the weighted-vote classifier (`classify.rs`)
+
+This is the crown jewel. Given up to *seven* fuzzy signals — mDNS service/model,
+open ports, hostname keywords, vendor, SSDP type/model/name/manufacturer, and
+HTTP banner — decide the device *kind* (phone, tv, printer, nas, camera, …).
+Rather than trust the single strongest signal blindly, **every signal casts a
+weighted vote and the highest total wins** (`classify.rs:246`). The vote array has
+grown to **13 entries** as new sources were added — the `Signals` struct
+(`classify.rs:19`) is deliberately open so a new source extends the classifier
+without reshuffling what's there:
+
+```rust
+let votes: [(Option<&str>, i32); 13] = [
+    (mdns.kind,                              W_MDNS_STRONG), // 100  definitive mDNS service
+    (mdns model → MODEL_KINDS,               W_MDNS_MODEL),  //  60
+    (strong_port_kind(open_ports),           W_STRONG_PORT), //  55
+    (ssdp deviceType → SSDP_TYPE_KINDS,      W_SSDP_TYPE),   //  50  UPnP device type
+    (ssdp model → MODEL_KINDS,               W_MDNS_MODEL),  //  60
+    (hostname → HOSTNAME_KINDS,              W_HOSTNAME),    //  40
+    (ssdp friendlyName → HOSTNAME_KINDS,     W_HOSTNAME),    //  40
+    (vendor → VENDOR_KINDS,                  W_VENDOR),      //  25
+    (ssdp manufacturer → VENDOR_KINDS,       W_VENDOR),      //  25
+    (banner title → HOSTNAME_KINDS,          W_BANNER),      //  22  web-UI page title
+    (banner server → VENDOR_KINDS,           W_BANNER),      //  22  Server header
+    (mdns.kind_hint,                         W_MDNS_HINT),   //  15
+    (weak_port_kind(open_ports),             W_WEAK_PORT),   //  12
 ];
 ```
 
 The weights encode *trust*: a definitive mDNS service (a device literally
-advertising `_googlecast._tcp`) scores 100 and decides the kind outright; a
-vendor name is a weak 25 (Apple makes phones, tablets, computers, TVs and
-speakers — it barely narrows anything). The scoring only changes the outcome when
-several weak signals corroborate against a lone noisy one. Ties break toward the
-*more specific* kind (nas over computer, camera over iot), via ordering in
-`KIND_NAMES` (`classify.rs:185`).
+advertising `_googlecast._tcp`) scores 100 and decides the kind outright; a UPnP
+`deviceType` is a solid-but-imperfect 50 (reliable for printers/routers, vague
+for the media-renderer family); an HTTP banner is a weak 22; a vendor name is
+25 (Apple makes phones, tablets, computers, TVs and speakers — it barely narrows
+anything). The scoring only changes the outcome when several weak signals
+corroborate against a lone noisy one — e.g. an SSDP `modelName` + `deviceType` +
+an open port 80 together pin a printer no single one of them would. Ties break
+toward the *more specific* kind (nas over computer, camera over iot), via
+ordering in `KIND_NAMES` (`classify.rs:185`).
 
 Two hard short-circuits come first: the gateway is always `"router"`, and this
 machine is always `"computer"` (`classify.rs:203`).
@@ -314,19 +411,21 @@ the shell-injection path.
 ```
         subnet 192.168.1.0/24
                 │
-   ┌────────────┼───────────────┬──────────────┐   all concurrent, ~3.2s
-   ▼            ▼               ▼              (passive)
- ICMP sweep   TCP connect    (open ports)     mDNS listen
- (ping bait) (SYN/RST bait)   → classifier    (self-announced identity)
-   └──────┬─────┘                                    │
-          ▼  provokes ARP resolution                 │
-   kernel neighbor table  ◄── ground truth: who exists
-          │                                           │
-          ▼  per host                                 │
-   enrich: OUI vendor · reverse-DNS hostname ─────────┘ (mDNS name/model/kind)
-          │
-          ▼
-   classify(): weighted vote over {mdns, ports, hostname, vendor} → kind
+   ┌────────────┼──────────────┬─────────────┬───────────┐  all concurrent, ~3.2s
+   ▼            ▼              ▼            (passive)   (passive)
+ ICMP sweep   TCP connect  (open ports)   mDNS listen  SSDP M-SEARCH
+ (ping bait) (SYN/RST bait) → classifier  (name/model) (friendlyName/model/type)
+   └──────┬─────┘                              │             │
+          ▼  provokes ARP resolution           │             │
+   kernel neighbor table  ◄── ground truth: who exists       │
+          │                                     │             │
+          ▼  per host, one concurrent round     │             │
+   enrich: OUI vendor · hostname(rDNS ‖ HTTP banner ‖ NetBIOS)│
+          │           · HTTP banner (server/title) ───────────┤
+          │           · NetBIOS computer name                 │
+          ▼                                                    │
+   classify(): weighted vote over 13 signals ◄────────────────┘
+               {mdns, ssdp, banner, ports, hostname, vendor} → kind
           │
           ▼
    + self · sort(gateway,self,ip) · dedupe(mac)  →  LanDeviceScan → IPC → UI
@@ -334,6 +433,8 @@ the shell-injection path.
 
 **The philosophy:** you can't ask the network "who are you," so you *provoke*
 everyone into the kernel's neighbor table using unprivileged bait traffic, treat
-that table as ground truth, then fuse every weak identity signal you can scrape
-(vendor prefix, reverse DNS, self-announcements, open ports) with a trust-weighted
-vote to guess what each device actually is.
+that table as ground truth, then fuse every weak identity signal you can scrape —
+vendor prefix, reverse DNS, mDNS/SSDP self-announcements, HTTP banners, NetBIOS
+names, and open ports — with a trust-weighted vote to guess what each device
+actually is. Each new source is one more struct field and one more vote, never a
+rewrite.
