@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#08090c" />
-    <title>Beacon</title>
+    <title>Rove</title>
     <script>
       // TEMP DIAGNOSTIC: capture the earliest error (incl. module-eval) so the
       // backend probe can read it even if React never mounts.
       window.addEventListener('error', function (e) {
-        window.__beaconErr =
+        window.__roveErr =
           (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '')
       })
       window.addEventListener('unhandledrejection', function (e) {
-        window.__beaconErr = 'rejection: ' + (e.reason && (e.reason.stack || e.reason))
+        window.__roveErr = 'rejection: ' + (e.reason && (e.reason.stack || e.reason))
       })
     </script>
   </head>

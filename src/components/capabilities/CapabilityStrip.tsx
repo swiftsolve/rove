@@ -1,8 +1,9 @@
 import type { CapabilityId, CapabilityRating } from '@/types'
-import { CAPABILITY_LEVEL_LABELS } from '@/types'
+import { CAPABILITY_DEFINITIONS, CAPABILITY_LEVEL_LABELS } from '@/types'
 import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Section from '@/components/ui/Section'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/ui/Icons'
@@ -39,37 +40,62 @@ export default function CapabilityStrip({
       icon={<ZapIcon size={15} />}
       className="capability-strip-section"
       action={
-        hasResults ? (
-          <Tooltip content={testing ? 'Speed test running' : 'Run speed test again'}>
-            <button
-              type="button"
-              className="btn-icon btn-icon-secondary"
-              onClick={onRunTest}
-              disabled={!canRunTest || testing}
-              aria-label="Run speed test again"
-            >
-              <RefreshIcon size={14} className={testing ? 'capability-rerun-spin' : undefined} />
-            </button>
-          </Tooltip>
-        ) : undefined
+        <Tooltip
+          content={
+            testing
+              ? 'Speed test running'
+              : hasResults
+                ? 'Run speed test again'
+                : 'Run speed test'
+          }
+        >
+          <button
+            type="button"
+            className={`btn-icon btn-icon-secondary${testing ? ' is-scanning' : ''}`}
+            onClick={onRunTest}
+            disabled={!canRunTest || testing}
+            aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
+          >
+            {testing ? (
+              <ButtonSpinner size={14} />
+            ) : hasResults ? (
+              <RefreshIcon size={14} />
+            ) : (
+              <PlayIcon size={14} />
+            )}
+          </button>
+        </Tooltip>
       }
     >
       {capabilities.length === 0 ? (
-        <div className="section-placeholder">
-          <ZapIcon size={24} className="section-placeholder-icon" />
-          <p className="text-hint">
-            Run a speed test to see what your connection can handle.
-          </p>
-          <button
-            type="button"
-            className="btn-primary capability-run-btn"
-            onClick={onRunTest}
-            disabled={!canRunTest || testing}
+        <>
+          <div
+            className="capability-strip capability-strip--placeholder"
+            role="list"
+            aria-hidden
           >
-            <PlayIcon size={13} />
-            {testing ? 'Running…' : 'Run speed test'}
-          </button>
-        </div>
+            {CAPABILITY_DEFINITIONS.map((capability) => (
+              <div className="capability-strip-cell" key={capability.id} role="listitem">
+                <Tooltip content={capability.label} align="left" placement="top">
+                  <span className="capability-strip-item capability-icon-tile level-unsupported">
+                    <CapabilityIcon id={capability.id} size={16} />
+                  </span>
+                </Tooltip>
+                <CapabilityMeter level="unsupported" showLabel={false} />
+              </div>
+            ))}
+          </div>
+
+          <div className="capability-strip-footer capability-strip-footer--hint">
+            {testing ? (
+              <span className="text-meta">Testing…</span>
+            ) : (
+              <p className="text-hint capability-strip-hint">
+                Available after speed test
+              </p>
+            )}
+          </div>
+        </>
       ) : (
         <>
           <div className={`capability-strip${testing ? ' capability-strip--testing' : ''}`} role="list">
@@ -78,15 +104,13 @@ export default function CapabilityStrip({
                 <Tooltip
                   content={
                     <InlineMeta
-                      items={
-                        testing
-                          ? [capability.label]
-                          : [capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]
-                      }
+                      items={[capability.label, CAPABILITY_LEVEL_LABELS[capability.level]]}
                     />
                   }
                   align="left"
                   placement="top"
+                  offset={4}
+                  disabled={testing}
                 >
                   <button
                     type="button"

@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/beacon-core", "src-tauri"]
+members = ["crates/rove-core", "src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

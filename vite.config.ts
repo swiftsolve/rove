@@ -14,7 +14,9 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    // Honor a harness-assigned PORT (e.g. the preview dev server) when present;
+    // `tauri:dev` sets no PORT and keeps the 5173 that tauri.conf expects.
+    port: Number(process.env.PORT) || 5173,
     strictPort: true,
     watch: {
       // The Rust build output isn't source; watching it exhausts inotify.

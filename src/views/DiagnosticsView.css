@@ -9,7 +9,7 @@
 .diag-header-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  gap: var(--gap-xs);
   min-width: 0;
   flex: 1;
 }
@@ -36,7 +36,16 @@
 }
 
 .diag-warning {
-  margin-top: var(--gap-sm);
+  margin: 0;
+}
+
+/* The packet-loss warning band reads as a continuation of the readout rather
+   than a divided-off footnote: no top line, and a roomier vertical padding so
+   the band has enough breathing room. */
+.diag-router-section .ui-section-footer {
+  padding-top: var(--gap-md);
+  padding-bottom: var(--gap-lg);
+  border-top: none;
 }
 
 /* Tighter row rhythm for the Router readout — less vertical air between each

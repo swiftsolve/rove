@@ -1,5 +1,14 @@
 @import './capability-icon-tile.css';
 
+/* Busy indicator in the section header while a speed test runs. Uses
+   --text-secondary to match the Devices/refresh button spinners — the tertiary
+   grey read as washed-out. The spinner inherits this colour via currentColor. */
+.capability-list-action {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
 .capability-row {
   display: flex;
   align-items: center;

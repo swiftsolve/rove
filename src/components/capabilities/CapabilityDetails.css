@@ -105,11 +105,14 @@
 }
 
 /* Verdict glyph, moved to the left beside the summary; colour-keyed to the
-   level and nudged down to sit against the summary's first line. */
+   level. The container is exactly one line of summary text tall and centres the
+   glyph within it, so the tick sits against the middle of the first line (the
+   summary itself stays top-aligned for the multi-line case). */
 .cap-verdict-icon {
   display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
-  margin-top: 1px;
+  height: calc(var(--text-small) * 1.45);
 }
 
 .cap-verdict-icon.level-excellent { color: var(--positive); }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { splitSpeedMbps, formatLatencyMs } from '@/lib/format'
+import { useSpeedTest } from '@/hooks/useSpeedTest'
 import {
   clearSpeedHistory,
   formatHistoryTimestamp,
@@ -94,16 +95,27 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
 
 export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element {
   const [entries, setEntries] = useState<readonly SpeedHistoryEntry[]>([])
+  // History loads over an async IPC call, so `entries` is empty on the first
+  // frame. Track whether that load has resolved so we don't flash the tall
+  // "no tests yet" placeholder — which fades in over the dark background and
+  // then swaps to the list mid-transition — before we actually know it's empty.
+  const [loaded, setLoaded] = useState(false)
+  // Re-load whenever a test finishes so a result recorded while this view is
+  // open shows up without a manual refresh. `completedAt` changes on each
+  // completed run, driving the effect below.
+  const { completedAt } = useSpeedTest()
 
   useEffect(() => {
     let active = true
-    void getSpeedHistory().then((loaded) => {
-      if (active) setEntries(loaded)
+    void getSpeedHistory().then((next) => {
+      if (!active) return
+      setEntries(next)
+      setLoaded(true)
     })
     return () => {
       active = false
     }
-  }, [])
+  }, [completedAt])
 
   const handleClear = (): void => {
     void clearSpeedHistory()
@@ -130,7 +142,7 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
         ) : undefined
       }
     >
-      {entries.length === 0 ? (
+      {!loaded ? null : entries.length === 0 ? (
         <div className="view-empty">
           <HistoryIcon size={28} className="section-placeholder-icon" />
           <p className="text-hint history-empty-text">

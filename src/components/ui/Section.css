@@ -52,6 +52,14 @@
   margin: 0;
 }
 
+/* A distinct sunken band below the body — sits flush to the card edges and reads
+   as a separate footnote/status area rather than part of the readout above it. */
+.ui-section-footer {
+  padding: var(--gap-sm) var(--section-body);
+  background: var(--bg-inset);
+  border-top: 1px solid var(--border);
+}
+
 .ui-section-body.is-loading {
   position: relative;
   opacity: 0.55;

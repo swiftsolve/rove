@@ -114,18 +114,53 @@
   gap: var(--gap-sm);
 }
 
-/* Fill the card's body and centre the spinner both ways. The card stretches to
-   match the taller Usage card beside it (grid row stretch), so flex:1 gives the
-   spinner the whole remaining height to centre within. */
+/* Centre the loading wave in the space below the title. flex:1 claims the
+   card's remaining height (the card is grid-stretched to the taller Usage card
+   beside it) and centres the wave within it. No min-height — a floor here would
+   make the loading state taller than the count/scan states and push the whole
+   grid row up. */
 .home-stat-loading {
   display: flex;
   flex: 1;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  /* Nudge the spinner down slightly so it sits closer to the vertical centre of
+     the card body rather than riding high under the title. */
+  padding-top: 6px;
 }
 
-.home-stat-loading .spinner {
-  width: 18px;
-  height: 18px;
+/* The macOS Devices widget before its first scan: a plain container (not a
+   button), so it drops the whole-card hover/press affordance and lets its own
+   Scan button own the interaction. */
+.home-stat-static {
+  cursor: default;
+}
+
+.home-stat-static:hover {
+  box-shadow: none;
+}
+
+.home-stat-static:active {
+  transform: none;
+}
+
+/* Centre the Scan button in the space below the title, matching the loading
+   wave. flex:1 claims the card's remaining height (the card is grid-stretched
+   to the taller Usage card beside it) and centres the button within it. No
+   min-height — a floor would push the whole grid row taller than the Usage
+   card. */
+.home-stat-scan {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Icon + label inside the Scan button. */
+.home-stat-scan .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  /* Nudge the button a touch lower toward the card's bottom edge. */
+  margin-bottom: -4px;
 }

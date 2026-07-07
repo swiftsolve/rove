@@ -105,7 +105,7 @@ function EthernetExtras({ info }: { readonly info: EthernetNetworkInfo }): JSX.E
   )
 }
 
-const EXPANDED_KEY = 'beacon.connection-details-expanded'
+const EXPANDED_KEY = 'rove.connection-details-expanded'
 
 function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
   // Persisted so the choice survives tab switches (which unmount this card)

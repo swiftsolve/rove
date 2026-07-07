@@ -5,7 +5,7 @@ import { getNetworkApi } from '@/bridge/networkApi'
 export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
 
 /** localStorage key used before history moved into the local database. */
-const LEGACY_STORAGE_KEY = 'beacon.speed-history.v1'
+const LEGACY_STORAGE_KEY = 'rove.speed-history.v1'
 
 function hasCoreFields(value: unknown): value is SpeedResult & { readonly timestamp: number } {
   if (typeof value !== 'object' || value == null) return false

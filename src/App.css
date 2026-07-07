@@ -74,7 +74,16 @@
 }
 
 .loading-screen p {
+  font-size: var(--text-small);
   color: var(--text-secondary);
+}
+
+/* Second line under the spinner when detection runs slow — quieter than the
+   primary label so it reassures rather than alarms. */
+.loading-screen-slow {
+  /* Override .loading-screen p (0,1,1). */
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
 }
 
 /* Error variant of the first-launch screen: an icon chip, a short heading, the
@@ -184,6 +193,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* Nudge down a hair so the label optically aligns with the wordmark's
+     center rather than sitting slightly high next to it. */
+  margin-top: 1px;
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
@@ -195,7 +207,7 @@
 .win-controls {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   -webkit-app-region: no-drag;
 }
 
@@ -275,6 +287,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--gap-tight);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   background: var(--bg-inset);
@@ -300,13 +313,13 @@
   cursor: not-allowed;
 }
 
-.btn-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+/* Busy (spinner) state stays full-opacity — the spinner conveys the wait, so no
+   dimming — while ignoring input. Defined after `:disabled` so its opacity wins
+   for buttons that stay `disabled` while in flight (matches `.btn-icon`). */
+.btn-secondary.is-scanning {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ---- Icon buttons ---- */
@@ -331,6 +344,16 @@
 .btn-icon:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Spinning (busy) icon buttons stay full-opacity — the spinner conveys the
+   busy state, so no dimming — but ignore pointer input while in flight. The
+   explicit opacity wins over `.btn-icon:disabled` (equal specificity, defined
+   later) so buttons that stay `disabled` while busy don't fade the spinner. */
+.btn-icon.is-scanning {
+  cursor: default;
+  pointer-events: none;
+  opacity: 1;
 }
 
 .btn-icon-primary {
@@ -368,7 +391,6 @@
 
 /* ---- Misc ---- */
 
-.error-banner,
 .inline-error {
   padding: var(--gap-sm) var(--gap-md);
   border-radius: var(--radius-sm);
@@ -378,8 +400,57 @@
   line-height: 1.45;
 }
 
+/* Actionable refresh-failure banner: icon + reason + retry + dismiss, so a
+   background timeout stays recoverable instead of being a dead red bar. */
 .error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-xs) var(--gap-sm) var(--gap-xs) var(--gap-md);
+  border-radius: var(--radius-sm);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--negative);
+  font-size: var(--text-body);
+  line-height: 1.45;
   animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.error-banner-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.error-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-banner-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--negative);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+.error-banner-action:hover {
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.error-banner-dismiss {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--negative);
+}
+
+.error-banner-dismiss:hover {
+  background: rgba(248, 113, 113, 0.14);
 }
 
 /* The global error above .app-main has no flex gap to lean on. */
