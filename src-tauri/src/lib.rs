@@ -505,7 +505,17 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
     // transparent background — no rounded tile — so it sits flush in the menu
     // bar / taskbar like other native tray icons rather than showing the boxed
     // app icon.
+    //
+    // The glyph colour has to differ by platform. macOS treats a black-on-alpha
+    // image as a *template* and tints it to the menu bar itself (see
+    // `icon_as_template` below), so black is correct there. Windows and Linux
+    // ignore the template flag and paint the pixels as-is — a black glyph then
+    // vanishes on their (dark by default) taskbars — so they get a white glyph
+    // with the same alpha. Both PNGs share `tray.png`'s exact silhouette.
+    #[cfg(target_os = "macos")]
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
+    #[cfg(not(target_os = "macos"))]
+    let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray-light.png"))?;
 
     TrayIconBuilder::with_id("main")
         .icon(icon)
