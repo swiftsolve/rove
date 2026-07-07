@@ -111,7 +111,11 @@
   /* Full-bleed to both card edges: the body content box plus the padding on
      each side, then negative margins pull it out over that padding. */
   width: calc(100% + 2 * var(--section-body));
-  margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  /* The results footer (icon + "Updated …") is taller than the plain hint, so
+     its centred text sits lower and reads as extra space under the bars. Trim the
+     top gap a touch (the --hint override pulls the shorter empty state in even
+     closer). */
+  margin: var(--gap-lg) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
   padding: var(--section-header-y) var(--section-body);
   background: var(--bg-inset);
   /* The strip full-bleeds to the card edge, and this section runs
@@ -122,13 +126,19 @@
 }
 
 /* Empty-state variant: the hint sits right-aligned in the dark inset strip in
-   place of the "Updated …" link, so the run affordance lives up in the header. */
+   place of the "Updated …" link, so the run affordance lives up in the header.
+   Pull the inset strip closer to the placeholder bars — the muted empty state
+   doesn't need the same breathing room the populated results row gets. */
 .capability-strip-footer--hint {
   justify-content: flex-end;
+  margin-top: var(--gap-md);
 }
 
 .capability-strip-hint {
   margin: 0;
+  /* A quiet placeholder line — kept a notch smaller than the "Updated … ago"
+     caption so it reads as a subtle prompt rather than a value. */
+  font-size: var(--text-micro);
 }
 
 /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and

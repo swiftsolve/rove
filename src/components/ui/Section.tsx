@@ -6,6 +6,7 @@ interface SectionProps {
   readonly icon?: ReactNode
   readonly action?: ReactNode
   readonly children: ReactNode
+  readonly footer?: ReactNode
   readonly className?: string
   readonly bodyClassName?: string
 }
@@ -15,6 +16,7 @@ export default function Section({
   icon,
   action,
   children,
+  footer,
   className = '',
   bodyClassName = '',
 }: SectionProps): JSX.Element {
@@ -30,6 +32,7 @@ export default function Section({
         {action != null && <div className="ui-section-action">{action}</div>}
       </header>
       <div className={bodyClasses}>{children}</div>
+      {footer != null && <div className="ui-section-footer">{footer}</div>}
     </section>
   )
 }

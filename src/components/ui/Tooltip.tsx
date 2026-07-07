@@ -32,6 +32,15 @@ interface TooltipProps {
    * Each side flips to its opposite when it would spill out of the viewport.
    */
   readonly placement?: 'top' | 'bottom' | 'left' | 'right'
+  /**
+   * Vertical nudge (px) applied to the bubble's final position for `top`/`bottom`
+   * placements — positive moves the bubble down. Lets a caller close the gap to
+   * the trigger without changing the shared default for every tooltip.
+   */
+  readonly offset?: number
+  /** When true, the tooltip never opens — used to hide stale content (e.g. a
+   *  capability rating while a fresh test is running). */
+  readonly disabled?: boolean
 }
 
 const GAP = 6
@@ -44,6 +53,7 @@ function computePosition(
   bubbleHeight: number,
   align: 'left' | 'right',
   placement: 'top' | 'bottom' | 'left' | 'right',
+  offset: number,
 ): { top: number; left: number } {
   const vw = window.innerWidth
   const vh = window.innerHeight
@@ -89,9 +99,9 @@ function computePosition(
 
   let top: number
   if (effectivePlacement === 'bottom') {
-    top = triggerRect.bottom + GAP
+    top = triggerRect.bottom + GAP + offset
   } else {
-    top = triggerRect.top - GAP - bubbleHeight
+    top = triggerRect.top - GAP - bubbleHeight + offset
   }
 
   let left: number
@@ -116,6 +126,8 @@ export function Tooltip({
   children,
   align = 'right',
   placement = 'bottom',
+  offset = 0,
+  disabled = false,
 }: TooltipProps): JSX.Element {
   const bubbleId = useId()
   const wrapRef = useRef<HTMLSpanElement>(null)
@@ -125,7 +137,7 @@ export function Tooltip({
   const [focused, setFocused] = useState(false)
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null)
 
-  const open = (hovered || focused) && !suppressed
+  const open = (hovered || focused) && !suppressed && !disabled
 
   const updatePosition = useCallback(() => {
     const wrap = wrapRef.current
@@ -136,8 +148,8 @@ export function Tooltip({
     const { width, height } = bubble.getBoundingClientRect()
     if (width === 0 || height === 0) return
 
-    setCoords(computePosition(triggerRect, width, height, align, placement))
-  }, [align, placement])
+    setCoords(computePosition(triggerRect, width, height, align, placement, offset))
+  }, [align, placement, offset])
 
   useLayoutEffect(() => {
     if (!open) {

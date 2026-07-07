@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Primary items sit at the top; the utility group (Settings, About) is pushed
+     to the bottom edge of the rail. */
+  justify-content: space-between;
   gap: var(--gap-md);
   /* Narrow icon-only rail. Horizontal padding is symmetric so the active pill
      and the left accent bar read as evenly inset; top padding matches the
@@ -20,6 +23,25 @@
   flex-direction: column;
   align-items: center;
   gap: var(--gap-md);
+}
+
+/* The bottom utility group (the gear menu), separated from the primary items by
+   a hairline that spans the rail's inner width. */
+.nav-items-bottom {
+  position: relative;
+  padding-top: var(--gap-md);
+}
+
+.nav-items-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  /* Cancel the rail's 11px side padding so the hairline runs the full width of
+     the rail, edge to edge, matching the panel borders elsewhere. */
+  left: -11px;
+  right: -11px;
+  height: 1px;
+  background: var(--border);
 }
 
 .nav-item {

@@ -185,7 +185,7 @@ export default function HomeStats({
                 }}
               >
                 <SearchIcon size={14} />
-                Scan
+                Discover
               </button>
             </div>
           ) : (

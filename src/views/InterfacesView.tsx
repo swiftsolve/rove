@@ -104,7 +104,7 @@ export default function InterfacesView({
         <Tooltip content="Refresh">
           <button
             type="button"
-            className="btn-icon btn-icon-secondary"
+            className={`btn-icon btn-icon-secondary${isLoading ? ' is-scanning' : ''}`}
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Refresh"

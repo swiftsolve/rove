@@ -51,7 +51,7 @@ export default function CapabilityStrip({
         >
           <button
             type="button"
-            className="btn-icon btn-icon-secondary"
+            className={`btn-icon btn-icon-secondary${testing ? ' is-scanning' : ''}`}
             onClick={onRunTest}
             disabled={!canRunTest || testing}
             aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
@@ -109,6 +109,8 @@ export default function CapabilityStrip({
                   }
                   align="left"
                   placement="top"
+                  offset={4}
+                  disabled={testing}
                 >
                   <button
                     type="button"

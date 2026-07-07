@@ -16,9 +16,13 @@ import InterfacesView from '@/views/InterfacesView'
 import DevicesView from '@/views/DevicesView'
 import UsageView from '@/views/UsageView'
 import DiagnosticsView from '@/views/DiagnosticsView'
+import SettingsView from '@/views/SettingsView'
+import AboutView from '@/views/AboutView'
 import { formatConnectionType } from '@/lib/format'
 import { IS_MAC } from '@/lib/platform'
 import { locationKey, useNavigation } from '@/navigation/useNavigation'
+import { getSetting, useSetting } from '@/hooks/useSetting'
+import { useTheme } from '@/hooks/useTheme'
 import './App.css'
 
 interface NetworkErrorInfo {
@@ -179,6 +183,12 @@ function StatusBar({
 export default function App(): JSX.Element {
   const { location, navigate, back } = useNavigation()
   const activeTab = location.tab
+  // Whether the Home summary keeps its connected-device count warm (Settings).
+  const [homeDeviceScan] = useSetting('homeDeviceScan', true)
+  // Colour theme — the nav rail's toggle flips it and Settings picks dark / light
+  // / system. The hook resolves the preference to a light boolean and mirrors it
+  // onto the document element as a class so index.css can remap its design tokens.
+  const { mode: themeMode, light: lightMode, setMode: setThemeMode, toggle: toggleTheme } = useTheme()
   const screenKey = locationKey(location)
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const scrollRef = useRef<HTMLElement>(null)
@@ -190,10 +200,12 @@ export default function App(): JSX.Element {
     scrollRef.current?.scrollTo({ top: 0 })
   }, [screenKey])
 
-  // Check for a newer signed release once, shortly after launch. If one is
-  // found, surface it via a non-blocking modal (never window.confirm, which
-  // freezes the webview on Linux/WebKitGTK).
+  // Check for a newer signed release once, shortly after launch — unless the
+  // user has turned off automatic checks in Settings. If one is found, surface
+  // it via a non-blocking modal (never window.confirm, which freezes the webview
+  // on Linux/WebKitGTK).
   useEffect(() => {
+    if (!getSetting('autoUpdate', true)) return
     void checkForUpdates().then(setPendingUpdate)
   }, [])
 
@@ -215,7 +227,10 @@ export default function App(): JSX.Element {
     // On macOS, don't auto-scan when Home loads — device discovery needs the
     // Local Network permission, so we wait until the user opens Devices or taps
     // Scan on the Home widget. Elsewhere, warm the count on Home as before.
-  } = useDevices(activeTab === 'devices' || (activeTab === 'home' && !IS_MAC), networkKey)
+  } = useDevices(
+    activeTab === 'devices' || (activeTab === 'home' && !IS_MAC && homeDeviceScan),
+    networkKey,
+  )
   const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(
     activeTab === 'usage' || activeTab === 'home',
   )
@@ -247,6 +262,8 @@ export default function App(): JSX.Element {
         <TabBar
           activeTab={activeTab}
           onChange={(tab) => navigate({ tab, speedSub: null })}
+          lightMode={lightMode}
+          onToggleTheme={toggleTheme}
         />
 
         <div className="app-col">
@@ -333,6 +350,16 @@ export default function App(): JSX.Element {
                   onRun={() => void runDiagnostics()}
                 />
               )}
+
+              {activeTab === 'settings' && (
+                <SettingsView
+                  themeMode={themeMode}
+                  onThemeModeChange={setThemeMode}
+                  onOpenAbout={() => navigate({ tab: 'about', speedSub: null })}
+                />
+              )}
+
+              {activeTab === 'about' && <AboutView />}
             </main>
           </section>
         </div>

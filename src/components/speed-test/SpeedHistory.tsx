@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { splitSpeedMbps, formatLatencyMs } from '@/lib/format'
+import { useSpeedTest } from '@/hooks/useSpeedTest'
 import {
   clearSpeedHistory,
   formatHistoryTimestamp,
@@ -99,6 +100,10 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
   // "no tests yet" placeholder — which fades in over the dark background and
   // then swaps to the list mid-transition — before we actually know it's empty.
   const [loaded, setLoaded] = useState(false)
+  // Re-load whenever a test finishes so a result recorded while this view is
+  // open shows up without a manual refresh. `completedAt` changes on each
+  // completed run, driving the effect below.
+  const { completedAt } = useSpeedTest()
 
   useEffect(() => {
     let active = true
@@ -110,7 +115,7 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
     return () => {
       active = false
     }
-  }, [])
+  }, [completedAt])
 
   const handleClear = (): void => {
     void clearSpeedHistory()

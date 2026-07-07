@@ -97,6 +97,93 @@
   --weight-semibold: 600;
 }
 
+/* ---- Theme switch transition ----
+   The theme toggle (App.tsx) runs the swap inside a View Transition and drives
+   a clip-path circle that grows from the window's centre. Suppress the built-in
+   cross-fade so only the circular reveal plays, and keep the incoming theme's
+   snapshot stacked above the outgoing one so it's revealed on top. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* Dark → light: the incoming light snapshot grows outward on top. */
+::view-transition-old(root) { z-index: 0; }
+::view-transition-new(root) { z-index: 1; }
+/* Light → dark: mirror it — the outgoing light snapshot stays on top and
+   collapses to the centre, revealing the dark snapshot beneath. */
+:root.theme-to-dark::view-transition-old(root) { z-index: 1; }
+:root.theme-to-dark::view-transition-new(root) { z-index: 0; }
+
+/* ---- Light theme ----
+   Applied by toggling `.theme-light` on the document element (see App.tsx).
+   The UI is driven almost entirely by the tokens above, so light mode is a
+   remap of those same variables — surfaces invert to a soft-grey backdrop with
+   white cards, hairlines and overlays flip from white-on-dark to black-on-light,
+   and the accent/semantic hues deepen for contrast against light surfaces. */
+:root.theme-light {
+  --bg-app: #f6f7fa;
+  --bg-app-2: #fafbfd;
+  --bg-panel: #ffffff;
+  --bg-panel-hi: #f6f7fa;
+  --bg-inset: #f4f6fa;
+  --bg-hover: #e9ecf2;
+
+  --border: rgba(15, 18, 30, 0.10);
+  --border-strong: rgba(15, 18, 30, 0.16);
+  --hairline-top: rgba(255, 255, 255, 0.7);
+
+  --text-primary: #1a1c22;
+  --text-secondary: #565a66;
+  --text-tertiary: #888c98;
+
+  --accent: #3d6fe0;
+  --accent-hover: #3162d4;
+  --accent-press: #2b58c4;
+  --accent-muted: rgba(61, 111, 224, 0.12);
+
+  --positive: #1aa87a;
+  --warning: #c6890c;
+  --negative: #dc5757;
+
+  --series-down: #3d6fe0;
+  --series-up: #7c5cff;
+
+  --shadow-panel: 0 1px 2px rgba(15, 20, 35, 0.06), 0 4px 12px rgba(15, 20, 35, 0.05);
+  --shadow-raised: 0 12px 32px rgba(15, 20, 35, 0.14);
+}
+
+/* In light mode the title bar and nav rail sit near-white (--bg-app-2), while the
+   main content backdrop stays a touch greyer so the white cards keep floating on
+   it rather than washing out. The bar and rail paint their own --bg-app-2 over
+   the shell, so this only sets the mid content area's shade. */
+:root.theme-light .app-shell { background: #f0f2f6; }
+
+/* Overlays that are hardcoded white-on-dark for "lift" need to flip to
+   black-on-light so they darken rather than disappear on pale surfaces. */
+:root.theme-light *::-webkit-scrollbar-thumb { background: rgba(15, 18, 30, 0.18); }
+:root.theme-light * { scrollbar-color: rgba(15, 18, 30, 0.18) transparent; }
+:root.theme-light .view-header-icon,
+:root.theme-light .subpage-back { background: rgba(15, 18, 30, 0.05); }
+:root.theme-light .nav-item:hover:not(.active) { background: rgba(15, 18, 30, 0.05); }
+:root.theme-light .conn-strip:hover,
+:root.theme-light .capability-row:hover,
+:root.theme-light .capability-row:focus-visible { background: rgba(15, 18, 30, 0.03); }
+:root.theme-light .capability-list--testing .capability-row .capability-seg,
+:root.theme-light .capability-strip--testing .capability-strip-cell .capability-seg,
+:root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg {
+  background: rgba(15, 18, 30, 0.07);
+}
+:root.theme-light .capability-list--testing .capability-row .capability-seg.on,
+:root.theme-light .capability-strip--testing .capability-strip-cell .capability-seg.on,
+:root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg.on {
+  background: rgba(15, 18, 30, 0.18);
+}
+:root.theme-light .setting-link-row:hover,
+:root.theme-light .setting-link-row:focus-visible {
+  background: rgba(15, 18, 30, 0.03);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -390,6 +477,7 @@ button:focus-visible {
 }
 
 .view-empty p {
+  font-size: var(--text-small);
   color: var(--text-tertiary);
 }
 

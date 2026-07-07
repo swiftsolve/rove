@@ -110,6 +110,17 @@ export default function SpeedView({
     )
   }
 
+  const historyLink = (
+    <button
+      type="button"
+      className="speed-history-link"
+      onClick={onOpenHistory}
+    >
+      <HistoryIcon size={13} />
+      <span className="speed-history-link-text">View history</span>
+    </button>
+  )
+
   return (
     <div className="view-page">
       <div className="view-header speed-header">
@@ -118,21 +129,22 @@ export default function SpeedView({
         </span>
         <div className="speed-header-text">
           <span className="view-header-title">Speed</span>
-          <span className={`speed-header-sub${completedAt != null && !testing ? ' show' : ''}`}>
+          <span className={`speed-header-sub${completedAt != null ? ' show' : ''}`}>
             {testing ? (
-              <span className="speed-header-status">Testing…</span>
+              <>
+                <span className="speed-header-status">Testing…</span>
+                {completedAt != null && (
+                  <>
+                    <DotSeparator />
+                    {historyLink}
+                  </>
+                )}
+              </>
             ) : completedAt != null ? (
               <>
                 Updated {formatTimeAgo(completedAt)}
                 <DotSeparator />
-                <button
-                  type="button"
-                  className="speed-history-link"
-                  onClick={onOpenHistory}
-                >
-                  <HistoryIcon size={13} />
-                  <span className="speed-history-link-text">View history</span>
-                </button>
+                {historyLink}
               </>
             ) : (
               'Measure your download and upload speeds'
@@ -141,17 +153,15 @@ export default function SpeedView({
         </div>
         <div className="speed-header-actions">
           {testing ? (
-            <Tooltip content="Stop test">
-              <button
-                type="button"
-                className="btn-primary speed-run-btn is-stop"
-                onClick={cancelTest}
-                aria-label="Stop test"
-              >
-                <StopIcon size={12} />
-                Stop
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              className="btn-primary speed-run-btn is-stop"
+              onClick={cancelTest}
+              aria-label="Stop test"
+            >
+              <StopIcon size={12} />
+              Stop
+            </button>
           ) : canTest ? (
             <button
               type="button"

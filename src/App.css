@@ -74,6 +74,7 @@
 }
 
 .loading-screen p {
+  font-size: var(--text-small);
   color: var(--text-secondary);
 }
 
@@ -286,6 +287,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--gap-tight);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   background: var(--bg-inset);
@@ -309,6 +311,15 @@
 .btn-secondary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Busy (spinner) state stays full-opacity — the spinner conveys the wait, so no
+   dimming — while ignoring input. Defined after `:disabled` so its opacity wins
+   for buttons that stay `disabled` while in flight (matches `.btn-icon`). */
+.btn-secondary.is-scanning {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ---- Icon buttons ---- */
@@ -336,10 +347,13 @@
 }
 
 /* Spinning (busy) icon buttons stay full-opacity — the spinner conveys the
-   busy state, so no dimming — but ignore pointer input while in flight. */
+   busy state, so no dimming — but ignore pointer input while in flight. The
+   explicit opacity wins over `.btn-icon:disabled` (equal specificity, defined
+   later) so buttons that stay `disabled` while busy don't fade the spinner. */
 .btn-icon.is-scanning {
   cursor: default;
   pointer-events: none;
+  opacity: 1;
 }
 
 .btn-icon-primary {

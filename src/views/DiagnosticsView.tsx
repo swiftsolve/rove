@@ -65,7 +65,7 @@ export default function DiagnosticsView({
           <Tooltip content="Run again">
             <button
               type="button"
-              className="btn-icon btn-icon-secondary"
+              className={`btn-icon btn-icon-secondary${isRunning ? ' is-scanning' : ''}`}
               onClick={onRun}
               disabled={isRunning}
               aria-label="Run again"
@@ -87,8 +87,16 @@ export default function DiagnosticsView({
         <>
           <Section
             title="Router"
+            className="diag-router-section"
             icon={<RouterIcon size={15} />}
             bodyClassName="row-list diag-router"
+            footer={
+              ping && ping.packetLoss > 0 ? (
+                <p className="text-hint diag-warning">
+                  Packet loss can cause slow or unstable connections.
+                </p>
+              ) : undefined
+            }
           >
             <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
             <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
@@ -107,11 +115,6 @@ export default function DiagnosticsView({
                 '—'
               )}
             </DataRow>
-            {ping && ping.packetLoss > 0 && (
-              <p className="text-hint diag-warning">
-                Packet loss can cause slow or unstable connections.
-              </p>
-            )}
           </Section>
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list">
