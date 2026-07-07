@@ -1,23 +1,31 @@
+<div align="center">
+
+<img src="src-tauri/icons/128x128.png" width="88" height="88" alt="Rove" />
+
 # Rove
 
-A fast, minimal desktop network monitor — live traffic, speed tests, LAN device
-discovery, connection diagnostics, and data-usage tracking. Tauri (Rust) + React.
+**A fast, minimal desktop network monitor.**
+
+Live traffic · speed tests · LAN device discovery · connection diagnostics · data-usage tracking
+
+<p>
+  <img alt="Tauri v2" src="https://img.shields.io/badge/Tauri-v2-24C8DB?style=flat-square&logo=tauri&logoColor=white" />
+  <img alt="Rust" src="https://img.shields.io/badge/Rust-backend-000000?style=flat-square&logo=rust&logoColor=white" />
+  <img alt="React" src="https://img.shields.io/badge/React-UI-149ECA?style=flat-square&logo=react&logoColor=white" />
+  <img alt="Platforms" src="https://img.shields.io/badge/Linux%20·%20macOS%20·%20Windows-3d6fe0?style=flat-square" />
+</p>
+
+</div>
+
+---
 
 ## How it works
 
 Rove is two programs talking over a thin, typed bridge:
 
-```
-┌───────────────────────────┐        invoke("get_devices")         ┌──────────────────────────┐
-│  React UI (system webview)│ ────────────────────────────────────▶│  Rust backend (Tauri)    │
-│  views · hooks · charts   │                                      │  src-tauri: commands     │
-│                           │ ◀──────────────────────────────────── │  rove-core: services   │
-└───────────────────────────┘   events: live-throughput,           └──────────────────────────┘
-                                speed-test-progress, network-changed          │
-                                                                    kernel & OS tools:
-                                                                    /sys, /proc, ip, iw, nmcli,
-                                                                    getent, ping, mDNS, HTTPS
-```
+<div align="center">
+  <img src="docs/assets/architecture.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
+</div>
 
 - **Request/response** — each UI data need is one Tauri *command* (`get_network_info`,
   `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
@@ -47,6 +55,11 @@ exponential moving average, and emits an event. Virtual interfaces (docker,
 veth, vpn…) are excluded.
 
 **Devices.** A four-step pipeline (`crates/rove-core/src/devices/`):
+
+<div align="center">
+  <img src="docs/assets/devices-pipeline.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
+</div>
+
 1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
    not the ICMP reply but the ARP exchange it forces: idle devices enter the
    kernel neighbor table even if they block ping.
