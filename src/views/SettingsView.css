@@ -1,0 +1,192 @@
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+/* Match the Speed page's capability list: rows carry their own symmetric
+   vertical padding (--row-py) and the column has no extra gap between them. */
+.setting-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Drop the body's default top padding: the first row's own --row-py already
+   supplies enough breathing room, so this pulls the content up closer to the
+   section title. */
+.ui-section-body.setting-list {
+  padding-top: 0;
+}
+
+/* A whole-row link (e.g. About) that reads and behaves like a Speed-page
+   capability row: symmetric --row-py padding, hover highlight bleeding into the
+   section padding via negative margin, and an always-faint chevron that
+   brightens on hover/focus. */
+.setting-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-lg);
+  padding: var(--row-py) 8px;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+.setting-link-row:hover,
+.setting-link-row:focus-visible {
+  background: rgba(255, 255, 255, 0.03);
+  outline: none;
+}
+
+.setting-link-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  opacity: 0.3;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.setting-link-row:hover .setting-link-chevron,
+.setting-link-row:focus-visible .setting-link-chevron {
+  opacity: 0.7;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-lg);
+  padding: var(--row-py) 0;
+}
+
+/* Stack the control beneath the label + description instead of placing it on the
+   right — used when the control is too wide to sit comfortably inline (e.g. the
+   three-segment theme picker). */
+.setting-row-stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-md);
+}
+
+.setting-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.setting-row-title {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.setting-row-desc {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.setting-row-control {
+  flex-shrink: 0;
+}
+
+/* Give the row's action button (e.g. "Check now") a taller hit area than the
+   default secondary button so it sits more comfortably against the two-line row
+   text beside it. */
+.setting-row-control .btn-secondary {
+  padding-top: var(--gap-sm);
+  padding-bottom: var(--gap-sm);
+}
+
+/* Pull the status band up close to the last row: drop the body's bottom padding
+   so only the row's own --row-py sits between the last row and the band. Only
+   applies when a footer band is actually present — when idle (no footer) the body
+   keeps its default bottom padding so the card doesn't look cramped. */
+.settings-updates .ui-section-body:has(+ .ui-section-footer) {
+  padding-bottom: 0;
+}
+
+/* The update-status footer reads as a continuation of the row list rather than a
+   separate sunken band: no top divider, and symmetric vertical padding so the
+   status text sits centred within the inset band. */
+.settings-updates .ui-section-footer {
+  padding-top: var(--gap-md);
+  padding-bottom: var(--gap-md);
+  border-top: none;
+}
+
+.settings-status {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Geometric centring leaves the glyph sitting a touch high against the text's
+   x-height (the check's mass and the lowercase body both centre below the line
+   box). A 1px nudge optically settles it onto the text. */
+.settings-status svg {
+  flex-shrink: 0;
+  transform: translateY(1px);
+}
+
+.settings-status.ok {
+  color: var(--positive);
+}
+
+.settings-update {
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+/* Three-way theme picker: a pill track holding dark / light / system segments,
+   the active one lit with the accent. Mirrors the Toggle's inset-track look so
+   the two Appearance controls read as a set. */
+.theme-segmented {
+  display: inline-flex;
+  gap: var(--gap-2xs);
+  padding: 2px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.theme-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  padding: 5px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+
+.theme-seg svg {
+  flex-shrink: 0;
+}
+
+.theme-seg:hover:not(.is-active) {
+  color: var(--text-secondary);
+}
+
+.theme-seg.is-active {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.theme-seg:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}

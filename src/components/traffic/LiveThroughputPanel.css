@@ -20,6 +20,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--gap-tight);
+  /* A rounded dark pill wrapping the dot + label so the badge reads as a
+     discrete status chip against the panel. */
+  padding: var(--gap-xs) var(--gap-sm);
+  border-radius: 99px;
+  background: var(--bg-inset);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);

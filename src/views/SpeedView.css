@@ -31,7 +31,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -3px;
+  margin-left: -6px;
   padding: 2px 8px;
   border-radius: 999px;
   color: var(--text-secondary);
@@ -85,8 +85,10 @@
   background: rgba(91, 140, 255, 0.08);
 }
 
-/* Stop variant of the header's Run test button, shown while a test runs. */
+/* Stop variant of the header's Run test button, shown while a test runs. Mirrors
+   the Run test button's faint wash-at-rest, but in the negative red. */
 .speed-run-btn.is-stop {
+  background: rgba(247, 123, 123, 0.08);
   color: var(--negative);
 }
 

@@ -3,6 +3,7 @@
  * optical size and stroke. Import these semantic names; swap the underlying
  * Lucide icon here in one place if the design changes.
  */
+import { useId } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
@@ -33,21 +34,25 @@ import {
   HelpCircle,
   History,
   House,
+  Info,
   Joystick,
   Laptop,
   Layers,
   MonitorPlay,
+  Moon,
   Network,
   Radio,
   Router,
   Search,
   Server,
+  Settings,
   Smartphone,
   Speaker,
   Printer,
   Sparkles,
   Square,
   Stethoscope,
+  Sun,
   Tablet,
   TriangleAlert,
   Trash2,
@@ -74,12 +79,19 @@ function make(Base: LucideIcon, defaultSize: number) {
 export const WifiIcon = make(Wifi, 20)
 
 /**
- * The Rove Mark — a filled centre dot inside an open ring. Drawn in
- * `currentColor` (fill + stroke) so it inherits the accent color from its
- * container, matching the tray glyph. This is the one brand glyph that isn't a
- * Lucide alias.
+ * The Rove Mark — a filled centre dot inside an open ring. By default it's drawn
+ * in `currentColor` (fill + stroke) so it inherits the accent color from its
+ * container, matching the tray glyph. Pass `gradient` for the app-icon treatment
+ * — the same top-to-bottom blue the 1024px dock icon uses. This is the one brand
+ * glyph that isn't a Lucide alias.
  */
-export function BrandIcon({ size = 20, className }: IconProps): JSX.Element {
+export function BrandIcon({
+  size = 20,
+  className,
+  gradient = false,
+}: IconProps & { readonly gradient?: boolean }): JSX.Element {
+  const gid = useId()
+  const paint = gradient ? `url(#${gid})` : 'currentColor'
   return (
     <svg
       width={size}
@@ -89,11 +101,19 @@ export function BrandIcon({ size = 20, className }: IconProps): JSX.Element {
       className={className}
       aria-hidden
     >
-      <circle cx="24" cy="24" r="7.5" fill="currentColor" />
+      {gradient && (
+        <defs>
+          <linearGradient id={gid} x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#7aa4ff" />
+            <stop offset="1" stopColor="#5484f5" />
+          </linearGradient>
+        </defs>
+      )}
+      <circle cx="24" cy="24" r="7.5" fill={paint} />
       <path
         d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
         fill="none"
-        stroke="currentColor"
+        stroke={paint}
         strokeWidth="5"
         strokeLinecap="round"
       />
@@ -127,6 +147,10 @@ export const DnsIcon = make(Server, 18)
 export const SparkleIcon = make(Sparkles, 18)
 export const HistoryIcon = make(History, 16)
 export const UsageIcon = make(BarChart3, 18)
+export const SettingsIcon = make(Settings, 18)
+export const SunIcon = make(Sun, 18)
+export const MoonIcon = make(Moon, 18)
+export const InfoIcon = make(Info, 18)
 export const TodayIcon = make(Clock, 18)
 export const WeekIcon = make(CalendarRange, 18)
 export const ComputerIcon = make(Laptop, 16)
