@@ -1,58 +1,58 @@
 <svg width="880" height="250" viewBox="0 0 880 250" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif">
   <defs>
     <filter id="c" x="-8%" y="-8%" width="116%" height="140%">
-      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#0f1423" flood-opacity="0.06"/>
-      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f1423" flood-opacity="0.06"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="9" flood-color="#000000" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.35"/>
     </filter>
     <marker id="a" markerWidth="9" markerHeight="9" refX="5" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#c3c8d4"/>
+      <path d="M0 0 L6 3 L0 6 Z" fill="#4a4d57"/>
     </marker>
   </defs>
 
-  <rect width="880" height="250" rx="18" fill="#f6f7fa"/>
-  <text x="40" y="46" font-size="15" font-weight="600" fill="#1a1c22">Device discovery — a four-step pipeline</text>
+  <rect width="880" height="250" rx="18" fill="#0a0b0e"/>
+  <text x="40" y="46" font-size="15" font-weight="600" fill="#f5f6f8">Device discovery — a four-step pipeline</text>
 
-  <!-- step template: 190 wide cards, x = 40, 250, 460, 670 -->
+  <!-- step cards: 180 wide, x = 40, 250, 460, 670 -->
   <!-- 1 Sweep -->
-  <g filter="url(#c)"><rect x="40" y="72" width="180" height="120" rx="13" fill="#ffffff" stroke="#e4e7ee"/></g>
-  <circle cx="66" cy="100" r="11" fill="#eef1fb"/><text x="66" y="104" font-size="12" font-weight="600" fill="#3d6fe0" text-anchor="middle">1</text>
-  <text x="86" y="104" font-size="14" font-weight="600" fill="#1a1c22">Sweep</text>
-  <text x="60" y="132" font-size="11.5" fill="#565a66">Ping the /24 — 64</text>
-  <text x="60" y="150" font-size="11.5" fill="#565a66">concurrent probes to</text>
-  <text x="60" y="168" font-size="11.5" fill="#565a66">force ARP into the</text>
-  <text x="60" y="186" font-size="11.5" fill="#565a66">neighbor table.</text>
+  <g filter="url(#c)"><rect x="40" y="72" width="180" height="120" rx="13" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/></g>
+  <circle cx="66" cy="100" r="11" fill="#5b8cff" fill-opacity="0.14"/><text x="66" y="104" font-size="12" font-weight="600" fill="#8fb0ff" text-anchor="middle">1</text>
+  <text x="86" y="105" font-size="14" font-weight="600" fill="#f5f6f8">Sweep</text>
+  <text x="60" y="133" font-size="11.5" fill="#a4a7b2">Ping the /24 — 64</text>
+  <text x="60" y="151" font-size="11.5" fill="#a4a7b2">concurrent probes to</text>
+  <text x="60" y="169" font-size="11.5" fill="#a4a7b2">force ARP into the</text>
+  <text x="60" y="187" font-size="11.5" fill="#a4a7b2">neighbor table.</text>
 
   <!-- 2 mDNS -->
-  <g filter="url(#c)"><rect x="250" y="72" width="180" height="120" rx="13" fill="#ffffff" stroke="#e4e7ee"/></g>
-  <circle cx="276" cy="100" r="11" fill="#f1edff"/><text x="276" y="104" font-size="12" font-weight="600" fill="#7c5cff" text-anchor="middle">2</text>
-  <text x="296" y="104" font-size="14" font-weight="600" fill="#1a1c22">mDNS</text>
-  <text x="270" y="132" font-size="11.5" fill="#565a66">Listen ~3 s for</text>
-  <text x="270" y="150" font-size="11.5" fill="#565a66">service announces —</text>
-  <text x="270" y="168" font-size="11.5" fill="#565a66">devices name</text>
-  <text x="270" y="186" font-size="11.5" fill="#565a66">themselves.</text>
+  <g filter="url(#c)"><rect x="250" y="72" width="180" height="120" rx="13" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/></g>
+  <circle cx="276" cy="100" r="11" fill="#b39dff" fill-opacity="0.16"/><text x="276" y="104" font-size="12" font-weight="600" fill="#c3b2ff" text-anchor="middle">2</text>
+  <text x="296" y="105" font-size="14" font-weight="600" fill="#f5f6f8">mDNS</text>
+  <text x="270" y="133" font-size="11.5" fill="#a4a7b2">Listen ~3 s for</text>
+  <text x="270" y="151" font-size="11.5" fill="#a4a7b2">service announces —</text>
+  <text x="270" y="169" font-size="11.5" fill="#a4a7b2">devices name</text>
+  <text x="270" y="187" font-size="11.5" fill="#a4a7b2">themselves.</text>
 
-  <!-- 3 Neighbor table -->
-  <g filter="url(#c)"><rect x="460" y="72" width="180" height="120" rx="13" fill="#ffffff" stroke="#e4e7ee"/></g>
-  <circle cx="486" cy="100" r="11" fill="#eef1fb"/><text x="486" y="104" font-size="12" font-weight="600" fill="#3d6fe0" text-anchor="middle">3</text>
-  <text x="506" y="104" font-size="14" font-weight="600" fill="#1a1c22">Neighbors</text>
-  <text x="480" y="132" font-size="11.5" fill="#565a66">Read ip neigh /</text>
-  <text x="480" y="150" font-size="11.5" fill="#565a66">arp -a as ground</text>
-  <text x="480" y="168" font-size="11.5" fill="#565a66">truth of who</text>
-  <text x="480" y="186" font-size="11.5" fill="#565a66">exists.</text>
+  <!-- 3 Neighbors -->
+  <g filter="url(#c)"><rect x="460" y="72" width="180" height="120" rx="13" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/></g>
+  <circle cx="486" cy="100" r="11" fill="#5b8cff" fill-opacity="0.14"/><text x="486" y="104" font-size="12" font-weight="600" fill="#8fb0ff" text-anchor="middle">3</text>
+  <text x="506" y="105" font-size="14" font-weight="600" fill="#f5f6f8">Neighbors</text>
+  <text x="480" y="133" font-size="11.5" fill="#a4a7b2">Read ip neigh /</text>
+  <text x="480" y="151" font-size="11.5" fill="#a4a7b2">arp -a as ground</text>
+  <text x="480" y="169" font-size="11.5" fill="#a4a7b2">truth of who</text>
+  <text x="480" y="187" font-size="11.5" fill="#a4a7b2">exists.</text>
 
   <!-- 4 Enrich -->
-  <g filter="url(#c)"><rect x="670" y="72" width="180" height="120" rx="13" fill="#ffffff" stroke="#e4e7ee"/></g>
-  <circle cx="696" cy="100" r="11" fill="#e6f7f1"/><text x="696" y="104" font-size="12" font-weight="600" fill="#1aa87a" text-anchor="middle">4</text>
-  <text x="716" y="104" font-size="14" font-weight="600" fill="#1a1c22">Enrich</text>
-  <text x="690" y="132" font-size="11.5" fill="#565a66">Vendor (OUI),</text>
-  <text x="690" y="150" font-size="11.5" fill="#565a66">hostname, and a</text>
-  <text x="690" y="168" font-size="11.5" fill="#565a66">trust-ranked device</text>
-  <text x="690" y="186" font-size="11.5" fill="#565a66">kind.</text>
+  <g filter="url(#c)"><rect x="670" y="72" width="180" height="120" rx="13" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/></g>
+  <circle cx="696" cy="100" r="11" fill="#43d6a0" fill-opacity="0.16"/><text x="696" y="104" font-size="12" font-weight="600" fill="#43d6a0" text-anchor="middle">4</text>
+  <text x="716" y="105" font-size="14" font-weight="600" fill="#f5f6f8">Enrich</text>
+  <text x="690" y="133" font-size="11.5" fill="#a4a7b2">Vendor (OUI),</text>
+  <text x="690" y="151" font-size="11.5" fill="#a4a7b2">hostname, and a</text>
+  <text x="690" y="169" font-size="11.5" fill="#a4a7b2">trust-ranked device</text>
+  <text x="690" y="187" font-size="11.5" fill="#a4a7b2">kind.</text>
 
   <!-- connectors -->
-  <line x1="222" y1="132" x2="246" y2="132" stroke="#c3c8d4" stroke-width="1.6" marker-end="url(#a)"/>
-  <line x1="432" y1="132" x2="456" y2="132" stroke="#c3c8d4" stroke-width="1.6" marker-end="url(#a)"/>
-  <line x1="642" y1="132" x2="666" y2="132" stroke="#c3c8d4" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="222" y1="132" x2="246" y2="132" stroke="#4a4d57" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="432" y1="132" x2="456" y2="132" stroke="#4a4d57" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="642" y1="132" x2="666" y2="132" stroke="#4a4d57" stroke-width="1.6" marker-end="url(#a)"/>
 
-  <text x="40" y="230" font-size="11" fill="#888c98">Steps 1 and 2 run concurrently; the router's admin page stays authoritative for devices that hide.</text>
+  <text x="40" y="230" font-size="11" fill="#71747f">Steps 1 and 2 run concurrently; the router's admin page stays authoritative for devices that hide.</text>
 </svg>
