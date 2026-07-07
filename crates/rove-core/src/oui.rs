@@ -11,9 +11,13 @@
 //! the IEEE sources). Sourcing from IEEE rather than Wireshark's GPL-2.0 `manuf`
 //! keeps the bundled table free of copyleft obligations.
 use std::collections::HashMap;
+use std::io::Read;
 use std::sync::OnceLock;
 
-static OUI_DATA: &str = include_str!("../data/oui.tsv");
+/// The table is embedded gzip'd (~555 KB vs ~1.8 MB raw); `build.rs` compresses
+/// `data/oui.tsv` into `OUT_DIR` at build time. Decompressed once, on first
+/// lookup, in [`table`].
+static OUI_GZ: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/oui.tsv.gz"));
 
 struct OuiTable {
     /// 24-bit assignments (MA-L), keyed by the first 6 nibbles.
@@ -27,12 +31,20 @@ struct OuiTable {
 fn table() -> &'static OuiTable {
     static TABLE: OnceLock<OuiTable> = OnceLock::new();
     TABLE.get_or_init(|| {
+        // Decompress the embedded table and leak it so the map values can borrow
+        // `&'static str` slices — the table lives for the whole process anyway.
+        let mut raw = String::new();
+        flate2::read::GzDecoder::new(OUI_GZ)
+            .read_to_string(&mut raw)
+            .expect("embedded oui.tsv.gz is valid gzip");
+        let data: &'static str = Box::leak(raw.into_boxed_str());
+
         let mut t = OuiTable {
             b24: HashMap::new(),
             b28: HashMap::new(),
             b36: HashMap::new(),
         };
-        for line in OUI_DATA.lines() {
+        for line in data.lines() {
             let mut fields = line.splitn(3, '\t');
             let (Some(bits), Some(prefix), Some(vendor)) =
                 (fields.next(), fields.next(), fields.next())

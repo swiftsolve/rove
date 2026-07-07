@@ -2964,6 +2964,7 @@ name = "rove-core"
 version = "1.0.0"
 dependencies = [
  "csv",
+ "flate2",
  "futures-util",
  "mdns-sd",
  "objc2",
