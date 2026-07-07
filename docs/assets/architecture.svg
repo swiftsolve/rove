@@ -1,80 +1,82 @@
 <svg width="880" height="440" viewBox="0 0 880 440" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif">
   <defs>
     <filter id="card" x="-8%" y="-8%" width="116%" height="130%">
-      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#0f1423" flood-opacity="0.06"/>
-      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f1423" flood-opacity="0.06"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.35"/>
     </filter>
     <linearGradient id="accentFade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#3d6fe0"/>
-      <stop offset="1" stop-color="#7c5cff"/>
+      <stop offset="0" stop-color="#5b8cff"/>
+      <stop offset="1" stop-color="#b39dff"/>
     </linearGradient>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#3d6fe0"/>
+      <path d="M0 0 L6 3 L0 6 Z" fill="#5b8cff"/>
     </marker>
     <marker id="arrowBack" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#7c5cff"/>
+      <path d="M0 0 L6 3 L0 6 Z" fill="#b39dff"/>
     </marker>
     <marker id="arrowMuted" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
-      <path d="M0 0 L6 3 L0 6 Z" fill="#888c98"/>
+      <path d="M0 0 L6 3 L0 6 Z" fill="#71747f"/>
     </marker>
   </defs>
 
   <!-- backdrop -->
-  <rect width="880" height="440" rx="18" fill="#f6f7fa"/>
+  <rect width="880" height="440" rx="18" fill="#0a0b0e"/>
 
   <!-- ============ React UI card ============ -->
   <g filter="url(#card)">
-    <rect x="40" y="60" width="300" height="200" rx="14" fill="#ffffff" stroke="#e4e7ee"/>
+    <rect x="40" y="60" width="300" height="200" rx="14" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/>
   </g>
   <rect x="40" y="60" width="300" height="4" rx="2" fill="url(#accentFade)"/>
-  <text x="64" y="98" font-size="16" font-weight="600" fill="#1a1c22">React UI</text>
-  <text x="64" y="118" font-size="12" fill="#888c98">system webview · no Node runtime</text>
-  <g font-size="12.5" fill="#565a66">
-    <text x="64" y="152">views · hooks · charts</text>
-    <text x="64" y="176">window.networkAPI contract</text>
-    <text x="64" y="200">Tauri bridge / browser mock</text>
+  <text x="64" y="99" font-size="16" font-weight="600" fill="#f5f6f8">React UI</text>
+  <text x="64" y="119" font-size="12" fill="#71747f">system webview · no Node runtime</text>
+  <g font-size="12.5" fill="#a4a7b2">
+    <text x="64" y="153">views · hooks · charts</text>
+    <text x="64" y="177">window.networkAPI contract</text>
+    <text x="64" y="201">Tauri bridge / browser mock</text>
   </g>
-  <rect x="64" y="216" width="252" height="26" rx="7" fill="#eef1fb"/>
-  <text x="76" y="233" font-size="11.5" fill="#3d6fe0" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">src/ — Vite · TypeScript · React</text>
+  <rect x="64" y="217" width="252" height="27" rx="7" fill="#5b8cff" fill-opacity="0.14"/>
+  <text x="76" y="234" font-size="11.5" fill="#8fb0ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">src/ — Vite · TypeScript · React</text>
 
   <!-- ============ Rust backend card ============ -->
   <g filter="url(#card)">
-    <rect x="540" y="60" width="300" height="200" rx="14" fill="#ffffff" stroke="#e4e7ee"/>
+    <rect x="540" y="60" width="300" height="200" rx="14" fill="#141519" stroke="#ffffff" stroke-opacity="0.07"/>
   </g>
   <rect x="540" y="60" width="300" height="4" rx="2" fill="url(#accentFade)"/>
-  <text x="564" y="98" font-size="16" font-weight="600" fill="#1a1c22">Rust backend</text>
-  <text x="564" y="118" font-size="12" fill="#888c98">Tauri v2 · memory-safe</text>
-  <g font-size="12.5" fill="#565a66">
-    <text x="564" y="152">src-tauri — #[command] wrappers</text>
-    <text x="564" y="176">rove-core — pure-Rust services</text>
-    <text x="564" y="200">events · capabilities · window</text>
+  <text x="564" y="99" font-size="16" font-weight="600" fill="#f5f6f8">Rust backend</text>
+  <text x="564" y="119" font-size="12" fill="#71747f">Tauri v2 · memory-safe</text>
+  <g font-size="12.5" fill="#a4a7b2">
+    <text x="564" y="153">src-tauri — #[command] wrappers</text>
+    <text x="564" y="177">rove-core — pure-Rust services</text>
+    <text x="564" y="201">events · capabilities · window</text>
   </g>
-  <rect x="564" y="216" width="252" height="26" rx="7" fill="#eef1fb"/>
-  <text x="576" y="233" font-size="11.5" fill="#3d6fe0" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">crates/rove-core · src-tauri</text>
+  <rect x="564" y="217" width="252" height="27" rx="7" fill="#5b8cff" fill-opacity="0.14"/>
+  <text x="576" y="234" font-size="11.5" fill="#8fb0ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">crates/rove-core · src-tauri</text>
 
   <!-- ============ bridge arrows ============ -->
   <!-- request -->
-  <line x1="344" y1="128" x2="536" y2="128" stroke="#3d6fe0" stroke-width="1.6" marker-end="url(#arrow)"/>
-  <rect x="392" y="106" width="96" height="20" rx="10" fill="#eef1fb"/>
-  <text x="440" y="120" font-size="11" fill="#3d6fe0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">invoke()</text>
+  <line x1="344" y1="128" x2="536" y2="128" stroke="#5b8cff" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <rect x="392" y="117" width="96" height="22" rx="11" fill="#0a0b0e"/>
+  <rect x="392" y="117" width="96" height="22" rx="11" fill="#5b8cff" fill-opacity="0.14"/>
+  <text x="440" y="132" font-size="11" fill="#8fb0ff" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">invoke()</text>
 
   <!-- response / events -->
-  <line x1="536" y1="192" x2="344" y2="192" stroke="#7c5cff" stroke-width="1.6" marker-end="url(#arrowBack)"/>
-  <rect x="388" y="170" width="104" height="20" rx="10" fill="#f1edff"/>
-  <text x="440" y="184" font-size="11" fill="#7c5cff" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">events</text>
+  <line x1="536" y1="192" x2="344" y2="192" stroke="#b39dff" stroke-width="1.6" marker-end="url(#arrowBack)"/>
+  <rect x="388" y="181" width="104" height="22" rx="11" fill="#0a0b0e"/>
+  <rect x="388" y="181" width="104" height="22" rx="11" fill="#b39dff" fill-opacity="0.14"/>
+  <text x="440" y="196" font-size="11" fill="#c3b2ff" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">events</text>
 
-  <text x="440" y="230" font-size="11" fill="#888c98" text-anchor="middle">typed bridge · camelCase on the wire</text>
+  <text x="440" y="232" font-size="11" fill="#71747f" text-anchor="middle">typed bridge · camelCase on the wire</text>
 
   <!-- ============ OS / kernel layer ============ -->
   <g filter="url(#card)">
-    <rect x="540" y="300" width="300" height="96" rx="14" fill="#fbfbfd" stroke="#e4e7ee"/>
+    <rect x="540" y="300" width="300" height="96" rx="14" fill="#0e0f13" stroke="#ffffff" stroke-opacity="0.07"/>
   </g>
-  <text x="564" y="332" font-size="13.5" font-weight="600" fill="#1a1c22">Kernel &amp; OS tools</text>
-  <text x="564" y="356" font-size="12" fill="#565a66">/sys · /proc · ip · iw · nmcli</text>
-  <text x="564" y="376" font-size="12" fill="#565a66">getent · ping · mDNS · HTTPS</text>
+  <text x="564" y="333" font-size="13.5" font-weight="600" fill="#f5f6f8">Kernel &amp; OS tools</text>
+  <text x="564" y="357" font-size="12" fill="#a4a7b2">/sys · /proc · ip · iw · nmcli</text>
+  <text x="564" y="377" font-size="12" fill="#a4a7b2">getent · ping · mDNS · HTTPS</text>
 
-  <line x1="690" y1="260" x2="690" y2="296" stroke="#888c98" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#arrowMuted)"/>
+  <line x1="690" y1="260" x2="690" y2="296" stroke="#71747f" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#arrowMuted)"/>
 
   <!-- legend footer -->
-  <text x="40" y="424" font-size="12" fill="#888c98">Rove — two programs, one thin typed bridge.</text>
+  <text x="40" y="424" font-size="12" fill="#71747f">Rove — two programs, one thin typed bridge.</text>
 </svg>
