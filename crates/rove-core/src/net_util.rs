@@ -1,8 +1,12 @@
 //! Small helpers shared across service modules.
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const VIRTUAL_PREFIXES: [&str; 10] = [
+const VIRTUAL_PREFIXES: [&str; 16] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
+    // macOS pseudo-interfaces: VPN tunnels (utunN — note "tun" above misses the
+    // leading "u"), VM host networking (vmenetN, bridgeN), Apple Wireless Direct
+    // Link / low-latency WLAN sidebands, and generic 4-in-6/6-in-4 tunnels.
+    "utun", "vmenet", "bridge", "awdl", "llw", "gif",
 ];
 
 /// Case-insensitive markers for Windows virtual/pseudo adapters that aren't real

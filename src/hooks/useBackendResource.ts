@@ -10,6 +10,12 @@ interface Options {
    * previous network's data.
    */
   readonly resetKey?: unknown
+  /**
+   * While `enabled`, silently refetch on this interval (ms) so on-screen values
+   * stay live without the user hitting refresh. Omit to fetch only on
+   * enable/reset. The poll is a background refresh — it never toggles `isBusy`.
+   */
+  readonly pollIntervalMs?: number
 }
 
 export interface BackendResource<T> {
@@ -28,7 +34,7 @@ export function useBackendResource<T>(
   fetcher: (() => Promise<T>) | undefined,
   enabled: boolean,
   errorMessage: string,
-  { refetchOnEnable = false, resetKey }: Options = {},
+  { refetchOnEnable = false, resetKey, pollIntervalMs }: Options = {},
 ): BackendResource<T> {
   const [data, setData] = useState<T | null>(null)
   const [isBusy, setIsBusy] = useState(false)
@@ -47,25 +53,32 @@ export function useBackendResource<T>(
   // then dropped — so `isBusy` never cleared and the spinner hung forever.
   const mountedRef = useRef(true)
 
-  const reload = useCallback(async (): Promise<void> => {
+  // `silent` skips the busy/error churn so a background poll refreshes values
+  // in place without flashing a spinner or clearing a visible error.
+  const reload = useCallback(async (silent = false): Promise<void> => {
     const fetch = fetcherRef.current
     if (!fetch) return
 
     // Guard against overlapping loads resolving out of order: only the latest
     // call is allowed to write state, and only while still mounted.
     const seq = ++reloadSeqRef.current
-    setIsBusy(true)
-    setError(null)
+    if (!silent) {
+      setIsBusy(true)
+      setError(null)
+    }
 
     try {
       const result = await fetch()
-      if (seq === reloadSeqRef.current && mountedRef.current) setData(result)
+      if (seq === reloadSeqRef.current && mountedRef.current) {
+        setData(result)
+        if (silent) setError(null)
+      }
     } catch (cause) {
       if (seq === reloadSeqRef.current && mountedRef.current) {
         setError(cause instanceof Error ? cause.message : errorMessage)
       }
     } finally {
-      if (seq === reloadSeqRef.current && mountedRef.current) setIsBusy(false)
+      if (!silent && seq === reloadSeqRef.current && mountedRef.current) setIsBusy(false)
     }
   }, [errorMessage])
 
@@ -90,6 +103,15 @@ export function useBackendResource<T>(
     hasRunRef.current = true
     void reload()
   }, [enabled, refetchOnEnable, reload, resetKey])
+
+  useEffect(() => {
+    // While the owning tab is visible, refresh in the background so values stay
+    // live without the user tapping refresh. Silent so it never flashes a
+    // spinner over data already on screen.
+    if (!enabled || !pollIntervalMs) return
+    const intervalId = window.setInterval(() => void reload(true), pollIntervalMs)
+    return () => window.clearInterval(intervalId)
+  }, [enabled, pollIntervalMs, reload])
 
   useEffect(() => {
     // Mark unmounted so a fetch that resolves afterward can't setState. Using a

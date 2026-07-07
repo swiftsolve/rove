@@ -6,6 +6,14 @@ pub async fn default_gateway() -> Option<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::default_gateway().await;
     }
+    // On macOS a VPN tunnel can top the routing table with no gateway; prefer the
+    // gateway of the physical default route. Fall through to the legacy probe if
+    // that route has none.
+    if cfg!(target_os = "macos") {
+        if let Some((_, Some(gw))) = platform::macos::best_default_route().await {
+            return Some(gw);
+        }
+    }
     if let Some(out) = try_run("ip route show default 2>/dev/null | awk '{print $3; exit}'").await {
         let ip = out.trim().to_string();
         if !ip.is_empty() {
@@ -22,6 +30,14 @@ pub async fn default_gateway() -> Option<String> {
 pub async fn default_interface() -> Option<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::default_interface().await;
+    }
+    // Skip VPN/virtual tunnels that can outrank the physical link (see
+    // `best_default_route`); otherwise the whole app binds to an interface with
+    // no IP, gateway or LAN subnet.
+    if cfg!(target_os = "macos") {
+        if let Some((iface, _)) = platform::macos::best_default_route().await {
+            return Some(iface);
+        }
     }
     if let Some(out) = try_run(
         "ip route show default 2>/dev/null | awk '{for (i = 1; i < NF; i++) if ($i == \"dev\") { print $(i + 1); exit }}'",
@@ -62,7 +78,7 @@ pub async fn connection_details(iface: &str, connection_type: &str) -> Connectio
     match (std::env::consts::OS, connection_type) {
         ("linux", "wifi") => platform::linux::wifi_details(iface).await,
         ("linux", _) => platform::linux::ethernet_details(iface).await,
-        ("macos", "wifi") => platform::macos::wifi_details().await,
+        ("macos", "wifi") => platform::macos::wifi_details(iface).await,
         ("windows", "wifi") => platform::windows::wifi_details().await,
         ("windows", _) => platform::windows::ethernet_details(iface).await,
         _ => ConnectionDetails::default(),
@@ -122,7 +138,13 @@ pub async fn network_info() -> NetworkInfo {
     };
 
     let (ip, mac) = crate::interfaces::address_of(&iface).await;
-    let connection_type = infer_connection_type(&iface);
+    // macOS names Wi-Fi `enN`, so the name heuristic always misreads it as
+    // Ethernet — resolve the medium through the hardware-port map instead.
+    let connection_type = if cfg!(target_os = "macos") {
+        platform::macos::connection_type_for(&iface).await
+    } else {
+        infer_connection_type(&iface)
+    };
     let mut details = connection_details(&iface, connection_type).await;
 
     if details.link_speed_mbps.is_none() {

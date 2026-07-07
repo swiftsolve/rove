@@ -26,8 +26,8 @@
 }
 
 .bench-progress-pct {
-  font-size: var(--text-small);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   color: var(--accent);
 }
 
@@ -35,7 +35,8 @@
   width: 100%;
 }
 
-/* Material-style wavy progress: a scrolling squiggle with a dot at its end. */
+/* Material 3 wavy determinate progress: scrolling squiggle (active) with a dot on
+   its leading edge + gap + flat track for the remainder. */
 .wavy-progress {
   display: block;
   width: 100%;
@@ -46,9 +47,18 @@
 .wavy-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* Remaining portion: same accent, dimmed — Android draws the track at reduced
+   emphasis behind the active indicator. */
+.wavy-track {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.24;
 }
 
 .wavy-dot {

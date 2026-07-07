@@ -1,14 +1,14 @@
 [package]
-name = "beacon"
+name = "rove"
 version = "0.0.2"
-description = "Beacon — network monitor"
+description = "Rove — network monitor"
 edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-beacon-core = { path = "../crates/beacon-core" }
+rove-core = { path = "../crates/rove-core" }
 tauri = { version = "2", features = ["macos-private-api", "tray-icon", "image-png"] }
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
@@ -26,5 +26,12 @@ tracing-appender = "0.2"
 glib = "0.18"
 
 [lib]
-name = "beacon_lib"
+name = "rove_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+# Name the binary "Rove" (uppercase) so macOS shows "Rove" in the Dock/menu bar
+# during `tauri dev`, which runs the raw executable rather than a bundled .app.
+# Matches `mainBinaryName` in tauri.conf.json, which only takes effect at bundle time.
+[[bin]]
+name = "Rove"
+path = "src/main.rs"

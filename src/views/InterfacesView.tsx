@@ -3,6 +3,7 @@ import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
@@ -81,8 +82,6 @@ export default function InterfacesView({
   error,
   onRefresh,
 }: InterfacesViewProps): JSX.Element {
-  const refreshing = isLoading && interfaces.length > 0
-
   return (
     <div className="view-page">
       <div className="view-header iface-header">
@@ -105,12 +104,12 @@ export default function InterfacesView({
         <Tooltip content="Refresh">
           <button
             type="button"
-            className="btn-icon btn-icon-secondary"
+            className={`btn-icon btn-icon-secondary${isLoading ? ' is-scanning' : ''}`}
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Refresh"
           >
-            {refreshing ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+            {isLoading ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
           </button>
         </Tooltip>
       </div>

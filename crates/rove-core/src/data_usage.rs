@@ -132,7 +132,7 @@ impl UsageTracker {
 
         if !self.first_sample_recorded {
             if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::net_util::now_ms()) {
-                eprintln!("Beacon: failed to record first-sample timestamp: {e}");
+                eprintln!("Rove: failed to record first-sample timestamp: {e}");
             }
             self.first_sample_recorded = true;
         }
@@ -142,10 +142,10 @@ impl UsageTracker {
 
         let key = local_date_key(0);
         if let Err(e) = self.store.add_usage(&key, rx_delta, tx_delta) {
-            eprintln!("Beacon: failed to persist data usage for {key}: {e}");
+            eprintln!("Rove: failed to persist data usage for {key}: {e}");
         }
         if let Err(e) = self.store.prune_usage(RETAIN_DAYS) {
-            eprintln!("Beacon: failed to prune old usage rows: {e}");
+            eprintln!("Rove: failed to prune old usage rows: {e}");
         }
     }
 

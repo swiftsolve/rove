@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { PendingUpdate } from '@/lib/updater'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import './UpdateDialog.css'
 
 /**
@@ -40,7 +41,7 @@ export default function UpdateDialog({
           Update available
         </h2>
         <p className="update-sub">
-          Beacon {update.version} is ready to install. You have {update.currentVersion}.
+          Rove {update.version} is ready to install. You have {update.currentVersion}.
         </p>
         {update.notes && <div className="update-notes">{update.notes}</div>}
         <div className="update-actions">
@@ -58,7 +59,7 @@ export default function UpdateDialog({
             onClick={handleInstall}
             disabled={installing}
           >
-            {installing && <span className="btn-spinner" aria-hidden />}
+            {installing && <ButtonSpinner size={14} />}
             {installing ? 'Installing…' : 'Install and restart'}
           </button>
         </div>

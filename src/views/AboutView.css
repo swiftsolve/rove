@@ -1,0 +1,66 @@
+.about-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-lg) var(--gap-md) var(--gap-md);
+}
+
+/* Mirror the dock icon: a dark squircle tile (top→bottom charcoal gradient) with
+   a soft blue glow blooming from just below centre behind the glyph. The glyph
+   itself carries the app icon's blue gradient (see BrandIcon `gradient`). */
+.about-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  /* macOS-squircle-ish corner: ~22% of the tile, matching the dock icon. */
+  border-radius: 16px;
+  /* Soft blue bloom (fully transparent by its edge, so no hard ring) sitting a
+     touch below centre over a top→bottom charcoal gradient — the same recipe the
+     1024px icon renders. */
+  background:
+    radial-gradient(circle at 50% 56%, rgba(91, 140, 255, 0.22), rgba(91, 140, 255, 0) 68%),
+    linear-gradient(180deg, #1f2125 0%, #16171a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 6px 16px rgba(0, 0, 0, 0.35);
+  margin-bottom: var(--gap-sm);
+}
+
+.about-name {
+  font-size: var(--text-display-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.about-tagline {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+  max-width: 300px;
+  line-height: 1.45;
+}
+
+.about-version {
+  margin-top: var(--gap-xs);
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.about-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.about-link:hover {
+  text-decoration: underline;
+}
+
+.about-footer {
+  text-align: center;
+  padding: var(--gap-sm) 0 var(--gap-md);
+}

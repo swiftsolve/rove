@@ -9,7 +9,7 @@
 //! Scope note: only plaintext HTTP (port 80) is grabbed. LAN HTTPS is almost
 //! always a self-signed cert that a correct TLS stack rejects, and reading it
 //! for a banner would mean disabling verification — deliberately left out to
-//! keep Beacon's no-danger-knobs posture. Certificate CN/SAN parsing is a
+//! keep Rove's no-danger-knobs posture. Certificate CN/SAN parsing is a
 //! possible future addition behind an explicit opt-in.
 use futures_util::StreamExt;
 use std::collections::HashMap;

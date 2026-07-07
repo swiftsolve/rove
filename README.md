@@ -1,17 +1,17 @@
-# Beacon
+# Rove
 
 A fast, minimal desktop network monitor — live traffic, speed tests, LAN device
 discovery, connection diagnostics, and data-usage tracking. Tauri (Rust) + React.
 
 ## How it works
 
-Beacon is two programs talking over a thin, typed bridge:
+Rove is two programs talking over a thin, typed bridge:
 
 ```
 ┌───────────────────────────┐        invoke("get_devices")         ┌──────────────────────────┐
 │  React UI (system webview)│ ────────────────────────────────────▶│  Rust backend (Tauri)    │
 │  views · hooks · charts   │                                      │  src-tauri: commands     │
-│                           │ ◀──────────────────────────────────── │  beacon-core: services   │
+│                           │ ◀──────────────────────────────────── │  rove-core: services   │
 └───────────────────────────┘   events: live-throughput,           └──────────────────────────┘
                                 speed-test-progress, network-changed          │
                                                                     kernel & OS tools:
@@ -21,13 +21,13 @@ Beacon is two programs talking over a thin, typed bridge:
 
 - **Request/response** — each UI data need is one Tauri *command* (`get_network_info`,
   `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
-  around a pure-Rust service in `crates/beacon-core`.
+  around a pure-Rust service in `crates/rove-core`.
 - **Push** — three *events* flow the other way: `live-throughput` (1 Hz while the
   Home tab is subscribed), `speed-test-progress`, and `network-changed` (the
   backend watches `ip monitor route` and nudges the UI within ~1 s of a cable
   pull or Wi-Fi join, so state never waits on the 15 s poll).
 - **The contract** — TypeScript types in `src/types/` define every payload; the
-  Rust structs in `crates/beacon-core/src/types.rs` mirror them field-for-field
+  Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
   (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
   `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
@@ -46,7 +46,7 @@ byte counters (via `sysinfo`), converts deltas to Mbps, smooths them with an
 exponential moving average, and emits an event. Virtual interfaces (docker,
 veth, vpn…) are excluded.
 
-**Devices.** A four-step pipeline (`crates/beacon-core/src/devices/`):
+**Devices.** A four-step pipeline (`crates/rove-core/src/devices/`):
 1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
    not the ICMP reply but the ARP exchange it forces: idle devices enter the
    kernel neighbor table even if they block ping.
@@ -89,7 +89,7 @@ and the backend is memory-safe Rust.
 ## Layout
 
 ```
-beacon/
+rove/
 ├── src/                        React UI (Vite)
 │   ├── main.tsx, App.tsx       entry + shell (header, nav, view switching)
 │   ├── views/                  one file per page: Home, Interfaces, Devices,
@@ -108,7 +108,7 @@ beacon/
 │   ├── bridge/                 Tauri implementation of the contract
 │   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
-├── crates/beacon-core/         all platform services in pure Rust (no Tauri/GTK
+├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
 │                               deps — compiles and tests anywhere): network_info,
 │                               interfaces, devices/, diagnostics, speed, mdns,
 │                               live_throughput, data_usage, oui, shell
@@ -132,8 +132,8 @@ Then:
 npm install
 npm run tauri:dev            # run the desktop app (hot-reloads the UI)
 npm run dev                  # UI only, in a browser, against the mock bridge
-cargo check -p beacon-core   # typecheck the service layer alone
-cargo run -p beacon-core --example scan   # print a live LAN scan
+cargo check -p rove-core   # typecheck the service layer alone
+cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 
 > **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.

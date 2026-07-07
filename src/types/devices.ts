@@ -47,7 +47,7 @@ export interface LanDevice {
   readonly isRandomizedMac: boolean
   /** This device is the default gateway (router). */
   readonly isGateway: boolean
-  /** This device is the machine Beacon is running on. */
+  /** This device is the machine Rove is running on. */
   readonly isSelf: boolean
   /** Neighbor entry is currently reachable (vs. merely cached/stale). */
   readonly reachable: boolean

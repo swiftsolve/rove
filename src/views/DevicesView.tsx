@@ -1,5 +1,6 @@
 import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
+import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import { Spinner } from '@/components/ui/Spinner'
 import {
   CameraIcon,
@@ -21,7 +22,13 @@ import {
 import { Tooltip } from '@/components/ui/Tooltip'
 
 const SCAN_HINT =
-  'Beacon scans your subnet and reads mDNS, SSDP/UPnP, NetBIOS and HTTP replies to identify devices. A device that blocks every probe and announces nothing at all can still be missed.'
+  'Rove scans your subnet and reads mDNS, SSDP/UPnP, NetBIOS and HTTP replies to identify devices. A device that blocks every probe and announces nothing at all can still be missed.'
+
+// Local Network access can't be queried on macOS, so when discovery comes up
+// empty we surface the most likely cause rather than implying the LAN is bare.
+import { IS_MAC } from '@/lib/platform'
+const LOCAL_NETWORK_HINT =
+  'Missing devices? Rove needs Local Network access — enable it in System Settings › Privacy & Security › Local Network, then scan again.'
 import './DevicesView.css'
 
 interface DevicesViewProps {
@@ -112,7 +119,11 @@ export default function DevicesView({
   const devices = scan?.devices ?? []
   const hasDevices = devices.length > 0
   const subnet = scan?.subnet ?? null
-  const rescanning = isScanning && devices.length > 0
+  // Scan resolved but turned up only this machine (or nothing) — on macOS the
+  // usual culprit is a withheld Local Network grant.
+  const onlySelf =
+    !isScanning && scan != null && devices.every((device) => device.isSelf)
+  const showLocalNetworkHint = IS_MAC && onlySelf
 
   return (
     <div className="view-page">
@@ -152,12 +163,12 @@ export default function DevicesView({
           <Tooltip content="Scan again">
             <button
               type="button"
-              className="btn-icon btn-icon-secondary"
-              onClick={onRescan}
-              disabled={isScanning}
+              className={`btn-icon btn-icon-secondary${isScanning ? ' is-scanning' : ''}`}
+              onClick={isScanning ? undefined : onRescan}
               aria-label="Scan again"
+              aria-busy={isScanning}
             >
-              {rescanning ? <span className="btn-spinner" /> : <RefreshIcon size={16} />}
+              {isScanning ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
             </button>
           </Tooltip>
         </div>
@@ -173,6 +184,7 @@ export default function DevicesView({
       ) : devices.length === 0 ? (
         <div className="view-empty">
           <p className="text-muted">No devices found on your network.</p>
+          {showLocalNetworkHint && <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>}
           <button type="button" className="btn-secondary" onClick={onRescan}>
             Scan again
           </button>
@@ -182,6 +194,9 @@ export default function DevicesView({
           {devices.map((device) => (
             <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
           ))}
+          {showLocalNetworkHint && (
+            <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>
+          )}
         </div>
       )}
     </div>

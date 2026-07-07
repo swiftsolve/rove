@@ -1,14 +1,14 @@
-# Learning Rust & Tauri through Beacon
+# Learning Rust & Tauri through Rove
 
-A guided tour of Rust and Tauri using Beacon's own source code as the textbook.
+A guided tour of Rust and Tauri using Rove's own source code as the textbook.
 Every concept points at real code in this repo, with file/line references you can
 click through in your editor.
 
 > **Companion pages:**
-> - [How Beacon Captures Network Data (per OS)](./networking-data-capture.md) — a
+> - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — a
 >   deep dive into the per-OS probes (`ip`/`netsh`/`airport`, byte counters) that
 >   feed everything below.
-> - [How Beacon Discovers & Identifies LAN Devices](./device-discovery.md) — the
+> - [How Rove Discovers & Identifies LAN Devices](./device-discovery.md) — the
 >   full device-scan pipeline: the ARP-table trick, TCP/mDNS probing, OUI vendor
 >   lookup, and the weighted-vote classifier.
 
@@ -35,10 +35,10 @@ JSON. That's the entire mental model. Electron does the same thing but ships a
 whole Chromium + Node; Tauri uses the OS's built-in webview and a Rust core, so
 the binary is tiny.
 
-Beacon splits the Rust side into **two crates** (a "crate" = a Rust compilation
+Rove splits the Rust side into **two crates** (a "crate" = a Rust compilation
 unit / library or binary):
 
-- `crates/beacon-core/` — pure logic. The doc comment on line 1 says it:
+- `crates/rove-core/` — pure logic. The doc comment on line 1 says it:
   *"Pure Rust (no Tauri/GTK dependency) so it compiles and tests anywhere."*
   This is where the actual network measuring lives.
 - `src-tauri/` — the "thin Tauri shell." Line 1: *"each command maps 1:1 to a
@@ -59,7 +59,7 @@ operating system — so they can't just read each other's variables. They have t
 pass **messages** through a channel the OS provides: pipes, sockets, shared
 memory regions, etc.
 
-### Why Beacon needs IPC at all
+### Why Rove needs IPC at all
 
 A Tauri app is not one program — it's (at least) **two processes**:
 
@@ -88,7 +88,7 @@ Tauri hides the plumbing behind two directions of message flow:
 
 - **Backend → Frontend: events.** Rust can push messages the other way *without*
   being asked, using `app.emit("event-name", payload)`. The frontend subscribes
-  with `listen("event-name", handler)`. Beacon uses this for anything streaming
+  with `listen("event-name", handler)`. Rove uses this for anything streaming
   or unsolicited: `speed-test-progress` (progress bar updates during a speed
   test), `live-throughput` (a sample every second), and `network-changed`
   (fired the instant a cable is pulled). See `src-tauri/src/lib.rs` —
@@ -100,7 +100,7 @@ Tauri hides the plumbing behind two directions of message flow:
 Because the data is *copied across a process boundary as text*, both sides only
 ever exchange things that can be turned into JSON and back. This is exactly why:
 
-- Every type a command returns derives `Serialize` (see `crates/beacon-core/src/types.rs`).
+- Every type a command returns derives `Serialize` (see `crates/rove-core/src/types.rs`).
 - Command errors are converted to `String` (`.map_err(|e| e.to_string())`) — a
   rich Rust error type can't cross the wire, but a string can.
 - The Rust structs use `#[serde(rename_all = "camelCase")]` so the JSON keys
@@ -127,7 +127,7 @@ command:
 ```rust
 #[tauri::command]
 async fn get_public_ip() -> Option<String> {
-    beacon_core::network_info::public_ip().await
+    rove_core::network_info::public_ip().await
 }
 ```
 
@@ -208,7 +208,7 @@ boilerplate.
 
 ## 5. Ownership — the concept that makes Rust *Rust*
 
-This is the big one, and `crates/beacon-core/src/data_usage.rs` shows it
+This is the big one, and `crates/rove-core/src/data_usage.rs` shows it
 beautifully. Rust has **no garbage collector** and yet is memory-safe. How?
 Three rules enforced at compile time:
 
@@ -313,7 +313,7 @@ sides are kept in sync by hand (that's what `types.rs` mirrors).
 
 ## 7. Shared state & fearless concurrency
 
-Beacon runs background loops (sampling usage every 30s, broadcasting throughput
+Rove runs background loops (sampling usage every 30s, broadcasting throughput
 every 1s) *and* handles commands — all touching shared state. In most languages
 that's a minefield. Rust makes the danger visible in the types. Look at
 `AppState` (`src-tauri/src/lib.rs:16`):
@@ -361,21 +361,21 @@ confront the poisoned case, and you make a deliberate choice.
 
 ---
 
-## 8. The full IPC round-trip, traced through Beacon
+## 8. The full IPC round-trip, traced through Rove
 
 Now let's follow real data across the process boundary, both directions, using
-Beacon's actual files.
+Rove's actual files.
 
 ### The bridge indirection (an architecture lesson)
 
-Notice that Beacon's React components **never call `invoke` directly.** They call
+Notice that Rove's React components **never call `invoke` directly.** They call
 `window.networkAPI.getDataUsage()`. That `window.networkAPI` object is installed
 at startup by `src/bridge/tauriNetworkApi.ts` (`installTauriBridge`), and it's the
 *only* file that imports `invoke`. Why the indirection? Because there's a second
 implementation, `src/dev/mockNetworkApi.ts`, used when the UI runs in a plain
 browser (no Rust backend). The components are written against an interface
 (`NetworkAPI`); at runtime either the real Tauri bridge or the mock is slotted in.
-This is the same "program to an interface" idea as `beacon-core` staying
+This is the same "program to an interface" idea as `rove-core` staying
 Tauri-free — swappable implementations behind a stable boundary.
 
 ### Direction A — a command (request → reply)
@@ -452,7 +452,7 @@ pattern to internalize:
 
 So: commands are for "do this / give me that, and reply"; events are for a
 continuous or unsolicited stream. The subscribe command is the request to *start*
-the stream; the stream itself arrives as events. Beacon's `useLiveThroughput` hook
+the stream; the stream itself arrives as events. Rove's `useLiveThroughput` hook
 even reference-counts the subscribe command (`backendRefCount`, line 53) so that N
 React consumers share one backend subscription — the first attach turns the tap on,
 the last detach turns it off.
@@ -463,12 +463,12 @@ the last detach turns it off.
 
 That's the foundational tour — IPC, ownership, `Option`/`Result`, structs/traits/
 derive, async, shared-state concurrency, and the full round-trip across the
-boundary, all from Beacon's real code. Deeper tracks available:
+boundary, all from Rove's real code. Deeper tracks available:
 
 1. **Async & tokio deep-dive** — how `spawn_usage_sampler`, the background loops,
    and the `speed-test-progress` event streaming work (`lib.rs:319-455`).
 2. ~~The Tauri IPC round-trip in full~~ — **done, see Section 8 above.**
-3. **Ownership & borrowing drills** — small exercises using Beacon's own types;
+3. **Ownership & borrowing drills** — small exercises using Rove's own types;
    predict what compiles, then check with `cargo`.
 4. **Traits & generics** — the `monitor_connectivity<F>` generic function
    (`lib.rs:409`) and how `derive` traits really work under the hood.

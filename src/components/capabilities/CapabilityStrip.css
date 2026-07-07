@@ -65,18 +65,22 @@
    meter to grey and drop the interactive affordances until the run completes.
    These need to outrank the `.capability-status.level-*` / `.capability-icon-tile.level-*`
    colour rules (both two-class, and loaded later), so match with three classes. */
-.capability-strip--testing .capability-strip-item.capability-icon-tile {
+.capability-strip--testing .capability-strip-item.capability-icon-tile,
+.capability-strip--placeholder .capability-strip-item.capability-icon-tile {
   color: var(--text-tertiary);
 }
 
 /* Disabled while testing — the bars go dark and dim so they read as inactive,
-   just faintly above the panel. Override the segment fills directly (rather than
-   tinting via currentColor) to keep full control of the greys. */
-.capability-strip--testing .capability-strip-cell .capability-seg {
+   just faintly above the panel. The empty-state placeholder grid borrows the
+   same muted look. Override the segment fills directly (rather than tinting via
+   currentColor) to keep full control of the greys. */
+.capability-strip--testing .capability-strip-cell .capability-seg,
+.capability-strip--placeholder .capability-strip-cell .capability-seg {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.capability-strip--testing .capability-strip-cell .capability-seg.on {
+.capability-strip--testing .capability-strip-cell .capability-seg.on,
+.capability-strip--placeholder .capability-strip-cell .capability-seg.on {
   background: rgba(255, 255, 255, 0.16);
 }
 
@@ -85,7 +89,9 @@
 }
 
 .capability-strip--testing .capability-strip-item:hover,
-.capability-strip--testing .capability-strip-item:focus-visible {
+.capability-strip--testing .capability-strip-item:focus-visible,
+.capability-strip--placeholder .capability-strip-item:hover,
+.capability-strip--placeholder .capability-strip-item:focus-visible {
   background: color-mix(in srgb, currentColor 14%, transparent);
   transform: none;
 }
@@ -93,10 +99,6 @@
 /* Run-test CTA in the empty state: a touch more air above the button. */
 .capability-run-btn {
   margin-top: var(--gap-2xs);
-}
-
-.capability-rerun-spin {
-  animation: spin 0.75s linear infinite;
 }
 
 /* Third row: a dark inset strip flush to the card's bottom edge — full-bleed
@@ -109,7 +111,11 @@
   /* Full-bleed to both card edges: the body content box plus the padding on
      each side, then negative margins pull it out over that padding. */
   width: calc(100% + 2 * var(--section-body));
-  margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  /* The results footer (icon + "Updated …") is taller than the plain hint, so
+     its centred text sits lower and reads as extra space under the bars. Trim the
+     top gap a touch (the --hint override pulls the shorter empty state in even
+     closer). */
+  margin: var(--gap-lg) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
   padding: var(--section-header-y) var(--section-body);
   background: var(--bg-inset);
   /* The strip full-bleeds to the card edge, and this section runs
@@ -117,6 +123,22 @@
      ourselves to sit flush inside the card's radius. */
   border-bottom-left-radius: var(--radius);
   border-bottom-right-radius: var(--radius);
+}
+
+/* Empty-state variant: the hint sits right-aligned in the dark inset strip in
+   place of the "Updated …" link, so the run affordance lives up in the header.
+   Pull the inset strip closer to the placeholder bars — the muted empty state
+   doesn't need the same breathing room the populated results row gets. */
+.capability-strip-footer--hint {
+  justify-content: flex-end;
+  margin-top: var(--gap-md);
+}
+
+.capability-strip-hint {
+  margin: 0;
+  /* A quiet placeholder line — kept a notch smaller than the "Updated … ago"
+     caption so it reads as a subtle prompt rather than a value. */
+  font-size: var(--text-micro);
 }
 
 /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and
@@ -137,16 +159,23 @@
   font-weight: var(--weight-medium);
 }
 
+/* Share the link's (animating) color so the glyph and label shift together on
+   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+   there's a single color animation rather than two that drift out of sync. */
 .capability-strip-link svg {
-  color: var(--text-tertiary);
-  transition: color var(--duration-fast) var(--ease-in-out);
+  color: inherit;
+  opacity: 0.72;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
 .capability-strip-link:hover,
-.capability-strip-link:focus-visible,
+.capability-strip-link:focus-visible {
+  color: var(--accent);
+}
+
 .capability-strip-link:hover svg,
 .capability-strip-link:focus-visible svg {
-  color: var(--accent);
+  opacity: 1;
 }
 
 .capability-strip-link:hover .capability-strip-updated,
