@@ -292,28 +292,9 @@ times and parsing the RTT out of each reply line with a regex
 
 ## 8. The design in one picture
 
-```
-         ┌──────────────────────────────────────────────┐
-         │  feature modules (OS-agnostic contract)        │
-         │  network_info · interfaces · devices ·         │
-         │  diagnostics · data_usage                      │
-         │      │  "give me the gateway / wifi / subnet"  │
-         └──────┼───────────────────────────────────────┘
-                │ dispatch via cfg!(target_os) / match OS
-      ┌─────────┼─────────────┬────────────────┐
-      ▼         ▼             ▼                ▼
- platform::  platform::   platform::      generic_interface_list()
-  linux       windows      macos          + sysinfo   ← ultimate
-   ip/iw/     PowerShell/   ifconfig/                    fallback
-   ethtool    netsh         CoreWLAN
-      │         │             │
-      ▼         ▼             ▼
-   shell::try_run  /  try_run_powershell   ← one runner, timeout,
-      │                                       windowless, Option<String>
-      ▼
-   OS networking tools  →  text/JSON  →  parsed into shared types.rs structs
-                                          (camelCase, Serialize → IPC → UI)
-```
+<div align="center">
+  <img src="assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into shared types.rs structs that serialize across IPC to the UI" />
+</div>
 
 **The whole philosophy:** define the facts once as OS-agnostic functions, dispatch
 to per-OS probes that shell out to each platform's native tools, treat every probe

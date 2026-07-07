@@ -41,16 +41,18 @@ identified device. That's the pipeline.
 
 From `scan()` in `crates/rove-core/src/devices/mod.rs:25`:
 
-```
-1. Scope     → find my subnet (e.g. 192.168.1.0/24)
-2. Provoke   → wake every host so it enters the neighbor table, while passive
-   & listeners collect self-announced identities
-   (ICMP sweep ‖ TCP probe ‖ mDNS listen ‖ SSDP listen — all concurrent, ~3.2s)
-3. Read      → the neighbor table = ground-truth list of who exists
-4. Enrich    → per host, in one concurrent round:
-   vendor (OUI) · hostname (rDNS ‖ HTTP banner ‖ NetBIOS) · kind (classify)
-5. Assemble  → add this machine, sort gateway→self→by-IP, dedupe by MAC
-```
+<div align="center">
+  <img src="assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
+</div>
+
+1. **Scope** — find my subnet (e.g. `192.168.1.0/24`).
+2. **Provoke** — wake every host so it enters the neighbor table, while passive
+   listeners collect self-announced identities (ICMP sweep ‖ TCP probe ‖ mDNS
+   listen ‖ SSDP listen — all concurrent, ~3.2 s).
+3. **Read** — the neighbor table = ground-truth list of who exists.
+4. **Enrich** — per host, in one concurrent round: vendor (OUI) · hostname
+   (rDNS ‖ HTTP banner ‖ NetBIOS) · kind (classify).
+5. **Assemble** — add this machine, sort gateway→self→by-IP, dedupe by MAC.
 
 The stage-2 probes/listeners all run concurrently, bounded by a single
 `DISCOVERY_WINDOW` of 3.2 seconds (`mod.rs:25`), not the sum of their parts. The
@@ -408,28 +410,9 @@ the shell-injection path.
 
 ## The whole thing in one diagram
 
-```
-        subnet 192.168.1.0/24
-                │
-   ┌────────────┼──────────────┬─────────────┬───────────┐  all concurrent, ~3.2s
-   ▼            ▼              ▼            (passive)   (passive)
- ICMP sweep   TCP connect  (open ports)   mDNS listen  SSDP M-SEARCH
- (ping bait) (SYN/RST bait) → classifier  (name/model) (friendlyName/model/type)
-   └──────┬─────┘                              │             │
-          ▼  provokes ARP resolution           │             │
-   kernel neighbor table  ◄── ground truth: who exists       │
-          │                                     │             │
-          ▼  per host, one concurrent round     │             │
-   enrich: OUI vendor · hostname(rDNS ‖ HTTP banner ‖ NetBIOS)│
-          │           · HTTP banner (server/title) ───────────┤
-          │           · NetBIOS computer name                 │
-          ▼                                                    │
-   classify(): weighted vote over 13 signals ◄────────────────┘
-               {mdns, ssdp, banner, ports, hostname, vendor} → kind
-          │
-          ▼
-   + self · sort(gateway,self,ip) · dedupe(mac)  →  LanDeviceScan → IPC → UI
-```
+<div align="center">
+  <img src="assets/discovery-fusion.svg" width="860" alt="Full discovery pipeline: two active probes (ICMP sweep, TCP connect) provoke the kernel neighbor table, two passive listeners (mDNS, SSDP) supply self-announced identity, enrichment adds vendor and hostname, and a 13-signal weighted vote in classify() decides each device kind before assembly into a LanDeviceScan" />
+</div>
 
 **The philosophy:** you can't ask the network "who are you," so you *provoke*
 everyone into the kernel's neighbor table using unprivileged bait traffic, treat
