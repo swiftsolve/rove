@@ -41,6 +41,21 @@ function resolveLight(mode: ThemeMode, sysLight: boolean): boolean {
   return mode === 'light' || (mode === 'system' && sysLight)
 }
 
+/**
+ * WebKitGTK (the Linux Tauri webview) crashes the whole app when the View
+ * Transitions API snapshots the page for the theme swap: on NVIDIA the snapshot
+ * runs through WebKit's accelerated compositor, which segfaults in
+ * libnvidia-eglcore (confirmed via core dump — SIGSEGV on the main thread inside
+ * libwebkit2gtk). WebKitGTK 2.52 advertises startViewTransition, so we can't
+ * feature-detect our way out; detect the engine (Linux, AppleWebKit, not
+ * Chromium) and fall back to the instant swap there. Harmless everywhere else.
+ */
+function isWebKitGtk(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return /\bLinux\b/.test(ua) && /AppleWebKit/.test(ua) && !/Chrom(e|ium)/.test(ua)
+}
+
 interface ViewTransition {
   readonly ready: Promise<void>
   readonly finished: Promise<void>
@@ -158,7 +173,7 @@ export function useTheme(): Theme {
       startViewTransition?: (callback: () => void) => ViewTransition
     }
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!doc.startViewTransition || reduceMotion) {
+    if (!doc.startViewTransition || reduceMotion || isWebKitGtk()) {
       persist()
       return
     }
