@@ -44,10 +44,39 @@ interface DevicesViewProps {
   readonly onRescan: () => void
 }
 
+// Singular device nouns for synthesizing a name — distinct from the category
+// labels in LAN_DEVICE_KIND_LABELS ("Mobile", "Smart home"), which don't read
+// naturally after an OS ("Android Mobile"). "unknown" has no noun by design.
+const KIND_NOUNS: Record<Exclude<LanDeviceKind, 'unknown'>, string> = {
+  router: 'router',
+  nas: 'NAS',
+  computer: 'computer',
+  tablet: 'tablet',
+  phone: 'phone',
+  console: 'game console',
+  tv: 'TV',
+  printer: 'printer',
+  camera: 'camera',
+  speaker: 'speaker',
+  iot: 'smart home device',
+}
+
+// A privacy-randomized phone often has no OUI vendor and no hostname, yet the
+// scan still identifies its OS/kind (e.g. via the DHCP fingerprint). Rather than
+// fall straight to "Unknown device", name it from whatever we did learn:
+// "Android phone", "Android device", or just "Phone".
+function describeUnnamed(device: LanDevice): string {
+  const noun = device.kind !== 'unknown' ? KIND_NOUNS[device.kind] : null
+  if (device.os && noun) return `${device.os} ${noun}`
+  if (device.os) return `${device.os} device`
+  if (noun) return noun.charAt(0).toUpperCase() + noun.slice(1)
+  return 'Unknown device'
+}
+
 function deviceName(device: LanDevice): string {
   if (device.isGateway) return 'Router'
   if (device.isSelf) return 'This device'
-  return device.hostname ?? device.vendor ?? 'Unknown device'
+  return device.hostname ?? device.vendor ?? describeUnnamed(device)
 }
 
 const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
