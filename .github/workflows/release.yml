@@ -57,8 +57,12 @@ jobs:
             echo "::notice::macOS code signing enabled"
           else
             echo "sign=false" >> "$GITHUB_OUTPUT"
-            [ "${{ matrix.platform }}" = "macos-latest" ] && \
+            # A plain `[ … ] && echo` makes the step exit 1 on non-macOS (the
+            # false test is the step's last command), which failed the Linux and
+            # Windows jobs. Use an if-block so the step always exits 0.
+            if [ "${{ matrix.platform }}" = "macos-latest" ]; then
               echo "::warning::APPLE_CERTIFICATE not set — producing an unsigned macOS build"
+            fi
           fi
 
       # Fail fast with a clear message if the certificate secret is set but
