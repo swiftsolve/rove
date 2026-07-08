@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="404" viewBox="0 0 920 404" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="tf" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#818cf8"></stop><stop offset="1" stop-color="#c4b5fd"></stop>
+    </linearGradient>
+    <linearGradient id="tb" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c4b5fd"></stop><stop offset="1" stop-color="#818cf8"></stop>
+    </linearGradient>
+    <clipPath id="ctf"><rect x="48" y="120" width="340" height="214" rx="14"></rect></clipPath>
+    <clipPath id="ctb"><rect x="532" y="120" width="340" height="214" rx="14"></rect></clipPath>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="919" height="403" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
+
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">ANATOMY OF A TAURI APP</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">Two isolated processes, one JSON bridge</text>
+
+  <!-- frontend -->
+  <rect x="48.5" y="120.5" width="339" height="213" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="48" y="120" width="340" height="5" fill="url(#tf)" clip-path="url(#ctf)"></rect>
+  <text x="72" y="162" font-size="17" font-weight="700" fill="#f2f2f5">Frontend</text>
+  <text x="72" y="182" font-size="12.5" fill="#7c7c8a">webview process · sandboxed</text>
+  <line x1="72" y1="198" x2="364" y2="198" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="72" y="222" font-size="13.5" fill="#c9c9d4">React + TypeScript UI</text>
+  <text x="72" y="246" font-size="13.5" fill="#c9c9d4">runs in the OS browser engine</text>
+  <text x="72" y="270" font-size="13.5" fill="#9a9aa8">no files · no sockets · no ping</text>
+  <rect x="72.5" y="292.5" width="150" height="30" rx="8" fill="#14141c" stroke="rgba(129,140,248,0.25)"></rect>
+  <text x="86" y="311.5" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#a5b4fc">src/</text>
+
+  <!-- backend -->
+  <rect x="532.5" y="120.5" width="339" height="213" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="532" y="120" width="340" height="5" fill="url(#tb)" clip-path="url(#ctb)"></rect>
+  <text x="556" y="162" font-size="17" font-weight="700" fill="#f2f2f5">Backend</text>
+  <text x="556" y="182" font-size="12.5" fill="#7c7c8a">native process · memory-safe Rust</text>
+  <line x1="556" y1="198" x2="848" y2="198" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="556" y="222" font-size="13.5" fill="#c9c9d4">your compiled binary</text>
+  <text x="556" y="246" font-size="13.5" fill="#c9c9d4">full OS access</text>
+  <text x="556" y="270" font-size="13.5" fill="#9a9aa8">files · sockets · processes</text>
+  <rect x="556.5" y="292.5" width="220" height="30" rx="8" fill="#14141c" stroke="rgba(196,181,253,0.25)"></rect>
+  <text x="570" y="311.5" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#c4b5fd">src-tauri/ · crates/rove-core</text>
+
+  <!-- channel -->
+  <text x="460" y="192" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">COMMANDS</text>
+  <line x1="392" y1="212" x2="524" y2="212" stroke="#818cf8" stroke-width="2"></line>
+  <polygon points="524,207 532,212 524,217" fill="#818cf8"></polygon>
+  <rect x="418.5" y="200.5" width="83" height="23" rx="12" fill="#1c1c2b" stroke="rgba(129,140,248,0.5)"></rect>
+  <text x="460" y="216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#a5b4fc" text-anchor="middle">invoke()</text>
+
+  <line x1="396" y1="262" x2="528" y2="262" stroke="#c4b5fd" stroke-width="2"></line>
+  <polygon points="396,257 388,262 396,267" fill="#c4b5fd"></polygon>
+  <rect x="426.5" y="250.5" width="67" height="23" rx="12" fill="#241c2b" stroke="rgba(196,181,253,0.5)"></rect>
+  <text x="460" y="266" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c4b5fd" text-anchor="middle">emit()</text>
+  <text x="460" y="292" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">EVENTS</text>
+
+  <!-- footer -->
+  <line x1="48" y1="356" x2="872" y2="356" stroke="rgba(255,255,255,0.06)"></line>
+  <text x="460" y="382" font-size="12.5" fill="#7c7c8a" text-anchor="middle">Separate memory spaces — every message is <tspan fill="#a5b4fc">copied across the boundary as JSON</tspan>, never shared by pointer.</text>
+</svg>

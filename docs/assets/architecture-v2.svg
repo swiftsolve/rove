@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="516" viewBox="0 0 920 516" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#818cf8"></stop><stop offset="1" stop-color="#c4b5fd"></stop>
+    </linearGradient>
+    <linearGradient id="gR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c4b5fd"></stop><stop offset="1" stop-color="#818cf8"></stop>
+    </linearGradient>
+    <clipPath id="clipL"><rect x="48" y="112" width="312" height="232" rx="14"></rect></clipPath>
+    <clipPath id="clipR"><rect x="560" y="112" width="312" height="232" rx="14"></rect></clipPath>
+  </defs>
+
+  
+  <rect x="0.5" y="0.5" width="919" height="515" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
+
+  
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">ARCHITECTURE</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">Two programs, one thin typed bridge</text>
+
+  
+  <rect x="48.5" y="112.5" width="311" height="231" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="48" y="112" width="312" height="5" fill="url(#gL)" clip-path="url(#clipL)"></rect>
+  <text x="70" y="152" font-size="17" font-weight="700" fill="#f2f2f5">React UI</text>
+  <text x="70" y="172" font-size="12.5" fill="#7c7c8a">system webview · no Node runtime</text>
+  <line x1="70" y1="188" x2="338" y2="188" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="70" y="210" font-size="13.5" fill="#c9c9d4">views · hooks · charts</text>
+  <text x="70" y="232" font-size="13.5" fill="#c9c9d4"><tspan font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#a5b4fc">window.networkAPI</tspan> contract</text>
+  <text x="70" y="254" font-size="13.5" fill="#c9c9d4">Tauri bridge / browser mock</text>
+  <rect x="70.5" y="290.5" width="267" height="31" rx="8" fill="#14141c" stroke="rgba(129,140,248,0.25)"></rect>
+  <text x="84" y="310" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#a5b4fc">src/ · Vite · TypeScript</text>
+
+  
+  <rect x="560.5" y="112.5" width="311" height="231" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="560" y="112" width="312" height="5" fill="url(#gR)" clip-path="url(#clipR)"></rect>
+  <text x="582" y="152" font-size="17" font-weight="700" fill="#f2f2f5">Rust backend</text>
+  <text x="582" y="172" font-size="12.5" fill="#7c7c8a">Tauri v2 · memory-safe</text>
+  <line x1="582" y1="188" x2="850" y2="188" stroke="rgba(255,255,255,0.07)"></line>
+  <text x="582" y="210" font-size="13.5" fill="#c9c9d4">src-tauri · <tspan font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#c4b5fd">#[command]</tspan> wrappers</text>
+  <text x="582" y="232" font-size="13.5" fill="#c9c9d4">rove-core · pure-Rust services</text>
+  <text x="582" y="254" font-size="13.5" fill="#c9c9d4">events · capabilities · window</text>
+  <rect x="582.5" y="290.5" width="267" height="31" rx="8" fill="#14141c" stroke="rgba(196,181,253,0.25)"></rect>
+  <text x="596" y="310" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#c4b5fd">crates/rove-core</text>
+
+  
+  <text x="460" y="180" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">REQUEST / RESPONSE</text>
+  <line x1="366" y1="200" x2="546" y2="200" stroke="#818cf8" stroke-width="2"></line>
+  <polygon points="546,195 554,200 546,205" fill="#818cf8"></polygon>
+  <rect x="418.5" y="188.5" width="83" height="23" rx="12" fill="#1c1c2b" stroke="rgba(129,140,248,0.5)"></rect>
+  <text x="460" y="204" font-family="Menlo, Consolas, monospace" font-size="12" fill="#a5b4fc" text-anchor="middle">invoke()</text>
+
+  <line x1="374" y1="256" x2="554" y2="256" stroke="#c4b5fd" stroke-width="2"></line>
+  <polygon points="374,251 366,256 374,261" fill="#c4b5fd"></polygon>
+  <rect x="424.5" y="244.5" width="71" height="23" rx="12" fill="#241c2b" stroke="rgba(196,181,253,0.5)"></rect>
+  <text x="460" y="260" font-family="Menlo, Consolas, monospace" font-size="12" fill="#c4b5fd" text-anchor="middle">events</text>
+  <text x="460" y="288" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#7c7c8a" text-anchor="middle">PUSH · 3 EVENTS</text>
+
+  
+  <line x1="716" y1="344" x2="716" y2="378" stroke="#55556a" stroke-width="2" stroke-dasharray="4 4"></line>
+  <polygon points="711,378 721,378 716,386" fill="#55556a"></polygon>
+
+  
+  <rect x="48.5" y="388.5" width="823" height="83" rx="14" fill="#191920" stroke="rgba(255,255,255,0.07)"></rect>
+  <text x="70" y="420" font-size="15" font-weight="700" fill="#f2f2f5">Kernel &amp; OS tools</text>
+  <text x="70" y="444" font-size="13" fill="#9a9aa8">/sys · /proc · ip · iw · nmcli · getent · ping · mDNS · HTTPS</text>
+
+  <text x="850" y="416" font-size="10.5" font-weight="600" letter-spacing="1.3" fill="#6b6b78" text-anchor="end">EMITS</text>
+  <rect x="482.5" y="424.5" width="107" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="536" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">live-throughput</text>
+  <rect x="597.5" y="424.5" width="135" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="665" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">speed-test-progress</text>
+  <rect x="740.5" y="424.5" width="109" height="21" rx="11" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
+  <text x="795" y="439" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">network-changed</text>
+</svg>

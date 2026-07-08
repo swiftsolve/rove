@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="556" viewBox="0 0 920 556" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <clipPath id="dcA"><rect x="48" y="108" width="824" height="74" rx="14"></rect></clipPath>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="919" height="555" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
+
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">DATA CAPTURE</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">Define once, dispatch per OS, degrade gracefully</text>
+
+  <!-- feature modules band -->
+  <rect x="48.5" y="108.5" width="823" height="73" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <rect x="48" y="108" width="6" height="74" fill="#818cf8" clip-path="url(#dcA)"></rect>
+  <text x="74" y="138" font-size="15.5" font-weight="700" fill="#f2f2f5">Feature modules</text>
+  <text x="230" y="138" font-size="12.5" fill="#7c7c8a">OS-agnostic contract — “give me the gateway / wifi / subnet”</text>
+  <text x="74" y="162" font-family="Menlo, Consolas, monospace" font-size="12.5" fill="#9a9aa8">network_info · interfaces · devices · diagnostics · data_usage</text>
+
+  <!-- dispatch label + arrows -->
+  <line x1="460" y1="182" x2="460" y2="212" stroke="#55556a" stroke-width="1.5"></line>
+  <rect x="352.5" y="188.5" width="215" height="21" rx="10.5" fill="#14141c" stroke="rgba(255,255,255,0.09)"></rect>
+  <text x="460" y="203" font-family="Menlo, Consolas, monospace" font-size="11" fill="#9a9aa8" text-anchor="middle">cfg!(target_os) / match OS</text>
+
+  <!-- platform columns -->
+  <!-- linux -->
+  <rect x="48.5" y="218.5" width="194" height="106" rx="13" fill="#1c1c24" stroke="rgba(129,140,248,0.28)"></rect>
+  <text x="66" y="246" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#a5b4fc">platform::linux</text>
+  <text x="66" y="272" font-size="12.5" fill="#9a9aa8">ip · iw · nmcli</text>
+  <text x="66" y="292" font-size="12.5" fill="#9a9aa8">ethtool · /sys · /proc</text>
+  <text x="66" y="312" font-size="12.5" fill="#9a9aa8">getent · resolv.conf</text>
+  <!-- windows -->
+  <rect x="258.5" y="218.5" width="194" height="106" rx="13" fill="#1c1c24" stroke="rgba(196,181,253,0.28)"></rect>
+  <text x="276" y="246" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#c4b5fd">platform::windows</text>
+  <text x="276" y="272" font-size="12.5" fill="#9a9aa8">PowerShell cmdlets</text>
+  <text x="276" y="292" font-size="12.5" fill="#9a9aa8">netsh · Get-NetAdapter</text>
+  <text x="276" y="312" font-size="12.5" fill="#9a9aa8">Find-NetRoute · arp</text>
+  <!-- macos -->
+  <rect x="468.5" y="218.5" width="194" height="106" rx="13" fill="#1c1c24" stroke="rgba(96,165,250,0.28)"></rect>
+  <text x="486" y="246" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#93c5fd">platform::macos</text>
+  <text x="486" y="272" font-size="12.5" fill="#9a9aa8">CoreWLAN (in-process)</text>
+  <text x="486" y="292" font-size="12.5" fill="#9a9aa8">ifconfig · route</text>
+  <text x="486" y="312" font-size="12.5" fill="#9a9aa8">system_profiler · arp</text>
+  <!-- generic fallback -->
+  <rect x="678.5" y="218.5" width="193" height="106" rx="13" fill="#191920" stroke="rgba(52,211,153,0.26)" stroke-dasharray="5 4"></rect>
+  <text x="696" y="246" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#6ee7b7">generic</text>
+  <text x="696" y="272" font-size="12.5" fill="#9a9aa8">sysinfo crate</text>
+  <text x="696" y="292" font-size="12.5" fill="#7c7c8a">ultimate fallback +</text>
+  <text x="696" y="312" font-size="12.5" fill="#7c7c8a">byte counters</text>
+
+  <!-- arrows from feature band into columns -->
+  <g stroke="#55556a" stroke-width="1.5" fill="none">
+    <path d="M145 212 L145 218"></path>
+    <path d="M355 212 L355 218"></path>
+    <path d="M565 212 L565 218"></path>
+    <path d="M775 212 L775 218"></path>
+  </g>
+  <g fill="#55556a">
+    <polygon points="140,213 150,213 145,220"></polygon>
+    <polygon points="350,213 360,213 355,220"></polygon>
+    <polygon points="560,213 570,213 565,220"></polygon>
+    <polygon points="770,213 780,213 775,220"></polygon>
+  </g>
+
+  <!-- shell runner band (linux/windows/macos feed it) -->
+  <line x1="355" y1="324" x2="355" y2="356" stroke="#55556a" stroke-width="1.5"></line>
+  <polygon points="350,349 360,349 355,357" fill="#55556a"></polygon>
+  <rect x="48.5" y="356.5" width="613" height="60" rx="13" fill="#191920" stroke="rgba(255,255,255,0.08)"></rect>
+  <text x="72" y="384" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#f2f2f5">shell::try_run · try_run_powershell</text>
+  <text x="72" y="404" font-size="12.5" fill="#9a9aa8">one runner — timeout · windowless · every probe returns <tspan font-family="Menlo, Consolas, monospace" fill="#a5b4fc">Option&lt;String&gt;</tspan></text>
+
+  <!-- generic bypass arrow -->
+  <path d="M775 324 L775 446" fill="none" stroke="#55556a" stroke-width="1.5" stroke-dasharray="5 4"></path>
+  <polygon points="770,440 780,440 775,448" fill="#55556a"></polygon>
+  <text x="787" y="392" font-size="11" fill="#6b6b78">bypasses shell</text>
+
+  <!-- output band -->
+  <line x1="355" y1="416" x2="355" y2="446" stroke="#55556a" stroke-width="1.5"></line>
+  <polygon points="350,439 360,439 355,447" fill="#55556a"></polygon>
+  <rect x="48.5" y="446.5" width="823" height="73" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <text x="74" y="476" font-size="15.5" font-weight="700" fill="#f2f2f5">Normalize &amp; serialize</text>
+  <text x="74" y="500" font-size="12.5" fill="#9a9aa8">OS text / JSON → parsed into shared <tspan font-family="Menlo, Consolas, monospace" fill="#c4b5fd">types.rs</tspan> structs (camelCase) → IPC → UI</text>
+</svg>
