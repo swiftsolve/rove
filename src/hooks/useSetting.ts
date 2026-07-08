@@ -51,3 +51,50 @@ export function useSetting(key: string, fallback: boolean): [boolean, (value: bo
 export function getSetting(key: string, fallback: boolean): boolean {
   return readSetting(key, fallback)
 }
+
+function readStringSetting(key: string, fallback: string): string {
+  try {
+    const raw = window.localStorage.getItem(PREFIX + key)
+    return raw == null ? fallback : raw
+  } catch {
+    return fallback
+  }
+}
+
+/** Read a persisted string once, outside React (e.g. when building a request). */
+export function getSettingString(key: string, fallback: string): string {
+  return readStringSetting(key, fallback)
+}
+
+/**
+ * A single string preference, persisted like {@link useSetting} but for free
+ * text (e.g. an API key). Same defensive reads and cross-surface sync.
+ */
+export function useSettingString(
+  key: string,
+  fallback: string,
+): [string, (value: string) => void] {
+  const [value, setValue] = useState<string>(() => readStringSetting(key, fallback))
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent): void => {
+      if (event.key === PREFIX + key) setValue(readStringSetting(key, fallback))
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [key, fallback])
+
+  const set = useCallback(
+    (next: string): void => {
+      setValue(next)
+      try {
+        window.localStorage.setItem(PREFIX + key, next)
+      } catch {
+        // Best-effort persistence; in-memory value still updates.
+      }
+    },
+    [key],
+  )
+
+  return [value, set]
+}

@@ -4,7 +4,15 @@ import { networkInfoEqual } from '@/components/connection/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
 
 const REFRESH_INTERVAL_MS = 15_000
-const NETWORK_INFO_TIMEOUT_MS = 10_000
+// Sit above the backend's own per-command budget (15s, see
+// crates/rove-core/src/shell.rs). A 10s frontend timeout could fire while a
+// slow-but-healthy probe was still legitimately working, turning a momentary
+// stall into a scary error banner.
+const NETWORK_INFO_TIMEOUT_MS = 20_000
+// A single slow or failed poll shouldn't wipe a good reading off the screen.
+// Keep showing the last good value and only surface an error once this many
+// polls fail back-to-back (~a sustained outage, not one unlucky poll).
+const FAILURE_GRACE = 3
 
 interface UseNetworkInfoResult {
   readonly info: NetworkInfo | null
@@ -44,6 +52,14 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   const [isLoading, setIsLoading] = useState(true)
   const infoRef = useRef<NetworkInfo | null>(null)
   infoRef.current = info
+  // Count consecutive failures so a lone slow poll stays invisible but a real
+  // sustained outage still surfaces.
+  const failuresRef = useRef(0)
+  // True while a refresh is awaiting the backend. Prevents an onNetworkChanged
+  // nudge (fired repeatedly during Wi-Fi roaming) from stacking a second poll
+  // on top of the interval poll — they'd only multiply backend load for the
+  // same answer.
+  const inFlightRef = useRef(false)
 
   const refresh = useCallback(async (silent = false): Promise<void> => {
     const bridgeError = getNetworkApiError()
@@ -52,6 +68,9 @@ export function useNetworkInfo(): UseNetworkInfoResult {
       setIsLoading(false)
       return
     }
+
+    if (inFlightRef.current) return
+    inFlightRef.current = true
 
     const isInitial = infoRef.current === null
     if (!silent && isInitial) setIsLoading(true)
@@ -63,15 +82,23 @@ export function useNetworkInfo(): UseNetworkInfoResult {
         'Network detection timed out.',
       )
 
+      failuresRef.current = 0
       setInfo((previous) => (networkInfoEqual(previous, data) ? previous : data))
       setError(null)
     } catch (unknownError) {
+      failuresRef.current += 1
       const message =
         unknownError instanceof Error
           ? unknownError.message
           : 'Failed to read network information'
-      setError(message)
+      // Keep the last good reading on screen through a transient blip. Only
+      // raise the banner on the very first load (nothing to fall back to) or
+      // once enough polls have failed in a row to mean a real outage.
+      if (infoRef.current === null || failuresRef.current >= FAILURE_GRACE) {
+        setError(message)
+      }
     } finally {
+      inFlightRef.current = false
       if (!silent || isInitial) setIsLoading(false)
     }
   }, [])

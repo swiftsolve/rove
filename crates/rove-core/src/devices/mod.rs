@@ -7,6 +7,9 @@
 //!   4. add this machine, sort gateway → self → by address
 mod banner;
 mod classify;
+/// Public so diagnostics/examples (and the planned alerts feature) can drive the
+/// passive listener and read captures directly.
+pub mod dhcp;
 mod hostname;
 mod netbios;
 mod probe;
@@ -80,11 +83,18 @@ pub async fn scan() -> LanDeviceScan {
         netbios::query_many(&ips),
     );
 
+    // Passive DHCP fingerprints accumulated by the background listener since
+    // startup (keyed by MAC — a joining client has no IP yet). Empty on the
+    // first scan, and empty entirely if the listener lacks the privilege to
+    // bind :67.
+    let dhcp_hits = dhcp::snapshot();
+
     let enrichment = Enrichment {
         mdns: &mdns_hits,
         ssdp: &ssdp_hits,
         banner: &banner_hits,
         netbios: &netbios_hits,
+        dhcp: &dhcp_hits,
         open_ports: &open_ports,
     };
     let mut devices: Vec<LanDevice> = in_scope
@@ -105,6 +115,7 @@ pub async fn scan() -> LanDeviceScan {
         subnet,
         interface_name: interface,
         scanned_at: crate::net_util::now_ms(),
+        dhcp_status: dhcp::status(),
     }
 }
 
@@ -116,6 +127,7 @@ struct Enrichment<'a> {
     ssdp: &'a std::collections::HashMap<String, ssdp::SsdpHit>,
     banner: &'a std::collections::HashMap<String, banner::BannerHit>,
     netbios: &'a std::collections::HashMap<String, String>,
+    dhcp: &'a std::collections::HashMap<String, dhcp::DhcpHit>,
     open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
 }
 
@@ -132,15 +144,18 @@ fn build_device(
     let mdns = enrichment.mdns.get(&neighbor.ip);
     let ssdp = enrichment.ssdp.get(&neighbor.ip);
     let banner = enrichment.banner.get(&neighbor.ip);
+    let dhcp = enrichment.dhcp.get(&dhcp::normalize_mac(&neighbor.mac));
     let ports = enrichment.open_ports.get(&neighbor.ip).map(Vec::as_slice).unwrap_or(&[]);
 
     // Name preference, most human first: a friendly mDNS name, then SSDP's UPnP
     // friendlyName, then the NetBIOS computer name (real name for Windows/SMB
-    // hosts), falling back to the reverse-DNS hostname.
+    // hosts), then the DHCP-reported hostname (covers non-Windows hosts NetBIOS
+    // misses), falling back to the reverse-DNS hostname.
     let hostname = mdns
         .and_then(|hit| hit.name.clone())
         .or_else(|| ssdp.and_then(|hit| hit.name.clone()))
         .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned())
+        .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()))
         .or(resolved_hostname);
 
     // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
@@ -155,11 +170,13 @@ fn build_device(
             mdns,
             ssdp,
             banner,
+            dhcp,
             open_ports: ports,
             is_gateway,
             is_self,
         }),
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
+        os: dhcp.and_then(|hit| hit.os).map(String::from),
         vendor,
         hostname,
         model,
@@ -185,6 +202,7 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         vendor: lookup_vendor(mac).map(String::from),
         hostname: hostname::local_machine_name(),
         model: None,
+        os: None,
         kind: "computer".into(),
         is_randomized_mac: is_randomized_mac(mac),
         is_gateway: false,

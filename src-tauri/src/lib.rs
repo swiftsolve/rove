@@ -5,6 +5,7 @@ use rove_core::{
     store::{KnownDevice, SpeedHistoryRecord, Store},
     types::*,
 };
+use futures_util::future::FutureExt;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{
@@ -33,6 +34,94 @@ struct AppState {
 /// that touches the same state for the rest of the process's life.
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+type SharedScan =
+    futures_util::future::Shared<std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>>;
+
+/// Hard ceiling on a single LAN scan. A healthy scan takes ~6s, so this sits
+/// well above the normal case, yet low enough that a wedged probe or a host that
+/// stalls an enrichment round can't tie up device polling for minutes.
+/// Overlapping scans — the usual cause of runaway times — are already prevented
+/// by the dedupe guard below; this is the backstop for everything else.
+const SCAN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+
+/// Coalesces concurrent LAN scans. Each `scan()` probes the subnet with up to
+/// 64 concurrent `ping` subprocesses; if the frontend's 45s poll (plus
+/// `onNetworkChanged` nudges during Wi-Fi roaming) fires a new request while a
+/// slow scan is still running, launching a *second* scan doubles that
+/// subprocess load and starves the tokio runtime — which is what made
+/// `get_network_info` time out. This guard makes overlapping callers await the
+/// single in-flight scan instead of starting their own.
+#[derive(Default)]
+struct DeviceScanner {
+    /// The in-flight scan (a cheaply-cloneable `Shared` future) tagged with a
+    /// generation id, or `None` when idle. The id lets the caller that started
+    /// a scan clear the slot on completion *without* clobbering a newer scan
+    /// that a later caller may have installed in the meantime.
+    inflight: tokio::sync::Mutex<Option<(u64, SharedScan)>>,
+    next_id: std::sync::atomic::AtomicU64,
+}
+
+impl DeviceScanner {
+    /// Run a scan, or join the one already in flight. Sequential (non-overlapping)
+    /// calls each get a fresh scan; overlapping calls all resolve to the same result.
+    /// The scan is bounded by `SCAN_TIMEOUT`; on expiry it yields an empty result
+    /// rather than letting a wedged probe run unbounded.
+    async fn scan(&self) -> LanDeviceScan {
+        self.scan_with(|| {
+            Box::pin(async {
+                match tokio::time::timeout(SCAN_TIMEOUT, rove_core::devices::scan()).await {
+                    Ok(scan) => scan,
+                    Err(_) => {
+                        tracing::warn!(
+                            timeout_s = SCAN_TIMEOUT.as_secs(),
+                            "device scan exceeded its time budget; returning empty result"
+                        );
+                        LanDeviceScan {
+                            devices: Vec::new(),
+                            subnet: None,
+                            interface_name: None,
+                            scanned_at: rove_core::net_util::now_ms(),
+                            dhcp_status: "unavailable",
+                        }
+                    }
+                }
+            })
+        })
+        .await
+    }
+
+    /// The dedupe machinery, parameterised over the scan producer so tests can
+    /// substitute a counted stub for the real (subprocess-heavy) `scan()`. The
+    /// producer runs only when no scan is in flight.
+    async fn scan_with<F>(&self, produce: F) -> LanDeviceScan
+    where
+        F: FnOnce() -> std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>,
+    {
+        let (id, fut) = {
+            let mut guard = self.inflight.lock().await;
+            if let Some((id, fut)) = guard.as_ref() {
+                (*id, fut.clone())
+            } else {
+                let id = self.next_id.fetch_add(1, Ordering::Relaxed);
+                let fut: SharedScan = produce().shared();
+                *guard = Some((id, fut.clone()));
+                (id, fut)
+            }
+        };
+
+        let result = fut.await;
+
+        // Clear the slot so the next caller starts a fresh scan — but only if it
+        // still holds the future we just awaited. A newer scan may already have
+        // replaced it, in which case leave that one alone.
+        let mut guard = self.inflight.lock().await;
+        if guard.as_ref().map(|(id, _)| *id) == Some(id) {
+            *guard = None;
+        }
+        result
+    }
 }
 
 /// Per-user log directory, following each platform's convention. Chosen so a
@@ -120,10 +209,13 @@ async fn get_interfaces() -> Vec<InterfaceSummary> {
 }
 
 #[tauri::command]
-async fn get_devices(store: tauri::State<'_, Arc<Store>>) -> Result<LanDeviceScan, ()> {
+async fn get_devices(
+    store: tauri::State<'_, Arc<Store>>,
+    scanner: tauri::State<'_, Arc<DeviceScanner>>,
+) -> Result<LanDeviceScan, ()> {
     tracing::info!("device scan started");
     let started = std::time::Instant::now();
-    let scan = rove_core::devices::scan().await;
+    let scan = scanner.scan().await;
     tracing::info!(
         devices = scan.devices.len(),
         subnet = ?scan.subnet,
@@ -134,6 +226,7 @@ async fn get_devices(store: tauri::State<'_, Arc<Store>>) -> Result<LanDeviceSca
     let _ = store.record_devices(&scan.devices, rove_core::net_util::now_ms() as i64);
     Ok(scan)
 }
+
 
 #[tauri::command]
 async fn run_diagnostics() -> NetworkDiagnostics {
@@ -367,15 +460,27 @@ fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
 /// Watch for connectivity changes and nudge the UI the moment they happen
 /// (cable pulled, Wi-Fi joined) instead of waiting out its polling interval.
 ///
-/// Linux streams kernel route events via `ip monitor route`; Windows subscribes
-/// to .NET `NetworkChange` notifications through a long-lived PowerShell. Both
-/// print one line per change, which we debounce into a `network-changed` event.
+/// Linux streams kernel route events via `ip monitor route`; macOS streams the
+/// routing socket via `route -n monitor`; Windows subscribes to .NET
+/// `NetworkChange` notifications through a long-lived PowerShell. Each prints on
+/// every change, which we debounce into a single `network-changed` event.
 /// Other platforms fall back to the UI's polling interval.
 fn spawn_route_monitor(handle: tauri::AppHandle) {
     #[cfg(target_os = "linux")]
     tauri::async_runtime::spawn(monitor_connectivity(handle, || {
         let mut cmd = tokio::process::Command::new("ip");
         cmd.args(["monitor", "route"]);
+        cmd
+    }));
+
+    // `route -n monitor` reads the PF_ROUTE socket (no privileges needed) and
+    // prints a multi-line block per routing change — a cable pull or Wi-Fi hop
+    // reassigns the default route, so it shows up here. The burst of lines
+    // collapses to one event via the 800 ms debounce below.
+    #[cfg(target_os = "macos")]
+    tauri::async_runtime::spawn(monitor_connectivity(handle, || {
+        let mut cmd = tokio::process::Command::new("route");
+        cmd.args(["-n", "monitor"]);
         cmd
     }));
 
@@ -387,7 +492,7 @@ fn spawn_route_monitor(handle: tauri::AppHandle) {
         cmd
     }));
 
-    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
     let _ = handle;
 }
 
@@ -405,7 +510,7 @@ while ($true) { Wait-Event | Out-Null; Get-Event | Remove-Event; [Console]::Out.
 
 /// Read change lines from a spawned monitor child, emitting a debounced
 /// `network-changed` per line and respawning it (with backoff) if it dies.
-#[cfg(any(target_os = "linux", target_os = "windows"))]
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 async fn monitor_connectivity<F>(handle: tauri::AppHandle, spawn: F)
 where
     F: Fn() -> tokio::process::Command,
@@ -611,6 +716,7 @@ pub fn run() {
             throughput_active: AtomicBool::new(false),
             tray_active: AtomicBool::new(false),
         })
+        .manage(Arc::new(DeviceScanner::default()))
         .setup(|app| {
             // macOS 14+ withholds the Wi-Fi SSID unless the app holds Location
             // authorization; prompt once at startup. No-op on other platforms,
@@ -678,4 +784,85 @@ pub fn run() {
                 show_main_window(_app_handle);
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::AtomicUsize;
+    use std::time::Duration;
+
+    fn canned_scan() -> LanDeviceScan {
+        LanDeviceScan {
+            devices: Vec::new(),
+            subnet: None,
+            interface_name: None,
+            scanned_at: 0,
+            dhcp_status: "unavailable",
+        }
+    }
+
+    /// Overlapping callers must coalesce onto one underlying scan. This is the
+    /// property that stops the ping-subprocess storm from multiplying.
+    #[tokio::test]
+    async fn overlapping_scans_run_once() {
+        const N: usize = 32;
+        let scanner = Arc::new(DeviceScanner::default());
+        let runs = Arc::new(AtomicUsize::new(0));
+        // Release all callers at the same instant so they genuinely overlap.
+        let gate = Arc::new(tokio::sync::Barrier::new(N));
+
+        let mut handles = Vec::with_capacity(N);
+        for _ in 0..N {
+            let scanner = scanner.clone();
+            let runs = runs.clone();
+            let gate = gate.clone();
+            handles.push(tokio::spawn(async move {
+                gate.wait().await;
+                scanner
+                    .scan_with(|| {
+                        let runs = runs.clone();
+                        Box::pin(async move {
+                            runs.fetch_add(1, Ordering::SeqCst);
+                            // Hold the scan in flight long enough that every
+                            // caller arrives while it's still running.
+                            tokio::time::sleep(Duration::from_millis(50)).await;
+                            canned_scan()
+                        })
+                    })
+                    .await
+            }));
+        }
+        for h in handles {
+            h.await.unwrap();
+        }
+
+        assert_eq!(
+            runs.load(Ordering::SeqCst),
+            1,
+            "all {N} overlapping callers should share a single scan"
+        );
+        // The slot must be released afterwards, so a later call scans afresh.
+        assert!(scanner.inflight.lock().await.is_none());
+    }
+
+    /// Non-overlapping callers must each get their own fresh scan — the guard
+    /// coalesces concurrency, it does not cache results.
+    #[tokio::test]
+    async fn sequential_scans_each_run() {
+        let scanner = DeviceScanner::default();
+        let runs = Arc::new(AtomicUsize::new(0));
+        for _ in 0..3 {
+            let runs = runs.clone();
+            scanner
+                .scan_with(|| {
+                    Box::pin(async move {
+                        runs.fetch_add(1, Ordering::SeqCst);
+                        canned_scan()
+                    })
+                })
+                .await;
+        }
+        assert_eq!(runs.load(Ordering::SeqCst), 3);
+    }
 }
