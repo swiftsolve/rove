@@ -72,7 +72,7 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             "tablet",
         ),
         (
-            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|-phone\b|phone-",
+            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|-phone\b|phone-|android-[0-9a-f]",
             "phone",
         ),
         (
@@ -419,6 +419,21 @@ mod tests {
 
     #[test]
     fn android_tv_hostname_is_a_tv_not_a_phone() {
+        assert_eq!(
+            kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
+            "tv"
+        );
+    }
+
+    #[test]
+    fn generic_android_hostname_is_a_phone() {
+        // A randomized-MAC Android with no vendor/mDNS still exposes a generic
+        // "android-<hex>" hostname — that alone should type it as a phone.
+        assert_eq!(
+            kind(Signals { hostname: Some("android-1a2b3c4d"), ..Default::default() }),
+            "phone"
+        );
+        // ...but the "android-<hex>" token must not swallow an Android TV.
         assert_eq!(
             kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
             "tv"

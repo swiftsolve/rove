@@ -40,5 +40,10 @@ vendor	aruba	-	router
 # option 1 — distinct from Android ("1,3,6,15...") and Windows ("1,15,3,6...").
 # Kept short so it matches across iOS/macOS versions (the tail options drift).
 prl_prefix	1,121,3,6,15	Apple	-
+# Android's PRL fallback for phones that omit the Option 60 vendor class. The
+# 26,28,51,58,59 run is Android-specific; the prefix diverges early from Apple
+# (1,121,…), macOS (1,3,6,15,119,…) and Windows (1,15,3,6,…), so PRL row order
+# is unaffected.
+prl_prefix	1,3,6,15,26,28,51,58,59,43	Android	phone
 prl_prefix	1,3,6,15,119,95,252,44,46	macOS	computer
 prl_prefix	1,15,3,6,44,46,47,31,33,121,249,43	Windows	computer
