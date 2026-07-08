@@ -56,6 +56,32 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     super::finalize_wifi(d)
 }
 
+/// Ethernet link facts for `iface` from a single `ifconfig <iface>`: the
+/// negotiated link speed and duplex from its `media:` descriptor. macOS has no
+/// `ethtool`, but `ifconfig` reports the same rate string it uses for the
+/// interface list, so the connection card and interface list stay consistent.
+/// Vendor is left to the caller's OUI fallback; `ifconfig` exposes no adapter
+/// vendor/product for the built-in or USB/Thunderbolt NICs.
+pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
+    let mut d = ConnectionDetails::default();
+    // Caller (`connection_details`) has already validated `iface`, but this is a
+    // pub entry point — keep it safe if called directly.
+    if !crate::net_util::is_shell_safe_iface(iface) {
+        return d;
+    }
+    if let Some(out) = try_run(&format!("ifconfig {iface} 2>/dev/null")).await {
+        if let Some(media) = out
+            .lines()
+            .map(str::trim)
+            .find_map(|line| line.strip_prefix("media: "))
+        {
+            d.link_speed_mbps = parse_media_speed(media);
+            d.duplex = parse_media_duplex(media);
+        }
+    }
+    d
+}
+
 /// Cached `system_profiler` Wi-Fi reading, refreshed off the hot path.
 #[derive(Clone)]
 struct WifiSignal {
@@ -323,4 +349,41 @@ fn parse_media_speed(media: &str) -> Option<i64> {
     }
     let n: i64 = num.parse().ok()?;
     Some(if gigabit { n * 1000 } else { n })
+}
+
+/// Duplex from an `ifconfig` `media:` descriptor. The mode lives in the
+/// angle-bracketed option list, e.g. "autoselect (1000baseT <full-duplex,
+/// flow-control>)" → "full". Returns the lowercase token the UI's duplex
+/// formatter expects; `None` when the media line carries no duplex hint (Wi-Fi,
+/// or a down link reporting "autoselect" alone).
+fn parse_media_duplex(media: &str) -> Option<String> {
+    let lower = media.to_ascii_lowercase();
+    if lower.contains("full-duplex") {
+        Some("full".to_string())
+    } else if lower.contains("half-duplex") {
+        Some("half".to_string())
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn media_speed_and_duplex() {
+        let m = "autoselect (1000baseT <full-duplex,flow-control>)";
+        assert_eq!(parse_media_speed(m), Some(1000));
+        assert_eq!(parse_media_duplex(m), Some("full".into()));
+
+        assert_eq!(parse_media_speed("100baseTX <half-duplex>"), Some(100));
+        assert_eq!(parse_media_duplex("100baseTX <half-duplex>"), Some("half".into()));
+
+        assert_eq!(parse_media_speed("10GbaseT <full-duplex>"), Some(10_000));
+
+        // Wi-Fi / down link: no rate, no duplex hint.
+        assert_eq!(parse_media_speed("autoselect"), None);
+        assert_eq!(parse_media_duplex("autoselect"), None);
+    }
 }

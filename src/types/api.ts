@@ -13,6 +13,7 @@ export interface NetworkAPI {
   getNetworkInfo(): Promise<NetworkInfo>
   getPublicIp(): Promise<string | null>
   getInterfaces(): Promise<readonly NetworkInterfaceSummary[]>
+  /** Scan the LAN for connected devices. */
   getDevices(): Promise<LanDeviceScan>
   getDataUsage(): Promise<DataUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>

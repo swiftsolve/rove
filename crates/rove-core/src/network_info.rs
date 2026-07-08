@@ -79,6 +79,7 @@ pub async fn connection_details(iface: &str, connection_type: &str) -> Connectio
         ("linux", "wifi") => platform::linux::wifi_details(iface).await,
         ("linux", _) => platform::linux::ethernet_details(iface).await,
         ("macos", "wifi") => platform::macos::wifi_details(iface).await,
+        ("macos", _) => platform::macos::ethernet_details(iface).await,
         ("windows", "wifi") => platform::windows::wifi_details().await,
         ("windows", _) => platform::windows::ethernet_details(iface).await,
         _ => ConnectionDetails::default(),

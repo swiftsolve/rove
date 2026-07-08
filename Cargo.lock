@@ -2922,6 +2922,7 @@ dependencies = [
 name = "rove"
 version = "0.0.2"
 dependencies = [
+ "futures-util",
  "glib",
  "rove-core",
  "serde",

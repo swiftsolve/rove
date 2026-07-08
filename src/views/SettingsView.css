@@ -94,12 +94,55 @@
   flex-shrink: 0;
 }
 
+.setting-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: var(--text-body);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--surface-sunken, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.setting-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.setting-input:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
 /* Give the row's action button (e.g. "Check now") a taller hit area than the
    default secondary button so it sits more comfortably against the two-line row
    text beside it. */
 .setting-row-control .btn-secondary {
   padding-top: var(--gap-sm);
   padding-bottom: var(--gap-sm);
+}
+
+/* "Check now" borrows the Speed page's Run test button shape — semibold label,
+   faint wash at rest that deepens on hover — but stays in a neutral palette
+   rather than the accent purple, since it's a routine action, not the primary
+   call to action on the screen. */
+.setting-row-control .check-now-btn {
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+}
+
+.setting-row-control .check-now-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Busy (spinner) state: stay full-opacity and ignore input while the check runs,
+   mirroring .btn-secondary.is-scanning. */
+.check-now-btn.is-scanning {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Pull the status band up close to the last row: drop the body's bottom padding

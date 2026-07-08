@@ -1,0 +1,44 @@
+# Curated DHCP fingerprint table — maps a device's DHCP Option 60 (vendor class)
+# or Option 55 (parameter request list) to an OS family and/or a device kind.
+#
+# Format (tab-separated): type <TAB> pattern <TAB> os <TAB> kind
+#   type = vendor       case-insensitive substring on Option 60 (pattern lowercase)
+#        | prl          exact match on the Option 55 list ("1,3,6,15,...")
+#        | prl_prefix   prefix match on the Option 55 list
+#   os   = OS family, or - if unknown
+#   kind = device kind (must be one of classify.rs KIND_NAMES), or - if unknown
+#
+# Curated from publicly-documented fingerprints — license-clean and safe to
+# extend (add rows, or import from an open dataset). Rows are tried top to
+# bottom, first match wins, so keep the most specific/reliable first. Vendor
+# rows precede PRL rows because Option 60 drifts far less than Option 55 across
+# OS versions. Each hit is only one weighted vote in classify.rs, so a strong
+# mDNS/SSDP signal still overrides a coarse guess here.
+
+# --- Option 60 vendor class (most reliable) ---
+vendor	android-dhcp	Android	phone
+vendor	msft	Windows	computer
+vendor	dhcpcd	Linux	-
+vendor	udhcp	Linux	iot
+vendor	jetdirect	-	printer
+vendor	canon	-	printer
+vendor	brother	-	printer
+vendor	epson	-	printer
+vendor	lexmark	-	printer
+vendor	nintendo	-	console
+vendor	roku	-	tv
+vendor	polycom	-	phone
+vendor	grandstream	-	phone
+vendor	yealink	-	phone
+vendor	ubnt	-	router
+vendor	ubiquiti	-	router
+vendor	mikrotik	-	router
+vendor	aruba	-	router
+
+# --- Option 55 parameter request list (version-sensitive; keep conservative) ---
+# Apple's signature is the early option 121 (classless static route) right after
+# option 1 — distinct from Android ("1,3,6,15...") and Windows ("1,15,3,6...").
+# Kept short so it matches across iOS/macOS versions (the tail options drift).
+prl_prefix	1,121,3,6,15	Apple	-
+prl_prefix	1,3,6,15,119,95,252,44,46	macOS	computer
+prl_prefix	1,15,3,6,44,46,47,31,33,121,249,43	Windows	computer

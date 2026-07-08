@@ -62,23 +62,30 @@ function assessCapabilities(speed: SpeedResult): readonly CapabilityRating[] {
   }))
 }
 
-const MOCK_LINK_CAPACITY_MBPS = 866
+// A modern Wi-Fi 6 home connection — one subnet (192.168.1.0/24) shared across
+// the connection card, diagnostics and the device scan so the demo is coherent.
+const MOCK_LINK_CAPACITY_MBPS = 1200
+const MOCK_SSID = 'Starlight_5G'
+const MOCK_FREQUENCY = 5745
+const MOCK_SELF_IP = '192.168.1.42'
+const MOCK_SELF_MAC = 'a4:c3:f0:1b:2d:9e'
+const MOCK_GATEWAY = '192.168.1.1'
 
 const MOCK_NETWORK_INFO: NetworkInfo = {
   connectionType: 'wifi',
   interfaceName: 'wlan0',
   isConnected: true,
-  ipAddress: '192.168.1.42',
-  gateway: '192.168.1.1',
-  macAddress: 'a4:c3:f0:1b:2d:9e',
-  dns: ['192.168.1.1', '1.1.1.1'],
-  ssid: 'Starlight_5G',
-  signalStrength: 78,
-  signalDbm: -54,
-  channel: 44,
-  frequency: 5220,
-  security: 'WPA2',
-  wifiStandard: 'Wi-Fi 5 (802.11ac)',
+  ipAddress: MOCK_SELF_IP,
+  gateway: MOCK_GATEWAY,
+  macAddress: MOCK_SELF_MAC,
+  dns: [MOCK_GATEWAY, '1.1.1.1'],
+  ssid: MOCK_SSID,
+  signalStrength: 84,
+  signalDbm: -47,
+  channel: 149,
+  frequency: MOCK_FREQUENCY,
+  security: 'WPA3',
+  wifiStandard: 'Wi-Fi 6 (802.11ax)',
   linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,
 }
 
@@ -89,8 +96,8 @@ const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
     operState: 'up',
     isDefault: true,
     isVirtual: false,
-    ipAddress: '192.168.1.42',
-    macAddress: 'a4:c3:f0:1b:2d:9e',
+    ipAddress: MOCK_SELF_IP,
+    macAddress: MOCK_SELF_MAC,
     speedMbps: MOCK_LINK_CAPACITY_MBPS,
     duplex: null,
   },
@@ -129,125 +136,155 @@ const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
   },
 ]
 
-const MOCK_HISTORY_KEY = 'rove.speed-history.v1'
-
-function readMockHistory(): readonly SpeedHistoryEntry[] {
-  try {
-    const raw = localStorage.getItem(MOCK_HISTORY_KEY)
-    const parsed: unknown = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? (parsed as SpeedHistoryEntry[]) : []
-  } catch {
-    return []
-  }
-}
-
-function writeMockHistory(entries: readonly SpeedHistoryEntry[]): void {
-  try {
-    localStorage.setItem(MOCK_HISTORY_KEY, JSON.stringify(entries))
-  } catch {
-    // ignore — dev-only best effort
-  }
-}
-
-// Captured from a real `ip neigh` scan on this network so the mock mirrors production output.
+// A lived-in home network: mostly named and classified, with one offline camera,
+// one privacy-randomized guest phone and one genuine unknown — the messiness a
+// real scan turns up. Self matches the connection card (same IP + MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
-  subnet: '192.168.2.0/24',
-  interfaceName: 'enp6s0',
+  subnet: '192.168.1.0/24',
+  interfaceName: 'wlan0',
   scannedAt: Date.now(),
+  dhcpStatus: 'active',
   devices: [
-    { ip: '192.168.2.1', hostname: 'mynetwork', model: null, kind: 'router', mac: 'bc:d5:ed:f7:5c:c5', vendor: 'Router (Zyxel)', isRandomizedMac: false, isGateway: true, isSelf: false, reachable: true },
-    { ip: '192.168.2.11', hostname: 'nabil-desktop', model: null, kind: 'computer', mac: 'fc:34:97:a1:c2:c8', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: true, reachable: true },
-    { ip: '192.168.2.12', hostname: null, model: null, kind: 'unknown', mac: '1c:3b:f3:85:8f:43', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.15', hostname: null, model: null, kind: 'unknown', mac: '98:17:3c:6d:03:1a', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.16', hostname: null, model: null, kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.19', hostname: null, model: null, kind: 'computer', mac: '08:38:e6:d8:df:23', vendor: 'Intel', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.20', hostname: 'shelly-plug', model: null, kind: 'iot', mac: '10:96:93:e4:bf:a8', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.21', hostname: null, model: null, kind: 'iot', mac: '08:3a:8d:ac:04:d0', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.24', hostname: 'iPhone-15', model: 'iPhone15,3', kind: 'phone', mac: 'ec:b5:fa:18:97:79', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.25', hostname: 'Living Room TV', model: 'BRAVIA KD-55X', kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.30', hostname: 'DiskStation', model: 'DS223', kind: 'nas', mac: '00:11:32:aa:bb:cc', vendor: 'Synology Incorporated', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.31', hostname: 'Johns-iPad', model: 'iPad13,4', kind: 'tablet', mac: 'a4:c3:f0:11:22:33', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.32', hostname: 'Xbox-Living-Room', model: null, kind: 'console', mac: '7c:ed:8d:44:55:66', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.2.33', hostname: 'Front-Door-Cam', model: null, kind: 'camera', mac: 'ec:71:db:77:88:99', vendor: 'Reolink', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: false },
-    { ip: '192.168.2.34', hostname: 'Kitchen-Sonos', model: 'Sonos One', kind: 'speaker', mac: '68:57:2d:aa:0b:0c', vendor: 'Sonos', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.1', hostname: 'router', model: null, os: null, kind: 'router', mac: '24:5a:4c:11:b2:03', vendor: 'Ubiquiti', isRandomizedMac: false, isGateway: true, isSelf: false, reachable: true },
+    { ip: MOCK_SELF_IP, hostname: 'rove-macbook', model: 'MacBookPro18,3', os: 'macOS', kind: 'computer', mac: MOCK_SELF_MAC, vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: true, reachable: true },
+    { ip: '192.168.1.10', hostname: 'Living-Room-TV', model: 'BRAVIA KD-65X90L', os: null, kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.12', hostname: 'Kitchen-Sonos', model: 'Sonos One', os: null, kind: 'speaker', mac: '68:57:2d:aa:0b:0c', vendor: 'Sonos', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.14', hostname: 'Office-Printer', model: 'OfficeJet Pro 9015', os: null, kind: 'printer', mac: '3c:52:82:1d:44:7e', vendor: 'HP', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.16', hostname: 'iPhone-15-Pro', model: 'iPhone16,1', os: 'iOS', kind: 'phone', mac: 'ec:b5:fa:18:97:79', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.18', hostname: 'Emmas-iPad', model: 'iPad13,4', os: 'iPadOS', kind: 'tablet', mac: 'a4:c3:f0:11:22:33', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.21', hostname: 'PlayStation-5', model: null, os: null, kind: 'console', mac: '7c:ed:8d:44:55:66', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.24', hostname: 'Nest-Hub', model: 'Google Nest Hub', os: null, kind: 'iot', mac: '1c:f2:9a:6d:03:1a', vendor: 'Google', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.27', hostname: 'DiskStation', model: 'DS923+', os: null, kind: 'nas', mac: '00:11:32:aa:bb:cc', vendor: 'Synology', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.30', hostname: 'Hue-Bridge', model: 'BSB002', os: null, kind: 'iot', mac: '00:17:88:2c:9f:d1', vendor: 'Signify (Philips Hue)', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.33', hostname: 'Front-Door-Cam', model: null, os: null, kind: 'camera', mac: 'ec:71:db:77:88:99', vendor: 'Reolink', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: false },
+    { ip: '192.168.1.36', hostname: 'shelly-plug-s', model: null, os: null, kind: 'iot', mac: '10:96:93:e4:bf:a8', vendor: 'Allterco (Shelly)', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.40', hostname: 'ecobee-thermostat', model: null, os: null, kind: 'iot', mac: '44:61:32:0a:7d:e2', vendor: 'ecobee', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
+    // fingerprint still identifies it. This is the headline win of the feature.
+    { ip: '192.168.1.44', hostname: null, model: 'Generic Android', os: 'Android', kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'unknown', mac: '1c:3b:f3:85:8f:43', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
   ],
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
-  gateway: '192.168.1.1',
+  gateway: MOCK_GATEWAY,
   defaultInterface: 'wlan0',
-  dnsServers: ['192.168.1.1', '1.1.1.1', '8.8.8.8'],
-  gatewayPing: { avgMs: 3.4, jitterMs: 0.8, packetLoss: 0 },
+  dnsServers: [MOCK_GATEWAY, '1.1.1.1', '8.8.8.8'],
+  gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
 }
 
 const MOCK_SPEED_RESULT: SpeedResult = {
-  downloadMbps: 187.3,
-  uploadMbps: 22.6,
-  latencyMs: 18,
-  jitterMs: 3.2,
+  downloadMbps: 623.4,
+  uploadMbps: 41.8,
+  latencyMs: 11,
+  jitterMs: 1.6,
   packetLoss: 0,
+}
+
+// Context stamped onto every recorded/seeded result, matching the connection.
+const MOCK_SPEED_CONTEXT = {
+  connectionType: 'wifi',
+  networkName: MOCK_SSID,
+  linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,
+  frequency: MOCK_FREQUENCY,
+} as const
+
+// A couple of weeks of history so the "View history" trend isn't empty. Newest
+// first; values wobble around the current result the way a real link does.
+function seedSpeedHistory(): SpeedHistoryEntry[] {
+  const hour = 3_600_000
+  const points: readonly (Omit<SpeedResult, never> & { agoHours: number })[] = [
+    { downloadMbps: 611.2, uploadMbps: 40.6, latencyMs: 12, jitterMs: 1.9, packetLoss: 0, agoHours: 6 },
+    { downloadMbps: 598.7, uploadMbps: 39.1, latencyMs: 13, jitterMs: 2.4, packetLoss: 0, agoHours: 27 },
+    { downloadMbps: 642.9, uploadMbps: 42.3, latencyMs: 10, jitterMs: 1.4, packetLoss: 0, agoHours: 52 },
+    { downloadMbps: 570.4, uploadMbps: 38.0, latencyMs: 15, jitterMs: 3.1, packetLoss: 0, agoHours: 74 },
+    { downloadMbps: 629.1, uploadMbps: 41.5, latencyMs: 11, jitterMs: 1.7, packetLoss: 0, agoHours: 121 },
+    { downloadMbps: 604.8, uploadMbps: 40.0, latencyMs: 12, jitterMs: 2.0, packetLoss: 0, agoHours: 168 },
+    { downloadMbps: 583.3, uploadMbps: 37.6, latencyMs: 14, jitterMs: 2.7, packetLoss: 1, agoHours: 240 },
+    { downloadMbps: 655.0, uploadMbps: 43.1, latencyMs: 10, jitterMs: 1.3, packetLoss: 0, agoHours: 312 },
+  ]
+  return points.map(({ agoHours, ...speed }) => ({
+    ...speed,
+    ...MOCK_SPEED_CONTEXT,
+    timestamp: Date.now() - agoHours * hour,
+  }))
 }
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
-/** Emits synthetic live-throughput samples to simulate background traffic. */
-function createLiveThroughputEmitter(): Pick<
-  NetworkAPI,
-  'subscribeLiveThroughput' | 'unsubscribeLiveThroughput' | 'onLiveThroughput'
-> {
-  const listeners = new Set<(t: LiveThroughput) => void>()
-  let timer: ReturnType<typeof setInterval> | null = null
-  let tick = 0
-
-  const stop = (): void => {
-    if (timer) {
-      clearInterval(timer)
-      timer = null
-    }
-  }
-
-  const start = (): void => {
-    if (timer) return
-    timer = setInterval(() => {
-      tick += 1
-      // Mostly idle with occasional bursts, so idle/active states both show.
-      const bursting = Math.floor(tick / 4) % 3 === 0
-      const download = bursting ? 8 + Math.random() * 40 : Math.random() * 0.05
-      const upload = bursting ? 1 + Math.random() * 6 : Math.random() * 0.03
-      const sample: LiveThroughput = {
-        downloadMbps: Number(download.toFixed(3)),
-        uploadMbps: Number(upload.toFixed(3)),
-        timestamp: Date.now(),
-      }
-      for (const listener of listeners) listener(sample)
-    }, 1000)
-  }
-
-  return {
-    subscribeLiveThroughput: async () => {
-      start()
-    },
-    unsubscribeLiveThroughput: async () => {
-      if (listeners.size === 0) stop()
-    },
-    onLiveThroughput: (callback): Unsubscribe => {
-      listeners.add(callback)
-      return () => {
-        listeners.delete(callback)
-        if (listeners.size === 0) stop()
-      }
-    },
-  }
+/** Smoothstep easing (0..1) for organic-looking ramps. */
+function smoothstep(x: number): number {
+  const t = Math.max(0, Math.min(1, x))
+  return t * t * (3 - 2 * t)
 }
 
 function createMockNetworkApi(): NetworkAPI {
-  const live = createLiveThroughputEmitter()
   const progressListeners = new Set<(p: SpeedTestProgress) => void>()
   let cancelled = false
+
+  // ---- live throughput ----
+  // A single 1 Hz sampler feeds the Home "Live traffic" widget. While a speed
+  // test runs it saturates the link, so the live reading IS the test's
+  // throughput: `testTraffic` holds that instantaneous rate and the sampler
+  // emits it, which is what makes the Speed view's Download/Upload numbers climb
+  // during a test (SpeedView tracks their running peak). When null, the sampler
+  // falls back to a gentle idle/burst pattern.
+  const liveListeners = new Set<(t: LiveThroughput) => void>()
+  let liveTimer: ReturnType<typeof setInterval> | null = null
+  let idleTick = 0
+  let testTraffic: { downloadMbps: number; uploadMbps: number } | null = null
+
+  const emitLive = (downloadMbps: number, uploadMbps: number): void => {
+    const sample: LiveThroughput = {
+      downloadMbps: Number(Math.max(0, downloadMbps).toFixed(3)),
+      uploadMbps: Number(Math.max(0, uploadMbps).toFixed(3)),
+      timestamp: Date.now(),
+    }
+    for (const listener of liveListeners) listener(sample)
+  }
+
+  const idleSample = (): { down: number; up: number } => {
+    idleTick += 1
+    // Mostly quiet, with a periodic streaming/backup burst so the chart is alive
+    // and both idle and active states show.
+    const streaming = Math.floor(idleTick / 6) % 4 === 0
+    const nudge = Math.floor(idleTick / 3) % 5 === 0
+    if (streaming) {
+      return { down: 22 + Math.random() * 46, up: 0.8 + Math.random() * 3.2 }
+    }
+    if (nudge) {
+      return { down: 1.5 + Math.random() * 6, up: 0.2 + Math.random() * 1.1 }
+    }
+    return { down: 0.02 + Math.random() * 0.06, up: 0.01 + Math.random() * 0.03 }
+  }
+
+  const startLive = (): void => {
+    if (liveTimer) return
+    liveTimer = setInterval(() => {
+      if (testTraffic) {
+        // Light ±3% jitter so the driven line reads as live, not flat.
+        const j = 0.97 + Math.random() * 0.06
+        emitLive(testTraffic.downloadMbps * j, testTraffic.uploadMbps * j)
+        return
+      }
+      const { down, up } = idleSample()
+      emitLive(down, up)
+    }, 1000)
+  }
+
+  const stopLive = (): void => {
+    if (liveTimer) {
+      clearInterval(liveTimer)
+      liveTimer = null
+    }
+  }
 
   const emitProgress = (progress: SpeedTestProgress): void => {
     for (const listener of progressListeners) listener(progress)
   }
+
+  // ---- speed history (in-memory; seeded, resets on reload) ----
+  let mockHistory: SpeedHistoryEntry[] = seedSpeedHistory()
 
   return {
     getNetworkInfo: async () => {
@@ -271,19 +308,30 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(200)
       const day = 86_400_000
       const gb = 1_000_000_000
-      const days = Array.from({ length: 7 }, (_, i) => {
+      // A believable week — lighter midweek, heavier on the weekend, today still
+      // filling in. Index 0 is six days ago, index 6 is today. [downGB, upGB].
+      const byDay: readonly [number, number][] = [
+        [5.1, 0.7],
+        [3.4, 0.5],
+        [6.2, 0.9],
+        [8.7, 1.2],
+        [11.8, 1.9],
+        [16.4, 2.3],
+        [4.9, 0.6],
+      ]
+      const days = byDay.map(([down, up], i) => {
         const when = new Date(Date.now() - (6 - i) * day)
         const key = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, '0')}-${String(when.getDate()).padStart(2, '0')}`
         return {
           date: key,
-          rxBytes: Math.round((0.4 + Math.abs(Math.sin(i * 2.1)) * 5.2) * gb),
-          txBytes: Math.round((0.1 + Math.abs(Math.sin(i * 1.3)) * 0.9) * gb),
+          rxBytes: Math.round(down * gb),
+          txBytes: Math.round(up * gb),
         }
       })
       return {
         days,
-        bootRxBytes: 6_300_000_000,
-        bootTxBytes: 7_400_000_000,
+        bootRxBytes: 23_400_000_000,
+        bootTxBytes: 3_100_000_000,
         trackingSince: Date.now() - 6 * day,
       }
     },
@@ -293,18 +341,59 @@ function createMockNetworkApi(): NetworkAPI {
     },
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       cancelled = false
-      const steps: readonly SpeedTestProgress[] = [
-        { phase: 'internet', message: 'Measuring latency…', progress: 10 },
-        { phase: 'internet', message: 'Testing download…', progress: 40 },
-        { phase: 'internet', message: 'Testing download…', progress: 65 },
-        { phase: 'internet', message: 'Testing upload…', progress: 85 },
-        { phase: 'internet', message: 'Finishing up…', progress: 95 },
-      ]
-      for (const step of steps) {
-        await delay(600)
-        if (cancelled) throw new Error('SPEED_TEST_CANCELLED')
-        emitProgress(step)
+      const { downloadMbps: DOWN, uploadMbps: UP } = MOCK_SPEED_RESULT
+
+      // A realistic ~10 s test, stepped every 200 ms. Progress bands line up with
+      // the UI's reveal thresholds (Download cell at 15 %, Upload at 55 %) and the
+      // wavy progress bar's steps [0, 15, 55, 85, 100].
+      const TICK_MS = 200
+      const phases = [
+        { name: 'latency', message: 'Measuring latency…', durMs: 1400, from: 0, to: 14 },
+        { name: 'download', message: 'Testing download…', durMs: 4600, from: 15, to: 54 },
+        { name: 'upload', message: 'Testing upload…', durMs: 3600, from: 55, to: 84 },
+        { name: 'finish', message: 'Finishing up…', durMs: 800, from: 85, to: 99 },
+      ] as const
+
+      for (const phase of phases) {
+        const ticks = Math.max(1, Math.round(phase.durMs / TICK_MS))
+        for (let i = 1; i <= ticks; i += 1) {
+          await delay(TICK_MS)
+          if (cancelled) {
+            testTraffic = null
+            throw new Error('SPEED_TEST_CANCELLED')
+          }
+          const pf = i / ticks // fraction through this phase, 0..1
+
+          if (phase.name === 'download') {
+            // Quick rise, then hold near the achieved rate with a little wobble.
+            const ramp = smoothstep(pf * 1.5)
+            testTraffic = {
+              downloadMbps: DOWN * ramp * (0.98 + Math.random() * 0.04),
+              uploadMbps: 0.05 + Math.random() * 0.1,
+            }
+          } else if (phase.name === 'upload') {
+            const ramp = smoothstep(pf * 1.5)
+            testTraffic = {
+              downloadMbps: DOWN * 0.03 * (1 - pf), // download tapers as upload takes over
+              uploadMbps: UP * ramp * (0.98 + Math.random() * 0.04),
+            }
+          } else {
+            // latency / finish — link mostly quiet
+            testTraffic = {
+              downloadMbps: 0.05 + Math.random() * 0.12,
+              uploadMbps: 0.03 + Math.random() * 0.06,
+            }
+          }
+
+          emitProgress({
+            phase: 'internet',
+            message: phase.message,
+            progress: phase.from + (phase.to - phase.from) * pf,
+          })
+        }
       }
+
+      testTraffic = null
       emitProgress({ phase: 'complete', message: 'Done', progress: 100 })
       return {
         internet: MOCK_SPEED_RESULT,
@@ -314,22 +403,17 @@ function createMockNetworkApi(): NetworkAPI {
     },
     cancelSpeedTest: async () => {
       cancelled = true
+      testTraffic = null
     },
-    // History persists in localStorage under the same key the real app used,
-    // so browser dev keeps working without a database behind it.
-    getSpeedHistory: async () => readMockHistory(),
+    getSpeedHistory: async () => mockHistory,
     saveSpeedResult: async (entry: SpeedHistoryEntry) => {
-      writeMockHistory([entry, ...readMockHistory()].slice(0, 50))
+      mockHistory = [entry, ...mockHistory].slice(0, 50)
     },
     importSpeedHistory: async (entries: readonly SpeedHistoryEntry[]) => {
-      writeMockHistory([...entries, ...readMockHistory()].slice(0, 50))
+      mockHistory = [...entries, ...mockHistory].slice(0, 50)
     },
     clearSpeedHistory: async () => {
-      try {
-        localStorage.removeItem(MOCK_HISTORY_KEY)
-      } catch {
-        // ignore
-      }
+      mockHistory = []
     },
     getKnownDevices: async () =>
       MOCK_DEVICE_SCAN.devices
@@ -349,9 +433,19 @@ function createMockNetworkApi(): NetworkAPI {
         progressListeners.delete(callback)
       }
     },
-    subscribeLiveThroughput: live.subscribeLiveThroughput,
-    unsubscribeLiveThroughput: live.unsubscribeLiveThroughput,
-    onLiveThroughput: live.onLiveThroughput,
+    subscribeLiveThroughput: async () => {
+      startLive()
+    },
+    unsubscribeLiveThroughput: async () => {
+      if (liveListeners.size === 0) stopLive()
+    },
+    onLiveThroughput: (callback): Unsubscribe => {
+      liveListeners.add(callback)
+      return () => {
+        liveListeners.delete(callback)
+        if (liveListeners.size === 0) stopLive()
+      }
+    },
   }
 }
 
@@ -383,7 +477,7 @@ export function installMockNetworkApiIfNeeded(): boolean {
 
   // eslint-disable-next-line no-console
   console.info(
-    '[rove] Electron bridge not found — using in-browser mock network data (dev only).',
+    '[rove] Tauri bridge not found, using in-browser mock network data (dev only).',
   )
   return true
 }
