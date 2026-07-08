@@ -45,7 +45,7 @@ export default function AboutView(): JSX.Element {
           <BrandIcon size={53} gradient />
         </span>
         <h1 className="about-name">Rove</h1>
-        <p className="about-tagline">Wi‑Fi and Ethernet network monitoring for the desktop.</p>
+        <p className="about-tagline">A fast, minimal network monitor for your desktop.</p>
         {version && <span className="about-version">Version {version}</span>}
       </div>
 
@@ -59,7 +59,7 @@ export default function AboutView(): JSX.Element {
         </DataRow>
       </Section>
 
-      <p className="about-footer text-meta">© {2026} Rove. All rights reserved.</p>
+      <p className="about-footer text-meta">© {2026} SwiftSolve. All rights reserved.</p>
     </div>
   )
 }

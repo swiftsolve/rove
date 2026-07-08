@@ -87,15 +87,34 @@ export default function CapabilityDetails({
   // target card sits below the page header, so scroll it to the top of the
   // viewport (its scroll-margin leaves a little breathing room). Deferred to the
   // next frame so the subpage has laid out before the scroll animates.
+  //
+  // We scroll the app's own `.app-scroll` container directly rather than calling
+  // card.scrollIntoView(): scrollIntoView walks up and scrolls *every* scrollable
+  // ancestor, which across an iframe boundary reaches the host document — so on
+  // the marketing-site demo it would drag the whole landing page down with it.
+  //
+  // Deferred two frames: opening the subpage changes the app's screen key, whose
+  // effect resets `.app-scroll` back to the top. Running a frame later than that
+  // reset lets our smooth scroll animate cleanly from the top to the target card.
   useEffect(() => {
     if (targetId == null) return
-    const frame = requestAnimationFrame(() => {
-      const card = listRef.current?.querySelector<HTMLElement>(
-        `[data-capability-id="${targetId}"]`,
-      )
-      card?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    let inner = 0
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => {
+        const card = listRef.current?.querySelector<HTMLElement>(
+          `[data-capability-id="${targetId}"]`,
+        )
+        const scroller = card?.closest<HTMLElement>('.app-scroll')
+        if (!card || !scroller) return
+        const margin = parseFloat(getComputedStyle(card).scrollMarginTop) || 0
+        const delta = card.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+        scroller.scrollTo({ top: scroller.scrollTop + delta - margin, behavior: 'smooth' })
+      })
     })
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(outer)
+      cancelAnimationFrame(inner)
+    }
   }, [targetId])
 
   return (
