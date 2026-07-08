@@ -161,6 +161,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--gap-xs);
+  /* Tighter horizontal padding than the base .btn-secondary (12px). */
+  padding-left: 8px;
+  padding-right: 8px;
   /* Nudge the button a touch lower toward the card's bottom edge. */
   margin-bottom: -4px;
 }

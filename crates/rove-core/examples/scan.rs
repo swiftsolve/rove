@@ -2,7 +2,7 @@
 #[tokio::main]
 async fn main() {
     let scan = rove_core::devices::scan().await;
-    println!("subnet {:?} via {:?} — {} devices", scan.subnet, scan.interface_name, scan.devices.len());
+    println!("subnet {:?} via {:?}: {} devices", scan.subnet, scan.interface_name, scan.devices.len());
     for d in &scan.devices {
         println!(
             "{:<15} {:<18} {:<10} {}",

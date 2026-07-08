@@ -27,14 +27,14 @@ Rove is two programs talking over a thin, typed bridge:
   <img src="docs/assets/architecture.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
 </div>
 
-- **Request/response** — each UI data need is one Tauri *command* (`get_network_info`,
+- **Request/response.** Each UI data need is one Tauri *command* (`get_network_info`,
   `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
   around a pure-Rust service in `crates/rove-core`.
-- **Push** — three *events* flow the other way: `live-throughput` (1 Hz while the
+- **Push.** Three *events* flow the other way: `live-throughput` (1 Hz while the
   Home tab is subscribed), `speed-test-progress`, and `network-changed` (the
   backend watches `ip monitor route` and nudges the UI within ~1 s of a cable
   pull or Wi-Fi join, so state never waits on the 15 s poll).
-- **The contract** — TypeScript types in `src/types/` define every payload; the
+- **The contract.** TypeScript types in `src/types/` define every payload; the
   Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
   (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
@@ -45,9 +45,9 @@ Rove is two programs talking over a thin, typed bridge:
 
 **Connection card / network info.** The kernel routing table is the source of
 truth: `ip route show default` names the interface your traffic really uses
-(so LAN↔Wi-Fi switches are always right), then per-medium tools fill in detail —
-`iw`/`nmcli` for SSID, band, channel, signal; `ethtool`/sysfs for link speed and
-duplex. DNS comes from `resolv.conf`.
+(so LAN↔Wi-Fi switches are always right), then per-medium tools fill in the
+detail: `iw`/`nmcli` for SSID, band, channel, signal; `ethtool`/sysfs for link
+speed and duplex. DNS comes from `resolv.conf`.
 
 **Live traffic.** A 1 Hz sampler reads the kernel's cumulative per-interface
 byte counters (via `sysinfo`), converts deltas to Mbps, smooths them with an
@@ -60,19 +60,19 @@ veth, vpn…) are excluded.
   <img src="docs/assets/devices-pipeline.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
 </div>
 
-1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
+1. *Sweep*: ping every host in your /24 (64 concurrent probes). The point is
    not the ICMP reply but the ARP exchange it forces: idle devices enter the
    kernel neighbor table even if they block ping.
-2. *mDNS* — concurrently, listen ~3 s for service announcements (`_googlecast`,
+2. *mDNS*: concurrently, listen ~3 s for service announcements (`_googlecast`,
    `_ipp`, `_hap`, `_raop`, …). Devices literally say what they are, often with
    a friendly name and hardware model.
-3. *Neighbor table* — `ip neigh` (or `arp -a`) is then read as the ground truth
+3. *Neighbor table*: `ip neigh` (or `arp -a`) is then read as the ground truth
    of who exists.
-4. *Enrich & classify* — each host gets a vendor (MAC OUI table), a hostname
+4. *Enrich & classify*: each host gets a vendor (MAC OUI table), a hostname
    (reverse DNS/mDNS, junk names filtered), and a best-effort kind. Signals are
    ranked by trust: role flags → mDNS service type → mDNS hardware model →
    hostname patterns → vendor patterns → weak mDNS hints → "unknown".
-   A device that blocks ping *and* announces nothing can still hide — the
+   A device that blocks ping *and* announces nothing can still hide; the
    router's admin page stays authoritative.
 
 **Speed test.** Saturates the link ~6 s per direction: parallel HTTPS streams
@@ -81,12 +81,12 @@ from public test endpoints (download) and random-payload POSTs (upload), then
 cancel command aborts between and within phases (streams poll a shared flag).
 Results feed the capability ratings (can this connection do 4K, cloud gaming…)
 against per-activity thresholds. Fair warning: at multi-gigabit rates one test
-moves 1–2 GB — that's inherent to how throughput measurement works.
+moves 1–2 GB. That's inherent to how throughput measurement works.
 
 **Data usage.** Every 30 s the backend accumulates counter deltas into per-day
 buckets persisted in the app-data dir (survives restarts; counters themselves
 reset at boot, which the delta logic handles). The "since boot" totals shown in
-the UI are read straight from `/sys/class/net/*/statistics` at query time —
+the UI are read straight from `/sys/class/net/*/statistics` at query time:
 kernel truth, no bookkeeping.
 
 **Diagnostics.** Pings your default gateway (latency / jitter / packet loss)
@@ -122,7 +122,7 @@ rove/
 │   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
-│                               deps — compiles and tests anywhere): network_info,
+│                               deps; compiles and tests anywhere): network_info,
 │                               interfaces, devices/, diagnostics, speed, mdns,
 │                               live_throughput, data_usage, oui, shell
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
@@ -178,11 +178,11 @@ for the job and degrades gracefully (missing values render as “—”):
 
 Platform branches are runtime `cfg!()` checks, so every path typechecks on
 every OS; CI (`.github/workflows/build.yml`) builds all three bundles. The
-instant network-change monitor (`ip monitor route`) is Linux-only — macOS and
+instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
 Windows fall back to the 15 s poll.
 
 On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
-deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN — including the
-link-speed / transmit rate, which the shell tools no longer expose. The SSID
+deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN, including the
+link-speed / transmit rate that the shell tools no longer expose. The SSID
 sits behind Location Services, so Rove asks for that permission once at startup;
 without it the network name shows as “—” while everything else still resolves.

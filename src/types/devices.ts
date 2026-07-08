@@ -43,6 +43,11 @@ export interface LanDevice {
   readonly hostname: string | null
   /** Hardware model from mDNS/UPnP (e.g. "MacBookPro18,3"), or null. */
   readonly model: string | null
+  /**
+   * OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
+   * "Apple"), or null when unknown.
+   */
+  readonly os: string | null
   /** True when the MAC is locally administered (privacy-randomized). */
   readonly isRandomizedMac: boolean
   /** This device is the default gateway (router). */
@@ -53,14 +58,23 @@ export interface LanDevice {
   readonly reachable: boolean
 }
 
+/**
+ * State of the passive DHCP-fingerprinting listener:
+ * - `starting` — bind not yet resolved (first scan of the session)
+ * - `active` — listening on :67, fingerprints will accrue as devices join
+ * - `unavailable` — no privilege to bind :67 (see the install setcap step)
+ */
+export type DhcpStatus = 'starting' | 'active' | 'unavailable'
+
 export interface LanDeviceScan {
   readonly devices: readonly LanDevice[]
   /** CIDR of the scanned segment, e.g. "192.168.2.0/24". */
   readonly subnet: string | null
   readonly interfaceName: string | null
   readonly scannedAt: number
+  readonly dhcpStatus: DhcpStatus
 }
 
 export function createEmptyDeviceScan(): LanDeviceScan {
-  return { devices: [], subnet: null, interfaceName: null, scannedAt: 0 }
+  return { devices: [], subnet: null, interfaceName: null, scannedAt: 0, dhcpStatus: 'starting' }
 }

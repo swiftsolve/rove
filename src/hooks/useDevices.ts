@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { LanDeviceScan } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
 
@@ -15,8 +15,15 @@ interface UseDevicesResult {
 }
 
 export function useDevices(enabled: boolean, networkKey?: string | null): UseDevicesResult {
+  const api = window.networkAPI
+  // "no bridge → no-op" behaviour: an undefined fetcher when the bridge is absent.
+  const fetchDevices = useMemo(
+    () => (api?.getDevices ? () => api.getDevices() : undefined),
+    [api],
+  )
+
   const { data, isBusy, error, reload } = useBackendResource(
-    window.networkAPI?.getDevices,
+    fetchDevices,
     enabled,
     'Failed to scan for devices',
     { resetKey: networkKey, refetchOnEnable: true, pollIntervalMs: POLL_INTERVAL_MS },

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Root LaunchDaemon for Rove's privileged DHCP capture helper.
+
+  macOS reserves ports below 1024 for root and has no per-app capability grant
+  (unlike Linux's cap_net_bind_service), so the app cannot bind :67 itself. This
+  daemon runs the helper as root; it writes captured fingerprints to a file the
+  unprivileged app reads. Install to /Library/LaunchDaemons/ (root:wheel, 0644).
+  See macos/dhcp-helper.md.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.rove.dhcp-helper</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Application Support/Rove/rove-dhcp-helper</string>
+        <string>/Library/Application Support/Rove/dhcp-cache.json</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>StandardErrorPath</key>
+    <string>/Library/Application Support/Rove/dhcp-helper.log</string>
+</dict>
+</plist>

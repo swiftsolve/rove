@@ -151,7 +151,7 @@ export default function SettingsView({
           control={
             <button
               type="button"
-              className={`btn-secondary${check.kind === 'checking' ? ' is-scanning' : ''}`}
+              className={`btn-primary check-now-btn${check.kind === 'checking' ? ' is-scanning' : ''}`}
               onClick={() => void runCheck()}
               disabled={check.kind === 'checking'}
             >

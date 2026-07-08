@@ -7,6 +7,7 @@
 //! matters when weaker signals disagree, letting corroboration beat a lone
 //! noisy guess. Role flags (gateway/self) still short-circuit outright.
 use crate::devices::banner::BannerHit;
+use crate::devices::dhcp::DhcpHit;
 use crate::devices::ssdp::SsdpHit;
 use crate::mdns::MdnsHit;
 use regex_lite::Regex;
@@ -24,6 +25,8 @@ pub struct Signals<'a> {
     pub mdns: Option<&'a MdnsHit>,
     pub ssdp: Option<&'a SsdpHit>,
     pub banner: Option<&'a BannerHit>,
+    /// Passive DHCP fingerprint (Option 55/60) captured when the device joined.
+    pub dhcp: Option<&'a DhcpHit>,
     /// Open TCP ports observed by the probe.
     pub open_ports: &'a [u16],
     pub is_gateway: bool,
@@ -211,6 +214,11 @@ const W_STRONG_PORT: i32 = 55;
 /// media types (a MediaRenderer might be a TV or a soundbar), so it sits below
 /// the strong-port vote and can't override a definitive mDNS service.
 const W_SSDP_TYPE: i32 = 50;
+/// A DHCP Option 55/60 fingerprint is a strong, hard-to-spoof OS-family signal
+/// (phone vs computer) captured passively when a device joins, and it survives
+/// MAC randomization. It sits just under a UPnP deviceType and above a hostname
+/// or vendor guess.
+const W_DHCP: i32 = 45;
 const W_HOSTNAME: i32 = 40;
 const W_VENDOR: i32 = 25;
 /// An HTTP `Server` header or page `<title>` is corroboration, not proof — many
@@ -241,9 +249,9 @@ pub fn classify(s: &Signals) -> String {
         return "computer".into();
     }
 
-    let Signals { vendor, hostname, mdns, ssdp, banner, open_ports, .. } = *s;
+    let Signals { vendor, hostname, mdns, ssdp, banner, dhcp, open_ports, .. } = *s;
 
-    let votes: [(Option<&str>, i32); 13] = [
+    let votes: [(Option<&str>, i32); 16] = [
         (mdns.and_then(|hit| hit.kind), W_MDNS_STRONG),
         (
             mdns.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
@@ -270,6 +278,17 @@ pub fn classify(s: &Signals) -> String {
         (
             ssdp.and_then(|hit| hit.manufacturer.as_deref()).and_then(|m| VENDOR_KINDS.matches(m)),
             W_VENDOR,
+        ),
+        // DHCP: the local fingerprint table's kind, plus the vendor class and
+        // self-reported hostname run through the existing regex tables.
+        (dhcp.and_then(|hit| hit.kind), W_DHCP),
+        (
+            dhcp.and_then(|hit| hit.vendor_class.as_deref()).and_then(|v| VENDOR_KINDS.matches(v)),
+            W_VENDOR,
+        ),
+        (
+            dhcp.and_then(|hit| hit.hostname.as_deref()).and_then(|h| HOSTNAME_KINDS.matches(h)),
+            W_HOSTNAME,
         ),
         // HTTP banner: the page title reads like a device name, the Server
         // header like a vendor/product string — match both against the tables.
@@ -318,6 +337,7 @@ pub fn classify(s: &Signals) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::devices::dhcp::DhcpHit;
     use crate::mdns::MdnsHit;
 
     fn strong(kind: &'static str) -> MdnsHit {
@@ -345,6 +365,25 @@ mod tests {
                 ..Default::default()
             }),
             "tv"
+        );
+    }
+
+    #[test]
+    fn dhcp_fingerprint_types_a_phone_over_an_ambiguous_vendor() {
+        // A randomized-MAC phone gives no useful OUI vendor, but its DHCP
+        // fingerprint still says "phone".
+        let dhcp = DhcpHit { kind: Some("phone"), ..Default::default() };
+        assert_eq!(kind(Signals { dhcp: Some(&dhcp), ..Default::default() }), "phone");
+    }
+
+    #[test]
+    fn dhcp_does_not_override_a_definitive_mdns_service() {
+        // mDNS strong service (100) must still beat the DHCP vote (45).
+        let mdns = strong("printer");
+        let dhcp = DhcpHit { kind: Some("computer"), ..Default::default() };
+        assert_eq!(
+            kind(Signals { mdns: Some(&mdns), dhcp: Some(&dhcp), ..Default::default() }),
+            "printer"
         );
     }
 

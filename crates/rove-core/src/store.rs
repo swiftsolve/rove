@@ -247,35 +247,32 @@ impl Store {
 
     // ---- known LAN devices -------------------------------------------------
 
-    /// Upsert the devices from a scan. First-seen is preserved; last-seen and
-    /// the mutable fields (ip/hostname/vendor/kind) advance to the latest,
-    /// keeping any previously-known hostname/vendor when this scan lacks one.
+    /// Upsert one device row. First-seen is set on insert and preserved on
+    /// conflict; the mutable fields (ip/hostname/vendor/kind) advance to the
+    /// latest, keeping a previously-known hostname/vendor when this scan lacks
+    /// one. `conn` is the open transaction (a `Transaction` derefs here).
+    fn upsert_device(conn: &Connection, device: &LanDevice, now_ms: i64) -> rusqlite::Result<()> {
+        conn.execute(
+            "INSERT INTO known_devices
+                (mac, ip, hostname, vendor, kind, first_seen, last_seen)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)
+             ON CONFLICT(mac) DO UPDATE SET
+                ip        = excluded.ip,
+                hostname  = COALESCE(excluded.hostname, known_devices.hostname),
+                vendor    = COALESCE(excluded.vendor, known_devices.vendor),
+                kind      = excluded.kind,
+                last_seen = excluded.last_seen",
+            params![device.mac, device.ip, device.hostname, device.vendor, device.kind, now_ms],
+        )?;
+        Ok(())
+    }
+
+    /// Upsert the devices from a scan.
     pub fn record_devices(&self, devices: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
         let mut conn = self.lock();
         let tx = conn.transaction()?;
-        for device in devices {
-            if device.mac.is_empty() {
-                continue;
-            }
-            tx.execute(
-                "INSERT INTO known_devices
-                    (mac, ip, hostname, vendor, kind, first_seen, last_seen)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)
-                 ON CONFLICT(mac) DO UPDATE SET
-                    ip        = excluded.ip,
-                    hostname  = COALESCE(excluded.hostname, known_devices.hostname),
-                    vendor    = COALESCE(excluded.vendor, known_devices.vendor),
-                    kind      = excluded.kind,
-                    last_seen = excluded.last_seen",
-                params![
-                    device.mac,
-                    device.ip,
-                    device.hostname,
-                    device.vendor,
-                    device.kind,
-                    now_ms,
-                ],
-            )?;
+        for device in devices.iter().filter(|d| !d.mac.is_empty()) {
+            Self::upsert_device(&tx, device, now_ms)?;
         }
         tx.commit()?;
         Ok(())
@@ -365,6 +362,7 @@ mod tests {
             vendor: Some("Acme".into()),
             hostname: Some("nas".into()),
             model: None,
+            os: None,
             kind: "computer".into(),
             is_randomized_mac: false,
             is_gateway: false,
