@@ -7,6 +7,7 @@
 //!   4. add this machine, sort gateway → self → by address
 mod banner;
 mod classify;
+mod history;
 /// Public so diagnostics/examples (and the planned alerts feature) can drive the
 /// passive listener and read captures directly.
 pub mod dhcp;
@@ -141,37 +142,53 @@ fn build_device(
     let vendor = lookup_vendor(&neighbor.mac).map(String::from);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
-    let mdns = enrichment.mdns.get(&neighbor.ip);
-    let ssdp = enrichment.ssdp.get(&neighbor.ip);
-    let banner = enrichment.banner.get(&neighbor.ip);
     let dhcp = enrichment.dhcp.get(&dhcp::normalize_mac(&neighbor.mac));
-    let ports = enrichment.open_ports.get(&neighbor.ip).map(Vec::as_slice).unwrap_or(&[]);
+
+    // mDNS/SSDP/banner/port signals are captured opportunistically in one lossy
+    // discovery window, so a device that advertised a decisive signal on an
+    // earlier scan may go quiet on this one — which used to flip its kind (a
+    // cast + HomeKit TV flapping between "TV / Media" and "Smart home"). Fold
+    // this scan's catch into the per-MAC accumulator and classify from the
+    // union of everything ever seen, so a signal observed once isn't forgotten.
+    // (DHCP already accumulates in its own background listener.) A device with
+    // no MAC can't be keyed, so it classifies from this scan alone.
+    let fresh = history::DeviceEvidence {
+        mdns: enrichment.mdns.get(&neighbor.ip).cloned().unwrap_or_default(),
+        ssdp: enrichment.ssdp.get(&neighbor.ip).cloned().unwrap_or_default(),
+        banner: enrichment.banner.get(&neighbor.ip).cloned().unwrap_or_default(),
+        ports: enrichment.open_ports.get(&neighbor.ip).cloned().unwrap_or_default(),
+    };
+    let evidence = if neighbor.mac.is_empty() {
+        fresh
+    } else {
+        history::merge_and_snapshot(&neighbor.mac, fresh)
+    };
 
     // Name preference, most human first: a friendly mDNS name, then SSDP's UPnP
     // friendlyName, then the NetBIOS computer name (real name for Windows/SMB
     // hosts), then the DHCP-reported hostname (covers non-Windows hosts NetBIOS
     // misses), falling back to the reverse-DNS hostname.
-    let hostname = mdns
-        .and_then(|hit| hit.name.clone())
-        .or_else(|| ssdp.and_then(|hit| hit.name.clone()))
+    let hostname = evidence
+        .mdns
+        .name
+        .clone()
+        .or_else(|| evidence.ssdp.name.clone())
         .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned())
         .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()))
         .or(resolved_hostname);
 
     // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
-    let model = mdns
-        .and_then(|hit| hit.model.clone())
-        .or_else(|| ssdp.and_then(|hit| hit.model.clone()));
+    let model = evidence.mdns.model.clone().or_else(|| evidence.ssdp.model.clone());
 
     LanDevice {
         kind: classify::classify(&classify::Signals {
             vendor: vendor.as_deref(),
             hostname: hostname.as_deref(),
-            mdns,
-            ssdp,
-            banner,
+            mdns: Some(&evidence.mdns),
+            ssdp: Some(&evidence.ssdp),
+            banner: Some(&evidence.banner),
             dhcp,
-            open_ports: ports,
+            open_ports: &evidence.ports,
             is_gateway,
             is_self,
         }),
