@@ -68,9 +68,13 @@ jobs:
           if [ "${{ matrix.platform }}" = "macos-latest" ] && [ -n "$APPLE_CERTIFICATE" ]; then
             echo "sign=true" >> "$GITHUB_OUTPUT"
             # Export to the job environment ONLY when signing, so these vars are
-            # absent (not empty) otherwise. Values are masked as secrets.
+            # absent (not empty) otherwise. Values are masked as secrets. The
+            # heredoc keeps a multi-line base64 certificate intact through
+            # $GITHUB_ENV (a plain KEY=value would break on wrapped base64).
             {
-              echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
+              echo "APPLE_CERTIFICATE<<__ROVE_EOF__"
+              echo "$APPLE_CERTIFICATE"
+              echo "__ROVE_EOF__"
               echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
               echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
               echo "APPLE_ID=$APPLE_ID"

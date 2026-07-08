@@ -59,8 +59,12 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           if [ "$RUNNER_OS" = "macOS" ] && [ -n "$APPLE_CERTIFICATE" ]; then
+            # Heredoc keeps a multi-line base64 certificate intact through
+            # $GITHUB_ENV (a plain KEY=value would break on wrapped base64).
             {
-              echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
+              echo "APPLE_CERTIFICATE<<__ROVE_EOF__"
+              echo "$APPLE_CERTIFICATE"
+              echo "__ROVE_EOF__"
               echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
               echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
               echo "APPLE_ID=$APPLE_ID"
