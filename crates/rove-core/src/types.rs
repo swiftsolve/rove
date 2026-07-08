@@ -55,6 +55,9 @@ pub struct LanDevice {
     /// Hardware model from mDNS TXT or a UPnP description, e.g. "MacBookPro18,3"
     /// or "BRAVIA KD-55X". None when no source reported one.
     pub model: Option<String>,
+    /// OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
+    /// "Apple"). None when unknown.
+    pub os: Option<String>,
     pub kind: String,
     pub is_randomized_mac: bool,
     pub is_gateway: bool,
@@ -69,6 +72,9 @@ pub struct LanDeviceScan {
     pub subnet: Option<String>,
     pub interface_name: Option<String>,
     pub scanned_at: u64,
+    /// Passive DHCP fingerprinting state: "starting", "active", or
+    /// "unavailable" (no privilege to bind :67).
+    pub dhcp_status: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]

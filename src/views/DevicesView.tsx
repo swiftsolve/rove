@@ -26,9 +26,15 @@ const SCAN_HINT =
 
 // Local Network access can't be queried on macOS, so when discovery comes up
 // empty we surface the most likely cause rather than implying the LAN is bare.
-import { IS_MAC } from '@/lib/platform'
+import { IS_MAC, IS_WINDOWS } from '@/lib/platform'
 const LOCAL_NETWORK_HINT =
-  'Missing devices? Rove needs Local Network access — enable it in System Settings › Privacy & Security › Local Network, then scan again.'
+  'Missing devices? Rove needs Local Network access. Enable it in System Settings › Privacy & Security › Local Network, then scan again.'
+// Passive DHCP fingerprinting needs permission to bind :67. This hint is only
+// shown on Linux, where reinstalling grants it via setcap and the advice is
+// actionable — macOS needs elevated privileges (no clean per-app grant yet) and
+// Windows binds it without any setup, so the copy would be wrong there.
+const DHCP_UNAVAILABLE_HINT =
+  'Passive DHCP fingerprinting is off (needs permission to watch for joining devices). Reinstall the .deb/.rpm to enable it, or grant cap_net_bind_service, for richer identification.'
 import './DevicesView.css'
 
 interface DevicesViewProps {
@@ -65,6 +71,14 @@ function KindIcon({ kind }: { readonly kind: LanDeviceKind }): JSX.Element {
 }
 
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
+  // Kind · OS · model, dropping whichever parts are unknown. OS comes from the
+  // passive DHCP fingerprint.
+  const meta = [
+    device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
+    device.os ?? undefined,
+    device.model ?? undefined,
+  ].filter((part): part is string => Boolean(part))
+
   return (
     <section className={`ui-section device-row ${device.isGateway ? 'gateway' : ''}`}>
       <span className={`device-row-icon kind-${device.kind}`}>
@@ -85,13 +99,7 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         {device.isGateway ? (
           <span className="text-meta device-row-kind gateway">Gateway</span>
         ) : (
-          (device.kind !== 'unknown' || device.model) && (
-            <span className="text-meta device-row-kind">
-              {device.kind !== 'unknown' && LAN_DEVICE_KIND_LABELS[device.kind]}
-              {device.kind !== 'unknown' && device.model ? ' · ' : ''}
-              {device.model}
-            </span>
-          )
+          meta.length > 0 && <span className="text-meta device-row-kind">{meta.join(' · ')}</span>
         )}
 
         <div className="device-row-bottom">
@@ -124,6 +132,15 @@ export default function DevicesView({
   const onlySelf =
     !isScanning && scan != null && devices.every((device) => device.isSelf)
   const showLocalNetworkHint = IS_MAC && onlySelf
+  // Surface the DHCP-off hint only once discovery has resolved (not during the
+  // "starting" window), and only on Linux — that's the one platform where the
+  // advice (reinstall / setcap) is actionable.
+  const showDhcpHint =
+    !isScanning &&
+    scan != null &&
+    scan.dhcpStatus === 'unavailable' &&
+    !IS_MAC &&
+    !IS_WINDOWS
 
   return (
     <div className="view-page">
@@ -197,6 +214,7 @@ export default function DevicesView({
           {showLocalNetworkHint && (
             <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>
           )}
+          {showDhcpHint && <p className="text-muted devices-hint">{DHCP_UNAVAILABLE_HINT}</p>}
         </div>
       )}
     </div>
