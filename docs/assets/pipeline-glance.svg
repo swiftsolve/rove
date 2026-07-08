@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="316" viewBox="0 0 920 316" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect x="0.5" y="0.5" width="919" height="315" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
+
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">DEVICE DISCOVERY</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">From an empty subnet to a labelled device list</text>
+
+  <!-- 1 Scope -->
+  <rect x="48.5" y="112.5" width="153" height="132" rx="13" fill="#1c1c24" stroke="rgba(129,140,248,0.28)"></rect>
+  <circle cx="79" cy="143" r="13" fill="rgba(129,140,248,0.15)" stroke="rgba(129,140,248,0.5)"></circle>
+  <text x="79" y="147.5" font-size="12.5" font-weight="700" fill="#a5b4fc" text-anchor="middle">1</text>
+  <text x="101" y="148" font-size="15" font-weight="700" fill="#f2f2f5">Scope</text>
+  <text x="67" y="178" font-size="12.5" fill="#9a9aa8"><tspan x="67" dy="0">Find my subnet</tspan><tspan x="67" dy="18">from the active</tspan><tspan x="67" dy="18">interface —</tspan></text>
+  <text x="67" y="232" font-family="Menlo, Consolas, monospace" font-size="11.5" fill="#a5b4fc">192.168.1.0/24</text>
+
+  <polygon points="207,177 215,182 207,187" fill="#55556a"></polygon>
+
+  <!-- 2 Provoke -->
+  <rect x="215.5" y="112.5" width="153" height="132" rx="13" fill="#1c1c24" stroke="rgba(167,139,250,0.28)"></rect>
+  <circle cx="246" cy="143" r="13" fill="rgba(167,139,250,0.15)" stroke="rgba(167,139,250,0.5)"></circle>
+  <text x="246" y="147.5" font-size="12.5" font-weight="700" fill="#c4b5fd" text-anchor="middle">2</text>
+  <text x="268" y="148" font-size="15" font-weight="700" fill="#f2f2f5">Provoke</text>
+  <text x="234" y="178" font-size="12.5" fill="#9a9aa8"><tspan x="234" dy="0">Wake every host</tspan><tspan x="234" dy="18">while listeners</tspan><tspan x="234" dy="18">grab self-</tspan><tspan x="234" dy="18">announced names.</tspan></text>
+
+  <polygon points="374,177 382,182 374,187" fill="#55556a"></polygon>
+
+  <!-- 3 Read -->
+  <rect x="382.5" y="112.5" width="153" height="132" rx="13" fill="#1c1c24" stroke="rgba(96,165,250,0.28)"></rect>
+  <circle cx="413" cy="143" r="13" fill="rgba(96,165,250,0.15)" stroke="rgba(96,165,250,0.5)"></circle>
+  <text x="413" y="147.5" font-size="12.5" font-weight="700" fill="#93c5fd" text-anchor="middle">3</text>
+  <text x="435" y="148" font-size="15" font-weight="700" fill="#f2f2f5">Read</text>
+  <text x="401" y="178" font-size="12.5" fill="#9a9aa8"><tspan x="401" dy="0">The neighbor</tspan><tspan x="401" dy="18">table is the</tspan><tspan x="401" dy="18">ground truth of</tspan><tspan x="401" dy="18">who exists.</tspan></text>
+
+  <polygon points="541,177 549,182 541,187" fill="#55556a"></polygon>
+
+  <!-- 4 Enrich -->
+  <rect x="549.5" y="112.5" width="153" height="132" rx="13" fill="#1c1c24" stroke="rgba(52,211,153,0.28)"></rect>
+  <circle cx="580" cy="143" r="13" fill="rgba(52,211,153,0.15)" stroke="rgba(52,211,153,0.5)"></circle>
+  <text x="580" y="147.5" font-size="12.5" font-weight="700" fill="#6ee7b7" text-anchor="middle">4</text>
+  <text x="602" y="148" font-size="15" font-weight="700" fill="#f2f2f5">Enrich</text>
+  <text x="568" y="178" font-size="12.5" fill="#9a9aa8"><tspan x="568" dy="0">Per host: vendor,</tspan><tspan x="568" dy="18">hostname, and a</tspan><tspan x="568" dy="18">trust-ranked</tspan><tspan x="568" dy="18">device kind.</tspan></text>
+
+  <polygon points="708,177 716,182 708,187" fill="#55556a"></polygon>
+
+  <!-- 5 Assemble -->
+  <rect x="716.5" y="112.5" width="153" height="132" rx="13" fill="#1c1c24" stroke="rgba(251,191,36,0.28)"></rect>
+  <circle cx="747" cy="143" r="13" fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.5)"></circle>
+  <text x="747" y="147.5" font-size="12.5" font-weight="700" fill="#fcd34d" text-anchor="middle">5</text>
+  <text x="769" y="148" font-size="15" font-weight="700" fill="#f2f2f5">Assemble</text>
+  <text x="735" y="178" font-size="12.5" fill="#9a9aa8"><tspan x="735" dy="0">Add self, sort</tspan><tspan x="735" dy="18">gateway→self→IP,</tspan><tspan x="735" dy="18">dedupe by MAC.</tspan></text>
+
+  <!-- concurrency bracket under stage 2 -->
+  <path d="M 215.5 254 L 215.5 260 Q 215.5 262 217.5 262 L 534.5 262 Q 536.5 262 536.5 260 L 536.5 254" fill="none" stroke="#55556a"></path>
+  <text x="376" y="280" font-size="11" font-weight="600" letter-spacing="1.1" fill="#7c7c8a" text-anchor="middle">STAGE 2 RUNS FOUR PROBES CONCURRENTLY — ONE 3.2 s WINDOW</text>
+</svg>

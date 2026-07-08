@@ -24,17 +24,17 @@ Live traffic · speed tests · LAN device discovery · connection diagnostics ·
 Rove is two programs talking over a thin, typed bridge:
 
 <div align="center">
-  <img src="docs/assets/architecture.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
+  <img src="docs/assets/architecture-v2.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
 </div>
 
 - **Request/response.** Each UI data need is one Tauri *command* (`get_network_info`,
   `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
   around a pure-Rust service in `crates/rove-core`.
-- **Push.** Three *events* flow the other way: `live-throughput` (1 Hz while the
+- **Push** — three *events* flow the other way: `live-throughput` (1 Hz while the
   Home tab is subscribed), `speed-test-progress`, and `network-changed` (the
   backend watches `ip monitor route` and nudges the UI within ~1 s of a cable
   pull or Wi-Fi join, so state never waits on the 15 s poll).
-- **The contract.** TypeScript types in `src/types/` define every payload; the
+- **The contract** — TypeScript types in `src/types/` define every payload; the
   Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
   (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
@@ -57,10 +57,10 @@ veth, vpn…) are excluded.
 **Devices.** A four-step pipeline (`crates/rove-core/src/devices/`):
 
 <div align="center">
-  <img src="docs/assets/devices-pipeline.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
+  <img src="docs/assets/devices-pipeline-v2.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
 </div>
 
-1. *Sweep*: ping every host in your /24 (64 concurrent probes). The point is
+1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
    not the ICMP reply but the ARP exchange it forces: idle devices enter the
    kernel neighbor table even if they block ping.
 2. *mDNS*: concurrently, listen ~3 s for service announcements (`_googlecast`,
@@ -122,7 +122,7 @@ rove/
 │   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
-│                               deps; compiles and tests anywhere): network_info,
+│                               deps — compiles and tests anywhere): network_info,
 │                               interfaces, devices/, diagnostics, speed, mdns,
 │                               live_throughput, data_usage, oui, shell
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
@@ -182,7 +182,7 @@ instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
 Windows fall back to the 15 s poll.
 
 On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
-deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN, including the
-link-speed / transmit rate that the shell tools no longer expose. The SSID
+deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN — including the
+link-speed / transmit rate, which the shell tools no longer expose. The SSID
 sits behind Location Services, so Rove asks for that permission once at startup;
 without it the network name shows as “—” while everything else still resolves.
