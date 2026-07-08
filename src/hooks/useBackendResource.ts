@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePageVisible } from '@/hooks/usePageVisible'
 
 interface Options {
   /** Refetch every time `enabled` turns true (default: fetch only once). */
@@ -52,6 +53,12 @@ export function useBackendResource<T>(
   // remount was skipped by the `hasRunRef` guard, and the in-flight result was
   // then dropped — so `isBusy` never cleared and the spinner hung forever.
   const mountedRef = useRef(true)
+
+  // Pause polling while the app is backgrounded; refresh once on resume. Without
+  // this, the webview's throttled interval wakes up and fires a burst of stale
+  // reloads (e.g. a heavy device rescan) the moment the window returns.
+  const visible = usePageVisible()
+  const wasVisibleRef = useRef(visible)
 
   // `silent` skips the busy/error churn so a background poll refreshes values
   // in place without flashing a spinner or clearing a visible error.
@@ -107,11 +114,16 @@ export function useBackendResource<T>(
   useEffect(() => {
     // While the owning tab is visible, refresh in the background so values stay
     // live without the user tapping refresh. Silent so it never flashes a
-    // spinner over data already on screen.
-    if (!enabled || !pollIntervalMs) return
+    // spinner over data already on screen. Paused while hidden, with one fresh
+    // read on resume so the first thing you see after a background stretch is
+    // current — the enable/reset effect already covers the initial load.
+    const resumed = visible && !wasVisibleRef.current
+    wasVisibleRef.current = visible
+    if (!enabled || !pollIntervalMs || !visible) return
+    if (resumed) void reload(true)
     const intervalId = window.setInterval(() => void reload(true), pollIntervalMs)
     return () => window.clearInterval(intervalId)
-  }, [enabled, pollIntervalMs, reload])
+  }, [enabled, pollIntervalMs, visible, reload])
 
   useEffect(() => {
     // Mark unmounted so a fetch that resolves afterward can't setState. Using a

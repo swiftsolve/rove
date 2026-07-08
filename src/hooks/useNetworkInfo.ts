@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { networkInfoEqual } from '@/components/connection/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
+import { usePageVisible } from '@/hooks/usePageVisible'
 
 const REFRESH_INTERVAL_MS = 15_000
 // Sit above the backend's own per-command budget (15s, see
@@ -60,6 +61,13 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   // on top of the interval poll — they'd only multiply backend load for the
   // same answer.
   const inFlightRef = useRef(false)
+  // Generation counter, bumped whenever the app resumes from the background.
+  // A poll captures the current generation when it starts; if the app is
+  // backgrounded and resumed while that poll is in flight, its result — and,
+  // crucially, its `setTimeout`-based timeout that a suspended webview fires
+  // the instant we return — belongs to a stale generation and is ignored.
+  const genRef = useRef(0)
+  const visible = usePageVisible()
 
   const refresh = useCallback(async (silent = false): Promise<void> => {
     const bridgeError = getNetworkApiError()
@@ -71,6 +79,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
 
     if (inFlightRef.current) return
     inFlightRef.current = true
+    const gen = genRef.current
 
     const isInitial = infoRef.current === null
     if (!silent && isInitial) setIsLoading(true)
@@ -82,10 +91,14 @@ export function useNetworkInfo(): UseNetworkInfoResult {
         'Network detection timed out.',
       )
 
+      if (gen !== genRef.current) return
       failuresRef.current = 0
       setInfo((previous) => (networkInfoEqual(previous, data) ? previous : data))
       setError(null)
     } catch (unknownError) {
+      // A poll that spanned a background stretch is stale — its failure (often a
+      // spurious timeout the frozen timer fired on resume) must not count.
+      if (gen !== genRef.current) return
       failuresRef.current += 1
       const message =
         unknownError instanceof Error
@@ -98,22 +111,26 @@ export function useNetworkInfo(): UseNetworkInfoResult {
         setError(message)
       }
     } finally {
-      inFlightRef.current = false
+      // Only the current generation owns the in-flight slot; a superseded poll
+      // must not clear a flag a fresh post-resume poll may already hold.
+      if (gen === genRef.current) inFlightRef.current = false
       if (!silent || isInitial) setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
+    // Poll only while the window is visible. On becoming visible again after a
+    // background stretch, invalidate any frozen in-flight poll (new generation),
+    // drop the failure streak so a stale timeout can't tip the banner, and read
+    // once immediately before resuming the interval.
+    if (!visible) return
+    genRef.current += 1
+    inFlightRef.current = false
+    failuresRef.current = 0
     void refresh(false)
-    let active = true
-    const intervalId = window.setInterval(() => {
-      if (active) void refresh(true)
-    }, REFRESH_INTERVAL_MS)
-    return () => {
-      active = false
-      window.clearInterval(intervalId)
-    }
-  }, [refresh])
+    const intervalId = window.setInterval(() => void refresh(true), REFRESH_INTERVAL_MS)
+    return () => window.clearInterval(intervalId)
+  }, [visible, refresh])
 
   // The backend watches the routing table — refresh the moment it nudges us
   // (cable pulled, Wi-Fi joined) instead of waiting out the poll interval.
