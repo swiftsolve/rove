@@ -51,10 +51,31 @@ jobs:
         shell: bash
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           if [ "${{ matrix.platform }}" = "macos-latest" ] && [ -n "$APPLE_CERTIFICATE" ]; then
             echo "sign=true" >> "$GITHUB_OUTPUT"
             echo "::notice::macOS code signing enabled"
+            # Export the signing vars to later steps ONLY when a cert is present.
+            # They must be ABSENT (not empty) for an unsigned build: Tauri treats
+            # a *set* but empty APPLE_CERTIFICATE as "a certificate is present"
+            # and dies trying to `security import` it — which is exactly what
+            # broke the unsigned macOS build. Heredoc keeps the multi-line base64
+            # certificate intact through $GITHUB_ENV.
+            {
+              echo "APPLE_CERTIFICATE<<__ROVE_EOF__"
+              echo "$APPLE_CERTIFICATE"
+              echo "__ROVE_EOF__"
+              echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
+              echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
+              echo "APPLE_ID=$APPLE_ID"
+              echo "APPLE_PASSWORD=$APPLE_PASSWORD"
+              echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+            } >> "$GITHUB_ENV"
           else
             echo "sign=false" >> "$GITHUB_OUTPUT"
             # A plain `[ … ] && echo` makes the step exit 1 on non-macOS (the
@@ -98,15 +119,11 @@ jobs:
           # --- Updater signing (required for auto-updates to install) ---
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # --- macOS code signing + notarization (removes Gatekeeper warning) ---
-          # Gated on the flag above: blank when disabled, which makes
-          # tauri-action skip signing/notarization entirely.
-          APPLE_CERTIFICATE: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE || '' }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
-          APPLE_SIGNING_IDENTITY: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_SIGNING_IDENTITY || '' }}
-          APPLE_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_ID || '' }}
-          APPLE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_TEAM_ID || '' }}
+          # macOS code-signing + notarization vars are injected into the
+          # environment by the "Determine macOS signing" step above, but ONLY
+          # when a certificate is present. They are deliberately NOT listed here:
+          # setting them to an empty string is what made Tauri attempt (and fail)
+          # to import a non-existent certificate on unsigned builds.
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Rove ${{ github.ref_name }}'
