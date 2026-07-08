@@ -505,6 +505,12 @@ mod tests {
             classify_fingerprint(None, Some("1,15,3,6,44,46,47,31,33,121,249,43,252")),
             (Some("computer"), Some("Windows")),
         );
+        // Android that omits the Option 60 vendor class is still caught by its
+        // PRL prefix (trailing options drift across versions).
+        assert_eq!(
+            classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,43,114")),
+            (Some("phone"), Some("Android")),
+        );
     }
 
     #[test]
