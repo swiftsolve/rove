@@ -46,14 +46,37 @@ jobs:
       # Enable macOS code signing only when a certificate secret is present.
       # If it's absent, we fall back to an unsigned build so the release still
       # publishes (Gatekeeper warning) instead of failing the whole job.
+      #
+      # When signing, the APPLE_* secrets are exported to $GITHUB_ENV so they
+      # are truly ABSENT (not empty) on the unsigned path. This matters: Tauri's
+      # Rust bundler reads std::env::var("APPLE_CERTIFICATE"), which returns
+      # Ok("") for a present-but-empty var and treats that as "signing
+      # requested", then crashes in `security import` on empty cert data. An
+      # inline `${{ … || '' }}` env value is present-but-empty, so it must not
+      # be used here.
       - name: Determine macOS signing
         id: macsign
         shell: bash
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           if [ "${{ matrix.platform }}" = "macos-latest" ] && [ -n "$APPLE_CERTIFICATE" ]; then
             echo "sign=true" >> "$GITHUB_OUTPUT"
+            # Export to the job environment ONLY when signing, so these vars are
+            # absent (not empty) otherwise. Values are masked as secrets.
+            {
+              echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
+              echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
+              echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
+              echo "APPLE_ID=$APPLE_ID"
+              echo "APPLE_PASSWORD=$APPLE_PASSWORD"
+              echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+            } >> "$GITHUB_ENV"
             echo "::notice::macOS code signing enabled"
           else
             echo "sign=false" >> "$GITHUB_OUTPUT"
@@ -92,21 +115,16 @@ jobs:
           rm -f cert.p12
           echo "::notice::APPLE_CERTIFICATE validated (valid .p12 with private key)"
 
+      # macOS signing secrets are injected via $GITHUB_ENV by the step above,
+      # but ONLY when signing is enabled — so on the unsigned path they are
+      # absent (not empty) and Tauri does an ad-hoc signature instead of
+      # crashing in `security import`.
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # --- Updater signing (required for auto-updates to install) ---
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # --- macOS code signing + notarization (removes Gatekeeper warning) ---
-          # Gated on the flag above: blank when disabled, which makes
-          # tauri-action skip signing/notarization entirely.
-          APPLE_CERTIFICATE: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE || '' }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
-          APPLE_SIGNING_IDENTITY: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_SIGNING_IDENTITY || '' }}
-          APPLE_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_ID || '' }}
-          APPLE_PASSWORD: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ steps.macsign.outputs.sign == 'true' && secrets.APPLE_TEAM_ID || '' }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Rove ${{ github.ref_name }}'
