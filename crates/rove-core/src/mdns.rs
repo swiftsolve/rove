@@ -51,6 +51,32 @@ pub struct MdnsHit {
     pub model: Option<String>,
 }
 
+impl MdnsHit {
+    /// Fold another observation of the same device into this one, using the same
+    /// rule as the within-window merge in [`discover`]: the strongest (lowest
+    /// `kind_rank`) strong kind wins, and every other field fills a gap it
+    /// doesn't already hold. Lets the scanner accumulate a device's mDNS
+    /// identity across scans so a service seen once isn't lost when a later,
+    /// lossy discovery window misses it.
+    pub(crate) fn absorb(&mut self, other: &MdnsHit) {
+        if let Some(kind) = other.kind {
+            let better = self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
+            if better {
+                self.kind = Some(kind);
+            }
+        }
+        if self.kind_hint.is_none() {
+            self.kind_hint = other.kind_hint;
+        }
+        if self.name.is_none() {
+            self.name = other.name.clone();
+        }
+        if self.model.is_none() {
+            self.model = other.model.clone();
+        }
+    }
+}
+
 /// Names like "0,1,2" or "16A9B57BB77..." are IDs, not names.
 fn is_human_name(name: &str) -> bool {
     if name.len() > 32 || !name.chars().any(|c| c.is_ascii_alphabetic()) {
