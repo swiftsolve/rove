@@ -14,6 +14,7 @@ pub mod dhcp;
 mod hostname;
 mod netbios;
 mod probe;
+mod snmp;
 mod ssdp;
 mod subnet;
 mod sweep;
@@ -77,11 +78,15 @@ pub async fn scan() -> LanDeviceScan {
     // Results stay aligned index-for-index with `in_scope` for the `zip` below.
     // Reverse-DNS, HTTP-banner and NetBIOS enrichment are independent — run them
     // together so their combined latency is one round, not three.
+    // The gateway is a single known host we can probe purposefully: SNMP
+    // `sysDescr` is the standard model source for network gear that never shows
+    // up on mDNS/SSDP. Read-only `public` community, one host — see `snmp`.
     let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
-    let (hostnames, banner_hits, netbios_hits) = tokio::join!(
+    let (hostnames, banner_hits, netbios_hits, snmp_hits) = tokio::join!(
         hostname::resolve_many(&ips),
         banner::grab(&open_ports),
         netbios::query_many(&ips),
+        snmp::discover(gateway.as_deref(), local_ipv4),
     );
 
     // Passive DHCP fingerprints accumulated by the background listener since
@@ -94,6 +99,7 @@ pub async fn scan() -> LanDeviceScan {
         mdns: &mdns_hits,
         ssdp: &ssdp_hits,
         banner: &banner_hits,
+        snmp: &snmp_hits,
         netbios: &netbios_hits,
         dhcp: &dhcp_hits,
         open_ports: &open_ports,
@@ -120,6 +126,40 @@ pub async fn scan() -> LanDeviceScan {
     }
 }
 
+/// Best-effort identity of the default gateway, resolved cheaply for the
+/// diagnostics Router panel (which shows the router but doesn't run a full
+/// device scan). Every field is best-effort and may be `None`.
+pub struct GatewayIdentity {
+    /// The gateway's MAC, from the neighbor table.
+    pub mac: Option<String>,
+    /// Make from the MAC OUI.
+    pub vendor: Option<String>,
+    /// Model from SNMP `sysDescr` — the one model source most routers expose.
+    pub model: Option<String>,
+}
+
+/// Resolve the gateway's vendor (MAC OUI) and model (SNMP `sysDescr`) without a
+/// full scan. Callers should ping the gateway first so its neighbor-table entry
+/// is fresh; `local_ip`, when known, is the active interface address the SNMP
+/// probe binds to. Returns all-`None` when there is no gateway.
+pub async fn gateway_identity(
+    gateway: Option<&str>,
+    local_ip: Option<std::net::Ipv4Addr>,
+) -> GatewayIdentity {
+    let Some(gw) = gateway else {
+        return GatewayIdentity { mac: None, vendor: None, model: None };
+    };
+    let mac = neighbor_table()
+        .await
+        .into_iter()
+        .find(|n| n.ip == gw)
+        .map(|n| n.mac)
+        .filter(|m| !m.is_empty());
+    let vendor = mac.as_deref().and_then(lookup_vendor).map(String::from);
+    let model = snmp::discover(gateway, local_ip).await.get(gw).and_then(|hit| hit.model());
+    GatewayIdentity { mac, vendor, model }
+}
+
 /// The per-scan lookup tables `build_device` draws on, all keyed by device IP.
 /// Bundled so a device is enriched from one value rather than a long argument
 /// list that grows with every new discovery source.
@@ -127,6 +167,7 @@ struct Enrichment<'a> {
     mdns: &'a std::collections::HashMap<String, mdns::MdnsHit>,
     ssdp: &'a std::collections::HashMap<String, ssdp::SsdpHit>,
     banner: &'a std::collections::HashMap<String, banner::BannerHit>,
+    snmp: &'a std::collections::HashMap<String, snmp::SnmpHit>,
     netbios: &'a std::collections::HashMap<String, String>,
     dhcp: &'a std::collections::HashMap<String, dhcp::DhcpHit>,
     open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
@@ -156,6 +197,7 @@ fn build_device(
         mdns: enrichment.mdns.get(&neighbor.ip).cloned().unwrap_or_default(),
         ssdp: enrichment.ssdp.get(&neighbor.ip).cloned().unwrap_or_default(),
         banner: enrichment.banner.get(&neighbor.ip).cloned().unwrap_or_default(),
+        snmp: enrichment.snmp.get(&neighbor.ip).cloned().unwrap_or_default(),
         ports: enrichment.open_ports.get(&neighbor.ip).cloned().unwrap_or_default(),
     };
     let evidence = if neighbor.mac.is_empty() {
@@ -198,8 +240,15 @@ fn build_device(
         history::stable_name(&neighbor.mac, hostname)
     };
 
-    // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
-    let model = evidence.mdns.model.clone().or_else(|| evidence.ssdp.model.clone());
+    // A hardware model from mDNS TXT is the most precise; SSDP's modelName next;
+    // then the gateway's SNMP `sysDescr` (the only model source for most routers,
+    // which announce on neither mDNS nor SSDP).
+    let model = evidence
+        .mdns
+        .model
+        .clone()
+        .or_else(|| evidence.ssdp.model.clone())
+        .or_else(|| evidence.snmp.model());
 
     // An Echo is fundamentally a speaker; keep that label even when it also acts
     // as a Matter/Thread hub (a strong `iot` vote that would otherwise win).
@@ -219,6 +268,18 @@ fn build_device(
         })
     };
 
+    // A privacy-randomized MAC has no OUI vendor, but an Apple handheld still
+    // gives away its maker — an mDNS/UPnP model like "iPhone15,2" or a default
+    // Apple hostname ("iPhone", "Jane's-iPad"). Surface that so a randomized
+    // iPhone reads "Phone · Apple" instead of dropping the make. Kept out of the
+    // classifier above, which stays on the authoritative OUI vendor.
+    let vendor = vendor.or_else(|| infer_vendor(hostname.as_deref(), model.as_deref()));
+
+    // Turn a raw hardware identifier into a name a person recognizes:
+    // "MacBookPro18,1" reads as "MacBook Pro", not a part number. Done after
+    // vendor inference above, which needs the raw "<family><gen>,<rev>" shape.
+    let model = model.map(|m| humanize_model(&m));
+
     LanDevice {
         kind,
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
@@ -234,6 +295,72 @@ fn build_device(
     }
 }
 
+/// Infer the maker when the OUI lookup came up empty (a privacy-randomized MAC).
+/// Currently Apple-only: Apple handhelds randomize their MAC yet still give
+/// themselves away by an mDNS/UPnP model identifier ("iPhone15,2", "iPad13,4")
+/// or a default Apple hostname ("iPhone", "Jane's-iPad"), so the make is still
+/// recoverable. Best-effort — other brands rarely both randomize *and*
+/// self-label, so they stay `None` rather than risk a wrong guess.
+fn infer_vendor(hostname: Option<&str>, model: Option<&str>) -> Option<String> {
+    if model.is_some_and(is_apple_model) || hostname.is_some_and(is_apple_hostname) {
+        return Some("Apple".to_string());
+    }
+    None
+}
+
+/// An Apple hardware model identifier: a product family followed by a
+/// "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3". The
+/// comma-number shape is what separates the model from a bare "iPad" hostname.
+fn is_apple_model(model: &str) -> bool {
+    const FAMILIES: [&str; 9] =
+        ["iphone", "ipad", "ipod", "watch", "macbook", "imac", "macmini", "macpro", "audioaccessory"];
+    let lower = model.trim().to_ascii_lowercase();
+    lower.contains(',')
+        && lower.bytes().any(|b| b.is_ascii_digit())
+        && FAMILIES.iter().any(|family| lower.starts_with(family))
+}
+
+/// Turn a hardware model string into a human-friendly product name. Apple's
+/// mDNS/UPnP identifiers ("MacBookPro18,1", "iPhone15,2", "AudioAccessory5,1")
+/// are the main offenders: they pack a product family together with a
+/// "<generation>,<revision>" suffix that means nothing to a person. Strip the
+/// suffix and expand the CamelCase family into spaced words, mapping the few
+/// families whose marketing name differs from the identifier. Anything that
+/// isn't a recognized Apple identifier (a router's SNMP `sysDescr`, an SSDP
+/// `modelName`) is already human-readable and passes through untouched.
+fn humanize_model(model: &str) -> String {
+    if !is_apple_model(model) {
+        return model.to_string();
+    }
+    // Everything before the "<gen>,<rev>" suffix is the product family.
+    let family: String = model.trim().chars().take_while(|c| !c.is_ascii_digit()).collect();
+    match family.to_ascii_lowercase().as_str() {
+        "audioaccessory" => "HomePod".to_string(),
+        "watch" => "Apple Watch".to_string(),
+        "macmini" => "Mac mini".to_string(),
+        "macpro" => "Mac Pro".to_string(),
+        // "MacBook" is one brand word, so only the trailing tier is split off.
+        "macbook" => "MacBook".to_string(),
+        "macbookpro" => "MacBook Pro".to_string(),
+        "macbookair" => "MacBook Air".to_string(),
+        // Lowercase-run families ("iphone", "ipad", "imac", "ipod") are a single
+        // word; keep the identifier's own casing rather than lowercasing it.
+        _ => family,
+    }
+}
+
+/// A hostname that names an Apple product — the platform default ("iPhone") or a
+/// personalized form ("Janes-iPad", "Apple-Watch"). Matched as substrings so the
+/// possessive/prefixed variants are covered.
+fn is_apple_hostname(hostname: &str) -> bool {
+    const MARKERS: [&str; 10] = [
+        "iphone", "ipad", "ipod", "macbook", "imac", "macmini", "mac-mini", "airpods",
+        "apple-watch", "apple watch",
+    ];
+    let lower = hostname.to_ascii_lowercase();
+    MARKERS.iter().any(|marker| lower.contains(marker))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -244,12 +371,19 @@ mod tests {
     fn device_with_mdns(mac: &str, ip: &str, mdns: mdns::MdnsHit) -> LanDevice {
         let mut mdns_map = HashMap::new();
         mdns_map.insert(ip.to_string(), mdns);
-        let (ssdp, banner, netbios, dhcp, ports) =
-            (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
+        let (ssdp, banner, snmp, netbios, dhcp, ports) = (
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+        );
         let enrichment = Enrichment {
             mdns: &mdns_map,
             ssdp: &ssdp,
             banner: &banner,
+            snmp: &snmp,
             netbios: &netbios,
             dhcp: &dhcp,
             open_ports: &ports,
@@ -275,6 +409,52 @@ mod tests {
         let echo = device_with_mdns("08:12:a5:00:00:12", "192.168.2.21", mdns::MdnsHit::default());
         assert_ne!(echo.hostname.as_deref(), Some("Amazon Echo"));
         assert_ne!(echo.kind, "speaker");
+    }
+
+    #[test]
+    fn apple_model_and_hostname_infer_an_apple_vendor() {
+        // The reported case: a randomized-MAC iPhone has no OUI vendor, but its
+        // model or default hostname still identifies the maker.
+        assert_eq!(infer_vendor(None, Some("iPhone15,2")).as_deref(), Some("Apple"));
+        assert_eq!(infer_vendor(Some("iPhone"), None).as_deref(), Some("Apple"));
+        assert_eq!(infer_vendor(Some("Janes-iPad"), None).as_deref(), Some("Apple"));
+        assert_eq!(infer_vendor(Some("Apple-Watch"), None).as_deref(), Some("Apple"));
+    }
+
+    #[test]
+    fn non_apple_signals_infer_no_vendor() {
+        // A bare "iPad"-less hostname or a non-Apple model must not be guessed.
+        assert!(infer_vendor(Some("Galaxy-S21"), None).is_none());
+        assert!(infer_vendor(Some("living-room"), Some("BRAVIA KD-55X")).is_none());
+        assert!(infer_vendor(None, None).is_none());
+    }
+
+    #[test]
+    fn a_bare_ipad_model_string_is_not_mistaken_for_a_model_id() {
+        // "iPad" alone (no ",<rev>") is a hostname, not a hardware model id, so
+        // is_apple_model must reject it — hostname matching covers that case.
+        assert!(!is_apple_model("iPad"));
+        assert!(is_apple_model("iPad13,4"));
+    }
+
+    #[test]
+    fn humanize_model_reads_apple_identifiers_as_product_names() {
+        assert_eq!(humanize_model("MacBookPro18,1"), "MacBook Pro");
+        assert_eq!(humanize_model("MacBookAir10,1"), "MacBook Air");
+        assert_eq!(humanize_model("iMac21,1"), "iMac");
+        assert_eq!(humanize_model("iPhone15,2"), "iPhone");
+        assert_eq!(humanize_model("iPad13,4"), "iPad");
+        assert_eq!(humanize_model("Macmini9,1"), "Mac mini");
+        assert_eq!(humanize_model("MacPro7,1"), "Mac Pro");
+        assert_eq!(humanize_model("Watch6,1"), "Apple Watch");
+        assert_eq!(humanize_model("AudioAccessory5,1"), "HomePod");
+    }
+
+    #[test]
+    fn humanize_model_leaves_readable_names_untouched() {
+        // A router's SNMP sysDescr or an SSDP modelName is already human-readable.
+        assert_eq!(humanize_model("HP LaserJet Pro"), "HP LaserJet Pro");
+        assert_eq!(humanize_model("BRAVIA KD-55X"), "BRAVIA KD-55X");
     }
 }
 

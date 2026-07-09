@@ -100,6 +100,12 @@ export default function DiagnosticsView({
           >
             <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
             <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
+            {diagnostics?.gatewayVendor && (
+              <DataRow label="Vendor" value={diagnostics.gatewayVendor} />
+            )}
+            {diagnostics?.gatewayModel && (
+              <DataRow label="Model" value={diagnostics.gatewayModel} />
+            )}
             <DataRow label="Latency">
               {ping ? (
                 <span className={latencyLevel(ping.avgMs)}>{formatPing(ping.avgMs)}</span>
@@ -117,7 +123,7 @@ export default function DiagnosticsView({
             </DataRow>
           </Section>
 
-          <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list">
+          <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list diag-dns">
             {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (
               (diagnostics?.dnsServers ?? []).map((server) => (
                 <DataRow key={server} label="Server" value={server} />

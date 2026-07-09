@@ -8,6 +8,7 @@ import {
 import type { SpeedTestConnection } from '@/components/speed-test/SpeedTestSection'
 import { formatBand } from '@/lib/format'
 import { getNetworkApi } from '@/bridge/networkApi'
+import { getLiveThroughput, subscribeLiveThroughput } from '@/hooks/useLiveThroughput'
 
 function connectionFromContext(context: SpeedRunContext): SpeedTestConnection | null {
   if (context.connectionType === 'wifi') {
@@ -61,6 +62,14 @@ interface SpeedTestState {
   readonly linkCapacityMbps: number | null
   /** Connection metadata captured when the last test finished. */
   readonly runConnection: SpeedTestConnection | null
+  /**
+   * Running peak of the live throughput per direction *during* the current
+   * test. Lives in this module store (not component state) so it survives the
+   * Speed view unmounting mid-test — otherwise switching tabs and back would
+   * zero the on-screen download/upload figures.
+   */
+  readonly livePeakDownloadMbps: number
+  readonly livePeakUploadMbps: number
 }
 
 interface UseSpeedTestResult extends SpeedTestState {
@@ -80,6 +89,8 @@ let state: SpeedTestState = {
   completedAt: null,
   linkCapacityMbps: null,
   runConnection: null,
+  livePeakDownloadMbps: 0,
+  livePeakUploadMbps: 0,
 }
 
 const listeners = new Set<() => void>()
@@ -88,6 +99,20 @@ function setState(next: SpeedTestState): void {
   state = next
   for (const listener of listeners) listener()
 }
+
+// While a test runs, the connection is saturated by the test itself, so the
+// live throughput is a real reading of the current speed. Fold each sample into
+// the running peak per direction so the on-screen numbers only ever climb. This
+// runs at the module level, independent of any mounted view, so the peaks keep
+// accumulating even while the Speed tab isn't on screen.
+subscribeLiveThroughput(() => {
+  if (!state.testing) return
+  const { downloadMbps, uploadMbps } = getLiveThroughput().throughput
+  const down = Math.max(state.livePeakDownloadMbps, downloadMbps)
+  const up = Math.max(state.livePeakUploadMbps, uploadMbps)
+  if (down === state.livePeakDownloadMbps && up === state.livePeakUploadMbps) return
+  setState({ ...state, livePeakDownloadMbps: down, livePeakUploadMbps: up })
+})
 
 function subscribe(listener: () => void): () => void {
   listeners.add(listener)
@@ -124,6 +149,8 @@ async function runTest(): Promise<void> {
     testing: true,
     error: null,
     progress: { phase: 'internet', message: 'Starting speed test…', progress: 0 },
+    livePeakDownloadMbps: 0,
+    livePeakUploadMbps: 0,
   })
 
   // `settled` stops trailing progress events (e.g. the backend's final
