@@ -187,6 +187,17 @@ fn build_device(
         .or(resolved_hostname)
         .or_else(|| is_echo.then(|| "Amazon Echo".to_string()));
 
+    // Reverse-DNS / NetBIOS names (the only label a Kasa-style plug exposes) flap
+    // across scans, and a nameless scan would drop the hostname classify vote and
+    // revert the device to its bare vendor kind ("HS103" plug → iot falling back
+    // to TP-Link → router). Remember the resolved name per-MAC so it — and the
+    // kind derived from it below — stays put. A MAC-less host can't be keyed.
+    let hostname = if neighbor.mac.is_empty() {
+        hostname
+    } else {
+        history::stable_name(&neighbor.mac, hostname)
+    };
+
     // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
     let model = evidence.mdns.model.clone().or_else(|| evidence.ssdp.model.clone());
 
