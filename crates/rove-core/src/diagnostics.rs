@@ -50,15 +50,36 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 pub async fn run() -> NetworkDiagnostics {
     let (gateway, iface, dns) = tokio::join!(default_gateway(), default_interface(), dns_servers());
 
-    let gateway_ping = match &gateway {
-        Some(gw) => ping(gw, 10).await,
+    // Resolve the router's make (MAC OUI) and model (SNMP) so the Router panel
+    // can name it — the diagnostics view never runs a full device scan itself.
+    let local_ipv4 = match &iface {
+        Some(name) => crate::interfaces::address_of(name)
+            .await
+            .0
+            .and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok()),
         None => None,
     };
+
+    // Ping and identity lookup run concurrently rather than back-to-back: SNMP
+    // addresses the gateway directly, and its neighbor-table entry is virtually
+    // always already resolved from the gateway/interface lookups above, so the
+    // MAC read no longer needs to wait out ten pings first.
+    let (gateway_ping, identity) = tokio::join!(
+        async {
+            match &gateway {
+                Some(gw) => ping(gw, 10).await,
+                None => None,
+            }
+        },
+        crate::devices::gateway_identity(gateway.as_deref(), local_ipv4),
+    );
 
     NetworkDiagnostics {
         gateway,
         default_interface: iface,
         dns_servers: dns,
         gateway_ping,
+        gateway_vendor: identity.vendor,
+        gateway_model: identity.model,
     }
 }

@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
 import type { CapabilityId, NetworkInfo } from '@/types'
 import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import type { SpeedSub } from '@/navigation/useNavigation'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
-import { useLiveThroughput } from '@/hooks/useLiveThroughput'
 import { canRunSpeedTest } from '@/components/connection/ConnectionCard'
 import SpeedTestSection, {
   type SpeedTestConnection,
@@ -56,6 +54,8 @@ export default function SpeedView({
     completedAt,
     linkCapacityMbps: testLinkCapacityMbps,
     runConnection,
+    livePeakDownloadMbps,
+    livePeakUploadMbps,
     runTest,
     cancelTest,
   } = useSpeedTest()
@@ -70,29 +70,6 @@ export default function SpeedView({
     hasRunTest && testLinkCapacityMbps != null
       ? testLinkCapacityMbps
       : getLinkCapacityMbps(info)
-
-  // While a test runs, the connection is saturated by the test itself, so the
-  // live throughput is a real reading of the current speed. Track its running
-  // peak per direction so the on-screen numbers only ever climb, then reset at
-  // the start of each test.
-  const live = useLiveThroughput()
-  const [peaks, setPeaks] = useState({ down: 0, up: 0 })
-  const wasTesting = useRef(false)
-
-  useEffect(() => {
-    if (testing && !wasTesting.current) setPeaks({ down: 0, up: 0 })
-    wasTesting.current = testing
-  }, [testing])
-
-  useEffect(() => {
-    if (!testing) return
-    const { downloadMbps, uploadMbps } = live.throughput
-    setPeaks((prev) =>
-      downloadMbps > prev.down || uploadMbps > prev.up
-        ? { down: Math.max(prev.down, downloadMbps), up: Math.max(prev.up, uploadMbps) }
-        : prev,
-    )
-  }, [testing, live.throughput])
 
   if (sub?.view === 'history') {
     return <SpeedHistory onBack={onBack} />
@@ -196,8 +173,8 @@ export default function SpeedView({
         canTest={canTest}
         error={speedTestError}
         progress={progress}
-        liveDownloadMbps={peaks.down}
-        liveUploadMbps={peaks.up}
+        liveDownloadMbps={livePeakDownloadMbps}
+        liveUploadMbps={livePeakUploadMbps}
       />
 
       <CapabilityList

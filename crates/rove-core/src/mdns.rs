@@ -101,6 +101,48 @@ fn is_human_name(name: &str) -> bool {
     !(compact.len() >= 16 && compact.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
+/// Google Cast's `_googlecast._tcp` service is shared by video devices
+/// (Chromecast, Nest Hub, Android TV) and audio-only ones (Nest Mini/Audio and
+/// smart-clock speakers), so the bare service type can't tell a TV from a
+/// speaker — every Cast device would otherwise read as "tv".
+///
+/// The TXT `ca` capabilities bitmask settles it: bit 0 is video-out, bit 2 is
+/// audio-out. A device that outputs audio but not video is a speaker; anything
+/// with video output — or an unreadable `ca` — keeps the historical "tv"
+/// default so nothing regresses. `md` is an opaque codename on many units (a
+/// Lenovo Smart Clock reports `LenovoCD-24502F`, not a marketing name), so it's
+/// only a keyword fallback for the rare device that omits `ca`.
+fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> &'static str {
+    const VIDEO_OUT: u32 = 0x01;
+    const AUDIO_OUT: u32 = 0x04;
+    if let Some(ca) = ca {
+        if ca & VIDEO_OUT != 0 {
+            return "tv";
+        }
+        if ca & AUDIO_OUT != 0 {
+            return "speaker";
+        }
+    }
+    // No usable `ca`: match only unambiguous audio-device names, so a codename or
+    // a video model can't be mistyped as a speaker. Everything else stays "tv".
+    if let Some(model) = model {
+        let m = model.to_ascii_lowercase();
+        const SPEAKER_HINTS: &[&str] = &[
+            "nest mini",
+            "nest audio",
+            "chromecast audio",
+            "google home mini",
+            "google home max",
+            "homepod",
+            "speaker",
+        ];
+        if SPEAKER_HINTS.iter().any(|hint| m.contains(hint)) {
+            return "speaker";
+        }
+    }
+    "tv"
+}
+
 fn kind_rank(kind: &str) -> u8 {
     match kind {
         "printer" => 0,
@@ -172,6 +214,17 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     .map(crate::net_util::sanitize_display)
                     .filter(|m| !m.is_empty());
 
+                // A Cast device's service alone means only "castable"; its `ca`
+                // capabilities decide TV vs. speaker (see `refine_cast_kind`).
+                let effective_kind: &'static str = if *service == "_googlecast._tcp.local." {
+                    let ca = info
+                        .get_property_val_str("ca")
+                        .and_then(|s| s.trim().parse::<u32>().ok());
+                    refine_cast_kind(ca, model.as_deref())
+                } else {
+                    *kind
+                };
+
                 for addr in info.get_addresses() {
                     if !addr.is_ipv4() {
                         continue;
@@ -180,13 +233,13 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     if *strong {
                         let better = entry
                             .kind
-                            .map(|current| kind_rank(kind) < kind_rank(current))
+                            .map(|current| kind_rank(effective_kind) < kind_rank(current))
                             .unwrap_or(true);
                         if better {
-                            entry.kind = Some(kind);
+                            entry.kind = Some(effective_kind);
                         }
                     } else if entry.kind_hint.is_none() {
-                        entry.kind_hint = Some(kind);
+                        entry.kind_hint = Some(effective_kind);
                     }
                     if entry.name.is_none() {
                         entry.name = name.clone();
@@ -222,6 +275,28 @@ mod tests {
         // A user-renamed endpoint is a real name and must survive.
         assert!(!is_generic_service_name("Kitchen"));
         assert!(!is_generic_service_name("Living Room Speaker"));
+    }
+
+    #[test]
+    fn cast_capabilities_split_speakers_from_tvs() {
+        // The real capture from a Lenovo Smart Clock: ca=231940 has the audio-out
+        // bit (0x04) set and video-out (0x01) clear — a speaker, not a TV, even
+        // though its `md` codename ("LenovoCD-24502F") names nothing.
+        assert_eq!(refine_cast_kind(Some(231940), Some("LenovoCD-24502F")), "speaker");
+        // A Chromecast (ca=4101) sets the video-out bit — stays a TV.
+        assert_eq!(refine_cast_kind(Some(4101), Some("Chromecast")), "tv");
+        // A Google Home speaker (ca=2052): audio-out, no video-out.
+        assert_eq!(refine_cast_kind(Some(2052), None), "speaker");
+    }
+
+    #[test]
+    fn cast_without_ca_falls_back_to_model_keywords_then_tv() {
+        // No `ca`: only unambiguous audio names become speakers.
+        assert_eq!(refine_cast_kind(None, Some("Nest Audio")), "speaker");
+        // An opaque codename with no `ca` can't be trusted as audio — stays "tv"
+        // (the historical default) rather than being guessed wrong.
+        assert_eq!(refine_cast_kind(None, Some("LenovoCD-24502F")), "tv");
+        assert_eq!(refine_cast_kind(None, None), "tv");
     }
 
     #[test]

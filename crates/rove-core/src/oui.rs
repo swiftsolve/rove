@@ -79,36 +79,111 @@ fn table() -> &'static OuiTable {
 /// unregistered or unparseable prefixes — a randomized MAC will almost never
 /// match, but callers should still gate on [`is_randomized_mac`].
 ///
-/// The registered name is passed through [`alias_vendor`] so an unrecognizable
-/// OEM/parent legal name becomes the consumer brand a user would recognize.
-pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
-    resolve(table(), mac).map(alias_vendor)
+/// The registered name is passed through [`clean_vendor`] so the verbose IEEE
+/// legal name ("Motorola (Wuhan) Mobility Technologies Communication Co., Ltd.")
+/// becomes a short label a user would recognize ("Motorola").
+pub fn lookup_vendor(mac: &str) -> Option<String> {
+    resolve(table(), mac).map(clean_vendor)
 }
 
 /// Consumer-brand aliases for OEM/parent legal names as registered with the IEEE.
-/// Smart-home vendors in particular register under an unrecognizable
-/// manufacturing-parent name — Govee's blocks all read "Shenzhen Intellirocks
-/// Tech. Co. Ltd." — so the raw registry string is useless as a device label.
-/// Each entry maps a distinctive, already-lowercased substring of the IEEE name
-/// to the recognizable brand. Curated and license-clean, like the table itself;
+/// Two jobs: surface a recognizable brand when the registry name is unrelated
+/// (Govee registers as "Shenzhen Intellirocks Tech. Co. Ltd."), and fix the
+/// casing that generic tidying can't (the registry shouts "TP-LINK", the brand
+/// is "TP-Link"). Each entry maps a distinctive, already-lowercased substring of
+/// the IEEE name to the brand. Curated and license-clean, like the table itself;
 /// keep needles specific enough not to collide with unrelated registrations.
 const VENDOR_ALIASES: &[(&str, &str)] = &[
     // Govee (D41368/5CE753/D4ADFC/E02A25 all register as the parent company).
     ("intellirocks", "Govee"),
+    // All-caps / OEM legal names whose brand casing tidying alone can't recover.
+    ("tp-link", "TP-Link"),
+    ("asustek", "ASUS"),
+    ("hon hai", "Foxconn"),
 ];
 
-/// Map a raw IEEE vendor string to a recognizable consumer brand when one is
-/// known, else return it unchanged. Case-insensitive substring match — the
-/// registry spelling (punctuation, "Co. Ltd." suffixes) varies, but a
-/// distinctive stem like "intellirocks" is stable.
-fn alias_vendor(vendor: &'static str) -> &'static str {
+/// Corporate/descriptor words that follow the brand in an IEEE legal name. The
+/// brand is the run of words *before* the first of these, so cutting here turns
+/// "Samsung Electronics Co.,Ltd" into "Samsung" and "TP-LINK TECHNOLOGIES
+/// CO.,LTD." into "TP-LINK". Compared case-insensitively against each word
+/// stripped of surrounding punctuation.
+const VENDOR_NOISE: &[&str] = &[
+    "technologies", "technology", "mobility", "communication", "communications",
+    "systems", "system", "electronics", "electronic", "networks", "network",
+    "corporation", "corp", "company", "co", "ltd", "inc", "gmbh", "llc",
+    "international", "holdings", "group", "industries", "industry", "manufacturing",
+    "semiconductor", "semiconductors", "devices", "device", "solutions",
+    "information", "computer", "computers", "enterprise", "enterprises", "limited",
+    "incorporated", "plc", "electric", "lighting",
+    // Non-English legal-entity suffixes, treated like "Inc"/"Ltd" ("Philips
+    // Lighting BV" -> "Philips", "Foo Oy" -> "Foo").
+    "bv", "ag", "sa", "oy", "ab", "pty", "pte", "kk", "sarl", "spa",
+];
+
+/// Map a raw IEEE vendor string to a short, recognizable label: a curated alias
+/// when one matches, else the generically tidied name (suffixes and location
+/// asides dropped). Never returns empty.
+fn clean_vendor(vendor: &str) -> String {
+    if let Some(brand) = alias_vendor(vendor) {
+        return brand.to_string();
+    }
+    tidy_vendor(vendor)
+}
+
+/// Curated-alias lookup: case-insensitive substring match on a distinctive stem
+/// ("intellirocks", "tp-link"), which is stable across registry punctuation.
+fn alias_vendor(vendor: &str) -> Option<&'static str> {
     let lower = vendor.to_ascii_lowercase();
-    for (needle, brand) in VENDOR_ALIASES {
-        if lower.contains(needle) {
-            return brand;
+    VENDOR_ALIASES
+        .iter()
+        .find(|(needle, _)| lower.contains(needle))
+        .map(|(_, brand)| *brand)
+}
+
+/// Trim an IEEE legal name down to the brand: drop parenthetical asides like
+/// "(Wuhan)", then keep the words before the first corporate/descriptor word
+/// (see [`VENDOR_NOISE`]). Casing is preserved — brand names are irregular
+/// (ASUS, iRobot), so title-casing would do more harm than good. Falls back to
+/// the trimmed original if the heuristic would leave nothing.
+fn tidy_vendor(vendor: &str) -> String {
+    // Drop bracketed asides (locations, notes) that split a brand from its type.
+    let mut without_brackets = String::with_capacity(vendor.len());
+    let mut depth: u32 = 0;
+    for c in vendor.chars() {
+        match c {
+            '(' | '[' => depth += 1,
+            ')' | ']' => depth = depth.saturating_sub(1),
+            _ if depth == 0 => without_brackets.push(c),
+            _ => {}
         }
     }
-    vendor
+
+    let words: Vec<&str> = without_brackets
+        .split(|c: char| c.is_whitespace() || c == ',')
+        .filter(|w| !w.is_empty())
+        .collect();
+
+    // Cut at the first noise word — but never at position 0, since a few brands
+    // legitimately begin with a descriptor ("Digital Devices", "General Electric").
+    let mut end = words.len();
+    for (i, word) in words.iter().enumerate().skip(1) {
+        let key = word.trim_matches(|c: char| !c.is_ascii_alphanumeric()).to_ascii_lowercase();
+        if VENDOR_NOISE.contains(&key.as_str()) {
+            end = i;
+            break;
+        }
+    }
+
+    let cleaned = words[..end]
+        .join(" ")
+        .trim_matches(|c: char| c == ',' || c == '.' || c.is_whitespace())
+        .to_string();
+
+    if cleaned.is_empty() {
+        vendor.trim().to_string()
+    } else {
+        cleaned
+    }
 }
 
 /// The precedence logic, split out from the global table so it can be unit
@@ -162,6 +237,52 @@ mod tests {
     }
 
     #[test]
+    fn tidy_strips_location_asides_and_corporate_suffixes() {
+        // The reported case: a verbose legal name collapses to the brand.
+        assert_eq!(
+            tidy_vendor("Motorola (Wuhan) Mobility Technologies Communication Co., Ltd."),
+            "Motorola"
+        );
+        assert_eq!(tidy_vendor("Samsung Electronics Co.,Ltd"), "Samsung");
+        assert_eq!(tidy_vendor("Cisco Systems, Inc"), "Cisco");
+        assert_eq!(tidy_vendor("Espressif Inc."), "Espressif");
+    }
+
+    #[test]
+    fn tidy_keeps_a_brand_that_begins_with_a_descriptor_word() {
+        // "Devices" is a noise word, but cutting at position 0 would leave nothing,
+        // so a leading descriptor is preserved.
+        assert_eq!(tidy_vendor("Digital Devices GmbH"), "Digital");
+    }
+
+    #[test]
+    fn tidy_leaves_a_clean_short_name_untouched() {
+        assert_eq!(tidy_vendor("Sonos, Inc."), "Sonos");
+        assert_eq!(tidy_vendor("Nintendo Co.,Ltd"), "Nintendo");
+    }
+
+    #[test]
+    fn tidy_strips_descriptor_and_non_english_legal_forms() {
+        // The reported case, plus other legal-entity suffixes.
+        assert_eq!(tidy_vendor("Philips Lighting BV"), "Philips");
+        assert_eq!(tidy_vendor("Wibrain Oy"), "Wibrain");
+        assert_eq!(tidy_vendor("Sagemcom SA"), "Sagemcom");
+    }
+
+    #[test]
+    fn tidy_keeps_multiword_brands_whose_second_word_is_not_noise() {
+        // Regression: an over-broad noise list would clip these to one word.
+        assert_eq!(tidy_vendor("Western Digital Technologies, Inc."), "Western Digital");
+        assert_eq!(tidy_vendor("Texas Instruments"), "Texas Instruments");
+    }
+
+    #[test]
+    fn alias_fixes_mangled_brand_casing() {
+        assert_eq!(clean_vendor("TP-LINK TECHNOLOGIES CO.,LTD."), "TP-Link");
+        assert_eq!(clean_vendor("ASUSTek COMPUTER INC."), "ASUS");
+    }
+
+    #[test]
     fn prefers_more_specific_assignments() {
         // 00:55:DA is a shared MA-L carved into /28 MA-M blocks; a 28-bit match
         // must win over the 24-bit fallback. Built as a synthetic table so the
@@ -194,7 +315,7 @@ mod tests {
     fn aliases_oem_legal_name_to_consumer_brand() {
         // 5C:E7:53 is one of Govee's blocks, registered to the parent
         // "Shenzhen Intellirocks Tech. Co. Ltd." — the alias must surface "Govee".
-        assert_eq!(lookup_vendor("5c:e7:53:3d:59:80"), Some("Govee"));
+        assert_eq!(lookup_vendor("5c:e7:53:3d:59:80").as_deref(), Some("Govee"));
     }
 
     #[test]
