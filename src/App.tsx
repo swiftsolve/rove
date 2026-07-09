@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
 import { isConnectedNetwork } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
+import { useLiveThroughputSource } from '@/hooks/useLiveThroughput'
+import { usePageVisible } from '@/hooks/usePageVisible'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
 import { useDataUsage } from '@/hooks/useDataUsage'
@@ -193,6 +195,7 @@ export default function App(): JSX.Element {
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const scrollRef = useRef<HTMLElement>(null)
   const { info, error, isLoading, refresh, setError } = useNetworkInfo()
+  const windowVisible = usePageVisible()
 
   // Reset scroll to the top whenever the screen changes (tab or subpage), so a
   // new page never inherits the previous page's scroll position.
@@ -210,6 +213,10 @@ export default function App(): JSX.Element {
   }, [])
 
   const isConnected = info ? isConnectedNetwork(info) : false
+  // Own the live-throughput feed for the whole app, not per-view: keep sampling
+  // the 60 s history while the window is visible (across every tab) so the Home
+  // chart is already current on return instead of resuming a stale snapshot.
+  useLiveThroughputSource(windowVisible)
   // Identity of the current network — when it changes, tab data caches keyed on
   // it are invalidated so we never show the previous network's devices/results.
   const networkKey = info ? `${info.interfaceName ?? ''}|${info.ipAddress ?? ''}` : null
