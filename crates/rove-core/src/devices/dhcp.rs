@@ -28,10 +28,14 @@
 //!     listener also captures exactly the "a new device just joined" moment,
 //!     which the planned alerts feature will reuse.
 //!
-//! Binding UDP :67 is privileged (root, or `cap_net_bind_service` on Linux; the
-//! `.deb`/`.rpm` post-install script is the place to grant that). Without the
-//! privilege the bind fails and the whole thing degrades silently to empty —
-//! consistent with the rest of the scanner's "missing value renders as —" rule.
+//! Binding UDP :67 needs privilege on some platforms but not all. Linux requires
+//! root or `cap_net_bind_service` (the `.deb`/`.rpm` post-install grants it);
+//! Windows has no low-port restriction; and modern macOS (verified on 26.x, with
+//! default `net.inet.ip.portrange` sysctls) lets an unprivileged process bind
+//! :67, so the in-process listener runs directly there too — no helper needed.
+//! Where the bind *is* denied, it fails and the whole thing degrades silently to
+//! empty — consistent with the scanner's "missing value renders as —" rule — and
+//! a privileged helper can backfill the capture (see [`run_capture_to_file`]).
 //!
 //! Classification is table-driven from `data/dhcp_fingerprints.tsv` (a curated,
 //! license-clean, offline table, same pattern as the OUI vendor list) — no key,
@@ -147,9 +151,12 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
         });
     });
     let mut map = CACHE.lock().unwrap().clone();
-    // Merge whatever a privileged helper captured. This is the macOS path: the
-    // app itself can't bind :67, so a root LaunchDaemon (`rove-dhcp-helper`)
-    // does the capture and writes it here. In-process captures win on conflict.
+    // Merge whatever a privileged helper captured. This is a fallback for
+    // platforms/configs where the in-process bind above is denied (e.g. older
+    // macOS that still reserves low ports for root, or :67 already held by
+    // another daemon): a root helper (`rove-dhcp-helper`) does the capture and
+    // writes it here. On modern macOS the in-process listener binds :67
+    // unprivileged, so this file is usually absent. In-process wins on conflict.
     for (mac, hit) in load_from_file(helper_cache_path()) {
         map.entry(mac).or_insert(hit);
     }
@@ -204,8 +211,10 @@ async fn listen_forever() -> std::io::Result<()> {
 
 /// Run the capture loop as a privileged helper, persisting the running set of
 /// captures to `path` after each new device (atomic write). The unprivileged app
-/// reads this file via [`snapshot`]. Requires root / the `:67` privilege — this
-/// is the entry point for the macOS `rove-dhcp-helper` LaunchDaemon.
+/// reads this file via [`snapshot`]. This is the fallback entry point (the
+/// `rove-dhcp-helper` binary) for platforms/configs where the app's own :67 bind
+/// is denied — Linux without the file capability, or older macOS that still
+/// reserves low ports for root. On modern macOS the in-process listener suffices.
 pub async fn run_capture_to_file(path: impl AsRef<Path>) -> std::io::Result<()> {
     let path = path.as_ref().to_path_buf();
     let mut seen: HashMap<String, DhcpHit> = HashMap::new();

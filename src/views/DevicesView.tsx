@@ -18,6 +18,7 @@ import {
   TabletIcon,
   TvIcon,
   UnknownDeviceIcon,
+  WatchIcon,
 } from '@/components/ui/Icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 
@@ -29,10 +30,11 @@ const SCAN_HINT =
 import { IS_MAC, IS_WINDOWS } from '@/lib/platform'
 const LOCAL_NETWORK_HINT =
   'Missing devices? Rove needs Local Network access. Enable it in System Settings › Privacy & Security › Local Network, then scan again.'
-// Passive DHCP fingerprinting needs permission to bind :67. This hint is only
-// shown on Linux, where reinstalling grants it via setcap and the advice is
-// actionable — macOS needs elevated privileges (no clean per-app grant yet) and
-// Windows binds it without any setup, so the copy would be wrong there.
+// Passive DHCP fingerprinting binds :67. This hint is only shown on Linux, where
+// reinstalling grants the bind via setcap and the advice is actionable. macOS
+// (verified on 26.x) and Windows both bind :67 without any setup, so if the
+// status were ever "unavailable" there the setcap copy would be wrong — hence
+// Linux-only.
 const DHCP_UNAVAILABLE_HINT =
   'Passive DHCP fingerprinting is off (needs permission to watch for joining devices). Reinstall the .deb/.rpm to enable it, or grant cap_net_bind_service, for richer identification.'
 import './DevicesView.css'
@@ -53,6 +55,7 @@ const KIND_NOUNS: Record<Exclude<LanDeviceKind, 'unknown'>, string> = {
   computer: 'computer',
   tablet: 'tablet',
   phone: 'phone',
+  watch: 'watch',
   console: 'game console',
   tv: 'TV',
   printer: 'printer',
@@ -85,6 +88,7 @@ const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Elemen
   computer: ComputerIcon,
   tablet: TabletIcon,
   phone: DeviceIcon,
+  watch: WatchIcon,
   console: ConsoleIcon,
   tv: TvIcon,
   printer: PrinterIcon,

@@ -58,6 +58,7 @@ import {
   Trash2,
   Tv,
   Video,
+  Watch,
   Waypoints,
   Wifi,
   WifiOff,
@@ -192,6 +193,7 @@ export const ChipIcon = make(Cpu, 16)
 export const HelpIcon = make(HelpCircle, 16)
 export const NasIcon = make(HardDrive, 16)
 export const TabletIcon = make(Tablet, 16)
+export const WatchIcon = make(Watch, 16)
 export const ConsoleIcon = make(Gamepad2, 16)
 export const CameraIcon = make(Cctv, 16)
 export const SpeakerIcon = make(Speaker, 16)
