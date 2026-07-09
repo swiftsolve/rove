@@ -164,10 +164,19 @@ fn build_device(
         history::merge_and_snapshot(&neighbor.mac, fresh)
     };
 
+    // An Amazon-OUI host advertising Spotify Connect is an Echo: Fire TVs and
+    // other Amazon gear don't announce a `_spotify-connect._tcp` receiver, so the
+    // pairing is a reliable fingerprint. It lets us name and type the device even
+    // though its only self-reported mDNS label is the generic "SpotifyConnect"
+    // service brand (dropped upstream in `mdns`).
+    let is_amazon = vendor.as_deref().is_some_and(|v| v.to_ascii_lowercase().contains("amazon"));
+    let is_echo = is_amazon && evidence.mdns.spotify_connect && !is_gateway && !is_self;
+
     // Name preference, most human first: a friendly mDNS name, then SSDP's UPnP
     // friendlyName, then the NetBIOS computer name (real name for Windows/SMB
     // hosts), then the DHCP-reported hostname (covers non-Windows hosts NetBIOS
-    // misses), falling back to the reverse-DNS hostname.
+    // misses), the reverse-DNS hostname, and finally a synthesized "Amazon Echo"
+    // when nothing named the device but the Echo fingerprint matched.
     let hostname = evidence
         .mdns
         .name
@@ -175,13 +184,18 @@ fn build_device(
         .or_else(|| evidence.ssdp.name.clone())
         .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned())
         .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()))
-        .or(resolved_hostname);
+        .or(resolved_hostname)
+        .or_else(|| is_echo.then(|| "Amazon Echo".to_string()));
 
     // A hardware model from mDNS TXT is the most precise; SSDP's modelName next.
     let model = evidence.mdns.model.clone().or_else(|| evidence.ssdp.model.clone());
 
-    LanDevice {
-        kind: classify::classify(&classify::Signals {
+    // An Echo is fundamentally a speaker; keep that label even when it also acts
+    // as a Matter/Thread hub (a strong `iot` vote that would otherwise win).
+    let kind = if is_echo {
+        "speaker".to_string()
+    } else {
+        classify::classify(&classify::Signals {
             vendor: vendor.as_deref(),
             hostname: hostname.as_deref(),
             mdns: Some(&evidence.mdns),
@@ -191,7 +205,11 @@ fn build_device(
             open_ports: &evidence.ports,
             is_gateway,
             is_self,
-        }),
+        })
+    };
+
+    LanDevice {
+        kind,
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         os: dhcp.and_then(|hit| hit.os).map(String::from),
         vendor,
@@ -202,6 +220,50 @@ fn build_device(
         reachable: neighbor.reachable,
         ip: neighbor.ip,
         mac: neighbor.mac,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    /// Build a device from a bare neighbor plus an mDNS hit, with every other
+    /// enrichment source empty — enough to exercise the Amazon-Echo path.
+    fn device_with_mdns(mac: &str, ip: &str, mdns: mdns::MdnsHit) -> LanDevice {
+        let mut mdns_map = HashMap::new();
+        mdns_map.insert(ip.to_string(), mdns);
+        let (ssdp, banner, netbios, dhcp, ports) =
+            (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
+        let enrichment = Enrichment {
+            mdns: &mdns_map,
+            ssdp: &ssdp,
+            banner: &banner,
+            netbios: &netbios,
+            dhcp: &dhcp,
+            open_ports: &ports,
+        };
+        let neighbor = RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true };
+        build_device(neighbor, None, &enrichment, None, None)
+    }
+
+    #[test]
+    fn amazon_plus_spotify_connect_is_a_named_echo_speaker() {
+        // 08:12:A5 is an Amazon OUI; the Spotify Connect flag completes the Echo
+        // fingerprint, so it names and types the device even with no other signal.
+        let hit = mdns::MdnsHit { spotify_connect: true, ..Default::default() };
+        let echo = device_with_mdns("08:12:a5:00:00:11", "192.168.2.20", hit);
+        assert_eq!(echo.kind, "speaker");
+        assert_eq!(echo.hostname.as_deref(), Some("Amazon Echo"));
+    }
+
+    #[test]
+    fn amazon_without_spotify_connect_is_not_forced_to_echo() {
+        // A Fire TV (Amazon OUI, no Spotify Connect receiver) must keep classifying
+        // normally rather than being mislabeled a speaker.
+        let echo = device_with_mdns("08:12:a5:00:00:12", "192.168.2.21", mdns::MdnsHit::default());
+        assert_ne!(echo.hostname.as_deref(), Some("Amazon Echo"));
+        assert_ne!(echo.kind, "speaker");
     }
 }
 
