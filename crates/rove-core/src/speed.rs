@@ -17,7 +17,13 @@ const DOWNLOAD_URLS: [&str; 4] = [
 const UPLOAD_URL: &str = "https://speed.cloudflare.com/__up";
 const PING_HOST: &str = "1.1.1.1";
 const PARALLEL: usize = 3;
+/// Ramp-up period at the start of each phase. Bytes transferred during warmup
+/// are discarded so TCP slow-start doesn't drag down the measured throughput.
+const WARMUP: Duration = Duration::from_secs(2);
+/// Measurement window, timed after warmup completes.
 const WINDOW: Duration = Duration::from_secs(6);
+/// Idle gap between phases so the link settles before the next measurement.
+const SETTLE: Duration = Duration::from_secs(1);
 
 fn round1(v: f64) -> f64 {
     (v * 10.0).round() / 10.0
@@ -31,6 +37,7 @@ fn mbps(bytes: u64, elapsed: Duration) -> f64 {
 async fn download_stream(
     client: &reqwest::Client,
     urls: &[&str],
+    measure_start: Instant,
     deadline: Instant,
     cancel: &AtomicBool,
 ) -> u64 {
@@ -50,8 +57,12 @@ async fn download_stream(
             tokio::time::timeout(Duration::from_secs(3), stream.next()).await
         {
             let Ok(chunk) = chunk else { break };
-            bytes += chunk.len() as u64;
-            if Instant::now() >= deadline || cancel.load(Ordering::Relaxed) {
+            let now = Instant::now();
+            // Only count bytes once the warmup period has elapsed.
+            if now >= measure_start {
+                bytes += chunk.len() as u64;
+            }
+            if now >= deadline || cancel.load(Ordering::Relaxed) {
                 return bytes;
             }
         }
@@ -68,25 +79,35 @@ pub async fn measure_download(cancel: &AtomicBool) -> f64 {
         return 0.0;
     };
     let start = Instant::now();
-    let deadline = start + WINDOW;
+    let measure_start = start + WARMUP;
+    let deadline = measure_start + WINDOW;
 
     let totals = futures_util::future::join_all(
-        (0..PARALLEL).map(|_| download_stream(&client, &DOWNLOAD_URLS, deadline, cancel)),
+        (0..PARALLEL).map(|_| download_stream(&client, &DOWNLOAD_URLS, measure_start, deadline, cancel)),
     )
     .await;
 
-    mbps(totals.iter().sum(), start.elapsed())
+    mbps(totals.iter().sum(), start.elapsed().saturating_sub(WARMUP))
 }
 
-async fn upload_stream(client: &reqwest::Client, deadline: Instant, cancel: &AtomicBool) -> u64 {
+async fn upload_stream(
+    client: &reqwest::Client,
+    measure_start: Instant,
+    deadline: Instant,
+    cancel: &AtomicBool,
+) -> u64 {
     use rand::RngCore;
     let mut chunk = vec![0u8; 4 * 1024 * 1024];
     rand::thread_rng().fill_bytes(&mut chunk);
 
     let mut bytes = 0u64;
     while Instant::now() < deadline && !cancel.load(Ordering::Relaxed) {
+        let sent_at = Instant::now();
         match client.post(UPLOAD_URL).body(chunk.clone()).send().await {
-            Ok(_) => bytes += chunk.len() as u64,
+            // Only count uploads that began after warmup, so a POST started
+            // during warmup is fully excluded even if it finishes later.
+            Ok(_) if sent_at >= measure_start => bytes += chunk.len() as u64,
+            Ok(_) => {}
             Err(_) => break,
         }
     }
@@ -102,14 +123,15 @@ pub async fn measure_upload(cancel: &AtomicBool) -> f64 {
         return 0.0;
     };
     let start = Instant::now();
-    let deadline = start + WINDOW;
+    let measure_start = start + WARMUP;
+    let deadline = measure_start + WINDOW;
 
     let totals = futures_util::future::join_all(
-        (0..PARALLEL).map(|_| upload_stream(&client, deadline, cancel)),
+        (0..PARALLEL).map(|_| upload_stream(&client, measure_start, deadline, cancel)),
     )
     .await;
 
-    mbps(totals.iter().sum(), start.elapsed())
+    mbps(totals.iter().sum(), start.elapsed().saturating_sub(WARMUP))
 }
 
 /// Full test. `report` receives phase updates; `cancel` aborts between and
@@ -131,7 +153,7 @@ pub async fn run<F: Fn(SpeedTestProgress)>(
     let download = measure_download(&cancel).await;
     check()?;
 
-    tokio::time::sleep(Duration::from_millis(400)).await;
+    tokio::time::sleep(SETTLE).await;
     check()?;
 
     report(SpeedTestProgress { phase: "internet".into(), message: "Testing upload speed…".into(), progress: 55 });
