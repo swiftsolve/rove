@@ -184,16 +184,13 @@ static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 
 /// A listening service that all but names the device type: 9100/631 are print
 /// protocols; 8009/8060 are Chromecast/Roku; 32400 is a Plex media server (an
-/// always-on NAS-class box); 1400 is Sonos; 62078 (lockdownd) is iOS-only.
+/// always-on NAS-class box); 1400 is Sonos.
 fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
     if ports.iter().any(|&p| matches!(p, 9100 | 631)) {
         return Some("printer");
     }
     if ports.iter().any(|&p| matches!(p, 8009 | 8060)) {
         return Some("tv");
-    }
-    if ports.contains(&62078) {
-        return Some("phone");
     }
     if ports.contains(&1400) {
         return Some("speaker");
@@ -202,6 +199,15 @@ fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
         return Some("nas");
     }
     None
+}
+
+/// Apple's lockdownd (62078) runs on every Apple handheld — iPhone, iPad *and*
+/// Apple Watch — so it marks the device as an Apple mobile but can't say which.
+/// It votes for the modal "phone" at a weight a more specific tablet/watch
+/// hostname or model still outranks, so an Apple Watch that only reverse-resolves
+/// to "Watch" isn't flipped to a phone the moment a scan catches lockdownd open.
+fn apple_mobile_port_kind(ports: &[u16]) -> Option<&'static str> {
+    ports.contains(&62078).then_some("phone")
 }
 
 /// Ports that merely lean one way — used only as weak corroboration. RTSP is
@@ -232,6 +238,10 @@ const W_SSDP_TYPE: i32 = 50;
 /// or vendor guess.
 const W_DHCP: i32 = 45;
 const W_HOSTNAME: i32 = 40;
+/// Apple lockdownd (62078) leans "phone" but must sit below a hostname/model so
+/// a device that names itself an iPad or Watch keeps that kind — lockdownd can't
+/// tell the three Apple handhelds apart (see [`apple_mobile_port_kind`]).
+const W_LOCKDOWND: i32 = 30;
 const W_VENDOR: i32 = 25;
 /// An HTTP `Server` header or page `<title>` is corroboration, not proof — many
 /// devices share an httpd string and titles are often generic ("Login"), so it
@@ -263,13 +273,14 @@ pub fn classify(s: &Signals) -> String {
 
     let Signals { vendor, hostname, mdns, ssdp, banner, dhcp, open_ports, .. } = *s;
 
-    let votes: [(Option<&str>, i32); 16] = [
+    let votes: [(Option<&str>, i32); 17] = [
         (mdns.and_then(|hit| hit.kind), W_MDNS_STRONG),
         (
             mdns.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
             W_MDNS_MODEL,
         ),
         (strong_port_kind(open_ports), W_STRONG_PORT),
+        (apple_mobile_port_kind(open_ports), W_LOCKDOWND),
         // SSDP casts the same shapes of vote as mDNS/hostname/vendor, from the
         // UPnP description: an explicit device type, plus model/name/vendor text
         // run through the existing regex tables.
@@ -475,6 +486,26 @@ mod tests {
         );
         // A Garmin OUI on a home LAN is a wearable, not a generic handheld.
         assert_eq!(kind(Signals { vendor: Some("Garmin International"), ..Default::default() }), "watch");
+    }
+
+    #[test]
+    fn lockdownd_does_not_flip_a_named_watch_to_a_phone() {
+        // The reported bug: an Apple Watch (randomized MAC → reverse-DNS "Watch"
+        // only) exposes lockdownd (62078), shared with iPhone/iPad. That port must
+        // not override the "Watch" hostname, or the device flaps to "phone" the
+        // moment a scan catches the port open.
+        assert_eq!(
+            kind(Signals { hostname: Some("Watch"), open_ports: &[62078], ..Default::default() }),
+            "watch"
+        );
+        // Same for an iPad that only names itself via reverse-DNS (no mDNS model):
+        // its hostname must still win over the shared lockdownd port.
+        assert_eq!(
+            kind(Signals { hostname: Some("Johns-iPad"), open_ports: &[62078], ..Default::default() }),
+            "tablet"
+        );
+        // ...but lockdownd alone (nothing more specific) still lands on "phone".
+        assert_eq!(kind(Signals { open_ports: &[62078], ..Default::default() }), "phone");
     }
 
     #[test]
