@@ -74,6 +74,16 @@ fn fill(dst: &mut Option<String>, src: &Option<String>) {
 static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
+/// Best display name ever resolved per MAC. Reverse-DNS and NetBIOS names flap
+/// exactly like the mDNS/SSDP signals above — a lookup that times out or misses
+/// its cache one scan yields nothing — but, unlike them, they aren't part of
+/// `DeviceEvidence` (they're derived downstream, after this cache is consulted).
+/// Remembering the winning name here keeps both the label *and* the kind stable:
+/// a hostname-driven classification (e.g. a Kasa "HS103" plug → iot) stops
+/// falling back to the bare vendor OUI (TP-Link → router) on a nameless scan.
+static NAMES: LazyLock<Mutex<HashMap<String, String>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
 /// Merge this scan's `fresh` signals for `mac` into the accumulated evidence and
 /// return the merged snapshot to classify from. The returned value carries every
 /// signal ever seen for the device, so its kind stays stable across scans that
@@ -83,6 +93,22 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
     let entry = cache.entry(mac.to_string()).or_default();
     entry.absorb(&fresh);
     entry.clone()
+}
+
+/// Remember the best display name resolved for `mac` and return the stable name
+/// to show: this scan's `candidate` when it resolved one (also updating the
+/// cache, so a genuine rename is picked up), else the last name ever seen. Keeps
+/// a device from reverting to a bare-vendor label on a scan whose reverse-DNS /
+/// NetBIOS lookup came back empty.
+pub fn stable_name(mac: &str, candidate: Option<String>) -> Option<String> {
+    let mut names = NAMES.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    match candidate {
+        Some(name) => {
+            names.insert(mac.to_string(), name.clone());
+            Some(name)
+        }
+        None => names.get(mac).cloned(),
+    }
 }
 
 #[cfg(test)]
@@ -150,5 +176,25 @@ mod tests {
         merge_and_snapshot(mac, DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
         let merged = merge_and_snapshot(mac, DeviceEvidence::default());
         assert_eq!(merged.mdns.kind, Some("tv"));
+    }
+
+    #[test]
+    fn a_resolved_name_survives_a_later_nameless_scan() {
+        // The Kasa-plug flap: reverse-DNS resolves "HS103" one scan and comes back
+        // empty the next; the remembered name must carry through so the device
+        // doesn't revert to its bare vendor label.
+        let mac = "aa:bb:cc:00:00:02";
+        assert_eq!(stable_name(mac, Some("HS103".into())).as_deref(), Some("HS103"));
+        assert_eq!(stable_name(mac, None).as_deref(), Some("HS103"));
+    }
+
+    #[test]
+    fn a_freshly_resolved_name_replaces_the_remembered_one() {
+        // A genuine rename is picked up: a later non-empty candidate wins over the
+        // cached value rather than being masked by it.
+        let mac = "aa:bb:cc:00:00:03";
+        stable_name(mac, Some("old-name".into()));
+        assert_eq!(stable_name(mac, Some("new-name".into())).as_deref(), Some("new-name"));
+        assert_eq!(stable_name(mac, None).as_deref(), Some("new-name"));
     }
 }
