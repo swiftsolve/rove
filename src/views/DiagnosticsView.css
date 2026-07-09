@@ -49,10 +49,15 @@
 }
 
 /* Tighter row rhythm for the Router and DNS readouts — less vertical air between
-   each label/value pair than the default 8px. First/last stay flush to the body. */
-.diag-router .data-row,
-.diag-dns .data-row {
+   each label/value pair than the default 8px. First/last stay flush to the body.
+   DNS sits a touch looser than Router since its repeated identical rows read
+   denser at the same padding. */
+.diag-router .data-row {
   padding: var(--gap-xs) 0;
+}
+
+.diag-dns .data-row {
+  padding: 6px 0;
 }
 
 .diag-router .data-row:first-child,
