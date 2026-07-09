@@ -75,7 +75,7 @@ export default function SpeedView({
   // live throughput is a real reading of the current speed. Track its running
   // peak per direction so the on-screen numbers only ever climb, then reset at
   // the start of each test.
-  const live = useLiveThroughput(testing)
+  const live = useLiveThroughput()
   const [peaks, setPeaks] = useState({ down: 0, up: 0 })
   const wasTesting = useRef(false)
 
