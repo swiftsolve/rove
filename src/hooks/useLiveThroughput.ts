@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import type { LiveThroughput } from '@/types'
 import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@/types'
 import {
@@ -43,52 +43,6 @@ function nextIdleState(
   return { isIdle: false, lowSince: null }
 }
 
-/**
- * Shared, reference-counted backend subscription. `subscribeLiveThroughput` /
- * `unsubscribeLiveThroughput` are global backend commands with no ref-count of
- * their own, so N consumers (or React 18 StrictMode's mount/unmount/remount)
- * must not each toggle it — the first attach subscribes, the last detach
- * unsubscribes.
- */
-let backendRefCount = 0
-const activeDetaches = new Set<() => void>()
-
-function attachThroughput(
-  api: NonNullable<Window['networkAPI']>,
-  onUpdate: (t: LiveThroughput) => void,
-): () => void {
-  const detachEvents = api.onLiveThroughput(onUpdate)
-  backendRefCount += 1
-  if (backendRefCount === 1) {
-    void api.subscribeLiveThroughput()
-  }
-  let released = false
-  const release = (): void => {
-    if (released) return
-    released = true
-    detachEvents()
-    backendRefCount -= 1
-    if (backendRefCount === 0) {
-      void api.unsubscribeLiveThroughput()
-    }
-  }
-  activeDetaches.add(release)
-  return () => {
-    activeDetaches.delete(release)
-    release()
-  }
-}
-
-// Vite HMR re-evaluates this module without tearing down the Rust backend or
-// the Tauri event listeners registered by the previous bundle — release them all.
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    for (const detach of activeDetaches) detach()
-    activeDetaches.clear()
-    backendRefCount = 0
-  })
-}
-
 export interface LiveThroughputState {
   readonly throughput: LiveThroughput
   readonly history: ThroughputHistory
@@ -102,63 +56,131 @@ const INITIAL_STATE: LiveThroughputState = {
 }
 
 /**
- * Persisted at module scope so the live chart keeps its accumulated history when
- * Home unmounts on a tab switch and remounts on return — otherwise the graph
- * would blank out and slowly refill from empty each time you come back.
+ * The live feed is a single module-level store, not per-component state. One
+ * owner (mounted high in the tree via `useLiveThroughputSource`) holds the
+ * backend subscription and folds each 1 Hz sample into a rolling 60 s history;
+ * views just read the store. Keeping one owner means the history is sampled
+ * continuously — including while you're on another tab — so the chart is already
+ * current when you return to Home instead of showing a frozen snapshot from when
+ * you left. It also means the backend subscription is never toggled off-and-on
+ * during a view swap, which previously raced two ordering-independent IPC calls
+ * and could leave the feed stuck.
  */
-let cachedState: LiveThroughputState = INITIAL_STATE
-let cachedIdle: IdleTracker = { isIdle: true, lowSince: null }
+let storeState: LiveThroughputState = INITIAL_STATE
+let idleTracker: IdleTracker = { isIdle: true, lowSince: null }
+const listeners = new Set<() => void>()
 
-export function useLiveThroughput(enabled: boolean): LiveThroughputState {
-  const [state, setState] = useState<LiveThroughputState>(() => cachedState)
-  const idleRef = useRef<IdleTracker>(cachedIdle)
+function setStoreState(next: LiveThroughputState): void {
+  storeState = next
+  for (const listener of listeners) listener()
+}
 
+function ingestSample(update: LiveThroughput): void {
+  const throughput = {
+    downloadMbps: sanitizeRate(update.downloadMbps),
+    uploadMbps: sanitizeRate(update.uploadMbps),
+    timestamp: update.timestamp || Date.now(),
+  }
+  const history = appendThroughputHistory(
+    storeState.history,
+    throughput.downloadMbps,
+    throughput.uploadMbps,
+  )
+  idleTracker = nextIdleState(
+    throughput.downloadMbps,
+    throughput.uploadMbps,
+    idleTracker,
+    throughput.timestamp,
+  )
+  setStoreState({ throughput, history, isIdle: idleTracker.isIdle })
+}
+
+// The window went out of view long enough to actually pause the feed. Drop the
+// stale trace so that when the window comes back the chart refills live from
+// "now" instead of resuming a snapshot from minutes ago. (This never fires on a
+// tab switch — the window stays visible then, so the feed keeps running.)
+function resetHistory(): void {
+  idleTracker = { isIdle: true, lowSince: null }
+  setStoreState(INITIAL_STATE)
+}
+
+// Backend subscribe/unsubscribe are a global on/off with no ref-count of their
+// own. A brief hidden blip (or React 18 StrictMode's mount/unmount/remount)
+// must not toggle them, so the teardown is deferred and cancelled if the owner
+// re-activates within the grace window.
+const SUBSCRIPTION_GRACE_MS = 2_000
+let sourceActive = false
+let detachEvents: (() => void) | null = null
+let stopTimer: ReturnType<typeof setTimeout> | null = null
+
+function startSource(): void {
+  if (stopTimer !== null) {
+    clearTimeout(stopTimer)
+    stopTimer = null
+  }
+  if (sourceActive) return
+  const api = window.networkAPI
+  if (!api?.subscribeLiveThroughput) return
+  sourceActive = true
+  detachEvents = api.onLiveThroughput(ingestSample)
+  void api.subscribeLiveThroughput()
+}
+
+function stopSourceNow(): void {
+  if (!sourceActive) return
+  sourceActive = false
+  detachEvents?.()
+  detachEvents = null
+  void window.networkAPI?.unsubscribeLiveThroughput?.()
+  resetHistory()
+}
+
+function scheduleStopSource(): void {
+  if (stopTimer !== null) clearTimeout(stopTimer)
+  stopTimer = setTimeout(() => {
+    stopTimer = null
+    stopSourceNow()
+  }, SUBSCRIPTION_GRACE_MS)
+}
+
+/**
+ * Owns the shared live-throughput subscription. Mount once, high in the tree,
+ * passing `active` = window visible. The feed then runs continuously across tab
+ * switches (the window stays visible) and only pauses when the window is
+ * genuinely hidden (minimised / occluded), matching the polling hooks.
+ */
+export function useLiveThroughputSource(active: boolean): void {
   useEffect(() => {
-    const api = window.networkAPI
-    if (!enabled || !api?.subscribeLiveThroughput) return
-
-    let active = true
-
-    const handleUpdate = (update: LiveThroughput): void => {
-      if (!active) return
-
-      const throughput = {
-        downloadMbps: sanitizeRate(update.downloadMbps),
-        uploadMbps: sanitizeRate(update.uploadMbps),
-        timestamp: update.timestamp || Date.now(),
-      }
-
-      setState((current) => {
-        const history = appendThroughputHistory(
-          current.history,
-          throughput.downloadMbps,
-          throughput.uploadMbps,
-        )
-
-        const idle = nextIdleState(
-          throughput.downloadMbps,
-          throughput.uploadMbps,
-          idleRef.current,
-          throughput.timestamp,
-        )
-        idleRef.current = idle
-        cachedIdle = idle
-
-        const next = { throughput, history, isIdle: idle.isIdle }
-        cachedState = next
-        return next
-      })
+    if (!active) {
+      scheduleStopSource()
+      return
     }
+    startSource()
+  }, [active])
+}
 
-    const detach = attachThroughput(api, handleUpdate)
+function subscribeStore(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
 
-    // Keep the accumulated history in the module cache on unmount so navigating
-    // away and back doesn't blank the chart.
-    return () => {
-      active = false
-      detach()
+/** Read the shared live-throughput state. Does not own the subscription. */
+export function useLiveThroughput(): LiveThroughputState {
+  return useSyncExternalStore(subscribeStore, () => storeState)
+}
+
+// Vite HMR re-evaluates this module without tearing down the Rust backend or the
+// Tauri event listeners registered by the previous bundle — release them here so
+// the next bundle's owner starts from a clean slate.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (stopTimer !== null) {
+      clearTimeout(stopTimer)
+      stopTimer = null
     }
-  }, [enabled])
-
-  return state
+    stopSourceNow()
+    listeners.clear()
+  })
 }
