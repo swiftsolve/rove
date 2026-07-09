@@ -1,10 +1,17 @@
 # macOS DHCP capture helper
 
+> **Note (macOS 26.x):** This helper is a **fallback**, not the primary macOS path.
+> Modern macOS (verified on 26.3, stock `net.inet.ip.portrange` sysctls) lets an
+> **unprivileged** process bind UDP `:67`, so Rove's in-process listener captures
+> DHCP fingerprints directly — no root helper, no LaunchDaemon, no signing needed.
+> You only need what's below if you're targeting an older macOS that still reserves
+> low ports for root, or a config where `:67` is otherwise unbindable.
+
 Passive DHCP fingerprinting needs to bind UDP `:67`. On Linux the installer grants
-`cap_net_bind_service`; on Windows there's no low-port restriction. **macOS** reserves
-ports below 1024 for root and has **no per-app capability grant**, so the app can't
-bind `:67` itself. A small root helper does the capture instead and hands results to
-the app over a file.
+`cap_net_bind_service`; on Windows there's no low-port restriction. On **older macOS**
+that reserves ports below 1024 for root with **no per-app capability grant**, the app
+can't bind `:67` itself — a small root helper does the capture instead and hands
+results to the app over a file.
 
 ## Architecture
 
