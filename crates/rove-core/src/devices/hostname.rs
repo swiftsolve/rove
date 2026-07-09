@@ -21,12 +21,15 @@ pub fn trim_suffix(host: &str) -> String {
 }
 
 /// Rejects names that carry no information: systemd's synthetic `_gateway`
-/// and routers echoing the MAC back ("ecb5fa189779").
+/// and routers echoing the MAC back ("ecb5fa189779", "98:17:3c:6d:03:1a").
 fn is_meaningful(host: &str) -> bool {
     if host == "_gateway" || host == "gateway" {
         return false;
     }
-    let hex_only: String = host.chars().filter(|c| *c != '-' && *c != '_').collect();
+    // Strip the separators a MAC might be written with (`-`, `_`, `:`) so both
+    // the bare "ecb5fa189779" and colon forms collapse to 12 hex digits.
+    let hex_only: String =
+        host.chars().filter(|c| *c != '-' && *c != '_' && *c != ':').collect();
     !(hex_only.len() == 12 && hex_only.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
@@ -75,7 +78,15 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
         // Emits `ip<TAB>hostname` per resolved IP.
         let per_ip = if std::env::consts::OS == "macos" {
             // macOS has no getent; dscacheutil queries the same resolver stack.
-            r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
+            // But its reverse lookups are cache-backed: on a cold cache it returns
+            // nothing, so a randomized-MAC phone whose only identity is its PTR
+            // ("iPhone") shows as an Unknown device until some later query warms
+            // the cache. Fall back to a bounded unicast `dig +short -x`, which
+            // asks the router's resolver directly (it knows the name from the
+            // DHCP lease) and doesn't depend on the cache — stripping dig's
+            // trailing dot. Absent `dig`, the fallback yields empty and we degrade
+            // to the dscacheutil-only behavior.
+            r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -z "$n" ]; then n=$(dig +short +time=1 +tries=1 -x "$1" 2>/dev/null | head -n1 | sed "s/\.$//"); fi; if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         } else {
             r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         };
@@ -138,6 +149,32 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     }
 
     ips.iter().map(|ip| resolved.get(ip).cloned()).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_mac_shaped_names_the_router_echoes_back() {
+        // Bare and separator forms of a MAC all collapse to 12 hex digits.
+        assert!(!is_meaningful("ecb5fa189779"));
+        assert!(!is_meaningful("98:17:3c:6d:03:1a"));
+        assert!(!is_meaningful("ec-b5-fa-18-97-79"));
+        assert!(!is_meaningful("_gateway"));
+        // Real names — including a hex-looking one that isn't 12 digits — survive.
+        assert!(is_meaningful("iPhone"));
+        assert!(is_meaningful("pixel-7"));
+        assert!(is_meaningful("deadbeef")); // 8 digits, not a MAC
+    }
+
+    #[test]
+    fn trims_local_suffixes() {
+        assert_eq!(trim_suffix("pixel-7.lan"), "pixel-7");
+        assert_eq!(trim_suffix("nas.local."), "nas");
+        assert_eq!(trim_suffix("host.internal"), "host");
+        assert_eq!(trim_suffix("plain"), "plain");
+    }
 }
 
 /// This machine's own hostname, for the self entry.
