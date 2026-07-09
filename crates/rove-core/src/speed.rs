@@ -9,22 +9,47 @@ use std::time::{Duration, Instant};
 
 pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
 
-// Sizes are chosen so a single connection can't drain the file within the
-// measurement window (even on a gigabit link), which would otherwise force a
-// reconnect and a fresh TCP slow-start in the middle of the measurement. We
-// always stop at the deadline, so a large file transfers no more data than a
-// small one — it just avoids the mid-window reconnect.
-const DOWNLOAD_URLS: [&str; 3] = [
-    "https://speed.cloudflare.com/__down?bytes=1000000000",
-    "https://proof.ovh.net/files/1Gb.dat",
-    "https://speed.hetzner.de/1GB.bin",
+// Download endpoints, tried in order. Cloudflare is primary: its anycast network
+// is local and fast almost everywhere and is purpose-built for parallel speed
+// tests, so stacking connections on it measures the link rather than an origin
+// cap. Two caveats drive the details:
+//   - Its __down endpoint caps the `bytes` parameter just under 100 MB
+//     (100_000_000 exactly returns 403), so we request 90 MB — the largest round
+//     size safely under the cap. Workers refetch when a file drains, but the
+//     client keeps the TCP connection alive between fetches so the congestion
+//     window carries over and a refetch pays no fresh slow-start.
+//   - Cloudflare rate-limits by request volume and will start returning 429 under
+//     heavy or repeated use. When that happens a worker advances to the fallback
+//     (DataPacket, a CDN speed-test file — not an origin that per-connection
+//     throttles) so download still reports a real number instead of zero.
+const DOWNLOAD_URLS: [&str; 2] = [
+    "https://speed.cloudflare.com/__down?bytes=90000000",
+    "https://nyc.download.datapacket.com/100mb.bin",
 ];
 const UPLOAD_URL: &str = "https://speed.cloudflare.com/__up";
 const PING_HOST: &str = "1.1.1.1";
-const PARALLEL: usize = 3;
+
+// A single TCP connection can only keep bandwidth×RTT bytes in flight before it
+// stalls waiting for ACKs, so on a fast link one connection tops out well below
+// line rate. The right number of parallel connections depends on the link and
+// its latency — too few undershoots gigabit, too many wastes setup on a slow
+// link. Instead of hardcoding a count we ramp connections up during warmup and
+// stop once aggregate throughput stops climbing, auto-tuning to the link.
+const MIN_CONNS: usize = 4;
+const MAX_CONNS: usize = 32;
+/// Connections added each ramp step while throughput is still climbing.
+const RAMP_STEP: usize = 4;
+/// How often the ramp controller samples aggregate throughput.
+const RAMP_SAMPLE: Duration = Duration::from_millis(300);
+/// Add another batch only if the latest sample's rate beats the previous by
+/// more than this fraction; below it we treat the link as saturated.
+const RAMP_GROWTH_THRESHOLD: f64 = 0.12;
+
 /// Ramp-up period at the start of each phase. Bytes transferred during warmup
-/// are discarded so TCP slow-start doesn't drag down the measured throughput.
-const WARMUP: Duration = Duration::from_secs(2);
+/// are discarded so TCP slow-start doesn't drag down the measured throughput,
+/// and the connection ramp runs within this window so we hit the measurement
+/// window already saturated.
+const WARMUP: Duration = Duration::from_secs(3);
 /// Measurement window, timed after warmup completes.
 const WINDOW: Duration = Duration::from_secs(6);
 /// Idle gap between phases so the link settles before the next measurement.
@@ -39,22 +64,107 @@ fn mbps(bytes: u64, elapsed: Duration) -> f64 {
     bytes as f64 * 8.0 / 1_000_000.0 / secs
 }
 
-async fn download_stream(
-    client: &reqwest::Client,
-    urls: &[&str],
+/// Shared throughput counters for one measurement phase. `raw` counts every
+/// byte and drives the ramp controller (which needs a live signal during
+/// warmup); `counted` only accrues bytes transferred after `measure_start` and
+/// is what the final rate is computed from.
+#[derive(Clone)]
+struct Counters {
+    raw: Arc<AtomicU64>,
+    counted: Arc<AtomicU64>,
+}
+
+impl Counters {
+    fn new() -> Self {
+        Self {
+            raw: Arc::new(AtomicU64::new(0)),
+            counted: Arc::new(AtomicU64::new(0)),
+        }
+    }
+
+    /// Record `n` transferred bytes; `now` decides whether they fall in the
+    /// measured window.
+    fn add(&self, n: u64, now: Instant, measure_start: Instant) {
+        self.raw.fetch_add(n, Ordering::Relaxed);
+        if now >= measure_start {
+            self.counted.fetch_add(n, Ordering::Relaxed);
+        }
+    }
+}
+
+/// Runs the connection ramp for one phase: starts `MIN_CONNS` workers, then
+/// samples aggregate throughput on a fixed cadence and adds `RAMP_STEP` more
+/// workers whenever the rate is still climbing, up to `MAX_CONNS`. Ramping only
+/// happens during warmup; once the measurement window opens the connection set
+/// is held steady. Returns the bytes transferred within the window.
+///
+/// `spawn_worker` launches one worker task that loops until the deadline,
+/// feeding the shared `Counters`.
+async fn adaptive_transfer(
+    counters: &Counters,
     measure_start: Instant,
     deadline: Instant,
-    cancel: &AtomicBool,
+    cancel: &Arc<AtomicBool>,
+    mut spawn_worker: impl FnMut() -> tokio::task::JoinHandle<()>,
 ) -> u64 {
-    let mut bytes = 0u64;
-    let mut url_index = 0usize;
+    let mut handles: Vec<_> = (0..MIN_CONNS).map(|_| spawn_worker()).collect();
+    let mut conns = MIN_CONNS;
+    let mut last_sample_bytes = 0u64;
+    let mut last_rate = 0.0f64;
+    let mut saturated = false;
 
     while Instant::now() < deadline && !cancel.load(Ordering::Relaxed) {
-        let url = urls[url_index % urls.len()];
-        url_index += 1;
+        tokio::time::sleep(RAMP_SAMPLE).await;
 
-        let Ok(response) = client.get(url).send().await else {
-            continue;
+        let total = counters.raw.load(Ordering::Relaxed);
+        let rate = total.saturating_sub(last_sample_bytes) as f64 / RAMP_SAMPLE.as_secs_f64();
+        last_sample_bytes = total;
+
+        // Only grow the pool while still warming up and still climbing.
+        if !saturated && Instant::now() < measure_start && conns < MAX_CONNS {
+            if rate > last_rate * (1.0 + RAMP_GROWTH_THRESHOLD) {
+                let step = RAMP_STEP.min(MAX_CONNS - conns);
+                handles.extend((0..step).map(|_| spawn_worker()));
+                conns += step;
+            } else {
+                saturated = true;
+            }
+        }
+        last_rate = rate;
+    }
+
+    // Workers exit on their own at the deadline; just drain them.
+    for handle in handles {
+        let _ = handle.await;
+    }
+    counters.counted.load(Ordering::Relaxed)
+}
+
+/// One download connection: pulls the file back-to-back until the deadline,
+/// feeding the shared counters. Starts on the primary endpoint and, on refusal,
+/// advances to the next — so once Cloudflare 429s the worker settles on the
+/// fallback instead of retrying a rate-limited origin every fetch.
+async fn download_worker(
+    client: reqwest::Client,
+    measure_start: Instant,
+    deadline: Instant,
+    cancel: Arc<AtomicBool>,
+    counters: Counters,
+) {
+    let mut url_index = 0usize;
+    while Instant::now() < deadline && !cancel.load(Ordering::Relaxed) {
+        let url = DOWNLOAD_URLS[url_index % DOWNLOAD_URLS.len()];
+        let response = match client.get(url).send().await {
+            Ok(r) if r.status().is_success() => r,
+            // A non-2xx (e.g. 429 Too Many Requests) or transport error means the
+            // origin refused this request; its tiny error body must not be counted
+            // as throughput. Advance to the next endpoint and back off briefly so
+            // we neither hammer a rate-limited origin nor spin on it.
+            _ => {
+                url_index += 1;
+                tokio::time::sleep(Duration::from_millis(250)).await;
+                continue;
+            }
         };
         let mut stream = response.bytes_stream();
 
@@ -63,21 +173,23 @@ async fn download_stream(
         {
             let Ok(chunk) = chunk else { break };
             let now = Instant::now();
-            // Only count bytes once the warmup period has elapsed.
-            if now >= measure_start {
-                bytes += chunk.len() as u64;
-            }
+            counters.add(chunk.len() as u64, now, measure_start);
             if now >= deadline || cancel.load(Ordering::Relaxed) {
-                return bytes;
+                return;
             }
         }
     }
-    bytes
 }
 
-pub async fn measure_download(cancel: &AtomicBool) -> f64 {
+pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
+    // Force HTTP/1.1: every worker requests the same host, and over HTTP/2
+    // reqwest coalesces them onto one TCP connection as multiplexed streams that
+    // then throttle each other via a shared flow-control window — collapsing the
+    // measured rate. HTTP/1.1 can't multiplex, so each concurrent worker opens
+    // its own TCP connection and we get real parallelism.
     let Ok(client) = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
+        .http1_only()
         .build()
     else {
         eprintln!("Rove: could not build HTTP client for download test");
@@ -86,13 +198,20 @@ pub async fn measure_download(cancel: &AtomicBool) -> f64 {
     let start = Instant::now();
     let measure_start = start + WARMUP;
     let deadline = measure_start + WINDOW;
+    let counters = Counters::new();
 
-    let totals = futures_util::future::join_all(
-        (0..PARALLEL).map(|_| download_stream(&client, &DOWNLOAD_URLS, measure_start, deadline, cancel)),
-    )
-    .await;
+    let spawn = || {
+        tokio::spawn(download_worker(
+            client.clone(),
+            measure_start,
+            deadline,
+            cancel.clone(),
+            counters.clone(),
+        ))
+    };
 
-    mbps(totals.iter().sum(), start.elapsed().saturating_sub(WARMUP))
+    let bytes = adaptive_transfer(&counters, measure_start, deadline, cancel, spawn).await;
+    mbps(bytes, start.elapsed().saturating_sub(WARMUP))
 }
 
 /// One connection's worth of upload. Rather than firing discrete POSTs and
@@ -102,30 +221,28 @@ pub async fn measure_download(cancel: &AtomicBool) -> f64 {
 /// the socket has room, so tallying bytes as they're pulled tracks the real
 /// send rate via TCP backpressure. Bytes handed over during warmup fill the
 /// send buffer but aren't counted, so the count reflects steady-state send.
-async fn upload_stream(
-    client: &reqwest::Client,
+async fn upload_worker(
+    client: reqwest::Client,
     payload: Bytes,
     measure_start: Instant,
     deadline: Instant,
     cancel: Arc<AtomicBool>,
-    counted: Arc<AtomicU64>,
+    counters: Counters,
 ) {
     while Instant::now() < deadline && !cancel.load(Ordering::Relaxed) {
         let payload = payload.clone();
         let cancel = cancel.clone();
-        let counted = counted.clone();
+        let counters = counters.clone();
         let body = reqwest::Body::wrap_stream(stream::unfold((), move |()| {
             let payload = payload.clone();
             let cancel = cancel.clone();
-            let counted = counted.clone();
+            let counters = counters.clone();
             async move {
                 let now = Instant::now();
                 if now >= deadline || cancel.load(Ordering::Relaxed) {
                     return None;
                 }
-                if now >= measure_start {
-                    counted.fetch_add(payload.len() as u64, Ordering::Relaxed);
-                }
+                counters.add(payload.len() as u64, now, measure_start);
                 Some((Ok::<_, std::io::Error>(payload), ()))
             }
         }));
@@ -155,21 +272,21 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
     let start = Instant::now();
     let measure_start = start + WARMUP;
     let deadline = measure_start + WINDOW;
-    let counted = Arc::new(AtomicU64::new(0));
+    let counters = Counters::new();
 
-    futures_util::future::join_all((0..PARALLEL).map(|_| {
-        upload_stream(
-            &client,
+    let spawn = || {
+        tokio::spawn(upload_worker(
+            client.clone(),
             payload.clone(),
             measure_start,
             deadline,
             cancel.clone(),
-            counted.clone(),
-        )
-    }))
-    .await;
+            counters.clone(),
+        ))
+    };
 
-    mbps(counted.load(Ordering::Relaxed), start.elapsed().saturating_sub(WARMUP))
+    let bytes = adaptive_transfer(&counters, measure_start, deadline, cancel, spawn).await;
+    mbps(bytes, start.elapsed().saturating_sub(WARMUP))
 }
 
 /// Full test. `report` receives phase updates; `cancel` aborts between and
