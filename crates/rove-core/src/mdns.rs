@@ -49,6 +49,10 @@ pub struct MdnsHit {
     pub kind_hint: Option<&'static str>,
     /// Hardware model from TXT (`am`/`model`/`md`), e.g. "MacBookPro18,3".
     pub model: Option<String>,
+    /// Host advertises `_spotify-connect._tcp`. On its own this is a weak TV/
+    /// speaker hint (many devices are Spotify endpoints), but combined with an
+    /// Amazon OUI it fingerprints an Echo — see the caller in `devices::mod`.
+    pub spotify_connect: bool,
 }
 
 impl MdnsHit {
@@ -74,7 +78,18 @@ impl MdnsHit {
         if self.model.is_none() {
             self.model = other.model.clone();
         }
+        self.spotify_connect |= other.spotify_connect;
     }
+}
+
+/// Instance names that are the *service* brand rather than the device — an
+/// Amazon Echo advertises `_spotify-connect._tcp` as the literal "SpotifyConnect".
+/// Reject these so the device falls back to a real name (vendor/hostname) instead
+/// of a service label; a user-renamed endpoint ("Kitchen") won't match.
+fn is_generic_service_name(name: &str) -> bool {
+    let compact: String =
+        name.chars().filter(|c| !c.is_whitespace()).collect::<String>().to_ascii_lowercase();
+    matches!(compact.as_str(), "spotifyconnect")
 }
 
 /// Names like "0,1,2" or "16A9B57BB77..." are IDs, not names.
@@ -123,7 +138,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
     let receivers: Vec<_> = SERVICE_KINDS
         .iter()
         .filter_map(|(service, kind, strong)| {
-            daemon.browse(service).ok().map(|rx| (rx, *kind, *strong))
+            daemon.browse(service).ok().map(|rx| (rx, *service, *kind, *strong))
         })
         .collect();
 
@@ -137,7 +152,8 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
         }
         let mut got_any = false;
 
-        for (rx, kind, strong) in &receivers {
+        for (rx, service, kind, strong) in &receivers {
+            let is_spotify = *service == "_spotify-connect._tcp.local.";
             while let Ok(event) = rx.try_recv() {
                 got_any = true;
                 let ServiceEvent::ServiceResolved(info) = event else {
@@ -148,7 +164,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     .map(String::from)
                     .or_else(|| instance_name(info.get_fullname()))
                     .map(|n| crate::net_util::sanitize_display(&n))
-                    .filter(|n| is_human_name(n));
+                    .filter(|n| is_human_name(n) && !is_generic_service_name(n));
                 let model = info
                     .get_property_val_str("am")
                     .or_else(|| info.get_property_val_str("model"))
@@ -178,6 +194,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     if entry.model.is_none() {
                         entry.model = model.clone();
                     }
+                    entry.spotify_connect |= is_spotify;
                 }
             }
         }
@@ -189,4 +206,34 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
 
     let _ = daemon.shutdown();
     hits
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generic_service_brand_is_not_a_device_name() {
+        // The Echo's `_spotify-connect` instance name — a service label, not the
+        // device — must be rejected however it's spaced/cased.
+        assert!(is_generic_service_name("SpotifyConnect"));
+        assert!(is_generic_service_name("Spotify Connect"));
+        assert!(is_generic_service_name("spotifyconnect"));
+        // A user-renamed endpoint is a real name and must survive.
+        assert!(!is_generic_service_name("Kitchen"));
+        assert!(!is_generic_service_name("Living Room Speaker"));
+    }
+
+    #[test]
+    fn spotify_connect_flag_survives_a_later_gap() {
+        // The Echo fingerprint must accumulate like the other identity signals so
+        // a window that misses the service doesn't erase it.
+        let mut acc = MdnsHit { spotify_connect: true, ..Default::default() };
+        acc.absorb(&MdnsHit::default());
+        assert!(acc.spotify_connect);
+
+        let mut acc = MdnsHit::default();
+        acc.absorb(&MdnsHit { spotify_connect: true, ..Default::default() });
+        assert!(acc.spotify_connect);
+    }
 }
