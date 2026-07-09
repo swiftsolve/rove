@@ -10,6 +10,7 @@
 import type {
   CapabilityLevel,
   CapabilityRating,
+  LanDevice,
   LanDeviceScan,
   LiveThroughput,
   NetworkAPI,
@@ -137,6 +138,43 @@ const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
 ]
 
 // A lived-in home network: mostly named and classified, with one offline camera,
+// An Apple hardware model identifier: a product family followed by a
+// "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
+// Mirrors is_apple_model in crates/rove-core/src/devices/mod.rs.
+const APPLE_MODEL_FAMILIES = [
+  'iphone', 'ipad', 'ipod', 'watch', 'macbook', 'imac', 'macmini', 'macpro', 'audioaccessory',
+]
+function isAppleModel(model: string): boolean {
+  const lower = model.trim().toLowerCase()
+  return (
+    lower.includes(',') &&
+    /\d/.test(lower) &&
+    APPLE_MODEL_FAMILIES.some((family) => lower.startsWith(family))
+  )
+}
+
+// Turn a hardware model string into a human-friendly product name, matching what
+// the real backend returns: it humanizes Apple mDNS/UPnP identifiers before they
+// ever reach the frontend. Mirrors humanize_model in
+// crates/rove-core/src/devices/mod.rs so the demo reads like production.
+function humanizeModel(model: string | null): string | null {
+  if (model === null || !isAppleModel(model)) return model
+  // Everything before the "<gen>,<rev>" suffix is the product family.
+  const family = model.trim().replace(/\d.*$/, '')
+  switch (family.toLowerCase()) {
+    case 'audioaccessory': return 'HomePod'
+    case 'watch': return 'Apple Watch'
+    case 'macmini': return 'Mac mini'
+    case 'macpro': return 'Mac Pro'
+    case 'macbook': return 'MacBook'
+    case 'macbookpro': return 'MacBook Pro'
+    case 'macbookair': return 'MacBook Air'
+    // Lowercase-run families ("iphone", "ipad", "imac", "ipod") are a single
+    // word; keep the identifier's own casing rather than lowercasing it.
+    default: return family
+  }
+}
+
 // one privacy-randomized guest phone and one genuine unknown — the messiness a
 // real scan turns up. Self matches the connection card (same IP + MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
@@ -144,7 +182,7 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
   interfaceName: 'wlan0',
   scannedAt: Date.now(),
   dhcpStatus: 'active',
-  devices: [
+  devices: ([
     { ip: '192.168.1.1', hostname: 'router', model: null, os: null, kind: 'router', mac: '24:5a:4c:11:b2:03', vendor: 'Ubiquiti', isRandomizedMac: false, isGateway: true, isSelf: false, reachable: true },
     { ip: MOCK_SELF_IP, hostname: 'rove-macbook', model: 'MacBookPro18,3', os: 'macOS', kind: 'computer', mac: MOCK_SELF_MAC, vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: true, reachable: true },
     { ip: '192.168.1.10', hostname: 'Living-Room-TV', model: 'BRAVIA KD-65X90L', os: null, kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
@@ -161,12 +199,12 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     { ip: '192.168.1.40', hostname: 'ecobee-thermostat', model: null, os: null, kind: 'iot', mac: '44:61:32:0a:7d:e2', vendor: 'ecobee', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
     // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
     // fingerprint still identifies it. This is the headline win of the feature.
-    { ip: '192.168.1.44', hostname: null, model: 'Generic Android', os: 'Android', kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
+    { ip: '192.168.1.44', hostname: null, model: null, os: 'Android', kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
     // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
     // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
     { ip: '192.168.1.46', hostname: 'iPhone', model: null, os: null, kind: 'phone', mac: 'ae:4a:06:fe:b5:37', vendor: 'Apple', isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
     { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'unknown', mac: '1c:3b:f3:85:8f:43', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-  ],
+  ] satisfies readonly LanDevice[]).map((device) => ({ ...device, model: humanizeModel(device.model) })),
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
