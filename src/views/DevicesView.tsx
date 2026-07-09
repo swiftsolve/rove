@@ -27,16 +27,9 @@ const SCAN_HINT =
 
 // Local Network access can't be queried on macOS, so when discovery comes up
 // empty we surface the most likely cause rather than implying the LAN is bare.
-import { IS_MAC, IS_WINDOWS } from '@/lib/platform'
+import { IS_MAC } from '@/lib/platform'
 const LOCAL_NETWORK_HINT =
   'Missing devices? Rove needs Local Network access. Enable it in System Settings › Privacy & Security › Local Network, then scan again.'
-// Passive DHCP fingerprinting binds :67. This hint is only shown on Linux, where
-// reinstalling grants the bind via setcap and the advice is actionable. macOS
-// (verified on 26.x) and Windows both bind :67 without any setup, so if the
-// status were ever "unavailable" there the setcap copy would be wrong — hence
-// Linux-only.
-const DHCP_UNAVAILABLE_HINT =
-  'Passive DHCP fingerprinting is off (needs permission to watch for joining devices). Reinstall the .deb/.rpm to enable it, or grant cap_net_bind_service, for richer identification.'
 import './DevicesView.css'
 
 interface DevicesViewProps {
@@ -177,15 +170,6 @@ export default function DevicesView({
   const onlySelf =
     !isScanning && scan != null && devices.every((device) => device.isSelf)
   const showLocalNetworkHint = IS_MAC && onlySelf
-  // Surface the DHCP-off hint only once discovery has resolved (not during the
-  // "starting" window), and only on Linux — that's the one platform where the
-  // advice (reinstall / setcap) is actionable.
-  const showDhcpHint =
-    !isScanning &&
-    scan != null &&
-    scan.dhcpStatus === 'unavailable' &&
-    !IS_MAC &&
-    !IS_WINDOWS
 
   return (
     <div className="view-page">
@@ -259,7 +243,6 @@ export default function DevicesView({
           {showLocalNetworkHint && (
             <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>
           )}
-          {showDhcpHint && <p className="text-muted devices-hint">{DHCP_UNAVAILABLE_HINT}</p>}
         </div>
       )}
     </div>
