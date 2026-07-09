@@ -71,6 +71,12 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle|fire-?hd|fire-?tablet|-tablet\b|\btablet\b",
             "tablet",
         ),
+        // Watch/wearable — must precede the phone row so brand tokens shared with
+        // phones ("galaxy watch", "pixel watch") land here, not on "phone".
+        (
+            r"(?i)\bwatch\b|-watch\b|watch-|apple-?watch|galaxy-?watch|pixel-?watch|smart-?watch|\bgizmo\b|fitbit|charge-?[2-6]\b|inspire-?[23]\b|\bversa\b|amazfit|ticwatch|wear-?os|mi-?band|\bfenix\b|forerunner|vivoactive|vivomove|\bvenu\b|instinct|\bgarmin\b",
+            "watch",
+        ),
         (
             r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|-phone\b|phone-|android-[0-9a-f]",
             "phone",
@@ -135,6 +141,9 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             r"(?i)raspberry|\bintel\b|\bdell\b|lenovo|hp inc|hewlett|framework|gigabyte|\bmsi\b|micro-star|asrock|super ?micro|supermicro|elitegroup|pegatron|\bquanta\b|compal|wistron|\bclevo\b|tuxedo|beelink|minisforum|\bchuwi\b|system76",
             "computer",
         ),
+        // Wearable-first brands — before the phone row so a Garmin/Fitbit OUI
+        // reads as a watch, not a generic handheld.
+        (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b", "watch"),
         (
             r"(?i)\bapple\b|samsung|xiaomi|oneplus|huawei|\boppo\b|\bvivo\b|realme|motorola|\bhtc\b|nothing tech|fairphone",
             "phone",
@@ -149,7 +158,10 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
         (r"(?i)synology|diskstation|\bqnap\b", "nas"),
         (r"(?i)macbook|imac|macmini|mac-?mini|macpro|mac-?studio|macstudio|windows|surface|thinkpad|optiplex|latitude", "computer"),
         (r"(?i)ipad", "tablet"),
-        (r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]|\bwatch\d", "phone"),
+        // Apple Watch reports models like "Watch6,1"; keep this above the phone
+        // row so it isn't swept up as a generic Apple handheld.
+        (r"(?i)\bwatch\d", "watch"),
+        (r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]", "phone"),
         (r"(?i)audioaccessory|homepod|sonos|\bspeaker\b", "speaker"),
         (r"(?i)\bcamera\b|\bcam\b|doorbell|hikvision|reolink", "camera"),
         (r"(?i)appletv|apple-?tv|shield|chromecast|bravia|roku|firetv|fire-?tv|android-?tv|vizio", "tv"),
@@ -231,9 +243,9 @@ const W_WEAK_PORT: i32 = 12;
 // Ordered most-specific first so a tie (equal weight *and* equal strongest
 // single signal) resolves toward the narrower kind — nas over computer, camera
 // or speaker over iot, console over tv.
-const KIND_NAMES: [&str; 11] = [
-    "router", "nas", "computer", "tablet", "phone", "console", "tv", "printer", "camera", "speaker",
-    "iot",
+const KIND_NAMES: [&str; 12] = [
+    "router", "nas", "computer", "tablet", "watch", "phone", "console", "tv", "printer", "camera",
+    "speaker", "iot",
 ];
 const KIND_COUNT: usize = KIND_NAMES.len();
 
@@ -438,6 +450,31 @@ mod tests {
             kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
             "tv"
         );
+    }
+
+    #[test]
+    fn a_bare_watch_hostname_is_a_watch() {
+        // The real case: an Apple Watch resolves only to reverse-DNS "Watch"
+        // (randomized MAC, no ports). That alone should type it as a watch.
+        assert_eq!(kind(Signals { hostname: Some("Watch"), ..Default::default() }), "watch");
+    }
+
+    #[test]
+    fn wearable_brands_type_as_watch_not_phone() {
+        // "galaxy watch" shares the "galaxy" token with phones — the watch row
+        // must win.
+        assert_eq!(
+            kind(Signals { hostname: Some("Galaxy-Watch5"), ..Default::default() }),
+            "watch"
+        );
+        // Apple Watch mDNS model, even alongside an Apple vendor that leans phone.
+        let mdns = MdnsHit { model: Some("Watch6,1".into()), ..Default::default() };
+        assert_eq!(
+            kind(Signals { vendor: Some("Apple, Inc."), mdns: Some(&mdns), ..Default::default() }),
+            "watch"
+        );
+        // A Garmin OUI on a home LAN is a wearable, not a generic handheld.
+        assert_eq!(kind(Signals { vendor: Some("Garmin International"), ..Default::default() }), "watch");
     }
 
     #[test]

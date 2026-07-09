@@ -78,8 +78,37 @@ fn table() -> &'static OuiTable {
 /// assignment (36-bit, then 28-bit, then the 24-bit OUI). Returns `None` for
 /// unregistered or unparseable prefixes — a randomized MAC will almost never
 /// match, but callers should still gate on [`is_randomized_mac`].
+///
+/// The registered name is passed through [`alias_vendor`] so an unrecognizable
+/// OEM/parent legal name becomes the consumer brand a user would recognize.
 pub fn lookup_vendor(mac: &str) -> Option<&'static str> {
-    resolve(table(), mac)
+    resolve(table(), mac).map(alias_vendor)
+}
+
+/// Consumer-brand aliases for OEM/parent legal names as registered with the IEEE.
+/// Smart-home vendors in particular register under an unrecognizable
+/// manufacturing-parent name — Govee's blocks all read "Shenzhen Intellirocks
+/// Tech. Co. Ltd." — so the raw registry string is useless as a device label.
+/// Each entry maps a distinctive, already-lowercased substring of the IEEE name
+/// to the recognizable brand. Curated and license-clean, like the table itself;
+/// keep needles specific enough not to collide with unrelated registrations.
+const VENDOR_ALIASES: &[(&str, &str)] = &[
+    // Govee (D41368/5CE753/D4ADFC/E02A25 all register as the parent company).
+    ("intellirocks", "Govee"),
+];
+
+/// Map a raw IEEE vendor string to a recognizable consumer brand when one is
+/// known, else return it unchanged. Case-insensitive substring match — the
+/// registry spelling (punctuation, "Co. Ltd." suffixes) varies, but a
+/// distinctive stem like "intellirocks" is stable.
+fn alias_vendor(vendor: &'static str) -> &'static str {
+    let lower = vendor.to_ascii_lowercase();
+    for (needle, brand) in VENDOR_ALIASES {
+        if lower.contains(needle) {
+            return brand;
+        }
+    }
+    vendor
 }
 
 /// The precedence logic, split out from the global table so it can be unit
@@ -159,6 +188,22 @@ mod tests {
     fn tolerates_dashes_and_short_input() {
         assert!(lookup_vendor("B8-27-EB-00-00-00").is_some());
         assert_eq!(lookup_vendor("b8:27"), None); // too few nibbles
+    }
+
+    #[test]
+    fn aliases_oem_legal_name_to_consumer_brand() {
+        // 5C:E7:53 is one of Govee's blocks, registered to the parent
+        // "Shenzhen Intellirocks Tech. Co. Ltd." — the alias must surface "Govee".
+        assert_eq!(lookup_vendor("5c:e7:53:3d:59:80"), Some("Govee"));
+    }
+
+    #[test]
+    fn alias_leaves_unmapped_vendors_untouched() {
+        // Raspberry Pi has no alias, so the registry name passes through.
+        assert!(lookup_vendor("b8:27:eb:11:22:33")
+            .unwrap()
+            .to_lowercase()
+            .contains("raspberry"));
     }
 
     #[test]
