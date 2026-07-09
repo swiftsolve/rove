@@ -183,13 +183,19 @@ static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 });
 
 /// A listening service that all but names the device type: 9100/631 are print
-/// protocols; 8009/8060 are Chromecast/Roku; 32400 is a Plex media server (an
-/// always-on NAS-class box); 1400 is Sonos.
+/// protocols; 8060 is the Roku control port (a streaming box is always a TV);
+/// 32400 is a Plex media server (an always-on NAS-class box); 1400 is Sonos.
+///
+/// Chromecast's 8009 is deliberately *not* here: it's the whole Google Cast
+/// family — Chromecasts, Nest Hubs *and* audio-only Cast speakers/smart clocks —
+/// so on its own it can't tell a TV from a speaker. It's a weak TV lean instead
+/// (see [`weak_port_kind`]), leaving the precise call to the mDNS `ca`
+/// capabilities that split audio-out from video-out devices.
 fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
     if ports.iter().any(|&p| matches!(p, 9100 | 631)) {
         return Some("printer");
     }
-    if ports.iter().any(|&p| matches!(p, 8009 | 8060)) {
+    if ports.contains(&8060) {
         return Some("tv");
     }
     if ports.contains(&1400) {
@@ -211,13 +217,18 @@ fn apple_mobile_port_kind(ports: &[u16]) -> Option<&'static str> {
 }
 
 /// Ports that merely lean one way — used only as weak corroboration. RTSP is
-/// usually an IP camera; SSH/SMB usually a computer or NAS.
+/// usually an IP camera; SSH/SMB usually a computer or NAS; Chromecast's 8009
+/// leans TV but can't outweigh a definitive mDNS speaker verdict (it's on Cast
+/// speakers too), so it only breaks a device out of "unknown".
 fn weak_port_kind(ports: &[u16]) -> Option<&'static str> {
     if ports.contains(&554) {
         return Some("camera");
     }
     if ports.iter().any(|&p| matches!(p, 22 | 445)) {
         return Some("computer");
+    }
+    if ports.contains(&8009) {
+        return Some("tv");
     }
     None
 }
@@ -614,6 +625,33 @@ mod tests {
             }),
             "iot"
         );
+    }
+
+    #[test]
+    fn a_cast_speaker_is_not_overridden_by_its_cast_family_signals() {
+        // A Lenovo Smart Clock (Google Assistant speaker): mDNS `ca` types it a
+        // speaker, but it also exposes the whole Cast family — port 8009 and an
+        // SSDP DIAL device type — which used to sum to a heavier "tv" vote and
+        // flip it. The definitive mDNS speaker verdict must now win.
+        let ssdp = SsdpHit {
+            device_type: Some("urn:dial-multiscreen-org:device:dial:1".into()),
+            name: Some("Living room clock".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Motorola (Wuhan) Mobility Technologies"),
+                hostname: Some("Living room clock"),
+                mdns: Some(&strong("speaker")),
+                ssdp: Some(&ssdp),
+                open_ports: &[8009],
+                ..Default::default()
+            }),
+            "speaker"
+        );
+        // ...but a bare Cast device with no mDNS verdict still falls back to TV
+        // (the common case is a Chromecast), rather than dropping to "unknown".
+        assert_eq!(kind(Signals { open_ports: &[8009], ..Default::default() }), "tv");
     }
 
     #[test]

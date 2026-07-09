@@ -22,7 +22,7 @@ export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
   nas: 'NAS / Server',
   computer: 'Computer',
   tablet: 'Tablet',
-  phone: 'Mobile',
+  phone: 'Phone',
   watch: 'Watch',
   console: 'Game console',
   tv: 'TV / Media',

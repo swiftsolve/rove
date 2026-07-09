@@ -162,6 +162,9 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
     // fingerprint still identifies it. This is the headline win of the feature.
     { ip: '192.168.1.44', hostname: null, model: 'Generic Android', os: 'Android', kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
+    // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
+    // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
+    { ip: '192.168.1.46', hostname: 'iPhone', model: null, os: null, kind: 'phone', mac: 'ae:4a:06:fe:b5:37', vendor: 'Apple', isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
     { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'unknown', mac: '1c:3b:f3:85:8f:43', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
   ],
 }
@@ -171,6 +174,8 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   defaultInterface: 'wlan0',
   dnsServers: [MOCK_GATEWAY, '1.1.1.1', '8.8.8.8'],
   gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
+  gatewayVendor: 'Sagemcom Broadband SAS',
+  gatewayModel: 'RouterOS RB750Gr3',
 }
 
 const MOCK_SPEED_RESULT: SpeedResult = {

@@ -104,13 +104,25 @@ function KindIcon({ kind }: { readonly kind: LanDeviceKind }): JSX.Element {
 }
 
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
-  // Kind · OS · model, dropping whichever parts are unknown. OS comes from the
-  // passive DHCP fingerprint.
+  const name = deviceName(device)
+  // Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
+  // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
+  // fingerprint. Case-insensitively drop any part that just repeats the name
+  // (e.g. a nameless host shown as its vendor) or an earlier part (an Apple
+  // handheld whose vendor and OS are both "Apple").
+  const seen = new Set<string>([name.toLowerCase()])
   const meta = [
     device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
+    device.vendor ?? undefined,
     device.os ?? undefined,
     device.model ?? undefined,
-  ].filter((part): part is string => Boolean(part))
+  ].filter((part): part is string => {
+    if (!part) return false
+    const key = part.toLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
   return (
     <section className={`ui-section device-row ${device.isGateway ? 'gateway' : ''}`}>
@@ -119,7 +131,7 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
       </span>
       <div className="device-row-body">
         <div className="device-row-top">
-          <span className="text-title device-row-name">{deviceName(device)}</span>
+          <span className="text-title device-row-name">{name}</span>
           <span
             className={`device-row-state ${device.reachable ? 'reachable' : 'stale'}`}
             title={device.reachable ? 'Reachable' : 'Cached (may be offline)'}
