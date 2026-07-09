@@ -48,16 +48,19 @@
   border-top: none;
 }
 
-/* Tighter row rhythm for the Router readout — less vertical air between each
-   label/value pair than the default 8px. First/last stay flush to the body. */
-.diag-router .data-row {
+/* Tighter row rhythm for the Router and DNS readouts — less vertical air between
+   each label/value pair than the default 8px. First/last stay flush to the body. */
+.diag-router .data-row,
+.diag-dns .data-row {
   padding: var(--gap-xs) 0;
 }
 
-.diag-router .data-row:first-child {
+.diag-router .data-row:first-child,
+.diag-dns .data-row:first-child {
   padding-top: 0;
 }
 
-.diag-router .data-row:last-child {
+.diag-router .data-row:last-child,
+.diag-dns .data-row:last-child {
   padding-bottom: 0;
 }

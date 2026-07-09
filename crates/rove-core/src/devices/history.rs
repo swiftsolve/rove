@@ -16,6 +16,7 @@
 //! listener's MAC→hit accumulator: like that cache it lives for the process
 //! lifetime (a restart re-learns within a few scans) and starts empty.
 use super::banner::BannerHit;
+use super::snmp::SnmpHit;
 use super::ssdp::SsdpHit;
 use crate::mdns::MdnsHit;
 use std::collections::HashMap;
@@ -29,6 +30,7 @@ pub struct DeviceEvidence {
     pub mdns: MdnsHit,
     pub ssdp: SsdpHit,
     pub banner: BannerHit,
+    pub snmp: SnmpHit,
     pub ports: Vec<u16>,
 }
 
@@ -49,6 +51,8 @@ impl DeviceEvidence {
 
         fill(&mut self.banner.server, &fresh.banner.server);
         fill(&mut self.banner.title, &fresh.banner.title);
+
+        fill(&mut self.snmp.sys_descr, &fresh.snmp.sys_descr);
 
         for &port in &fresh.ports {
             if !self.ports.contains(&port) {

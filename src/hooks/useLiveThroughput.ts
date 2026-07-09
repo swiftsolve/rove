@@ -171,6 +171,16 @@ export function useLiveThroughput(): LiveThroughputState {
   return useSyncExternalStore(subscribeStore, () => storeState)
 }
 
+/** Current live-throughput state, for non-React module-level consumers. */
+export function getLiveThroughput(): LiveThroughputState {
+  return storeState
+}
+
+/** Subscribe to live-throughput changes outside React. Returns an unsubscribe. */
+export function subscribeLiveThroughput(listener: () => void): () => void {
+  return subscribeStore(listener)
+}
+
 // Vite HMR re-evaluates this module without tearing down the Rust backend or the
 // Tauri event listeners registered by the previous bundle — release them here so
 // the next bundle's owner starts from a clean slate.

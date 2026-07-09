@@ -92,6 +92,11 @@ pub struct NetworkDiagnostics {
     pub default_interface: Option<String>,
     pub dns_servers: Vec<String>,
     pub gateway_ping: Option<PingStats>,
+    /// Router make from the gateway's MAC OUI, or None when unknown/randomized.
+    pub gateway_vendor: Option<String>,
+    /// Router model from the gateway's SNMP `sysDescr`, or None when it doesn't
+    /// answer SNMP (many consumer routers) or reports no usable model.
+    pub gateway_model: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
