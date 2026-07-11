@@ -505,6 +505,22 @@ mod tests {
             classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,43,114")),
             (Some("phone"), Some("Android")),
         );
+        // The bare 26,28,51,58,59 signature (no trailing 43) and newer builds
+        // that extend the tail differently both resolve off the shortened prefix.
+        assert_eq!(
+            classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59")),
+            (Some("phone"), Some("Android")),
+        );
+        assert_eq!(
+            classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,108,109,114,252")),
+            (Some("phone"), Some("Android")),
+        );
+        // A build that requests the classless-static-route option (33) up front
+        // before the same Android run.
+        assert_eq!(
+            classify_fingerprint(None, Some("1,33,3,6,15,26,28,51,58,59,43,114")),
+            (Some("phone"), Some("Android")),
+        );
     }
 
     #[test]
