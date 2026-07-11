@@ -65,9 +65,12 @@
 }
 
 .wifi-share-sub {
+  /* Span the body and left-align so it lines up with the header title. */
+  align-self: stretch;
   margin: var(--gap-xs) 0 0;
   font-size: var(--text-small);
   color: var(--text-secondary);
+  text-align: left;
 }
 
 /* White plate so the QR keeps its quiet zone and contrast in dark mode. */
