@@ -270,7 +270,6 @@ fn build_device(
             banner: Some(&evidence.banner),
             dhcp,
             open_ports: &evidence.ports,
-            is_randomized: is_randomized_mac(&neighbor.mac),
             is_gateway,
             is_self,
         })
