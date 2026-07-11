@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/networkApi'
+import { CloseIcon } from '@/components/ui/Icons'
 import { Spinner } from '@/components/ui/Spinner'
 import './WifiShareDialog.css'
 
@@ -53,9 +54,19 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
         aria-labelledby="wifi-share-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="wifi-share-title" className="wifi-share-title">
-          Share Wi‑Fi
-        </h2>
+        <div className="wifi-share-header">
+          <h2 id="wifi-share-title" className="wifi-share-title">
+            Share Wi‑Fi
+          </h2>
+          <button
+            type="button"
+            className="btn-icon btn-icon-secondary wifi-share-close"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <CloseIcon size={15} />
+          </button>
+        </div>
 
         {loading ? (
           <div className="wifi-share-state">
@@ -67,30 +78,25 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
             <p className="wifi-share-error">{error}</p>
           </div>
         ) : share ? (
-          <>
-            <p className="wifi-share-sub">Scan with a phone camera to join {share.ssid}.</p>
+          <div className="wifi-share-body">
             <div className="wifi-share-qr">
               <img
                 src={`data:image/svg+xml,${encodeURIComponent(share.qrSvg)}`}
                 alt={`QR code to join the Wi‑Fi network ${share.ssid}`}
-                width={200}
-                height={200}
+                width={220}
+                height={220}
               />
             </div>
+            <p className="wifi-share-sub">
+              Scan with a phone camera to join <strong>{share.ssid}</strong>
+            </p>
             {secured && !share.password && (
               <p className="wifi-share-note">
-                The saved password wasn&apos;t available, so scanning will prompt for it. Enter it
-                by hand to join.
+                The saved password wasn&apos;t available, so scanning will prompt for it.
               </p>
             )}
-          </>
+          </div>
         ) : null}
-
-        <div className="wifi-share-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
       </div>
     </div>
   )
