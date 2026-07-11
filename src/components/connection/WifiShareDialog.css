@@ -12,8 +12,8 @@
 
 .wifi-share-dialog {
   width: 100%;
-  max-width: 320px;
-  padding: var(--gap-lg);
+  max-width: 400px;
+  padding: var(--gap-xl);
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -62,12 +62,18 @@
   text-align: center;
 }
 
+.wifi-share-sub {
+  margin: var(--gap-xs) 0 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
 /* White plate so the QR keeps its quiet zone and contrast in dark mode. */
 .wifi-share-qr {
   display: flex;
   justify-content: center;
-  margin: var(--gap-lg) 0 var(--gap-md);
-  padding: var(--gap-md);
+  margin: var(--gap-lg) 0;
+  padding: var(--gap-lg);
   background: #ffffff;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -75,19 +81,16 @@
 
 .wifi-share-qr img {
   display: block;
-  width: 220px;
-  height: 220px;
+  width: 260px;
+  height: 260px;
 }
 
-.wifi-share-sub {
+.wifi-share-ssid {
   margin: 0;
-  font-size: var(--text-small);
-  color: var(--text-secondary);
-}
-
-.wifi-share-sub strong {
-  color: var(--text-primary);
+  font-size: var(--text-section);
   font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .wifi-share-note {
