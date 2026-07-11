@@ -219,15 +219,21 @@ fn build_device(
     // hosts), then the DHCP-reported hostname (covers non-Windows hosts NetBIOS
     // misses), the reverse-DNS hostname, and finally a synthesized "Amazon Echo"
     // when nothing named the device but the Echo fingerprint matched.
+    // Each source is tagged with its strength rank so the per-MAC name cache below
+    // can honour this same order across scans — a weaker signal resolved later
+    // (a flap-prone reverse-DNS PTR) must not overwrite a stronger one remembered
+    // from an earlier scan.
+    use history::NameRank;
     let hostname = evidence
         .mdns
         .name
         .clone()
-        .or_else(|| evidence.ssdp.name.clone())
-        .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned())
-        .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()))
-        .or(resolved_hostname)
-        .or_else(|| is_echo.then(|| "Amazon Echo".to_string()));
+        .map(|n| (n, NameRank::Mdns))
+        .or_else(|| evidence.ssdp.name.clone().map(|n| (n, NameRank::Ssdp)))
+        .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned().map(|n| (n, NameRank::NetBios)))
+        .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()).map(|n| (n, NameRank::Dhcp)))
+        .or_else(|| resolved_hostname.map(|n| (n, NameRank::ReverseDns)))
+        .or_else(|| is_echo.then(|| ("Amazon Echo".to_string(), NameRank::Synthetic)));
 
     // Reverse-DNS / NetBIOS names (often the only label a plug or printer exposes)
     // flap across scans, and a nameless scan would drop the hostname classify vote
@@ -236,7 +242,7 @@ fn build_device(
     // it — and the kind derived from it below — stays put. A MAC-less host can't be
     // keyed.
     let hostname = if neighbor.mac.is_empty() {
-        hostname
+        hostname.map(|(name, _)| name)
     } else {
         history::stable_name(&neighbor.mac, hostname)
     };

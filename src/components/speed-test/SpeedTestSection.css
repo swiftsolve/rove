@@ -52,6 +52,31 @@
   stroke-linejoin: round;
 }
 
+/* The squiggle is drawn once and scrolls purely via this transform, so the
+   browser can composite it on the GPU instead of the JS loop rebuilding the
+   path each frame. The group is built with one wavelength of left overscan;
+   translating rightward by exactly one wavelength loops seamlessly. Duration
+   (WAVE_LENGTH / WAVE_SPEED) is set inline to stay in sync with the JS
+   constants. */
+.wavy-scroll {
+  animation-name: wavy-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes wavy-scroll {
+  to {
+    transform: translateX(var(--wave-length));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wavy-scroll {
+    animation: none;
+  }
+}
+
 /* Remaining portion: same accent, dimmed — Android draws the track at reduced
    emphasis behind the active indicator. */
 .wavy-track {

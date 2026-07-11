@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useId, useRef, type CSSProperties } from 'react'
 import type { SpeedResult, SpeedTestProgress } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import Section from '@/components/ui/Section'
@@ -99,20 +99,23 @@ function nextStepCeiling(backend: number): number {
 // run rewinds the backend to 0, which is our cue to clear the carried-over fill.
 let persistedPct = 0
 
-// Build the squiggle path string for a given leading edge and phase: a smooth
-// (quadratic through midpoints) wave from 0 to `end`, full amplitude throughout,
-// ending on the rounded cap wherever the wave happens to be — like Android's.
-function buildWavePath(end: number, phase: number): string {
-  let prevX = 0
-  let prevY = waveY(0, phase)
+// Build the squiggle path ONCE per width: a smooth (quadratic through midpoints)
+// wave spanning one wavelength of overscan on the left (so the CSS scroll can
+// translate it rightward without exposing a gap) through the full width. Phase
+// is fixed at 0 — the scroll is a CSS transform on the GPU, not a per-frame
+// rebuild, so this string is only regenerated when the container resizes.
+function buildStaticWave(width: number): string {
+  const start = -WAVE_LENGTH
+  let prevX = start
+  let prevY = waveY(start, 0)
   let d = `M ${prevX.toFixed(2)} ${prevY.toFixed(2)}`
-  for (let x = 3; x <= end; x += 3) {
-    const y = waveY(x, phase)
+  for (let x = start + 3; x <= width; x += 3) {
+    const y = waveY(x, 0)
     d += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${((prevX + x) / 2).toFixed(2)} ${((prevY + y) / 2).toFixed(2)}`
     prevX = x
     prevY = y
   }
-  d += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${end.toFixed(2)} ${waveY(end, phase).toFixed(2)}`
+  d += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${width.toFixed(2)} ${waveY(width, 0).toFixed(2)}`
   return d
 }
 
@@ -122,31 +125,33 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
   const targetRef = useRef(target)
   targetRef.current = target
 
+  // Sanitize the colons React's useId emits — they're fine in most contexts but
+  // brittle inside an SVG url(#…) fragment reference.
+  const clipId = `wavy${useId().replace(/:/g, '')}`
   const wrapRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const fillRef = useRef<SVGPathElement>(null)
+  const clipRef = useRef<SVGRectElement>(null)
   const dotRef = useRef<SVGCircleElement>(null)
   const trackRef = useRef<SVGLineElement>(null)
 
-  // The animation runs entirely off React's render path: the SVG shell is
-  // rendered once, and this rAF loop mutates its geometry directly each frame.
-  // Re-rendering the component (a long `d` string reconciled 60×/s) is what made
-  // the bar chug, so we deliberately never setState here. The loop also owns the
-  // width measurement (via ResizeObserver) so a resize never forces a re-render.
+  // The wave *shape* is fixed; only its horizontal offset scrolls, and that's a
+  // CSS transform on the scroll group (compositor-driven — see .wavy-scroll).
+  // So the expensive work — building the squiggle `d` string and re-parsing it —
+  // happens only when the width changes, here, not 60×/s. The per-frame loop
+  // below is left with a couple of trivial attribute writes.
   useEffect(() => {
     const wrap = wrapRef.current
     if (!wrap) return
 
     let width = wrap.clientWidth
-    // The SVG's coordinate system only depends on width, so its size attributes
-    // are written here — not in the per-frame loop. Re-setting `viewBox` every
-    // frame forces the browser to re-layout the whole SVG each tick, which is
-    // what made the bar chug; writing it only on resize keeps the loop cheap.
     const applySize = (): void => {
       const svg = svgRef.current
-      if (svg && width > 0) {
+      const fill = fillRef.current
+      if (svg && fill && width > 0) {
         svg.setAttribute('width', String(width))
         svg.setAttribute('viewBox', `0 0 ${width} ${WAVE_HEIGHT}`)
+        fill.setAttribute('d', buildStaticWave(width)) // rebuilt only on resize
       }
     }
     const measure = (): void => {
@@ -157,9 +162,14 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
     const observer = new ResizeObserver(measure)
     observer.observe(wrap)
 
+    // Per-frame work is now just advancing the fill length: a clip rect grows
+    // to reveal more of the (already-drawn, GPU-scrolled) wave, and the dot rides
+    // its leading edge. No geometry is rebuilt, so the loop is nearly free.
     let pct = persistedPct
+    let lastEnd = -1
+    let lastTrackStart = -1
     let raf = 0
-    const loop = (time: number): void => {
+    const loop = (): void => {
       const backend = targetRef.current
       // A new run rewinds the backend to 0 — mirror that in the local fill so the
       // bar restarts instead of holding a stale value carried over the remount.
@@ -169,29 +179,33 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
       if (backend > next) next += (backend - next) * 0.2 // ease up to a backend jump
       pct = Math.max(pct, next) // monotonic
       persistedPct = pct // survive a remount mid-test
-      const phase = -(((time / 1000) * WAVE_SPEED) % WAVE_LENGTH)
 
-      const svg = svgRef.current
-      const fill = fillRef.current
+      const clip = clipRef.current
       const dot = dotRef.current
       const track = trackRef.current
-      if (width > 0 && svg && fill && dot && track) {
+      if (width > 0 && clip && dot && track) {
         const fraction = Math.max(pct / 100, WAVE_MIN_FRACTION)
         const end = fraction * width
-        // Track runs to just inside the right edge so its round cap doesn't clip,
-        // starting a gap past the active tip.
-        const trackEnd = width - WAVE_STROKE / 2
-        const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
-        const showTrack = trackEnd - trackStart > 0.5
-
-        fill.setAttribute('d', buildWavePath(end, phase))
-        dot.setAttribute('cx', end.toFixed(2))
-        if (showTrack) {
-          track.setAttribute('x1', trackStart.toFixed(2))
-          track.setAttribute('x2', trackEnd.toFixed(2))
-          track.style.display = ''
-        } else {
-          track.style.display = 'none'
+        // Skip the DOM writes on frames where the fill hasn't moved a pixel — the
+        // creep is sub-pixel per frame, so most frames are no-ops now.
+        if (Math.abs(end - lastEnd) >= 0.25) {
+          lastEnd = end
+          clip.setAttribute('width', end.toFixed(2))
+          dot.setAttribute('cx', end.toFixed(2))
+          // Track runs to just inside the right edge (round cap unclipped),
+          // starting a gap past the active tip.
+          const trackEnd = width - WAVE_STROKE / 2
+          const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
+          if (Math.abs(trackStart - lastTrackStart) >= 0.25) {
+            lastTrackStart = trackStart
+            if (trackEnd - trackStart > 0.5) {
+              track.setAttribute('x1', trackStart.toFixed(2))
+              track.setAttribute('x2', trackEnd.toFixed(2))
+              track.style.display = ''
+            } else {
+              track.style.display = 'none'
+            }
+          }
         }
       }
       raf = requestAnimationFrame(loop)
@@ -203,11 +217,30 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
     }
   }, [])
 
-  // Static shell — the loop above owns every animating attribute. The dot stays
-  // on the centerline while the wave undulates behind it, so cy is fixed here.
+  // Static shell. The wave is drawn once and scrolls via CSS; a clip rect (grown
+  // by the loop) reveals the filled portion; the dot rides its leading edge and
+  // masks the clip's straight cut. The dot stays on the centerline, so cy is fixed.
   return (
     <div ref={wrapRef} className="wavy-progress" aria-hidden>
       <svg ref={svgRef} height={WAVE_HEIGHT}>
+        <defs>
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+            <rect ref={clipRef} x={0} y={0} width={0} height={WAVE_HEIGHT} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          <g
+            className="wavy-scroll"
+            style={
+              {
+                '--wave-length': `${WAVE_LENGTH}px`,
+                animationDuration: `${WAVE_LENGTH / WAVE_SPEED}s`,
+              } as CSSProperties
+            }
+          >
+            <path ref={fillRef} className="wavy-fill" />
+          </g>
+        </g>
         <line
           ref={trackRef}
           className="wavy-track"
@@ -215,7 +248,6 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
           y2={WAVE_MID}
           style={{ display: 'none' }}
         />
-        <path ref={fillRef} className="wavy-fill" />
         <circle ref={dotRef} className="wavy-dot" cy={WAVE_MID} r={LEAD_DOT_R} />
       </svg>
     </div>

@@ -45,6 +45,7 @@
    truncates first, the band holds its width. */
 .history-conn-band {
   flex-shrink: 0;
+  font-size: var(--text-caption);
   color: var(--text-tertiary);
   font-weight: var(--weight-regular);
 }
