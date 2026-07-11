@@ -92,7 +92,7 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             "watch",
         ),
         (
-            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\brmx\d{4}|\bcph\d{4}|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|infinix|\btecno\b|zenfone|-phone\b|phone-|android-[0-9a-f]",
+            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|\biqoo\b|realme|\brmx\d{4}|\bcph\d{4}|\boppo\b|\bvivo\b|\bhonor\b|\bmate-?[1-9]\d?\b|moto[- ]?[ge]|motorola|nokia-?\d|infinix|\btecno\b|zenfone|-phone\b|phone-|android-[0-9a-f]",
             "phone",
         ),
         (
@@ -185,7 +185,7 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
         // reads as a watch, not a generic handheld.
         (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b|polar electro", "watch"),
         (
-            r"(?i)\bapple\b|samsung|xiaomi|oneplus|huawei|\boppo\b|\bvivo\b|realme|motorola|\bhtc\b|nothing tech|fairphone",
+            r"(?i)\bapple\b|samsung|xiaomi|oneplus|huawei|\bhonor\b|\boppo\b|\bvivo\b|realme|motorola|\bhtc\b|nothing tech|fairphone",
             "phone",
         ),
     ])
@@ -934,6 +934,8 @@ mod tests {
         assert_eq!(kind(Signals { vendor: Some("Tenda Technology Co.,Ltd"), ..Default::default() }), "router");
         assert_eq!(kind(Signals { vendor: Some("Polar Electro Oy"), ..Default::default() }), "watch");
         assert_eq!(kind(Signals { vendor: Some("VMware, Inc."), ..Default::default() }), "computer");
+        // Honor split from Huawei and now registers its own OUIs — a phone maker.
+        assert_eq!(kind(Signals { vendor: Some("Honor Device Co., Ltd."), ..Default::default() }), "phone");
     }
 
     #[test]
@@ -946,6 +948,12 @@ mod tests {
         // Realme/OPPO model-code hostnames.
         assert_eq!(kind(Signals { hostname: Some("RMX3563"), ..Default::default() }), "phone");
         assert_eq!(kind(Signals { hostname: Some("CPH2451"), ..Default::default() }), "phone");
+        // iQOO (phone-only brand) and Huawei Mate default hostnames.
+        assert_eq!(kind(Signals { hostname: Some("iQOO-Neo9"), ..Default::default() }), "phone");
+        assert_eq!(kind(Signals { hostname: Some("HUAWEI-Mate40-Pro"), ..Default::default() }), "phone");
+        // ...but the Mate token must stay phone-specific: a word that merely
+        // ends in "mate" (no boundary, no trailing model number) is not a phone.
+        assert_eq!(kind(Signals { hostname: Some("teammate"), ..Default::default() }), "unknown");
         // ISP CPE and mesh gear.
         assert_eq!(kind(Signals { hostname: Some("Livebox-A1B2"), ..Default::default() }), "router");
         assert_eq!(kind(Signals { hostname: Some("Archer-AX55"), ..Default::default() }), "router");
