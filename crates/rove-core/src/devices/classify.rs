@@ -43,10 +43,6 @@ pub struct Signals<'a> {
     pub dhcp: Option<&'a DhcpHit>,
     /// Open TCP ports observed by the probe.
     pub open_ports: &'a [u16],
-    /// The MAC is locally administered (privacy-randomized). On a home network a
-    /// device that randomizes yet leaks no other identity is almost always a
-    /// smartphone — see the last-resort lean in [`classify`].
-    pub is_randomized: bool,
     pub is_gateway: bool,
     pub is_self: bool,
 }
@@ -339,11 +335,6 @@ const W_VENDOR: i32 = 25;
 const W_BANNER: i32 = 22;
 const W_MDNS_HINT: i32 = 15;
 const W_WEAK_PORT: i32 = 12;
-/// A privacy-randomized MAC with no other identity leans "phone" — the lightest
-/// vote of all, below even a weak port, so it only decides a device that would
-/// otherwise be "unknown" and never overrides a real signal. Deliberately thin
-/// enough to leave the verdict Low-confidence (hedged "Phone?").
-const W_RANDOMIZED_PHONE: i32 = 10;
 
 /// A verdict is decisive only when the winner leads the runner-up by at least
 /// one vendor-grade signal, or is anchored by a single signal of hostname
@@ -527,17 +518,6 @@ pub fn classify(s: &Signals) -> Verdict {
     tally.cast_all(apple_mobile_port_votes(open_ports));
     tally.cast_all(weak_port_votes(open_ports));
     tally.cast_all(implausible_port_votes(open_ports));
-
-    // Last resort: a privacy-randomized MAC that leaked nothing else. Both iOS
-    // and Android randomize by default, so the silent randomizer on a home LAN
-    // is far more often a phone than anything else — computers and IoT that
-    // randomize almost always also expose a hostname or service that has already
-    // voted above. The vote is the lightest of all, so it only breaks a device
-    // out of "unknown"; the implausible-handheld penalties above still cancel it
-    // for a randomizing laptop that serves SSH/SMB/RDP (net-negative → excluded).
-    if s.is_randomized {
-        tally.cast(Some("phone"), W_RANDOMIZED_PHONE);
-    }
 
     tally.verdict()
 }
@@ -1103,47 +1083,13 @@ mod tests {
     }
 
     #[test]
-    fn a_silent_randomized_mac_leans_phone() {
-        // The modern-phone reality: an Android/iOS handset randomizes its MAC and,
-        // on this scan, leaked nothing else (no DHCP capture, no hostname, no
-        // service). Rather than fall to "unknown" it should read as a hedged phone.
-        assert_eq!(kind(Signals { is_randomized: true, ..Default::default() }), "phone");
-        assert_eq!(
-            confidence(Signals { is_randomized: true, ..Default::default() }),
-            Confidence::Low
-        );
-        // A stable-MAC device with no signal is still genuinely unknown — the lean
-        // is specifically about the randomized population.
+    fn a_signalless_device_stays_unknown() {
+        // A device that leaked nothing the classifier can read — including a
+        // silent privacy-randomized handset — must stay "unknown" (the UI renders
+        // it as a generic device), never a guessed kind. We only name what we can
+        // actually identify.
         assert_eq!(kind(Signals::default()), "unknown");
-    }
-
-    #[test]
-    fn a_randomized_lean_never_overrides_a_real_signal() {
-        // Any real signal outweighs the last-resort lean, so a randomizing device
-        // that DID announce itself keeps its true kind.
-        assert_eq!(
-            kind(Signals {
-                is_randomized: true,
-                mdns: Some(&strong("printer")),
-                ..Default::default()
-            }),
-            "printer"
-        );
-        assert_eq!(
-            kind(Signals {
-                is_randomized: true,
-                hostname: Some("Living-Room-AppleTV"),
-                ..Default::default()
-            }),
-            "tv"
-        );
-        // ...and a randomizing laptop that serves SSH/SMB stays a computer: the
-        // implausible-handheld penalty cancels the phone lean (net-negative), so
-        // the weak computer-port vote wins.
-        assert_eq!(
-            kind(Signals { is_randomized: true, open_ports: &[22, 445], ..Default::default() }),
-            "computer"
-        );
+        assert_eq!(confidence(Signals::default()), Confidence::Low);
     }
 
     #[test]
