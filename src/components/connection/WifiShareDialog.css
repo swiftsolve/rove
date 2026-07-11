@@ -1,7 +1,9 @@
+/* Absolute (not fixed) and portaled into `.app-col`, so it covers and centres
+   over the main content area rather than the whole window. */
 .wifi-share-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 100;
+  z-index: 90;
   display: flex;
   align-items: center;
   justify-content: center;

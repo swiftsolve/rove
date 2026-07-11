@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/networkApi'
 import { CloseIcon } from '@/components/ui/Icons'
@@ -45,7 +46,7 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
 
   const secured = share != null && share.encryption !== 'nopass'
 
-  return (
+  const overlay = (
     <div className="wifi-share-overlay" role="presentation" onClick={onClose}>
       <div
         className="wifi-share-dialog"
@@ -99,4 +100,10 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
       </div>
     </div>
   )
+
+  // Anchor the modal to the main content column so it centres over the page
+  // area, not the whole window (the nav rail stays uncovered). Fall back to
+  // inline rendering if the column isn't in the DOM.
+  const host = typeof document !== 'undefined' ? document.querySelector('.app-col') : null
+  return host ? createPortal(overlay, host) : overlay
 }
