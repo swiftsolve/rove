@@ -17,6 +17,14 @@ interface Options {
    * enable/reset. The poll is a background refresh — it never toggles `isBusy`.
    */
   readonly pollIntervalMs?: number
+  /**
+   * Fire the automatic fetch when `enabled`/`resetKey` first turn on? Default
+   * true. Set false for a poll-only resource whose initial value is seeded
+   * elsewhere (e.g. a "live metrics" overlay seeded by a sibling full snapshot):
+   * it then fetches only on its poll interval and on visibility-resume, so it
+   * never adds a second probe of the same targets on open.
+   */
+  readonly fetchOnEnable?: boolean
 }
 
 export interface BackendResource<T> {
@@ -35,7 +43,7 @@ export function useBackendResource<T>(
   fetcher: (() => Promise<T>) | undefined,
   enabled: boolean,
   errorMessage: string,
-  { refetchOnEnable = false, resetKey, pollIntervalMs }: Options = {},
+  { refetchOnEnable = false, resetKey, pollIntervalMs, fetchOnEnable = true }: Options = {},
 ): BackendResource<T> {
   const [data, setData] = useState<T | null>(null)
   const [isBusy, setIsBusy] = useState(false)
@@ -102,10 +110,11 @@ export function useBackendResource<T>(
     // we never serve the previous network's data. The initial transition from
     // "no key yet" to the first real key is NOT a switch — it's the key merely
     // becoming known (network info finishing loading just after the first fetch
-    // already kicked off) — so it must not clear state or force a redundant
+    // already kicked off) — so it must neither clear state nor force a redundant
     // refetch. Only a change between two known keys is a real invalidation.
-    if (resetKeyRef.current !== resetKey) {
-      const hadPreviousKey = resetKeyRef.current != null
+    const keyChanged = resetKeyRef.current !== resetKey
+    const hadPreviousKey = resetKeyRef.current != null
+    if (keyChanged) {
       resetKeyRef.current = resetKey
       if (hadPreviousKey) {
         hasRunRef.current = false
@@ -114,10 +123,17 @@ export function useBackendResource<T>(
       }
     }
     if (!enabled) return
+    // Poll-only resource: its first value is seeded elsewhere, so it fetches on
+    // its interval/resume only — never an on-enable probe.
+    if (!fetchOnEnable) return
+    // The key just settled null→real without a real switch. The on-enable fetch
+    // has already run against the (only) network, so this settle must not fire a
+    // second, identical probe on top of it.
+    if (keyChanged && !hadPreviousKey && hasRunRef.current) return
     if (!refetchOnEnable && hasRunRef.current) return
     hasRunRef.current = true
     void reload()
-  }, [enabled, refetchOnEnable, reload, resetKey])
+  }, [enabled, refetchOnEnable, reload, resetKey, fetchOnEnable])
 
   useEffect(() => {
     // While the owning tab is visible, refresh in the background so values stay

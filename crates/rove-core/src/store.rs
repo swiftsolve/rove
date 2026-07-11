@@ -155,6 +155,25 @@ impl Store {
         // missing, idempotently, so a collided version number can't wedge history.
         Self::ensure_column(&conn, "speed_history", "link_speed_mbps", "REAL")?;
         Self::ensure_column(&conn, "speed_history", "frequency", "REAL")?;
+        // Scrub reverse-DNS error text that earlier builds stored as a hostname.
+        // macOS `dig` prints diagnostics like ";; connection timed out; no servers
+        // could be reached" to stdout, and it leaked through as a device name; the
+        // `COALESCE` upsert then pins it forever. A real hostname holds only
+        // `[A-Za-z0-9._-]`, so null anything with a character outside that set —
+        // it re-resolves to the correct name (or Unknown) on the next scan. The
+        // `IF EXISTS`-style guard keeps this safe on a DB that predates the table.
+        let has_known_devices: bool = conn.query_row(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='known_devices'",
+            [],
+            |_| Ok(()),
+        ).is_ok();
+        if has_known_devices {
+            conn.execute(
+                "UPDATE known_devices SET hostname = NULL \
+                 WHERE hostname IS NOT NULL AND hostname GLOB '*[^A-Za-z0-9._-]*'",
+                [],
+            )?;
+        }
         Ok(())
     }
 
@@ -481,5 +500,33 @@ mod tests {
         assert_eq!(known[0].last_seen, 2000);
         assert_eq!(known[0].ip.as_deref(), Some("192.168.1.9"));
         assert_eq!(known[0].hostname.as_deref(), Some("nas"));
+    }
+
+    #[test]
+    fn migrate_scrubs_reverse_dns_error_text_stored_as_hostname() {
+        // Seed a DB the way earlier builds left it: a leaked `dig` diagnostic
+        // pinned as a device's hostname, alongside a legitimately-named device.
+        let conn = Connection::open_in_memory().unwrap();
+        let store = Store::from_connection(conn).unwrap();
+        store
+            .lock()
+            .execute_batch(
+                "INSERT INTO known_devices (mac, ip, hostname, vendor, kind, first_seen, last_seen)
+                 VALUES ('11:11:11:11:11:11', '192.168.2.12',
+                         ';; connection timed out; no servers could be reached',
+                         NULL, 'unknown', 1, 1),
+                        ('22:22:22:22:22:22', '192.168.2.20', 'pixel-7', NULL, 'phone', 1, 1);",
+            )
+            .unwrap();
+
+        // Re-running migrate() (as a fresh open would) heals the poisoned row.
+        store.migrate().unwrap();
+
+        let known = store.known_devices().unwrap();
+        let by_mac = |mac: &str| {
+            known.iter().find(|d| d.mac == mac).unwrap().hostname.clone()
+        };
+        assert_eq!(by_mac("11:11:11:11:11:11"), None);
+        assert_eq!(by_mac("22:22:22:22:22:22").as_deref(), Some("pixel-7"));
     }
 }

@@ -1,12 +1,6 @@
 import { useMemo } from 'react'
 import type { LanDeviceScan } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
-import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
-
-// A LAN scan is heavy (ARP/SSDP/ping sweeps), so poll less aggressively than the
-// cheap interface read — enough to stay reasonably fresh without hammering the
-// network the whole time the tab is open.
-const POLL_INTERVAL_MS = 45_000
 
 interface UseDevicesResult {
   readonly scan: LanDeviceScan | null
@@ -23,15 +17,20 @@ export function useDevices(enabled: boolean, networkKey?: string | null): UseDev
     [api],
   )
 
+  // No periodic poll: a LAN scan is heavy (ARP/SSDP/ping sweeps) and repeatedly
+  // rescanning in the background is intrusive. Scan when the tab opens, when the
+  // network changes, or when the user hits refresh — nothing on a timer.
+  // A genuine network switch is already covered by `resetKey: networkKey` — when
+  // the interface or IP changes, the cache invalidates and rescans. We do NOT
+  // rescan on every raw `network-changed` nudge: macOS' route-socket monitor
+  // emits those for transient routing churn (including traffic from our own
+  // scan), which turned into an endless self-triggering rescan loop.
   const { data, isBusy, error, reload } = useBackendResource(
     fetchDevices,
     enabled,
     'Failed to scan for devices',
-    { resetKey: networkKey, refetchOnEnable: true, pollIntervalMs: POLL_INTERVAL_MS },
+    { resetKey: networkKey, refetchOnEnable: true },
   )
-
-  // Network switched — rescan at once instead of waiting out the poll interval.
-  useOnNetworkChanged(() => void reload(), enabled)
 
   return { scan: data, isScanning: isBusy, error, rescan: reload }
 }

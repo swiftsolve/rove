@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import type { NetworkDiagnostics } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
-import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 
 // The live metrics (gateway latency + service reachability) refresh on this
 // tight cadence so the Connection view's numbers stay current. The heavier full
@@ -26,23 +25,32 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
     { resetKey: networkKey, refetchOnEnable: true },
   )
 
-  // Live metrics, refreshed every 15s. useBackendResource pauses this while the
-  // window is hidden and fires one fresh read on resume.
+  // Live metrics, refreshed every 15s. Poll-only: the full run above already
+  // probes the gateway and services for the initial paint, so live must NOT
+  // fetch on open too — that was probing every target twice on each visit. It
+  // just keeps those numbers current on the interval (paused while hidden, one
+  // fresh read on resume) and takes over once its first reading lands.
   const live = useBackendResource(
     window.networkAPI?.runDiagnosticsLive,
     enabled,
     'Diagnostics failed',
-    { resetKey: networkKey, refetchOnEnable: true, pollIntervalMs: LIVE_POLL_INTERVAL_MS },
+    {
+      resetKey: networkKey,
+      pollIntervalMs: LIVE_POLL_INTERVAL_MS,
+      fetchOnEnable: false,
+    },
   )
 
   const { reload: reloadFull } = full
   const { reload: reloadLive } = live
+  // Manual refresh re-runs both so the overlaid live metrics don't linger stale
+  // over the freshly-probed full snapshot. A genuine network switch is handled
+  // by `resetKey: networkKey` (full refetches, live re-seeds from it) — we do
+  // NOT re-run on raw `network-changed` nudges, which macOS' route monitor
+  // emits for transient routing churn and which turned into a probe storm.
   const run = useCallback(async () => {
     await Promise.all([reloadFull(), reloadLive()])
   }, [reloadFull, reloadLive])
-
-  // Network switched — re-run both at once instead of waiting out the interval.
-  useOnNetworkChanged(() => void run(), enabled)
 
   // Overlay the live metrics on the last full snapshot. Once a live reading has
   // landed it owns latency/services wholesale (a null ping means "unreachable",

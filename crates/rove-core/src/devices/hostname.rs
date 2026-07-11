@@ -20,6 +20,19 @@ pub fn trim_suffix(host: &str) -> String {
     HOST_SUFFIX.replace(host, "").into_owned()
 }
 
+/// Rejects strings that aren't syntactically valid hostnames. Reverse-DNS
+/// tooling prints diagnostics to *stdout* — macOS `dig` emits lines like
+/// ";; connection timed out; no servers could be reached" that `2>/dev/null`
+/// can't catch — so error text can reach this filter as a candidate hostname.
+/// A real hostname carries no whitespace or punctuation beyond `-`, `.`, `_`,
+/// and holds at least one alphanumeric, so anything else is rejected outright.
+fn is_valid_hostname(host: &str) -> bool {
+    !host.is_empty()
+        && host.len() <= 253
+        && host.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '.' | '_'))
+        && host.chars().any(|c| c.is_ascii_alphanumeric())
+}
+
 /// Rejects names that carry no information: systemd's synthetic `_gateway`
 /// and routers echoing the MAC back ("ecb5fa189779", "98:17:3c:6d:03:1a").
 fn is_meaningful(host: &str) -> bool {
@@ -86,7 +99,13 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
             // DHCP lease) and doesn't depend on the cache — stripping dig's
             // trailing dot. Absent `dig`, the fallback yields empty and we degrade
             // to the dscacheutil-only behavior.
-            r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -z "$n" ]; then n=$(dig +short +time=1 +tries=1 -x "$1" 2>/dev/null | head -n1 | sed "s/\.$//"); fi; if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
+            //
+            // `dig` writes its comment/diagnostic lines (e.g. ";; connection timed
+            // out; no servers could be reached") to *stdout*, not stderr, so
+            // `2>/dev/null` doesn't catch them. Pick the first line that actually
+            // looks like a name (starts alphanumeric) rather than `head -n1`, so a
+            // failed lookup yields empty instead of leaking the error as a hostname.
+            r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -z "$n" ]; then n=$(dig +short +time=1 +tries=1 -x "$1" 2>/dev/null | awk "/^[A-Za-z0-9]/{print; exit}" | sed "s/\.$//"); fi; if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         } else {
             r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         };
@@ -101,7 +120,7 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
                     continue;
                 };
                 let host = trim_suffix(host.trim());
-                if !host.is_empty() && is_meaningful(&host) {
+                if is_valid_hostname(&host) && is_meaningful(&host) {
                     resolved.insert(ip.trim().to_string(), host);
                 }
             }
@@ -141,7 +160,7 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
                     continue;
                 };
                 let host = trim_suffix(host.trim());
-                if !host.is_empty() && is_meaningful(&host) {
+                if is_valid_hostname(&host) && is_meaningful(&host) {
                     resolved.insert(ip.trim().to_string(), host);
                 }
             }
@@ -166,6 +185,20 @@ mod tests {
         assert!(is_meaningful("iPhone"));
         assert!(is_meaningful("pixel-7"));
         assert!(is_meaningful("deadbeef")); // 8 digits, not a MAC
+    }
+
+    #[test]
+    fn rejects_reverse_dns_error_text() {
+        // The exact leak: macOS `dig` diagnostics that reached the name field.
+        assert!(!is_valid_hostname(";; connection timed out; no servers could be reached"));
+        assert!(!is_valid_hostname("no servers could be reached"));
+        assert!(!is_valid_hostname(";;"));
+        assert!(!is_valid_hostname(""));
+        // Real hostnames pass.
+        assert!(is_valid_hostname("pixel-7"));
+        assert!(is_valid_hostname("Nabils-MacBook"));
+        assert!(is_valid_hostname("nas.home"));
+        assert!(is_valid_hostname("host_1"));
     }
 
     #[test]

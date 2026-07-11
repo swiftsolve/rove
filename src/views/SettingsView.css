@@ -157,6 +157,7 @@
    separate sunken band: no top divider, and symmetric vertical padding so the
    status text sits centred within the inset band. */
 .settings-updates .ui-section-footer {
+  margin-top: var(--gap-md);
   padding-top: var(--gap-md);
   padding-bottom: var(--gap-md);
   border-top: none;

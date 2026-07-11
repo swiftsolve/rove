@@ -178,9 +178,7 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
   // both "Apple").
   const seen = new Set<string>([name.toLowerCase()])
   const meta = [
-    device.kind !== 'unknown'
-      ? LAN_DEVICE_KIND_LABELS[device.kind] + (device.kindConfidence === 'low' ? '?' : '')
-      : undefined,
+    device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
     device.vendor ?? undefined,
     device.os ?? undefined,
     device.model ?? undefined,
