@@ -146,6 +146,40 @@ impl Store {
             conn.execute_batch(SCHEMA_V2)?;
             conn.pragma_update(None, "user_version", 2)?;
         }
+        // Independently of the version counter, guarantee the columns the
+        // insert/read SQL relies on actually exist. A parallel feature branch
+        // also bumped the schema to v2 (adding its own `bufferbloat_ms` column),
+        // so some installs reach user_version 2 without link_speed_mbps/frequency
+        // — and the `version < 2` gate above then skips adding them. Every insert
+        // and read would fail with "no such column" on those DBs. Add whatever is
+        // missing, idempotently, so a collided version number can't wedge history.
+        Self::ensure_column(&conn, "speed_history", "link_speed_mbps", "REAL")?;
+        Self::ensure_column(&conn, "speed_history", "frequency", "REAL")?;
+        Ok(())
+    }
+
+    /// Add `column` to `table` if it isn't already present. Names are fixed
+    /// literals from the migration, never user input, so interpolating them into
+    /// the DDL is safe (and unavoidable — SQLite takes no bind params in DDL or
+    /// PRAGMA). Nullable additive columns leave existing rows untouched.
+    fn ensure_column(
+        conn: &Connection,
+        table: &str,
+        column: &str,
+        decl_type: &str,
+    ) -> rusqlite::Result<()> {
+        let present = conn
+            .prepare(&format!("PRAGMA table_info({table})"))?
+            .query_map([], |row| row.get::<_, String>(1))?
+            .collect::<rusqlite::Result<Vec<String>>>()?
+            .iter()
+            .any(|name| name == column);
+        if !present {
+            conn.execute(
+                &format!("ALTER TABLE {table} ADD COLUMN {column} {decl_type}"),
+                [],
+            )?;
+        }
         Ok(())
     }
 
@@ -362,6 +396,38 @@ mod tests {
         assert_eq!(rows[0].frequency, Some(5180.0));
         store.clear_speed_history().unwrap();
         assert!(store.speed_history().unwrap().is_empty());
+    }
+
+    #[test]
+    fn heals_v2_db_that_a_parallel_branch_created_without_the_new_columns() {
+        // Reproduce a DB stamped user_version = 2 by a different branch: it has
+        // bufferbloat_ms but not link_speed_mbps/frequency. Opening it must add
+        // the missing columns so inserts and reads work instead of erroring with
+        // "no such column".
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE speed_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp INTEGER NOT NULL,
+                download_mbps REAL NOT NULL,
+                upload_mbps REAL NOT NULL,
+                latency_ms REAL NOT NULL,
+                jitter_ms REAL NOT NULL,
+                packet_loss REAL NOT NULL,
+                connection_type TEXT NOT NULL,
+                network_name TEXT,
+                bufferbloat_ms REAL
+            );
+            PRAGMA user_version = 2;",
+        )
+        .unwrap();
+
+        let store = Store::from_connection(conn).unwrap();
+        store.insert_speed(&sample(1)).unwrap();
+        let rows = store.speed_history().unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].link_speed_mbps, Some(866.0));
+        assert_eq!(rows[0].frequency, Some(5180.0));
     }
 
     #[test]
