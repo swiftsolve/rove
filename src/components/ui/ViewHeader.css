@@ -1,0 +1,45 @@
+/* Internals of the shared view header (see ViewHeader.tsx). The outer
+   .view-header frame — edge bleed and the divider below — lives in index.css. */
+
+/* Lift the header (and its tooltips) above the view content, which is a later
+   sibling and would otherwise paint over a tooltip that drops into it. */
+.view-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  position: relative;
+  z-index: 20;
+}
+
+.view-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  min-width: 0;
+  flex: 1;
+}
+
+/* Reserve the subtitle line's height even while it only holds a status
+   placeholder, so the title above never shifts when the real content resolves. */
+.view-header-sub {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  min-height: calc(var(--text-caption) * 1.35);
+}
+
+/* Fade the subtitle in the moment it resolves (class toggles on → animation runs). */
+.view-header-sub.show {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+/* Muted status text filling the subtitle slot while loading ("Scanning…"). */
+.view-header-status {
+  color: var(--text-tertiary);
+}
+
+/* Keep the action controls grouped tightly at the header's end. */
+.view-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

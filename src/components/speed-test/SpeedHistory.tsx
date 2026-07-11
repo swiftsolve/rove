@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { splitSpeedMbps, formatLatencyMs } from '@/lib/format'
+import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
 import {
   clearSpeedHistory,
@@ -8,7 +8,7 @@ import {
   type SpeedHistoryEntry,
 } from '@/components/speed-test/speed-history'
 import Subpage from '@/components/ui/Subpage'
-import { InlineMeta } from '@/components/ui/DotSeparator'
+import { DotSeparator, InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import type { SpeedSeries } from '@/components/traffic/SpeedReadout'
@@ -25,11 +25,18 @@ function ConnectionBadge({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.
     connectionType === 'wifi' ? WifiIcon : connectionType === 'ethernet' ? EthernetIcon : GlobeIcon
   const fallback =
     connectionType === 'wifi' ? 'Wi‑Fi' : connectionType === 'ethernet' ? 'Ethernet' : 'Unknown'
+  const band = formatBand(entry.frequency)
 
   return (
     <span className={`history-conn conn-${connectionType}`}>
       <Icon size={13} />
       <span className="history-conn-name">{networkName ?? fallback}</span>
+      {band != null && (
+        <>
+          <DotSeparator />
+          <span className="history-conn-band">{band}</span>
+        </>
+      )}
     </span>
   )
 }
@@ -81,13 +88,20 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
         />
       </div>
 
-      <div className="history-card-sub num">
-        <InlineMeta
-          items={[
-            <>Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
-            <>{entry.packetLoss}% loss</>,
-          ]}
-        />
+      <div className="history-card-footer">
+        <p className="history-footnote num">
+          <InlineMeta
+            items={[
+              <>Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
+              <>{entry.packetLoss}% loss</>,
+            ]}
+          />
+          {entry.linkSpeedMbps != null && (
+            <span className="history-footnote-link">
+              Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps)}</span>
+            </span>
+          )}
+        </p>
       </div>
     </div>
   )

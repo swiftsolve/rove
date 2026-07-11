@@ -25,7 +25,13 @@ const SERVICE_KINDS: &[(&str, &str, bool)] = &[
     ("_matter._tcp.local.", "iot", true),
     ("_esphomelib._tcp.local.", "iot", true),
     ("_shelly._tcp.local.", "iot", true),
+    ("_hue._tcp.local.", "iot", true),
+    ("_ewelink._tcp.local.", "iot", true),
+    ("_wled._tcp.local.", "iot", true),
+    ("_elg._tcp.local.", "iot", true),
+    ("_octoprint._tcp.local.", "printer", true),
     ("_sonos._tcp.local.", "speaker", true),
+    ("_soundtouch._tcp.local.", "speaker", true),
     ("_axis-video._tcp.local.", "camera", true),
     ("_workstation._tcp.local.", "computer", true),
     ("_smb._tcp.local.", "computer", true),
@@ -37,6 +43,7 @@ const SERVICE_KINDS: &[(&str, &str, bool)] = &[
     ("_amzn-wplay._tcp.local.", "tv", false),
     ("_ssh._tcp.local.", "computer", false),
     ("_daap._tcp.local.", "computer", false),
+    ("_rfb._tcp.local.", "computer", false),
 ];
 
 #[derive(Debug, Clone, Default)]

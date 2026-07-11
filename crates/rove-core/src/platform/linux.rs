@@ -18,6 +18,17 @@ macro_rules! static_regex {
     };
 }
 
+/// Negotiated link speed (Mbps) from `/sys/class/net/<iface>/speed`. `None`
+/// when the file is unreadable or reports a non-positive placeholder (a down
+/// link or virtual interface prints -1). Linux-only by nature — callers on
+/// other platforms must not reach for it.
+pub fn sysfs_link_speed(iface: &str) -> Option<i64> {
+    std::fs::read_to_string(format!("/sys/class/net/{iface}/speed"))
+        .ok()
+        .and_then(|raw| raw.trim().parse::<i64>().ok())
+        .filter(|v| *v > 0)
+}
+
 static_regex!(IW_SIGNAL, r"signal:\s*(-?\d+)");
 static_regex!(IW_SSID, r"SSID:\s*(.+)");
 static_regex!(IW_FREQ, r"freq:\s*(\d+)");
@@ -60,10 +71,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
 
         let oper_state = entry["operstate"].as_str().unwrap_or("unknown").to_lowercase();
 
-        let speed = std::fs::read_to_string(format!("/sys/class/net/{name}/speed"))
-            .ok()
-            .and_then(|raw| raw.trim().parse::<i64>().ok())
-            .filter(|v| *v > 0);
+        let speed = sysfs_link_speed(&name);
 
         let is_virtual = is_virtual_interface(&name);
         result.push(InterfaceSummary {
@@ -153,9 +161,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     }
     // /sys fallback when ethtool is missing
     if d.link_speed_mbps.is_none() {
-        if let Ok(raw) = std::fs::read_to_string(format!("/sys/class/net/{iface}/speed")) {
-            d.link_speed_mbps = raw.trim().parse().ok().filter(|v: &i64| *v > 0);
-        }
+        d.link_speed_mbps = sysfs_link_speed(iface);
     }
 
     if let Some(out) = try_run(&format!(

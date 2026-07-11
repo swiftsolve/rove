@@ -49,6 +49,20 @@ pub fn parse(subnet: &str) -> Option<(Ipv4Addr, u32)> {
     Some((network.parse().ok()?, prefix.parse().ok()?))
 }
 
+/// Every usable host address in `subnet` ("a.b.c.d/p"), excluding the network
+/// and broadcast addresses. `None` when the CIDR doesn't parse or the prefix is
+/// outside 24..=30 — larger ranges are impolite to probe actively; smaller ones
+/// pointless. Shared by the ICMP sweep and the TCP probe so both scope
+/// identically.
+pub fn hosts(subnet: &str) -> Option<impl Iterator<Item = Ipv4Addr>> {
+    let (network, prefix) = parse(subnet)?;
+    if !(24..=30).contains(&prefix) {
+        return None;
+    }
+    let base = u32::from(network);
+    Some((1u32..(1 << (32 - prefix)) - 1).map(move |offset| Ipv4Addr::from(base + offset)))
+}
+
 pub fn prefix_mask(prefix: u32) -> u32 {
     if prefix == 0 {
         0

@@ -2,11 +2,11 @@ import type { NetworkDiagnostics } from '@/types'
 import { FAILED_PING } from '@/types'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
-import { Tooltip } from '@/components/ui/Tooltip'
-import { ConnectionIcon, DnsIcon, RefreshIcon, RouterIcon } from '@/components/ui/Icons'
+import { ConnectionIcon, DnsIcon, RouterIcon } from '@/components/ui/Icons'
 import { formatLatencyMs } from '@/lib/format'
+import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
-import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
+import { ViewHeader } from '@/components/ui/ViewHeader'
 import './DiagnosticsView.css'
 
 interface DiagnosticsViewProps {
@@ -45,36 +45,21 @@ export default function DiagnosticsView({
 
   return (
     <div className="view-page">
-      <div className="view-header diag-header">
-        <span className="view-header-icon">
-          <ConnectionIcon size={18} />
-        </span>
-        <div className="diag-header-text">
-          <span className="view-header-title">Connection</span>
-          <span className={`diag-header-sub${hasDiagnostics && !isRunning ? ' show' : ''}`}>
-            {isRunning ? (
-              <span className="diag-header-status">Checking…</span>
-            ) : hasDiagnostics ? (
-              'Router latency and DNS servers'
-            ) : (
-              <span className="diag-header-status">&nbsp;</span>
-            )}
-          </span>
-        </div>
-        <div className="diag-header-actions">
-          <Tooltip content="Run again">
-            <button
-              type="button"
-              className={`btn-icon btn-icon-secondary${isRunning ? ' is-scanning' : ''}`}
-              onClick={onRun}
-              disabled={isRunning}
-              aria-label="Run again"
-            >
-              {isRunning ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
-            </button>
-          </Tooltip>
-        </div>
-      </div>
+      <ViewHeader
+        icon={<ConnectionIcon size={18} />}
+        title="Connection"
+        subtitle={
+          isRunning ? (
+            <span className="view-header-status">Checking…</span>
+          ) : hasDiagnostics ? (
+            'Router latency and DNS servers'
+          ) : (
+            <span className="view-header-status">&nbsp;</span>
+          )
+        }
+        subtitleShown={hasDiagnostics && !isRunning}
+        actions={<RefreshIconButton label="Run again" isBusy={isRunning} onClick={onRun} />}
+      />
 
       {error && <div className="error-banner">{error}</div>}
 

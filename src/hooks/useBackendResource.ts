@@ -47,6 +47,10 @@ export function useBackendResource<T>(
   fetcherRef.current = fetcher
 
   const reloadSeqRef = useRef(0)
+  // Seq of the latest non-silent reload — the one that owns the busy flag. A
+  // silent poll bumps reloadSeqRef (data ordering) but must not steal busy
+  // ownership, or a manual reload it overlaps would never clear its spinner.
+  const busySeqRef = useRef(0)
   // Liveness, kept separate from `reloadSeqRef` (which only orders overlapping
   // loads). Conflating the two is what previously orphaned the initial fetch
   // under React 18 StrictMode: its simulated unmount bumped the sequence, the
@@ -70,6 +74,7 @@ export function useBackendResource<T>(
     // call is allowed to write state, and only while still mounted.
     const seq = ++reloadSeqRef.current
     if (!silent) {
+      busySeqRef.current = seq
       setIsBusy(true)
       setError(null)
     }
@@ -85,7 +90,10 @@ export function useBackendResource<T>(
         setError(cause instanceof Error ? cause.message : errorMessage)
       }
     } finally {
-      if (!silent && seq === reloadSeqRef.current && mountedRef.current) setIsBusy(false)
+      // Clear busy when the owning (non-silent) reload settles, even if a
+      // silent poll superseded it for data — comparing against reloadSeqRef
+      // here is what used to leave the spinner stuck after such an overlap.
+      if (!silent && seq === busySeqRef.current && mountedRef.current) setIsBusy(false)
     }
   }, [errorMessage])
 

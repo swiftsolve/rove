@@ -1,5 +1,34 @@
 //! Small helpers shared across service modules.
+use std::sync::{Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+/// Lock a mutex, recovering the guard on poison instead of panicking. A single
+/// panic while holding one of these locks would otherwise wedge every caller
+/// that touches the same state for the rest of the process's life.
+pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
+    m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+/// Canonical MAC form: lowercase, colon-separated, zero-padded octets
+/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0"). Accepts `:`- or `-`-separated
+/// input (Windows uses dashes), so BSD's stripped octets match sysinfo/OUI
+/// formatting and dedupe cleanly against the local machine's own address.
+pub fn normalize_mac_colons(raw: &str) -> String {
+    raw.split([':', '-'])
+        .map(|octet| format!("{:0>2}", octet.to_ascii_lowercase()))
+        .collect::<Vec<_>>()
+        .join(":")
+}
+
+/// Bare MAC form: 12 lowercase hex chars, no separators ("AA:BB:CC:11:22:33" →
+/// "aabbcc112233"). The DHCP cache keys on this so hits join the neighbor table
+/// regardless of separator or case.
+pub fn normalize_mac_bare(mac: &str) -> String {
+    mac.chars()
+        .filter(|c| c.is_ascii_hexdigit())
+        .map(|c| c.to_ascii_lowercase())
+        .collect()
+}
 
 const VIRTUAL_PREFIXES: [&str; 16] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
@@ -80,4 +109,22 @@ fn is_bidi_control(c: char) -> bool {
         '\u{200E}' | '\u{200F}'
         | '\u{202A}'..='\u{202E}'
         | '\u{2066}'..='\u{2069}')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_mac_colons_pads_and_lowercases() {
+        // BSD `arp` zero-strips octets; Windows separates with dashes.
+        assert_eq!(normalize_mac_colons("8:3a:8d:AC:4:d0"), "08:3a:8d:ac:04:d0");
+        assert_eq!(normalize_mac_colons("10-A5-1D-01-8F-9C"), "10:a5:1d:01:8f:9c");
+    }
+
+    #[test]
+    fn normalize_mac_bare_strips_separators_and_case() {
+        assert_eq!(normalize_mac_bare("AA:BB:CC:11:22:33"), "aabbcc112233");
+        assert_eq!(normalize_mac_bare("aa-bb-cc-11-22-33"), "aabbcc112233");
+    }
 }

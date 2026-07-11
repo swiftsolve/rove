@@ -8,7 +8,7 @@ const TAIL_PEAK_WINDOW = 5
 const SETTLED_RATIO = 0.25
 
 /** Snap scale to readable axis steps so labels do not flicker. */
-export function roundNiceScale(mbps: number): number {
+function roundNiceScale(mbps: number): number {
   const safe = Math.max(MIN_SCALE_MBPS, mbps)
 
   if (safe <= 10) return 10

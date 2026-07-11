@@ -92,91 +92,121 @@ function nextStepCeiling(backend: number): number {
   return 100
 }
 
+// The smoothed fill leads the backend's coarse steps, so it must outlive the
+// component: switching tabs mid-test and coming back should resume the bar
+// where it had crept to, not snap back to the last backend step. Kept at module
+// scope (like the store's live-peak throughput) so it survives remounts; a new
+// run rewinds the backend to 0, which is our cue to clear the carried-over fill.
+let persistedPct = 0
+
+// Build the squiggle path string for a given leading edge and phase: a smooth
+// (quadratic through midpoints) wave from 0 to `end`, full amplitude throughout,
+// ending on the rounded cap wherever the wave happens to be — like Android's.
+function buildWavePath(end: number, phase: number): string {
+  let prevX = 0
+  let prevY = waveY(0, phase)
+  let d = `M ${prevX.toFixed(2)} ${prevY.toFixed(2)}`
+  for (let x = 3; x <= end; x += 3) {
+    const y = waveY(x, phase)
+    d += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${((prevX + x) / 2).toFixed(2)} ${((prevY + y) / 2).toFixed(2)}`
+    prevX = x
+    prevY = y
+  }
+  d += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${end.toFixed(2)} ${waveY(end, phase).toFixed(2)}`
+  return d
+}
+
 function WavyProgress({ progress }: { readonly progress: number }): JSX.Element {
   const target = Math.max(0, Math.min(100, progress))
+  if (target === 0) persistedPct = 0
   const targetRef = useRef(target)
   targetRef.current = target
-  const pctRef = useRef(target)
-  const phaseRef = useRef(0)
-  const [, setFrame] = useState(0)
 
   const wrapRef = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(0)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const fillRef = useRef<SVGPathElement>(null)
+  const dotRef = useRef<SVGCircleElement>(null)
+  const trackRef = useRef<SVGLineElement>(null)
 
+  // The animation runs entirely off React's render path: the SVG shell is
+  // rendered once, and this rAF loop mutates its geometry directly each frame.
+  // Re-rendering the component (a long `d` string reconciled 60×/s) is what made
+  // the bar chug, so we deliberately never setState here. The loop also owns the
+  // width measurement (via ResizeObserver) so a resize never forces a re-render.
   useEffect(() => {
-    const el = wrapRef.current
-    if (!el) return
-    const update = (): void => setWidth(el.clientWidth)
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+    const wrap = wrapRef.current
+    if (!wrap) return
 
-  // One rAF loop drives both: the fill eases toward the latest percentage (so it
-  // grows smoothly between the backend's discrete steps) and the wave phase
-  // scrolls at a constant, time-based velocity (so the flow never speeds up or
-  // slows down with the frame rate).
-  useEffect(() => {
+    let width = wrap.clientWidth
+    const measure = (): void => {
+      width = wrap.clientWidth
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(wrap)
+
+    let pct = persistedPct
     let raf = 0
     const loop = (time: number): void => {
       const backend = targetRef.current
+      // A new run rewinds the backend to 0 — mirror that in the local fill so the
+      // bar restarts instead of holding a stale value carried over the remount.
+      if (backend === 0) pct = 0
       const ceiling = backend >= 100 ? 100 : nextStepCeiling(backend) - PROGRESS_MARGIN
-      let next = Math.min(pctRef.current + PROGRESS_CREEP, ceiling)
+      let next = Math.min(pct + PROGRESS_CREEP, ceiling)
       if (backend > next) next += (backend - next) * 0.2 // ease up to a backend jump
-      pctRef.current = Math.max(pctRef.current, next) // monotonic
-      phaseRef.current = -(((time / 1000) * WAVE_SPEED) % WAVE_LENGTH)
-      setFrame((n) => (n + 1) % 1_000_000)
+      pct = Math.max(pct, next) // monotonic
+      persistedPct = pct // survive a remount mid-test
+      const phase = -(((time / 1000) * WAVE_SPEED) % WAVE_LENGTH)
+
+      const svg = svgRef.current
+      const fill = fillRef.current
+      const dot = dotRef.current
+      const track = trackRef.current
+      if (width > 0 && svg && fill && dot && track) {
+        const fraction = Math.max(pct / 100, WAVE_MIN_FRACTION)
+        const end = fraction * width
+        // Track runs to just inside the right edge so its round cap doesn't clip,
+        // starting a gap past the active tip.
+        const trackEnd = width - WAVE_STROKE / 2
+        const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
+        const showTrack = trackEnd - trackStart > 0.5
+
+        svg.setAttribute('width', String(width))
+        svg.setAttribute('viewBox', `0 0 ${width} ${WAVE_HEIGHT}`)
+        fill.setAttribute('d', buildWavePath(end, phase))
+        dot.setAttribute('cx', end.toFixed(2))
+        if (showTrack) {
+          track.setAttribute('x1', trackStart.toFixed(2))
+          track.setAttribute('x2', trackEnd.toFixed(2))
+          track.style.display = ''
+        } else {
+          track.style.display = 'none'
+        }
+      }
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(raf)
+      observer.disconnect()
+    }
   }, [])
 
-  const phase = phaseRef.current
-  const fraction = Math.max(pctRef.current / 100, WAVE_MIN_FRACTION)
-  const end = fraction * width
-  const dotY = WAVE_MID // dot stays steady on the centerline while the wave undulates behind it
-  // Track runs to just inside the right edge so its round cap doesn't clip.
-  const trackEnd = width - WAVE_STROKE / 2
-  // Track starts a gap past the active tip and runs to the end.
-  const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
-  const showTrack = trackEnd - trackStart > 0.5
-
-  // Smooth (quadratic through midpoints) squiggle from 0 to the leading edge.
-  // The wave carries full amplitude all the way, ending on the rounded cap
-  // wherever the wave happens to be — like Android's.
-  let active = ''
-  if (width > 0) {
-    let prevX = 0
-    let prevY = waveY(0, phase)
-    active = `M ${prevX.toFixed(2)} ${prevY.toFixed(2)}`
-    for (let x = 3; x <= end; x += 3) {
-      const y = waveY(x, phase)
-      active += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${((prevX + x) / 2).toFixed(2)} ${((prevY + y) / 2).toFixed(2)}`
-      prevX = x
-      prevY = y
-    }
-    active += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${end.toFixed(2)} ${waveY(end, phase).toFixed(2)}`
-  }
-
+  // Static shell — the loop above owns every animating attribute. The dot stays
+  // on the centerline while the wave undulates behind it, so cy is fixed here.
   return (
     <div ref={wrapRef} className="wavy-progress" aria-hidden>
-      {width > 0 && (
-        <svg width={width} height={WAVE_HEIGHT} viewBox={`0 0 ${width} ${WAVE_HEIGHT}`}>
-          {showTrack && (
-            <line
-              className="wavy-track"
-              x1={trackStart}
-              y1={WAVE_MID}
-              x2={trackEnd}
-              y2={WAVE_MID}
-            />
-          )}
-          <path className="wavy-fill" d={active} />
-          <circle className="wavy-dot" cx={end} cy={dotY} r={LEAD_DOT_R} />
-        </svg>
-      )}
+      <svg ref={svgRef} height={WAVE_HEIGHT}>
+        <line
+          ref={trackRef}
+          className="wavy-track"
+          y1={WAVE_MID}
+          y2={WAVE_MID}
+          style={{ display: 'none' }}
+        />
+        <path ref={fillRef} className="wavy-fill" />
+        <circle ref={dotRef} className="wavy-dot" cy={WAVE_MID} r={LEAD_DOT_R} />
+      </svg>
     </div>
   )
 }

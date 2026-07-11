@@ -3,12 +3,12 @@
 //! Rove observes the same facts on every platform — the interface list, the
 //! active Wi-Fi/Ethernet details, the LAN subnet, routing and DNS — but each OS
 //! exposes them through different tools (`ip`/`iw` on Linux, `Get-NetAdapter`
-//! /`netsh` on Windows, `ifconfig`/`airport` on macOS). This module collects
+//! /`netsh` on Windows, `ifconfig`/CoreWLAN on macOS). This module collects
 //! those per-OS probes in one place, one file per platform:
 //!
 //!   * [`linux`]   — `ip`, `iw`, `ethtool`, `nmcli`, `/sys`
 //!   * [`windows`] — PowerShell (`Get-NetAdapter`, `Find-NetRoute`), `netsh`
-//!   * [`macos`]   — `ifconfig`, the private `airport` tool
+//!   * [`macos`]   — `ifconfig`, `system_profiler`, CoreWLAN (via [`mac_native`])
 //!
 //! The cross-platform *contract* — which probe to call, and the fallback chain
 //! when a tool is missing — stays in the feature modules (`interfaces`,
@@ -146,7 +146,7 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
     out.lines()
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
-            let mac = normalize_mac(&c[2]);
+            let mac = crate::net_util::normalize_mac_colons(&c[2]);
             // Drop broadcast and multicast pseudo-neighbors; they aren't devices.
             if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33")
             {
@@ -157,14 +157,26 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
         .collect()
 }
 
-/// Lowercase, colon-separated, zero-padded MAC ("8:3a:8d:ac:4:d0" →
-/// "08:3a:8d:ac:04:d0") so BSD's stripped octets match sysinfo/OUI formatting
-/// and dedupe cleanly against the local machine's own address.
-fn normalize_mac(raw: &str) -> String {
-    raw.split([':', '-'])
-        .map(|octet| format!("{:0>2}", octet.to_ascii_lowercase()))
-        .collect::<Vec<_>>()
-        .join(":")
+// ---- Wi-Fi channel plans ---------------------------------------------------
+
+/// The three Wi-Fi bands, disambiguated by each platform's own hint (channel
+/// numbers repeat across bands: 6 GHz channel 1 is not 2.4 GHz channel 1).
+pub(crate) enum WifiBand {
+    TwoFour,
+    Five,
+    Six,
+}
+
+/// Centre frequency (MHz) for a Wi-Fi `channel` in `band`, per the 802.11
+/// channel plans. Channel 14 is the 2.4 GHz outlier: it sits at 2484 MHz,
+/// 12 MHz above channel 13 rather than the plan's usual 5 MHz step.
+pub(crate) fn channel_to_frequency(band: WifiBand, channel: i64) -> i64 {
+    match band {
+        WifiBand::TwoFour if channel == 14 => 2484,
+        WifiBand::TwoFour => 2407 + channel * 5,
+        WifiBand::Five => 5000 + channel * 5,
+        WifiBand::Six => 5950 + channel * 5,
+    }
 }
 
 // ---- ping ----------------------------------------------------------------
@@ -185,5 +197,19 @@ pub fn ping_command(host: &str, count: u32, timeout_ms: u32) -> String {
         format!("ping -c {count} -i 0.2 -W {timeout_ms} {host} 2>/dev/null")
     } else {
         format!("ping -c {count} -i 0.2 -W 1 {host} 2>/dev/null")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn channel_frequency_follows_the_channel_plans() {
+        assert_eq!(channel_to_frequency(WifiBand::TwoFour, 1), 2412);
+        // Channel 14 is the 2.4 GHz outlier at 2484 MHz, not 2407 + 14*5 = 2477.
+        assert_eq!(channel_to_frequency(WifiBand::TwoFour, 14), 2484);
+        assert_eq!(channel_to_frequency(WifiBand::Five, 60), 5300);
+        assert_eq!(channel_to_frequency(WifiBand::Six, 101), 6455);
     }
 }

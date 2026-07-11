@@ -1,5 +1,5 @@
-//! macOS host/network probes: `ifconfig`, `netstat`, `networksetup` and the
-//! (now-deprecated) private `airport` tool.
+//! macOS host/network probes: `ifconfig`, `netstat`, `networksetup` and
+//! `system_profiler`.
 use crate::net_util::is_virtual_interface;
 use crate::shell::try_run;
 use crate::types::ConnectionDetails;
@@ -10,28 +10,10 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
-    let airport = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport";
     let mut d = ConnectionDetails::default();
-    if let Some(out) = try_run(&format!("{airport} -I")).await {
-        for line in out.lines() {
-            let mut parts = line.trim().splitn(2, ':');
-            let key = parts.next().unwrap_or("").trim();
-            let value = parts.next().unwrap_or("").trim();
-            match key {
-                "SSID" => d.ssid = Some(value.to_string()).filter(|s| !s.is_empty()),
-                "agrCtlRSSI" => d.signal_dbm = value.parse().ok(),
-                "channel" => d.channel = value.split(',').next().and_then(|v| v.trim().parse().ok()),
-                _ => {}
-            }
-        }
-    }
-    // `airport` was gutted on macOS 14.4+ (it now prints only a deprecation
-    // notice), so on modern systems the block above yields nothing. The SSID now
-    // lives behind Location Services and is only reachable in-process via
-    // CoreWLAN — every shell tool returns "<redacted>".
-    if d.ssid.is_none() {
-        d.ssid = super::mac_native::current_ssid();
-    }
+    // The SSID lives behind Location Services on macOS 14+ and is only reachable
+    // in-process via CoreWLAN — every shell tool returns "<redacted>".
+    d.ssid = super::mac_native::current_ssid();
     // Last resort: `networksetup` (also redacted without Location access, but
     // harmless to try).
     if d.ssid.is_none() && crate::net_util::is_shell_safe_iface(iface) {
@@ -103,7 +85,7 @@ const SIGNAL_TTL: Duration = Duration::from_secs(12);
 /// background `system_profiler` refresh. Never blocks: a cold cache just means
 /// the signal appears one poll later.
 fn apply_cached_signal(d: &mut ConnectionDetails) {
-    let cached = SIGNAL_CACHE.lock().unwrap().clone();
+    let cached = crate::net_util::lock(&SIGNAL_CACHE).clone();
     let stale = cached.as_ref().map_or(true, |s| s.at.elapsed() > SIGNAL_TTL);
     if stale {
         // `swap` inside the task dedupes concurrent refreshes; spawning needs the
@@ -126,7 +108,7 @@ async fn refresh_signal_cache() {
         return; // another refresh is already running
     }
     if let Some(signal) = query_wifi_signal().await {
-        *SIGNAL_CACHE.lock().unwrap() = Some(signal);
+        *crate::net_util::lock(&SIGNAL_CACHE) = Some(signal);
     }
     REFRESH_IN_FLIGHT.store(false, Ordering::Release);
 }
@@ -210,20 +192,21 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
 /// from the channel number alone (6E reuses 2.4 GHz numbers), so `system_profiler`'s
 /// band hint ("5GHz", "2GHz", "6GHz") disambiguates; fall back to channel ranges.
 fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
-    let two_four = |ch: i64| if ch == 14 { 2484 } else { 2407 + ch * 5 };
-    if band_hint.contains("6GHz") {
-        Some(5950 + channel * 5)
+    use super::WifiBand;
+    let band = if band_hint.contains("6GHz") {
+        WifiBand::Six
     } else if band_hint.contains("5GHz") {
-        Some(5000 + channel * 5)
+        WifiBand::Five
     } else if band_hint.contains("2GHz") {
-        Some(two_four(channel))
+        WifiBand::TwoFour
     } else {
         match channel {
-            1..=14 => Some(two_four(channel)),
-            32..=196 => Some(5000 + channel * 5),
-            _ => None,
+            1..=14 => WifiBand::TwoFour,
+            32..=196 => WifiBand::Five,
+            _ => return None,
         }
-    }
+    };
+    Some(super::channel_to_frequency(band, channel))
 }
 
 /// The preferred IPv4 default route as `(interface, gateway)`. A VPN tunnel

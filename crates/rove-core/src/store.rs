@@ -29,6 +29,8 @@ pub struct SpeedHistoryRecord {
     pub packet_loss: f64,
     pub connection_type: String,
     pub network_name: Option<String>,
+    pub link_speed_mbps: Option<f64>,
+    pub frequency: Option<f64>, // Wi-Fi centre frequency (MHz), for band label
 }
 
 /// A LAN device as remembered across scans, with first/last-seen timestamps.
@@ -84,12 +86,34 @@ CREATE TABLE IF NOT EXISTS known_devices (
 );
 ";
 
+/// v2 — speed_history gains the link speed and Wi-Fi band captured at test time.
+/// The old table is dropped and recreated rather than altered: past rows never
+/// carried these fields and speed history is disposable, so there's nothing
+/// worth preserving through the upgrade.
+const SCHEMA_V2: &str = "
+DROP TABLE IF EXISTS speed_history;
+CREATE TABLE speed_history (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       INTEGER NOT NULL,
+    download_mbps   REAL    NOT NULL,
+    upload_mbps     REAL    NOT NULL,
+    latency_ms      REAL    NOT NULL,
+    jitter_ms       REAL    NOT NULL,
+    packet_loss     REAL    NOT NULL,
+    connection_type TEXT    NOT NULL,
+    network_name    TEXT,
+    link_speed_mbps REAL,
+    frequency       REAL
+);
+CREATE INDEX IF NOT EXISTS idx_speed_history_ts ON speed_history(timestamp DESC);
+";
+
 impl Store {
     /// Lock the connection, recovering the guard if a previous holder panicked
     /// rather than propagating the poison (which would wedge every subsequent
     /// query for the app's lifetime).
     fn lock(&self) -> std::sync::MutexGuard<'_, Connection> {
-        self.conn.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+        crate::net_util::lock(&self.conn)
     }
 
     /// Open (creating if needed) the database at `path` and apply migrations.
@@ -118,6 +142,10 @@ impl Store {
             conn.execute_batch(SCHEMA_V1)?;
             conn.pragma_update(None, "user_version", 1)?;
         }
+        if version < 2 {
+            conn.execute_batch(SCHEMA_V2)?;
+            conn.pragma_update(None, "user_version", 2)?;
+        }
         Ok(())
     }
 
@@ -129,8 +157,8 @@ impl Store {
         conn.execute(
             "INSERT INTO speed_history
                 (timestamp, download_mbps, upload_mbps, latency_ms, jitter_ms,
-                 packet_loss, connection_type, network_name)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                 packet_loss, connection_type, network_name, link_speed_mbps, frequency)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
             params![
                 rec.timestamp,
                 rec.download_mbps,
@@ -140,6 +168,8 @@ impl Store {
                 rec.packet_loss,
                 rec.connection_type,
                 rec.network_name,
+                rec.link_speed_mbps,
+                rec.frequency,
             ],
         )?;
         conn.execute(
@@ -155,7 +185,7 @@ impl Store {
         let conn = self.lock();
         let mut stmt = conn.prepare(
             "SELECT timestamp, download_mbps, upload_mbps, latency_ms, jitter_ms,
-                    packet_loss, connection_type, network_name
+                    packet_loss, connection_type, network_name, link_speed_mbps, frequency
              FROM speed_history ORDER BY timestamp DESC LIMIT ?1",
         )?;
         let rows = stmt.query_map([SPEED_HISTORY_LIMIT], |row| {
@@ -168,16 +198,15 @@ impl Store {
                 packet_loss: row.get(5)?,
                 connection_type: row.get(6)?,
                 network_name: row.get(7)?,
+                link_speed_mbps: row.get(8)?,
+                frequency: row.get(9)?,
             })
         })?;
         rows.collect()
     }
 
     pub fn clear_speed_history(&self) -> rusqlite::Result<()> {
-        self.conn
-            .lock()
-            .unwrap()
-            .execute("DELETE FROM speed_history", [])?;
+        self.lock().execute("DELETE FROM speed_history", [])?;
         Ok(())
     }
 
@@ -314,6 +343,8 @@ mod tests {
             packet_loss: 0.0,
             connection_type: "wifi".into(),
             network_name: Some("Home".into()),
+            link_speed_mbps: Some(866.0),
+            frequency: Some(5180.0),
         }
     }
 
@@ -326,6 +357,9 @@ mod tests {
         let rows = store.speed_history().unwrap();
         assert_eq!(rows.len() as i64, SPEED_HISTORY_LIMIT);
         assert_eq!(rows[0].timestamp, SPEED_HISTORY_LIMIT + 4);
+        // Link speed and band round-trip through the v2 columns.
+        assert_eq!(rows[0].link_speed_mbps, Some(866.0));
+        assert_eq!(rows[0].frequency, Some(5180.0));
         store.clear_speed_history().unwrap();
         assert!(store.speed_history().unwrap().is_empty());
     }

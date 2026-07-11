@@ -5,7 +5,10 @@
 }
 
 .history-card {
-  padding: var(--section-body);
+  /* No bottom padding — the footer banner bleeds to the card's bottom edge. */
+  padding: var(--section-body) var(--section-body) 0;
+  /* Clip the full-bleed footer banner to the card's rounded corners. */
+  overflow: hidden;
 }
 
 .history-card-head {
@@ -13,7 +16,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-md);
-  margin-bottom: 14px;
+  margin-bottom: var(--gap-md);
 }
 
 /* Connection badge, tinted by medium. */
@@ -31,10 +34,19 @@
 .history-conn.conn-ethernet { color: var(--positive); }
 
 .history-conn-name {
+  min-width: 0;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Band label sits beside the network name as secondary metadata — the name
+   truncates first, the band holds its width. */
+.history-conn-band {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-weight: var(--weight-regular);
 }
 
 .history-card-time {
@@ -76,10 +88,35 @@
   color: var(--text-secondary);
 }
 
-.history-card-sub {
-  margin-top: 12px;
+/* Closing banner on the darkest panel, matching the capabilities detail card's
+   verdict strip: framed on three sides with the inset colour, rounded to the
+   card's bottom corners. Carries jitter/loss on the left, link speed on the
+   right. Trim the horizontal padding by the border width so its content stays
+   aligned with the metrics grid above. */
+.history-card-footer {
+  margin: var(--gap-sm) calc(-1 * var(--section-body)) 0;
+  padding: var(--gap-md) calc(var(--section-body) - 1px);
+  background: var(--bg-app);
+  border: 1px solid var(--bg-inset);
+  border-top: 0;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.history-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  width: 100%;
+  min-width: 0;
   font-size: var(--text-caption);
   color: var(--text-tertiary);
+}
+
+.history-footnote-link {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Centre the wrapped hint under the icon, matching the app's other empty

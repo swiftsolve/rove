@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { networkInfoEqual } from '@/components/connection/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
+import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
 
 const REFRESH_INTERVAL_MS = 15_000
@@ -132,20 +133,8 @@ export function useNetworkInfo(): UseNetworkInfoResult {
     return () => window.clearInterval(intervalId)
   }, [visible, refresh])
 
-  // The backend watches the routing table — refresh the moment it nudges us
-  // (cable pulled, Wi-Fi joined) instead of waiting out the poll interval.
-  useEffect(() => {
-    const api = window.networkAPI
-    if (!api?.onNetworkChanged) return
-    let active = true
-    const detach = api.onNetworkChanged(() => {
-      if (active) void refresh(true)
-    })
-    return () => {
-      active = false
-      detach()
-    }
-  }, [refresh])
+  // Network changed — refresh at once instead of waiting out the poll interval.
+  useOnNetworkChanged(() => void refresh(true))
 
   return { info, error, isLoading, refresh: () => refresh(false), setError }
 }

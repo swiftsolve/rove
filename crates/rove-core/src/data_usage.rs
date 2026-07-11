@@ -22,7 +22,7 @@ fn local_offset_secs() -> i64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let mut cached = LOCAL_OFFSET.lock().unwrap_or_else(|e| e.into_inner());
+    let mut cached = crate::net_util::lock(&LOCAL_OFFSET);
     if let Some((offset, computed_at)) = *cached {
         if now.saturating_sub(computed_at) < OFFSET_TTL_SECS {
             return offset;
@@ -132,7 +132,7 @@ impl UsageTracker {
 
         if !self.first_sample_recorded {
             if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::net_util::now_ms()) {
-                eprintln!("Rove: failed to record first-sample timestamp: {e}");
+                tracing::warn!("failed to record first-sample timestamp: {e}");
             }
             self.first_sample_recorded = true;
         }
@@ -142,10 +142,10 @@ impl UsageTracker {
 
         let key = local_date_key(0);
         if let Err(e) = self.store.add_usage(&key, rx_delta, tx_delta) {
-            eprintln!("Rove: failed to persist data usage for {key}: {e}");
+            tracing::error!("failed to persist data usage for {key}: {e}");
         }
         if let Err(e) = self.store.prune_usage(RETAIN_DAYS) {
-            eprintln!("Rove: failed to prune old usage rows: {e}");
+            tracing::warn!("failed to prune old usage rows: {e}");
         }
     }
 

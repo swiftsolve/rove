@@ -1,27 +1,10 @@
-.speed-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-md);
-  position: relative;
-  z-index: 20;
-}
-
-.speed-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  min-width: 0;
-  flex: 1;
-}
-
-
+/* The "Updated …" meta, dot and history link sit on one centred line. The rest
+   of the subtitle treatment (size, colour, reserved height, fade-in) comes from
+   the shared .view-header-sub. */
 .speed-header-sub {
   display: inline-flex;
   align-items: center;
   gap: var(--gap-tight);
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
-  min-height: calc(var(--text-caption) * 1.35);
 }
 
 /* "View history" reads as a quiet pill link after the "Updated …" meta:
@@ -63,20 +46,6 @@
 
 .speed-history-link:hover svg {
   opacity: 1;
-}
-
-.speed-header-sub.show {
-  animation: fade-in var(--duration-normal) var(--ease-out);
-}
-
-.speed-header-status {
-  color: var(--text-tertiary);
-}
-
-.speed-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 /* The header's Run test button carries a faint accent wash at rest so it reads
