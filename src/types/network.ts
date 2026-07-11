@@ -45,6 +45,22 @@ export type ConnectedNetworkInfo = WifiNetworkInfo | EthernetNetworkInfo
 
 export type NetworkInfo = ConnectedNetworkInfo | DisconnectedNetworkInfo
 
+/** QR encryption tokens understood by phone Wi-Fi scanners. */
+export type WifiEncryption = 'WPA' | 'WEP' | 'nopass'
+
+/**
+ * A "join this Wi-Fi" payload for the active network: what the QR encodes plus
+ * the human-readable parts to render alongside it. `password` is null for open
+ * networks and for secured ones whose saved secret the OS wouldn't hand over.
+ */
+export interface WifiShare {
+  readonly ssid: string
+  readonly encryption: WifiEncryption
+  readonly password: string | null
+  /** Self-contained SVG markup of the QR code, ready to inline as a data URI. */
+  readonly qrSvg: string
+}
+
 export type ConnectionDetails = {
   ssid?: string | null
   signalStrength?: number | null

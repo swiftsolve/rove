@@ -356,6 +356,7 @@ export default function App(): JSX.Element {
                   isRunning={diagnosticsRunning}
                   error={diagnosticsError}
                   onRun={() => void runDiagnostics()}
+                  canShareWifi={info?.connectionType === 'wifi'}
                 />
               )}
 
