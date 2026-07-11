@@ -15,3 +15,4 @@ pub mod shell;
 pub mod speed;
 pub mod store;
 pub mod types;
+pub mod wifi_share;

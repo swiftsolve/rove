@@ -38,6 +38,24 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     super::finalize_wifi(d)
 }
 
+/// The saved Wi-Fi passphrase for `ssid` from the login Keychain, where macOS
+/// stores it as a generic password keyed by the network name. Reading it pops
+/// the standard Keychain authorisation dialog (Allow / Always Allow / Deny);
+/// declining, or a Keychain that has no entry, yields `None`.
+pub async fn wifi_password(ssid: &str) -> Option<String> {
+    let quoted = crate::net_util::shell_single_quote(ssid);
+    let out = try_run(&format!(
+        "security find-generic-password -w -a {quoted} 2>/dev/null"
+    ))
+    .await?;
+    let pw = out.trim();
+    if pw.is_empty() {
+        None
+    } else {
+        Some(pw.to_string())
+    }
+}
+
 /// Ethernet link facts for `iface` from a single `ifconfig <iface>`: the
 /// negotiated link speed and duplex from its `media:` descriptor. macOS has no
 /// `ethtool`, but `ifconfig` reports the same rate string it uses for the

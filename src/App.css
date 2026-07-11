@@ -30,6 +30,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Positioning context for content-area modals (the Wi-Fi share popup portals
+     in here so it centres over the page, not the whole window). */
+  position: relative;
 }
 
 .app {

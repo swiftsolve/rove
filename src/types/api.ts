@@ -6,11 +6,14 @@ import type { NetworkInterfaceSummary } from './interfaces'
 import type { LiveThroughput } from './live-throughput'
 import type { SpeedTestResult } from './capabilities'
 import type { SpeedTestProgress } from './speed'
-import type { NetworkInfo } from './network'
+import type { NetworkInfo, WifiShare } from './network'
 import type { SpeedHistoryEntry } from './history'
 
 export interface NetworkAPI {
   getNetworkInfo(): Promise<NetworkInfo>
+  /** Build a shareable QR + credentials for the current Wi-Fi network. Rejects
+   *  when there's no Wi-Fi link to share. */
+  getWifiShare(): Promise<WifiShare>
   getPublicIp(): Promise<string | null>
   getInterfaces(): Promise<readonly NetworkInterfaceSummary[]>
   /** Scan the LAN for connected devices. */

@@ -52,6 +52,7 @@ import {
   Smartphone,
   Speaker,
   Printer,
+  QrCode,
   Sparkles,
   Square,
   Stethoscope,
@@ -206,6 +207,7 @@ export const TvIcon = make(Tv, 16)
 export const PrinterIcon = make(Printer, 16)
 export const ChipIcon = make(Cpu, 16)
 export const HelpIcon = make(HelpCircle, 16)
+export const QrCodeIcon = make(QrCode, 16)
 export const NasIcon = make(HardDrive, 16)
 export const TabletIcon = make(Tablet, 16)
 export const WatchIcon = make(Watch, 16)

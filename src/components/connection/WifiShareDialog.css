@@ -1,0 +1,118 @@
+/* Absolute (not fixed) and portaled into `.app-col`, so it covers and centres
+   over the main content area rather than the whole window. */
+.wifi-share-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-xl);
+  background: rgba(0, 0, 0, 0.55);
+  animation: wifi-share-fade var(--duration-fast) var(--ease-out);
+}
+
+.wifi-share-dialog {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--gap-xl);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-raised);
+  animation: wifi-share-rise var(--duration-normal) var(--ease-out);
+}
+
+.wifi-share-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.wifi-share-title {
+  margin: 0;
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Pull the close button toward the panel's corner without cramping the title. */
+.wifi-share-close {
+  margin: calc(-1 * var(--gap-xs)) calc(-1 * var(--gap-xs)) 0 0;
+}
+
+.wifi-share-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-xl) 0 var(--gap-md);
+  text-align: center;
+}
+
+.wifi-share-error {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+.wifi-share-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.wifi-share-sub {
+  /* Span the body and left-align so it lines up with the header title. */
+  align-self: stretch;
+  margin: var(--gap-xs) 0 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+/* White plate so the QR keeps its quiet zone and contrast in dark mode. */
+.wifi-share-qr {
+  display: flex;
+  justify-content: center;
+  margin: var(--gap-lg) 0;
+  padding: var(--gap-lg);
+  background: #ffffff;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.wifi-share-qr img {
+  display: block;
+  width: 260px;
+  height: 260px;
+}
+
+.wifi-share-ssid {
+  margin: 0;
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.wifi-share-note {
+  margin: var(--gap-md) 0 0;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+@keyframes wifi-share-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes wifi-share-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

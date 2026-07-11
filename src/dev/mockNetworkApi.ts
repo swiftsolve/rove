@@ -24,6 +24,7 @@ import type {
   SpeedTestProgress,
   SpeedTestResult,
   Unsubscribe,
+  WifiShare,
   WindowControls,
 } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
@@ -90,6 +91,48 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
   security: 'WPA3',
   wifiStandard: 'Wi-Fi 6 (802.11ax)',
   linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,
+}
+
+/**
+ * A decorative QR-like SVG for the browser mock. It isn't a valid, scannable
+ * code — the real backend generates one with the `qrcode` crate — but it gives
+ * the share dialog a faithful shape to lay out against during design work.
+ */
+function mockQrSvg(): string {
+  const size = 25
+  const quiet = 4
+  const dim = size + quiet * 2
+  const isFinder = (x: number, y: number): boolean => {
+    const inBox = (bx: number, by: number): boolean => {
+      const dx = x - bx
+      const dy = y - by
+      if (dx < 0 || dx > 6 || dy < 0 || dy > 6) return false
+      const ring = dx === 0 || dx === 6 || dy === 0 || dy === 6
+      const core = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4
+      return ring || core
+    }
+    return inBox(0, 0) || inBox(size - 7, 0) || inBox(0, size - 7)
+  }
+  let rects = ''
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      // Finder patterns where they belong, otherwise a deterministic speckle.
+      const dark = isFinder(x, y) ? true : ((x * 7 + y * 13 + x * y) % 3 === 0)
+      if (dark) rects += `<rect x="${x + quiet}" y="${y + quiet}" width="1" height="1"/>`
+    }
+  }
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" shape-rendering="crispEdges">` +
+    `<rect width="${dim}" height="${dim}" fill="#ffffff"/>` +
+    `<g fill="#000000">${rects}</g></svg>`
+  )
+}
+
+const MOCK_WIFI_SHARE: WifiShare = {
+  ssid: MOCK_SSID,
+  encryption: 'WPA',
+  password: 'correct-horse-battery',
+  qrSvg: mockQrSvg(),
 }
 
 const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
@@ -361,6 +404,10 @@ function createMockNetworkApi(): NetworkAPI {
     getNetworkInfo: async () => {
       await delay(250)
       return MOCK_NETWORK_INFO
+    },
+    getWifiShare: async () => {
+      await delay(300)
+      return MOCK_WIFI_SHARE
     },
     getPublicIp: async () => {
       await delay(400)
