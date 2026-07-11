@@ -19,6 +19,7 @@ import type {
   SpeedTestProgress,
   SpeedTestResult,
   Unsubscribe,
+  WifiShare,
   WindowControls,
 } from '@/types'
 
@@ -39,6 +40,7 @@ function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsub
 
 const tauriNetworkApi: NetworkAPI = {
   getNetworkInfo: () => invoke<NetworkInfo>('get_network_info'),
+  getWifiShare: () => invoke<WifiShare>('get_wifi_share'),
   getPublicIp: () => invoke<string | null>('get_public_ip'),
   getInterfaces: () => invoke<readonly NetworkInterfaceSummary[]>('get_interfaces'),
   getDevices: () => invoke<LanDeviceScan>('get_devices'),

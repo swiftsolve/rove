@@ -11,6 +11,7 @@ import {
   RouterIcon,
 } from '@/components/ui/Icons'
 import { Tooltip } from '@/components/ui/Tooltip'
+import ShareWifiButton from '@/components/connection/ShareWifiButton'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { useCountUp } from '@/hooks/useCountUp'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
@@ -26,6 +27,8 @@ interface DiagnosticsViewProps {
   readonly isRunning: boolean
   readonly error: string | null
   readonly onRun: () => void
+  /** Whether the active connection is Wi-Fi, gating the "Share Wi-Fi" action. */
+  readonly canShareWifi: boolean
 }
 
 function formatPercent(pct: number): string {
@@ -87,6 +90,7 @@ export default function DiagnosticsView({
   isRunning,
   error,
   onRun,
+  canShareWifi,
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
   const hasDiagnostics = diagnostics != null
@@ -108,6 +112,7 @@ export default function DiagnosticsView({
         subtitleShown={hasDiagnostics && !isRunning}
         actions={
           <>
+            {canShareWifi && <ShareWifiButton />}
             <Tooltip content={SERVICE_INFO_HINT}>
               <button
                 type="button"

@@ -30,6 +30,12 @@ pub async fn get_network_info() -> NetworkInfo {
 }
 
 #[tauri::command]
+pub async fn get_wifi_share() -> Result<rove_core::wifi_share::WifiShare, String> {
+    tracing::info!("wifi share requested");
+    rove_core::wifi_share::current_wifi_share().await
+}
+
+#[tauri::command]
 pub async fn get_interfaces() -> Vec<InterfaceSummary> {
     tracing::info!("interfaces requested");
     let started = std::time::Instant::now();
