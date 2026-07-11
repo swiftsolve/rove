@@ -130,6 +130,7 @@ pub fn run() {
             commands::get_interfaces,
             commands::get_devices,
             commands::run_diagnostics,
+            commands::run_diagnostics_live,
             commands::get_public_ip,
             commands::run_speed_test,
             commands::cancel_speed_test,

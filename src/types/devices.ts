@@ -17,6 +17,9 @@ export const LAN_DEVICE_KINDS = [
 /** Best-effort device category inferred from vendor OUI and role flags. */
 export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 
+/** How decisive the classifier's vote was — 'low' kinds render hedged. */
+export type LanDeviceKindConfidence = 'high' | 'low'
+
 export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
   router: 'Network',
   nas: 'NAS / Server',
@@ -37,6 +40,8 @@ export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
 export interface LanDevice {
   /** Best-effort category — vendor OUIs only reveal so much. */
   readonly kind: LanDeviceKind
+  /** 'low' when the kind is a thin-margin guess, rendered hedged ("Phone?"). */
+  readonly kindConfidence: LanDeviceKindConfidence
   readonly ip: string
   readonly mac: string
   /** Best-effort vendor from the MAC OUI, or null when unknown/randomized. */

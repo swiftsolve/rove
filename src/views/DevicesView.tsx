@@ -171,12 +171,16 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
   const name = deviceName(device)
   // Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
   // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
-  // fingerprint. Case-insensitively drop any part that just repeats the name
-  // (e.g. a nameless host shown as its vendor) or an earlier part (an Apple
-  // handheld whose vendor and OS are both "Apple").
+  // fingerprint. A low-confidence kind is hedged with a trailing "?" — the
+  // classifier's margin was too thin to state it as fact. Case-insensitively
+  // drop any part that just repeats the name (e.g. a nameless host shown as
+  // its vendor) or an earlier part (an Apple handheld whose vendor and OS are
+  // both "Apple").
   const seen = new Set<string>([name.toLowerCase()])
   const meta = [
-    device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
+    device.kind !== 'unknown'
+      ? LAN_DEVICE_KIND_LABELS[device.kind] + (device.kindConfidence === 'low' ? '?' : '')
+      : undefined,
     device.vendor ?? undefined,
     device.os ?? undefined,
     device.model ?? undefined,

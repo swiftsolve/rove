@@ -398,6 +398,7 @@ mod tests {
             model: None,
             os: None,
             kind: "computer".into(),
+            kind_confidence: "high",
             is_randomized_mac: false,
             is_gateway: false,
             is_self: false,

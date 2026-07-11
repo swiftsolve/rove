@@ -4,6 +4,7 @@
    opacity over the dark background, reading as a dark flash mid-transition. */
 .subpage {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--gap-stack);
 }

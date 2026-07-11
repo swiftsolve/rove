@@ -8,6 +8,11 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+# Direct TLS handshakes for the service-reachability probe (reuses the rustls +
+# aws-lc-rs stack reqwest already pulls in). webpki-roots supplies trust anchors
+# so the probe validates certificates without depending on the OS trust store.
+tokio-rustls = "0.26"
+webpki-roots = "0.26"
 sysinfo = { version = "0.33", default-features = false, features = ["network", "system"] }
 futures-util = "0.3"
 # Facade only — the Tauri shell installs the subscriber that writes rove.log,

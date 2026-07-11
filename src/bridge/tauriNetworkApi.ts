@@ -9,6 +9,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
   DataUsageSummary,
   LanDeviceScan,
+  LiveDiagnostics,
   LiveThroughput,
   NetworkAPI,
   NetworkDiagnostics,
@@ -42,6 +43,7 @@ const tauriNetworkApi: NetworkAPI = {
   getInterfaces: () => invoke<readonly NetworkInterfaceSummary[]>('get_interfaces'),
   getDevices: () => invoke<LanDeviceScan>('get_devices'),
   runDiagnostics: () => invoke<NetworkDiagnostics>('run_diagnostics'),
+  runDiagnosticsLive: () => invoke<LiveDiagnostics>('run_diagnostics_live'),
   runSpeedTest: () => invoke<SpeedTestResult>('run_speed_test'),
   cancelSpeedTest: () => invoke<void>('cancel_speed_test'),
   getDataUsage: () => invoke<DataUsageSummary>('get_data_usage'),

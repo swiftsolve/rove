@@ -13,6 +13,7 @@ import type {
   CapabilityRating,
   LanDevice,
   LanDeviceScan,
+  LiveDiagnostics,
   LiveThroughput,
   NetworkAPI,
   NetworkDiagnostics,
@@ -176,6 +177,10 @@ function humanizeModel(model: string | null): string | null {
   }
 }
 
+// Rows omit kindConfidence except where the hedge is the point (the vendor-only
+// TP-Link plug); the map below fills in the common 'high'.
+type MockLanDevice = Omit<LanDevice, 'kindConfidence'> & Partial<Pick<LanDevice, 'kindConfidence'>>
+
 // one privacy-randomized guest phone and one genuine unknown — the messiness a
 // real scan turns up. Self matches the connection card (same IP + MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
@@ -206,9 +211,13 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     { ip: '192.168.1.46', hostname: 'iPhone', model: null, os: null, kind: 'phone', mac: 'ae:4a:06:fe:b5:37', vendor: 'Apple', isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
     // A TP-Link Kasa/Tapo smart plug: its OUI resolves to the generic "TP-Link"
     // name (shared with Archer routers), so with no other signal the classifier
-    // leans "Smart home", not "Network".
-    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'iot', mac: '1c:3b:f3:85:8f:43', vendor: 'TP-Link', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-  ] satisfies readonly LanDevice[]).map((device) => ({ ...device, model: humanizeModel(device.model) })),
+    // leans "Smart home", not "Network" — a low-confidence call the UI hedges.
+    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'iot', kindConfidence: 'low', mac: '1c:3b:f3:85:8f:43', vendor: 'TP-Link', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+  ] satisfies readonly MockLanDevice[]).map((device) => ({
+    ...device,
+    model: humanizeModel(device.model),
+    kindConfidence: device.kindConfidence ?? 'high',
+  })),
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
@@ -218,6 +227,21 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
   gatewayVendor: 'Sagemcom Broadband SAS',
   gatewayModel: 'RouterOS RB750Gr3',
+  isp: {
+    name: 'Comcast Cable Communications',
+    asn: 'AS7922',
+    city: 'San Francisco',
+    region: 'California',
+    country: 'United States',
+    publicIp: '203.0.113.57',
+  },
+  services: [
+    { name: 'Google', host: 'google.com', latencyMs: 28.4 },
+    { name: 'Cloudflare', host: 'cloudflare.com', latencyMs: 19.6 },
+    { name: 'YouTube', host: 'youtube.com', latencyMs: 33.0 },
+    { name: 'Netflix', host: 'netflix.com', latencyMs: 44.6 },
+    { name: 'Zoom', host: 'zoom.us', latencyMs: 76.2 },
+  ],
 }
 
 const MOCK_SPEED_RESULT: SpeedResult = {
@@ -395,6 +419,30 @@ function createMockNetworkApi(): NetworkAPI {
     runDiagnostics: async () => {
       await delay(700)
       return MOCK_DIAGNOSTICS
+    },
+    // Wobble the live numbers around their baselines each poll so the count-up
+    // animation is visibly exercised in the browser mock.
+    runDiagnosticsLive: async (): Promise<LiveDiagnostics> => {
+      await delay(300)
+      const wobble = (base: number, spread: number): number =>
+        Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
+      const basePing = MOCK_DIAGNOSTICS.gatewayPing
+      return {
+        gatewayPing: basePing
+          ? {
+              avgMs: Math.max(0.1, wobble(basePing.avgMs, 3)),
+              jitterMs: Math.max(0, wobble(basePing.jitterMs, 1)),
+              packetLoss: basePing.packetLoss,
+            }
+          : null,
+        services: MOCK_DIAGNOSTICS.services.map((service) => ({
+          ...service,
+          latencyMs:
+            service.latencyMs == null
+              ? null
+              : Math.max(1, wobble(service.latencyMs, 12)),
+        })),
+      }
     },
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       cancelled = false
