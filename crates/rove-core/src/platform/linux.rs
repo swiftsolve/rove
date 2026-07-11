@@ -152,6 +152,46 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     super::finalize_wifi(d)
 }
 
+/// The saved passphrase for the Wi-Fi network on `iface`, via NetworkManager.
+/// `-s` asks nmcli to include secrets, which polkit gates: an authorised
+/// session gets it silently, otherwise the user sees a polkit auth prompt (or,
+/// if they decline / aren't allowed, we get nothing and return `None`). `ssid`
+/// is only a fallback profile name — NetworkManager keys secrets by connection
+/// name, which is usually but not always the SSID.
+pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
+    let profile = active_connection_name(iface)
+        .await
+        .unwrap_or_else(|| ssid.to_string());
+    let quoted = crate::net_util::shell_single_quote(&profile);
+    let out = try_run(&format!(
+        "nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null"
+    ))
+    .await?;
+    let psk = out.trim();
+    if psk.is_empty() {
+        None
+    } else {
+        Some(psk.to_string())
+    }
+}
+
+/// The name of the connection profile currently active on `iface`, so we read
+/// the secret for the network we're actually joined to rather than guessing
+/// from the SSID.
+async fn active_connection_name(iface: &str) -> Option<String> {
+    if !crate::net_util::is_shell_safe_iface(iface) {
+        return None;
+    }
+    let out = try_run(&format!(
+        "nmcli -t -f GENERAL.CONNECTION device show {iface} 2>/dev/null"
+    ))
+    .await?;
+    out.lines()
+        .find_map(|line| line.strip_prefix("GENERAL.CONNECTION:"))
+        .map(|name| name.trim().to_string())
+        .filter(|name| !name.is_empty() && name != "--")
+}
+
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
 

@@ -127,6 +127,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_network_info,
+            commands::get_wifi_share,
             commands::get_interfaces,
             commands::get_devices,
             commands::run_diagnostics,

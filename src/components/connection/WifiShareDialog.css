@@ -1,0 +1,138 @@
+.wifi-share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-xl);
+  background: rgba(0, 0, 0, 0.55);
+  animation: wifi-share-fade var(--duration-fast) var(--ease-out);
+}
+
+.wifi-share-dialog {
+  width: 100%;
+  max-width: 320px;
+  padding: var(--gap-xl);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-raised);
+  animation: wifi-share-rise var(--duration-normal) var(--ease-out);
+}
+
+.wifi-share-title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wifi-share-sub {
+  margin: var(--gap-tight) 0 0;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.wifi-share-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-xl) 0;
+  text-align: center;
+}
+
+.wifi-share-error {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+/* White plate so the QR keeps its quiet zone and contrast in dark mode. */
+.wifi-share-qr {
+  display: flex;
+  justify-content: center;
+  margin: var(--gap-lg) 0;
+}
+
+.wifi-share-qr img {
+  width: 200px;
+  height: 200px;
+  padding: var(--gap-md);
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+}
+
+.wifi-share-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.wifi-share-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-stack);
+  background: var(--bg-inset);
+  border-radius: var(--radius-sm);
+}
+
+.wifi-share-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2xs);
+  min-width: 0;
+  flex: 1;
+}
+
+.wifi-share-row-label {
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.wifi-share-row-value {
+  font-family: ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.wifi-share-note {
+  margin: 0;
+  padding: var(--gap-tight) var(--gap-stack);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.wifi-share-meta {
+  margin: var(--gap-md) 0 0;
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.wifi-share-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--gap-lg);
+}
+
+@keyframes wifi-share-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes wifi-share-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

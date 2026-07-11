@@ -91,6 +91,15 @@ pub fn is_shell_safe_iface(s: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
 }
 
+/// Wrap `s` in single quotes for safe interpolation into a `sh -c` command,
+/// escaping any embedded single quote (`'` → `'\''`). Use for values we can't
+/// constrain to a safe charset the way [`is_shell_safe_iface`] does — chiefly
+/// SSIDs and NetworkManager profile names, which may contain spaces, quotes or
+/// shell metacharacters. Not for Windows `cmd`, whose quoting rules differ.
+pub fn shell_single_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\\''"))
+}
+
 /// Strip control characters and bidi overrides from a display string sourced
 /// from the network (mDNS TXT records, reverse DNS) before it is persisted or
 /// rendered, and bound its length. Prevents a neighbor from injecting RTL

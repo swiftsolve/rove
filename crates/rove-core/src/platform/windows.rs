@@ -159,6 +159,22 @@ fn non_empty(s: &str) -> Option<String> {
     Some(s.to_string()).filter(|s| !s.is_empty())
 }
 
+/// The saved passphrase for the `ssid` profile via `netsh wlan show profile
+/// … key=clear`. The clear key is only emitted to an elevated (Administrator)
+/// caller; run without elevation, netsh simply omits the "Key Content" line and
+/// we return `None`. The double quotes around the profile name can't be escaped
+/// inside a `cmd` argument, so an embedded quote is stripped first (SSIDs
+/// effectively never contain one).
+pub async fn wifi_password(ssid: &str) -> Option<String> {
+    let safe = ssid.replace('"', "");
+    let out = try_run(&format!("netsh wlan show profile name=\"{safe}\" key=clear")).await?;
+    out.lines()
+        .find_map(|line| line.trim().strip_prefix("Key Content"))
+        .and_then(|rest| rest.split_once(':'))
+        .map(|(_, value)| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
 /// Centre frequency (MHz) for a Wi-Fi `channel` in the given band (GHz), per the
 /// 802.11 channel plans. The band is required because channel numbers repeat
 /// across bands (6 GHz channel 1 is not 2.4 GHz channel 1).
