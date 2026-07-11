@@ -79,17 +79,16 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
           </div>
         ) : share ? (
           <div className="wifi-share-body">
+            <p className="wifi-share-sub">Scan with a phone camera to join</p>
             <div className="wifi-share-qr">
               <img
                 src={`data:image/svg+xml,${encodeURIComponent(share.qrSvg)}`}
                 alt={`QR code to join the Wi‑Fi network ${share.ssid}`}
-                width={220}
-                height={220}
+                width={260}
+                height={260}
               />
             </div>
-            <p className="wifi-share-sub">
-              Scan with a phone camera to join <strong>{share.ssid}</strong>
-            </p>
+            <p className="wifi-share-ssid">{share.ssid}</p>
             {secured && !share.password && (
               <p className="wifi-share-note">
                 The saved password wasn&apos;t available, so scanning will prompt for it.
