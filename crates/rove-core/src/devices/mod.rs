@@ -183,7 +183,7 @@ fn build_device(
     let vendor = lookup_vendor(&neighbor.mac).map(String::from);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
-    let dhcp = enrichment.dhcp.get(&dhcp::normalize_mac(&neighbor.mac));
+    let dhcp = enrichment.dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
 
     // mDNS/SSDP/banner/port signals are captured opportunistically in one lossy
     // discovery window, so a device that advertised a decisive signal on an
@@ -229,11 +229,12 @@ fn build_device(
         .or(resolved_hostname)
         .or_else(|| is_echo.then(|| "Amazon Echo".to_string()));
 
-    // Reverse-DNS / NetBIOS names (the only label a Kasa-style plug exposes) flap
-    // across scans, and a nameless scan would drop the hostname classify vote and
-    // revert the device to its bare vendor kind ("HS103" plug → iot falling back
-    // to TP-Link → router). Remember the resolved name per-MAC so it — and the
-    // kind derived from it below — stays put. A MAC-less host can't be keyed.
+    // Reverse-DNS / NetBIOS names (often the only label a plug or printer exposes)
+    // flap across scans, and a nameless scan would drop the hostname classify vote
+    // and revert the device to its bare vendor kind (an "Office-LaserJet" printer
+    // falling back to its HP OUI → computer). Remember the resolved name per-MAC so
+    // it — and the kind derived from it below — stays put. A MAC-less host can't be
+    // keyed.
     let hostname = if neighbor.mac.is_empty() {
         hostname
     } else {

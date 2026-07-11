@@ -3,6 +3,7 @@ import type { DailyUsage, DataUsageSummary } from '@/types'
 import { formatBytes, splitBytes } from '@/lib/format'
 import Section from '@/components/ui/Section'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
+import { ViewHeader } from '@/components/ui/ViewHeader'
 import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { Spinner } from '@/components/ui/Spinner'
@@ -214,17 +215,12 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
 
   return (
     <div className="view-page">
-      <div className="view-header usage-header">
-        <span className="view-header-icon">
-          <UsageIcon size={18} />
-        </span>
-        <div className="usage-header-text">
-          <span className="view-header-title">Usage</span>
-          <span className={`usage-header-sub${!(isLoading && !hasData) ? ' show' : ''}`}>
-            {subtitle}
-          </span>
-        </div>
-        <div className="usage-header-actions">
+      <ViewHeader
+        icon={<UsageIcon size={18} />}
+        title="Usage"
+        subtitle={subtitle}
+        subtitleShown={!(isLoading && !hasData)}
+        actions={
           <UiTooltip content={USAGE_INFO_HINT}>
             <button
               type="button"
@@ -234,8 +230,8 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
               <HelpIcon size={16} />
             </button>
           </UiTooltip>
-        </div>
-      </div>
+        }
+      />
 
       {error && <div className="error-banner" role="alert">{error}</div>}
 

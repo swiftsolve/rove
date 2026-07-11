@@ -69,7 +69,12 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             continue; // phantom/disabled rows carry no status
         }
         let speed = parts.next().and_then(parse_link_speed).filter(|v| *v > 0);
-        let mac = normalize_mac(parts.next().unwrap_or(""));
+        // "10-A5-1D-01-8F-9C" → "10:a5:1d:01:8f:9c"; `None` when empty.
+        let mac = parts
+            .next()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(crate::net_util::normalize_mac_colons);
         let is_virtual_flag = parts.next().map(str::trim) == Some("1");
         let ip = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(String::from);
 
@@ -107,12 +112,6 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
     }
     super::sort_interfaces(&mut result);
     result
-}
-
-/// "10-A5-1D-01-8F-9C" → "10:a5:1d:01:8f:9c"; `None` when empty.
-fn normalize_mac(raw: &str) -> Option<String> {
-    let raw = raw.trim();
-    (!raw.is_empty()).then(|| raw.replace('-', ":").to_lowercase())
 }
 
 // ---- connection details --------------------------------------------------
@@ -164,16 +163,17 @@ fn non_empty(s: &str) -> Option<String> {
 /// 802.11 channel plans. The band is required because channel numbers repeat
 /// across bands (6 GHz channel 1 is not 2.4 GHz channel 1).
 fn channel_to_frequency(band_ghz: f64, channel: i64) -> Option<i64> {
-    let base = if band_ghz >= 5.9 {
-        5950 // 6 GHz
+    use super::WifiBand;
+    let band = if band_ghz >= 5.9 {
+        WifiBand::Six
     } else if band_ghz >= 4.9 {
-        5000 // 5 GHz
+        WifiBand::Five
     } else if band_ghz >= 2.4 {
-        2407 // 2.4 GHz
+        WifiBand::TwoFour
     } else {
         return None;
     };
-    Some(base + channel * 5)
+    Some(super::channel_to_frequency(band, channel))
 }
 
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
@@ -311,6 +311,8 @@ mod tests {
     #[test]
     fn channel_frequency_bands_disambiguate_by_band() {
         assert_eq!(channel_to_frequency(2.4, 1), Some(2412));
+        // 2.4 GHz channel 14 is the plan's outlier at 2484 MHz, not 2477.
+        assert_eq!(channel_to_frequency(2.4, 14), Some(2484));
         assert_eq!(channel_to_frequency(5.0, 60), Some(5300));
         assert_eq!(channel_to_frequency(6.0, 101), Some(6455));
         assert_eq!(channel_to_frequency(0.0, 1), None);

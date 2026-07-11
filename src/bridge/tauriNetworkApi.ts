@@ -8,7 +8,6 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
   DataUsageSummary,
-  KnownDevice,
   LanDeviceScan,
   LiveThroughput,
   NetworkAPI,
@@ -51,7 +50,6 @@ const tauriNetworkApi: NetworkAPI = {
   importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>
     invoke<void>('import_speed_history', { entries }),
   clearSpeedHistory: () => invoke<void>('clear_speed_history'),
-  getKnownDevices: () => invoke<readonly KnownDevice[]>('get_known_devices'),
 
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>
     subscribeEvent('speed-test-progress', callback),
@@ -66,23 +64,7 @@ const tauriNetworkApi: NetworkAPI = {
 
 const tauriWindowControls: WindowControls = {
   minimize: () => void getCurrentWindow().minimize(),
-  toggleMaximize: () => void getCurrentWindow().toggleMaximize(),
   close: () => void getCurrentWindow().close(),
-  isMaximized: () => getCurrentWindow().isMaximized(),
-  onMaximizedChange: (callback: (maximized: boolean) => void) => {
-    let disposed = false
-    let dispose: (() => void) | null = null
-    void getCurrentWindow()
-      .onResized(() => void getCurrentWindow().isMaximized().then(callback))
-      .then((unlisten) => {
-        if (disposed) unlisten()
-        else dispose = unlisten
-      })
-    return () => {
-      disposed = true
-      dispose?.()
-    }
-  },
 }
 
 export function isTauri(): boolean {

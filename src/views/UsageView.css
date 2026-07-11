@@ -1,35 +1,3 @@
-.usage-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-md);
-  position: relative;
-  z-index: 20;
-}
-
-.usage-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  min-width: 0;
-  flex: 1;
-}
-
-.usage-header-sub {
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
-  min-height: calc(var(--text-caption) * 1.35);
-}
-
-.usage-header-sub.show {
-  animation: fade-in var(--duration-normal) var(--ease-out);
-}
-
-.usage-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 /* Today metrics sit on the plain card surface; the section body's top padding
    is the only gap below the title. */
 .usage-hero {

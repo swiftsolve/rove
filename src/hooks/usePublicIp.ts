@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useRef } from 'react'
+import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface PublicIpState {
   readonly publicIp: string | null
@@ -10,32 +11,24 @@ interface PublicIpState {
  * changes (e.g. the local IP), since switching networks can change the WAN IP.
  */
 export function usePublicIp(enabled: boolean, refetchKey: string | null): PublicIpState {
-  const [state, setState] = useState<PublicIpState>({ publicIp: null, isLoading: false })
+  const api = window.networkAPI
+  const fetchIp = useMemo(
+    () => (api?.getPublicIp ? () => api.getPublicIp() : undefined),
+    [api],
+  )
 
-  useEffect(() => {
-    if (!enabled || !window.networkAPI?.getPublicIp) {
-      // Keep the last known value rather than flashing to "—" on a blip.
-      setState((prev) => ({ publicIp: prev.publicIp, isLoading: false }))
-      return
-    }
+  const { data, isBusy } = useBackendResource(
+    fetchIp,
+    enabled,
+    'Failed to fetch the public IP.',
+    { refetchOnEnable: true, resetKey: refetchKey },
+  )
 
-    let cancelled = false
-    setState((prev) => ({ publicIp: prev.publicIp, isLoading: true }))
+  // Keep the last known value rather than flashing to "—" on a blip: a network
+  // switch (resetKey change) or transient failure clears/keeps `data` null, but
+  // the WAN IP rarely changes — show the previous one until the refetch lands.
+  const lastIpRef = useRef<string | null>(null)
+  if (data != null) lastIpRef.current = data
 
-    window.networkAPI
-      .getPublicIp()
-      .then((ip) => {
-        if (!cancelled) setState({ publicIp: ip, isLoading: false })
-      })
-      .catch(() => {
-        // Preserve the previous IP on a transient failure — it rarely changes.
-        if (!cancelled) setState((prev) => ({ publicIp: prev.publicIp, isLoading: false }))
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [enabled, refetchKey])
-
-  return state
+  return { publicIp: data ?? lastIpRef.current, isLoading: isBusy }
 }

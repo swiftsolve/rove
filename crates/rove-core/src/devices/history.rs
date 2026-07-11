@@ -83,8 +83,8 @@ static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> =
 /// its cache one scan yields nothing — but, unlike them, they aren't part of
 /// `DeviceEvidence` (they're derived downstream, after this cache is consulted).
 /// Remembering the winning name here keeps both the label *and* the kind stable:
-/// a hostname-driven classification (e.g. a Kasa "HS103" plug → iot) stops
-/// falling back to the bare vendor OUI (TP-Link → router) on a nameless scan.
+/// a hostname-driven classification (e.g. an "Office-LaserJet" printer → printer)
+/// stops falling back to the bare vendor OUI (HP → computer) on a nameless scan.
 static NAMES: LazyLock<Mutex<HashMap<String, String>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
@@ -93,7 +93,7 @@ static NAMES: LazyLock<Mutex<HashMap<String, String>>> =
 /// signal ever seen for the device, so its kind stays stable across scans that
 /// happen to miss a signal.
 pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
-    let mut cache = CACHE.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut cache = crate::net_util::lock(&CACHE);
     let entry = cache.entry(mac.to_string()).or_default();
     entry.absorb(&fresh);
     entry.clone()
@@ -105,7 +105,7 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
 /// a device from reverting to a bare-vendor label on a scan whose reverse-DNS /
 /// NetBIOS lookup came back empty.
 pub fn stable_name(mac: &str, candidate: Option<String>) -> Option<String> {
-    let mut names = NAMES.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut names = crate::net_util::lock(&NAMES);
     match candidate {
         Some(name) => {
             names.insert(mac.to_string(), name.clone());

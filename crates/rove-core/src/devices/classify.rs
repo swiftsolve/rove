@@ -60,61 +60,69 @@ impl KindPatterns {
 static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (
-            r"(?i)synology|diskstation|\bqnap\b|truenas|freenas|unraid|openmediavault|\bnas\b|nas-|-nas\b|asustor|terramaster|\bdrobo\b",
+            r"(?i)synology|diskstation|\bqnap\b|truenas|freenas|unraid|openmediavault|\bnas\b|nas-|-nas\b|asustor|terramaster|\bdrobo\b|mycloud|readynas",
             "nas",
         ),
         (
-            r"(?i)macbook|imac|mac-?mini|mac-?pro|mac-?studio|\bpc\b|-pc\b|desktop|laptop|thinkpad|ideapad|optiplex|latitude|elitebook|probook|zenbook|vivobook|surface|workstation|\bnuc\b|raspberry|\brpi\b|pi-?hole|steam-?deck|ubuntu|fedora|debian|archlinux|framework|system76|-server\b|server-",
+            r"(?i)macbook|imac|mac-?mini|mac-?pro|mac-?studio|\bpc\b|-pc\b|desktop|laptop|thinkpad|ideapad|thinkcentre|optiplex|latitude|inspiron|\bxps\b|alienware|elitebook|probook|\bomen\b|pavilion|zenbook|vivobook|surface|chromebook|chromebox|pixelbook|workstation|\bnuc\b|raspberry|\brpi\b|pi-?hole|steam-?deck|ubuntu|fedora|debian|archlinux|framework|system76|-server\b|server-|\bwin-[0-9a-z]|esxi|proxmox|vmware",
             "computer",
         ),
         (
-            r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle|fire-?hd|fire-?tablet|-tablet\b|\btablet\b",
+            r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle|fire-?hd|fire-?tablet|-tablet\b|\btablet\b|lenovo-?tab|\btab-[a-z0-9]|mi-?pad|mediapad",
             "tablet",
         ),
         // Watch/wearable — must precede the phone row so brand tokens shared with
         // phones ("galaxy watch", "pixel watch") land here, not on "phone".
         (
-            r"(?i)\bwatch\b|-watch\b|watch-|apple-?watch|galaxy-?watch|pixel-?watch|smart-?watch|\bgizmo\b|fitbit|charge-?[2-6]\b|inspire-?[23]\b|\bversa\b|amazfit|ticwatch|wear-?os|mi-?band|\bfenix\b|forerunner|vivoactive|vivomove|\bvenu\b|instinct|\bgarmin\b",
+            r"(?i)\bwatch\b|-watch\b|watch-|apple-?watch|galaxy-?watch|pixel-?watch|smart-?watch|\bsm-r\d|\bgizmo\b|fitbit|charge-?[2-6]\b|inspire-?[23]\b|\bversa\b|amazfit|ticwatch|wear-?os|mi-?band|\bfenix\b|forerunner|vivoactive|vivomove|\bvenu\b|instinct|\bgarmin\b",
             "watch",
         ),
         (
-            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|-phone\b|phone-|android-[0-9a-f]",
+            r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|realme|\brmx\d{4}|\bcph\d{4}|\boppo\b|\bvivo\b|\bhonor\b|moto[- ]?[ge]|motorola|nokia-?\d|infinix|\btecno\b|zenfone|-phone\b|phone-|android-[0-9a-f]",
             "phone",
         ),
         (
-            r"(?i)\bxbox\b|playstation|\bps[45]\b|psvita|nintendo|-switch\b|switch-|\bwii\b|steam-?link",
+            r"(?i)\bxbox\b|playstation|\bps[345]\b|psvita|nintendo|-switch\b|switch-|\bwii\b|steam-?link|rog-?ally",
             "console",
         ),
         (
-            r"(?i)appletv|apple-tv|android-?tv|google-?tv|chromecast|nvidia-?shield|\bshield\b|firetv|fire-?tv|fire-?stick|firestick|roku|bravia|aquos|webos|\blg-?tv|samsung-?tv|\btv\b|vizio",
+            r"(?i)appletv|apple-tv|android-?tv|google-?tv|chromecast|nvidia-?shield|\bshield\b|firetv|fire-?tv|fire-?stick|firestick|roku|bravia|aquos|webos|\blg-?tv|samsung-?tv|\btv\b|vizio|\btivo\b|mi-?box|set-?top|projector",
             "tv",
         ),
         (
-            r"(?i)printer|officejet|laserjet|deskjet|\benvy\b|pixma|imageclass|maxify|workforce|ecotank|expression|brother|hl-l|\bmfc-|\bdcp-|epson|\bcanon\b|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|scanner",
+            r"(?i)printer|officejet|laserjet|deskjet|\benvy\b|pixma|imageclass|maxify|workforce|ecotank|expression|brother|hl-l|\bmfc-|\bdcp-|epson|\bcanon\b|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|scanner|octoprint|\bender-?\d|prusa|bambu-?lab",
             "printer",
         ),
         (
-            r"(?i)camera|webcam|ipcam|\bcam-?\d|-cam\b|doorbell|reolink|amcrest|hikvision|\bdahua\b|\barlo\b|blink-?(cam|mini)|eufycam|nest-?cam|wyze-?cam|wyzecam|ring-doorbell",
+            r"(?i)camera|webcam|ipcam|\bcam-?\d|-cam\b|doorbell|reolink|amcrest|hikvision|\bdahua\b|\barlo\b|blink-?(cam|mini)|eufycam|nest-?cam|wyze-?cam|wyzecam|ring-doorbell|foscam|ezviz|\bannke\b|\bnvr\b|tapo-?c\d",
             "camera",
         ),
         (
-            r"(?i)\bsonos\b|homepod|\becho\b|\balexa\b|echo-?dot|nest-?mini|nest-?hub|nest-?audio|sound-?bar|\bheos\b|speaker|\bbose\b|\bdenon\b",
+            r"(?i)\bsonos\b|homepod|\becho\b|\balexa\b|echo-?dot|nest-?mini|nest-?hub|nest-?audio|sound-?bar|\bheos\b|speaker|\bbose\b|\bdenon\b|\bjbl\b|klipsch|bluesound|\bwiim\b|marantz|soundtouch|musiccast|symfonisk",
             "speaker",
         ),
         (
-            r"(?i)esp-?\d|esp32|esp8266|tasmota|shelly|sonoff|tuya|smartlife|kasa|\bhs\d{3}|\bks\d{3}|\bkp\d{3}|wemo|meross|govee|lifx|nanoleaf|\bwiz-|yeelight|tradfri|\bhue\b|philips-?hue|lutron|caseta|ecobee|\bnest\b|thermostat|sensi|wyze|eufy|\bring\b|smartplug|-plug\b|plug-?\d|smartbulb|-bulb\b|light-?\d|smartswitch|vacuum|roborock|roomba|neato|deebot|ecovacs|airfryer|cosori|purifier|humidifier|smartthings|zigbee|z-?wave|\baqara\b|switchbot|\bmyq\b|\bwled\b",
+            r"(?i)esp-?\d|esp32|esp8266|tasmota|shelly|sonoff|tuya|smartlife|kasa|\btapo\b|tapo-|\bhs\d{3}|\bks\d{3}|\bkp\d{3}|\bp1\d{2}\b|wemo|meross|govee|lifx|nanoleaf|\bwiz-|yeelight|tradfri|\bhue\b|philips-?hue|lutron|caseta|ecobee|\bnest\b|thermostat|sensi|wyze|eufy|\bring\b|smartplug|-plug\b|plug-?\d|smartbulb|-bulb\b|light-?\d|smartswitch|vacuum|roborock|roomba|neato|deebot|ecovacs|airfryer|cosori|purifier|humidifier|dishwasher|\bwasher\b|\bdryer\b|fridge|refrigerator|\boven\b|microwave|smartthings|zigbee|z-?wave|\baqara\b|switchbot|\bmyq\b|\bwled\b|broadlink|netatmo|schlage|kwikset|\bnuki\b|door-?lock|doorlock|deadbolt|garage|sprinkler|irrigation|rachio|wallbox|chargepoint|juicebox|\bevse\b|solaredge|enphase|litter-?robot|petcube|blinds|curtain|weather-?station|awair|airthings|-sensor\b|sensor-|smoke-?alarm",
             "iot",
         ),
         (
-            r"(?i)router|gateway|\bap-?\d|access-?point|unifi|\budm\b|\buap\b|openwrt|dd-wrt|mikrotik|\beero\b|\borbi\b|nighthawk|fritz|\bomada\b|\bdeco\b|\bvelop\b|repeater|\bmodem\b|\bont\b",
+            r"(?i)router|gateway|\bap-?\d|access-?point|unifi|\budm\b|\buap\b|openwrt|dd-wrt|mikrotik|\beero\b|\borbi\b|nighthawk|fritz|\bomada\b|\bdeco\b|\bvelop\b|repeater|\bmodem\b|\bont\b|linksys|airport|time-?capsule|extender|\barcher\b|tplink|starlink|gl-?inet|livebox|freebox|xfinity",
             "router",
         ),
     ])
 });
 
-/// Ordered so specific products win over broad brands (a Kasa plug is IoT, not
-/// a router, even though TP-Link mostly makes routers). Matched against the full
+/// Ordered so specific products win over broad brands. Matched against the full
 /// IEEE vendor name, so registry spellings like "Signify" appear here.
+///
+/// TP-Link is deliberately absent from both the IoT and router rows: the IEEE
+/// registry gives its entire catalog one name ("TP-LINK TECHNOLOGIES CO.,LTD."),
+/// so a Kasa/Tapo smart plug is indistinguishable by vendor from an Archer
+/// router. Rather than guess — and mislabel a bare AP/switch as "Smart home" or
+/// a smart plug as "Network" — a lone TP-Link OUI casts no vendor vote and falls
+/// back to "unknown". Real TP-Link gear of either kind still types correctly via
+/// a stronger signal (the gateway short-circuit, or a `deco`/`omada`/`ap-N`/
+/// `repeater`/`kasa`/`tapo` hostname, or an SSDP type, that decides the vote).
 static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (
@@ -122,28 +130,46 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             "nas",
         ),
         (
-            r"(?i)hikvision|\bdahua\b|reolink|amcrest|\blorex\b|axis comm|\bwyze\b|\barlo\b|\bswann\b|uniview",
+            r"(?i)hikvision|\bdahua\b|reolink|amcrest|\blorex\b|axis comm|\bwyze\b|\barlo\b|\bswann\b|uniview|ezviz|foscam|vivotek|hanwha|annke",
             "camera",
         ),
-        (r"(?i)sonos|\bbose\b|\bdenon\b|marantz|\bheos\b|sonance", "speaker"),
-        (r"(?i)nintendo", "console"),
         (
-            r"(?i)espressif|\btuya\b|sonoff|itead|shelly|allterco|\bnest\b|\bring\b|\beufy\b|philips lighting|signify|ecobee|\blifx\b|nanoleaf|govee|yeelight|roborock|ecovacs|irobot|\bneato\b|tradfri|lutron|leviton|sengled|meross|switchbot|aqara|lumi|\bwiz\b|kasa|vesync|cosori|shenzhen.*(smart|iot|tech)",
+            r"(?i)sonos|\bbose\b|\bdenon\b|marantz|\bheos\b|sonance|harman|\bjbl\b|bang & olufsen|klipsch|yamaha|\bonkyo\b|bluesound|devialet|\bpolk\b",
+            "speaker",
+        ),
+        // PlayStation OUIs register as "Sony Interactive Entertainment" — must
+        // precede the TV row, whose broad \bsony\b would otherwise claim them.
+        (r"(?i)nintendo|sony interactive", "console"),
+        // Phone brands whose registry names collide with a broader row below:
+        // Transsion (Tecno/Infinix/itel) registers as "Shenzhen Transsion …",
+        // which the IoT row's generic shenzhen catch-all would swallow.
+        (r"(?i)transsion|hmd global", "phone"),
+        (
+            r"(?i)espressif|\btuya\b|sonoff|itead|shelly|allterco|\bnest\b|\bring\b|\beufy\b|philips lighting|signify|ecobee|\blifx\b|nanoleaf|govee|yeelight|roborock|ecovacs|irobot|\bneato\b|tradfri|\bikea\b|lutron|leviton|sengled|meross|switchbot|aqara|lumi|\bwiz\b|vesync|cosori|broadlink|netatmo|\bsomfy\b|resideo|honeywell|chamberlain|liftmaster|rachio|rain bird|ledvance|osram|\bmidea\b|\bdyson\b|\bgree\b|daikin|smartthings|samjin|emporia|enphase|solaredge|fronius|growatt|wallbox|chargepoint|ecoflow|\bnuki\b|august home|allegion|schlage|kwikset|shenzhen.*(smart|iot|tech)",
             "iot",
         ),
-        (r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum", "printer"),
-        (r"(?i)roku|vizio|lg elec|hisense|\btcl\b|skyworth|funai|\bonn\b|\bsony\b|amlogic|insignia", "tv"),
         (
-            r"(?i)zyxel|tp-link|ubiquiti|netgear|mikrotik|\basus\b|d-link|\baruba\b|\bcisco\b|ruckus|meraki|juniper|fortinet|sonicwall|\barris\b|technicolor|sagemcom|actiontec|\bcalix\b|adtran|\beero\b|turris|\bzte\b|sagem",
+            r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum|oki electric",
+            "printer",
+        ),
+        (
+            r"(?i)roku|vizio|lg elec|hisense|\btcl\b|skyworth|funai|\bonn\b|\bsony\b|amlogic|insignia|panasonic|xgimi",
+            "tv",
+        ),
+        // "Compal Broadband" (cable modems) must precede the computer row, whose
+        // bare "compal" token covers the laptop-ODM sibling company. Bare "Nokia"
+        // OUIs are ISP gateways/ONTs — Nokia-brand phones register as HMD Global.
+        (
+            r"(?i)zyxel|ubiquiti|netgear|mikrotik|\basus\b|d-link|\baruba\b|\bcisco\b|ruckus|meraki|juniper|fortinet|sonicwall|\barris\b|technicolor|sagemcom|actiontec|\bcalix\b|adtran|\beero\b|turris|\bzte\b|sagem|\btenda\b|hitron|commscope|cambium|engenius|sercomm|\baskey\b|\bhumax\b|vantiva|airties|plume design|compal broadband|\bnokia\b",
             "router",
         ),
         (
-            r"(?i)raspberry|\bintel\b|\bdell\b|lenovo|hp inc|hewlett|framework|gigabyte|\bmsi\b|micro-star|asrock|super ?micro|supermicro|elitegroup|pegatron|\bquanta\b|compal|wistron|\bclevo\b|tuxedo|beelink|minisforum|\bchuwi\b|system76",
+            r"(?i)raspberry|\bintel\b|\bdell\b|lenovo|hp inc|hewlett|framework|gigabyte|\bmsi\b|micro-star|asrock|super ?micro|supermicro|elitegroup|pegatron|\bquanta\b|compal|wistron|\bclevo\b|tuxedo|beelink|minisforum|\bchuwi\b|system76|\bacer\b|fujitsu|lite-?on|azurewave|vmware|parallels|pcs systemtechnik|\bzotac\b",
             "computer",
         ),
         // Wearable-first brands — before the phone row so a Garmin/Fitbit OUI
         // reads as a watch, not a generic handheld.
-        (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b", "watch"),
+        (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b|polar electro", "watch"),
         (
             r"(?i)\bapple\b|samsung|xiaomi|oneplus|huawei|\boppo\b|\bvivo\b|realme|motorola|\bhtc\b|nothing tech|fairphone",
             "phone",
@@ -157,15 +183,17 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (r"(?i)synology|diskstation|\bqnap\b", "nas"),
         (r"(?i)macbook|imac|macmini|mac-?mini|macpro|mac-?studio|macstudio|windows|surface|thinkpad|optiplex|latitude", "computer"),
-        (r"(?i)ipad", "tablet"),
+        (r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle", "tablet"),
         // Apple Watch reports models like "Watch6,1"; keep this above the phone
-        // row so it isn't swept up as a generic Apple handheld.
-        (r"(?i)\bwatch\d", "watch"),
+        // row so it isn't swept up as a generic Apple handheld. Samsung watches
+        // are SM-R models — above the phone row's broader sm-[a-z].
+        (r"(?i)\bwatch\d|\bsm-r\d", "watch"),
         (r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]", "phone"),
-        (r"(?i)audioaccessory|homepod|sonos|\bspeaker\b", "speaker"),
+        (r"(?i)playstation|\bps[45]\b|\bxbox\b|nintendo", "console"),
+        (r"(?i)audioaccessory|homepod|sonos|\bspeaker\b|soundbar", "speaker"),
         (r"(?i)\bcamera\b|\bcam\b|doorbell|hikvision|reolink", "camera"),
         (r"(?i)appletv|apple-?tv|shield|chromecast|bravia|roku|firetv|fire-?tv|android-?tv|vizio", "tv"),
-        (r"(?i)\bhue\b|bridge|\bplug\b|bulb|sensor|thermostat", "iot"),
+        (r"(?i)\bhue\b|bridge|\bplug\b|bulb|sensor|thermostat|roomba|robovac|vacuum", "iot"),
     ])
 });
 
@@ -174,9 +202,15 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// router (usually already decided by the gateway flag); MediaServer leans NAS.
 static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice", "router"),
+        (
+            r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice|WLANAccessPointDevice",
+            "router",
+        ),
         (r"(?i)Printer", "printer"),
         (r"(?i)ZonePlayer", "speaker"),
+        // Belkin Wemo plugs/switches announce vendor URNs like
+        // "urn:Belkin:device:controllee:1".
+        (r"(?i)urn:belkin:device", "iot"),
         (r"(?i)MediaRenderer|dial", "tv"),
         (r"(?i)MediaServer", "nas"),
     ])
@@ -185,6 +219,10 @@ static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// A listening service that all but names the device type: 9100/631 are print
 /// protocols; 8060 is the Roku control port (a streaming box is always a TV);
 /// 32400 is a Plex media server (an always-on NAS-class box); 1400 is Sonos.
+/// 9999 and 6668 are the local-control APIs of the two largest smart-plug/bulb
+/// families (Kasa-style and Tuya-based respectively) — the population that is
+/// otherwise silent: no mDNS, no SSDP, and a module-vendor or catalog-wide OUI
+/// the registry can't split.
 ///
 /// Chromecast's 8009 is deliberately *not* here: it's the whole Google Cast
 /// family — Chromecasts, Nest Hubs *and* audio-only Cast speakers/smart clocks —
@@ -203,6 +241,9 @@ fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
     }
     if ports.contains(&32400) {
         return Some("nas");
+    }
+    if ports.iter().any(|&p| matches!(p, 9999 | 6668)) {
+        return Some("iot");
     }
     None
 }
@@ -628,6 +669,34 @@ mod tests {
     }
 
     #[test]
+    fn a_bare_tp_link_oui_stays_unknown() {
+        // TP-Link's OUI resolves to one generic name shared by Kasa/Tapo plugs
+        // and Archer/Deco networking gear. With no other signal it must cast no
+        // vendor vote and fall back to "unknown", rather than guess "Smart home"
+        // (mislabeling a bare AP/switch) or "Network" (mislabeling a smart plug).
+        assert_eq!(kind(Signals { vendor: Some("TP-Link"), ..Default::default() }), "unknown");
+    }
+
+    #[test]
+    fn a_tp_link_router_still_types_as_router_via_stronger_signals() {
+        // The gateway is a router regardless of vendor (role flag short-circuits).
+        assert_eq!(
+            kind(Signals { vendor: Some("TP-Link"), is_gateway: true, ..Default::default() }),
+            "router"
+        );
+        // A non-gateway TP-Link mesh node/AP names itself: the router hostname
+        // (weight 40) outvotes the IoT vendor lean (weight 25).
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("TP-Link"),
+                hostname: Some("Deco-X20"),
+                ..Default::default()
+            }),
+            "router"
+        );
+    }
+
+    #[test]
     fn a_cast_speaker_is_not_overridden_by_its_cast_family_signals() {
         // A Lenovo Smart Clock (Google Assistant speaker): mDNS `ca` types it a
         // speaker, but it also exposes the whole Cast family — port 8009 and an
@@ -702,6 +771,103 @@ mod tests {
         assert_eq!(
             kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
             "router"
+        );
+    }
+
+    #[test]
+    fn registry_name_collisions_resolve_to_the_specific_brand() {
+        // PlayStations register as "Sony Interactive Entertainment" — console,
+        // not swept up by the TV row's broad \bsony\b (Bravia OUIs).
+        assert_eq!(
+            kind(Signals { vendor: Some("Sony Interactive Entertainment Inc."), ..Default::default() }),
+            "console"
+        );
+        assert_eq!(kind(Signals { vendor: Some("Sony Corporation"), ..Default::default() }), "tv");
+        // Transsion phones register as "Shenzhen Transsion …" — the IoT row's
+        // generic shenzhen catch-all must not swallow them.
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Shenzhen Transsion Technologies Co.Ltd"),
+                ..Default::default()
+            }),
+            "phone"
+        );
+        // Bare "Nokia" OUIs are ISP gateways; Nokia-brand phones are HMD Global.
+        assert_eq!(kind(Signals { vendor: Some("Nokia"), ..Default::default() }), "router");
+        assert_eq!(kind(Signals { vendor: Some("HMD Global Oy"), ..Default::default() }), "phone");
+        // Compal Broadband makes cable modems; Compal Electronics builds laptops.
+        assert_eq!(
+            kind(Signals { vendor: Some("Compal Broadband Networks, Inc."), ..Default::default() }),
+            "router"
+        );
+        assert_eq!(
+            kind(Signals { vendor: Some("COMPAL ELECTRONICS, INC."), ..Default::default() }),
+            "computer"
+        );
+    }
+
+    #[test]
+    fn broader_vendor_coverage_types_common_home_brands() {
+        assert_eq!(kind(Signals { vendor: Some("IKEA of Sweden AB"), ..Default::default() }), "iot");
+        assert_eq!(kind(Signals { vendor: Some("Netatmo"), ..Default::default() }), "iot");
+        assert_eq!(kind(Signals { vendor: Some("Harman/Becker Automotive Systems GmbH"), ..Default::default() }), "speaker");
+        assert_eq!(kind(Signals { vendor: Some("Yamaha Corporation"), ..Default::default() }), "speaker");
+        assert_eq!(kind(Signals { vendor: Some("EZVIZ CO.,LTD."), ..Default::default() }), "camera");
+        assert_eq!(kind(Signals { vendor: Some("Panasonic Corporation"), ..Default::default() }), "tv");
+        assert_eq!(kind(Signals { vendor: Some("Tenda Technology Co.,Ltd"), ..Default::default() }), "router");
+        assert_eq!(kind(Signals { vendor: Some("Polar Electro Oy"), ..Default::default() }), "watch");
+        assert_eq!(kind(Signals { vendor: Some("VMware, Inc."), ..Default::default() }), "computer");
+    }
+
+    #[test]
+    fn broader_hostname_coverage_types_common_devices() {
+        // Windows default machine names ("WIN-ABC123DEF45").
+        assert_eq!(kind(Signals { hostname: Some("WIN-ABC123DEF45"), ..Default::default() }), "computer");
+        // Smart appliances.
+        assert_eq!(kind(Signals { hostname: Some("LG-Dishwasher"), ..Default::default() }), "iot");
+        assert_eq!(kind(Signals { hostname: Some("kitchen-fridge"), ..Default::default() }), "iot");
+        // Realme/OPPO model-code hostnames.
+        assert_eq!(kind(Signals { hostname: Some("RMX3563"), ..Default::default() }), "phone");
+        assert_eq!(kind(Signals { hostname: Some("CPH2451"), ..Default::default() }), "phone");
+        // ISP CPE and mesh gear.
+        assert_eq!(kind(Signals { hostname: Some("Livebox-A1B2"), ..Default::default() }), "router");
+        assert_eq!(kind(Signals { hostname: Some("Archer-AX55"), ..Default::default() }), "router");
+    }
+
+    #[test]
+    fn tapo_hostnames_split_cameras_from_plugs() {
+        // A Tapo camera model token must win over the generic Tapo IoT token.
+        assert_eq!(kind(Signals { hostname: Some("Tapo-C210"), ..Default::default() }), "camera");
+        // Any other Tapo device (plugs, bulbs) is smart home.
+        assert_eq!(kind(Signals { hostname: Some("Tapo-P110"), ..Default::default() }), "iot");
+    }
+
+    #[test]
+    fn a_smart_plug_control_port_types_iot_without_any_other_signal() {
+        // The silent-plug case: no mDNS/SSDP, no hostname, and an OUI that is
+        // either a module vendor or too catalog-wide to vote. The local-control
+        // API port alone must decide it.
+        assert_eq!(kind(Signals { open_ports: &[9999], ..Default::default() }), "iot");
+        assert_eq!(kind(Signals { open_ports: &[80, 6668], ..Default::default() }), "iot");
+    }
+
+    #[test]
+    fn wemo_ssdp_device_type_is_iot() {
+        let ssdp = SsdpHit {
+            device_type: Some("urn:Belkin:device:controllee:1".into()),
+            ..Default::default()
+        };
+        assert_eq!(kind(Signals { ssdp: Some(&ssdp), ..Default::default() }), "iot");
+    }
+
+    #[test]
+    fn samsung_watch_model_is_a_watch_not_a_phone() {
+        // Galaxy Watch models are "SM-R…" — must land on the watch row, not the
+        // phone row's broader "sm-[a-z]".
+        let mdns = MdnsHit { model: Some("SM-R930".into()), ..Default::default() };
+        assert_eq!(
+            kind(Signals { vendor: Some("Samsung Electronics"), mdns: Some(&mdns), ..Default::default() }),
+            "watch"
         );
     }
 

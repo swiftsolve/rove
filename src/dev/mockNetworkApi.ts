@@ -1,11 +1,12 @@
 /**
- * Browser mock for the Electron `networkAPI`/`windowControls` bridge.
+ * Browser mock of the `window.networkAPI`/`window.windowControls` bridge.
  *
  * When the app runs in a plain browser (e.g. viewing the Vite dev server over a
- * forwarded port), `window.networkAPI` doesn't exist because there's no Electron
- * preload. This installs a faithful, in-memory stand-in so the UI renders fully
- * populated for design/polish work. It is only wired up in dev builds and only
- * when the real bridge is absent — see `installMockNetworkApiIfNeeded`.
+ * forwarded port), `window.networkAPI` doesn't exist because there's no Tauri
+ * backend to install the real bridge (see bridge/tauriNetworkApi.ts). This
+ * installs a faithful, in-memory stand-in so the UI renders fully populated for
+ * design/polish work. It is only wired up in dev builds and only when the real
+ * bridge is absent — see `installMockNetworkApiIfNeeded`.
  */
 import type {
   CapabilityLevel,
@@ -28,7 +29,7 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
-/** Mirrors electron/capabilities/capability-assessor.ts so mock ratings match production. */
+/** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
   const { requirements } = definition
   const { downloadMbps, uploadMbps, latencyMs, jitterMs } = speed
@@ -203,7 +204,10 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
     // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
     { ip: '192.168.1.46', hostname: 'iPhone', model: null, os: null, kind: 'phone', mac: 'ae:4a:06:fe:b5:37', vendor: 'Apple', isRandomizedMac: true, isGateway: false, isSelf: false, reachable: true },
-    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'unknown', mac: '1c:3b:f3:85:8f:43', vendor: null, isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
+    // A TP-Link Kasa/Tapo smart plug: its OUI resolves to the generic "TP-Link"
+    // name (shared with Archer routers), so with no other signal the classifier
+    // leans "Smart home", not "Network".
+    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'iot', mac: '1c:3b:f3:85:8f:43', vendor: 'TP-Link', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
   ] satisfies readonly LanDevice[]).map((device) => ({ ...device, model: humanizeModel(device.model) })),
 }
 
@@ -342,10 +346,20 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(300)
       return MOCK_INTERFACES
     },
-    getDevices: async () => {
-      await delay(900)
-      return { ...MOCK_DEVICE_SCAN, scannedAt: Date.now() }
-    },
+    // The scan indicator beside the subnet (pulsing dot + "Sweeping →
+    // Listening → Identifying") only shows while a scan with results is in
+    // flight, and each stage holds ~1.3s. So the first scan resolves fast for a
+    // snappy first paint, while a manual rescan (the refresh button) runs long
+    // enough to walk all three stages before the results land — which is what
+    // makes the indicator visible in the landing-page demo.
+    getDevices: (() => {
+      let scans = 0
+      return async () => {
+        scans += 1
+        await delay(scans === 1 ? 700 : 3600)
+        return { ...MOCK_DEVICE_SCAN, scannedAt: Date.now() }
+      }
+    })(),
     onNetworkChanged: () => () => undefined,
     getDataUsage: async () => {
       await delay(200)
@@ -458,18 +472,6 @@ function createMockNetworkApi(): NetworkAPI {
     clearSpeedHistory: async () => {
       mockHistory = []
     },
-    getKnownDevices: async () =>
-      MOCK_DEVICE_SCAN.devices
-        .filter((device) => device.mac.length > 0)
-        .map((device) => ({
-          mac: device.mac,
-          ip: device.ip,
-          hostname: device.hostname,
-          vendor: device.vendor,
-          kind: device.kind,
-          firstSeen: Date.now() - 3 * 86_400_000,
-          lastSeen: Date.now(),
-        })),
     onSpeedTestProgress: (callback): Unsubscribe => {
       progressListeners.add(callback)
       return () => {
@@ -495,16 +497,13 @@ function createMockNetworkApi(): NetworkAPI {
 function createMockWindowControls(): WindowControls {
   return {
     minimize: () => {},
-    toggleMaximize: () => {},
     close: () => {},
-    isMaximized: async () => false,
-    onMaximizedChange: (): Unsubscribe => () => {},
   }
 }
 
 /**
- * Installs the mock bridge when running in a browser without the Electron
- * preload. No-op inside Electron (where `window.networkAPI` already exists).
+ * Installs the mock bridge when running in a browser without the Tauri
+ * backend. No-op inside Tauri (where `window.networkAPI` already exists).
  * Returns true if the mock was installed.
  */
 export function installMockNetworkApiIfNeeded(): boolean {
@@ -518,7 +517,6 @@ export function installMockNetworkApiIfNeeded(): boolean {
   mutableWindow.networkAPI = createMockNetworkApi()
   mutableWindow.windowControls = createMockWindowControls()
 
-  // eslint-disable-next-line no-console
   console.info(
     '[rove] Tauri bridge not found, using in-browser mock network data (dev only).',
   )

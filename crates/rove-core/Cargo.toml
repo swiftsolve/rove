@@ -10,6 +10,9 @@ tokio = { workspace = true }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
 sysinfo = { version = "0.33", default-features = false, features = ["network", "system"] }
 futures-util = "0.3"
+# Facade only — the Tauri shell installs the subscriber that writes rove.log,
+# so failures reported here land in the same file.
+tracing = "0.1"
 bytes = "1"
 rand = "0.8"
 regex-lite = "0.1"

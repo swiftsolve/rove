@@ -7,7 +7,7 @@ import type { LiveThroughput } from './live-throughput'
 import type { SpeedTestResult } from './capabilities'
 import type { SpeedTestProgress } from './speed'
 import type { NetworkInfo } from './network'
-import type { KnownDevice, SpeedHistoryEntry } from './history'
+import type { SpeedHistoryEntry } from './history'
 
 export interface NetworkAPI {
   getNetworkInfo(): Promise<NetworkInfo>
@@ -26,8 +26,6 @@ export interface NetworkAPI {
   /** Bulk-insert results (used once to migrate legacy localStorage history). */
   importSpeedHistory(entries: readonly SpeedHistoryEntry[]): Promise<void>
   clearSpeedHistory(): Promise<void>
-  /** Every LAN device ever recorded, most-recently-seen first. */
-  getKnownDevices(): Promise<readonly KnownDevice[]>
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
   onNetworkChanged(callback: () => void): Unsubscribe
@@ -38,10 +36,7 @@ export interface NetworkAPI {
 
 export interface WindowControls {
   minimize(): void
-  toggleMaximize(): void
   close(): void
-  isMaximized(): Promise<boolean>
-  onMaximizedChange(callback: (maximized: boolean) => void): Unsubscribe
 }
 
 declare global {

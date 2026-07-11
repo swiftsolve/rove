@@ -192,7 +192,7 @@ pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
         .http1_only()
         .build()
     else {
-        eprintln!("Rove: could not build HTTP client for download test");
+        tracing::error!("could not build HTTP client for download test");
         return 0.0;
     };
     let start = Instant::now();
@@ -258,7 +258,7 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
         .timeout(Duration::from_secs(15))
         .build()
     else {
-        eprintln!("Rove: could not build HTTP client for upload test");
+        tracing::error!("could not build HTTP client for upload test");
         return 0.0;
     };
 

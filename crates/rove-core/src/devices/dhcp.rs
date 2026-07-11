@@ -150,7 +150,7 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
             let _ = listen_forever().await;
         });
     });
-    let mut map = CACHE.lock().unwrap().clone();
+    let mut map = crate::net_util::lock(&CACHE).clone();
     // Merge whatever a privileged helper captured. This is a fallback for
     // platforms/configs where the in-process bind above is denied (e.g. older
     // macOS that still reserves low ports for root, or :67 already held by
@@ -161,15 +161,6 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
         map.entry(mac).or_insert(hit);
     }
     map
-}
-
-/// Normalize a MAC to 12 lowercase hex chars so the cache key matches the
-/// neighbor table regardless of separator or case.
-pub fn normalize_mac(mac: &str) -> String {
-    mac.chars()
-        .filter(|c| c.is_ascii_hexdigit())
-        .flat_map(|c| c.to_ascii_lowercase().to_string().chars().collect::<Vec<_>>())
-        .collect()
 }
 
 /// Bind `:67` and deliver each parsed client fingerprint to `on_hit`. Shared by
@@ -204,7 +195,7 @@ async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Resul
 /// In-process listener: capture into the shared cache (Linux/Windows path).
 async fn listen_forever() -> std::io::Result<()> {
     capture_loop(|mac, hit| {
-        CACHE.lock().unwrap().insert(mac, hit);
+        crate::net_util::lock(&CACHE).insert(mac, hit);
     })
     .await
 }
@@ -473,12 +464,6 @@ mod tests {
     fn truncated_option_does_not_panic() {
         // Length byte claims 8 bytes but only 2 follow.
         assert!(parse_packet(&packet(&[53, 1, 1, 60, 8, b'x', b'y'])).is_some());
-    }
-
-    #[test]
-    fn normalize_mac_strips_separators_and_case() {
-        assert_eq!(normalize_mac("AA:BB:CC:11:22:33"), "aabbcc112233");
-        assert_eq!(normalize_mac("aa-bb-cc-11-22-33"), "aabbcc112233");
     }
 
     #[test]

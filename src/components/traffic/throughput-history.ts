@@ -1,8 +1,8 @@
 import { sanitizeRate } from '@/types'
 
 /** One minute of history at one sample per second. */
-export const THROUGHPUT_HISTORY_LENGTH = 60
-export const CHART_WINDOW_MS = THROUGHPUT_HISTORY_LENGTH * 1_000
+const THROUGHPUT_HISTORY_LENGTH = 60
+const CHART_WINDOW_MS = THROUGHPUT_HISTORY_LENGTH * 1_000
 
 export function formatChartWindowLabel(): string {
   const seconds = CHART_WINDOW_MS / 1000

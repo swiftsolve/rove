@@ -1,26 +1,3 @@
-/* Page header matching the Devices view: a count as the title with a per-type
-   breakdown beneath it, and the action button aligned to the right. */
-.iface-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--gap-md);
-}
-
-.iface-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  min-width: 0;
-  flex: 1;
-}
-
-
-.iface-header-sub {
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
-}
-
 .interface-list {
   display: flex;
   flex-direction: column;

@@ -148,10 +148,10 @@ pub async fn network_info() -> NetworkInfo {
     };
     let mut details = connection_details(&iface, connection_type).await;
 
-    if details.link_speed_mbps.is_none() {
-        if let Ok(raw) = std::fs::read_to_string(format!("/sys/class/net/{iface}/speed")) {
-            details.link_speed_mbps = raw.trim().parse().ok().filter(|v: &i64| *v > 0);
-        }
+    // Linux fallback when neither ethtool nor iw supplied a rate; /sys doesn't
+    // exist on the other platforms.
+    if details.link_speed_mbps.is_none() && cfg!(target_os = "linux") {
+        details.link_speed_mbps = platform::linux::sysfs_link_speed(&iface);
     }
 
     // Wi-Fi on Windows has no link speed from netsh; fall back to the adapter's

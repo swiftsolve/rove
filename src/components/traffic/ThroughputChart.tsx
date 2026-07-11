@@ -51,6 +51,13 @@ export default function ThroughputChart({
       down: sanitizeRate(download[index] ?? 0),
       up: sanitizeRate(upload[index] ?? 0),
     }))
+    // A lone sample renders as a dot centered in the plot (the x-domain collapses
+    // to a single value). Seed a leading zero so the first sample draws as a short
+    // line anchored to the right ("Now") instead, matching the steady-state trace.
+    const first = rows[0]
+    if (rows.length === 1 && first) {
+      rows.unshift({ index: first.index - 1, down: 0, up: 0 })
+    }
     return { data: rows, maxValue: max }
   }, [download, upload, linkCapacityMbps, speedTestRunning])
 

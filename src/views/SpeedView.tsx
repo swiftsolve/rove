@@ -11,6 +11,7 @@ import CapabilityDetails from '@/components/capabilities/CapabilityDetails'
 import SpeedHistory from '@/components/speed-test/SpeedHistory'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
+import { ViewHeader } from '@/components/ui/ViewHeader'
 import { HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
 import { formatBand, formatTimeAgo } from '@/lib/format'
 import './SpeedView.css'
@@ -100,36 +101,34 @@ export default function SpeedView({
 
   return (
     <div className="view-page">
-      <div className="view-header speed-header">
-        <span className="view-header-icon">
-          <SpeedIcon size={18} />
-        </span>
-        <div className="speed-header-text">
-          <span className="view-header-title">Speed</span>
-          <span className={`speed-header-sub${completedAt != null ? ' show' : ''}`}>
-            {testing ? (
-              <>
-                <span className="speed-header-status">Testing…</span>
-                {completedAt != null && (
-                  <>
-                    <DotSeparator />
-                    {historyLink}
-                  </>
-                )}
-              </>
-            ) : completedAt != null ? (
-              <>
-                Updated {formatTimeAgo(completedAt)}
-                <DotSeparator />
-                {historyLink}
-              </>
-            ) : (
-              'Measure your download and upload speeds'
-            )}
-          </span>
-        </div>
-        <div className="speed-header-actions">
-          {testing ? (
+      <ViewHeader
+        icon={<SpeedIcon size={18} />}
+        title="Speed"
+        subtitle={
+          testing ? (
+            <>
+              <span className="view-header-status">Testing…</span>
+              {completedAt != null && (
+                <>
+                  <DotSeparator />
+                  {historyLink}
+                </>
+              )}
+            </>
+          ) : completedAt != null ? (
+            <>
+              Updated {formatTimeAgo(completedAt)}
+              <DotSeparator />
+              {historyLink}
+            </>
+          ) : (
+            'Measure your download and upload speeds'
+          )
+        }
+        subtitleClassName="speed-header-sub"
+        subtitleShown={completedAt != null}
+        actions={
+          testing ? (
             <button
               type="button"
               className="btn-primary speed-run-btn is-stop"
@@ -161,9 +160,9 @@ export default function SpeedView({
                 Run test
               </button>
             </Tooltip>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       <SpeedTestSection
         internetSpeed={internetSpeed}

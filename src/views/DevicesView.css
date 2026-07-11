@@ -1,47 +1,99 @@
-.devices-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-md);
-  /* Lift the header (and its tooltip) above the device list, which is a later
-     sibling and would otherwise paint over a tooltip that drops into it. */
-  position: relative;
-  z-index: 20;
-}
-
-.devices-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  min-width: 0;
-  flex: 1;
-}
-
-
+/* "Subnet" label and value sit on one line, aligned on their baselines. The
+   rest of the subtitle treatment (size, colour, reserved height, fade-in)
+   comes from the shared .view-header-sub. */
 .devices-subnet {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  font-size: var(--text-caption);
-  color: var(--text-tertiary);
-  /* Reserve the line's height even while it only holds the scanning hint, so
-     the title above never shifts when the subnet resolves. */
-  min-height: calc(var(--text-caption) * 1.35);
 }
 
-/* Fade the subnet in the moment it resolves (class toggles on → animation runs). */
-.devices-subnet.show {
-  animation: fade-in var(--duration-normal) var(--ease-out);
-}
-
-.devices-subnet-status {
-  color: var(--text-tertiary);
-}
-
-/* Keep the help and refresh controls grouped tightly at the header's end. */
-.devices-header-actions {
-  display: flex;
+/* Live rescan indicator trailing the subnet: a pulsing green dot + one-word
+   stage. Center-aligned as its own group so the dot sits mid-text rather than
+   on the baseline, and set off from the subnet value with a little extra room. */
+.devices-scan {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  align-self: center;
+  gap: 5px;
+  margin-left: 3px;
+  color: var(--text-tertiary);
+  /* Slide in from the left when a scan starts; .leaving reverses the motion
+     back out (the component lingers mounted just long enough for it to play). */
+  animation: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
+}
+
+/* On first load the indicator fills the slot alone (no subnet to its left), so
+   drop the set-off margin and let the dot line up with the title's edge. */
+.devices-scan:first-child {
+  margin-left: 0;
+}
+
+.devices-scan.leaving {
+  animation: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes scan-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scan-slide-out {
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.devices-scan-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--positive);
+  animation: status-pulse 1.6s ease-in-out infinite;
+}
+
+/* Stack the stage words so they cross-fade in place; a hidden sizer (the
+   longest label) holds the box to a stable width so nothing reflows. */
+.devices-scan-phases {
+  position: relative;
+  display: inline-block;
+}
+
+.devices-scan-phase-sizer {
+  visibility: hidden;
+}
+
+/* Each word fades upward through three states: it waits below, settles into
+   place as the current stage, then drifts on up as it hands off — so entering
+   and leaving read as one continuous rising motion. */
+.devices-scan-phase {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+
+.devices-scan-phase[data-state='next'] {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.devices-scan-phase[data-state='current'] {
+  opacity: 1;
+  transform: none;
+}
+
+.devices-scan-phase[data-state='past'] {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 
 .device-list {
@@ -219,11 +271,31 @@
 }
 
 .devices-hint {
-  margin-top: 10px;
   max-width: 40ch;
   line-height: 1.45;
   font-size: 12px;
+  text-align: center;
 }
 .device-list > .devices-hint {
+  margin-top: 10px;
   padding: 0 4px;
+  text-align: left;
+}
+
+/* Blank state: icon + short line, generously spaced and centred. */
+.devices-empty {
+  gap: 16px;
+  text-align: center;
+}
+.devices-empty-icon {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+.devices-empty-title {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+/* Nudge the button down from the copy above it. */
+.devices-empty .btn-secondary {
+  margin-top: 4px;
 }

@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
 import type { NetworkDiagnostics } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
+import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 
 // Diagnostics runs live latency/reachability probes, so poll on the gentler
 // cadence rather than the cheap interface read's — fresh, but not a constant
@@ -22,21 +22,8 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
     { resetKey: networkKey, refetchOnEnable: true, pollIntervalMs: POLL_INTERVAL_MS },
   )
 
-  // The backend nudges us when the routing table changes (network switched) —
-  // re-run at once instead of waiting out the poll interval.
-  useEffect(() => {
-    if (!enabled) return
-    const api = window.networkAPI
-    if (!api?.onNetworkChanged) return
-    let active = true
-    const detach = api.onNetworkChanged(() => {
-      if (active) void reload()
-    })
-    return () => {
-      active = false
-      detach()
-    }
-  }, [enabled, reload])
+  // Network switched — re-run at once instead of waiting out the poll interval.
+  useOnNetworkChanged(() => void reload(), enabled)
 
   return { diagnostics: data, isRunning: isBusy, error, run: reload }
 }

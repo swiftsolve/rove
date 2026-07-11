@@ -32,6 +32,8 @@ const PROBE_PORTS: &[u16] = &[
     1400,  // sonos
     62078, // lockdownd — iPhone/iPad/iPod only
     445,   // smb — computers, NAS
+    9999,  // smart-plug local control API (Kasa-style devices)
+    6668,  // smart-plug local control API (Tuya-based devices)
 ];
 
 /// Sockets in flight at once. Sized to finish a /24 within the discovery window
@@ -45,15 +47,9 @@ const CONNECT_TIMEOUT: Duration = Duration::from_millis(400);
 /// of open ports keyed by host IP. Hosts that refuse every port still get woken
 /// into the ARP table (the point of discovery) but won't appear in the map.
 pub async fn probe(subnet: &str) -> HashMap<String, Vec<u16>> {
-    let Some((network, prefix)) = super::subnet::parse(subnet) else {
+    let Some(hosts) = super::subnet::hosts(subnet) else {
         return HashMap::new();
     };
-    if !(24..=30).contains(&prefix) {
-        return HashMap::new(); // mirror the ICMP sweep's politeness bounds
-    }
-
-    let base = u32::from(network);
-    let hosts = (1u32..(1 << (32 - prefix)) - 1).map(move |offset| Ipv4Addr::from(base + offset));
     // Materialize the (host, port) pairs so the stream has a plain owned source
     // and the resulting future stays `Send + 'static` for the Tauri command.
     let targets: Vec<(Ipv4Addr, u16)> = hosts

@@ -1,10 +1,10 @@
 import type { NetworkInterfaceSummary } from '@/types'
-import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/ui/Icons'
+import { EthernetIcon, LayersIcon, WifiIcon } from '@/components/ui/Icons'
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
-import { Tooltip } from '@/components/ui/Tooltip'
-import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
+import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
+import { ViewHeader } from '@/components/ui/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
 
@@ -84,35 +84,20 @@ export default function InterfacesView({
 }: InterfacesViewProps): JSX.Element {
   return (
     <div className="view-page">
-      <div className="view-header iface-header">
-        <span className="view-header-icon">
-          <LayersIcon size={18} />
-        </span>
-        <div className="iface-header-text">
-          <span className="view-header-title">
-            {interfaces.length > 0
-              ? `${interfaces.length} ${interfaces.length === 1 ? 'interface' : 'interfaces'}`
-              : 'Interfaces'}
-          </span>
-          {interfaces.length > 0 && (
-            <InlineMeta
-              className="iface-header-sub"
-              items={interfaceTypeSummaryParts(interfaces)}
-            />
-          )}
-        </div>
-        <Tooltip content="Refresh">
-          <button
-            type="button"
-            className={`btn-icon btn-icon-secondary${isLoading ? ' is-scanning' : ''}`}
-            onClick={onRefresh}
-            disabled={isLoading}
-            aria-label="Refresh"
-          >
-            {isLoading ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
-          </button>
-        </Tooltip>
-      </div>
+      <ViewHeader
+        icon={<LayersIcon size={18} />}
+        title={
+          interfaces.length > 0
+            ? `${interfaces.length} ${interfaces.length === 1 ? 'interface' : 'interfaces'}`
+            : 'Interfaces'
+        }
+        subtitle={
+          interfaces.length > 0 ? (
+            <InlineMeta className="iface-header-sub" items={interfaceTypeSummaryParts(interfaces)} />
+          ) : undefined
+        }
+        actions={<RefreshIconButton label="Refresh" isBusy={isLoading} onClick={onRefresh} />}
+      />
 
       {error && <div className="error-banner">{error}</div>}
 
