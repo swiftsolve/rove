@@ -5,6 +5,9 @@
  */
 import { useId } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
+import { FourKIcon, HdIcon } from '@hugeicons/core-free-icons'
 import {
   Activity,
   ArrowDown,
@@ -27,6 +30,7 @@ import {
   Minus,
   MonitorSmartphone,
   Play,
+  // MonitorPlay dropped in favour of Tabler's dedicated HD/4K badge glyphs
   RotateCw,
   Gamepad2,
   Gauge,
@@ -38,7 +42,6 @@ import {
   Joystick,
   Laptop,
   Layers,
-  MonitorPlay,
   Moon,
   Network,
   Radio,
@@ -74,6 +77,18 @@ interface IconProps {
 function make(Base: LucideIcon, defaultSize: number) {
   return function Icon({ size = defaultSize, className }: IconProps): JSX.Element {
     return <Base size={size} className={className} strokeWidth={1.75} aria-hidden />
+  }
+}
+
+// Hugeicons equivalent of `make` — Hugeicons ship as SVG data rendered through
+// the shared <HugeiconsIcon> component. They're drawn on the same 24-grid as the
+// Lucide aliases but at a native 1.5 stroke, which we keep here for the enclosed
+// HD/4K badge glyphs.
+function makeHuge(icon: IconSvgElement, defaultSize: number) {
+  return function Icon({ size = defaultSize, className }: IconProps): JSX.Element {
+    return (
+      <HugeiconsIcon icon={icon} size={size} strokeWidth={1.5} className={className} aria-hidden />
+    )
   }
 }
 
@@ -213,7 +228,8 @@ export const AlertIcon = make(TriangleAlert, 16)
 
 // Capability icons
 export const BrowsingIcon = make(Compass, 22)
-export const HdStreamIcon = make(MonitorPlay, 22)
+export const HdStreamIcon = makeHuge(HdIcon, 22)
+export const UltraHdStreamIcon = makeHuge(FourKIcon, 22)
 export const VideoCallIcon = make(Video, 22)
 export const GamepadIcon = make(Gamepad2, 22)
 export const CloudGamingIcon = make(Joystick, 22)

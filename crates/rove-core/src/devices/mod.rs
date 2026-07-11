@@ -253,8 +253,8 @@ fn build_device(
 
     // An Echo is fundamentally a speaker; keep that label even when it also acts
     // as a Matter/Thread hub (a strong `iot` vote that would otherwise win).
-    let kind = if is_echo {
-        "speaker".to_string()
+    let verdict = if is_echo {
+        classify::Verdict { kind: "speaker", confidence: classify::Confidence::High }
     } else {
         classify::classify(&classify::Signals {
             vendor: vendor.as_deref(),
@@ -282,7 +282,8 @@ fn build_device(
     let model = model.map(|m| humanize_model(&m));
 
     LanDevice {
-        kind,
+        kind: verdict.kind.to_string(),
+        kind_confidence: verdict.confidence.as_str(),
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         os: dhcp.and_then(|hit| hit.os).map(String::from),
         vendor,
@@ -475,6 +476,7 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         model: None,
         os: None,
         kind: "computer".into(),
+        kind_confidence: "high",
         is_randomized_mac: is_randomized_mac(mac),
         is_gateway: false,
         is_self: true,

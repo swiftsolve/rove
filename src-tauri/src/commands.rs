@@ -67,6 +67,11 @@ pub async fn run_diagnostics() -> NetworkDiagnostics {
 }
 
 #[tauri::command]
+pub async fn run_diagnostics_live() -> rove_core::types::LiveDiagnostics {
+    rove_core::diagnostics::run_live().await
+}
+
+#[tauri::command]
 pub async fn get_public_ip() -> Option<String> {
     rove_core::network_info::public_ip().await
 }

@@ -1,7 +1,7 @@
 import type { Unsubscribe } from './common'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
-import type { NetworkDiagnostics } from './diagnostics'
+import type { LiveDiagnostics, NetworkDiagnostics } from './diagnostics'
 import type { NetworkInterfaceSummary } from './interfaces'
 import type { LiveThroughput } from './live-throughput'
 import type { SpeedTestResult } from './capabilities'
@@ -17,6 +17,9 @@ export interface NetworkAPI {
   getDevices(): Promise<LanDeviceScan>
   getDataUsage(): Promise<DataUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>
+  /** The fast-changing metrics only (gateway latency + service reachability),
+   *  for the Connection view's tight refresh loop. */
+  runDiagnosticsLive(): Promise<LiveDiagnostics>
   runSpeedTest(): Promise<SpeedTestResult>
   cancelSpeedTest(): Promise<void>
   /** Past speed-test results, newest first, from the local database. */

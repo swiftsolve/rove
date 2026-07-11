@@ -6,6 +6,20 @@
 //! device on their own, so unambiguous cases are unchanged; the voting only
 //! matters when weaker signals disagree, letting corroboration beat a lone
 //! noisy guess. Role flags (gateway/self) still short-circuit outright.
+//!
+//! Three refinements keep the arithmetic honest:
+//! - free text relayed by several protocols (one discovered name echoed as the
+//!   hostname, the SSDP friendlyName *and* the DHCP hostname) is deduplicated
+//!   and votes once — a copied string is one observation, not corroboration;
+//! - an ambiguous signal casts a *distribution* over kinds (lockdownd → mostly
+//!   phone, some tablet/watch) instead of betting everything on its modal kind;
+//! - physically implausible pairings cast negative votes (a host serving
+//!   SSH/SMB/RDP is not a wearable), so a general-purpose machine can't be
+//!   dragged into a handheld kind by a lone vendor guess.
+//!
+//! The [`Verdict`] also carries a [`Confidence`]: `Low` when the winner's lead
+//! is thinner than one vendor-grade signal and no hostname-grade signal
+//! anchors it, so the UI can hedge the label instead of stating it as fact.
 use crate::devices::banner::BannerHit;
 use crate::devices::dhcp::DhcpHit;
 use crate::devices::ssdp::SsdpHit;
@@ -250,28 +264,48 @@ fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
 
 /// Apple's lockdownd (62078) runs on every Apple handheld — iPhone, iPad *and*
 /// Apple Watch — so it marks the device as an Apple mobile but can't say which.
-/// It votes for the modal "phone" at a weight a more specific tablet/watch
-/// hostname or model still outranks, so an Apple Watch that only reverse-resolves
-/// to "Watch" isn't flipped to a phone the moment a scan catches lockdownd open.
-fn apple_mobile_port_kind(ports: &[u16]) -> Option<&'static str> {
-    ports.contains(&62078).then_some("phone")
+/// It votes the whole distribution, weighted toward the modal "phone" at a
+/// weight a more specific tablet/watch hostname or model still outranks, while
+/// the minor shares corroborate whichever handheld the device names itself as
+/// — an Apple Watch that only reverse-resolves to "Watch" isn't flipped to a
+/// phone the moment a scan catches lockdownd open.
+fn apple_mobile_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
+    if ports.contains(&62078) {
+        &[("phone", W_LOCKDOWND), ("tablet", 12), ("watch", 8)]
+    } else {
+        &[]
+    }
 }
 
 /// Ports that merely lean one way — used only as weak corroboration. RTSP is
-/// usually an IP camera; SSH/SMB usually a computer or NAS; Chromecast's 8009
-/// leans TV but can't outweigh a definitive mDNS speaker verdict (it's on Cast
-/// speakers too), so it only breaks a device out of "unknown".
-fn weak_port_kind(ports: &[u16]) -> Option<&'static str> {
+/// usually an IP camera; SSH/SMB usually a computer or NAS. Chromecast's 8009
+/// is the whole Cast family — mostly TVs and streamers, but also audio-only
+/// Cast speakers — so it votes a TV-leaning distribution that breaks a device
+/// out of "unknown" without outweighing a definitive mDNS speaker verdict.
+fn weak_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
     if ports.contains(&554) {
-        return Some("camera");
+        return &[("camera", W_WEAK_PORT)];
     }
     if ports.iter().any(|&p| matches!(p, 22 | 445)) {
-        return Some("computer");
+        return &[("computer", W_WEAK_PORT)];
     }
     if ports.contains(&8009) {
-        return Some("tv");
+        return &[("tv", W_WEAK_PORT), ("speaker", 6)];
     }
-    None
+    &[]
+}
+
+/// Negative evidence. An open SSH, SMB or RDP service means a general-purpose
+/// OS — no watch, phone or tablet serves these on a LAN — so those kinds are
+/// penalized enough to cancel a lone vendor guess (an Apple OUI plus SSH/SMB
+/// now reads "computer", not "phone") without overturning a real handheld
+/// signal like a hostname or hardware model.
+fn implausible_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
+    if ports.iter().any(|&p| matches!(p, 22 | 445 | 3389)) {
+        &[("watch", -30), ("phone", -20), ("tablet", -15)]
+    } else {
+        &[]
+    }
 }
 
 /// Trust weight of each signal. Strong signals outweigh any single weak one, so
@@ -302,6 +336,13 @@ const W_BANNER: i32 = 22;
 const W_MDNS_HINT: i32 = 15;
 const W_WEAK_PORT: i32 = 12;
 
+/// A verdict is decisive only when the winner leads the runner-up by at least
+/// one vendor-grade signal, or is anchored by a single signal of hostname
+/// grade or better. Anything thinner — a lone weak port, a contested vote —
+/// is a best guess the UI hedges.
+const CONFIDENCE_MARGIN: i32 = W_VENDOR;
+const CONFIDENCE_ANCHOR: i32 = W_HOSTNAME;
+
 // Ordered most-specific first so a tie (equal weight *and* equal strongest
 // single signal) resolves toward the narrower kind — nas over computer, camera
 // or speaker over iot, console over tv.
@@ -315,98 +356,170 @@ fn kind_index(kind: &str) -> Option<usize> {
     KIND_NAMES.iter().position(|&k| k == kind)
 }
 
-pub fn classify(s: &Signals) -> String {
+/// How decisive the vote was. `Low` marks a thin-margin best guess — the UI
+/// renders those hedged ("Phone?") rather than as fact.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Confidence {
+    High,
+    Low,
+}
+
+impl Confidence {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Confidence::High => "high",
+            Confidence::Low => "low",
+        }
+    }
+}
+
+/// The classifier's answer: the winning kind plus how decisive the vote was.
+pub struct Verdict {
+    pub kind: &'static str,
+    pub confidence: Confidence,
+}
+
+/// Accumulated votes per kind. `best_single` remembers each kind's strongest
+/// positive signal, both to break ties toward the more trustworthy source
+/// (rather than sheer count) and to anchor the confidence call.
+#[derive(Default)]
+struct Tally {
+    total: [i32; KIND_COUNT],
+    best_single: [i32; KIND_COUNT],
+}
+
+impl Tally {
+    fn cast(&mut self, kind: Option<&str>, weight: i32) {
+        if let Some(i) = kind.and_then(kind_index) {
+            self.total[i] += weight;
+            if weight > 0 {
+                self.best_single[i] = self.best_single[i].max(weight);
+            }
+        }
+    }
+
+    fn cast_all(&mut self, votes: &[(&str, i32)]) {
+        for &(kind, weight) in votes {
+            self.cast(Some(kind), weight);
+        }
+    }
+
+    fn verdict(&self) -> Verdict {
+        let mut winner: Option<usize> = None;
+        for i in 0..KIND_COUNT {
+            // A kind pushed to zero or below by negative evidence is out of
+            // the running entirely.
+            if self.total[i] <= 0 {
+                continue;
+            }
+            let better = match winner {
+                None => true,
+                Some(w) => {
+                    (self.total[i], self.best_single[i]) > (self.total[w], self.best_single[w])
+                }
+            };
+            if better {
+                winner = Some(i);
+            }
+        }
+        let Some(w) = winner else {
+            return Verdict { kind: "unknown", confidence: Confidence::Low };
+        };
+        let runner_up =
+            (0..KIND_COUNT).filter(|&i| i != w).map(|i| self.total[i].max(0)).max().unwrap_or(0);
+        let decisive = self.total[w] - runner_up >= CONFIDENCE_MARGIN
+            || self.best_single[w] >= CONFIDENCE_ANCHOR;
+        Verdict {
+            kind: KIND_NAMES[w],
+            confidence: if decisive { Confidence::High } else { Confidence::Low },
+        }
+    }
+}
+
+/// One free-text vote channel (names, vendor strings, models), remembering
+/// each string already cast against its table: `build_device` copies a single
+/// discovered name into several protocol slots (the display hostname may *be*
+/// the SSDP friendlyName or the DHCP-reported hostname), and the same text
+/// relayed twice is one observation, not corroboration. Callers cast the
+/// highest-weight slot first so a duplicate keeps its strongest reading.
+struct TextChannel<'a> {
+    table: &'static LazyLock<KindPatterns>,
+    seen: Vec<&'a str>,
+}
+
+impl<'a> TextChannel<'a> {
+    fn new(table: &'static LazyLock<KindPatterns>) -> Self {
+        Self { table, seen: Vec::new() }
+    }
+
+    fn vote(&mut self, tally: &mut Tally, text: Option<&'a str>, weight: i32) {
+        let Some(text) = text else { return };
+        if self.seen.iter().any(|prior| prior.eq_ignore_ascii_case(text)) {
+            return;
+        }
+        self.seen.push(text);
+        tally.cast(self.table.matches(text), weight);
+    }
+}
+
+pub fn classify(s: &Signals) -> Verdict {
     if s.is_gateway {
-        return "router".into();
+        return Verdict { kind: "router", confidence: Confidence::High };
     }
     if s.is_self {
-        return "computer".into();
+        return Verdict { kind: "computer", confidence: Confidence::High };
     }
 
     let Signals { vendor, hostname, mdns, ssdp, banner, dhcp, open_ports, .. } = *s;
 
-    let votes: [(Option<&str>, i32); 17] = [
-        (mdns.and_then(|hit| hit.kind), W_MDNS_STRONG),
-        (
-            mdns.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
-            W_MDNS_MODEL,
-        ),
-        (strong_port_kind(open_ports), W_STRONG_PORT),
-        (apple_mobile_port_kind(open_ports), W_LOCKDOWND),
-        // SSDP casts the same shapes of vote as mDNS/hostname/vendor, from the
-        // UPnP description: an explicit device type, plus model/name/vendor text
-        // run through the existing regex tables.
-        (
-            ssdp.and_then(|hit| hit.device_type.as_deref()).and_then(|t| SSDP_TYPE_KINDS.matches(t)),
-            W_SSDP_TYPE,
-        ),
-        (
-            ssdp.and_then(|hit| hit.model.as_deref()).and_then(|m| MODEL_KINDS.matches(m)),
-            W_MDNS_MODEL,
-        ),
-        (hostname.and_then(|h| HOSTNAME_KINDS.matches(h)), W_HOSTNAME),
-        (
-            ssdp.and_then(|hit| hit.name.as_deref()).and_then(|n| HOSTNAME_KINDS.matches(n)),
-            W_HOSTNAME,
-        ),
-        (vendor.and_then(|v| VENDOR_KINDS.matches(v)), W_VENDOR),
-        (
-            ssdp.and_then(|hit| hit.manufacturer.as_deref()).and_then(|m| VENDOR_KINDS.matches(m)),
-            W_VENDOR,
-        ),
-        // DHCP: the local fingerprint table's kind, plus the vendor class and
-        // self-reported hostname run through the existing regex tables.
-        (dhcp.and_then(|hit| hit.kind), W_DHCP),
-        (
-            dhcp.and_then(|hit| hit.vendor_class.as_deref()).and_then(|v| VENDOR_KINDS.matches(v)),
-            W_VENDOR,
-        ),
-        (
-            dhcp.and_then(|hit| hit.hostname.as_deref()).and_then(|h| HOSTNAME_KINDS.matches(h)),
-            W_HOSTNAME,
-        ),
-        // HTTP banner: the page title reads like a device name, the Server
-        // header like a vendor/product string — match both against the tables.
-        (
-            banner.and_then(|b| b.title.as_deref()).and_then(|t| HOSTNAME_KINDS.matches(t)),
-            W_BANNER,
-        ),
-        (
-            banner
-                .and_then(|b| b.identity())
-                .and_then(|t| VENDOR_KINDS.matches(&t).or_else(|| HOSTNAME_KINDS.matches(&t))),
-            W_BANNER,
-        ),
-        (mdns.and_then(|hit| hit.kind_hint), W_MDNS_HINT),
-        (weak_port_kind(open_ports), W_WEAK_PORT),
-    ];
+    let mut tally = Tally::default();
 
-    // Tally weight per kind, and remember each kind's single strongest signal to
-    // break ties toward the more trustworthy source rather than sheer count.
-    let mut total = [0i32; KIND_COUNT];
-    let mut best_single = [0i32; KIND_COUNT];
-    for (kind, weight) in votes {
-        if let Some(i) = kind.and_then(kind_index) {
-            total[i] += weight;
-            best_single[i] = best_single[i].max(weight);
-        }
+    // Definitive service, port, device-type and fingerprint signals.
+    tally.cast(mdns.and_then(|hit| hit.kind), W_MDNS_STRONG);
+    tally.cast(strong_port_kind(open_ports), W_STRONG_PORT);
+    // SSDP's explicit UPnP device type; its model/name/manufacturer text joins
+    // the shared free-text channels below.
+    tally.cast(
+        ssdp.and_then(|hit| hit.device_type.as_deref()).and_then(|t| SSDP_TYPE_KINDS.matches(t)),
+        W_SSDP_TYPE,
+    );
+    // DHCP: the local fingerprint table's kind; its vendor class and
+    // self-reported hostname join the free-text channels below.
+    tally.cast(dhcp.and_then(|hit| hit.kind), W_DHCP);
+    tally.cast(mdns.and_then(|hit| hit.kind_hint), W_MDNS_HINT);
+
+    // Free-text channels, deduplicated per table (see TextChannel).
+    let mut models = TextChannel::new(&MODEL_KINDS);
+    models.vote(&mut tally, mdns.and_then(|hit| hit.model.as_deref()), W_MDNS_MODEL);
+    models.vote(&mut tally, ssdp.and_then(|hit| hit.model.as_deref()), W_MDNS_MODEL);
+
+    let mut names = TextChannel::new(&HOSTNAME_KINDS);
+    names.vote(&mut tally, hostname, W_HOSTNAME);
+    names.vote(&mut tally, ssdp.and_then(|hit| hit.name.as_deref()), W_HOSTNAME);
+    names.vote(&mut tally, dhcp.and_then(|hit| hit.hostname.as_deref()), W_HOSTNAME);
+    // The HTTP page title reads like a device name.
+    names.vote(&mut tally, banner.and_then(|b| b.title.as_deref()), W_BANNER);
+
+    let mut vendors = TextChannel::new(&VENDOR_KINDS);
+    vendors.vote(&mut tally, vendor, W_VENDOR);
+    vendors.vote(&mut tally, ssdp.and_then(|hit| hit.manufacturer.as_deref()), W_VENDOR);
+    vendors.vote(&mut tally, dhcp.and_then(|hit| hit.vendor_class.as_deref()), W_VENDOR);
+
+    // The banner identity (Server header + title joined) reads like a
+    // vendor/product string — an owned join, so matched directly.
+    if let Some(identity) = banner.and_then(|b| b.identity()) {
+        tally.cast(
+            VENDOR_KINDS.matches(&identity).or_else(|| HOSTNAME_KINDS.matches(&identity)),
+            W_BANNER,
+        );
     }
 
-    let mut winner: Option<usize> = None;
-    for i in 0..KIND_COUNT {
-        if total[i] == 0 {
-            continue;
-        }
-        let better = match winner {
-            None => true,
-            Some(w) => (total[i], best_single[i]) > (total[w], best_single[w]),
-        };
-        if better {
-            winner = Some(i);
-        }
-    }
+    // Ambiguous ports vote distributions; implausible pairings vote against.
+    tally.cast_all(apple_mobile_port_votes(open_ports));
+    tally.cast_all(weak_port_votes(open_ports));
+    tally.cast_all(implausible_port_votes(open_ports));
 
-    winner.map(|i| KIND_NAMES[i]).unwrap_or("unknown").into()
+    tally.verdict()
 }
 
 #[cfg(test)]
@@ -422,7 +535,11 @@ mod tests {
     /// Classify from a partial set of signals — unspecified sources default to
     /// absent, keeping each test focused on the signals under test.
     fn kind(sig: Signals) -> String {
-        classify(&sig)
+        classify(&sig).kind.to_string()
+    }
+
+    fn confidence(sig: Signals) -> Confidence {
+        classify(&sig).confidence
     }
 
     #[test]
@@ -869,6 +986,92 @@ mod tests {
             kind(Signals { vendor: Some("Samsung Electronics"), mdns: Some(&mdns), ..Default::default() }),
             "watch"
         );
+    }
+
+    #[test]
+    fn the_same_name_relayed_by_several_protocols_votes_once() {
+        // build_device copies one discovered name across protocol slots (the
+        // display hostname may *be* the SSDP friendlyName or the DHCP-reported
+        // hostname). Echoed three times it must still count as one observation,
+        // so the stronger independent signal — the mDNS hardware model — wins.
+        let mdns = MdnsHit { model: Some("iPad13,4".into()), ..Default::default() };
+        let ssdp = SsdpHit { name: Some("Johns-iPhone".into()), ..Default::default() };
+        let dhcp = DhcpHit { hostname: Some("Johns-iPhone".into()), ..Default::default() };
+        assert_eq!(
+            kind(Signals {
+                hostname: Some("Johns-iPhone"),
+                mdns: Some(&mdns),
+                ssdp: Some(&ssdp),
+                dhcp: Some(&dhcp),
+                ..Default::default()
+            }),
+            "tablet"
+        );
+    }
+
+    #[test]
+    fn distinct_names_still_corroborate() {
+        // Different strings are independent observations: two phone-ish names
+        // together must outvote the lone model signal that wins above.
+        let mdns = MdnsHit { model: Some("iPad13,4".into()), ..Default::default() };
+        let dhcp = DhcpHit { hostname: Some("Johns-iPhone".into()), ..Default::default() };
+        assert_eq!(
+            kind(Signals {
+                hostname: Some("iPhone-15-Pro"),
+                mdns: Some(&mdns),
+                dhcp: Some(&dhcp),
+                ..Default::default()
+            }),
+            "phone"
+        );
+    }
+
+    #[test]
+    fn computer_ports_rule_out_a_handheld_vendor_guess() {
+        // A Mac with SSH + SMB sharing on and no useful hostname: the Apple
+        // OUI's phone lean (25) used to beat the weak computer ports (12); the
+        // negative handheld evidence now flips it to what the ports prove.
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Apple, Inc."),
+                open_ports: &[22, 445],
+                ..Default::default()
+            }),
+            "computer"
+        );
+        // ...but a real handheld signal survives the penalty: a device that
+        // names itself an iPhone stays a phone even with such a port open.
+        assert_eq!(
+            kind(Signals {
+                vendor: Some("Apple, Inc."),
+                hostname: Some("Johns-iPhone"),
+                open_ports: &[22],
+                ..Default::default()
+            }),
+            "phone"
+        );
+    }
+
+    #[test]
+    fn confidence_separates_decisive_calls_from_hedges() {
+        // Role flags and hostname-grade (or better) signals are decisive.
+        assert_eq!(confidence(Signals { is_gateway: true, ..Default::default() }), Confidence::High);
+        assert_eq!(
+            confidence(Signals { hostname: Some("Office-LaserJet"), ..Default::default() }),
+            Confidence::High
+        );
+        assert_eq!(
+            confidence(Signals { open_ports: &[80, 9100], ..Default::default() }),
+            Confidence::High
+        );
+        // A lone weak port, the ambiguous Apple-mobile port, or no signal at
+        // all is a best guess the UI should hedge.
+        assert_eq!(confidence(Signals { open_ports: &[22], ..Default::default() }), Confidence::Low);
+        assert_eq!(
+            confidence(Signals { open_ports: &[62078], ..Default::default() }),
+            Confidence::Low
+        );
+        assert_eq!(confidence(Signals::default()), Confidence::Low);
     }
 
     #[test]

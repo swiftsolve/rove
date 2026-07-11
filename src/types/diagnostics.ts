@@ -9,4 +9,42 @@ export interface NetworkDiagnostics {
   readonly gatewayVendor: string | null
   /** Router model from the gateway's SNMP sysDescr, or null when unavailable. */
   readonly gatewayModel: string | null
+  /** WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
+   *  service is unreachable — e.g. no internet or the request timed out. */
+  readonly isp: IspInfo | null
+  /** TCP-connect reachability of well-known internet services. */
+  readonly services: readonly ServiceReachability[]
+}
+
+/**
+ * The fast-changing subset of diagnostics, refreshed on a tight poll so the
+ * live numbers stay current without re-running the heavier ISP + router-identity
+ * lookups. Merged over the last full NetworkDiagnostics in the view.
+ */
+export interface LiveDiagnostics {
+  readonly gatewayPing: PingStats | null
+  readonly services: readonly ServiceReachability[]
+}
+
+/** WAN-side identity from an IP-geolocation lookup; every field is optional. */
+export interface IspInfo {
+  /** ISP or organization name, e.g. "Comcast Cable". */
+  readonly name: string | null
+  /** Autonomous-system number, formatted "AS15169". */
+  readonly asn: string | null
+  readonly city: string | null
+  readonly region: string | null
+  readonly country: string | null
+  /** Public (WAN) IP reported by the same lookup. */
+  readonly publicIp: string | null
+}
+
+/** Reachability of one internet service, measured as TCP-connect time to 443. */
+export interface ServiceReachability {
+  /** Human label, e.g. "Netflix". */
+  readonly name: string
+  /** Hostname probed, e.g. "netflix.com". */
+  readonly host: string
+  /** TCP-connect latency in ms, or null when the handshake failed/timed out. */
+  readonly latencyMs: number | null
 }

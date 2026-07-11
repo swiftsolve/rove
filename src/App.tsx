@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
-import { isConnectedNetwork } from '@/types'
+import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useLiveThroughputSource } from '@/hooks/useLiveThroughput'
 import { usePageVisible } from '@/hooks/usePageVisible'
@@ -352,6 +352,7 @@ export default function App(): JSX.Element {
               {activeTab === 'diagnostics' && (
                 <DiagnosticsView
                   diagnostics={diagnostics}
+                  linkSpeedMbps={info ? getLinkCapacityMbps(info) : null}
                   isRunning={diagnosticsRunning}
                   error={diagnosticsError}
                   onRun={() => void runDiagnostics()}

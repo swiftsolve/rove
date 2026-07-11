@@ -7,6 +7,7 @@ import {
   GlobeStreamIcon,
   HdStreamIcon,
   LiveStreamIcon,
+  UltraHdStreamIcon,
   VideoCallIcon,
 } from '@/components/ui/Icons'
 
@@ -19,7 +20,7 @@ interface CapabilityIconProps {
 const ICONS: Record<CapabilityId, typeof BrowsingIcon> = {
   browsing: BrowsingIcon,
   'streaming-hd': HdStreamIcon,
-  'streaming-4k': HdStreamIcon,
+  'streaming-4k': UltraHdStreamIcon,
   'video-calls': VideoCallIcon,
   gaming: GamepadIcon,
   'cloud-gaming': CloudGamingIcon,

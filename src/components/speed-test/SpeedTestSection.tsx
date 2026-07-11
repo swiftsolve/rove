@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import type { SpeedResult, SpeedTestProgress } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import Section from '@/components/ui/Section'
@@ -138,9 +138,22 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
     if (!wrap) return
 
     let width = wrap.clientWidth
+    // The SVG's coordinate system only depends on width, so its size attributes
+    // are written here — not in the per-frame loop. Re-setting `viewBox` every
+    // frame forces the browser to re-layout the whole SVG each tick, which is
+    // what made the bar chug; writing it only on resize keeps the loop cheap.
+    const applySize = (): void => {
+      const svg = svgRef.current
+      if (svg && width > 0) {
+        svg.setAttribute('width', String(width))
+        svg.setAttribute('viewBox', `0 0 ${width} ${WAVE_HEIGHT}`)
+      }
+    }
     const measure = (): void => {
       width = wrap.clientWidth
+      applySize()
     }
+    applySize()
     const observer = new ResizeObserver(measure)
     observer.observe(wrap)
 
@@ -171,8 +184,6 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
         const trackStart = Math.min(end + LEAD_DOT_R + TRACK_GAP, trackEnd)
         const showTrack = trackEnd - trackStart > 0.5
 
-        svg.setAttribute('width', String(width))
-        svg.setAttribute('viewBox', `0 0 ${width} ${WAVE_HEIGHT}`)
         fill.setAttribute('d', buildWavePath(end, phase))
         dot.setAttribute('cx', end.toFixed(2))
         if (showTrack) {
