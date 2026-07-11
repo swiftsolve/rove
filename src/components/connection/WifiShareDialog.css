@@ -65,56 +65,11 @@
   box-shadow: var(--shadow-raised);
 }
 
-.wifi-share-rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-sm);
-}
-
-.wifi-share-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-sm);
-  padding: var(--gap-sm) var(--gap-stack);
-  background: var(--bg-inset);
-  border-radius: var(--radius-sm);
-}
-
-.wifi-share-row-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-2xs);
-  min-width: 0;
-  flex: 1;
-}
-
-.wifi-share-row-label {
-  font-size: var(--text-micro);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-tertiary);
-}
-
-.wifi-share-row-value {
-  font-family: ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
-  font-size: var(--text-small);
-  color: var(--text-primary);
-  overflow-wrap: anywhere;
-}
-
 .wifi-share-note {
   margin: 0;
   padding: var(--gap-tight) var(--gap-stack);
   font-size: var(--text-caption);
   color: var(--text-secondary);
-}
-
-.wifi-share-meta {
-  margin: var(--gap-md) 0 0;
-  font-size: var(--text-micro);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-tertiary);
   text-align: center;
 }
 
