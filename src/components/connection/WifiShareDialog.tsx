@@ -1,57 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/networkApi'
-import { CheckIcon, CopyIcon } from '@/components/ui/Icons'
 import { Spinner } from '@/components/ui/Spinner'
 import './WifiShareDialog.css'
 
-/** Human label for the QR's encryption token. */
-function securityLabel(share: WifiShare): string {
-  switch (share.encryption) {
-    case 'nopass':
-      return 'Open network'
-    case 'WEP':
-      return 'WEP'
-    default:
-      return 'WPA/WPA2'
-  }
-}
-
-/** A labelled credential row with a copy-to-clipboard button. */
-function CopyRow({ label, value }: { readonly label: string; readonly value: string }): JSX.Element {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = (): void => {
-    void navigator.clipboard
-      ?.writeText(value)
-      .then(() => {
-        setCopied(true)
-        window.setTimeout(() => setCopied(false), 1500)
-      })
-      .catch(() => undefined)
-  }
-
-  return (
-    <div className="wifi-share-row">
-      <div className="wifi-share-row-text">
-        <span className="wifi-share-row-label">{label}</span>
-        <span className="wifi-share-row-value">{value}</span>
-      </div>
-      <button
-        type="button"
-        className="btn-icon btn-icon-secondary"
-        onClick={handleCopy}
-        aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
-      >
-        {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-      </button>
-    </div>
-  )
-}
-
 /**
- * Modal that turns the current Wi-Fi connection into a scannable QR code plus
- * copyable credentials. Fetches the payload from the backend on open; the
+ * Modal that turns the current Wi-Fi connection into a scannable QR code. The
+ * passphrase is encoded in the QR so a phone can join by scanning, but it's
+ * never shown in plaintext. Fetches the payload from the backend on open; the
  * passphrase is read behind an OS auth prompt, so the fetch can take a moment
  * (or come back without a password if the user declines).
  */
@@ -121,20 +77,12 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
                 height={200}
               />
             </div>
-            <div className="wifi-share-rows">
-              <CopyRow label="Network" value={share.ssid} />
-              {share.password ? (
-                <CopyRow label="Password" value={share.password} />
-              ) : secured ? (
-                <p className="wifi-share-note">
-                  The saved password wasn&apos;t available. Scan the code to join, or enter the
-                  password by hand.
-                </p>
-              ) : (
-                <p className="wifi-share-note">This is an open network — no password needed.</p>
-              )}
-            </div>
-            <p className="wifi-share-meta">{securityLabel(share)}</p>
+            {secured && !share.password && (
+              <p className="wifi-share-note">
+                The saved password wasn&apos;t available, so scanning will prompt for it. Enter it
+                by hand to join.
+              </p>
+            )}
           </>
         ) : null}
 
