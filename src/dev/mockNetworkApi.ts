@@ -297,6 +297,8 @@ const mockServices: ServiceDefinition[] = [
   { name: 'YouTube', host: 'youtube.com' },
   { name: 'Netflix', host: 'netflix.com' },
   { name: 'Zoom', host: 'zoom.us' },
+  // A custom, self-hosted service standing in for a user-added entry that's down.
+  { name: 'Home Server', host: 'homeserver.local' },
 ]
 
 // A stable-ish baseline latency per host so the card doesn't reshuffle each
@@ -307,20 +309,18 @@ function mockLatencyFor(host: string): number {
   return Math.round((20 + (seed % 90)) * 10) / 10
 }
 
-// Health per host: 200 for a normal service, but Cloudflare stands in for the
-// "reachable but erroring" case — a fast TLS handshake to the edge alongside an
-// HTTP 530 (what a Cloudflare 1033 tunnel error returns), so the degraded row
-// state is exercised in the browser mock.
-function mockHttpStatusFor(host: string): number {
-  return host === 'cloudflare.com' ? 530 : 200
-}
+// A custom, self-hosted service that never answers — stands in for the
+// "Unreachable" row state (the TLS handshake never completes), so the browser
+// mock exercises a service that's down without marking a real provider as
+// failing. Its latency is null and it carries no HTTP status.
+const MOCK_UNREACHABLE_HOST = 'homeserver.local'
 
 function mockServiceReachability(): NetworkDiagnostics['services'] {
-  return mockServices.map((s) => ({
-    ...s,
-    latencyMs: mockLatencyFor(s.host),
-    httpStatus: mockHttpStatusFor(s.host),
-  }))
+  return mockServices.map((s) =>
+    s.host === MOCK_UNREACHABLE_HOST
+      ? { ...s, latencyMs: null, httpStatus: null }
+      : { ...s, latencyMs: mockLatencyFor(s.host), httpStatus: 200 },
+  )
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
