@@ -4,9 +4,9 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import WifiShareDialog from './WifiShareDialog'
 
 /**
- * Header-right action for the Connection view: a QR button that opens the
- * Wi-Fi share dialog. Mount it only when the active connection is Wi-Fi —
- * there's nothing to share over Ethernet.
+ * A QR button that opens the Wi-Fi share dialog, shown beside the signal meter
+ * in the Home connection card. Mount it only when the active connection is
+ * Wi-Fi — there's nothing to share over Ethernet.
  */
 export default function ShareWifiButton(): JSX.Element {
   const [open, setOpen] = useState(false)

@@ -155,7 +155,7 @@ export function ManageServicesPage({
   return (
     <Subpage
       title="Services"
-      description="Add, edit, or remove the services you track"
+      description="Add the cloud services you rely on, and Rove monitors each one to tell service outages from problems on your own network."
       action={addButton}
       className="mgsvc-page"
       onBack={onBack}

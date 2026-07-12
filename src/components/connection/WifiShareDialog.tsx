@@ -55,10 +55,13 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
         aria-labelledby="wifi-share-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="wifi-share-header">
-          <h2 id="wifi-share-title" className="wifi-share-title">
-            Share Wi‑Fi
-          </h2>
+        <header className="wifi-share-head">
+          <div className="wifi-share-heading">
+            <h2 id="wifi-share-title" className="wifi-share-title">
+              Share Wi‑Fi
+            </h2>
+            <p className="wifi-share-sub">Scan with a phone camera to join</p>
+          </div>
           <button
             type="button"
             className="btn-icon btn-icon-secondary wifi-share-close"
@@ -67,36 +70,37 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
           >
             <CloseIcon size={15} />
           </button>
-        </div>
+        </header>
 
-        {loading ? (
-          <div className="wifi-share-state">
-            <Spinner />
-            <p className="text-muted">Reading network details…</p>
-          </div>
-        ) : error ? (
-          <div className="wifi-share-state">
-            <p className="wifi-share-error">{error}</p>
-          </div>
-        ) : share ? (
-          <div className="wifi-share-body">
-            <p className="wifi-share-sub">Scan with a phone camera to join</p>
-            <div className="wifi-share-qr">
-              <img
-                src={`data:image/svg+xml,${encodeURIComponent(share.qrSvg)}`}
-                alt={`QR code to join the Wi‑Fi network ${share.ssid}`}
-                width={260}
-                height={260}
-              />
+        <div className="wifi-share-body">
+          {loading ? (
+            <div className="wifi-share-state">
+              <Spinner />
+              <p className="text-muted">Generating QR code…</p>
             </div>
-            <p className="wifi-share-ssid">{share.ssid}</p>
-            {secured && !share.password && (
-              <p className="wifi-share-note">
-                The saved password wasn&apos;t available, so scanning will prompt for it.
-              </p>
-            )}
-          </div>
-        ) : null}
+          ) : error ? (
+            <div className="wifi-share-state">
+              <p className="wifi-share-error">{error}</p>
+            </div>
+          ) : share ? (
+            <>
+              <div className="wifi-share-qr">
+                <img
+                  src={`data:image/svg+xml,${encodeURIComponent(share.qrSvg)}`}
+                  alt={`QR code to join the Wi‑Fi network ${share.ssid}`}
+                  width={240}
+                  height={240}
+                />
+              </div>
+              <p className="wifi-share-ssid">{share.ssid}</p>
+              {secured && !share.password && (
+                <p className="wifi-share-note">
+                  The saved password wasn&apos;t available, so scanning will prompt for it.
+                </p>
+              )}
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   )

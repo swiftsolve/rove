@@ -1,5 +1,6 @@
 /* Absolute (not fixed) and portaled into `.app-col`, so it covers and centres
-   over the main content area rather than the whole window. */
+   over the main content area rather than the whole window. Mirrors the Add
+   Service dialog's sectioned shell so the two popups read as one family. */
 .wifi-share-overlay {
   position: absolute;
   inset: 0;
@@ -8,14 +9,17 @@
   align-items: center;
   justify-content: center;
   padding: var(--gap-xl);
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.5);
   animation: wifi-share-fade var(--duration-fast) var(--ease-out);
 }
 
 .wifi-share-dialog {
   width: 100%;
-  max-width: 400px;
-  padding: var(--gap-xl);
+  max-width: 340px;
+  /* No padding on the shell itself — the header and body own their own insets;
+     overflow clips the recessed body's square corners to the shell radius. */
+  padding: 0;
+  overflow: hidden;
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -23,23 +27,51 @@
   animation: wifi-share-rise var(--duration-normal) var(--ease-out);
 }
 
-.wifi-share-header {
+/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */
+.wifi-share-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--gap-sm);
+  padding: var(--gap-lg);
+}
+
+.wifi-share-heading {
+  min-width: 0;
 }
 
 .wifi-share-title {
   margin: 0;
-  font-size: var(--text-section);
+  font-size: 15px;
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-/* Pull the close button toward the panel's corner without cramping the title. */
-.wifi-share-close {
+.wifi-share-sub {
+  margin: 4px 0 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+/* Pull the close button toward the panel's corner without cramping the title.
+   It blends into the header with no dark fill of its own — the scoped selector
+   outweighs .btn-icon-secondary's background. */
+.wifi-share-head .wifi-share-close {
+  flex-shrink: 0;
   margin: calc(-1 * var(--gap-xs)) calc(-1 * var(--gap-xs)) 0 0;
+  background: transparent;
+}
+
+/* The content sits a step below the header — a recessed well that frames the QR
+   between the header and the shell's bottom edge. */
+.wifi-share-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--gap-lg);
+  background: var(--bg-app-2);
 }
 
 .wifi-share-state {
@@ -47,8 +79,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--gap-md);
-  padding: var(--gap-xl) 0 var(--gap-md);
+  padding: var(--gap-lg) 0;
   text-align: center;
+}
+
+/* Match the full-page loading label (--text-small) so the dialog's "Generating
+   QR code…" doesn't read a step larger than the app's other loading text. */
+.wifi-share-state .text-muted {
+  font-size: var(--text-small);
 }
 
 .wifi-share-error {
@@ -57,27 +95,11 @@
   color: var(--text-secondary);
 }
 
-.wifi-share-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.wifi-share-sub {
-  /* Span the body and left-align so it lines up with the header title. */
-  align-self: stretch;
-  margin: var(--gap-xs) 0 0;
-  font-size: var(--text-small);
-  color: var(--text-secondary);
-  text-align: left;
-}
-
 /* White plate so the QR keeps its quiet zone and contrast in dark mode. */
 .wifi-share-qr {
   display: flex;
   justify-content: center;
-  margin: var(--gap-lg) 0;
+  margin-bottom: var(--gap-md);
   padding: var(--gap-lg);
   background: #ffffff;
   border: 1px solid var(--border-strong);
@@ -86,8 +108,8 @@
 
 .wifi-share-qr img {
   display: block;
-  width: 260px;
-  height: 260px;
+  width: 240px;
+  height: 240px;
 }
 
 .wifi-share-ssid {
