@@ -140,8 +140,12 @@ pub struct LiveDiagnostics {
     pub services: Vec<ServiceReachability>,
 }
 
-/// Round-trip reachability of one internet service, measured as the time to
-/// complete a TCP handshake to port 443 (many of these block ICMP echo).
+/// Reachability of one internet service, along two independent axes: a network
+/// signal (`latency_ms`, the time to complete a TLS handshake to :443 — many of
+/// these block ICMP echo) and an application signal (`http_status`, what a
+/// lightweight HTTP HEAD actually returns). They can disagree: a service can be
+/// reachable in a few ms yet answering 5xx, e.g. a Cloudflare tunnel failure
+/// (Error 1033) whose edge TLS completes fine but returns HTTP 530.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceReachability {
@@ -149,8 +153,12 @@ pub struct ServiceReachability {
     pub name: String,
     /// Hostname probed, e.g. "netflix.com".
     pub host: String,
-    /// TCP-connect latency in ms, or None when the handshake failed/timed out.
+    /// TLS-handshake latency to :443 in ms, or None when it failed/timed out.
     pub latency_ms: Option<f64>,
+    /// HTTP status from a HEAD to `https://host/`, or None for IP-literal hosts
+    /// and when no HTTP response came back. A 5xx here means the network path is
+    /// up but the service itself is erroring.
+    pub http_status: Option<u16>,
 }
 
 #[derive(Debug, Clone, Serialize)]

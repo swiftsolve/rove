@@ -22,7 +22,7 @@ import {
 import './EventsView.css'
 
 const FEED_HINT =
-  'Rove logs changes it notices between device scans — new devices and access points, departures, and shifts in a device’s IP, name, vendor or type. Events are kept for 30 days. Scans run on the Devices tab, on Home, or when you refresh here.'
+  'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
 
 interface EventsViewProps {
   readonly events: readonly NetworkEvent[]
@@ -63,7 +63,7 @@ const EVENT_TITLES: Record<NetworkEventType, string> = {
   initial_scan: 'Network baseline', // overridden with the live count below
   device_joined: 'New device joined the network',
   ap_appeared: 'New access point detected',
-  device_offline: 'Device dropped off the network',
+  device_offline: 'Device left the network',
   device_online: 'Device reconnected',
   gateway_changed: 'Gateway changed',
   wifi_connected: 'Connected to Wi‑Fi',
@@ -95,32 +95,58 @@ function initialScanTitle(event: NetworkEvent): string {
   return `${count} ${count === 1 ? 'device' : 'devices'} discovered`
 }
 
-function ordinal(day: number): string {
-  const teens = day % 100
-  if (teens >= 11 && teens <= 13) return `${day}th`
-  switch (day % 10) {
-    case 1:
-      return `${day}st`
-    case 2:
-      return `${day}nd`
-    case 3:
-      return `${day}rd`
-    default:
-      return `${day}th`
-  }
-}
-
-// Absolute date + 12h time, e.g. "12th January, 1:24 PM" — the timeline shows each
-// node's own timestamp rather than day-grouping, so the line stays continuous.
-function formatTimestamp(ts: number): string {
-  const date = new Date(ts)
-  const month = date.toLocaleDateString(undefined, { month: 'long' })
-  const time = date.toLocaleTimeString(undefined, {
+// 12h time only, e.g. "1:24 PM" — the day is carried by the group heading above,
+// so each node just shows the time within its day.
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString(undefined, {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   })
-  return `${ordinal(date.getDate())} ${month}, ${time}`
+}
+
+// A stable per-calendar-day key (local time) used to slice the feed into days.
+function dayKey(ts: number): string {
+  const date = new Date(ts)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+// The date label for a day section: "Today" / "Yesterday" for the two most
+// recent days, otherwise "Monday, 12th January" (with the year appended when
+// it isn't the current one).
+function formatDayHeading(ts: number): string {
+  const date = new Date(ts)
+  const now = new Date()
+  if (dayKey(ts) === dayKey(now.getTime())) return 'Today'
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+  if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
+
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'long' })
+  const month = date.toLocaleDateString(undefined, { month: 'long' })
+  const base = `${weekday}, ${date.getDate()} ${month}`
+  return date.getFullYear() === now.getFullYear() ? base : `${base} ${date.getFullYear()}`
+}
+
+// Slice the (already time-ordered) feed into consecutive same-day runs, keeping
+// the incoming order so the timeline stays continuous within each day.
+interface DayGroup {
+  readonly key: string
+  readonly heading: string
+  readonly events: readonly NetworkEvent[]
+}
+
+function groupByDay(events: readonly NetworkEvent[]): DayGroup[] {
+  const groups: DayGroup[] = []
+  for (const event of events) {
+    const key = dayKey(event.ts)
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) {
+      ;(last.events as NetworkEvent[]).push(event)
+    } else {
+      groups.push({ key, heading: formatDayHeading(event.ts), events: [event] })
+    }
+  }
+  return groups
 }
 
 function EventIcon({ type }: { readonly type: NetworkEventType }): JSX.Element {
@@ -135,9 +161,6 @@ function TimelineItem({ event }: { readonly event: NetworkEvent }): JSX.Element 
   // device); every other event just shows the device it's about.
   const subject = isInitial ? 'Tracking changes from here on' : subjectName(event)
   const kindLabel = isInitial ? null : subjectKind(event, subject)
-  // The baseline carries its count in newValue, which isn't a before→after
-  // transition, so don't render it as one.
-  const hasChange = !isInitial && event.oldValue != null && event.newValue != null
 
   // The address line: MAC · Randomized · IP (any absent part is dropped).
   // InlineMeta renders each separator as a dot icon.
@@ -159,23 +182,15 @@ function TimelineItem({ event }: { readonly event: NetworkEvent }): JSX.Element 
         <EventIcon type={event.type} />
       </span>
       <div className="tl-content">
-        <span className="tl-time">{formatTimestamp(event.ts)}</span>
-        <span className="tl-title">{title}</span>
+        <span className="tl-head">
+          <span className="tl-title">{title}</span>
+          <span className="tl-time">{formatTime(event.ts)}</span>
+        </span>
         {subject && (
           <InlineMeta
             className="tl-subject"
             items={[subject, kindLabel && <span className="tl-subject-kind">{kindLabel}</span>]}
           />
-        )}
-
-        {hasChange && (
-          <span className="tl-change">
-            <span className="tl-old num">{event.oldValue}</span>
-            <span className="tl-arrow" aria-hidden>
-              →
-            </span>
-            <span className="tl-new num">{event.newValue}</span>
-          </span>
         )}
 
         {metaItems.length > 0 && <InlineMeta className="tl-meta" items={metaItems} />}
@@ -200,7 +215,7 @@ export default function EventsView({
         title="Timeline"
         subtitle={
           hasEvents ? (
-            <span className="text-meta">What’s changed in the past 30 days</span>
+            <span className="text-meta">What’s changed in the past week</span>
           ) : undefined
         }
         subtitleShown={hasEvents}
@@ -234,11 +249,11 @@ export default function EventsView({
         </div>
       ) : !hasEvents ? (
         <div className="view-empty events-empty">
-          <ActivityIcon size={40} className="events-empty-icon" />
+          <ActivityIcon size={28} className="events-empty-icon" />
           <p className="events-empty-title">No events yet</p>
           <p className="text-muted events-hint">
-            Changes on your network — new devices, departures, IP or name changes — show up here as
-            Rove scans. Run a scan to check now.
+            When a device joins, leaves, or changes its IP or name, it shows up here. Run a scan to
+            check for activity.
           </p>
           <button type="button" className="btn-secondary" onClick={onRefresh}>
             Scan now
@@ -246,8 +261,13 @@ export default function EventsView({
         </div>
       ) : (
         <div className="events-timeline">
-          {events.map((event) => (
-            <TimelineItem key={event.id} event={event} />
+          {groupByDay(events).map((group) => (
+            <section className="tl-day" key={group.key}>
+              <h2 className="tl-day-heading">{group.heading}</h2>
+              {group.events.map((event) => (
+                <TimelineItem key={event.id} event={event} />
+              ))}
+            </section>
           ))}
         </div>
       )}
