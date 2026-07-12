@@ -155,6 +155,32 @@ async fn tcp_connect_latency(host: &str) -> Option<f64> {
     Some((ms * 10.0).round() / 10.0)
 }
 
+/// The HTTP status a lightweight HEAD to `https://host/` returns, or None when
+/// there's no usable HTTP answer (IP-literal host, or the request failed/timed
+/// out). This is the application-layer counterpart to [`service_latency`]: the
+/// two can disagree, and that's the point — a 5xx here on a service that
+/// `service_latency` reaches in a few ms means the network path is fine but the
+/// service itself is failing. A Cloudflare tunnel error (Error 1033) is exactly
+/// this shape: TLS to the edge completes, but the edge returns HTTP 530.
+async fn service_health(host: &str) -> Option<u16> {
+    // An IP literal has no certificate name and no virtual host to route on, so
+    // an HTTP probe would be meaningless (or hit an unrelated default vhost).
+    // The reachability latency alone stands in for it, as it does for the TLS
+    // path above.
+    if host.parse::<std::net::IpAddr>().is_ok() {
+        return None;
+    }
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(5))
+        // Don't chase redirects: a 3xx already proves the server is answering,
+        // and following it would add round-trips and blur which host we rated.
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .ok()?;
+    let resp = client.head(format!("https://{host}/")).send().await.ok()?;
+    Some(resp.status().as_u16())
+}
+
 /// Reachability of a single host (a hostname's TLS handshake, or an IP's TCP
 /// connect), in ms — or None when it can't be reached. Used by the "test before
 /// add" step so a service can be checked without being stored.
@@ -162,13 +188,19 @@ pub async fn probe_service(host: &str) -> Option<f64> {
     service_latency(host).await
 }
 
-/// Probe each service in `services` concurrently, preserving their order.
+/// Probe each service in `services` concurrently, preserving their order. Each
+/// service is measured on both axes — network latency (TLS handshake) and HTTP
+/// health (HEAD) — at once, so a service that's reachable but erroring reads as
+/// such rather than as a clean green latency.
 pub async fn service_reachability(services: &[crate::store::ServiceDef]) -> Vec<ServiceReachability> {
     let probes = services.iter().map(|svc| async move {
+        let (latency_ms, http_status) =
+            tokio::join!(service_latency(&svc.host), service_health(&svc.host));
         ServiceReachability {
             name: svc.name.clone(),
             host: svc.host.clone(),
-            latency_ms: service_latency(&svc.host).await,
+            latency_ms,
+            http_status,
         }
     });
     futures_util::future::join_all(probes).await

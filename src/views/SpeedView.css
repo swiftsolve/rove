@@ -48,20 +48,26 @@
   opacity: 1;
 }
 
-/* The header's Run test button carries a faint accent wash at rest so it reads
-   as a button rather than a bare link, deepening to --accent-muted on hover. */
+/* The header's Run test button is a solid accent button, matching the app's other
+   primary actions (Add service), deepening to --accent-hover on hover. */
 .speed-run-btn:not(.is-stop) {
-  background: rgba(91, 140, 255, 0.08);
+  color: #fff;
+  background: var(--accent);
 }
 
-/* Stop variant of the header's Run test button, shown while a test runs. Mirrors
-   the Run test button's faint wash-at-rest, but in the negative red. */
+.speed-run-btn:not(.is-stop):hover:not(:disabled) {
+  color: #fff;
+  background: var(--accent-hover);
+}
+
+/* Stop variant, shown while a test runs — the same solid treatment in negative red
+   so the toggle keeps its fill rather than flipping to a faint wash mid-test. */
 .speed-run-btn.is-stop {
-  background: rgba(247, 123, 123, 0.08);
-  color: var(--negative);
+  color: #fff;
+  background: var(--negative);
 }
 
 .speed-run-btn.is-stop:hover:not(:disabled) {
-  background: rgba(247, 123, 123, 0.14);
-  color: var(--negative);
+  color: #fff;
+  background: color-mix(in srgb, var(--negative) 84%, #000);
 }

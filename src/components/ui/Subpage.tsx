@@ -7,6 +7,8 @@ interface SubpageProps {
   readonly description?: string
   /** Optional control rendered opposite the back button. */
   readonly action?: ReactNode
+  /** Extra class on the page root, for per-page tweaks to the shared layout. */
+  readonly className?: string
   readonly onBack: () => void
   readonly children: ReactNode
 }
@@ -15,11 +17,12 @@ export default function Subpage({
   title,
   description,
   action,
+  className,
   onBack,
   children,
 }: SubpageProps): JSX.Element {
   return (
-    <div className="subpage">
+    <div className={className != null ? `subpage ${className}` : 'subpage'}>
       <header className="view-header subpage-head">
         <button
           type="button"

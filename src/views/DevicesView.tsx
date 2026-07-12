@@ -102,16 +102,17 @@ function relativeAge(ms: number): string {
   return `${Math.floor(hours / 24)}d ago`
 }
 
-// "Last seen …" for an offline device. Suppressed when it was seen within the
-// last ~90s — that's a device still in the ARP table but not answering, where
-// the "Offline" badge already says everything and "last seen just now" would
-// only read as a contradiction. A device merged back from the roster carries an
-// older timestamp and gets the label.
-function lastSeenLabel(device: LanDevice): string | null {
+// A bare "12m ago" for an offline device, shown inline in the meta line. The
+// "Offline" badge already carries the meaning, so the age needs no "Last seen"
+// prefix. Suppressed when it was seen within the last ~90s — that's a device
+// still in the ARP table but not answering, where "just now" would only read as
+// a contradiction. A device merged back from the roster carries an older
+// timestamp and gets the age.
+function lastSeenAge(device: LanDevice): string | null {
   if (device.reachable || device.lastSeen == null) return null
   const ms = Date.now() - device.lastSeen
   if (ms < 90_000) return null
-  return `Last seen ${relativeAge(ms)}`
+  return relativeAge(ms)
 }
 
 const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
@@ -242,7 +243,7 @@ function OnlineIndicator({
 
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
   const name = deviceName(device)
-  const lastSeen = lastSeenLabel(device)
+  const lastSeen = lastSeenAge(device)
   // Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
   // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
   // fingerprint. A low-confidence kind is hedged with a trailing "?" — the
@@ -284,10 +285,13 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         {device.isGateway ? (
           <span className="text-meta device-row-kind gateway">Gateway</span>
         ) : (
-          meta.length > 0 && <InlineMeta items={meta} className="text-meta device-row-kind" />
+          (meta.length > 0 || lastSeen) && (
+            <div className="device-row-meta">
+              {meta.length > 0 && <InlineMeta items={meta} className="text-meta device-row-kind" />}
+              {lastSeen && <span className="text-meta device-row-lastseen">{lastSeen}</span>}
+            </div>
+          )
         )}
-
-        {lastSeen && <span className="text-meta device-row-lastseen">{lastSeen}</span>}
 
         <div className="device-row-bottom">
           <span className="text-meta device-row-mac">

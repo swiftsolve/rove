@@ -48,12 +48,18 @@ export interface ServiceDefinition {
   readonly host: string
 }
 
-/** Reachability of one internet service, measured as TCP-connect time to 443. */
+/** Reachability of one internet service on two independent axes: network
+ *  latency (TLS handshake to :443) and application health (an HTTP HEAD). They
+ *  can disagree — a service can be reachable in a few ms yet answering 5xx. */
 export interface ServiceReachability {
   /** Human label, e.g. "Netflix". */
   readonly name: string
   /** Hostname probed, e.g. "netflix.com". */
   readonly host: string
-  /** TCP-connect latency in ms, or null when the handshake failed/timed out. */
+  /** TLS-handshake latency in ms, or null when it failed/timed out. */
   readonly latencyMs: number | null
+  /** HTTP status from a HEAD to the host, or null for IP-literal hosts and when
+   *  no HTTP response came back. A 5xx means the path is up but the service is
+   *  erroring (e.g. a Cloudflare 1033 tunnel error surfaces as 530). */
+  readonly httpStatus: number | null
 }

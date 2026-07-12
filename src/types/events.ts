@@ -22,7 +22,7 @@ export type NetworkEventSeverity = 'info' | 'warning' | 'critical'
 /**
  * One entry in the network-change feed, derived by the backend from diffing
  * successive device scans (see Store::record_devices). Append-only and pruned
- * to a 30-day window.
+ * to a 7-day window.
  */
 export interface NetworkEvent {
   readonly id: number

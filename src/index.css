@@ -569,6 +569,11 @@ button:focus-visible {
 .subpage > *:nth-child(3) { animation-delay: 90ms; }
 .view-page > *:nth-child(4),
 .subpage > *:nth-child(4) { animation-delay: 135ms; }
+/* Everything from the 5th child on shares the final step so a longer page (e.g.
+   the Connection view's ISP card, its 5th child) still settles in after the
+   staggered cards above it instead of popping in at delay 0, out of order. */
+.view-page > *:nth-child(n + 5),
+.subpage > *:nth-child(n + 5) { animation-delay: 180ms; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

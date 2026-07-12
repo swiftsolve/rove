@@ -275,7 +275,6 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
 function seedNetworkEvents(): NetworkEvent[] {
   const min = 60_000
   const hour = 3_600_000
-  const day = 86_400_000
   const rows: readonly (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
     { ago: 3 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, randomized: true },
@@ -283,8 +282,8 @@ function seedNetworkEvents(): NetworkEvent[] {
     { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, randomized: false },
     { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
     { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
-    { ago: 4 * day + 6 * hour, type: 'gateway_changed', severity: 'critical', mac: '24:5a:4c:11:b2:03', ip: '192.168.1.1', name: 'Router', kind: null, oldValue: '9c:a2:f4:00:1d:e2', newValue: '24:5a:4c:11:b2:03', randomized: false },
-    { ago: 6 * day, type: 'initial_scan', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: '17', randomized: false },
+    { ago: 30 * hour, type: 'gateway_changed', severity: 'critical', mac: '24:5a:4c:11:b2:03', ip: '192.168.1.1', name: 'Router', kind: null, oldValue: '9c:a2:f4:00:1d:e2', newValue: '24:5a:4c:11:b2:03', randomized: false },
+    { ago: 34 * hour, type: 'initial_scan', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: '17', randomized: false },
   ]
   return rows.map(({ ago, ...rest }, i) => ({ ...rest, id: rows.length - i, ts: Date.now() - ago }))
 }
@@ -308,8 +307,20 @@ function mockLatencyFor(host: string): number {
   return Math.round((20 + (seed % 90)) * 10) / 10
 }
 
+// Health per host: 200 for a normal service, but Cloudflare stands in for the
+// "reachable but erroring" case — a fast TLS handshake to the edge alongside an
+// HTTP 530 (what a Cloudflare 1033 tunnel error returns), so the degraded row
+// state is exercised in the browser mock.
+function mockHttpStatusFor(host: string): number {
+  return host === 'cloudflare.com' ? 530 : 200
+}
+
 function mockServiceReachability(): NetworkDiagnostics['services'] {
-  return mockServices.map((s) => ({ ...s, latencyMs: mockLatencyFor(s.host) }))
+  return mockServices.map((s) => ({
+    ...s,
+    latencyMs: mockLatencyFor(s.host),
+    httpStatus: mockHttpStatusFor(s.host),
+  }))
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {

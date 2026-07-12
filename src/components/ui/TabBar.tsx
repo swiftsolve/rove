@@ -40,7 +40,7 @@ const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'speed', label: 'Speed', Icon: SpeedIcon },
   { id: 'devices', label: 'Devices', Icon: DevicesIcon },
-  { id: 'events', label: 'Events', Icon: EventsIcon },
+  { id: 'events', label: 'Timeline', Icon: EventsIcon },
   { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
   { id: 'usage', label: 'Usage', Icon: UsageIcon },

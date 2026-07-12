@@ -7,21 +7,27 @@ export type SpeedSub =
   | { readonly view: 'details'; readonly target: CapabilityId | null }
   | { readonly view: 'history' }
 
+/** A subpage layered over the Connection tab. `null` means the tab's main page. */
+export type DiagSub = { readonly view: 'services' }
+
 /** A single screen the app can show — a tab, optionally with a subpage. */
 export interface AppLocation {
   readonly tab: AppTab
   readonly speedSub: SpeedSub | null
+  /** Subpage over the Connection tab (e.g. manage services); omit for the main page. */
+  readonly diagSub?: DiagSub | null
 }
 
 export const HOME_LOCATION: AppLocation = { tab: 'home', speedSub: null }
 
 /** A short, stable key for a location — handy for keying effects (e.g. scroll). */
 export function locationKey(location: AppLocation): string {
-  return `${location.tab}:${location.speedSub?.view ?? ''}`
+  return `${location.tab}:${location.speedSub?.view ?? ''}:${location.diagSub?.view ?? ''}`
 }
 
 function sameLocation(a: AppLocation, b: AppLocation): boolean {
   if (a.tab !== b.tab) return false
+  if ((a.diagSub?.view ?? null) !== (b.diagSub?.view ?? null)) return false
   const subA = a.speedSub
   const subB = b.speedSub
   if (subA == null || subB == null) return subA === subB
