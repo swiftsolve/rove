@@ -12,6 +12,7 @@ import {
   Activity,
   ArrowDown,
   ArrowLeft,
+  ArrowRight,
   ArrowUp,
   BarChart3,
   CalendarRange,
@@ -44,14 +45,19 @@ import {
   Layers,
   Moon,
   Network,
+  Pencil,
+  Plus,
   Radio,
   Router,
   Search,
   Server,
   Settings,
+  ShieldAlert,
   Smartphone,
   Speaker,
   Printer,
+  Tag,
+  TextSearch,
   QrCode,
   Sparkles,
   Square,
@@ -140,9 +146,11 @@ export function BrandIcon({
 export const EthernetIcon = make(EthernetPort, 20)
 export const OfflineIcon = make(WifiOff, 20)
 export const ActivityIcon = make(Activity, 18)
+export const EventsIcon = make(TextSearch, 18)
 export const ZapIcon = make(Zap, 22)
 export const ArrowDownIcon = make(ArrowDown, 16)
 export const ArrowUpIcon = make(ArrowUp, 16)
+export const ArrowRightIcon = make(ArrowRight, 16)
 export const ChevronDownIcon = make(ChevronDown, 16)
 export const ChevronRightIcon = make(ChevronRight, 16)
 export const ArrowLeftIcon = make(ArrowLeft, 16)
@@ -215,7 +223,11 @@ export const ConsoleIcon = make(Gamepad2, 16)
 export const CameraIcon = make(Cctv, 16)
 export const SpeakerIcon = make(Speaker, 16)
 export const UnknownDeviceIcon = make(HelpCircle, 16)
+export const TagIcon = make(Tag, 16)
+export const ShieldAlertIcon = make(ShieldAlert, 16)
 export const TrashIcon = make(Trash2, 16)
+export const PlusIcon = make(Plus, 16)
+export const EditIcon = make(Pencil, 15)
 export const StopIcon = make(Square, 14)
 export const PlayIcon = make(Play, 16)
 export const RefreshIcon = make(RotateCw, 16)

@@ -1,0 +1,19 @@
+.service-icon {
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  object-fit: contain;
+  /* Favicons carry their own colors — sit them on a light chip so dark logos
+     stay legible against the panel and every service reads as one tile. */
+  background: #fff;
+}
+
+.service-icon--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}

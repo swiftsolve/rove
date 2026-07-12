@@ -8,6 +8,7 @@
 mod banner;
 mod classify;
 mod history;
+mod liveness;
 /// Public so diagnostics/examples (and the planned alerts feature) can drive the
 /// passive listener and read captures directly.
 pub mod dhcp;
@@ -21,7 +22,7 @@ mod sweep;
 
 use crate::mdns;
 use crate::network_info::{default_gateway, default_interface};
-use crate::oui::{is_randomized_mac, lookup_vendor};
+use crate::oui::{is_kind_ambiguous_vendor, is_randomized_mac, lookup_vendor};
 use crate::platform::{neighbor_table, RawNeighbor};
 use crate::types::{LanDevice, LanDeviceScan};
 use std::time::Duration;
@@ -50,22 +51,28 @@ pub async fn scan() -> LanDeviceScan {
     // The sweep and TCP probe both wake idle hosts into the neighbor table; the
     // probe additionally reaches ICMP-filtering hosts and reports open ports.
     // mDNS and SSDP listen concurrently for devices that announce themselves.
-    let (mdns_hits, ssdp_hits, open_ports) = match &subnet {
+    let (mdns_hits, ssdp_hits, ping_live, open_ports, tcp_live) = match &subnet {
         Some(subnet) => {
-            let (mdns_hits, ssdp_hits, (), ports) = tokio::join!(
+            let (mdns_hits, ssdp_hits, ping_live, probed) = tokio::join!(
                 mdns::discover(DISCOVERY_WINDOW),
                 ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
                 sweep::sweep(subnet),
                 probe::probe(subnet),
             );
-            (mdns_hits, ssdp_hits, ports)
+            (mdns_hits, ssdp_hits, ping_live, probed.open_ports, probed.responsive)
         }
         None => {
             let (mdns_hits, ssdp_hits) = tokio::join!(
                 mdns::discover(DISCOVERY_WINDOW),
                 ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
             );
-            (mdns_hits, ssdp_hits, std::collections::HashMap::new())
+            (
+                mdns_hits,
+                ssdp_hits,
+                std::collections::HashSet::new(),
+                std::collections::HashMap::new(),
+                std::collections::HashSet::new(),
+            )
         }
     };
 
@@ -103,6 +110,9 @@ pub async fn scan() -> LanDeviceScan {
         netbios: &netbios_hits,
         dhcp: &dhcp_hits,
         open_ports: &open_ports,
+        ping_live: &ping_live,
+        tcp_live: &tcp_live,
+        active_probe: subnet.is_some(),
     };
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()
@@ -171,6 +181,16 @@ struct Enrichment<'a> {
     netbios: &'a std::collections::HashMap<String, String>,
     dhcp: &'a std::collections::HashMap<String, dhcp::DhcpHit>,
     open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
+    /// IPs that replied to this scan's ICMP sweep — a positive liveness signal.
+    ping_live: &'a std::collections::HashSet<String>,
+    /// IPs that answered this scan's TCP probe — by accepting *or* refusing a
+    /// connection. Either proves the host is alive even when it drops ICMP and
+    /// announces nothing (a phone asleep in Wi-Fi power-save still RSTs a SYN).
+    tcp_live: &'a std::collections::HashSet<String>,
+    /// Whether this scan actually ran the active probes (sweep/TCP). False only
+    /// when the subnet is unknown, in which case there's nothing to derive
+    /// liveness from and the scan falls back to the neighbor table's own state.
+    active_probe: bool,
 }
 
 fn build_device(
@@ -262,8 +282,14 @@ fn build_device(
     let verdict = if is_echo {
         classify::Verdict { kind: "speaker", confidence: classify::Confidence::High }
     } else {
+        // Read the vendor for display, but withhold its kind vote when the OUI's
+        // registrant is too kind-ambiguous to type (see `is_kind_ambiguous_vendor`):
+        // a lone "Motorola (Wuhan)" ODM block is a Lenovo smart-home device, not a
+        // Motorola phone, so it must fall back to a real signal rather than guess.
+        let classify_vendor =
+            if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
         classify::classify(&classify::Signals {
-            vendor: vendor.as_deref(),
+            vendor: classify_vendor,
             hostname: hostname.as_deref(),
             mdns: Some(&evidence.mdns),
             ssdp: Some(&evidence.ssdp),
@@ -287,6 +313,38 @@ fn build_device(
     // vendor inference above, which needs the raw "<family><gen>,<rev>" shape.
     let model = model.map(|m| humanize_model(&m));
 
+    // Liveness. On macOS/Windows the neighbor table carries no state, so a
+    // departed device lingers in the ARP cache and would otherwise read "Online"
+    // for ~20 min. Decide from this scan's active probes instead: an ICMP reply,
+    // a TCP answer (an open port *or* a RST from a closed one), or any
+    // announcement (mDNS/SSDP/NetBIOS/SNMP/banner) means the device answered
+    // *now*. The TCP answer is what keeps a power-saving phone — which ignores
+    // ICMP and announces nothing but still RSTs a SYN — from reading "Offline".
+    // On Linux a genuine REACHABLE state counts too. Self and the gateway are
+    // always present. The result is debounced by MAC (see `liveness`) so one
+    // dropped probe doesn't flip a device to "Cached".
+    let reachable = if is_self || is_gateway {
+        true
+    } else if !enrichment.active_probe {
+        // No active probe ran (unknown subnet) — nothing better than the table.
+        neighbor.reachable
+    } else {
+        let ip = neighbor.ip.as_str();
+        let live_now = (neighbor.stateful && neighbor.reachable)
+            || enrichment.ping_live.contains(ip)
+            || enrichment.tcp_live.contains(ip)
+            || enrichment.mdns.contains_key(ip)
+            || enrichment.ssdp.contains_key(ip)
+            || enrichment.netbios.contains_key(ip)
+            || enrichment.snmp.contains_key(ip)
+            || enrichment.banner.contains_key(ip);
+        if neighbor.mac.is_empty() {
+            live_now // no stable key to debounce against
+        } else {
+            liveness::reachable(&neighbor.mac, live_now)
+        }
+    };
+
     LanDevice {
         kind: verdict.kind.to_string(),
         kind_confidence: verdict.confidence.as_str(),
@@ -297,9 +355,12 @@ fn build_device(
         model,
         is_gateway,
         is_self,
-        reachable: neighbor.reachable,
+        reachable,
         ip: neighbor.ip,
         mac: neighbor.mac,
+        // Stamped by the store's roster merge (see `devices_with_offline`); a
+        // bare scan has no timestamp of its own.
+        last_seen: None,
     }
 }
 
@@ -387,6 +448,8 @@ mod tests {
             HashMap::new(),
             HashMap::new(),
         );
+        let ping_live = std::collections::HashSet::new();
+        let tcp_live = std::collections::HashSet::new();
         let enrichment = Enrichment {
             mdns: &mdns_map,
             ssdp: &ssdp,
@@ -395,9 +458,55 @@ mod tests {
             netbios: &netbios,
             dhcp: &dhcp,
             open_ports: &ports,
+            ping_live: &ping_live,
+            tcp_live: &tcp_live,
+            active_probe: true,
         };
-        let neighbor = RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true };
+        let neighbor =
+            RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true, stateful: true };
         build_device(neighbor, None, &enrichment, None, None)
+    }
+
+    #[test]
+    fn a_tcp_answer_alone_reads_a_stateless_device_as_reachable() {
+        // The reported case: a randomized-MAC phone asleep in Wi-Fi power-save
+        // drops ICMP and announces nothing, so ping_live and every announcement
+        // map is empty. But it RSTs a SYN to a closed port, which probe::probe
+        // records in `responsive` → tcp_live. With a stateless neighbor entry
+        // (macOS arp -a: reachable but not `stateful`), that TCP answer is the
+        // only live signal — and it must be enough to read "Online".
+        let (mdns, ssdp, banner, snmp, netbios, dhcp, ports) = (
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+        );
+        let ping_live = std::collections::HashSet::new();
+        let mut tcp_live = std::collections::HashSet::new();
+        tcp_live.insert("192.168.2.35".to_string());
+        let enrichment = Enrichment {
+            mdns: &mdns,
+            ssdp: &ssdp,
+            banner: &banner,
+            snmp: &snmp,
+            netbios: &netbios,
+            dhcp: &dhcp,
+            open_ports: &ports,
+            ping_live: &ping_live,
+            tcp_live: &tcp_live,
+            active_probe: true,
+        };
+        let neighbor = RawNeighbor {
+            ip: "192.168.2.35".to_string(),
+            mac: "a6:80:ee:e0:f8:f7".to_string(),
+            reachable: true,
+            stateful: false,
+        };
+        let device = build_device(neighbor, None, &enrichment, None, None);
+        assert!(device.reachable, "a TCP RST/accept is a live signal on its own");
     }
 
     #[test]
@@ -417,6 +526,24 @@ mod tests {
         let echo = device_with_mdns("08:12:a5:00:00:12", "192.168.2.21", mdns::MdnsHit::default());
         assert_ne!(echo.hostname.as_deref(), Some("Amazon Echo"));
         assert_ne!(echo.kind, "speaker");
+    }
+
+    #[test]
+    fn a_motorola_wuhan_odm_oui_is_not_confidently_typed_a_phone() {
+        // The reported case: a Lenovo speaker on 08:38:E6 ("Motorola (Wuhan)
+        // Mobility" ODM) resolves to a bare "Motorola" vendor and used to be typed
+        // a phone. With no other signal it must fall back to a generic device, not
+        // a confident (and wrong) "phone" — the vendor still shows for display.
+        let device = device_with_mdns("08:38:e6:d8:df:23", "192.168.2.19", mdns::MdnsHit::default());
+        assert_eq!(device.vendor.as_deref(), Some("Motorola"));
+        assert_ne!(device.kind, "phone");
+        assert_eq!(device.kind, "unknown");
+
+        // A Motorola-brand phone block (00:62:01, "Motorola Mobility LLC, a Lenovo
+        // Company") tidies to the same "Motorola" but stays a phone.
+        let phone = device_with_mdns("00:62:01:00:00:22", "192.168.2.29", mdns::MdnsHit::default());
+        assert_eq!(phone.vendor.as_deref(), Some("Motorola"));
+        assert_eq!(phone.kind, "phone");
     }
 
     #[test]
@@ -487,5 +614,6 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         is_gateway: false,
         is_self: true,
         reachable: true,
+        last_seen: None,
     });
 }

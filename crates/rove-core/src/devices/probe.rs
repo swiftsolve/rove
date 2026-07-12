@@ -10,7 +10,8 @@
 //!
 //! This needs no raw sockets or elevated privileges, unlike ARP or SYN scanning.
 use futures_util::StreamExt;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::io::ErrorKind;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 use tokio::net::TcpStream;
@@ -43,12 +44,26 @@ const CONCURRENT_PROBES: usize = 400;
 /// this budget mostly bounds how long we wait on silent/absent addresses.
 const CONNECT_TIMEOUT: Duration = Duration::from_millis(400);
 
-/// Probe every usable host in `subnet` across [`PROBE_PORTS`]. Returns the set
-/// of open ports keyed by host IP. Hosts that refuse every port still get woken
-/// into the ARP table (the point of discovery) but won't appear in the map.
-pub async fn probe(subnet: &str) -> HashMap<String, Vec<u16>> {
+/// The outcome of probing a subnet: which ports are open, and which hosts
+/// answered at the TCP layer at all.
+pub struct ProbeResult {
+    /// Open TCP ports keyed by host IP — connections that were accepted.
+    pub open_ports: HashMap<String, Vec<u16>>,
+    /// Hosts that answered *any* probe this scan, whether by accepting
+    /// (SYN-ACK) or refusing (RST). Both prove the host is alive right now —
+    /// including a phone asleep in Wi-Fi power-save, which drops ICMP and
+    /// announces nothing yet still RSTs a SYN to a closed port. The scan feeds
+    /// this into its liveness verdict so such a phone doesn't read "Offline".
+    pub responsive: HashSet<String>,
+}
+
+/// Probe every usable host in `subnet` across [`PROBE_PORTS`]. Returns the open
+/// ports per host and the set of hosts that answered at the TCP layer. Hosts
+/// that neither accept nor refuse (silent/absent) still got woken into the ARP
+/// table (the point of discovery) but appear in neither collection.
+pub async fn probe(subnet: &str) -> ProbeResult {
     let Some(hosts) = super::subnet::hosts(subnet) else {
-        return HashMap::new();
+        return ProbeResult { open_ports: HashMap::new(), responsive: HashSet::new() };
     };
     // Materialize the (host, port) pairs so the stream has a plain owned source
     // and the resulting future stays `Send + 'static` for the Tauri command.
@@ -56,13 +71,22 @@ pub async fn probe(subnet: &str) -> HashMap<String, Vec<u16>> {
         .flat_map(|ip| PROBE_PORTS.iter().map(move |&port| (ip, port)))
         .collect();
 
-    let open: Vec<(String, u16)> = futures_util::stream::iter(targets)
+    // Each answered probe yields the host IP and, when the connection was
+    // accepted, the open port. `None` for the port means the host refused (RST)
+    // — still a proof of life. A timeout or unreachable error yields nothing.
+    let answers: Vec<(String, Option<u16>)> = futures_util::stream::iter(targets)
         .map(|(ip, port)| async move {
             let addr = SocketAddr::from((ip, port));
-            // Only an accepted connection records an open port; a refusal or
-            // timeout still did its discovery job by forcing ARP resolution.
             match timeout(CONNECT_TIMEOUT, TcpStream::connect(addr)).await {
-                Ok(Ok(_stream)) => Some((ip.to_string(), port)),
+                // Accepted — the host is alive and this port is open.
+                Ok(Ok(_stream)) => Some((ip.to_string(), Some(port))),
+                // Refused (RST) — the port is closed, but the host answered, so
+                // it's alive. This is what catches a power-saving phone that
+                // ignores ICMP: it still RSTs a SYN to a closed port.
+                Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => {
+                    Some((ip.to_string(), None))
+                }
+                // No answer (timeout) or unreachable — nothing proven.
                 _ => None,
             }
         })
@@ -71,12 +95,16 @@ pub async fn probe(subnet: &str) -> HashMap<String, Vec<u16>> {
         .collect()
         .await;
 
-    let mut by_ip: HashMap<String, Vec<u16>> = HashMap::new();
-    for (ip, port) in open {
-        by_ip.entry(ip).or_default().push(port);
+    let mut open_ports: HashMap<String, Vec<u16>> = HashMap::new();
+    let mut responsive: HashSet<String> = HashSet::new();
+    for (ip, port) in answers {
+        if let Some(port) = port {
+            open_ports.entry(ip.clone()).or_default().push(port);
+        }
+        responsive.insert(ip);
     }
-    for ports in by_ip.values_mut() {
+    for ports in open_ports.values_mut() {
         ports.sort_unstable();
     }
-    by_ip
+    ProbeResult { open_ports, responsive }
 }

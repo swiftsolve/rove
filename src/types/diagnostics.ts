@@ -39,6 +39,15 @@ export interface IspInfo {
   readonly publicIp: string | null
 }
 
+/** A service in the user's reachability list — the durable definition, without
+ *  a measurement. Ships with defaults but is editable per user (add/remove). */
+export interface ServiceDefinition {
+  /** Human label, e.g. "Netflix". */
+  readonly name: string
+  /** Host probed, a hostname ("netflix.com") or IP ("192.168.1.1"). */
+  readonly host: string
+}
+
 /** Reachability of one internet service, measured as TCP-connect time to 443. */
 export interface ServiceReachability {
   /** Human label, e.g. "Netflix". */

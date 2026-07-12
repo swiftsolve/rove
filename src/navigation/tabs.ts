@@ -3,6 +3,7 @@ export const APP_TABS = [
   'speed',
   'interfaces',
   'devices',
+  'events',
   'usage',
   'diagnostics',
   'settings',

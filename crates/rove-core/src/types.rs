@@ -66,6 +66,10 @@ pub struct LanDevice {
     pub is_gateway: bool,
     pub is_self: bool,
     pub reachable: bool,
+    /// Epoch-ms this device last answered, carried so the UI can show "last seen
+    /// 3m ago" for an offline device. `None` on a freshly-scanned device that
+    /// hasn't been merged against the roster yet; the store's merge stamps it.
+    pub last_seen: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import './DataRow.css'
 
 interface DataRowProps {
-  readonly label: string
+  readonly label: ReactNode
   readonly value?: string | null
   readonly children?: ReactNode
 }

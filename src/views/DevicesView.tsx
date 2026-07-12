@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
+import { InlineMeta } from '@/components/ui/DotSeparator'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
@@ -73,7 +74,44 @@ function describeUnnamed(device: LanDevice): string {
 function deviceName(device: LanDevice): string {
   if (device.isGateway) return 'Router'
   if (device.isSelf) return 'This device'
-  return device.hostname ?? device.vendor ?? describeUnnamed(device)
+  // A real hostname is the name the user gave the device — it always wins.
+  if (device.hostname) return device.hostname
+  const noun = device.kind !== 'unknown' ? KIND_NOUNS[device.kind] : null
+  // Keep the kind beside a known maker rather than letting the vendor replace
+  // it, so the kind never drops out of the name. A vendor is a brand, so it
+  // reads as maker · type ("Apple · Phone"), matching the dot-separated meta
+  // line; when the maker is unknown, fall back to the OS/kind synthesis.
+  if (device.vendor) {
+    // A smart-home device's noun ("smart home device") is verbose and already
+    // spelled out in the kind chip below the name ("Smart home"), so pairing it
+    // with the maker reads as "Espressif · Smart home device". Show the maker
+    // alone there — the chip carries the category.
+    if (device.kind === 'iot') return device.vendor
+    return noun ? `${device.vendor} · ${noun.charAt(0).toUpperCase() + noun.slice(1)}` : device.vendor
+  }
+  return describeUnnamed(device)
+}
+
+// A coarse "3m ago" / "2h ago" / "4d ago". We only ever show this for offline
+// devices, so second-level precision isn't worth it.
+function relativeAge(ms: number): string {
+  const mins = Math.floor(ms / 60_000)
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+// "Last seen …" for an offline device. Suppressed when it was seen within the
+// last ~90s — that's a device still in the ARP table but not answering, where
+// the "Offline" badge already says everything and "last seen just now" would
+// only read as a contradiction. A device merged back from the roster carries an
+// older timestamp and gets the label.
+function lastSeenLabel(device: LanDevice): string | null {
+  if (device.reachable || device.lastSeen == null) return null
+  const ms = Date.now() - device.lastSeen
+  if (ms < 90_000) return null
+  return `Last seen ${relativeAge(ms)}`
 }
 
 const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
@@ -167,8 +205,44 @@ function ScanStatus({ active }: { readonly active: boolean }): JSX.Element | nul
   )
 }
 
+// The online tally shares the scan status's slot and motion: it slides in from
+// the left when a scan finishes (active turns true) and slides back out to the
+// left when the next scan starts and the status takes the slot. Like ScanStatus
+// it lingers mounted for SCAN_EXIT_MS so the slide-out can play rather than the
+// count just vanishing.
+function OnlineIndicator({
+  active,
+  count,
+}: {
+  readonly active: boolean
+  readonly count: number
+}): JSX.Element | null {
+  const [mounted, setMounted] = useState(active)
+
+  useEffect(() => {
+    if (active) {
+      setMounted(true)
+      return
+    }
+    const id = window.setTimeout(() => setMounted(false), SCAN_EXIT_MS)
+    return () => window.clearTimeout(id)
+  }, [active])
+
+  if (!mounted) return null
+  return (
+    <span
+      className={`devices-online ${active ? '' : 'leaving'}`}
+      title="Responding to the last scan"
+    >
+      <span className="devices-online-dot" aria-hidden />
+      <span className="num">{count}</span> online
+    </span>
+  )
+}
+
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
   const name = deviceName(device)
+  const lastSeen = lastSeenLabel(device)
   // Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
   // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
   // fingerprint. A low-confidence kind is hedged with a trailing "?" — the
@@ -199,19 +273,21 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         <div className="device-row-top">
           <span className="text-title device-row-name">{name}</span>
           <span
-            className={`device-row-state ${device.reachable ? 'reachable' : 'stale'}`}
-            title={device.reachable ? 'Reachable' : 'Cached (may be offline)'}
+            className={`device-row-state ${device.reachable ? 'reachable' : 'offline'}`}
+            title={device.reachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
             <span className="device-row-dot" aria-hidden />
-            {device.reachable ? 'Online' : 'Cached'}
+            {device.reachable ? 'Online' : 'Offline'}
           </span>
         </div>
 
         {device.isGateway ? (
           <span className="text-meta device-row-kind gateway">Gateway</span>
         ) : (
-          meta.length > 0 && <span className="text-meta device-row-kind">{meta.join(' · ')}</span>
+          meta.length > 0 && <InlineMeta items={meta} className="text-meta device-row-kind" />
         )}
+
+        {lastSeen && <span className="text-meta device-row-lastseen">{lastSeen}</span>}
 
         <div className="device-row-bottom">
           <span className="text-meta device-row-mac">
@@ -235,8 +311,16 @@ export default function DevicesView({
   error,
   onRescan,
 }: DevicesViewProps): JSX.Element {
-  const devices = scan?.devices ?? []
+  // Online first (keeping the scan's order among them), then offline devices
+  // most-recently-seen first. A stable sort preserves the live ordering within
+  // each group.
+  const devices = [...(scan?.devices ?? [])].sort((a, b) => {
+    if (a.reachable !== b.reachable) return a.reachable ? -1 : 1
+    if (!a.reachable) return (b.lastSeen ?? 0) - (a.lastSeen ?? 0)
+    return 0
+  })
   const hasDevices = devices.length > 0
+  const onlineCount = devices.filter((device) => device.reachable).length
   const subnet = scan?.subnet ?? null
   // Scan resolved but turned up only this machine (or nothing) — on macOS the
   // usual culprit is a withheld Local Network grant.
@@ -260,7 +344,14 @@ export default function DevicesView({
             <>
               <span className="field-label">Subnet</span>
               <span className="num">{subnet}</span>
-              <ScanStatus active={isScanning} />
+              {/* One slot shared by the online tally and the scan status. The
+                  entering one holds the slot's width while the leaving one is
+                  overlaid absolutely (see CSS), so they cross-slide in place
+                  instead of shoving each other sideways. */}
+              <span className="devices-indicator">
+                <OnlineIndicator active={!isScanning} count={onlineCount} />
+                <ScanStatus active={isScanning} />
+              </span>
             </>
           ) : isScanning ? (
             <ScanStatus active />

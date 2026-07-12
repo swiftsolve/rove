@@ -1,0 +1,162 @@
+.svc-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-xl);
+  background: rgba(0, 0, 0, 0.5);
+  animation: svc-dialog-fade var(--duration-fast) var(--ease-out);
+}
+
+.svc-dialog {
+  width: 100%;
+  max-width: 340px;
+  padding: 22px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-raised);
+  animation: svc-dialog-rise var(--duration-normal) var(--ease-out);
+}
+
+.svc-dialog-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.svc-dialog-sub {
+  margin: 3px 0 0;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+.svc-dialog-input {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--text-body);
+  transition: border-color var(--duration-fast) var(--ease-in-out);
+}
+
+.svc-dialog-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.svc-dialog-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.svc-dialog-input[aria-invalid='true'] {
+  border-color: var(--negative);
+}
+
+/* A single reserved slot below the input — the hint, the error, or the tested
+   result all occupy it, so the dialog's height stays put as the state changes. */
+.svc-dialog-note,
+.svc-dialog-result {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  margin: 10px 0 0;
+}
+
+.svc-dialog-note {
+  font-size: var(--text-small);
+  color: var(--text-tertiary);
+}
+
+.svc-dialog-note-error {
+  color: var(--negative);
+}
+
+.svc-dialog-result {
+  gap: var(--gap-sm);
+  padding: 0 12px;
+  background: var(--bg-inset);
+  border-radius: var(--radius-sm);
+}
+
+.svc-dialog-result-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-small);
+  color: var(--text-primary);
+}
+
+.svc-dialog-result-status {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  font-size: var(--text-small);
+}
+
+.svc-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gap-sm);
+  margin-top: 18px;
+}
+
+.svc-dialog-btn {
+  min-width: 76px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border);
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+
+.svc-dialog-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.svc-dialog-btn.is-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.svc-dialog-btn.is-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.svc-dialog-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@keyframes svc-dialog-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes svc-dialog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

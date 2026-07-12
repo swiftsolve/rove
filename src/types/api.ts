@@ -1,7 +1,8 @@
 import type { Unsubscribe } from './common'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
-import type { LiveDiagnostics, NetworkDiagnostics } from './diagnostics'
+import type { NetworkEvent } from './events'
+import type { LiveDiagnostics, NetworkDiagnostics, ServiceDefinition } from './diagnostics'
 import type { NetworkInterfaceSummary } from './interfaces'
 import type { LiveThroughput } from './live-throughput'
 import type { SpeedTestResult } from './capabilities'
@@ -18,11 +19,26 @@ export interface NetworkAPI {
   getInterfaces(): Promise<readonly NetworkInterfaceSummary[]>
   /** Scan the LAN for connected devices. */
   getDevices(): Promise<LanDeviceScan>
+  /** The network-change feed (new devices, departures, identity changes),
+   *  newest first. Populated as a side effect of device scans. */
+  getNetworkEvents(): Promise<readonly NetworkEvent[]>
   getDataUsage(): Promise<DataUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>
   /** The fast-changing metrics only (gateway latency + service reachability),
    *  for the Connection view's tight refresh loop. */
   runDiagnosticsLive(): Promise<LiveDiagnostics>
+  /** Probe a single host's reachability without storing it — the "test before
+   *  add" step. Resolves to the latency in ms, or null when unreachable. */
+  testService(host: string): Promise<number | null>
+  /** The user's reachability service list — the built-in defaults plus any the
+   *  user added, minus any they removed. Ordered as shown. */
+  listServices(): Promise<readonly ServiceDefinition[]>
+  /** Add a service to the list; returns the updated list. Re-adding an existing
+   *  host updates its label rather than duplicating it. */
+  addService(name: string, host: string): Promise<readonly ServiceDefinition[]>
+  /** Remove the service with this host (built-in or custom); returns the
+   *  updated list. */
+  deleteService(host: string): Promise<readonly ServiceDefinition[]>
   runSpeedTest(): Promise<SpeedTestResult>
   cancelSpeedTest(): Promise<void>
   /** Past speed-test results, newest first, from the local database. */

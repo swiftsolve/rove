@@ -111,6 +111,11 @@ pub struct RawNeighbor {
     pub ip: String,
     pub mac: String,
     pub reachable: bool,
+    /// Whether `reachable` reflects a real kernel liveness state (Linux `ip
+    /// neigh`) rather than the `arp -a` fallback's blanket `true`. The device
+    /// scan only trusts `reachable` for its liveness verdict when this is set;
+    /// on macOS/Windows it relies on active probes instead.
+    pub stateful: bool,
 }
 
 static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
@@ -152,7 +157,10 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
             {
                 return None;
             }
-            Some(RawNeighbor { ip: c[1].to_string(), mac, reachable: true })
+            // `arp -a` has no liveness column, so `reachable` here is a
+            // placeholder the scan ignores (stateful: false) in favour of its
+            // own active probe.
+            Some(RawNeighbor { ip: c[1].to_string(), mac, reachable: true, stateful: false })
         })
         .collect()
 }

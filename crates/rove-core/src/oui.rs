@@ -86,6 +86,28 @@ pub fn lookup_vendor(mac: &str) -> Option<String> {
     resolve(table(), mac).map(clean_vendor)
 }
 
+/// True when a MAC's registrant spans so many device kinds that its OUI alone
+/// can't name a type — the classifier should read the vendor for *display* but
+/// cast no *kind* vote, letting a real mDNS/hostname/port signal decide (the same
+/// stance [`crate::devices`] takes on TP-Link's catalog-wide block, dropped there
+/// by omission from the vendor table).
+///
+/// This exists for the ambiguous registrants that *can't* be dropped by omission
+/// because they tidy to a brand shared with unambiguous gear. "Motorola (Wuhan)
+/// Mobility Technologies Communication Co., Ltd." is the ODM behind Lenovo's
+/// Google-Assistant smart-home line — Smart Clock, Smart Display, Smart Tab,
+/// speakers — not Motorola-brand phones, yet it tidies to the same "Motorola" as
+/// the phone blocks ("Motorola Mobility LLC, a Lenovo Company"). Left to vote it
+/// would confidently label every Lenovo Smart Clock a phone.
+pub fn is_kind_ambiguous_vendor(mac: &str) -> bool {
+    resolve(table(), mac)
+        .map(|v| {
+            let v = v.to_ascii_lowercase();
+            v.contains("motorola") && v.contains("wuhan")
+        })
+        .unwrap_or(false)
+}
+
 /// Consumer-brand aliases for OEM/parent legal names as registered with the IEEE.
 /// Two jobs: surface a recognizable brand when the registry name is unrelated
 /// (Govee registers as "Shenzhen Intellirocks Tech. Co. Ltd."), and fix the
@@ -234,6 +256,27 @@ mod tests {
             .unwrap()
             .to_lowercase()
             .contains("raspberry"));
+    }
+
+    #[test]
+    fn motorola_wuhan_odm_is_flagged_kind_ambiguous_but_motorola_phones_are_not() {
+        // 08:38:E6 is the "Motorola (Wuhan) Mobility Technologies Communication"
+        // ODM block — Lenovo smart-home gear (Smart Clock/Display/Tab, speakers),
+        // not a phone. Both it and the phone blocks tidy to a bare "Motorola", so
+        // the flag is what keeps a lone Wuhan OUI from voting "phone".
+        assert_eq!(lookup_vendor("08:38:E6:D8:DF:23").as_deref(), Some("Motorola"));
+        assert!(is_kind_ambiguous_vendor("08:38:E6:D8:DF:23"));
+        assert!(is_kind_ambiguous_vendor("04:34:F6:00:00:01"));
+
+        // The Motorola-brand phone blocks ("Motorola Mobility LLC, a Lenovo
+        // Company") also tidy to "Motorola" but stay a confident phone vote.
+        assert_eq!(lookup_vendor("00:62:01:00:00:01").as_deref(), Some("Motorola"));
+        assert!(!is_kind_ambiguous_vendor("00:62:01:00:00:01"));
+        assert!(!is_kind_ambiguous_vendor("04:D3:95:00:00:01"));
+
+        // An unrelated vendor and an unregistered prefix are never flagged.
+        assert!(!is_kind_ambiguous_vendor("b8:27:eb:11:22:33"));
+        assert!(!is_kind_ambiguous_vendor("02:00:00:00:00:00"));
     }
 
     #[test]
