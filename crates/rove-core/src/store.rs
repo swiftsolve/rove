@@ -138,8 +138,8 @@ const EVENT_ETHERNET_CONNECTED: &str = "ethernet_connected";
 /// network can be detected across the frequent `network_info` polls.
 const META_CONNECTION_IDENTITY: &str = "connection_identity";
 
-/// Drop events older than this (matches the 30-day feed consumer tools keep).
-const EVENT_RETENTION_MS: i64 = 30 * 24 * 60 * 60 * 1000;
+/// Drop events older than this (matches the 7-day feed consumer tools keep).
+const EVENT_RETENTION_MS: i64 = 7 * 24 * 60 * 60 * 1000;
 /// Hard cap on retained events, so a churny network can't grow the table
 /// without bound even inside the retention window.
 const EVENT_LIMIT: i64 = 1000;
@@ -571,8 +571,10 @@ impl Store {
         // gone here too — otherwise the feed's offline/online state lags what the
         // user sees, staying silent until the OS ages the stale ARP entry out
         // (~20 min later). Self and the gateway are always reachable, so they
-        // never spuriously drop. The liveness debounce (see `liveness`) already
-        // absorbs a single missed probe, so this doesn't flap on a brief sleep.
+        // never spuriously drop. The liveness debounce (see `liveness`) holds a
+        // device reachable until it has both missed several scans and stayed
+        // silent for a wall-clock floor, so a brief sleep — or a burst of
+        // event-driven scans landing seconds apart — doesn't flap the feed.
         let live: HashSet<&str> = devices
             .iter()
             .filter(|d| !d.mac.is_empty() && d.reachable)

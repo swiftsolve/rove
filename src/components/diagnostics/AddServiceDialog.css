@@ -1,7 +1,9 @@
+/* Absolute (not fixed) and portaled into `.app-col`, so it covers and centres
+   over the main content area rather than the whole window. */
 .svc-dialog-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 100;
+  z-index: 90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,12 +15,27 @@
 .svc-dialog {
   width: 100%;
   max-width: 340px;
-  padding: 22px;
+  /* No padding on the shell itself — the header and body own their own insets so
+     the divider between them can run edge to edge. */
+  padding: 0;
   background: var(--bg-panel);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow-raised);
   animation: svc-dialog-rise var(--duration-normal) var(--ease-out);
+}
+
+/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */
+.svc-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  padding: var(--gap-lg);
+}
+
+.svc-dialog-heading {
+  min-width: 0;
 }
 
 .svc-dialog-title {
@@ -30,15 +47,49 @@
 }
 
 .svc-dialog-sub {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
   font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+/* Pull the close button toward the panel's corner without cramping the title.
+   It blends into the header with no dark fill of its own — the scoped selector
+   outweighs .btn-icon-secondary's background. */
+.svc-dialog-head .svc-dialog-close {
+  flex-shrink: 0;
+  margin: calc(-1 * var(--gap-xs)) calc(-1 * var(--gap-xs)) 0 0;
+  background: transparent;
+}
+
+/* The middle section sits a step below the header/footer surfaces — a recessed
+   well that frames the fields between the two dividers. */
+.svc-dialog-body {
+  padding: var(--gap-lg);
+  background: var(--bg-app-2);
+}
+
+.svc-dialog-field {
+  display: block;
+}
+
+.svc-dialog-field + .svc-dialog-field {
+  margin-top: var(--gap-lg);
+}
+
+.svc-dialog-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
 
 .svc-dialog-input {
   width: 100%;
-  margin-top: 18px;
+  /* Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
+     fixed-height control centred beside it lands on a symmetric gap. */
   padding: 10px 12px;
+  line-height: 18px;
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -60,18 +111,94 @@
   border-color: var(--negative);
 }
 
-/* A single reserved slot below the input — the hint, the error, or the tested
-   result all occupy it, so the dialog's height stays put as the state changes. */
+/* The address field carries its Test action inline: the group owns the border
+   and focus/invalid state, and the input inside goes borderless so the two read
+   as one control. */
+.svc-dialog-inputgroup {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding-right: 6px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--duration-fast) var(--ease-in-out);
+}
+
+.svc-dialog-inputgroup:focus-within {
+  border-color: var(--accent);
+}
+
+.svc-dialog-inputgroup[data-invalid='true'] {
+  border-color: var(--negative);
+}
+
+.svc-dialog-inputgroup .svc-dialog-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+}
+
+.svc-dialog-inputgroup .svc-dialog-input:focus-visible {
+  border: none;
+}
+
+/* The inline Test action is a quiet, transparent accent button — a faint accent
+   wash with an accent-coloured label — so it reads as secondary to the solid
+   "Add service" confirm below. */
+.svc-dialog-test {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 30px;
+  padding: 0 var(--gap-stack);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  background: var(--accent-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+
+.svc-dialog-test:hover:not(:disabled) {
+  color: var(--accent-hover);
+  background: var(--accent-muted);
+}
+
+/* While testing the label is just a small spinner, so collapse the button to a
+   square instead of holding the full "Test" width around it. */
+.svc-dialog-test.is-loading {
+  min-width: 0;
+  width: 30px;
+  padding: 0;
+}
+
+.svc-dialog-test:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Feedback tucked directly under the address field — the idle hint, an error, or
+   the tested result. The hint is a snug one-line caption; the result is a taller
+   inset row, so it swaps in the moment a test lands. */
 .svc-dialog-note,
 .svc-dialog-result {
   display: flex;
   align-items: center;
-  min-height: 34px;
-  margin: 10px 0 0;
+  margin-top: var(--gap-sm);
 }
 
 .svc-dialog-note {
+  min-height: 18px;
   font-size: var(--text-small);
+  line-height: 1.4;
   color: var(--text-tertiary);
 }
 
@@ -80,9 +207,13 @@
 }
 
 .svc-dialog-result {
+  /* Match the address field's outer height (line-height 18 + 20 padding + 2 border)
+     so the result reads as the same-sized box swapping in. */
+  min-height: 40px;
   gap: var(--gap-sm);
   padding: 0 12px;
   background: var(--bg-inset);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
 
@@ -102,19 +233,27 @@
   font-size: var(--text-small);
 }
 
-.svc-dialog-actions {
+/* The confirm sits in its own footer; the darker body above sets it apart, so it
+   needs no divider — the button reads as a distinct step on its own. */
+.svc-dialog-foot {
   display: flex;
   justify-content: flex-end;
-  gap: var(--gap-sm);
-  margin-top: 18px;
+  padding: var(--gap-lg);
 }
 
+/* Matches the size of the manage page's "Add service" (a .btn-primary): the same
+   caption text, weight, and padding, so the two read as one control. */
 .svc-dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
   min-width: 76px;
-  padding: 7px 14px;
+  padding: var(--gap-sm) var(--gap-stack);
   border-radius: var(--radius-sm);
-  font-size: var(--text-small);
-  font-weight: var(--weight-medium);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
   color: var(--text-secondary);
   background: var(--bg-panel-hi);
   border: 1px solid var(--border);
@@ -128,11 +267,8 @@
   color: var(--text-primary);
 }
 
+/* Right-aligned confirm — the only action now that close lives in the header. */
 .svc-dialog-btn.is-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap-tight);
   color: #fff;
   background: var(--accent);
   border-color: transparent;

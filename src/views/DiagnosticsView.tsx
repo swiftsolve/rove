@@ -1,5 +1,6 @@
 import type { IspInfo, NetworkDiagnostics } from '@/types'
 import { FAILED_PING } from '@/types'
+import type { DiagSub } from '@/navigation/useNavigation'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/Icons'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServicesSection } from '@/components/diagnostics/ServicesSection'
+import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
 import { Tooltip } from '@/components/ui/Tooltip'
 import ShareWifiButton from '@/components/connection/ShareWifiButton'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
@@ -29,6 +31,13 @@ interface DiagnosticsViewProps {
   readonly onRun: () => void
   /** Whether the active connection is Wi-Fi, gating the "Share Wi-Fi" action. */
   readonly canShareWifi: boolean
+  /** Subpage layered over the Connection tab (manage services), or null for the
+   *  main page. Owned by the app's navigation stack so Back pops the right screen. */
+  readonly sub: DiagSub | null
+  /** Open the manage-services subpage. */
+  readonly onManageServices: () => void
+  /** Return to the previous screen. */
+  readonly onBack: () => void
 }
 
 function formatPercent(pct: number): string {
@@ -54,7 +63,7 @@ function formatLocation(isp: IspInfo): string | null {
 }
 
 const SERVICE_INFO_HINT =
-  'Cloud service reachability, measured as the time to complete a secure (TLS) handshake with each service.'
+  'Cloud service reachability. The number is how long a secure (TLS) handshake takes to reach each service. A service that can’t be reached, or that answers but is failing, shows “Unreachable”.'
 
 export default function DiagnosticsView({
   diagnostics,
@@ -63,9 +72,22 @@ export default function DiagnosticsView({
   error,
   onRun,
   canShareWifi,
+  sub,
+  onManageServices,
+  onBack,
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
   const hasDiagnostics = diagnostics != null
+
+  if (sub?.view === 'services') {
+    return (
+      <ManageServicesPage
+        reachability={diagnostics?.services}
+        onRefresh={onRun}
+        onBack={onBack}
+      />
+    )
+  }
 
   return (
     <div className="view-page">
@@ -161,7 +183,7 @@ export default function DiagnosticsView({
             </DataRow>
           </Section>
 
-          <ServicesSection reachability={diagnostics?.services} onRefresh={onRun} />
+          <ServicesSection reachability={diagnostics?.services} onManage={onManageServices} />
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list diag-dns">
             {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (

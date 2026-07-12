@@ -131,6 +131,12 @@ function isCancellation(cause: unknown): boolean {
 // Monotonic run id: a late progress event or a superseded run can never write
 // over a newer one's state.
 let runSeq = 0
+// The run a stop was requested for. A stop fired during the pre-flight — while we
+// await getNetworkInfo, before the backend test is even running — would otherwise
+// be lost: `cancelSpeedTest` has nothing to cancel yet, and the backend clears its
+// own cancel flag when the test starts. Recording the run here lets us abort before
+// ever kicking it off.
+let cancelledRun = 0
 
 async function runTest(): Promise<void> {
   if (state.testing) return
@@ -143,6 +149,7 @@ async function runTest(): Promise<void> {
 
   const myRun = ++runSeq
   const isCurrent = (): boolean => myRun === runSeq
+  const isCancelled = (): boolean => cancelledRun === myRun
 
   setState({
     ...state,
@@ -157,12 +164,20 @@ async function runTest(): Promise<void> {
   // "complete" tick) from racing the terminal state write below.
   let settled = false
   const unsubscribe = api.onSpeedTestProgress((progress) => {
-    if (settled || !isCurrent()) return
+    if (settled || !isCurrent() || isCancelled()) return
     setState({ ...state, progress })
   })
 
   try {
     const context = await currentRunContext()
+    // A stop during the pre-flight aborts here, before the backend test starts —
+    // otherwise runSpeedTest would kick off (and reset the cancel) and run to the end.
+    if (isCancelled()) {
+      settled = true
+      unsubscribe()
+      if (isCurrent()) setState({ ...state, testing: false, progress: INITIAL_PROGRESS, error: null })
+      return
+    }
     const result = await api.runSpeedTest()
     settled = true
     unsubscribe()
@@ -196,6 +211,10 @@ async function runTest(): Promise<void> {
 }
 
 function cancelTest(): void {
+  // Mark the in-flight run cancelled so a stop during the pre-flight still aborts
+  // it, then ask the backend to cancel the test itself (a no-op if it hasn't
+  // started — which is exactly the case the run flag covers).
+  if (state.testing) cancelledRun = runSeq
   void window.networkAPI?.cancelSpeedTest()
 }
 

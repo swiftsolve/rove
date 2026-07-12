@@ -261,6 +261,31 @@
   font-size: var(--text-section);
 }
 
+/* The subtitle line beneath the name: device type on the left, and for an
+   offline device its last-seen age pinned to the right edge. */
+.device-row-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+/* On the meta line the type stays on a single line and ellipsizes when space is
+   tight, so the age remains a clean right-hand column instead of wrapping
+   beneath the type. */
+.device-row-meta > .device-row-kind {
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.device-row-meta > .device-row-kind .inline-meta-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Device category as a subtitle line beneath the name — a step brighter than
    the MAC so the hierarchy reads name › type › address. */
 .device-row-kind {
@@ -268,14 +293,17 @@
   color: var(--text-secondary);
 }
 
-.device-row-kind.gateway {
-  color: var(--positive);
+/* "5h ago" for an offline device — right-aligned on the subtitle line and
+   dimmer than the type, so it reads as status rather than another attribute.
+   margin-left:auto keeps it flush right even when the type label is absent. */
+.device-row-lastseen {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
 }
 
-/* "Last seen 5h ago" under an offline device — dimmer than the identity line
-   so it reads as status, not another attribute. */
-.device-row-lastseen {
-  color: var(--text-tertiary);
+.device-row-kind.gateway {
+  color: var(--positive);
 }
 
 .device-row-mac {

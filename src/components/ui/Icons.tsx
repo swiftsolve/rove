@@ -30,6 +30,7 @@ import {
   HardDrive,
   Minus,
   MonitorSmartphone,
+  MoreHorizontal,
   Play,
   // MonitorPlay dropped in favour of Tabler's dedicated HD/4K badge glyphs
   RotateCw,
@@ -228,6 +229,7 @@ export const ShieldAlertIcon = make(ShieldAlert, 16)
 export const TrashIcon = make(Trash2, 16)
 export const PlusIcon = make(Plus, 16)
 export const EditIcon = make(Pencil, 15)
+export const MoreIcon = make(MoreHorizontal, 16)
 export const StopIcon = make(Square, 14)
 export const PlayIcon = make(Play, 16)
 export const RefreshIcon = make(RotateCw, 16)

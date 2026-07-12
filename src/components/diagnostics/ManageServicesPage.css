@@ -1,0 +1,138 @@
+/* The tracked-service list as an editable page: each row carries its favicon and
+   name, its current latency, and a remove control. Rows are separated by the same
+   hairline the data cards use. */
+.mgsvc-list {
+  /* No inset on the container — the rows carry the horizontal padding so their
+     dividers run edge to edge across the card. */
+  padding: 0;
+}
+
+.mgsvc-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-md) var(--gap-lg);
+}
+
+.mgsvc-row + .mgsvc-row {
+  border-top: 1px solid var(--border);
+}
+
+.mgsvc-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.mgsvc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.mgsvc-status {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  color: var(--text-secondary);
+}
+
+/* Per-row overflow menu: a kebab button anchoring a dropdown. */
+.mgsvc-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mgsvc-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.mgsvc-kebab:hover,
+.mgsvc-kebab[aria-expanded='true'] {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.mgsvc-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 148px;
+  padding: var(--gap-xs);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+  animation: mgsvc-menu-in var(--duration-fast) var(--ease-out);
+}
+
+.mgsvc-menuitem {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  width: 100%;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  text-align: left;
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.mgsvc-menuitem:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.mgsvc-menuitem.is-danger {
+  color: var(--negative);
+}
+
+.mgsvc-menuitem.is-danger:hover {
+  color: var(--negative);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
+}
+
+@keyframes mgsvc-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.mgsvc-empty {
+  padding: var(--gap-xl);
+  text-align: center;
+}
+
+/* The header's "Add service" is a solid accent button matching the add-service
+   popup's confirm — just with a plus icon. It borrows .btn-primary for layout and
+   size; the element+class selectors override that ghost style's colour and hover
+   with the filled accent fill. */
+button.mgsvc-add {
+  color: #fff;
+  background: var(--accent);
+}
+
+button.mgsvc-add:hover:not(:disabled) {
+  color: #fff;
+  background: var(--accent-hover);
+}
