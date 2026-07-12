@@ -10,9 +10,10 @@ interface ServiceIconProps {
   readonly size?: number
 }
 
-/** Registered-domain favicon via DuckDuckGo's icon proxy. Keyed on host so any
- *  service — including ones added later — gets an icon for free. Falls back to a
- *  letter monogram when the host has no favicon or the fetch fails. */
+/** Registered-domain favicon via Google's icon service, requested at 64px so it
+ *  stays crisp on high-DPI screens even though it renders into a ~16px box. Keyed
+ *  on host so any service — including ones added later — gets an icon for free.
+ *  Falls back to a letter monogram when the fetch fails. */
 export function ServiceIcon({ host, name, size = 16 }: ServiceIconProps): JSX.Element {
   const [failed, setFailed] = useState(false)
   const dimensions = { width: size, height: size }
@@ -28,7 +29,7 @@ export function ServiceIcon({ host, name, size = 16 }: ServiceIconProps): JSX.El
   return (
     <img
       className="service-icon"
-      src={`https://icons.duckduckgo.com/ip3/${encodeURIComponent(host)}.ico`}
+      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`}
       alt=""
       style={dimensions}
       loading="lazy"

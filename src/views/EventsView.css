@@ -1,7 +1,31 @@
 .events-timeline {
   display: flex;
   flex-direction: column;
-  padding: 6px 4px 2px;
+  /* No left pad so the marker column sits flush with the header icon; keep the
+     small right pad so timestamps don't run to the very edge. */
+  padding: 6px 4px 8px 0;
+}
+
+/* A day's worth of nodes, headed by its date. Sections stack with a little
+   breathing room so each day reads as its own block. */
+.tl-day {
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-day:not(:first-child) {
+  margin-top: 18px;
+}
+
+/* The date divider — quiet, uppercase, sitting above the day's first node and
+   flush with the left edge (no indent, so no empty space beside the date). */
+.tl-day-heading {
+  margin: 0 0 14px;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* One node on the line: a marker column and the content beside it. */
@@ -19,8 +43,9 @@
   padding-bottom: 0;
 }
 
-/* The connecting line: from just below this node down to the next one. Dropped
-   on the last item so the line ends cleanly at the final marker. */
+/* The connecting line: from just below this node down to the next one within
+   the same day. Dropped on a day's last node so the line ends at the final
+   marker of each day rather than running on beside the next date heading. */
 .tl-item:not(:last-child)::before {
   content: '';
   position: absolute;
@@ -99,16 +124,29 @@
   line-height: 1.3;
 }
 
-.tl-time {
-  color: var(--text-tertiary);
-  font-size: var(--text-small);
+/* Title on the left, time pinned to the right edge on the same line. The time
+   takes only the width it needs and never wraps, so a long title flows beneath
+   it rather than pushing it around. */
+.tl-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .tl-title {
+  flex: 1;
+  min-width: 0;
   color: var(--text-primary);
   font-weight: 600;
   font-size: var(--text-section);
   overflow-wrap: anywhere;
+}
+
+.tl-time {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  white-space: nowrap;
 }
 
 .tl-subject {
@@ -120,29 +158,6 @@
 /* The device category shown after the name ("Apple · Phone") — a step quieter
    so the name still leads. The dot separator is a shared InlineMeta dot icon. */
 .tl-subject-kind {
-  color: var(--text-tertiary);
-}
-
-/* old → new transition for change events. */
-.tl-change {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-  color: var(--text-tertiary);
-  font-size: var(--text-small);
-}
-
-.tl-old {
-  text-decoration: line-through;
-  opacity: 0.8;
-}
-
-.tl-new {
-  color: var(--text-secondary);
-}
-
-.tl-arrow {
   color: var(--text-tertiary);
 }
 

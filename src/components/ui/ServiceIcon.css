@@ -2,9 +2,9 @@
   flex-shrink: 0;
   border-radius: var(--radius-xs);
   object-fit: contain;
-  /* Favicons carry their own colors — sit them on a light chip so dark logos
-     stay legible against the panel and every service reads as one tile. */
-  background: #fff;
+  /* No backing chip: favicons render on the panel directly, so logos with
+     transparent padding blend in instead of flashing a white square. Most
+     service favicons carry their own background, so this reads cleanly. */
 }
 
 .service-icon--fallback {
