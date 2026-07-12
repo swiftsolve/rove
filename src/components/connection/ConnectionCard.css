@@ -6,6 +6,7 @@
 }
 
 .conn-strip {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--gap-md);
@@ -16,7 +17,18 @@
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
-.conn-strip:focus-visible {
+/* Transparent button filling the whole strip: it's the expand target, sitting
+   behind the content so the SSID/signal stay visible. The content is
+   click-through (pointer-events: none) so clicks anywhere fall to this toggle —
+   except the QR button, which raises itself and handles its own click. */
+.conn-strip-toggle {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  cursor: pointer;
+}
+
+.conn-strip-toggle:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: -2px;
   border-radius: var(--radius);
@@ -27,6 +39,22 @@
 }
 
 .conn-strip-icon,
+.conn-strip-text,
+.conn-strip > .signal-meter,
+.conn-chevron {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.conn-strip-share {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+}
+
+.conn-strip-icon,
+.conn-strip-share,
 .conn-chevron,
 .conn-strip > .signal-meter {
   align-self: center;

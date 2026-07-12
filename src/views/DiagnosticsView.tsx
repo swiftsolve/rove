@@ -14,7 +14,6 @@ import { MetricValue } from '@/components/ui/MetricValue'
 import { ServicesSection } from '@/components/diagnostics/ServicesSection'
 import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
 import { Tooltip } from '@/components/ui/Tooltip'
-import ShareWifiButton from '@/components/connection/ShareWifiButton'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
@@ -29,8 +28,6 @@ interface DiagnosticsViewProps {
   readonly isRunning: boolean
   readonly error: string | null
   readonly onRun: () => void
-  /** Whether the active connection is Wi-Fi, gating the "Share Wi-Fi" action. */
-  readonly canShareWifi: boolean
   /** Subpage layered over the Connection tab (manage services), or null for the
    *  main page. Owned by the app's navigation stack so Back pops the right screen. */
   readonly sub: DiagSub | null
@@ -71,7 +68,6 @@ export default function DiagnosticsView({
   isRunning,
   error,
   onRun,
-  canShareWifi,
   sub,
   onManageServices,
   onBack,
@@ -106,7 +102,6 @@ export default function DiagnosticsView({
         subtitleShown={hasDiagnostics && !isRunning}
         actions={
           <>
-            {canShareWifi && <ShareWifiButton />}
             <Tooltip content={SERVICE_INFO_HINT}>
               <button
                 type="button"
