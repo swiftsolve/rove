@@ -3,17 +3,17 @@ import { FAILED_PING } from '@/types'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
 import {
-  CloudIcon,
   ConnectionIcon,
   DnsIcon,
   GlobeIcon,
   HelpIcon,
   RouterIcon,
 } from '@/components/ui/Icons'
+import { MetricValue } from '@/components/ui/MetricValue'
+import { ServicesSection } from '@/components/diagnostics/ServicesSection'
 import { Tooltip } from '@/components/ui/Tooltip'
 import ShareWifiButton from '@/components/connection/ShareWifiButton'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
-import { useCountUp } from '@/hooks/useCountUp'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
@@ -35,24 +35,6 @@ function formatPercent(pct: number): string {
   return `${Math.round(pct * 10) / 10}%`
 }
 
-/**
- * A numeric readout that eases toward its latest value each poll (up or down),
- * matching the Live Traffic readouts. On first paint it shows the value outright
- * — the ease only kicks in when a subsequent poll changes the number.
- */
-function MetricValue({
-  value,
-  level,
-  format,
-}: {
-  readonly value: number
-  readonly level?: string
-  readonly format: (n: number) => string
-}): JSX.Element {
-  const animated = useCountUp(value)
-  return <span className={level}>{format(animated)}</span>
-}
-
 function latencyLevel(ms: number): string {
   if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'val-bad'
   if (ms <= 40) return 'val-good'
@@ -63,16 +45,6 @@ function latencyLevel(ms: number): string {
 function lossLevel(pct: number): string {
   if (pct <= 0) return 'val-good'
   if (pct <= 2) return 'val-warn'
-  return 'val-bad'
-}
-
-// Service reachability is a full TLS handshake to :443 (DNS + TCP + TLS), so its
-// round-trips run well above a bare ICMP ping — roughly twice a plain connect for
-// the extra handshake RTT. The bands are looser than `latencyLevel` to match. A
-// null latency means the handshake never completed.
-function serviceLevel(ms: number): string {
-  if (ms <= 120) return 'val-good'
-  if (ms <= 300) return 'val-warn'
   return 'val-bad'
 }
 
@@ -189,29 +161,7 @@ export default function DiagnosticsView({
             </DataRow>
           </Section>
 
-          <Section
-            title="Services"
-            icon={<CloudIcon size={15} />}
-            bodyClassName="row-list diag-router"
-          >
-            {(diagnostics?.services?.length ?? 0) > 0 ? (
-              (diagnostics?.services ?? []).map((service) => (
-                <DataRow key={service.host} label={service.name}>
-                  {service.latencyMs == null ? (
-                    <span className="val-bad">Unreachable</span>
-                  ) : (
-                    <MetricValue
-                      value={service.latencyMs}
-                      level={serviceLevel(service.latencyMs)}
-                      format={formatLatencyMs}
-                    />
-                  )}
-                </DataRow>
-              ))
-            ) : (
-              <p className="text-hint">No services were checked.</p>
-            )}
-          </Section>
+          <ServicesSection reachability={diagnostics?.services} onRefresh={onRun} />
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list diag-dns">
             {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (

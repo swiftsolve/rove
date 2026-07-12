@@ -30,18 +30,6 @@ static TLS_CONFIG: LazyLock<Arc<ClientConfig>> = LazyLock::new(|| {
     Arc::new(config)
 });
 
-/// Well-known services probed for the reachability card. Ordered as shown in the
-/// UI. Each is measured by a full TLS handshake to 443 (see `service_latency`),
-/// which works even where the host silently drops ICMP echo (Netflix, Zoom, …)
-/// and confirms the secure connection actually completes.
-const PROBED_SERVICES: &[(&str, &str)] = &[
-    ("Google", "google.com"),
-    ("Cloudflare", "cloudflare.com"),
-    ("YouTube", "youtube.com"),
-    ("Netflix", "netflix.com"),
-    ("Zoom", "zoom.us"),
-];
-
 /// Ping a host and derive avg / jitter / loss, like the Electron measurer.
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     // `host` is interpolated into a shell command; callers pass gateway/DNS
@@ -135,6 +123,14 @@ pub async fn isp_info() -> Option<IspInfo> {
 /// and isn't being intercepted or blocked mid-path. Runs ~1 RTT slower than a
 /// plain connect as a result.
 async fn service_latency(host: &str) -> Option<f64> {
+    // A bare IP literal has no certificate name to validate against, so the TLS
+    // probe below would spuriously read "unreachable". Fall back to a plain TCP
+    // connect to :443, which still measures reachability — it just can't assert
+    // that HTTPS specifically completes the way the hostname path does.
+    if host.parse::<std::net::IpAddr>().is_ok() {
+        return tcp_connect_latency(host).await;
+    }
+
     let server_name = ServerName::try_from(host).ok()?.to_owned();
     let connector = TlsConnector::from(TLS_CONFIG.clone());
     let start = Instant::now();
@@ -148,13 +144,31 @@ async fn service_latency(host: &str) -> Option<f64> {
     Some((ms * 10.0).round() / 10.0)
 }
 
-/// Probe every service in `PROBED_SERVICES` concurrently.
-pub async fn service_reachability() -> Vec<ServiceReachability> {
-    let probes = PROBED_SERVICES.iter().map(|&(name, host)| async move {
+/// Time to open a plain TCP connection to `host:443`, in ms, or None on failure.
+/// Used for IP-literal services, where there's no hostname for a TLS cert check.
+async fn tcp_connect_latency(host: &str) -> Option<f64> {
+    let start = Instant::now();
+    let connect = tokio::net::TcpStream::connect((host, 443));
+    let stream = tokio::time::timeout(Duration::from_secs(5), connect).await.ok()?.ok()?;
+    let ms = start.elapsed().as_secs_f64() * 1000.0;
+    drop(stream);
+    Some((ms * 10.0).round() / 10.0)
+}
+
+/// Reachability of a single host (a hostname's TLS handshake, or an IP's TCP
+/// connect), in ms — or None when it can't be reached. Used by the "test before
+/// add" step so a service can be checked without being stored.
+pub async fn probe_service(host: &str) -> Option<f64> {
+    service_latency(host).await
+}
+
+/// Probe each service in `services` concurrently, preserving their order.
+pub async fn service_reachability(services: &[crate::store::ServiceDef]) -> Vec<ServiceReachability> {
+    let probes = services.iter().map(|svc| async move {
         ServiceReachability {
-            name: name.to_string(),
-            host: host.to_string(),
-            latency_ms: service_latency(host).await,
+            name: svc.name.clone(),
+            host: svc.host.clone(),
+            latency_ms: service_latency(&svc.host).await,
         }
     });
     futures_util::future::join_all(probes).await
@@ -173,14 +187,14 @@ async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
 /// SNMP identity lookups that `run` performs: those never change between polls
 /// and re-running them (an external HTTP call and a per-poll SNMP timeout on
 /// routers that don't answer) would be wasteful.
-pub async fn run_live() -> LiveDiagnostics {
+pub async fn run_live(service_list: &[crate::store::ServiceDef]) -> LiveDiagnostics {
     let gateway = default_gateway().await;
     let (gateway_ping, services) =
-        tokio::join!(gateway_ping(gateway.as_deref()), service_reachability());
+        tokio::join!(gateway_ping(gateway.as_deref()), service_reachability(service_list));
     LiveDiagnostics { gateway_ping, services }
 }
 
-pub async fn run() -> NetworkDiagnostics {
+pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostics {
     let (gateway, iface, dns) = tokio::join!(default_gateway(), default_interface(), dns_servers());
 
     // Resolve the router's make (MAC OUI) and model (SNMP) so the Router panel
@@ -204,7 +218,7 @@ pub async fn run() -> NetworkDiagnostics {
         gateway_ping(gateway.as_deref()),
         crate::devices::gateway_identity(gateway.as_deref(), local_ipv4),
         isp_info(),
-        service_reachability(),
+        service_reachability(service_list),
     );
 
     NetworkDiagnostics {

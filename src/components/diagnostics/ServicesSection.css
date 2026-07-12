@@ -1,0 +1,33 @@
+/* Favicon + name sit inline; the name keeps the baseline so it still aligns
+   with the latency value on the right. */
+.service-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+/* The header cluster: edit + add icon buttons, snug together. */
+.svc-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+/* A service row's delete control, shown only in manage mode where it replaces
+   the latency value on the right. */
+.svc-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--text-tertiary);
+  border-radius: var(--radius-xs);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.svc-delete:hover {
+  color: var(--val-bad, #e5484d);
+  background: var(--bg-hover);
+}

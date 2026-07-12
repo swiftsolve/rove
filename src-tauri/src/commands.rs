@@ -3,7 +3,7 @@ use crate::scanner::DeviceScanner;
 use crate::AppState;
 use rove_core::{
     net_util::lock,
-    store::{SpeedHistoryRecord, Store},
+    store::{NetworkEvent, SpeedHistoryRecord, Store},
     types::*,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -17,7 +17,9 @@ fn err_str(e: impl std::fmt::Display) -> String {
 }
 
 #[tauri::command]
-pub async fn get_network_info() -> NetworkInfo {
+pub async fn get_network_info(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<NetworkInfo, String> {
     tracing::info!("network info requested");
     let started = std::time::Instant::now();
     let info = rove_core::network_info::network_info().await;
@@ -26,7 +28,18 @@ pub async fn get_network_info() -> NetworkInfo {
         interface = ?info.interface_name,
         "network info resolved"
     );
-    info
+    // Log a connection event if this machine has moved onto a new Wi-Fi/Ethernet
+    // network since the last poll. Best-effort: a DB hiccup must not fail the
+    // network-info read the whole UI depends on.
+    let _ = store.record_connection(
+        &info.connection_type,
+        info.details.ssid.as_deref(),
+        info.interface_name.as_deref(),
+        info.ip_address.as_deref(),
+        info.mac_address.as_deref(),
+        rove_core::net_util::now_ms() as i64,
+    );
+    Ok(info)
 }
 
 #[tauri::command]
@@ -55,7 +68,7 @@ pub async fn get_devices(
 ) -> Result<LanDeviceScan, String> {
     tracing::info!("device scan started");
     let started = std::time::Instant::now();
-    let scan = scanner.scan().await;
+    let mut scan = scanner.scan().await;
     tracing::info!(
         devices = scan.devices.len(),
         subnet = ?scan.subnet,
@@ -63,18 +76,64 @@ pub async fn get_devices(
         elapsed_ms = started.elapsed().as_millis() as u64,
         "device scan finished"
     );
-    let _ = store.record_devices(&scan.devices, rove_core::net_util::now_ms() as i64);
+    let now = rove_core::net_util::now_ms() as i64;
+    let _ = store.record_devices(&scan.devices, now);
+    // Merge in recently-seen devices that didn't answer this scan, so an offline
+    // device stays listed (marked Offline, with a "last seen" time) instead of
+    // vanishing the moment the OS ages its ARP entry out.
+    if let Ok(merged) =
+        store.devices_with_offline(&scan.devices, now, rove_core::store::OFFLINE_LIST_KEEP_MS)
+    {
+        scan.devices = merged;
+    }
     Ok(scan)
 }
 
 #[tauri::command]
-pub async fn run_diagnostics() -> NetworkDiagnostics {
-    rove_core::diagnostics::run().await
+pub async fn run_diagnostics(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<NetworkDiagnostics, String> {
+    // Fall back to the built-in defaults on a store read error so the card never
+    // blanks over a transient DB hiccup.
+    let services = store.services().unwrap_or_else(|_| rove_core::store::default_service_list());
+    Ok(rove_core::diagnostics::run(&services).await)
 }
 
 #[tauri::command]
-pub async fn run_diagnostics_live() -> rove_core::types::LiveDiagnostics {
-    rove_core::diagnostics::run_live().await
+pub async fn run_diagnostics_live(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<rove_core::types::LiveDiagnostics, String> {
+    let services = store.services().unwrap_or_else(|_| rove_core::store::default_service_list());
+    Ok(rove_core::diagnostics::run_live(&services).await)
+}
+
+#[tauri::command]
+pub async fn test_service(host: String) -> Option<f64> {
+    rove_core::diagnostics::probe_service(&host).await
+}
+
+#[tauri::command]
+pub async fn list_services(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+    store.services().map_err(err_str)
+}
+
+#[tauri::command]
+pub async fn add_service(
+    store: tauri::State<'_, Arc<Store>>,
+    name: String,
+    host: String,
+) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+    store.add_service(&name, &host).map_err(err_str)
+}
+
+#[tauri::command]
+pub async fn delete_service(
+    store: tauri::State<'_, Arc<Store>>,
+    host: String,
+) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+    store.delete_service(&host).map_err(err_str)
 }
 
 #[tauri::command]
@@ -144,6 +203,13 @@ pub fn get_speed_history(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<Vec<SpeedHistoryRecord>, String> {
     store.speed_history().map_err(err_str)
+}
+
+/// The network-change feed (newest first). Populated as a side effect of device
+/// scans — see `get_devices`/`Store::record_devices` — so this is a cheap read.
+#[tauri::command]
+pub fn get_network_events(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<NetworkEvent>, String> {
+    store.network_events(200).map_err(err_str)
 }
 
 #[tauri::command]

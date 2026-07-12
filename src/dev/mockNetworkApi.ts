@@ -17,8 +17,10 @@ import type {
   LiveThroughput,
   NetworkAPI,
   NetworkDiagnostics,
+  NetworkEvent,
   NetworkInfo,
   NetworkInterfaceSummary,
+  ServiceDefinition,
   SpeedHistoryEntry,
   SpeedResult,
   SpeedTestProgress,
@@ -222,7 +224,8 @@ function humanizeModel(model: string | null): string | null {
 
 // Rows omit kindConfidence except where the hedge is the point (the vendor-only
 // TP-Link plug); the map below fills in the common 'high'.
-type MockLanDevice = Omit<LanDevice, 'kindConfidence'> & Partial<Pick<LanDevice, 'kindConfidence'>>
+type MockLanDevice = Omit<LanDevice, 'kindConfidence' | 'lastSeen'> &
+  Partial<Pick<LanDevice, 'kindConfidence' | 'lastSeen'>>
 
 // one privacy-randomized guest phone and one genuine unknown — the messiness a
 // real scan turns up. Self matches the connection card (same IP + MAC).
@@ -260,7 +263,53 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     ...device,
     model: humanizeModel(device.model),
     kindConfidence: device.kindConfidence ?? 'high',
+    // Reachable devices were just seen; the offline camera is a roster device
+    // merged back in, so it carries an older "last seen" to exercise the label.
+    lastSeen: device.reachable ? Date.now() : Date.now() - 5 * 60 * 60_000,
   })),
+}
+
+// A few days of change history, newest first — one of each kind so the feed's
+// grouping, icons and severities all show. Timestamps are relative to now so
+// the day headers ("Today"/"Yesterday") stay meaningful in the demo.
+function seedNetworkEvents(): NetworkEvent[] {
+  const min = 60_000
+  const hour = 3_600_000
+  const day = 86_400_000
+  const rows: readonly (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
+    { ago: 3 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, randomized: false },
+    { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, randomized: true },
+    { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: '192.168.1.51', name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
+    { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, randomized: false },
+    { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
+    { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
+    { ago: 4 * day + 6 * hour, type: 'gateway_changed', severity: 'critical', mac: '24:5a:4c:11:b2:03', ip: '192.168.1.1', name: 'Router', kind: null, oldValue: '9c:a2:f4:00:1d:e2', newValue: '24:5a:4c:11:b2:03', randomized: false },
+    { ago: 6 * day, type: 'initial_scan', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: '17', randomized: false },
+  ]
+  return rows.map(({ ago, ...rest }, i) => ({ ...rest, id: rows.length - i, ts: Date.now() - ago }))
+}
+
+// The user's editable service list, seeded with the built-in defaults. Add /
+// delete mutate this in place so listServices and the diagnostics probes below
+// all read the same source of truth — mirroring the SQLite-backed real store.
+const mockServices: ServiceDefinition[] = [
+  { name: 'Google', host: 'google.com' },
+  { name: 'Cloudflare', host: 'cloudflare.com' },
+  { name: 'YouTube', host: 'youtube.com' },
+  { name: 'Netflix', host: 'netflix.com' },
+  { name: 'Zoom', host: 'zoom.us' },
+]
+
+// A stable-ish baseline latency per host so the card doesn't reshuffle each
+// poll. Unknown hosts (freshly added) get a plausible value derived from the
+// host string, so a newly-added service reads as reachable in the mock.
+function mockLatencyFor(host: string): number {
+  const seed = [...host].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  return Math.round((20 + (seed % 90)) * 10) / 10
+}
+
+function mockServiceReachability(): NetworkDiagnostics['services'] {
+  return mockServices.map((s) => ({ ...s, latencyMs: mockLatencyFor(s.host) }))
 }
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
@@ -278,13 +327,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
     country: 'United States',
     publicIp: '203.0.113.57',
   },
-  services: [
-    { name: 'Google', host: 'google.com', latencyMs: 28.4 },
-    { name: 'Cloudflare', host: 'cloudflare.com', latencyMs: 19.6 },
-    { name: 'YouTube', host: 'youtube.com', latencyMs: 33.0 },
-    { name: 'Netflix', host: 'netflix.com', latencyMs: 44.6 },
-    { name: 'Zoom', host: 'zoom.us', latencyMs: 76.2 },
-  ],
+  services: mockServiceReachability(),
 }
 
 const MOCK_SPEED_RESULT: SpeedResult = {
@@ -399,6 +442,8 @@ function createMockNetworkApi(): NetworkAPI {
 
   // ---- speed history (in-memory; seeded, resets on reload) ----
   let mockHistory: SpeedHistoryEntry[] = seedSpeedHistory()
+  // ---- network-change feed (in-memory; seeded, resets on reload) ----
+  const mockEvents: NetworkEvent[] = seedNetworkEvents()
 
   return {
     getNetworkInfo: async () => {
@@ -432,6 +477,10 @@ function createMockNetworkApi(): NetworkAPI {
       }
     })(),
     onNetworkChanged: () => () => undefined,
+    getNetworkEvents: async () => {
+      await delay(200)
+      return mockEvents
+    },
     getDataUsage: async () => {
       await delay(200)
       const day = 86_400_000
@@ -465,7 +514,7 @@ function createMockNetworkApi(): NetworkAPI {
     },
     runDiagnostics: async () => {
       await delay(700)
-      return MOCK_DIAGNOSTICS
+      return { ...MOCK_DIAGNOSTICS, services: mockServiceReachability() }
     },
     // Wobble the live numbers around their baselines each poll so the count-up
     // animation is visibly exercised in the browser mock.
@@ -482,7 +531,7 @@ function createMockNetworkApi(): NetworkAPI {
               packetLoss: basePing.packetLoss,
             }
           : null,
-        services: MOCK_DIAGNOSTICS.services.map((service) => ({
+        services: mockServiceReachability().map((service) => ({
           ...service,
           latencyMs:
             service.latencyMs == null
@@ -490,6 +539,30 @@ function createMockNetworkApi(): NetworkAPI {
               : Math.max(1, wobble(service.latencyMs, 12)),
         })),
       }
+    },
+    testService: async (host: string) => {
+      // A ~probe delay, then a plausible latency. A couple of reserved hosts
+      // resolve as unreachable so the dialog's failure path is exercisable.
+      await delay(650)
+      if (/^10\.|unreachable/i.test(host)) return null
+      return mockLatencyFor(host)
+    },
+    listServices: async () => {
+      await delay(120)
+      return mockServices.map((s) => ({ ...s }))
+    },
+    addService: async (name: string, host: string) => {
+      await delay(160)
+      const existing = mockServices.findIndex((s) => s.host === host)
+      if (existing >= 0) mockServices[existing] = { name, host }
+      else mockServices.push({ name, host })
+      return mockServices.map((s) => ({ ...s }))
+    },
+    deleteService: async (host: string) => {
+      await delay(160)
+      const at = mockServices.findIndex((s) => s.host === host)
+      if (at >= 0) mockServices.splice(at, 1)
+      return mockServices.map((s) => ({ ...s }))
     },
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       cancelled = false

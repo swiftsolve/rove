@@ -1,0 +1,185 @@
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 4px 2px;
+}
+
+/* One node on the line: a marker column and the content beside it. */
+.tl-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 14px;
+  padding-bottom: 22px;
+}
+
+/* No trailing gap after the final node — the line ends at it, and the
+   per-node padding is only there to space one node from the next. */
+.tl-item:last-child {
+  padding-bottom: 0;
+}
+
+/* The connecting line: from just below this node down to the next one. Dropped
+   on the last item so the line ends cleanly at the final marker. */
+.tl-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px; /* centre of the 28px marker column, minus half the 2px line */
+  top: 30px; /* marker height (28) + a 2px gap so it starts below the node */
+  bottom: 0;
+  width: 2px;
+  background: var(--border-strong);
+  border-radius: 1px;
+}
+
+.tl-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  /* Sit above the connector so the line reads as passing behind the nodes. */
+  z-index: 1;
+}
+
+/* The node is tinted by tone so the timeline is scannable at a glance. Every
+   tone uses the same faint currentColor wash for its fill; only the glyph
+   colour changes. */
+.tl-marker[class*='tone-'] {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+/* Arrivals & connections — a device joined, came back, or linked up. */
+.tl-marker.tone-join {
+  color: var(--positive);
+}
+
+/* A departure — quiet, not alarming; a known device just dropped off. Given a
+   ring outline (rather than a filled wash) so the node reads as "hollow/gone",
+   setting it apart from the filled arrival/change markers. */
+.tl-marker.tone-leave {
+  color: var(--text-tertiary);
+  background: var(--bg-inset);
+  box-shadow: inset 0 0 0 1.5px var(--border-strong);
+}
+
+/* The baseline snapshot — calm and neutral. */
+.tl-marker.tone-baseline {
+  color: var(--accent);
+}
+
+/* Cautionary — a new access point appeared (warning severity). */
+.tl-marker.tone-alert {
+  color: var(--warning);
+}
+
+/* Alarming — the gateway changed (critical severity). */
+.tl-marker.tone-danger {
+  color: var(--negative);
+}
+
+.tl-content {
+  display: flex;
+  flex-direction: column;
+  /* One gap value governs the spacing between every line — no per-line margins,
+     so time → title → device → change → address are all evenly spaced. */
+  gap: 4px;
+  min-width: 0;
+  /* Nudge the text down so the timestamp's cap-height lines up with the marker. */
+  padding-top: 2px;
+}
+
+/* Uniform line box so the visual gap between lines matches the flex gap and
+   doesn't drift with each line's font size. */
+.tl-content > * {
+  line-height: 1.3;
+}
+
+.tl-time {
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+}
+
+.tl-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--text-section);
+  overflow-wrap: anywhere;
+}
+
+.tl-subject {
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+}
+
+/* The device category shown after the name ("Apple · Phone") — a step quieter
+   so the name still leads. The dot separator is a shared InlineMeta dot icon. */
+.tl-subject-kind {
+  color: var(--text-tertiary);
+}
+
+/* old → new transition for change events. */
+.tl-change {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+}
+
+.tl-old {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.tl-new {
+  color: var(--text-secondary);
+}
+
+.tl-arrow {
+  color: var(--text-tertiary);
+}
+
+/* Address line, one step quieter than everything above it — its parts are
+   separated by dot icons (MAC · Randomized · IP), via the shared InlineMeta. */
+.tl-meta {
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Blank state — icon + short line, generously spaced and centred. */
+.events-empty {
+  gap: 16px;
+  text-align: center;
+}
+
+.events-empty-icon {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.events-empty-title {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+.events-hint {
+  max-width: 42ch;
+  line-height: 1.45;
+  font-size: 12px;
+  text-align: center;
+}
+
+.events-empty .btn-secondary {
+  margin-top: 4px;
+}

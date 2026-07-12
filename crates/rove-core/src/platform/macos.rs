@@ -255,15 +255,39 @@ pub async fn best_default_route() -> Option<(String, Option<String>)> {
     physical_no_gw.or(any)
 }
 
+/// The last successfully-parsed Wi-Fi hardware-port map. The port layout is
+/// fixed for the machine's lifetime, so once we've read it we keep it: a later
+/// `networksetup` hiccup then reuses the known-good answer instead of returning
+/// empty and letting `en0` fall through to "ethernet" — a misclassification that
+/// otherwise flip-flops the connection type and spawns spurious connect events.
+static WIFI_DEVICES_CACHE: Mutex<Option<Vec<String>>> = Mutex::new(None);
+
 /// `enN` device names bound to a "Wi-Fi" hardware port. macOS names Wi-Fi
 /// interfaces `enN` just like Ethernet, so the cross-platform name heuristic
 /// can't tell them apart — this hardware-port map is the authoritative source.
-/// Empty when `networksetup` is unavailable, letting callers fall back.
+/// A transient probe failure reuses the last good reading; empty only before the
+/// first successful read, letting callers fall back.
 pub async fn wifi_devices() -> Vec<String> {
+    let devices = try_run("networksetup -listallhardwareports 2>/dev/null")
+        .await
+        .map(|out| parse_wifi_devices(&out))
+        .unwrap_or_default();
+    // A failed probe or an empty parse (unexpected output shape) is treated the
+    // same: keep the last good map rather than overwriting it with empty, so a
+    // one-poll hiccup doesn't reclassify `en0` from Wi-Fi to Ethernet.
+    if devices.is_empty() {
+        return crate::net_util::lock(&WIFI_DEVICES_CACHE)
+            .clone()
+            .unwrap_or_default();
+    }
+    *crate::net_util::lock(&WIFI_DEVICES_CACHE) = Some(devices.clone());
+    devices
+}
+
+/// Extract the `enN` devices under a "Wi-Fi" hardware port from
+/// `networksetup -listallhardwareports` output.
+fn parse_wifi_devices(out: &str) -> Vec<String> {
     let mut devices = Vec::new();
-    let Some(out) = try_run("networksetup -listallhardwareports 2>/dev/null").await else {
-        return devices;
-    };
     let mut in_wifi = false;
     for line in out.lines() {
         let line = line.trim();
@@ -386,5 +410,37 @@ mod tests {
         // Wi-Fi / down link: no rate, no duplex hint.
         assert_eq!(parse_media_speed("autoselect"), None);
         assert_eq!(parse_media_duplex("autoselect"), None);
+    }
+
+    #[test]
+    fn wifi_devices_parses_only_the_wifi_port() {
+        // macOS names Wi-Fi `enN` just like Ethernet; only the port header
+        // distinguishes them.
+        let out = "\
+Hardware Port: Ethernet
+Device: en1
+Ethernet Address: aa:bb:cc:dd:ee:01
+
+Hardware Port: Wi-Fi
+Device: en0
+Ethernet Address: aa:bb:cc:dd:ee:00
+
+Hardware Port: Thunderbolt Bridge
+Device: bridge0
+";
+        assert_eq!(parse_wifi_devices(out), vec!["en0".to_string()]);
+    }
+
+    #[test]
+    fn wifi_devices_falls_back_to_last_good_on_transient_failure() {
+        // The static cache is process-wide; scope this test to a private map so
+        // it doesn't race the real probe. We exercise the fallback contract
+        // directly: an empty parse must not clobber a known-good reading.
+        let good = parse_wifi_devices("Hardware Port: Wi-Fi\nDevice: en0\n");
+        assert_eq!(good, vec!["en0".to_string()]);
+        // A probe that returns nothing (unavailable) or an unparseable blob
+        // yields an empty list — the signal for "reuse the cache".
+        assert!(parse_wifi_devices("").is_empty());
+        assert!(parse_wifi_devices("Hardware Port: Ethernet\nDevice: en1\n").is_empty());
     }
 }

@@ -6,6 +6,7 @@ import { useLiveThroughputSource } from '@/hooks/useLiveThroughput'
 import { usePageVisible } from '@/hooks/usePageVisible'
 import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
+import { useNetworkEvents } from '@/hooks/useNetworkEvents'
 import { useDataUsage } from '@/hooks/useDataUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { AlertIcon, BrandIcon, CloseIcon, MinimizeIcon, OfflineIcon, RefreshIcon } from '@/components/ui/Icons'
@@ -16,6 +17,7 @@ import HomeView from '@/views/HomeView'
 import SpeedView from '@/views/SpeedView'
 import InterfacesView from '@/views/InterfacesView'
 import DevicesView from '@/views/DevicesView'
+import EventsView from '@/views/EventsView'
 import UsageView from '@/views/UsageView'
 import DiagnosticsView from '@/views/DiagnosticsView'
 import SettingsView from '@/views/SettingsView'
@@ -245,6 +247,21 @@ export default function App(): JSX.Element {
   const deviceOnline = deviceScan
     ? deviceScan.devices.filter((device) => device.reachable).length
     : null
+  // The change feed is a cheap DB read (populated as a side effect of scans), so
+  // keep it enabled whenever the Events tab is open; it also polls quietly.
+  const {
+    events,
+    isLoading: eventsLoading,
+    error: eventsError,
+    reload: reloadEvents,
+  } = useNetworkEvents(activeTab === 'events')
+  // A scan is what generates new events, so pull the feed the moment one
+  // finishes (devicesScanning true→false) rather than waiting on the poll.
+  const wasScanningRef = useRef(false)
+  useEffect(() => {
+    if (wasScanningRef.current && !devicesScanning) void reloadEvents()
+    wasScanningRef.current = devicesScanning
+  }, [devicesScanning, reloadEvents])
   const {
     diagnostics,
     isRunning: diagnosticsRunning,
@@ -342,6 +359,16 @@ export default function App(): JSX.Element {
                   isScanning={devicesScanning}
                   error={devicesError}
                   onRescan={() => void rescanDevices()}
+                />
+              )}
+
+              {activeTab === 'events' && (
+                <EventsView
+                  events={events}
+                  isLoading={eventsLoading}
+                  isScanning={devicesScanning}
+                  error={eventsError}
+                  onRefresh={() => void rescanDevices()}
                 />
               )}
 

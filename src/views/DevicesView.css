@@ -7,25 +7,77 @@
   gap: 6px;
 }
 
-/* Live rescan indicator trailing the subnet: a pulsing green dot + one-word
-   stage. Center-aligned as its own group so the dot sits mid-text rather than
-   on the baseline, and set off from the subnet value with a little extra room. */
-.devices-scan {
-  display: inline-flex;
-  align-items: center;
-  align-self: center;
-  gap: 5px;
+/* The shared slot for the online tally and the scan status. Positioned so a
+   leaving indicator can be pulled out of flow and overlaid at left:0 while the
+   entering one holds the width — they cross-slide in the same place instead of
+   pushing each other sideways. The 3px set-off from the subnet lives here now. */
+.devices-indicator {
+  position: relative;
+  display: inline-block;
   margin-left: 3px;
+}
+
+/* The one that's on its way out overlays the slot's start rather than taking
+   layout space, so the incoming one doesn't get shoved right then snap back. */
+.devices-online.leaving,
+.devices-scan.leaving {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Count of devices that answered the last scan, sitting between the subnet and
+   the scan-status word. A static green dot marks it as a live/online tally
+   (distinct from the scan indicator's pulsing dot). */
+/* Sits on the same text baseline as the subnet value (inherits the row's
+   align-items: baseline — no align-self override). The dot is an inline element
+   nudged to the middle of the text so only the marker floats, not the label.
+   Same 3px set-off as the scan indicator so the dot + text land in the exact
+   same spot when the subtitle toggles between "N online" and the scan status. */
+.devices-online {
   color: var(--text-tertiary);
-  /* Slide in from the left when a scan starts; .leaving reverses the motion
-     back out (the component lingers mounted just long enough for it to play). */
+  white-space: nowrap;
+  /* Slides in from the left when a scan finishes — same motion as the scan
+     status it replaces (shared keyframes below). */
   animation: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
 }
 
-/* On first load the indicator fills the slot alone (no subnet to its left), so
-   drop the set-off margin and let the dot line up with the title's edge. */
-.devices-scan:first-child {
-  margin-left: 0;
+/* Slide back out to the left when the next scan starts and the status returns. */
+.devices-online.leaving {
+  animation: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+}
+
+.devices-online-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--positive);
+  margin-right: 5px;
+  /* Centre on the cap/digit height of the numbers beside it ("16", the subnet),
+     which sits a touch above the x-height middle vertical-align gives. */
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.devices-online .num {
+  color: var(--text-secondary);
+}
+
+/* Live rescan indicator trailing the subnet: a pulsing green dot + one-word
+   stage. Inline (not flex) so the dot can be nudged to the text's optical middle
+   with vertical-align — flex centering put it on the line-box centre, which
+   reads a touch low. Sits on the subnet's baseline, set off with a little room. */
+.devices-scan {
+  display: inline-block;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  /* Slide in from the left when a scan starts; .leaving reverses the motion
+     back out (the component lingers mounted just long enough for it to play).
+     The set-off from the subnet lives on the .devices-indicator wrapper; on
+     first load (no devices) the status renders bare in the subtitle with none. */
+  animation: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
 }
 
 .devices-scan.leaving {
@@ -51,10 +103,16 @@
 }
 
 .devices-scan-dot {
+  display: inline-block;
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--positive);
+  margin-right: 5px;
+  /* Same centering as the online dot, so both land in the exact same spot. */
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
   animation: status-pulse 1.6s ease-in-out infinite;
 }
 
@@ -206,11 +264,18 @@
 /* Device category as a subtitle line beneath the name — a step brighter than
    the MAC so the hierarchy reads name › type › address. */
 .device-row-kind {
+  flex-wrap: wrap;
   color: var(--text-secondary);
 }
 
 .device-row-kind.gateway {
   color: var(--positive);
+}
+
+/* "Last seen 5h ago" under an offline device — dimmer than the identity line
+   so it reads as status, not another attribute. */
+.device-row-lastseen {
+  color: var(--text-tertiary);
 }
 
 .device-row-mac {

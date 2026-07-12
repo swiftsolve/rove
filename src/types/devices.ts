@@ -63,6 +63,12 @@ export interface LanDevice {
   readonly isSelf: boolean
   /** Neighbor entry is currently reachable (vs. merely cached/stale). */
   readonly reachable: boolean
+  /**
+   * Epoch-ms this device last answered. Present so an offline device can show
+   * "last seen 3m ago"; null on a device that hasn't been reconciled with the
+   * roster. Offline devices are dropped from the list 24h after this.
+   */
+  readonly lastSeen: number | null
 }
 
 /**
