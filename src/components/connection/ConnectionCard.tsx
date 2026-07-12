@@ -16,6 +16,7 @@ import {
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from '@/components/ui/Icons'
+import ShareWifiButton from './ShareWifiButton'
 import './ConnectionCard.css'
 
 interface ConnectionCardProps {
@@ -146,13 +147,18 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
 
   return (
     <section className={`conn-card ${display.variant}`}>
-      <button
-        type="button"
-        className="conn-strip"
-        onClick={toggleExpanded}
-        aria-expanded={expanded}
-        aria-label={detailsLabel}
-      >
+      <div className="conn-strip">
+        {/* A transparent full-strip button keeps the whole row one expand target
+            without wrapping the QR button inside another button (invalid HTML).
+            The content above it stays click-through so the overlay still toggles;
+            the QR button opts back in and handles its own click. */}
+        <button
+          type="button"
+          className="conn-strip-toggle"
+          onClick={toggleExpanded}
+          aria-expanded={expanded}
+          aria-label={detailsLabel}
+        />
         <div className="conn-strip-icon">
           <ConnectionIcon variant={display.variant} />
         </div>
@@ -164,6 +170,11 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
             <div className="text-secondary conn-strip-sub">{display.subtitle}</div>
           )}
         </div>
+        {isWifiNetwork(info) && (
+          <span className="conn-strip-share">
+            <ShareWifiButton />
+          </span>
+        )}
         {isWifiNetwork(info) && info.signalStrength != null && (
           <SignalMeter strength={info.signalStrength} />
         )}
@@ -172,7 +183,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
           className={`conn-chevron ${expanded ? 'open' : ''}`}
           aria-hidden
         />
-      </button>
+      </div>
 
       <div className={`conn-details-wrap ${expanded ? 'open' : ''}`}>
         <div className="conn-details row-list">
