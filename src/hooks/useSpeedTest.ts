@@ -211,10 +211,18 @@ async function runTest(): Promise<void> {
 }
 
 function cancelTest(): void {
+  if (!state.testing) return
   // Mark the in-flight run cancelled so a stop during the pre-flight still aborts
-  // it, then ask the backend to cancel the test itself (a no-op if it hasn't
-  // started — which is exactly the case the run flag covers).
-  if (state.testing) cancelledRun = runSeq
+  // it before kicking off the backend test.
+  cancelledRun = runSeq
+  // Settle the UI immediately rather than waiting for the backend's test promise
+  // to reject — that lag is what made Stop feel unresponsive. Bumping runSeq makes
+  // the in-flight run non-current, so its trailing progress and terminal writes are
+  // ignored and can't clobber the idle state we set here.
+  runSeq++
+  setState({ ...state, testing: false, progress: INITIAL_PROGRESS, error: null })
+  // Still ask the backend to actually stop its work (a no-op if it hasn't started —
+  // which is exactly the case the run flag covers).
   void window.networkAPI?.cancelSpeedTest()
 }
 
