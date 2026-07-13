@@ -6,6 +6,15 @@
   gap: var(--gap-sm);
 }
 
+/* The reachability readout — the latency value or the "Unreachable" status —
+   sits a step down from the default row value. The Services card is a dense list
+   of secondary metrics, so the smaller text keeps it compact and lets the
+   service name lead. Scoped to service rows so other latency readouts (Router,
+   DNS) keep their size. */
+.svc-row .text-value {
+  font-size: var(--text-small);
+}
+
 /* The header cluster: edit + add icon buttons, snug together. */
 .svc-actions {
   display: flex;

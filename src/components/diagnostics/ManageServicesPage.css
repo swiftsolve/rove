@@ -130,6 +130,9 @@
 button.mgsvc-add {
   color: #fff;
   background: var(--accent);
+  /* A step up from the base .btn-primary size, matching the Run test button. */
+  padding: 10px 14px;
+  font-size: var(--text-small);
 }
 
 button.mgsvc-add:hover:not(:disabled) {
