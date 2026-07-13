@@ -49,7 +49,16 @@
 }
 
 /* The header's Run test button is a solid accent button, matching the app's other
-   primary actions (Add service), deepening to --accent-hover on hover. */
+   primary actions (Add service), deepening to --accent-hover on hover. Sized a
+   step up from the base .btn-primary so this headline action reads a little
+   bigger; the Add-service buttons carry the same bump to stay matched. The
+   element+class selector out-specifies the base .btn-primary so the larger size
+   wins regardless of stylesheet order. */
+button.speed-run-btn {
+  padding: 10px 14px;
+  font-size: var(--text-small);
+}
+
 .speed-run-btn:not(.is-stop) {
   color: #fff;
   background: var(--accent);

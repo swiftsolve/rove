@@ -155,7 +155,7 @@ export function ManageServicesPage({
   return (
     <Subpage
       title="Services"
-      description="Add, edit, or remove the services you track"
+      description="Add, edit, or remove the services"
       action={addButton}
       className="mgsvc-page"
       onBack={onBack}
@@ -188,7 +188,7 @@ export function ManageServicesPage({
                   {latency === undefined ? (
                     <span className="text-hint">…</span>
                   ) : latency === null || erroring ? (
-                    <span className="val-bad">Unreachable</span>
+                    <span className="val-bad">Down</span>
                   ) : (
                     <MetricValue value={latency} level={serviceLevel(latency)} format={formatLatencyMs} />
                   )}

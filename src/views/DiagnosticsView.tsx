@@ -60,7 +60,7 @@ function formatLocation(isp: IspInfo): string | null {
 }
 
 const SERVICE_INFO_HINT =
-  'Cloud service reachability. The number is how long a secure (TLS) handshake takes to reach each service. A service that can’t be reached, or that answers but is failing, shows “Unreachable”.'
+  'Cloud service reachability, checked on two axes: a secure (TLS) handshake to reach the host, and an HTTP request to confirm it’s serving. The number is the handshake time; a service that can’t be reached, or that answers but is failing, shows “Down”.'
 
 export default function DiagnosticsView({
   diagnostics,
@@ -155,7 +155,7 @@ export default function DiagnosticsView({
               {ping == null ? (
                 '—'
               ) : ping.avgMs >= FAILED_PING.avgMs ? (
-                <span className="val-bad">Unreachable</span>
+                <span className="val-bad">Down</span>
               ) : (
                 <MetricValue value={ping.avgMs} level={latencyLevel(ping.avgMs)} format={formatLatencyMs} />
               )}
@@ -164,7 +164,7 @@ export default function DiagnosticsView({
               {ping == null ? (
                 '—'
               ) : ping.jitterMs >= FAILED_PING.avgMs ? (
-                'Unreachable'
+                'Down'
               ) : (
                 <MetricValue value={ping.jitterMs} format={formatLatencyMs} />
               )}
