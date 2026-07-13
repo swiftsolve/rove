@@ -241,17 +241,18 @@
   padding: var(--gap-lg);
 }
 
-/* Matches the size of the manage page's "Add service" (a .btn-primary): the same
-   caption text, weight, and padding, so the two read as one control. */
+/* Matches the size of the manage page's "Add service": the same text, weight, and
+   padding, so the two read as one control (both bumped a step above the base
+   .btn-primary size). */
 .svc-dialog-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--gap-tight);
   min-width: 76px;
-  padding: var(--gap-sm) var(--gap-stack);
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
-  font-size: var(--text-caption);
+  font-size: var(--text-small);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   color: var(--text-secondary);

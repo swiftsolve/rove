@@ -126,3 +126,83 @@
   max-width: 260px;
   text-align: center;
 }
+
+/* Header overflow menu: a kebab that opens a small dropdown with Delete. Mirrors
+   the per-row menu on the manage-services page so the two read the same. */
+.history-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.history-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.history-kebab:hover,
+.history-kebab[aria-expanded='true'] {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.history-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 148px;
+  padding: var(--gap-xs);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+  animation: history-menu-in var(--duration-fast) var(--ease-out);
+}
+
+.history-menuitem {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  width: 100%;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  text-align: left;
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.history-menuitem:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.history-menuitem.is-danger {
+  color: var(--negative);
+}
+
+.history-menuitem.is-danger:hover {
+  color: var(--negative);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
+}
+
+@keyframes history-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

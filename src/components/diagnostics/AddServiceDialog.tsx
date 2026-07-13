@@ -196,7 +196,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
                 <ServiceIcon host={outcome.host} name={name || outcome.name} size={18} />
                 <span className="svc-dialog-result-name">{name || outcome.name}</span>
                 {outcome.latencyMs == null ? (
-                  <span className="svc-dialog-result-status val-bad">Unreachable</span>
+                  <span className="svc-dialog-result-status val-bad">Down</span>
                 ) : (
                   <span className={`svc-dialog-result-status ${serviceLevel(outcome.latencyMs)}`}>
                     {formatLatencyMs(outcome.latencyMs)}

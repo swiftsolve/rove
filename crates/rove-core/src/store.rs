@@ -1031,9 +1031,10 @@ impl Store {
                     kd.mac, kd.hostname, kd.vendor, kd.os, kd.kind, kd.randomized
              FROM network_events e
              LEFT JOIN known_devices kd ON kd.mac = e.mac
-             -- Hostname-change events are no longer produced; hide any that a
-             -- prior version already recorded so they age out of view at once.
-             WHERE e.type != 'hostname_changed'
+             -- Retired event types (hostname changes, and the app start/stop
+             -- lifecycle rows) are no longer produced; hide any that a prior
+             -- version already recorded so they age out of view at once.
+             WHERE e.type NOT IN ('hostname_changed', 'app_started', 'app_stopped')
              ORDER BY e.ts DESC, e.id DESC LIMIT ?1",
         )?;
         let rows = stmt.query_map([limit], |row| {

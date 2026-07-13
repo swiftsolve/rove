@@ -20,6 +20,19 @@ export interface AppLocation {
 
 export const HOME_LOCATION: AppLocation = { tab: 'home', speedSub: null }
 
+/**
+ * The screen a subpage's Back button should return to: a subpage falls back to
+ * its own tab's main page, anything else to Home. Used when there's no app
+ * history entry to pop (e.g. loaded straight onto a subpage, or embedded in a
+ * host page), so Back always lands somewhere sensible in-app instead of
+ * escaping to whatever the browser had before us.
+ */
+function parentLocation(location: AppLocation): AppLocation {
+  if (location.speedSub != null) return { tab: location.tab, speedSub: null }
+  if (location.diagSub != null) return { tab: location.tab, speedSub: null, diagSub: null }
+  return HOME_LOCATION
+}
+
 /** A short, stable key for a location — handy for keying effects (e.g. scroll). */
 export function locationKey(location: AppLocation): string {
   return `${location.tab}:${location.speedSub?.view ?? ''}:${location.diagSub?.view ?? ''}`
@@ -77,6 +90,14 @@ export function useNavigation(): Navigation {
   // pushState side effect inside a setState updater (StrictMode invokes those
   // twice in dev, which would push two entries and make Back need two presses).
   const locationRef = useRef<AppLocation>(HOME_LOCATION)
+  // How many of *our* entries sit behind the active one — i.e. how many times we
+  // can call `history.back()` and stay inside the app. `navigate` pushes one on
+  // (increment); popping one off via back/forward (popstate) takes one back. It
+  // starts at 0 and never counts entries the host page left behind us, so Back
+  // can tell "there's an app screen to return to" from "stepping back would leave
+  // the app" — the latter is where the web/mobile demo used to escape to the
+  // previous page (or do nothing at the very first entry).
+  const appDepthRef = useRef(0)
 
   const applyLocation = useCallback((next: AppLocation): void => {
     locationRef.current = next
@@ -98,6 +119,11 @@ export function useNavigation(): Navigation {
   // Alt+←/→ all arrive here.
   useEffect(() => {
     const onPop = (event: PopStateEvent): void => {
+      // One of our entries just came off the top (back button, OS gesture,
+      // thumb button, Alt+←). Under-counting here is harmless — Back would just
+      // fall back to the in-app parent — whereas over-counting could escape, so
+      // never drop below zero.
+      appDepthRef.current = Math.max(0, appDepthRef.current - 1)
       applyLocation(readLocation(event.state) ?? HOME_LOCATION)
     }
     window.addEventListener('popstate', onPop)
@@ -109,12 +135,26 @@ export function useNavigation(): Navigation {
     // fills with duplicate entries (e.g. tapping the already-active tab).
     if (sameLocation(locationRef.current, to)) return
     window.history.pushState(writeState(to), '')
+    appDepthRef.current += 1
     applyLocation(to)
   }, [applyLocation])
 
   const back = useCallback((): void => {
-    window.history.back()
-  }, [])
+    // If one of our own entries is behind us, pop it — this keeps the app's Back
+    // button, the OS back gesture and the history stack in lockstep (the
+    // `popstate` handler mirrors the previous screen). If nothing of ours is
+    // behind us, `history.back()` would leave the app entirely (or do nothing at
+    // the first entry), so instead navigate in-app to the current screen's
+    // parent and rewrite the current entry to match.
+    if (appDepthRef.current > 0) {
+      window.history.back()
+      return
+    }
+    const parent = parentLocation(locationRef.current)
+    if (sameLocation(locationRef.current, parent)) return
+    window.history.replaceState(writeState(parent), '')
+    applyLocation(parent)
+  }, [applyLocation])
 
   return { location, navigate, back }
 }
