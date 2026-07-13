@@ -285,7 +285,13 @@ function seedNetworkEvents(): NetworkEvent[] {
     { ago: 30 * hour, type: 'gateway_changed', severity: 'critical', mac: '24:5a:4c:11:b2:03', ip: '192.168.1.1', name: 'Router', kind: null, oldValue: '9c:a2:f4:00:1d:e2', newValue: '24:5a:4c:11:b2:03', randomized: false },
     { ago: 34 * hour, type: 'initial_scan', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: '17', randomized: false },
   ]
-  return rows.map(({ ago, ...rest }, i) => ({ ...rest, id: rows.length - i, ts: Date.now() - ago }))
+  // Serve newest-first, mirroring the backend's `ORDER BY ts DESC`. The rows
+  // above are authored out of strict time order, so sort by age before stamping
+  // ids/timestamps — otherwise the timeline's day grouping (which assumes a
+  // time-ordered feed) can emit two sections for the same day. Newer events get
+  // the higher id, matching the store's AUTOINCREMENT.
+  const ordered = [...rows].sort((a, b) => a.ago - b.ago)
+  return ordered.map(({ ago, ...rest }, i) => ({ ...rest, id: ordered.length - i, ts: Date.now() - ago }))
 }
 
 // The user's editable service list, seeded with the built-in defaults. Add /
