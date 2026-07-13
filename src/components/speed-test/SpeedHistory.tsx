@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useSpeedTest } from '@/hooks/useSpeedTest'
 import {
@@ -9,10 +9,9 @@ import {
 } from '@/components/speed-test/speed-history'
 import Subpage from '@/components/ui/Subpage'
 import { DotSeparator, InlineMeta } from '@/components/ui/DotSeparator'
-import { Tooltip } from '@/components/ui/Tooltip'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import type { SpeedSeries } from '@/components/traffic/SpeedReadout'
-import { EthernetIcon, GlobeIcon, HistoryIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
+import { EthernetIcon, GlobeIcon, HistoryIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedHistory.css'
 
 interface SpeedHistoryProps {
@@ -107,6 +106,60 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
   )
 }
 
+/** The header overflow menu: a kebab that opens a dropdown with Delete (clear
+ *  all history). Closes on outside click or Escape. */
+function HistoryMenu({ onDelete }: { readonly onDelete: () => void }): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDocDown = (e: MouseEvent): void => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div className="history-menu" ref={ref}>
+      <button
+        type="button"
+        className="history-kebab"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="History options"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <MoreIcon size={16} />
+      </button>
+      {open && (
+        <div className="history-dropdown" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className="history-menuitem is-danger"
+            onClick={() => {
+              setOpen(false)
+              onDelete()
+            }}
+          >
+            <TrashIcon size={14} />
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element {
   const [entries, setEntries] = useState<readonly SpeedHistoryEntry[]>([])
   // History loads over an async IPC call, so `entries` is empty on the first
@@ -138,23 +191,10 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
 
   return (
     <Subpage
-      title="Speed test history"
+      title="Speed Test Results"
       description="Results from your past speed tests, newest first."
       onBack={onBack}
-      action={
-        entries.length > 0 ? (
-          <Tooltip content="Clear history">
-            <button
-              type="button"
-              className="btn-icon btn-icon-secondary"
-              onClick={handleClear}
-              aria-label="Clear history"
-            >
-              <TrashIcon size={15} />
-            </button>
-          </Tooltip>
-        ) : undefined
-      }
+      action={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
     >
       {!loaded ? null : entries.length === 0 ? (
         <div className="view-empty">

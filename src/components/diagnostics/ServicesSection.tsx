@@ -92,7 +92,7 @@ export function ServicesSection({ reachability, onManage }: ServicesSectionProps
                 {latency === undefined ? (
                   <span className="text-hint">…</span>
                 ) : latency === null || erroring ? (
-                  <span className="val-bad">Unreachable</span>
+                  <span className="val-bad">Down</span>
                 ) : (
                   <MetricValue
                     value={latency}

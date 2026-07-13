@@ -301,25 +301,35 @@ const mockServices: ServiceDefinition[] = [
   { name: 'Home Server', host: 'homeserver.local' },
 ]
 
-// A stable-ish baseline latency per host so the card doesn't reshuffle each
-// poll. Unknown hosts (freshly added) get a plausible value derived from the
-// host string, so a newly-added service reads as reachable in the mock.
+// A stable-ish baseline latency per host so the card doesn't reshuffle each poll.
 function mockLatencyFor(host: string): number {
   const seed = [...host].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
   return Math.round((20 + (seed % 90)) * 10) / 10
 }
 
-// A custom, self-hosted service that never answers — stands in for the
-// "Unreachable" row state (the TLS handshake never completes), so the browser
-// mock exercises a service that's down without marking a real provider as
-// failing. Its latency is null and it carries no HTTP status.
-const MOCK_UNREACHABLE_HOST = 'homeserver.local'
+// The mock has no real network to probe, so it can only vouch for the well-known
+// public services it ships with. Anything else — the seeded self-hosted box, or
+// any custom host the user adds (an internal `*.local`, or a hostname that isn't
+// actually serving) — reads as Down rather than pretending an arbitrary
+// name answered. This is the single reachability verdict both the diagnostics
+// list and the "test before add" dialog consult, so they always agree.
+const MOCK_REACHABLE_HOSTS = new Set([
+  'google.com',
+  'cloudflare.com',
+  'youtube.com',
+  'netflix.com',
+  'zoom.us',
+])
+
+function mockIsReachable(host: string): boolean {
+  return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
+}
 
 function mockServiceReachability(): NetworkDiagnostics['services'] {
   return mockServices.map((s) =>
-    s.host === MOCK_UNREACHABLE_HOST
-      ? { ...s, latencyMs: null, httpStatus: null }
-      : { ...s, latencyMs: mockLatencyFor(s.host), httpStatus: 200 },
+    mockIsReachable(s.host)
+      ? { ...s, latencyMs: mockLatencyFor(s.host), httpStatus: 200 }
+      : { ...s, latencyMs: null, httpStatus: null },
   )
 }
 
@@ -552,11 +562,11 @@ function createMockNetworkApi(): NetworkAPI {
       }
     },
     testService: async (host: string) => {
-      // A ~probe delay, then a plausible latency. A couple of reserved hosts
-      // resolve as unreachable so the dialog's failure path is exercisable.
+      // A ~probe delay, then the same reachability verdict the diagnostics list
+      // uses — so a host that shows Down in the list also fails the
+      // test-before-add check, instead of the two disagreeing.
       await delay(650)
-      if (/^10\.|unreachable/i.test(host)) return null
-      return mockLatencyFor(host)
+      return mockIsReachable(host) ? mockLatencyFor(host) : null
     },
     listServices: async () => {
       await delay(120)

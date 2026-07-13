@@ -95,7 +95,7 @@ export default function SpeedView({
       onClick={onOpenHistory}
     >
       <HistoryIcon size={13} />
-      <span className="speed-history-link-text">View history</span>
+      <span className="speed-history-link-text">All Results</span>
     </button>
   )
 

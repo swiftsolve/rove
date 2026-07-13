@@ -181,11 +181,23 @@ async fn service_health(host: &str) -> Option<u16> {
     Some(resp.status().as_u16())
 }
 
-/// Reachability of a single host (a hostname's TLS handshake, or an IP's TCP
-/// connect), in ms — or None when it can't be reached. Used by the "test before
-/// add" step so a service can be checked without being stored.
+/// Reachability of a single host, measured on both axes — the TLS handshake (or
+/// an IP's TCP connect) *and* the HTTP health — so its verdict matches what the
+/// Services list shows. Returns the latency in ms when the service is up, or None
+/// when it's Down: either the network path failed, or the host answered but with
+/// a server error (a Cloudflare tunnel that's down returns HTTP 530, for
+/// instance). Used by the "test before add" step so a service can be checked
+/// without being stored — the dialog must agree with the list it will land in.
 pub async fn probe_service(host: &str) -> Option<f64> {
-    service_latency(host).await
+    let (latency, health) = tokio::join!(service_latency(host), service_health(host));
+    // The path has to be reachable at all (TLS/TCP), and — for hostnames, where
+    // an HTTP probe is meaningful — the service must not be answering a 5xx. An
+    // IP literal has no HTTP check (`service_health` is None), so latency stands.
+    let latency = latency?;
+    if health.is_some_and(|status| status >= 500) {
+        return None;
+    }
+    Some(latency)
 }
 
 /// Probe each service in `services` concurrently, preserving their order. Each

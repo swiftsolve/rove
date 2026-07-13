@@ -154,9 +154,16 @@ function EventIcon({ type }: { readonly type: NetworkEventType }): JSX.Element {
   return <Icon size={15} />
 }
 
+// An event the UI has copy for. Anything else — e.g. a row left behind by a
+// retired feature — is filtered out upstream rather than shown as a placeholder,
+// so `TimelineItem` only ever renders a recognized type.
+function isKnownEvent(event: NetworkEvent): boolean {
+  return event.type in EVENT_TITLES
+}
+
 function TimelineItem({ event }: { readonly event: NetworkEvent }): JSX.Element {
   const isInitial = event.type === 'initial_scan'
-  const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type] ?? 'Network change'
+  const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type]
   // The baseline keeps a one-line subtitle (it's a network-wide summary, not a
   // device); every other event just shows the device it's about.
   const subject = isInitial ? 'Tracking changes from here on' : subjectName(event)
@@ -206,7 +213,10 @@ export default function EventsView({
   error,
   onRefresh,
 }: EventsViewProps): JSX.Element {
-  const hasEvents = events.length > 0
+  // Only render events the UI recognizes; unknown types are skipped entirely
+  // rather than surfaced as a generic row.
+  const visibleEvents = events.filter(isKnownEvent)
+  const hasEvents = visibleEvents.length > 0
 
   return (
     <div className="view-page">
@@ -261,7 +271,7 @@ export default function EventsView({
         </div>
       ) : (
         <div className="events-timeline">
-          {groupByDay(events).map((group) => (
+          {groupByDay(visibleEvents).map((group) => (
             <section className="tl-day" key={group.key}>
               <h2 className="tl-day-heading">{group.heading}</h2>
               {group.events.map((event) => (
