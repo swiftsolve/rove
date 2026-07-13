@@ -34,6 +34,9 @@
   display: grid;
   grid-template-columns: 28px 1fr;
   gap: 14px;
+  /* Nudge the marker column in from the left so the icons aren't flush against
+     the edge; the day heading stays flush (it has no indent). */
+  padding-left: 5px;
   padding-bottom: 22px;
 }
 
@@ -49,7 +52,7 @@
 .tl-item:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: 13px; /* centre of the 28px marker column, minus half the 2px line */
+  left: 18px; /* padding-left (5) + centre of the 28px marker column, minus half the 2px line */
   top: 30px; /* marker height (28) + a 2px gap so it starts below the node */
   bottom: 0;
   width: 2px;
