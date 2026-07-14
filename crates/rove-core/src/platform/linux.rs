@@ -29,6 +29,23 @@ pub fn sysfs_link_speed(iface: &str) -> Option<i64> {
         .filter(|v| *v > 0)
 }
 
+/// Whether `iface` currently has physical link (carrier), from
+/// `/sys/class/net/<iface>/carrier`. Unlike the routing table, this is the
+/// hardware's own signal: an unplugged Ethernet reads `0` here even while the
+/// kernel keeps a stale `linkdown` default route pointing at it, which is exactly
+/// the case `default_interface` must reject.
+///
+/// Only a definitive `0` counts as down. A read error, an administratively-down
+/// interface (the file returns `EINVAL`), or a virtual interface with no carrier
+/// concept (`tun`/`tap`/bridges) all fall back to "up" — those legitimately carry
+/// traffic, so a missing carrier reading must never be treated as a dead link.
+pub fn carrier_up(iface: &str) -> bool {
+    match std::fs::read_to_string(format!("/sys/class/net/{iface}/carrier")) {
+        Ok(raw) => raw.trim() != "0",
+        Err(_) => true,
+    }
+}
+
 static_regex!(IW_SIGNAL, r"signal:\s*(-?\d+)");
 static_regex!(IW_SSID, r"SSID:\s*(.+)");
 static_regex!(IW_FREQ, r"freq:\s*(\d+)");

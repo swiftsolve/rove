@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { IspInfo, NetworkDiagnostics } from '@/types'
 import { FAILED_PING } from '@/types'
 import type { DiagSub } from '@/navigation/useNavigation'
@@ -13,6 +14,9 @@ import {
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServicesSection } from '@/components/diagnostics/ServicesSection'
 import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
+import { ServicesTimelinePage } from '@/components/diagnostics/ServicesTimelinePage'
+import { recordReachability } from '@/components/diagnostics/service-history'
+import { recordLatency } from '@/components/diagnostics/service-latency'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
@@ -33,6 +37,8 @@ interface DiagnosticsViewProps {
   readonly sub: DiagSub | null
   /** Open the manage-services subpage. */
   readonly onManageServices: () => void
+  /** Open the services timeline subpage. */
+  readonly onServicesTimeline: () => void
   /** Return to the previous screen. */
   readonly onBack: () => void
 }
@@ -70,16 +76,47 @@ export default function DiagnosticsView({
   onRun,
   sub,
   onManageServices,
+  onServicesTimeline,
   onBack,
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
   const hasDiagnostics = diagnostics != null
 
+  // Record service up/down transitions from each probe so the timeline accrues
+  // while the Connection tab is open. Runs before any early return so it keeps
+  // logging even while the timeline subpage itself is showing.
+  //
+  // The internet status is passed through: when this machine is offline every
+  // service probe fails at once, which isn't an outage of theirs — the recorder
+  // logs a single "connection lost" for that window instead of a phantom
+  // down-and-recovery per service.
+  const services = diagnostics?.services
+  const internet = diagnostics?.internet
+  useEffect(() => {
+    if (services) {
+      recordReachability(services, internet)
+      // Append this poll's latencies to the shared per-service history that feeds
+      // the sparkline on each row of the manage page.
+      recordLatency(services, internet)
+    }
+  }, [services, internet])
+
   if (sub?.view === 'services') {
     return (
       <ManageServicesPage
         reachability={diagnostics?.services}
+        internet={diagnostics?.internet}
         onRefresh={onRun}
+        onBack={onBack}
+      />
+    )
+  }
+
+  if (sub?.view === 'services-timeline') {
+    return (
+      <ServicesTimelinePage
+        reachability={diagnostics?.services}
+        internet={diagnostics?.internet}
         onBack={onBack}
       />
     )
@@ -181,7 +218,12 @@ export default function DiagnosticsView({
             </DataRow>
           </Section>
 
-          <ServicesSection reachability={diagnostics?.services} onManage={onManageServices} />
+          <ServicesSection
+            reachability={diagnostics?.services}
+            internet={diagnostics?.internet}
+            onManage={onManageServices}
+            onTimeline={onServicesTimeline}
+          />
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list diag-dns">
             {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (

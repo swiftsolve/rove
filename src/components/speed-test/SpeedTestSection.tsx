@@ -325,71 +325,62 @@ function SpeedTestSection({
     >
       {error && <p className="inline-error">{error}</p>}
 
-      {!canTest && !testing ? (
-        <div className="section-placeholder">
-          <SpeedIcon size={24} className="section-placeholder-icon" />
-          <p className="text-hint">Connect to Wi‑Fi or Ethernet to run a speed test.</p>
-        </div>
-      ) : (
-        <>
-          <div className="bench-hero">
-            <div className="bench-hero-cell">
-              <div className="bench-hero-label">
-                <DirectionIcon series="down" />
-                <span className="field-label">Download</span>
-              </div>
-              <SpeedCell mbps={downloadCell} placeholder={isEmpty} />
-            </div>
-            <div className="bench-hero-cell">
-              <div className="bench-hero-label">
-                <DirectionIcon series="up" />
-                <span className="field-label">Upload</span>
-              </div>
-              <SpeedCell mbps={uploadCell} placeholder={isEmpty} />
-            </div>
+      <div className="bench-hero">
+        <div className="bench-hero-cell">
+          <div className="bench-hero-label">
+            <DirectionIcon series="down" />
+            <span className="field-label">Download</span>
           </div>
+          <SpeedCell mbps={downloadCell} placeholder={isEmpty} />
+        </div>
+        <div className="bench-hero-cell">
+          <div className="bench-hero-label">
+            <DirectionIcon series="up" />
+            <span className="field-label">Upload</span>
+          </div>
+          <SpeedCell mbps={uploadCell} placeholder={isEmpty} />
+        </div>
+      </div>
 
-          {!testing && (
-            <div className="bench-substats">
-              <div className="bench-substat">
-                <span className="field-label">Ping</span>
-                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
-                  {pingText}
-                </span>
-              </div>
-              <div className="bench-substat">
-                <span className="field-label">Jitter</span>
-                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
-                  {jitterText}
-                </span>
-              </div>
-              <div className="bench-substat">
-                <span className="field-label">Loss</span>
-                <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
-                  {lossText}
-                </span>
-              </div>
-            </div>
-          )}
+      {!testing && (
+        <div className="bench-substats">
+          <div className="bench-substat">
+            <span className="field-label">Ping</span>
+            <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+              {pingText}
+            </span>
+          </div>
+          <div className="bench-substat">
+            <span className="field-label">Jitter</span>
+            <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+              {jitterText}
+            </span>
+          </div>
+          <div className="bench-substat">
+            <span className="field-label">Loss</span>
+            <span className={`bench-substat-value num${isEmpty ? ' is-empty' : ''}`}>
+              {lossText}
+            </span>
+          </div>
+        </div>
+      )}
 
-          {testing ? (
-            <TestProgress progress={progress} />
-          ) : (
-            hasResults &&
-            (connection != null || linkCapacityMbps != null) && (
-              <div className="bench-footer">
-                <p className="text-meta bench-footnote">
-                  {connection != null && <ConnectionTag connection={connection} />}
-                  {linkCapacityMbps != null && (
-                    <span className="bench-footnote-link">
-                      Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
-                    </span>
-                  )}
-                </p>
-              </div>
-            )
-          )}
-        </>
+      {testing ? (
+        <TestProgress progress={progress} />
+      ) : (
+        hasResults &&
+        (connection != null || linkCapacityMbps != null) && (
+          <div className="bench-footer">
+            <p className="text-meta bench-footnote">
+              {connection != null && <ConnectionTag connection={connection} />}
+              {linkCapacityMbps != null && (
+                <span className="bench-footnote-link">
+                  Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
+                </span>
+              )}
+            </p>
+          </div>
+        )
       )}
     </Section>
   )

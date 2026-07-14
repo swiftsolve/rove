@@ -12,6 +12,7 @@ import {
   ArrowRightIcon,
   EthernetIcon,
   HelpIcon,
+  OfflineIcon,
   RefreshIcon,
   RouterIcon,
   SearchIcon,
@@ -38,9 +39,9 @@ type IconComponent = (props: { readonly size?: number }) => JSX.Element
 
 // The node's colour category. The glyph says *what* happened; this tint says how
 // to read it at a glance — arrivals/connections read positive (green), the
-// baseline calm (blue), a departure quiet (grey), a new access point cautionary
-// (amber), a gateway change alarming (red). Warning/critical events keep the
-// loud colours severity used before.
+// baseline calm (blue), a departure quiet (grey), a new access point or gateway
+// change cautionary (amber), a lost connection alarming (red). Warning/critical
+// events keep the loud colours severity used before.
 type EventTone = 'join' | 'leave' | 'baseline' | 'alert' | 'danger'
 
 interface EventStyle {
@@ -54,9 +55,10 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   ap_appeared: { icon: RouterIcon, tone: 'alert' },
   device_offline: { icon: ArrowLeftIcon, tone: 'leave' },
   device_online: { icon: RefreshIcon, tone: 'join' },
-  gateway_changed: { icon: ShieldAlertIcon, tone: 'danger' },
+  gateway_changed: { icon: ShieldAlertIcon, tone: 'alert' },
   wifi_connected: { icon: WifiIcon, tone: 'join' },
   ethernet_connected: { icon: EthernetIcon, tone: 'join' },
+  connection_lost: { icon: OfflineIcon, tone: 'danger' },
 }
 
 const EVENT_TITLES: Record<NetworkEventType, string> = {
@@ -68,6 +70,7 @@ const EVENT_TITLES: Record<NetworkEventType, string> = {
   gateway_changed: 'Gateway changed',
   wifi_connected: 'Connected to Wi‑Fi',
   ethernet_connected: 'Connected to Ethernet',
+  connection_lost: 'Network connection lost',
 }
 
 function subjectName(event: NetworkEvent): string {

@@ -4,7 +4,7 @@ import './Subpage.css'
 
 interface SubpageProps {
   readonly title: string
-  readonly description?: string
+  readonly description?: ReactNode
   /** Optional control rendered opposite the back button. */
   readonly action?: ReactNode
   /** Extra class on the page root, for per-page tweaks to the shared layout. */

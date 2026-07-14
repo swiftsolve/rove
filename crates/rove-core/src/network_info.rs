@@ -14,7 +14,13 @@ pub async fn default_gateway() -> Option<String> {
             return Some(gw);
         }
     }
-    if let Some(out) = try_run("ip route show default 2>/dev/null | awk '{print $3; exit}'").await {
+    // `!/linkdown/` keeps a stale gateway from a just-unplugged NIC out of the
+    // result, so the diagnostics split reads Offline (no gateway) rather than a
+    // misleading NoInternet — matching how `default_interface` filters the same
+    // dead route.
+    if let Some(out) =
+        try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await
+    {
         let ip = out.trim().to_string();
         if !ip.is_empty() {
             return Some(ip);
@@ -39,13 +45,20 @@ pub async fn default_interface() -> Option<String> {
             return Some(iface);
         }
     }
+    // `!/linkdown/` skips a default route the kernel has flagged dead (an
+    // unplugged NIC whose route the network manager hasn't torn down yet), so a
+    // live higher-metric default route is chosen over a stale one when both exist.
     if let Some(out) = try_run(
-        "ip route show default 2>/dev/null | awk '{for (i = 1; i < NF; i++) if ($i == \"dev\") { print $(i + 1); exit }}'",
+        "ip route show default 2>/dev/null | awk '!/linkdown/ {for (i = 1; i < NF; i++) if ($i == \"dev\") { print $(i + 1); exit }}'",
     )
     .await
     {
         let name = out.trim().to_string();
-        if !name.is_empty() {
+        // Backstop the route-text check with the hardware carrier signal: a stale
+        // default route isn't always `linkdown`-flagged (it depends on the network
+        // manager), so confirm the chosen interface actually has link before
+        // reporting it as connected. Non-Linux hosts never reach this `ip` path.
+        if !name.is_empty() && (!cfg!(target_os = "linux") || platform::linux::carrier_up(&name)) {
             return Some(name);
         }
     }

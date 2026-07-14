@@ -6,7 +6,6 @@ import ConnectionCard, { canRunSpeedTest } from '@/components/connection/Connect
 import CapabilityStrip from '@/components/capabilities/CapabilityStrip'
 import HomeStats from '@/components/home/HomeStats'
 import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
-import './HomeView.css'
 
 interface HomeViewProps {
   readonly info: NetworkInfo
@@ -54,15 +53,6 @@ export default function HomeView({
   return (
     <div className="view-page">
       <ConnectionCard info={info} />
-
-      {!isConnected && (
-        <div className="offline-notice surface">
-          <p className="text-hint">
-            You&apos;re offline. Connect to Wi‑Fi or plug in Ethernet to see live traffic and
-            run a speed test.
-          </p>
-        </div>
-      )}
 
       {isConnected && (
         <LiveThroughputPanel

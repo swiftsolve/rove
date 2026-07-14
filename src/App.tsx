@@ -402,6 +402,13 @@ export default function App(): JSX.Element {
                   onManageServices={() =>
                     navigate({ tab: 'diagnostics', speedSub: null, diagSub: { view: 'services' } })
                   }
+                  onServicesTimeline={() =>
+                    navigate({
+                      tab: 'diagnostics',
+                      speedSub: null,
+                      diagSub: { view: 'services-timeline' },
+                    })
+                  }
                   onBack={back}
                 />
               )}

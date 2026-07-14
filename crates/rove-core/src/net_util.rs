@@ -30,19 +30,25 @@ pub fn normalize_mac_bare(mac: &str) -> String {
         .collect()
 }
 
-const VIRTUAL_PREFIXES: [&str; 16] = [
+const VIRTUAL_PREFIXES: [&str; 18] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
     // macOS pseudo-interfaces: VPN tunnels (utunN — note "tun" above misses the
     // leading "u"), VM host networking (vmenetN, bridgeN), Apple Wireless Direct
     // Link / low-latency WLAN sidebands, and generic 4-in-6/6-in-4 tunnels.
     "utun", "vmenet", "bridge", "awdl", "llw", "gif",
+    // Linux link-aggregation masters (`bond0`, `team0`). The master's counters
+    // are the *sum* of its enslaved physical NICs, so counting both the master
+    // and its slaves reports the traffic twice — the same double-count the Npcap
+    // shim caused on Windows. The physical slaves carry the real bytes; drop the
+    // master.
+    "bond", "team",
 ];
 
 /// Case-insensitive markers for Windows virtual/pseudo adapters that aren't real
 /// hardware: Hyper-V switches, WFP/filter miniports, Wi-Fi Direct radios and
 /// tunnelling pseudo-interfaces. A fallback for when the OS `Virtual` flag can't
 /// be read; none of these substrings occur in a physical NIC's name.
-const VIRTUAL_SUBSTRINGS: [&str; 9] = [
+const VIRTUAL_SUBSTRINGS: [&str; 10] = [
     "vethernet",
     "wi-fi direct",
     "wifi direct",
@@ -52,11 +58,43 @@ const VIRTUAL_SUBSTRINGS: [&str; 9] = [
     "teredo",
     "pseudo-interface",
     "ip-https",
+    // Npcap (Wireshark/Nmap, and bundled by some VPNs) installs a packet-capture
+    // shim per physical NIC — e.g. "Ethernet-Npcap Packet Driver (NPCAP)-0000" —
+    // that shadows the real adapter's byte counters exactly. Left in, the live
+    // throughput sampler sums it alongside the real "Ethernet" and reports double
+    // the actual rate. It never carries traffic of its own, so drop it.
+    "npcap",
 ];
+
+/// True for a bare kernel-bridge master (`br0`, `br1`, …). The Docker-style
+/// `br-<hash>` form is already caught by the `br-` prefix; this covers the plain
+/// numeric naming `iproute2` gives a hand-created bridge. Like a bond master, a
+/// bridge's counters overlap its enslaved ports, so summing both double-counts.
+fn is_numbered_bridge(name: &str) -> bool {
+    name.strip_prefix("br")
+        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_digit()))
+}
+
+/// True for a Linux VLAN subinterface (`eth0.100`, `enp3s0.42`, `bond0.5`). The
+/// tagged frames it counts have already crossed — and been counted on — its
+/// parent, so the parent is always a superset: dropping the child removes the
+/// duplication without hiding any traffic. No Windows or macOS interface name
+/// contains a dot, so this is inert on those platforms.
+fn is_vlan_subinterface(name: &str) -> bool {
+    match name.rsplit_once('.') {
+        Some((parent, tag)) => {
+            !parent.is_empty() && !tag.is_empty() && tag.bytes().all(|b| b.is_ascii_digit())
+        }
+        None => false,
+    }
+}
 
 /// Loopback / container / VPN interfaces that shouldn't count as hardware.
 pub fn is_virtual_interface(name: &str) -> bool {
     if name == "lo" || VIRTUAL_PREFIXES.iter().any(|p| name.starts_with(p)) {
+        return true;
+    }
+    if is_numbered_bridge(name) || is_vlan_subinterface(name) {
         return true;
     }
     let lower = name.to_ascii_lowercase();
@@ -135,5 +173,40 @@ mod tests {
     fn normalize_mac_bare_strips_separators_and_case() {
         assert_eq!(normalize_mac_bare("AA:BB:CC:11:22:33"), "aabbcc112233");
         assert_eq!(normalize_mac_bare("aa-bb-cc-11-22-33"), "aabbcc112233");
+    }
+
+    #[test]
+    fn npcap_shadow_adapter_is_virtual_but_real_nic_is_not() {
+        // The Npcap packet-capture shim mirrors the real NIC's counters, so it
+        // must be excluded from the throughput sum; the physical adapter stays.
+        assert!(is_virtual_interface("Ethernet-Npcap Packet Driver (NPCAP)-0000"));
+        assert!(!is_virtual_interface("Ethernet"));
+        assert!(!is_virtual_interface("Wi-Fi"));
+    }
+
+    #[test]
+    fn linux_aggregation_and_vlan_netdevs_are_virtual() {
+        // Bond/team masters and bridges mirror their members' counters; VLAN
+        // subinterfaces re-count bytes already tallied on their parent. All would
+        // double-count if summed, so each reads as virtual.
+        assert!(is_virtual_interface("bond0"));
+        assert!(is_virtual_interface("team0"));
+        assert!(is_virtual_interface("br0"));
+        assert!(is_virtual_interface("br1"));
+        assert!(is_virtual_interface("eth0.100"));
+        assert!(is_virtual_interface("enp3s0.42"));
+        assert!(is_virtual_interface("bond0.5"));
+    }
+
+    #[test]
+    fn real_nics_are_not_mistaken_for_aggregation_or_vlan() {
+        // The physical leaves that actually carry the bytes must survive.
+        assert!(!is_virtual_interface("eth0"));
+        assert!(!is_virtual_interface("enp3s0"));
+        assert!(!is_virtual_interface("wlan0"));
+        assert!(!is_virtual_interface("wlp2s0"));
+        assert!(!is_virtual_interface("en0"));
+        // "br" not followed by only digits is a normal name, not a numbered bridge.
+        assert!(!is_virtual_interface("brtest"));
     }
 }

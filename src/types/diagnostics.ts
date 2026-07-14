@@ -1,10 +1,23 @@
 import type { PingStats } from './speed'
 
+/**
+ * Whether this machine can reach the public internet — the context a service
+ * verdict needs to mean anything.
+ * - `online`     an internet anchor answered; service verdicts are trustworthy.
+ * - `noInternet` on a LAN (a gateway exists) but no anchor answered; the WAN is
+ *                down, so public services can't be checked (LAN ones may still be).
+ * - `offline`    no default gateway at all; not on a usable network.
+ */
+export type InternetStatus = 'online' | 'noInternet' | 'offline'
+
 export interface NetworkDiagnostics {
   readonly gateway: string | null
   readonly defaultInterface: string | null
   readonly dnsServers: readonly string[]
   readonly gatewayPing: PingStats | null
+  /** Public-internet reachability, so Services can tell an outage apart from
+   *  this machine being offline. */
+  readonly internet: InternetStatus
   /** Router make from the gateway's MAC OUI, or null when unknown. */
   readonly gatewayVendor: string | null
   /** Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null
@@ -27,6 +40,9 @@ export interface NetworkDiagnostics {
  */
 export interface LiveDiagnostics {
   readonly gatewayPing: PingStats | null
+  /** Public-internet reachability, refreshed each poll so Services stops
+   *  reporting outages the moment connectivity is lost or regained. */
+  readonly internet: InternetStatus
   readonly services: readonly ServiceReachability[]
 }
 

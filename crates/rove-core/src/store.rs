@@ -133,6 +133,11 @@ const EVENT_GATEWAY_CHANGED: &str = "gateway_changed";
 /// device, and are diffed against the last connection stashed in `meta`.
 const EVENT_WIFI_CONNECTED: &str = "wifi_connected";
 const EVENT_ETHERNET_CONNECTED: &str = "ethernet_connected";
+/// This machine lost its network connection entirely (dropped to disconnected).
+/// One of these stands in for the flood of per-device "offline" rows a scan
+/// would otherwise emit while offline — with no uplink we can't confirm any host,
+/// so every device looks departed, but the truth is that *we* left, not them.
+const EVENT_CONNECTION_LOST: &str = "connection_lost";
 
 /// `meta` key holding the last connection this machine was on, so a change of
 /// network can be detected across the frequent `network_info` polls.
@@ -691,7 +696,14 @@ impl Store {
         // whether absent entirely or present but failing liveness. Skip any
         // already marked offline so a device stays one event until it returns.
         // Suppressed on the seed scan along with the rest of the diff.
-        if !seed {
+        //
+        // An empty `live` set means *nothing at all* answered — not even self or
+        // the gateway, which are always reachable when we have a link. That's this
+        // machine going offline (or a scan that wholly failed), not the entire LAN
+        // departing at once, so suppress the per-device offline burst: the single
+        // `connection_lost` event (from `record_connection`) represents the drop
+        // instead. The devices are untouched, so they simply resume when we return.
+        if !seed && !live.is_empty() {
             for (mac, prev) in &prior {
                 if live.contains(mac.as_str()) {
                     continue;
@@ -797,20 +809,34 @@ impl Store {
         // Emit only on a transition *into* a connected Wi-Fi/Ethernet state, and
         // only once a baseline exists (so the first observation after launch is
         // silent rather than a spurious "connected").
-        if prev.is_some() {
-            let event = match connection_type {
-                "wifi" => Some((EVENT_WIFI_CONNECTED, network_name.unwrap_or("Wi-Fi"))),
+        if let Some(prev) = prev.as_deref() {
+            // A transition *into* a connected network is a connect event; a
+            // transition from a connected network *out* to disconnected is a
+            // connection-lost event. Anything else (still disconnected, VPN↔VPN)
+            // is silent. `prev_connected` gates the loss so we don't fire it when
+            // we were already off-network (e.g. VPN → disconnected).
+            let prev_connected =
+                prev.starts_with("wifi|") || prev.starts_with("ethernet|");
+            let event: Option<(&str, &str, &str)> = match connection_type {
+                "wifi" => Some((EVENT_WIFI_CONNECTED, "info", network_name.unwrap_or("Wi-Fi"))),
                 "ethernet" => {
-                    Some((EVENT_ETHERNET_CONNECTED, interface.unwrap_or("Ethernet")))
+                    Some((EVENT_ETHERNET_CONNECTED, "info", interface.unwrap_or("Ethernet")))
+                }
+                // Dropped off the network. Name what we lost from the prior
+                // baseline — the new state has no interface/SSID of its own.
+                _ if prev_connected => {
+                    let lost = prev.split_once('|').map(|(_, label)| label).unwrap_or("");
+                    let lost = if lost.is_empty() { "your network" } else { lost };
+                    Some((EVENT_CONNECTION_LOST, "warning", lost))
                 }
                 _ => None,
             };
-            if let Some((event_type, name)) = event {
+            if let Some((event_type, severity, name)) = event {
                 Self::record_event_raw(
                     &tx,
                     now_ms,
                     event_type,
-                    "info",
+                    severity,
                     mac,
                     ip,
                     Some(name),
@@ -1735,6 +1761,71 @@ mod tests {
     }
 
     #[test]
+    fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
+        let store = Store::open_in_memory().unwrap();
+        let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
+        gw.is_gateway = true;
+        let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+        let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+
+        store.record_devices(&[gw.clone(), phone.clone(), laptop.clone()], 1_000).unwrap(); // baseline
+
+        // Going offline: the scan confirms nobody — not even self or the gateway
+        // (all unreachable). Model that as the stale roster with reachable=false,
+        // which is what a scan yields with no uplink. No per-device offline burst
+        // should fire — the machine left, the LAN didn't empty out.
+        let offline_scan: Vec<LanDevice> = [gw, phone, laptop]
+            .into_iter()
+            .map(|mut d| {
+                d.reachable = false;
+                d
+            })
+            .collect();
+        store.record_devices(&offline_scan, 2_000).unwrap();
+
+        let offline = store
+            .network_events(100)
+            .unwrap()
+            .into_iter()
+            .filter(|e| e.event_type == "device_offline")
+            .count();
+        assert_eq!(offline, 0, "an offline scan must not mark every device departed");
+
+        // Back online — everyone answers again. They were never marked offline, so
+        // there's no spurious reconnect flurry either.
+        let back = [
+            device("00:00:00:00:00:01", "192.168.1.1", "router"),
+            device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone"),
+            device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer"),
+        ];
+        store.record_devices(&back, 3_000).unwrap();
+        let online = store
+            .network_events(100)
+            .unwrap()
+            .into_iter()
+            .filter(|e| e.event_type == "device_online")
+            .count();
+        assert_eq!(online, 0, "devices that were never marked offline don't 'reconnect'");
+    }
+
+    #[test]
+    fn a_real_departure_still_fires_when_others_remain_reachable() {
+        // The guard keys on *nothing* being reachable. As long as at least one
+        // device answered (here the gateway), a genuinely absent device is still a
+        // real departure and must fire — the offline suppression must not swallow it.
+        let store = Store::open_in_memory().unwrap();
+        let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
+        gw.is_gateway = true;
+        let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+
+        store.record_devices(&[gw.clone(), phone.clone()], 1_000).unwrap(); // baseline
+        store.record_devices(&[gw], 2_000).unwrap(); // phone leaves, gateway stays
+        let latest = &store.network_events(1).unwrap()[0];
+        assert_eq!(latest.event_type, "device_offline");
+        assert_eq!(latest.mac.as_deref(), Some("aa:aa:aa:aa:aa:aa"));
+    }
+
+    #[test]
     fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
         let store = Store::open_in_memory().unwrap();
         let here = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
@@ -2022,12 +2113,23 @@ mod tests {
         assert_eq!(latest.event_type, "ethernet_connected");
         assert_eq!(latest.name.as_deref(), Some("eth0"));
 
-        // Unplug → disconnected updates the baseline but posts no event.
-        let before = types(&store).len();
+        // Unplug → connection_lost (warning), naming the network we dropped from
+        // the prior baseline, since the disconnected state carries no interface.
         store
             .record_connection("disconnected", None, None, None, None, 3_000)
             .unwrap();
-        assert_eq!(types(&store).len(), before, "a drop to disconnected is silent");
+        let latest = &store.network_events(1).unwrap()[0];
+        assert_eq!(latest.event_type, "connection_lost");
+        assert_eq!(latest.severity, "warning");
+        assert_eq!(latest.name.as_deref(), Some("eth0"), "names the lost network");
+
+        // A second disconnected poll (still off-network) is silent — the loss
+        // already fired, and there's no connected baseline to leave again.
+        let before = types(&store).len();
+        store
+            .record_connection("disconnected", None, None, None, None, 3_200)
+            .unwrap();
+        assert_eq!(types(&store).len(), before, "staying disconnected emits nothing further");
 
         // …and back onto Wi-Fi → wifi_connected with the SSID as its subject.
         store

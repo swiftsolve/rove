@@ -8,7 +8,7 @@ export type SpeedSub =
   | { readonly view: 'history' }
 
 /** A subpage layered over the Connection tab. `null` means the tab's main page. */
-export type DiagSub = { readonly view: 'services' }
+export type DiagSub = { readonly view: 'services' } | { readonly view: 'services-timeline' }
 
 /** A single screen the app can show — a tab, optionally with a subpage. */
 export interface AppLocation {

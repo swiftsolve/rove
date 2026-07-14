@@ -1,0 +1,89 @@
+/* A row-sized latency chart. The wrapper is the positioning context for the
+   floating hover label, which is anchored to the hovered point's x. */
+.spark-wrap {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.spark {
+  display: block;
+  overflow: visible;
+  cursor: crosshair;
+  /* Health drives the line colour via currentColor; set per band below. */
+  color: var(--text-tertiary);
+}
+
+.spark-good {
+  color: var(--positive);
+}
+.spark-warn {
+  color: var(--warning);
+}
+.spark-bad {
+  color: var(--negative);
+}
+
+.spark-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.spark-dot-solo {
+  fill: currentColor;
+}
+
+/* The down-state flat line — full-strength red across the middle, so an outage
+   reads at a glance without any of the trend's ups and downs. */
+.spark-flat {
+  opacity: 1;
+  stroke-width: 1.5;
+}
+
+/* Failed probes: a small negative-coloured mark on the baseline, regardless of
+   the line's current band. */
+.spark-down {
+  fill: var(--negative);
+}
+
+/* Nothing recorded yet — reserve the space so rows don't reflow once history
+   starts to land. */
+.spark-empty {
+  display: inline-block;
+}
+
+.spark-cursor {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.spark-cursor-dot {
+  fill: currentColor;
+  stroke: var(--bg-panel);
+  stroke-width: 1.5;
+}
+
+/* The value bubble that follows the hovered point. Centred over its x and lifted
+   above the chart; translate keeps it from clipping at the chart's edges. */
+.spark-tip {
+  position: absolute;
+  bottom: calc(100% + 3px);
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-panel);
+  color: var(--text-primary);
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-micro);
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}

@@ -37,6 +37,7 @@ import {
   Gamepad2,
   Gauge,
   Globe,
+  GlobeOff,
   HelpCircle,
   History,
   House,
@@ -73,7 +74,6 @@ import {
   Watch,
   Waypoints,
   Wifi,
-  WifiOff,
   X,
   Zap,
 } from 'lucide-react'
@@ -146,7 +146,7 @@ export function BrandIcon({
   )
 }
 export const EthernetIcon = make(EthernetPort, 20)
-export const OfflineIcon = make(WifiOff, 20)
+export const OfflineIcon = make(GlobeOff, 20)
 export const ActivityIcon = make(Activity, 18)
 export const EventsIcon = make(TextSearch, 18)
 export const ZapIcon = make(Zap, 22)

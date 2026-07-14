@@ -135,6 +135,24 @@ export function formatDateTime(timestamp: number): string {
   }).format(new Date(timestamp))
 }
 
+/** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". Used
+ *  for service outage lengths on the Services timeline. */
+export function formatDuration(ms: number): string {
+  if (!Number.isFinite(ms) || ms < 0) return '—'
+  const seconds = Math.round(ms / 1000)
+  if (seconds < 60) return `${seconds} s`
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) {
+    const remMinutes = minutes % 60
+    return remMinutes > 0 ? `${hours} h ${remMinutes} min` : `${hours} h`
+  }
+  const days = Math.floor(hours / 24)
+  const remHours = hours % 24
+  return remHours > 0 ? `${days} d ${remHours} h` : `${days} d`
+}
+
 /** Relative timestamp for recent times; absolute date after 24 h. */
 export function formatTimeAgo(timestamp: number): string {
   const elapsed = Date.now() - timestamp
