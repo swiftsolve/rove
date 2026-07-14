@@ -1,0 +1,84 @@
+/* Per-app usage list. Each row stacks a name+total header, a proportional
+   down/up bar, and the two byte figures — the same down/up colour language as
+   the Usage view, applied per application. */
+.app-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.app-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.app-row-name {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  /* Long process paths (e.g. macOS bundle identifiers) truncate rather than
+     wrap, keeping every row one line tall. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-row-total {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* The bar is a single track; the two segments sit side by side, each scaled
+   against the busiest app so rows read comparably. An empty segment collapses
+   to zero width. */
+.app-row-bar {
+  display: flex;
+  height: 6px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--bg-inset);
+}
+
+.app-row-seg {
+  height: 100%;
+}
+
+.app-row-seg--down {
+  background: var(--series-down);
+}
+
+.app-row-seg--up {
+  background: var(--series-up);
+}
+
+.app-row-figures {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.app-row-figure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Explanatory line under the empty/unsupported states, kept narrow and calm. */
+.app-usage-note {
+  max-width: 34ch;
+  margin-top: var(--gap-xs);
+  text-align: center;
+}

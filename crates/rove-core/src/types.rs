@@ -224,3 +224,26 @@ pub struct DataUsageSummary {
     pub boot_tx_bytes: u64,
     pub tracking_since: Option<u64>,
 }
+
+/// One application's network usage since Rove started watching. `name` is the
+/// process name (all processes sharing it are summed).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppUsage {
+    pub name: String,
+    pub rx_bytes: u64,
+    pub tx_bytes: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppUsageSummary {
+    /// Per-app totals, busiest first. Empty before the first sample.
+    pub apps: Vec<AppUsage>,
+    /// `"supported"` where per-app metering works (Linux, macOS) or
+    /// `"unsupported"` where it needs a facility Rove doesn't yet drive
+    /// (Windows/ETW) — the UI shows an explanatory note instead of an empty list.
+    pub support: &'static str,
+    /// Epoch ms of the first sample, or null before then.
+    pub tracking_since: Option<u64>,
+}

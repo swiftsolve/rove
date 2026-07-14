@@ -42,6 +42,31 @@ pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
     });
 }
 
+/// How often per-app usage is sampled. Shorter is more accurate — a socket that
+/// opens *and* closes entirely within one interval is never observed, so its
+/// bytes are missed — but each tick shells out to `ss`/`nettop`, so this trades
+/// a little accuracy for a light touch. A few seconds catches all but the most
+/// fleeting connections.
+const APP_USAGE_INTERVAL: Duration = Duration::from_secs(4);
+
+/// Accumulate per-app network usage every [`APP_USAGE_INTERVAL`]. Unlike the
+/// interface usage sampler this reads a per-process source (`ss` on Linux,
+/// `nettop` on macOS) and is async, so it lives in its own loop rather than the
+/// sysinfo tick. A panic in the sampling path must not stop the loop for the
+/// rest of the session, so each tick's fallible work is isolated.
+pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        loop {
+            let units = rove_core::app_usage::sample_units().await;
+            {
+                let state = handle.state::<AppState>();
+                lock(&state.app_usage).ingest(units);
+            }
+            tokio::time::sleep(APP_USAGE_INTERVAL).await;
+        }
+    });
+}
+
 /// Emit live throughput at 1 Hz while the UI is subscribed.
 pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
