@@ -101,9 +101,12 @@ pub struct NetworkDiagnostics {
     pub gateway_ping: Option<PingStats>,
     /// Router make from the gateway's MAC OUI, or None when unknown/randomized.
     pub gateway_vendor: Option<String>,
-    /// Router model from the gateway's SNMP `sysDescr`, or None when it doesn't
-    /// answer SNMP (many consumer routers) or reports no usable model.
+    /// Router model from the gateway's SNMP `sysDescr` (or UPnP `modelName`), or
+    /// None when it answers neither or reports no usable model.
     pub gateway_model: Option<String>,
+    /// Router product name from the gateway's UPnP `friendlyName` (e.g. "Giga Hub
+    /// 2.0"), or None when it doesn't announce over SSDP.
+    pub gateway_name: Option<String>,
     /// WAN-side identity (ISP, ASN, location, public IP), or None when the
     /// lookup service is unreachable — e.g. no internet or the request timed out.
     pub isp: Option<IspInfo>,

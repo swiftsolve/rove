@@ -31,6 +31,17 @@ use std::time::Duration;
 /// also (roughly) the total added latency of a scan.
 const DISCOVERY_WINDOW: Duration = Duration::from_millis(3200);
 
+/// The listen window for the passive refresh. mDNS/SSDP browse is multicast
+/// (not per-host probing), so this is nearly free; it's the only liveness source
+/// the refresh has on the stateless macOS/Windows ARP table, so it's given a full
+/// window rather than a scan's share of one.
+const PASSIVE_WINDOW: Duration = Duration::from_millis(2500);
+
+/// SSDP window for the gateway-only identity probe (`gateway_identity`). Short —
+/// we want just the router's own announcement, and the Connection panel that
+/// waits on it should stay snappy.
+const GATEWAY_SSDP_WINDOW: Duration = Duration::from_millis(2000);
+
 pub async fn scan() -> LanDeviceScan {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
 
@@ -136,6 +147,146 @@ pub async fn scan() -> LanDeviceScan {
     }
 }
 
+/// A no-probe presence refresh for the background monitor. Reads the kernel
+/// neighbor table and listens for mDNS/SSDP announcements — no ICMP sweep and no
+/// TCP probe, so it adds essentially no per-host traffic (or battery cost) versus
+/// a full [`scan`]. It returns only the devices it can *positively confirm are
+/// present right now* and never asserts a departure: passive discovery can't
+/// prove a device is gone (a silent host looks identical to a departed one,
+/// especially on macOS/Windows whose ARP table carries no liveness state). The
+/// caller ([`crate::store::Store::touch_devices`]) bumps `last_seen` for these and
+/// leaves the rest of the roster untouched.
+///
+/// Cross-OS liveness: on Linux `ip neigh` reports a real REACHABLE state, which
+/// counts on its own; on macOS/Windows the neighbor table is stateless, so a host
+/// is confirmed only when it announced via mDNS or SSDP this window. Self and the
+/// gateway are always present.
+pub async fn passive_refresh() -> Vec<LanDevice> {
+    let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
+
+    let subnet = match &interface {
+        Some(name) => subnet::subnet_of(name).await,
+        None => None,
+    };
+
+    let (self_ip, self_mac) = match &interface {
+        Some(name) => crate::interfaces::address_of(name).await,
+        None => (None, None),
+    };
+    let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
+
+    // Passive announcements only — a handful of multicast browse/M-SEARCH
+    // datagrams, no host probing. This is the whole difference from `scan`,
+    // which also runs the ping sweep and the per-host TCP probe.
+    let (mdns_hits, ssdp_hits) =
+        tokio::join!(mdns::discover(PASSIVE_WINDOW), ssdp::discover(PASSIVE_WINDOW, local_ipv4));
+
+    let in_scope = neighbor_table()
+        .await
+        .into_iter()
+        .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true));
+
+    // Starts the background DHCP listener on first call (same as `scan`), so the
+    // passive path keeps it alive even if the user never opens the Devices tab.
+    let dhcp_hits = dhcp::snapshot();
+
+    let mut devices: Vec<LanDevice> = in_scope
+        .filter_map(|neighbor| {
+            build_passive_device(
+                neighbor,
+                &mdns_hits,
+                &ssdp_hits,
+                &dhcp_hits,
+                gateway.as_deref(),
+                self_ip.as_deref(),
+            )
+        })
+        .collect();
+
+    add_self_if_missing(&mut devices, self_ip.as_deref(), self_mac.as_deref());
+    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, subnet::ip_sort_key(&d.ip)));
+    devices.dedup_by(|a, b| a.mac == b.mac);
+    devices
+}
+
+/// Build a device for the passive refresh, or `None` when it can't be confirmed
+/// present right now. Confirmation is OS-aware: a Linux `ip neigh` REACHABLE
+/// state (`stateful` + `reachable`) stands on its own; on the stateless
+/// macOS/Windows ARP table a host counts only when it announced via mDNS or SSDP
+/// this window. Self and the gateway are always present.
+///
+/// Runs the same stateless classifier as a full scan over the passive evidence
+/// it *does* have — OUI vendor, mDNS/SSDP names and types, and the DHCP
+/// fingerprint — with no banner/port probing. Typing a genuinely new arrival
+/// (rather than leaving it `unknown`) is what lets the event feed keep a new
+/// router/AP at its higher-severity `ap_appeared` warning instead of a plain
+/// join. `classify` is a pure function, so this touches none of the cross-scan
+/// accumulators (`history`, `liveness`) an active scan owns. For a device the
+/// store already knows this typing is ignored — `touch_devices` preserves the
+/// richer active-scan identity — so it only ever fills in a fresh arrival.
+fn build_passive_device(
+    neighbor: RawNeighbor,
+    mdns: &std::collections::HashMap<String, mdns::MdnsHit>,
+    ssdp: &std::collections::HashMap<String, ssdp::SsdpHit>,
+    dhcp: &std::collections::HashMap<String, dhcp::DhcpHit>,
+    gateway: Option<&str>,
+    self_ip: Option<&str>,
+) -> Option<LanDevice> {
+    let is_gateway = gateway == Some(neighbor.ip.as_str());
+    let is_self = self_ip == Some(neighbor.ip.as_str());
+    let mdns_hit = mdns.get(&neighbor.ip);
+    let ssdp_hit = ssdp.get(&neighbor.ip);
+    let present = is_self
+        || is_gateway
+        || (neighbor.stateful && neighbor.reachable)
+        || mdns_hit.is_some()
+        || ssdp_hit.is_some();
+    if !present {
+        return None;
+    }
+
+    let vendor = lookup_vendor(&neighbor.mac).map(String::from);
+    let dhcp_hit = dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
+
+    // Best passive name, most human first — the full scan's order minus the
+    // active-only NetBIOS/reverse-DNS sources.
+    let hostname = mdns_hit
+        .and_then(|h| h.name.clone())
+        .or_else(|| ssdp_hit.and_then(|h| h.name.clone()))
+        .or_else(|| dhcp_hit.and_then(|h| h.hostname.clone()));
+
+    // Withhold a kind-ambiguous OUI's vote (an ODM block that could be any of its
+    // customers' gear), exactly as the full scan does.
+    let classify_vendor =
+        if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
+    let verdict = classify::classify(&classify::Signals {
+        vendor: classify_vendor,
+        hostname: hostname.as_deref(),
+        mdns: mdns_hit,
+        ssdp: ssdp_hit,
+        dhcp: dhcp_hit,
+        is_gateway,
+        is_self,
+        ..Default::default()
+    });
+
+    Some(LanDevice {
+        kind: verdict.kind.to_string(),
+        kind_confidence: verdict.confidence.as_str(),
+        is_randomized_mac: is_randomized_mac(&neighbor.mac),
+        os: dhcp_hit.and_then(|hit| hit.os).map(String::from),
+        vendor,
+        hostname,
+        model: None,
+        is_gateway,
+        is_self,
+        reachable: true,
+        ip: neighbor.ip,
+        mac: neighbor.mac,
+        last_seen: None,
+    })
+}
+
 /// Best-effort identity of the default gateway, resolved cheaply for the
 /// diagnostics Router panel (which shows the router but doesn't run a full
 /// device scan). Every field is best-effort and may be `None`.
@@ -144,20 +295,24 @@ pub struct GatewayIdentity {
     pub mac: Option<String>,
     /// Make from the MAC OUI.
     pub vendor: Option<String>,
-    /// Model from SNMP `sysDescr` — the one model source most routers expose.
+    /// Model from SNMP `sysDescr`, or the UPnP `modelName` when the router answers
+    /// SSDP but not SNMP.
     pub model: Option<String>,
+    /// Human product name from the router's UPnP `friendlyName` (e.g. "Giga Hub
+    /// 2.0 Internet Gateway Device"), or None when it doesn't announce over SSDP.
+    pub name: Option<String>,
 }
 
-/// Resolve the gateway's vendor (MAC OUI) and model (SNMP `sysDescr`) without a
-/// full scan. Callers should ping the gateway first so its neighbor-table entry
-/// is fresh; `local_ip`, when known, is the active interface address the SNMP
-/// probe binds to. Returns all-`None` when there is no gateway.
+/// Resolve the gateway's make (MAC OUI), model and product name without a full
+/// scan. Callers should ping the gateway first so its neighbor-table entry is
+/// fresh; `local_ip`, when known, is the active interface address the SNMP/SSDP
+/// probes bind to. Returns all-`None` when there is no gateway.
 pub async fn gateway_identity(
     gateway: Option<&str>,
     local_ip: Option<std::net::Ipv4Addr>,
 ) -> GatewayIdentity {
     let Some(gw) = gateway else {
-        return GatewayIdentity { mac: None, vendor: None, model: None };
+        return GatewayIdentity { mac: None, vendor: None, model: None, name: None };
     };
     let mac = neighbor_table()
         .await
@@ -166,8 +321,20 @@ pub async fn gateway_identity(
         .map(|n| n.mac)
         .filter(|m| !m.is_empty());
     let vendor = mac.as_deref().and_then(lookup_vendor).map(String::from);
-    let model = snmp::discover(gateway, local_ip).await.get(gw).and_then(|hit| hit.model());
-    GatewayIdentity { mac, vendor, model }
+
+    // SNMP names the model on gear that answers it; SSDP adds the UPnP
+    // friendlyName/modelName that most consumer routers announce instead. Run
+    // both concurrently — neither blocks the other, and the panel takes whatever
+    // either yields.
+    let (snmp_hits, ssdp_hits) =
+        tokio::join!(snmp::discover(gateway, local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
+    let ssdp_hit = ssdp_hits.get(gw);
+    let name = ssdp_hit.and_then(|hit| hit.name.clone());
+    let model = snmp_hits
+        .get(gw)
+        .and_then(|hit| hit.model())
+        .or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
+    GatewayIdentity { mac, vendor, model, name }
 }
 
 /// The per-scan lookup tables `build_device` draws on, all keyed by device IP.
@@ -465,6 +632,105 @@ mod tests {
         let neighbor =
             RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true, stateful: true };
         build_device(neighbor, None, &enrichment, None, None)
+    }
+
+    #[test]
+    fn passive_confirms_a_linux_reachable_entry_but_not_a_stale_one() {
+        let (mdns, ssdp, dhcp) = (HashMap::new(), HashMap::new(), HashMap::new());
+        // Linux `ip neigh` REACHABLE (stateful + reachable) is real liveness, so
+        // it's confirmed present with no announcement needed.
+        let reachable = RawNeighbor {
+            ip: "192.168.1.5".into(),
+            mac: "aa:bb:cc:dd:ee:01".into(),
+            reachable: true,
+            stateful: true,
+        };
+        assert!(build_passive_device(reachable, &mdns, &ssdp, &dhcp, None, None).is_some());
+        // A STALE entry (stateful but not reachable) that announces nothing is not
+        // confirmable passively — leave it to an active scan.
+        let stale = RawNeighbor {
+            ip: "192.168.1.6".into(),
+            mac: "aa:bb:cc:dd:ee:02".into(),
+            reachable: false,
+            stateful: true,
+        };
+        assert!(build_passive_device(stale, &mdns, &ssdp, &dhcp, None, None).is_none());
+    }
+
+    #[test]
+    fn passive_does_not_trust_a_stateless_arp_entry_without_an_announcement() {
+        // macOS/Windows `arp -a` reports reachable=true but stateful=false — a
+        // placeholder, not liveness. A device that has left lingers here for ~20
+        // min, so without an mDNS/SSDP announcement it must not read as present.
+        let (mut mdns, ssdp, dhcp) =
+            (HashMap::new(), HashMap::<String, ssdp::SsdpHit>::new(), HashMap::new());
+        let bare = RawNeighbor {
+            ip: "192.168.1.7".into(),
+            mac: "aa:bb:cc:dd:ee:03".into(),
+            reachable: true,
+            stateful: false,
+        };
+        assert!(
+            build_passive_device(bare, &mdns, &ssdp, &dhcp, None, None).is_none(),
+            "a stale ARP-cache entry must not be confirmed present"
+        );
+
+        // The same kind of host, now announcing over mDNS → confirmed, and its
+        // announced name is carried through for a fresh arrival.
+        mdns.insert(
+            "192.168.1.8".into(),
+            mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() },
+        );
+        let announcing = RawNeighbor {
+            ip: "192.168.1.8".into(),
+            mac: "aa:bb:cc:dd:ee:04".into(),
+            reachable: true,
+            stateful: false,
+        };
+        let dev = build_passive_device(announcing, &mdns, &ssdp, &dhcp, None, None)
+            .expect("announced host");
+        assert!(dev.reachable);
+        assert_eq!(dev.hostname.as_deref(), Some("Living Room TV"));
+    }
+
+    #[test]
+    fn passive_always_confirms_self_and_gateway() {
+        // Self and the gateway are present by definition — even a gateway whose
+        // ARP entry looks stale and that announced nothing must be confirmed.
+        let (mdns, ssdp, dhcp) = (HashMap::new(), HashMap::new(), HashMap::new());
+        let gw = RawNeighbor {
+            ip: "192.168.1.1".into(),
+            mac: "aa:bb:cc:dd:ee:05".into(),
+            reachable: false,
+            stateful: false,
+        };
+        let dev = build_passive_device(gw, &mdns, &ssdp, &dhcp, Some("192.168.1.1"), None)
+            .expect("the gateway is always present");
+        assert!(dev.is_gateway);
+    }
+
+    #[test]
+    fn passive_types_a_new_router_so_it_keeps_its_ap_warning() {
+        // The event feed logs a new non-gateway router/AP as a higher-severity
+        // `ap_appeared` warning — but only if the arrival is actually typed a
+        // router. The lightweight classify pass must carry a DHCP router
+        // fingerprint through so a rogue AP joining while backgrounded isn't
+        // downgraded to a plain join.
+        let (mdns, ssdp) = (HashMap::new(), HashMap::new());
+        let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
+        dhcp.insert(
+            crate::net_util::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
+            dhcp::DhcpHit { kind: Some("router"), ..Default::default() },
+        );
+        let ap = RawNeighbor {
+            ip: "192.168.1.9".into(),
+            mac: "aa:bb:cc:dd:dd:06".into(),
+            reachable: true,
+            stateful: true,
+        };
+        let dev = build_passive_device(ap, &mdns, &ssdp, &dhcp, None, None).expect("present");
+        assert_eq!(dev.kind, "router", "a router fingerprint types the arrival as router");
+        assert!(!dev.is_gateway, "and not the gateway → emit_new_device raises ap_appeared");
     }
 
     #[test]

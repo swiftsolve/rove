@@ -1,9 +1,23 @@
-//! The background loops: usage sampling, live-throughput broadcasting, and the
-//! OS network-change monitor that nudges the UI off its polling interval.
+//! The background loops: usage sampling, live-throughput broadcasting, the
+//! passive device-roster refresh, and the OS network-change monitor that nudges
+//! the UI off its polling interval.
 use crate::AppState;
-use rove_core::{live_throughput::ThroughputSampler, net_util::lock};
+use rove_core::{live_throughput::ThroughputSampler, net_util::lock, store::Store};
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Emitter, Manager};
+
+/// How often the passive refresh tops up the device roster. A full scan is heavy
+/// and noisy (ping sweep + per-host TCP probe), so the UI only scans on demand;
+/// this passive pass (neighbor table + mDNS/SSDP announcements, no probing) is
+/// cheap enough to run on a timer and keep `last_seen`/online state warm even
+/// while the window is hidden to tray.
+const PASSIVE_REFRESH_INTERVAL: Duration = Duration::from_secs(5 * 60);
+
+/// Delay before the first passive refresh, giving the UI's initial on-open scan
+/// time to seed the roster — `touch_devices` no-ops until that baseline exists.
+const PASSIVE_REFRESH_WARMUP: Duration = Duration::from_secs(60);
 
 /// Accumulate data usage into daily buckets every 30s.
 pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
@@ -50,6 +64,35 @@ pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
             }
             let sample = sampler.sample();
             let _ = handle.emit("live-throughput", &sample);
+        }
+    });
+}
+
+/// Keep the device roster warm in the background. Every
+/// [`PASSIVE_REFRESH_INTERVAL`] this runs a no-probe presence pass (see
+/// [`rove_core::devices::passive_refresh`]) — the kernel neighbor table plus
+/// mDNS/SSDP announcements, no ping sweep or TCP probe — and folds the confirmed
+/// devices into the store. That bumps `last_seen` and logs arrivals/returns
+/// without the traffic or battery cost of a full scan, so a device seen (or a
+/// return) while the app sits in the tray isn't lost by the time the user next
+/// opens the Devices tab. Runs regardless of window visibility, unlike the
+/// frontend's on-open scan.
+///
+/// Deliberately fire-and-persist with no UI event: the frontend's only device
+/// fetch runs a *full active* scan, so nudging an open view to reload would
+/// reintroduce the very scan-storm this passive pass exists to avoid. The warmed
+/// store is read on the next natural load (tab open, resume, network change).
+pub fn spawn_device_refresh(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(PASSIVE_REFRESH_WARMUP).await;
+        loop {
+            let present = rove_core::devices::passive_refresh().await;
+            let now = rove_core::net_util::now_ms() as i64;
+            let store = handle.state::<Arc<Store>>();
+            if let Err(e) = store.touch_devices(&present, now) {
+                tracing::warn!("passive device refresh failed to persist: {e}");
+            }
+            tokio::time::sleep(PASSIVE_REFRESH_INTERVAL).await;
         }
     });
 }

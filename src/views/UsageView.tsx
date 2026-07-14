@@ -135,7 +135,7 @@ const renderActiveBar =
       <circle
         cx={x + width / 2}
         cy={y}
-        r={3}
+        r={5}
         fill={color}
         // Ring in the band's own surface colour (not text-primary) so the dot
         // reads as punched out of the chart in both themes — in light mode a

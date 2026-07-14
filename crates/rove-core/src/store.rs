@@ -542,6 +542,78 @@ impl Store {
         Ok(())
     }
 
+    /// Bump only the liveness columns (`ip`, `last_seen`) of an existing row,
+    /// leaving the identity (hostname/vendor/kind/os) exactly as an active scan
+    /// settled it. Used by the passive refresh, whose thin evidence must never
+    /// overwrite a better name; a row that doesn't exist yet is simply not
+    /// touched (the caller inserts genuinely new devices via `upsert_device`).
+    fn bump_last_seen(conn: &Connection, mac: &str, ip: &str, now_ms: i64) -> rusqlite::Result<()> {
+        conn.execute(
+            "UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1",
+            params![mac, ip, now_ms],
+        )?;
+        Ok(())
+    }
+
+    /// Record a passive presence sweep — the devices the background refresh could
+    /// positively confirm are on the network right now (see
+    /// [`crate::devices::passive_refresh`]). Unlike [`Self::record_devices`] this
+    /// asserts **no** departures: passive discovery can't prove a device is gone,
+    /// so a host missing from `present` is left as-is rather than marked offline.
+    /// The refresh only ever advances the roster forward — it bumps `last_seen`
+    /// for a known device, logs a genuinely new MAC as an arrival, and re-flags a
+    /// device that had gone offline as back online. A known device's richer
+    /// identity is preserved (see [`Self::bump_last_seen`]).
+    ///
+    /// No-ops until an active scan has seeded the roster: seeding a partial
+    /// passive view (only the announcing hosts) would make that first full scan
+    /// report every silent device as a new arrival.
+    pub fn touch_devices(&self, present: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
+        let mut conn = self.lock();
+        let prior = Self::load_known_map(&conn)?;
+        // Wait for the first active scan to establish the baseline (see above).
+        if prior.is_empty() {
+            return Ok(());
+        }
+        let tx = conn.transaction()?;
+        let last_event = Self::load_last_event_types(&tx)?;
+
+        for device in present.iter().filter(|d| !d.mac.is_empty() && d.reachable) {
+            match prior.get(&device.mac) {
+                None => {
+                    // A device we've never recorded, seen only passively. Store
+                    // its (thin) identity so the arrival isn't blank, and announce
+                    // it — an active scan will enrich it on the next real scan.
+                    Self::emit_new_device(&tx, device, now_ms)?;
+                    Self::upsert_device(&tx, device, now_ms)?;
+                }
+                Some(_) => {
+                    // Back after we'd marked it offline: mirror `record_devices`'
+                    // online transition so a device returning while the window is
+                    // backgrounded still lands on the feed.
+                    if last_event.get(&device.mac).map(String::as_str)
+                        == Some(EVENT_DEVICE_OFFLINE)
+                    {
+                        Self::record_event(
+                            &tx,
+                            now_ms,
+                            EVENT_DEVICE_ONLINE,
+                            "info",
+                            device,
+                            None,
+                            None,
+                        )?;
+                    }
+                    Self::bump_last_seen(&tx, &device.mac, &device.ip, now_ms)?;
+                }
+            }
+        }
+
+        Self::prune_events(&tx, now_ms)?;
+        tx.commit()?;
+        Ok(())
+    }
+
     /// Upsert the devices from a scan and derive the network-change events that
     /// scan implies (arrivals, departures, and mutated identity), diffing the
     /// batch against the remembered roster before it's overwritten.
@@ -1526,6 +1598,108 @@ mod tests {
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "gateway_changed");
         assert_eq!(latest.severity, "critical");
+    }
+
+    #[test]
+    fn touch_devices_no_ops_until_an_active_scan_seeds_the_roster() {
+        let store = Store::open_in_memory().unwrap();
+        let seen = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "unknown");
+        // No baseline yet: a passive pass must not seed the roster (that's the
+        // first active scan's job), or that scan would report every silent host
+        // it finds as a fresh arrival.
+        store.touch_devices(std::slice::from_ref(&seen), 1_000).unwrap();
+        assert!(store.known_devices().unwrap().is_empty());
+        assert!(store.network_events(100).unwrap().is_empty());
+    }
+
+    #[test]
+    fn touch_devices_bumps_last_seen_without_touching_identity() {
+        let store = Store::open_in_memory().unwrap();
+        let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "phone");
+        phone.hostname = Some("Janes-Phone".into());
+        phone.vendor = Some("Apple".into());
+        store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
+
+        // A passive sighting carries only thin evidence (no hostname, kind
+        // unknown). It must advance last_seen/ip yet leave the richer identity an
+        // active scan resolved exactly as it was.
+        let mut passive = device("bb:bb:bb:bb:bb:bb", "192.168.2.20", "unknown");
+        passive.hostname = None;
+        passive.vendor = None;
+        store.touch_devices(std::slice::from_ref(&passive), 5_000).unwrap();
+
+        let known = store.known_devices().unwrap();
+        assert_eq!(known.len(), 1);
+        assert_eq!(known[0].last_seen, 5_000, "last_seen advances");
+        assert_eq!(known[0].ip.as_deref(), Some("192.168.2.20"), "and so does the IP");
+        assert_eq!(known[0].hostname.as_deref(), Some("Janes-Phone"), "identity untouched");
+        assert_eq!(known[0].kind, "phone");
+        assert_eq!(known[0].vendor.as_deref(), Some("Apple"));
+    }
+
+    #[test]
+    fn touch_devices_never_marks_an_absent_device_offline() {
+        let store = Store::open_in_memory().unwrap();
+        let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+        let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
+        store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
+        let before = store.network_events(100).unwrap().len();
+
+        // A passive pass that only saw `a` must not declare `b` gone — passive
+        // discovery can't prove absence, so it only ever adds presence.
+        store.touch_devices(std::slice::from_ref(&a), 2_000).unwrap();
+        let events = store.network_events(100).unwrap();
+        assert_eq!(events.len(), before, "no event for the device it didn't see");
+        assert!(events.iter().all(|e| e.event_type != "device_offline"));
+    }
+
+    #[test]
+    fn touch_devices_re_flags_a_returning_device_online() {
+        let store = Store::open_in_memory().unwrap();
+        let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+        let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
+        store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
+        store.record_devices(std::slice::from_ref(&a), 2_000).unwrap(); // b drops → offline
+        assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_offline");
+
+        // b is seen again by a passive pass → an online transition still lands on
+        // the feed even though no active scan ran.
+        store.touch_devices(std::slice::from_ref(&b), 3_000).unwrap();
+        assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_online");
+    }
+
+    #[test]
+    fn touch_devices_records_a_genuinely_new_arrival() {
+        let store = Store::open_in_memory().unwrap();
+        let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+        store.record_devices(std::slice::from_ref(&a), 1_000).unwrap(); // baseline exists
+
+        // A device that joined while the app sat in the tray, caught passively.
+        let mut newcomer = device("cc:cc:cc:cc:cc:cc", "192.168.1.42", "unknown");
+        newcomer.hostname = Some("new-tv".into());
+        store.touch_devices(std::slice::from_ref(&newcomer), 2_000).unwrap();
+
+        assert!(
+            store.known_devices().unwrap().iter().any(|d| d.mac == "cc:cc:cc:cc:cc:cc"),
+            "the arrival is recorded"
+        );
+        assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_joined");
+    }
+
+    #[test]
+    fn touch_devices_flags_a_new_router_as_an_ap_appeared_warning() {
+        let store = Store::open_in_memory().unwrap();
+        let baseline = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+        store.record_devices(std::slice::from_ref(&baseline), 1_000).unwrap();
+
+        // A router-kind arrival caught passively (the classify pass typed it as a
+        // router, not left it unknown) must land as the higher-severity
+        // ap_appeared warning, not a plain join.
+        let ap = device("dd:dd:dd:dd:dd:dd", "192.168.1.2", "router");
+        store.touch_devices(std::slice::from_ref(&ap), 2_000).unwrap();
+        let latest = &store.network_events(1).unwrap()[0];
+        assert_eq!(latest.event_type, "ap_appeared");
+        assert_eq!(latest.severity, "warning");
     }
 
     #[test]

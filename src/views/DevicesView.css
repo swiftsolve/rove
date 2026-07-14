@@ -302,7 +302,9 @@
   color: var(--text-tertiary);
 }
 
-.device-row-kind.gateway {
+/* The green "Gateway" role that leads the gateway's meta line; the maker/model
+   that follow inherit the muted meta colour, giving name › role › details. */
+.device-row-gateway-role {
   color: var(--positive);
 }
 

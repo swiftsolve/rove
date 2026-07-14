@@ -235,7 +235,7 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
   scannedAt: Date.now(),
   dhcpStatus: 'active',
   devices: ([
-    { ip: '192.168.1.1', hostname: 'router', model: null, os: null, kind: 'router', mac: '24:5a:4c:11:b2:03', vendor: 'Ubiquiti', isRandomizedMac: false, isGateway: true, isSelf: false, reachable: true },
+    { ip: '192.168.1.1', hostname: 'router', model: 'UniFi Dream Router', os: null, kind: 'router', mac: '24:5a:4c:11:b2:03', vendor: 'Ubiquiti', isRandomizedMac: false, isGateway: true, isSelf: false, reachable: true },
     { ip: MOCK_SELF_IP, hostname: 'rove-macbook', model: 'MacBookPro18,3', os: 'macOS', kind: 'computer', mac: MOCK_SELF_MAC, vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: true, reachable: true },
     { ip: '192.168.1.10', hostname: 'Living-Room-TV', model: 'BRAVIA KD-65X90L', os: null, kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
     { ip: '192.168.1.12', hostname: 'Kitchen-Sonos', model: 'Sonos One', os: null, kind: 'speaker', mac: '68:57:2d:aa:0b:0c', vendor: 'Sonos', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
@@ -345,7 +345,8 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   dnsServers: [MOCK_GATEWAY, '1.1.1.1', '8.8.8.8'],
   gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
   gatewayVendor: 'Sagemcom Broadband SAS',
-  gatewayModel: 'RouterOS RB750Gr3',
+  gatewayModel: 'Giga Hub 2.0',
+  gatewayName: 'Giga Hub 2.0 Internet Gateway Device',
   isp: {
     name: 'Comcast Cable Communications',
     asn: 'AS7922',

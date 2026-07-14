@@ -100,6 +100,7 @@ pub fn run() {
             store_init::init_store(app);
             monitors::spawn_usage_sampler(handle.clone());
             monitors::spawn_throughput_broadcaster(handle.clone());
+            monitors::spawn_device_refresh(handle.clone());
             monitors::spawn_route_monitor(handle.clone());
 
             // If the tray comes up, closing the window will hide to tray;

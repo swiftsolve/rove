@@ -272,6 +272,7 @@ pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostic
         gateway_ping,
         gateway_vendor: identity.vendor,
         gateway_model: identity.model,
+        gateway_name: identity.name,
         isp,
         services,
     }
