@@ -1,0 +1,585 @@
+<title>Rove — Product Engineering Case Study</title>
+
+<style>
+  :root {
+    /* neutrals carry a slight blue bias — chosen, not defaulted */
+    --ground: #F4F6F9;
+    --surface: #FFFFFF;
+    --surface-2: #EDF1F7;
+    --ink: #0E1723;
+    --ink-soft: #46566B;
+    --ink-faint: #8290A6;
+    --line: #DCE3EC;
+    --accent: #2F62D8;
+    --accent-2: #0E9DAD;
+    --glow: rgba(47, 98, 216, 0.13);
+    --live: #0E9DAD;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+
+    --measure: 66ch;
+    --pad: clamp(1.25rem, 5vw, 2.5rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0B111A;
+      --surface: #111A26;
+      --surface-2: #16212F;
+      --ink: #EAF0F8;
+      --ink-soft: #A6B4C8;
+      --ink-faint: #6C7C93;
+      --line: #223141;
+      --accent: #5B8CFF;
+      --accent-2: #2AD3E6;
+      --glow: rgba(91, 140, 255, 0.16);
+      --live: #2AD3E6;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --ground: #F4F6F9; --surface: #FFFFFF; --surface-2: #EDF1F7;
+    --ink: #0E1723; --ink-soft: #46566B; --ink-faint: #8290A6;
+    --line: #DCE3EC; --accent: #2F62D8; --accent-2: #0E9DAD;
+    --glow: rgba(47, 98, 216, 0.13); --live: #0E9DAD;
+  }
+  :root[data-theme="dark"] {
+    --ground: #0B111A; --surface: #111A26; --surface-2: #16212F;
+    --ink: #EAF0F8; --ink-soft: #A6B4C8; --ink-faint: #6C7C93;
+    --line: #223141; --accent: #5B8CFF; --accent-2: #2AD3E6;
+    --glow: rgba(91, 140, 255, 0.16); --live: #2AD3E6;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 var(--pad);
+  }
+
+  /* ---------- shared type ---------- */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+    font-weight: 600;
+  }
+  h2 {
+    font-size: clamp(1.5rem, 3.6vw, 2.05rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0.55rem 0 0;
+    font-weight: 750;
+  }
+  h3 { text-wrap: balance; }
+  p { max-width: var(--measure); }
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(120% 90% at 82% -10%, var(--glow), transparent 60%);
+  }
+  #throughput {
+    position: absolute;
+    inset: auto 0 0 0;
+    width: 100%;
+    height: 62%;
+    display: block;
+    opacity: 0.9;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, transparent, #000 45%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%);
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(3.5rem, 11vw, 6.5rem);
+    padding-bottom: clamp(3.5rem, 11vw, 6.5rem);
+  }
+  .hero h1 {
+    font-size: clamp(2.35rem, 7vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    margin: 0.8rem 0 0;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .hero h1 .live { color: var(--accent); position: relative; white-space: nowrap; }
+  .lede {
+    font-size: clamp(1.08rem, 2.4vw, 1.32rem);
+    color: var(--ink-soft);
+    margin: 1.4rem 0 0;
+    line-height: 1.5;
+    max-width: 40ch;
+  }
+  .status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.4rem;
+    align-items: center;
+    margin: 2.2rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+  .status-row b { color: var(--ink-soft); font-weight: 600; }
+  .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--live);
+    margin-right: 0.5rem;
+    box-shadow: 0 0 0 0 var(--live);
+    animation: pulse 2.4s ease-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 55%, transparent); }
+    70% { box-shadow: 0 0 0 7px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+
+  /* ---------- sections ---------- */
+  section { padding: clamp(3rem, 8vw, 5rem) 0; border-bottom: 1px solid var(--line); }
+  .section-head { margin-bottom: 2rem; }
+  .body-copy p { color: var(--ink-soft); margin: 1.1rem 0 0; }
+  .body-copy p:first-child { margin-top: 0; }
+  .body-copy strong { color: var(--ink); font-weight: 650; }
+
+  ul.plain { list-style: none; padding: 0; margin: 1.3rem 0 0; max-width: var(--measure); }
+  ul.plain li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin: 0.7rem 0;
+    color: var(--ink-soft);
+  }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0.62em;
+    width: 8px; height: 2px;
+    background: var(--accent);
+  }
+  ul.plain strong { color: var(--ink); font-weight: 650; }
+
+  /* ---------- views table ---------- */
+  .table-scroll { overflow-x: auto; margin-top: 1.6rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    font-weight: 600;
+    padding: 0 1rem 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody td { padding: 0.85rem 1rem 0.85rem 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.view {
+    font-family: var(--mono);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.92rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- decision cards ---------- */
+  .decisions { display: grid; gap: 1rem; margin-top: 1.9rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: clamp(1.3rem, 3.5vw, 1.9rem);
+    position: relative;
+  }
+  .card .num {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .card h3 {
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+    margin: 0.5rem 0 0.7rem;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+  .card p { color: var(--ink-soft); margin: 0.7rem 0 0; font-size: 1rem; }
+  .card .takeaway {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--line);
+    font-size: 0.95rem;
+  }
+  .card .takeaway b {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+  }
+
+  /* ---------- visual slot ---------- */
+  .slot {
+    margin-top: 1.7rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--line));
+    border-radius: 14px;
+    background:
+      repeating-linear-gradient(-45deg, transparent, transparent 11px, color-mix(in srgb, var(--accent) 6%, transparent) 11px, color-mix(in srgb, var(--accent) 6%, transparent) 12px),
+      var(--surface-2);
+    padding: clamp(1.6rem, 5vw, 2.6rem);
+    text-align: center;
+  }
+  .slot .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .slot p { margin: 0.6rem auto 0; color: var(--ink-soft); max-width: 46ch; font-size: 0.98rem; }
+
+  /* ---------- polish list / callout ---------- */
+  .callout {
+    margin-top: 1.6rem;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 1.1rem 1.3rem;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    max-width: var(--measure);
+  }
+  .callout b { color: var(--ink); }
+
+  /* ---------- footer ---------- */
+  footer { padding: clamp(2.5rem, 7vw, 4rem) 0 5rem; }
+  .footer-note {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.03em;
+  }
+  .footer-note a { color: var(--ink-soft); }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .dot { animation: none; }
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+</style>
+
+<header class="hero">
+  <canvas id="throughput" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">Case Study · Product Engineering</p>
+    <h1>A network monitor that tells the truth&nbsp;<span class="live">right now</span>.</h1>
+    <p class="lede">Rove shows the honest, live state of your network — and stays correct the instant anything changes.</p>
+    <div class="status-row">
+      <span><span class="dot"></span><b>Live</b></span>
+      <span>Role&nbsp;·&nbsp;<b>Solo — product, design, engineering</b></span>
+      <span>Stack&nbsp;·&nbsp;<b>Rust · Tauri v2 · React</b></span>
+      <span><b>~21k</b>&nbsp;LOC</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">The bet</p>
+        <h2>Network state should never feel stale.</h2>
+      </div>
+      <div class="body-copy reveal">
+        <p>A modern connection isn't one fixed thing. You pull a cable, join a new SSID, drift between bands, walk from one router to the next. Most tools treat the network as static and poll on a slow timer — so they're routinely wrong right when you open them to find out why something changed.</p>
+        <p><strong>Rove is built around that motion.</strong> The whole product rests on one wager: a monitor that's ever wrong isn't a monitor. Being <em>currently true</em> is the entire job — and the name, <em>Rove</em>, names the behavior.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">What I shipped</p>
+        <h2>One small window, five focused answers.</h2>
+      </div>
+      <div class="reveal">
+        <p class="body-copy" style="margin:0;color:var(--ink-soft)">A cross-platform desktop app — Linux, macOS, Windows — built solo end to end: the product calls, the interaction design, and the systems work.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>View</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="view">Home</td><td>Live throughput and what you're connected through, updated the second it changes.</td></tr>
+              <tr><td class="view">Devices</td><td>Every device on your LAN, named and classified — no admin rights.</td></tr>
+              <tr><td class="view">Speed test</td><td>Real download, upload, and latency — rated against real activities: calls, 4K, cloud gaming.</td></tr>
+              <tr><td class="view">Usage</td><td>Per-day data usage that survives restarts.</td></tr>
+              <tr><td class="view">Diagnostics</td><td>Gateway health, packet loss, and the DNS in use.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="slot">
+          <p class="tag">◍ Visual slot — add later</p>
+          <p>A short GIF of the connection card updating the instant a cable is pulled is the single most persuasive asset for this page. Second choice: the live-traffic graph, or a LAN scan resolving into named devices.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Judgment under tradeoffs</p>
+        <h2>Three decisions worth showing.</h2>
+      </div>
+      <div class="decisions">
+        <article class="card reveal">
+          <span class="num">DECISION 01</span>
+          <h3>Make “current” the product, not a feature</h3>
+          <p>Instead of polling every 15 seconds, the backend <em>watches</em> the OS routing table and re-reads the source of truth the moment anything changes, nudging the UI within about a second. Slower platforms fall back to the poll and still work.</p>
+          <div class="takeaway"><b>The bet</b>The extra plumbing — a push channel alongside request/response — exists entirely to protect one feeling: that what you're looking at is true.</div>
+        </article>
+        <article class="card reveal">
+          <span class="num">DECISION 02</span>
+          <h3>Answer a hard question with cheap signals — honestly</h3>
+          <p>“What's on my LAN?” has no clean OS API. Rove fuses <strong>seven unprivileged signals</strong> — ICMP sweep, TCP probe, mDNS, SSDP/UPnP, reverse DNS, an HTTP banner grab, and NetBIOS — and reconciles them with a trust-weighted vote to name and classify each device in a couple of seconds, no admin rights.</p>
+          <div class="takeaway"><b>The tradeoff I owned</b>A device that blocks ping and announces nothing can still hide. Rather than fake exhaustiveness, the UI defers to the router as authoritative. Naming the limit is better product than hiding it.</div>
+        </article>
+        <article class="card reveal">
+          <span class="num">DECISION 03</span>
+          <h3>Degrade gracefully instead of erroring</h3>
+          <p>Every platform exposes this data through different tools, any of which can be missing. The service layer treats a missing tool as <em>“no data,”</em> not a failure — the next probe is tried, and missing values render as a quiet “—”, never a crash.</p>
+          <div class="takeaway"><b>Why it matters</b>Utilities get judged in their worst moment — the weird laptop, the locked-down OS. Graceful degradation is what makes it trustworthy there.</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">The last 10%</p>
+        <h2>The polish that makes a utility feel like a product.</h2>
+      </div>
+      <div class="reveal">
+        <ul class="plain">
+          <li>Speed-test <strong>Stop</strong> settles the UI immediately, instead of waiting for the backend to unwind.</li>
+          <li>Services show a clear <strong>“Down”</strong> state rather than an ambiguous blank.</li>
+          <li>Frameless, minimal chrome with a staggered entrance — quick and quiet, not chatty.</li>
+          <li>Copy tuned deliberately — subtitles trimmed back to concise one-liners.</li>
+        </ul>
+        <div class="callout">None of these were in a spec. They're the difference between <b>“it works”</b> and <b>“someone cared.”</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Constraints</p>
+        <h2>Small on purpose, and it stays honest under pressure.</h2>
+      </div>
+      <div class="reveal">
+        <ul class="plain">
+          <li><strong>Solo, cross-platform.</strong> Platform differences are runtime checks, so every code path typechecks on every OS and CI builds all three bundles.</li>
+          <li><strong>Lightweight by design.</strong> A ~5 MB installer; a memory-safe Rust backend with no Node runtime in the UI process — the webview can only call the specific commands I expose.</li>
+          <li><strong>Known cost, stated plainly.</strong> A speed test at multi-gigabit rates moves 1–2 GB — inherent to measuring throughput. Rather than hide it, the app warns you. Trust over polish.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Next</p>
+        <h2>Where it goes from here.</h2>
+      </div>
+      <div class="reveal">
+        <ul class="plain">
+          <li>Turn the router-authoritative caveat into a feature — optional import from the router's device list to close the hidden-device gap.</li>
+          <li>History and alerting on metrics that already stream — throughput, gateway loss. The pipeline is already there.</li>
+          <li>A packaged auto-update channel, so “small and fast” survives distribution.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap reveal">
+      <p class="eyebrow">Takeaway</p>
+      <h2 style="max-width:22ch">One clear bet, carried all the way through.</h2>
+      <p class="body-copy" style="color:var(--ink-soft)">Rove is a small product with a single thesis — <em>be true right now</em> — pushed through the architecture, the tradeoffs, and the last-10% polish. The case where I set the direction and built the systems to honor it.</p>
+      <p class="footer-note" style="margin-top:2rem">Repo · <a href="#">add link</a>&nbsp;&nbsp;·&nbsp;&nbsp;Demo · <a href="#">add link</a>&nbsp;&nbsp;·&nbsp;&nbsp;Contact · <a href="#">add</a></p>
+    </div>
+  </footer>
+</main>
+
+<script>
+  // Ambient throughput readout — evokes the app's live-traffic graph.
+  (function () {
+    var canvas = document.getElementById("throughput");
+    if (!canvas) return;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var ctx = canvas.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0;
+
+    function css(varName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    }
+
+    function resize() {
+      var r = canvas.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = Math.max(1, W * dpr);
+      canvas.height = Math.max(1, H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // two smoothed series: a foreground (accent) and a fainter secondary
+    var N = 160;
+    var a = new Array(N).fill(0.35);
+    var b = new Array(N).fill(0.2);
+    var emaA = 0.35, emaB = 0.2;
+    var tick = 0;
+
+    function step(series, ema, base, vol) {
+      var target = base + Math.random() * vol;
+      // occasional bursts, like real traffic
+      if (Math.random() < 0.04) target += 0.4;
+      ema = ema + (target - ema) * 0.12;
+      series.push(ema);
+      series.shift();
+      return ema;
+    }
+
+    function line(series, color, width, fill) {
+      var pad = 6;
+      var top = pad, bottom = H - pad;
+      ctx.beginPath();
+      for (var i = 0; i < series.length; i++) {
+        var x = (i / (series.length - 1)) * W;
+        var y = bottom - series[i] * (bottom - top);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      if (fill) {
+        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.beginPath();
+        for (var j = 0; j < series.length; j++) {
+          var xx = (j / (series.length - 1)) * W;
+          var yy = bottom - series[j] * (bottom - top);
+          if (j === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+        }
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
+
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      var accent = css("--accent") || "#2F62D8";
+      var accent2 = css("--accent-2") || "#0E9DAD";
+
+      // faint baseline grid
+      ctx.strokeStyle = css("--line") || "#DCE3EC";
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 1;
+      for (var g = 1; g < 4; g++) {
+        var gy = (H / 4) * g;
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.globalAlpha = 0.4;
+      line(b, accent2, 1.5, null);
+      ctx.globalAlpha = 1;
+
+      var fill = "rgba(0,0,0,0)";
+      line(a, accent, 2, null);
+
+      // endpoint marker
+      var lx = W, ly = (H - 6) - a[a.length - 1] * (H - 12);
+      ctx.beginPath();
+      ctx.arc(lx - 2, ly, 3, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+    }
+
+    if (reduce) {
+      // draw a single static readout
+      for (var k = 0; k < N; k++) { emaA = step(a, emaA, 0.3, 0.5); emaB = step(b, emaB, 0.2, 0.35); }
+      frame();
+      return;
+    }
+
+    var last = 0;
+    function loop(ts) {
+      if (ts - last > 55) {
+        emaA = step(a, emaA, 0.3, 0.5);
+        emaB = step(b, emaB, 0.2, 0.35);
+        frame();
+        last = ts;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+
+  // scroll reveal
+  (function () {
+    var els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach(function (e) { e.classList.add("in"); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.14 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+</script>
