@@ -9,6 +9,7 @@
  * bridge is absent — see `installMockNetworkApiIfNeeded`.
  */
 import type {
+  AppUsageSummary,
   CapabilityLevel,
   CapabilityRating,
   LanDevice,
@@ -539,6 +540,27 @@ function createMockNetworkApi(): NetworkAPI {
         bootTxBytes: 3_100_000_000,
         trackingSince: Date.now() - 6 * day,
       }
+    },
+    getAppUsage: async (): Promise<AppUsageSummary> => {
+      await delay(200)
+      const mb = 1_000_000
+      // A believable session: a browser dominating, a music stream, a couple of
+      // background sync/update daemons. [name, downMB, upMB].
+      const rows: readonly [string, number, number][] = [
+        ['firefox', 842, 63],
+        ['Spotify', 214, 8],
+        ['com.apple.WebKit.Networking', 118, 11],
+        ['Dropbox', 47, 96],
+        ['slack', 39, 12],
+        ['softwareupdated', 31, 1],
+        ['ssh', 4, 27],
+      ]
+      const apps = rows.map(([name, down, up]) => ({
+        name,
+        rxBytes: Math.round(down * mb),
+        txBytes: Math.round(up * mb),
+      }))
+      return { apps, support: 'supported', trackingSince: Date.now() - 42 * 60_000 }
     },
     runDiagnostics: async () => {
       await delay(700)

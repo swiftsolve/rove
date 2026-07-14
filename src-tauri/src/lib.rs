@@ -7,6 +7,7 @@ mod scanner;
 mod store_init;
 mod tray;
 
+use rove_core::app_usage::AppUsageTracker;
 use rove_core::data_usage::UsageTracker;
 use scanner::DeviceScanner;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -16,6 +17,10 @@ use tauri::Manager;
 struct AppState {
     speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
     usage: Mutex<Option<UsageTracker>>,
+    /// Per-app usage totals, fed by the background app-usage sampler. Always
+    /// present (unlike `usage`, which waits on the store) — the tracker is pure
+    /// in-memory state, so it needs no initialization.
+    app_usage: Mutex<AppUsageTracker>,
     networks: Mutex<sysinfo::Networks>,
     /// True while any UI consumer wants 1 Hz live-throughput samples. The
     /// frontend ref-counts and toggles this; a bool avoids counter drift if
@@ -84,6 +89,7 @@ pub fn run() {
         .manage(AppState {
             speed_cancel: Mutex::new(None),
             usage: Mutex::new(None),
+            app_usage: Mutex::new(AppUsageTracker::new()),
             networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
             throughput_active: AtomicBool::new(false),
             tray_active: AtomicBool::new(false),
@@ -99,6 +105,7 @@ pub fn run() {
             let handle = app.handle().clone();
             store_init::init_store(app);
             monitors::spawn_usage_sampler(handle.clone());
+            monitors::spawn_app_usage_sampler(handle.clone());
             monitors::spawn_throughput_broadcaster(handle.clone());
             monitors::spawn_device_refresh(handle.clone());
             monitors::spawn_route_monitor(handle.clone());
@@ -141,6 +148,7 @@ pub fn run() {
             commands::run_speed_test,
             commands::cancel_speed_test,
             commands::get_data_usage,
+            commands::get_app_usage,
             commands::get_speed_history,
             commands::get_network_events,
             commands::save_speed_result,

@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
+  AppUsageSummary,
   DataUsageSummary,
   LanDeviceScan,
   LiveDiagnostics,
@@ -58,6 +59,7 @@ const tauriNetworkApi: NetworkAPI = {
   runSpeedTest: () => invoke<SpeedTestResult>('run_speed_test'),
   cancelSpeedTest: () => invoke<void>('cancel_speed_test'),
   getDataUsage: () => invoke<DataUsageSummary>('get_data_usage'),
+  getAppUsage: () => invoke<AppUsageSummary>('get_app_usage'),
   getSpeedHistory: () => invoke<readonly SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
   importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>
