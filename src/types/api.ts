@@ -1,4 +1,5 @@
 import type { Unsubscribe } from './common'
+import type { AppUsageSummary } from './app-usage'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
 import type { NetworkEvent } from './events'
@@ -23,6 +24,8 @@ export interface NetworkAPI {
    *  newest first. Populated as a side effect of device scans. */
   getNetworkEvents(): Promise<readonly NetworkEvent[]>
   getDataUsage(): Promise<DataUsageSummary>
+  /** Per-app network usage since Rove started watching, busiest first. */
+  getAppUsage(): Promise<AppUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>
   /** The fast-changing metrics only (gateway latency + service reachability),
    *  for the Connection view's tight refresh loop. */
