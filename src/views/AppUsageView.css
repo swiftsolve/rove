@@ -1,33 +1,51 @@
-/* Per-app usage list. Each row stacks a name+total header, a proportional
-   down/up bar, and the two byte figures — the same down/up colour language as
-   the Usage view, applied per application. */
+/* Per-app usage list, styled after the Services list: compact rows with a
+   hairline between each. Each row is icon + name + total on the main line, with
+   the download/upload split as a quiet second line. */
 .app-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-lg);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .app-row {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: 4px;
+  padding: var(--gap-sm) 0;
 }
 
-.app-row-head {
+/* The line between items — only between rows, so the card's own padding frames
+   the first and last cleanly. */
+.app-row + .app-row {
+  border-top: 1px solid var(--border);
+}
+
+.app-row:first-child {
+  padding-top: 0;
+}
+
+.app-row:last-child {
+  padding-bottom: 0;
+}
+
+.app-row-main {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--gap-md);
+}
+
+.app-row-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .app-row-name {
   font-size: var(--text-small);
   color: var(--text-primary);
   /* Long process paths (e.g. macOS bundle identifiers) truncate rather than
-     wrap, keeping every row one line tall. */
+     wrap, keeping the main line one row tall. */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -39,33 +57,12 @@
   flex-shrink: 0;
 }
 
-/* The bar is a single track; the two segments sit side by side, each scaled
-   against the busiest app so rows read comparably. An empty segment collapses
-   to zero width. */
-.app-row-bar {
-  display: flex;
-  height: 6px;
-  border-radius: var(--radius-xs);
-  overflow: hidden;
-  background: var(--bg-inset);
-}
-
-.app-row-seg {
-  height: 100%;
-}
-
-.app-row-seg--down {
-  background: var(--series-down);
-}
-
-.app-row-seg--up {
-  background: var(--series-up);
-}
-
+/* Download/upload figures, indented under the name so they align past the icon. */
 .app-row-figures {
   display: flex;
   align-items: center;
   gap: var(--gap-md);
+  padding-left: 24px;
 }
 
 .app-row-figure {

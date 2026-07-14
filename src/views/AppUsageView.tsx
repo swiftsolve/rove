@@ -1,8 +1,8 @@
 import type { AppUsage, AppUsageSummary } from '@/types'
-import { formatBytes, formatTimeAgo } from '@/lib/format'
-import Section from '@/components/ui/Section'
+import { formatBytes } from '@/lib/format'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
 import { ViewHeader } from '@/components/ui/ViewHeader'
+import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { AppsIcon, HelpIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { Spinner } from '@/components/ui/Spinner'
@@ -12,36 +12,68 @@ const APP_USAGE_INFO_HINT =
   'Bytes are attributed to the app that moved them, read from the OS per-process ' +
   'network counters while Rove is running. Totals reset when Rove restarts.'
 
+// Best-effort brand icon: map a process name to a registered domain and reuse
+// the Services favicon lookup, falling back to a letter monogram for anything
+// unrecognised. Ordered most-specific first (e.g. chromium before chrome,
+// webkit/safari before the generic apple). Not exhaustive — the monogram covers
+// the long tail (daemons, CLIs) cleanly.
+const APP_DOMAINS: readonly (readonly [string, string])[] = [
+  ['firefox', 'firefox.com'],
+  ['chromium', 'google.com'],
+  ['chrome', 'google.com'],
+  ['spotify', 'spotify.com'],
+  ['slack', 'slack.com'],
+  ['dropbox', 'dropbox.com'],
+  ['discord', 'discord.com'],
+  ['zoom', 'zoom.us'],
+  ['telegram', 'telegram.org'],
+  ['signal', 'signal.org'],
+  ['whatsapp', 'whatsapp.com'],
+  ['steam', 'steampowered.com'],
+  ['brave', 'brave.com'],
+  ['opera', 'opera.com'],
+  ['edge', 'microsoft.com'],
+  ['teams', 'microsoft.com'],
+  ['outlook', 'microsoft.com'],
+  ['onedrive', 'microsoft.com'],
+  ['vscode', 'visualstudio.com'],
+  ['code', 'visualstudio.com'],
+  ['safari', 'apple.com'],
+  ['webkit', 'apple.com'],
+  ['softwareupdate', 'apple.com'],
+  ['apple', 'apple.com'],
+  ['git', 'github.com'],
+  ['node', 'nodejs.org'],
+]
+
+function appDomain(name: string): string {
+  const lower = name.toLowerCase()
+  for (const [key, domain] of APP_DOMAINS) {
+    if (lower.includes(key)) return domain
+  }
+  return ''
+}
+
 interface AppUsageViewProps {
   readonly usage: AppUsageSummary
   readonly isLoading: boolean
   readonly error?: string | null
 }
 
-/** One app's row: name, a proportional bar, and its down/up figures. */
-function AppRow({ app, max }: { readonly app: AppUsage; readonly max: number }): JSX.Element {
+/** One app's row, styled like a Services row: icon + name on the left, total on
+ *  the right, with the download/upload split as a quiet second line. */
+function AppRow({ app }: { readonly app: AppUsage }): JSX.Element {
   const total = app.rxBytes + app.txBytes
-  // Split the bar into down/up segments, each scaled against the busiest app so
-  // the rows are comparable at a glance. Guard the divide for the all-zero case.
-  const scale = max > 0 ? 100 / max : 0
-  const downPct = app.rxBytes * scale
-  const upPct = app.txBytes * scale
-
   return (
-    <li className="app-row">
-      <div className="app-row-head">
-        <span className="app-row-name" title={app.name}>
-          {app.name}
+    <div className="app-row">
+      <div className="app-row-main">
+        <span className="app-row-id">
+          <ServiceIcon host={appDomain(app.name)} name={app.name} />
+          <span className="app-row-name" title={app.name}>
+            {app.name}
+          </span>
         </span>
         <span className="app-row-total num">{formatBytes(total)}</span>
-      </div>
-      <div
-        className="app-row-bar"
-        role="img"
-        aria-label={`${formatBytes(app.rxBytes)} down, ${formatBytes(app.txBytes)} up`}
-      >
-        <span className="app-row-seg app-row-seg--down" style={{ width: `${downPct}%` }} />
-        <span className="app-row-seg app-row-seg--up" style={{ width: `${upPct}%` }} />
       </div>
       <div className="app-row-figures">
         <span className="app-row-figure">
@@ -53,14 +85,13 @@ function AppRow({ app, max }: { readonly app: AppUsage; readonly max: number }):
           <span className="num">{formatBytes(app.txBytes)}</span>
         </span>
       </div>
-    </li>
+    </div>
   )
 }
 
 export default function AppUsageView({ usage, isLoading, error }: AppUsageViewProps): JSX.Element {
-  const { apps, support, trackingSince } = usage
+  const { apps, support } = usage
   const hasData = apps.length > 0
-  const max = apps.reduce((m, app) => Math.max(m, app.rxBytes + app.txBytes), 0)
 
   const subtitle =
     isLoading && !hasData ? 'Loading…' : 'Network usage by application, busiest first'
@@ -113,21 +144,13 @@ export default function AppUsageView({ usage, isLoading, error }: AppUsageViewPr
           </p>
         </div>
       ) : (
-        <Section
-          title="Since Rove started"
-          icon={<AppsIcon size={15} />}
-          action={
-            trackingSince != null ? (
-              <span className="text-meta">measuring {formatTimeAgo(trackingSince)}</span>
-            ) : undefined
-          }
-        >
-          <ul className="app-list">
+        <div className="ui-section">
+          <div className="ui-section-body app-list">
             {apps.map((app) => (
-              <AppRow key={app.name} app={app} max={max} />
+              <AppRow key={app.name} app={app} />
             ))}
-          </ul>
-        </Section>
+          </div>
+        </div>
       )}
     </div>
   )
