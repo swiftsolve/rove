@@ -82,6 +82,13 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
             <div className="wifi-share-state">
               <p className="wifi-share-error">{error}</p>
             </div>
+          ) : secured && !share?.password ? (
+            <div className="wifi-share-state">
+              <p className="wifi-share-note">
+                The saved password for {share?.ssid ?? 'this network'} wasn&apos;t available, so
+                there&apos;s no complete QR code to scan. Try again to allow access when prompted.
+              </p>
+            </div>
           ) : share ? (
             <>
               <div className="wifi-share-qr">
@@ -93,11 +100,6 @@ export default function WifiShareDialog({ onClose }: { readonly onClose: () => v
                 />
               </div>
               <p className="wifi-share-ssid">{share.ssid}</p>
-              {secured && !share.password && (
-                <p className="wifi-share-note">
-                  The saved password wasn&apos;t available, so scanning will prompt for it.
-                </p>
-              )}
             </>
           ) : null}
         </div>
