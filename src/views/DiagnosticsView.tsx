@@ -140,6 +140,9 @@ export default function DiagnosticsView({
           >
             <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
             <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
+            {diagnostics?.gatewayName && (
+              <DataRow label="Name" value={diagnostics.gatewayName} />
+            )}
             {diagnostics?.gatewayVendor && (
               <DataRow label="Vendor" value={diagnostics.gatewayVendor} />
             )}

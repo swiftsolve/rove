@@ -265,6 +265,18 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
     return true
   })
 
+  // The gateway's name is the generic role "Router", so the product we resolved
+  // (e.g. "Giga Hub 2.0") would otherwise never surface. Show it on the meta line
+  // beside the green "Gateway" role. Prefer the UPnP friendlyName (the gateway's
+  // hostname, which the display name discards), falling back to the hardware
+  // model — but skip a generic reverse-DNS hostname like "router" so the real
+  // model wins instead. Nothing resolved leaves a bare "Gateway".
+  const isGenericGatewayName = (part: string): boolean =>
+    part.toLowerCase() === 'router' || part.toLowerCase() === 'gateway'
+  const gatewayProduct =
+    [device.hostname, device.model].find((part) => part && !isGenericGatewayName(part)) ?? null
+  const gatewayInfo = gatewayProduct ? [gatewayProduct] : []
+
   return (
     <section className={`ui-section device-row ${device.isGateway ? 'gateway' : ''}`}>
       <span className={`device-row-icon kind-${device.kind}`}>
@@ -283,7 +295,17 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
         </div>
 
         {device.isGateway ? (
-          <span className="text-meta device-row-kind gateway">Gateway</span>
+          <div className="device-row-meta">
+            <InlineMeta
+              items={[
+                <span key="role" className="device-row-gateway-role">
+                  Gateway
+                </span>,
+                ...gatewayInfo,
+              ]}
+              className="text-meta device-row-kind"
+            />
+          </div>
         ) : (
           (meta.length > 0 || lastSeen) && (
             <div className="device-row-meta">

@@ -7,8 +7,12 @@ export interface NetworkDiagnostics {
   readonly gatewayPing: PingStats | null
   /** Router make from the gateway's MAC OUI, or null when unknown. */
   readonly gatewayVendor: string | null
-  /** Router model from the gateway's SNMP sysDescr, or null when unavailable. */
+  /** Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null
+   *  when unavailable. */
   readonly gatewayModel: string | null
+  /** Router product name from the gateway's UPnP friendlyName (e.g. "Giga Hub
+   *  2.0"), or null when it doesn't announce over SSDP. */
+  readonly gatewayName: string | null
   /** WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
    *  service is unreachable — e.g. no internet or the request timed out. */
   readonly isp: IspInfo | null
