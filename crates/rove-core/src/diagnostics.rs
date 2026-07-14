@@ -1,7 +1,7 @@
 use crate::network_info::{default_gateway, default_interface, dns_servers};
 use crate::shell::{try_run_timeout};
 use crate::types::{
-    IspInfo, LiveDiagnostics, NetworkDiagnostics, PingStats, ServiceReachability,
+    InternetStatus, IspInfo, LiveDiagnostics, NetworkDiagnostics, PingStats, ServiceReachability,
 };
 use regex_lite::Regex;
 use std::sync::LazyLock;
@@ -226,6 +226,41 @@ async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
     }
 }
 
+/// Hosts probed solely to answer "does this machine have working internet?".
+/// Independent operators with near-100% uptime, so it takes a real outage of the
+/// whole path — not one flaky service — for every one to fail. Probed by
+/// *hostname* through the same full-TLS path as services, so a captive portal
+/// (whose certificate won't validate) reads as no-internet rather than a false
+/// "online".
+const INTERNET_ANCHORS: [&str; 2] = ["cloudflare.com", "www.google.com"];
+
+/// Whether this machine can currently reach the public internet — true as soon as
+/// any one anchor completes its TLS handshake. This is the context a failed
+/// service probe needs: without it, "unreachable from here" is indistinguishable
+/// from "the service is down". Anchors run concurrently, so this costs one 5s
+/// timeout at worst (only when the machine really is offline).
+async fn internet_reachable() -> bool {
+    let probes = INTERNET_ANCHORS.iter().map(|host| service_latency(host));
+    futures_util::future::join_all(probes)
+        .await
+        .into_iter()
+        .any(|latency| latency.is_some())
+}
+
+/// Fold the anchor result and gateway presence into an [`InternetStatus`]. We key
+/// the offline/no-internet split on whether a gateway exists — a route to a LAN —
+/// rather than on gateway ping loss, because plenty of routers drop ICMP echo yet
+/// route fine; treating that as "offline" would be wrong.
+fn classify_internet(reachable: bool, gateway: Option<&str>) -> InternetStatus {
+    if reachable {
+        InternetStatus::Online
+    } else if gateway.is_some() {
+        InternetStatus::NoInternet
+    } else {
+        InternetStatus::Offline
+    }
+}
+
 /// The fast-changing metrics only — gateway latency and service reachability —
 /// for the Connection view's tight refresh loop. Deliberately skips the ISP and
 /// SNMP identity lookups that `run` performs: those never change between polls
@@ -233,9 +268,16 @@ async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
 /// routers that don't answer) would be wasteful.
 pub async fn run_live(service_list: &[crate::store::ServiceDef]) -> LiveDiagnostics {
     let gateway = default_gateway().await;
-    let (gateway_ping, services) =
-        tokio::join!(gateway_ping(gateway.as_deref()), service_reachability(service_list));
-    LiveDiagnostics { gateway_ping, services }
+    let (gateway_ping, internet, services) = tokio::join!(
+        gateway_ping(gateway.as_deref()),
+        internet_reachable(),
+        service_reachability(service_list),
+    );
+    LiveDiagnostics {
+        gateway_ping,
+        internet: classify_internet(internet, gateway.as_deref()),
+        services,
+    }
 }
 
 pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostics {
@@ -258,18 +300,20 @@ pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostic
     //
     // The WAN identity lookup and the service-reachability probes reach the
     // internet, so they join the same concurrent batch — none blocks another.
-    let (gateway_ping, identity, isp, services) = tokio::join!(
+    let (gateway_ping, identity, isp, internet, services) = tokio::join!(
         gateway_ping(gateway.as_deref()),
         crate::devices::gateway_identity(gateway.as_deref(), local_ipv4),
         isp_info(),
+        internet_reachable(),
         service_reachability(service_list),
     );
 
     NetworkDiagnostics {
-        gateway,
+        gateway: gateway.clone(),
         default_interface: iface,
         dns_servers: dns,
         gateway_ping,
+        internet: classify_internet(internet, gateway.as_deref()),
         gateway_vendor: identity.vendor,
         gateway_model: identity.model,
         gateway_name: identity.name,

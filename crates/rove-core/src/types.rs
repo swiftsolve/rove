@@ -92,6 +92,22 @@ pub struct PingStats {
     pub packet_loss: f64,
 }
 
+/// Whether this machine can actually reach the public internet — the context a
+/// service verdict needs to mean anything. A service that doesn't answer reads as
+/// "Down" only when we know the internet is up; otherwise the failure is ours,
+/// not the service's, and the UI must say "can't check" instead of blaming it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum InternetStatus {
+    /// An internet anchor was reachable — service verdicts are trustworthy.
+    Online,
+    /// A default gateway exists (we're on a LAN) but no anchor answered — the WAN
+    /// is down. LAN-local services may still be reachable; public ones can't be.
+    NoInternet,
+    /// No default gateway at all — not on a usable network. Nothing is reachable.
+    Offline,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkDiagnostics {
@@ -99,6 +115,9 @@ pub struct NetworkDiagnostics {
     pub default_interface: Option<String>,
     pub dns_servers: Vec<String>,
     pub gateway_ping: Option<PingStats>,
+    /// Public-internet reachability, so the Services list can tell a genuine
+    /// outage apart from this machine simply being offline.
+    pub internet: InternetStatus,
     /// Router make from the gateway's MAC OUI, or None when unknown/randomized.
     pub gateway_vendor: Option<String>,
     /// Router model from the gateway's SNMP `sysDescr` (or UPnP `modelName`), or
@@ -140,6 +159,10 @@ pub struct IspInfo {
 #[serde(rename_all = "camelCase")]
 pub struct LiveDiagnostics {
     pub gateway_ping: Option<PingStats>,
+    /// Public-internet reachability, refreshed each poll so the Services list
+    /// stops reporting outages the moment this machine loses (or regains) its
+    /// connection. See [`InternetStatus`].
+    pub internet: InternetStatus,
     pub services: Vec<ServiceReachability>,
 }
 

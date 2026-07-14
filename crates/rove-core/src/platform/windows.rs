@@ -8,22 +8,40 @@ use std::net::Ipv4Addr;
 
 // ---- routing / DNS -------------------------------------------------------
 
-/// Default gateway via a real forwarding lookup. `Get-NetRoute` lists every
-/// 0.0.0.0/0 entry, including stale ones left on a just-disconnected adapter (an
-/// unplugged Ethernet can keep a metric-0 default route), so sorting by metric
-/// can pick a dead link. `Find-NetRoute` returns the route Windows would
-/// actually use — only over a connected interface.
+/// The forwarding route Windows would actually use to reach the internet, guarded
+/// against two ways a dead link masquerades as live:
+///
+///  1. `Find-NetRoute` emits *two* rows — a bare source-address selection
+///     (`MSFT_NetIPAddress`: an `InterfaceAlias` but no `NextHop`) followed by the
+///     real `0.0.0.0/0` route. `Where-Object NextHop` drops the stub so we only
+///     ever read a genuine forwarding entry.
+///  2. Windows can keep a stale metric-0 default route on a just-unplugged
+///     Ethernet adapter, so even the real route row can point at a dead link. The
+///     adapter's `Status -eq 'Up'` check (media actually connected) rejects that.
+///
+/// Selecting `$route.PSObject.Properties['Field']` after the guard lets both the
+/// gateway and interface lookups share this one script.
+fn default_route_field(field: &str) -> String {
+    format!(
+        "$route = Find-NetRoute -RemoteIPAddress '8.8.8.8' -ErrorAction SilentlyContinue | Where-Object NextHop | Select-Object -First 1; \
+         if ($route -and (Get-NetAdapter -InterfaceIndex $route.InterfaceIndex -ErrorAction SilentlyContinue).Status -eq 'Up') {{ $route.{field} }}"
+    )
+}
+
+/// Default gateway via a real forwarding lookup. See [`default_route_field`] for
+/// why the raw `Find-NetRoute` output can't be trusted unfiltered.
 pub async fn default_gateway() -> Option<String> {
-    let out = try_run_powershell("(Find-NetRoute -RemoteIPAddress '8.8.8.8' -ErrorAction SilentlyContinue | Where-Object NextHop | Select-Object -First 1).NextHop").await?;
+    let out = try_run_powershell(&default_route_field("NextHop")).await?;
     let ip = out.trim().to_string();
     if ip.is_empty() { None } else { Some(ip) }
 }
 
-/// Interface Windows actually forwards through — not the lowest-metric row,
-/// which can be a stale route on a disconnected adapter (e.g. showing
-/// "Ethernet 2" while on Wi-Fi). See [`default_gateway`].
+/// Interface Windows actually forwards through — not the lowest-metric row, which
+/// can be a stale route on a disconnected adapter (e.g. showing "Ethernet 2"
+/// while on Wi-Fi), and not the source-address stub row that lingers with a
+/// configured IP after the cable is pulled. See [`default_route_field`].
 pub async fn default_interface() -> Option<String> {
-    let out = try_run_powershell("(Find-NetRoute -RemoteIPAddress '8.8.8.8' -ErrorAction SilentlyContinue | Select-Object -First 1).InterfaceAlias").await?;
+    let out = try_run_powershell(&default_route_field("InterfaceAlias")).await?;
     let name = out.trim().to_string();
     if name.is_empty() { None } else { Some(name) }
 }

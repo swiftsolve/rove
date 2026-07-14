@@ -10,33 +10,71 @@
 .mgsvc-row {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
-  padding: var(--gap-md) var(--gap-lg);
+  gap: var(--gap-sm);
+  /* Less right padding than left so the kebab sits closer to the card edge — its
+     30px hit area already carries visual breathing room around the dots. */
+  padding: var(--gap-md) var(--gap-tight) var(--gap-md) var(--gap-lg);
 }
 
 .mgsvc-row + .mgsvc-row {
   border-top: 1px solid var(--border);
 }
 
-.mgsvc-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gap-sm);
+/* Two stacked lines: favicon + name + trend on top, URL + status below. Takes the
+   row's free width so both lines can ellipsis their left-hand text. */
+.mgsvc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
   flex: 1 1 auto;
+}
+
+/* One line of the body: left-hand text that ellipsises, right-hand value that
+   holds its width. */
+.mgsvc-line {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  min-width: 0;
+}
+
+/* Indent the URL line so it starts under the name, clearing the favicon (16px)
+   and its gap that lead the line above. */
+.mgsvc-line-sub {
+  min-height: 1.25em;
+  padding-left: calc(16px + var(--gap-md));
 }
 
 .mgsvc-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
   color: var(--text-primary);
+}
+
+/* The service URL under the name — muted, and ellipsised when it's long. */
+.mgsvc-host {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-small);
+  color: var(--text-tertiary);
 }
 
 .mgsvc-status {
   flex-shrink: 0;
+  /* Hold a steady width so the URL's ellipsis to its left doesn't shift as the
+     animated latency number changes width poll to poll. */
+  min-width: 4.5em;
   font-family: var(--font-numeric);
+  font-size: var(--text-small);
   color: var(--text-secondary);
+  text-align: right;
 }
 
 /* Per-row overflow menu: a kebab button anchoring a dropdown. */

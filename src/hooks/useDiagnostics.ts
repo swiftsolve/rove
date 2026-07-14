@@ -61,7 +61,12 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
       ? null
       : live.data == null
         ? full.data
-        : { ...full.data, gatewayPing: live.data.gatewayPing, services: live.data.services }
+        : {
+            ...full.data,
+            gatewayPing: live.data.gatewayPing,
+            internet: live.data.internet,
+            services: live.data.services,
+          }
 
   return {
     diagnostics,

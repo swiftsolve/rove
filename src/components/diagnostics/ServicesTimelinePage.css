@@ -1,0 +1,278 @@
+/* The header subtitle's up/down tally, e.g. "5 up · 1 down" — the dot is the
+   shared InlineMeta separator. */
+.stl-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+/* Each half of the tally pairs its arrow with the count. The icon inherits the
+   span's colour (green for up, red for down), matching the timeline markers. */
+.stl-tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.stl-tally-icon {
+  flex-shrink: 0;
+}
+
+/* The timeline itself — a marker column and content beside it, connected by a
+   line, mirroring the network events feed. */
+.stl-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 4px 8px 0;
+}
+
+.stl-day {
+  display: flex;
+  flex-direction: column;
+}
+
+.stl-day:not(:first-child) {
+  margin-top: 18px;
+}
+
+.stl-day-heading {
+  margin: 0 0 14px;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stl-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 14px;
+  padding-left: 5px;
+  padding-bottom: 22px;
+}
+
+.stl-item:last-child {
+  padding-bottom: 0;
+}
+
+/* The connecting line, from just below a node to the next within the same day;
+   dropped on a day's last node so it ends at the final marker. */
+.stl-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 30px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-strong);
+  border-radius: 1px;
+}
+
+.stl-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+/* A service dropping off reads as an alarm (red); a recovery reads positive
+   (green) — the same colour language as the reachability numbers. */
+.stl-marker.is-down {
+  color: var(--negative);
+}
+
+.stl-marker.is-up {
+  color: var(--positive);
+}
+
+/* A healthy summary ("N services running") — the same positive tint as a
+   recovery, glyphed with a check. */
+.stl-marker.is-running {
+  color: var(--positive);
+}
+
+.stl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.stl-content > * {
+  line-height: 1.3;
+}
+
+.stl-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.stl-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--text-section);
+  overflow-wrap: anywhere;
+}
+
+.stl-time {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  white-space: nowrap;
+}
+
+/* The subject line: the service's favicon and name, sitting under the title —
+   the events-feed shape (what happened on top, which service beneath). */
+.stl-subject {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+}
+
+.stl-subject-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The running summary's subtitle is a quiet aside, not a service name. */
+.stl-subject-muted {
+  color: var(--text-tertiary);
+}
+
+/* The connection row keeps its status and offline duration on one line: the
+   status at the left, the duration flush right (pushed by its margin-left:auto).
+   Overrides the subject's inline-flex so the row spans the full content width. */
+.stl-conn-line {
+  display: flex;
+  width: 100%;
+}
+
+.stl-conn-line .stl-meta-duration {
+  font-size: var(--text-small);
+}
+
+.stl-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+  letter-spacing: 0.02em;
+}
+
+.stl-meta-host {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The outage length sits at the far right of the meta row, no dot before it. */
+.stl-meta-duration {
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Header overflow menu — the kebab and its dropdown, matching the manage page's
+   row menu and the speed-history menu. */
+.stl-menu {
+  position: relative;
+}
+
+.stl-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.stl-kebab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.stl-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 148px;
+  padding: var(--gap-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel-hi);
+  box-shadow: var(--shadow-raised);
+}
+
+.stl-menuitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-xs);
+  color: var(--text-secondary);
+  font-size: var(--text-small);
+  text-align: left;
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.stl-menuitem:hover {
+  background: var(--bg-hover);
+}
+
+.stl-menuitem.is-danger {
+  color: var(--negative);
+}
+
+.stl-menuitem.is-danger:hover {
+  color: var(--negative);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
+}
+
+/* Blank state — icon + short line, centred, matching the events/speed empties. */
+.stl-empty {
+  gap: 14px;
+  text-align: center;
+}
+
+.stl-empty-icon {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.stl-empty-title {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+.stl-empty-hint {
+  max-width: 42ch;
+  line-height: 1.45;
+  font-size: 12px;
+  text-align: center;
+}

@@ -12,6 +12,7 @@ export const NETWORK_EVENT_TYPES = [
   'gateway_changed',
   'wifi_connected',
   'ethernet_connected',
+  'connection_lost',
 ] as const
 
 export type NetworkEventType = (typeof NETWORK_EVENT_TYPES)[number]

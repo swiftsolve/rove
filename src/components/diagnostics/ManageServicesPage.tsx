@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ServiceDefinition, ServiceReachability } from '@/types'
+import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import Subpage from '@/components/ui/Subpage'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { EditIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { Tooltip } from '@/components/ui/Tooltip'
+import { Sparkline } from '@/components/ui/Sparkline'
 import { useServices } from '@/hooks/useServices'
+import { useServiceLatency } from '@/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/components/diagnostics/AddServiceDialog'
 import { formatLatencyMs } from '@/lib/format'
 import './ManageServicesPage.css'
@@ -91,6 +94,11 @@ function RowMenu({
 interface ManageServicesPageProps {
   /** The latest reachability probes; latency is matched to rows by host. */
   readonly reachability: readonly ServiceReachability[] | undefined
+  /** This machine's own internet reachability. When it isn't `online`, a probe
+   *  that failed means "we couldn't check", not "the service is down", so those
+   *  rows read as unknown ("—") rather than "Down" — matching the Services card.
+   *  It also gates the Add button: there's nothing to probe with no connection. */
+  readonly internet: InternetStatus | undefined
   /** Re-run diagnostics so a just-added/removed service's latency refreshes. */
   readonly onRefresh: () => void
   readonly onBack: () => void
@@ -107,10 +115,19 @@ type DialogState = { readonly mode: 'add' } | { readonly mode: 'edit'; readonly 
  */
 export function ManageServicesPage({
   reachability,
+  internet,
   onRefresh,
   onBack,
 }: ManageServicesPageProps): JSX.Element {
   const { services, add, remove } = useServices(true)
+  // Rolling per-host latency history for each row's trend sparkline, appended
+  // each diagnostics poll (recording is driven by the diagnostics effect).
+  const latencyHistory = useServiceLatency()
+
+  // Same rule as the Services card: with the internet unreachable, a failed probe
+  // is our fault, not the service's — so read those rows as unknown, and there's
+  // nothing to probe against, so adding a service is disabled until we're back.
+  const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [menuHost, setMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
@@ -140,7 +157,14 @@ export function ManageServicesPage({
     void remove(host).then(onRefresh)
   }
 
-  const addButton = (
+  const addButton = cannotReachInternet ? (
+    <Tooltip content="Connect to the internet first">
+      <button type="button" className="btn-primary mgsvc-add" disabled aria-label="Add service">
+        <PlusIcon size={14} />
+        Add service
+      </button>
+    </Tooltip>
+  ) : (
     <button
       type="button"
       className="btn-primary mgsvc-add"
@@ -178,21 +202,44 @@ export function ManageServicesPage({
             const probe = reachByHost.get(svc.host)
             const latency = probe ? probe.latencyMs : seededLatency.get(svc.host)
             const erroring = probe ? isServiceErroring(probe.httpStatus) : false
+            const samples = latencyHistory[svc.host] ?? []
+            // Down the same way the status reads it: a failed path (only when the
+            // internet is up, else it's our fault) or a reachable-but-erroring
+            // host. A down row's sparkline is a flat red line, not its old trend.
+            const isDown = probe
+              ? erroring || (probe.latencyMs === null && !cannotReachInternet)
+              : false
             return (
               <div className="mgsvc-row" key={svc.host}>
-                <span className="mgsvc-label">
-                  <ServiceIcon host={svc.host} name={svc.name} />
-                  <span className="mgsvc-name">{svc.name}</span>
-                </span>
-                <span className="mgsvc-status num">
-                  {latency === undefined ? (
-                    <span className="text-hint">…</span>
-                  ) : latency === null || erroring ? (
-                    <span className="val-bad">Down</span>
-                  ) : (
-                    <MetricValue value={latency} level={serviceLevel(latency)} format={formatLatencyMs} />
-                  )}
-                </span>
+                <div className="mgsvc-body">
+                  <div className="mgsvc-line">
+                    <ServiceIcon host={svc.host} name={svc.name} />
+                    <span className="mgsvc-name">{svc.name}</span>
+                    {(samples.length > 0 || isDown) && (
+                      <Sparkline samples={samples} down={isDown} width={96} height={20} label={svc.name} />
+                    )}
+                  </div>
+                  <div className="mgsvc-line mgsvc-line-sub">
+                    <span className="mgsvc-host">{svc.host}</span>
+                    <span className="mgsvc-status num">
+                      {latency === undefined ? (
+                        <span className="text-hint">…</span>
+                      ) : latency === null ? (
+                        // Path failed. Only a genuine "Down" when we know the internet
+                        // is up; otherwise the failure is ours, so read it as unknown.
+                        cannotReachInternet ? (
+                          <span className="text-hint">—</span>
+                        ) : (
+                          <span className="val-bad">Down</span>
+                        )
+                      ) : erroring ? (
+                        <span className="val-bad">Down</span>
+                      ) : (
+                        <MetricValue value={latency} level={serviceLevel(latency)} format={formatLatencyMs} />
+                      )}
+                    </span>
+                  </div>
+                </div>
                 <RowMenu
                   service={svc}
                   open={menuHost === svc.host}

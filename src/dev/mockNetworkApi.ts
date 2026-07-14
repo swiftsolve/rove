@@ -280,6 +280,7 @@ function seedNetworkEvents(): NetworkEvent[] {
     { ago: 3 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, randomized: true },
     { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: '192.168.1.51', name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
+    { ago: 75 * min, type: 'connection_lost', severity: 'warning', mac: null, ip: null, name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, randomized: false },
     { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
     { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
@@ -311,7 +312,11 @@ const mockServices: ServiceDefinition[] = [
 // A stable-ish baseline latency per host so the card doesn't reshuffle each poll.
 function mockLatencyFor(host: string): number {
   const seed = [...host].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
-  return Math.round((20 + (seed % 90)) * 10) / 10
+  const base = 20 + (seed % 90)
+  // A little per-poll wander around the host's baseline so the row sparklines
+  // show a live trend rather than a dead-flat line.
+  const jitter = (Math.random() - 0.5) * 12
+  return Math.round(Math.max(1, base + jitter) * 10) / 10
 }
 
 // The mock has no real network to probe, so it can only vouch for the well-known
@@ -345,6 +350,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   defaultInterface: 'wlan0',
   dnsServers: [MOCK_GATEWAY, '1.1.1.1', '8.8.8.8'],
   gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
+  internet: 'online',
   gatewayVendor: 'Sagemcom Broadband SAS',
   gatewayModel: 'Giga Hub 2.0',
   gatewayName: 'Giga Hub 2.0 Internet Gateway Device',
@@ -581,6 +587,7 @@ function createMockNetworkApi(): NetworkAPI {
               packetLoss: basePing.packetLoss,
             }
           : null,
+        internet: 'online',
         services: mockServiceReachability().map((service) => ({
           ...service,
           latencyMs:
