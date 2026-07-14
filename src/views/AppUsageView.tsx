@@ -93,10 +93,11 @@ export default function AppUsageView({ usage, isLoading, error }: AppUsageViewPr
 
       {support === 'unsupported' ? (
         <div className="view-empty">
-          <p className="text-muted">Per-app usage isn’t available on this system yet.</p>
+          <p className="text-muted">Per-app usage isn’t available right now.</p>
           <p className="text-meta app-usage-note">
-            Attributing bytes to a process needs an OS facility Rove doesn’t drive here
-            (event tracing on Windows). It works on Linux and macOS.
+            On Windows, attributing bytes to a process uses a network event-tracing
+            session that needs administrator rights — run Rove as administrator to
+            enable per-app usage. It works without elevation on Linux and macOS.
           </p>
         </div>
       ) : isLoading && !hasData ? (

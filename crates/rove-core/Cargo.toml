@@ -38,6 +38,12 @@ flate2 = "1"
 # compiled into the shipped binary.
 csv = "1"
 
+# Per-app usage on Windows consumes the Microsoft-Windows-Kernel-Network ETW
+# provider (per-PID send/recv byte events) via ferrisetw — a safe wrapper over
+# the ETW consumer APIs. No packet capture and no Npcap; the session needs admin.
+[target.'cfg(windows)'.dependencies]
+ferrisetw = "1.2"
+
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.
 [target.'cfg(target_os = "macos")'.dependencies]

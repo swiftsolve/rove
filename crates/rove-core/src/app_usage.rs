@@ -25,12 +25,24 @@ use crate::types::{AppUsage, AppUsageSummary};
 use std::collections::{HashMap, HashSet};
 
 /// `"supported"` on platforms with a byte-accurate per-process source,
-/// `"unsupported"` elsewhere (Windows needs ETW — see the module docs). Mirrors
-/// the `&'static str` status convention used by `LanDeviceScan::dhcp_status`.
-pub const fn platform_support() -> &'static str {
-    if cfg!(any(target_os = "linux", target_os = "macos")) {
+/// `"unsupported"` elsewhere. Mirrors the `&'static str` status convention used
+/// by `LanDeviceScan::dhcp_status`. On Windows this depends on the ETW session
+/// actually being up (it needs admin), so it is a runtime check, not a constant.
+pub fn platform_support() -> &'static str {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
         "supported"
-    } else {
+    }
+    #[cfg(windows)]
+    {
+        if etw::is_active() {
+            "supported"
+        } else {
+            "unsupported"
+        }
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    {
         "unsupported"
     }
 }
@@ -53,28 +65,39 @@ pub struct UsageUnit {
 /// separately by [`platform_support`], so an idle machine reads as "supported,
 /// nothing yet" rather than "unsupported".
 pub async fn sample_units() -> Vec<UsageUnit> {
-    if cfg!(target_os = "linux") {
-        // -t TCP only (UDP has no byte counters in the diag interface), -i
-        // socket info (the bytes), -n numeric, -H no header, -p process.
+    // -t TCP only (UDP has no byte counters in the diag interface), -i socket
+    // info (the bytes), -n numeric, -H no header, -p process.
+    #[cfg(target_os = "linux")]
+    {
         return match crate::shell::try_run("ss -tinHp").await {
             Some(out) => parse_ss(&out),
             None => Vec::new(),
         };
     }
-    if cfg!(target_os = "macos") {
-        // -P per-process (no per-connection sub-rows), -L 1 one sample then
-        // exit, -x raw byte counts (not human units), -J restricts the columns
-        // to the two we parse, -n no DNS.
+    // -P per-process (no per-connection sub-rows), -L 1 one sample then exit, -x
+    // raw byte counts (not human units), -n no DNS, -J restricts to our columns.
+    #[cfg(target_os = "macos")]
+    {
         return match crate::shell::try_run("nettop -P -L 1 -x -n -J bytes_in,bytes_out").await {
             Some(out) => parse_nettop(&out),
             None => Vec::new(),
         };
     }
-    Vec::new()
+    // Windows reads a running ETW accumulator rather than shelling out; this is
+    // a synchronous snapshot, so there's nothing to await.
+    #[cfg(windows)]
+    {
+        return etw::sample_units();
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    {
+        Vec::new()
+    }
 }
 
 /// Read an unsigned field written as `key<digits>` out of a whitespace-joined
 /// line — e.g. `bytes_sent:5231` → `5231`.
+#[cfg(any(target_os = "linux", test))]
 fn field_u64(line: &str, key: &str) -> Option<u64> {
     let start = line.find(key)? + key.len();
     let digits: String = line[start..].chars().take_while(|c| c.is_ascii_digit()).collect();
@@ -83,6 +106,7 @@ fn field_u64(line: &str, key: &str) -> Option<u64> {
 
 /// The first process name from an `ss -p` process column, i.e. the `NAME` in
 /// `users:(("NAME",pid=123,fd=45))`.
+#[cfg(any(target_os = "linux", test))]
 fn ss_proc_name(line: &str) -> Option<String> {
     let marker = "users:((\"";
     let start = line.find(marker)? + marker.len();
@@ -95,6 +119,7 @@ fn ss_proc_name(line: &str) -> Option<String> {
 /// the addresses and owning process, then an indented info line carrying
 /// `bytes_sent:`/`bytes_received:`. Sockets without a process (TIME-WAIT, etc.)
 /// or without byte counters are skipped.
+#[cfg(any(target_os = "linux", test))]
 fn parse_ss(output: &str) -> Vec<UsageUnit> {
     let mut units = Vec::new();
     // The header we're waiting to pair with its following info line.
@@ -142,6 +167,7 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
 /// tolerant of whitespace- or comma-separated output (nettop's formatting
 /// varies): a row is any line whose first token ends in `.<digits>` and which
 /// has at least two integer columns after it. `bytes_in` is rx, `bytes_out` tx.
+#[cfg(any(target_os = "macos", test))]
 fn parse_nettop(output: &str) -> Vec<UsageUnit> {
     let mut units = Vec::new();
     for line in output.lines() {
@@ -236,6 +262,150 @@ impl AppUsageTracker {
         });
 
         AppUsageSummary { apps, support: platform_support(), tracking_since: self.since }
+    }
+}
+
+/// Windows per-app metering via the Microsoft-Windows-Kernel-Network ETW
+/// provider. The provider emits one event per network send/receive carrying the
+/// owning `PID` and the byte `size`; a single long-lived consumer thread
+/// accumulates those into cumulative per-PID totals, which [`sample_units`]
+/// snapshots and resolves to process names. Unlike the socket-snapshot sources
+/// this sees *every* byte event, so it never misses a short-lived connection —
+/// but starting the session needs administrator rights.
+#[cfg(windows)]
+mod etw {
+    use super::UsageUnit;
+    use ferrisetw::parser::Parser;
+    use ferrisetw::provider::Provider;
+    use ferrisetw::schema_locator::SchemaLocator;
+    use ferrisetw::trace::{TraceTrait, UserTrace};
+    use ferrisetw::EventRecord;
+    use std::collections::HashMap;
+    use std::sync::{LazyLock, Mutex, OnceLock};
+
+    /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
+    const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;
+
+    #[derive(Default, Clone, Copy)]
+    struct ByteAcc {
+        rx: u64,
+        tx: u64,
+    }
+
+    /// Cumulative bytes per PID since the trace started, written by the ETW
+    /// callback and read by [`sample_units`]. Monotonic per PID, so the usage
+    /// tracker's delta logic handles it exactly like a kernel counter.
+    static ACC: LazyLock<Mutex<HashMap<u32, ByteAcc>>> =
+        LazyLock::new(|| Mutex::new(HashMap::new()));
+    /// PID → process name, captured while the process is alive so its bytes keep
+    /// a meaningful label even after it exits.
+    static NAMES: LazyLock<Mutex<HashMap<u32, String>>> =
+        LazyLock::new(|| Mutex::new(HashMap::new()));
+    /// Whether the trace session started (false = no admin rights / failure).
+    static STARTED: OnceLock<bool> = OnceLock::new();
+
+    /// ETW callback: fold each send/receive event's byte count into its PID's
+    /// running total. Event IDs come from the provider manifest — 10/26 are TCP
+    /// send (IPv4/IPv6), 42/58 UDP send; 11/27/43/59 the matching receives.
+    fn on_event(record: &EventRecord, locator: &SchemaLocator) {
+        let Ok(schema) = locator.event_schema(record) else {
+            return;
+        };
+        let (is_rx, is_tx) = match record.event_id() {
+            10 | 26 | 42 | 58 => (false, true),
+            11 | 27 | 43 | 59 => (true, false),
+            _ => return,
+        };
+        let parser = Parser::create(record, &schema);
+        let pid: u32 = match parser.try_parse("PID") {
+            Ok(v) => v,
+            Err(_) => return,
+        };
+        let size: u32 = match parser.try_parse("size") {
+            Ok(v) => v,
+            Err(_) => return,
+        };
+
+        let mut acc = ACC.lock().unwrap();
+        let entry = acc.entry(pid).or_default();
+        if is_rx {
+            entry.rx = entry.rx.saturating_add(u64::from(size));
+        }
+        if is_tx {
+            entry.tx = entry.tx.saturating_add(u64::from(size));
+        }
+    }
+
+    /// Start the trace once, on the first sample. The consumer runs on its own
+    /// thread (`process_from_handle` blocks); the `UserTrace` is deliberately
+    /// leaked so the session lives for the whole process — dropping it would
+    /// stop tracing.
+    fn ensure_started() {
+        STARTED.get_or_init(|| {
+            let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
+            match UserTrace::new()
+                .named(String::from("RoveNetUsage"))
+                .enable(provider)
+                .start()
+            {
+                Ok((trace, handle)) => {
+                    std::thread::spawn(move || {
+                        let _ = UserTrace::process_from_handle(handle);
+                    });
+                    std::mem::forget(trace);
+                    true
+                }
+                Err(e) => {
+                    tracing::warn!("per-app ETW trace could not start (needs admin?): {e:?}");
+                    false
+                }
+            }
+        });
+    }
+
+    /// True once the ETW session is running.
+    pub fn is_active() -> bool {
+        *STARTED.get().unwrap_or(&false)
+    }
+
+    /// Resolve process names for the given PIDs via sysinfo, caching them so a
+    /// process that later exits keeps its label.
+    fn refresh_names(pids: &[u32]) {
+        use sysinfo::{Pid, ProcessesToUpdate, System};
+        static SYS: LazyLock<Mutex<System>> = LazyLock::new(|| Mutex::new(System::new()));
+
+        let mut sys = SYS.lock().unwrap();
+        sys.refresh_processes(ProcessesToUpdate::All, true);
+        let mut names = NAMES.lock().unwrap();
+        for &pid in pids {
+            if let Some(proc_) = sys.process(Pid::from_u32(pid)) {
+                names.insert(pid, proc_.name().to_string_lossy().into_owned());
+            }
+        }
+    }
+
+    /// Snapshot the per-PID accumulator as cumulative [`UsageUnit`]s keyed by
+    /// PID. The usage tracker turns these into per-app deltas.
+    pub fn sample_units() -> Vec<UsageUnit> {
+        ensure_started();
+
+        let snapshot: Vec<(u32, ByteAcc)> = {
+            let acc = ACC.lock().unwrap();
+            acc.iter().map(|(&pid, &bytes)| (pid, bytes)).collect()
+        };
+        let pids: Vec<u32> = snapshot.iter().map(|(pid, _)| *pid).collect();
+        refresh_names(&pids);
+
+        let names = NAMES.lock().unwrap();
+        snapshot
+            .into_iter()
+            .map(|(pid, bytes)| UsageUnit {
+                key: pid.to_string(),
+                name: names.get(&pid).cloned().unwrap_or_else(|| format!("PID {pid}")),
+                rx: bytes.rx,
+                tx: bytes.tx,
+            })
+            .collect()
     }
 }
 
