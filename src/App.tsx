@@ -8,6 +8,7 @@ import { useNetworkInterfaces } from '@/hooks/useNetworkInterfaces'
 import { useDevices } from '@/hooks/useDevices'
 import { useNetworkEvents } from '@/hooks/useNetworkEvents'
 import { useDataUsage } from '@/hooks/useDataUsage'
+import { useAppUsage } from '@/hooks/useAppUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { AlertIcon, BrandIcon, CloseIcon, MinimizeIcon, OfflineIcon, RefreshIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
@@ -19,6 +20,7 @@ import InterfacesView from '@/views/InterfacesView'
 import DevicesView from '@/views/DevicesView'
 import EventsView from '@/views/EventsView'
 import UsageView from '@/views/UsageView'
+import AppUsageView from '@/views/AppUsageView'
 import DiagnosticsView from '@/views/DiagnosticsView'
 import SettingsView from '@/views/SettingsView'
 import AboutView from '@/views/AboutView'
@@ -243,6 +245,11 @@ export default function App(): JSX.Element {
   const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(
     activeTab === 'usage' || activeTab === 'home',
   )
+  const {
+    usage: appUsage,
+    isLoading: appUsageLoading,
+    error: appUsageError,
+  } = useAppUsage(activeTab === 'apps')
   const deviceCount = deviceScan ? deviceScan.devices.length : null
   const deviceOnline = deviceScan
     ? deviceScan.devices.filter((device) => device.reachable).length
@@ -374,6 +381,14 @@ export default function App(): JSX.Element {
 
               {activeTab === 'usage' && (
                 <UsageView usage={usage} isLoading={usageLoading} error={usageError} />
+              )}
+
+              {activeTab === 'apps' && (
+                <AppUsageView
+                  usage={appUsage}
+                  isLoading={appUsageLoading}
+                  error={appUsageError}
+                />
               )}
 
               {activeTab === 'diagnostics' && (

@@ -1,5 +1,6 @@
 //! Rove's platform services — everything the UI needs to observe a network.
 //! Pure Rust (no Tauri/GTK dependency) so it compiles and tests anywhere.
+pub mod app_usage;
 pub mod capabilities;
 pub mod data_usage;
 pub mod devices;

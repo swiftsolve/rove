@@ -1,6 +1,7 @@
 import { memo, type JSX } from 'react'
 import type { AppTab } from '@/navigation/tabs'
 import {
+  AppsIcon,
   ConnectionIcon,
   DevicesIcon,
   EventsIcon,
@@ -44,6 +45,7 @@ const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
   { id: 'usage', label: 'Usage', Icon: UsageIcon },
+  { id: 'apps', label: 'Apps', Icon: AppsIcon },
 ]
 
 // The gear sitting on its own at the foot of the rail. About is reached from

@@ -5,6 +5,7 @@ export const APP_TABS = [
   'devices',
   'events',
   'usage',
+  'apps',
   'diagnostics',
   'settings',
   'about',

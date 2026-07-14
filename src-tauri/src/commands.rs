@@ -198,6 +198,13 @@ pub fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
         })
 }
 
+/// Per-app network usage since Rove started watching. A cheap in-memory read —
+/// the background sampler (see `monitors::spawn_app_usage_sampler`) does the work.
+#[tauri::command]
+pub fn get_app_usage(state: tauri::State<'_, AppState>) -> AppUsageSummary {
+    lock(&state.app_usage).summary()
+}
+
 #[tauri::command]
 pub fn get_speed_history(
     store: tauri::State<'_, Arc<Store>>,

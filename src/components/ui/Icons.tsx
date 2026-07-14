@@ -43,6 +43,7 @@ import {
   Info,
   Joystick,
   Laptop,
+  LayoutGrid,
   Layers,
   Moon,
   Network,
@@ -158,6 +159,7 @@ export const ArrowLeftIcon = make(ArrowLeft, 16)
 export const CheckIcon = make(Check, 16)
 export const HomeIcon = make(House, 18)
 export const LayersIcon = make(Layers, 18)
+export const AppsIcon = make(LayoutGrid, 18)
 export const DiagnosticsIcon = make(Stethoscope, 18)
 export const DeviceIcon = make(Smartphone, 18)
 export const DevicesIcon = make(MonitorSmartphone, 18)
