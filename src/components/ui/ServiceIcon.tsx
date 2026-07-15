@@ -1,6 +1,27 @@
 import { useState } from 'react'
 import './ServiceIcon.css'
 
+// Suffixes that only ever name something on the local network, so the public
+// icon service has nothing to serve for them and answers 404.
+const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', '.localdomain']
+
+/** Whether a public favicon could exist for `host`. LAN names (mDNS `.local`,
+ *  bare single-label hostnames) and IP literals never resolve at the icon
+ *  service — asking anyway just spends a request to be told 404. */
+function mayHaveFavicon(host: string): boolean {
+  const lower = host.trim().toLowerCase().replace(/\.$/, '')
+  if (!lower) return false
+  // IPv6 literal, bracketed or bare.
+  if (lower.includes(':')) return false
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(lower)) return false
+  if (!lower.includes('.')) return false
+  return !PRIVATE_SUFFIXES.some((suffix) => lower.endsWith(suffix))
+}
+
+// Hosts whose favicon has already 404'd, remembered for the session so remounts
+// (list polls, page switches) don't re-request an icon we know isn't there.
+const failedFavicons = new Set<string>()
+
 interface ServiceIconProps {
   /** Hostname whose favicon to show, e.g. "netflix.com". */
   readonly host: string
@@ -23,7 +44,9 @@ interface ServiceIconProps {
  *  missing source or a load error. */
 export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): JSX.Element {
   const [srcFailed, setSrcFailed] = useState(false)
-  const [faviconFailed, setFaviconFailed] = useState(false)
+  // Favicon failure is tracked per host in `failedFavicons`, not in state, so it
+  // survives remounts; this only re-renders us when a load error records one.
+  const [, noteFaviconFailure] = useState(0)
   const dimensions = { width: size, height: size }
 
   if (src && !srcFailed) {
@@ -38,7 +61,7 @@ export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): J
     )
   }
 
-  if (host && !faviconFailed) {
+  if (mayHaveFavicon(host) && !failedFavicons.has(host)) {
     return (
       <img
         className="service-icon"
@@ -46,7 +69,10 @@ export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): J
         alt=""
         style={dimensions}
         loading="lazy"
-        onError={() => setFaviconFailed(true)}
+        onError={() => {
+          failedFavicons.add(host)
+          noteFaviconFailure((n) => n + 1)
+        }}
       />
     )
   }
