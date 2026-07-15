@@ -165,14 +165,24 @@
   text-align: right;
 }
 
-/* Header subtitle link into the Hosts subpage: a quiet inline link that
-   brightens to the accent on hover, its globe glyph nudged to the text baseline.
-   Mirrors the Services view's "View timeline" link. */
+/* Header subtitle link into the Hosts subpage: the same quiet pill link as Speed's
+   "All Results" (see .speed-history-link) and Services' "View timeline", down to the
+   geometry and weight — only the globe glyph differs. The button reset carries the font
+   family across but not the size, so font-size: inherit is what keeps it at the
+   subtitle's caption size. Speed's link trails a dot separator, so its -6px margin
+   leaves a deliberate 2px gap after it; this one leads the subtitle, so it cancels the
+   pill's left padding outright to sit flush under the title. */
 .app-hosts-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-xs);
-  color: var(--text-tertiary);
+  gap: 5px;
+  margin-left: -8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
   transition: color var(--duration-fast) var(--ease-in-out);
 }
 
@@ -183,6 +193,19 @@
 .app-hosts-link:hover .app-hosts-link-text {
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* Share the link's (animating) color so the glyph and label shift together on
+   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+   there's a single color animation rather than two that drift out of sync. */
+.app-hosts-link svg {
+  color: inherit;
+  opacity: 0.72;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.app-hosts-link:hover svg {
+  opacity: 1;
 }
 
 /* Explanatory line under the empty/unsupported states, kept narrow and calm. */
