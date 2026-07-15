@@ -31,7 +31,7 @@ const STORAGE_KEY = 'rove.service-latency.v1'
 // A short recent window — enough to read a trend at a glance without the store or
 // the sparkline getting busy. At the ~15 s diagnostics poll this is a few minutes
 // of history per service.
-const MAX_SAMPLES = 24
+export const MAX_SAMPLES = 24
 
 function isSample(value: unknown): value is LatencySample {
   if (typeof value !== 'object' || value == null) return false
@@ -128,6 +128,23 @@ export function recordLatency(
 ): void {
   const next = appendSamples(cache, reachability, internet)
   if (next === cache) return
+  cache = next
+  writeLatencyHistory(next)
+  for (const listener of listeners) listener()
+}
+
+/**
+ * Replace the history of the given hosts, keeping only the most recent
+ * MAX_SAMPLES of each. This exists for the dev mock, which installs itself only
+ * when the real bridge is absent: nothing in the store then came from a real
+ * probe, so it hands us a full backdated window and the Services sparklines open
+ * populated rather than drawing their first lone sample.
+ */
+export function seedLatencyHistory(seed: LatencyHistory): void {
+  const next: Record<string, readonly LatencySample[]> = { ...cache }
+  for (const [host, samples] of Object.entries(seed)) {
+    next[host] = samples.slice(Math.max(0, samples.length - MAX_SAMPLES))
+  }
   cache = next
   writeLatencyHistory(next)
   for (const listener of listeners) listener()

@@ -7,6 +7,7 @@ import { CloudIcon, EditIcon, EventsIcon, MoreIcon, PlusIcon, TrashIcon } from '
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
 import { serviceTally } from '@/components/diagnostics/ServiceTally'
+import { MAX_SAMPLES } from '@/components/diagnostics/service-latency'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { useServices } from '@/hooks/useServices'
 import { useServiceLatency } from '@/hooks/useServiceLatency'
@@ -238,7 +239,14 @@ export function ManageServicesPage({
                     <ServiceIcon host={svc.host} name={svc.name} />
                     <span className="mgsvc-name">{svc.name}</span>
                     {(samples.length > 0 || isDown) && (
-                      <Sparkline samples={samples} down={isDown} width={64} height={20} label={svc.name} />
+                      <Sparkline
+                        samples={samples}
+                        slots={MAX_SAMPLES}
+                        down={isDown}
+                        width={64}
+                        height={20}
+                        label={svc.name}
+                      />
                     )}
                   </div>
                   <div className="mgsvc-line mgsvc-line-sub">
