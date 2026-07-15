@@ -93,18 +93,76 @@ pub async fn get_devices(
 pub async fn run_diagnostics(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<NetworkDiagnostics, String> {
-    // Fall back to the built-in defaults on a store read error so the card never
-    // blanks over a transient DB hiccup.
-    let services = store.services().unwrap_or_else(|_| rove_core::store::default_service_list());
-    Ok(rove_core::diagnostics::run(&services).await)
+    let diag = rove_core::diagnostics::run().await;
+    // Log an internet up/down transition if WAN reachability changed since the last
+    // poll. Best-effort: a DB hiccup must not fail the diagnostics read.
+    let _ = store.record_internet(diag.internet, rove_core::net_util::now_ms() as i64);
+    Ok(diag)
 }
 
 #[tauri::command]
 pub async fn run_diagnostics_live(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<rove_core::types::LiveDiagnostics, String> {
+    let live = rove_core::diagnostics::run_live().await;
+    // The 15s poll is where a WAN outage or recovery is normally caught; record the
+    // transition so it surfaces on the Timeline. Best-effort, idempotent per poll.
+    let _ = store.record_internet(live.internet, rove_core::net_util::now_ms() as i64);
+    Ok(live)
+}
+
+/// Probe the user's service list — the Services view's own metric, independent
+/// of the Connection diagnostics above (which no longer touch services). Bundles
+/// the internet verdict from the same batch so the view can pair each result set
+/// with whether this machine had internet when they were taken.
+#[tauri::command]
+pub async fn run_services(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<rove_core::types::ServicesReport, String> {
+    // Fall back to the built-in defaults on a store read error so the list never
+    // blanks over a transient DB hiccup.
     let services = store.services().unwrap_or_else(|_| rove_core::store::default_service_list());
-    Ok(rove_core::diagnostics::run_live(&services).await)
+    let report = rove_core::diagnostics::run_services(&services).await;
+    let now = rove_core::net_util::now_ms() as i64;
+    // The service poll also catches WAN transitions while the Services tab is open;
+    // record it so the Timeline stays current here too. Best-effort, idempotent.
+    let _ = store.record_internet(report.internet, now);
+    // Fold this batch into the services timeline too. The heartbeat is what makes
+    // the log complete (it runs with the window shut), but it only ticks each
+    // minute — folding the view's own 15s poll in as well means a transition the
+    // user is watching land on the list also lands on the timeline at the same
+    // moment, rather than up to a minute later. `record_services` diffs against
+    // its own baseline, so the two writers can't double-log a crossing.
+    let _ = store.record_services(&report, now);
+    Ok(report)
+}
+
+/// The services outage timeline, newest first. Recorded by the always-on
+/// heartbeat (and topped up by the Services view's own poll), so it covers
+/// outages that happened while the window was closed.
+#[tauri::command]
+pub fn get_service_history(
+    store: tauri::State<'_, Arc<Store>>,
+) -> Result<Vec<rove_core::types::ServiceEvent>, String> {
+    store.service_events().map_err(|e| e.to_string())
+}
+
+/// Wipe the timeline and the baseline behind it, so the next probe re-seeds from
+/// scratch rather than treating a currently-down service as old news.
+#[tauri::command]
+pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
+    store.clear_service_events().map_err(|e| e.to_string())
+}
+
+/// The last public-internet reachability verdict from the background heartbeat,
+/// or None before its first probe lands. A cheap cached read — it never probes;
+/// [`monitors::spawn_internet_heartbeat`] owns the probing. Drives the top-bar
+/// connectivity label.
+#[tauri::command]
+pub fn get_internet_status(
+    state: tauri::State<'_, AppState>,
+) -> Option<rove_core::types::InternetStatus> {
+    *rove_core::net_util::lock(&state.internet)
 }
 
 #[tauri::command]
@@ -203,6 +261,14 @@ pub fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
 #[tauri::command]
 pub fn get_app_usage(state: tauri::State<'_, AppState>) -> AppUsageSummary {
     lock(&state.app_usage).summary()
+}
+
+/// Per-app remote-host breakdown for the Hosts view. A cheap in-memory read —
+/// the background sampler (`monitors::spawn_host_usage_sampler`) does the
+/// sampling, reverse-DNS, and geolocation.
+#[tauri::command]
+pub fn get_host_usage(state: tauri::State<'_, AppState>) -> HostUsageSummary {
+    lock(&state.host_usage).summary()
 }
 
 #[tauri::command]

@@ -161,6 +161,34 @@
   text-align: center;
 }
 
+/* The header subtitle line: the up/down tally, then the timeline link. */
+.mgsvc-subtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+/* Timeline link sitting in the header subtitle: a quiet inline link that brightens
+   to the accent on hover, with its history glyph nudged to the text baseline. */
+.mgsvc-timeline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.mgsvc-timeline-link:hover {
+  color: var(--accent);
+}
+
+/* Underline only the label on hover (not the glyph), matching the Speed history
+   link, so it reads as a link while the whole control picks up the accent. */
+.mgsvc-timeline-link:hover .mgsvc-timeline-link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* The header's "Add service" is a solid accent button matching the add-service
    popup's confirm — just with a plus icon. It borrows .btn-primary for layout and
    size; the element+class selectors override that ghost style's colour and hover

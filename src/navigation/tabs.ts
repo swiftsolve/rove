@@ -7,6 +7,7 @@ export const APP_TABS = [
   'usage',
   'apps',
   'diagnostics',
+  'services',
   'settings',
   'about',
 ] as const

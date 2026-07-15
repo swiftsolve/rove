@@ -42,7 +42,8 @@
 .subpage-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  /* Match the top-level view header's title/subtitle spacing (.view-header-text). */
+  gap: var(--gap-xs);
   min-width: 0;
   flex: 1;
 }

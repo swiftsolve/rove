@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { InternetStatus, ServiceReachability } from '@/types'
+import type {
+  ConnectionEvent,
+  InternetStatus,
+  ServiceEvent,
+  ServiceReachability,
+  ServiceTransitionEvent,
+} from '@/types'
 import Subpage from '@/components/ui/Subpage'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
-import { DotSeparator } from '@/components/ui/DotSeparator'
+import { serviceTally } from '@/components/diagnostics/ServiceTally'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -14,15 +20,7 @@ import {
   TrashIcon,
 } from '@/components/ui/Icons'
 import { formatDuration } from '@/lib/format'
-import {
-  clearServiceHistory,
-  getServiceHistory,
-  reachabilityStatus,
-  recordReachability,
-  type ConnectionEvent,
-  type ServiceEvent,
-  type ServiceTransitionEvent,
-} from '@/components/diagnostics/service-history'
+import { useServiceHistory } from '@/hooks/useServiceHistory'
 import './ServicesTimelinePage.css'
 
 // 12h time only, e.g. "1:24 PM" — the day is carried by the group heading above.
@@ -214,12 +212,12 @@ function ConnectionRow({
       </span>
       <div className="stl-content">
         <span className="stl-head">
-          <span className="stl-title">Internet connection</span>
+          <span className="stl-title">{lost ? 'Internet disconnected' : 'Internet reconnected'}</span>
           <span className="stl-time">{formatTime(event.ts)}</span>
         </span>
         {/* Status on the left, offline duration flush right — both on one line. */}
         <span className="stl-subject stl-subject-muted stl-conn-line">
-          <span>{lost ? 'This device went offline' : 'Back online'}</span>
+          <span>{lost ? 'No internet connection detected.' : 'Connection restored.'}</span>
           {showDuration && (
             <span className="stl-meta-duration">Offline for {formatDuration(durationMs)}</span>
           )}
@@ -286,83 +284,48 @@ function TimelineMenu({ onClear }: { readonly onClear: () => void }): JSX.Elemen
 interface ServicesTimelinePageProps {
   /** The latest reachability probes, for the up/down count in the header. */
   readonly reachability: readonly ServiceReachability[] | undefined
-  /** This machine's own internet reachability. Passed to the recorder so an
-   *  offline window logs a single "connection lost" instead of every service. */
+  /** This machine's own internet reachability, for the header tally: with no
+   *  connection every probe fails at once, which is ours to own, not theirs. */
   readonly internet: InternetStatus | undefined
   readonly onBack: () => void
 }
 
 /**
  * A timeline of service outages and recoveries: when each tracked service went
- * down and when it came back, newest first and grouped by day. The history is
- * recorded frontend-side from the same reachability probes the Connection view
- * polls (see `service-history`), so it accrues while the Connection tab is open.
+ * down and when it came back, newest first and grouped by day.
+ *
+ * The log itself is the backend's (see `service_events`), recorded by the
+ * always-on services heartbeat rather than by this page — so it covers outages
+ * that happened while the window was closed, which the old frontend-owned log
+ * could never see. The live probes this page receives only feed the header
+ * tally.
  */
 export function ServicesTimelinePage({
   reachability,
   internet,
   onBack,
 }: ServicesTimelinePageProps): JSX.Element {
-  // Fold the latest probe into the log, then load it into state — re-running
-  // whenever fresh probes land so a transition surfaces without a manual
-  // refresh. Recording here (as well as in the parent view) closes the gap where
-  // the page would otherwise read the log before the parent's recorder effect
-  // wrote to it; `recordReachability` is idempotent, so the double call is safe.
-  const [events, setEvents] = useState<readonly ServiceEvent[]>([])
-  useEffect(() => {
-    if (reachability) recordReachability(reachability, internet)
-    setEvents(getServiceHistory())
-  }, [reachability, internet])
+  const { events, clear } = useServiceHistory()
 
   const durations = useMemo(() => outageDurations(events), [events])
   const offlineDur = useMemo(() => offlineDurations(events), [events])
   const ongoingDownStart = useMemo(() => ongoingDownStarts(events), [events])
-  // Read once per render for the live "Down for …" on open outages. `events` is
-  // replaced on every poll (setEvents runs whenever reachability changes), so
-  // this advances each poll without a dedicated timer.
+  // Read once per render for the live "Down for …" on open outages. The page
+  // re-renders on each heartbeat nudge and on every probe the header tally
+  // shows, so this advances on its own without a dedicated timer.
   const now = Date.now()
 
-  // The current up/down tally, straight from the live probes, shown as the
-  // header subtitle (e.g. "5 up · 1 down").
-  const { upCount, downCount, hasProbes } = useMemo(() => {
-    const probes = reachability ?? []
-    const up = probes.filter((svc) => reachabilityStatus(svc) === 'up').length
-    return { upCount: up, downCount: probes.length - up, hasProbes: probes.length > 0 }
-  }, [reachability])
-
-  // With the machine itself offline, every probe fails at once — a "6 down" tally
-  // would blame the services for our own outage. Surface the real cause instead,
-  // matching the "connection lost" event the timeline records for this window.
-  const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
-
-  const subtitle = cannotReachInternet ? (
-    <span className="stl-summary">
-      <span className="val-bad">Network connection lost</span>
-    </span>
-  ) : hasProbes ? (
-    <span className="stl-summary">
-      <span className="stl-tally val-good">
-        <ArrowUpIcon size={13} className="stl-tally-icon" />
-        {upCount} up
-      </span>
-      <DotSeparator />
-      <span className={`stl-tally ${downCount > 0 ? 'val-bad' : ''}`}>
-        <ArrowDownIcon size={13} className="stl-tally-icon" />
-        {downCount} down
-      </span>
-    </span>
-  ) : (
-    'When your services went down and came back.'
-  )
+  // The current up/down tally, straight from the live probes. Until the first
+  // probes land there's nothing to count, so the header falls back to prose.
+  const subtitle = serviceTally(reachability, internet) ?? 'When your services went down and came back.'
 
   const handleClear = (): void => {
-    clearServiceHistory()
-    setEvents([])
+    void clear()
   }
 
   return (
     <Subpage
-      title="Services timeline"
+      title="Services Timeline"
       description={subtitle}
       onBack={onBack}
       action={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}

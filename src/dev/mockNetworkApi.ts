@@ -10,6 +10,7 @@
  */
 import type {
   AppUsageSummary,
+  HostUsageSummary,
   CapabilityLevel,
   CapabilityRating,
   LanDevice,
@@ -22,6 +23,8 @@ import type {
   NetworkInfo,
   NetworkInterfaceSummary,
   ServiceDefinition,
+  ServiceEvent,
+  ServicesReport,
   SpeedHistoryEntry,
   SpeedResult,
   SpeedTestProgress,
@@ -281,6 +284,8 @@ function seedNetworkEvents(): NetworkEvent[] {
     { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, randomized: true },
     { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: '192.168.1.51', name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 75 * min, type: 'connection_lost', severity: 'warning', mac: null, ip: null, name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
+    { ago: 70 * min, type: 'internet_lost', severity: 'warning', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, randomized: false },
+    { ago: 62 * min, type: 'internet_restored', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, randomized: false },
     { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
     { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, randomized: false },
@@ -308,6 +313,25 @@ const mockServices: ServiceDefinition[] = [
   // A custom, self-hosted service standing in for a user-added entry that's down.
   { name: 'Home Server', host: 'homeserver.local' },
 ]
+
+// A seeded timeline, oldest event ~2 days back, so the Services timeline has
+// something to group by day and render durations for. The backend owns the real
+// one (recorded by the services heartbeat); this stands in for it in the browser.
+const HOUR_MS = 60 * 60 * 1000
+const mockServiceHistory: ServiceEvent[] = (() => {
+  const now = Date.now()
+  // Newest first, matching the order the real `get_service_history` returns.
+  return [
+    { type: 'running', count: 5, ts: now - 2 * HOUR_MS },
+    { type: 'transition', host: 'homeserver.local', name: 'Home Server', status: 'up', ts: now - 2 * HOUR_MS },
+    { type: 'transition', host: 'homeserver.local', name: 'Home Server', status: 'down', ts: now - 5 * HOUR_MS },
+    { type: 'connection', status: 'restored', ts: now - 26 * HOUR_MS },
+    { type: 'connection', status: 'lost', ts: now - 27 * HOUR_MS },
+    { type: 'transition', host: 'netflix.com', name: 'Netflix', status: 'up', ts: now - 47 * HOUR_MS },
+    { type: 'transition', host: 'netflix.com', name: 'Netflix', status: 'down', ts: now - 48 * HOUR_MS },
+    { type: 'running', count: 6, ts: now - 50 * HOUR_MS },
+  ]
+})()
 
 // A stable-ish baseline latency per host so the card doesn't reshuffle each poll.
 function mockLatencyFor(host: string): number {
@@ -337,7 +361,7 @@ function mockIsReachable(host: string): boolean {
   return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
 }
 
-function mockServiceReachability(): NetworkDiagnostics['services'] {
+function mockServiceReachability(): ServicesReport['services'] {
   return mockServices.map((s) =>
     mockIsReachable(s.host)
       ? { ...s, latencyMs: mockLatencyFor(s.host), httpStatus: 200 }
@@ -362,7 +386,6 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
     country: 'United States',
     publicIp: '203.0.113.57',
   },
-  services: mockServiceReachability(),
 }
 
 const MOCK_SPEED_RESULT: SpeedResult = {
@@ -512,6 +535,8 @@ function createMockNetworkApi(): NetworkAPI {
       }
     })(),
     onNetworkChanged: () => () => undefined,
+    getInternetStatus: async () => 'online',
+    onInternetStatus: () => () => undefined,
     getNetworkEvents: async () => {
       await delay(200)
       return mockEvents
@@ -565,12 +590,64 @@ function createMockNetworkApi(): NetworkAPI {
         name,
         rxBytes: Math.round(down * mb),
         txBytes: Math.round(up * mb),
+        // The mock has no real OS icons; rows fall back to favicon/monogram.
+        icon: null,
       }))
       return { apps, support: 'supported', trackingSince: Date.now() - 42 * 60_000 }
     },
+    getHostUsage: async (): Promise<HostUsageSummary> => {
+      await delay(200)
+      const mb = 1_000_000
+      // Each app with a few believable remote hosts. [host|ip, cc, downMB, upMB];
+      // a null cc (LAN peer) shows no flag, a null host shows the bare IP.
+      const apps: readonly [
+        string,
+        string | null,
+        [string | null, string, string | null, number, number][],
+      ][] = [
+        ['firefox', null, [
+          ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 401, 33],
+          ['edge-star.facebook.com', '157.240.22.35', 'US', 312, 24],
+          ['gru.cdn.instagram.com', '31.13.85.52', 'IE', 208, 9],
+          ['duckduckgo.com', '52.142.124.215', 'US', 44, 6],
+          [null, '203.0.113.9', 'JP', 18, 3],
+        ]],
+        ['Spotify', 'SE', [
+          ['audio-fa.scdn.co', '35.186.224.25', 'US', 190, 4],
+          ['gew1-accesspoint.ap.spotify.com', '104.199.65.9', 'DE', 24, 4],
+        ]],
+        ['Dropbox', 'US', [
+          ['edge-block-api.dropbox.com', '162.125.248.18', 'US', 41, 88],
+        ]],
+        ['slack', 'US', [
+          ['wss-primary.slack.com', '99.86.229.44', 'US', 27, 8],
+          [null, '192.168.1.14', null, 12, 4],
+        ]],
+      ]
+      return {
+        apps: apps.map(([name, , hosts]) => {
+          const mapped = hosts.map(([host, ip, cc, down, up]) => ({
+            ip: ip ?? host ?? '',
+            host,
+            countryCode: cc,
+            rxBytes: Math.round(down * mb),
+            txBytes: Math.round(up * mb),
+          }))
+          return {
+            name,
+            icon: null,
+            rxBytes: mapped.reduce((s, h) => s + h.rxBytes, 0),
+            txBytes: mapped.reduce((s, h) => s + h.txBytes, 0),
+            hosts: mapped,
+          }
+        }),
+        support: 'supported',
+        trackingSince: Date.now() - 42 * 60_000,
+      }
+    },
     runDiagnostics: async () => {
       await delay(700)
-      return { ...MOCK_DIAGNOSTICS, services: mockServiceReachability() }
+      return MOCK_DIAGNOSTICS
     },
     // Wobble the live numbers around their baselines each poll so the count-up
     // animation is visibly exercised in the browser mock.
@@ -588,12 +665,19 @@ function createMockNetworkApi(): NetworkAPI {
             }
           : null,
         internet: 'online',
+      }
+    },
+    // The Services view's own probe, wobbled per poll like the live metrics above.
+    runServices: async (): Promise<ServicesReport> => {
+      await delay(300)
+      const wobble = (base: number, spread: number): number =>
+        Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
+      return {
+        internet: 'online',
         services: mockServiceReachability().map((service) => ({
           ...service,
           latencyMs:
-            service.latencyMs == null
-              ? null
-              : Math.max(1, wobble(service.latencyMs, 12)),
+            service.latencyMs == null ? null : Math.max(1, wobble(service.latencyMs, 12)),
         })),
       }
     },
@@ -621,6 +705,17 @@ function createMockNetworkApi(): NetworkAPI {
       if (at >= 0) mockServices.splice(at, 1)
       return mockServices.map((s) => ({ ...s }))
     },
+    getServiceHistory: async () => {
+      await delay(140)
+      return mockServiceHistory.map((e) => ({ ...e }))
+    },
+    clearServiceHistory: async () => {
+      await delay(120)
+      mockServiceHistory.length = 0
+    },
+    // No backend heartbeat in the browser mock, so the timeline never nudges —
+    // it just renders whatever `getServiceHistory` returned on mount.
+    onServicesTimeline: () => () => undefined,
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       cancelled = false
       const { downloadMbps: DOWN, uploadMbps: UP } = MOCK_SPEED_RESULT

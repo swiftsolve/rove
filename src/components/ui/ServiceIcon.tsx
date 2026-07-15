@@ -8,32 +8,52 @@ interface ServiceIconProps {
   readonly name: string
   /** Rendered edge length in px. */
   readonly size?: number
+  /**
+   * A ready-to-render icon (e.g. a `data:` URI for an app's real OS icon) that
+   * takes precedence over the favicon. Falls through to the favicon/monogram if
+   * it's absent or fails to load.
+   */
+  readonly src?: string | null
 }
 
-/** Registered-domain favicon via Google's icon service, requested at 64px so it
- *  stays crisp on high-DPI screens even though it renders into a ~16px box. Keyed
- *  on host so any service — including ones added later — gets an icon for free.
- *  Falls back to a letter monogram when the fetch fails. */
-export function ServiceIcon({ host, name, size = 16 }: ServiceIconProps): JSX.Element {
-  const [failed, setFailed] = useState(false)
+/** An icon for a service or app, resolved in three tiers: an explicit `src`
+ *  (e.g. the app's real OS icon), then the registered-domain favicon via Google's
+ *  icon service (requested at 64px so it stays crisp on high-DPI screens even in a
+ *  ~16px box), then a letter monogram. Each tier falls through to the next on a
+ *  missing source or a load error. */
+export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): JSX.Element {
+  const [srcFailed, setSrcFailed] = useState(false)
+  const [faviconFailed, setFaviconFailed] = useState(false)
   const dimensions = { width: size, height: size }
 
-  if (failed || !host) {
+  if (src && !srcFailed) {
     return (
-      <span className="service-icon service-icon--fallback" style={dimensions} aria-hidden="true">
-        {name.trim().charAt(0).toUpperCase() || '?'}
-      </span>
+      <img
+        className="service-icon"
+        src={src}
+        alt=""
+        style={dimensions}
+        onError={() => setSrcFailed(true)}
+      />
+    )
+  }
+
+  if (host && !faviconFailed) {
+    return (
+      <img
+        className="service-icon"
+        src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`}
+        alt=""
+        style={dimensions}
+        loading="lazy"
+        onError={() => setFaviconFailed(true)}
+      />
     )
   }
 
   return (
-    <img
-      className="service-icon"
-      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`}
-      alt=""
-      style={dimensions}
-      loading="lazy"
-      onError={() => setFailed(true)}
-    />
+    <span className="service-icon service-icon--fallback" style={dimensions} aria-hidden="true">
+      {name.trim().charAt(0).toUpperCase() || '?'}
+    </span>
   )
 }

@@ -7,6 +7,12 @@ export interface AppUsage {
   readonly name: string
   readonly rxBytes: number
   readonly txBytes: number
+  /**
+   * `data:image/png;base64,…` of the app's real OS icon (macOS), or null when it
+   * couldn't be resolved (helpers/daemons, or a non-macOS platform) — the row
+   * then falls back to a favicon/monogram.
+   */
+  readonly icon: string | null
 }
 
 export interface AppUsageSummary {

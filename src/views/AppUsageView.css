@@ -6,25 +6,61 @@
   flex-direction: column;
 }
 
+/* Own the horizontal inset on the rows, not the section body, so the hairline
+   dividers can run edge to edge. No vertical padding here: every row carries its
+   own equal top/bottom padding, so the card frame stays consistent with the
+   spacing inside each item and the first/last rows aren't special-cased. */
+.ui-section-body.app-list {
+  padding: 0;
+}
+
 .app-row {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: var(--gap-sm) 0;
+  gap: var(--gap-sm);
+  padding: var(--gap-md) var(--section-body);
+  transition: background var(--duration-fast) var(--ease-in-out);
 }
 
-/* The line between items — only between rows, so the card's own padding frames
-   the first and last cleanly. */
+/* Same faint wash as the Speed page's capability rows. */
+.app-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* The whole row links into that app's hosts. A transparent overlay button covers
+   it — so the row's block content (bar, figures) needn't nest inside a button —
+   and, being absolutely positioned, paints above the static content to catch the
+   click while staying invisible. */
+.app-row-toggle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.app-row-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Keep the visual layers click-through so the overlay button owns all pointer
+   interaction (cursor + click). Without this, content painted above the overlay
+   — notably the caret — swallows the click and shows the default cursor. Mirrors
+   the ConnectionCard strip pattern. */
+.app-row-main,
+.app-row-bar,
+.app-row-figures {
+  pointer-events: none;
+}
+
+/* The line between items — only between rows. Each row spans the full card
+   width, so the hairline goes end to end (clipped to the card's rounded corners
+   by the section's overflow:hidden). */
 .app-row + .app-row {
   border-top: 1px solid var(--border);
-}
-
-.app-row:first-child {
-  padding-top: 0;
-}
-
-.app-row:last-child {
-  padding-bottom: 0;
 }
 
 .app-row-main {
@@ -32,6 +68,24 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-md);
+}
+
+/* Total + navigation caret grouped at the row's right edge. */
+.app-row-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.app-row-caret {
+  color: var(--text-tertiary);
+  opacity: 0.35;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.app-row:hover .app-row-caret {
+  opacity: 0.75;
 }
 
 .app-row-id {
@@ -57,12 +111,42 @@
   flex-shrink: 0;
 }
 
-/* Download/upload figures, indented under the name so they align past the icon. */
+/* A single track whose two segments sit side by side, each scaled against the
+   busiest app so rows read comparably; an empty segment collapses to zero width.
+   Sits just inside the app icon's left edge. */
+.app-row-bar {
+  display: flex;
+  height: 3px;
+  margin-left: 3px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--bg-inset);
+}
+
+.app-row-seg {
+  height: 100%;
+  /* Ease the segment widths as the totals change (and as the busiest-app scale
+     shifts), so the bars glide in step with the count-up figures rather than
+     snapping. Neutralised under prefers-reduced-motion by the global rule. */
+  transition: width 400ms var(--ease-out);
+}
+
+.app-row-seg--down {
+  background: var(--series-down);
+}
+
+.app-row-seg--up {
+  background: var(--series-up);
+}
+
+/* Download/upload figures, nudged left so the down arrow sits centered under the
+   app icon above (rather than under the name) — echoing the Hosts view, where
+   the flag centers under the app icon. */
 .app-row-figures {
   display: flex;
   align-items: center;
   gap: var(--gap-md);
-  padding-left: 24px;
+  padding-left: 0;
 }
 
 .app-row-figure {
@@ -71,6 +155,34 @@
   gap: 5px;
   font-size: var(--text-caption);
   color: var(--text-tertiary);
+}
+
+/* Right-align each figure's value in a fixed-width box so the down and up
+   columns line up across app rows — the up arrow no longer drifts with the
+   width of the download value beside it. Matches the Hosts view. */
+.app-row-figure .num {
+  min-width: 46px;
+  text-align: right;
+}
+
+/* Header subtitle link into the Hosts subpage: a quiet inline link that
+   brightens to the accent on hover, its globe glyph nudged to the text baseline.
+   Mirrors the Services view's "View timeline" link. */
+.app-hosts-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.app-hosts-link:hover {
+  color: var(--accent);
+}
+
+.app-hosts-link:hover .app-hosts-link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* Explanatory line under the empty/unsupported states, kept narrow and calm. */

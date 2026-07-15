@@ -16,6 +16,7 @@
 //! Shared, OS-agnostic glue (the sysinfo fallback, Wi-Fi post-processing, the
 //! windowless-spawn helper, interface sorting) lives in this file.
 
+pub mod app_icon;
 pub mod linux;
 pub mod mac_native;
 pub mod macos;

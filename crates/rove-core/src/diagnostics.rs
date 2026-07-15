@@ -2,6 +2,7 @@ use crate::network_info::{default_gateway, default_interface, dns_servers};
 use crate::shell::{try_run_timeout};
 use crate::types::{
     InternetStatus, IspInfo, LiveDiagnostics, NetworkDiagnostics, PingStats, ServiceReachability,
+    ServicesReport,
 };
 use regex_lite::Regex;
 use std::sync::LazyLock;
@@ -266,21 +267,46 @@ fn classify_internet(reachable: bool, gateway: Option<&str>) -> InternetStatus {
 /// SNMP identity lookups that `run` performs: those never change between polls
 /// and re-running them (an external HTTP call and a per-poll SNMP timeout on
 /// routers that don't answer) would be wasteful.
-pub async fn run_live(service_list: &[crate::store::ServiceDef]) -> LiveDiagnostics {
+pub async fn run_live() -> LiveDiagnostics {
     let gateway = default_gateway().await;
-    let (gateway_ping, internet, services) = tokio::join!(
-        gateway_ping(gateway.as_deref()),
-        internet_reachable(),
-        service_reachability(service_list),
-    );
+    let (gateway_ping, internet) =
+        tokio::join!(gateway_ping(gateway.as_deref()), internet_reachable());
     LiveDiagnostics {
         gateway_ping,
+        internet: classify_internet(internet, gateway.as_deref()),
+    }
+}
+
+/// Service reachability, on its own — the Services view's probe, independent of
+/// the Connection diagnostics above. Bundles the machine's own internet verdict,
+/// probed in the same batch, so the view can pair each set of service results
+/// with whether *we* had internet when they were taken (see [`ServicesReport`]).
+/// The gateway lookup is only what `classify_internet` needs to tell "WAN down"
+/// (on a LAN) apart from "no network at all".
+pub async fn run_services(service_list: &[crate::store::ServiceDef]) -> ServicesReport {
+    let gateway = default_gateway().await;
+    let (internet, services) =
+        tokio::join!(internet_reachable(), service_reachability(service_list));
+    ServicesReport {
         internet: classify_internet(internet, gateway.as_deref()),
         services,
     }
 }
 
-pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostics {
+/// Public-internet reachability, and nothing else. The always-on background
+/// heartbeat calls this: it deliberately skips the gateway ping, the service
+/// list, and the ISP/SNMP identity that `run`/`run_live` gather — just the
+/// anchor probe plus a gateway lookup, folded into an [`InternetStatus`]. That
+/// keeps it cheap enough to run on a tight timer (and while the window is hidden
+/// to tray), so an internet up/down transition is caught no matter which tab is
+/// open — or whether the window is open at all.
+pub async fn check_internet() -> InternetStatus {
+    let gateway = default_gateway().await;
+    let reachable = internet_reachable().await;
+    classify_internet(reachable, gateway.as_deref())
+}
+
+pub async fn run() -> NetworkDiagnostics {
     let (gateway, iface, dns) = tokio::join!(default_gateway(), default_interface(), dns_servers());
 
     // Resolve the router's make (MAC OUI) and model (SNMP) so the Router panel
@@ -298,14 +324,13 @@ pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostic
     // always already resolved from the gateway/interface lookups above, so the
     // MAC read no longer needs to wait out ten pings first.
     //
-    // The WAN identity lookup and the service-reachability probes reach the
+    // The WAN identity lookup and the internet-anchor probe both reach the
     // internet, so they join the same concurrent batch — none blocks another.
-    let (gateway_ping, identity, isp, internet, services) = tokio::join!(
+    let (gateway_ping, identity, isp, internet) = tokio::join!(
         gateway_ping(gateway.as_deref()),
         crate::devices::gateway_identity(gateway.as_deref(), local_ipv4),
         isp_info(),
         internet_reachable(),
-        service_reachability(service_list),
     );
 
     NetworkDiagnostics {
@@ -318,6 +343,5 @@ pub async fn run(service_list: &[crate::store::ServiceDef]) -> NetworkDiagnostic
         gateway_model: identity.model,
         gateway_name: identity.name,
         isp,
-        services,
     }
 }

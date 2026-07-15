@@ -1,6 +1,7 @@
-import type { JSX, ReactNode } from 'react'
+import { useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
+import { formatDuration } from '@/lib/format'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
@@ -11,6 +12,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   EthernetIcon,
+  GlobeIcon,
   HelpIcon,
   OfflineIcon,
   RefreshIcon,
@@ -59,6 +61,8 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   wifi_connected: { icon: WifiIcon, tone: 'join' },
   ethernet_connected: { icon: EthernetIcon, tone: 'join' },
   connection_lost: { icon: OfflineIcon, tone: 'danger' },
+  internet_lost: { icon: OfflineIcon, tone: 'danger' },
+  internet_restored: { icon: GlobeIcon, tone: 'join' },
 }
 
 const EVENT_TITLES: Record<NetworkEventType, string> = {
@@ -71,6 +75,34 @@ const EVENT_TITLES: Record<NetworkEventType, string> = {
   wifi_connected: 'Connected to Wi‑Fi',
   ethernet_connected: 'Connected to Ethernet',
   connection_lost: 'Network connection lost',
+  internet_lost: 'Internet disconnected',
+  internet_restored: 'Internet reconnected',
+}
+
+// Internet up/down events carry no device subject, so a short descriptive line
+// stands in for the subject row to give the title context.
+const INTERNET_SUBTITLES: Partial<Record<NetworkEventType, string>> = {
+  internet_lost: 'No internet connection detected.',
+  internet_restored: 'Connection restored.',
+}
+
+// Pair each `internet_restored` with the `internet_lost` it ended (keyed by the
+// restored event's id) so the recovery row can show how long we were offline —
+// the same "Offline for …" the services timeline shows. Events arrive
+// newest-first, so we walk oldest-first tracking the last unmatched loss.
+function offlineDurations(newestFirst: readonly NetworkEvent[]): Map<number, number> {
+  const durations = new Map<number, number>()
+  let lostTs: number | null = null
+  for (let i = newestFirst.length - 1; i >= 0; i--) {
+    const e = newestFirst[i]!
+    if (e.type === 'internet_lost') {
+      lostTs = e.ts
+    } else if (e.type === 'internet_restored' && lostTs != null) {
+      durations.set(e.id, e.ts - lostTs)
+      lostTs = null
+    }
+  }
+  return durations
 }
 
 function subjectName(event: NetworkEvent): string {
@@ -164,13 +196,28 @@ function isKnownEvent(event: NetworkEvent): boolean {
   return event.type in EVENT_TITLES
 }
 
-function TimelineItem({ event }: { readonly event: NetworkEvent }): JSX.Element {
+function TimelineItem({
+  event,
+  offlineMs,
+}: {
+  readonly event: NetworkEvent
+  /** For `internet_restored`, how long we were offline before reconnecting. */
+  readonly offlineMs?: number
+}): JSX.Element {
   const isInitial = event.type === 'initial_scan'
+  // Internet up/down events describe this machine's own WAN reachability, not a
+  // device — they carry a fixed descriptive subtitle instead of a device subject
+  // or address line (subjectName would otherwise read "Unknown device").
+  const isInternet = event.type === 'internet_lost' || event.type === 'internet_restored'
   const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type]
   // The baseline keeps a one-line subtitle (it's a network-wide summary, not a
-  // device); every other event just shows the device it's about.
-  const subject = isInitial ? 'Tracking changes from here on' : subjectName(event)
-  const kindLabel = isInitial ? null : subjectKind(event, subject)
+  // device); every other device event just shows the device it's about.
+  const subject = isInitial
+    ? 'Tracking changes from here on'
+    : isInternet
+      ? null
+      : subjectName(event)
+  const kindLabel = isInitial || !subject ? null : subjectKind(event, subject)
 
   // The address line: MAC · Randomized · IP (any absent part is dropped).
   // InlineMeta renders each separator as a dot icon.
@@ -202,6 +249,14 @@ function TimelineItem({ event }: { readonly event: NetworkEvent }): JSX.Element 
             items={[subject, kindLabel && <span className="tl-subject-kind">{kindLabel}</span>]}
           />
         )}
+        {isInternet && INTERNET_SUBTITLES[event.type] && (
+          <span className="tl-subject tl-conn-line">
+            <span>{INTERNET_SUBTITLES[event.type]}</span>
+            {offlineMs != null && (
+              <span className="tl-conn-duration">Offline for {formatDuration(offlineMs)}</span>
+            )}
+          </span>
+        )}
 
         {metaItems.length > 0 && <InlineMeta className="tl-meta" items={metaItems} />}
       </div>
@@ -220,6 +275,8 @@ export default function EventsView({
   // rather than surfaced as a generic row.
   const visibleEvents = events.filter(isKnownEvent)
   const hasEvents = visibleEvents.length > 0
+  // Offline durations for the `internet_restored` rows, keyed by event id.
+  const offlineDur = useMemo(() => offlineDurations(visibleEvents), [visibleEvents])
 
   return (
     <div className="view-page">
@@ -278,7 +335,7 @@ export default function EventsView({
             <section className="tl-day" key={group.key}>
               <h2 className="tl-day-heading">{group.heading}</h2>
               {group.events.map((event) => (
-                <TimelineItem key={event.id} event={event} />
+                <TimelineItem key={event.id} event={event} offlineMs={offlineDur.get(event.id)} />
               ))}
             </section>
           ))}

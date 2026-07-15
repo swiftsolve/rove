@@ -12,7 +12,7 @@ mod liveness;
 /// Public so diagnostics/examples (and the planned alerts feature) can drive the
 /// passive listener and read captures directly.
 pub mod dhcp;
-mod hostname;
+pub mod hostname;
 mod netbios;
 mod probe;
 mod snmp;

@@ -129,9 +129,6 @@ pub struct NetworkDiagnostics {
     /// WAN-side identity (ISP, ASN, location, public IP), or None when the
     /// lookup service is unreachable — e.g. no internet or the request timed out.
     pub isp: Option<IspInfo>,
-    /// TCP-connect reachability of well-known internet services. Empty only if
-    /// the probe set is somehow cleared; each entry may still be Unreachable.
-    pub services: Vec<ServiceReachability>,
 }
 
 /// WAN-side identity resolved from an IP-geolocation lookup. Every field is
@@ -159,10 +156,24 @@ pub struct IspInfo {
 #[serde(rename_all = "camelCase")]
 pub struct LiveDiagnostics {
     pub gateway_ping: Option<PingStats>,
-    /// Public-internet reachability, refreshed each poll so the Services list
-    /// stops reporting outages the moment this machine loses (or regains) its
-    /// connection. See [`InternetStatus`].
+    /// Public-internet reachability, refreshed each poll. See [`InternetStatus`].
     pub internet: InternetStatus,
+}
+
+/// Service reachability plus the internet context needed to read it, probed as
+/// one batch and served by its own command — the Connection diagnostics no
+/// longer probe services (that's the Services view's own concern). Pairing the
+/// two atomically is what lets the Services view tell a genuine outage apart
+/// from this machine simply being offline: when the machine has no internet,
+/// every probe fails at once and the view collapses that to a single
+/// "connection lost" rather than a wall of per-service downs.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServicesReport {
+    /// Public-internet reachability, from the same batch as `services`.
+    pub internet: InternetStatus,
+    /// TCP-connect reachability of the user's service list. Empty only if the
+    /// list is somehow cleared; each entry may still be Unreachable.
     pub services: Vec<ServiceReachability>,
 }
 
@@ -185,6 +196,52 @@ pub struct ServiceReachability {
     /// and when no HTTP response came back. A 5xx here means the network path is
     /// up but the service itself is erroring.
     pub http_status: Option<u16>,
+}
+
+/// The status a service was in at a point in time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ServiceStatus {
+    Up,
+    Down,
+}
+
+/// This machine's own network dropping or returning, as the services timeline
+/// records it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ConnectionChange {
+    Lost,
+    Restored,
+}
+
+/// One entry in the services timeline. Only moments are stored — never a sample
+/// per probe — so the log stays small and reads as a history of outages and
+/// recoveries rather than a firehose.
+///
+/// A `Connection` event exists because when *this machine* loses its network,
+/// every probe fails at once. That isn't an outage of theirs, so the log records
+/// a single connection drop in place of the wall of per-service downs, and
+/// freezes per-service diffing until the network returns.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum ServiceEvent {
+    /// A single service crossed between up and down.
+    Transition {
+        /// Hostname probed — the stable key across renames.
+        host: String,
+        /// The service's label as it read when the crossing was recorded.
+        name: String,
+        /// The status it moved *into*.
+        status: ServiceStatus,
+        ts: i64,
+    },
+    /// A positive summary: `count` services were up. Logged once as a baseline
+    /// when monitoring first sees the services, and again whenever everything
+    /// recovers after an outage.
+    Running { count: i64, ts: i64 },
+    /// This machine's own connection dropped or returned.
+    Connection { status: ConnectionChange, ts: i64 },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -256,6 +313,10 @@ pub struct AppUsage {
     pub name: String,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
+    /// A `data:image/png;base64,…` of the app's real OS icon (macOS), or `None`
+    /// when it couldn't be resolved (helpers/daemons, or a non-macOS platform) —
+    /// the UI then falls back to a favicon/monogram.
+    pub icon: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -268,5 +329,51 @@ pub struct AppUsageSummary {
     /// (Windows/ETW) — the UI shows an explanatory note instead of an empty list.
     pub support: &'static str,
     /// Epoch ms of the first sample, or null before then.
+    pub tracking_since: Option<u64>,
+}
+
+/// One remote host an app has exchanged bytes with this session. `ip` is the
+/// grouping key (all connections to the same peer are summed); `host` and
+/// `country_code` are filled in asynchronously after the peer is first seen, so
+/// both are `None` until reverse-DNS / geolocation resolve (or if they fail).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostConn {
+    /// Remote peer IP (no port). Stable identity for the host across samples.
+    pub ip: String,
+    /// Reverse-DNS hostname, or `None` until resolved / when it has no PTR.
+    pub host: Option<String>,
+    /// ISO-3166 alpha-2 country code (e.g. "US"), or `None` until resolved,
+    /// for a private/reserved address, or when the geolocation lookup fails.
+    pub country_code: Option<String>,
+    pub rx_bytes: u64,
+    pub tx_bytes: u64,
+}
+
+/// One application with the remote hosts it has talked to, busiest host first.
+/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts — note this
+/// is TCP-connection traffic only (the source that carries a peer address), so
+/// it can read a little lower than the Apps view's all-protocol process totals.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppHosts {
+    pub name: String,
+    /// The app's real OS icon as a `data:` URI, or `None` (see [`AppUsage::icon`]).
+    pub icon: Option<String>,
+    pub rx_bytes: u64,
+    pub tx_bytes: u64,
+    pub hosts: Vec<HostConn>,
+}
+
+/// Per-app remote-host breakdown for the Hosts view. Mirrors
+/// [`AppUsageSummary`]'s shape (apps busiest first, platform `support`, and the
+/// tracking-since epoch) so the frontend can treat the two the same way.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostUsageSummary {
+    pub apps: Vec<AppHosts>,
+    /// `"supported"` where per-host attribution works (Linux, macOS) or
+    /// `"unsupported"` elsewhere (Windows ETW carries no peer address).
+    pub support: &'static str,
     pub tracking_since: Option<u64>,
 }

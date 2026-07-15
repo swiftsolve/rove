@@ -24,6 +24,12 @@
   color: var(--negative);
 }
 
+/* The gradient area under the line; its fill is the per-instance gradient set
+   inline, so just make sure it never draws an outline. */
+.spark-area {
+  stroke: none;
+}
+
 .spark-line {
   fill: none;
   stroke: currentColor;

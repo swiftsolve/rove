@@ -41,6 +41,10 @@ interface TooltipProps {
   /** When true, the tooltip never opens — used to hide stale content (e.g. a
    *  capability rating while a fresh test is running). */
   readonly disabled?: boolean
+  /** Extra class on the wrapper span, so a caller can make the trigger participate
+   *  in its own flex layout (e.g. shrink/truncate) rather than sit at intrinsic
+   *  width. */
+  readonly className?: string
 }
 
 const GAP = 6
@@ -128,6 +132,7 @@ export function Tooltip({
   placement = 'bottom',
   offset = 0,
   disabled = false,
+  className,
 }: TooltipProps): JSX.Element {
   const bubbleId = useId()
   const wrapRef = useRef<HTMLSpanElement>(null)
@@ -192,7 +197,7 @@ export function Tooltip({
     <>
       <span
         ref={wrapRef}
-        className="tooltip-wrap"
+        className={className ? `tooltip-wrap ${className}` : 'tooltip-wrap'}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocusCapture={() => setFocused(true)}

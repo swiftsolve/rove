@@ -2,10 +2,12 @@ import type { InternetStatus, ServiceReachability } from '@/types'
 
 /**
  * A small, frontend-owned rolling buffer of per-service latency samples, powering
- * the sparkline beside each row on the Services card. Like the outage timeline
- * (see service-history.ts) it derives purely from the reachability probes the
- * Connection view already polls and persists to localStorage, so it needs no new
- * IPC surface — it just appends the latest latency per host on each poll.
+ * the sparkline beside each row on the Services card. It derives purely from the
+ * reachability probes the Services view already polls and persists to
+ * localStorage, so it needs no IPC surface — it just appends the latest latency
+ * per host on each poll. (The outage *timeline* is the backend's, recorded by
+ * the services heartbeat; this is only the trend line beside each row, which is
+ * worth nothing once the tab is closed anyway.)
  *
  * Each poll appends one sample per host (the TLS-handshake latency, or null when
  * the probe failed) and keeps only the most recent MAX_SAMPLES per host, so the

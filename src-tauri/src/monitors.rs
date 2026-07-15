@@ -67,6 +67,63 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
     });
 }
 
+/// How often per-app remote hosts are sampled. A touch slower than the per-app
+/// byte sampler: each tick may also reverse-DNS and geolocate newly-seen peers,
+/// so it does more work, and the host list churns less than raw byte totals.
+const HOST_USAGE_INTERVAL: Duration = Duration::from_secs(6);
+
+/// New public peers geolocated per tick. ipwho.is is a free, rate-limited
+/// service, so the newly-seen peers are metered out a handful at a time rather
+/// than fired in one burst; they fill in over a few ticks as the UI polls.
+const HOST_GEOIP_PER_TICK: usize = 8;
+
+/// Sample per-app remote hosts every [`HOST_USAGE_INTERVAL`], then enrich the
+/// newly-seen peers: reverse-DNS the whole batch in one process, and geolocate a
+/// bounded number of public peers. Runs independently of the per-app byte
+/// sampler (that one keeps its own `-P`/process-total source); this pass is the
+/// peer-aware one behind the Hosts view. A panic in the sampling path must not
+/// stop the loop, so each tick's fallible work is isolated per await section.
+pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
+    use std::collections::HashMap;
+    tauri::async_runtime::spawn(async move {
+        loop {
+            let readings = rove_core::host_usage::sample().await;
+
+            // Ingest and capture what still needs resolving, dropping the lock
+            // before any await (a std Mutex must never be held across .await).
+            let (need_hosts, need_countries) = {
+                let state = handle.state::<AppState>();
+                let mut tracker = lock(&state.host_usage);
+                tracker.ingest(readings);
+                (tracker.pending_hostnames(), tracker.pending_countries())
+            };
+
+            // Reverse-DNS the entire new batch in a single process, then bank
+            // the answers (misses cached too, so a peer is resolved once).
+            if !need_hosts.is_empty() {
+                let names = rove_core::devices::hostname::resolve_many(&need_hosts).await;
+                let resolved: HashMap<String, Option<String>> =
+                    need_hosts.into_iter().zip(names).collect();
+                let state = handle.state::<AppState>();
+                lock(&state.host_usage).record_hostnames(resolved);
+            }
+
+            // Geolocate a bounded slice of new public peers this tick.
+            let mut countries: HashMap<String, Option<String>> = HashMap::new();
+            for ip in need_countries.into_iter().take(HOST_GEOIP_PER_TICK) {
+                let code = rove_core::host_usage::country_lookup(&ip).await;
+                countries.insert(ip, code);
+            }
+            if !countries.is_empty() {
+                let state = handle.state::<AppState>();
+                lock(&state.host_usage).record_countries(countries);
+            }
+
+            tokio::time::sleep(HOST_USAGE_INTERVAL).await;
+        }
+    });
+}
+
 /// Emit live throughput at 1 Hz while the UI is subscribed.
 pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
@@ -118,6 +175,92 @@ pub fn spawn_device_refresh(handle: tauri::AppHandle) {
                 tracing::warn!("passive device refresh failed to persist: {e}");
             }
             tokio::time::sleep(PASSIVE_REFRESH_INTERVAL).await;
+        }
+    });
+}
+
+/// How often the background internet heartbeat checks public reachability. Each
+/// tick is two concurrent TLS handshakes to well-known anchors plus a gateway
+/// lookup (see [`rove_core::diagnostics::check_internet`]) — cheap enough to run
+/// always, including while the window is hidden to tray. This is what makes an
+/// internet up/down transition land on the Timeline no matter which tab is open
+/// (the diagnostics poll that used to be the only source runs only on the
+/// Diagnostics tab), and what keeps the top-bar connectivity label honest.
+const INTERNET_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(20);
+
+/// Probe public-internet reachability on a steady timer, independent of the UI.
+/// Each tick caches the verdict for the top bar, folds it into the store (which
+/// logs an `internet_lost` / `internet_restored` event only on a genuine
+/// crossing — `record_internet` diffs its own baseline, so calling it every tick
+/// is safe and idempotent), and — on a change — nudges the UI so the status bar
+/// updates at once rather than on its next read. Runs regardless of window
+/// visibility, so an ISP outage while Rove sits in the tray is still recorded.
+pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        let mut last: Option<rove_core::types::InternetStatus> = None;
+        loop {
+            let status = rove_core::diagnostics::check_internet().await;
+            let now = rove_core::net_util::now_ms() as i64;
+            {
+                let state = handle.state::<AppState>();
+                *lock(&state.internet) = Some(status);
+            }
+            let store = handle.state::<Arc<Store>>();
+            if let Err(e) = store.record_internet(status, now) {
+                tracing::warn!("internet heartbeat failed to persist: {e}");
+            }
+            if last != Some(status) {
+                let _ = handle.emit("internet-status", status);
+                last = Some(status);
+            }
+            tokio::time::sleep(INTERNET_HEARTBEAT_INTERVAL).await;
+        }
+    });
+}
+
+/// How often the services heartbeat re-probes the tracked services. Slower than
+/// the Services view's own 15s poll on purpose: unlike the local counters the
+/// other samplers read, every tick here opens a TLS handshake and an HTTP HEAD
+/// to each service — third parties who didn't ask to be health-checked — so the
+/// cadence is set by what's neighbourly, not by what the UI could display. A
+/// minute is ample for an outage log a human reads.
+const SERVICES_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(60);
+
+/// Delay before the first heartbeat probe. The Services view probes on open
+/// anyway, and both write the same timeline, so this stays out of the way while
+/// the app finds its feet rather than piling a second probe onto launch.
+const SERVICES_HEARTBEAT_WARMUP: Duration = Duration::from_secs(10);
+
+/// Probe the user's tracked services on a steady timer, independent of the UI.
+///
+/// This is what makes the Services timeline trustworthy: the view's own poll
+/// only runs while the Services tab is open, so an outage that started while you
+/// were on another tab — or with the window hidden to tray — was simply never
+/// recorded. `record_services` diffs against its own per-host baseline and logs
+/// only crossings, so calling it every tick is idempotent — and harmless
+/// alongside the `run_services` command, which folds its own probes in too.
+pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(SERVICES_HEARTBEAT_WARMUP).await;
+        loop {
+            let services = {
+                let store = handle.state::<Arc<Store>>();
+                store.services().unwrap_or_else(|_| rove_core::store::default_service_list())
+            };
+            if !services.is_empty() {
+                let report = rove_core::diagnostics::run_services(&services).await;
+                let now = rove_core::net_util::now_ms() as i64;
+                let store = handle.state::<Arc<Store>>();
+                match store.record_services(&report, now) {
+                    // Nudge the timeline so an outage recorded while it's on
+                    // screen lands without waiting for a remount.
+                    Ok(()) => {
+                        let _ = handle.emit("services-timeline", &());
+                    }
+                    Err(e) => tracing::warn!("services heartbeat failed to persist: {e}"),
+                }
+            }
+            tokio::time::sleep(SERVICES_HEARTBEAT_INTERVAL).await;
         }
     });
 }

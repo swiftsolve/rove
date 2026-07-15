@@ -164,6 +164,22 @@
   color: var(--text-tertiary);
 }
 
+/* Internet rows keep their status and offline duration on one line: the status
+   at the left, the duration flush right (pushed by margin-left:auto). Overrides
+   the subject's inline flow so the row spans the full content width. */
+.tl-conn-line {
+  display: flex;
+  width: 100%;
+}
+
+.tl-conn-duration {
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+  font-size: var(--text-small);
+}
+
 /* Address line, one step quieter than everything above it — its parts are
    separated by dot icons (MAC · Randomized · IP), via the shared InlineMeta. */
 .tl-meta {

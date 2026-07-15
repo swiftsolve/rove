@@ -8,7 +8,9 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
   AppUsageSummary,
+  HostUsageSummary,
   DataUsageSummary,
+  InternetStatus,
   LanDeviceScan,
   LiveDiagnostics,
   LiveThroughput,
@@ -18,6 +20,8 @@ import type {
   NetworkInfo,
   NetworkInterfaceSummary,
   ServiceDefinition,
+  ServiceEvent,
+  ServicesReport,
   SpeedHistoryEntry,
   SpeedTestProgress,
   SpeedTestResult,
@@ -50,16 +54,22 @@ const tauriNetworkApi: NetworkAPI = {
   getNetworkEvents: () => invoke<readonly NetworkEvent[]>('get_network_events'),
   runDiagnostics: () => invoke<NetworkDiagnostics>('run_diagnostics'),
   runDiagnosticsLive: () => invoke<LiveDiagnostics>('run_diagnostics_live'),
+  runServices: () => invoke<ServicesReport>('run_services'),
+  getInternetStatus: () => invoke<InternetStatus | null>('get_internet_status'),
   testService: (host: string) => invoke<number | null>('test_service', { host }),
   listServices: () => invoke<readonly ServiceDefinition[]>('list_services'),
   addService: (name: string, host: string) =>
     invoke<readonly ServiceDefinition[]>('add_service', { name, host }),
   deleteService: (host: string) =>
     invoke<readonly ServiceDefinition[]>('delete_service', { host }),
+  getServiceHistory: () => invoke<readonly ServiceEvent[]>('get_service_history'),
+  clearServiceHistory: () => invoke<void>('clear_service_history'),
+  onServicesTimeline: (callback: () => void) => subscribeEvent('services-timeline', callback),
   runSpeedTest: () => invoke<SpeedTestResult>('run_speed_test'),
   cancelSpeedTest: () => invoke<void>('cancel_speed_test'),
   getDataUsage: () => invoke<DataUsageSummary>('get_data_usage'),
   getAppUsage: () => invoke<AppUsageSummary>('get_app_usage'),
+  getHostUsage: () => invoke<HostUsageSummary>('get_host_usage'),
   getSpeedHistory: () => invoke<readonly SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
   importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>
@@ -70,6 +80,9 @@ const tauriNetworkApi: NetworkAPI = {
     subscribeEvent('speed-test-progress', callback),
 
   onNetworkChanged: (callback: () => void) => subscribeEvent('network-changed', callback),
+
+  onInternetStatus: (callback: (status: InternetStatus) => void) =>
+    subscribeEvent('internet-status', callback),
 
   subscribeLiveThroughput: () => invoke<void>('subscribe_live_throughput'),
   unsubscribeLiveThroughput: () => invoke<void>('unsubscribe_live_throughput'),

@@ -234,8 +234,19 @@ fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
 /// real IPv4 gateway; degrade gracefully when none does.
 pub async fn best_default_route() -> Option<(String, Option<String>)> {
     let out = try_run("netstat -rn -f inet 2>/dev/null").await?;
+    pick_default_route(&out)
+}
+
+/// Choose the physical default route from `netstat -rn -f inet` output. A VPN
+/// tunnel (`utun*`) or VM bridge (`bridge100`) keeps its own default route that
+/// can outrank — or outlive — the physical link: turn Wi-Fi off with a VM
+/// running and the only remaining default route is the bridge's, pointing at an
+/// interface that carries no real uplink. Virtual interfaces are therefore never
+/// chosen, so an all-virtual routing table yields `None` and the app reports
+/// "disconnected" rather than a phantom wired connection. A physical link whose
+/// gateway didn't parse is still returned (gateway `None`) as a last resort.
+fn pick_default_route(out: &str) -> Option<(String, Option<String>)> {
     let mut physical_no_gw: Option<(String, Option<String>)> = None;
-    let mut any: Option<(String, Option<String>)> = None;
     for line in out.lines() {
         // "default  <gateway>  <flags>  <netif>[  <expire>]"
         let cols: Vec<&str> = line.split_whitespace().collect();
@@ -243,16 +254,19 @@ pub async fn best_default_route() -> Option<(String, Option<String>)> {
             continue;
         }
         let iface = cols[3].to_string();
-        let gw = cols[1].parse::<Ipv4Addr>().ok().map(|ip| ip.to_string());
-        any.get_or_insert_with(|| (iface.clone(), gw.clone()));
-        if !is_virtual_interface(&iface) {
-            if gw.is_some() {
-                return Some((iface, gw)); // physical link with a real gateway — ideal
-            }
-            physical_no_gw.get_or_insert((iface, gw));
+        // Skip VPN tunnels and VM bridges outright — they route packets but
+        // aren't the machine's uplink, and treating one as the active connection
+        // is exactly the bridge100-shows-as-"Wired" bug.
+        if is_virtual_interface(&iface) {
+            continue;
         }
+        let gw = cols[1].parse::<Ipv4Addr>().ok().map(|ip| ip.to_string());
+        if gw.is_some() {
+            return Some((iface, gw)); // physical link with a real gateway — ideal
+        }
+        physical_no_gw.get_or_insert((iface, gw));
     }
-    physical_no_gw.or(any)
+    physical_no_gw
 }
 
 /// The last successfully-parsed Wi-Fi hardware-port map. The port layout is
@@ -410,6 +424,54 @@ mod tests {
         // Wi-Fi / down link: no rate, no duplex hint.
         assert_eq!(parse_media_speed("autoselect"), None);
         assert_eq!(parse_media_duplex("autoselect"), None);
+    }
+
+    #[test]
+    fn default_route_prefers_physical_with_gateway() {
+        // en0 (Wi-Fi) has a real gateway; bridge100 (a VM bridge) also holds a
+        // default route. The physical, gatewayed link must win regardless of order.
+        let out = "\
+Routing tables
+
+Internet:
+Destination        Gateway            Flags        Netif Expire
+default            192.168.2.1        UGScg          en0
+default            link#24            UCSIg      bridge100      !
+";
+        assert_eq!(
+            pick_default_route(out),
+            Some(("en0".to_string(), Some("192.168.2.1".to_string())))
+        );
+    }
+
+    #[test]
+    fn default_route_ignores_virtual_only_table() {
+        // Wi-Fi is off, so en0's default route is gone and only the VM bridge's
+        // remains. bridge100 isn't a real uplink, so the machine reads as
+        // disconnected (None) rather than a phantom "Wired connection".
+        let out = "\
+Routing tables
+
+Internet:
+Destination        Gateway            Flags        Netif Expire
+default            link#24            UCSIg      bridge100      !
+";
+        assert_eq!(pick_default_route(out), None);
+    }
+
+    #[test]
+    fn default_route_falls_back_to_physical_without_gateway() {
+        // A physical link whose gateway didn't parse still beats a virtual route:
+        // it's returned with gateway None rather than dropped in favour of utun0.
+        let out = "\
+Routing tables
+
+Internet:
+Destination        Gateway            Flags        Netif Expire
+default            link#24            UCSIg          utun0
+default            link#11            UCSg           en0
+";
+        assert_eq!(pick_default_route(out), Some(("en0".to_string(), None)));
     }
 
     #[test]

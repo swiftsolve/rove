@@ -1,9 +1,17 @@
 import type { Unsubscribe } from './common'
 import type { AppUsageSummary } from './app-usage'
+import type { HostUsageSummary } from './host-usage'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
 import type { NetworkEvent } from './events'
-import type { LiveDiagnostics, NetworkDiagnostics, ServiceDefinition } from './diagnostics'
+import type {
+  InternetStatus,
+  LiveDiagnostics,
+  NetworkDiagnostics,
+  ServiceDefinition,
+  ServiceEvent,
+  ServicesReport,
+} from './diagnostics'
 import type { NetworkInterfaceSummary } from './interfaces'
 import type { LiveThroughput } from './live-throughput'
 import type { SpeedTestResult } from './capabilities'
@@ -26,10 +34,20 @@ export interface NetworkAPI {
   getDataUsage(): Promise<DataUsageSummary>
   /** Per-app network usage since Rove started watching, busiest first. */
   getAppUsage(): Promise<AppUsageSummary>
+  /** Per-app remote-host breakdown (hostname + country + bytes), busiest first. */
+  getHostUsage(): Promise<HostUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>
-  /** The fast-changing metrics only (gateway latency + service reachability),
-   *  for the Connection view's tight refresh loop. */
+  /** The fast-changing gateway metrics only, for the Connection view's tight
+   *  refresh loop. Service reachability is NOT here — see `runServices`. */
   runDiagnosticsLive(): Promise<LiveDiagnostics>
+  /** Probe the user's service list — the Services view's own metric, separate
+   *  from the Connection diagnostics. Bundles the internet verdict from the same
+   *  batch so a mass "all down" reads as this machine being offline, not theirs. */
+  runServices(): Promise<ServicesReport>
+  /** The last public-internet reachability verdict from the always-on
+   *  background heartbeat, or null before its first probe lands. A cheap cached
+   *  read (never probes) — drives the top-bar connectivity label. */
+  getInternetStatus(): Promise<InternetStatus | null>
   /** Probe a single host's reachability without storing it — the "test before
    *  add" step. Resolves to the latency in ms, or null when unreachable. */
   testService(host: string): Promise<number | null>
@@ -42,6 +60,15 @@ export interface NetworkAPI {
   /** Remove the service with this host (built-in or custom); returns the
    *  updated list. */
   deleteService(host: string): Promise<readonly ServiceDefinition[]>
+  /** The services outage timeline, newest first. Recorded by the always-on
+   *  backend heartbeat, so it covers outages that happened while the Services
+   *  tab — or the whole window — was closed. */
+  getServiceHistory(): Promise<readonly ServiceEvent[]>
+  /** Wipe the timeline and the baseline behind it, so the next probe re-seeds. */
+  clearServiceHistory(): Promise<void>
+  /** Fires when the services heartbeat has folded a fresh probe into the
+   *  timeline, so a page showing it can re-read. */
+  onServicesTimeline(callback: () => void): Unsubscribe
   runSpeedTest(): Promise<SpeedTestResult>
   cancelSpeedTest(): Promise<void>
   /** Past speed-test results, newest first, from the local database. */
@@ -54,6 +81,9 @@ export interface NetworkAPI {
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
   onNetworkChanged(callback: () => void): Unsubscribe
+  /** Fires when the background heartbeat observes a public-internet
+   *  reachability change (WAN lost or restored). */
+  onInternetStatus(callback: (status: InternetStatus) => void): Unsubscribe
   subscribeLiveThroughput(): Promise<void>
   unsubscribeLiveThroughput(): Promise<void>
   onLiveThroughput(callback: (throughput: LiveThroughput) => void): Unsubscribe

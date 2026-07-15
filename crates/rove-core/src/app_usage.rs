@@ -57,6 +57,10 @@ pub struct UsageUnit {
     pub name: String,
     pub rx: u64,
     pub tx: u64,
+    /// The owning process id, when the source reports one (macOS `nettop`,
+    /// Windows ETW). Used to resolve the app's real OS icon; `None` on Linux
+    /// (keyed by socket, no icon lookup) and doesn't affect byte accounting.
+    pub pid: Option<u32>,
 }
 
 /// Take one snapshot of per-unit cumulative byte counters from the OS. Empty on
@@ -98,7 +102,7 @@ pub async fn sample_units() -> Vec<UsageUnit> {
 /// Read an unsigned field written as `key<digits>` out of a whitespace-joined
 /// line — e.g. `bytes_sent:5231` → `5231`.
 #[cfg(any(target_os = "linux", test))]
-fn field_u64(line: &str, key: &str) -> Option<u64> {
+pub(crate) fn field_u64(line: &str, key: &str) -> Option<u64> {
     let start = line.find(key)? + key.len();
     let digits: String = line[start..].chars().take_while(|c| c.is_ascii_digit()).collect();
     digits.parse().ok()
@@ -107,7 +111,7 @@ fn field_u64(line: &str, key: &str) -> Option<u64> {
 /// The first process name from an `ss -p` process column, i.e. the `NAME` in
 /// `users:(("NAME",pid=123,fd=45))`.
 #[cfg(any(target_os = "linux", test))]
-fn ss_proc_name(line: &str) -> Option<String> {
+pub(crate) fn ss_proc_name(line: &str) -> Option<String> {
     let marker = "users:((\"";
     let start = line.find(marker)? + marker.len();
     let end = line[start..].find('"')?;
@@ -137,7 +141,7 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
             if let Some((name, key)) = pending.take() {
                 let tx = field_u64(trimmed, "bytes_sent:").unwrap_or(0);
                 let rx = field_u64(trimmed, "bytes_received:").unwrap_or(0);
-                units.push(UsageUnit { key, name, rx, tx });
+                units.push(UsageUnit { key, name, rx, tx, pid: None });
             }
             continue;
         }
@@ -151,6 +155,8 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
                 let mut cols = trimmed.split_whitespace();
                 let local = cols.nth(3);
                 let peer = cols.next();
+                // Socket-keyed accounting: no per-process icon lookup on Linux,
+                // so pid is left unset.
                 pending = match (local, peer) {
                     (Some(local), Some(peer)) => Some((name, format!("{local}|{peer}"))),
                     _ => None,
@@ -184,7 +190,13 @@ fn parse_nettop(output: &str) -> Vec<UsageUnit> {
 
         let nums: Vec<u64> = fields[1..].iter().filter_map(|f| f.parse::<u64>().ok()).collect();
         let (Some(&rx), Some(&tx)) = (nums.first(), nums.get(1)) else { continue };
-        units.push(UsageUnit { key: (*first).to_string(), name: name.to_string(), rx, tx });
+        units.push(UsageUnit {
+            key: (*first).to_string(),
+            name: name.to_string(),
+            rx,
+            tx,
+            pid: pid.parse::<u32>().ok(),
+        });
     }
     units
 }
@@ -205,6 +217,11 @@ pub struct AppUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, ByteCounts>,
     since: Option<u64>,
+    /// Resolved real OS icon per app name, as a `data:` URI. Cached because the
+    /// lookup shells into AppKit/Launch Services — do it once per name, not every
+    /// tick. `None` is cached too (name isn't an installed app), so unresolved
+    /// daemons/CLIs aren't re-probed forever; the UI shows a monogram for them.
+    icons: HashMap<String, Option<String>>,
 }
 
 impl AppUsageTracker {
@@ -239,6 +256,18 @@ impl AppUsageTracker {
             self.last.insert(unit.key.clone(), ByteCounts { rx: unit.rx, tx: unit.tx });
             seen.insert(unit.key);
 
+            // First time we see this app name, resolve its real OS icon (once).
+            // Skipped under `cfg(test)` so the pure accounting tests don't shell
+            // into AppKit/Launch Services (see `attaches_cached_icon_to_summary`
+            // for the attach path).
+            if !self.icons.contains_key(&unit.name) {
+                #[cfg(not(test))]
+                let icon = crate::platform::app_icon::app_icon_data_uri(&unit.name, unit.pid);
+                #[cfg(test)]
+                let icon: Option<String> = None;
+                self.icons.insert(unit.name.clone(), icon);
+            }
+
             let entry = self.totals.entry(unit.name).or_default();
             entry.rx = entry.rx.saturating_add(drx);
             entry.tx = entry.tx.saturating_add(dtx);
@@ -252,7 +281,12 @@ impl AppUsageTracker {
             .totals
             .iter()
             .filter(|(_, b)| b.rx > 0 || b.tx > 0)
-            .map(|(name, b)| AppUsage { name: name.clone(), rx_bytes: b.rx, tx_bytes: b.tx })
+            .map(|(name, b)| AppUsage {
+                name: name.clone(),
+                rx_bytes: b.rx,
+                tx_bytes: b.tx,
+                icon: self.icons.get(name).cloned().flatten(),
+            })
             .collect();
         // Busiest (rx+tx) first; ties broken by name so the order is stable.
         apps.sort_by(|a, b| {
@@ -404,6 +438,7 @@ mod etw {
                 name: names.get(&pid).cloned().unwrap_or_else(|| format!("PID {pid}")),
                 rx: bytes.rx,
                 tx: bytes.tx,
+                pid: Some(pid),
             })
             .collect()
     }
@@ -433,6 +468,7 @@ TIME-WAIT 0 0 192.168.1.42:40120 35.186.224.25:443
                 name: "firefox".into(),
                 rx: 18422,
                 tx: 5231,
+                pid: None,
             }
         );
         assert_eq!(units[1].name, "spotify");
@@ -450,17 +486,27 @@ firefox.1234,52310,18422,
 Spotify.567,1200,900,";
         let units = parse_nettop(out);
         assert_eq!(units.len(), 2);
-        assert_eq!(units[0], UsageUnit { key: "firefox.1234".into(), name: "firefox".into(), rx: 52310, tx: 18422 });
+        assert_eq!(
+            units[0],
+            UsageUnit {
+                key: "firefox.1234".into(),
+                name: "firefox".into(),
+                rx: 52310,
+                tx: 18422,
+                pid: Some(1234),
+            }
+        );
         assert_eq!(units[1].name, "Spotify");
+        assert_eq!(units[1].pid, Some(567));
     }
 
     #[test]
     fn accumulates_deltas_per_app_across_ticks() {
         let mut t = AppUsageTracker::new();
         // Tick 1: a fresh socket contributes its full reading.
-        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 100, tx: 40 }]);
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 100, tx: 40, pid: None }]);
         // Tick 2: the same socket grew — credit only the delta.
-        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 250, tx: 90 }]);
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 250, tx: 90, pid: None }]);
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
         assert_eq!(s.apps[0].name, "firefox");
@@ -471,15 +517,15 @@ Spotify.567,1200,900,";
     #[test]
     fn banks_closed_sockets_and_counts_reused_keys_fresh() {
         let mut t = AppUsageTracker::new();
-        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 500, tx: 0 }]);
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 500, tx: 0, pid: None }]);
         // s1 closed (absent this tick); its 500 stays banked. A new socket s2
         // for the same app opens with its own cumulative counter.
-        t.ingest(vec![UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0 }]);
+        t.ingest(vec![UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0, pid: None }]);
         // s1's key reappears as a brand-new socket (counter reset low) — its
         // full reading counts, not an underflow.
         t.ingest(vec![
-            UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0 },
-            UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 30, tx: 0 },
+            UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0, pid: None },
+            UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 30, tx: 0, pid: None },
         ]);
         let s = t.summary();
         assert_eq!(s.apps[0].rx_bytes, 500 + 200 + 30);
@@ -489,12 +535,32 @@ Spotify.567,1200,900,";
     fn sums_multiple_processes_sharing_a_name() {
         let mut t = AppUsageTracker::new();
         t.ingest(vec![
-            UsageUnit { key: "a".into(), name: "chrome".into(), rx: 100, tx: 10 },
-            UsageUnit { key: "b".into(), name: "chrome".into(), rx: 300, tx: 20 },
+            UsageUnit { key: "a".into(), name: "chrome".into(), rx: 100, tx: 10, pid: None },
+            UsageUnit { key: "b".into(), name: "chrome".into(), rx: 300, tx: 20, pid: None },
         ]);
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
         assert_eq!(s.apps[0].rx_bytes, 400);
         assert_eq!(s.apps[0].tx_bytes, 30);
+    }
+
+    #[test]
+    fn attaches_cached_icon_to_summary() {
+        // Live icon resolution is skipped under cfg(test), so seed the cache
+        // directly (same-module tests can touch private fields) to prove the
+        // summary carries a resolved icon and leaves an unresolved one as None.
+        let mut t = AppUsageTracker::new();
+        t.ingest(vec![
+            UsageUnit { key: "a".into(), name: "Spotify".into(), rx: 100, tx: 0, pid: None },
+            UsageUnit { key: "b".into(), name: "daemon".into(), rx: 50, tx: 0, pid: None },
+        ]);
+        t.icons.insert("Spotify".into(), Some("data:image/png;base64,ABC".into()));
+        // "daemon" stays cached as None (ingest inserted None under cfg(test)).
+
+        let s = t.summary();
+        let spotify = s.apps.iter().find(|a| a.name == "Spotify").unwrap();
+        let daemon = s.apps.iter().find(|a| a.name == "daemon").unwrap();
+        assert_eq!(spotify.icon.as_deref(), Some("data:image/png;base64,ABC"));
+        assert_eq!(daemon.icon, None);
     }
 }
