@@ -26,10 +26,10 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
   )
 
   // Live metrics, refreshed every 15s. Poll-only: the full run above already
-  // probes the gateway and services for the initial paint, so live must NOT
-  // fetch on open too — that was probing every target twice on each visit. It
-  // just keeps those numbers current on the interval (paused while hidden, one
-  // fresh read on resume) and takes over once its first reading lands.
+  // probes the gateway for the initial paint, so live must NOT fetch on open too
+  // — that was probing the target twice on each visit. It just keeps those
+  // numbers current on the interval (paused while hidden, one fresh read on
+  // resume) and takes over once its first reading lands.
   const live = useBackendResource(
     window.networkAPI?.runDiagnosticsLive,
     enabled,
@@ -53,9 +53,9 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
   }, [reloadFull, reloadLive])
 
   // Overlay the live metrics on the last full snapshot. Once a live reading has
-  // landed it owns latency/services wholesale (a null ping means "unreachable",
-  // which must win over the full run's stale value); until then the full run's
-  // own initial reading shows, so nothing flashes empty on open.
+  // landed it owns latency wholesale (a null ping means "unreachable", which must
+  // win over the full run's stale value); until then the full run's own initial
+  // reading shows, so nothing flashes empty on open.
   const diagnostics =
     full.data == null
       ? null
@@ -65,7 +65,6 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
             ...full.data,
             gatewayPing: live.data.gatewayPing,
             internet: live.data.internet,
-            services: live.data.services,
           }
 
   return {

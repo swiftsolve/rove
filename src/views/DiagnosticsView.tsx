@@ -1,23 +1,9 @@
-import { useEffect } from 'react'
 import type { IspInfo, NetworkDiagnostics } from '@/types'
 import { FAILED_PING } from '@/types'
-import type { DiagSub } from '@/navigation/useNavigation'
 import DataRow from '@/components/ui/DataRow'
 import Section from '@/components/ui/Section'
-import {
-  ConnectionIcon,
-  DnsIcon,
-  GlobeIcon,
-  HelpIcon,
-  RouterIcon,
-} from '@/components/ui/Icons'
+import { ConnectionIcon, DnsIcon, GlobeIcon, RouterIcon } from '@/components/ui/Icons'
 import { MetricValue } from '@/components/ui/MetricValue'
-import { ServicesSection } from '@/components/diagnostics/ServicesSection'
-import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
-import { ServicesTimelinePage } from '@/components/diagnostics/ServicesTimelinePage'
-import { recordReachability } from '@/components/diagnostics/service-history'
-import { recordLatency } from '@/components/diagnostics/service-latency'
-import { Tooltip } from '@/components/ui/Tooltip'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
@@ -32,15 +18,6 @@ interface DiagnosticsViewProps {
   readonly isRunning: boolean
   readonly error: string | null
   readonly onRun: () => void
-  /** Subpage layered over the Connection tab (manage services), or null for the
-   *  main page. Owned by the app's navigation stack so Back pops the right screen. */
-  readonly sub: DiagSub | null
-  /** Open the manage-services subpage. */
-  readonly onManageServices: () => void
-  /** Open the services timeline subpage. */
-  readonly onServicesTimeline: () => void
-  /** Return to the previous screen. */
-  readonly onBack: () => void
 }
 
 function formatPercent(pct: number): string {
@@ -65,62 +42,15 @@ function formatLocation(isp: IspInfo): string | null {
   return parts.length > 0 ? parts.join(', ') : null
 }
 
-const SERVICE_INFO_HINT =
-  'Cloud service reachability, checked on two axes: a secure (TLS) handshake to reach the host, and an HTTP request to confirm it’s serving. The number is the handshake time; a service that can’t be reached, or that answers but is failing, shows “Down”.'
-
 export default function DiagnosticsView({
   diagnostics,
   linkSpeedMbps,
   isRunning,
   error,
   onRun,
-  sub,
-  onManageServices,
-  onServicesTimeline,
-  onBack,
 }: DiagnosticsViewProps): JSX.Element {
   const ping = diagnostics?.gatewayPing
   const hasDiagnostics = diagnostics != null
-
-  // Record service up/down transitions from each probe so the timeline accrues
-  // while the Connection tab is open. Runs before any early return so it keeps
-  // logging even while the timeline subpage itself is showing.
-  //
-  // The internet status is passed through: when this machine is offline every
-  // service probe fails at once, which isn't an outage of theirs — the recorder
-  // logs a single "connection lost" for that window instead of a phantom
-  // down-and-recovery per service.
-  const services = diagnostics?.services
-  const internet = diagnostics?.internet
-  useEffect(() => {
-    if (services) {
-      recordReachability(services, internet)
-      // Append this poll's latencies to the shared per-service history that feeds
-      // the sparkline on each row of the manage page.
-      recordLatency(services, internet)
-    }
-  }, [services, internet])
-
-  if (sub?.view === 'services') {
-    return (
-      <ManageServicesPage
-        reachability={diagnostics?.services}
-        internet={diagnostics?.internet}
-        onRefresh={onRun}
-        onBack={onBack}
-      />
-    )
-  }
-
-  if (sub?.view === 'services-timeline') {
-    return (
-      <ServicesTimelinePage
-        reachability={diagnostics?.services}
-        internet={diagnostics?.internet}
-        onBack={onBack}
-      />
-    )
-  }
 
   return (
     <div className="view-page">
@@ -131,26 +61,13 @@ export default function DiagnosticsView({
           isRunning ? (
             <span className="view-header-status">Checking…</span>
           ) : hasDiagnostics ? (
-            'Router, services, DNS, and ISP'
+            'Router, DNS, and ISP'
           ) : (
             <span className="view-header-status">&nbsp;</span>
           )
         }
         subtitleShown={hasDiagnostics && !isRunning}
-        actions={
-          <>
-            <Tooltip content={SERVICE_INFO_HINT}>
-              <button
-                type="button"
-                className="btn-icon btn-icon-secondary"
-                aria-label="About service reachability"
-              >
-                <HelpIcon size={16} />
-              </button>
-            </Tooltip>
-            <RefreshIconButton label="Run again" isBusy={isRunning} onClick={onRun} />
-          </>
-        }
+        actions={<RefreshIconButton label="Run again" isBusy={isRunning} onClick={onRun} />}
       />
 
       {error && <div className="error-banner">{error}</div>}
@@ -217,13 +134,6 @@ export default function DiagnosticsView({
               )}
             </DataRow>
           </Section>
-
-          <ServicesSection
-            reachability={diagnostics?.services}
-            internet={diagnostics?.internet}
-            onManage={onManageServices}
-            onTimeline={onServicesTimeline}
-          />
 
           <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName="row-list diag-dns">
             {(diagnostics?.dnsServers?.length ?? 0) > 0 ? (

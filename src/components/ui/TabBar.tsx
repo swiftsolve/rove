@@ -2,6 +2,7 @@ import { memo, type JSX } from 'react'
 import type { AppTab } from '@/navigation/tabs'
 import {
   AppsIcon,
+  CloudIcon,
   ConnectionIcon,
   DevicesIcon,
   EventsIcon,
@@ -41,11 +42,12 @@ const TAB_DEFINITIONS: readonly TabDefinition[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'speed', label: 'Speed', Icon: SpeedIcon },
   { id: 'devices', label: 'Devices', Icon: DevicesIcon },
+  { id: 'apps', label: 'Apps', Icon: AppsIcon },
+  { id: 'services', label: 'Services', Icon: CloudIcon },
   { id: 'events', label: 'Timeline', Icon: EventsIcon },
   { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
   { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
   { id: 'usage', label: 'Usage', Icon: UsageIcon },
-  { id: 'apps', label: 'Apps', Icon: AppsIcon },
 ]
 
 // The gear sitting on its own at the foot of the rail. About is reached from
@@ -65,7 +67,7 @@ function NavItem({
     <Tooltip content={tab.label} placement="right">
       <button
         type="button"
-        className={`nav-item ${active ? 'active' : ''}`}
+        className={`nav-item nav-item-${tab.id} ${active ? 'active' : ''}`}
         onClick={() => onChange(tab.id)}
         aria-current={active ? 'page' : undefined}
         aria-label={tab.label}

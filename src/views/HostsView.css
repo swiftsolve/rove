@@ -1,0 +1,201 @@
+/* Per-app remote-host list. Each app is a group: an icon + name header with the
+   app's total on the right, then its hosts beneath — hostname + country flag on
+   the left of each host row, the download/upload split on the right. Styled to
+   sit next to the Apps list, with a hairline between app groups. */
+.host-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Rows own the horizontal inset (not the body) so the hairlines run edge to
+   edge; no vertical padding here — each group carries its own. */
+.ui-section-body.host-list {
+  padding: 0;
+}
+
+.host-app {
+  padding: var(--gap-md) var(--section-body);
+  /* Breathing room when a focused group is scrolled to the top of the list. */
+  scroll-margin-top: var(--gap-md);
+}
+
+/* The line between app groups only — clipped to the card's rounded corners by
+   the section's overflow:hidden. */
+.host-app + .host-app {
+  border-top: 1px solid var(--border);
+}
+
+/* A group sits flush against the card edge and carries no radius of its own, so
+   the highlight ring's corners would run square into the card's rounded ones and
+   get shaved off by its overflow:hidden. Match the card's curve on whichever
+   edges the flashed group actually touches. Only while flashing — the rest of
+   the time these are plain square rows. */
+.host-app.nav-flash:first-child {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.host-app.nav-flash:last-child {
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.host-app.nav-flash:only-child {
+  border-radius: var(--radius);
+}
+
+/* The group header is a full-width toggle button; strip the native button chrome
+   so it reads as a row, and give the whole strip a quiet hover to signal it's
+   clickable. */
+.host-app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.host-app-header:hover {
+  color: var(--text-primary);
+}
+
+.host-app-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Points down (▼) when expanded, rotates to a right caret (▶) when collapsed. */
+.host-app-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transform: rotate(-90deg);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.host-app-chevron.open {
+  transform: rotate(0deg);
+}
+
+/* Small muted count of hosts in the group, sitting after the app name. */
+.host-app-count {
+  flex-shrink: 0;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--bg-inset);
+  color: var(--text-tertiary);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.host-app-name {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-app-total {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* The app's hosts, indented so each 18px flag sits centered under the 16px app
+   icon above it (past the chevron gutter): chevron 14 + gap 8 + half of (16−18)
+   ≈ 21px. The flag column then reads as a continuation of the app-icon column. */
+.host-app-hosts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-sm);
+  padding-left: 21px;
+}
+
+.host-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.host-row-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* Fixed-width flag slot so hostnames stay aligned whether or not a flag (or the
+   globe fallback for an unresolved / LAN peer) is present. */
+.host-flag {
+  flex-shrink: 0;
+  width: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.host-flag-fallback {
+  color: var(--text-quaternary, var(--text-tertiary));
+  opacity: 0.6;
+}
+
+.host-name {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The tooltip wrapper around the hostname must itself shrink (and clip) so the
+   name still truncates/marquees inside the row rather than sizing to its full
+   text. The portalled bubble is unaffected by the clip. */
+.host-name-tip {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.host-row-figures {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-md);
+  flex-shrink: 0;
+}
+
+.host-figure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Right-align each figure's value in a fixed-width box so the down and up
+   columns line up across the rows in a group (the arrows stay in constant
+   columns instead of drifting with each value's width). */
+.host-figure .num {
+  min-width: 46px;
+  text-align: right;
+}
+
+/* Explanatory line under the empty/unsupported states, kept narrow and calm. */
+.host-usage-note {
+  max-width: 40ch;
+  margin-top: var(--gap-xs);
+  text-align: center;
+}

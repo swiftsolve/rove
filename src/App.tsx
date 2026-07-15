@@ -9,7 +9,10 @@ import { useDevices } from '@/hooks/useDevices'
 import { useNetworkEvents } from '@/hooks/useNetworkEvents'
 import { useDataUsage } from '@/hooks/useDataUsage'
 import { useAppUsage } from '@/hooks/useAppUsage'
+import { useHostUsage } from '@/hooks/useHostUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
+import { useServiceReachability } from '@/hooks/useServiceReachability'
+import { useInternetStatus } from '@/hooks/useInternetStatus'
 import { AlertIcon, BrandIcon, CloseIcon, MinimizeIcon, OfflineIcon, RefreshIcon } from '@/components/ui/Icons'
 import TabBar from '@/components/ui/TabBar'
 import UpdateDialog from '@/components/ui/UpdateDialog'
@@ -21,7 +24,11 @@ import DevicesView from '@/views/DevicesView'
 import EventsView from '@/views/EventsView'
 import UsageView from '@/views/UsageView'
 import AppUsageView from '@/views/AppUsageView'
+import HostsView from '@/views/HostsView'
 import DiagnosticsView from '@/views/DiagnosticsView'
+import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
+import { ServicesTimelinePage } from '@/components/diagnostics/ServicesTimelinePage'
+import { recordLatency } from '@/components/diagnostics/service-latency'
 import SettingsView from '@/views/SettingsView'
 import AboutView from '@/views/AboutView'
 import { formatConnectionType } from '@/lib/format'
@@ -160,11 +167,16 @@ function WindowControls(): JSX.Element {
   )
 }
 
+// Top-bar connectivity state. 'on' = a link that reaches the internet; 'bad' =
+// a link is up but the public internet is unreachable (ISP outage, or a bridge
+// with no WAN route); 'off' = no usable link at all.
+type StatusTone = 'on' | 'bad' | 'off'
+
 function StatusBar({
-  connected,
+  tone,
   label,
 }: {
-  readonly connected: boolean
+  readonly tone: StatusTone
   readonly label: string
 }): JSX.Element {
   return (
@@ -176,7 +188,7 @@ function StatusBar({
           </span>
           <span className="brand-name">Rove</span>
         </div>
-        <span className={`status-bar-link ${connected ? 'on' : ''}`}>
+        <span className={`status-bar-link ${tone === 'off' ? '' : tone}`}>
           <span className="status-bar-dot" aria-hidden />
           {label}
         </span>
@@ -217,6 +229,10 @@ export default function App(): JSX.Element {
   }, [])
 
   const isConnected = info ? isConnectedNetwork(info) : false
+  // Public-internet reachability from the always-on background heartbeat, kept
+  // separate from the local link above: the link can be up while the WAN is
+  // unreachable (an ISP outage, or a bridge interface with no route out).
+  const internet = useInternetStatus()
   // Own the live-throughput feed for the whole app, not per-view: keep sampling
   // the 60 s history while the window is visible (across every tab) so the Home
   // chart is already current on return instead of resuming a stale snapshot.
@@ -250,6 +266,11 @@ export default function App(): JSX.Element {
     isLoading: appUsageLoading,
     error: appUsageError,
   } = useAppUsage(activeTab === 'apps')
+  const {
+    usage: hostUsage,
+    isLoading: hostUsageLoading,
+    error: hostUsageError,
+  } = useHostUsage(activeTab === 'apps' && location.appsSub?.view === 'hosts')
   const deviceCount = deviceScan ? deviceScan.devices.length : null
   const deviceOnline = deviceScan
     ? deviceScan.devices.filter((device) => device.reachable).length
@@ -276,18 +297,54 @@ export default function App(): JSX.Element {
     run: runDiagnostics,
   } = useDiagnostics(activeTab === 'diagnostics', networkKey)
 
+  // Service reachability rides its own probe now, independent of the Connection
+  // diagnostics — opening the Connection view no longer probes the user's
+  // services. It runs while the Services tab is open (either subview).
+  const {
+    report: servicesReport,
+    run: runServices,
+  } = useServiceReachability(activeTab === 'services', networkKey)
+
+  // Record per-host latency from each probe so the Services page sparklines
+  // accrue while the tab is open. The outage *timeline* is not recorded here —
+  // that's the backend heartbeat's job (see `spawn_services_heartbeat`), so it
+  // keeps accruing with this tab, and the window, closed.
+  //
+  // The internet status is passed through: when this machine is offline every
+  // service probe fails at once, which isn't the services' fault. It's paired
+  // with the probes from the same batch (see `ServicesReport`) so the two never
+  // disagree about that window.
+  const svcServices = servicesReport?.services
+  const svcInternet = servicesReport?.internet
+  useEffect(() => {
+    if (svcServices) recordLatency(svcServices, svcInternet)
+  }, [svcServices, svcInternet])
+
   // Home and Speed can't render without network info; the other tabs can.
   // Show the loading/error state only in the content area (not full-screen) so
   // the window chrome and tabs stay usable even before info arrives.
   const needsInfo = activeTab === 'home' || activeTab === 'speed'
-  const statusLabel = !info ? 'Connecting…' : isConnected ? formatConnectionType(info.connectionType) : 'Offline'
+  // The top-bar connectivity summary layers WAN reachability over the local
+  // link: a live link with a dead WAN reads "No internet" (red) rather than
+  // masquerading as connected; only a link that reaches the internet is "on".
+  // `internet` is null until the first heartbeat lands — treat that as fine so
+  // the bar doesn't flash a false outage on launch.
+  const internetDown = isConnected && (internet === 'noInternet' || internet === 'offline')
+  const statusTone: StatusTone = !isConnected ? 'off' : internetDown ? 'bad' : 'on'
+  const statusLabel = !info
+    ? 'Connecting…'
+    : !isConnected
+      ? 'Offline'
+      : internetDown
+        ? 'No internet'
+        : formatConnectionType(info.connectionType)
 
   return (
     <div className="app-shell">
       {pendingUpdate && (
         <UpdateDialog update={pendingUpdate} onDismiss={() => setPendingUpdate(null)} />
       )}
-      <StatusBar connected={isConnected} label={statusLabel} />
+      <StatusBar tone={statusTone} label={statusLabel} />
 
       <div className="app-lower">
         <TabBar
@@ -383,13 +440,28 @@ export default function App(): JSX.Element {
                 <UsageView usage={usage} isLoading={usageLoading} error={usageError} />
               )}
 
-              {activeTab === 'apps' && (
-                <AppUsageView
-                  usage={appUsage}
-                  isLoading={appUsageLoading}
-                  error={appUsageError}
-                />
-              )}
+              {activeTab === 'apps' &&
+                (location.appsSub?.view === 'hosts' ? (
+                  <HostsView
+                    usage={hostUsage}
+                    isLoading={hostUsageLoading}
+                    error={hostUsageError}
+                    focusApp={location.appsSub.app ?? null}
+                    onBack={back}
+                  />
+                ) : (
+                  <AppUsageView
+                    usage={appUsage}
+                    isLoading={appUsageLoading}
+                    error={appUsageError}
+                    onViewHosts={() =>
+                      navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'hosts' } })
+                    }
+                    onOpenApp={(name) =>
+                      navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'hosts', app: name } })
+                    }
+                  />
+                ))}
 
               {activeTab === 'diagnostics' && (
                 <DiagnosticsView
@@ -398,20 +470,26 @@ export default function App(): JSX.Element {
                   isRunning={diagnosticsRunning}
                   error={diagnosticsError}
                   onRun={() => void runDiagnostics()}
-                  sub={location.diagSub ?? null}
-                  onManageServices={() =>
-                    navigate({ tab: 'diagnostics', speedSub: null, diagSub: { view: 'services' } })
-                  }
-                  onServicesTimeline={() =>
-                    navigate({
-                      tab: 'diagnostics',
-                      speedSub: null,
-                      diagSub: { view: 'services-timeline' },
-                    })
-                  }
-                  onBack={back}
                 />
               )}
+
+              {activeTab === 'services' &&
+                (location.servicesSub?.view === 'timeline' ? (
+                  <ServicesTimelinePage
+                    reachability={servicesReport?.services}
+                    internet={servicesReport?.internet}
+                    onBack={back}
+                  />
+                ) : (
+                  <ManageServicesPage
+                    reachability={servicesReport?.services}
+                    internet={servicesReport?.internet}
+                    onRefresh={() => void runServices()}
+                    onTimeline={() =>
+                      navigate({ tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } })
+                    }
+                  />
+                ))}
 
               {activeTab === 'settings' && (
                 <SettingsView

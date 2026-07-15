@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import type { LatencySample } from '@/components/diagnostics/service-latency'
 import { formatLatencyMs } from '@/lib/format'
 import './Sparkline.css'
@@ -48,8 +48,10 @@ export function Sparkline({
 }: SparklineProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement>(null)
   const [hover, setHover] = useState<number | null>(null)
+  // Unique per instance so multiple sparklines on a page don't share a gradient.
+  const fillId = useId().replace(/:/g, '')
 
-  const { points, segments } = useMemo(() => {
+  const { points, segments, areas } = useMemo(() => {
     const n = samples.length
     const innerW = width - PAD * 2
     const innerH = height - PAD * 2
@@ -87,7 +89,19 @@ export function Sparkline({
     }
     if (run.length > 0) segs.push(run.map((r) => `${r.x},${r.y}`).join(' '))
 
-    return { points: pts, segments: segs }
+    // A soft area under each line run, closed down to the baseline, for the
+    // gradient fill — only for multi-point runs (a lone point has no area).
+    const baseline = height - PAD
+    const areaPolys = segs
+      .filter((s) => s.includes(' '))
+      .map((s) => {
+        const coords = s.split(' ')
+        const firstX = coords[0]!.split(',')[0]!
+        const lastX = coords[coords.length - 1]!.split(',')[0]!
+        return `${s} ${lastX},${baseline} ${firstX},${baseline}`
+      })
+
+    return { points: pts, segments: segs, areas: areaPolys }
   }, [samples, width, height])
 
   // A down service reads as a single flat red line — its latency trend is
@@ -155,6 +169,18 @@ export function Sparkline({
         onMouseMove={handleMove}
         onMouseLeave={() => setHover(null)}
       >
+        {/* Area fill under the trend — a vertical fade from the band colour to
+            transparent, echoing the Live traffic chart. currentColor ties it to
+            the active health band. */}
+        <defs>
+          <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity={0.22} />
+            <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        {areas.map((pts, i) => (
+          <polygon key={`area-${i}`} className="spark-area" points={pts} fill={`url(#${fillId})`} />
+        ))}
         {segments.map((pts, i) =>
           pts.includes(' ') ? (
             <polyline key={i} className="spark-line" points={pts} />

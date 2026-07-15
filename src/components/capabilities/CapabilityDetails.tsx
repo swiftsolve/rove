@@ -7,6 +7,7 @@ import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Subpage from '@/components/ui/Subpage'
 import { AlertIcon, CheckIcon, CloseIcon } from '@/components/ui/Icons'
 import { formatTimeAgo } from '@/lib/format'
+import { flashHighlight } from '@/lib/highlight'
 import './CapabilityDetails.css'
 
 /** The verdict glyph: a tick when the connection clears the bar, a warning when
@@ -109,6 +110,7 @@ export default function CapabilityDetails({
         const margin = parseFloat(getComputedStyle(card).scrollMarginTop) || 0
         const delta = card.getBoundingClientRect().top - scroller.getBoundingClientRect().top
         scroller.scrollTo({ top: scroller.scrollTop + delta - margin, behavior: 'smooth' })
+        flashHighlight(card)
       })
     })
     return () => {

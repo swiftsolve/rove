@@ -6,7 +6,7 @@
 //! and the UI reaches it through thin Tauri commands. All methods lock an
 //! internal `Mutex<Connection>`, so a shared `Arc<Store>` is safe to hand to
 //! both command handlers and the background usage sampler.
-use crate::types::LanDevice;
+use crate::types::{InternetStatus, LanDevice};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -138,16 +138,41 @@ const EVENT_ETHERNET_CONNECTED: &str = "ethernet_connected";
 /// would otherwise emit while offline — with no uplink we can't confirm any host,
 /// so every device looks departed, but the truth is that *we* left, not them.
 const EVENT_CONNECTION_LOST: &str = "connection_lost";
+/// This machine lost / regained public-internet reachability (the WAN), as
+/// classified by the diagnostics poll's [`InternetStatus`]. Distinct from
+/// `connection_lost`, which tracks the local link (Wi-Fi/Ethernet) dropping: the
+/// internet can be unreachable while the link is up (an ISP outage), and this
+/// pair captures exactly that — mirroring the online/offline split the Services
+/// timeline already shows.
+const EVENT_INTERNET_LOST: &str = "internet_lost";
+const EVENT_INTERNET_RESTORED: &str = "internet_restored";
 
 /// `meta` key holding the last connection this machine was on, so a change of
 /// network can be detected across the frequent `network_info` polls.
 const META_CONNECTION_IDENTITY: &str = "connection_identity";
+/// `meta` key holding the last internet-reachability verdict ("online"/"offline"),
+/// so a WAN up/down transition can be detected across diagnostics polls.
+const META_INTERNET_STATUS: &str = "internet_status";
+/// `meta` key holding whether the services timeline currently sits inside a
+/// recorded connection drop ("lost"/"restored"). Deliberately separate from
+/// [`META_INTERNET_STATUS`]: that one is the device feed's baseline and is
+/// consumed by `record_internet`'s own diff, so sharing it would mean whichever
+/// recorder ran first swallowed the crossing before the other saw it.
+const META_SERVICE_CONNECTION: &str = "service_connection_status";
 
 /// Drop events older than this (matches the 7-day feed consumer tools keep).
 const EVENT_RETENTION_MS: i64 = 7 * 24 * 60 * 60 * 1000;
 /// Hard cap on retained events, so a churny network can't grow the table
 /// without bound even inside the retention window.
 const EVENT_LIMIT: i64 = 1000;
+
+/// The services timeline keeps a longer memory than the device feed's 7 days:
+/// "when was Netflix last down" is worth a month, and the log only grows on a
+/// crossing, so a month of it is still tiny.
+const SERVICE_EVENT_RETENTION_MS: i64 = 30 * 24 * 60 * 60 * 1000;
+/// Hard cap on retained timeline entries, so a flapping service can't grow the
+/// table without bound inside the retention window.
+const SERVICE_EVENT_LIMIT: i64 = 500;
 /// A device is only an "offline" candidate when it was seen this recently
 /// before a scan missed it. Anything older is the historical roster (a device
 /// that left days ago), not one that just dropped — so it never fires, which is
@@ -253,6 +278,33 @@ CREATE TABLE IF NOT EXISTS services (
 );
 ";
 
+/// v5 — the services outage timeline, previously a frontend localStorage log
+/// that only accrued while the Services tab was open. Owning it here is what
+/// lets the always-on heartbeat record an outage whether or not the window is
+/// even up. Two tables: the append-only log (pruned by age/count), and the
+/// per-host baseline the diff compares each probe against, so only crossings
+/// land in the log.
+///
+/// `status` carries a transition's 'up'/'down' and a connection event's
+/// 'lost'/'restored'; `count` is the running summary's tally. Each is null for
+/// the shapes that don't use it — the row's `type` says which apply.
+const SCHEMA_V5: &str = "
+CREATE TABLE IF NOT EXISTS service_events (
+    id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts     INTEGER NOT NULL,
+    type   TEXT    NOT NULL,
+    host   TEXT,
+    name   TEXT,
+    status TEXT,
+    count  INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_service_events_ts ON service_events(ts DESC);
+CREATE TABLE IF NOT EXISTS service_state (
+    host   TEXT PRIMARY KEY,
+    status TEXT NOT NULL
+);
+";
+
 impl Store {
     /// Lock the connection, recovering the guard if a previous holder panicked
     /// rather than propagating the poison (which would wedge every subsequent
@@ -308,6 +360,10 @@ impl Store {
             }
             conn.pragma_update(None, "user_version", 4)?;
         }
+        if version < 5 {
+            conn.execute_batch(SCHEMA_V5)?;
+            conn.pragma_update(None, "user_version", 5)?;
+        }
         // Same defensive stance as the speed_history columns below: a colliding
         // user_version from a parallel branch could stamp the DB at >=3 without
         // ever creating this table, and every event insert/read would then fail
@@ -317,6 +373,10 @@ impl Store {
         // Same guard for the services table — (re)creating it is idempotent and
         // never re-seeds, so a collided version number can't wedge the list.
         conn.execute_batch(SCHEMA_V4)?;
+        // And the same for the timeline's tables, for the same reason: a version
+        // number collided from another branch must not leave the heartbeat
+        // writing into tables that were never created.
+        conn.execute_batch(SCHEMA_V5)?;
         // Independently of the version counter, guarantee the columns the
         // insert/read SQL relies on actually exist. A parallel feature branch
         // also bumped the schema to v2 (adding its own `bufferbloat_ms` column),
@@ -692,18 +752,39 @@ impl Store {
             Self::upsert_device(&tx, device, now_ms)?;
         }
 
+        // The host's own link state, as last recorded by `record_connection`
+        // (identity `"wifi|…"`/`"ethernet|…"` when connected, `"disconnected|"`
+        // otherwise). A scan that runs while this machine is itself off-network
+        // sees every LAN peer stop answering at once — that's our uplink dropping,
+        // not the whole network emptying out. An absent identity (never polled)
+        // reads as connected so we don't over-suppress a genuine departure.
+        let host_connected: bool = tx
+            .query_row(
+                "SELECT value FROM meta WHERE key = ?1",
+                [META_CONNECTION_IDENTITY],
+                |row| row.get::<_, String>(0),
+            )
+            .optional()?
+            .map(|id| id.starts_with("wifi|") || id.starts_with("ethernet|"))
+            .unwrap_or(true);
+
         // Departures: recently-seen devices that didn't answer this scan —
         // whether absent entirely or present but failing liveness. Skip any
         // already marked offline so a device stays one event until it returns.
         // Suppressed on the seed scan along with the rest of the diff.
         //
-        // An empty `live` set means *nothing at all* answered — not even self or
-        // the gateway, which are always reachable when we have a link. That's this
-        // machine going offline (or a scan that wholly failed), not the entire LAN
-        // departing at once, so suppress the per-device offline burst: the single
-        // `connection_lost` event (from `record_connection`) represents the drop
-        // instead. The devices are untouched, so they simply resume when we return.
-        if !seed && !live.is_empty() {
+        // Two conditions suppress the whole burst, both meaning "this machine
+        // dropped off, the LAN didn't empty out":
+        //   * An empty `live` set — *nothing at all* answered, not even self or
+        //     the gateway (always reachable when we have a link): the scan wholly
+        //     failed.
+        //   * The host itself is disconnected — on macOS a downed uplink still
+        //     enumerates `self` as reachable, so `live` is non-empty and the check
+        //     above misses it; the stored connection identity catches it.
+        // In both cases the single `connection_lost` event (from
+        // `record_connection`) represents the drop instead. The devices are
+        // untouched, so they simply resume when we return.
+        if !seed && !live.is_empty() && host_connected {
             for (mac, prev) in &prior {
                 if live.contains(mac.as_str()) {
                     continue;
@@ -853,6 +934,346 @@ impl Store {
              ON CONFLICT(key) DO UPDATE SET value = excluded.value",
             params![META_CONNECTION_IDENTITY, identity],
         )?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Log an internet-reachability transition. The diagnostics poll classifies
+    /// whether this machine can reach the public internet (see [`InternetStatus`]);
+    /// this diffs that verdict against the last one stashed in `meta` and, on a
+    /// crossing, appends a single `internet_lost` / `internet_restored` event.
+    ///
+    /// `noInternet` (WAN down but on a LAN) and `offline` (no network at all) both
+    /// collapse to "no internet" here — the timeline only cares whether the public
+    /// internet is reachable, matching the Services timeline's online/offline
+    /// split. The first observation after launch is silent (it just seeds the
+    /// baseline in `meta`), so a cold start doesn't read as a fresh outage.
+    ///
+    /// Best-effort and safe to call on every poll: an unchanged verdict does
+    /// nothing.
+    pub fn record_internet(&self, internet: InternetStatus, now_ms: i64) -> rusqlite::Result<()> {
+        // Collapse the three-way status to the only axis this event tracks: can we
+        // reach the public internet, or not.
+        let online = matches!(internet, InternetStatus::Online);
+        let value = if online { "online" } else { "offline" };
+
+        let mut conn = self.lock();
+        let prev: Option<String> = conn
+            .query_row(
+                "SELECT value FROM meta WHERE key = ?1",
+                [META_INTERNET_STATUS],
+                |row| row.get(0),
+            )
+            .optional()?;
+
+        // Unchanged since the last poll — the common case. Nothing to record.
+        if prev.as_deref() == Some(value) {
+            return Ok(());
+        }
+
+        let tx = conn.transaction()?;
+        // Emit only on a genuine crossing, and only once a baseline exists, so the
+        // first observation after launch seeds `meta` silently rather than logging
+        // a phantom outage or recovery.
+        if prev.is_some() {
+            let (event_type, severity) = if online {
+                (EVENT_INTERNET_RESTORED, "info")
+            } else {
+                (EVENT_INTERNET_LOST, "warning")
+            };
+            Self::record_event_raw(
+                &tx, now_ms, event_type, severity, None, None, None, None, None, false,
+            )?;
+            Self::prune_events(&tx, now_ms)?;
+        }
+
+        tx.execute(
+            "INSERT INTO meta (key, value) VALUES (?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            params![META_INTERNET_STATUS, value],
+        )?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Fold one probe batch into the services timeline, recording only what
+    /// changed: a service crossing up or down, a `Running` baseline the first
+    /// time the services are ever seen, a `Running` summary when the last outage
+    /// clears, and a single connection drop/return when *this machine* is the one
+    /// that's offline. Re-running with unchanged probes writes nothing, so the
+    /// heartbeat can call it every tick.
+    ///
+    /// While this machine has no internet, per-service diffing freezes: every
+    /// probe fails at once as a side effect of *our* outage, so logging them
+    /// would be a wall of lies. Freezing means the eventual recovery diffs
+    /// against the real pre-outage state rather than a phantom mass-down.
+    pub fn record_services(
+        &self,
+        report: &crate::types::ServicesReport,
+        now_ms: i64,
+    ) -> rusqlite::Result<()> {
+        use crate::types::{ConnectionChange, InternetStatus, ServiceEvent, ServiceStatus};
+
+        if report.services.is_empty() {
+            return Ok(());
+        }
+        let offline = !matches!(report.internet, InternetStatus::Online);
+
+        let mut conn = self.lock();
+        let was_offline = conn
+            .query_row(
+                "SELECT value FROM meta WHERE key = ?1",
+                [META_SERVICE_CONNECTION],
+                |row| row.get::<_, String>(0),
+            )
+            .optional()?
+            .as_deref()
+            == Some("lost");
+
+        let tx = conn.transaction()?;
+
+        // We're the ones offline. Record the drop once on the way in, then stop —
+        // the per-service state stays frozen at its pre-outage values.
+        if offline {
+            if !was_offline {
+                Self::insert_service_event(
+                    &tx,
+                    &ServiceEvent::Connection { status: ConnectionChange::Lost, ts: now_ms },
+                )?;
+                Self::set_service_connection(&tx, "lost")?;
+                Self::prune_service_events(&tx, now_ms)?;
+                tx.commit()?;
+            }
+            return Ok(());
+        }
+
+        let mut events: Vec<ServiceEvent> = Vec::new();
+
+        // Back online after a recorded drop: close it before resuming per-service
+        // diffing, so the timeline reads as one outage rather than a gap.
+        if was_offline {
+            events.push(ServiceEvent::Connection { status: ConnectionChange::Restored, ts: now_ms });
+            Self::set_service_connection(&tx, "restored")?;
+        }
+
+        let previous = Self::service_state(&tx)?;
+        let up_count = report
+            .services
+            .iter()
+            .filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up)
+            .count() as i64;
+
+        // Baseline: anchor a brand-new timeline with a positive summary rather
+        // than leaving it blank until something first breaks.
+        if Self::service_events_is_empty(&tx)? && up_count > 0 {
+            events.push(ServiceEvent::Running { count: up_count, ts: now_ms });
+        }
+
+        let previously_any_down = previous.values().any(|s| *s == ServiceStatus::Down);
+        let mut now_any_down = false;
+        let mut recovered = false;
+
+        for svc in &report.services {
+            let status = Self::reachability_status(svc);
+            if status == ServiceStatus::Down {
+                now_any_down = true;
+            }
+            // A host we've never seen counts as "not down", so a service that has
+            // been fine since first sight records nothing.
+            let prev = previous.get(&svc.host).copied();
+            let changed = match status {
+                ServiceStatus::Down => prev != Some(ServiceStatus::Down),
+                ServiceStatus::Up => prev == Some(ServiceStatus::Down),
+            };
+            if changed {
+                events.push(ServiceEvent::Transition {
+                    host: svc.host.clone(),
+                    name: svc.name.clone(),
+                    status,
+                    ts: now_ms,
+                });
+                if status == ServiceStatus::Up {
+                    recovered = true;
+                }
+            }
+            Self::set_service_state(&tx, &svc.host, status)?;
+        }
+
+        // Full recovery: something had been down, and now nothing is.
+        if recovered && previously_any_down && !now_any_down {
+            events.push(ServiceEvent::Running { count: up_count, ts: now_ms });
+        }
+
+        if events.is_empty() {
+            // Still commit: the per-host state rows above may have seeded hosts
+            // seen for the first time, and dropping that would re-seed forever.
+            tx.commit()?;
+            return Ok(());
+        }
+        for event in &events {
+            Self::insert_service_event(&tx, event)?;
+        }
+        Self::prune_service_events(&tx, now_ms)?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// A service reads as down when the network path failed (no TLS handshake, so
+    /// no latency) or the host answered but is erroring. Mirrors the verdict the
+    /// Services page renders, so the timeline never disagrees with the live list.
+    fn reachability_status(svc: &crate::types::ServiceReachability) -> crate::types::ServiceStatus {
+        use crate::types::ServiceStatus;
+        match (svc.latency_ms, svc.http_status) {
+            (None, _) => ServiceStatus::Down,
+            (_, Some(status)) if status >= 500 => ServiceStatus::Down,
+            _ => ServiceStatus::Up,
+        }
+    }
+
+    fn set_service_connection(conn: &Connection, value: &str) -> rusqlite::Result<()> {
+        conn.execute(
+            "INSERT INTO meta (key, value) VALUES (?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            params![META_SERVICE_CONNECTION, value],
+        )?;
+        Ok(())
+    }
+
+    fn set_service_state(
+        conn: &Connection,
+        host: &str,
+        status: crate::types::ServiceStatus,
+    ) -> rusqlite::Result<()> {
+        conn.execute(
+            "INSERT INTO service_state (host, status) VALUES (?1, ?2)
+             ON CONFLICT(host) DO UPDATE SET status = excluded.status",
+            params![host, Self::status_str(status)],
+        )?;
+        Ok(())
+    }
+
+    /// The last known status per host. A host absent from the map has never been
+    /// seen, which the diff reads as "not currently down".
+    fn service_state(
+        conn: &Connection,
+    ) -> rusqlite::Result<std::collections::HashMap<String, crate::types::ServiceStatus>> {
+        use crate::types::ServiceStatus;
+        let mut stmt = conn.prepare("SELECT host, status FROM service_state")?;
+        let rows = stmt.query_map([], |row| {
+            let host: String = row.get(0)?;
+            let status: String = row.get(1)?;
+            Ok((host, if status == "down" { ServiceStatus::Down } else { ServiceStatus::Up }))
+        })?;
+        rows.collect()
+    }
+
+    fn status_str(status: crate::types::ServiceStatus) -> &'static str {
+        match status {
+            crate::types::ServiceStatus::Up => "up",
+            crate::types::ServiceStatus::Down => "down",
+        }
+    }
+
+    fn service_events_is_empty(conn: &Connection) -> rusqlite::Result<bool> {
+        let count: i64 = conn.query_row("SELECT COUNT(*) FROM service_events", [], |row| row.get(0))?;
+        Ok(count == 0)
+    }
+
+    fn insert_service_event(
+        conn: &Connection,
+        event: &crate::types::ServiceEvent,
+    ) -> rusqlite::Result<()> {
+        use crate::types::{ConnectionChange, ServiceEvent};
+        match event {
+            ServiceEvent::Transition { host, name, status, ts } => conn.execute(
+                "INSERT INTO service_events (ts, type, host, name, status)
+                 VALUES (?1, 'transition', ?2, ?3, ?4)",
+                params![ts, host, name, Self::status_str(*status)],
+            )?,
+            ServiceEvent::Running { count, ts } => conn.execute(
+                "INSERT INTO service_events (ts, type, count) VALUES (?1, 'running', ?2)",
+                params![ts, count],
+            )?,
+            ServiceEvent::Connection { status, ts } => conn.execute(
+                "INSERT INTO service_events (ts, type, status) VALUES (?1, 'connection', ?2)",
+                params![ts, match status {
+                    ConnectionChange::Lost => "lost",
+                    ConnectionChange::Restored => "restored",
+                }],
+            )?,
+        };
+        Ok(())
+    }
+
+    fn prune_service_events(conn: &Connection, now_ms: i64) -> rusqlite::Result<()> {
+        conn.execute(
+            "DELETE FROM service_events WHERE ts < ?1",
+            [now_ms - SERVICE_EVENT_RETENTION_MS],
+        )?;
+        conn.execute(
+            "DELETE FROM service_events WHERE id NOT IN
+                (SELECT id FROM service_events ORDER BY ts DESC, id DESC LIMIT ?1)",
+            [SERVICE_EVENT_LIMIT],
+        )?;
+        Ok(())
+    }
+
+    /// The services timeline, newest first.
+    pub fn service_events(&self) -> rusqlite::Result<Vec<crate::types::ServiceEvent>> {
+        use crate::types::{ConnectionChange, ServiceEvent, ServiceStatus};
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT ts, type, host, name, status, count FROM service_events
+             ORDER BY ts DESC, id DESC",
+        )?;
+        let rows = stmt.query_map([], |row| {
+            let ts: i64 = row.get(0)?;
+            let kind: String = row.get(1)?;
+            let host: Option<String> = row.get(2)?;
+            let name: Option<String> = row.get(3)?;
+            let status: Option<String> = row.get(4)?;
+            let count: Option<i64> = row.get(5)?;
+            Ok(match kind.as_str() {
+                "running" => Some(ServiceEvent::Running { count: count.unwrap_or(0), ts }),
+                "connection" => Some(ServiceEvent::Connection {
+                    status: if status.as_deref() == Some("lost") {
+                        ConnectionChange::Lost
+                    } else {
+                        ConnectionChange::Restored
+                    },
+                    ts,
+                }),
+                // A transition needs both a host and a label to render; a row
+                // missing either is corrupt, so drop it rather than invent one.
+                "transition" => match (host, name) {
+                    (Some(host), Some(name)) => Some(ServiceEvent::Transition {
+                        host,
+                        name,
+                        status: if status.as_deref() == Some("down") {
+                            ServiceStatus::Down
+                        } else {
+                            ServiceStatus::Up
+                        },
+                        ts,
+                    }),
+                    _ => None,
+                },
+                _ => None,
+            })
+        })?;
+        Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?.into_iter().flatten().collect())
+    }
+
+    /// Drop the timeline and the baseline it diffs against. Clearing the state
+    /// too means the next probe re-seeds from scratch — otherwise a service
+    /// currently down would never log its `down` again, having "already" been
+    /// down as far as the baseline knew.
+    pub fn clear_service_events(&self) -> rusqlite::Result<()> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        tx.execute("DELETE FROM service_events", [])?;
+        tx.execute("DELETE FROM service_state", [])?;
+        tx.execute("DELETE FROM meta WHERE key = ?1", [META_SERVICE_CONNECTION])?;
         tx.commit()?;
         Ok(())
     }
@@ -1809,6 +2230,40 @@ mod tests {
     }
 
     #[test]
+    fn a_disconnected_host_does_not_fire_departures_for_peers() {
+        // The macOS case behind the flood: when the uplink drops, a scan still
+        // enumerates `self` as reachable, so `live` is non-empty and the
+        // empty-scan guard alone misses it. The host's recorded connection state
+        // (`disconnected`) must suppress the per-device offline burst — only the
+        // single `connection_lost` event should stand in for the drop.
+        let store = Store::open_in_memory().unwrap();
+        store.record_connection("wifi", Some("home"), None, None, None, 500).unwrap();
+        let mut me = device("00:00:00:00:00:0a", "192.168.1.5", "computer");
+        me.is_self = true;
+        let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+        let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+
+        store
+            .record_devices(&[me.clone(), phone.clone(), laptop.clone()], 1_000)
+            .unwrap(); // baseline
+
+        // Uplink drops: the host is now disconnected, and the next scan sees only
+        // self (still reachable), with the real peers gone unreachable.
+        store.record_connection("disconnected", None, None, None, None, 2_000).unwrap();
+        let phone_gone = LanDevice { reachable: false, ..phone };
+        let laptop_gone = LanDevice { reachable: false, ..laptop };
+        store.record_devices(&[me, phone_gone, laptop_gone], 3_000).unwrap();
+
+        let offline = store
+            .network_events(100)
+            .unwrap()
+            .into_iter()
+            .filter(|e| e.event_type == "device_offline")
+            .count();
+        assert_eq!(offline, 0, "a disconnected host must not mark its peers departed");
+    }
+
+    #[test]
     fn a_real_departure_still_fires_when_others_remain_reachable() {
         // The guard keys on *nothing* being reachable. As long as at least one
         // device answered (here the gateway), a genuinely absent device is still a
@@ -2141,6 +2596,50 @@ mod tests {
     }
 
     #[test]
+    fn records_internet_transitions_but_stays_quiet_on_the_baseline() {
+        let store = Store::open_in_memory().unwrap();
+        let types = |store: &Store| {
+            store
+                .network_events(100)
+                .unwrap()
+                .into_iter()
+                .map(|e| e.event_type)
+                .collect::<Vec<_>>()
+        };
+
+        // First observation just seeds the baseline — launching with working
+        // internet isn't a "restored" event.
+        store.record_internet(InternetStatus::Online, 1_000).unwrap();
+        assert!(types(&store).is_empty(), "the first verdict only seeds a baseline");
+
+        // Re-polling the same verdict is silent.
+        store.record_internet(InternetStatus::Online, 1_500).unwrap();
+        assert!(types(&store).is_empty(), "an unchanged verdict emits nothing");
+
+        // WAN drops while still on a LAN → a single internet_lost (warning).
+        store.record_internet(InternetStatus::NoInternet, 2_000).unwrap();
+        let latest = &store.network_events(1).unwrap()[0];
+        assert_eq!(latest.event_type, "internet_lost");
+        assert_eq!(latest.severity, "warning");
+
+        // Dropping the gateway too (offline) is still "no internet" — no second
+        // event, since we never regained reachability in between.
+        let before = types(&store).len();
+        store.record_internet(InternetStatus::Offline, 2_500).unwrap();
+        assert_eq!(
+            types(&store).len(),
+            before,
+            "noInternet → offline is still offline, so nothing new fires"
+        );
+
+        // Back online → internet_restored (info).
+        store.record_internet(InternetStatus::Online, 3_000).unwrap();
+        let latest = &store.network_events(1).unwrap()[0];
+        assert_eq!(latest.event_type, "internet_restored");
+        assert_eq!(latest.severity, "info");
+    }
+
+    #[test]
     fn migrate_scrubs_reverse_dns_error_text_stored_as_hostname() {
         // Seed a DB the way earlier builds left it: a leaked `dig` diagnostic
         // pinned as a device's hostname, alongside a legitimately-named device.
@@ -2166,5 +2665,133 @@ mod tests {
         };
         assert_eq!(by_mac("11:11:11:11:11:11"), None);
         assert_eq!(by_mac("22:22:22:22:22:22").as_deref(), Some("pixel-7"));
+    }
+
+    // --- services timeline -------------------------------------------------
+
+    use crate::types::{
+        ConnectionChange, InternetStatus, ServiceEvent, ServiceReachability, ServiceStatus,
+        ServicesReport,
+    };
+
+    /// A probe batch where every host in `up` answered and every host in `down`
+    /// failed its path, with the machine itself online.
+    fn report(up: &[&str], down: &[&str]) -> ServicesReport {
+        let svc = |host: &str, latency: Option<f64>| ServiceReachability {
+            name: host.to_uppercase(),
+            host: host.to_string(),
+            latency_ms: latency,
+            http_status: latency.map(|_| 200),
+        };
+        ServicesReport {
+            internet: InternetStatus::Online,
+            services: up
+                .iter()
+                .map(|h| svc(h, Some(12.0)))
+                .chain(down.iter().map(|h| svc(h, None)))
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn services_first_sight_logs_a_running_baseline_only() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com", "b.com"], &[]), 1_000).unwrap();
+
+        let events = store.service_events().unwrap();
+        assert_eq!(events, vec![ServiceEvent::Running { count: 2, ts: 1_000 }]);
+    }
+
+    #[test]
+    fn services_records_only_crossings_not_every_probe() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com"], &[]), 1_000).unwrap();
+        // Same verdict three more times — the log must not grow.
+        store.record_services(&report(&["a.com"], &[]), 2_000).unwrap();
+        store.record_services(&report(&["a.com"], &[]), 3_000).unwrap();
+
+        assert_eq!(store.service_events().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn services_logs_down_then_up_and_a_recovery_summary() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com", "b.com"], &[]), 1_000).unwrap();
+        store.record_services(&report(&["a.com"], &["b.com"]), 2_000).unwrap();
+        store.record_services(&report(&["a.com", "b.com"], &[]), 3_000).unwrap();
+
+        // Newest first: recovery summary, b back up, b went down, baseline.
+        let events = store.service_events().unwrap();
+        assert_eq!(events.len(), 4);
+        assert_eq!(events[0], ServiceEvent::Running { count: 2, ts: 3_000 });
+        assert!(matches!(
+            &events[1],
+            ServiceEvent::Transition { host, status: ServiceStatus::Up, ts: 3_000, .. } if host == "b.com"
+        ));
+        assert!(matches!(
+            &events[2],
+            ServiceEvent::Transition { host, status: ServiceStatus::Down, ts: 2_000, .. } if host == "b.com"
+        ));
+    }
+
+    #[test]
+    fn our_own_outage_logs_one_connection_drop_not_a_wall_of_downs() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com", "b.com"], &[]), 1_000).unwrap();
+
+        // We go offline: every probe fails at once. That's ours, not theirs.
+        let mut offline = report(&[], &["a.com", "b.com"]);
+        offline.internet = InternetStatus::Offline;
+        store.record_services(&offline, 2_000).unwrap();
+        store.record_services(&offline, 3_000).unwrap();
+
+        let events = store.service_events().unwrap();
+        assert_eq!(events[0], ServiceEvent::Connection { status: ConnectionChange::Lost, ts: 2_000 });
+        // Only the drop and the original baseline — no per-service downs, and the
+        // second offline probe adds nothing.
+        assert_eq!(events.len(), 2);
+
+        // Back online, unchanged services: the drop closes, and the frozen state
+        // means no phantom "recovery" for services that never actually fell.
+        store.record_services(&report(&["a.com", "b.com"], &[]), 4_000).unwrap();
+        let events = store.service_events().unwrap();
+        assert_eq!(
+            events[0],
+            ServiceEvent::Connection { status: ConnectionChange::Restored, ts: 4_000 }
+        );
+        assert_eq!(events.len(), 3);
+    }
+
+    #[test]
+    fn a_service_erroring_5xx_counts_as_down_even_though_the_path_is_up() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com"], &[]), 1_000).unwrap();
+
+        let mut erroring = report(&["a.com"], &[]);
+        erroring.services[0].http_status = Some(530);
+        store.record_services(&erroring, 2_000).unwrap();
+
+        let events = store.service_events().unwrap();
+        assert!(matches!(
+            &events[0],
+            ServiceEvent::Transition { status: ServiceStatus::Down, ts: 2_000, .. }
+        ));
+    }
+
+    #[test]
+    fn clearing_lets_a_still_down_service_log_its_outage_again() {
+        let store = Store::open_in_memory().unwrap();
+        store.record_services(&report(&["a.com"], &["b.com"]), 1_000).unwrap();
+        store.clear_service_events().unwrap();
+        assert!(store.service_events().unwrap().is_empty());
+
+        // b.com is still down. Without clearing the baseline too, the diff would
+        // read it as "already down" and the timeline would stay empty forever.
+        store.record_services(&report(&["a.com"], &["b.com"]), 2_000).unwrap();
+        let events = store.service_events().unwrap();
+        assert!(events.iter().any(|e| matches!(
+            e,
+            ServiceEvent::Transition { host, status: ServiceStatus::Down, .. } if host == "b.com"
+        )));
     }
 }

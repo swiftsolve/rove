@@ -9,6 +9,8 @@ mod tray;
 
 use rove_core::app_usage::AppUsageTracker;
 use rove_core::data_usage::UsageTracker;
+use rove_core::host_usage::HostUsageTracker;
+use rove_core::types::InternetStatus;
 use scanner::DeviceScanner;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -21,6 +23,9 @@ struct AppState {
     /// present (unlike `usage`, which waits on the store) — the tracker is pure
     /// in-memory state, so it needs no initialization.
     app_usage: Mutex<AppUsageTracker>,
+    /// Per-app remote-host breakdown for the Hosts view, fed by its own
+    /// background sampler + enrichment loop. In-memory like `app_usage`.
+    host_usage: Mutex<HostUsageTracker>,
     networks: Mutex<sysinfo::Networks>,
     /// True while any UI consumer wants 1 Hz live-throughput samples. The
     /// frontend ref-counts and toggles this; a bool avoids counter drift if
@@ -31,6 +36,10 @@ struct AppState {
     /// StatusNotifier host), closing the window must actually quit so the user
     /// isn't left with an invisible, unreachable process.
     tray_active: AtomicBool,
+    /// Latest public-internet reachability from the background heartbeat, or
+    /// None before the first probe lands. The top bar reads this cheaply; the
+    /// heartbeat owns the probing and the Timeline logging.
+    internet: Mutex<Option<InternetStatus>>,
 }
 
 pub fn run() {
@@ -90,9 +99,11 @@ pub fn run() {
             speed_cancel: Mutex::new(None),
             usage: Mutex::new(None),
             app_usage: Mutex::new(AppUsageTracker::new()),
+            host_usage: Mutex::new(HostUsageTracker::new()),
             networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
             throughput_active: AtomicBool::new(false),
             tray_active: AtomicBool::new(false),
+            internet: Mutex::new(None),
         })
         .manage(Arc::new(DeviceScanner::default()))
         .setup(|app| {
@@ -106,9 +117,12 @@ pub fn run() {
             store_init::init_store(app);
             monitors::spawn_usage_sampler(handle.clone());
             monitors::spawn_app_usage_sampler(handle.clone());
+            monitors::spawn_host_usage_sampler(handle.clone());
             monitors::spawn_throughput_broadcaster(handle.clone());
             monitors::spawn_device_refresh(handle.clone());
             monitors::spawn_route_monitor(handle.clone());
+            monitors::spawn_internet_heartbeat(handle.clone());
+            monitors::spawn_services_heartbeat(handle.clone());
 
             // If the tray comes up, closing the window will hide to tray;
             // otherwise we leave close-to-quit intact so the app stays reachable.
@@ -140,6 +154,10 @@ pub fn run() {
             commands::get_devices,
             commands::run_diagnostics,
             commands::run_diagnostics_live,
+            commands::run_services,
+            commands::get_service_history,
+            commands::clear_service_history,
+            commands::get_internet_status,
             commands::test_service,
             commands::list_services,
             commands::add_service,
@@ -149,6 +167,7 @@ pub fn run() {
             commands::cancel_speed_test,
             commands::get_data_usage,
             commands::get_app_usage,
+            commands::get_host_usage,
             commands::get_speed_history,
             commands::get_network_events,
             commands::save_speed_result,

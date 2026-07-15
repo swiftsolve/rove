@@ -241,6 +241,12 @@
   color: var(--positive);
 }
 
+/* Link up, but the public internet is unreachable — red to set it apart from
+   both the green "connected" and the neutral "offline" (no link) states. */
+.status-bar-link.bad {
+  color: var(--negative);
+}
+
 .status-bar-dot {
   width: 5px;
   height: 5px;
@@ -248,7 +254,8 @@
   background: currentColor;
 }
 
-.status-bar-link.on .status-bar-dot {
+.status-bar-link.on .status-bar-dot,
+.status-bar-link.bad .status-bar-dot {
   animation: status-pulse 2.4s ease-in-out infinite;
 }
 

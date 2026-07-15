@@ -134,11 +134,13 @@
   margin-top: var(--gap-md);
 }
 
-.capability-strip-hint {
+/* Scoped to the footer to outweigh the `.text-hint` base class, which lands
+   later in the sheet (index.css is imported after App's component CSS). */
+.capability-strip-footer .capability-strip-hint {
   margin: 0;
-  /* A quiet placeholder line — kept a notch smaller than the "Updated … ago"
-     caption so it reads as a subtle prompt rather than a value. */
-  font-size: var(--text-micro);
+  /* Matches the "Updated … ago" caption this line stands in for, so the empty
+     and populated footers read at the same weight. */
+  font-size: var(--text-caption);
 }
 
 /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and

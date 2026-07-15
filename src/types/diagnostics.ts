@@ -29,8 +29,6 @@ export interface NetworkDiagnostics {
   /** WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
    *  service is unreachable — e.g. no internet or the request timed out. */
   readonly isp: IspInfo | null
-  /** TCP-connect reachability of well-known internet services. */
-  readonly services: readonly ServiceReachability[]
 }
 
 /**
@@ -40,9 +38,22 @@ export interface NetworkDiagnostics {
  */
 export interface LiveDiagnostics {
   readonly gatewayPing: PingStats | null
-  /** Public-internet reachability, refreshed each poll so Services stops
-   *  reporting outages the moment connectivity is lost or regained. */
+  /** Public-internet reachability, refreshed each poll. */
   readonly internet: InternetStatus
+}
+
+/**
+ * Service reachability plus the internet context needed to read it, probed as
+ * one batch and served by its own command — the Connection diagnostics no longer
+ * probe services. Pairing the two atomically is what lets the Services view tell
+ * a genuine outage apart from this machine being offline: when the machine has no
+ * internet, every probe fails at once and the view collapses that to a single
+ * "connection lost" rather than a wall of per-service downs.
+ */
+export interface ServicesReport {
+  /** Public-internet reachability, from the same batch as `services`. */
+  readonly internet: InternetStatus
+  /** TCP-connect reachability of the user's service list. */
   readonly services: readonly ServiceReachability[]
 }
 
@@ -83,3 +94,42 @@ export interface ServiceReachability {
    *  erroring (e.g. a Cloudflare 1033 tunnel error surfaces as 530). */
   readonly httpStatus: number | null
 }
+
+/** The status a service was in at a point in time. */
+export type ServiceStatus = 'up' | 'down'
+
+/** One service crossing between up and down. */
+export interface ServiceTransitionEvent {
+  readonly type: 'transition'
+  /** Hostname probed — the stable key across renames. */
+  readonly host: string
+  /** The service's label as it read when the crossing was recorded. */
+  readonly name: string
+  /** The status it moved *into*. */
+  readonly status: ServiceStatus
+  /** Epoch milliseconds when the crossing was first observed. */
+  readonly ts: number
+}
+
+/** A positive summary: `count` services were up (a baseline, or a full recovery
+ *  after an outage). */
+export interface ServicesRunningEvent {
+  readonly type: 'running'
+  readonly count: number
+  readonly ts: number
+}
+
+/** This machine's own network dropping or returning. Recorded once in place of
+ *  the per-service downs its probes would otherwise produce. */
+export interface ConnectionEvent {
+  readonly type: 'connection'
+  readonly status: 'lost' | 'restored'
+  readonly ts: number
+}
+
+/**
+ * One entry in the services timeline, as the backend records it (see
+ * `service_events`). Only moments are stored — never a sample per probe — so the
+ * log reads as a history of outages and recoveries.
+ */
+export type ServiceEvent = ServiceTransitionEvent | ServicesRunningEvent | ConnectionEvent

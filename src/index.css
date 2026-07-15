@@ -575,6 +575,34 @@ button:focus-visible {
 .view-page > *:nth-child(n + 5),
 .subpage > *:nth-child(n + 5) { animation-delay: 180ms; }
 
+/* The ring drawn around an item a navigation just scrolled to (see
+   lib/highlight.ts). An outline rather than a border so it costs no layout, and
+   inset by its own width so a row inside an overflow-clipped card doesn't get
+   its ring shaved off at the card's edge. Holds briefly at full strength before
+   fading, so the eye has time to land before it goes. */
+.nav-flash {
+  animation: nav-flash 1.5s var(--ease-out) forwards;
+}
+
+@keyframes nav-flash {
+  0% {
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+    background-color: transparent;
+  }
+  15%,
+  55% {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+    background-color: var(--accent-muted);
+  }
+  100% {
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+    background-color: transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

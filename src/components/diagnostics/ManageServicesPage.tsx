@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
-import Subpage from '@/components/ui/Subpage'
+import { ViewHeader } from '@/components/ui/ViewHeader'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
-import { EditIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { CloudIcon, EditIcon, EventsIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { DotSeparator } from '@/components/ui/DotSeparator'
+import { serviceTally } from '@/components/diagnostics/ServiceTally'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { useServices } from '@/hooks/useServices'
 import { useServiceLatency } from '@/hooks/useServiceLatency'
@@ -101,23 +103,24 @@ interface ManageServicesPageProps {
   readonly internet: InternetStatus | undefined
   /** Re-run diagnostics so a just-added/removed service's latency refreshes. */
   readonly onRefresh: () => void
-  readonly onBack: () => void
+  /** Open the services timeline (linked from the subtitle). */
+  readonly onTimeline: () => void
 }
 
 type DialogState = { readonly mode: 'add' } | { readonly mode: 'edit'; readonly service: ServiceDefinition }
 
 /**
- * The full-page editor for the tracked-service list: add a service (by URL/IP),
- * or edit/remove any of them from a per-row menu, with a back button to the
- * Connection view. The list is owned by the backend store (see `useServices`);
- * latency is overlaid from the latest diagnostics probes so each row still shows
- * how it's doing while you edit.
+ * The Services page: the tracked-service list, where a service is added (by
+ * URL/IP) or edited/removed from a per-row menu, with a link to the outage
+ * timeline in the subtitle. The list is owned by the backend store (see
+ * `useServices`); latency is overlaid from the latest diagnostics probes so each
+ * row shows how it's doing.
  */
 export function ManageServicesPage({
   reachability,
   internet,
   onRefresh,
-  onBack,
+  onTimeline,
 }: ManageServicesPageProps): JSX.Element {
   const { services, add, remove } = useServices(true)
   // Rolling per-host latency history for each row's trend sparkline, appended
@@ -128,6 +131,10 @@ export function ManageServicesPage({
   // is our fault, not the service's — so read those rows as unknown, and there's
   // nothing to probe against, so adding a service is disabled until we're back.
   const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
+  // The same live up/down count the timeline header shows, ahead of the timeline
+  // link — arrows only, since this header is already about services. Null until
+  // the first probes land, so the link stands alone until then.
+  const tally = serviceTally(reachability, internet, { labels: false })
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [menuHost, setMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
@@ -177,13 +184,28 @@ export function ManageServicesPage({
   )
 
   return (
-    <Subpage
-      title="Services"
-      description="Add, edit, or remove the services"
-      action={addButton}
-      className="mgsvc-page"
-      onBack={onBack}
-    >
+    <div className="view-page mgsvc-page">
+      <ViewHeader
+        icon={<CloudIcon size={18} />}
+        title="Services"
+        subtitle={
+          <span className="mgsvc-subtitle">
+            {tally && (
+              <>
+                {tally}
+                <DotSeparator />
+              </>
+            )}
+            <button type="button" className="mgsvc-timeline-link" onClick={onTimeline}>
+              <EventsIcon size={13} />
+              <span className="mgsvc-timeline-link-text">View timeline</span>
+            </button>
+          </span>
+        }
+        subtitleShown
+        actions={addButton}
+      />
+
       {dialog && (
         <AddServiceDialog
           editing={
@@ -216,7 +238,7 @@ export function ManageServicesPage({
                     <ServiceIcon host={svc.host} name={svc.name} />
                     <span className="mgsvc-name">{svc.name}</span>
                     {(samples.length > 0 || isDown) && (
-                      <Sparkline samples={samples} down={isDown} width={96} height={20} label={svc.name} />
+                      <Sparkline samples={samples} down={isDown} width={64} height={20} label={svc.name} />
                     )}
                   </div>
                   <div className="mgsvc-line mgsvc-line-sub">
@@ -262,6 +284,6 @@ export function ManageServicesPage({
           <p className="text-hint">No services yet. Add one to start tracking it.</p>
         </div>
       )}
-    </Subpage>
+    </div>
   )
 }

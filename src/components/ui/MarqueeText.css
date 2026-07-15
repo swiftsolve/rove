@@ -1,0 +1,40 @@
+.marquee-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* When the text overflows, hovering it runs one full round-trip per cycle:
+   wait at the start, scroll to the end, wait there, scroll back, then wait
+   again before repeating. Idle, it stays ellipsis-truncated. Driven by
+   text-indent so the element needs no inner wrapper. */
+.marquee-text.is-overflowing:hover {
+  text-overflow: clip;
+  animation: marquee-scroll var(--marquee-duration, 6s) ease-in-out infinite;
+}
+
+@keyframes marquee-scroll {
+  /* dwell at the start */
+  0%,
+  12% {
+    text-indent: 0;
+  }
+  /* scrolled to the end, then dwell there */
+  44%,
+  56% {
+    text-indent: calc(var(--marquee-distance, 0px) * -1);
+  }
+  /* scrolled back to the start, then dwell before the next cycle */
+  88%,
+  100% {
+    text-indent: 0;
+  }
+}
+
+/* Respect reduced-motion: never scroll — the title tooltip still reveals the
+   full text on hover. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-text.is-overflowing:hover {
+    animation: none;
+  }
+}

@@ -7,15 +7,23 @@ export type SpeedSub =
   | { readonly view: 'details'; readonly target: CapabilityId | null }
   | { readonly view: 'history' }
 
-/** A subpage layered over the Connection tab. `null` means the tab's main page. */
-export type DiagSub = { readonly view: 'services' } | { readonly view: 'services-timeline' }
+/** A subpage layered over the Services tab. `null` means the tab's main page. */
+export type ServicesSub = { readonly view: 'timeline' }
+
+/** A subpage layered over the Apps tab (the per-app host breakdown). `null`
+ *  means the tab's main page. `app` names the app to open expanded (others
+ *  collapsed); omit it to open every group expanded (the plain "View hosts"
+ *  entry point). */
+export type AppsSub = { readonly view: 'hosts'; readonly app?: string | null }
 
 /** A single screen the app can show — a tab, optionally with a subpage. */
 export interface AppLocation {
   readonly tab: AppTab
   readonly speedSub: SpeedSub | null
-  /** Subpage over the Connection tab (e.g. manage services); omit for the main page. */
-  readonly diagSub?: DiagSub | null
+  /** Subpage over the Services tab (the timeline); omit for the main page. */
+  readonly servicesSub?: ServicesSub | null
+  /** Subpage over the Apps tab (the Hosts view); omit for the main page. */
+  readonly appsSub?: AppsSub | null
 }
 
 export const HOME_LOCATION: AppLocation = { tab: 'home', speedSub: null }
@@ -29,18 +37,21 @@ export const HOME_LOCATION: AppLocation = { tab: 'home', speedSub: null }
  */
 function parentLocation(location: AppLocation): AppLocation {
   if (location.speedSub != null) return { tab: location.tab, speedSub: null }
-  if (location.diagSub != null) return { tab: location.tab, speedSub: null, diagSub: null }
+  if (location.servicesSub != null) return { tab: location.tab, speedSub: null, servicesSub: null }
+  if (location.appsSub != null) return { tab: location.tab, speedSub: null, appsSub: null }
   return HOME_LOCATION
 }
 
 /** A short, stable key for a location — handy for keying effects (e.g. scroll). */
 export function locationKey(location: AppLocation): string {
-  return `${location.tab}:${location.speedSub?.view ?? ''}:${location.diagSub?.view ?? ''}`
+  return `${location.tab}:${location.speedSub?.view ?? ''}:${location.servicesSub?.view ?? ''}:${location.appsSub?.view ?? ''}:${location.appsSub?.app ?? ''}`
 }
 
 function sameLocation(a: AppLocation, b: AppLocation): boolean {
   if (a.tab !== b.tab) return false
-  if ((a.diagSub?.view ?? null) !== (b.diagSub?.view ?? null)) return false
+  if ((a.servicesSub?.view ?? null) !== (b.servicesSub?.view ?? null)) return false
+  if ((a.appsSub?.view ?? null) !== (b.appsSub?.view ?? null)) return false
+  if ((a.appsSub?.app ?? null) !== (b.appsSub?.app ?? null)) return false
   const subA = a.speedSub
   const subB = b.speedSub
   if (subA == null || subB == null) return subA === subB
