@@ -144,7 +144,7 @@ interface HostsViewProps {
   readonly isLoading: boolean
   readonly error?: string | null
   /** When set (arrived by clicking an app), open only this app's group and
-   *  collapse the rest; when null, every group opens expanded. */
+   *  collapse the rest; when null, every group starts collapsed. */
   readonly focusApp?: string | null
   /** Return to the Apps list (the subpage's Back button). */
   readonly onBack: () => void
@@ -160,20 +160,18 @@ export default function HostsView({
   const { apps, support } = usage
   const hasData = apps.length > 0
 
-  // Which groups are expanded. `'all'` (the plain "View hosts" entry) expands
-  // every group, including ones that appear on a later poll; a Set (arrived via
-  // an app click) expands exactly those names, so the focused app opens and the
-  // rest — present or newly-arriving — stay collapsed. The view remounts on each
-  // navigation, so seeding from `focusApp` here is enough.
-  const [expanded, setExpanded] = useState<'all' | ReadonlySet<string>>(() =>
-    focusApp ? new Set([focusApp]) : 'all',
+  // Which groups are expanded, by app name. Arriving via an app click opens that
+  // one; arriving via "All hosts" opens none, leaving the list scannable rather
+  // than dumping every host at once. Either way groups that appear on a later
+  // poll stay collapsed. The view remounts on each navigation, so seeding from
+  // `focusApp` here is enough.
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() =>
+    focusApp ? new Set([focusApp]) : new Set(),
   )
-  const isExpanded = (name: string): boolean => expanded === 'all' || expanded.has(name)
+  const isExpanded = (name: string): boolean => expanded.has(name)
   const toggle = (name: string): void =>
     setExpanded((prev) => {
-      // Materialise `'all'` into the concrete set of current app names before
-      // flipping one, so collapsing a single group leaves the others open.
-      const next = prev === 'all' ? new Set(apps.map((a) => a.name)) : new Set(prev)
+      const next = new Set(prev)
       if (next.has(name)) next.delete(name)
       else next.add(name)
       return next
