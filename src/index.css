@@ -579,7 +579,13 @@ button:focus-visible {
    lib/highlight.ts). An outline rather than a border so it costs no layout, and
    inset by its own width so a row inside an overflow-clipped card doesn't get
    its ring shaved off at the card's edge. Holds briefly at full strength before
-   fading, so the eye has time to land before it goes. */
+   fading, so the eye has time to land before it goes.
+
+   The fill is a gradient layer rather than a background-color: an animation
+   overrides the property it animates for its whole run, so tweening the colour
+   would blow away a target's own background (.surface's panel fill among them)
+   and flash the app background through it. A background-image composites over
+   that instead. */
 .nav-flash {
   animation: nav-flash 1.5s var(--ease-out) forwards;
 }
@@ -588,18 +594,18 @@ button:focus-visible {
   0% {
     outline: 1px solid transparent;
     outline-offset: -1px;
-    background-color: transparent;
+    background-image: linear-gradient(transparent, transparent);
   }
   15%,
   55% {
     outline: 1px solid var(--accent);
     outline-offset: -1px;
-    background-color: var(--accent-muted);
+    background-image: linear-gradient(var(--accent-muted), var(--accent-muted));
   }
   100% {
     outline: 1px solid transparent;
     outline-offset: -1px;
-    background-color: transparent;
+    background-image: linear-gradient(transparent, transparent);
   }
 }
 
