@@ -34,6 +34,8 @@ import type {
   WindowControls,
 } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
+import type { LatencySample } from '@/components/diagnostics/service-latency'
+import { MAX_SAMPLES, seedLatencyHistory } from '@/components/diagnostics/service-latency'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
@@ -333,14 +335,46 @@ const mockServiceHistory: ServiceEvent[] = (() => {
   ]
 })()
 
-// A stable-ish baseline latency per host so the card doesn't reshuffle each poll.
+// A latency character per built-in host. The baselines deliberately spread across
+// all three reachability bands (good <= 120 ms, warn <= 300, bad above) so the
+// Services rows exercise every colour during design work instead of the uniform
+// wall of green a single band would give. `spread` is how far a poll can wander.
+const MOCK_LATENCY_PROFILES: Record<string, { readonly base: number; readonly spread: number }> = {
+  'cloudflare.com': { base: 14, spread: 5 }, // anycast edge, a few hops away
+  'google.com': { base: 26, spread: 7 },
+  'youtube.com': { base: 72, spread: 26 }, // a livelier line, and one dropped probe
+  'netflix.com': { base: 168, spread: 40 }, // warm: a distant CDN pop
+  'zoom.us': { base: 340, spread: 90 }, // hot: the call everyone complains about
+}
+
+const FALLBACK_PROFILE = { base: 60, spread: 20 }
+
+function latencyProfile(host: string): { readonly base: number; readonly spread: number } {
+  return MOCK_LATENCY_PROFILES[host] ?? FALLBACK_PROFILE
+}
+
+// Where each host's walk currently sits, so successive polls continue the line
+// rather than teleporting.
+const mockLatencyWalk = new Map<string, number>()
+
+/**
+ * The next latency for a host: a mean-reverting step from its last value rather
+ * than fresh noise around the baseline, so the sparkline reads as a signal with
+ * momentum — it drifts, spikes and settles — instead of a jagged fuzz. The pull
+ * back toward the baseline keeps a long run from wandering off into another band.
+ */
+function stepLatency(host: string, from?: number): number {
+  const { base, spread } = latencyProfile(host)
+  const prev = from ?? mockLatencyWalk.get(host) ?? base
+  const pull = (base - prev) * 0.3
+  const step = (Math.random() - 0.5) * spread
+  const next = Math.max(1, prev + pull + step)
+  mockLatencyWalk.set(host, next)
+  return next
+}
+
 function mockLatencyFor(host: string): number {
-  const seed = [...host].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
-  const base = 20 + (seed % 90)
-  // A little per-poll wander around the host's baseline so the row sparklines
-  // show a live trend rather than a dead-flat line.
-  const jitter = (Math.random() - 0.5) * 12
-  return Math.round(Math.max(1, base + jitter) * 10) / 10
+  return Math.round(stepLatency(host) * 10) / 10
 }
 
 // The mock has no real network to probe, so it can only vouch for the well-known
@@ -359,6 +393,34 @@ const MOCK_REACHABLE_HOSTS = new Set([
 
 function mockIsReachable(host: string): boolean {
   return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
+}
+
+// Matches the Services tab's poll cadence, so seeded samples are spaced the way
+// recorded ones will be as live polling continues the line.
+const MOCK_POLL_INTERVAL_MS = 15_000
+
+// One brief outage in the seeded window, a few polls back, so the sparkline's gap
+// and baseline tick are visible during design work without a row being down.
+const MOCK_SEEDED_BLIP: Readonly<Record<string, number>> = { 'youtube.com': 5 }
+
+/**
+ * A full window of backdated latency history per reachable host, so the Services
+ * sparklines open populated instead of drawing their first lone sample. Each walk
+ * ends where live polling picks it up, leaving no seam at the right edge.
+ */
+function mockSeededLatencyHistory(): Record<string, LatencySample[]> {
+  const now = Date.now()
+  const history: Record<string, LatencySample[]> = {}
+  for (const svc of mockServices) {
+    if (!mockIsReachable(svc.host)) continue
+    const blipAgo = MOCK_SEEDED_BLIP[svc.host]
+    history[svc.host] = Array.from({ length: MAX_SAMPLES }, (_, i) => {
+      const ago = MAX_SAMPLES - 1 - i
+      const ms = ago === blipAgo ? null : Math.round(stepLatency(svc.host) * 10) / 10
+      return { ts: now - ago * MOCK_POLL_INTERVAL_MS, ms }
+    })
+  }
+  return history
 }
 
 function mockServiceReachability(): ServicesReport['services'] {
@@ -836,6 +898,7 @@ export function installMockNetworkApiIfNeeded(): boolean {
   }
   mutableWindow.networkAPI = createMockNetworkApi()
   mutableWindow.windowControls = createMockWindowControls()
+  seedLatencyHistory(mockSeededLatencyHistory())
 
   console.info(
     '[rove] Tauri bridge not found, using in-browser mock network data (dev only).',
