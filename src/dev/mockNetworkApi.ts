@@ -303,6 +303,20 @@ function seedNetworkEvents(): NetworkEvent[] {
   return ordered.map(({ ago, ...rest }, i) => ({ ...rest, id: ordered.length - i, ts: Date.now() - ago }))
 }
 
+// A believable session: a browser dominating, a music stream, a couple of
+// background sync/update daemons. [name, downMB, upMB]. Busiest first, as the
+// real sampler returns them. Every name here needs an entry in getHostUsage —
+// each Apps row links into that app's host group.
+const MOCK_APP_ROWS: readonly [string, number, number][] = [
+  ['firefox', 842, 63],
+  ['Spotify', 214, 8],
+  ['com.apple.WebKit.Networking', 118, 11],
+  ['Dropbox', 47, 96],
+  ['slack', 39, 12],
+  ['softwareupdated', 31, 1],
+  ['ssh', 4, 27],
+]
+
 // The user's editable service list, seeded with the built-in defaults. Add /
 // delete mutate this in place so listServices and the diagnostics probes below
 // all read the same source of truth — mirroring the SQLite-backed real store.
@@ -323,9 +337,10 @@ const HOUR_MS = 60 * 60 * 1000
 const mockServiceHistory: ServiceEvent[] = (() => {
   const now = Date.now()
   // Newest first, matching the order the real `get_service_history` returns.
+  // Home Server has no recovery: `homeserver.local` isn't in
+  // MOCK_REACHABLE_HOSTS, so it always probes Down — the timeline has to leave
+  // it down for the two to agree.
   return [
-    { type: 'running', count: 5, ts: now - 2 * HOUR_MS },
-    { type: 'transition', host: 'homeserver.local', name: 'Home Server', status: 'up', ts: now - 2 * HOUR_MS },
     { type: 'transition', host: 'homeserver.local', name: 'Home Server', status: 'down', ts: now - 5 * HOUR_MS },
     { type: 'connection', status: 'restored', ts: now - 26 * HOUR_MS },
     { type: 'connection', status: 'lost', ts: now - 27 * HOUR_MS },
@@ -637,18 +652,7 @@ function createMockNetworkApi(): NetworkAPI {
     getAppUsage: async (): Promise<AppUsageSummary> => {
       await delay(200)
       const mb = 1_000_000
-      // A believable session: a browser dominating, a music stream, a couple of
-      // background sync/update daemons. [name, downMB, upMB].
-      const rows: readonly [string, number, number][] = [
-        ['firefox', 842, 63],
-        ['Spotify', 214, 8],
-        ['com.apple.WebKit.Networking', 118, 11],
-        ['Dropbox', 47, 96],
-        ['slack', 39, 12],
-        ['softwareupdated', 31, 1],
-        ['ssh', 4, 27],
-      ]
-      const apps = rows.map(([name, down, up]) => ({
+      const apps = MOCK_APP_ROWS.map(([name, down, up]) => ({
         name,
         rxBytes: Math.round(down * mb),
         txBytes: Math.round(up * mb),
@@ -660,34 +664,50 @@ function createMockNetworkApi(): NetworkAPI {
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
       const mb = 1_000_000
-      // Each app with a few believable remote hosts. [host|ip, cc, downMB, upMB];
-      // a null cc (LAN peer) shows no flag, a null host shows the bare IP.
-      const apps: readonly [
-        string,
-        string | null,
-        [string | null, string, string | null, number, number][],
-      ][] = [
-        ['firefox', null, [
-          ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 401, 33],
-          ['edge-star.facebook.com', '157.240.22.35', 'US', 312, 24],
-          ['gru.cdn.instagram.com', '31.13.85.52', 'IE', 208, 9],
-          ['duckduckgo.com', '52.142.124.215', 'US', 44, 6],
-          [null, '203.0.113.9', 'JP', 18, 3],
+      // Every app in MOCK_APP_ROWS gets hosts, in the same order — each Apps row
+      // links here focused on its app, so an app missing from this list would
+      // land on a group that doesn't exist. [host|ip, cc, downMB, upMB]; a null
+      // cc (LAN peer) shows no flag, a null host shows the bare IP.
+      //
+      // Per-app sums stay at or under that app's getAppUsage totals: hosts count
+      // TCP-connection traffic only, so they're a subset of the app's bytes.
+      const apps: readonly [string, [string | null, string, string | null, number, number][]][] = [
+        ['firefox', [
+          ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 342, 27],
+          ['edge-star.facebook.com', '157.240.22.35', 'US', 268, 20],
+          ['gru.cdn.instagram.com', '31.13.85.52', 'IE', 178, 8],
+          ['duckduckgo.com', '52.142.124.215', 'US', 38, 5],
+          [null, '203.0.113.9', 'JP', 15, 2],
         ]],
-        ['Spotify', 'SE', [
+        ['Spotify', [
           ['audio-fa.scdn.co', '35.186.224.25', 'US', 190, 4],
           ['gew1-accesspoint.ap.spotify.com', '104.199.65.9', 'DE', 24, 4],
         ]],
-        ['Dropbox', 'US', [
+        ['com.apple.WebKit.Networking', [
+          ['p52-content.icloud.com', '17.248.184.72', 'US', 74, 4],
+          ['gateway.icloud.com', '17.248.130.11', 'US', 28, 5],
+          ['guzzoni.apple.com', '17.252.76.19', 'US', 10, 1],
+        ]],
+        ['Dropbox', [
           ['edge-block-api.dropbox.com', '162.125.248.18', 'US', 41, 88],
         ]],
-        ['slack', 'US', [
+        ['slack', [
           ['wss-primary.slack.com', '99.86.229.44', 'US', 27, 8],
           [null, '192.168.1.14', null, 12, 4],
         ]],
+        ['softwareupdated', [
+          ['swcdn.apple.com', '17.253.17.201', 'US', 27, 0.4],
+          ['swscan.apple.com', '17.253.17.207', 'US', 3, 0.5],
+        ]],
+        // Upload-heavy, the shape an ssh session actually has: a LAN box and a
+        // remote build host.
+        ['ssh', [
+          ['build-01.example.net', '198.51.100.24', 'DE', 2.5, 17],
+          [null, '192.168.1.20', null, 1.2, 9],
+        ]],
       ]
       return {
-        apps: apps.map(([name, , hosts]) => {
+        apps: apps.map(([name, hosts]) => {
           const mapped = hosts.map(([host, ip, cc, down, up]) => ({
             ip: ip ?? host ?? '',
             host,
