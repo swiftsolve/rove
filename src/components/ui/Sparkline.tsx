@@ -24,6 +24,12 @@ interface SparklineProps {
   readonly height?: number
   /** Accessible label for the whole chart, e.g. the service name. */
   readonly label?: string
+  /** How many samples the x-axis spans. Fixing this to the history window keeps
+   *  the newest sample pinned to the right edge while a partial history fills in
+   *  from the left, so a chart that's still filling grows the way a live trend
+   *  reads instead of stretching (or sprouting from the middle at one sample).
+   *  Defaults to the sample count, which stretches them across the full width. */
+  readonly slots?: number
   /** The service is currently down: draw a single flat red line instead of the
    *  latency trend, so an outage never reads as a healthy-looking chart. */
   readonly down?: boolean
@@ -44,6 +50,7 @@ export function Sparkline({
   width = 76,
   height = 22,
   label,
+  slots,
   down = false,
 }: SparklineProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -55,6 +62,9 @@ export function Sparkline({
     const n = samples.length
     const innerW = width - PAD * 2
     const innerH = height - PAD * 2
+    // The axis spans the full history window even before it has filled, so the
+    // newest sample always sits at the right edge.
+    const span = Math.max(slots ?? n, n)
 
     // Scale y over the observed latency range, with a small floor so a flat run
     // of identical values still draws a centred line rather than pinning an edge.
@@ -63,7 +73,10 @@ export function Sparkline({
     const max = values.length > 0 ? Math.max(...values) : 1
     const flat = max === min
 
-    const xAt = (i: number): number => (n <= 1 ? PAD + innerW / 2 : PAD + (i / (n - 1)) * innerW)
+    // Right-aligned: the last sample lands on the right edge and older ones step
+    // back leftwards, leaving the unfilled part of the window blank.
+    const xAt = (i: number): number =>
+      span <= 1 ? width - PAD : PAD + ((span - n + i) / (span - 1)) * innerW
     // Higher latency sits higher on the chart, so a spike reads as a spike. A run
     // of identical values has no range to scale over, so it sits on the midline.
     const yAt = (ms: number): number =>
@@ -102,7 +115,7 @@ export function Sparkline({
       })
 
     return { points: pts, segments: segs, areas: areaPolys }
-  }, [samples, width, height])
+  }, [samples, width, height, slots])
 
   // A down service reads as a single flat red line — its latency trend is
   // meaningless once it's unreachable, and a green-looking chart on a down row is
