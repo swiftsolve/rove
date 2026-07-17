@@ -40,9 +40,9 @@ const TRAFFIC_EMPTY_HINT =
   'while Rove runs.'
 
 const TRAFFIC_UNSUPPORTED_HINT =
-  'Grouping traffic by protocol reads the OS per-socket peer ports, which Rove ' +
-  'can do on Linux and macOS. On Windows the per-app network events carry no ' +
-  'peer address, so traffic types can’t be shown.'
+  'On Windows, grouping traffic by protocol uses a network event-tracing ' +
+  'session that needs administrator rights — run Rove as administrator to enable ' +
+  'the Traffic Types view. It works without elevation on Linux and macOS.'
 
 interface IconProps {
   readonly size?: number
