@@ -72,17 +72,13 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
 /// so it does more work, and the host list churns less than raw byte totals.
 const HOST_USAGE_INTERVAL: Duration = Duration::from_secs(6);
 
-/// New public peers geolocated per tick. ipwho.is is a free, rate-limited
-/// service, so the newly-seen peers are metered out a handful at a time rather
-/// than fired in one burst; they fill in over a few ticks as the UI polls.
-const HOST_GEOIP_PER_TICK: usize = 8;
-
 /// Sample per-app remote hosts every [`HOST_USAGE_INTERVAL`], then enrich the
-/// newly-seen peers: reverse-DNS the whole batch in one process, and geolocate a
-/// bounded number of public peers. Runs independently of the per-app byte
-/// sampler (that one keeps its own `-P`/process-total source); this pass is the
-/// peer-aware one behind the Hosts view. A panic in the sampling path must not
-/// stop the loop, so each tick's fallible work is isolated per await section.
+/// newly-seen peers: reverse-DNS the whole batch in one process, and geolocate
+/// every new public peer against the bundled table. Runs independently of the
+/// per-app byte sampler (that one keeps its own `-P`/process-total source); this
+/// pass is the peer-aware one behind the Hosts view. A panic in the sampling
+/// path must not stop the loop, so each tick's fallible work is isolated per
+/// await section.
 pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     use std::collections::HashMap;
     tauri::async_runtime::spawn(async move {
@@ -108,15 +104,26 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                 lock(&state.host_usage).record_hostnames(resolved);
             }
 
-            // Geolocate a bounded slice of new public peers this tick.
-            let mut countries: HashMap<String, Option<String>> = HashMap::new();
-            for ip in need_countries.into_iter().take(HOST_GEOIP_PER_TICK) {
-                let code = rove_core::host_usage::country_lookup(&ip).await;
-                countries.insert(ip, code);
-            }
-            if !countries.is_empty() {
+            // Geolocate every new public peer against the bundled table, then
+            // bank the answers (misses cached too, so a peer is resolved once).
+            // No per-tick cap: these are local table reads, so the whole backlog
+            // clears in one pass and flags land on the Hosts view's next poll.
+            // Off the async workers, since the first read decodes the ~8 MB
+            // table; spawn_blocking also keeps a panic here from killing the loop.
+            if !need_countries.is_empty() {
+                let resolved = tauri::async_runtime::spawn_blocking(move || {
+                    need_countries
+                        .into_iter()
+                        .map(|ip| {
+                            let code = rove_core::geoip::country_code(&ip);
+                            (ip, code)
+                        })
+                        .collect::<HashMap<String, Option<String>>>()
+                })
+                .await
+                .unwrap_or_default();
                 let state = handle.state::<AppState>();
-                lock(&state.host_usage).record_countries(countries);
+                lock(&state.host_usage).record_countries(resolved);
             }
 
             tokio::time::sleep(HOST_USAGE_INTERVAL).await;
