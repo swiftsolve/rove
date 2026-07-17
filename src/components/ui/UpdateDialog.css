@@ -10,10 +10,14 @@
   animation: update-fade var(--duration-fast) var(--ease-out);
 }
 
+/* Sectioned shell: no padding on the shell itself — the header, body, and
+   actions own their own insets; overflow clips the recessed well's square
+   corners to the shell radius. Mirrors the Wi-Fi share / Add service dialogs. */
 .update-dialog {
   width: 100%;
-  max-width: 340px;
-  padding: var(--gap-xl);
+  max-width: 360px;
+  padding: 0;
+  overflow: hidden;
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -21,27 +25,88 @@
   animation: update-rise var(--duration-normal) var(--ease-out);
 }
 
-.update-title {
-  margin: 0;
-  font-size: var(--text-body);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+.update-head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
 }
 
-.update-sub {
-  margin: var(--gap-tight) 0 0;
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
+/* Accent-tinted tile holding the Rove mark — the dialog's visual anchor. */
+.update-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  background: var(--accent-muted);
+  border: 1px solid var(--border);
+}
+
+.update-heading {
+  min-width: 0;
+}
+
+.update-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* Version diff — dim current, accent new, arrow between. */
+.update-versions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  margin: 3px 0 0;
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.update-version-old {
+  color: var(--text-tertiary);
+}
+
+.update-versions svg {
+  color: var(--text-tertiary);
+}
+
+.update-version-new {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+/* Recessed well framing the notes — a step below the header, like the Wi-Fi
+   share body. Only rendered when the release ships notes. */
+.update-body {
+  padding: var(--gap-lg);
+  background: var(--bg-app-2);
+  border-top: 1px solid var(--border);
+}
+
+.update-notes-label {
+  margin: 0 0 var(--gap-sm);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
 .update-notes {
-  margin-top: var(--gap-md);
-  max-height: 160px;
+  max-height: 168px;
   overflow-y: auto;
-  padding: var(--gap-sm) var(--gap-stack);
+  padding: var(--gap-stack) var(--gap-md);
   background: var(--bg-inset);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: var(--text-caption);
+  font-size: var(--text-body);
+  line-height: 1.5;
   color: var(--text-secondary);
   white-space: pre-wrap;
 }
@@ -50,7 +115,61 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--gap-sm);
-  margin-top: var(--gap-xl);
+  padding: var(--gap-lg);
+}
+
+/* Dialog action buttons — mirror the Add service dialog family so the two read
+   as one control set: a bordered secondary and a filled-accent primary. */
+.update-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  min-width: 76px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  background: var(--bg-panel-hi);
+  border: 1px solid var(--border);
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+
+.update-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.update-btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.update-btn.is-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.update-btn.is-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.update-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Busy (spinner) state stays full-opacity — the spinner conveys the wait — while
+   ignoring input. Defined after :disabled so its opacity wins. */
+.update-btn.is-busy {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
 }
 
 @keyframes update-fade {

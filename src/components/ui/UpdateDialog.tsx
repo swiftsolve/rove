@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import type { PendingUpdate } from '@/lib/updater'
 import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
+import { BrandIcon, ArrowRightIcon, DownloadIcon } from '@/components/ui/Icons'
 import './UpdateDialog.css'
 
 /**
  * Non-blocking update prompt. Replaces window.confirm, which freezes the
  * webview on Linux/WebKitGTK because native JS dialogs block the GTK loop.
+ *
+ * Sectioned-shell layout to match the Wi-Fi share and Add service dialogs: a
+ * header on the panel surface with the brand mark and a version-diff line, then
+ * a recessed "What's new" well (only when the release ships notes).
  */
 export default function UpdateDialog({
   update,
@@ -37,17 +42,33 @@ export default function UpdateDialog({
         aria-labelledby="update-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="update-title" className="update-title">
-          Update available
-        </h2>
-        <p className="update-sub">
-          Rove {update.version} is ready to install. You have {update.currentVersion}.
-        </p>
-        {update.notes && <div className="update-notes">{update.notes}</div>}
+        <div className="update-head">
+          <div className="update-mark" aria-hidden>
+            <BrandIcon size={20} />
+          </div>
+          <div className="update-heading">
+            <h2 id="update-title" className="update-title">
+              Update available
+            </h2>
+            <p className="update-versions">
+              <span className="update-version-old">{update.currentVersion}</span>
+              <ArrowRightIcon />
+              <span className="update-version-new">{update.version}</span>
+            </p>
+          </div>
+        </div>
+
+        {update.notes && (
+          <div className="update-body">
+            <p className="update-notes-label">What&rsquo;s new</p>
+            <div className="update-notes">{update.notes}</div>
+          </div>
+        )}
+
         <div className="update-actions">
           <button
             type="button"
-            className="btn-secondary"
+            className="update-btn"
             onClick={onDismiss}
             disabled={installing}
           >
@@ -55,11 +76,11 @@ export default function UpdateDialog({
           </button>
           <button
             type="button"
-            className="btn-primary"
+            className={`update-btn is-primary${installing ? ' is-busy' : ''}`}
             onClick={handleInstall}
             disabled={installing}
           >
-            {installing && <ButtonSpinner size={14} />}
+            {installing ? <ButtonSpinner size={14} color="#fff" /> : <DownloadIcon size={15} />}
             {installing ? 'Installing…' : 'Install and restart'}
           </button>
         </div>
