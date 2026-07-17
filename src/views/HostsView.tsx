@@ -27,9 +27,9 @@ const HOST_USAGE_EMPTY_HINT =
   'Rove runs.'
 
 const HOST_USAGE_UNSUPPORTED_HINT =
-  'Attributing connections to hosts reads the OS per-socket peer addresses, which ' +
-  'Rove can do on Linux and macOS. On Windows the per-app network events carry no ' +
-  'peer address, so hosts can’t be shown.'
+  'On Windows, attributing connections to hosts uses a network event-tracing ' +
+  'session that needs administrator rights — run Rove as administrator to enable ' +
+  'the Hosts view. It works without elevation on Linux and macOS.'
 
 /** One remote host beneath its app: flag + hostname on the left, the download /
  *  upload split on the right — the country flag sitting alongside the host. */
