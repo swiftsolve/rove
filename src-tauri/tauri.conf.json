@@ -69,7 +69,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "ZFc1MGNuVnpkR1ZrSUdOdmJXMWxiblE2SUcxcGJtbHphV2R1SUhCMVlteHBZeUJyWlhrNklFRTBRVGczT1VVMU5qVTRSRUZHUmtNS1VsZFVPSEkwTVd3MVdHMXZjRVUwY1RsWmRISmpSRGxCWkVFM0wzRTBURkJKY0VKME1VaDRjVWhwVmxacFYwdGpaSHBhZVU1aFdXa0s=",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE0QTg3OUU1NjU4REFGRkMKUldUOHI0MWw1WG1vcEU0cTlZdHJjRDlBZEE3L3E0TFBJcEJ0MUh4cUhpVlZpV0tjZHpaeU5hWWkK",
       "endpoints": [
         "https://github.com/swiftsolve/rove/releases/latest/download/latest.json"
       ]
