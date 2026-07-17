@@ -32,8 +32,8 @@
 //! so a peer is resolved at most once.
 
 use crate::app_usage::CounterSemantics;
-use crate::net_util::routable_peer_ip;
-use crate::types::{AppHosts, HostConn, HostUsageSummary};
+use crate::net_util::{peer_port, routable_peer_ip};
+use crate::types::{AppHosts, HostConn, HostUsageSummary, TrafficType, TrafficUsageSummary};
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -58,6 +58,10 @@ pub struct PeerReading {
     pub conn_key: String,
     pub app: String,
     pub ip: String,
+    /// The peer's (service) port — 443, 53, … — used to bucket the connection
+    /// into a traffic type. `None` when the source token carried no readable
+    /// port, in which case it falls into the "other" bucket.
+    pub port: Option<u16>,
     pub rx: u64,
     pub tx: u64,
     /// Owning process id when the source reports one (macOS), used to resolve
@@ -108,8 +112,8 @@ use crate::app_usage::{field_u64, ss_proc_name};
 #[cfg(any(target_os = "linux", test))]
 fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
-    // (app, conn_key, peer_ip) awaiting its following info line.
-    let mut pending: Option<(String, String, String)> = None;
+    // (app, conn_key, peer_ip, peer_port) awaiting its following info line.
+    let mut pending: Option<(String, String, String, Option<u16>)> = None;
 
     for line in output.lines() {
         let trimmed = line.trim();
@@ -118,10 +122,10 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
         }
 
         if trimmed.contains("bytes_sent:") || trimmed.contains("bytes_received:") {
-            if let Some((app, conn_key, ip)) = pending.take() {
+            if let Some((app, conn_key, ip, port)) = pending.take() {
                 let tx = field_u64(trimmed, "bytes_sent:").unwrap_or(0);
                 let rx = field_u64(trimmed, "bytes_received:").unwrap_or(0);
-                readings.push(PeerReading { conn_key, app, ip, rx, tx, pid: None });
+                readings.push(PeerReading { conn_key, app, ip, port, rx, tx, pid: None });
             }
             continue;
         }
@@ -133,7 +137,7 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
                 let peer = cols.next();
                 match (local, peer, peer.and_then(routable_peer_ip)) {
                     (Some(local), Some(peer), Some(ip)) => {
-                        Some((app, format!("{local}|{peer}"), ip))
+                        Some((app, format!("{local}|{peer}"), ip, peer_port(peer)))
                     }
                     // A socket with no routable peer (listener/loopback) resets
                     // the pairing so its info line isn't misattributed.
@@ -171,7 +175,8 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
         // current process; pull its per-connection byte columns.
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((app, pid)) = &current else { continue };
-            let Some(ip) = routable_peer_ip(peer.trim()) else { continue };
+            let peer = peer.trim();
+            let Some(ip) = routable_peer_ip(peer) else { continue };
             let rx = fields.get(4).and_then(|f| f.trim().parse::<u64>().ok());
             let tx = fields.get(5).and_then(|f| f.trim().parse::<u64>().ok());
             let (Some(rx), Some(tx)) = (rx, tx) else { continue };
@@ -179,6 +184,7 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
                 conn_key: label.to_string(),
                 app: app.clone(),
                 ip,
+                port: peer_port(peer),
                 rx,
                 tx,
                 pid: *pid,
@@ -233,6 +239,70 @@ fn v6_is_public(v6: Ipv6Addr) -> bool {
     !(v6.is_loopback() || v6.is_unspecified() || is_link_local || is_unique_local)
 }
 
+/// A traffic-type bucket: a stable `id` slug (what the frontend keys an icon
+/// off) and a human `label`. Both are static — the set of buckets is fixed.
+#[derive(Clone, Copy)]
+struct TrafficClass {
+    id: &'static str,
+    label: &'static str,
+}
+
+/// Everything not on the well-known list below. Ephemeral-port peers,
+/// unrecognised services, and readings whose source token carried no port all
+/// land here — an honest catch-all rather than a guess.
+const OTHER: TrafficClass = TrafficClass { id: "other", label: "Other" };
+
+const fn cls(id: &'static str, label: &'static str) -> TrafficClass {
+    TrafficClass { id, label }
+}
+
+/// Bucket a connection by its peer (service) port. Only ports Rove can actually
+/// observe are listed — this reads the same TCP + connected-UDP samples the
+/// hosts view does, so LAN broadcast/multicast chatter (mDNS, SSDP, NetBIOS
+/// name service, DHCP) never reaches here; those sockets have wildcard peers and
+/// are dropped upstream. Grouping is by service, so the encrypted and plaintext
+/// members of a protocol family (IMAP/IMAPS, submission/SMTP) share one bucket.
+///
+/// The list favours ports that carry real *volume* — the point of a byte
+/// breakdown — so the heavy hitters that would otherwise swell "Other" (file
+/// shares, tunnels, media, torrents, databases) get named, while rare
+/// low-traffic control ports are left to fall through.
+fn classify_port(port: Option<u16>) -> TrafficClass {
+    match port {
+        // The web, by far the bulk of it: HTTPS and HTTP/3 (QUIC) both ride 443,
+        // plaintext HTTP and its common alternates on the rest.
+        Some(443 | 8443) => cls("https", "HTTPS"),
+        Some(80 | 8080 | 8000 | 8888) => cls("http", "HTTP"),
+        // DNS proper (53) and DNS-over-TLS (853); DoH is just HTTPS on 443.
+        Some(53 | 853) => cls("dns", "DNS"),
+        Some(22) => cls("ssh", "SSH"),
+        Some(21 | 989 | 990) => cls("ftp", "FTP"),
+        // Mail: submission/SMTP and IMAP(S)/POP3(S), plaintext and TLS together.
+        Some(25 | 465 | 587 | 143 | 993 | 110 | 995) => cls("email", "Email"),
+        Some(123) => cls("ntp", "NTP"),
+        // NAT traversal for real-time media (WebRTC, VoIP, games).
+        Some(3478 | 5349) => cls("stun", "STUN/TURN"),
+        // Vendor push keepalives: Apple (5223), Google GCM/FCM (5228).
+        Some(5223 | 5228) => cls("push", "Push"),
+        // Databases: MSSQL, MySQL, Postgres, Redis, MongoDB, CouchDB, Cassandra.
+        Some(1433 | 3306 | 5432 | 6379 | 27017 | 5984 | 9042) => cls("database", "Database"),
+        // Encrypted tunnels: OpenVPN, IPsec (IKE/NAT-T), L2TP, PPTP, WireGuard.
+        Some(1194 | 500 | 4500 | 1701 | 1723 | 51820) => cls("vpn", "VPN"),
+        // Streaming media transport: RTMP and RTSP.
+        Some(1935 | 554) => cls("media", "Streaming media"),
+        // Remote desktop: RDP and VNC.
+        Some(3389 | 5900) => cls("remote", "Remote desktop"),
+        // Network file sharing: SMB, NFS, NetBIOS session (the TCP one, :139 —
+        // the :137/:138 name/datagram services are UDP broadcast, dropped above).
+        Some(445 | 2049 | 139) => cls("fileshare", "File sharing"),
+        // BitTorrent's default client-port range.
+        Some(6881..=6889) => cls("p2p", "Peer-to-peer"),
+        // Chat: XMPP (5222) and IRC (6667 plaintext, 6697 TLS).
+        Some(5222 | 6667 | 6697) => cls("messaging", "Messaging"),
+        _ => OTHER,
+    }
+}
+
 #[derive(Default, Clone, Copy)]
 struct ByteCounts {
     rx: u64,
@@ -248,6 +318,11 @@ struct ByteCounts {
 pub struct HostUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, HashMap<String, ByteCounts>>,
+    /// Running totals bucketed by traffic type (see [`classify_port`]), banked
+    /// from the very same per-socket deltas as `totals` so the Traffic Types
+    /// view and the Hosts view stay in step. Keyed by the class `id`; the label
+    /// rides in the value so `traffic_summary` needn't re-derive it.
+    protocols: HashMap<&'static str, (TrafficClass, ByteCounts)>,
     since: Option<u64>,
     /// Resolved app icon per app name (`None` cached too — see [`app_usage`]).
     icons: HashMap<String, Option<String>>,
@@ -323,6 +398,14 @@ impl HostUsageTracker {
             if !ip_is_public(&reading.ip) {
                 self.countries.entry(reading.ip.clone()).or_insert(None);
             }
+
+            // Bucket the same delta by traffic type. Uses the connection's peer
+            // port, so it's the identical growth being banked here and per-host —
+            // the two views can't disagree about how much moved.
+            let class = classify_port(reading.port);
+            let proto = self.protocols.entry(class.id).or_insert((class, ByteCounts::default()));
+            proto.1.rx = proto.1.rx.saturating_add(drx);
+            proto.1.tx = proto.1.tx.saturating_add(dtx);
 
             let by_ip = self.totals.entry(reading.app).or_default();
             let entry = by_ip.entry(reading.ip).or_default();
@@ -408,6 +491,29 @@ impl HostUsageTracker {
 
         HostUsageSummary { apps, support: platform_support(), tracking_since: self.since }
     }
+
+    /// Traffic broken down by kind, busiest first, dropping buckets that have
+    /// moved nothing. Grouped from the same samples as [`summary`], so it covers
+    /// exactly the same traffic — just bucketed by service port, not peer IP.
+    pub fn traffic_summary(&self) -> TrafficUsageSummary {
+        let mut types: Vec<TrafficType> = self
+            .protocols
+            .values()
+            .filter(|(_, b)| b.rx > 0 || b.tx > 0)
+            .map(|(class, b)| TrafficType {
+                id: class.id,
+                label: class.label,
+                rx_bytes: b.rx,
+                tx_bytes: b.tx,
+            })
+            .collect();
+        types.sort_by(|a, b| {
+            (b.rx_bytes + b.tx_bytes)
+                .cmp(&(a.rx_bytes + a.tx_bytes))
+                .then_with(|| a.label.cmp(b.label))
+        });
+        TrafficUsageSummary { types, support: platform_support(), tracking_since: self.since }
+    }
 }
 
 #[cfg(test)]
@@ -427,11 +533,13 @@ LISTEN 0 128 127.0.0.1:5432 0.0.0.0:* users:((\"postgres\",pid=99,fd=7))
         assert_eq!(r.len(), 2);
         assert_eq!(r[0].app, "firefox");
         assert_eq!(r[0].ip, "140.82.113.25");
+        assert_eq!(r[0].port, Some(443));
         assert_eq!(r[0].rx, 18422);
         assert_eq!(r[0].tx, 5231);
-        // IPv6 peer in ss bracket form, port stripped.
+        // IPv6 peer in ss bracket form: IP kept without the port, port read off.
         assert_eq!(r[1].app, "spotify");
         assert_eq!(r[1].ip, "2606:4700::6810:85e5");
+        assert_eq!(r[1].port, Some(443));
     }
 
     #[test]
@@ -450,11 +558,13 @@ time,,interface,state,bytes_in,bytes_out,rx_dupe
         assert_eq!(r.len(), 2);
         assert_eq!(r[0].app, "apsd");
         assert_eq!(r[0].ip, "17.57.147.7");
+        assert_eq!(r[0].port, Some(5223));
         assert_eq!(r[0].rx, 6461);
         assert_eq!(r[0].tx, 53268);
         assert_eq!(r[0].pid, Some(375));
         assert_eq!(r[1].app, "OneDrive");
         assert_eq!(r[1].ip, "4.145.79.81");
+        assert_eq!(r[1].port, Some(443));
     }
 
     /// QUIC (HTTP/3) is UDP to a concrete peer on :443 — real traffic to a real
@@ -472,6 +582,7 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(r.len(), 1, "only the QUIC socket with a real peer is attributed");
         assert_eq!(r[0].app, "firefox");
         assert_eq!(r[0].ip, "17.253.24.251");
+        assert_eq!(r[0].port, Some(443));
         assert_eq!(r[0].rx, 48000);
     }
 
@@ -484,6 +595,7 @@ time,,interface,state,bytes_in,bytes_out
         let r = parse_nettop_peers(out);
         assert_eq!(r.len(), 1);
         assert_eq!(r[0].ip, "2606:4700::1111");
+        assert_eq!(r[0].port, Some(443));
     }
 
     #[test]
@@ -491,15 +603,15 @@ time,,interface,state,bytes_in,bytes_out
         let mut t = HostUsageTracker::new();
         // First snapshot: baseline only, for both already-open sockets.
         t.ingest(vec![
-            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 100, tx: 40, pid: None },
-            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 50, tx: 10, pid: None },
+            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 100, tx: 40, pid: None },
+            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 50, tx: 10, pid: None },
         ]);
         // s1 grows (credit delta), s2 unchanged, plus a new host for firefox on
         // a connection opened since the last tick (credited in full).
         t.ingest(vec![
-            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 250, tx: 90, pid: None },
-            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 50, tx: 10, pid: None },
-            PeerReading { conn_key: "s3".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 500, tx: 0, pid: None },
+            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 250, tx: 90, pid: None },
+            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 50, tx: 10, pid: None },
+            PeerReading { conn_key: "s3".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 500, tx: 0, pid: None },
         ]);
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
@@ -511,6 +623,17 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(firefox.hosts[1].rx_bytes, 150);
         assert_eq!(firefox.hosts[1].tx_bytes, 50);
         assert_eq!(firefox.rx_bytes, 500 + 150);
+
+        // The same growth, bucketed by service port: DNS (500, from s3 on :53)
+        // ahead of HTTPS (150+50, the :443 sockets), busiest first. Neither
+        // socket's pre-baseline history is banked here either.
+        let tt = t.traffic_summary();
+        assert_eq!(tt.types.len(), 2);
+        assert_eq!(tt.types[0].id, "dns");
+        assert_eq!(tt.types[0].rx_bytes, 500);
+        assert_eq!(tt.types[1].id, "https");
+        assert_eq!(tt.types[1].rx_bytes, 150);
+        assert_eq!(tt.types[1].tx_bytes, 50);
     }
 
     /// The Hosts view's half of the priming contract. This view reads a different
@@ -526,6 +649,7 @@ time,,interface,state,bytes_in,bytes_out
                 conn_key: "c1".into(),
                 app: "Browser Helper".into(),
                 ip: "140.82.113.25".into(),
+                port: Some(443),
                 rx,
                 tx,
                 pid: None,
@@ -550,14 +674,14 @@ time,,interface,state,bytes_in,bytes_out
         // the two halves being wired together wrong.
         let mut t = HostUsageTracker::new();
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 10, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), rx: 5, tx: 0, pid: None },
+            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 10, tx: 0, pid: None },
+            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 5, tx: 0, pid: None },
         ]);
         // Past the baseline snapshot, so both peers carry bytes and so reach the
         // summary at all.
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 20, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), rx: 15, tx: 0, pid: None },
+            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 20, tx: 0, pid: None },
+            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 15, tx: 0, pid: None },
         ]);
 
         let resolved: HashMap<String, Option<String>> = t
@@ -586,8 +710,8 @@ time,,interface,state,bytes_in,bytes_out
     fn private_peers_never_pending_for_country() {
         let mut t = HostUsageTracker::new();
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "app".into(), ip: "192.168.1.5".into(), rx: 10, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "app".into(), ip: "140.82.113.25".into(), rx: 10, tx: 0, pid: None },
+            PeerReading { conn_key: "a".into(), app: "app".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 10, tx: 0, pid: None },
+            PeerReading { conn_key: "b".into(), app: "app".into(), ip: "140.82.113.25".into(), port: Some(443), rx: 10, tx: 0, pid: None },
         ]);
         // Only the public peer awaits a country lookup.
         assert_eq!(t.pending_countries(), vec!["140.82.113.25".to_string()]);
@@ -605,6 +729,7 @@ time,,interface,state,bytes_in,bytes_out
                 conn_key: "a".into(),
                 app: "firefox".into(),
                 ip: "140.82.113.25".into(),
+                port: Some(443),
                 rx,
                 tx: 0,
                 pid: None,
@@ -632,4 +757,51 @@ time,,interface,state,bytes_in,bytes_out
         assert!(!ip_is_public("fc00::1")); // unique-local
     }
 
+    #[test]
+    fn classifies_ports_into_traffic_types() {
+        // Well-known service ports map to their family; encrypted and plaintext
+        // members share one bucket.
+        assert_eq!(classify_port(Some(443)).id, "https");
+        assert_eq!(classify_port(Some(80)).id, "http");
+        assert_eq!(classify_port(Some(53)).id, "dns");
+        assert_eq!(classify_port(Some(853)).id, "dns");
+        assert_eq!(classify_port(Some(22)).id, "ssh");
+        assert_eq!(classify_port(Some(993)).id, "email");
+        assert_eq!(classify_port(Some(5223)).id, "push");
+        // The widened buckets that used to fall into "other".
+        assert_eq!(classify_port(Some(5432)).id, "database"); // Postgres
+        assert_eq!(classify_port(Some(51820)).id, "vpn"); // WireGuard
+        assert_eq!(classify_port(Some(1935)).id, "media"); // RTMP
+        assert_eq!(classify_port(Some(3389)).id, "remote"); // RDP
+        assert_eq!(classify_port(Some(445)).id, "fileshare"); // SMB
+        assert_eq!(classify_port(Some(6881)).id, "p2p"); // BitTorrent (range)
+        assert_eq!(classify_port(Some(6889)).id, "p2p"); // range upper bound
+        assert_eq!(classify_port(Some(5222)).id, "messaging"); // XMPP
+        // Ephemeral / unrecognised / missing ports still fall through to "other".
+        assert_eq!(classify_port(Some(54312)).id, "other");
+        assert_eq!(classify_port(None).id, "other");
+    }
+
+    #[test]
+    fn unclassified_ports_bank_into_the_other_bucket() {
+        let mut t = HostUsageTracker::new();
+        let tick = |rx: u64| {
+            vec![PeerReading {
+                conn_key: "p".into(),
+                app: "some-daemon".into(),
+                ip: "203.0.113.7".into(),
+                port: Some(48211), // ephemeral peer port — not a known service
+                rx,
+                tx: 0,
+                pid: None,
+            }]
+        };
+        t.ingest(tick(0)); // baseline
+        t.ingest(tick(1000));
+        let tt = t.traffic_summary();
+        assert_eq!(tt.types.len(), 1);
+        assert_eq!(tt.types[0].id, "other");
+        assert_eq!(tt.types[0].label, "Other");
+        assert_eq!(tt.types[0].rx_bytes, 1000);
+    }
 }

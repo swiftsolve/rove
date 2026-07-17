@@ -1,6 +1,7 @@
 import type { Unsubscribe } from './common'
 import type { AppUsageSummary } from './app-usage'
 import type { HostUsageSummary } from './host-usage'
+import type { TrafficUsageSummary } from './traffic-usage'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
 import type { NetworkEvent } from './events'
@@ -36,6 +37,9 @@ export interface NetworkAPI {
   getAppUsage(): Promise<AppUsageSummary>
   /** Per-app remote-host breakdown (hostname + country + bytes), busiest first. */
   getHostUsage(): Promise<HostUsageSummary>
+  /** Session traffic bucketed by kind (protocol), busiest first — the same
+   *  connections as `getHostUsage`, grouped by service port instead of peer. */
+  getTrafficUsage(): Promise<TrafficUsageSummary>
   runDiagnostics(): Promise<NetworkDiagnostics>
   /** The fast-changing gateway metrics only, for the Connection view's tight
    *  refresh loop. Service reachability is NOT here — see `runServices`. */

@@ -36,6 +36,22 @@
   line-height: 1.2;
 }
 
+/* A small status pill for the section's right-hand slot — amber, to read as
+   "heads up" without the alarm of an error colour. Used for the ISP card's
+   VPN/proxy flag; sized to sit unobtrusively where the brand icon would. */
+.ui-section-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
 .ui-section-action {
   display: flex;
   align-items: center;

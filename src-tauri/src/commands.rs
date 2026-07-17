@@ -271,6 +271,15 @@ pub fn get_host_usage(state: tauri::State<'_, AppState>) -> HostUsageSummary {
     lock(&state.host_usage).summary()
 }
 
+/// Traffic broken down by kind (protocol) for the Traffic Types view. A cheap
+/// in-memory read off the very same tracker `get_host_usage` reads — the host
+/// sampler's connections, regrouped by service port instead of peer IP, so no
+/// extra sampling and the two views can't disagree on totals.
+#[tauri::command]
+pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSummary {
+    lock(&state.host_usage).traffic_summary()
+}
+
 #[tauri::command]
 pub fn get_speed_history(
     store: tauri::State<'_, Arc<Store>>,

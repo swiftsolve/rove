@@ -62,6 +62,35 @@ pub(crate) fn strip_port(addr: &str) -> Option<String> {
     }
 }
 
+/// The port from a peer token, across the same formats [`strip_port`] handles:
+/// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
+/// `None` when there's no port (a bare address, or a `*` wildcard) or it doesn't
+/// parse — the traffic-type classifier then treats it as unknown. The peer port
+/// is the *service* end of a client connection (443, 53, …), so it names the
+/// kind of traffic; the local port is ephemeral and carries no such meaning.
+pub(crate) fn peer_port(addr: &str) -> Option<u16> {
+    let a = addr.trim();
+    if a.is_empty() || a.starts_with('*') {
+        return None;
+    }
+    // ss IPv6 bracket form: [addr]:port
+    if let Some(rest) = a.strip_prefix('[') {
+        return rest.rsplit_once("]:").and_then(|(_, port)| port.parse().ok());
+    }
+    if a.matches(':').count() >= 2 {
+        // IPv6. nettop tacks the port on after a dot past the last colon; a bare
+        // IPv6 literal (no trailing ".<digits>") has no port to read.
+        if let (Some(dot), Some(colon)) = (a.rfind('.'), a.rfind(':')) {
+            if colon < dot {
+                return a[dot + 1..].parse().ok();
+            }
+        }
+        return None;
+    }
+    // IPv4 (or a bare host): the port trails the last colon.
+    a.rsplit_once(':').and_then(|(_, port)| port.parse().ok())
+}
+
 /// Whether an address is a peer out on the network, rather than this machine
 /// talking to itself or to nothing.
 fn is_routable_peer(ip: IpAddr) -> bool {
@@ -284,6 +313,17 @@ mod tests {
         assert_eq!(strip_port("1.2.3.4:443").as_deref(), Some("1.2.3.4"));
         assert_eq!(strip_port("[2606::1]:443").as_deref(), Some("2606::1"));
         assert_eq!(strip_port("2606:4700::1111.443").as_deref(), Some("2606:4700::1111"));
+    }
+
+    #[test]
+    fn reads_peer_port_across_formats() {
+        assert_eq!(peer_port("1.2.3.4:443"), Some(443));
+        assert_eq!(peer_port("[2606::1]:53"), Some(53));
+        assert_eq!(peer_port("2606:4700::1111.5223"), Some(5223));
+        // No port to read: bare address or a wildcard socket.
+        assert_eq!(peer_port("2606:4700::1111"), None);
+        assert_eq!(peer_port("*:*"), None);
+        assert_eq!(peer_port("1.2.3.4"), None);
     }
 
     #[test]

@@ -10,6 +10,7 @@ import { useNetworkEvents } from '@/hooks/useNetworkEvents'
 import { useDataUsage } from '@/hooks/useDataUsage'
 import { useAppUsage } from '@/hooks/useAppUsage'
 import { useHostUsage } from '@/hooks/useHostUsage'
+import { useTrafficUsage } from '@/hooks/useTrafficUsage'
 import { useDiagnostics } from '@/hooks/useDiagnostics'
 import { useServiceReachability } from '@/hooks/useServiceReachability'
 import { useInternetStatus } from '@/hooks/useInternetStatus'
@@ -25,6 +26,7 @@ import EventsView from '@/views/EventsView'
 import UsageView from '@/views/UsageView'
 import AppUsageView from '@/views/AppUsageView'
 import HostsView from '@/views/HostsView'
+import TrafficView from '@/views/TrafficView'
 import DiagnosticsView from '@/views/DiagnosticsView'
 import { ManageServicesPage } from '@/components/diagnostics/ManageServicesPage'
 import { ServicesTimelinePage } from '@/components/diagnostics/ServicesTimelinePage'
@@ -271,6 +273,11 @@ export default function App(): JSX.Element {
     isLoading: hostUsageLoading,
     error: hostUsageError,
   } = useHostUsage(activeTab === 'apps' && location.appsSub?.view === 'hosts')
+  const {
+    usage: trafficUsage,
+    isLoading: trafficUsageLoading,
+    error: trafficUsageError,
+  } = useTrafficUsage(activeTab === 'apps' && location.appsSub?.view === 'traffic')
   const deviceCount = deviceScan ? deviceScan.devices.length : null
   const deviceOnline = deviceScan
     ? deviceScan.devices.filter((device) => device.reachable).length
@@ -449,6 +456,13 @@ export default function App(): JSX.Element {
                     focusApp={location.appsSub.app ?? null}
                     onBack={back}
                   />
+                ) : location.appsSub?.view === 'traffic' ? (
+                  <TrafficView
+                    usage={trafficUsage}
+                    isLoading={trafficUsageLoading}
+                    error={trafficUsageError}
+                    onBack={back}
+                  />
                 ) : (
                   <AppUsageView
                     usage={appUsage}
@@ -456,6 +470,9 @@ export default function App(): JSX.Element {
                     error={appUsageError}
                     onViewHosts={() =>
                       navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'hosts' } })
+                    }
+                    onViewTraffic={() =>
+                      navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'traffic' } })
                     }
                     onOpenApp={(name) =>
                       navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'hosts', app: name } })

@@ -70,16 +70,74 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     })
 }
 
-/// Resolve the WAN-side identity (ISP, ASN, location, public IP) from ipwho.is
-/// — a free, keyless, HTTPS geolocation service. Returns None when there's no
-/// internet or the lookup fails; the card then falls back to a quieter state.
+/// The WAN-side identity for the ISP card: ISP name, ASN, location, and public
+/// IP. Assembled from two sources so the card stays populated whenever we're
+/// online:
 ///
-/// This is the only lookup that still leaves the machine: ISP name, ASN, and
-/// city aren't in the bundled IP-to-country table (see [`crate::geoip`]), and
-/// it's one request about *our own* address. Per-peer flags used to share this
-/// service and could exhaust its free daily quota within minutes of churn,
-/// which silently blanked this card too; they're resolved locally now.
+///   * **On-device** ([`crate::geoip`]) — ASN (number + operator name) and
+///     country, resolved from our public IP against the bundled DB-IP tables.
+///     No network, no quota, so this base is always available.
+///   * **Live enrichment** ([`ipwho_enrich`]) — Website (the card's brand icon)
+///     and city, plus a friendlier ISP name, layered on top *when* ipwho.is
+///     answers. Best-effort: its rate limit or an outage costs only these
+///     extras, no longer the whole card.
+///
+/// `None` only when we can't even learn our own public IP — i.e. we're offline —
+/// which is the one case where the card's quiet state is the right answer.
 pub async fn isp_info() -> Option<IspInfo> {
+    // Our public IP and the enrichment lookup are independent — ipwho.is resolves
+    // *our* address server-side, needing nothing from us — and both hit the
+    // network, so they run concurrently. The IP comes from the plain echo service
+    // (no quota); it anchors the on-device lookups and stands in for ipwho.is
+    // when that's throttled.
+    let (public_ip, enrich) = tokio::join!(crate::network_info::public_ip(), ipwho_enrich());
+
+    // Whichever source named our address, ipify preferred as the quota-free
+    // anchor. Nothing at all means offline: give up and let the card go quiet.
+    let public_ip = public_ip.or_else(|| enrich.as_ref().and_then(|e| e.public_ip.clone()))?;
+
+    // On-device base: ASN identity and country, from the bundled tables.
+    let asn = crate::geoip::asn_info(&public_ip);
+    let local_name = asn.as_ref().and_then(|a| a.org.clone());
+    let local_asn = asn.as_ref().and_then(|a| a.number).map(|n| format!("AS{n}"));
+    let local_country = crate::geoip::country_name(&public_ip);
+
+    // A hosting/datacenter ASN for our own egress means a VPN or proxy, not a
+    // consumer ISP — decided from the locally-resolved AS number so it holds even
+    // when ipwho.is is throttled (the exact case a VPN'd user often hits).
+    let is_vpn = asn
+        .as_ref()
+        .and_then(|a| a.number)
+        .is_some_and(crate::geoip::is_hosting_asn);
+
+    // Merge, preferring ipwho.is's strings where it answered — its ISP name is
+    // often friendlier than the raw AS org, and it owns the whole identity so
+    // name/ASN stay mutually consistent. Domain, city, and region have no local
+    // source, so they're simply absent when ipwho.is is unavailable.
+    let e = enrich.as_ref();
+    Some(IspInfo {
+        name: e.and_then(|e| e.name.clone()).or(local_name),
+        asn: e.and_then(|e| e.asn.clone()).or(local_asn),
+        domain: e.and_then(|e| e.domain.clone()),
+        city: e.and_then(|e| e.city.clone()),
+        region: e.and_then(|e| e.region.clone()),
+        country: e.and_then(|e| e.country.clone()).or(local_country),
+        public_ip: Some(public_ip),
+        is_vpn,
+    })
+}
+
+/// Best-effort WAN identity from ipwho.is — a free, keyless, HTTPS geolocation
+/// service. Returns None when there's no internet or the lookup fails (a 5s
+/// timeout, an HTTP error, or a throttle), in which case [`isp_info`] falls back
+/// to the on-device tables for everything but Website and city.
+///
+/// This is the only lookup that still leaves the machine, and it's one request
+/// about *our own* address. Per-peer flags used to share this service and could
+/// exhaust its free daily quota within minutes of churn, which silently blanked
+/// this card too; they're resolved locally now, as — since this rewrite — are
+/// the card's own ISP name, ASN, and country.
+async fn ipwho_enrich() -> Option<IspInfo> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(5))
         .build()
@@ -141,6 +199,9 @@ pub async fn isp_info() -> Option<IspInfo> {
         region: str_field(&json, "region"),
         country: str_field(&json, "country"),
         public_ip: str_field(&json, "ip"),
+        // Enrichment only; the VPN verdict is decided on-device in `isp_info`
+        // from the resolved ASN, so this field of the enrichment is never read.
+        is_vpn: false,
     })
 }
 

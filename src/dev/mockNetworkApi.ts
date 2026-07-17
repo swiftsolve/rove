@@ -11,6 +11,7 @@
 import type {
   AppUsageSummary,
   HostUsageSummary,
+  TrafficUsageSummary,
   CapabilityLevel,
   CapabilityRating,
   LanDevice,
@@ -463,6 +464,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
     region: 'California',
     country: 'United States',
     publicIp: '203.0.113.57',
+    isVpn: false,
   },
 }
 
@@ -727,6 +729,35 @@ function createMockNetworkApi(): NetworkAPI {
         support: 'supported',
         trackingSince: Date.now() - 42 * 60_000,
       }
+    },
+    getTrafficUsage: async (): Promise<TrafficUsageSummary> => {
+      await delay(200)
+      const mb = 1_000_000
+      // A believable protocol mix for the session above: the web dominates,
+      // then a QUIC/HTTP3 slice, DNS, push keepalives, an ssh session's upload,
+      // and a long tail of unrecognised ports. [id, label, downMB, upMB].
+      const rows: readonly [string, string, number, number][] = [
+        ['https', 'HTTPS', 1180, 132],
+        ['fileshare', 'File sharing', 96, 14],
+        ['media', 'Streaming media', 88, 3],
+        ['vpn', 'VPN', 44, 51],
+        ['ssh', 'SSH', 4, 27],
+        ['database', 'Database', 12, 9],
+        ['dns', 'DNS', 6, 7],
+        ['push', 'Push', 3, 4],
+        ['email', 'Email', 2, 1],
+        ['ntp', 'NTP', 0.1, 0.1],
+        ['other', 'Other', 18, 6],
+      ]
+      const types = rows
+        .map(([id, label, down, up]) => ({
+          id,
+          label,
+          rxBytes: Math.round(down * mb),
+          txBytes: Math.round(up * mb),
+        }))
+        .sort((a, b) => b.rxBytes + b.txBytes - (a.rxBytes + a.txBytes))
+      return { types, support: 'supported', trackingSince: Date.now() - 42 * 60_000 }
     },
     runDiagnostics: async () => {
       await delay(700)

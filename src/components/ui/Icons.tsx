@@ -15,6 +15,7 @@ import {
   ArrowRight,
   ArrowUp,
   BarChart3,
+  Bell,
   CalendarRange,
   Check,
   ChevronDown,
@@ -25,8 +26,10 @@ import {
   Compass,
   Cpu,
   Copy,
+  Database,
   Download,
   EthernetPort,
+  FolderSync,
   HardDrive,
   Minus,
   MonitorSmartphone,
@@ -46,6 +49,8 @@ import {
   Laptop,
   LayoutGrid,
   Layers,
+  Mail,
+  MessageSquare,
   Moon,
   Network,
   Pencil,
@@ -55,11 +60,13 @@ import {
   Search,
   Server,
   Settings,
+  Share2,
   ShieldAlert,
   Smartphone,
   Speaker,
   Printer,
   Tag,
+  Terminal,
   TextSearch,
   QrCode,
   Sparkles,
@@ -217,6 +224,14 @@ export const ComputerIcon = make(Laptop, 16)
 export const TvIcon = make(Tv, 16)
 export const PrinterIcon = make(Printer, 16)
 export const ChipIcon = make(Cpu, 16)
+export const DatabaseIcon = make(Database, 16)
+export const MailIcon = make(Mail, 16)
+export const MessageIcon = make(MessageSquare, 16)
+export const TerminalIcon = make(Terminal, 16)
+export const ClockIcon = make(Clock, 16)
+export const BellIcon = make(Bell, 16)
+export const FileTransferIcon = make(FolderSync, 16)
+export const ShareIcon = make(Share2, 16)
 export const HelpIcon = make(HelpCircle, 16)
 export const QrCodeIcon = make(QrCode, 16)
 export const NasIcon = make(HardDrive, 16)

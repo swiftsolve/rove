@@ -165,6 +165,23 @@
   text-align: right;
 }
 
+/* The two subtitle links ("All hosts" · "All traffic types") sit in a row with a
+   tertiary dot between them (see Speed's subtitle). The first link cancels its own
+   left padding to sit flush under the title (see .app-hosts-link); each pill keeps
+   its inner padding so the dot sits an even distance from both labels. */
+.app-subtitle-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Only the first link cancels its left padding (to align flush under the title);
+   the second (after the dot) keeps its own so the dot sits an even distance from
+   both labels rather than hugging the second pill. */
+.app-subtitle-links .sep-dot + .app-hosts-link {
+  margin-left: 0;
+}
+
 /* Header subtitle link into the Hosts subpage: the same quiet pill link as Speed's
    "All Results" (see .speed-history-link) and Services' "View timeline", down to the
    geometry and weight — only the globe glyph differs. The button reset carries the font

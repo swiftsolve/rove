@@ -71,6 +71,10 @@ export interface IspInfo {
   readonly country: string | null
   /** Public (WAN) IP reported by the same lookup. */
   readonly publicIp: string | null
+  /** True when the public IP's ASN is a datacenter/hosting network, i.e. we're
+   *  behind a VPN or proxy and the fields above describe the exit node rather
+   *  than the real ISP. The card badges itself and adds a hint when set. */
+  readonly isVpn: boolean
 }
 
 /** A service in the user's reachability list — the durable definition, without

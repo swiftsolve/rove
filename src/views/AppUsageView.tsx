@@ -5,9 +5,10 @@ import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
 import { ViewHeader } from '@/components/ui/ViewHeader'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { MetricValue } from '@/components/ui/MetricValue'
-import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, InfoIcon } from '@/components/ui/Icons'
+import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, InfoIcon, LayersIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { DotSeparator } from '@/components/ui/DotSeparator'
 import { Spinner } from '@/components/ui/Spinner'
 import './AppUsageView.css'
 
@@ -30,6 +31,8 @@ interface AppUsageViewProps {
   readonly error?: string | null
   /** Open the per-app remote-host breakdown (the Hosts subpage). */
   readonly onViewHosts: () => void
+  /** Open the by-protocol breakdown (the Traffic Types subpage). */
+  readonly onViewTraffic: () => void
   /** Open the Hosts subpage focused on a single app (that group expanded, the
    *  rest collapsed). Fired by clicking an app row. */
   readonly onOpenApp: (name: string) => void
@@ -102,6 +105,7 @@ export default function AppUsageView({
   isLoading,
   error,
   onViewHosts,
+  onViewTraffic,
   onOpenApp,
 }: AppUsageViewProps): JSX.Element {
   const { apps, support } = usage
@@ -115,10 +119,17 @@ export default function AppUsageView({
     isLoading && !hasData ? (
       'Loading…'
     ) : (
-      <button type="button" className="app-hosts-link" onClick={onViewHosts}>
-        <GlobeIcon size={13} />
-        <span className="app-hosts-link-text">All hosts</span>
-      </button>
+      <span className="app-subtitle-links">
+        <button type="button" className="app-hosts-link" onClick={onViewHosts}>
+          <GlobeIcon size={13} />
+          <span className="app-hosts-link-text">All hosts</span>
+        </button>
+        <DotSeparator />
+        <button type="button" className="app-hosts-link" onClick={onViewTraffic}>
+          <LayersIcon size={13} />
+          <span className="app-hosts-link-text">All traffic types</span>
+        </button>
+      </span>
     )
 
   return (
