@@ -17,14 +17,10 @@ const APP_USAGE_INFO_HINT =
   'Bytes are attributed to the app that moved them, read from the OS per-process ' +
   'network counters while Rove is running. Totals reset when Rove restarts.'
 
-const APP_USAGE_EMPTY_HINT =
-  'Usage appears here as your apps send and receive. Totals are gathered while ' +
-  'Rove runs.'
+const APP_USAGE_EMPTY_HINT = 'Usage appears here as your apps send and receive.'
 
 const APP_USAGE_UNSUPPORTED_HINT =
-  'On Windows, attributing bytes to a process uses a network event-tracing session ' +
-  'that needs administrator rights — run Rove as administrator to enable per-app ' +
-  'usage. It works without elevation on Linux and macOS.'
+  'Run Rove as administrator to meter per-app usage on Windows.'
 
 interface AppUsageViewProps {
   readonly usage: AppUsageSummary
@@ -162,7 +158,7 @@ export default function AppUsageView({
       {support === 'unsupported' ? (
         <EmptyState
           icon={InfoIcon}
-          title="Per-app usage isn’t available"
+          title="Administrator access needed"
           hint={APP_USAGE_UNSUPPORTED_HINT}
           action={<RestartAsAdminAction />}
         />
@@ -172,7 +168,7 @@ export default function AppUsageView({
           <p className="text-muted">Measuring per-app usage…</p>
         </div>
       ) : !hasData ? (
-        <EmptyState icon={AppsIcon} title="No app traffic yet" hint={APP_USAGE_EMPTY_HINT} />
+        <EmptyState icon={AppsIcon} title="No app usage yet" hint={APP_USAGE_EMPTY_HINT} />
       ) : (
         <div className="ui-section">
           <div className="ui-section-body app-list">

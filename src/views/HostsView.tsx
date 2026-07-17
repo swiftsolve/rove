@@ -23,14 +23,10 @@ const HOST_USAGE_INFO_HINT =
   'lookup, both filled in shortly after a host is first seen. Bytes cover TCP ' +
   'connections only and reset when Rove restarts.'
 
-const HOST_USAGE_EMPTY_HINT =
-  'Hosts appear here as your apps open connections. Totals are gathered while ' +
-  'Rove runs.'
+const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps open connections.'
 
 const HOST_USAGE_UNSUPPORTED_HINT =
-  'On Windows, attributing connections to hosts uses a network event-tracing ' +
-  'session that needs administrator rights — run Rove as administrator to enable ' +
-  'the Hosts view. It works without elevation on Linux and macOS.'
+  'Run Rove as administrator to attribute hosts to apps on Windows.'
 
 /** One remote host beneath its app: flag + hostname on the left, the download /
  *  upload split on the right — the country flag sitting alongside the host. */
@@ -244,7 +240,7 @@ export default function HostsView({
       {support === 'unsupported' ? (
         <EmptyState
           icon={InfoIcon}
-          title="Per-app hosts aren’t available"
+          title="Administrator access needed"
           hint={HOST_USAGE_UNSUPPORTED_HINT}
           action={<RestartAsAdminAction />}
         />
@@ -254,7 +250,7 @@ export default function HostsView({
           <p className="text-muted">Measuring per-app hosts…</p>
         </div>
       ) : !hasData ? (
-        <EmptyState icon={GlobeIcon} title="No host connections yet" hint={HOST_USAGE_EMPTY_HINT} />
+        <EmptyState icon={GlobeIcon} title="No hosts yet" hint={HOST_USAGE_EMPTY_HINT} />
       ) : (
         <div className="ui-section">
           <div className="ui-section-body host-list" ref={listRef}>

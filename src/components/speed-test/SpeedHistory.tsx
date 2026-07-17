@@ -12,6 +12,7 @@ import { DotSeparator, InlineMeta } from '@/components/ui/DotSeparator'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import type { SpeedSeries } from '@/components/traffic/SpeedReadout'
 import { EthernetIcon, GlobeIcon, HistoryIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/ui/Icons'
+import { EmptyState } from '@/components/ui/EmptyState'
 import './SpeedHistory.css'
 
 interface SpeedHistoryProps {
@@ -197,12 +198,11 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
       action={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
     >
       {!loaded ? null : entries.length === 0 ? (
-        <div className="view-empty">
-          <HistoryIcon size={28} className="section-placeholder-icon" />
-          <p className="text-hint history-empty-text">
-            No tests recorded yet. Results appear here each time you run a speed test.
-          </p>
-        </div>
+        <EmptyState
+          icon={HistoryIcon}
+          title="No speed tests yet"
+          hint="Results appear here each time you run a speed test."
+        />
       ) : (
         <div className="history-list">
           {entries.map((entry, index) => (
