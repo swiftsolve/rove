@@ -29,7 +29,7 @@
 //!     which the planned alerts feature will reuse.
 //!
 //! Binding UDP :67 needs privilege on some platforms but not all. Linux requires
-//! root or `cap_net_bind_service` (the `.deb`/`.rpm` post-install grants it);
+//! root or `cap_net_bind_service` (the `.deb` post-install grants it);
 //! Windows has no low-port restriction; and modern macOS (verified on 26.x, with
 //! default `net.inet.ip.portrange` sysctls) lets an unprivileged process bind
 //! :67, so the in-process listener runs directly there too — no helper needed.
