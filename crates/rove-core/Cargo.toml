@@ -44,6 +44,10 @@ csv = "1"
 # the ETW consumer APIs. No packet capture and no Npcap; the session needs admin.
 [target.'cfg(windows)'.dependencies]
 ferrisetw = "1.2"
+# Enumerates this host's own interface addresses so the ETW consumer can tell
+# which end of a connection event is the remote peer (the Hosts view) without
+# depending on the provider's send/receive address labelling.
+if-addrs = "0.13"
 
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.

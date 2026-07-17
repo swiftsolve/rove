@@ -3138,6 +3138,7 @@ dependencies = [
  "ferrisetw",
  "flate2",
  "futures-util",
+ "if-addrs",
  "maxminddb",
  "mdns-sd",
  "objc2",

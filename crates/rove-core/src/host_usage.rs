@@ -17,8 +17,12 @@
 //!     carrying that connection's cumulative byte counts. Every protocol with a
 //!     concrete peer is attributed, so this matches the byte-total view's
 //!     coverage rather than trailing it by the QUIC volume.
-//!   * **Windows / other** — the Kernel-Network ETW events carry a PID and a
-//!     size but no peer address, so per-host attribution isn't available.
+//!   * **Windows** — the `Microsoft-Windows-Kernel-Network` ETW events carry the
+//!     connection's remote address alongside the PID and size, so the same
+//!     admin-only session that meters per-app bytes ([`crate::app_usage`]) also
+//!     feeds per-host attribution here. TCP and UDP (QUIC) alike, matching the
+//!     byte-total view's coverage.
+//!   * **other** — no per-connection peer source, so unsupported.
 //!
 //! Both supported sources report *cumulative* counters per socket, so — exactly
 //! like the interface and per-app trackers — [`HostUsageTracker`] banks the
@@ -38,13 +42,24 @@ use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// `"supported"` on platforms whose per-socket source carries a peer address
-/// (Linux, macOS); `"unsupported"` elsewhere. Unlike [`crate::app_usage`]'s
-/// per-process totals, Windows ETW can't back this at all (no peer in the
-/// events), so it's a compile-time constant rather than a runtime check.
+/// (Linux, macOS), and on Windows once the shared ETW session is up; the
+/// Kernel-Network events carry the connection's remote address, so — unlike an
+/// earlier belief that they didn't — the Hosts view works there too. Windows is
+/// therefore a runtime check gated on the same admin-only session that backs
+/// [`crate::app_usage`], not a compile-time constant.
 pub fn platform_support() -> &'static str {
-    if cfg!(any(target_os = "linux", target_os = "macos")) {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
         "supported"
-    } else {
+    }
+    // The peer readings come from the same ETW session as per-app bytes, so the
+    // two views light up together (and both need Rove run as administrator).
+    #[cfg(windows)]
+    {
+        crate::app_usage::platform_support()
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    {
         "unsupported"
     }
 }
@@ -94,7 +109,27 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
             .await
             .map(|out| parse_nettop_peers(&out));
     }
-    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    // Windows reads the same running ETW session as per-app bytes, tagging each
+    // connection's cumulative counter with its remote peer. A synchronous
+    // in-process snapshot that can't fail, so there's nothing to await.
+    #[cfg(windows)]
+    {
+        return Some(
+            crate::app_usage::windows_peer_units()
+                .into_iter()
+                .map(|u| PeerReading {
+                    conn_key: u.conn_key,
+                    app: u.name,
+                    ip: u.ip,
+                    port: u.port,
+                    rx: u.rx,
+                    tx: u.tx,
+                    pid: Some(u.pid),
+                })
+                .collect(),
+        );
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
     {
         None
     }
@@ -334,6 +369,23 @@ pub struct HostUsageTracker {
     countries: HashMap<String, Option<String>>,
 }
 
+/// How this platform's peer readings must be banked. Linux/macOS snapshot live
+/// OS socket counters ([`CounterSemantics::Socket`] — primed on the first sample
+/// since a socket open at launch carries pre-Rove history). Windows reads a
+/// zero-based ETW accumulator Rove starts itself ([`CounterSemantics::PidAccumulator`]),
+/// so its first sample is entirely traffic Rove watched and must *not* be primed
+/// away — matching how [`crate::app_usage`] banks the same session.
+const fn peer_counter_semantics() -> CounterSemantics {
+    #[cfg(windows)]
+    {
+        CounterSemantics::PidAccumulator
+    }
+    #[cfg(not(windows))]
+    {
+        CounterSemantics::Socket
+    }
+}
+
 impl HostUsageTracker {
     pub fn new() -> Self {
         Self::default()
@@ -343,12 +395,14 @@ impl HostUsageTracker {
     /// growth since its last reading, and forget sockets that vanished (their
     /// bytes are already banked in `totals`).
     ///
-    /// Unlike [`crate::app_usage`], this path is socket-keyed on *both*
-    /// platforms — Linux `ss` by address pair, macOS `nettop` without `-P` by its
-    /// `local<->peer` label — so every reading here is
-    /// [`crate::app_usage::CounterSemantics::Socket`] and a decrease really does
-    /// mean a recycled address pair rather than a closed socket. Don't port
+    /// This path is keyed per socket/connection on every platform — Linux `ss` by
+    /// address pair, macOS `nettop` without `-P` by its `local<->peer` label, and
+    /// Windows ETW by the connection's `local|peer` address pair — so a decrease
+    /// really does mean a recycled key rather than a closed socket. Don't port
     /// app_usage's macOS process-aggregate handling over; it would be wrong here.
+    /// The exact banking rule ([`peer_counter_semantics`]) still differs by
+    /// platform: the OS socket sources are primed on the first snapshot, the
+    /// zero-based Windows accumulator isn't.
     ///
     /// What *does* carry over is priming: the first snapshot only sets baselines
     /// ([`crate::app_usage::CounterSemantics::primes_on_first_snapshot`]), because
@@ -363,7 +417,8 @@ impl HostUsageTracker {
         if first_snapshot {
             self.since = Some(crate::net_util::now_ms());
         }
-        let priming = first_snapshot && CounterSemantics::Socket.primes_on_first_snapshot();
+        let semantics = peer_counter_semantics();
+        let priming = first_snapshot && semantics.primes_on_first_snapshot();
 
         let mut seen = HashSet::with_capacity(readings.len());
         for reading in readings {
@@ -372,8 +427,8 @@ impl HostUsageTracker {
                 (0, 0)
             } else {
                 (
-                    CounterSemantics::Socket.credit(reading.rx, prev.map(|p| p.rx)),
-                    CounterSemantics::Socket.credit(reading.tx, prev.map(|p| p.tx)),
+                    semantics.credit(reading.rx, prev.map(|p| p.rx)),
+                    semantics.credit(reading.tx, prev.map(|p| p.tx)),
                 )
             };
 
