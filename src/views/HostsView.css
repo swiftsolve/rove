@@ -192,10 +192,3 @@
   min-width: 46px;
   text-align: right;
 }
-
-/* Explanatory line under the empty/unsupported states, kept narrow and calm. */
-.host-usage-note {
-  max-width: 40ch;
-  margin-top: var(--gap-xs);
-  text-align: center;
-}

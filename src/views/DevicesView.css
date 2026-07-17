@@ -365,32 +365,12 @@
   color: var(--positive);
 }
 
-.devices-hint {
-  max-width: 40ch;
-  line-height: 1.45;
-  font-size: 12px;
-  text-align: center;
-}
+/* The Local Network hint trailing a scan that did find devices. The blank-state
+   copy of it is laid out by <EmptyState> instead. */
 .device-list > .devices-hint {
+  max-width: 40ch;
   margin-top: 10px;
   padding: 0 4px;
-  text-align: left;
-}
-
-/* Blank state: icon + short line, generously spaced and centred. */
-.devices-empty {
-  gap: 16px;
-  text-align: center;
-}
-.devices-empty-icon {
-  color: var(--text-tertiary);
-  opacity: 0.55;
-}
-.devices-empty-title {
-  font-size: var(--text-body);
-  color: var(--text-secondary);
-}
-/* Nudge the button down from the copy above it. */
-.devices-empty .btn-secondary {
-  margin-top: 4px;
+  line-height: 1.45;
+  font-size: var(--text-small);
 }
