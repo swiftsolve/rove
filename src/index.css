@@ -216,6 +216,19 @@ body {
   overflow: hidden;
 }
 
+/* The app-wide `user-select: none` on <body> gives the desktop-app feel, but it
+   inherits into form controls — and WebView2 (Windows) honours it there, which
+   makes <input>/<textarea> impossible to type in. WebKit (macOS/Linux webview)
+   exempts form controls, so the break only shows on Windows. Re-enable selection
+   on editable elements so they're typeable on every platform. */
+input,
+textarea,
+select,
+[contenteditable]:not([contenteditable='false']) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 .num,
 .data-row-value,
 .metric-value {
