@@ -458,6 +458,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   isp: {
     name: 'Comcast Cable Communications',
     asn: 'AS7922',
+    domain: 'xfinity.com',
     city: 'San Francisco',
     region: 'California',
     country: 'United States',

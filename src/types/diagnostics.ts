@@ -63,6 +63,9 @@ export interface IspInfo {
   readonly name: string | null
   /** Autonomous-system number, formatted "AS15169". */
   readonly asn: string | null
+  /** The ISP's registered domain, e.g. "bell.ca", or null when the lookup didn't
+   *  report one. Resolved to a brand icon on the card. */
+  readonly domain: string | null
   readonly city: string | null
   readonly region: string | null
   readonly country: string | null
