@@ -8,18 +8,40 @@
 //!   * **Linux** — `ss -tinHp` reads the kernel's per-socket `TCP_INFO`
 //!     (`bytes_sent`/`bytes_received`) alongside the owning process. Readable
 //!     unprivileged for your own sockets; no eBPF, no capture.
-//!   * **macOS** — `nettop` reports cumulative bytes per process.
+//!   * **macOS** — `nettop` reports cumulative bytes per socket, listing each
+//!     process's sockets beneath it, TCP and UDP alike. Sockets with no peer
+//!     (mDNS and other unconnected chatter) are the one exclusion — nettop can't
+//!     name them well enough to meter, see `meterable_peer`.
 //!   * **Windows / other** — per-process byte metering needs an ETW consumer
 //!     (`Microsoft-Windows-Kernel-Network`), not yet implemented, so the
 //!     platform reports itself unsupported rather than returning wrong numbers.
 //!
-//! Both supported sources report *cumulative* counters per unit of accounting —
-//! a single socket on Linux, a process on macOS — so, exactly like the
-//! interface tracker, [`AppUsageTracker`] keeps the last reading and banks the
-//! delta into a per-app running total. Accounting at the socket level (Linux)
+//! Both supported sources report *cumulative* counters per socket, so, exactly
+//! like the interface tracker, [`AppUsageTracker`] keeps the last reading and
+//! banks the delta into a per-app running total. Accounting at the socket level
 //! means a socket that both opens and closes *between* two samples is missed —
 //! the same inherent limitation snapshot-based tools like Sniffnet document —
 //! but every socket that lives across a tick is counted in full.
+//!
+//! # Why not `nettop -P`
+//!
+//! macOS will happily hand out a per-process total via `nettop -P`, and reading
+//! that instead is a trap worth spelling out, because Rove shipped it and it was
+//! wrong. `-P` reports the sum over a process's *currently open* sockets: it is a
+//! gauge, not an odometer. When a socket closes, its bytes leave the sum.
+//!
+//! No accumulation strategy recovers from that, because the loss happens before
+//! Rove sees the number. Banking every rise re-banks a process's whole history
+//! each time the sum dips and then recovers, inventing traffic. Crediting nothing
+//! on a dip (the obvious fix) instead *loses* whatever the surviving sockets
+//! moved during that same tick — which, for anything holding several concurrent
+//! connections that finish and are replaced (a download, a browser), is most of
+//! the traffic. Both readings are badly wrong, in opposite directions.
+//!
+//! The per-socket rows are the same bytes with the information still intact: the
+//! process row `-P` would have printed is exactly their sum, so nothing is given
+//! up by reading them instead, and a close is now visible as one key going away
+//! rather than as an unattributable dip.
 
 use crate::types::{AppUsage, AppUsageSummary};
 use std::collections::{HashMap, HashSet};
@@ -48,8 +70,8 @@ pub fn platform_support() -> &'static str {
 }
 
 /// One cumulative reading for a single unit of accounting. `key` is a stable
-/// identity for that unit across samples — a socket's address pair on Linux, a
-/// `name.pid` on macOS — so [`AppUsageTracker`] can diff it tick to tick.
+/// identity for that unit across samples — a socket's address pair on Linux and
+/// macOS, a PID on Windows — so [`AppUsageTracker`] can diff it tick to tick.
 /// `rx`/`tx` are cumulative bytes in/out for that unit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UsageUnit {
@@ -64,27 +86,25 @@ pub struct UsageUnit {
 }
 
 /// What a [`UsageUnit`]'s key identifies, and so what its counter means when it
-/// *doesn't* simply grow. The three sources Rove reads disagree on this, and the
+/// *doesn't* simply grow. The sources Rove reads disagree on this, and the
 /// disagreement is the whole reason this type exists: the same reading has to be
 /// banked differently depending on where it came from.
+///
+/// Every byte-accurate source Rove reads is keyed by *socket*. That isn't a
+/// coincidence — see the module docs on why a per-process aggregate can't be
+/// accumulated at all.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CounterSemantics {
-    /// Linux `ss`: one key is one socket (its local/peer address pair). A live
-    /// socket's counter only ever grows, so a decrease means the address pair was
-    /// recycled by a brand-new socket carrying its own fresh counter — all of
-    /// that reading is traffic we haven't banked. A socket that turns up
-    /// mid-session counts in full for the same reason: it opened since the last
-    /// tick, so its whole counter accrued while we were watching. The sockets
-    /// already established in the *first* snapshot are the exception — see
+    /// Linux `ss`, and macOS `nettop`'s per-connection rows: one key is one
+    /// socket (its local/peer address pair). A live socket's counter only ever
+    /// grows, so a decrease means the address pair was recycled by a brand-new
+    /// socket carrying its own fresh counter — all of that reading is traffic we
+    /// haven't banked. A socket that turns up mid-session counts in full for the
+    /// same reason: it opened since the last tick, so its whole counter accrued
+    /// while we were watching. The sockets already established in the *first*
+    /// snapshot are the exception — see
     /// [`CounterSemantics::primes_on_first_snapshot`].
     Socket,
-    /// macOS `nettop -P`: one key is one process, and its counter is the sum over
-    /// that process's *currently open* sockets. Such a sum legitimately falls when
-    /// a socket closes and drops out of it, so a decrease is bookkeeping rather
-    /// than traffic and must credit nothing. A first sighting credits nothing
-    /// either: the process arrives carrying however much it moved before Rove was
-    /// watching, and this tracker only claims to count what it saw.
-    ProcessAggregate,
     /// Windows ETW: one key is one PID, and the counter is an accumulator Rove
     /// starts itself, so it's zero-based at our first sample and only grows. A
     /// first sighting is therefore all traffic we watched and counts in full; a
@@ -105,7 +125,6 @@ impl CounterSemantics {
             (Self::Socket, _) => now,
             (Self::PidAccumulator, None) => now,
             (Self::PidAccumulator, Some(_)) => 0,
-            (Self::ProcessAggregate, _) => 0,
         }
     }
 
@@ -113,14 +132,14 @@ impl CounterSemantics {
     /// whether the counters it carries can include traffic from before Rove was
     /// watching.
     ///
-    /// True for both OS-supplied sources: the sockets and processes already alive
-    /// at launch arrive holding however much they moved beforehand, and these
-    /// trackers only claim to count what they saw. False for Windows' ETW
-    /// accumulator, which Rove starts itself and so reads zero-based — its first
-    /// sample is entirely traffic we watched, and priming it away would lose it.
+    /// True for the OS-supplied socket sources: the sockets already open at
+    /// launch arrive holding however much they moved beforehand, and this tracker
+    /// only claims to count what it saw. False for Windows' ETW accumulator,
+    /// which Rove starts itself and so reads zero-based — its first sample is
+    /// entirely traffic we watched, and priming it away would lose it.
     pub(crate) const fn primes_on_first_snapshot(self) -> bool {
         match self {
-            Self::Socket | Self::ProcessAggregate => true,
+            Self::Socket => true,
             Self::PidAccumulator => false,
         }
     }
@@ -134,7 +153,7 @@ const fn platform_semantics() -> CounterSemantics {
     }
     #[cfg(target_os = "macos")]
     {
-        CounterSemantics::ProcessAggregate
+        CounterSemantics::Socket
     }
     #[cfg(windows)]
     {
@@ -171,13 +190,16 @@ pub async fn sample_units() -> Option<Vec<UsageUnit>> {
     {
         return crate::shell::try_run("ss -tinHp").await.map(|out| parse_ss(&out));
     }
-    // -P per-process (no per-connection sub-rows), -L 1 one sample then exit, -x
-    // raw byte counts (not human units), -n no DNS, -J restricts to our columns.
+    // Deliberately *without* -P: that prints one aggregate row per process, which
+    // can't be accumulated (see the module docs). Plain nettop prints each
+    // process's sockets beneath it, which can. No -m either, so every protocol's
+    // sockets are listed, not just TCP. -L 1 one sample then exit, -x raw byte
+    // counts (not human units), -n no DNS, -J restricts to our columns.
     #[cfg(target_os = "macos")]
     {
-        return crate::shell::try_run("nettop -P -L 1 -x -n -J bytes_in,bytes_out")
+        return crate::shell::try_run("nettop -L 1 -x -n -J bytes_in,bytes_out")
             .await
-            .map(|out| parse_nettop(&out));
+            .map(|out| parse_nettop_sockets(&out));
     }
     // Windows reads a running ETW accumulator rather than shelling out; this is
     // a synchronous snapshot that can't fail, so there's nothing to await.
@@ -260,37 +282,102 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
     units
 }
 
-/// Parse `nettop -P -x -J bytes_in,bytes_out` output. Each process row leads
-/// with `name.pid` followed by its two cumulative byte columns. Deliberately
-/// tolerant of whitespace- or comma-separated output (nettop's formatting
-/// varies): a row is any line whose first token ends in `.<digits>` and which
-/// has at least two integer columns after it. `bytes_in` is rx, `bytes_out` tx.
+/// Parse `nettop -L 1 -x -n -J bytes_in,bytes_out` (no `-P`) into per-socket
+/// readings. nettop alternates a process row (`name.pid`) with that process's
+/// socket rows beneath it (`tcp4 local<->peer`, `udp4 local<->peer`, …), each
+/// carrying its own cumulative counters. The process row is exactly the sum of
+/// the socket rows under it, so it is deliberately read only as the owner for
+/// the rows that follow — never banked, because that sum is a gauge over open
+/// sockets rather than an odometer (see the module docs).
+///
+/// Listeners print empty byte columns and are skipped, as are sockets with a
+/// wildcard peer — see [`meterable_peer`]. Loopback is *not* filtered (unlike
+/// [`crate::host_usage`], which lists hosts): a socket to `127.0.0.1` is still
+/// this process moving bytes.
 #[cfg(any(target_os = "macos", test))]
-fn parse_nettop(output: &str) -> Vec<UsageUnit> {
-    let mut units = Vec::new();
-    for line in output.lines() {
-        let fields: Vec<&str> =
-            line.split([',', ' ', '\t']).filter(|f| !f.is_empty()).collect();
-        let Some(first) = fields.first() else { continue };
+fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
+    let mut units: Vec<UsageUnit> = Vec::new();
+    // The process whose socket rows we're currently reading: (`name.pid`, name, pid).
+    let mut current: Option<(String, String, Option<u32>)> = None;
 
-        // A process row's first token is "name.pid" with a numeric pid; the
-        // header row ("bytes_in") and per-interface sub-rows fail this.
-        let Some((name, pid)) = first.rsplit_once('.') else { continue };
-        if name.is_empty() || pid.is_empty() || !pid.bytes().all(|b| b.is_ascii_digit()) {
+    for line in output.lines() {
+        // Split on ',' alone, keeping empty fields, so the byte columns stay at
+        // fixed indices — a socket row's label contains spaces, so splitting on
+        // whitespace too would shift them.
+        let mut fields = line.split(',');
+        let Some(label) = fields.next().map(str::trim) else { continue };
+        if label.is_empty() {
             continue;
         }
 
-        let nums: Vec<u64> = fields[1..].iter().filter_map(|f| f.parse::<u64>().ok()).collect();
-        let (Some(&rx), Some(&tx)) = (nums.first(), nums.get(1)) else { continue };
-        units.push(UsageUnit {
-            key: (*first).to_string(),
-            name: name.to_string(),
-            rx,
-            tx,
-            pid: pid.parse::<u32>().ok(),
-        });
+        // A socket row, attributed to the process row above it.
+        if let Some((_, peer)) = label.split_once("<->") {
+            let Some((owner, name, pid)) = &current else { continue };
+            if !meterable_peer(peer) {
+                continue;
+            }
+            let rx = fields.next().and_then(|f| f.trim().parse::<u64>().ok());
+            let tx = fields.next().and_then(|f| f.trim().parse::<u64>().ok());
+            let (Some(rx), Some(tx)) = (rx, tx) else { continue };
+            units.push(UsageUnit {
+                // Scope the socket to its owner: two processes can each hold a
+                // socket printing the same label.
+                key: format!("{owner}|{label}"),
+                name: name.clone(),
+                rx,
+                tx,
+                pid: *pid,
+            });
+            continue;
+        }
+
+        // Otherwise a process row, "name.pid" with a numeric pid. Anything else
+        // (the header row) clears the owner so stray rows aren't misattributed.
+        match label.rsplit_once('.') {
+            Some((name, pid))
+                if !name.is_empty()
+                    && !pid.is_empty()
+                    && pid.bytes().all(|b| b.is_ascii_digit()) =>
+            {
+                current = Some((label.to_string(), name.to_string(), pid.parse().ok()));
+            }
+            _ => current = None,
+        }
     }
+
+    // Defensive: a concrete peer makes a socket's 4-tuple unique, so this should
+    // never fire. It matters because the failure is silent and severe — several
+    // rows sharing a key don't just lose detail, they re-bank each other's whole
+    // counters on every tick (the wildcard rows above did exactly that, reading a
+    // music player at 1.4 GB in twelve seconds). Dropping a key we can't tell
+    // apart under-counts it; metering it wrong doesn't stay bounded.
+    let mut seen: HashMap<String, usize> = HashMap::with_capacity(units.len());
+    for unit in &units {
+        *seen.entry(unit.key.clone()).or_default() += 1;
+    }
+    units.retain(|unit| seen.get(&unit.key) == Some(&1));
     units
+}
+
+/// Whether a socket's peer gives it a meterable identity.
+///
+/// nettop names a socket only by its address pair, so an *unconnected* socket —
+/// peer `*:*` (or `*.*` for v6) — has no identity at all: one process can hold
+/// several that print the identical label with different counters, and no column
+/// nettop offers tells them apart (a music player was observed holding nine
+/// `udp4 *:5353<->*:*` mDNS sockets on the same interface). Keyed together they
+/// re-bank each other every tick; keyed apart they can't be. So they aren't
+/// counted, and the loss is bounded: unconnected UDP is DNS, mDNS and other
+/// service discovery — chatter, not payload. Everything carrying real volume
+/// (all TCP, and connected UDP like QUIC) names a concrete peer and is metered.
+///
+/// This is a property of the row alone, deliberately: a rule that depended on
+/// what *else* is in the sample would make a socket start counting the moment its
+/// siblings closed, banking its whole history as if it were new.
+#[cfg(any(target_os = "macos", test))]
+fn meterable_peer(peer: &str) -> bool {
+    let peer = peer.trim();
+    !peer.is_empty() && !peer.starts_with('*')
 }
 
 #[derive(Default, Clone, Copy)]
@@ -588,27 +675,107 @@ TIME-WAIT 0 0 192.168.1.42:40120 35.186.224.25:443
     }
 
     #[test]
-    fn parses_nettop_process_rows() {
-        // A header row then two process rows; tolerant of comma or column
-        // separation. First numeric column is bytes_in (rx), second bytes_out.
+    fn parses_nettop_socket_rows_and_ignores_the_process_row() {
+        // Real `nettop -L 1 -x -n -J bytes_in,bytes_out` shape: a header, then
+        // each process followed by its sockets. The process row is exactly the
+        // sum of its sockets, so it must never become a unit of its own —
+        // banking both would double-count. Listeners print empty byte columns.
         let out = "\
-time,bytes_in,bytes_out,
-firefox.1234,52310,18422,
-Spotify.567,1200,900,";
-        let units = parse_nettop(out);
-        assert_eq!(units.len(), 2);
+,bytes_in,bytes_out,
+launchd.1,0,0,
+tcp4 127.0.0.1:8021<->*:*,,,
+apsd.375,87292,449441,
+tcp4 192.168.2.16:61151<->17.57.144.246:5223,87292,449441,
+syslogd.368,0,422,
+udp4 192.168.2.16:54845<->192.168.2.1:514,0,422,";
+        let units = parse_nettop_sockets(out);
+        assert_eq!(units.len(), 2, "one unit per socket carrying counters, none per process");
         assert_eq!(
             units[0],
             UsageUnit {
-                key: "firefox.1234".into(),
-                name: "firefox".into(),
-                rx: 52310,
-                tx: 18422,
-                pid: Some(1234),
+                key: "apsd.375|tcp4 192.168.2.16:61151<->17.57.144.246:5223".into(),
+                name: "apsd".into(),
+                rx: 87292,
+                tx: 449441,
+                pid: Some(375),
             }
         );
-        assert_eq!(units[1].name, "Spotify");
-        assert_eq!(units[1].pid, Some(567));
+        // A connected UDP socket is metered exactly like TCP.
+        assert_eq!(units[1].name, "syslogd");
+        assert_eq!(units[1].tx, 422);
+    }
+
+    #[test]
+    fn nettop_socket_rows_without_an_owning_process_are_dropped() {
+        // The header row clears the owner, so a stray socket row can't be
+        // misattributed to whichever process happened to be parsed last.
+        let out = "\
+,bytes_in,bytes_out,
+tcp4 10.0.0.1:1<->10.0.0.2:2,500,500,";
+        assert!(parse_nettop_sockets(out).is_empty());
+    }
+
+    /// Two processes can each hold a socket printing the same label, so the key
+    /// has to be scoped to the owner or they'd collide into one unit.
+    #[test]
+    fn nettop_socket_keys_are_scoped_to_their_process() {
+        let out = "\
+,bytes_in,bytes_out,
+firefox.1,10,0,
+tcp4 10.0.0.1:1<->10.0.0.9:443,10,0,
+Spotify.2,20,0,
+tcp4 10.0.0.1:1<->10.0.0.9:443,20,0,";
+        let units = parse_nettop_sockets(out);
+        assert_eq!(units.len(), 2);
+        assert_ne!(units[0].key, units[1].key);
+    }
+
+    /// The TIDAL regression. One process holding several unconnected sockets that
+    /// print the *identical* label with different counters is real nettop output,
+    /// and nothing distinguishes them. Keyed together they telescope — each tick
+    /// credits the largest counter afresh — which read a music player at 1.4 GB
+    /// in twelve seconds. They must not be metered at all.
+    #[test]
+    fn nettop_wildcard_peer_sockets_are_not_metered() {
+        let out = "\
+,bytes_in,bytes_out,
+TIDAL.44881,301974419,328,
+udp4 *:5353<->*:*,19623541,40,
+udp4 *:5353<->*:*,23292855,40,
+udp4 *:5353<->*:*,51792185,40,
+tcp4 192.168.2.16:5:1<->17.248.1.1:443,4096,128,";
+        let units = parse_nettop_sockets(out);
+        assert_eq!(units.len(), 1, "only the socket with a concrete peer is meterable");
+        assert_eq!(units[0].rx, 4096);
+    }
+
+    /// The same output, driven through the tracker across ticks: the wildcard
+    /// sockets are inert, so a genuinely idle app banks nothing rather than
+    /// re-banking its mDNS history every tick.
+    #[test]
+    fn wildcard_peer_sockets_do_not_accumulate_across_ticks() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        let out = "\
+,bytes_in,bytes_out,
+TIDAL.44881,301974419,0,
+udp4 *:5353<->*:*,19623541,0,
+udp4 *:5353<->*:*,51792185,0,";
+        for _ in 0..5 {
+            t.ingest(parse_nettop_sockets(out));
+        }
+        assert!(t.summary().apps.is_empty(), "phantom bytes from indistinguishable sockets");
+    }
+
+    /// IPv6 wildcards print `*.*` rather than `*:*`.
+    #[test]
+    fn meterable_peer_rejects_both_wildcard_spellings() {
+        assert!(!meterable_peer("*:*"));
+        assert!(!meterable_peer("*.*"));
+        assert!(!meterable_peer(""));
+        assert!(meterable_peer("17.248.1.1:443"));
+        assert!(meterable_peer("2606::1.443"));
+        // Loopback is still this process moving bytes, and is uniquely keyed.
+        assert!(meterable_peer("127.0.0.1:8021"));
     }
 
     #[test]
@@ -677,48 +844,49 @@ Spotify.567,1200,900,";
         assert_eq!(s.apps[0].rx_bytes, 500 + 200 + 30);
     }
 
-    /// The mDNSResponder regression: a `nettop -P` per-process counter falls
-    /// whenever one of that process's sockets closes and leaves the aggregate.
-    /// Crediting the full reading on the way down re-banked the process's entire
-    /// history every time — which is how a DNS proxy holding ~130 MB of lifetime
-    /// counters and churning a socket per query read as gigabytes.
+    /// The appstored regression, and the reason this module reads sockets rather
+    /// than `nettop -P`: a downloader holds several connections at once, and they
+    /// finish and are replaced while the others are still pulling. Summed per
+    /// process the tick nets out *downwards* — a fall — so an aggregate reader
+    /// banks nothing and the surviving sockets' traffic vanishes. Per socket it
+    /// is all still there. Read as `-P` this tick looks like 20 MB -> 17 MB;
+    /// 7 MB really moved.
     #[test]
-    fn process_aggregate_source_credits_nothing_when_the_counter_falls() {
-        let mut t = AppUsageTracker::with_semantics(CounterSemantics::ProcessAggregate);
-        let tick = |rx: u64| {
-            vec![UsageUnit { key: "mDNSResponder.537".into(), name: "mDNSResponder".into(), rx, tx: 0, pid: Some(537) }]
+    fn socket_source_counts_traffic_when_a_sibling_socket_closes() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        let sock = |k: &str, rx: u64| UsageUnit {
+            key: format!("appstored.42|{k}"),
+            name: "appstored".into(),
+            rx,
+            tx: 0,
+            pid: Some(42),
         };
-        // First sighting: 132 MB of history that predates us. Baseline only.
-        t.ingest(tick(132_000_000));
-        // A socket closes and drops out of the aggregate, four times over.
-        t.ingest(tick(131_900_000));
-        t.ingest(tick(131_800_000));
-        t.ingest(tick(131_700_000));
-        t.ingest(tick(131_600_000));
-        assert!(t.summary().apps.is_empty(), "phantom bytes banked from a falling counter");
-
-        // Real growth from the last baseline still counts.
-        t.ingest(tick(131_600_500));
-        assert_eq!(t.summary().apps[0].rx_bytes, 500);
+        // First snapshot: two connections already open, 10 MB each. Baseline.
+        t.ingest(vec![sock("a", 10_000_000), sock("b", 10_000_000)]);
+        // "a" finishes and closes. In the same tick "b" pulls 4 MB more and a
+        // fresh "c" pulls 3 MB.
+        t.ingest(vec![sock("b", 14_000_000), sock("c", 3_000_000)]);
+        assert_eq!(t.summary().apps[0].rx_bytes, 7_000_000);
     }
 
-    /// A process with no open sockets drops out of `nettop` entirely and comes
-    /// back later. Its return is a first sighting again, and must not re-bank the
-    /// history it returns carrying.
+    /// A socket that closes is gone for good; its address pair coming back is a
+    /// brand-new socket with a fresh counter, not the old one rewound. The banked
+    /// history must survive the round trip either way.
     #[test]
-    fn process_aggregate_source_does_not_rebank_history_on_reappearance() {
-        let mut t = AppUsageTracker::with_semantics(CounterSemantics::ProcessAggregate);
-        let tick = |rx: u64| vec![UsageUnit { key: "cupsd.99".into(), name: "cupsd".into(), rx, tx: 0, pid: Some(99) }];
-        t.ingest(tick(5_000_000));
+    fn socket_source_does_not_rebank_history_when_a_key_is_recycled() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        let tick = |rx: u64| vec![UsageUnit { key: "cupsd.99|tcp4 a<->b".into(), name: "cupsd".into(), rx, tx: 0, pid: Some(99) }];
+        t.ingest(tick(5_000_000)); // first snapshot: baseline
         t.ingest(tick(5_000_400)); // +400 watched
-        t.ingest(vec![]); // all sockets closed: absent from the sample
-        t.ingest(tick(5_000_400)); // back, carrying the same history
-        assert_eq!(t.summary().apps[0].rx_bytes, 400);
+        t.ingest(vec![]); // socket closed: absent from the sample
+        // The address pair is recycled by a new socket, counting from scratch.
+        t.ingest(tick(600));
+        assert_eq!(t.summary().apps[0].rx_bytes, 1000);
     }
 
-    /// Windows' ETW accumulator is zero-based at Rove's first sample, so unlike a
-    /// `nettop` process row or an `ss` socket a first sighting is all traffic we
-    /// watched — and the first snapshot must *not* be primed away.
+    /// Windows' ETW accumulator is zero-based at Rove's first sample, so unlike
+    /// an `ss` or `nettop` socket a first sighting is all traffic we watched —
+    /// and the first snapshot must *not* be primed away.
     #[test]
     fn pid_accumulator_source_counts_a_first_sighting_in_full() {
         let mut t = AppUsageTracker::with_semantics(CounterSemantics::PidAccumulator);
