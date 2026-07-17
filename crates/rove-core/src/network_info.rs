@@ -121,16 +121,15 @@ pub async fn public_ip() -> Option<String> {
         .timeout(std::time::Duration::from_secs(5))
         .build()
         .ok()?;
-    let ip = client
-        .get("https://api.ipify.org")
-        .send()
-        .await
-        .ok()?
-        .text()
-        .await
-        .ok()?
-        .trim()
-        .to_string();
+    let response = client.get("https://api.ipify.org").send().await.ok()?;
+    // The parse below already rejects an error page, but only by failing to read
+    // as an address — which looks the same as being offline. Say which it was.
+    let status = response.status();
+    if !status.is_success() {
+        tracing::warn!("api.ipify.org public-IP lookup returned HTTP {status}");
+        return None;
+    }
+    let ip = response.text().await.ok()?.trim().to_string();
     (!ip.is_empty() && ip.parse::<std::net::IpAddr>().is_ok()).then_some(ip)
 }
 

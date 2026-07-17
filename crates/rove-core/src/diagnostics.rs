@@ -73,23 +73,39 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 /// Resolve the WAN-side identity (ISP, ASN, location, public IP) from ipwho.is
 /// — a free, keyless, HTTPS geolocation service. Returns None when there's no
 /// internet or the lookup fails; the card then falls back to a quieter state.
+///
+/// This is the only lookup that still leaves the machine: ISP name, ASN, and
+/// city aren't in the bundled IP-to-country table (see [`crate::geoip`]), and
+/// it's one request about *our own* address. Per-peer flags used to share this
+/// service and could exhaust its free daily quota within minutes of churn,
+/// which silently blanked this card too; they're resolved locally now.
 pub async fn isp_info() -> Option<IspInfo> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(5))
         .build()
         .ok()?;
-    let body = client
-        .get("https://ipwho.is/")
-        .send()
-        .await
-        .ok()?
-        .text()
-        .await
-        .ok()?;
+    let response = client.get("https://ipwho.is/").send().await.ok()?;
+    // reqwest treats 4xx/5xx as Ok, so a throttled or errored lookup would sail
+    // through to the parse below and read as "no data" — indistinguishable from
+    // being offline. Name it in the log instead: this card going quiet is the
+    // first symptom of a quota problem, and it used to be undiagnosable.
+    let status = response.status();
+    if !status.is_success() {
+        tracing::warn!("ipwho.is ISP lookup returned HTTP {status}");
+        return None;
+    }
+    let body = response.text().await.ok()?;
     let json: serde_json::Value = serde_json::from_str(&body).ok()?;
-    // ipwho.is answers 200 with `{"success": false, ...}` on lookup failure
-    // (rate limit, reserved range) rather than an HTTP error — treat as no data.
+    // ipwho.is also answers 200 with `{"success": false, "message": ...}` for
+    // failures it considers routine (verified against a malformed address), so
+    // the status check alone isn't enough — and `message` is what distinguishes
+    // a rate limit from a bad lookup.
     if json.get("success").and_then(serde_json::Value::as_bool) == Some(false) {
+        let message = json
+            .get("message")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("no message");
+        tracing::warn!("ipwho.is ISP lookup unsuccessful: {message}");
         return None;
     }
 
@@ -107,10 +123,20 @@ pub async fn isp_info() -> Option<IspInfo> {
         .and_then(serde_json::Value::as_u64)
         .filter(|&n| n > 0)
         .map(|n| format!("AS{n}"));
+    // Unlike the other fields, this one ends up inside a URL rather than being
+    // rendered as text, so it's held to a hostname's shape instead of passing a
+    // third party's string through. The card percent-encodes it regardless —
+    // this just keeps junk from becoming an icon request that can only 404.
+    let domain = connection.and_then(|c| str_field(c, "domain")).filter(|d| {
+        d.len() <= 253
+            && d.contains('.')
+            && d.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-')
+    });
 
     Some(IspInfo {
         name,
         asn,
+        domain,
         city: str_field(&json, "city"),
         region: str_field(&json, "region"),
         country: str_field(&json, "country"),

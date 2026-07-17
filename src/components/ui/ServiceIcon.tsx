@@ -35,14 +35,27 @@ interface ServiceIconProps {
    * it's absent or fails to load.
    */
   readonly src?: string | null
+  /**
+   * What to render when no icon resolves. `'monogram'` (the default) keeps a
+   * list's rows aligned by always occupying the box. `'none'` renders nothing —
+   * for a standalone slot, where a bare letter reads as a glitch rather than as
+   * a brand.
+   */
+  readonly fallback?: 'monogram' | 'none'
 }
 
 /** An icon for a service or app, resolved in three tiers: an explicit `src`
  *  (e.g. the app's real OS icon), then the registered-domain favicon via Google's
  *  icon service (requested at 64px so it stays crisp on high-DPI screens even in a
- *  ~16px box), then a letter monogram. Each tier falls through to the next on a
- *  missing source or a load error. */
-export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): JSX.Element {
+ *  ~16px box), then a letter monogram (or nothing — see `fallback`). Each tier
+ *  falls through to the next on a missing source or a load error. */
+export function ServiceIcon({
+  host,
+  name,
+  size = 16,
+  src,
+  fallback = 'monogram',
+}: ServiceIconProps): JSX.Element | null {
   const [srcFailed, setSrcFailed] = useState(false)
   // Favicon failure is tracked per host in `failedFavicons`, not in state, so it
   // survives remounts; this only re-renders us when a load error records one.
@@ -76,6 +89,8 @@ export function ServiceIcon({ host, name, size = 16, src }: ServiceIconProps): J
       />
     )
   }
+
+  if (fallback === 'none') return null
 
   return (
     <span className="service-icon service-icon--fallback" style={dimensions} aria-hidden="true">

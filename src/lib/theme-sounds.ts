@@ -1,4 +1,5 @@
 import { getSetting } from '@/hooks/useSetting'
+import { IS_WEBKIT_GTK } from '@/lib/platform'
 import switchOnUrl from '@/assets/sounds/switch-on.mp3'
 import switchOffUrl from '@/assets/sounds/switch-off.mp3'
 
@@ -9,6 +10,11 @@ import switchOffUrl from '@/assets/sounds/switch-off.mp3'
  * Playback is best-effort: audio is unavailable in some webviews, and the
  * first play before any user gesture can be blocked by autoplay policy. Every
  * failure is swallowed so a missing sound can never disturb the theme swap.
+ *
+ * WebKitGTK is the one engine where "best-effort" isn't enough to keep us safe:
+ * it decodes `<audio>` through GStreamer, which the AppImage doesn't bundle, so
+ * the failure lands in the media backend rather than as a rejected play()
+ * promise we could swallow. We skip the sound there outright — see IS_WEBKIT_GTK.
  */
 
 // Gate playback on the same persisted setting the Settings toggle writes.
@@ -42,6 +48,7 @@ const playing = new Set<HTMLAudioElement>()
 
 /** Play the switch sound for the theme being switched *to*. */
 export function playThemeSwitchSound(target: 'light' | 'dark'): void {
+  if (IS_WEBKIT_GTK) return
   if (!getSetting(SOUND_SETTING, true)) return
   const base = template(target === 'light' ? switchOnUrl : switchOffUrl)
   if (!base) return

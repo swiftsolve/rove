@@ -63,6 +63,9 @@ export interface IspInfo {
   readonly name: string | null
   /** Autonomous-system number, formatted "AS15169". */
   readonly asn: string | null
+  /** The ISP's registered domain, e.g. "bell.ca", or null when the lookup didn't
+   *  report one. Resolved to a brand icon on the card. */
+  readonly domain: string | null
   readonly city: string | null
   readonly region: string | null
   readonly country: string | null
@@ -111,11 +114,14 @@ export interface ServiceTransitionEvent {
   readonly ts: number
 }
 
-/** A positive summary: `count` services were up (a baseline, or a full recovery
- *  after an outage). */
+/** A summary of the tracked services: `count` of `total` were up (a baseline, or
+ *  a full recovery after an outage). A recovery always has `count === total`; a
+ *  baseline can be partial, when a service was already down the first time
+ *  monitoring looked. */
 export interface ServicesRunningEvent {
   readonly type: 'running'
   readonly count: number
+  readonly total: number
   readonly ts: number
 }
 

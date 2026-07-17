@@ -6,6 +6,7 @@ import { ConnectionIcon, DnsIcon, GlobeIcon, RouterIcon } from '@/components/ui/
 import { MetricValue } from '@/components/ui/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
+import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
 import './DiagnosticsView.css'
@@ -149,11 +150,29 @@ export default function DiagnosticsView({
             title="ISP"
             icon={<GlobeIcon size={15} />}
             bodyClassName="row-list diag-router"
+            // The brand mark, only if one actually resolves. Plenty of ISPs have
+            // no favicon (Comcast, for one), and a lone letter in this corner
+            // would read as a glitch rather than a brand — so unlike a list row,
+            // this slot stays empty rather than falling back to a monogram.
+            action={
+              diagnostics?.isp?.domain ? (
+                <ServiceIcon
+                  host={diagnostics.isp.domain}
+                  name={diagnostics.isp.name ?? 'ISP'}
+                  size={18}
+                  fallback="none"
+                />
+              ) : undefined
+            }
           >
             {diagnostics?.isp ? (
               <>
                 <DataRow label="ISP" value={diagnostics.isp.name} />
                 <DataRow label="ASN" value={diagnostics.isp.asn} />
+                {/* "Website", not "Domain" — in a network tool the latter reads
+                    as a DHCP search domain. DataRow hides itself when null, so
+                    a lookup that named no domain simply has no row. */}
+                <DataRow label="Website" value={diagnostics.isp.domain} />
                 <DataRow label="Location" value={formatLocation(diagnostics.isp)} />
                 <DataRow label="Public IP" value={diagnostics.isp.publicIp} />
               </>
