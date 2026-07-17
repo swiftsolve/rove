@@ -57,8 +57,10 @@ const APP_USAGE_INTERVAL: Duration = Duration::from_secs(4);
 pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
-            let units = rove_core::app_usage::sample_units().await;
-            {
+            // A failed sample is skipped, not ingested as an empty one: the
+            // tracker would read that as every unit having vanished, drop its
+            // baselines, and re-credit the world on the next good tick.
+            if let Some(units) = rove_core::app_usage::sample_units().await {
                 let state = handle.state::<AppState>();
                 lock(&state.app_usage).ingest(units);
             }
@@ -83,14 +85,20 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     use std::collections::HashMap;
     tauri::async_runtime::spawn(async move {
         loop {
-            let readings = rove_core::host_usage::sample().await;
+            let sampled = rove_core::host_usage::sample().await;
 
             // Ingest and capture what still needs resolving, dropping the lock
             // before any await (a std Mutex must never be held across .await).
             let (need_hosts, need_countries) = {
                 let state = handle.state::<AppState>();
                 let mut tracker = lock(&state.host_usage);
-                tracker.ingest(readings);
+                // A failed sample is skipped rather than ingested as an empty
+                // one, which the tracker would read as every socket having
+                // closed. The enrichment below still runs: it drains whatever
+                // peers are already pending, and doesn't need this tick's rows.
+                if let Some(readings) = sampled {
+                    tracker.ingest(readings);
+                }
                 (tracker.pending_hostnames(), tracker.pending_countries())
             };
 
