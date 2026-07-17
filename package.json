@@ -1,6 +1,6 @@
 {
   "name": "rove",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Rove — a desktop app for Wi-Fi and Ethernet network monitoring",
   "private": true,
   "type": "module",

@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Rove",
   "mainBinaryName": "Rove",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "identifier": "com.rove.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -69,7 +69,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgzNUM2QkFEMkY2ODRERDMKUldUVFRXZ3ZyV3RjZzdHUFJiMk4zSnNZUEFoaGFBM0N2a1NoRVBXbWMzRW5VTVpraDZRS2tMS3YK",
+      "pubkey": "ZFc1MGNuVnpkR1ZrSUdOdmJXMWxiblE2SUcxcGJtbHphV2R1SUhCMVlteHBZeUJyWlhrNklFRTBRVGczT1VVMU5qVTRSRUZHUmtNS1VsZFVPSEkwTVd3MVdHMXZjRVUwY1RsWmRISmpSRGxCWkVFM0wzRTBURkJKY0VKME1VaDRjVWhwVmxacFYwdGpaSHBhZVU1aFdXa0s=",
       "endpoints": [
         "https://github.com/swiftsolve/rove/releases/latest/download/latest.json"
       ]
