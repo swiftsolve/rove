@@ -506,6 +506,21 @@ pub(crate) fn windows_peer_units() -> Vec<PeerUnit> {
     etw::sample_peer_units()
 }
 
+/// Why per-app usage (and, sharing the same session, Hosts/Traffic) is
+/// unavailable, for the UI's unsupported state. On Windows it's the last ETW
+/// start error, or `None` once the session is running; other platforms are
+/// always supported, so `None`.
+pub fn support_detail() -> Option<String> {
+    #[cfg(windows)]
+    {
+        etw::last_error()
+    }
+    #[cfg(not(windows))]
+    {
+        None
+    }
+}
+
 /// Windows per-app metering via the Microsoft-Windows-Kernel-Network ETW
 /// provider. The provider emits one event per network send/receive carrying the
 /// owning `PID`, the byte `size`, and the connection's local/remote addresses
@@ -580,6 +595,10 @@ mod etw {
     /// Serialises start attempts so a burst of concurrent samples can't race two
     /// sessions open at once.
     static START_LOCK: Mutex<()> = Mutex::new(());
+    /// The last failure from [`ensure_started`], surfaced in the UI's
+    /// unsupported state so a user (or we) can see *why* the session won't open
+    /// without hunting the log. `None` once it's running.
+    static LAST_ERROR: LazyLock<Mutex<Option<String>>> = LazyLock::new(|| Mutex::new(None));
 
     /// This host's interface IPs. `if-addrs` covers IPv4 and IPv6; an error
     /// (rare) yields an empty set, which just falls the peer pick back to the
@@ -714,14 +733,15 @@ mod etw {
                 });
                 std::mem::forget(trace);
                 ACTIVE.store(true, Ordering::Release);
+                *LAST_ERROR.lock().unwrap() = None;
             }
             // Left inactive so the next sample retries. The usual cause is
-            // running without elevation; the app's manifest requests it, but a
-            // dev/unbundled run or a denied UAC prompt lands here.
+            // running without elevation, but not the only one — record the exact
+            // error so the UI can show it rather than only blaming elevation.
             Err(e) => {
-                tracing::warn!(
-                    "per-app ETW trace could not start — run Rove as administrator ({e:?})"
-                );
+                let detail = format!("{e:?}");
+                tracing::warn!("per-app ETW trace could not start: {detail}");
+                *LAST_ERROR.lock().unwrap() = Some(detail);
             }
         }
     }
@@ -729,6 +749,15 @@ mod etw {
     /// True while the ETW session is running.
     pub fn is_active() -> bool {
         ACTIVE.load(Ordering::Acquire)
+    }
+
+    /// The last ETW start failure, or `None` while the session is running. Shown
+    /// in the unsupported state so the real cause is visible.
+    pub fn last_error() -> Option<String> {
+        if ACTIVE.load(Ordering::Acquire) {
+            return None;
+        }
+        LAST_ERROR.lock().unwrap().clone()
     }
 
     /// Resolve process names for the given PIDs via sysinfo, caching them so a
