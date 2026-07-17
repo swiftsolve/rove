@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { RestartAsAdminAction } from '@/components/ui/RestartAsAdminAction'
 import { Spinner } from '@/components/ui/Spinner'
 import './TrafficView.css'
 
@@ -164,6 +165,7 @@ export default function TrafficView({
           icon={InfoIcon}
           title="Traffic types aren’t available"
           hint={TRAFFIC_UNSUPPORTED_HINT}
+          action={<RestartAsAdminAction />}
         />
       ) : isLoading && !hasData ? (
         <div className="view-empty">
