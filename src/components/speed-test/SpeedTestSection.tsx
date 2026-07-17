@@ -121,7 +121,6 @@ function buildStaticWave(width: number): string {
 
 function WavyProgress({ progress }: { readonly progress: number }): JSX.Element {
   const target = Math.max(0, Math.min(100, progress))
-  if (target === 0) persistedPct = 0
   const targetRef = useRef(target)
   targetRef.current = target
 
