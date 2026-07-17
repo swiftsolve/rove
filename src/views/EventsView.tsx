@@ -30,7 +30,7 @@ const FEED_HINT =
   'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
 
 const EMPTY_HINT =
-  'When a device joins, leaves, or changes its IP or name, it shows up here. Run a scan to check for activity.'
+  'Devices joining, leaving, or changing appear here. Run a scan to check.'
 
 interface EventsViewProps {
   readonly events: readonly NetworkEvent[]

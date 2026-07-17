@@ -20,6 +20,7 @@ import {
   OfflineIcon,
   TrashIcon,
 } from '@/components/ui/Icons'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { formatDuration } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { useServiceHistory } from '@/hooks/useServiceHistory'
@@ -341,14 +342,11 @@ export function ServicesTimelinePage({
       action={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
     >
       {events.length === 0 ? (
-        <div className="view-empty stl-empty">
-          <HistoryIcon size={28} className="stl-empty-icon" />
-          <p className="stl-empty-title">No outages recorded yet</p>
-          <p className="text-muted stl-empty-hint">
-            When a tracked service goes down or comes back, it shows up here. Rove records changes
-            while the Connection tab is open.
-          </p>
-        </div>
+        <EmptyState
+          icon={HistoryIcon}
+          title="No outages yet"
+          hint="Outages for tracked services appear here while the Connection tab is open."
+        />
       ) : (
         <div className="stl-timeline">
           {groupByDay(events, now).map((group) => (
