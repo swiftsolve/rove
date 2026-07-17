@@ -280,6 +280,59 @@ pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSumma
     lock(&state.host_usage).traffic_summary()
 }
 
+/// Relaunch Rove elevated so the ETW session behind the Apps/Hosts/Traffic
+/// views can open (it needs administrator rights). Windows-only: launches an
+/// elevated copy via the shell's `RunAs` verb — which raises the UAC prompt —
+/// then exits this unelevated instance once the elevated one is on its way. If
+/// the user dismisses the prompt nothing is launched, so this instance stays up
+/// and the caller surfaces the returned error.
+#[tauri::command]
+pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // Don't flash a console window for the launcher PowerShell.
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+        let exe = std::env::current_exe().map_err(err_str)?;
+        // Single-quote the path for PowerShell, doubling any embedded quote.
+        let exe = exe.to_string_lossy().replace('\'', "''");
+        // `Start-Process -Verb RunAs` raises the UAC prompt. Its failure on a
+        // dismissed prompt is non-terminating by default (PowerShell would still
+        // exit 0), so force it terminating with `-ErrorAction Stop` and map the
+        // decline to a non-zero exit — that's how we tell "elevated" from
+        // "declined". Run on a blocking thread: the prompt can sit for as long
+        // as the user takes, and we deliberately don't time it out.
+        let script =
+            format!("try {{ Start-Process -FilePath '{exe}' -Verb RunAs -ErrorAction Stop }} catch {{ exit 1 }}");
+        let launched = tokio::task::spawn_blocking(move || {
+            std::process::Command::new("powershell")
+                .args(["-NoProfile", "-Command", &script])
+                .creation_flags(CREATE_NO_WINDOW)
+                .status()
+                .map(|s| s.success())
+        })
+        .await
+        .map_err(err_str)?
+        .map_err(err_str)?;
+
+        if launched {
+            // Hand off to the elevated instance. There's no single-instance
+            // guard, so the brief overlap is fine — ferrisetw stops the old
+            // ETW session by name before the new one opens it.
+            app.exit(0);
+            Ok(())
+        } else {
+            Err("Elevation was declined.".to_string())
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = app;
+        Err("Elevation is only supported on Windows.".to_string())
+    }
+}
+
 #[tauri::command]
 pub fn get_speed_history(
     store: tauri::State<'_, Arc<Store>>,
