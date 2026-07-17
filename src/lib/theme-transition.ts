@@ -1,20 +1,6 @@
 import { flushSync } from 'react-dom'
+import { IS_WEBKIT_GTK } from '@/lib/platform'
 import { playThemeSwitchSound } from '@/lib/theme-sounds'
-
-/**
- * WebKitGTK (the Linux Tauri webview) crashes the whole app when the View
- * Transitions API snapshots the page for the theme swap: on NVIDIA the snapshot
- * runs through WebKit's accelerated compositor, which segfaults in
- * libnvidia-eglcore (confirmed via core dump — SIGSEGV on the main thread inside
- * libwebkit2gtk). WebKitGTK 2.52 advertises startViewTransition, so we can't
- * feature-detect our way out; detect the engine (Linux, AppleWebKit, not
- * Chromium) and fall back to the instant swap there. Harmless everywhere else.
- */
-function isWebKitGtk(): boolean {
-  if (typeof navigator === 'undefined') return false
-  const ua = navigator.userAgent
-  return /\bLinux\b/.test(ua) && /AppleWebKit/.test(ua) && !/Chrom(e|ium)/.test(ua)
-}
 
 interface ViewTransition {
   readonly ready: Promise<void>
@@ -41,9 +27,10 @@ let running: RunningSwap | null = null
  * circle from the centre of the window rather than the browser's default
  * cross-fade. The View Transitions API snapshots the old and new states; we then
  * drive the new snapshot's clip-path from a zero-radius circle out to one that
- * covers the whole window (radius = corner distance from centre). Engines
- * without the API (older WebKitGTK) and users who prefer reduced motion just get
- * an instant swap — the state change still applies, only the animation is skipped.
+ * covers the whole window (radius = corner distance from centre). Engines without
+ * the API, WebKitGTK (where it's advertised but segfaults — see IS_WEBKIT_GTK),
+ * and users who prefer reduced motion just get an instant swap — the state change
+ * still applies, only the animation is skipped.
  *
  * `persist` stores the preference and re-renders React state; it always runs
  * exactly once, whether or not an animation plays.
@@ -87,7 +74,7 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
     startViewTransition?: (callback: () => void) => ViewTransition
   }
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!doc.startViewTransition || reduceMotion || isWebKitGtk()) {
+  if (!doc.startViewTransition || reduceMotion || IS_WEBKIT_GTK) {
     persist()
     return
   }
