@@ -13,6 +13,7 @@ import { MetricValue } from '@/components/ui/MetricValue'
 import { ChevronDownIcon, GlobeIcon, HelpIcon, InfoIcon, IpIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { RestartAsAdminAction } from '@/components/ui/RestartAsAdminAction'
 import { Spinner } from '@/components/ui/Spinner'
 import './HostsView.css'
 
@@ -245,6 +246,7 @@ export default function HostsView({
           icon={InfoIcon}
           title="Per-app hosts aren’t available"
           hint={HOST_USAGE_UNSUPPORTED_HINT}
+          action={<RestartAsAdminAction />}
         />
       ) : isLoading && !hasData ? (
         <div className="view-empty">

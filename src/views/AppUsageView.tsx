@@ -8,6 +8,7 @@ import { MetricValue } from '@/components/ui/MetricValue'
 import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, InfoIcon, LayersIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { RestartAsAdminAction } from '@/components/ui/RestartAsAdminAction'
 import { DotSeparator } from '@/components/ui/DotSeparator'
 import { Spinner } from '@/components/ui/Spinner'
 import './AppUsageView.css'
@@ -163,6 +164,7 @@ export default function AppUsageView({
           icon={InfoIcon}
           title="Per-app usage isn’t available"
           hint={APP_USAGE_UNSUPPORTED_HINT}
+          action={<RestartAsAdminAction />}
         />
       ) : isLoading && !hasData ? (
         <div className="view-empty">
