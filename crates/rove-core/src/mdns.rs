@@ -229,7 +229,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                         .and_then(|s| s.trim().parse::<u32>().ok());
                     refine_cast_kind(ca, model.as_deref())
                 } else {
-                    *kind
+                    kind
                 };
 
                 for addr in info.get_addresses() {

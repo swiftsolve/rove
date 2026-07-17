@@ -10,10 +10,10 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
-    let mut d = ConnectionDetails::default();
     // The SSID lives behind Location Services on macOS 14+ and is only reachable
     // in-process via CoreWLAN — every shell tool returns "<redacted>".
-    d.ssid = super::mac_native::current_ssid();
+    let mut d =
+        ConnectionDetails { ssid: super::mac_native::current_ssid(), ..Default::default() };
     // Last resort: `networksetup` (also redacted without Location access, but
     // harmless to try).
     if d.ssid.is_none() && crate::net_util::is_shell_safe_iface(iface) {
@@ -104,7 +104,7 @@ const SIGNAL_TTL: Duration = Duration::from_secs(12);
 /// the signal appears one poll later.
 fn apply_cached_signal(d: &mut ConnectionDetails) {
     let cached = crate::net_util::lock(&SIGNAL_CACHE).clone();
-    let stale = cached.as_ref().map_or(true, |s| s.at.elapsed() > SIGNAL_TTL);
+    let stale = cached.as_ref().is_none_or(|s| s.at.elapsed() > SIGNAL_TTL);
     if stale {
         // `swap` inside the task dedupes concurrent refreshes; spawning needs the
         // Tokio runtime this fn always runs under (called from an async command).
@@ -191,9 +191,7 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
     }
 
     // A redacted SSID with no stats is worthless; require at least a real signal.
-    if signal_dbm.is_none() {
-        return None;
-    }
+    signal_dbm?;
     Some(WifiSignal {
         ssid,
         signal_dbm,

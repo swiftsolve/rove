@@ -10,9 +10,8 @@ pub fn init_store(app: &tauri::App) {
     let data_dir = app
         .path()
         .app_data_dir()
-        .map(|dir| {
-            let _ = std::fs::create_dir_all(&dir);
-            dir
+        .inspect(|dir| {
+            let _ = std::fs::create_dir_all(dir);
         })
         .unwrap_or_else(|_| std::path::PathBuf::from("."));
 
