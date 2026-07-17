@@ -35,20 +35,14 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       // React-Compiler-era rules. The codebase deliberately mirrors the latest
-      // props/state into refs during render (see useBackendResource), syncs
-      // state in a few effects (Tooltip, useNavigation), and reads the wall
-      // clock during render for text that ages — "3m ago", "Down for …" — so it
-      // advances on the re-renders that already happen rather than on a timer
-      // per screen (format.ts, EventsView, DevicesView, ServicesTimelinePage).
-      // Established patterns that predate the compiler. Keep them visible as
-      // warnings rather than rewriting working code; revisit if the app ever
-      // adopts the compiler.
+      // props/state into refs during render (see useBackendResource) and syncs
+      // state in a few effects (Tooltip, useNavigation) — established patterns
+      // that predate the compiler. Keep them visible as warnings rather than
+      // rewriting working code; revisit if the app ever adopts the compiler.
       //
-      // `purity` only ever fires on the clock read that sits directly in a
-      // component body; the identical reads inside render-called helpers are
-      // past what it traces. Downgrading it is what keeps that one honest —
-      // hoisting it into a helper would silence the rule and change nothing.
-      'react-hooks/purity': 'warn',
+      // `purity` is deliberately NOT among them: text that ages reads the clock
+      // through `useNow` instead, so nothing calls it during render. Leaving the
+      // rule at `error` is what keeps that from creeping back.
       'react-hooks/refs': 'warn',
       'react-hooks/set-state-in-effect': 'warn',
     },

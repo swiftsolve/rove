@@ -21,6 +21,7 @@ import {
   TrashIcon,
 } from '@/components/ui/Icons'
 import { formatDuration } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
 import { useServiceHistory } from '@/hooks/useServiceHistory'
 import './ServicesTimelinePage.css'
 
@@ -41,9 +42,9 @@ function dayKey(ts: number): string {
 
 // "Today" / "Yesterday" for the two most recent days, otherwise "Monday, 12
 // January" (with the year appended when it isn't the current one).
-function formatDayHeading(ts: number): string {
+function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
-  const now = new Date()
+  const now = new Date(nowMs)
   if (dayKey(ts) === dayKey(now.getTime())) return 'Today'
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
   if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
@@ -62,7 +63,7 @@ interface DayGroup {
 
 // Slice the (already newest-first) feed into consecutive same-day runs, keeping
 // the incoming order so the timeline stays continuous within each day.
-function groupByDay(events: readonly ServiceEvent[]): DayGroup[] {
+function groupByDay(events: readonly ServiceEvent[], now: number): DayGroup[] {
   const groups: DayGroup[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
@@ -70,7 +71,7 @@ function groupByDay(events: readonly ServiceEvent[]): DayGroup[] {
     if (last && last.key === key) {
       ;(last.events as ServiceEvent[]).push(event)
     } else {
-      groups.push({ key, heading: formatDayHeading(event.ts), events: [event] })
+      groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })
     }
   }
   return groups
@@ -320,10 +321,9 @@ export function ServicesTimelinePage({
   const durations = useMemo(() => outageDurations(events), [events])
   const offlineDur = useMemo(() => offlineDurations(events), [events])
   const ongoingDownStart = useMemo(() => ongoingDownStarts(events), [events])
-  // Read once per render for the live "Down for …" on open outages. The page
-  // re-renders on each heartbeat nudge and on every probe the header tally
-  // shows, so this advances on its own without a dedicated timer.
-  const now = Date.now()
+  // The live "Down for …" on open outages, and the day headings. Ticks at the
+  // second, because that's the finest unit `formatDuration` renders.
+  const now = useNow()
 
   // The current up/down tally, straight from the live probes. Until the first
   // probes land there's nothing to count, so the header falls back to prose.
@@ -351,7 +351,7 @@ export function ServicesTimelinePage({
         </div>
       ) : (
         <div className="stl-timeline">
-          {groupByDay(events).map((group) => (
+          {groupByDay(events, now).map((group) => (
             <section className="stl-day" key={group.key}>
               <h2 className="stl-day-heading">{group.heading}</h2>
               {group.events.map((event) =>

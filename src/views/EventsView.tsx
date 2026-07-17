@@ -2,6 +2,7 @@ import { useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import { formatDuration } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
@@ -149,9 +150,9 @@ function dayKey(ts: number): string {
 // The date label for a day section: "Today" / "Yesterday" for the two most
 // recent days, otherwise "Monday, 12th January" (with the year appended when
 // it isn't the current one).
-function formatDayHeading(ts: number): string {
+function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
-  const now = new Date()
+  const now = new Date(nowMs)
   if (dayKey(ts) === dayKey(now.getTime())) return 'Today'
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
   if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
@@ -170,7 +171,7 @@ interface DayGroup {
   readonly events: readonly NetworkEvent[]
 }
 
-function groupByDay(events: readonly NetworkEvent[]): DayGroup[] {
+function groupByDay(events: readonly NetworkEvent[], now: number): DayGroup[] {
   const groups: DayGroup[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
@@ -178,7 +179,7 @@ function groupByDay(events: readonly NetworkEvent[]): DayGroup[] {
     if (last && last.key === key) {
       ;(last.events as NetworkEvent[]).push(event)
     } else {
-      groups.push({ key, heading: formatDayHeading(event.ts), events: [event] })
+      groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })
     }
   }
   return groups
@@ -271,6 +272,8 @@ export default function EventsView({
   error,
   onRefresh,
 }: EventsViewProps): JSX.Element {
+  // Only the day headings need this, and they only turn over at midnight.
+  const now = useNow(60_000)
   // Only render events the UI recognizes; unknown types are skipped entirely
   // rather than surfaced as a generic row.
   const visibleEvents = events.filter(isKnownEvent)
@@ -331,7 +334,7 @@ export default function EventsView({
         </div>
       ) : (
         <div className="events-timeline">
-          {groupByDay(visibleEvents).map((group) => (
+          {groupByDay(visibleEvents, now).map((group) => (
             <section className="tl-day" key={group.key}>
               <h2 className="tl-day-heading">{group.heading}</h2>
               {group.events.map((event) => (

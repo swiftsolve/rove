@@ -13,7 +13,8 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
 import { ViewHeader } from '@/components/ui/ViewHeader'
 import { HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
-import { formatBand, formatTimeAgo } from '@/lib/format'
+import { formatBand, formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
 import './SpeedView.css'
 
 interface SpeedViewProps {
@@ -46,6 +47,7 @@ export default function SpeedView({
   onOpenHistory,
   onBack,
 }: SpeedViewProps): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
   const {
     internetSpeed,
     capabilities,
@@ -117,7 +119,7 @@ export default function SpeedView({
             </>
           ) : completedAt != null ? (
             <>
-              Updated {formatTimeAgo(completedAt)}
+              Updated {formatTimeAgo(completedAt, now)}
               <DotSeparator />
               {historyLink}
             </>

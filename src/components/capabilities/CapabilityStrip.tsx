@@ -7,7 +7,8 @@ import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/ui/Icons'
-import { formatTimeAgo } from '@/lib/format'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
 import './CapabilityStrip.css'
 
 interface CapabilityStripProps {
@@ -32,6 +33,7 @@ export default function CapabilityStrip({
   onRunTest,
   onOpenSpeed,
 }: CapabilityStripProps): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
   const hasResults = capabilities.length > 0
 
   return (
@@ -141,7 +143,7 @@ export default function CapabilityStrip({
               >
                 <HistoryIcon size={13} />
                 <span className="capability-strip-updated">
-                  Updated {formatTimeAgo(completedAt)}
+                  Updated {formatTimeAgo(completedAt, now)}
                 </span>
               </button>
             </div>
