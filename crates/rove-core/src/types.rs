@@ -360,24 +360,19 @@ pub struct HostConn {
 }
 
 /// One application with the remote hosts it has talked to, busiest host first.
-/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts, and read
-/// *at or below* the same app's [`AppUsage`] total — this view is a subset of
-/// that one, not a second opinion on it. Both bank per-socket deltas and gate on
-/// the same peer rule (`net_util::routable_peer_ip`), so loopback and
-/// wildcard sockets are absent from both and don't explain the gap. What remains:
+/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts, and should
+/// match the same app's [`AppUsage`] total closely: both bank per-socket deltas,
+/// both gate on the same peer rule (`net_util::routable_peer_ip`), and both cover
+/// the same protocols — every connected socket with a real peer, TCP and UDP
+/// (QUIC) alike. So loopback, wildcard sockets, and protocol coverage all cancel.
 ///
-///   * A peer with no country — a LAN/private address — is metered here but drawn
-///     without a flag, whereas [`AppUsage`] doesn't care about country at all.
-///     (Same bytes, so this isn't a size difference — just noting the two views
-///     treat private peers differently in the UI, not the total.)
-///   * On macOS this view samples `nettop -m tcp`, so connected UDP — QUIC,
-///     chiefly — counts in [`AppUsage`] alone. On Linux both read `ss -tinHp`
-///     and are TCP-only, so this cause doesn't apply.
-///
-/// One caveat on "at or below": the two samplers run on different intervals with
-/// independently primed baselines, so a single read compares totals banked up to
-/// different instants and the subset relation can look briefly violated while
-/// traffic is in flight.
+/// The totals still won't be identical to the byte, for one structural reason:
+/// the two samplers run on their own intervals with independently primed
+/// baselines, so any single read compares totals banked up to slightly different
+/// instants, and the gap widens while traffic is actively flowing. It's a timing
+/// skew, not a coverage difference — over a quiet moment the two converge.
+/// (A per-host peer with no country still draws without a flag; that's a UI
+/// detail, not a byte difference.)
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppHosts {

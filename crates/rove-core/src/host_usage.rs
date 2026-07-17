@@ -1,19 +1,22 @@
 //! Per-app *remote host* attribution — "which hosts is each app talking to, and
 //! how much". Where [`crate::app_usage`] answers "how many bytes has this app
 //! moved" (a per-process total), this module keeps the traffic broken down by
-//! the remote peer on the other end of each TCP connection, so the Hosts view
-//! can show, under each app, the hosts it reached with a hostname, country flag,
-//! and byte split.
+//! the remote peer on the other end of each connection, so the Hosts view can
+//! show, under each app, the hosts it reached with a hostname, country flag, and
+//! byte split.
 //!
 //! It reuses the same peer-address sources the OS already exposes — no packet
 //! capture, no elevated privileges:
 //!
 //!   * **Linux** — `ss -tinHp` lists each TCP socket with its `LOCAL`/`PEER`
 //!     address pair and the owning process, plus `bytes_sent`/`bytes_received`.
+//!     (TCP only — Linux app-byte metering is likewise TCP-only, so the two
+//!     views still agree; UDP/QUIC per-host attribution on Linux is future work.)
 //!   * **macOS** — `nettop` *without* `-P` prints one row per process followed
-//!     by a row per connection (`tcp4 local<->peer …`) carrying that
-//!     connection's cumulative byte counts. (The Apps view keeps its own `-P`
-//!     process-total sampler; this is a separate, peer-aware pass.)
+//!     by a row per connection (`tcp4 local<->peer …`, and `udp4 …` for QUIC)
+//!     carrying that connection's cumulative byte counts. Every protocol with a
+//!     concrete peer is attributed, so this matches the byte-total view's
+//!     coverage rather than trailing it by the QUIC volume.
 //!   * **Windows / other** — the Kernel-Network ETW events carry a PID and a
 //!     size but no peer address, so per-host attribution isn't available.
 //!
@@ -67,7 +70,7 @@ pub struct PeerReading {
 ///
 /// `None` means no sample was taken (source tool missing, errored, timed out, or
 /// an unsupported platform); `Some(vec![])` means the sample worked and there
-/// were no open TCP sockets. As in [`crate::app_usage::sample_units`], the two
+/// were no connected sockets. As in [`crate::app_usage::sample_units`], the two
 /// must not be conflated: ingesting a failure as an empty snapshot would forget
 /// every socket's baseline and re-credit each one's full counter next tick.
 pub async fn sample() -> Option<Vec<PeerReading>> {
@@ -75,12 +78,15 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
     {
         return crate::shell::try_run("ss -tinHp").await.map(|out| parse_ss_peers(&out));
     }
-    // No -P: nettop then prints per-connection sub-rows (with peer + per-conn
-    // bytes) under each process row. -m tcp limits to TCP (the only mode with a
-    // meaningful peer), -x raw bytes, -n no DNS (we do our own reverse lookup).
+    // No -P: nettop prints per-connection sub-rows (peer + per-conn bytes) under
+    // each process row. No -m either: the default lists TCP *and* UDP, so QUIC
+    // (HTTP/3, on :443) is attributed to its host like any TCP flow. Unconnected
+    // UDP — mDNS, DNS listeners — has a `*` peer and is dropped by
+    // `routable_peer_ip`, the same gate the byte-total view uses. -x raw bytes,
+    // -n no DNS (we do our own reverse lookup).
     #[cfg(target_os = "macos")]
     {
-        return crate::shell::try_run("nettop -L 1 -x -n -m tcp")
+        return crate::shell::try_run("nettop -L 1 -x -n")
             .await
             .map(|out| parse_nettop_peers(&out));
     }
@@ -140,12 +146,12 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     readings
 }
 
-/// Parse `nettop -L 1 -x -n -m tcp` (no `-P`). Output alternates a process row
+/// Parse `nettop -L 1 -x -n` (no `-P`, no `-m`). Output alternates a process row
 /// (`name.pid,,,bytes_in,bytes_out,…`) with the connection rows beneath it
-/// (`tcp4 local<->peer,iface,state,bytes_in,bytes_out,…`). The process row sets
-/// the owning app for the connection rows that follow, until the next process
-/// row. Connections without a routable peer (listeners, `*`, loopback) are
-/// skipped.
+/// (`tcp4 local<->peer,iface,state,bytes_in,bytes_out,…`, and `udp4 …` for QUIC
+/// and other connected UDP). The process row sets the owning app for the
+/// connection rows that follow, until the next process row. Connections without
+/// a routable peer (listeners, `*` wildcards, loopback) are skipped.
 #[cfg(any(target_os = "macos", test))]
 fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
@@ -161,8 +167,8 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
             continue;
         }
 
-        // A connection row: "tcpN local<->peer". Attribute it to the current
-        // process; pull its per-connection byte columns.
+        // A connection row: "tcpN/udpN local<->peer". Attribute it to the
+        // current process; pull its per-connection byte columns.
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((app, pid)) = &current else { continue };
             let Some(ip) = routable_peer_ip(peer.trim()) else { continue };
@@ -449,6 +455,24 @@ time,,interface,state,bytes_in,bytes_out,rx_dupe
         assert_eq!(r[0].pid, Some(375));
         assert_eq!(r[1].app, "OneDrive");
         assert_eq!(r[1].ip, "4.145.79.81");
+    }
+
+    /// QUIC (HTTP/3) is UDP to a concrete peer on :443 — real traffic to a real
+    /// host, so it's attributed like any TCP flow now that the sampler drops
+    /// `-m tcp`. Unconnected UDP (mDNS, `*` peer) and loopback UDP stay out.
+    #[test]
+    fn parses_connected_udp_and_drops_peerless_udp() {
+        let out = "\
+time,,interface,state,bytes_in,bytes_out
+16:00:00.0,firefox.900,,,50000,9000
+16:00:00.0,udp4 192.168.2.16:51094<->17.253.24.251:443,en0,,48000,8000,0
+16:00:00.0,udp4 *:5353<->*:*,en0,,1000,500,0
+16:00:00.0,udp4 127.0.0.1:56142<->127.0.0.1:56142,lo0,,900,900,0";
+        let r = parse_nettop_peers(out);
+        assert_eq!(r.len(), 1, "only the QUIC socket with a real peer is attributed");
+        assert_eq!(r[0].app, "firefox");
+        assert_eq!(r[0].ip, "17.253.24.251");
+        assert_eq!(r[0].rx, 48000);
     }
 
     #[test]
