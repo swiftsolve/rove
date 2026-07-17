@@ -140,6 +140,9 @@ pub struct IspInfo {
     pub name: Option<String>,
     /// Autonomous-system number, formatted "AS15169".
     pub asn: Option<String>,
+    /// The ISP's registered domain (e.g. "bell.ca") — the card resolves it to a
+    /// brand icon. Comes free with the lookup that fills the rest of this struct.
+    pub domain: Option<String>,
     pub city: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,

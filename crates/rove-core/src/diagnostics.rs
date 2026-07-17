@@ -123,10 +123,20 @@ pub async fn isp_info() -> Option<IspInfo> {
         .and_then(serde_json::Value::as_u64)
         .filter(|&n| n > 0)
         .map(|n| format!("AS{n}"));
+    // Unlike the other fields, this one ends up inside a URL rather than being
+    // rendered as text, so it's held to a hostname's shape instead of passing a
+    // third party's string through. The card percent-encodes it regardless —
+    // this just keeps junk from becoming an icon request that can only 404.
+    let domain = connection.and_then(|c| str_field(c, "domain")).filter(|d| {
+        d.len() <= 253
+            && d.contains('.')
+            && d.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-')
+    });
 
     Some(IspInfo {
         name,
         asn,
+        domain,
         city: str_field(&json, "city"),
         region: str_field(&json, "region"),
         country: str_field(&json, "country"),
