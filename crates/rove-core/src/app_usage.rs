@@ -12,9 +12,11 @@
 //!     process's sockets beneath it, TCP and UDP alike. Sockets whose peer isn't
 //!     a host on the network — unconnected mDNS chatter, loopback — are excluded
 //!     by the shared `net_util::routable_peer_ip` rule.
-//!   * **Windows / other** — per-process byte metering needs an ETW consumer
-//!     (`Microsoft-Windows-Kernel-Network`), not yet implemented, so the
-//!     platform reports itself unsupported rather than returning wrong numbers.
+//!   * **Windows** — an ETW consumer of the `Microsoft-Windows-Kernel-Network`
+//!     provider (see [`mod@etw`]) folds each send/receive event into a per-PID
+//!     byte total. It needs administrator rights to start the session, so the
+//!     platform reports itself unsupported (rather than empty) until it's up.
+//!   * **other** — no per-process source, so reported unsupported.
 //!
 //! Both supported sources report *cumulative* counters per socket, so, exactly
 //! like the interface tracker, [`AppUsageTracker`] keeps the last reading and
@@ -483,23 +485,47 @@ impl AppUsageTracker {
     }
 }
 
+/// A single per-connection reading drawn from the Windows ETW session, feeding
+/// the Hosts view. Mirrors the shape [`crate::host_usage`] needs so it can map
+/// straight to a `PeerReading` without this module depending on that type.
+#[cfg(windows)]
+pub(crate) struct PeerUnit {
+    pub conn_key: String,
+    pub name: String,
+    pub pid: u32,
+    pub ip: String,
+    pub port: Option<u16>,
+    pub rx: u64,
+    pub tx: u64,
+}
+
+/// Snapshot the per-connection accumulator for the Hosts view. Windows-only;
+/// see [`etw::sample_peer_units`].
+#[cfg(windows)]
+pub(crate) fn windows_peer_units() -> Vec<PeerUnit> {
+    etw::sample_peer_units()
+}
+
 /// Windows per-app metering via the Microsoft-Windows-Kernel-Network ETW
 /// provider. The provider emits one event per network send/receive carrying the
-/// owning `PID` and the byte `size`; a single long-lived consumer thread
-/// accumulates those into cumulative per-PID totals, which [`sample_units`]
-/// snapshots and resolves to process names. Unlike the socket-snapshot sources
-/// this sees *every* byte event, so it never misses a short-lived connection —
-/// but starting the session needs administrator rights.
+/// owning `PID`, the byte `size`, and the connection's local/remote addresses
+/// and ports; a single long-lived consumer thread accumulates those two ways —
+/// cumulative per-PID totals for the Apps view ([`sample_units`]) and cumulative
+/// per-connection totals tagged with the remote peer for the Hosts view
+/// ([`sample_peer_units`]). Unlike the socket-snapshot sources this sees *every*
+/// byte event, so it never misses a short-lived connection — but starting the
+/// session needs administrator rights.
 #[cfg(windows)]
 mod etw {
-    use super::UsageUnit;
+    use super::{PeerUnit, UsageUnit};
     use ferrisetw::parser::Parser;
     use ferrisetw::provider::Provider;
     use ferrisetw::schema_locator::SchemaLocator;
     use ferrisetw::trace::{TraceTrait, UserTrace};
     use ferrisetw::EventRecord;
-    use std::collections::HashMap;
-    use std::sync::{LazyLock, Mutex, OnceLock};
+    use std::collections::{HashMap, HashSet};
+    use std::net::IpAddr;
+    use std::sync::{LazyLock, Mutex, OnceLock, RwLock};
 
     /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
     const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;
@@ -510,11 +536,35 @@ mod etw {
         tx: u64,
     }
 
+    /// Cumulative bytes for one connection (socket), tagged with its remote peer
+    /// and owning PID. `touched` marks whether an event landed on it since the
+    /// last sample, so idle/closed connections can be pruned — otherwise the map
+    /// would grow without bound as ephemeral ports churn.
+    #[derive(Default, Clone)]
+    struct PeerAcc {
+        pid: u32,
+        ip: String,
+        port: Option<u16>,
+        rx: u64,
+        tx: u64,
+        touched: bool,
+    }
+
     /// Cumulative bytes per PID since the trace started, written by the ETW
     /// callback and read by [`sample_units`]. Monotonic per PID, so the usage
     /// tracker's delta logic handles it exactly like a kernel counter.
     static ACC: LazyLock<Mutex<HashMap<u32, ByteAcc>>> =
         LazyLock::new(|| Mutex::new(HashMap::new()));
+    /// Cumulative bytes per connection, keyed by a stable `local|peer` address
+    /// pair, read by [`sample_peer_units`]. Zero-based and monotonic per key
+    /// exactly like [`ACC`], so the host tracker diffs it the same way.
+    static PEER_ACC: LazyLock<Mutex<HashMap<String, PeerAcc>>> =
+        LazyLock::new(|| Mutex::new(HashMap::new()));
+    /// This host's own interface addresses, used to pick the *remote* endpoint
+    /// out of a connection event's (source, destination) pair. Refreshed each
+    /// sample rather than per event — local addresses change rarely.
+    static LOCAL_IPS: LazyLock<RwLock<HashSet<IpAddr>>> =
+        LazyLock::new(|| RwLock::new(local_ips()));
     /// PID → process name, captured while the process is alive so its bytes keep
     /// a meaningful label even after it exits.
     static NAMES: LazyLock<Mutex<HashMap<u32, String>>> =
@@ -522,9 +572,28 @@ mod etw {
     /// Whether the trace session started (false = no admin rights / failure).
     static STARTED: OnceLock<bool> = OnceLock::new();
 
+    /// This host's interface IPs. `if-addrs` covers IPv4 and IPv6; an error
+    /// (rare) yields an empty set, which just falls the peer pick back to the
+    /// send/receive-direction heuristic below.
+    fn local_ips() -> HashSet<IpAddr> {
+        if_addrs::get_if_addrs()
+            .map(|addrs| addrs.into_iter().map(|a| a.ip()).collect())
+            .unwrap_or_default()
+    }
+
+    /// A Windows `win:Port` field is stored big-endian (network order); ferrisetw
+    /// hands back the raw little-endian `u16`, so swap to host order. `0` (no
+    /// port) becomes `None`.
+    fn host_port(raw: u16) -> Option<u16> {
+        let port = raw.swap_bytes();
+        (port != 0).then_some(port)
+    }
+
     /// ETW callback: fold each send/receive event's byte count into its PID's
-    /// running total. Event IDs come from the provider manifest — 10/26 are TCP
-    /// send (IPv4/IPv6), 42/58 UDP send; 11/27/43/59 the matching receives.
+    /// running total (Apps view) and, when the event carries an address pair,
+    /// into its connection's running total tagged with the remote peer (Hosts
+    /// view). Event IDs come from the provider manifest — 10/26 are TCP send
+    /// (IPv4/IPv6), 42/58 UDP send; 11/27/43/59 the matching receives.
     fn on_event(record: &EventRecord, locator: &SchemaLocator) {
         let Ok(schema) = locator.event_schema(record) else {
             return;
@@ -544,8 +613,69 @@ mod etw {
             Err(_) => return,
         };
 
-        let mut acc = ACC.lock().unwrap();
-        let entry = acc.entry(pid).or_default();
+        // Per-PID total (Apps view) — always credited, even for loopback traffic
+        // that the per-peer path below discards.
+        {
+            let mut acc = ACC.lock().unwrap();
+            let entry = acc.entry(pid).or_default();
+            if is_rx {
+                entry.rx = entry.rx.saturating_add(u64::from(size));
+            }
+            if is_tx {
+                entry.tx = entry.tx.saturating_add(u64::from(size));
+            }
+        }
+
+        // Per-connection total (Hosts view). Both directions of a flow carry the
+        // same (saddr, daddr) pair, so keying on it groups them; the remote peer
+        // is whichever endpoint isn't one of this host's own addresses. That test
+        // sidesteps having to know whether the provider labels addresses by
+        // packet direction or by connection role. `saddr`/`daddr` parse as either
+        // IPv4 or IPv6 depending on the event; a parse miss just skips the peer
+        // side, leaving the per-PID total intact.
+        let (Ok(saddr), Ok(daddr)) =
+            (parser.try_parse::<IpAddr>("saddr"), parser.try_parse::<IpAddr>("daddr"))
+        else {
+            return;
+        };
+        let sport: u16 = parser.try_parse("sport").unwrap_or(0);
+        let dport: u16 = parser.try_parse("dport").unwrap_or(0);
+
+        let (local_ip, local_port, peer_ip, peer_port) = {
+            let locals = LOCAL_IPS.read().unwrap();
+            let saddr_local = locals.contains(&saddr);
+            let daddr_local = locals.contains(&daddr);
+            match (saddr_local, daddr_local) {
+                (true, false) => (saddr, sport, daddr, dport),
+                (false, true) => (daddr, dport, saddr, sport),
+                // Both local → loopback / same-host traffic: not a remote host.
+                (true, true) => return,
+                // Neither recognised (empty/stale local set): fall back to the
+                // packet-direction convention — on send the peer is the
+                // destination, on receive it's the source.
+                (false, false) => {
+                    if is_tx {
+                        (saddr, sport, daddr, dport)
+                    } else {
+                        (daddr, dport, saddr, sport)
+                    }
+                }
+            }
+        };
+
+        let conn_key = format!(
+            "{local_ip}:{}|{peer_ip}:{}",
+            host_port(local_port).unwrap_or(0),
+            host_port(peer_port).unwrap_or(0)
+        );
+        let mut peers = PEER_ACC.lock().unwrap();
+        let entry = peers.entry(conn_key).or_insert_with(|| PeerAcc {
+            pid,
+            ip: peer_ip.to_string(),
+            port: host_port(peer_port),
+            ..PeerAcc::default()
+        });
+        entry.touched = true;
         if is_rx {
             entry.rx = entry.rx.saturating_add(u64::from(size));
         }
@@ -623,6 +753,43 @@ mod etw {
                 rx: bytes.rx,
                 tx: bytes.tx,
                 pid: Some(pid),
+            })
+            .collect()
+    }
+
+    /// Snapshot the per-connection accumulator as cumulative [`PeerUnit`]s for the
+    /// Hosts view. Connections that saw no event since the previous sample (a
+    /// closed or idle flow) are pruned here — their bytes are already banked by
+    /// the host tracker, and their ephemeral-port key won't recur, so dropping
+    /// them just bounds the map.
+    pub fn sample_peer_units() -> Vec<PeerUnit> {
+        ensure_started();
+        *LOCAL_IPS.write().unwrap() = local_ips();
+
+        let snapshot: Vec<(String, PeerAcc)> = {
+            let mut peers = PEER_ACC.lock().unwrap();
+            peers.retain(|_, e| e.touched);
+            let snap: Vec<(String, PeerAcc)> =
+                peers.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+            for e in peers.values_mut() {
+                e.touched = false;
+            }
+            snap
+        };
+        let pids: Vec<u32> = snapshot.iter().map(|(_, e)| e.pid).collect();
+        refresh_names(&pids);
+
+        let names = NAMES.lock().unwrap();
+        snapshot
+            .into_iter()
+            .map(|(conn_key, e)| PeerUnit {
+                conn_key,
+                name: names.get(&e.pid).cloned().unwrap_or_else(|| format!("PID {}", e.pid)),
+                pid: e.pid,
+                ip: e.ip,
+                port: e.port,
+                rx: e.rx,
+                tx: e.tx,
             })
             .collect()
     }
