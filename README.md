@@ -99,6 +99,36 @@ Tauri v2 is deny-by-default: the webview can only call what
 and the frameless-window controls). There is no Node runtime in the UI process
 and the backend is memory-safe Rust.
 
+The Hosts view knows which remote hosts each app talks to — a list that is
+browsing history in all but name. *That list* never leaves your machine: country
+flags are resolved against an IP-to-country table bundled in the binary
+(`geoip.rs`), not by asking a geolocation API about each peer.
+
+Two things do leave, neither of them a peer address:
+
+- **Your own WAN identity**, when the Connection tab asks: your public IP
+  (api.ipify.org) and your ISP/ASN/city (ipwho.is). No local table can answer
+  these — they're one request each, about your own address.
+- **Brand icons**, via Google's favicon service (`ServiceIcon.tsx`). This sends a
+  *domain*: `firefox.com` for Firefox, plus the services you've chosen to
+  monitor. Never a discovered peer, and never a hostname the Hosts view
+  reverse-resolved. Apps it doesn't recognise fall back to a letter monogram and
+  ask nothing.
+
+All of it is keyless — Rove ships no API credentials.
+
+### Bundled data
+
+| Table | Source | License | Refresh |
+|---|---|---|---|
+| MAC OUI → vendor (`data/oui.tsv`) | [IEEE Registration Authority](https://standards-oui.ieee.org/) | Public registry | `cargo run -p rove-core --example gen_oui` |
+| IP → country (`data/dbip-country-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
+
+Both are chosen to be freely redistributable in a shipped binary: IEEE over
+Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA
+requires destroying superseded copies within 30 days of each twice-weekly
+release — a term a binary already on users' machines cannot honour.
+
 ## Layout
 
 ```
@@ -124,7 +154,8 @@ rove/
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
 │                               deps — compiles and tests anywhere): network_info,
 │                               interfaces, devices/, diagnostics, speed, mdns,
-│                               live_throughput, data_usage, oui, shell
+│                               live_throughput, data_usage, oui, geoip, shell
+│   └── data/                   bundled lookup tables (OUI, IP-to-country)
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
                                 service, events, capabilities, window config
 ```
