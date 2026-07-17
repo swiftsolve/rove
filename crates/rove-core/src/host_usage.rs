@@ -29,6 +29,7 @@
 //! so a peer is resolved at most once.
 
 use crate::app_usage::CounterSemantics;
+use crate::net_util::routable_peer_ip;
 use crate::types::{AppHosts, HostConn, HostUsageSummary};
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -124,7 +125,7 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
                 let mut cols = trimmed.split_whitespace();
                 let local = cols.nth(3);
                 let peer = cols.next();
-                match (local, peer, peer.and_then(peer_ip)) {
+                match (local, peer, peer.and_then(routable_peer_ip)) {
                     (Some(local), Some(peer), Some(ip)) => {
                         Some((app, format!("{local}|{peer}"), ip))
                     }
@@ -164,7 +165,7 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
         // process; pull its per-connection byte columns.
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((app, pid)) = &current else { continue };
-            let Some(ip) = peer_ip(peer.trim()) else { continue };
+            let Some(ip) = routable_peer_ip(peer.trim()) else { continue };
             let rx = fields.get(4).and_then(|f| f.trim().parse::<u64>().ok());
             let tx = fields.get(5).and_then(|f| f.trim().parse::<u64>().ok());
             let (Some(rx), Some(tx)) = (rx, tx) else { continue };
@@ -193,57 +194,6 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
         current = None;
     }
     readings
-}
-
-/// Extract the bare IP from a `host:port` / `[v6]:port` / `v6.port` peer token,
-/// returning `None` for a listener wildcard or a non-routable (loopback /
-/// unspecified) address — those aren't hosts worth showing.
-fn peer_ip(addr: &str) -> Option<String> {
-    let a = addr.trim();
-    if a.is_empty() || a.starts_with('*') {
-        return None;
-    }
-    let ip = strip_port(a)?;
-    match ip.parse::<IpAddr>() {
-        Ok(parsed) if is_shown(parsed) => Some(ip),
-        _ => None,
-    }
-}
-
-/// Strip the port from a peer token across the formats the two sources emit:
-/// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
-fn strip_port(addr: &str) -> Option<String> {
-    // ss IPv6 bracket form: [addr]:port
-    if let Some(rest) = addr.strip_prefix('[') {
-        return rest.split(']').next().map(str::to_string).filter(|s| !s.is_empty());
-    }
-    if addr.matches(':').count() >= 2 {
-        // IPv6. nettop tacks the port on with a dot after the address; strip a
-        // trailing ".<digits>" only when it sits past the last colon.
-        if let (Some(dot), Some(colon)) = (addr.rfind('.'), addr.rfind(':')) {
-            if colon < dot && addr[dot + 1..].bytes().all(|b| b.is_ascii_digit()) {
-                return Some(addr[..dot].to_string());
-            }
-        }
-        return Some(addr.to_string());
-    }
-    // IPv4 (or a bare host): trim a trailing :port.
-    match addr.rsplit_once(':') {
-        Some((ip, port)) if !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => {
-            Some(ip.to_string())
-        }
-        _ => Some(addr.to_string()),
-    }
-}
-
-/// Whether a peer is worth listing at all: exclude loopback and unspecified
-/// (same-machine / no address). Private/LAN peers *are* shown (a local service
-/// is a legitimate host), just without a country flag — see [`ip_is_public`].
-fn is_shown(ip: IpAddr) -> bool {
-    match ip {
-        IpAddr::V4(v4) => !v4.is_loopback() && !v4.is_unspecified() && !v4.is_broadcast(),
-        IpAddr::V6(v6) => !v6.is_loopback() && !v6.is_unspecified(),
-    }
 }
 
 /// Whether a peer IP is a public, geolocatable address — false for private,
@@ -658,12 +608,4 @@ time,,interface,state,bytes_in,bytes_out
         assert!(!ip_is_public("fc00::1")); // unique-local
     }
 
-    #[test]
-    fn strips_ports_across_formats() {
-        assert_eq!(strip_port("1.2.3.4:443").as_deref(), Some("1.2.3.4"));
-        assert_eq!(strip_port("[2606::1]:443").as_deref(), Some("2606::1"));
-        assert_eq!(strip_port("2606:4700::1111.443").as_deref(), Some("2606:4700::1111"));
-        assert_eq!(peer_ip("*:*"), None);
-        assert_eq!(peer_ip("127.0.0.1:80"), None);
-    }
 }
