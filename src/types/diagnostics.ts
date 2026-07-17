@@ -114,11 +114,14 @@ export interface ServiceTransitionEvent {
   readonly ts: number
 }
 
-/** A positive summary: `count` services were up (a baseline, or a full recovery
- *  after an outage). */
+/** A summary of the tracked services: `count` of `total` were up (a baseline, or
+ *  a full recovery after an outage). A recovery always has `count === total`; a
+ *  baseline can be partial, when a service was already down the first time
+ *  monitoring looked. */
 export interface ServicesRunningEvent {
   readonly type: 'running'
   readonly count: number
+  readonly total: number
   readonly ts: number
 }
 
