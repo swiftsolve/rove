@@ -525,7 +525,8 @@ mod etw {
     use ferrisetw::EventRecord;
     use std::collections::{HashMap, HashSet};
     use std::net::IpAddr;
-    use std::sync::{LazyLock, Mutex, OnceLock, RwLock};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::{LazyLock, Mutex, RwLock};
 
     /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
     const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;
@@ -569,8 +570,16 @@ mod etw {
     /// a meaningful label even after it exits.
     static NAMES: LazyLock<Mutex<HashMap<u32, String>>> =
         LazyLock::new(|| Mutex::new(HashMap::new()));
-    /// Whether the trace session started (false = no admin rights / failure).
-    static STARTED: OnceLock<bool> = OnceLock::new();
+    /// Whether the trace session is currently running. Retried every sample
+    /// until it sticks rather than latched once: a first attempt can fail for a
+    /// recoverable reason (the app was launched before it was elevated, or a
+    /// previous session was still tearing down), and giving up for the life of
+    /// the process would leave the Apps/Hosts/Traffic views dark even after the
+    /// user relaunches as administrator into the same session store.
+    static ACTIVE: AtomicBool = AtomicBool::new(false);
+    /// Serialises start attempts so a burst of concurrent samples can't race two
+    /// sessions open at once.
+    static START_LOCK: Mutex<()> = Mutex::new(());
 
     /// This host's interface IPs. `if-addrs` covers IPv4 and IPv6; an error
     /// (rare) yields an empty set, which just falls the peer pick back to the
@@ -689,31 +698,37 @@ mod etw {
     /// leaked so the session lives for the whole process — dropping it would
     /// stop tracing.
     fn ensure_started() {
-        STARTED.get_or_init(|| {
-            let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
-            match UserTrace::new()
-                .named(String::from("RoveNetUsage"))
-                .enable(provider)
-                .start()
-            {
-                Ok((trace, handle)) => {
-                    std::thread::spawn(move || {
-                        let _ = UserTrace::process_from_handle(handle);
-                    });
-                    std::mem::forget(trace);
-                    true
-                }
-                Err(e) => {
-                    tracing::warn!("per-app ETW trace could not start (needs admin?): {e:?}");
-                    false
-                }
+        if ACTIVE.load(Ordering::Acquire) {
+            return;
+        }
+        let _guard = START_LOCK.lock().unwrap();
+        // Another sample may have started it while we waited on the lock.
+        if ACTIVE.load(Ordering::Acquire) {
+            return;
+        }
+        let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
+        match UserTrace::new().named(String::from("RoveNetUsage")).enable(provider).start() {
+            Ok((trace, handle)) => {
+                std::thread::spawn(move || {
+                    let _ = UserTrace::process_from_handle(handle);
+                });
+                std::mem::forget(trace);
+                ACTIVE.store(true, Ordering::Release);
             }
-        });
+            // Left inactive so the next sample retries. The usual cause is
+            // running without elevation; the app's manifest requests it, but a
+            // dev/unbundled run or a denied UAC prompt lands here.
+            Err(e) => {
+                tracing::warn!(
+                    "per-app ETW trace could not start — run Rove as administrator ({e:?})"
+                );
+            }
+        }
     }
 
-    /// True once the ETW session is running.
+    /// True while the ETW session is running.
     pub fn is_active() -> bool {
-        *STARTED.get().unwrap_or(&false)
+        ACTIVE.load(Ordering::Acquire)
     }
 
     /// Resolve process names for the given PIDs via sysinfo, caching them so a
