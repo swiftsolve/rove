@@ -4,6 +4,7 @@ import type {
   InternetStatus,
   ServiceEvent,
   ServiceReachability,
+  ServicesRunningEvent,
   ServiceTransitionEvent,
 } from '@/types'
 import Subpage from '@/components/ui/Subpage'
@@ -174,7 +175,12 @@ function TransitionRow({
   )
 }
 
-function RunningRow({ event }: { readonly event: { readonly count: number; readonly ts: number } }): JSX.Element {
+function RunningRow({ event }: { readonly event: ServicesRunningEvent }): JSX.Element {
+  // A recovery summary covers every service, but a baseline recorded while one
+  // was already down does not — so the subtext names the denominator rather than
+  // calling a partial tally all-clear.
+  const allHealthy = event.count >= event.total
+
   return (
     <div className="stl-item">
       <span className="stl-marker is-running" aria-hidden>
@@ -187,7 +193,11 @@ function RunningRow({ event }: { readonly event: { readonly count: number; reado
           </span>
           <span className="stl-time">{formatTime(event.ts)}</span>
         </span>
-        <span className="stl-subject stl-subject-muted">All services healthy</span>
+        <span className="stl-subject stl-subject-muted">
+          {allHealthy
+            ? 'All services healthy'
+            : `${event.count} of ${event.total} services healthy`}
+        </span>
       </div>
     </div>
   )

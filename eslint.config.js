@@ -9,6 +9,23 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
   {
+    // Tooling scripts run under Node, so they get Node's globals — plus the
+    // browser ones, because a script driving a page (see screenshots.mjs) ships
+    // callbacks that are serialized and run inside it.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        localStorage: 'readonly',
+        window: 'readonly',
+        PopStateEvent: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     rules: {
       // Match tsconfig's noUnusedLocals: underscore-prefixed names are

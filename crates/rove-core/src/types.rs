@@ -140,6 +140,9 @@ pub struct IspInfo {
     pub name: Option<String>,
     /// Autonomous-system number, formatted "AS15169".
     pub asn: Option<String>,
+    /// The ISP's registered domain (e.g. "bell.ca") — the card resolves it to a
+    /// brand icon. Comes free with the lookup that fills the rest of this struct.
+    pub domain: Option<String>,
     pub city: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,
@@ -236,10 +239,12 @@ pub enum ServiceEvent {
         status: ServiceStatus,
         ts: i64,
     },
-    /// A positive summary: `count` services were up. Logged once as a baseline
-    /// when monitoring first sees the services, and again whenever everything
-    /// recovers after an outage.
-    Running { count: i64, ts: i64 },
+    /// A summary of the tracked services: `count` of `total` were up. Logged
+    /// once as a baseline when monitoring first sees the services, and again
+    /// whenever everything recovers after an outage. A recovery is always
+    /// `count == total`, but a baseline can be partial — a service may already
+    /// have been down the first time we looked — so the two must stay distinct.
+    Running { count: i64, total: i64, ts: i64 },
     /// This machine's own connection dropped or returned.
     Connection { status: ConnectionChange, ts: i64 },
 }

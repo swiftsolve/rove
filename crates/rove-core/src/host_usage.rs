@@ -21,17 +21,16 @@
 //! like the interface and per-app trackers — [`HostUsageTracker`] banks the
 //! delta per socket into a running per-`(app, peer-ip)` total.
 //!
-//! Hostnames (reverse DNS) and countries (IP geolocation) are resolved
-//! asynchronously *outside* the tracker and fed back in: [`HostUsageTracker`]
-//! exposes the peer IPs still awaiting each lookup ([`pending_hostnames`],
-//! [`pending_countries`]) and accepts the answers ([`record_hostnames`],
-//! [`record_countries`]), caching them (including misses) so a peer is probed at
-//! most once.
+//! Hostnames (reverse DNS) and countries ([`crate::geoip`], a bundled table —
+//! no per-peer network call) are resolved *outside* the tracker and fed back in:
+//! [`HostUsageTracker`] exposes the peer IPs still awaiting each lookup
+//! ([`pending_hostnames`], [`pending_countries`]) and accepts the answers
+//! ([`record_hostnames`], [`record_countries`]), caching them (including misses)
+//! so a peer is resolved at most once.
 
 use crate::types::{AppHosts, HostConn, HostUsageSummary};
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::time::Duration;
 
 /// `"supported"` on platforms whose per-socket source carries a peer address
 /// (Linux, macOS); `"unsupported"` elsewhere. Unlike [`crate::app_usage`]'s
@@ -340,7 +339,10 @@ impl HostUsageTracker {
             }
 
             // A private/reserved peer has no country: seed the cache with a miss
-            // now so it's never queued for a geolocation lookup.
+            // now so it's never offered for geolocation. The table would answer
+            // "no record" for most of these anyway, but not all — CGNAT and other
+            // shared ranges can carry a record, and reporting a country for the
+            // carrier's block would be a fiction about the peer.
             if !ip_is_public(&reading.ip) {
                 self.countries.entry(reading.ip.clone()).or_insert(None);
             }
@@ -359,8 +361,9 @@ impl HostUsageTracker {
         self.known_ips().filter(|ip| !self.hostnames.contains_key(*ip)).cloned().collect()
     }
 
-    /// Public peer IPs seen but not yet geolocated. Private/reserved addresses
-    /// are pre-seeded at ingest and so never appear here.
+    /// Public peer IPs seen but not yet geolocated, for the caller to resolve
+    /// via [`crate::geoip`] and feed back through [`record_countries`].
+    /// Private/reserved addresses are pre-seeded at ingest and never appear here.
     pub fn pending_countries(&self) -> Vec<String> {
         self.known_ips().filter(|ip| !self.countries.contains_key(*ip)).cloned().collect()
     }
@@ -375,7 +378,10 @@ impl HostUsageTracker {
         self.hostnames.extend(resolved);
     }
 
-    /// Record geolocation results (IP → ISO-2 country code, `None` on failure).
+    /// Record geolocation results (IP → ISO-2 country code, `None` for an
+    /// address the table has no country for). Cached including misses: the
+    /// lookup is a local table read, so a miss is a stable answer about the
+    /// address rather than a failure that might succeed on a retry.
     pub fn record_countries(&mut self, resolved: HashMap<String, Option<String>>) {
         self.countries.extend(resolved);
     }
@@ -425,24 +431,6 @@ impl HostUsageTracker {
 
         HostUsageSummary { apps, support: platform_support(), tracking_since: self.since }
     }
-}
-
-/// Resolve a public IP's ISO-3166 alpha-2 country code from ipwho.is — the same
-/// keyless HTTPS service the WAN-side ISP card uses, here queried per remote
-/// peer. Returns `None` when the lookup fails or the service reports no data
-/// (rate limit, reserved range).
-pub async fn country_lookup(ip: &str) -> Option<String> {
-    let client = reqwest::Client::builder().timeout(Duration::from_secs(5)).build().ok()?;
-    let url = format!("https://ipwho.is/{ip}?fields=success,country_code");
-    let body = client.get(&url).send().await.ok()?.text().await.ok()?;
-    let json: serde_json::Value = serde_json::from_str(&body).ok()?;
-    if json.get("success").and_then(serde_json::Value::as_bool) == Some(false) {
-        return None;
-    }
-    json.get("country_code")
-        .and_then(serde_json::Value::as_str)
-        .filter(|s| s.len() == 2 && s.bytes().all(|b| b.is_ascii_alphabetic()))
-        .map(str::to_uppercase)
 }
 
 #[cfg(test)]
@@ -525,6 +513,40 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(firefox.hosts[1].rx_bytes, 250 + 50);
         assert_eq!(firefox.hosts[1].tx_bytes, 90 + 10);
         assert_eq!(firefox.rx_bytes, 500 + 300);
+    }
+
+    #[test]
+    fn resolves_countries_end_to_end_through_the_bundled_table() {
+        // The sequence `spawn_host_usage_sampler` runs each tick, minus tokio:
+        // ingest → pending_countries → geoip → record_countries → summary. The
+        // per-piece tests above stub the country in, so this is what would catch
+        // the two halves being wired together wrong.
+        let mut t = HostUsageTracker::new();
+        t.ingest(vec![
+            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 10, tx: 0, pid: None },
+            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), rx: 5, tx: 0, pid: None },
+        ]);
+
+        let resolved: HashMap<String, Option<String>> = t
+            .pending_countries()
+            .into_iter()
+            .map(|ip| {
+                let code = crate::geoip::country_code(&ip);
+                (ip, code)
+            })
+            .collect();
+        t.record_countries(resolved);
+
+        let hosts = &t.summary().apps[0].hosts;
+        let public = hosts.iter().find(|h| h.ip == "8.8.8.8").expect("public peer in summary");
+        let private = hosts.iter().find(|h| h.ip == "192.168.1.5").expect("private peer in summary");
+        assert_eq!(public.country_code.as_deref(), Some("US"));
+        // The LAN peer is still a listed host — it just has no flag.
+        assert_eq!(private.country_code, None);
+
+        // One pass clears the whole backlog: nothing is left waiting, which is
+        // what dropping the old per-tick lookup budget bought.
+        assert!(t.pending_countries().is_empty());
     }
 
     #[test]

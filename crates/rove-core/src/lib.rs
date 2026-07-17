@@ -5,6 +5,7 @@ pub mod capabilities;
 pub mod data_usage;
 pub mod devices;
 pub mod diagnostics;
+pub mod geoip;
 pub mod host_usage;
 pub mod interfaces;
 pub mod live_throughput;

@@ -346,7 +346,7 @@ const mockServiceHistory: ServiceEvent[] = (() => {
     { type: 'connection', status: 'lost', ts: now - 27 * HOUR_MS },
     { type: 'transition', host: 'netflix.com', name: 'Netflix', status: 'up', ts: now - 47 * HOUR_MS },
     { type: 'transition', host: 'netflix.com', name: 'Netflix', status: 'down', ts: now - 48 * HOUR_MS },
-    { type: 'running', count: 6, ts: now - 50 * HOUR_MS },
+    { type: 'running', count: 6, total: mockServices.length, ts: now - 50 * HOUR_MS },
   ]
 })()
 
@@ -458,6 +458,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   isp: {
     name: 'Comcast Cable Communications',
     asn: 'AS7922',
+    domain: 'xfinity.com',
     city: 'San Francisco',
     region: 'California',
     country: 'United States',

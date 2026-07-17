@@ -28,6 +28,7 @@ flate2 = "1"
 # Encodes the "join this Wi-Fi" QR code. Core only (no image/svg render
 # features) — we build the SVG ourselves in wifi_share.rs.
 qrcode = { version = "0.14", default-features = false }
+maxminddb = "0.29.0"
 
 [build-dependencies]
 # Gzips data/oui.tsv into OUT_DIR at build time (see build.rs).
