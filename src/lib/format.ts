@@ -153,9 +153,16 @@ export function formatDuration(ms: number): string {
   return remHours > 0 ? `${days} d ${remHours} h` : `${days} d`
 }
 
-/** Relative timestamp for recent times; absolute date after 24 h. */
-export function formatTimeAgo(timestamp: number): string {
-  const elapsed = Date.now() - timestamp
+/** The resolution to read the clock at for `formatTimeAgo` (see `useNow`). Its
+ *  finest boundary is "just now", at 45 s, so 10 s keeps the label honest
+ *  without re-rendering every caller once a second. */
+export const TIME_AGO_RESOLUTION_MS = 10_000
+
+/** Relative timestamp for recent times; absolute date after 24 h. `now` is the
+ *  clock to measure against — see `useNow`, which is what makes the label age on
+ *  screen rather than at whatever moment the caller last re-rendered. */
+export function formatTimeAgo(timestamp: number, now: number): string {
+  const elapsed = now - timestamp
   if (elapsed >= TIME_AGO_RELATIVE_MS) return formatDateTime(timestamp)
 
   const seconds = Math.round(elapsed / 1000)

@@ -6,7 +6,8 @@ import CapabilityIcon from '@/components/capabilities/CapabilityIcon'
 import CapabilityMeter from '@/components/capabilities/CapabilityMeter'
 import Subpage from '@/components/ui/Subpage'
 import { AlertIcon, CheckIcon, CloseIcon } from '@/components/ui/Icons'
-import { formatTimeAgo } from '@/lib/format'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
 import './CapabilityDetails.css'
 
@@ -82,6 +83,7 @@ export default function CapabilityDetails({
   targetId,
   onBack,
 }: CapabilityDetailsProps): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
   const listRef = useRef<HTMLDivElement>(null)
 
   // Smooth-scroll to the capability the user clicked. Runs once on open; the
@@ -123,7 +125,7 @@ export default function CapabilityDetails({
     <Subpage
       title="Capabilities"
       description={
-        completedAt != null ? `Updated ${formatTimeAgo(completedAt)}` : undefined
+        completedAt != null ? `Updated ${formatTimeAgo(completedAt, now)}` : undefined
       }
       onBack={onBack}
     >

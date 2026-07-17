@@ -23,6 +23,7 @@ import {
   WatchIcon,
 } from '@/components/ui/Icons'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import './DevicesView.css'
 
@@ -108,9 +109,9 @@ function relativeAge(ms: number): string {
 // still in the ARP table but not answering, where "just now" would only read as
 // a contradiction. A device merged back from the roster carries an older
 // timestamp and gets the age.
-function lastSeenAge(device: LanDevice): string | null {
+function lastSeenAge(device: LanDevice, now: number): string | null {
   if (device.reachable || device.lastSeen == null) return null
-  const ms = Date.now() - device.lastSeen
+  const ms = now - device.lastSeen
   if (ms < 90_000) return null
   return relativeAge(ms)
 }
@@ -242,8 +243,11 @@ function OnlineIndicator({
 }
 
 function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
+  // Coarse on purpose: `relativeAge` only ever renders whole minutes, and this
+  // is a row in a list that can be long.
+  const now = useNow(30_000)
   const name = deviceName(device)
-  const lastSeen = lastSeenAge(device)
+  const lastSeen = lastSeenAge(device, now)
   // Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
   // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
   // fingerprint. A low-confidence kind is hedged with a trailing "?" — the
