@@ -311,7 +311,10 @@ pub struct DataUsageSummary {
 }
 
 /// One application's network usage since Rove started watching. `name` is the
-/// process name (all processes sharing it are summed).
+/// process name (all processes sharing it are summed). This counts every socket
+/// the process owns that has a peer, loopback included; for the same app's
+/// traffic broken down by remote host — a smaller number, deliberately — see
+/// [`AppHosts`].
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppUsage {
@@ -356,9 +359,23 @@ pub struct HostConn {
 }
 
 /// One application with the remote hosts it has talked to, busiest host first.
-/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts — note this
-/// is TCP-connection traffic only (the source that carries a peer address), so
-/// it can read a little lower than the Apps view's all-protocol process totals.
+/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts, and read
+/// *at or below* the same app's [`AppUsage`] total — this view is a subset of
+/// that one, not a second opinion on it. Both bank per-socket deltas, so the
+/// difference is only ever traffic this view deliberately leaves out:
+///
+///   * Sockets with no host worth listing — loopback, unspecified and wildcard
+///     peers — are dropped, whereas [`AppUsage`] counts every socket the process
+///     owns. A local dev server on `127.0.0.1`, or a DNS proxy on
+///     `127.0.0.1:53`, lands there and not here.
+///   * On macOS this view samples `nettop -m tcp`, so connected UDP — QUIC,
+///     chiefly — counts in [`AppUsage`] alone. On Linux both read `ss -tinHp`
+///     and are TCP-only, so this cause doesn't apply.
+///
+/// One caveat on "at or below": the two samplers run on different intervals with
+/// independently primed baselines, so a single read compares totals banked up to
+/// different instants and the subset relation can look briefly violated while
+/// traffic is in flight.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppHosts {
