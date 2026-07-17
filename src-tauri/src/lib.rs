@@ -169,6 +169,7 @@ pub fn run() {
             commands::get_app_usage,
             commands::get_host_usage,
             commands::get_traffic_usage,
+            commands::usage_support_detail,
             commands::relaunch_as_admin,
             commands::get_speed_history,
             commands::get_network_events,

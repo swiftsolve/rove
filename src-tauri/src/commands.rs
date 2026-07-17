@@ -280,6 +280,15 @@ pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSumma
     lock(&state.host_usage).traffic_summary()
 }
 
+/// Why per-app usage is unavailable, for the "needs administrator" empty state.
+/// On Windows this is the last ETW session start error (`None` once it's up);
+/// elsewhere always `None`. Lets the UI show the real cause instead of only
+/// suggesting elevation when elevation isn't the problem.
+#[tauri::command]
+pub fn usage_support_detail() -> Option<String> {
+    rove_core::app_usage::support_detail()
+}
+
 /// Relaunch Rove elevated so the ETW session behind the Apps/Hosts/Traffic
 /// views can open (it needs administrator rights). Windows-only: launches an
 /// elevated copy via the shell's `RunAs` verb — which raises the UAC prompt —
