@@ -191,29 +191,3 @@
   letter-spacing: 0.02em;
 }
 
-/* Blank state — icon + short line, generously spaced and centred. */
-.events-empty {
-  gap: 16px;
-  text-align: center;
-}
-
-.events-empty-icon {
-  color: var(--text-tertiary);
-  opacity: 0.55;
-}
-
-.events-empty-title {
-  font-size: var(--text-body);
-  color: var(--text-secondary);
-}
-
-.events-hint {
-  max-width: 42ch;
-  line-height: 1.45;
-  font-size: 12px;
-  text-align: center;
-}
-
-.events-empty .btn-secondary {
-  margin-top: 4px;
-}

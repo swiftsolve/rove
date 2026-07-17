@@ -10,8 +10,9 @@ import Subpage from '@/components/ui/Subpage'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { MarqueeText } from '@/components/ui/MarqueeText'
 import { MetricValue } from '@/components/ui/MetricValue'
-import { ChevronDownIcon, GlobeIcon, HelpIcon, IpIcon } from '@/components/ui/Icons'
+import { ChevronDownIcon, GlobeIcon, HelpIcon, InfoIcon, IpIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import './HostsView.css'
 
@@ -20,6 +21,15 @@ const HOST_USAGE_INFO_HINT =
   'addresses. Hostnames come from reverse DNS and flags from an IP-geolocation ' +
   'lookup, both filled in shortly after a host is first seen. Bytes cover TCP ' +
   'connections only and reset when Rove restarts.'
+
+const HOST_USAGE_EMPTY_HINT =
+  'Hosts appear here as your apps open connections. Totals are gathered while ' +
+  'Rove runs.'
+
+const HOST_USAGE_UNSUPPORTED_HINT =
+  'Attributing connections to hosts reads the OS per-socket peer addresses, which ' +
+  'Rove can do on Linux and macOS. On Windows the per-app network events carry no ' +
+  'peer address, so hosts can’t be shown.'
 
 /** One remote host beneath its app: flag + hostname on the left, the download /
  *  upload split on the right — the country flag sitting alongside the host. */
@@ -231,27 +241,18 @@ export default function HostsView({
       )}
 
       {support === 'unsupported' ? (
-        <div className="view-empty">
-          <p className="text-muted">Per-app host attribution isn’t available right now.</p>
-          <p className="text-meta host-usage-note">
-            Attributing connections to hosts reads the OS per-socket peer
-            addresses, which Rove can do on Linux and macOS. On Windows the
-            per-app network events carry no peer address, so hosts can’t be shown.
-          </p>
-        </div>
+        <EmptyState
+          icon={InfoIcon}
+          title="Per-app hosts aren’t available"
+          hint={HOST_USAGE_UNSUPPORTED_HINT}
+        />
       ) : isLoading && !hasData ? (
         <div className="view-empty">
           <Spinner />
           <p className="text-muted">Measuring per-app hosts…</p>
         </div>
       ) : !hasData ? (
-        <div className="view-empty">
-          <p className="text-muted">No host connections seen yet.</p>
-          <p className="text-meta host-usage-note">
-            Hosts appear here as your apps open connections. Totals are gathered
-            while Rove runs.
-          </p>
-        </div>
+        <EmptyState icon={GlobeIcon} title="No host connections yet" hint={HOST_USAGE_EMPTY_HINT} />
       ) : (
         <div className="ui-section">
           <div className="ui-section-body host-list" ref={listRef}>

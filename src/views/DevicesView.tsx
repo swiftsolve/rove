@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { LanDevice, LanDeviceKind, LanDeviceScan } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import { InlineMeta } from '@/components/ui/DotSeparator'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
@@ -420,16 +421,16 @@ export default function DevicesView({
           <p className="text-muted">Scanning your network…</p>
         </div>
       ) : devices.length === 0 ? (
-        <div className="view-empty devices-empty">
-          <DevicesIcon size={40} className="devices-empty-icon" />
-          <p className="devices-empty-title">No devices found</p>
-          {showLocalNetworkHint && (
-            <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>
-          )}
-          <button type="button" className="btn-secondary" onClick={onRescan}>
-            Try again
-          </button>
-        </div>
+        <EmptyState
+          icon={DevicesIcon}
+          title="No devices found"
+          hint={showLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
+          action={
+            <button type="button" className="btn-secondary" onClick={onRescan}>
+              Try again
+            </button>
+          }
+        />
       ) : (
         <div className="device-list">
           {devices.map((device) => (

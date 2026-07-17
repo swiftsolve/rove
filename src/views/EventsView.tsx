@@ -4,6 +4,7 @@ import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import { formatDuration } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
@@ -27,6 +28,9 @@ import './EventsView.css'
 
 const FEED_HINT =
   'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
+
+const EMPTY_HINT =
+  'When a device joins, leaves, or changes its IP or name, it shows up here. Run a scan to check for activity.'
 
 interface EventsViewProps {
   readonly events: readonly NetworkEvent[]
@@ -321,17 +325,16 @@ export default function EventsView({
           <p className="text-muted">Loading events…</p>
         </div>
       ) : !hasEvents ? (
-        <div className="view-empty events-empty">
-          <ActivityIcon size={28} className="events-empty-icon" />
-          <p className="events-empty-title">No events yet</p>
-          <p className="text-muted events-hint">
-            When a device joins, leaves, or changes its IP or name, it shows up here. Run a scan to
-            check for activity.
-          </p>
-          <button type="button" className="btn-secondary" onClick={onRefresh}>
-            Scan now
-          </button>
-        </div>
+        <EmptyState
+          icon={ActivityIcon}
+          title="No events yet"
+          hint={EMPTY_HINT}
+          action={
+            <button type="button" className="btn-secondary" onClick={onRefresh}>
+              Scan now
+            </button>
+          }
+        />
       ) : (
         <div className="events-timeline">
           {groupByDay(visibleEvents, now).map((group) => (
