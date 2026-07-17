@@ -286,8 +286,9 @@ CREATE TABLE IF NOT EXISTS services (
 /// land in the log.
 ///
 /// `status` carries a transition's 'up'/'down' and a connection event's
-/// 'lost'/'restored'; `count` is the running summary's tally. Each is null for
-/// the shapes that don't use it — the row's `type` says which apply.
+/// 'lost'/'restored'; `count`/`total` are the running summary's tally and the
+/// number of services it was drawn from. Each is null for the shapes that don't
+/// use it — the row's `type` says which apply.
 const SCHEMA_V5: &str = "
 CREATE TABLE IF NOT EXISTS service_events (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -296,7 +297,8 @@ CREATE TABLE IF NOT EXISTS service_events (
     host   TEXT,
     name   TEXT,
     status TEXT,
-    count  INTEGER
+    count  INTEGER,
+    total  INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_service_events_ts ON service_events(ts DESC);
 CREATE TABLE IF NOT EXISTS service_state (
@@ -386,6 +388,24 @@ impl Store {
         // missing, idempotently, so a collided version number can't wedge history.
         Self::ensure_column(&conn, "speed_history", "link_speed_mbps", "REAL")?;
         Self::ensure_column(&conn, "speed_history", "frequency", "REAL")?;
+        // `total` arrived after the timeline shipped: a running summary used to
+        // record only how many services were up, which left a partial baseline
+        // ("5 up" while a 6th was down) indistinguishable from a full recovery,
+        // and the UI read every summary as all-clear. Nullable, so existing rows
+        // survive the add — the backfill below gives them a denominator.
+        Self::ensure_column(&conn, "service_events", "total", "INTEGER")?;
+        // Reconstruct that denominator for pre-`total` rows. A recovery summary
+        // had everything up by construction, so its own count is already right;
+        // a baseline may have been partial, and today's service list is the best
+        // estimate left of what it was counting. MAX keeps the two consistent —
+        // a list that has since shrunk must not read as "6 of 5 healthy". Gated
+        // on IS NULL, so it can't rewrite a total a later probe recorded.
+        conn.execute(
+            "UPDATE service_events
+                SET total = MAX(count, (SELECT COUNT(*) FROM services))
+              WHERE type = 'running' AND total IS NULL",
+            [],
+        )?;
         // Scrub reverse-DNS error text that earlier builds stored as a hostname.
         // macOS `dig` prints diagnostics like ";; connection timed out; no servers
         // could be reached" to stdout, and it leaked through as a device name; the
@@ -1062,11 +1082,15 @@ impl Store {
             .iter()
             .filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up)
             .count() as i64;
+        let total_count = report.services.len() as i64;
 
-        // Baseline: anchor a brand-new timeline with a positive summary rather
-        // than leaving it blank until something first breaks.
+        // Baseline: anchor a brand-new timeline with a summary rather than
+        // leaving it blank until something first breaks. This one can be partial
+        // — a service already down the first time we look is reported here as
+        // `up_count < total_count`, and paired with its own "went down" row
+        // below — so it carries the total to say so.
         if Self::service_events_is_empty(&tx)? && up_count > 0 {
-            events.push(ServiceEvent::Running { count: up_count, ts: now_ms });
+            events.push(ServiceEvent::Running { count: up_count, total: total_count, ts: now_ms });
         }
 
         let previously_any_down = previous.values().any(|s| *s == ServiceStatus::Down);
@@ -1099,9 +1123,10 @@ impl Store {
             Self::set_service_state(&tx, &svc.host, status)?;
         }
 
-        // Full recovery: something had been down, and now nothing is.
+        // Full recovery: something had been down, and now nothing is — so this
+        // summary is always the whole set, `up_count == total_count`.
         if recovered && previously_any_down && !now_any_down {
-            events.push(ServiceEvent::Running { count: up_count, ts: now_ms });
+            events.push(ServiceEvent::Running { count: up_count, total: total_count, ts: now_ms });
         }
 
         if events.is_empty() {
@@ -1190,9 +1215,10 @@ impl Store {
                  VALUES (?1, 'transition', ?2, ?3, ?4)",
                 params![ts, host, name, Self::status_str(*status)],
             )?,
-            ServiceEvent::Running { count, ts } => conn.execute(
-                "INSERT INTO service_events (ts, type, count) VALUES (?1, 'running', ?2)",
-                params![ts, count],
+            ServiceEvent::Running { count, total, ts } => conn.execute(
+                "INSERT INTO service_events (ts, type, count, total)
+                 VALUES (?1, 'running', ?2, ?3)",
+                params![ts, count, total],
             )?,
             ServiceEvent::Connection { status, ts } => conn.execute(
                 "INSERT INTO service_events (ts, type, status) VALUES (?1, 'connection', ?2)",
@@ -1223,7 +1249,7 @@ impl Store {
         use crate::types::{ConnectionChange, ServiceEvent, ServiceStatus};
         let conn = self.lock();
         let mut stmt = conn.prepare(
-            "SELECT ts, type, host, name, status, count FROM service_events
+            "SELECT ts, type, host, name, status, count, total FROM service_events
              ORDER BY ts DESC, id DESC",
         )?;
         let rows = stmt.query_map([], |row| {
@@ -1233,8 +1259,16 @@ impl Store {
             let name: Option<String> = row.get(3)?;
             let status: Option<String> = row.get(4)?;
             let count: Option<i64> = row.get(5)?;
+            let total: Option<i64> = row.get(6)?;
             Ok(match kind.as_str() {
-                "running" => Some(ServiceEvent::Running { count: count.unwrap_or(0), ts }),
+                "running" => {
+                    let count = count.unwrap_or(0);
+                    // A row the backfill couldn't reach (no `services` rows to
+                    // count from) still has no denominator; treating it as its
+                    // own total reads as all-clear, which is what every summary
+                    // claimed before partial baselines were distinguishable.
+                    Some(ServiceEvent::Running { count, total: total.unwrap_or(count), ts })
+                }
                 "connection" => Some(ServiceEvent::Connection {
                     status: if status.as_deref() == Some("lost") {
                         ConnectionChange::Lost
@@ -2699,7 +2733,43 @@ mod tests {
         store.record_services(&report(&["a.com", "b.com"], &[]), 1_000).unwrap();
 
         let events = store.service_events().unwrap();
-        assert_eq!(events, vec![ServiceEvent::Running { count: 2, ts: 1_000 }]);
+        assert_eq!(events, vec![ServiceEvent::Running { count: 2, total: 2, ts: 1_000 }]);
+    }
+
+    /// The timeline reads `count`/`total` off the wire verbatim to decide
+    /// between "all healthy" and "5 of 6 healthy". A rename here would leave the
+    /// frontend comparing against `undefined` — which reads as a partial tally
+    /// for every summary — so pin the shape the UI actually consumes.
+    #[test]
+    fn running_event_serializes_with_the_field_names_the_ui_reads() {
+        let json = serde_json::to_value(ServiceEvent::Running {
+            count: 5,
+            total: 6,
+            ts: 1_000,
+        })
+        .unwrap();
+
+        assert_eq!(
+            json,
+            serde_json::json!({ "type": "running", "count": 5, "total": 6, "ts": 1_000 })
+        );
+    }
+
+    /// A service already down the first time we look makes the baseline partial.
+    /// It must carry the full total rather than passing 2-of-3 off as all-clear.
+    #[test]
+    fn services_first_sight_baseline_is_partial_when_one_is_already_down() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .record_services(&report(&["a.com", "b.com"], &["c.com"]), 1_000)
+            .unwrap();
+
+        let events = store.service_events().unwrap();
+        let baseline = events
+            .iter()
+            .find(|e| matches!(e, ServiceEvent::Running { .. }))
+            .expect("a baseline summary");
+        assert_eq!(*baseline, ServiceEvent::Running { count: 2, total: 3, ts: 1_000 });
     }
 
     #[test]
@@ -2723,7 +2793,7 @@ mod tests {
         // Newest first: recovery summary, b back up, b went down, baseline.
         let events = store.service_events().unwrap();
         assert_eq!(events.len(), 4);
-        assert_eq!(events[0], ServiceEvent::Running { count: 2, ts: 3_000 });
+        assert_eq!(events[0], ServiceEvent::Running { count: 2, total: 2, ts: 3_000 });
         assert!(matches!(
             &events[1],
             ServiceEvent::Transition { host, status: ServiceStatus::Up, ts: 3_000, .. } if host == "b.com"

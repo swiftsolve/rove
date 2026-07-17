@@ -239,10 +239,12 @@ pub enum ServiceEvent {
         status: ServiceStatus,
         ts: i64,
     },
-    /// A positive summary: `count` services were up. Logged once as a baseline
-    /// when monitoring first sees the services, and again whenever everything
-    /// recovers after an outage.
-    Running { count: i64, ts: i64 },
+    /// A summary of the tracked services: `count` of `total` were up. Logged
+    /// once as a baseline when monitoring first sees the services, and again
+    /// whenever everything recovers after an outage. A recovery is always
+    /// `count == total`, but a baseline can be partial — a service may already
+    /// have been down the first time we looked — so the two must stay distinct.
+    Running { count: i64, total: i64, ts: i64 },
     /// This machine's own connection dropped or returned.
     Connection { status: ConnectionChange, ts: i64 },
 }
