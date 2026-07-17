@@ -245,7 +245,7 @@ fn build_passive_device(
         return None;
     }
 
-    let vendor = lookup_vendor(&neighbor.mac).map(String::from);
+    let vendor = lookup_vendor(&neighbor.mac);
     let dhcp_hit = dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
 
     // Best passive name, most human first — the full scan's order minus the
@@ -320,7 +320,7 @@ pub async fn gateway_identity(
         .find(|n| n.ip == gw)
         .map(|n| n.mac)
         .filter(|m| !m.is_empty());
-    let vendor = mac.as_deref().and_then(lookup_vendor).map(String::from);
+    let vendor = mac.as_deref().and_then(lookup_vendor);
 
     // SNMP names the model on gear that answers it; SSDP adds the UPnP
     // friendlyName/modelName that most consumer routers announce instead. Run
@@ -367,7 +367,7 @@ fn build_device(
     gateway: Option<&str>,
     self_ip: Option<&str>,
 ) -> LanDevice {
-    let vendor = lookup_vendor(&neighbor.mac).map(String::from);
+    let vendor = lookup_vendor(&neighbor.mac);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
     let dhcp = enrichment.dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
@@ -595,6 +595,31 @@ fn is_apple_hostname(hostname: &str) -> bool {
     ];
     let lower = hostname.to_ascii_lowercase();
     MARKERS.iter().any(|marker| lower.contains(marker))
+}
+
+/// The neighbor table never lists the local machine — add it for a complete count.
+fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
+    let (Some(ip), Some(mac)) = (self_ip, self_mac) else {
+        return;
+    };
+    if devices.iter().any(|d| d.mac == mac) {
+        return;
+    }
+    devices.push(LanDevice {
+        ip: ip.to_string(),
+        mac: mac.to_string(),
+        vendor: lookup_vendor(mac),
+        hostname: hostname::local_machine_name(),
+        model: None,
+        os: None,
+        kind: "computer".into(),
+        kind_confidence: "high",
+        is_randomized_mac: is_randomized_mac(mac),
+        is_gateway: false,
+        is_self: true,
+        reachable: true,
+        last_seen: None,
+    });
 }
 
 #[cfg(test)]
@@ -857,29 +882,4 @@ mod tests {
         assert_eq!(humanize_model("HP LaserJet Pro"), "HP LaserJet Pro");
         assert_eq!(humanize_model("BRAVIA KD-55X"), "BRAVIA KD-55X");
     }
-}
-
-/// The neighbor table never lists the local machine — add it for a complete count.
-fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
-    let (Some(ip), Some(mac)) = (self_ip, self_mac) else {
-        return;
-    };
-    if devices.iter().any(|d| d.mac == mac) {
-        return;
-    }
-    devices.push(LanDevice {
-        ip: ip.to_string(),
-        mac: mac.to_string(),
-        vendor: lookup_vendor(mac).map(String::from),
-        hostname: hostname::local_machine_name(),
-        model: None,
-        os: None,
-        kind: "computer".into(),
-        kind_confidence: "high",
-        is_randomized_mac: is_randomized_mac(mac),
-        is_gateway: false,
-        is_self: true,
-        reachable: true,
-        last_seen: None,
-    });
 }

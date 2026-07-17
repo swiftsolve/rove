@@ -170,6 +170,27 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     ips.iter().map(|ip| resolved.get(ip).cloned()).collect()
 }
 
+/// This machine's own hostname, for the self entry.
+pub fn local_machine_name() -> Option<String> {
+    std::fs::read_to_string("/etc/hostname")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| std::env::var("COMPUTERNAME").ok())
+        .or_else(|| std::env::var("HOSTNAME").ok())
+        .or_else(|| {
+            // macOS and most Unixes: the plain `hostname` binary.
+            let mut cmd = std::process::Command::new("hostname");
+            crate::platform::hide_console(&mut cmd);
+            cmd.output()
+                .ok()
+                .and_then(|o| String::from_utf8(o.stdout).ok())
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        })
+        .map(|h| trim_suffix(&h))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -208,25 +229,4 @@ mod tests {
         assert_eq!(trim_suffix("host.internal"), "host");
         assert_eq!(trim_suffix("plain"), "plain");
     }
-}
-
-/// This machine's own hostname, for the self entry.
-pub fn local_machine_name() -> Option<String> {
-    std::fs::read_to_string("/etc/hostname")
-        .ok()
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .or_else(|| std::env::var("COMPUTERNAME").ok())
-        .or_else(|| std::env::var("HOSTNAME").ok())
-        .or_else(|| {
-            // macOS and most Unixes: the plain `hostname` binary.
-            let mut cmd = std::process::Command::new("hostname");
-            crate::platform::hide_console(&mut cmd);
-            cmd.output()
-                .ok()
-                .and_then(|o| String::from_utf8(o.stdout).ok())
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty())
-        })
-        .map(|h| trim_suffix(&h))
 }

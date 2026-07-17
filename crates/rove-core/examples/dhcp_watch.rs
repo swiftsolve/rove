@@ -26,7 +26,7 @@ async fn main() {
     }
 
     println!("Watching for DHCP broadcasts. Reconnect a device's Wi-Fi to force one. Ctrl-C to stop.\n");
-    println!("{:<18} {:<24} {:<16} {:<9} {}", "MAC", "HOSTNAME (opt 12)", "OS", "KIND", "VENDOR CLASS / PRL");
+    println!("{:<18} {:<24} {:<16} {:<9} VENDOR CLASS / PRL", "MAC", "HOSTNAME (opt 12)", "OS", "KIND");
 
     let mut seen: HashSet<String> = HashSet::new();
     loop {

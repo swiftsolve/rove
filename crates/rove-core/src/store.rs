@@ -2190,8 +2190,8 @@ mod tests {
         let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
 
         store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[a.clone()], 2_000).unwrap(); // b drops → offline
-        store.record_devices(&[a.clone()], 3_000).unwrap(); // still gone → no repeat
+        store.record_devices(std::slice::from_ref(&a), 2_000).unwrap(); // b drops → offline
+        store.record_devices(std::slice::from_ref(&a), 3_000).unwrap(); // still gone → no repeat
         let offline: Vec<_> = store
             .network_events(100)
             .unwrap()
@@ -2325,12 +2325,12 @@ mod tests {
         // ago, and the computer is here now.
         let now = 3 * OFFLINE_LIST_KEEP_MS; // comfortably past both timestamps
         store.record_devices(&[ancient], now - 2 * OFFLINE_LIST_KEEP_MS).unwrap();
-        store.record_devices(&[recent.clone()], now - 60_000).unwrap();
-        store.record_devices(&[here.clone()], now).unwrap();
+        store.record_devices(std::slice::from_ref(&recent), now - 60_000).unwrap();
+        store.record_devices(std::slice::from_ref(&here), now).unwrap();
 
         // Only the computer answered this scan; merge fills in the phone (recent)
         // but not the TV (beyond the 24h window).
-        let merged = store.devices_with_offline(&[here.clone()], now, OFFLINE_LIST_KEEP_MS).unwrap();
+        let merged = store.devices_with_offline(std::slice::from_ref(&here), now, OFFLINE_LIST_KEEP_MS).unwrap();
         let by_mac = |m: &str| merged.iter().find(|d| d.mac == m).cloned();
 
         let online = by_mac("aa:aa:aa:aa:aa:aa").unwrap();
@@ -2388,7 +2388,7 @@ mod tests {
         let phone = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", "phone");
 
         store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[keep.clone()], 2_000).unwrap(); // vanishes → offline
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // vanishes → offline
         assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_offline");
 
         // Reappears in the ARP table but still isn't answering (reachable=false)
@@ -2417,7 +2417,7 @@ mod tests {
         phone.os = Some("Android".into());
 
         store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[keep.clone()], 2_000).unwrap(); // phone drops off
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // phone drops off
 
         let offline = &store.network_events(1).unwrap()[0];
         assert_eq!(offline.event_type, "device_offline");
@@ -2440,7 +2440,7 @@ mod tests {
         phone.is_randomized_mac = true;
 
         store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[keep.clone()], 2_000).unwrap(); // phone departs
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // phone departs
 
         let offline = &store.network_events(1).unwrap()[0];
         assert_eq!(offline.event_type, "device_offline");
@@ -2463,7 +2463,7 @@ mod tests {
         ghost.is_randomized_mac = true;
 
         store.record_devices(&[keep.clone(), ghost.clone()], 1_000).unwrap();
-        store.record_devices(&[keep.clone()], 2_000).unwrap();
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap();
 
         let offline = &store.network_events(1).unwrap()[0];
         assert_eq!(offline.event_type, "device_offline");
@@ -2482,7 +2482,7 @@ mod tests {
         let mut thin = device("1a:78:49:c6:0d:df", "192.168.1.20", "unknown");
         thin.is_randomized_mac = true;
         store.record_devices(&[keep.clone(), thin.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[keep.clone()], 2_000).unwrap(); // drops off, thin
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // drops off, thin
 
         let offline_id = {
             let e = &store.network_events(1).unwrap()[0];
@@ -2521,7 +2521,7 @@ mod tests {
         let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
         laptop.hostname = Some("laptop-01".into());
         store.record_devices(&[keep.clone(), laptop.clone()], 1_000).unwrap(); // baseline
-        store.record_devices(&[keep.clone()], 2_000).unwrap(); // laptop departs
+        store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // laptop departs
 
         // Forget the departed device, simulating a roster it's no longer part of.
         store.lock().execute("DELETE FROM known_devices WHERE mac = ?1", ["bb:bb:bb:bb:bb:bb"]).unwrap();

@@ -176,7 +176,7 @@ pub async fn network_info() -> NetworkInfo {
     // didn't supply one (Windows Ethernet, macOS Wi-Fi).
     if details.vendor.is_none() {
         if let Some(mac) = &mac {
-            details.vendor = crate::oui::lookup_vendor(mac).map(String::from);
+            details.vendor = crate::oui::lookup_vendor(mac);
         }
     }
 
