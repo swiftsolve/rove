@@ -311,10 +311,11 @@ pub struct DataUsageSummary {
 }
 
 /// One application's network usage since Rove started watching. `name` is the
-/// process name (all processes sharing it are summed). This counts every socket
-/// the process owns that has a peer, loopback included; for the same app's
-/// traffic broken down by remote host — a smaller number, deliberately — see
-/// [`AppHosts`].
+/// process name (all processes sharing it are summed). This counts the bytes the
+/// process moved to hosts out on the network — sockets to a loopback or wildcard
+/// peer are excluded, the same rule the hosts view uses
+/// (`net_util::routable_peer_ip`). For that same traffic broken down by
+/// remote host, see [`AppHosts`].
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppUsage {
@@ -361,13 +362,14 @@ pub struct HostConn {
 /// One application with the remote hosts it has talked to, busiest host first.
 /// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts, and read
 /// *at or below* the same app's [`AppUsage`] total — this view is a subset of
-/// that one, not a second opinion on it. Both bank per-socket deltas, so the
-/// difference is only ever traffic this view deliberately leaves out:
+/// that one, not a second opinion on it. Both bank per-socket deltas and gate on
+/// the same peer rule (`net_util::routable_peer_ip`), so loopback and
+/// wildcard sockets are absent from both and don't explain the gap. What remains:
 ///
-///   * Sockets with no host worth listing — loopback, unspecified and wildcard
-///     peers — are dropped, whereas [`AppUsage`] counts every socket the process
-///     owns. A local dev server on `127.0.0.1`, or a DNS proxy on
-///     `127.0.0.1:53`, lands there and not here.
+///   * A peer with no country — a LAN/private address — is metered here but drawn
+///     without a flag, whereas [`AppUsage`] doesn't care about country at all.
+///     (Same bytes, so this isn't a size difference — just noting the two views
+///     treat private peers differently in the UI, not the total.)
 ///   * On macOS this view samples `nettop -m tcp`, so connected UDP — QUIC,
 ///     chiefly — counts in [`AppUsage`] alone. On Linux both read `ss -tinHp`
 ///     and are TCP-only, so this cause doesn't apply.

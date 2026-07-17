@@ -9,9 +9,9 @@
 //!     (`bytes_sent`/`bytes_received`) alongside the owning process. Readable
 //!     unprivileged for your own sockets; no eBPF, no capture.
 //!   * **macOS** — `nettop` reports cumulative bytes per socket, listing each
-//!     process's sockets beneath it, TCP and UDP alike. Sockets with no peer
-//!     (mDNS and other unconnected chatter) are the one exclusion — nettop can't
-//!     name them well enough to meter, see `meterable_peer`.
+//!     process's sockets beneath it, TCP and UDP alike. Sockets whose peer isn't
+//!     a host on the network — unconnected mDNS chatter, loopback — are excluded
+//!     by the shared `net_util::routable_peer_ip` rule.
 //!   * **Windows / other** — per-process byte metering needs an ETW consumer
 //!     (`Microsoft-Windows-Kernel-Network`), not yet implemented, so the
 //!     platform reports itself unsupported rather than returning wrong numbers.
@@ -235,8 +235,12 @@ pub(crate) fn ss_proc_name(line: &str) -> Option<String> {
 /// Parse `ss -tinHp` output into per-socket cumulative readings. Each socket is
 /// two lines: a header (`STATE recvq sendq LOCAL PEER users:((...))`) carrying
 /// the addresses and owning process, then an indented info line carrying
-/// `bytes_sent:`/`bytes_received:`. Sockets without a process (TIME-WAIT, etc.)
-/// or without byte counters are skipped.
+/// `bytes_sent:`/`bytes_received:`. Sockets without a process (TIME-WAIT, etc.),
+/// without byte counters, or whose peer isn't a host on the network (loopback,
+/// listeners — the shared [`crate::net_util::routable_peer_ip`] rule) are
+/// skipped. Dropping loopback matters especially here: on Linux the kernel lists
+/// both ends of a `127.0.0.1` connection as separate sockets, so counting it
+/// would bill an app talking to itself twice.
 #[cfg(any(target_os = "linux", test))]
 fn parse_ss(output: &str) -> Vec<UsageUnit> {
     let mut units = Vec::new();
@@ -270,9 +274,10 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
                 let local = cols.nth(3);
                 let peer = cols.next();
                 // Socket-keyed accounting: no per-process icon lookup on Linux,
-                // so pid is left unset.
-                pending = match (local, peer) {
-                    (Some(local), Some(peer)) => Some((name, format!("{local}|{peer}"))),
+                // so pid is left unset. A non-routable peer (loopback, listener)
+                // drops the pairing so its info line isn't banked.
+                pending = match (local, peer, peer.and_then(crate::net_util::routable_peer_ip)) {
+                    (Some(local), Some(peer), Some(_)) => Some((name, format!("{local}|{peer}"))),
                     _ => None,
                 };
             }
@@ -290,10 +295,11 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
 /// the rows that follow — never banked, because that sum is a gauge over open
 /// sockets rather than an odometer (see the module docs).
 ///
-/// Listeners print empty byte columns and are skipped, as are sockets with a
-/// wildcard peer — see [`meterable_peer`]. Loopback is *not* filtered (unlike
-/// [`crate::host_usage`], which lists hosts): a socket to `127.0.0.1` is still
-/// this process moving bytes.
+/// Listeners print empty byte columns and are skipped, as are sockets whose peer
+/// isn't a host out on the network — wildcards and loopback both, via the shared
+/// [`crate::net_util::routable_peer_ip`] rule (see there for why). This module
+/// and [`crate::host_usage`] read the same sockets, so they gate on the same
+/// rule: a byte that counts as app traffic is a byte that reached some host.
 #[cfg(any(target_os = "macos", test))]
 fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
     let mut units: Vec<UsageUnit> = Vec::new();
@@ -313,7 +319,7 @@ fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
         // A socket row, attributed to the process row above it.
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((owner, name, pid)) = &current else { continue };
-            if !meterable_peer(peer) {
+            if crate::net_util::routable_peer_ip(peer).is_none() {
                 continue;
             }
             let rx = fields.next().and_then(|f| f.trim().parse::<u64>().ok());
@@ -359,26 +365,6 @@ fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
     units
 }
 
-/// Whether a socket's peer gives it a meterable identity.
-///
-/// nettop names a socket only by its address pair, so an *unconnected* socket —
-/// peer `*:*` (or `*.*` for v6) — has no identity at all: one process can hold
-/// several that print the identical label with different counters, and no column
-/// nettop offers tells them apart (a music player was observed holding nine
-/// `udp4 *:5353<->*:*` mDNS sockets on the same interface). Keyed together they
-/// re-bank each other every tick; keyed apart they can't be. So they aren't
-/// counted, and the loss is bounded: unconnected UDP is DNS, mDNS and other
-/// service discovery — chatter, not payload. Everything carrying real volume
-/// (all TCP, and connected UDP like QUIC) names a concrete peer and is metered.
-///
-/// This is a property of the row alone, deliberately: a rule that depended on
-/// what *else* is in the sample would make a socket start counting the moment its
-/// siblings closed, banking its whole history as if it were new.
-#[cfg(any(target_os = "macos", test))]
-fn meterable_peer(peer: &str) -> bool {
-    let peer = peer.trim();
-    !peer.is_empty() && !peer.starts_with('*')
-}
 
 #[derive(Default, Clone, Copy)]
 struct ByteCounts {
@@ -674,6 +660,21 @@ TIME-WAIT 0 0 192.168.1.42:40120 35.186.224.25:443
         assert_eq!(units[1].tx, 1200);
     }
 
+    /// A loopback socket is dropped: on Linux the kernel lists both of its ends
+    /// as separate sockets, so counting it bills an app talking to itself twice.
+    #[test]
+    fn ss_loopback_sockets_are_not_metered() {
+        let out = "\
+ESTAB 0 0 127.0.0.1:9000 127.0.0.1:53 users:((\"resolver\",pid=42,fd=7))
+\t cubic bytes_sent:4000 bytes_received:4000 segs_out:3 segs_in:3
+ESTAB 0 0 192.168.1.42:52134 140.82.113.25:443 users:((\"firefox\",pid=1234,fd=90))
+\t cubic bytes_sent:100 bytes_received:200 segs_out:2 segs_in:2";
+        let units = parse_ss(out);
+        assert_eq!(units.len(), 1, "the loopback socket is dropped, the real one kept");
+        assert_eq!(units[0].name, "firefox");
+        assert_eq!(units[0].rx, 200);
+    }
+
     #[test]
     fn parses_nettop_socket_rows_and_ignores_the_process_row() {
         // Real `nettop -L 1 -x -n -J bytes_in,bytes_out` shape: a header, then
@@ -766,16 +767,20 @@ udp4 *:5353<->*:*,51792185,0,";
         assert!(t.summary().apps.is_empty(), "phantom bytes from indistinguishable sockets");
     }
 
-    /// IPv6 wildcards print `*.*` rather than `*:*`.
+    /// Loopback is excluded on macOS just as on Linux and in the hosts view: a
+    /// process talking to `127.0.0.1` isn't using the network. (The peer-rule
+    /// unit tests live with the rule, in `net_util`; this pins that the parser
+    /// actually applies it.)
     #[test]
-    fn meterable_peer_rejects_both_wildcard_spellings() {
-        assert!(!meterable_peer("*:*"));
-        assert!(!meterable_peer("*.*"));
-        assert!(!meterable_peer(""));
-        assert!(meterable_peer("17.248.1.1:443"));
-        assert!(meterable_peer("2606::1.443"));
-        // Loopback is still this process moving bytes, and is uniquely keyed.
-        assert!(meterable_peer("127.0.0.1:8021"));
+    fn nettop_loopback_sockets_are_not_metered() {
+        let out = "\
+,bytes_in,bytes_out,
+localproxy.7,5000,5000,
+tcp4 127.0.0.1:9000<->127.0.0.1:53,4000,4000,
+tcp4 192.168.2.16:51000<->17.248.1.1:443,1000,1000,";
+        let units = parse_nettop_sockets(out);
+        assert_eq!(units.len(), 1, "the loopback socket is dropped, the real one kept");
+        assert_eq!(units[0].rx, 1000);
     }
 
     #[test]

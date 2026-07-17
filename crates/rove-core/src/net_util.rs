@@ -1,6 +1,75 @@
 //! Small helpers shared across service modules.
+use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+/// The bare IP of a socket's peer, or `None` when that peer isn't a host out on
+/// the network. Shared by the per-app and per-host trackers so the two agree on
+/// what counts as traffic — they read the same sockets, and a rule that lived in
+/// only one of them would silently drift.
+///
+/// `None` covers two different problems that happen to want the same answer:
+///
+///   * **A wildcard peer** (`*:*`, or `*.*` for v6) is an unconnected socket,
+///     and it has no identity: `nettop` names a socket only by its address pair,
+///     so one process can hold several printing the identical label with
+///     different counters — nine `udp4 *:5353<->*:*` mDNS sockets, say — that
+///     nothing distinguishes. Keyed together they re-bank each other every tick;
+///     keyed apart they can't be. They are not meterable at all.
+///   * **A loopback, unspecified or broadcast peer** never reaches the network.
+///     Counting it would report a local dev server as bandwidth, and on Linux
+///     both ends of a loopback connection are separate sockets, so an app talking
+///     to itself would count every byte twice.
+///
+/// Private/LAN peers *are* routable here: a NAS on the same subnet is a real
+/// host that real bytes crossed a real link to reach. It just has no country —
+/// that's a separate question, see `host_usage::ip_is_public`.
+pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
+    let a = addr.trim();
+    if a.is_empty() || a.starts_with('*') {
+        return None;
+    }
+    let ip = strip_port(a)?;
+    match ip.parse::<IpAddr>() {
+        Ok(parsed) if is_routable_peer(parsed) => Some(ip),
+        _ => None,
+    }
+}
+
+/// Strip the port from a peer token across the formats our sources emit:
+/// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
+pub(crate) fn strip_port(addr: &str) -> Option<String> {
+    // ss IPv6 bracket form: [addr]:port
+    if let Some(rest) = addr.strip_prefix('[') {
+        return rest.split(']').next().map(str::to_string).filter(|s| !s.is_empty());
+    }
+    if addr.matches(':').count() >= 2 {
+        // IPv6. nettop tacks the port on with a dot after the address; strip a
+        // trailing ".<digits>" only when it sits past the last colon.
+        if let (Some(dot), Some(colon)) = (addr.rfind('.'), addr.rfind(':')) {
+            if colon < dot && addr[dot + 1..].bytes().all(|b| b.is_ascii_digit()) {
+                return Some(addr[..dot].to_string());
+            }
+        }
+        return Some(addr.to_string());
+    }
+    // IPv4 (or a bare host): trim a trailing :port.
+    match addr.rsplit_once(':') {
+        Some((ip, port)) if !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => {
+            Some(ip.to_string())
+        }
+        _ => Some(addr.to_string()),
+    }
+}
+
+/// Whether an address is a peer out on the network, rather than this machine
+/// talking to itself or to nothing.
+fn is_routable_peer(ip: IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(v4) => !v4.is_loopback() && !v4.is_unspecified() && !v4.is_broadcast(),
+        IpAddr::V6(v6) => !v6.is_loopback() && !v6.is_unspecified(),
+    }
+}
 
 /// Lock a mutex, recovering the guard on poison instead of panicking. A single
 /// panic while holding one of these locks would otherwise wedge every caller
@@ -208,5 +277,29 @@ mod tests {
         assert!(!is_virtual_interface("en0"));
         // "br" not followed by only digits is a normal name, not a numbered bridge.
         assert!(!is_virtual_interface("brtest"));
+    }
+
+    #[test]
+    fn strips_ports_across_formats() {
+        assert_eq!(strip_port("1.2.3.4:443").as_deref(), Some("1.2.3.4"));
+        assert_eq!(strip_port("[2606::1]:443").as_deref(), Some("2606::1"));
+        assert_eq!(strip_port("2606:4700::1111.443").as_deref(), Some("2606:4700::1111"));
+    }
+
+    #[test]
+    fn routable_peer_ip_rejects_what_isnt_a_host_on_the_network() {
+        // Unconnected sockets: no peer, and no identity to meter them by.
+        assert_eq!(routable_peer_ip("*:*"), None);
+        assert_eq!(routable_peer_ip("*.*"), None);
+        assert_eq!(routable_peer_ip(""), None);
+        // Same machine: never touches the network, and on Linux would be counted
+        // once at each end of the connection.
+        assert_eq!(routable_peer_ip("127.0.0.1:80"), None);
+        assert_eq!(routable_peer_ip("[::1]:80"), None);
+        assert_eq!(routable_peer_ip("0.0.0.0:0"), None);
+        // Real peers, public and private alike.
+        assert_eq!(routable_peer_ip("17.248.1.1:443").as_deref(), Some("17.248.1.1"));
+        assert_eq!(routable_peer_ip("192.168.2.1:53").as_deref(), Some("192.168.2.1"));
+        assert_eq!(routable_peer_ip("2606:4700::1111.443").as_deref(), Some("2606:4700::1111"));
     }
 }
