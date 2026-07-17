@@ -28,6 +28,7 @@
 //! ([`record_hostnames`], [`record_countries`]), caching them (including misses)
 //! so a peer is resolved at most once.
 
+use crate::app_usage::CounterSemantics;
 use crate::types::{AppHosts, HostConn, HostUsageSummary};
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -61,29 +62,30 @@ pub struct PeerReading {
 }
 
 /// Take one snapshot of per-connection cumulative byte counters, tagged with the
-/// remote peer. Empty on an unsupported platform or when the source tool returns
-/// nothing (no open TCP sockets).
-pub async fn sample() -> Vec<PeerReading> {
+/// remote peer.
+///
+/// `None` means no sample was taken (source tool missing, errored, timed out, or
+/// an unsupported platform); `Some(vec![])` means the sample worked and there
+/// were no open TCP sockets. As in [`crate::app_usage::sample_units`], the two
+/// must not be conflated: ingesting a failure as an empty snapshot would forget
+/// every socket's baseline and re-credit each one's full counter next tick.
+pub async fn sample() -> Option<Vec<PeerReading>> {
     #[cfg(target_os = "linux")]
     {
-        return match crate::shell::try_run("ss -tinHp").await {
-            Some(out) => parse_ss_peers(&out),
-            None => Vec::new(),
-        };
+        return crate::shell::try_run("ss -tinHp").await.map(|out| parse_ss_peers(&out));
     }
     // No -P: nettop then prints per-connection sub-rows (with peer + per-conn
     // bytes) under each process row. -m tcp limits to TCP (the only mode with a
     // meaningful peer), -x raw bytes, -n no DNS (we do our own reverse lookup).
     #[cfg(target_os = "macos")]
     {
-        return match crate::shell::try_run("nettop -L 1 -x -n -m tcp").await {
-            Some(out) => parse_nettop_peers(&out),
-            None => Vec::new(),
-        };
+        return crate::shell::try_run("nettop -L 1 -x -n -m tcp")
+            .await
+            .map(|out| parse_nettop_peers(&out));
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     {
-        Vec::new()
+        None
     }
 }
 
@@ -306,24 +308,43 @@ impl HostUsageTracker {
         Self::default()
     }
 
-    /// Fold one snapshot into the running totals. Mirrors
-    /// [`crate::app_usage::AppUsageTracker::ingest`]'s delta accounting: credit
-    /// each socket's growth since its last reading (a fresh or counter-reset
-    /// socket contributes its full reading), and forget sockets that vanished.
+    /// Fold one successful snapshot into the running totals: credit each socket's
+    /// growth since its last reading, and forget sockets that vanished (their
+    /// bytes are already banked in `totals`).
+    ///
+    /// Unlike [`crate::app_usage`], this path is socket-keyed on *both*
+    /// platforms — Linux `ss` by address pair, macOS `nettop` without `-P` by its
+    /// `local<->peer` label — so every reading here is
+    /// [`crate::app_usage::CounterSemantics::Socket`] and a decrease really does
+    /// mean a recycled address pair rather than a closed socket. Don't port
+    /// app_usage's macOS process-aggregate handling over; it would be wrong here.
+    ///
+    /// What *does* carry over is priming: the first snapshot only sets baselines
+    /// ([`crate::app_usage::CounterSemantics::primes_on_first_snapshot`]), because
+    /// the connections already established at launch arrive holding however much
+    /// they moved before Rove existed. Without it this view banks that history
+    /// while the Apps view discards it, and the same app reads as busier here than
+    /// there — or shows up here having never appeared there at all.
+    ///
+    /// Only ever pass a snapshot that was actually taken — see [`sample`].
     pub fn ingest(&mut self, readings: Vec<PeerReading>) {
-        if self.since.is_none() {
+        let first_snapshot = self.since.is_none();
+        if first_snapshot {
             self.since = Some(crate::net_util::now_ms());
         }
+        let priming = first_snapshot && CounterSemantics::Socket.primes_on_first_snapshot();
 
         let mut seen = HashSet::with_capacity(readings.len());
         for reading in readings {
             let prev = self.last.get(&reading.conn_key).copied();
-            let delta = |now: u64, was: Option<u64>| match was {
-                Some(p) if now >= p => now - p,
-                _ => now,
+            let (drx, dtx) = if priming {
+                (0, 0)
+            } else {
+                (
+                    CounterSemantics::Socket.credit(reading.rx, prev.map(|p| p.rx)),
+                    CounterSemantics::Socket.credit(reading.tx, prev.map(|p| p.tx)),
+                )
             };
-            let drx = delta(reading.rx, prev.map(|p| p.rx));
-            let dtx = delta(reading.tx, prev.map(|p| p.tx));
 
             self.last.insert(reading.conn_key.clone(), ByteCounts { rx: reading.rx, tx: reading.tx });
             seen.insert(reading.conn_key);
@@ -494,11 +515,13 @@ time,,interface,state,bytes_in,bytes_out
     #[test]
     fn accumulates_per_app_per_host_deltas() {
         let mut t = HostUsageTracker::new();
+        // First snapshot: baseline only, for both already-open sockets.
         t.ingest(vec![
             PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 100, tx: 40, pid: None },
             PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 50, tx: 10, pid: None },
         ]);
-        // s1 grows (credit delta), s2 unchanged, plus a new host for firefox.
+        // s1 grows (credit delta), s2 unchanged, plus a new host for firefox on
+        // a connection opened since the last tick (credited in full).
         t.ingest(vec![
             PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 250, tx: 90, pid: None },
             PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), rx: 50, tx: 10, pid: None },
@@ -507,12 +530,42 @@ time,,interface,state,bytes_in,bytes_out
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
         let firefox = &s.apps[0];
-        // Busiest host (8.8.8.8, 500) first; 1.1.1.1 sums both sockets.
+        // Busiest host (8.8.8.8, 500) first. 1.1.1.1 carries only s1's growth —
+        // neither socket's pre-baseline history is banked.
         assert_eq!(firefox.hosts[0].ip, "8.8.8.8");
         assert_eq!(firefox.hosts[1].ip, "1.1.1.1");
-        assert_eq!(firefox.hosts[1].rx_bytes, 250 + 50);
-        assert_eq!(firefox.hosts[1].tx_bytes, 90 + 10);
-        assert_eq!(firefox.rx_bytes, 500 + 300);
+        assert_eq!(firefox.hosts[1].rx_bytes, 150);
+        assert_eq!(firefox.hosts[1].tx_bytes, 50);
+        assert_eq!(firefox.rx_bytes, 500 + 150);
+    }
+
+    /// The Hosts view's half of the priming contract. This view reads a different
+    /// `nettop` invocation than the Apps view, and only the Apps one discards
+    /// pre-launch history — so without priming here, a connection already
+    /// established at launch banks its whole counter, and the app shows up on
+    /// Hosts (at an inflated total) having never appeared on Apps at all.
+    #[test]
+    fn primes_on_the_first_snapshot() {
+        let mut t = HostUsageTracker::new();
+        let tick = |rx: u64, tx: u64| {
+            vec![PeerReading {
+                conn_key: "c1".into(),
+                app: "Browser Helper".into(),
+                ip: "140.82.113.25".into(),
+                rx,
+                tx,
+                pid: None,
+            }]
+        };
+        // A browser connection 162 MB into its life when Rove starts watching.
+        t.ingest(tick(162_000_000, 4_000_000));
+        assert!(t.summary().apps.is_empty(), "history from before the first snapshot was banked");
+
+        // Only what it moves from there on counts.
+        t.ingest(tick(162_000_800, 4_000_200));
+        let host = &t.summary().apps[0].hosts[0];
+        assert_eq!(host.rx_bytes, 800);
+        assert_eq!(host.tx_bytes, 200);
     }
 
     #[test]
@@ -525,6 +578,12 @@ time,,interface,state,bytes_in,bytes_out
         t.ingest(vec![
             PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 10, tx: 0, pid: None },
             PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), rx: 5, tx: 0, pid: None },
+        ]);
+        // Past the baseline snapshot, so both peers carry bytes and so reach the
+        // summary at all.
+        t.ingest(vec![
+            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), rx: 20, tx: 0, pid: None },
+            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), rx: 15, tx: 0, pid: None },
         ]);
 
         let resolved: HashMap<String, Option<String>> = t
@@ -567,14 +626,18 @@ time,,interface,state,bytes_in,bytes_out
     #[test]
     fn joins_resolved_hostname_and_country() {
         let mut t = HostUsageTracker::new();
-        t.ingest(vec![PeerReading {
-            conn_key: "a".into(),
-            app: "firefox".into(),
-            ip: "140.82.113.25".into(),
-            rx: 10,
-            tx: 0,
-            pid: None,
-        }]);
+        let tick = |rx: u64| {
+            vec![PeerReading {
+                conn_key: "a".into(),
+                app: "firefox".into(),
+                ip: "140.82.113.25".into(),
+                rx,
+                tx: 0,
+                pid: None,
+            }]
+        };
+        t.ingest(tick(0)); // baseline snapshot
+        t.ingest(tick(10));
         t.record_hostnames(HashMap::from([("140.82.113.25".into(), Some("lb.github.com".into()))]));
         t.record_countries(HashMap::from([("140.82.113.25".into(), Some("US".into()))]));
         let s = t.summary();

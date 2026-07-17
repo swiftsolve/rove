@@ -63,39 +63,131 @@ pub struct UsageUnit {
     pub pid: Option<u32>,
 }
 
-/// Take one snapshot of per-unit cumulative byte counters from the OS. Empty on
-/// an unsupported platform, or when the source tool is missing/returns nothing
-/// (e.g. no open TCP sockets) — the platform's *capability* is reported
-/// separately by [`platform_support`], so an idle machine reads as "supported,
-/// nothing yet" rather than "unsupported".
-pub async fn sample_units() -> Vec<UsageUnit> {
+/// What a [`UsageUnit`]'s key identifies, and so what its counter means when it
+/// *doesn't* simply grow. The three sources Rove reads disagree on this, and the
+/// disagreement is the whole reason this type exists: the same reading has to be
+/// banked differently depending on where it came from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CounterSemantics {
+    /// Linux `ss`: one key is one socket (its local/peer address pair). A live
+    /// socket's counter only ever grows, so a decrease means the address pair was
+    /// recycled by a brand-new socket carrying its own fresh counter — all of
+    /// that reading is traffic we haven't banked. A socket that turns up
+    /// mid-session counts in full for the same reason: it opened since the last
+    /// tick, so its whole counter accrued while we were watching. The sockets
+    /// already established in the *first* snapshot are the exception — see
+    /// [`CounterSemantics::primes_on_first_snapshot`].
+    Socket,
+    /// macOS `nettop -P`: one key is one process, and its counter is the sum over
+    /// that process's *currently open* sockets. Such a sum legitimately falls when
+    /// a socket closes and drops out of it, so a decrease is bookkeeping rather
+    /// than traffic and must credit nothing. A first sighting credits nothing
+    /// either: the process arrives carrying however much it moved before Rove was
+    /// watching, and this tracker only claims to count what it saw.
+    ProcessAggregate,
+    /// Windows ETW: one key is one PID, and the counter is an accumulator Rove
+    /// starts itself, so it's zero-based at our first sample and only grows. A
+    /// first sighting is therefore all traffic we watched and counts in full; a
+    /// decrease can't happen, and credits nothing if it somehow does.
+    PidAccumulator,
+}
+
+impl CounterSemantics {
+    /// What `now` adds to the running total, given the previous reading for the
+    /// same key (`None` when the key is new to us). The first snapshot a tracker
+    /// ever ingests is the caller's business — see [`Self::primes_on_first_snapshot`]
+    /// — so a `None` here means a unit that arrived while Rove was already
+    /// watching, not one that was already there when it started.
+    pub(crate) fn credit(self, now: u64, prev: Option<u64>) -> u64 {
+        match (self, prev) {
+            // Growth since the last reading is real traffic under all three.
+            (_, Some(p)) if now >= p => now - p,
+            (Self::Socket, _) => now,
+            (Self::PidAccumulator, None) => now,
+            (Self::PidAccumulator, Some(_)) => 0,
+            (Self::ProcessAggregate, _) => 0,
+        }
+    }
+
+    /// Whether the first snapshot a tracker ever ingests is pure baseline — i.e.
+    /// whether the counters it carries can include traffic from before Rove was
+    /// watching.
+    ///
+    /// True for both OS-supplied sources: the sockets and processes already alive
+    /// at launch arrive holding however much they moved beforehand, and these
+    /// trackers only claim to count what they saw. False for Windows' ETW
+    /// accumulator, which Rove starts itself and so reads zero-based — its first
+    /// sample is entirely traffic we watched, and priming it away would lose it.
+    pub(crate) const fn primes_on_first_snapshot(self) -> bool {
+        match self {
+            Self::Socket | Self::ProcessAggregate => true,
+            Self::PidAccumulator => false,
+        }
+    }
+}
+
+/// The semantics of this platform's source (see [`sample_units`]).
+const fn platform_semantics() -> CounterSemantics {
+    #[cfg(target_os = "linux")]
+    {
+        CounterSemantics::Socket
+    }
+    #[cfg(target_os = "macos")]
+    {
+        CounterSemantics::ProcessAggregate
+    }
+    #[cfg(windows)]
+    {
+        CounterSemantics::PidAccumulator
+    }
+    // Nothing is ever sampled here, so the choice is inert; match Linux.
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    {
+        CounterSemantics::Socket
+    }
+}
+
+impl Default for CounterSemantics {
+    fn default() -> Self {
+        platform_semantics()
+    }
+}
+
+/// Take one snapshot of per-unit cumulative byte counters from the OS.
+///
+/// `None` means no sample was taken — the source tool is missing, errored, timed
+/// out, or the platform is unsupported. `Some(vec![])` means the sample worked
+/// and there was genuinely nothing to report (an idle machine with no open
+/// sockets). Callers must keep the two apart: a failed sample says nothing about
+/// which units still exist, and feeding it to [`AppUsageTracker::ingest`] as if
+/// every unit had vanished would drop every baseline, so the next good tick
+/// would re-credit each unit's whole counter as fresh traffic. The platform's
+/// *capability* is reported separately by [`platform_support`], so an idle
+/// machine still reads as "supported, nothing yet".
+pub async fn sample_units() -> Option<Vec<UsageUnit>> {
     // -t TCP only (UDP has no byte counters in the diag interface), -i socket
     // info (the bytes), -n numeric, -H no header, -p process.
     #[cfg(target_os = "linux")]
     {
-        return match crate::shell::try_run("ss -tinHp").await {
-            Some(out) => parse_ss(&out),
-            None => Vec::new(),
-        };
+        return crate::shell::try_run("ss -tinHp").await.map(|out| parse_ss(&out));
     }
     // -P per-process (no per-connection sub-rows), -L 1 one sample then exit, -x
     // raw byte counts (not human units), -n no DNS, -J restricts to our columns.
     #[cfg(target_os = "macos")]
     {
-        return match crate::shell::try_run("nettop -P -L 1 -x -n -J bytes_in,bytes_out").await {
-            Some(out) => parse_nettop(&out),
-            None => Vec::new(),
-        };
+        return crate::shell::try_run("nettop -P -L 1 -x -n -J bytes_in,bytes_out")
+            .await
+            .map(|out| parse_nettop(&out));
     }
     // Windows reads a running ETW accumulator rather than shelling out; this is
-    // a synchronous snapshot, so there's nothing to await.
+    // a synchronous snapshot that can't fail, so there's nothing to await.
     #[cfg(windows)]
     {
-        return etw::sample_units();
+        return Some(etw::sample_units());
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
     {
-        Vec::new()
+        None
     }
 }
 
@@ -217,6 +309,9 @@ pub struct AppUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, ByteCounts>,
     since: Option<u64>,
+    /// How to read the counters this tracker is fed — set from the platform's
+    /// source and overridable in tests.
+    semantics: CounterSemantics,
     /// Resolved real OS icon per app name, as a `data:` URI. Cached because the
     /// lookup shells into AppKit/Launch Services — do it once per name, not every
     /// tick. `None` is cached too (name isn't an installed app), so unresolved
@@ -229,29 +324,45 @@ impl AppUsageTracker {
         Self::default()
     }
 
-    /// Fold one snapshot into the running totals. For each unit, credit the
-    /// delta since its last reading; a unit seen for the first time (or whose
-    /// counter went backwards because its key was reused by a fresh socket)
-    /// contributes its full current reading. Units that vanished since last tick
-    /// are forgotten — their bytes are already banked in `totals`, so `last`
-    /// never grows without bound across a long session.
+    /// A tracker that reads its counters with the given semantics, for testing
+    /// every platform's source on whatever host the tests run on.
+    #[cfg(test)]
+    fn with_semantics(semantics: CounterSemantics) -> Self {
+        Self { semantics, ..Self::default() }
+    }
+
+    /// Fold one successful snapshot into the running totals, crediting each unit
+    /// per [`CounterSemantics`]. Units absent from this snapshot are forgotten —
+    /// their bytes are already banked in `totals`, so `last` never grows without
+    /// bound across a long session.
+    ///
+    /// The first snapshot ever ingested only sets baselines, for the sources that
+    /// need it ([`CounterSemantics::primes_on_first_snapshot`]): whatever its
+    /// units have already moved, they moved before Rove was watching, and this
+    /// tracker only claims to count what it saw.
+    ///
+    /// Only ever pass a snapshot that was actually taken: [`sample_units`]
+    /// returns `None` for a failed sample, and folding that in as an empty
+    /// snapshot would forget every baseline and re-credit the world on the next
+    /// good tick.
     pub fn ingest(&mut self, units: Vec<UsageUnit>) {
-        if self.since.is_none() {
+        let first_snapshot = self.since.is_none();
+        if first_snapshot {
             self.since = Some(crate::net_util::now_ms());
         }
+        let priming = first_snapshot && self.semantics.primes_on_first_snapshot();
 
         let mut seen = HashSet::with_capacity(units.len());
         for unit in units {
             let prev = self.last.get(&unit.key).copied();
-            let delta = |now: u64, was: Option<u64>| match was {
-                // A decrease means the key was reused by a new unit, not a
-                // negative transfer: bank the new unit's full reading, never a
-                // phantom underflow.
-                Some(p) if now >= p => now - p,
-                _ => now,
+            let (drx, dtx) = if priming {
+                (0, 0)
+            } else {
+                (
+                    self.semantics.credit(unit.rx, prev.map(|p| p.rx)),
+                    self.semantics.credit(unit.tx, prev.map(|p| p.tx)),
+                )
             };
-            let drx = delta(unit.rx, prev.map(|p| p.rx));
-            let dtx = delta(unit.tx, prev.map(|p| p.tx));
 
             self.last.insert(unit.key.clone(), ByteCounts { rx: unit.rx, tx: unit.tx });
             seen.insert(unit.key);
@@ -502,27 +613,62 @@ Spotify.567,1200,900,";
 
     #[test]
     fn accumulates_deltas_per_app_across_ticks() {
-        let mut t = AppUsageTracker::new();
-        // Tick 1: a fresh socket contributes its full reading.
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        // Tick 1 is the first snapshot: this socket was already open, so its
+        // reading is a baseline, not traffic.
         t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 100, tx: 40, pid: None }]);
         // Tick 2: the same socket grew — credit only the delta.
         t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 250, tx: 90, pid: None }]);
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
         assert_eq!(s.apps[0].name, "firefox");
-        assert_eq!(s.apps[0].rx_bytes, 250);
-        assert_eq!(s.apps[0].tx_bytes, 90);
+        assert_eq!(s.apps[0].rx_bytes, 150);
+        assert_eq!(s.apps[0].tx_bytes, 50);
+    }
+
+    /// A socket already established when Rove launched arrives carrying its whole
+    /// history. Crediting that on first sighting banks bytes we never watched —
+    /// which is what made the Hosts view list apps, and totals, that the Apps
+    /// view had correctly left out.
+    #[test]
+    fn socket_source_primes_on_the_first_snapshot() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        // A long-lived socket, 40 MB into its life when Rove starts watching.
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "Arc".into(), rx: 40_000_000, tx: 2_000_000, pid: None }]);
+        assert!(t.summary().apps.is_empty(), "history from before the first snapshot was banked");
+
+        // Only what it moves from there on counts.
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "Arc".into(), rx: 40_000_300, tx: 2_000_100, pid: None }]);
+        let s = t.summary();
+        assert_eq!(s.apps[0].rx_bytes, 300);
+        assert_eq!(s.apps[0].tx_bytes, 100);
+    }
+
+    /// Priming is scoped to the first *snapshot*, not to every first sighting: a
+    /// socket that turns up later opened since the last tick, so its whole
+    /// counter accrued while Rove was watching and still counts in full.
+    #[test]
+    fn socket_source_counts_a_mid_session_socket_in_full() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "Arc".into(), rx: 999, tx: 0, pid: None }]);
+        t.ingest(vec![
+            UsageUnit { key: "s1".into(), name: "Arc".into(), rx: 999, tx: 0, pid: None },
+            UsageUnit { key: "s2".into(), name: "Arc".into(), rx: 700, tx: 0, pid: None },
+        ]);
+        assert_eq!(t.summary().apps[0].rx_bytes, 700);
     }
 
     #[test]
-    fn banks_closed_sockets_and_counts_reused_keys_fresh() {
-        let mut t = AppUsageTracker::new();
+    fn socket_source_banks_closed_sockets_and_counts_reused_keys_fresh() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        // Baseline snapshot, then s1 moves 500 while we watch.
+        t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 0, tx: 0, pid: None }]);
         t.ingest(vec![UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 500, tx: 0, pid: None }]);
         // s1 closed (absent this tick); its 500 stays banked. A new socket s2
         // for the same app opens with its own cumulative counter.
         t.ingest(vec![UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0, pid: None }]);
-        // s1's key reappears as a brand-new socket (counter reset low) — its
-        // full reading counts, not an underflow.
+        // s1's address pair is recycled by a brand-new socket (counter reset
+        // low) — its full reading counts, not an underflow.
         t.ingest(vec![
             UsageUnit { key: "s2".into(), name: "firefox".into(), rx: 200, tx: 0, pid: None },
             UsageUnit { key: "s1".into(), name: "firefox".into(), rx: 30, tx: 0, pid: None },
@@ -531,9 +677,66 @@ Spotify.567,1200,900,";
         assert_eq!(s.apps[0].rx_bytes, 500 + 200 + 30);
     }
 
+    /// The mDNSResponder regression: a `nettop -P` per-process counter falls
+    /// whenever one of that process's sockets closes and leaves the aggregate.
+    /// Crediting the full reading on the way down re-banked the process's entire
+    /// history every time — which is how a DNS proxy holding ~130 MB of lifetime
+    /// counters and churning a socket per query read as gigabytes.
+    #[test]
+    fn process_aggregate_source_credits_nothing_when_the_counter_falls() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::ProcessAggregate);
+        let tick = |rx: u64| {
+            vec![UsageUnit { key: "mDNSResponder.537".into(), name: "mDNSResponder".into(), rx, tx: 0, pid: Some(537) }]
+        };
+        // First sighting: 132 MB of history that predates us. Baseline only.
+        t.ingest(tick(132_000_000));
+        // A socket closes and drops out of the aggregate, four times over.
+        t.ingest(tick(131_900_000));
+        t.ingest(tick(131_800_000));
+        t.ingest(tick(131_700_000));
+        t.ingest(tick(131_600_000));
+        assert!(t.summary().apps.is_empty(), "phantom bytes banked from a falling counter");
+
+        // Real growth from the last baseline still counts.
+        t.ingest(tick(131_600_500));
+        assert_eq!(t.summary().apps[0].rx_bytes, 500);
+    }
+
+    /// A process with no open sockets drops out of `nettop` entirely and comes
+    /// back later. Its return is a first sighting again, and must not re-bank the
+    /// history it returns carrying.
+    #[test]
+    fn process_aggregate_source_does_not_rebank_history_on_reappearance() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::ProcessAggregate);
+        let tick = |rx: u64| vec![UsageUnit { key: "cupsd.99".into(), name: "cupsd".into(), rx, tx: 0, pid: Some(99) }];
+        t.ingest(tick(5_000_000));
+        t.ingest(tick(5_000_400)); // +400 watched
+        t.ingest(vec![]); // all sockets closed: absent from the sample
+        t.ingest(tick(5_000_400)); // back, carrying the same history
+        assert_eq!(t.summary().apps[0].rx_bytes, 400);
+    }
+
+    /// Windows' ETW accumulator is zero-based at Rove's first sample, so unlike a
+    /// `nettop` process row or an `ss` socket a first sighting is all traffic we
+    /// watched — and the first snapshot must *not* be primed away.
+    #[test]
+    fn pid_accumulator_source_counts_a_first_sighting_in_full() {
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::PidAccumulator);
+        t.ingest(vec![UsageUnit { key: "1234".into(), name: "chrome".into(), rx: 800, tx: 100, pid: Some(1234) }]);
+        t.ingest(vec![UsageUnit { key: "1234".into(), name: "chrome".into(), rx: 900, tx: 100, pid: Some(1234) }]);
+        let s = t.summary();
+        assert_eq!(s.apps[0].rx_bytes, 900);
+        assert_eq!(s.apps[0].tx_bytes, 100);
+    }
+
     #[test]
     fn sums_multiple_processes_sharing_a_name() {
-        let mut t = AppUsageTracker::new();
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        // Baseline snapshot, then both sockets move while we watch.
+        t.ingest(vec![
+            UsageUnit { key: "a".into(), name: "chrome".into(), rx: 0, tx: 0, pid: None },
+            UsageUnit { key: "b".into(), name: "chrome".into(), rx: 0, tx: 0, pid: None },
+        ]);
         t.ingest(vec![
             UsageUnit { key: "a".into(), name: "chrome".into(), rx: 100, tx: 10, pid: None },
             UsageUnit { key: "b".into(), name: "chrome".into(), rx: 300, tx: 20, pid: None },
@@ -549,7 +752,11 @@ Spotify.567,1200,900,";
         // Live icon resolution is skipped under cfg(test), so seed the cache
         // directly (same-module tests can touch private fields) to prove the
         // summary carries a resolved icon and leaves an unresolved one as None.
-        let mut t = AppUsageTracker::new();
+        let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
+        t.ingest(vec![
+            UsageUnit { key: "a".into(), name: "Spotify".into(), rx: 0, tx: 0, pid: None },
+            UsageUnit { key: "b".into(), name: "daemon".into(), rx: 0, tx: 0, pid: None },
+        ]);
         t.ingest(vec![
             UsageUnit { key: "a".into(), name: "Spotify".into(), rx: 100, tx: 0, pid: None },
             UsageUnit { key: "b".into(), name: "daemon".into(), rx: 50, tx: 0, pid: None },
