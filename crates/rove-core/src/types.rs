@@ -141,14 +141,25 @@ pub struct IspInfo {
     /// Autonomous-system number, formatted "AS15169".
     pub asn: Option<String>,
     /// The ISP's registered domain (e.g. "bell.ca") — the card resolves it to a
-    /// brand icon. Comes free with the lookup that fills the rest of this struct.
+    /// brand icon. Only the live ipwho.is enrichment carries this; it's absent
+    /// (and the icon falls away) when that lookup is rate-limited or down.
     pub domain: Option<String>,
+    /// City and region are likewise enrichment-only. Country is also resolved
+    /// on-device, so the Location row keeps at least a country when ipwho.is is
+    /// unavailable.
     pub city: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,
-    /// Public (WAN) IP as reported by the same lookup, so the card needn't make
-    /// a second round-trip to the plain public-IP echo service.
+    /// Public (WAN) IP, from the quota-free echo service that anchors the
+    /// on-device lookups — so the card needn't trust the enrichment lookup for
+    /// its most basic field.
     pub public_ip: Option<String>,
+    /// True when our public IP's ASN is a datacenter/hosting network rather than
+    /// a consumer ISP — i.e. we're behind a VPN or proxy, so the fields above
+    /// describe the exit node, not the real provider. The card badges itself
+    /// accordingly. Resolved on-device ([`crate::geoip::is_hosting_asn`]), so it
+    /// holds even when the live enrichment lookup is rate-limited.
+    pub is_vpn: bool,
 }
 
 /// The fast-changing subset of diagnostics, refreshed on a tight poll so the
@@ -393,6 +404,37 @@ pub struct HostUsageSummary {
     pub apps: Vec<AppHosts>,
     /// `"supported"` where per-host attribution works (Linux, macOS) or
     /// `"unsupported"` elsewhere (Windows ETW carries no peer address).
+    pub support: &'static str,
+    pub tracking_since: Option<u64>,
+}
+
+/// One kind of traffic — a protocol bucket the connections were grouped into by
+/// their remote (service) port, e.g. HTTPS on 443 or DNS on 53. `id` is a stable
+/// slug the frontend keys an icon off; `label` is the human name to show.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrafficType {
+    /// Stable classification slug (`"https"`, `"dns"`, `"ssh"`, `"other"`, …).
+    pub id: &'static str,
+    /// Display name for the bucket (`"HTTPS"`, `"DNS"`, …).
+    pub label: &'static str,
+    pub rx_bytes: u64,
+    pub tx_bytes: u64,
+}
+
+/// Traffic broken down by kind (protocol) rather than by app or host — a flat,
+/// busiest-first list for the Traffic Types view. Same coverage as
+/// [`HostUsageSummary`] (it's grouped from the very same per-connection samples,
+/// so TCP + connected UDP/QUIC only, routable peers only), just bucketed by the
+/// peer port instead of the peer IP. Mirrors the other usage summaries' shape
+/// (`support` + `tracking_since`) so the frontend treats them alike.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrafficUsageSummary {
+    /// Per-kind totals, busiest first. Empty before the first sample.
+    pub types: Vec<TrafficType>,
+    /// `"supported"` where per-connection metering works (Linux, macOS) or
+    /// `"unsupported"` elsewhere (Windows ETW carries no peer port either).
     pub support: &'static str,
     pub tracking_since: Option<u64>,
 }

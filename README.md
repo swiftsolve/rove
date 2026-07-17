@@ -107,8 +107,11 @@ flags are resolved against an IP-to-country table bundled in the binary
 Two things do leave, neither of them a peer address:
 
 - **Your own WAN identity**, when the Connection tab asks: your public IP
-  (api.ipify.org) and your ISP/ASN/city (ipwho.is). No local table can answer
-  these — they're one request each, about your own address.
+  (api.ipify.org). Your ISP, ASN, and country are then resolved from that IP
+  against bundled tables (`geoip.rs`) — no request. A best-effort call to
+  ipwho.is only *enriches* the card with your city and ISP website when it isn't
+  rate-limited; the card stays populated without it. Every request here is about
+  your own address.
 - **Brand icons**, via Google's favicon service (`ServiceIcon.tsx`). This sends a
   *domain*: `firefox.com` for Firefox, plus the services you've chosen to
   monitor. Never a discovered peer, and never a hostname the Hosts view
@@ -123,6 +126,8 @@ All of it is keyless — Rove ships no API credentials.
 |---|---|---|---|
 | MAC OUI → vendor (`data/oui.tsv`) | [IEEE Registration Authority](https://standards-oui.ieee.org/) | Public registry | `cargo run -p rove-core --example gen_oui` |
 | IP → country (`data/dbip-country-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
+| IP → ASN (`data/dbip-asn-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
+| Hosting/VPN ASNs (`data/hosting-asns.txt`) | [brianhama/bad-asn-list](https://github.com/brianhama/bad-asn-list) | [MIT](https://opensource.org/licenses/MIT) | `cargo run -p rove-core --example gen_hosting_asns` |
 
 Both are chosen to be freely redistributable in a shipped binary: IEEE over
 Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA

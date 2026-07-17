@@ -1,0 +1,111 @@
+/* Traffic-type list, styled after the per-app usage list: compact rows with a
+   hairline between each. Each row is glyph + name + total on the main line, with
+   the download/upload split as a quiet second line. The rows aren't navigable
+   (unlike the Apps list), so there's no overlay button or caret here. */
+.traffic-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Own the horizontal inset on the rows, not the section body, so the hairline
+   dividers can run edge to edge — matching the Apps list. */
+.ui-section-body.traffic-list {
+  padding: 0;
+}
+
+.traffic-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  padding: var(--gap-md) var(--section-body);
+}
+
+/* The line between items — only between rows, running the full card width
+   (clipped to the card's rounded corners by the section's overflow:hidden). */
+.traffic-row + .traffic-row {
+  border-top: 1px solid var(--border);
+}
+
+.traffic-row-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.traffic-row-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.traffic-row-glyph {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.traffic-row-name {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.traffic-row-total {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* A single track whose two segments sit side by side, each scaled against the
+   busiest type so rows read comparably; an empty segment collapses to zero
+   width. Sits just inside the glyph's left edge, like the Apps bar. */
+.traffic-row-bar {
+  display: flex;
+  height: 3px;
+  margin-left: 3px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--bg-inset);
+}
+
+.traffic-row-seg {
+  height: 100%;
+  /* Ease the segment widths as the totals change (and as the busiest-type scale
+     shifts), so the bars glide in step with the count-up figures rather than
+     snapping. Neutralised under prefers-reduced-motion by the global rule. */
+  transition: width 400ms var(--ease-out);
+}
+
+.traffic-row-seg--down {
+  background: var(--series-down);
+}
+
+.traffic-row-seg--up {
+  background: var(--series-up);
+}
+
+/* Download/upload figures, aligned under the glyph above — the down arrow sits
+   centered under the type glyph, echoing the Apps and Hosts views. */
+.traffic-row-figures {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.traffic-row-figure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Right-align each figure's value in a fixed-width box so the down and up
+   columns line up across rows — matching the Apps and Hosts views. */
+.traffic-row-figure .num {
+  min-width: 46px;
+  text-align: right;
+}

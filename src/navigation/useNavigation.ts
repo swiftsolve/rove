@@ -10,11 +10,13 @@ export type SpeedSub =
 /** A subpage layered over the Services tab. `null` means the tab's main page. */
 export type ServicesSub = { readonly view: 'timeline' }
 
-/** A subpage layered over the Apps tab (the per-app host breakdown). `null`
- *  means the tab's main page. `app` names the app to open expanded (others
- *  collapsed); omit it to open every group expanded (the plain "View hosts"
- *  entry point). */
-export type AppsSub = { readonly view: 'hosts'; readonly app?: string | null }
+/** A subpage layered over the Apps tab. `null` means the tab's main page.
+ *  `'hosts'` is the per-app remote-host breakdown — `app` names the group to
+ *  open expanded (others collapsed), omitted for the plain "All hosts" entry
+ *  point. `'traffic'` is the flat by-protocol breakdown ("All traffic types"). */
+export type AppsSub =
+  | { readonly view: 'hosts'; readonly app?: string | null }
+  | { readonly view: 'traffic' }
 
 /** A single screen the app can show — a tab, optionally with a subpage. */
 export interface AppLocation {
@@ -42,16 +44,22 @@ function parentLocation(location: AppLocation): AppLocation {
   return HOME_LOCATION
 }
 
+/** The focused app of an Apps subpage, or null — only the `hosts` view carries
+ *  one, so this narrows the union before reaching for `app`. */
+function appsSubApp(sub: AppsSub | null | undefined): string | null {
+  return sub?.view === 'hosts' ? sub.app ?? null : null
+}
+
 /** A short, stable key for a location — handy for keying effects (e.g. scroll). */
 export function locationKey(location: AppLocation): string {
-  return `${location.tab}:${location.speedSub?.view ?? ''}:${location.servicesSub?.view ?? ''}:${location.appsSub?.view ?? ''}:${location.appsSub?.app ?? ''}`
+  return `${location.tab}:${location.speedSub?.view ?? ''}:${location.servicesSub?.view ?? ''}:${location.appsSub?.view ?? ''}:${appsSubApp(location.appsSub) ?? ''}`
 }
 
 function sameLocation(a: AppLocation, b: AppLocation): boolean {
   if (a.tab !== b.tab) return false
   if ((a.servicesSub?.view ?? null) !== (b.servicesSub?.view ?? null)) return false
   if ((a.appsSub?.view ?? null) !== (b.appsSub?.view ?? null)) return false
-  if ((a.appsSub?.app ?? null) !== (b.appsSub?.app ?? null)) return false
+  if (appsSubApp(a.appsSub) !== appsSubApp(b.appsSub)) return false
   const subA = a.speedSub
   const subB = b.speedSub
   if (subA == null || subB == null) return subA === subB

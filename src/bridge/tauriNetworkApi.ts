@@ -9,6 +9,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import type {
   AppUsageSummary,
   HostUsageSummary,
+  TrafficUsageSummary,
   DataUsageSummary,
   InternetStatus,
   LanDeviceScan,
@@ -70,6 +71,7 @@ const tauriNetworkApi: NetworkAPI = {
   getDataUsage: () => invoke<DataUsageSummary>('get_data_usage'),
   getAppUsage: () => invoke<AppUsageSummary>('get_app_usage'),
   getHostUsage: () => invoke<HostUsageSummary>('get_host_usage'),
+  getTrafficUsage: () => invoke<TrafficUsageSummary>('get_traffic_usage'),
   getSpeedHistory: () => invoke<readonly SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
   importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>

@@ -150,12 +150,17 @@ export default function DiagnosticsView({
             title="ISP"
             icon={<GlobeIcon size={15} />}
             bodyClassName="row-list diag-router"
-            // The brand mark, only if one actually resolves. Plenty of ISPs have
-            // no favicon (Comcast, for one), and a lone letter in this corner
-            // would read as a glitch rather than a brand — so unlike a list row,
-            // this slot stays empty rather than falling back to a monogram.
+            // The right-hand slot: a small "VPN" pill when our egress is a
+            // hosting/datacenter ASN (these rows then describe the exit node, not
+            // the real ISP), otherwise the brand mark — but only if one actually
+            // resolves. Plenty of ISPs have no favicon (Comcast, for one), and a
+            // lone letter here would read as a glitch rather than a brand, so this
+            // slot stays empty rather than falling back to a monogram. A VPN exit
+            // has no brand domain, so the two never contend for the slot.
             action={
-              diagnostics?.isp?.domain ? (
+              diagnostics?.isp?.isVpn ? (
+                <span className="ui-section-badge">VPN</span>
+              ) : diagnostics?.isp?.domain ? (
                 <ServiceIcon
                   host={diagnostics.isp.domain}
                   name={diagnostics.isp.name ?? 'ISP'}
@@ -177,7 +182,15 @@ export default function DiagnosticsView({
                 <DataRow label="Public IP" value={diagnostics.isp.publicIp} />
               </>
             ) : (
-              <p className="text-hint">Provider details are unavailable offline.</p>
+              // The card resolves ISP/ASN/country on-device now, so it only lands
+              // here when we couldn't even learn our own public IP — i.e. offline.
+              // Guard the copy on the known internet state anyway, so a transient
+              // echo-service blip while online doesn't claim we're offline.
+              <p className="text-hint">
+                {diagnostics?.internet === 'online'
+                  ? 'Provider details are momentarily unavailable.'
+                  : 'Provider details are unavailable offline.'}
+              </p>
             )}
           </Section>
         </>
