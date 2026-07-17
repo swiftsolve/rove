@@ -37,7 +37,6 @@
     "targets": [
       "appimage",
       "deb",
-      "rpm",
       "dmg",
       "nsis",
       "msi"
@@ -59,20 +58,6 @@
           "libayatana-appindicator3-1",
           "iproute2",
           "iputils-ping"
-        ],
-        "files": {
-          "/etc/apparmor.d/rove": "linux/rove.apparmor"
-        },
-        "postInstallScript": "linux/postinst.sh",
-        "preRemoveScript": "linux/prerm.sh"
-      },
-      "rpm": {
-        "depends": [
-          "webkit2gtk4.1",
-          "gtk3",
-          "libayatana-appindicator-gtk3",
-          "iproute",
-          "iputils"
         ],
         "files": {
           "/etc/apparmor.d/rove": "linux/rove.apparmor"

@@ -94,7 +94,6 @@ jobs:
           name: rove-${{ matrix.os }}
           path: |
             target/release/bundle/deb/*.deb
-            target/release/bundle/rpm/*.rpm
             target/release/bundle/appimage/*.AppImage
             target/release/bundle/dmg/*.dmg
             target/release/bundle/nsis/*.exe
