@@ -533,10 +533,11 @@ pub fn support_detail() -> Option<String> {
 #[cfg(windows)]
 mod etw {
     use super::{PeerUnit, UsageUnit};
+    use ferrisetw::native::EvntraceNativeError;
     use ferrisetw::parser::Parser;
     use ferrisetw::provider::Provider;
     use ferrisetw::schema_locator::SchemaLocator;
-    use ferrisetw::trace::{TraceTrait, UserTrace};
+    use ferrisetw::trace::{stop_trace_by_name, TraceError, TraceTrait, UserTrace};
     use ferrisetw::EventRecord;
     use std::collections::{HashMap, HashSet};
     use std::net::IpAddr;
@@ -545,6 +546,11 @@ mod etw {
 
     /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
     const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;
+
+    /// The ETW session name. Kernel trace sessions are system-global and keyed by
+    /// this name, which is why a prior Rove process's session can still be alive
+    /// when we launch again — see [`ensure_started`].
+    const SESSION_NAME: &str = "RoveNetUsage";
 
     #[derive(Default, Clone, Copy)]
     struct ByteAcc {
@@ -712,10 +718,14 @@ mod etw {
         }
     }
 
-    /// Start the trace once, on the first sample. The consumer runs on its own
-    /// thread (`process_from_handle` blocks); the `UserTrace` is deliberately
-    /// leaked so the session lives for the whole process — dropping it would
-    /// stop tracing.
+    /// Start the trace once, on the first sample, recovering from a stale session
+    /// left by a previous run. A first attempt that fails with `AlreadyExist`
+    /// means a `RoveNetUsage` session from an earlier Rove process is still
+    /// registered in the kernel — the `UserTrace` is deliberately leaked (so the
+    /// session lives for the whole process) and is therefore never stopped, not
+    /// on a crash nor even on a clean exit. That's not an elevation problem, so
+    /// stop the orphan by name and retry once before blaming the start error on
+    /// the UI's unsupported state.
     fn ensure_started() {
         if ACTIVE.load(Ordering::Acquire) {
             return;
@@ -725,25 +735,45 @@ mod etw {
         if ACTIVE.load(Ordering::Acquire) {
             return;
         }
-        let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
-        match UserTrace::new().named(String::from("RoveNetUsage")).enable(provider).start() {
-            Ok((trace, handle)) => {
-                std::thread::spawn(move || {
-                    let _ = UserTrace::process_from_handle(handle);
-                });
-                std::mem::forget(trace);
-                ACTIVE.store(true, Ordering::Release);
-                *LAST_ERROR.lock().unwrap() = None;
+        match try_start() {
+            Ok(()) => {}
+            Err(TraceError::EtwNativeError(EvntraceNativeError::AlreadyExist)) => {
+                if let Err(e) = stop_trace_by_name(SESSION_NAME) {
+                    tracing::warn!("could not stop stale ETW session {SESSION_NAME}: {e:?}");
+                }
+                if let Err(e) = try_start() {
+                    record_start_error(&e);
+                }
             }
-            // Left inactive so the next sample retries. The usual cause is
-            // running without elevation, but not the only one — record the exact
-            // error so the UI can show it rather than only blaming elevation.
-            Err(e) => {
-                let detail = format!("{e:?}");
-                tracing::warn!("per-app ETW trace could not start: {detail}");
-                *LAST_ERROR.lock().unwrap() = Some(detail);
-            }
+            Err(e) => record_start_error(&e),
         }
+    }
+
+    /// One attempt to open the trace. On success the consumer runs on its own
+    /// thread (`process_from_handle` blocks) and the `UserTrace` is deliberately
+    /// leaked so the session lives for the whole process — dropping it would stop
+    /// tracing.
+    fn try_start() -> Result<(), TraceError> {
+        let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
+        let (trace, handle) =
+            UserTrace::new().named(String::from(SESSION_NAME)).enable(provider).start()?;
+        std::thread::spawn(move || {
+            let _ = UserTrace::process_from_handle(handle);
+        });
+        std::mem::forget(trace);
+        ACTIVE.store(true, Ordering::Release);
+        *LAST_ERROR.lock().unwrap() = None;
+        Ok(())
+    }
+
+    /// Record a start failure for the UI's unsupported state, leaving the session
+    /// inactive so the next sample retries. The usual cause is running without
+    /// elevation, but not the only one — keep the exact error so the UI can show
+    /// it rather than only blaming elevation.
+    fn record_start_error(e: &TraceError) {
+        let detail = format!("{e:?}");
+        tracing::warn!("per-app ETW trace could not start: {detail}");
+        *LAST_ERROR.lock().unwrap() = Some(detail);
     }
 
     /// True while the ETW session is running.
