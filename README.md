@@ -134,6 +134,11 @@ Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA
 requires destroying superseded copies within 30 days of each twice-weekly
 release — a term a binary already on users' machines cannot honour.
 
+The Hosts view's country flags are drawn with the **Twemoji Country Flags**
+font (`src/assets/fonts/TwemojiCountryFlags.woff2`), because Windows ships no
+flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter/twemoji),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 ## Layout
 
 ```
