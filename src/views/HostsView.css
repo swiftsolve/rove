@@ -147,6 +147,10 @@
   justify-content: center;
   font-size: 13px;
   line-height: 1;
+  /* Twemoji flag glyphs first so the country flags render on Windows (which has
+     no flag emoji); the SVG-icon fallbacks for LAN/unresolved peers aren't text
+     and are unaffected. See the @font-face note in index.css. */
+  font-family: 'Twemoji Country Flags', var(--font);
 }
 
 .host-flag-fallback {

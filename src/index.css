@@ -14,6 +14,21 @@
   src: url('./assets/fonts/Questrial-Regular.woff2') format('woff2');
 }
 
+/* Country-flag glyphs for the Hosts view. Windows ships no flag emoji (Segoe UI
+   Emoji omits them), so the regional-indicator pairs `flag.ts` emits render as
+   blank/boxed letters in WebView2. This Twemoji subset supplies only the flag
+   glyphs — applied ahead of the UI font on the flag slot, it draws the flags on
+   Windows while every other character falls through to the normal font. macOS
+   and Linux already have their own flags; the font just makes the artwork
+   consistent. Twemoji art, CC BY 4.0 (see README). */
+@font-face {
+  font-family: 'Twemoji Country Flags';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/TwemojiCountryFlags.woff2') format('woff2');
+}
+
 :root {
   /* Surfaces — a genuine elevation ladder rather than one flat panel colour */
   --bg-app: #0a0b0e;
