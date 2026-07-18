@@ -156,11 +156,6 @@
   }
 }
 
-.mgsvc-empty {
-  padding: var(--gap-xl);
-  text-align: center;
-}
-
 /* The header subtitle line: the up/down tally, then the timeline link. */
 .mgsvc-subtitle {
   display: inline-flex;

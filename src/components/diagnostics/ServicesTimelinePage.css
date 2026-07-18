@@ -233,26 +233,3 @@
   color: var(--negative);
   background: color-mix(in srgb, var(--negative) 14%, transparent);
 }
-
-/* Blank state — icon + short line, centred, matching the events/speed empties. */
-.stl-empty {
-  gap: 14px;
-  text-align: center;
-}
-
-.stl-empty-icon {
-  color: var(--text-tertiary);
-  opacity: 0.55;
-}
-
-.stl-empty-title {
-  font-size: var(--text-body);
-  color: var(--text-secondary);
-}
-
-.stl-empty-hint {
-  max-width: 42ch;
-  line-height: 1.45;
-  font-size: 12px;
-  text-align: center;
-}

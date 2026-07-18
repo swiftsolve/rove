@@ -36,14 +36,10 @@ const TRAFFIC_INFO_HINT =
   'protocol instead of by host, and it resets when Rove restarts. Local ' +
   'broadcast chatter (mDNS, SSDP) isn’t counted — it has no remote host.'
 
-const TRAFFIC_EMPTY_HINT =
-  'Traffic types appear here as your apps send and receive. Totals are gathered ' +
-  'while Rove runs.'
+const TRAFFIC_EMPTY_HINT = 'Traffic appears here as your apps send and receive.'
 
 const TRAFFIC_UNSUPPORTED_HINT =
-  'On Windows, grouping traffic by protocol uses a network event-tracing ' +
-  'session that needs administrator rights — run Rove as administrator to enable ' +
-  'the Traffic Types view. It works without elevation on Linux and macOS.'
+  'Run Rove as administrator to break traffic down by protocol on Windows.'
 
 interface IconProps {
   readonly size?: number
@@ -163,7 +159,7 @@ export default function TrafficView({
       {support === 'unsupported' ? (
         <EmptyState
           icon={InfoIcon}
-          title="Traffic types aren’t available"
+          title="Administrator access needed"
           hint={TRAFFIC_UNSUPPORTED_HINT}
           action={<RestartAsAdminAction />}
         />
