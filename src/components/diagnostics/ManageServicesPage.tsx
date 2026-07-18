@@ -4,6 +4,7 @@ import { ViewHeader } from '@/components/ui/ViewHeader'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { CloudIcon, EditIcon, EventsIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
 import { serviceTally } from '@/components/diagnostics/ServiceTally'
@@ -288,9 +289,11 @@ export function ManageServicesPage({
           })}
         </div>
       ) : (
-        <div className="mgsvc-empty surface">
-          <p className="text-hint">No services yet. Add one to start tracking it.</p>
-        </div>
+        <EmptyState
+          icon={CloudIcon}
+          title="No services yet"
+          hint="Add a service to start tracking it."
+        />
       )}
     </div>
   )

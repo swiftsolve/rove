@@ -423,7 +423,7 @@ export default function DevicesView({
       ) : devices.length === 0 ? (
         <EmptyState
           icon={DevicesIcon}
-          title="No devices found"
+          title="No devices yet"
           hint={showLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
           action={
             <button type="button" className="btn-secondary" onClick={onRescan}>

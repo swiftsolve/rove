@@ -120,13 +120,6 @@
   flex-shrink: 0;
 }
 
-/* Centre the wrapped hint under the icon, matching the app's other empty
-   states (no card background — just icon + text on the page). */
-.history-empty-text {
-  max-width: 260px;
-  text-align: center;
-}
-
 /* Header overflow menu: a kebab that opens a small dropdown with Delete. Mirrors
    the per-row menu on the manage-services page so the two read the same. */
 .history-menu {
