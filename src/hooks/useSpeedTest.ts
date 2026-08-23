@@ -131,11 +131,10 @@ function isCancellation(cause: unknown): boolean {
 // Monotonic run id: a late progress event or a superseded run can never write
 // over a newer one's state.
 let runSeq = 0
-// The run a stop was requested for. A stop fired during the pre-flight — while we
-// await getNetworkInfo, before the backend test is even running — would otherwise
-// be lost: `cancelSpeedTest` has nothing to cancel yet, and the backend clears its
-// own cancel flag when the test starts. Recording the run here lets us abort before
-// ever kicking it off.
+// The run a stop was requested for. cancelTest() also bumps runSeq (making a
+// stopped run non-current), so this is the belt-and-suspenders signal the
+// progress listener checks to keep a late tick from a just-cancelled run from
+// slipping through.
 let cancelledRun = 0
 
 async function runTest(): Promise<void> {
@@ -169,16 +168,15 @@ async function runTest(): Promise<void> {
   })
 
   try {
-    const context = await currentRunContext()
-    // A stop during the pre-flight aborts here, before the backend test starts —
-    // otherwise runSpeedTest would kick off (and reset the cancel) and run to the end.
-    if (isCancelled()) {
-      settled = true
-      unsubscribe()
-      if (isCurrent()) setState({ ...state, testing: false, progress: INITIAL_PROGRESS, error: null })
-      return
-    }
+    // Fetch the run context concurrently with the test instead of awaiting it
+    // first. getNetworkInfo() takes 10s+ on Windows when a VPN and other virtual
+    // adapters are present (each PowerShell probe enumerates them all), and
+    // blocking on it here froze the UI at "Starting speed test…" for that whole
+    // time before the backend test even began. The context is only needed once
+    // the result is in, so overlap it with the test.
+    const contextPromise = currentRunContext()
     const result = await api.runSpeedTest()
+    const context = await contextPromise
     settled = true
     unsubscribe()
     await saveSpeedResult(result.internet, context)

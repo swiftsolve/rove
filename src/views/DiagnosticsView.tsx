@@ -147,7 +147,7 @@ export default function DiagnosticsView({
           </Section>
 
           <Section
-            title="ISP"
+            title={diagnostics?.isp?.isVpn ? 'VPN' : 'ISP'}
             icon={<GlobeIcon size={15} />}
             bodyClassName="row-list diag-router"
             // The right-hand slot: a small "VPN" pill when our egress is a
@@ -172,7 +172,14 @@ export default function DiagnosticsView({
           >
             {diagnostics?.isp ? (
               <>
-                <DataRow label="ISP" value={diagnostics.isp.name} />
+                {/* Under a VPN these rows describe the exit node, not the real
+                    ISP, so the first row is "Provider" — the value (the exit's
+                    hosting company) is correct, only the "ISP" label would lie.
+                    The remaining rows stay accurate as-is (see title comment). */}
+                <DataRow
+                  label={diagnostics.isp.isVpn ? 'Provider' : 'ISP'}
+                  value={diagnostics.isp.name}
+                />
                 <DataRow label="ASN" value={diagnostics.isp.asn} />
                 {/* "Website", not "Domain" — in a network tool the latter reads
                     as a DHCP search domain. DataRow hides itself when null, so

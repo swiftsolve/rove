@@ -167,11 +167,33 @@
 }
 
 /* The tooltip wrapper around the hostname must itself shrink (and clip) so the
-   name still truncates/marquees inside the row rather than sizing to its full
-   text. The portalled bubble is unaffected by the clip. */
+   name still truncates inside the row rather than sizing to its full text. The
+   portalled bubble is unaffected by the clip. */
 .host-name-tip {
   min-width: 0;
   overflow: hidden;
+}
+
+/* The hover tooltip's body: the full hostname (which the row truncates) with its
+   IP beneath. The name wraps within the bubble's max width so even a long host
+   reads in full, across a couple of lines if need be. */
+.host-name-tip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.host-name-tip-name {
+  color: var(--text-primary);
+  /* Most hostnames fit the bubble's (widened) cap on one line, so the box hugs
+     them. One longer than the cap wraps and fills each line to the edge rather
+     than breaking at a hyphen and leaving the box padded out to the cap. */
+  word-break: break-all;
+}
+
+.host-name-tip-ip {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 
 .host-row-figures {

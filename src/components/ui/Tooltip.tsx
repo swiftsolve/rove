@@ -45,6 +45,10 @@ interface TooltipProps {
    *  in its own flex layout (e.g. shrink/truncate) rather than sit at intrinsic
    *  width. */
   readonly className?: string
+  /** Max width (px) of the bubble before its content wraps. Defaults to
+   *  `MAX_WIDTH`; raise it for content that reads better on fewer lines (e.g. a
+   *  hostname, which otherwise wraps and leaves the box padded out to the cap). */
+  readonly maxWidth?: number
 }
 
 const GAP = 6
@@ -133,6 +137,7 @@ export function Tooltip({
   offset = 0,
   disabled = false,
   className,
+  maxWidth = MAX_WIDTH,
 }: TooltipProps): JSX.Element {
   const bubbleId = useId()
   const wrapRef = useRef<HTMLSpanElement>(null)
@@ -220,7 +225,7 @@ export function Tooltip({
             style={{
               top: coords?.top ?? -9999,
               left: coords?.left ?? -9999,
-              maxWidth: MAX_WIDTH,
+              maxWidth,
             }}
           >
             {content}

@@ -213,16 +213,18 @@ pub async fn run_speed_test(
         *slot = Some(cancel.clone());
     }
 
-    let link_capacity = rove_core::network_info::network_info()
-        .await
-        .details
-        .link_speed_mbps;
-
+    // Run the link-capacity probe concurrently with the test rather than before
+    // it. network_info() takes 10s+ on Windows when a VPN and other virtual
+    // adapters are present, and awaiting it here froze the UI at "Starting speed
+    // test…" for that whole time before the first phase emitted. The capacity is
+    // only used to annotate the result, so it overlaps the ~18s test for free.
     let emitter = app.clone();
-    let result = rove_core::speed::run(link_capacity, cancel.clone(), move |progress| {
-        let _ = emitter.emit("speed-test-progress", &progress);
-    })
-    .await;
+    let (info, result) = tokio::join!(
+        rove_core::network_info::network_info(),
+        rove_core::speed::run(cancel.clone(), move |progress| {
+            let _ = emitter.emit("speed-test-progress", &progress);
+        }),
+    );
 
     // Clear our cancel slot unconditionally (on success, error, or cancel), but
     // only if a newer run hasn't already replaced it.
@@ -232,7 +234,10 @@ pub async fn run_speed_test(
             *slot = None;
         }
     }
-    result
+
+    let mut result = result?;
+    result.link_capacity_mbps = info.details.link_speed_mbps;
+    Ok(result)
 }
 
 #[tauri::command]
