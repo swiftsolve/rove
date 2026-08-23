@@ -181,7 +181,7 @@ mod imp {
     /// `QueryFullProcessImageNameW`. `None` if the pid has exited or can't be
     /// opened — Rove runs elevated for the ETW session, so access is not the usual
     /// cause; a since-exited pid is (that's what [`exe_path_for_name`] covers).
-    fn exe_path_for_pid(pid: u32) -> Option<PathBuf> {
+    pub(crate) fn exe_path_for_pid(pid: u32) -> Option<PathBuf> {
         // SAFETY: a scoped process handle, closed on every path out; the path
         // buffer is sized up front and the OS writes back the used length.
         unsafe {
