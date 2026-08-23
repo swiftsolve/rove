@@ -8,38 +8,60 @@ use std::net::Ipv4Addr;
 
 // ---- routing / DNS -------------------------------------------------------
 
-/// The forwarding route Windows would actually use to reach the internet, guarded
-/// against two ways a dead link masquerades as live:
+/// The interface Windows forwards internet traffic through, ranked so a VPN
+/// tunnel never masquerades as the machine's LAN uplink.
 ///
-///  1. `Find-NetRoute` emits *two* rows — a bare source-address selection
-///     (`MSFT_NetIPAddress`: an `InterfaceAlias` but no `NextHop`) followed by the
-///     real `0.0.0.0/0` route. `Where-Object NextHop` drops the stub so we only
-///     ever read a genuine forwarding entry.
-///  2. Windows can keep a stale metric-0 default route on a just-unplugged
-///     Ethernet adapter, so even the real route row can point at a dead link. The
-///     adapter's `Status -eq 'Up'` check (media actually connected) rejects that.
+/// `Find-NetRoute -RemoteIPAddress '8.8.8.8'` reports the *effective* route to the
+/// internet — which is precisely the tunnel once a VPN is up. Device discovery is
+/// scoped to this interface, so keying off that route made the scan target the
+/// tunnel's point-to-point range and find nothing. Modern VPNs (WireGuard/Wintun,
+/// NordLynx, Mullvad, OpenVPN) install their default via the `0.0.0.0/1` +
+/// `128.0.0.0/1` split and leave the physical adapter's own `0.0.0.0/0` in place,
+/// so the real LAN route is still present — it just no longer wins to `8.8.8.8`.
 ///
-/// Selecting `$route.PSObject.Properties['Field']` after the guard lets both the
-/// gateway and interface lookups share this one script.
+/// So enumerate every default route and rank them, mirroring macOS's
+/// [`pick_default_route`](crate::platform::macos):
+///
+///  1. `Status -eq 'Up'` — media actually connected. This rejects the stale
+///     metric-0 default Windows keeps on a just-unplugged Ethernet adapter (the
+///     dead-link case the old `Find-NetRoute` guard existed for).
+///  2. `HardwareInterface` first — the OS's own "is this real hardware" verdict
+///     ranks a physical NIC above any VPN/tunnel pseudo-adapter without matching
+///     vendor-specific tunnel names. A Hyper-V "vEthernet" host adapter is *not*
+///     hardware, yet when it owns the only default route (the physical NIC is
+///     bound to the vSwitch and has none) it still wins by falling through to the
+///     second tier — so that setup keeps working.
+///  3. Lowest effective metric (route + interface) breaks ties between two live
+///     physical links, preferring Ethernet over Wi-Fi exactly as Windows does.
+///
+/// `field` is `InterfaceAlias` or `NextHop`, so the interface and gateway lookups
+/// share this one ranked selection and can't disagree on which route won.
 fn default_route_field(field: &str) -> String {
-    format!(
-        "$route = Find-NetRoute -RemoteIPAddress '8.8.8.8' -ErrorAction SilentlyContinue | Where-Object NextHop | Select-Object -First 1; \
-         if ($route -and (Get-NetAdapter -InterfaceIndex $route.InterfaceIndex -ErrorAction SilentlyContinue).Status -eq 'Up') {{ $route.{field} }}"
-    )
+    // `field` is only ever an internal literal below, never caller input.
+    const SCRIPT: &str = "\
+        Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | ForEach-Object { \
+          $r = $_; $a = Get-NetAdapter -InterfaceIndex $r.ifIndex -ErrorAction SilentlyContinue; \
+          if ($a -and $a.Status -eq 'Up') { \
+            $im = (Get-NetIPInterface -InterfaceIndex $r.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue).InterfaceMetric; \
+            [pscustomobject]@{ InterfaceAlias = $r.InterfaceAlias; NextHop = $r.NextHop; \
+              Metric = [int]$r.RouteMetric + [int]$im; Physical = [int]$a.HardwareInterface } } } | \
+        Sort-Object @{Expression='Physical';Descending=$true}, @{Expression='Metric';Descending=$false} | \
+        Select-Object -First 1 | ForEach-Object { $_.@FIELD@ }";
+    SCRIPT.replace("@FIELD@", field)
 }
 
-/// Default gateway via a real forwarding lookup. See [`default_route_field`] for
-/// why the raw `Find-NetRoute` output can't be trusted unfiltered.
+/// Default gateway — the `NextHop` of the same ranked default route
+/// [`default_interface`] selects, so the two always describe one link. See
+/// [`default_route_field`] for why the effective internet route can't be trusted.
 pub async fn default_gateway() -> Option<String> {
     let out = try_run_powershell(&default_route_field("NextHop")).await?;
     let ip = out.trim().to_string();
     if ip.is_empty() { None } else { Some(ip) }
 }
 
-/// Interface Windows actually forwards through — not the lowest-metric row, which
-/// can be a stale route on a disconnected adapter (e.g. showing "Ethernet 2"
-/// while on Wi-Fi), and not the source-address stub row that lingers with a
-/// configured IP after the cable is pulled. See [`default_route_field`].
+/// Interface Windows actually forwards through — a live physical NIC in
+/// preference to any VPN tunnel or stale route on a disconnected adapter. See
+/// [`default_route_field`] for the full ranking.
 pub async fn default_interface() -> Option<String> {
     let out = try_run_powershell(&default_route_field("InterfaceAlias")).await?;
     let name = out.trim().to_string();

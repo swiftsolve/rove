@@ -8,7 +8,6 @@ import { flashHighlight } from '@/lib/highlight'
 import { Tooltip as UiTooltip } from '@/components/ui/Tooltip'
 import Subpage from '@/components/ui/Subpage'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
-import { MarqueeText } from '@/components/ui/MarqueeText'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ChevronDownIcon, GlobeIcon, HelpIcon, InfoIcon, IpIcon } from '@/components/ui/Icons'
 import DirectionIcon from '@/components/ui/DirectionIcon'
@@ -70,20 +69,28 @@ function HostRow({ host }: { readonly host: HostConn }): JSX.Element {
         ) : (
           flagGlyph
         )}
-        {/* Reveal the underlying IP in the styled tooltip (matching the flag's),
-            but only once a hostname has resolved — when the label already is the
-            IP there's nothing to add. Kept as one always-mounted tree (disabled
-            rather than conditionally rendered) so the node survives the poll that
-            fills the hostname in: remounting here would restart the name's
-            marquee mid-scroll. */}
+        {/* The row truncates the hostname with an ellipsis; hovering reveals the
+            whole thing — plus the underlying IP — in the styled tooltip. A tooltip
+            rather than an in-place scroll: it shows the entire name at once, at any
+            length, with no motion (an in-place marquee either scrolls forever or
+            hides one end). Only meaningful once a hostname has resolved; when the
+            label already is the IP there's nothing more to reveal, so it's
+            disabled rather than unmounted, so the node survives the poll that
+            fills the hostname in. */}
         <UiTooltip
-          content={host.ip}
+          content={
+            <span className="host-name-tip-content">
+              <span className="host-name-tip-name">{host.host}</span>
+              <span className="host-name-tip-ip">{host.ip}</span>
+            </span>
+          }
           placement="top"
           align="left"
           className="host-name-tip"
+          maxWidth={360}
           disabled={!host.host}
         >
-          <MarqueeText className="host-name" text={label} />
+          <span className="host-name">{label}</span>
         </UiTooltip>
       </span>
       <span className="host-row-figures">

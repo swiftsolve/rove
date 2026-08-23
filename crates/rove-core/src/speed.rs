@@ -291,8 +291,13 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
 
 /// Full test. `report` receives phase updates; `cancel` aborts between and
 /// within phases (streams poll it each chunk).
+///
+/// The result's `link_capacity_mbps` is left `None` here and filled in by the
+/// caller: resolving it means a full `network_info()` probe (10s+ on Windows
+/// when a VPN and other virtual adapters are present), and blocking the test on
+/// it froze the UI at "Starting speed test…" before the first phase began. The
+/// command runs that probe concurrently with this test instead.
 pub async fn run<F: Fn(SpeedTestProgress)>(
-    link_capacity_mbps: Option<i64>,
     cancel: Arc<AtomicBool>,
     report: F,
 ) -> Result<SpeedTestResult, String> {
@@ -336,6 +341,6 @@ pub async fn run<F: Fn(SpeedTestProgress)>(
     Ok(SpeedTestResult {
         capabilities: assess(&internet),
         internet,
-        link_capacity_mbps,
+        link_capacity_mbps: None, // filled in by the caller (see doc comment)
     })
 }

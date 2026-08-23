@@ -48,6 +48,21 @@ ferrisetw = "1.2"
 # which end of a connection event is the remote peer (the Hosts view) without
 # depending on the provider's send/receive address labelling.
 if-addrs = "0.13"
+# Real per-app icons: resolve a PID (or process name) to its executable, then
+# extract the Shell's icon for that .exe via IShellItemImageFactory and read its
+# pixels back with GDI. See platform/app_icon.rs.
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Threading",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_Shell",
+] }
+# Encodes the extracted icon bitmap as a PNG the frontend drops into an <img> as
+# a data: URI.
+png = "0.18"
+base64 = "0.21"
 
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.

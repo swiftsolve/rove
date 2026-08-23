@@ -49,7 +49,6 @@
   text-transform: uppercase;
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
 }
 
 .ui-section-action {
