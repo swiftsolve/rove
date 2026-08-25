@@ -37,8 +37,16 @@ const PROBE_PORTS: &[u16] = &[
     6668,  // smart-plug local control API (Tuya-based devices)
 ];
 
-/// Sockets in flight at once. Sized to finish a /24 within the discovery window
-/// while staying well under a typical 1024 open-file limit.
+/// Sockets in flight at once, before the descriptor budget is applied. Sized to
+/// finish a /24 within the discovery window.
+///
+/// This is a *request*, not a guarantee: the figure that matters is whatever
+/// [`fd_limit::budget`] allows, because a GUI process on macOS inherits
+/// launchd's 256-descriptor soft limit rather than the 1024+ a shell grants.
+/// Holding 400 sockets open under that limit doesn't fail the probe — it
+/// starves every *other* descriptor user for the length of the scan, including
+/// the `netstat -rn` spawn behind `default_interface()`, which then reports the
+/// machine as offline mid-scan. See `platform::fd_limit`.
 const CONCURRENT_PROBES: usize = 400;
 /// A live host on a LAN answers (accept or RST) in single-digit milliseconds;
 /// this budget mostly bounds how long we wait on silent/absent addresses.
@@ -90,7 +98,7 @@ pub async fn probe(subnet: &str) -> ProbeResult {
                 _ => None,
             }
         })
-        .buffer_unordered(CONCURRENT_PROBES)
+        .buffer_unordered(crate::platform::fd_limit::budget(CONCURRENT_PROBES))
         .filter_map(|hit| async move { hit })
         .collect()
         .await;

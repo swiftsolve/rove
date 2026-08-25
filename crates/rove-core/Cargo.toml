@@ -77,3 +77,9 @@ objc2-core-location = { version = "0.3", default-features = false, features = ["
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "libc", "NSRunningApplication", "NSWorkspace", "NSImage", "NSImageRep", "NSBitmapImageRep", "NSGraphicsContext", "NSGraphics", "objc2-core-foundation"] }
 # Encodes the rasterised icon PNG as a data: URI the frontend drops into <img>.
 base64 = "0.21"
+
+# `setrlimit`/`getrlimit` for the descriptor-budget guard in `platform::fd_limit`.
+# A GUI app inherits launchd's 256-descriptor soft limit on macOS, which the
+# device scan's concurrent sockets would otherwise exhaust.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

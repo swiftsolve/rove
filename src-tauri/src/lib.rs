@@ -49,6 +49,11 @@ pub fn run() {
     let _log_guard = logging::init_logging();
     logging::install_panic_logger();
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "Rove starting");
+    // Lift the descriptor soft limit before anything can scan. A GUI process
+    // inherits launchd's 256 on macOS, which the device scan's concurrent
+    // sockets exhaust — starving the subprocess spawns behind
+    // `default_interface()` and making a healthy link read as disconnected.
+    tracing::info!(fd_limit = rove_core::platform::fd_limit::raise(), "descriptor budget");
     // Capture the desktop/render environment up front: this is exactly the
     // context (GDK backend, Wayland socket, and the AppArmor label that governs
     // whether WebKit's sandboxed WebProcess can start) that has caused the

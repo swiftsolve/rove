@@ -17,6 +17,7 @@
 //! windowless-spawn helper, interface sorting) lives in this file.
 
 pub mod app_icon;
+pub mod fd_limit;
 pub mod linux;
 pub mod mac_native;
 pub mod macos;
