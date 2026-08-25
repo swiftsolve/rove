@@ -387,10 +387,17 @@ pub async fn run_services(service_list: &[crate::store::ServiceDef]) -> Services
 /// keeps it cheap enough to run on a tight timer (and while the window is hidden
 /// to tray), so an internet up/down transition is caught no matter which tab is
 /// open — or whether the window is open at all.
-pub async fn check_internet() -> InternetStatus {
-    let gateway = default_gateway().await;
-    let reachable = internet_reachable().await;
-    classify_internet(reachable, gateway.as_deref())
+/// This machine's internet status, or [`ShellError`] when the gateway probe
+/// could not run.
+///
+/// The gateway is what separates `NoInternet` (on a LAN, WAN down) from
+/// `Offline` (no network at all), so a gateway we failed to *read* must not be
+/// reported as a gateway that isn't *there*. The caller records outages to the
+/// timeline; an undetermined status is not an outage.
+pub async fn check_internet() -> Result<InternetStatus, crate::shell::ShellError> {
+    let (gateway, reachable) =
+        tokio::join!(crate::network_info::probe_default_gateway(), internet_reachable());
+    Ok(classify_internet(reachable, gateway?.as_deref()))
 }
 
 pub async fn run() -> NetworkDiagnostics {

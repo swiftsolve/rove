@@ -22,15 +22,29 @@ pub async fn get_network_info(
 ) -> Result<NetworkInfo, String> {
     tracing::info!("network info requested");
     let started = std::time::Instant::now();
-    let info = rove_core::network_info::network_info().await;
+    // An error here means the link could not be *determined*, not that it is
+    // down. Surface it as an error so the UI keeps the state it already has:
+    // rendering "unknown" as "disconnected" is precisely the bug that logged a
+    // `connection_lost` on a healthy link whenever a scan exhausted the
+    // descriptor budget (see `rove_core::platform::fd_limit`).
+    let info = rove_core::network_info::network_info().await.map_err(|e| {
+        tracing::warn!(
+            elapsed_ms = started.elapsed().as_millis() as u64,
+            error = %e,
+            "network info undetermined — leaving the last known state in place"
+        );
+        format!("Could not read the network: {e}")
+    })?;
     tracing::info!(
         elapsed_ms = started.elapsed().as_millis() as u64,
         interface = ?info.interface_name,
         "network info resolved"
     );
     // Log a connection event if this machine has moved onto a new Wi-Fi/Ethernet
-    // network since the last poll. Best-effort: a DB hiccup must not fail the
-    // network-info read the whole UI depends on.
+    // network since the last poll. Only reached once the link is actually known
+    // — an undetermined link returns above without recording anything, so it can
+    // never be mistaken for a transition. Best-effort: a DB hiccup must not fail
+    // the network-info read the whole UI depends on.
     let _ = store.record_connection(
         &info.connection_type,
         info.details.ssid.as_deref(),
@@ -236,7 +250,9 @@ pub async fn run_speed_test(
     }
 
     let mut result = result?;
-    result.link_capacity_mbps = info.details.link_speed_mbps;
+    // The capacity only annotates the result, so an unreadable link leaves the
+    // annotation empty rather than failing a speed test that otherwise ran fine.
+    result.link_capacity_mbps = info.ok().and_then(|i| i.details.link_speed_mbps);
     Ok(result)
 }
 

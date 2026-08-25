@@ -33,7 +33,9 @@ pub struct WifiShare {
 /// Errors (as a display string for the frontend) when there's no Wi-Fi link or
 /// its SSID is unavailable — the two states where there's nothing to share.
 pub async fn current_wifi_share() -> Result<WifiShare, String> {
-    let info = network_info().await;
+    // A link we couldn't read is not a Wi-Fi link we can share; say so plainly
+    // rather than reporting "not connected to Wi-Fi", which would be a guess.
+    let info = network_info().await.map_err(|e| format!("Could not read the network: {e}"))?;
     if info.connection_type != "wifi" {
         return Err("Not connected to Wi-Fi.".into());
     }

@@ -214,7 +214,19 @@ pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         let mut last: Option<rove_core::types::InternetStatus> = None;
         loop {
-            let status = rove_core::diagnostics::check_internet().await;
+            // An undetermined status is not an outage: skip the tick entirely
+            // rather than persist a state we never actually observed. Writing one
+            // would put a false `internet_lost` on the user's timeline — the same
+            // mistake, in a different subsystem, as the false `connection_lost`
+            // (see `rove_core::platform::fd_limit`).
+            let status = match rove_core::diagnostics::check_internet().await {
+                Ok(status) => status,
+                Err(e) => {
+                    tracing::warn!(error = %e, "internet status undetermined — skipping this tick");
+                    tokio::time::sleep(INTERNET_HEARTBEAT_INTERVAL).await;
+                    continue;
+                }
+            };
             let now = rove_core::net_util::now_ms() as i64;
             {
                 let state = handle.state::<AppState>();

@@ -1,17 +1,29 @@
 use crate::platform;
-use crate::shell::try_run;
+use crate::shell::{try_run, ShellError};
 use crate::types::{ConnectionDetails, NetworkInfo};
 
 pub async fn default_gateway() -> Option<String> {
+    probe_default_gateway().await.ok().flatten()
+}
+
+/// [`default_gateway`], reporting *why* it found nothing.
+///
+/// `Ok(None)` means the routing table was read and holds no usable default
+/// gateway. `Err` means it could not be read at all — which the diagnostics
+/// split must not mistake for "no gateway", since that is what separates
+/// `Offline` from `NoInternet`.
+pub async fn probe_default_gateway() -> Result<Option<String>, ShellError> {
     if cfg!(target_os = "windows") {
-        return platform::windows::default_gateway().await;
+        return Ok(platform::windows::default_gateway().await);
     }
     // On macOS a VPN tunnel can top the routing table with no gateway; prefer the
     // gateway of the physical default route. Fall through to the legacy probe if
     // that route has none.
     if cfg!(target_os = "macos") {
-        if let Some((_, Some(gw))) = platform::macos::best_default_route().await {
-            return Some(gw);
+        // `?`: a routing table we couldn't read tells us nothing, and the probes
+        // below would fail for the same reason. Propagate instead of guessing.
+        if let Some((_, Some(gw))) = platform::macos::best_default_route().await? {
+            return Ok(Some(gw));
         }
     }
     // `!/linkdown/` keeps a stale gateway from a just-unplugged NIC out of the
@@ -23,26 +35,45 @@ pub async fn default_gateway() -> Option<String> {
     {
         let ip = out.trim().to_string();
         if !ip.is_empty() {
-            return Some(ip);
+            return Ok(Some(ip));
         }
     }
-    let out = try_run("route -n get default 2>/dev/null | grep gateway | awk '{print $2}'").await?;
-    let ip = out.trim().to_string();
-    if ip.is_empty() { None } else { Some(ip) }
+    // Last resort. An `Empty`/`Status` failure here is a real answer — no default
+    // gateway — so it flattens to `Ok(None)`; only a probe that never ran is an error.
+    match crate::shell::run("route -n get default 2>/dev/null | grep gateway | awk '{print $2}'")
+        .await
+    {
+        Ok(out) => Ok(Some(out.trim().to_string()).filter(|ip| !ip.is_empty())),
+        Err(e) if e.probe_ran() => Ok(None),
+        Err(e) => Err(e),
+    }
 }
 
 /// Interface the kernel routes default traffic through — routing table first,
 /// matching the Electron implementation.
 pub async fn default_interface() -> Option<String> {
+    probe_default_interface().await.ok().flatten()
+}
+
+/// [`default_interface`], reporting *why* it found nothing.
+///
+/// The distinction is the whole point: `Ok(None)` means this machine genuinely
+/// has no default route (it is offline), while `Err` means we could not find
+/// out. [`network_info`] must never render the second as the first — doing so is
+/// what logged a `connection_lost` on a healthy link whenever a device scan
+/// exhausted the descriptor budget.
+pub async fn probe_default_interface() -> Result<Option<String>, ShellError> {
     if cfg!(target_os = "windows") {
-        return platform::windows::default_interface().await;
+        return Ok(platform::windows::default_interface().await);
     }
     // Skip VPN/virtual tunnels that can outrank the physical link (see
     // `best_default_route`); otherwise the whole app binds to an interface with
     // no IP, gateway or LAN subnet.
     if cfg!(target_os = "macos") {
-        if let Some((iface, _)) = platform::macos::best_default_route().await {
-            return Some(iface);
+        // `?` as in `probe_default_gateway`: propagate an unreadable routing
+        // table rather than letting it read as "no interface".
+        if let Some((iface, _)) = platform::macos::best_default_route().await? {
+            return Ok(Some(iface));
         }
     }
     // `!/linkdown/` skips a default route the kernel has flagged dead (an
@@ -59,12 +90,18 @@ pub async fn default_interface() -> Option<String> {
         // manager), so confirm the chosen interface actually has link before
         // reporting it as connected. Non-Linux hosts never reach this `ip` path.
         if !name.is_empty() && (!cfg!(target_os = "linux") || platform::linux::carrier_up(&name)) {
-            return Some(name);
+            return Ok(Some(name));
         }
     }
-    let out = try_run("route -n get default 2>/dev/null | grep interface | awk '{print $2}'").await?;
-    let name = out.trim().to_string();
-    if name.is_empty() { None } else { Some(name) }
+    // As in `probe_default_gateway`: a probe that ran and found nothing is
+    // `Ok(None)`; only one that never ran is an error.
+    match crate::shell::run("route -n get default 2>/dev/null | grep interface | awk '{print $2}'")
+        .await
+    {
+        Ok(out) => Ok(Some(out.trim().to_string()).filter(|n| !n.is_empty())),
+        Err(e) if e.probe_ran() => Ok(None),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn dns_servers() -> Vec<String> {
@@ -133,12 +170,23 @@ pub async fn public_ip() -> Option<String> {
     (!ip.is_empty() && ip.parse::<std::net::IpAddr>().is_ok()).then_some(ip)
 }
 
-pub async fn network_info() -> NetworkInfo {
+/// The machine's current link, or [`ShellError`] when the link *could not be
+/// determined* — as opposed to being determined to be down.
+///
+/// Callers that record state transitions (`record_connection`) must treat the
+/// error as "no new information" and leave the last known state standing. A
+/// probe that never ran is not evidence of a disconnection.
+pub async fn network_info() -> Result<NetworkInfo, ShellError> {
     let (iface, gateway, dns) =
-        tokio::join!(default_interface(), default_gateway(), dns_servers());
+        tokio::join!(probe_default_interface(), probe_default_gateway(), dns_servers());
+    // An unreadable routing table means unknown, not disconnected — propagate.
+    let iface = iface?;
+    // The gateway is an enrichment here rather than the verdict, so a failure to
+    // read it degrades to "unknown gateway" instead of failing the whole probe.
+    let gateway = gateway.unwrap_or_default();
 
     let Some(iface) = iface else {
-        return NetworkInfo {
+        return Ok(NetworkInfo {
             connection_type: "disconnected".into(),
             is_connected: false,
             interface_name: None,
@@ -147,7 +195,7 @@ pub async fn network_info() -> NetworkInfo {
             mac_address: None,
             dns,
             details: ConnectionDetails::default(),
-        };
+        });
     };
 
     let (ip, mac) = crate::interfaces::address_of(&iface).await;
@@ -180,7 +228,7 @@ pub async fn network_info() -> NetworkInfo {
         }
     }
 
-    NetworkInfo {
+    Ok(NetworkInfo {
         connection_type: connection_type.into(),
         is_connected: true,
         interface_name: Some(iface),
@@ -189,5 +237,5 @@ pub async fn network_info() -> NetworkInfo {
         mac_address: mac,
         dns,
         details,
-    }
+    })
 }

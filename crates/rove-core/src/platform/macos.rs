@@ -1,7 +1,7 @@
 //! macOS host/network probes: `ifconfig`, `netstat`, `networksetup` and
 //! `system_profiler`.
 use crate::net_util::is_virtual_interface;
-use crate::shell::try_run;
+use crate::shell::{try_run, ShellError};
 use crate::types::ConnectionDetails;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
@@ -230,9 +230,13 @@ fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
 /// `route -n get default` alone lands on an interface with no address, no
 /// gateway and the wrong subnet. Prefer a non-virtual interface that carries a
 /// real IPv4 gateway; degrade gracefully when none does.
-pub async fn best_default_route() -> Option<(String, Option<String>)> {
-    let out = try_run("netstat -rn -f inet 2>/dev/null").await?;
-    pick_default_route(&out)
+pub async fn best_default_route() -> Result<Option<(String, Option<String>)>, ShellError> {
+    // `run`, not `try_run`: the caller decides whether this machine is connected,
+    // so it must be able to tell "the routing table has no usable default route"
+    // (`Ok(None)`) from "the routing table could not be read" (`Err`). Those were
+    // the same value once, which is how an `EMFILE` mid-scan read as a dropped link.
+    let out = crate::shell::run("netstat -rn -f inet 2>/dev/null").await?;
+    Ok(pick_default_route(&out))
 }
 
 /// Choose the physical default route from `netstat -rn -f inet` output. A VPN
