@@ -2,7 +2,9 @@
   <rect x="0.5" y="0.5" width="919" height="627" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
 
   <text x="48" y="52" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">DEVICE DISCOVERY · THE WHOLE PIPELINE</text>
-  <text x="48" y="82" font-size="22" font-weight="700" fill="#f2f2f5">Seven unprivileged signals, one trust-weighted vote</text>
+  <text x="48" y="82" font-size="22" font-weight="700" fill="#f2f2f5">Nine unprivileged signals, one trust-weighted vote</text>
+
+  <text x="868" y="115" font-size="10" font-weight="600" letter-spacing="1" fill="#6b6b78" text-anchor="end">+ PASSIVE DHCP LISTENER · ALWAYS ON</text>
 
   <!-- subnet pill -->
   <rect x="355.5" y="96.5" width="209" height="29" rx="14.5" fill="#14141c" stroke="rgba(255,255,255,0.1)"></rect>
@@ -85,7 +87,7 @@
   <!-- enrich band (existence spine) -->
   <rect x="48.5" y="372.5" width="560" height="62" rx="13" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
   <text x="72" y="398" font-size="14" font-weight="700" fill="#f2f2f5">Enrich each host</text>
-  <text x="72" y="420" font-size="12.5" fill="#9a9aa8">OUI vendor · hostname (rDNS ‖ HTTP banner ‖ NetBIOS) · model</text>
+  <text x="72" y="420" font-size="12.5" fill="#9a9aa8">OUI vendor · hostname (rDNS ‖ HTTP banner ‖ NetBIOS) · model (SNMP)</text>
 
   <!-- identity dashed rail down to classify -->
   <path d="M679 348 L679 470" fill="none" stroke="#55556a" stroke-width="1.5" stroke-dasharray="5 4"></path>
@@ -98,8 +100,8 @@
 
   <!-- classify band -->
   <rect x="48.5" y="472.5" width="820" height="70" rx="13" fill="#1c1c2b" stroke="rgba(196,181,253,0.3)"></rect>
-  <text x="72" y="500" font-size="15" font-weight="700" fill="#f2f2f5"><tspan font-family="Menlo, Consolas, monospace" fill="#c4b5fd">classify()</tspan> — weighted vote over 13 signals</text>
-  <text x="72" y="524" font-size="12.5" fill="#9a9aa8">mDNS · SSDP · open ports · HTTP banner · hostname · vendor  →  highest total wins the device <tspan fill="#c4b5fd">kind</tspan></text>
+  <text x="72" y="500" font-size="15" font-weight="700" fill="#f2f2f5"><tspan font-family="Menlo, Consolas, monospace" fill="#c4b5fd">classify()</tspan> — trust-weighted vote over every signal</text>
+  <text x="72" y="524" font-size="12.5" fill="#9a9aa8">mDNS · SSDP · DHCP · open ports · HTTP banner · hostname · vendor  →  highest total wins the device <tspan fill="#c4b5fd">kind</tspan></text>
 
   <!-- classify -> output -->
   <line x1="460" y1="542" x2="460" y2="564" stroke="#55556a" stroke-width="1.5"></line>

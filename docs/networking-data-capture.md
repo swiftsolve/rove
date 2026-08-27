@@ -219,7 +219,7 @@ The device scanner (`crates/rove-core/src/devices/mod.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
 LAN" is the kernel's neighbor table** (the ARP cache on IPv4) — the map of IP →
 MAC the kernel has already resolved. Rove reads it via `ip neigh show` on Linux
-(which includes a reachability state) or `arp -a` elsewhere (`platform/mod.rs:122`).
+(which includes a reachability state) or `arp -a` elsewhere (`platform/mod.rs:135`).
 
 But the ARP cache only holds hosts the machine has *recently talked to* — idle
 devices won't be there. So before reading it, Rove **actively wakes every host
@@ -227,14 +227,15 @@ in the subnet** (`devices/sweep.rs`):
 
 ```rust
 // ping every address in the /24..30, 64 at a time
-futures_util::stream::iter(hosts)
+futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
     .map(|ip| async move {
         let cmd = crate::platform::ping_command(&ip, 1, 700);
-        let _ = crate::shell::try_run_timeout(&cmd, Duration::from_secs(3)).await;
+        let replied = crate::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+            .await
+            .is_some();
+        replied.then_some(ip)              // a reply also proves it's alive *now*
     })
     .buffer_unordered(CONCURRENT_PROBES)   // 64 concurrent
-    .collect::<Vec<()>>()
-    .await;
 ```
 
 The clever part (comment at `sweep.rs:1`): **we don't care whether the ping
@@ -246,12 +247,14 @@ listeners — **mDNS** and **SSDP/UPnP** — that catch devices announcing their
 friendly names and models.
 
 Everything then gets enriched: vendor from the MAC's OUI prefix; hostname from
-whichever source is friendliest (mDNS → SSDP → NetBIOS → reverse DNS); a hardware
-model from mDNS/SSDP; and a device `kind` from a 13-way weighted-vote classifier
-that also folds in HTTP-banner hints. The local machine is added manually because
-it never appears in its own neighbor table (`add_self_if_missing`,
-`devices/mod.rs:174`). The full pipeline — SSDP, HTTP banners, NetBIOS, and the
-classifier — is covered in the [device-discovery page](./device-discovery.md).
+whichever source is friendliest (mDNS → SSDP → NetBIOS → DHCP → reverse DNS); a
+hardware model from mDNS/SSDP, or the gateway's SNMP `sysDescr`; and a device
+`kind` from a trust-weighted classifier that folds in every signal gathered —
+HTTP banners and passive DHCP fingerprints included. The local machine is added
+manually because it never appears in its own neighbor table
+(`add_self_if_missing`, `devices/mod.rs:601`). The full pipeline — SSDP, HTTP
+banners, NetBIOS, SNMP, DHCP fingerprinting and the classifier — is covered in the
+[device-discovery page](./device-discovery.md).
 
 ---
 
