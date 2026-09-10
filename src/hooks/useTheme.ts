@@ -4,7 +4,8 @@ import { swapResolvedTheme } from '@/lib/theme-transition'
 /**
  * The colour-theme preference: an explicit choice, or `system` to follow the
  * OS's `prefers-color-scheme`. Persisted to localStorage so it survives reloads
- * and stays in sync across surfaces reading the same key.
+ * and stays in sync across surfaces reading the same key. With nothing stored
+ * the app starts dark; `system` is opt-in from Settings.
  *
  * The rest of the app only cares about the resolved light/dark boolean; this
  * hook derives it from the mode and, when `system`, from the live OS setting.
@@ -22,14 +23,18 @@ function readMode(): ThemeMode {
     if (raw === 'light' || raw === 'dark' || raw === 'system') return raw
     // Migrate the old boolean-only preference: an explicit lightMode becomes an
     // explicit light/dark choice. Its absence means the user never chose, so a
-    // fresh install follows the OS.
+    // fresh install falls through to the default below.
     const legacy = window.localStorage.getItem(LEGACY_KEY)
     if (legacy === 'true') return 'light'
     if (legacy === 'false') return 'dark'
   } catch {
     // localStorage unavailable (private mode) — fall through to the default.
   }
-  return 'system'
+  // Dark is the app's own look: it's what index.html declares (color-scheme,
+  // theme-color) and what the first paint shows, so starting there means no
+  // flash and no surprise for someone on a light desktop. 'system' remains a
+  // choice in Settings, just not the one we make for you.
+  return 'dark'
 }
 
 function systemPrefersLight(): boolean {
