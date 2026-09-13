@@ -12,11 +12,16 @@
 # This profile does not confine Rove (flags=(unconfined)); it exists solely
 # to grant the `userns` permission, matching the pattern Ubuntu ships for
 # browsers and other WebKit/Chromium apps in /etc/apparmor.d/.
+#
+# The attachment path below is case-sensitive and must match the installed
+# binary, which the deb lays down as /usr/bin/Rove (tauri.conf.json's
+# mainBinaryName). A lowercase path silently matches nothing: apparmor_parser
+# loads the profile without complaint and the blank-WebProcess bug returns.
 abi <abi/4.0>,
 
 include <tunables/global>
 
-profile rove /usr/bin/rove flags=(unconfined) {
+profile rove /usr/bin/Rove flags=(unconfined) {
   userns,
 
   # Site-specific additions and overrides. See local/README for details.
