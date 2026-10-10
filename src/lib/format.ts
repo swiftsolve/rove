@@ -82,6 +82,23 @@ export function formatDisplayValue(value: string | null | undefined): string {
   return value?.trim() ? value : '—'
 }
 
+/** MAC addresses always display upper-case (A4:C3:F0:…), wherever they appear. */
+export function formatMac(mac: string | null | undefined): string {
+  return mac?.trim() ? mac.trim().toUpperCase() : '—'
+}
+
+/**
+ * Whether an OS-reported Wi‑Fi security string means the network is secured.
+ * Mirrors the backend's QR encryption mapping: empty, `--`, `None` and `Open`
+ * read as open; anything else present (WEP, WPA*, RSN, 802.1X…) as secured.
+ * Null when the OS didn't report security at all.
+ */
+export function isSecuredWifi(security: string | null | undefined): boolean | null {
+  if (security == null) return null
+  const s = security.trim().toUpperCase()
+  return !(s === '' || s === '--' || s === 'NONE' || s === 'OPEN')
+}
+
 export function formatDuplex(duplex: string | null | undefined): string | null {
   if (!duplex) return null
   if (duplex === 'full') return 'Full duplex'

@@ -9,13 +9,22 @@ import {
   formatChannel,
   formatDisplayValue,
   formatDuplex,
+  formatMac,
   formatSignalStrength,
   formatSpeedMbps,
   formatWifiStandard,
+  isSecuredWifi,
 } from '@/lib/format'
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
-import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from '@/components/ui/Icons'
+import {
+  ChevronDownIcon,
+  EthernetIcon,
+  LockIcon,
+  OfflineIcon,
+  UnlockIcon,
+  WifiIcon,
+} from '@/components/ui/Icons'
 import ShareWifiButton from './ShareWifiButton'
 import './ConnectionCard.css'
 
@@ -66,6 +75,35 @@ function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
   )
 }
 
+/**
+ * Wi‑Fi security with a lock: closed and green when the network is secured,
+ * open and red when it's open. Null when the OS didn't report security.
+ * `iconOnly` keeps just the lock (collapsed strip, where width is tight).
+ */
+function SecurityBadge({
+  security,
+  iconOnly = false,
+}: {
+  readonly security: string | null
+  readonly iconOnly?: boolean
+}): JSX.Element | null {
+  const secured = isSecuredWifi(security)
+  if (secured == null || security == null) return null
+  const label = secured ? security.trim() : 'Open'
+  const description = secured ? `Secured (${label})` : 'Open network — traffic is not encrypted'
+  return (
+    <span
+      className={`security-badge ${secured ? 'secured' : 'open'}`}
+      title={description}
+      role={iconOnly ? 'img' : undefined}
+      aria-label={iconOnly ? description : undefined}
+    >
+      {secured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
+      {!iconOnly && label}
+    </span>
+  )
+}
+
 function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
   return (
     <>
@@ -90,7 +128,13 @@ function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
       </DataRow>
       <DataRow label="Band" value={formatBand(info.frequency)} />
       <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
-      <DataRow label="Security" value={formatDisplayValue(info.security)} />
+      {isSecuredWifi(info.security) != null ? (
+        <DataRow label="Security">
+          <SecurityBadge security={info.security} />
+        </DataRow>
+      ) : (
+        <DataRow label="Security" value="—" />
+      )}
       <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
     </>
   )
@@ -140,7 +184,13 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
       ? formatSpeedMbps(info.linkSpeedMbps)
       : null
   const subBits = isWifiNetwork(info)
-    ? [info.ipAddress, formatBand(info.frequency)]
+    ? [
+        info.ipAddress,
+        formatBand(info.frequency),
+        isSecuredWifi(info.security) != null && (
+          <SecurityBadge security={info.security} iconOnly />
+        ),
+      ]
     : [info.ipAddress, linkSpeed]
   const subItems = subBits.filter(Boolean)
   const detailsLabel = expanded ? 'Hide connection details' : 'Show connection details'
@@ -197,7 +247,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
           {isWifiNetwork(info) && <WifiExtras info={info} />}
           {isEthernetNetwork(info) && <EthernetExtras info={info} />}
           <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-          <DataRow label="MAC" value={formatDisplayValue(info.macAddress)} />
+          <DataRow label="MAC" value={formatMac(info.macAddress)} />
           {info.dns.length > 0 && (
             <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
           )}
