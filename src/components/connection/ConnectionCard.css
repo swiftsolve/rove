@@ -199,3 +199,24 @@
 .conn-details .data-row:has(.signal-detail) {
   align-items: center;
 }
+
+/* Wi‑Fi security: lock + protocol, green when secured, red when open. Used in
+   the expanded Security row and beside the band in the collapsed strip. */
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.security-badge.secured svg { color: var(--positive); }
+.security-badge.open { color: var(--negative); }
+
+/* Same baseline fix as the Signal row: the badge is a flex box with no text
+   baseline, so centre the row to keep the label level with it. */
+.conn-details .data-row:has(.security-badge) {
+  align-items: center;
+}
+
+.conn-strip-sub .security-badge {
+  vertical-align: middle;
+}

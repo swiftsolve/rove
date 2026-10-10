@@ -5,7 +5,7 @@ import { InlineMeta } from '@/components/ui/DotSeparator'
 import { RefreshIconButton } from '@/components/ui/RefreshIconButton'
 import { Spinner } from '@/components/ui/Spinner'
 import { ViewHeader } from '@/components/ui/ViewHeader'
-import { formatConnectionType, formatDisplayValue, formatOperState, formatSpeedMbps } from '@/lib/format'
+import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import './InterfacesView.css'
 
 interface InterfacesViewProps {
@@ -52,7 +52,7 @@ function InterfacePanel({ iface }: { readonly iface: NetworkInterfaceSummary }):
           label="Link speed"
           value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
         />
-        <DataRow label="MAC" value={formatDisplayValue(iface.macAddress)} />
+        <DataRow label="MAC" value={formatMac(iface.macAddress)} />
       </div>
     </section>
   )
