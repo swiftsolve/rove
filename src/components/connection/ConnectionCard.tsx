@@ -117,7 +117,13 @@ function SecurityBadge({
   )
 }
 
-function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
+function WifiExtras({
+  info,
+  linkSpeed,
+}: {
+  readonly info: WifiNetworkInfo
+  readonly linkSpeed: string | null
+}): JSX.Element {
   return (
     <>
       <DataRow label="Signal">
@@ -139,8 +145,10 @@ function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
           )}
         </span>
       </DataRow>
+      {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Band" value={formatBand(info.frequency)} />
       <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
+      <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
       {isSecuredWifi(info.security) != null ? (
         <DataRow label="Security">
           <SecurityBadge security={info.security} />
@@ -148,16 +156,22 @@ function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
       ) : (
         <DataRow label="Security" value="—" />
       )}
-      <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
     </>
   )
 }
 
-function EthernetExtras({ info }: { readonly info: EthernetNetworkInfo }): JSX.Element {
+function EthernetExtras({
+  info,
+  linkSpeed,
+}: {
+  readonly info: EthernetNetworkInfo
+  readonly linkSpeed: string | null
+}): JSX.Element {
   return (
     <>
-      <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
+      {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Duplex" value={formatDisplayValue(formatDuplex(info.duplex))} />
+      <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
       <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
     </>
   )
@@ -253,15 +267,16 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
             label="Public IP"
             value={publicIp ?? (publicIpLoading ? 'Checking…' : null)}
           />
+          {/* Grouped by topic: addresses, then the link itself, then the
+              hardware it runs over. */}
           <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
-          {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
-          {isWifiNetwork(info) && <WifiExtras info={info} />}
-          {isEthernetNetwork(info) && <EthernetExtras info={info} />}
-          <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-          <DataRow label="MAC" value={formatMac(info.macAddress)} />
           {info.dns.length > 0 && (
             <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
           )}
+          {isWifiNetwork(info) && <WifiExtras info={info} linkSpeed={linkSpeed} />}
+          {isEthernetNetwork(info) && <EthernetExtras info={info} linkSpeed={linkSpeed} />}
+          <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
+          <DataRow label="MAC" value={formatMac(info.macAddress)} />
         </div>
       </div>
     </section>
