@@ -201,22 +201,48 @@
 }
 
 /* Wi‑Fi security: lock + protocol, green when secured, red when open. Used in
-   the expanded Security row and beside the band in the collapsed strip. */
+   the expanded Security row and beside the band in the collapsed strip. A
+   block flex box (not inline-flex) so the lock centres on the text instead of
+   sitting on the line's baseline, which drops it a couple of pixels low. */
 .security-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+}
+
+.security-badge svg {
+  flex-shrink: 0;
+}
+
+.security-badge-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .security-badge.secured svg { color: var(--positive); }
 .security-badge.open { color: var(--negative); }
 
-/* Same baseline fix as the Signal row: the badge is a flex box with no text
-   baseline, so centre the row to keep the label level with it. */
+/* Expanded row: right-align the badge in the value cell, and centre the row
+   (same baseline fix as Signal) so the label stays level with it. */
+.conn-details .security-badge {
+  justify-content: flex-end;
+}
+
 .conn-details .data-row:has(.security-badge) {
   align-items: center;
 }
 
-.conn-strip-sub .security-badge {
-  vertical-align: middle;
+/* Collapsed strip: the badge's item is a flex box too, so the strip's
+   `align-items: center` lines the lock up with the IP and band. When space runs
+   out the protocol text ellipsizes and the IP holds its full width (even a
+   sub-pixel squeeze would otherwise ellipsize it). */
+.conn-strip-sub.inline-meta .inline-meta-item:has(.security-badge) {
+  display: flex;
+  overflow: hidden;
+}
+
+.conn-strip-sub.inline-meta:has(.security-badge) .inline-meta-item:first-child {
+  flex-shrink: 0;
 }
