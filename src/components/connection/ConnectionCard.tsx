@@ -75,31 +75,44 @@ function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
   )
 }
 
+// Strongest first: the collapsed strip names the best protocol the network offers.
+const SECURITY_PROTOCOLS = ['WPA3', 'WPA2', 'WPA', 'OWE', 'WEP']
+
+/**
+ * The strongest protocol named in an OS security string, for tight spaces:
+ * "WPA3-Personal (H2E)" → "WPA3", "WPA2 WPA3" (transition mode) → "WPA3".
+ * Falls back to the full string when none is recognised (e.g. "802.1X").
+ */
+function shortSecurityLabel(security: string): string {
+  const tokens = security.toUpperCase().split(/[^A-Z0-9]+/)
+  return SECURITY_PROTOCOLS.find((p) => tokens.includes(p)) ?? security
+}
+
 /**
  * Wi‑Fi security with a lock: closed and green when the network is secured,
  * open and red when it's open. Null when the OS didn't report security.
- * `iconOnly` keeps just the lock (collapsed strip, where width is tight).
+ * `short` trims the label to the strongest protocol for the collapsed strip.
  */
 function SecurityBadge({
   security,
-  iconOnly = false,
+  short = false,
 }: {
   readonly security: string | null
-  readonly iconOnly?: boolean
+  readonly short?: boolean
 }): JSX.Element | null {
   const secured = isSecuredWifi(security)
   if (secured == null || security == null) return null
-  const label = secured ? security.trim() : 'Open'
-  const description = secured ? `Secured (${label})` : 'Open network — traffic is not encrypted'
+  // Collapse runs of spaces — Windows reports e.g. "WPA3-Personal  (H2E)".
+  const full = security.trim().replace(/\s+/g, ' ')
+  const label = secured ? (short ? shortSecurityLabel(full) : full) : 'Open'
+  const description = secured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
     <span
       className={`security-badge ${secured ? 'secured' : 'open'}`}
       title={description}
-      role={iconOnly ? 'img' : undefined}
-      aria-label={iconOnly ? description : undefined}
     >
       {secured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
-      {!iconOnly && label}
+      <span className="security-badge-label">{label}</span>
     </span>
   )
 }
@@ -187,9 +200,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
     ? [
         info.ipAddress,
         formatBand(info.frequency),
-        isSecuredWifi(info.security) != null && (
-          <SecurityBadge security={info.security} iconOnly />
-        ),
+        isSecuredWifi(info.security) != null && <SecurityBadge security={info.security} short />,
       ]
     : [info.ipAddress, linkSpeed]
   const subItems = subBits.filter(Boolean)
