@@ -213,6 +213,10 @@
 
 .security-badge svg {
   flex-shrink: 0;
+  /* The lock is taller than the text's cap height and centring on the line box
+     leaves it reading low; lift it to sit level with the protocol text (same
+     optical nudge the signal bars get). */
+  transform: translateY(-1px);
 }
 
 .security-badge-label {
