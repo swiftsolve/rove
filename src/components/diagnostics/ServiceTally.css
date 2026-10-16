@@ -1,4 +1,4 @@
-/* The header up/down tally, e.g. "5 Up · 1 Down" — the dot is the shared
+/* The header up/down tally, e.g. "5 UP · 1 DOWN" — the dot is the shared
    InlineMeta separator. Sits in the header subtitle, so it inherits that line's
    caption size and tertiary colour. */
 .svctally {
