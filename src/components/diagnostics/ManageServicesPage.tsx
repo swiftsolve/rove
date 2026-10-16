@@ -134,9 +134,8 @@ export function ManageServicesPage({
   // nothing to probe against, so adding a service is disabled until we're back.
   const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
   // The same live up/down count the timeline header shows, ahead of the timeline
-  // link — arrows only, since this header is already about services. Null until
-  // the first probes land, so the link stands alone until then.
-  const tally = serviceTally(reachability, internet, { labels: false })
+  // link. Null until the first probes land, so the link stands alone until then.
+  const tally = serviceTally(reachability, internet)
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [menuHost, setMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
