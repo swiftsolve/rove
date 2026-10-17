@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="300" viewBox="0 0 920 300" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect x="0.5" y="0.5" width="919" height="299" rx="20" fill="#15151b" stroke="rgba(255,255,255,0.06)"></rect>
+
+  <text x="48" y="58" font-size="12" font-weight="600" letter-spacing="2.2" fill="#6b6b78">THE EVENT THAT CARRIES NOTHING</text>
+  <text x="48" y="88" font-size="22" font-weight="700" fill="#f2f2f5">A tap on the shoulder</text>
+
+  <rect x="48.5" y="118.5" width="249" height="85" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <text x="173" y="155" font-size="15" font-weight="700" fill="#f2f2f5" text-anchor="middle">Kernel</text>
+  <text x="173" y="180" font-size="12.5" fill="#9a9aa8" text-anchor="middle">cable pulled, Wi-Fi joined</text>
+
+  <line x1="301" y1="161" x2="324" y2="161" stroke="#55556a" stroke-width="2"></line>
+  <polygon points="324,156 332,161 324,166" fill="#55556a"></polygon>
+
+  <rect x="336.5" y="118.5" width="247" height="85" rx="14" fill="#1c1c24" stroke="rgba(196,181,253,0.45)"></rect>
+  <text x="460" y="148" font-size="15" font-weight="700" fill="#f2f2f5" text-anchor="middle">Rust monitor</text>
+  <text x="460" y="171" font-family="Menlo, Consolas, monospace" font-size="11.5" fill="#c4b5fd" text-anchor="middle">emit("network-changed", &amp;())</text>
+  <text x="460" y="191" font-size="12" font-weight="600" letter-spacing="0.6" fill="#c4b5fd" text-anchor="middle">payload: none</text>
+
+  <line x1="587" y1="161" x2="610" y2="161" stroke="#55556a" stroke-width="2"></line>
+  <polygon points="610,156 618,161 610,166" fill="#55556a"></polygon>
+
+  <rect x="622.5" y="118.5" width="249" height="85" rx="14" fill="#1c1c24" stroke="rgba(255,255,255,0.07)"></rect>
+  <text x="747" y="155" font-size="15" font-weight="700" fill="#f2f2f5" text-anchor="middle">React</text>
+  <text x="747" y="180" font-size="12.5" fill="#9a9aa8" text-anchor="middle">re-runs the fetch it already had</text>
+
+  <line x1="48" y1="234" x2="872" y2="234" stroke="#55556a" stroke-width="1.5" stroke-dasharray="5 5"></line>
+
+  <text x="460" y="260" font-size="14" fill="#c9c9d4" text-anchor="middle">The tap says <tspan font-weight="700" fill="#f2f2f5">when</tspan>. The existing pull says <tspan font-weight="700" fill="#f2f2f5">what</tspan>.</text>
+  <text x="460" y="282" font-size="12.5" fill="#7c7c8a" text-anchor="middle">the 15 s poll still runs underneath as the safety net</text>
+</svg>

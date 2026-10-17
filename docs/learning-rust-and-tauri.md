@@ -5,6 +5,9 @@ Every concept points at real code in this repo, with file/line references you ca
 click through in your editor.
 
 > **Companion pages:**
+> - [How Rove Is Put Together](./architecture.md) — the same boundary as a set of
+>   diagrams: the bridge's two implementations, pull vs push, and the anatomy of
+>   one `invoke`.
 > - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — a
 >   deep dive into the per-OS probes (`ip`/`netsh`/CoreWLAN, byte counters) that
 >   feed everything below.
