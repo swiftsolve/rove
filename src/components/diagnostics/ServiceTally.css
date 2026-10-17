@@ -1,4 +1,4 @@
-/* The header up/down tally, e.g. "5 UP · 1 DOWN" — the dot is the shared
+/* The header up/down tally, e.g. "5 Up · 1 Down" — the dot is the shared
    InlineMeta separator. Sits in the header subtitle, so it inherits that line's
    caption size and tertiary colour. Wraps between the two halves rather than
    letting either be squeezed — below ~390px of header width there isn't room
@@ -14,7 +14,7 @@
 /* Each half pairs its arrow with the count. The icon inherits the span's colour
    (green for up, red for down), matching the timeline markers. `nowrap` keeps
    the count and its label atomic: as a flex item the text shrinks to its
-   min-content width, which would otherwise break "5 UP" across two lines. */
+   min-content width, which would otherwise break "5 Up" across two lines. */
 .svctally-half {
   display: inline-flex;
   align-items: center;
