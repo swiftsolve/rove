@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [master, main]
+    branches: [master]
   pull_request:
   # Manual runs are the only ones that keep their installers — see the upload
   # step. Use this when you actually want a build to download.
