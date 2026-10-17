@@ -98,11 +98,15 @@ function RowMenu({
 interface ManageServicesPageProps {
   /** The latest reachability probes; latency is matched to rows by host. */
   readonly reachability: readonly ServiceReachability[] | undefined
-  /** This machine's own internet reachability. When it isn't `online`, a probe
-   *  that failed means "we couldn't check", not "the service is down", so those
-   *  rows read as unknown ("—") rather than "Down" — matching the Services card.
-   *  It also gates the Add button: there's nothing to probe with no connection. */
+  /** The internet reachability measured alongside `reachability` (same probe
+   *  batch). When it isn't `online`, a probe in that batch that failed means "we
+   *  couldn't check", not "the service is down", so those rows read as unknown
+   *  ("—") rather than "Down" — matching the Services card. */
   readonly internet: InternetStatus | undefined
+  /** The app's live internet status — the same one the title bar shows. Drives
+   *  the header ("No internet") and gates the Add button, so the page never
+   *  disagrees with the title bar between probe batches. */
+  readonly liveInternet: InternetStatus | undefined
   /** Re-run diagnostics so a just-added/removed service's latency refreshes. */
   readonly onRefresh: () => void
   /** Open the services timeline (linked from the subtitle). */
@@ -121,6 +125,7 @@ type DialogState = { readonly mode: 'add' } | { readonly mode: 'edit'; readonly 
 export function ManageServicesPage({
   reachability,
   internet,
+  liveInternet,
   onRefresh,
   onTimeline,
 }: ManageServicesPageProps): JSX.Element {
@@ -129,13 +134,16 @@ export function ManageServicesPage({
   // each diagnostics poll (recording is driven by the diagnostics effect).
   const latencyHistory = useServiceLatency()
 
-  // Same rule as the Services card: with the internet unreachable, a failed probe
-  // is our fault, not the service's — so read those rows as unknown, and there's
-  // nothing to probe against, so adding a service is disabled until we're back.
+  // Same rule as the Services card: with the internet unreachable when this batch
+  // ran, a failed probe is our fault, not the service's — so read those rows as
+  // unknown.
   const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
+  // There's nothing to probe against while offline right now, so adding a
+  // service is disabled until we're back.
+  const offlineNow = liveInternet === 'noInternet' || liveInternet === 'offline'
   // The same live up/down count the timeline header shows, ahead of the timeline
   // link. Null until the first probes land, so the link stands alone until then.
-  const tally = serviceTally(reachability, internet)
+  const tally = serviceTally(reachability, liveInternet)
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [menuHost, setMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
@@ -165,7 +173,7 @@ export function ManageServicesPage({
     void remove(host).then(onRefresh)
   }
 
-  const addButton = cannotReachInternet ? (
+  const addButton = offlineNow ? (
     <Tooltip content="Connect to the internet first">
       <button type="button" className="btn-primary mgsvc-add" disabled aria-label="Add service">
         <PlusIcon size={14} />

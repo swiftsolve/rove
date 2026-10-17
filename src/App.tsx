@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/lib/updater'
-import { getLinkCapacityMbps, isConnectedNetwork } from '@/types'
+import { getLinkCapacityMbps, isConnectedNetwork, type InternetStatus } from '@/types'
 import { useNetworkInfo } from '@/hooks/useNetworkInfo'
 import { useLiveThroughputSource } from '@/hooks/useLiveThroughput'
 import { usePageVisible } from '@/hooks/usePageVisible'
@@ -344,6 +344,19 @@ export default function App(): JSX.Element {
   // service probe fails at once, which isn't the services' fault. It's paired
   // with the probes from the same batch (see `ServicesReport`) so the two never
   // disagree about that window.
+  // When the live internet status flips (lost or restored), re-probe right away
+  // rather than waiting out the poll, so the rows catch up with the header and
+  // title bar within a second instead of showing the previous batch's verdict.
+  // The first verdict after launch isn't a flip — the tab's own fetch covers it.
+  const lastInternetRef = useRef(internet)
+  useEffect(() => {
+    const previous = lastInternetRef.current
+    lastInternetRef.current = internet
+    if (previous !== null && previous !== internet && activeTab === 'services') {
+      void runServices()
+    }
+  }, [internet, activeTab, runServices])
+
   const svcServices = servicesReport?.services
   const svcInternet = servicesReport?.internet
   useEffect(() => {
@@ -368,6 +381,16 @@ export default function App(): JSX.Element {
       : internetDown
         ? 'No internet'
         : formatConnectionType(info.connectionType)
+  // The same verdict the title bar shows, for the Services headers — one source
+  // of truth, so the page can't say "No internet" while the bar says Wi-Fi (or
+  // the reverse) between service probe batches. Undefined while still connecting.
+  const liveInternet: InternetStatus | undefined = !info
+    ? undefined
+    : !isConnected
+      ? 'offline'
+      : internetDown
+        ? (internet ?? undefined)
+        : 'online'
 
   return (
     <div className="app-shell">
@@ -517,13 +540,14 @@ export default function App(): JSX.Element {
                 (location.servicesSub?.view === 'timeline' ? (
                   <ServicesTimelinePage
                     reachability={servicesReport?.services}
-                    internet={servicesReport?.internet}
+                    internet={liveInternet}
                     onBack={back}
                   />
                 ) : (
                   <ManageServicesPage
                     reachability={servicesReport?.services}
                     internet={servicesReport?.internet}
+                    liveInternet={liveInternet}
                     onRefresh={() => void runServices()}
                     onTimeline={() =>
                       navigate({ tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } })
