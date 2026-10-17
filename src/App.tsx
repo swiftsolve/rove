@@ -217,6 +217,7 @@ export default function App(): JSX.Element {
   const screenKey = locationKey(location)
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const scrollRef = useRef<HTMLElement>(null)
+  const mainRef = useRef<HTMLElement>(null)
   const { info, error, isLoading, refresh, setError } = useNetworkInfo()
   const windowVisible = usePageVisible()
 
@@ -224,6 +225,23 @@ export default function App(): JSX.Element {
   // new page never inherits the previous page's scroll position.
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
+  }, [screenKey])
+
+  // On every screen change after the first, move focus to the new page's h1 (or
+  // the main region if the page has none yet, e.g. still loading). This is the
+  // standard SPA route-change pattern: screen readers announce the new page, and
+  // the next Tab enters its content instead of walking the rest of the nav rail.
+  const firstScreenRef = useRef(true)
+  useEffect(() => {
+    if (firstScreenRef.current) {
+      firstScreenRef.current = false
+      return
+    }
+    const main = mainRef.current
+    if (!main) return
+    const target = main.querySelector<HTMLElement>('h1') ?? main
+    target.tabIndex = -1
+    target.focus({ preventScroll: true })
   }, [screenKey])
 
   // Check for a newer signed release once, shortly after launch — unless the
@@ -377,7 +395,7 @@ export default function App(): JSX.Element {
               />
             )}
 
-            <main className="app-main">
+            <main ref={mainRef} className="app-main">
               {!info && needsInfo && (
                 <LoadingScreen error={isLoading ? null : error} onRetry={() => void refresh()} />
               )}

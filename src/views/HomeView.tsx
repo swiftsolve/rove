@@ -52,6 +52,9 @@ export default function HomeView({
 
   return (
     <div className="view-page">
+      {/* No visible title on Home, but every screen needs an h1: it names the
+          page for screen readers and is where focus lands on navigation. */}
+      <h1 className="sr-only">Home</h1>
       <ConnectionCard info={info} />
 
       {isConnected && (

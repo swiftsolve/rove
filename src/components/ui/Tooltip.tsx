@@ -190,8 +190,13 @@ export function Tooltip({
             children.props.onPointerDown?.(event)
           },
           onClick: (event: MouseEvent<HTMLElement>) => {
-            setSuppressed(true)
-            ;(event.currentTarget as HTMLElement).blur()
+            // Only a pointer click hides the bubble and drops focus. A keyboard
+            // activation (Enter/Space reports `detail === 0`) must keep focus on
+            // the trigger, or it falls back to <body> and the Tab position is lost.
+            if (event.detail !== 0) {
+              setSuppressed(true)
+              ;(event.currentTarget as HTMLElement).blur()
+            }
             children.props.onClick?.(event)
           },
         },
@@ -205,7 +210,12 @@ export function Tooltip({
         className={className ? `tooltip-wrap ${className}` : 'tooltip-wrap'}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onFocusCapture={() => setFocused(true)}
+        onFocusCapture={(event) => {
+          setFocused(true)
+          // Keyboard focus always shows the bubble, even if an earlier click left
+          // it suppressed with the pointer still resting on the trigger.
+          if ((event.target as HTMLElement).matches(':focus-visible')) setSuppressed(false)
+        }}
         onBlurCapture={(event) => {
           if (!wrapRef.current?.contains(event.relatedTarget as Node | null)) {
             setFocused(false)
