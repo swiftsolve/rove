@@ -179,6 +179,11 @@
     background var(--duration-fast) var(--ease-in-out);
 }
 
+/* Items fill the menu edge to edge, so the ring goes inside the item. */
+.history-menuitem:focus-visible {
+  outline-offset: var(--focus-inset);
+}
+
 .history-menuitem:hover {
   color: var(--text-primary);
   background: var(--bg-hover);

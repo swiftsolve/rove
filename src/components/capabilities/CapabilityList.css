@@ -23,10 +23,14 @@
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
-.capability-row:hover,
-.capability-row:focus-visible {
+.capability-row:hover {
   background: rgba(255, 255, 255, 0.03);
-  outline: none;
+}
+
+/* Focus is the ring alone, no wash — like the nav-flash highlight minus its
+   fill. The row bleeds 8px into the section padding; draw the ring inside it. */
+.capability-row:focus-visible {
+  outline-offset: var(--focus-inset);
 }
 
 /* Every row keeps the same symmetric vertical padding — no first/last special
@@ -119,8 +123,7 @@
   cursor: default;
 }
 
-.capability-list--testing .capability-row:hover,
-.capability-list--testing .capability-row:focus-visible {
+.capability-list--testing .capability-row:hover {
   background: transparent;
 }
 

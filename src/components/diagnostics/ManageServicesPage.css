@@ -135,6 +135,11 @@
     background var(--duration-fast) var(--ease-in-out);
 }
 
+/* Items fill the menu edge to edge, so the ring goes inside the item. */
+.mgsvc-menuitem:focus-visible {
+  outline-offset: var(--focus-inset);
+}
+
 .mgsvc-menuitem:hover {
   color: var(--text-primary);
   background: var(--bg-hover);
@@ -189,13 +194,21 @@
   transition: color var(--duration-fast) var(--ease-in-out);
 }
 
-.mgsvc-timeline-link:hover {
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.mgsvc-timeline-link:focus-visible {
+  outline: none;
+}
+
+.mgsvc-timeline-link:hover,
+.mgsvc-timeline-link:focus-visible {
   color: var(--accent);
 }
 
 /* Underline only the label on hover (not the glyph), matching the Speed history
    link, so it reads as a link while the whole control picks up the accent. */
-.mgsvc-timeline-link:hover .mgsvc-timeline-link-text {
+.mgsvc-timeline-link:hover .mgsvc-timeline-link-text,
+.mgsvc-timeline-link:focus-visible .mgsvc-timeline-link-text {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -209,7 +222,8 @@
   transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
-.mgsvc-timeline-link:hover svg {
+.mgsvc-timeline-link:hover svg,
+.mgsvc-timeline-link:focus-visible svg {
   opacity: 1;
 }
 

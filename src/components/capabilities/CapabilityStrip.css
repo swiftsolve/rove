@@ -54,10 +54,9 @@
     transform var(--duration-fast) var(--ease-in-out);
 }
 
-.capability-strip-item:hover,
-.capability-strip-item:focus-visible {
+/* Focus is the ring alone; the tint and lift are hover feedback. */
+.capability-strip-item:hover {
   background: color-mix(in srgb, currentColor 22%, transparent);
-  outline: none;
   transform: translateY(-1px);
 }
 
@@ -89,9 +88,7 @@
 }
 
 .capability-strip--testing .capability-strip-item:hover,
-.capability-strip--testing .capability-strip-item:focus-visible,
-.capability-strip--placeholder .capability-strip-item:hover,
-.capability-strip--placeholder .capability-strip-item:focus-visible {
+.capability-strip--placeholder .capability-strip-item:hover {
   background: color-mix(in srgb, currentColor 14%, transparent);
   transform: none;
 }
@@ -168,6 +165,11 @@
   color: inherit;
   opacity: 0.72;
   transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+/* Text link: focus mirrors hover (accent + underline) rather than a ring. */
+.capability-strip-link:focus-visible {
+  outline: none;
 }
 
 .capability-strip-link:hover,

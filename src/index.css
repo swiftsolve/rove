@@ -67,6 +67,14 @@
   --radius: 13px;
   --radius-sm: 8px;
   --radius-xs: 5px;
+  /* Keyboard focus ring — the same 1px accent line as the nav-flash highlight.
+     Controls get it outside their edge (--focus-offset). Rows that sit flush in a
+     card draw it just inside (--focus-inset), square-cornered like the highlight,
+     rounding only where the row meets the card's own rounded corners. */
+  --focus-ring-width: 1px;
+  --focus-ring: var(--focus-ring-width) solid var(--accent);
+  --focus-offset: 2px;
+  --focus-inset: calc(-1 * var(--focus-ring-width));
 
   /* One padding value on every axis so cards read as evenly inset, matching the
      14px gap the cards stack at (--gap-stack). */
@@ -182,8 +190,7 @@
 :root.theme-light .subpage-back { background: rgba(15, 18, 30, 0.05); }
 :root.theme-light .nav-item:hover:not(.active) { background: rgba(15, 18, 30, 0.05); }
 :root.theme-light .conn-strip:hover,
-:root.theme-light .capability-row:hover,
-:root.theme-light .capability-row:focus-visible { background: rgba(15, 18, 30, 0.03); }
+:root.theme-light .capability-row:hover { background: rgba(15, 18, 30, 0.03); }
 :root.theme-light .capability-list--testing .capability-row .capability-seg,
 :root.theme-light .capability-strip--testing .capability-strip-cell .capability-seg,
 :root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg {
@@ -194,8 +201,7 @@
 :root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg.on {
   background: rgba(15, 18, 30, 0.18);
 }
-:root.theme-light .setting-link-row:hover,
-:root.theme-light .setting-link-row:focus-visible {
+:root.theme-light .setting-link-row:hover {
   background: rgba(15, 18, 30, 0.03);
 }
 
@@ -284,9 +290,12 @@ button {
   white-space: nowrap;
 }
 
-button:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 1px;
+/* The one default focus ring: outside the control, following its border-radius.
+   :where() keeps it at zero specificity so a component can restyle it (e.g. draw
+   it inset) with a single class. */
+:where(button, a[href], input, select, textarea, [tabindex], [role='button'], svg):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 /* Headings and <main> only take focus programmatically, on navigation, to
@@ -556,10 +565,15 @@ main[tabindex='-1']:focus {
 
 /* ---- Shared chart tooltip (throughput + usage) ---- */
 
-/* Recharts renders its own <svg>; suppress its focus/keyboard outline. */
-.recharts-wrapper,
-.recharts-surface {
+/* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
+   follows the arrow keys) still needs a visible ring; one that isn't never gets
+   focus. Only the wrapper's own outline goes. */
+.recharts-wrapper {
   outline: none;
+}
+
+.recharts-surface:focus-visible {
+  border-radius: var(--radius-sm);
 }
 
 .chart-tip {
