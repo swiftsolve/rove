@@ -170,15 +170,16 @@
 /* Timeline link sitting in the header subtitle: the same quiet pill link as Speed's
    "All Results" (see .speed-history-link), down to the geometry and weight — only the
    glyph differs. The button reset carries the font family across but not the size, so
-   font-size: inherit is what keeps it at the subtitle's caption size. No separator dot
-   precedes it: the subtitle wraps the link to its own line on a narrow window, and a
-   dot left behind at a line's start reads as a bullet. The subtitle's gap plus the
-   link's own glyph carry the separation instead, so the pill keeps its full padding. */
+   font-size: inherit is what keeps it at the subtitle's caption size. Negative left
+   margin pulls the pill's padding back so it sits a natural distance from the dot.
+   The dot is a plain subtitle child, so a window narrow enough to wrap the link can
+   strand it at the start of a line, where it reads as a bullet — only the web demo's
+   phone widths get that narrow, and the app's own window never does. */
 .mgsvc-timeline-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -2px;
+  margin-left: -6px;
   padding: 2px 8px;
   border-radius: 999px;
   color: var(--text-secondary);

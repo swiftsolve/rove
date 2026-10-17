@@ -6,6 +6,7 @@ import { ServiceIcon } from '@/components/ui/ServiceIcon'
 import { CloudIcon, EditIcon, EventsIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { DotSeparator } from '@/components/ui/DotSeparator'
 import { serviceTally } from '@/components/diagnostics/ServiceTally'
 import { MAX_SAMPLES } from '@/components/diagnostics/service-latency'
 import { Sparkline } from '@/components/ui/Sparkline'
@@ -190,7 +191,12 @@ export function ManageServicesPage({
         title="Services"
         subtitle={
           <span className="mgsvc-subtitle">
-            {tally}
+            {tally && (
+              <>
+                {tally}
+                <DotSeparator />
+              </>
+            )}
             <button type="button" className="mgsvc-timeline-link" onClick={onTimeline}>
               <EventsIcon size={13} />
               <span className="mgsvc-timeline-link-text">View timeline</span>
