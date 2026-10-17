@@ -156,23 +156,29 @@
   }
 }
 
-/* The header subtitle line: the up/down tally, then the timeline link. */
+/* The header subtitle line: the up/down tally, then the timeline link. Wraps the
+   link onto its own line when the two can't share one, so a narrow window breaks
+   between them rather than inside either. */
 .mgsvc-subtitle {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--gap-sm);
+  row-gap: var(--gap-xs);
 }
 
 /* Timeline link sitting in the header subtitle: the same quiet pill link as Speed's
    "All Results" (see .speed-history-link), down to the geometry and weight — only the
    glyph differs. The button reset carries the font family across but not the size, so
-   font-size: inherit is what keeps it at the subtitle's caption size. Negative left
-   margin pulls the pill's padding back so it sits a natural distance from the dot. */
+   font-size: inherit is what keeps it at the subtitle's caption size. No separator dot
+   precedes it: the subtitle wraps the link to its own line on a narrow window, and a
+   dot left behind at a line's start reads as a bullet. The subtitle's gap plus the
+   link's own glyph carry the separation instead, so the pill keeps its full padding. */
 .mgsvc-timeline-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -6px;
+  margin-left: -2px;
   padding: 2px 8px;
   border-radius: 999px;
   color: var(--text-secondary);
