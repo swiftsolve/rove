@@ -289,6 +289,26 @@ button:focus-visible {
   outline-offset: 1px;
 }
 
+/* Headings and <main> only take focus programmatically, on navigation, to
+   announce the new page. They aren't controls, so they get no focus ring. */
+h1[tabindex='-1']:focus,
+main[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Present for assistive tech, invisible on screen. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---- Typography ---- */
 
 /** Panel headings — e.g. Live usage, Speed test */

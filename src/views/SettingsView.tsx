@@ -107,7 +107,7 @@ export default function SettingsView({
         <span className="view-header-icon">
           <SettingsIcon size={18} />
         </span>
-        <span className="view-header-title">Settings</span>
+        <h1 className="view-header-title">Settings</h1>
       </div>
 
       <Section

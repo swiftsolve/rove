@@ -44,7 +44,7 @@ export function ViewHeader({
     <div className="view-header view-header-row">
       <span className="view-header-icon">{icon}</span>
       <div className="view-header-text">
-        <span className="view-header-title">{title}</span>
+        <h1 className="view-header-title">{title}</h1>
         {subtitle !== undefined && <span className={subClass}>{subtitle}</span>}
       </div>
       {actions !== undefined && <div className="view-header-actions">{actions}</div>}
