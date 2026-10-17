@@ -26,6 +26,7 @@ import {
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
+import { formatMac } from '@/lib/format'
 import './DevicesView.css'
 
 const SCAN_HINT =
@@ -322,7 +323,7 @@ function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
 
         <div className="device-row-bottom">
           <span className="text-meta device-row-mac">
-            <span className="device-row-mac-addr">{device.mac.toUpperCase()}</span>
+            <span className="device-row-mac-addr">{formatMac(device.mac)}</span>
             {device.isRandomizedMac && !device.isGateway && !device.isSelf && (
               <span className="device-row-random" title="Privacy-randomized MAC address">
                 Randomized

@@ -1,7 +1,7 @@
 import { useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/types'
-import { formatDuration } from '@/lib/format'
+import { formatDuration, formatMac } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -228,7 +228,7 @@ function TimelineItem({
   // InlineMeta renders each separator as a dot icon.
   const metaItems: ReactNode[] = []
   if (!isInitial && event.mac) {
-    metaItems.push(<span className="num">{event.mac.toUpperCase()}</span>)
+    metaItems.push(<span className="num">{formatMac(event.mac)}</span>)
     if (event.randomized) {
       metaItems.push(<span title="Privacy-randomized MAC address">Randomized</span>)
     }
