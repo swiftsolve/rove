@@ -9,13 +9,22 @@ import {
   formatChannel,
   formatDisplayValue,
   formatDuplex,
+  formatMac,
   formatSignalStrength,
   formatSpeedMbps,
   formatWifiStandard,
+  isSecuredWifi,
 } from '@/lib/format'
 import DataRow from '@/components/ui/DataRow'
 import { InlineMeta } from '@/components/ui/DotSeparator'
-import { ChevronDownIcon, EthernetIcon, OfflineIcon, WifiIcon } from '@/components/ui/Icons'
+import {
+  ChevronDownIcon,
+  EthernetIcon,
+  LockIcon,
+  OfflineIcon,
+  UnlockIcon,
+  WifiIcon,
+} from '@/components/ui/Icons'
 import ShareWifiButton from './ShareWifiButton'
 import './ConnectionCard.css'
 
@@ -66,7 +75,55 @@ function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
   )
 }
 
-function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
+// Strongest first: the collapsed strip names the best protocol the network offers.
+const SECURITY_PROTOCOLS = ['WPA3', 'WPA2', 'WPA', 'OWE', 'WEP']
+
+/**
+ * The strongest protocol named in an OS security string, for tight spaces:
+ * "WPA3-Personal (H2E)" → "WPA3", "WPA2 WPA3" (transition mode) → "WPA3".
+ * Falls back to the full string when none is recognised (e.g. "802.1X").
+ */
+function shortSecurityLabel(security: string): string {
+  const tokens = security.toUpperCase().split(/[^A-Z0-9]+/)
+  return SECURITY_PROTOCOLS.find((p) => tokens.includes(p)) ?? security
+}
+
+/**
+ * Wi‑Fi security with a lock: closed and green when the network is secured,
+ * open and red when it's open. Null when the OS didn't report security.
+ * `short` trims the label to the strongest protocol for the collapsed strip.
+ */
+function SecurityBadge({
+  security,
+  short = false,
+}: {
+  readonly security: string | null
+  readonly short?: boolean
+}): JSX.Element | null {
+  const secured = isSecuredWifi(security)
+  if (secured == null || security == null) return null
+  // Collapse runs of spaces — Windows reports e.g. "WPA3-Personal  (H2E)".
+  const full = security.trim().replace(/\s+/g, ' ')
+  const label = secured ? (short ? shortSecurityLabel(full) : full) : 'Open'
+  const description = secured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
+  return (
+    <span
+      className={`security-badge ${secured ? 'secured' : 'open'}`}
+      title={description}
+    >
+      {secured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
+      <span className="security-badge-label">{label}</span>
+    </span>
+  )
+}
+
+function WifiExtras({
+  info,
+  linkSpeed,
+}: {
+  readonly info: WifiNetworkInfo
+  readonly linkSpeed: string | null
+}): JSX.Element {
   return (
     <>
       <DataRow label="Signal">
@@ -88,19 +145,33 @@ function WifiExtras({ info }: { readonly info: WifiNetworkInfo }): JSX.Element {
           )}
         </span>
       </DataRow>
+      {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Band" value={formatBand(info.frequency)} />
       <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
-      <DataRow label="Security" value={formatDisplayValue(info.security)} />
       <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
+      {isSecuredWifi(info.security) != null ? (
+        <DataRow label="Security">
+          <SecurityBadge security={info.security} />
+        </DataRow>
+      ) : (
+        <DataRow label="Security" value="—" />
+      )}
     </>
   )
 }
 
-function EthernetExtras({ info }: { readonly info: EthernetNetworkInfo }): JSX.Element {
+function EthernetExtras({
+  info,
+  linkSpeed,
+}: {
+  readonly info: EthernetNetworkInfo
+  readonly linkSpeed: string | null
+}): JSX.Element {
   return (
     <>
-      <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
+      {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Duplex" value={formatDisplayValue(formatDuplex(info.duplex))} />
+      <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
       <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
     </>
   )
@@ -140,7 +211,11 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
       ? formatSpeedMbps(info.linkSpeedMbps)
       : null
   const subBits = isWifiNetwork(info)
-    ? [info.ipAddress, formatBand(info.frequency)]
+    ? [
+        info.ipAddress,
+        formatBand(info.frequency),
+        isSecuredWifi(info.security) != null && <SecurityBadge security={info.security} short />,
+      ]
     : [info.ipAddress, linkSpeed]
   const subItems = subBits.filter(Boolean)
   const detailsLabel = expanded ? 'Hide connection details' : 'Show connection details'
@@ -192,15 +267,16 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
             label="Public IP"
             value={publicIp ?? (publicIpLoading ? 'Checking…' : null)}
           />
+          {/* Grouped by topic: addresses, then the link itself, then the
+              hardware it runs over. */}
           <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
-          {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
-          {isWifiNetwork(info) && <WifiExtras info={info} />}
-          {isEthernetNetwork(info) && <EthernetExtras info={info} />}
-          <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-          <DataRow label="MAC" value={formatDisplayValue(info.macAddress)} />
           {info.dns.length > 0 && (
             <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
           )}
+          {isWifiNetwork(info) && <WifiExtras info={info} linkSpeed={linkSpeed} />}
+          {isEthernetNetwork(info) && <EthernetExtras info={info} linkSpeed={linkSpeed} />}
+          <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
+          <DataRow label="MAC" value={formatMac(info.macAddress)} />
         </div>
       </div>
     </section>
