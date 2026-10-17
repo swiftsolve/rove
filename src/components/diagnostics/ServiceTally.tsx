@@ -5,7 +5,7 @@ import { reachabilityStatus } from '@/lib/serviceStatus'
 import './ServiceTally.css'
 
 /**
- * The live up/down count over the tracked services (e.g. "5 UP · 1 DOWN"), for
+ * The live up/down count over the tracked services (e.g. "5 Up · 1 Down"), for
  * the Services and Services Timeline headers. Returns `null` when there's
  * nothing to count yet, so each caller picks its own fallback — hence a plain
  * function rather than a component, which would always render truthy.
@@ -34,12 +34,12 @@ export function serviceTally(
     <span className="svctally">
       <span className="svctally-half val-good">
         <ArrowUpIcon size={13} className="svctally-icon" />
-        {upCount} UP
+        {upCount} Up
       </span>
       <DotSeparator />
       <span className={`svctally-half ${downCount > 0 ? 'val-bad' : ''}`}>
         <ArrowDownIcon size={13} className="svctally-icon" />
-        {downCount} DOWN
+        {downCount} Down
       </span>
     </span>
   )
