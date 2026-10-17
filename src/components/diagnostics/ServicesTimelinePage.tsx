@@ -296,8 +296,9 @@ function TimelineMenu({ onClear }: { readonly onClear: () => void }): JSX.Elemen
 interface ServicesTimelinePageProps {
   /** The latest reachability probes, for the up/down count in the header. */
   readonly reachability: readonly ServiceReachability[] | undefined
-  /** This machine's own internet reachability, for the header tally: with no
-   *  connection every probe fails at once, which is ours to own, not theirs. */
+  /** The app's live internet status — the same one the title bar shows — for
+   *  the header tally: with no connection every probe fails at once, which is
+   *  ours to own, not theirs. */
   readonly internet: InternetStatus | undefined
   readonly onBack: () => void
 }

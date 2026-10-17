@@ -16,11 +16,12 @@ export function serviceTally(
 ): JSX.Element | null {
   // With the machine itself offline, every probe fails at once — a "6 down" tally
   // would blame the services for our own outage. Surface the real cause instead,
-  // matching the "connection lost" event the timeline records for this window.
+  // in the title bar's words. Callers pass the live status the title bar reads,
+  // so the two always agree.
   if (internet === 'noInternet' || internet === 'offline') {
     return (
       <span className="svctally">
-        <span className="val-bad">Network connection lost</span>
+        <span className="val-bad">No internet</span>
       </span>
     )
   }
