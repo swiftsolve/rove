@@ -28,18 +28,32 @@ Rove is two programs talking over a thin, typed bridge:
 </div>
 
 - **Request/response.** Each UI data need is one Tauri *command* (`get_network_info`,
-  `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/lib.rs`
-  around a pure-Rust service in `crates/rove-core`.
-- **Push** — three *events* flow the other way: `live-throughput` (1 Hz while the
-  Home tab is subscribed), `speed-test-progress`, and `network-changed` (the
-  backend watches `ip monitor route` and nudges the UI within ~1 s of a cable
-  pull or Wi-Fi join, so state never waits on the 15 s poll).
+  `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/commands.rs`
+  — registered in `lib.rs` — around a pure-Rust service in `crates/rove-core`.
+- **Push** — five *events* flow the other way, each because it's continuous,
+  arrives mid-operation, or is triggered from outside the app: `live-throughput`
+  (1 Hz while subscribed), `speed-test-progress`, `internet-status` and
+  `services-timeline` (from the always-on background heartbeats), and
+  `network-changed` (the backend watches `ip monitor route` and nudges the UI
+  within ~1 s of a cable pull or Wi-Fi join, so state never waits on the 15 s
+  poll). That last one carries no payload at all — it just makes the pull that
+  already exists happen now.
 - **The contract** — TypeScript types in `src/types/` define every payload; the
   Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
   (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
   `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
   which is why `npm run dev` works in a plain browser for UI work.
+
+> **Deeper dives**
+> - [How Rove Is Put Together](docs/architecture.md) — the swap seam, pull vs
+>   push, and what an `invoke` is on the wire.
+> - [Learning Rust & Tauri through Rove](docs/learning-rust-and-tauri.md) — the
+>   same boundary from the language side.
+> - [How Rove Captures Network Data (per OS)](docs/networking-data-capture.md)
+> - [How Rove Discovers & Identifies LAN Devices](docs/device-discovery.md)
+> - [The Networking Protocols Behind Rove's Device Discovery](docs/networking-protocols.md)
+> - [Why "Rove"?](docs/why-rove.md)
 
 ### What each feature actually measures
 

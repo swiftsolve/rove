@@ -1,0 +1,176 @@
+# How Rove Is Put Together
+
+Four diagrams for the decisions that shape everything else: where the UI stops
+and the backend starts, which direction data moves, and what a call across that
+gap actually is.
+
+> **Companion pages:**
+> - [Learning Rust & Tauri through Rove](./learning-rust-and-tauri.md) — the same
+>   boundary from the language side, with the Rust concepts spelled out.
+> - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — the
+>   per-OS probes behind every command below.
+> - [How Rove Discovers & Identifies LAN Devices](./device-discovery.md) — the
+>   device-scan pipeline in full.
+
+---
+
+## 1. The swap seam
+
+Every screen reads from one object on `window`. Two things can supply it, and
+nothing above the line can tell which one did.
+
+<div align="center">
+  <img src="assets/bridge-seam.svg" width="820" alt="React views and hooks sit above a dashed seam labelled window.networkAPI; below it the path splits into a Tauri bridge leading to the Rust backend, or a browser mock leading to nothing at all" />
+</div>
+
+`src/types/api.ts` declares the interface. Two files implement it:
+`src/bridge/tauriNetworkApi.ts` forwards each method to a Tauri command, and
+`src/dev/mockNetworkApi.ts` answers from memory. `src/main.tsx` picks one at
+startup:
+
+```ts
+if (isTauri()) {
+  installTauriBridge()
+} else if (import.meta.env.DEV) {
+  installMockNetworkApiIfNeeded()
+}
+```
+
+The mock isn't a fixture file — it fakes *time* as well as data: calls resolve
+after a plausible delay, live throughput ticks once a second with a periodic
+burst, and a speed test runs a scripted ten-second ramp that can be cancelled
+mid-flight. Which is why `npm run dev` gives a fully populated UI in a plain
+browser, why `npm run screenshots` produces the same shots on any machine
+without leaking a real SSID, and why the same build can run inside an iframe as
+a live demo.
+
+Two consequences worth knowing:
+
+- **The two type definitions are kept in sync by hand.** Serde guarantees the
+  Rust struct matches the JSON it emits; nothing checks that against the
+  TypeScript. Rename a field in Rust and the UI still compiles, then reads
+  `undefined` at runtime. `ts-rs` or `specta` would close this by generating one
+  side from the other.
+- **The mock re-implements one rule.** `rateCapability` in the mock mirrors
+  `rate` in `crates/rove-core/src/capabilities.rs` so demo ratings match
+  production. Two copies of one rule, also synced by hand.
+
+**Not everything goes through the bridge.** Three files call Tauri directly —
+`RestartAsAdminAction.tsx` (elevation), `AboutView.tsx` (app version), and
+`lib/updater.ts` (check + relaunch). All are desktop-only by nature with nothing
+meaningful to mock, and each degrades to nothing in a browser. The rule is:
+*anything the UI renders goes through the bridge; anything that only exists on a
+desktop doesn't.*
+
+---
+
+## 2. Two directions, and only five exceptions
+
+<div align="center">
+  <img src="assets/pull-push.svg" width="820" alt="React on the left and Rust on the right: React sends about thirty invoke commands rightward and receives JSON back, while Rust pushes five named events leftward without being asked" />
+</div>
+
+**Pull when React knows it needs something** — a tab opened, a button was
+pressed, a poll fired. That covers roughly thirty commands, registered in
+`src-tauri/src/lib.rs` and implemented in `src-tauri/src/commands.rs`.
+
+**Push when only Rust knows something happened.** Five events qualify, each
+because it is continuous, arrives mid-operation, or is triggered from outside
+the app:
+
+| Event | Why it can't be pulled |
+|---|---|
+| `live-throughput` | 1 Hz forever; polling it would be silly |
+| `speed-test-progress` | one call takes ~10 s, progress must arrive *during* it |
+| `network-changed` | only the kernel knows you pulled the cable |
+| `internet-status` | a background heartbeat notices, not the UI |
+| `services-timeline` | runs even with the window closed |
+
+Push costs more than pull — subscribe, unsubscribe, tear down on unmount, and
+handle events that land *after* teardown (`useOnNetworkChanged` keeps an
+`active` flag for exactly that race). So it stays rare.
+
+Two places the directions mix:
+
+- **Pull to turn push on.** `subscribe_live_throughput` / `unsubscribe_live_throughput`
+  are ordinary commands that flip an atomic flag; the 1 Hz loop in
+  `src-tauri/src/monitors.rs` skips its work entirely while it's false, so an
+  unwatched window costs nothing.
+- **Push that triggers a pull** — the next section.
+
+---
+
+## 3. The event that carries nothing
+
+<div align="center">
+  <img src="assets/network-changed.svg" width="820" alt="The kernel's routing table changes; a Rust monitor emits a network-changed event carrying no payload; React responds by re-running the fetch it already had" />
+</div>
+
+A 15-second poll is correct and feels dead. Rather than build a second data path
+for instant updates, `network-changed` ships **no payload at all**:
+
+```rust
+let _ = handle.emit("network-changed", &());
+```
+
+React answers it by re-running the fetch it already had:
+
+```ts
+useOnNetworkChanged(() => void refresh(true))
+```
+
+So the connection card updates within about a second of a cable pull, the poll
+stays as the safety net, and there is no second payload to keep in sync with the
+request path. The tap says *when*; the existing pull says *what*.
+
+The monitor behind it watches `ip monitor route` and is Linux-only; macOS and
+Windows fall back to the poll.
+
+---
+
+## 4. What one `invoke` actually is
+
+<div align="center">
+  <img src="assets/ipc-anatomy.svg" width="820" alt="A POST to ipc://localhost/get_network_info carrying a Tauri-Invoke-Key header and a JSON body; the reply is application/json with a Tauri-Response header reading ok" />
+</div>
+
+Tauri registers custom URI schemes with the webview — the same mechanism that
+serves the bundled UI out of the binary. Two are in play: `tauri://localhost`
+for assets (`http://tauri.localhost` on Windows), and `ipc` for commands.
+
+A command call is shaped like HTTP but never reaches the network. The command
+name is read from the URL path, the arguments are the JSON body, and a
+`Tauri-Response` header of `ok` or `error` is what decides whether the promise
+resolves or rejects. `Tauri-Invoke-Key` is checked so page content can't fire
+commands on its own — defence in depth alongside
+`src-tauri/capabilities/default.json`, which already limits the webview to our
+commands, event listening and the frameless-window controls.
+
+There is no local HTTP server and no open port; nothing else on the machine can
+connect to it.
+
+**Sync vs async matters on the Rust side.** Every command returns a promise in
+JavaScript, but a plain `fn` command runs on the main thread while an `async fn`
+runs on a thread pool. The split in `commands.rs` follows that: anything that
+probes, shells out or hits the network is `async` (`get_devices`,
+`run_speed_test`, `get_network_info`); the cheap in-memory and database reads are
+sync (`get_app_usage`, `get_speed_history`, `cancel_speed_test`). A slow command
+declared sync would freeze the window while the UI politely awaited it, and
+nothing in the type system would warn you.
+
+---
+
+## Where the frameworks stop
+
+| Written for Rove | Came with the tools |
+|---|---|
+| The bridge — one object on `window`, two implementations | The window — native, frameless, from JSON config |
+| The contract — TypeScript types mirrored by Rust structs | The IPC transport plus the `#[tauri::command]` glue |
+| The mock — data *and* time, ~960 lines | Asset embedding — the UI compiled into the binary |
+| `useBackendResource` — loading, polling, pause-when-hidden, race handling | Permissions — the deny-by-default capability manifest |
+| The live store — one owner, 60 s history, idle hysteresis | Installers — deb, AppImage, dmg, nsis, msi, and signing |
+| Every measurement in `crates/rove-core` | Rendering — React renders; it has no opinion on fetching |
+
+Tauri owns the container and the pipe; serde owns the translation; the bridge
+owns the naming. Keeping a seam of our own *above* the framework's seam is what
+makes the mock — and therefore the browser demo — possible at all.

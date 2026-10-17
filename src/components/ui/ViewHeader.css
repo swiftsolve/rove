@@ -37,9 +37,12 @@
   color: var(--text-tertiary);
 }
 
-/* Keep the action controls grouped tightly at the header's end. */
+/* Keep the action controls grouped tightly at the header's end. They hold their
+   size so a long subtitle wraps inside the text column instead of squeezing the
+   buttons into it — .view-header-text already has min-width: 0 to yield first. */
 .view-header-actions {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
