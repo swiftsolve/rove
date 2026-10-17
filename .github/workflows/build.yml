@@ -4,6 +4,9 @@ on:
   push:
     branches: [master, main]
   pull_request:
+  # Manual runs are the only ones that keep their installers — see the upload
+  # step. Use this when you actually want a build to download.
+  workflow_dispatch:
 
 jobs:
   build:
@@ -88,7 +91,17 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
+      # Only on a manual run. This workflow exists to prove the thing still
+      # compiles and bundles on all three OSes; the installers it produces on
+      # every push were nobody's download — releases get theirs from
+      # release.yml, which attaches them to the GitHub Release on a v* tag.
+      # Keeping them filled the account's artifact storage quota, at which
+      # point *this step* started failing every run (~0.6 GB over 12 bundles,
+      # the Linux one alone 108 MB), reporting the whole build red while every
+      # build step had passed. Short retention keeps a manual run from
+      # rebuilding that backlog.
       - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v5
         with:
           name: rove-${{ matrix.os }}
@@ -99,3 +112,4 @@ jobs:
             target/release/bundle/nsis/*.exe
             target/release/bundle/msi/*.msi
           if-no-files-found: ignore
+          retention-days: 7
