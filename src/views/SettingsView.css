@@ -36,10 +36,14 @@
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
-.setting-link-row:hover,
-.setting-link-row:focus-visible {
+.setting-link-row:hover {
   background: rgba(255, 255, 255, 0.03);
-  outline: none;
+}
+
+/* Focus is the ring alone, no wash — like the nav-flash highlight minus its
+   fill. The row bleeds 8px into the section padding; draw the ring inside it. */
+.setting-link-row:focus-visible {
+  outline-offset: var(--focus-inset);
 }
 
 .setting-link-chevron {
@@ -230,7 +234,8 @@
   color: var(--accent);
 }
 
+/* Segments sit 2px inside their track, so the ring goes inside the segment
+   rather than spilling over the track's edge and its neighbours. */
 .theme-seg:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: var(--focus-inset);
 }

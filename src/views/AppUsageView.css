@@ -41,9 +41,23 @@
   cursor: pointer;
 }
 
+/* Rows run edge to edge in the card, so the ring goes just inside the row, like
+   the nav-flash highlight: square corners, except where the first and last rows
+   meet the card's rounded ones. */
 .app-row-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
+  outline-offset: var(--focus-inset);
+}
+
+.app-row:first-child .app-row-toggle {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.app-row:last-child .app-row-toggle {
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.app-row:only-child .app-row-toggle {
+  border-radius: var(--radius);
 }
 
 /* Keep the visual layers click-through so the overlay button owns all pointer
@@ -203,11 +217,19 @@
   transition: color var(--duration-fast) var(--ease-in-out);
 }
 
-.app-hosts-link:hover {
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.app-hosts-link:focus-visible {
+  outline: none;
+}
+
+.app-hosts-link:hover,
+.app-hosts-link:focus-visible {
   color: var(--accent);
 }
 
-.app-hosts-link:hover .app-hosts-link-text {
+.app-hosts-link:hover .app-hosts-link-text,
+.app-hosts-link:focus-visible .app-hosts-link-text {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -221,6 +243,7 @@
   transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
-.app-hosts-link:hover svg {
+.app-hosts-link:hover svg,
+.app-hosts-link:focus-visible svg {
   opacity: 1;
 }

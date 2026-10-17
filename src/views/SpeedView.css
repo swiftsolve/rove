@@ -24,13 +24,21 @@
   transition: color var(--duration-fast) var(--ease-in-out);
 }
 
-.speed-history-link:hover {
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.speed-history-link:focus-visible {
+  outline: none;
+}
+
+.speed-history-link:hover,
+.speed-history-link:focus-visible {
   color: var(--accent);
 }
 
 /* Underline only the label on hover (not the clock glyph), so the link reads
    as a link while the pill tint carries the accent. */
-.speed-history-link:hover .speed-history-link-text {
+.speed-history-link:hover .speed-history-link-text,
+.speed-history-link:focus-visible .speed-history-link-text {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -44,7 +52,8 @@
   transition: opacity var(--duration-fast) var(--ease-in-out);
 }
 
-.speed-history-link:hover svg {
+.speed-history-link:hover svg,
+.speed-history-link:focus-visible svg {
   opacity: 1;
 }
 

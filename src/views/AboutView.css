@@ -56,7 +56,14 @@
   text-decoration: none;
 }
 
-.about-link:hover {
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.about-link:focus-visible {
+  outline: none;
+}
+
+.about-link:hover,
+.about-link:focus-visible {
   text-decoration: underline;
 }
 
