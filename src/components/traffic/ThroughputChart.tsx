@@ -86,7 +86,13 @@ export default function ThroughputChart({
         aria-label={`Throughput over time. Currently ${currentDown.toFixed(1)} megabits per second down, ${currentUp.toFixed(1)} up`}
       >
         <ResponsiveContainer width="100%" height={80} initialDimension={{ width: 600, height: 80 }}>
-          <AreaChart data={data} margin={{ top: 4, right: 28, bottom: 4, left: 2 }}>
+          <AreaChart
+            data={data}
+            margin={{ top: 4, right: 28, bottom: 4, left: 2 }}
+            // The wrapper's role="img" label already describes the chart, and there's
+            // no tooltip to drive — so don't let the SVG take a dead Tab stop.
+            accessibilityLayer={false}
+          >
             <defs>
               <linearGradient id={downFill} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--series-down)" stopOpacity={0.28} />

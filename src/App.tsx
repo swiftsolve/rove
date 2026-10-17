@@ -143,6 +143,9 @@ function ErrorBanner({
   )
 }
 
+// Kept out of the Tab order, like a native title bar: otherwise the first Tab
+// lands on Minimize/Close at the top-right instead of the nav rail, and a stray
+// Enter closes the window.
 function WindowControls(): JSX.Element {
   const controls = window.windowControls
   if (!controls) return <></>
@@ -154,6 +157,7 @@ function WindowControls(): JSX.Element {
         className="win-btn"
         onClick={() => controls.minimize()}
         aria-label="Minimize"
+        tabIndex={-1}
       >
         <MinimizeIcon size={15} />
       </button>
@@ -162,6 +166,7 @@ function WindowControls(): JSX.Element {
         className="win-btn win-btn-close"
         onClick={() => controls.close()}
         aria-label="Close"
+        tabIndex={-1}
       >
         <CloseIcon size={15} />
       </button>
