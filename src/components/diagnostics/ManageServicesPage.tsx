@@ -3,7 +3,7 @@ import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/t
 import { ViewHeader } from '@/components/ui/ViewHeader'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
-import { CloudIcon, EditIcon, EventsIcon, MoreIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { CloudIcon, EditIcon, EventsIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
@@ -72,7 +72,7 @@ function RowMenu({
         aria-label={`Options for ${service.name}`}
         onClick={() => onOpenChange(open ? null : service.host)}
       >
-        <MoreIcon size={16} />
+        <MoreVerticalIcon size={16} />
       </button>
       {open && (
         <div className="mgsvc-dropdown" role="menu">
