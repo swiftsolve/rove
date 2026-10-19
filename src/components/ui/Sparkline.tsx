@@ -31,7 +31,8 @@ interface SparklineProps {
    *  Defaults to the sample count, which stretches them across the full width. */
   readonly slots?: number
   /** The service is currently down: draw a single flat red line instead of the
-   *  latency trend, so an outage never reads as a healthy-looking chart. */
+   *  latency trend, along the baseline, so an outage never reads as a
+   *  healthy-looking chart. */
   readonly down?: boolean
 }
 
@@ -43,7 +44,7 @@ const PAD = 3
  * line, coloured by the latest reading's health band. Failed probes (null ms)
  * break the line and drop a marker to the baseline. Hovering a point reveals its
  * value in a small floating label. A down service is shown as a single flat red
- * line rather than its (now meaningless) trend.
+ * baseline rather than its (now meaningless) trend.
  */
 export function Sparkline({
   samples,
@@ -119,9 +120,10 @@ export function Sparkline({
 
   // A down service reads as a single flat red line — its latency trend is
   // meaningless once it's unreachable, and a green-looking chart on a down row is
-  // worse than none. Hovering it just says "Down".
+  // worse than none. It sits on the baseline, where failed probes drop to, so it
+  // reads as "nothing" rather than a mid-range reading. Hovering it says "Down".
   if (down) {
-    const midY = height / 2
+    const baseY = height - PAD
     return (
       <span className="spark-wrap" style={{ width, height }}>
         <svg
@@ -134,7 +136,7 @@ export function Sparkline({
           onMouseMove={() => setHover(0)}
           onMouseLeave={() => setHover(null)}
         >
-          <line className="spark-line spark-flat" x1={PAD} y1={midY} x2={width - PAD} y2={midY} />
+          <line className="spark-line spark-flat" x1={PAD} y1={baseY} x2={width - PAD} y2={baseY} />
         </svg>
         {hover !== null && (
           <span className="spark-tip" style={{ left: '50%' }} role="status">
