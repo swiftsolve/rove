@@ -43,11 +43,11 @@
   fill: currentColor;
 }
 
-/* The down-state flat line — full-strength red across the middle, so an outage
-   reads at a glance without any of the trend's ups and downs. */
+/* The down-state flat line along the baseline. It keeps the trend's stroke
+   weight but runs the full width with square ends, so it lines up flush with the
+   status text under it instead of stopping a pad short of either edge. */
 .spark-flat {
-  opacity: 1;
-  stroke-width: 1.5;
+  stroke-linecap: butt;
 }
 
 /* Failed probes: a small negative-coloured mark on the baseline, regardless of

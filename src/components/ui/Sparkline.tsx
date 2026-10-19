@@ -36,7 +36,10 @@ interface SparklineProps {
   readonly down?: boolean
 }
 
-// A little inset so the stroke and the end dots aren't clipped at the edges.
+// A little vertical inset so the stroke and the dots aren't clipped at the top
+// and bottom. There's no horizontal inset: the line runs edge to edge so its
+// ends line up with the text above and below it (the svg doesn't clip, so the
+// round caps and dots can overhang the edges a touch).
 const PAD = 3
 
 /**
@@ -61,7 +64,6 @@ export function Sparkline({
 
   const { points, segments, areas } = useMemo(() => {
     const n = samples.length
-    const innerW = width - PAD * 2
     const innerH = height - PAD * 2
     // The axis spans the full history window even before it has filled, so the
     // newest sample always sits at the right edge.
@@ -77,7 +79,7 @@ export function Sparkline({
     // Right-aligned: the last sample lands on the right edge and older ones step
     // back leftwards, leaving the unfilled part of the window blank.
     const xAt = (i: number): number =>
-      span <= 1 ? width - PAD : PAD + ((span - n + i) / (span - 1)) * innerW
+      span <= 1 ? width : ((span - n + i) / (span - 1)) * width
     // Higher latency sits higher on the chart, so a spike reads as a spike. A run
     // of identical values has no range to scale over, so it sits on the midline.
     const yAt = (ms: number): number =>
@@ -136,7 +138,7 @@ export function Sparkline({
           onMouseMove={() => setHover(0)}
           onMouseLeave={() => setHover(null)}
         >
-          <line className="spark-line spark-flat" x1={PAD} y1={baseY} x2={width - PAD} y2={baseY} />
+          <line className="spark-line spark-flat" x1={0} y1={baseY} x2={width} y2={baseY} />
         </svg>
         {hover !== null && (
           <span className="spark-tip" style={{ left: '50%' }} role="status">
