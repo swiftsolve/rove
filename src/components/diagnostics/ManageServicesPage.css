@@ -92,8 +92,29 @@
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
   transition:
+    width var(--duration-fast) var(--ease-in-out),
+    opacity var(--duration-fast) var(--ease-in-out),
     color var(--duration-fast) var(--ease-in-out),
     background var(--duration-fast) var(--ease-in-out);
+}
+
+/* On hover-capable pointers the kebab is collapsed to zero width until its row is
+   hovered, then grows and fades in, nudging the latency column aside as it slides
+   in. It stays shown while its menu is open or it has keyboard focus. Touch keeps
+   it always visible. */
+@media (hover: hover) {
+  .mgsvc-kebab {
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .mgsvc-row:hover .mgsvc-kebab,
+  .mgsvc-kebab:focus-visible,
+  .mgsvc-kebab[aria-expanded='true'] {
+    width: 30px;
+    opacity: 1;
+  }
 }
 
 .mgsvc-kebab:hover,
