@@ -127,11 +127,10 @@
 
 /* A single track whose two segments sit side by side, each scaled against the
    busiest app so rows read comparably; an empty segment collapses to zero width.
-   Sits just inside the app icon's left edge. */
+   Starts flush with the app icon's left edge. */
 .app-row-bar {
   display: flex;
   height: 3px;
-  margin-left: 3px;
   border-radius: var(--radius-xs);
   overflow: hidden;
   background: var(--bg-inset);
@@ -153,14 +152,14 @@
   background: var(--series-up);
 }
 
-/* Download/upload figures, nudged left so the down arrow sits centered under the
-   app icon above (rather than under the name) — echoing the Hosts view, where
-   the flag centers under the app icon. */
+/* Download/upload figures, pulled left by the arrow glyph's side bearing (the
+   lucide arrow's stroke starts ~4/24 into its box, ~2px at 11px) so the drawn
+   arrow lines up with the app icon's and bar's left edge. */
 .app-row-figures {
   display: flex;
   align-items: center;
   gap: var(--gap-md);
-  padding-left: 0;
+  margin-left: -2px;
 }
 
 .app-row-figure {
