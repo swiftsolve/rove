@@ -3,7 +3,7 @@ import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/t
 import { ViewHeader } from '@/components/ui/ViewHeader'
 import { MetricValue } from '@/components/ui/MetricValue'
 import { ServiceIcon } from '@/components/ui/ServiceIcon'
-import { CloudIcon, EditIcon, EventsIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
+import { ChevronRightIcon, CloudIcon, EditIcon, EventsIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from '@/components/ui/Icons'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
@@ -208,6 +208,7 @@ export function ManageServicesPage({
             <button type="button" className="mgsvc-timeline-link" onClick={onTimeline}>
               <EventsIcon size={13} />
               <span className="mgsvc-timeline-link-text">View timeline</span>
+              <ChevronRightIcon size={13} className="link-caret" />
             </button>
           </span>
         }

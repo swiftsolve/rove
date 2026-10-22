@@ -238,13 +238,13 @@
 }
 
 .status-bar-link.on {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 /* Link up, but the public internet is unreachable — red to set it apart from
    both the green "connected" and the neutral "offline" (no link) states. */
 .status-bar-link.bad {
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .status-bar-dot {
@@ -281,7 +281,7 @@
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-muted);
-  color: var(--accent-hover);
+  color: var(--accent-text);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -405,7 +405,7 @@
   padding: var(--gap-sm) var(--gap-md);
   border-radius: var(--radius-sm);
   background: rgba(248, 113, 113, 0.08);
-  color: var(--negative);
+  color: var(--negative-text);
   font-size: var(--text-body);
   line-height: 1.45;
 }
@@ -419,7 +419,7 @@
   padding: var(--gap-xs) var(--gap-sm) var(--gap-xs) var(--gap-md);
   border-radius: var(--radius-sm);
   background: rgba(248, 113, 113, 0.08);
-  color: var(--negative);
+  color: var(--negative-text);
   font-size: var(--text-body);
   line-height: 1.45;
   animation: fade-in var(--duration-fast) var(--ease-out);
@@ -442,7 +442,7 @@
   flex-shrink: 0;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  color: var(--negative);
+  color: var(--negative-text);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   transition: background var(--duration-fast) var(--ease-in-out);
@@ -456,7 +456,7 @@
   width: 24px;
   height: 24px;
   flex-shrink: 0;
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .error-banner-dismiss:hover {
