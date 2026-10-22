@@ -45,16 +45,39 @@
 
   --text-primary: #f5f6f8;
   --text-secondary: #a4a7b2;
-  --text-tertiary: #71747f;
+  /* The lightest that still clears AA (4.5:1) on a hovered row (--bg-hover). */
+  --text-tertiary: #868992;
 
   --accent: #5b8cff;
   --accent-hover: #6f9bff;
   --accent-press: #4d7ef0;
   --accent-muted: rgba(91, 140, 255, 0.14);
+  /* Accent for words sitting on --accent-muted (a selected segment, a tinted
+     button). The tint lowers contrast, so light mode needs a darker blue here
+     to keep 4.5:1; dark mode's accent already clears it. */
+  --accent-text: var(--accent);
+  /* Solid fills under white labels. The bright accent reads well as text on the
+     dark surfaces but gives white text only 3.2:1, so filled buttons sit a step
+     darker to clear AA (4.5:1). */
+  --accent-fill: #476ec8;
+  --accent-fill-hover: #4a72d0;
+  --negative-fill: #b75b5b;
 
   --positive: #43d6a0;
   --warning: #f5c451;
   --negative: #f77b7b;
+  /* Status colour for words ("Online", "Slow"). Both themes use the same shade
+     as the icons and bars beside them, so a green place is one green; these stay
+     separate tokens so a theme could split them if text ever needed it. */
+  --positive-text: var(--positive);
+  --warning-text: var(--warning);
+  --negative-text: var(--negative);
+  /* The two in-between steps of the capability scale (excellent → good → fair →
+     poor), which sit between --positive/--warning and --warning/--negative. */
+  --good: #7fd88a;
+  --poor: #f0a35e;
+  --good-text: var(--good);
+  --poor-text: var(--poor);
 
   --series-down: #6aa0ff;
   --series-up: #b39dff;
@@ -158,19 +181,43 @@
 
   --text-primary: #1a1c22;
   --text-secondary: #565a66;
-  --text-tertiary: #888c98;
+  /* The lightest grey that still clears AA (4.5:1) on the grey shell (#f0f2f6),
+     not just on the white cards. */
+  --text-tertiary: #6a6d77;
 
-  --accent: #3d6fe0;
-  --accent-hover: #3162d4;
-  --accent-press: #2b58c4;
-  --accent-muted: rgba(61, 111, 224, 0.12);
+  --accent: #3a69d5;
+  --accent-hover: #3360c9;
+  --accent-press: #2c55b8;
+  --accent-muted: rgba(58, 105, 213, 0.12);
+  --accent-text: #2c55b8;
+  --accent-fill: #3a69d5;
+  --accent-fill-hover: #3360c9;
+  /* The red Stop button: the lightest red that keeps its white label at 4.5:1,
+     a hair deeper than --negative. */
+  --negative-fill: #ed0132;
 
-  --positive: #1aa87a;
-  --warning: #c6890c;
-  --negative: #dc5757;
+  /* One shade per status hue, shared by its words, icons, bars and dots so a
+     place that's green is one green throughout. Each is the lightest shade of
+     its hue that still clears 3:1 (the bar for icons and other graphics) on
+     every surface it sits on: the white cards, the grey inset and shell, and
+     the 14% tints of icon tiles and timeline markers. Each is held at the most
+     saturated it can be at that lightness (OKLCH chroma at the sRGB edge).
+     This is a deliberate trade: status words in these colours ("Excellent",
+     "Online", "5 Up") land near 3:1, short of the 4.5:1 text minimum, in
+     exchange for colours that read bright rather than dark or brown. Green is
+     nudged from the dark theme's mint toward pure green, where the gamut has
+     more room. The -text tokens fall back to these (see :root). */
+  --positive: #01934a;
+  --warning: #ac7601;
+  --negative: #f40134;
+  /* The capability scale's in-between steps, on the same rule. Their hues are
+     pulled apart from their neighbours (good is yellow-green, poor is orange)
+     so the four levels stay distinct. */
+  --good: #4a9001;
+  --poor: #ce6001;
 
-  --series-down: #3d6fe0;
-  --series-up: #7c5cff;
+  --series-down: #3a69d5;
+  --series-up: #7154e8;
 
   --shadow-panel: 0 1px 2px rgba(15, 20, 35, 0.06), 0 4px 12px rgba(15, 20, 35, 0.05);
   --shadow-raised: 0 12px 32px rgba(15, 20, 35, 0.14);
@@ -428,9 +475,27 @@ main[tabindex='-1']:focus {
 }
 
 /* Semantic value states — encode health in colour, only where it's earned */
-.val-good { color: var(--positive); }
-.val-warn { color: var(--warning); }
-.val-bad { color: var(--negative); }
+.val-good { color: var(--positive-text); }
+.val-warn { color: var(--warning-text); }
+.val-bad { color: var(--negative-text); }
+
+/* Trailing chevron on the quiet header links ("All Results", "View timeline",
+   "All hosts"). Their labels sit in the subtitle's grey until hovered, so this is
+   the cue at rest that they open a page, the same › the Home cards use; it nudges
+   forward on hover. The glyph's ink is only the middle quarter of its box, so the
+   negative margins trim that empty space and the gaps are set by the ink: the
+   label sits ~6px from the caret, as from its leading icon, and a following dot
+   keeps its 8px (see .sep-dot). The button > svg selector outranks each link's
+   own `svg` rule, whose transition would otherwise drop the transform. */
+button > svg.link-caret {
+  margin: 0 -4px 0 -4px;
+  transition:
+    opacity var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+button:is(:hover, :focus-visible) > svg.link-caret {
+  transform: translateX(2px);
+}
 
 .text-meta {
   font-size: var(--text-caption);

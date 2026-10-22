@@ -37,8 +37,15 @@
   white-space: nowrap;
 }
 
+/* The bars take the fill colour (the same as the row's icon); the level word
+   beside them takes the darker text shade, which needs 4.5:1 where the bars
+   only need 3:1. */
 .capability-status.level-excellent { color: var(--positive); }
-.capability-status.level-good { color: #7fd88a; }
+.capability-status.level-good { color: var(--good); }
 .capability-status.level-fair { color: var(--warning); }
-.capability-status.level-poor { color: #f0a35e; }
+.capability-status.level-poor { color: var(--poor); }
+.capability-status.level-excellent .capability-level { color: var(--positive-text); }
+.capability-status.level-good .capability-level { color: var(--good-text); }
+.capability-status.level-fair .capability-level { color: var(--warning-text); }
+.capability-status.level-poor .capability-level { color: var(--poor-text); }
 .capability-status.level-unsupported { color: var(--text-tertiary); }

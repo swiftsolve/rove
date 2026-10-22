@@ -31,7 +31,7 @@
 }
 
 .live-badge.live {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 .live-badge.live::before {

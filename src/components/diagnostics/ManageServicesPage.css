@@ -167,11 +167,11 @@
 }
 
 .mgsvc-menuitem.is-danger {
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .mgsvc-menuitem.is-danger:hover {
-  color: var(--negative);
+  color: var(--negative-text);
   background: color-mix(in srgb, var(--negative) 14%, transparent);
 }
 
@@ -189,15 +189,16 @@
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--gap-sm);
+  gap: var(--gap-tight);
   row-gap: var(--gap-xs);
 }
 
 /* Timeline link sitting in the header subtitle: the same quiet pill link as Speed's
    "All Results" (see .speed-history-link), down to the geometry and weight — only the
    glyph differs. The button reset carries the font family across but not the size, so
-   font-size: inherit is what keeps it at the subtitle's caption size. Negative left
-   margin pulls the pill's padding back so it sits a natural distance from the dot.
+   font-size: inherit is what keeps it at the subtitle's caption size. The negative
+   left margin cancels the pill's padding and the glyph's empty edge, so the dot
+   keeps the same 8px to the glyph as to the text before it.
    The dot is a plain subtitle child, so a window narrow enough to wrap the link can
    strand it at the start of a line, where it reads as a bullet — only the web demo's
    phone widths get that narrow, and the app's own window never does. */
@@ -205,7 +206,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -6px;
+  margin-left: -9.5px;
   padding: 2px 8px;
   border-radius: 999px;
   color: var(--text-secondary);
@@ -254,7 +255,7 @@
    with the filled accent fill. */
 button.mgsvc-add {
   color: #fff;
-  background: var(--accent);
+  background: var(--accent-fill);
   /* A step up from the base .btn-primary size, matching the Run test button. */
   padding: 10px 14px;
   font-size: var(--text-small);
@@ -262,5 +263,5 @@ button.mgsvc-add {
 
 button.mgsvc-add:hover:not(:disabled) {
   color: #fff;
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
 }

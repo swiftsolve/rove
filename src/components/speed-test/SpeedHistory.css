@@ -190,11 +190,11 @@
 }
 
 .history-menuitem.is-danger {
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .history-menuitem.is-danger:hover {
-  color: var(--negative);
+  color: var(--negative-text);
   background: color-mix(in srgb, var(--negative) 14%, transparent);
 }
 
