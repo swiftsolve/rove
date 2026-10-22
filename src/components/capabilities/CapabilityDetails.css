@@ -40,9 +40,9 @@
 }
 
 .cap-detail-icon.level-excellent { color: var(--positive); }
-.cap-detail-icon.level-good { color: #7fd88a; }
+.cap-detail-icon.level-good { color: var(--good); }
 .cap-detail-icon.level-fair { color: var(--warning); }
-.cap-detail-icon.level-poor { color: #f0a35e; }
+.cap-detail-icon.level-poor { color: var(--poor); }
 .cap-detail-icon.level-unsupported { color: var(--text-tertiary); }
 
 /* Bars sit at the bottom of the 12px meter box; nudge up to sit optically
@@ -116,9 +116,9 @@
 }
 
 .cap-verdict-icon.level-excellent { color: var(--positive); }
-.cap-verdict-icon.level-good { color: #7fd88a; }
+.cap-verdict-icon.level-good { color: var(--good); }
 .cap-verdict-icon.level-fair { color: var(--warning); }
-.cap-verdict-icon.level-poor { color: #f0a35e; }
+.cap-verdict-icon.level-poor { color: var(--poor); }
 .cap-verdict-icon.level-unsupported { color: var(--text-tertiary); }
 
 .cap-verdict-status {
@@ -139,10 +139,10 @@
   flex-shrink: 0;
 }
 
-.cap-verdict-status.level-excellent { color: var(--positive); }
-.cap-verdict-status.level-good { color: #7fd88a; }
-.cap-verdict-status.level-fair { color: var(--warning); }
-.cap-verdict-status.level-poor { color: #f0a35e; }
+.cap-verdict-status.level-excellent { color: var(--positive-text); }
+.cap-verdict-status.level-good { color: var(--good-text); }
+.cap-verdict-status.level-fair { color: var(--warning-text); }
+.cap-verdict-status.level-poor { color: var(--poor-text); }
 .cap-verdict-status.level-unsupported { color: var(--text-tertiary); }
 
 /* All four requirements in a compact metric grid — your value colours red
@@ -176,7 +176,7 @@
 }
 
 .cap-metric.fail .cap-metric-value {
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .cap-metric-need {

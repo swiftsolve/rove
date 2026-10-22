@@ -8,13 +8,14 @@
 }
 
 /* "View history" reads as a quiet pill link after the "Updated …" meta:
-   subtle at rest, picking up the accent tint on hover. Negative left margin
-   pulls the pill's padding back so it sits a natural distance from the dot. */
+   subtle at rest, picking up the accent tint on hover. The negative left margin
+   cancels the pill's padding and the glyph's empty edge, so the dot keeps the
+   same 8px to the clock as to the text before it. */
 .speed-history-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -6px;
+  margin-left: -9.5px;
   padding: 2px 8px;
   border-radius: 999px;
   color: var(--text-secondary);
@@ -70,22 +71,22 @@ button.speed-run-btn {
 
 .speed-run-btn:not(.is-stop) {
   color: #fff;
-  background: var(--accent);
+  background: var(--accent-fill);
 }
 
 .speed-run-btn:not(.is-stop):hover:not(:disabled) {
   color: #fff;
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
 }
 
 /* Stop variant, shown while a test runs — the same solid treatment in negative red
    so the toggle keeps its fill rather than flipping to a faint wash mid-test. */
 .speed-run-btn.is-stop {
   color: #fff;
-  background: var(--negative);
+  background: var(--negative-fill);
 }
 
 .speed-run-btn.is-stop:hover:not(:disabled) {
   color: #fff;
-  background: color-mix(in srgb, var(--negative) 84%, #000);
+  background: color-mix(in srgb, var(--negative-fill) 84%, #000);
 }

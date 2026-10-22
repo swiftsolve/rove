@@ -79,17 +79,17 @@
 
 .conn-card.wifi .conn-strip-icon {
   color: var(--series-down);
-  background: rgba(96, 165, 250, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .conn-card.ethernet .conn-strip-icon {
   color: var(--positive);
-  background: rgba(52, 211, 153, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .conn-card.disconnected .conn-strip-icon {
   color: var(--negative);
-  background: rgba(248, 113, 113, 0.08);
+  background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
 .conn-strip-text {
@@ -231,7 +231,7 @@
 }
 
 .security-badge.secured svg { color: var(--positive); }
-.security-badge.open { color: var(--negative); }
+.security-badge.open { color: var(--negative-text); }
 
 /* Expanded row: right-align the badge in the value cell, and centre the row
    (same baseline fix as Signal) so the label stays level with it. */

@@ -7,7 +7,7 @@
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--gap-sm);
+  gap: var(--gap-tight);
   row-gap: 2px;
 }
 
@@ -30,5 +30,9 @@
    SettingsView.css, which nudges the other way for the same reason. */
 .svctally-icon {
   flex-shrink: 0;
+  /* The arrow's ink starts ~3px into its box; pull that back so the gap after a
+     dot separator (and the first arrow's alignment under the title) is set by
+     the ink, like a text label's. */
+  margin-left: -3px;
   transform: translateY(-1px);
 }

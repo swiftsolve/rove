@@ -12,7 +12,7 @@ import SpeedHistory from '@/components/speed-test/SpeedHistory'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { DotSeparator } from '@/components/ui/DotSeparator'
 import { ViewHeader } from '@/components/ui/ViewHeader'
-import { HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
+import { ChevronRightIcon, HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/ui/Icons'
 import { formatBand, formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import './SpeedView.css'
@@ -98,6 +98,7 @@ export default function SpeedView({
     >
       <HistoryIcon size={13} />
       <span className="speed-history-link-text">All Results</span>
+      <ChevronRightIcon size={13} className="link-caret" />
     </button>
   )
 

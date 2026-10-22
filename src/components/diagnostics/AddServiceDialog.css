@@ -157,7 +157,7 @@
   padding: 0 var(--gap-stack);
   border: none;
   border-radius: var(--radius-sm);
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-muted);
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
@@ -168,7 +168,7 @@
 }
 
 .svc-dialog-test:hover:not(:disabled) {
-  color: var(--accent-hover);
+  color: var(--accent-text);
   background: var(--accent-muted);
 }
 
@@ -203,7 +203,7 @@
 }
 
 .svc-dialog-note-error {
-  color: var(--negative);
+  color: var(--negative-text);
 }
 
 .svc-dialog-result {
@@ -271,12 +271,12 @@
 /* Right-aligned confirm — the only action now that close lives in the header. */
 .svc-dialog-btn.is-primary {
   color: #fff;
-  background: var(--accent);
+  background: var(--accent-fill);
   border-color: transparent;
 }
 
 .svc-dialog-btn.is-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
   color: #fff;
 }
 
