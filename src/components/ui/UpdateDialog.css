@@ -150,12 +150,12 @@
 
 .update-btn.is-primary {
   color: #fff;
-  background: var(--accent);
+  background: var(--accent-fill);
   border-color: transparent;
 }
 
 .update-btn.is-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
   color: #fff;
 }
 

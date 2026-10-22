@@ -120,11 +120,13 @@ export default function AppUsageView({
         <button type="button" className="app-hosts-link" onClick={onViewHosts}>
           <GlobeIcon size={13} />
           <span className="app-hosts-link-text">All hosts</span>
+          <ChevronRightIcon size={13} className="link-caret" />
         </button>
         <DotSeparator />
         <button type="button" className="app-hosts-link" onClick={onViewTraffic}>
           <LayersIcon size={13} />
           <span className="app-hosts-link-text">All traffic types</span>
+          <ChevronRightIcon size={13} className="link-caret" />
         </button>
       </span>
     )

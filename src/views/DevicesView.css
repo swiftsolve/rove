@@ -10,11 +10,13 @@
 /* The shared slot for the online tally and the scan status. Positioned so a
    leaving indicator can be pulled out of flow and overlaid at left:0 while the
    entering one holds the width — they cross-slide in the same place instead of
-   pushing each other sideways. The 3px set-off from the subnet lives here now. */
+   pushing each other sideways. The 2px set-off on top of the row's 6px gap puts
+   the dot 8px from the subnet, the same as from its count and the spacing every
+   dot separator in the app keeps (see .sep-dot). */
 .devices-indicator {
   position: relative;
   display: inline-block;
-  margin-left: 3px;
+  margin-left: 2px;
 }
 
 /* The one that's on its way out overlays the slot's start rather than taking
@@ -32,7 +34,7 @@
 /* Sits on the same text baseline as the subnet value (inherits the row's
    align-items: baseline — no align-self override). The dot is an inline element
    nudged to the middle of the text so only the marker floats, not the label.
-   Same 3px set-off as the scan indicator so the dot + text land in the exact
+   Same spacing as the scan indicator so the dot + text land in the exact
    same spot when the subtitle toggles between "N online" and the scan status. */
 .devices-online {
   color: var(--text-tertiary);
@@ -53,7 +55,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--positive);
-  margin-right: 5px;
+  margin-right: 8px;
   /* Centre on the cap/digit height of the numbers beside it ("16", the subnet),
      which sits a touch above the x-height middle vertical-align gives. */
   vertical-align: middle;
@@ -108,7 +110,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--positive);
-  margin-right: 5px;
+  margin-right: 8px;
   /* Same centering as the online dot, so both land in the exact same spot. */
   vertical-align: middle;
   position: relative;
@@ -209,7 +211,7 @@
 
 .device-row.gateway .device-row-icon {
   color: var(--positive);
-  background: rgba(52, 211, 153, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 /* Known device kinds get a quiet tint so categories scan at a glance;
@@ -219,26 +221,26 @@
 .device-row:not(.gateway) .device-row-icon.kind-tablet,
 .device-row:not(.gateway) .device-row-icon.kind-phone {
   color: var(--series-down);
-  background: rgba(106, 160, 255, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-tv,
 .device-row:not(.gateway) .device-row-icon.kind-console,
 .device-row:not(.gateway) .device-row-icon.kind-printer {
   color: var(--series-up);
-  background: rgba(179, 157, 255, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-iot,
 .device-row:not(.gateway) .device-row-icon.kind-camera,
 .device-row:not(.gateway) .device-row-icon.kind-speaker {
   color: var(--warning);
-  background: rgba(245, 196, 81, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-router {
   color: var(--positive);
-  background: rgba(52, 211, 153, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 /* Let a long name use up to two lines rather than truncating; the card grows
@@ -305,7 +307,7 @@
 /* The green "Gateway" role that leads the gateway's meta line; the maker/model
    that follow inherit the muted meta colour, giving name › role › details. */
 .device-row-gateway-role {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 .device-row-mac {
@@ -362,7 +364,7 @@
 }
 
 .device-row-state.reachable {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 /* The Local Network hint trailing a scan that did find devices. The blank-state

@@ -184,7 +184,7 @@
 }
 
 .settings-status.ok {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 .settings-update {
@@ -231,7 +231,7 @@
 
 .theme-seg.is-active {
   background: var(--accent-muted);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Segments sit 2px inside their track, so the ring goes inside the segment

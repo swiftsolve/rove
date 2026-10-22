@@ -41,12 +41,12 @@
 
 .iface-panel.wifi .iface-panel-icon {
   color: var(--series-down);
-  background: rgba(96, 165, 250, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .iface-panel.ethernet .iface-panel-icon {
   color: var(--positive);
-  background: rgba(52, 211, 153, 0.1);
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .iface-panel-name {
@@ -72,7 +72,7 @@
 }
 
 .iface-panel.default .iface-tag:not(.muted) {
-  color: var(--positive);
+  color: var(--positive-text);
 }
 
 .iface-state {
@@ -91,5 +91,5 @@
 }
 
 .iface-state.up {
-  color: var(--positive);
+  color: var(--positive-text);
 }
