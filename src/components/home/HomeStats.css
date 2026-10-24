@@ -66,13 +66,13 @@
 }
 
 /* Down/up split on the usage card: two labelled readouts, mirroring the
-   Live traffic panel (colour-keyed label above a compact value). */
+   Traffic panel (colour-keyed label above a compact value). */
 .home-usage-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--gap-sm);
   width: 100%;
-  /* Match the Live traffic panel's breathing room between title and readouts
+  /* Match the Traffic panel's breathing room between title and readouts
      (~18px total, vs the 8px the tighter card gap would give on its own). */
   margin-top: var(--gap-md);
 }

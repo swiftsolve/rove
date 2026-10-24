@@ -56,7 +56,7 @@
   text-overflow: ellipsis;
 }
 
-/* Match the widget-title size (e.g. "Live traffic"), not the larger text-title.
+/* Match the widget-title size (e.g. "Traffic"), not the larger text-title.
    The compound selector outranks the .text-title utility regardless of CSS
    load order. */
 .iface-panel-name.text-title {

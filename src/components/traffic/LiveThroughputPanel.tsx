@@ -23,7 +23,7 @@ function LiveThroughputPanel({
   return (
     <Section
       className="live-panel"
-      title="Live traffic"
+      title="Traffic"
       icon={<ActivityIcon size={15} />}
       action={<span className="text-meta live-badge live">Live</span>}
     >
