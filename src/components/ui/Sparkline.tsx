@@ -187,7 +187,7 @@ export function Sparkline({
         onMouseLeave={() => setHover(null)}
       >
         {/* Area fill under the trend — a vertical fade from the band colour to
-            transparent, echoing the Live traffic chart. currentColor ties it to
+            transparent, echoing the Traffic chart. currentColor ties it to
             the active health band. */}
         <defs>
           <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">

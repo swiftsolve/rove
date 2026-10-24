@@ -518,7 +518,7 @@ function createMockNetworkApi(): NetworkAPI {
   let cancelled = false
 
   // ---- live throughput ----
-  // A single 1 Hz sampler feeds the Home "Live traffic" widget. While a speed
+  // A single 1 Hz sampler feeds the Home "Traffic" widget. While a speed
   // test runs it saturates the link, so the live reading IS the test's
   // throughput: `testTraffic` holds that instantaneous rate and the sampler
   // emits it, which is what makes the Speed view's Download/Upload numbers climb
