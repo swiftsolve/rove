@@ -43,6 +43,7 @@ export default function CapabilityStrip({
       className="capability-strip-section"
       action={
         <Tooltip
+          placement="left"
           content={
             testing
               ? 'Speed test running'
