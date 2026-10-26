@@ -85,13 +85,6 @@
   min-width: 0;
 }
 
-/* Two big numbers sit side by side in a half-width card, so the readout value
-   is smaller than a full-width metric to keep both on one line without clipping
-   on narrow windows. */
-.home-usage-readout .metric-compact .metric-value {
-  font-size: var(--text-title);
-}
-
 .home-usage-key {
   width: 6px;
   height: 6px;

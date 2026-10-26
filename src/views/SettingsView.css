@@ -98,27 +98,6 @@
   flex-shrink: 0;
 }
 
-.setting-input {
-  width: 100%;
-  padding: var(--gap-sm) var(--gap-stack);
-  font-size: var(--text-body);
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--surface-sunken, var(--surface));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  outline: none;
-}
-
-.setting-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.setting-input:focus {
-  border-color: var(--accent);
-  outline: 1px solid var(--accent);
-}
-
 /* Give the row's action button (e.g. "Check now") a taller hit area than the
    default secondary button so it sits more comfortably against the two-line row
    text beside it. */

@@ -28,8 +28,8 @@ function LiveThroughputPanel({
       action={<span className="text-meta live-badge live">Live</span>}
     >
       <div className="live-readouts">
-        <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" isCompact />
-        <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" isCompact />
+        <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" />
+        <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" />
       </div>
 
       <div className="live-chart-wrap">

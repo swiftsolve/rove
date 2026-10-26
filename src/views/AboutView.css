@@ -31,7 +31,7 @@
 }
 
 .about-name {
-  font-size: var(--text-display-sm);
+  font-size: var(--text-display);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.02em;
   color: var(--text-primary);
