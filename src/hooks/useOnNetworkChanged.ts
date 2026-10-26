@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
+import { useLatestRef } from '@/hooks/useLatestRef'
 
 /**
  * Runs `callback` whenever the backend nudges us that the OS routing table
@@ -9,8 +10,7 @@ import { useEffect, useRef } from 'react'
  * render without churning the subscription; only `isEnabled` re-subscribes.
  */
 export function useOnNetworkChanged(callback: () => void, isEnabled = true): void {
-  const callbackRef = useRef(callback)
-  callbackRef.current = callback
+  const callbackRef = useLatestRef(callback)
 
   useEffect(() => {
     if (!isEnabled) return
@@ -27,5 +27,5 @@ export function useOnNetworkChanged(callback: () => void, isEnabled = true): voi
       isActive = false
       detach()
     }
-  }, [isEnabled])
+  }, [isEnabled, callbackRef])
 }

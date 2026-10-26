@@ -34,17 +34,9 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      // React-Compiler-era rules. The codebase deliberately mirrors the latest
-      // props/state into refs during render (see useBackendResource) and syncs
-      // state in a few effects (Tooltip, useNavigation) — established patterns
-      // that predate the compiler. Keep them visible as warnings rather than
-      // rewriting working code; revisit if the app ever adopts the compiler.
-      //
-      // `purity` is deliberately NOT among them: text that ages reads the clock
-      // through `useNow` instead, so nothing calls it during render. Leaving the
-      // rule at `error` is what keeps that from creeping back.
-      'react-hooks/refs': 'warn',
-      'react-hooks/set-state-in-effect': 'warn',
+      // The React-Compiler-era hooks rules (refs, set-state-in-effect, purity)
+      // stay at their default `error`. Latest-value refs go through
+      // `useLatestRef`, and text that ages reads the clock through `useNow`.
     },
   },
 )

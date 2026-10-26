@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLatestRef } from '@/hooks/useLatestRef'
 import { usePageVisible } from '@/hooks/usePageVisible'
 
 interface Options {
@@ -51,8 +52,7 @@ export function useBackendResource<T>(
   const hasRunRef = useRef(false)
   const resetKeyRef = useRef(resetKey)
 
-  const fetcherRef = useRef(fetcher)
-  fetcherRef.current = fetcher
+  const fetcherRef = useLatestRef(fetcher)
 
   const reloadSeqRef = useRef(0)
   // Seq of the latest non-silent reload — the one that owns the busy flag. A
@@ -103,7 +103,7 @@ export function useBackendResource<T>(
       // here is what used to leave the spinner stuck after such an overlap.
       if (!isSilent && seq === busySeqRef.current && mountedRef.current) setIsBusy(false)
     }
-  }, [errorMessage])
+  }, [errorMessage, fetcherRef])
 
   useEffect(() => {
     // A changed resetKey (e.g. the network switched) invalidates the cache so

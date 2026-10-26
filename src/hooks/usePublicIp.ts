@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface PublicIpState {
@@ -27,8 +27,8 @@ export function usePublicIp(isEnabled: boolean, refetchKey: string | null): Publ
   // Keep the last known value rather than flashing to "—" on a blip: a network
   // switch (resetKey change) or transient failure clears/keeps `data` null, but
   // the WAN IP rarely changes — show the previous one until the refetch lands.
-  const lastIpRef = useRef<string | null>(null)
-  if (data != null) lastIpRef.current = data
+  const [lastIp, setLastIp] = useState<string | null>(null)
+  if (data != null && data !== lastIp) setLastIp(data)
 
-  return { publicIp: data ?? lastIpRef.current, isLoading: isBusy }
+  return { publicIp: data ?? lastIp, isLoading: isBusy }
 }

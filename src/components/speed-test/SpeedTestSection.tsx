@@ -5,6 +5,7 @@ import Section from '@/components/ui/Section'
 import { InlineMeta } from '@/components/ui/DotSeparator'
 import DirectionIcon from '@/components/ui/DirectionIcon'
 import { useCountUp } from '@/hooks/useCountUp'
+import { useLatestRef } from '@/hooks/useLatestRef'
 import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedTestSection.css'
 
@@ -121,8 +122,7 @@ function buildStaticWave(width: number): string {
 
 function WavyProgress({ progress }: { progress: number }): JSX.Element {
   const target = Math.max(0, Math.min(100, progress))
-  const targetRef = useRef(target)
-  targetRef.current = target
+  const targetRef = useLatestRef(target)
 
   // Sanitize the colons React's useId emits — they're fine in most contexts but
   // brittle inside an SVG url(#…) fragment reference.
@@ -214,7 +214,7 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
       cancelAnimationFrame(raf)
       observer.disconnect()
     }
-  }, [])
+  }, [targetRef])
 
   // Static shell. The wave is drawn once and scrolls via CSS; a clip rect (grown
   // by the loop) reveals the filled portion; the dot rides its leading edge and

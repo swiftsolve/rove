@@ -19,10 +19,13 @@ interface UseServiceHistoryResult {
 export function useServiceHistory(): UseServiceHistoryResult {
   const [events, setEvents] = useState<ServiceEvent[]>([])
 
-  const read = useCallback(async (): Promise<void> => {
-    const history = await window.networkAPI?.getServiceHistory()
-    if (history) setEvents(history)
-  }, [])
+  const read = useCallback(
+    async (): Promise<void> =>
+      window.networkAPI?.getServiceHistory().then((history) => {
+        if (history) setEvents(history)
+      }),
+    [],
+  )
 
   useEffect(() => {
     void read()

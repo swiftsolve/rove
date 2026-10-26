@@ -164,11 +164,12 @@ const SCAN_EXIT_MS = 220
 function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const [isMounted, setIsMounted] = useState(isActive)
+  console.log('SCANDBG render', isActive, isMounted, phase)
+  if (isActive && !isMounted) setIsMounted(true)
 
-  // Step the stage word while a scan runs; restart from the first each scan.
+  // Step the stage word while a scan runs.
   useEffect(() => {
     if (!isActive) return
-    setPhase(0)
     const id = window.setInterval(
       () => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)),
       SCAN_PHASE_MS,
@@ -176,13 +177,16 @@ function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
     return () => window.clearInterval(id)
   }, [isActive])
 
-  // Linger past the end of the scan so the slide-out can play, then unmount.
+  // Linger past the end of the scan so the slide-out can play, then unmount
+  // and rewind, so the next scan starts from the first stage word.
   useEffect(() => {
-    if (isActive) {
-      setIsMounted(true)
-      return
-    }
-    const id = window.setTimeout(() => setIsMounted(false), SCAN_EXIT_MS)
+    if (isActive) return
+    console.log('SCANDBG arm exit')
+    const id = window.setTimeout(() => {
+      console.log('SCANDBG exit fired')
+      setIsMounted(false)
+      setPhase(0)
+    }, SCAN_EXIT_MS)
     return () => window.clearTimeout(id)
   }, [isActive])
 
@@ -222,12 +226,10 @@ function OnlineIndicator({
   count: number
 }): JSX.Element | null {
   const [isMounted, setIsMounted] = useState(isActive)
+  if (isActive && !isMounted) setIsMounted(true)
 
   useEffect(() => {
-    if (isActive) {
-      setIsMounted(true)
-      return
-    }
+    if (isActive) return
     const id = window.setTimeout(() => setIsMounted(false), SCAN_EXIT_MS)
     return () => window.clearTimeout(id)
   }, [isActive])

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { isNetworkInfoEqual } from '@/components/connection/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
+import { useLatestRef } from '@/hooks/useLatestRef'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
 
@@ -52,8 +53,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   const [info, setInfo] = useState<NetworkInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const infoRef = useRef<NetworkInfo | null>(null)
-  infoRef.current = info
+  const infoRef = useLatestRef(info)
   // Count consecutive failures so a lone slow poll stays invisible but a real
   // sustained outage still surfaces.
   const failuresRef = useRef(0)
@@ -117,7 +117,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
       if (gen === genRef.current) inFlightRef.current = false
       if (!isSilent || isInitial) setIsLoading(false)
     }
-  }, [])
+  }, [infoRef])
 
   useEffect(() => {
     // Poll only while the window is visible. On becoming visible again after a
@@ -128,6 +128,9 @@ export function useNetworkInfo(): UseNetworkInfoResult {
     genRef.current += 1
     inFlightRef.current = false
     failuresRef.current = 0
+    // Deliberate: a non-silent read raises the loading flag before it awaits, so
+    // a resume after a failed first load shows the spinner instead of the error.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh(false)
     const intervalId = window.setInterval(() => void refresh(true), REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
