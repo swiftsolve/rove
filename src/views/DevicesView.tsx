@@ -164,7 +164,6 @@ const SCAN_EXIT_MS = 220
 function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const [isMounted, setIsMounted] = useState(isActive)
-  console.log('SCANDBG render', isActive, isMounted, phase)
   if (isActive && !isMounted) setIsMounted(true)
 
   // Step the stage word while a scan runs.
@@ -181,9 +180,7 @@ function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   // and rewind, so the next scan starts from the first stage word.
   useEffect(() => {
     if (isActive) return
-    console.log('SCANDBG arm exit')
     const id = window.setTimeout(() => {
-      console.log('SCANDBG exit fired')
       setIsMounted(false)
       setPhase(0)
     }, SCAN_EXIT_MS)
