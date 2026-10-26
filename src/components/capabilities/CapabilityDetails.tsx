@@ -47,12 +47,12 @@ function CapabilityDetailCard({
           <span className="cap-detail-name">{capability.label}</span>
           <span className="cap-detail-desc">{capability.description}</span>
         </div>
-        <CapabilityMeter level={capability.level} showLabel={false} />
+        <CapabilityMeter level={capability.level} shouldShowLabel={false} />
       </header>
 
       <div className="cap-metrics">
         {checks.map((check) => (
-          <div key={check.label} className={`cap-metric ${check.pass ? 'pass' : 'fail'}`}>
+          <div key={check.label} className={`cap-metric ${check.isMet ? 'pass' : 'fail'}`}>
             <span className="field-label">{check.label}</span>
             <span className="cap-metric-value num">{check.have}</span>
             <span className="cap-metric-need">{check.need}</span>

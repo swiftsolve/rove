@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
-import { networkInfoEqual } from '@/components/connection/network-info-equal'
+import { isNetworkInfoEqual } from '@/components/connection/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
@@ -68,9 +68,9 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   // crucially, its `setTimeout`-based timeout that a suspended webview fires
   // the instant we return — belongs to a stale generation and is ignored.
   const genRef = useRef(0)
-  const visible = usePageVisible()
+  const isVisible = usePageVisible()
 
-  const refresh = useCallback(async (silent = false): Promise<void> => {
+  const refresh = useCallback(async (isSilent = false): Promise<void> => {
     const bridgeError = getNetworkApiError()
     if (bridgeError) {
       setError(bridgeError)
@@ -83,7 +83,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
     const gen = genRef.current
 
     const isInitial = infoRef.current === null
-    if (!silent && isInitial) setIsLoading(true)
+    if (!isSilent && isInitial) setIsLoading(true)
 
     try {
       const data = await withTimeout(
@@ -94,7 +94,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
 
       if (gen !== genRef.current) return
       failuresRef.current = 0
-      setInfo((previous) => (networkInfoEqual(previous, data) ? previous : data))
+      setInfo((previous) => (isNetworkInfoEqual(previous, data) ? previous : data))
       setError(null)
     } catch (unknownError) {
       // A poll that spanned a background stretch is stale — its failure (often a
@@ -115,7 +115,7 @@ export function useNetworkInfo(): UseNetworkInfoResult {
       // Only the current generation owns the in-flight slot; a superseded poll
       // must not clear a flag a fresh post-resume poll may already hold.
       if (gen === genRef.current) inFlightRef.current = false
-      if (!silent || isInitial) setIsLoading(false)
+      if (!isSilent || isInitial) setIsLoading(false)
     }
   }, [])
 
@@ -124,14 +124,14 @@ export function useNetworkInfo(): UseNetworkInfoResult {
     // background stretch, invalidate any frozen in-flight poll (new generation),
     // drop the failure streak so a stale timeout can't tip the banner, and read
     // once immediately before resuming the interval.
-    if (!visible) return
+    if (!isVisible) return
     genRef.current += 1
     inFlightRef.current = false
     failuresRef.current = 0
     void refresh(false)
     const intervalId = window.setInterval(() => void refresh(true), REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
-  }, [visible, refresh])
+  }, [isVisible, refresh])
 
   // Network changed — refresh at once instead of waiting out the poll interval.
   useOnNetworkChanged(() => void refresh(true))

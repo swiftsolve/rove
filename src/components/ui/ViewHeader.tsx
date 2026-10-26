@@ -14,7 +14,7 @@ interface ViewHeaderProps {
   /** Extra class for view-specific subtitle layout (gaps, truncation). */
   subtitleClassName?: string
   /** Toggling this on runs the subtitle's fade-in once (class swap → animation). */
-  subtitleShown?: boolean
+  isSubtitleShown?: boolean
   /** Controls grouped at the header's end (refresh/help buttons, actions). */
   actions?: ReactNode
 }
@@ -29,13 +29,13 @@ export function ViewHeader({
   title,
   subtitle,
   subtitleClassName,
-  subtitleShown = false,
+  isSubtitleShown = false,
   actions,
 }: ViewHeaderProps): JSX.Element {
   const subClass = [
     'view-header-sub',
     subtitleClassName,
-    subtitleShown ? 'show' : undefined,
+    isSubtitleShown ? 'show' : undefined,
   ]
     .filter(Boolean)
     .join(' ')

@@ -19,17 +19,17 @@ function platformLabel(): string {
 function useAppVersion(): string | null {
   const [version, setVersion] = useState<string | null>(null)
   useEffect(() => {
-    let alive = true
+    let isAlive = true
     getVersion()
       .then((v) => {
-        if (alive) setVersion(v)
+        if (isAlive) setVersion(v)
       })
       .catch(() => {
         // Not running under Tauri (e.g. a plain browser preview) — leave unknown.
-        if (alive) setVersion(null)
+        if (isAlive) setVersion(null)
       })
     return () => {
-      alive = false
+      isAlive = false
     }
   }, [])
   return version
@@ -42,7 +42,7 @@ export default function AboutView(): JSX.Element {
     <div className="view-page">
       <div className="about-hero">
         <span className="about-logo" aria-hidden>
-          <BrandIcon size={53} gradient />
+          <BrandIcon size={53} hasGradient />
         </span>
         <h1 className="about-name">Rove</h1>
         <p className="about-tagline">A fast, minimal network monitor for your desktop.</p>

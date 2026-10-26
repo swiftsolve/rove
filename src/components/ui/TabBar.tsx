@@ -21,7 +21,7 @@ interface TabBarProps {
   activeTab: AppTab
   onChange: (tab: AppTab) => void
   /** Whether the light theme is active — drives the toggle's icon and label. */
-  lightMode: boolean
+  isLightMode: boolean
   /** Flip between light and dark themes. */
   onToggleTheme: () => void
 }
@@ -56,20 +56,20 @@ const SETTINGS_TAB: TabDefinition = { id: 'settings', label: 'Settings', Icon: S
 
 function NavItem({
   tab,
-  active,
+  isActive,
   onChange,
 }: {
   tab: TabDefinition
-  active: boolean
+  isActive: boolean
   onChange: (tab: AppTab) => void
 }): JSX.Element {
   return (
     <Tooltip content={tab.label} placement="right">
       <button
         type="button"
-        className={`nav-item nav-item-${tab.id} ${active ? 'active' : ''}`}
+        className={`nav-item nav-item-${tab.id} ${isActive ? 'active' : ''}`}
         onClick={() => onChange(tab.id)}
-        aria-current={active ? 'page' : undefined}
+        aria-current={isActive ? 'page' : undefined}
         aria-label={tab.label}
       >
         <tab.Icon size={18} className="nav-icon" />
@@ -79,18 +79,18 @@ function NavItem({
 }
 
 function ThemeToggle({
-  lightMode,
+  isLightMode,
   onToggle,
 }: {
-  lightMode: boolean
+  isLightMode: boolean
   onToggle: () => void
 }): JSX.Element {
   // Show the glyph for the mode you'll switch *to*, matching the tooltip.
-  const label = lightMode ? 'Switch to dark mode' : 'Switch to light mode'
+  const label = isLightMode ? 'Switch to dark mode' : 'Switch to light mode'
   return (
     <Tooltip content={label} placement="right">
       <button type="button" className="nav-item" onClick={onToggle} aria-label={label}>
-        {lightMode ? (
+        {isLightMode ? (
           <MoonIcon size={18} className="nav-icon" />
         ) : (
           <SunIcon size={18} className="nav-icon" />
@@ -103,22 +103,22 @@ function ThemeToggle({
 export default memo(function TabBar({
   activeTab,
   onChange,
-  lightMode,
+  isLightMode,
   onToggleTheme,
 }: TabBarProps) {
   return (
     <nav className="nav-rail" aria-label="Main navigation">
       <div className="nav-items">
         {TAB_DEFINITIONS.map((tab) => (
-          <NavItem key={tab.id} tab={tab} active={tab.id === activeTab} onChange={onChange} />
+          <NavItem key={tab.id} tab={tab} isActive={tab.id === activeTab} onChange={onChange} />
         ))}
       </div>
       <div className="nav-items nav-items-bottom">
         {/* Theme toggle sits above the gear; About lives inside the Settings page. */}
-        <ThemeToggle lightMode={lightMode} onToggle={onToggleTheme} />
+        <ThemeToggle isLightMode={isLightMode} onToggle={onToggleTheme} />
         <NavItem
           tab={SETTINGS_TAB}
-          active={activeTab === 'settings' || activeTab === 'about'}
+          isActive={activeTab === 'settings' || activeTab === 'about'}
           onChange={onChange}
         />
       </div>

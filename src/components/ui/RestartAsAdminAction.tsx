@@ -19,45 +19,45 @@ import { isTauri } from '@/bridge/tauriNetworkApi'
  * are always supported, and there's no shell to elevate through in the browser.
  */
 export function RestartAsAdminAction(): JSX.Element | null {
-  const [busy, setBusy] = useState(false)
-  const [declined, setDeclined] = useState(false)
+  const [isBusy, setIsBusy] = useState(false)
+  const [wasDeclined, setWasDeclined] = useState(false)
   const [detail, setDetail] = useState<string | null>(null)
 
-  const enabled = IS_WINDOWS && isTauri()
+  const isEnabled = IS_WINDOWS && isTauri()
 
   // Pull the real reason the session won't open, so a failure that isn't about
   // elevation (a policy block, a provider error) is visible rather than hidden.
   useEffect(() => {
-    if (!enabled) return
-    let alive = true
+    if (!isEnabled) return
+    let isAlive = true
     void invoke<string | null>('usage_support_detail')
-      .then((d) => alive && setDetail(d))
-      .catch(() => alive && setDetail(null))
+      .then((d) => isAlive && setDetail(d))
+      .catch(() => isAlive && setDetail(null))
     return () => {
-      alive = false
+      isAlive = false
     }
-  }, [enabled])
+  }, [isEnabled])
 
-  if (!enabled) return null
+  if (!isEnabled) return null
 
   const onClick = async (): Promise<void> => {
-    setBusy(true)
-    setDeclined(false)
+    setIsBusy(true)
+    setWasDeclined(false)
     try {
       await invoke('relaunch_as_admin')
       // On success the backend exits this process; nothing more to do.
     } catch {
-      setDeclined(true)
-      setBusy(false)
+      setWasDeclined(true)
+      setIsBusy(false)
     }
   }
 
   return (
     <>
-      <button type="button" className="btn-secondary" onClick={onClick} disabled={busy}>
-        {busy ? 'Waiting for confirmation…' : 'Restart as administrator'}
+      <button type="button" className="btn-secondary" onClick={onClick} disabled={isBusy}>
+        {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
       </button>
-      {declined && <p className="empty-state-hint">Elevation was declined.</p>}
+      {wasDeclined && <p className="empty-state-hint">Elevation was declined.</p>}
       {detail && <p className="empty-state-hint">Details: {detail}</p>}
     </>
   )

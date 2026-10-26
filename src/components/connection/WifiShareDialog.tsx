@@ -16,23 +16,23 @@ import './WifiShareDialog.css'
 export default function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
   const [share, setShare] = useState<WifiShare | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    let cancelled = false
+    let isCancelled = false
     getNetworkApi()
       .getWifiShare()
       .then((result) => {
-        if (!cancelled) setShare(result)
+        if (!isCancelled) setShare(result)
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+        if (!isCancelled) setError(err instanceof Error ? err.message : String(err))
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!isCancelled) setIsLoading(false)
       })
     return () => {
-      cancelled = true
+      isCancelled = true
     }
   }, [])
 
@@ -44,7 +44,7 @@ export default function WifiShareDialog({ onClose }: { onClose: () => void }): J
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const secured = share != null && share.encryption !== 'nopass'
+  const isSecured = share != null && share.encryption !== 'nopass'
 
   const overlay = (
     <div className="wifi-share-overlay" role="presentation" onClick={onClose}>
@@ -73,7 +73,7 @@ export default function WifiShareDialog({ onClose }: { onClose: () => void }): J
         </header>
 
         <div className="wifi-share-body">
-          {loading ? (
+          {isLoading ? (
             <div className="wifi-share-state">
               <Spinner />
               <p className="text-muted">Generating QR code…</p>
@@ -82,7 +82,7 @@ export default function WifiShareDialog({ onClose }: { onClose: () => void }): J
             <div className="wifi-share-state">
               <p className="wifi-share-error">{error}</p>
             </div>
-          ) : secured && !share?.password ? (
+          ) : isSecured && !share?.password ? (
             <div className="wifi-share-state">
               <p className="wifi-share-note">
                 The saved password for {share?.ssid ?? 'this network'} wasn&apos;t available, so

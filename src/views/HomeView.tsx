@@ -10,10 +10,10 @@ import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
 interface HomeViewProps {
   info: NetworkInfo
   usage: DataUsageSummary
-  usageLoading: boolean
+  isUsageLoading: boolean
   deviceCount: number | null
   deviceOnline: number | null
-  devicesLoading: boolean
+  areDevicesLoading: boolean
   /** macOS only: trigger a device scan from the Home widget (no auto-scan there). */
   onScanDevices?: () => void
   onOpenCapabilities: (capabilityId: CapabilityId) => void
@@ -28,10 +28,10 @@ interface HomeViewProps {
 export default function HomeView({
   info,
   usage,
-  usageLoading,
+  isUsageLoading,
   deviceCount,
   deviceOnline,
-  devicesLoading,
+  areDevicesLoading,
   onScanDevices,
   onOpenCapabilities,
   onRunSpeedTest,
@@ -42,7 +42,7 @@ export default function HomeView({
   const isConnected = isConnectedNetwork(info)
   // A speed test can be started from the Speed tab and keeps running across tab
   // switches, so the live panel still reflects it while you're on Home.
-  const { testing, capabilities, completedAt, runTest } = useSpeedTest()
+  const { isTesting, capabilities, completedAt, runTest } = useSpeedTest()
   const { throughput: liveThroughput, history: liveHistory } = useLiveThroughput()
 
   const handleRunTest = (): void => {
@@ -61,7 +61,7 @@ export default function HomeView({
         <LiveThroughputPanel
           throughput={liveThroughput}
           history={liveHistory}
-          speedTestRunning={testing}
+          isSpeedTestRunning={isTesting}
           linkCapacityMbps={getLinkCapacityMbps(info)}
         />
       )}
@@ -70,7 +70,7 @@ export default function HomeView({
         <CapabilityStrip
           capabilities={capabilities}
           canRunTest={canRunSpeedTest(info)}
-          testing={testing}
+          isTesting={isTesting}
           completedAt={completedAt}
           onOpenDetails={onOpenCapabilities}
           onRunTest={handleRunTest}
@@ -80,10 +80,10 @@ export default function HomeView({
 
       <HomeStats
         usage={usage}
-        usageLoading={usageLoading}
+        isUsageLoading={isUsageLoading}
         deviceCount={deviceCount}
         deviceOnline={deviceOnline}
-        devicesLoading={devicesLoading}
+        areDevicesLoading={areDevicesLoading}
         onScanDevices={onScanDevices}
         onOpenUsage={onOpenUsage}
         onOpenDevices={onOpenDevices}

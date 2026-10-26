@@ -280,7 +280,7 @@ fn build_passive_device(
         model: None,
         is_gateway,
         is_self,
-        reachable: true,
+        is_reachable: true,
         ip: neighbor.ip,
         mac: neighbor.mac,
         last_seen: None,
@@ -522,7 +522,7 @@ fn build_device(
         model,
         is_gateway,
         is_self,
-        reachable,
+        is_reachable: reachable,
         ip: neighbor.ip,
         mac: neighbor.mac,
         // Stamped by the store's roster merge (see `devices_with_offline`); a
@@ -617,7 +617,7 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         is_randomized_mac: is_randomized_mac(mac),
         is_gateway: false,
         is_self: true,
-        reachable: true,
+        is_reachable: true,
         last_seen: None,
     });
 }
@@ -714,7 +714,7 @@ mod tests {
         };
         let dev = build_passive_device(announcing, &mdns, &ssdp, &dhcp, None, None)
             .expect("announced host");
-        assert!(dev.reachable);
+        assert!(dev.is_reachable);
         assert_eq!(dev.hostname.as_deref(), Some("Living Room TV"));
     }
 
@@ -797,7 +797,7 @@ mod tests {
             stateful: false,
         };
         let device = build_device(neighbor, None, &enrichment, None, None);
-        assert!(device.reachable, "a TCP RST/accept is a live signal on its own");
+        assert!(device.is_reachable, "a TCP RST/accept is a live signal on its own");
     }
 
     #[test]

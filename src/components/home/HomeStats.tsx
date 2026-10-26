@@ -20,10 +20,10 @@ interface StatCardProps {
    * renders as a clickable div (role="button") instead — the whole widget still
    * navigates, and the nested control stops propagation to run its own action.
    */
-  staticBody?: boolean
+  hasStaticBody?: boolean
 }
 
-function StatCard({ icon, label, body, ariaLabel, onOpen, staticBody }: StatCardProps): JSX.Element {
+function StatCard({ icon, label, body, ariaLabel, onOpen, hasStaticBody }: StatCardProps): JSX.Element {
   const caret = onOpen ? <ChevronRightIcon size={16} className="home-stat-caret" /> : null
 
   const head = (
@@ -46,7 +46,7 @@ function StatCard({ icon, label, body, ariaLabel, onOpen, staticBody }: StatCard
   // Body owns a control: a <button> can't nest inside a <button>, so render the
   // card as a clickable div. The whole widget navigates (like the Usage card),
   // while the nested control (e.g. Scan) stops propagation to run its own action.
-  if (staticBody) {
+  if (hasStaticBody) {
     return (
       <div
         role="button"
@@ -101,10 +101,10 @@ function StatReadout({ keyClass, value, unit }: StatReadoutProps): JSX.Element {
 
 interface HomeStatsProps {
   usage: DataUsageSummary
-  usageLoading: boolean
+  isUsageLoading: boolean
   deviceCount: number | null
   deviceOnline: number | null
-  devicesLoading: boolean
+  areDevicesLoading: boolean
   /** macOS only: scan from the widget instead of auto-scanning on Home load. */
   onScanDevices?: () => void
   onOpenUsage: () => void
@@ -113,23 +113,23 @@ interface HomeStatsProps {
 
 export default function HomeStats({
   usage,
-  usageLoading,
+  isUsageLoading,
   deviceCount,
   deviceOnline,
-  devicesLoading,
+  areDevicesLoading,
   onScanDevices,
   onOpenUsage,
   onOpenDevices,
 }: HomeStatsProps): JSX.Element {
   const today = usage.days[usage.days.length - 1]
-  const usageResolved = today != null || !usageLoading
+  const isUsageResolved = today != null || !isUsageLoading
   const down = splitBytes(today?.rxBytes ?? 0)
   const up = splitBytes(today?.txBytes ?? 0)
 
   const hasDevices = deviceCount != null
   // macOS before its first scan: no count yet, nothing loading, and a scan
   // handler wired up. Offer a Scan button in place of the auto-scanned count.
-  const showScanButton = !hasDevices && !devicesLoading && onScanDevices != null
+  const shouldShowScanButton = !hasDevices && !areDevicesLoading && onScanDevices != null
 
   return (
     <div className="home-stats">
@@ -137,7 +137,7 @@ export default function HomeStats({
         icon={<TodayIcon size={15} />}
         label="Usage"
         body={
-          usageResolved ? (
+          isUsageResolved ? (
             <div className="home-usage-split" aria-hidden>
               <StatReadout keyClass="down" value={down.value} unit={down.unit} />
               <StatReadout keyClass="up" value={up.value} unit={up.unit} />
@@ -149,7 +149,7 @@ export default function HomeStats({
           )
         }
         ariaLabel={`Usage: ${
-          usageResolved ? `${down.value} ${down.unit} down, ${up.value} ${up.unit} up` : 'unavailable'
+          isUsageResolved ? `${down.value} ${down.unit} down, ${up.value} ${up.unit} up` : 'unavailable'
         }. Open Usage.`}
         onOpen={onOpenUsage}
       />
@@ -161,7 +161,7 @@ export default function HomeStats({
           // button, or a rescan started on the Devices page (shared state). A
           // background poll is silent (never toggles the busy flag), so this
           // only replaces the count during a real scan, not every refresh.
-          devicesLoading ? (
+          areDevicesLoading ? (
             <div className="home-stat-loading" aria-hidden>
               <ButtonSpinner size={14} color="var(--text-secondary)" />
             </div>
@@ -173,7 +173,7 @@ export default function HomeStats({
                 unit="online"
               />
             </div>
-          ) : showScanButton ? (
+          ) : shouldShowScanButton ? (
             <div className="home-stat-scan">
               <button
                 type="button"
@@ -195,7 +195,7 @@ export default function HomeStats({
           )
         }
         ariaLabel={
-          devicesLoading
+          areDevicesLoading
             ? 'Scanning for devices. Open Devices.'
             : hasDevices
               ? `${deviceOnline != null ? `${deviceOnline} of ` : ''}${deviceCount} devices online. Open Devices.`
@@ -205,7 +205,7 @@ export default function HomeStats({
         // static so its Scan button isn't nested inside a button, but the caret
         // stays live as a standalone control — opening Devices runs the scan.
         onOpen={onOpenDevices}
-        staticBody={showScanButton}
+        hasStaticBody={shouldShowScanButton}
       />
     </div>
   )

@@ -1,6 +1,6 @@
 import type { NetworkInfo } from '@/types'
 
-export function networkInfoEqual(
+export function isNetworkInfoEqual(
   previous: NetworkInfo | null,
   next: NetworkInfo,
 ): boolean {

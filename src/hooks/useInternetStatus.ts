@@ -18,17 +18,17 @@ export function useInternetStatus(): InternetStatus | null {
   useEffect(() => {
     const api = window.networkAPI
     if (!api) return
-    // `active` guards against a late-resolving read or event landing after the
+    // `isActive` guards against a late-resolving read or event landing after the
     // effect has torn down (e.g. Vite HMR remounts).
-    let active = true
+    let isActive = true
     void api.getInternetStatus?.().then((s) => {
-      if (active) setStatus(s)
+      if (isActive) setStatus(s)
     })
     const detach = api.onInternetStatus?.((s) => {
-      if (active) setStatus(s)
+      if (isActive) setStatus(s)
     })
     return () => {
-      active = false
+      isActive = false
       detach?.()
     }
   }, [])

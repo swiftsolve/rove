@@ -112,7 +112,7 @@ function relativeAge(ms: number): string {
 // a contradiction. A device merged back from the roster carries an older
 // timestamp and gets the age.
 function lastSeenAge(device: LanDevice, now: number): string | null {
-  if (device.reachable || device.lastSeen == null) return null
+  if (device.isReachable || device.lastSeen == null) return null
   const ms = now - device.lastSeen
   if (ms < 90_000) return null
   return relativeAge(ms)
@@ -155,40 +155,40 @@ const SCAN_EXIT_MS = 220
 //
 // Motion: the indicator slides in from the left when a scan starts, the stage
 // words fade upward through each other while it runs, and on completion the
-// whole thing slides back out to the left. The exit is why it takes `active`
+// whole thing slides back out to the left. The exit is why it takes `isActive`
 // instead of being conditionally rendered — it stays mounted for SCAN_EXIT_MS
 // after the scan ends so the slide-out can play.
 //
 // All three words are stacked (a hidden sizer holds the width to the longest
 // so the layout never jumps); the current one is driven by data-state.
-function ScanStatus({ active }: { active: boolean }): JSX.Element | null {
+function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
-  const [mounted, setMounted] = useState(active)
+  const [isMounted, setIsMounted] = useState(isActive)
 
   // Step the stage word while a scan runs; restart from the first each scan.
   useEffect(() => {
-    if (!active) return
+    if (!isActive) return
     setPhase(0)
     const id = window.setInterval(
       () => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)),
       SCAN_PHASE_MS,
     )
     return () => window.clearInterval(id)
-  }, [active])
+  }, [isActive])
 
   // Linger past the end of the scan so the slide-out can play, then unmount.
   useEffect(() => {
-    if (active) {
-      setMounted(true)
+    if (isActive) {
+      setIsMounted(true)
       return
     }
-    const id = window.setTimeout(() => setMounted(false), SCAN_EXIT_MS)
+    const id = window.setTimeout(() => setIsMounted(false), SCAN_EXIT_MS)
     return () => window.clearTimeout(id)
-  }, [active])
+  }, [isActive])
 
-  if (!mounted) return null
+  if (!isMounted) return null
   return (
-    <span className={`devices-scan ${active ? '' : 'leaving'}`} role="status">
+    <span className={`devices-scan ${isActive ? '' : 'leaving'}`} role="status">
       <span className="devices-scan-dot" aria-hidden />
       <span className="devices-scan-phases">
         <span className="devices-scan-phase-sizer" aria-hidden>
@@ -215,27 +215,27 @@ function ScanStatus({ active }: { active: boolean }): JSX.Element | null {
 // it lingers mounted for SCAN_EXIT_MS so the slide-out can play rather than the
 // count just vanishing.
 function OnlineIndicator({
-  active,
+  isActive,
   count,
 }: {
-  active: boolean
+  isActive: boolean
   count: number
 }): JSX.Element | null {
-  const [mounted, setMounted] = useState(active)
+  const [isMounted, setIsMounted] = useState(isActive)
 
   useEffect(() => {
-    if (active) {
-      setMounted(true)
+    if (isActive) {
+      setIsMounted(true)
       return
     }
-    const id = window.setTimeout(() => setMounted(false), SCAN_EXIT_MS)
+    const id = window.setTimeout(() => setIsMounted(false), SCAN_EXIT_MS)
     return () => window.clearTimeout(id)
-  }, [active])
+  }, [isActive])
 
-  if (!mounted) return null
+  if (!isMounted) return null
   return (
     <span
-      className={`devices-online ${active ? '' : 'leaving'}`}
+      className={`devices-online ${isActive ? '' : 'leaving'}`}
       title="Responding to the last scan"
     >
       <span className="devices-online-dot" aria-hidden />
@@ -292,11 +292,11 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
         <div className="device-row-top">
           <span className="text-title device-row-name">{name}</span>
           <span
-            className={`device-row-state ${device.reachable ? 'reachable' : 'offline'}`}
-            title={device.reachable ? 'Reachable' : 'Offline — no response to recent scans'}
+            className={`device-row-state ${device.isReachable ? 'reachable' : 'offline'}`}
+            title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
             <span className="device-row-dot" aria-hidden />
-            {device.reachable ? 'Online' : 'Offline'}
+            {device.isReachable ? 'Online' : 'Offline'}
           </span>
         </div>
 
@@ -347,18 +347,18 @@ export default function DevicesView({
   // most-recently-seen first. A stable sort preserves the live ordering within
   // each group.
   const devices = [...(scan?.devices ?? [])].sort((a, b) => {
-    if (a.reachable !== b.reachable) return a.reachable ? -1 : 1
-    if (!a.reachable) return (b.lastSeen ?? 0) - (a.lastSeen ?? 0)
+    if (a.isReachable !== b.isReachable) return a.isReachable ? -1 : 1
+    if (!a.isReachable) return (b.lastSeen ?? 0) - (a.lastSeen ?? 0)
     return 0
   })
   const hasDevices = devices.length > 0
-  const onlineCount = devices.filter((device) => device.reachable).length
+  const onlineCount = devices.filter((device) => device.isReachable).length
   const subnet = scan?.subnet ?? null
   // Scan resolved but turned up only this machine (or nothing) — on macOS the
   // usual culprit is a withheld Local Network grant.
-  const onlySelf =
+  const isOnlySelf =
     !isScanning && scan != null && devices.every((device) => device.isSelf)
-  const showLocalNetworkHint = IS_MAC && onlySelf
+  const shouldShowLocalNetworkHint = IS_MAC && isOnlySelf
 
   return (
     <div className="view-page">
@@ -381,16 +381,16 @@ export default function DevicesView({
                   overlaid absolutely (see CSS), so they cross-slide in place
                   instead of shoving each other sideways. */}
               <span className="devices-indicator">
-                <OnlineIndicator active={!isScanning} count={onlineCount} />
-                <ScanStatus active={isScanning} />
+                <OnlineIndicator isActive={!isScanning} count={onlineCount} />
+                <ScanStatus isActive={isScanning} />
               </span>
             </>
           ) : isScanning ? (
-            <ScanStatus active />
+            <ScanStatus isActive />
           ) : undefined
         }
         subtitleClassName="devices-subnet"
-        subtitleShown={hasDevices && subnet != null}
+        isSubtitleShown={hasDevices && subnet != null}
         actions={
           <>
             <Tooltip content={SCAN_HINT}>
@@ -425,7 +425,7 @@ export default function DevicesView({
         <EmptyState
           icon={DevicesIcon}
           title="No devices yet"
-          hint={showLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
+          hint={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
           action={
             <button type="button" className="btn-secondary" onClick={onRescan}>
               Try again
@@ -437,7 +437,7 @@ export default function DevicesView({
           {devices.map((device) => (
             <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
           ))}
-          {showLocalNetworkHint && (
+          {shouldShowLocalNetworkHint && (
             <p className="text-muted devices-hint">{LOCAL_NETWORK_HINT}</p>
           )}
         </div>

@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
  * otherwise read as a spurious "timed out" even though the backend is fine.
  */
 export function usePageVisible(): boolean {
-  const [visible, setVisible] = useState(() =>
+  const [isVisible, setIsVisible] = useState(() =>
     typeof document === 'undefined' ? true : document.visibilityState !== 'hidden',
   )
 
@@ -22,10 +22,10 @@ export function usePageVisible(): boolean {
     // Deliberately NOT focus/blur: those fire on every alt-tab while the window
     // is still visible, which would pause polling and force a heavy rescan each
     // time you click back.
-    const update = () => setVisible(document.visibilityState !== 'hidden')
+    const update = () => setIsVisible(document.visibilityState !== 'hidden')
     document.addEventListener('visibilitychange', update)
     return () => document.removeEventListener('visibilitychange', update)
   }, [])
 
-  return visible
+  return isVisible
 }

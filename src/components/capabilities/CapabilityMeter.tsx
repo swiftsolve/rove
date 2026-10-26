@@ -22,10 +22,10 @@ const SEGMENTS = [0, 1, 2, 3]
 
 export default function CapabilityMeter({
   level,
-  showLabel = true,
+  shouldShowLabel = true,
 }: {
   level: CapabilityLevel
-  showLabel?: boolean
+  shouldShowLabel?: boolean
 }): JSX.Element {
   const rank = LEVEL_RANK[level]
 
@@ -36,7 +36,7 @@ export default function CapabilityMeter({
           <span key={i} className={`capability-seg${i < rank ? ' on' : ''}`} />
         ))}
       </span>
-      {showLabel && (
+      {shouldShowLabel && (
         <span className="capability-level">{CAPABILITY_LEVEL_LABELS[level]}</span>
       )}
     </div>

@@ -114,7 +114,7 @@ pub struct NetworkEvent {
     /// The device's MAC was privacy-randomized. Presence events for such
     /// devices are inherently noisy (a phone re-randomizes roughly daily and
     /// then reads as brand-new), so the UI flags rather than hides them.
-    pub randomized: bool,
+    pub is_randomized: bool,
 }
 
 // Event-type slugs. Kept as constants so the detector and any tests reference
@@ -663,7 +663,7 @@ impl Store {
         let tx = conn.transaction()?;
         let last_event = Self::load_last_event_types(&tx)?;
 
-        for device in present.iter().filter(|d| !d.mac.is_empty() && d.reachable) {
+        for device in present.iter().filter(|d| !d.mac.is_empty() && d.is_reachable) {
             match prior.get(&device.mac) {
                 None => {
                     // A device we've never recorded, seen only passively. Store
@@ -734,7 +734,7 @@ impl Store {
         // event-driven scans landing seconds apart — doesn't flap the feed.
         let live: HashSet<&str> = devices
             .iter()
-            .filter(|d| !d.mac.is_empty() && d.reachable)
+            .filter(|d| !d.mac.is_empty() && d.is_reachable)
             .map(|d| d.mac.as_str())
             .collect();
 
@@ -750,7 +750,7 @@ impl Store {
                         // Answered again after we'd marked it offline. Gate on
                         // `reachable` so a device that's back in the ARP table
                         // but still not responding doesn't read as reconnected.
-                        if device.reachable
+                        if device.is_reachable
                             && last_event.get(&device.mac).map(String::as_str)
                                 == Some(EVENT_DEVICE_OFFLINE)
                         {
@@ -1633,7 +1633,7 @@ impl Store {
                 kind,
                 old_value: row.get(7)?,
                 new_value: row.get(8)?,
-                randomized,
+                is_randomized: randomized,
             })
         })?;
         rows.collect()
@@ -1697,7 +1697,7 @@ impl Store {
                 // remembered roster so an offline device keeps its last-known
                 // identity. Only while unreachable — a live device's fresh scan is
                 // authoritative and may legitimately reclassify it.
-                if !d.reachable {
+                if !d.is_reachable {
                     if let Some(kd) = known.get(&d.mac) {
                         d.hostname = d.hostname.take().or_else(|| kd.hostname.clone());
                         d.vendor = d.vendor.take().or_else(|| kd.vendor.clone());
@@ -1734,7 +1734,7 @@ impl Store {
                 is_randomized_mac: kd.randomized,
                 is_gateway: false,
                 is_self: false,
-                reachable: false,
+                is_reachable: false,
                 last_seen: Some(kd.last_seen),
             });
         }
@@ -1915,7 +1915,7 @@ mod tests {
             is_randomized_mac: false,
             is_gateway: false,
             is_self: false,
-            reachable: true,
+            is_reachable: true,
             last_seen: None,
         };
         store.record_devices(std::slice::from_ref(&device), 1000).unwrap();
@@ -1963,13 +1963,13 @@ mod tests {
         let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "unknown");
         silent.hostname = None;
         silent.os = None;
-        silent.reachable = false;
+        silent.is_reachable = false;
         store.record_devices(std::slice::from_ref(&silent), 2_000).unwrap();
 
         let merged =
             store.devices_with_offline(std::slice::from_ref(&silent), 2_000, OFFLINE_LIST_KEEP_MS).unwrap();
         let row = merged.iter().find(|d| d.mac == "bb:bb:bb:bb:bb:bb").unwrap();
-        assert!(!row.reachable, "it still reads offline");
+        assert!(!row.is_reachable, "it still reads offline");
         assert_eq!(row.kind, "phone", "with its remembered kind, not unknown");
         assert_eq!(row.os.as_deref(), Some("Android"), "its remembered OS");
         assert_eq!(row.hostname.as_deref(), Some("Janes-Phone"), "and its remembered name");
@@ -2007,7 +2007,7 @@ mod tests {
             is_randomized_mac: false,
             is_gateway: false,
             is_self: false,
-            reachable: true,
+            is_reachable: true,
             last_seen: None,
         }
     }
@@ -2232,7 +2232,7 @@ mod tests {
         let offline_scan: Vec<LanDevice> = [gw, phone, laptop]
             .into_iter()
             .map(|mut d| {
-                d.reachable = false;
+                d.is_reachable = false;
                 d
             })
             .collect();
@@ -2284,8 +2284,8 @@ mod tests {
         // Uplink drops: the host is now disconnected, and the next scan sees only
         // self (still reachable), with the real peers gone unreachable.
         store.record_connection("disconnected", None, None, None, None, 2_000).unwrap();
-        let phone_gone = LanDevice { reachable: false, ..phone };
-        let laptop_gone = LanDevice { reachable: false, ..laptop };
+        let phone_gone = LanDevice { is_reachable: false, ..phone };
+        let laptop_gone = LanDevice { is_reachable: false, ..laptop };
         store.record_devices(&[me, phone_gone, laptop_gone], 3_000).unwrap();
 
         let offline = store
@@ -2334,11 +2334,11 @@ mod tests {
         let by_mac = |m: &str| merged.iter().find(|d| d.mac == m).cloned();
 
         let online = by_mac("aa:aa:aa:aa:aa:aa").unwrap();
-        assert!(online.reachable, "the live device stays reachable");
+        assert!(online.is_reachable, "the live device stays reachable");
         assert_eq!(online.last_seen, Some(now), "and is stamped with this scan");
 
         let offline = by_mac("bb:bb:bb:bb:bb:bb").expect("recent departure is kept");
-        assert!(!offline.reachable, "a merged roster device reads offline");
+        assert!(!offline.is_reachable, "a merged roster device reads offline");
         assert_eq!(offline.kind, "phone", "carrying its stored identity");
         assert_eq!(offline.last_seen, Some(now - 60_000), "with its real last-seen time");
 
@@ -2359,7 +2359,7 @@ mod tests {
         // in the scan with reachable=false ("Offline" in the Devices view). The
         // feed must reflect that, not wait for the device to vanish entirely.
         let mut asleep = phone.clone();
-        asleep.reachable = false;
+        asleep.is_reachable = false;
         store.record_devices(&[keep.clone(), asleep.clone()], 2_000).unwrap();
 
         let latest = &store.network_events(1).unwrap()[0];
@@ -2394,7 +2394,7 @@ mod tests {
         // Reappears in the ARP table but still isn't answering (reachable=false)
         // → not a reconnect; it stays offline on the feed.
         let mut silent = phone.clone();
-        silent.reachable = false;
+        silent.is_reachable = false;
         let before = store.network_events(100).unwrap().len();
         store.record_devices(&[keep.clone(), silent], 3_000).unwrap();
         assert_eq!(
@@ -2425,7 +2425,7 @@ mod tests {
         // instead of a null name the UI would render as "Unknown device"…
         assert_eq!(offline.name.as_deref(), Some("Android phone"));
         // …and the randomized flag survives from the stored row.
-        assert!(offline.randomized);
+        assert!(offline.is_randomized);
     }
 
     #[test]
@@ -2468,7 +2468,7 @@ mod tests {
         let offline = &store.network_events(1).unwrap()[0];
         assert_eq!(offline.event_type, "device_offline");
         assert_eq!(offline.name, None, "no identity to snapshot");
-        assert!(offline.randomized, "so the UI can still show 'Private device'");
+        assert!(offline.is_randomized, "so the UI can still show 'Private device'");
     }
 
     #[test]
@@ -2507,7 +2507,7 @@ mod tests {
             .find(|e| e.id == offline_id)
             .unwrap();
         assert_eq!(offline.name.as_deref(), Some("Android phone"));
-        assert!(offline.randomized, "randomized resolves from the roster too");
+        assert!(offline.is_randomized, "randomized resolves from the roster too");
     }
 
     #[test]

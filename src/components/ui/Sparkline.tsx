@@ -33,7 +33,7 @@ interface SparklineProps {
   /** The service is currently down: draw a single flat red line instead of the
    *  latency trend, along the baseline, so an outage never reads as a
    *  healthy-looking chart. */
-  down?: boolean
+  isDown?: boolean
 }
 
 // A little vertical inset so the stroke and the dots aren't clipped at the top
@@ -55,7 +55,7 @@ export function Sparkline({
   height = 22,
   label,
   slots,
-  down = false,
+  isDown = false,
 }: SparklineProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement>(null)
   const [hover, setHover] = useState<number | null>(null)
@@ -74,7 +74,7 @@ export function Sparkline({
     const values = samples.map((s) => s.ms).filter((m): m is number => m !== null)
     const min = values.length > 0 ? Math.min(...values) : 0
     const max = values.length > 0 ? Math.max(...values) : 1
-    const flat = max === min
+    const isFlat = max === min
 
     // Right-aligned: the last sample lands on the right edge and older ones step
     // back leftwards, leaving the unfilled part of the window blank.
@@ -83,7 +83,7 @@ export function Sparkline({
     // Higher latency sits higher on the chart, so a spike reads as a spike. A run
     // of identical values has no range to scale over, so it sits on the midline.
     const yAt = (ms: number): number =>
-      flat ? PAD + innerH / 2 : PAD + innerH - ((ms - min) / (max - min)) * innerH
+      isFlat ? PAD + innerH / 2 : PAD + innerH - ((ms - min) / (max - min)) * innerH
 
     const pts: Point[] = samples.map((sample, i) => ({
       x: xAt(i),
@@ -124,7 +124,7 @@ export function Sparkline({
   // meaningless once it's unreachable, and a green-looking chart on a down row is
   // worse than none. It sits on the baseline, where failed probes drop to, so it
   // reads as "nothing" rather than a mid-range reading. Hovering it says "Down".
-  if (down) {
+  if (isDown) {
     const baseY = height - PAD
     return (
       <span className="spark-wrap" style={{ width, height }}>

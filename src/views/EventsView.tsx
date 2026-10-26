@@ -112,7 +112,7 @@ function offlineDurations(newestFirst: NetworkEvent[]): Map<number, number> {
 
 function subjectName(event: NetworkEvent): string {
   if (event.name) return event.name
-  if (event.randomized) return 'Private device'
+  if (event.isRandomized) return 'Private device'
   return 'Unknown device'
 }
 
@@ -229,7 +229,7 @@ function TimelineItem({
   const metaItems: ReactNode[] = []
   if (!isInitial && event.mac) {
     metaItems.push(<span className="num">{formatMac(event.mac)}</span>)
-    if (event.randomized) {
+    if (event.isRandomized) {
       metaItems.push(<span title="Privacy-randomized MAC address">Randomized</span>)
     }
   }
@@ -295,7 +295,7 @@ export default function EventsView({
             <span className="text-meta">What’s changed in the past week</span>
           ) : undefined
         }
-        subtitleShown={hasEvents}
+        isSubtitleShown={hasEvents}
         actions={
           <>
             <Tooltip content={FEED_HINT}>

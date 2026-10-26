@@ -2,7 +2,7 @@ import { memo, useState } from 'react'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isConnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
 import { getConnectionDisplay } from '@/components/connection/connection-display'
-import { networkInfoEqual } from '@/components/connection/network-info-equal'
+import { isNetworkInfoEqual } from '@/components/connection/network-info-equal'
 import { usePublicIp } from '@/hooks/usePublicIp'
 import {
   formatBand,
@@ -91,27 +91,27 @@ function shortSecurityLabel(security: string): string {
 /**
  * Wi‑Fi security with a lock: closed and green when the network is secured,
  * open and red when it's open. Null when the OS didn't report security.
- * `short` trims the label to the strongest protocol for the collapsed strip.
+ * `isShort` trims the label to the strongest protocol for the collapsed strip.
  */
 function SecurityBadge({
   security,
-  short = false,
+  isShort = false,
 }: {
   security: string | null
-  short?: boolean
+  isShort?: boolean
 }): JSX.Element | null {
-  const secured = isSecuredWifi(security)
-  if (secured == null || security == null) return null
+  const isSecured = isSecuredWifi(security)
+  if (isSecured == null || security == null) return null
   // Collapse runs of spaces — Windows reports e.g. "WPA3-Personal  (H2E)".
   const full = security.trim().replace(/\s+/g, ' ')
-  const label = secured ? (short ? shortSecurityLabel(full) : full) : 'Open'
-  const description = secured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
+  const label = isSecured ? (isShort ? shortSecurityLabel(full) : full) : 'Open'
+  const description = isSecured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
     <span
-      className={`security-badge ${secured ? 'secured' : 'open'}`}
+      className={`security-badge ${isSecured ? 'secured' : 'open'}`}
       title={description}
     >
-      {secured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
+      {isSecured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
       <span className="security-badge-label">{label}</span>
     </span>
   )
@@ -182,7 +182,7 @@ const EXPANDED_KEY = 'rove.connection-details-expanded'
 function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
   // Persisted so the choice survives tab switches (which unmount this card)
   // and restarts. Defaults to collapsed rather than auto-expanding.
-  const [expanded, setExpanded] = useState(() => {
+  const [isExpanded, setIsExpanded] = useState(() => {
     try {
       return localStorage.getItem(EXPANDED_KEY) === 'true'
     } catch {
@@ -191,18 +191,18 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
   })
 
   const toggleExpanded = (): void => {
-    setExpanded((open) => {
-      const next = !open
+    setIsExpanded((wasExpanded) => {
+      const willExpand = !wasExpanded
       try {
-        localStorage.setItem(EXPANDED_KEY, String(next))
+        localStorage.setItem(EXPANDED_KEY, String(willExpand))
       } catch {
         // Storage unavailable — remember for this session only.
       }
-      return next
+      return willExpand
     })
   }
   const display = getConnectionDisplay(info)
-  const { publicIp, isLoading: publicIpLoading } = usePublicIp(
+  const { publicIp, isLoading: isPublicIpLoading } = usePublicIp(
     isConnectedNetwork(info),
     info.ipAddress,
   )
@@ -214,11 +214,11 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
     ? [
         info.ipAddress,
         formatBand(info.frequency),
-        isSecuredWifi(info.security) != null && <SecurityBadge security={info.security} short />,
+        isSecuredWifi(info.security) != null && <SecurityBadge security={info.security} isShort />,
       ]
     : [info.ipAddress, linkSpeed]
   const subItems = subBits.filter(Boolean)
-  const detailsLabel = expanded ? 'Hide connection details' : 'Show connection details'
+  const detailsLabel = isExpanded ? 'Hide connection details' : 'Show connection details'
 
   return (
     <section className={`conn-card ${display.variant}`}>
@@ -231,7 +231,7 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
           type="button"
           className="conn-strip-toggle"
           onClick={toggleExpanded}
-          aria-expanded={expanded}
+          aria-expanded={isExpanded}
           aria-label={detailsLabel}
         />
         <div className="conn-strip-icon">
@@ -255,17 +255,17 @@ function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
         )}
         <ChevronDownIcon
           size={14}
-          className={`conn-chevron ${expanded ? 'open' : ''}`}
+          className={`conn-chevron ${isExpanded ? 'open' : ''}`}
           aria-hidden
         />
       </div>
 
-      <div className={`conn-details-wrap ${expanded ? 'open' : ''}`}>
+      <div className={`conn-details-wrap ${isExpanded ? 'open' : ''}`}>
         <div className="conn-details row-list">
           <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
           <DataRow
             label="Public IP"
-            value={publicIp ?? (publicIpLoading ? 'Checking…' : null)}
+            value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
           />
           {/* Grouped by topic: addresses, then the link itself, then the
               hardware it runs over. */}
@@ -289,5 +289,5 @@ export function canRunSpeedTest(info: NetworkInfo): boolean {
 
 export default memo(
   ConnectionCard,
-  (previous, next) => networkInfoEqual(previous.info, next.info),
+  (previous, next) => isNetworkInfoEqual(previous.info, next.info),
 )

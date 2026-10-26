@@ -10,14 +10,14 @@ import './LiveThroughputPanel.css'
 interface LiveThroughputPanelProps {
   throughput: LiveThroughput
   history: ThroughputHistory
-  speedTestRunning?: boolean
+  isSpeedTestRunning?: boolean
   linkCapacityMbps?: number | null
 }
 
 function LiveThroughputPanel({
   throughput,
   history,
-  speedTestRunning = false,
+  isSpeedTestRunning = false,
   linkCapacityMbps = null,
 }: LiveThroughputPanelProps): JSX.Element {
   return (
@@ -28,15 +28,15 @@ function LiveThroughputPanel({
       action={<span className="text-meta live-badge live">Live</span>}
     >
       <div className="live-readouts">
-        <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" compact />
-        <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" compact />
+        <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" isCompact />
+        <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" isCompact />
       </div>
 
       <div className="live-chart-wrap">
         <ThroughputChart
           download={history.download}
           upload={history.upload}
-          speedTestRunning={speedTestRunning}
+          isSpeedTestRunning={isSpeedTestRunning}
           linkCapacityMbps={linkCapacityMbps}
         />
       </div>

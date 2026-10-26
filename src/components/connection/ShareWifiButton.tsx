@@ -9,7 +9,7 @@ import WifiShareDialog from './WifiShareDialog'
  * Wi-Fi — there's nothing to share over Ethernet.
  */
 export default function ShareWifiButton(): JSX.Element {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
@@ -18,12 +18,12 @@ export default function ShareWifiButton(): JSX.Element {
           type="button"
           className="btn-icon btn-icon-secondary"
           aria-label="Share Wi‑Fi"
-          onClick={() => setOpen(true)}
+          onClick={() => setIsOpen(true)}
         >
           <QrCodeIcon size={16} />
         </button>
       </Tooltip>
-      {open && <WifiShareDialog onClose={() => setOpen(false)} />}
+      {isOpen && <WifiShareDialog onClose={() => setIsOpen(false)} />}
     </>
   )
 }

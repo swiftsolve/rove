@@ -46,5 +46,5 @@ export interface NetworkEvent {
   newValue: string | null
   /** The device's MAC was privacy-randomized — presence events for it are
    *  noisier (a phone re-randomizes ~daily), so the UI flags them. */
-  randomized: boolean
+  isRandomized: boolean
 }

@@ -9,7 +9,7 @@ async fn main() {
             d.ip,
             d.hostname.as_deref().unwrap_or("-"),
             d.kind,
-            if d.reachable { "online" } else { "cached" }
+            if d.is_reachable { "online" } else { "cached" }
         );
     }
 }

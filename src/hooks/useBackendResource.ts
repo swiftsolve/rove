@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePageVisible } from '@/hooks/usePageVisible'
 
 interface Options {
-  /** Refetch every time `enabled` turns true (default: fetch only once). */
-  refetchOnEnable?: boolean
+  /** Refetch every time `isEnabled` turns true (default: fetch only once). */
+  shouldRefetchOnEnable?: boolean
   /**
    * Cache-invalidation token. When it changes, the cached data/error are
    * discarded and the resource is refetched — pass a value that changes with
@@ -12,19 +12,19 @@ interface Options {
    */
   resetKey?: unknown
   /**
-   * While `enabled`, silently refetch on this interval (ms) so on-screen values
+   * While `isEnabled`, silently refetch on this interval (ms) so on-screen values
    * stay live without the user hitting refresh. Omit to fetch only on
    * enable/reset. The poll is a background refresh — it never toggles `isBusy`.
    */
   pollIntervalMs?: number
   /**
-   * Fire the automatic fetch when `enabled`/`resetKey` first turn on? Default
+   * Fire the automatic fetch when `isEnabled`/`resetKey` first turn on? Default
    * true. Set false for a poll-only resource whose initial value is seeded
    * elsewhere (e.g. a "live metrics" overlay seeded by a sibling full snapshot):
    * it then fetches only on its poll interval and on visibility-resume, so it
    * never adds a second probe of the same targets on open.
    */
-  fetchOnEnable?: boolean
+  shouldFetchOnEnable?: boolean
 }
 
 export interface BackendResource<T> {
@@ -41,9 +41,9 @@ export interface BackendResource<T> {
  */
 export function useBackendResource<T>(
   fetcher: (() => Promise<T>) | undefined,
-  enabled: boolean,
+  isEnabled: boolean,
   errorMessage: string,
-  { refetchOnEnable = false, resetKey, pollIntervalMs, fetchOnEnable = true }: Options = {},
+  { shouldRefetchOnEnable = false, resetKey, pollIntervalMs, shouldFetchOnEnable = true }: Options = {},
 ): BackendResource<T> {
   const [data, setData] = useState<T | null>(null)
   const [isBusy, setIsBusy] = useState(false)
@@ -69,19 +69,19 @@ export function useBackendResource<T>(
   // Pause polling while the app is backgrounded; refresh once on resume. Without
   // this, the webview's throttled interval wakes up and fires a burst of stale
   // reloads (e.g. a heavy device rescan) the moment the window returns.
-  const visible = usePageVisible()
-  const wasVisibleRef = useRef(visible)
+  const isVisible = usePageVisible()
+  const wasVisibleRef = useRef(isVisible)
 
-  // `silent` skips the busy/error churn so a background poll refreshes values
+  // `isSilent` skips the busy/error churn so a background poll refreshes values
   // in place without flashing a spinner or clearing a visible error.
-  const reload = useCallback(async (silent = false): Promise<void> => {
+  const reload = useCallback(async (isSilent = false): Promise<void> => {
     const fetch = fetcherRef.current
     if (!fetch) return
 
     // Guard against overlapping loads resolving out of order: only the latest
     // call is allowed to write state, and only while still mounted.
     const seq = ++reloadSeqRef.current
-    if (!silent) {
+    if (!isSilent) {
       busySeqRef.current = seq
       setIsBusy(true)
       setError(null)
@@ -91,7 +91,7 @@ export function useBackendResource<T>(
       const result = await fetch()
       if (seq === reloadSeqRef.current && mountedRef.current) {
         setData(result)
-        if (silent) setError(null)
+        if (isSilent) setError(null)
       }
     } catch (cause) {
       if (seq === reloadSeqRef.current && mountedRef.current) {
@@ -101,7 +101,7 @@ export function useBackendResource<T>(
       // Clear busy when the owning (non-silent) reload settles, even if a
       // silent poll superseded it for data — comparing against reloadSeqRef
       // here is what used to leave the spinner stuck after such an overlap.
-      if (!silent && seq === busySeqRef.current && mountedRef.current) setIsBusy(false)
+      if (!isSilent && seq === busySeqRef.current && mountedRef.current) setIsBusy(false)
     }
   }, [errorMessage])
 
@@ -112,9 +112,9 @@ export function useBackendResource<T>(
     // becoming known (network info finishing loading just after the first fetch
     // already kicked off) — so it must neither clear state nor force a redundant
     // refetch. Only a change between two known keys is a real invalidation.
-    const keyChanged = resetKeyRef.current !== resetKey
+    const hasKeyChanged = resetKeyRef.current !== resetKey
     const hadPreviousKey = resetKeyRef.current != null
-    if (keyChanged) {
+    if (hasKeyChanged) {
       resetKeyRef.current = resetKey
       if (hadPreviousKey) {
         hasRunRef.current = false
@@ -122,18 +122,18 @@ export function useBackendResource<T>(
         setError(null)
       }
     }
-    if (!enabled) return
+    if (!isEnabled) return
     // Poll-only resource: its first value is seeded elsewhere, so it fetches on
     // its interval/resume only — never an on-enable probe.
-    if (!fetchOnEnable) return
+    if (!shouldFetchOnEnable) return
     // The key just settled null→real without a real switch. The on-enable fetch
     // has already run against the (only) network, so this settle must not fire a
     // second, identical probe on top of it.
-    if (keyChanged && !hadPreviousKey && hasRunRef.current) return
-    if (!refetchOnEnable && hasRunRef.current) return
+    if (hasKeyChanged && !hadPreviousKey && hasRunRef.current) return
+    if (!shouldRefetchOnEnable && hasRunRef.current) return
     hasRunRef.current = true
     void reload()
-  }, [enabled, refetchOnEnable, reload, resetKey, fetchOnEnable])
+  }, [isEnabled, shouldRefetchOnEnable, reload, resetKey, shouldFetchOnEnable])
 
   useEffect(() => {
     // While the owning tab is visible, refresh in the background so values stay
@@ -141,13 +141,13 @@ export function useBackendResource<T>(
     // spinner over data already on screen. Paused while hidden, with one fresh
     // read on resume so the first thing you see after a background stretch is
     // current — the enable/reset effect already covers the initial load.
-    const resumed = visible && !wasVisibleRef.current
-    wasVisibleRef.current = visible
-    if (!enabled || !pollIntervalMs || !visible) return
-    if (resumed) void reload(true)
+    const hasResumed = isVisible && !wasVisibleRef.current
+    wasVisibleRef.current = isVisible
+    if (!isEnabled || !pollIntervalMs || !isVisible) return
+    if (hasResumed) void reload(true)
     const intervalId = window.setInterval(() => void reload(true), pollIntervalMs)
     return () => window.clearInterval(intervalId)
-  }, [enabled, pollIntervalMs, visible, reload])
+  }, [isEnabled, pollIntervalMs, isVisible, reload])
 
   useEffect(() => {
     // Mark unmounted so a fetch that resolves afterward can't setState. Using a

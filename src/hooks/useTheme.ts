@@ -42,15 +42,15 @@ function systemPrefersLight(): boolean {
 }
 
 /** Resolve the mode to a concrete light(true)/dark(false) boolean. */
-function resolveLight(mode: ThemeMode, sysLight: boolean): boolean {
-  return mode === 'light' || (mode === 'system' && sysLight)
+function resolveLight(mode: ThemeMode, isSystemLight: boolean): boolean {
+  return mode === 'light' || (mode === 'system' && isSystemLight)
 }
 
 export interface Theme {
   /** The user's stored preference: 'dark' | 'light' | 'system'. */
   mode: ThemeMode
   /** The resolved theme currently on screen. */
-  light: boolean
+  isLight: boolean
   /** Set an explicit preference (or 'system') with an animated swap + sound. */
   setMode: (mode: ThemeMode) => void
   /** Nav-rail toggle: flip to the explicit opposite of what's showing. */
@@ -59,13 +59,13 @@ export interface Theme {
 
 export function useTheme(): Theme {
   const [mode, setModeState] = useState<ThemeMode>(readMode)
-  const [sysLight, setSysLight] = useState<boolean>(systemPrefersLight)
+  const [isSystemLight, setIsSystemLight] = useState<boolean>(systemPrefersLight)
 
   // Track the OS preference so a 'system' choice reflects it live (e.g. the user
   // flips their desktop to light while the app is open).
   useEffect(() => {
     const mq = window.matchMedia(LIGHT_QUERY)
-    const onChange = (): void => setSysLight(mq.matches)
+    const onChange = (): void => setIsSystemLight(mq.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
   }, [])
@@ -79,17 +79,17 @@ export function useTheme(): Theme {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  const light = resolveLight(mode, sysLight)
+  const isLight = resolveLight(mode, isSystemLight)
 
   // Mirror the resolved theme onto the document element as a class so index.css
   // can remap its design tokens. Covers passive changes too (an OS flip while on
   // 'system'), which arrive here without going through the animated setMode path.
   useEffect(() => {
-    document.documentElement.classList.toggle('theme-light', light)
-  }, [light])
+    document.documentElement.classList.toggle('theme-light', isLight)
+  }, [isLight])
 
   const setMode = useCallback((nextMode: ThemeMode): void => {
-    const nextLight = resolveLight(nextMode, systemPrefersLight())
+    const isNextLight = resolveLight(nextMode, systemPrefersLight())
 
     const persist = (): void => {
       setModeState(nextMode)
@@ -100,7 +100,7 @@ export function useTheme(): Theme {
       }
     }
 
-    swapResolvedTheme(nextLight, persist)
+    swapResolvedTheme(isNextLight, persist)
   }, [])
 
   // The nav-rail toggle makes an explicit choice — the opposite of what's showing
@@ -109,5 +109,5 @@ export function useTheme(): Theme {
     setMode(document.documentElement.classList.contains('theme-light') ? 'dark' : 'light')
   }, [setMode])
 
-  return { mode, light, setMode, toggle }
+  return { mode, isLight, setMode, toggle }
 }

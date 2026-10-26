@@ -109,7 +109,7 @@ function resetHistory(): void {
 // must not toggle them, so the teardown is deferred and cancelled if the owner
 // re-activates within the grace window.
 const SUBSCRIPTION_GRACE_MS = 2_000
-let sourceActive = false
+let isSourceActive = false
 let detachEvents: (() => void) | null = null
 let stopTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -118,17 +118,17 @@ function startSource(): void {
     clearTimeout(stopTimer)
     stopTimer = null
   }
-  if (sourceActive) return
+  if (isSourceActive) return
   const api = window.networkAPI
   if (!api?.subscribeLiveThroughput) return
-  sourceActive = true
+  isSourceActive = true
   detachEvents = api.onLiveThroughput(ingestSample)
   void api.subscribeLiveThroughput()
 }
 
 function stopSourceNow(): void {
-  if (!sourceActive) return
-  sourceActive = false
+  if (!isSourceActive) return
+  isSourceActive = false
   detachEvents?.()
   detachEvents = null
   void window.networkAPI?.unsubscribeLiveThroughput?.()
@@ -145,18 +145,18 @@ function scheduleStopSource(): void {
 
 /**
  * Owns the shared live-throughput subscription. Mount once, high in the tree,
- * passing `active` = window visible. The feed then runs continuously across tab
+ * passing `isActive` = window visible. The feed then runs continuously across tab
  * switches (the window stays visible) and only pauses when the window is
  * genuinely hidden (minimised / occluded), matching the polling hooks.
  */
-export function useLiveThroughputSource(active: boolean): void {
+export function useLiveThroughputSource(isActive: boolean): void {
   useEffect(() => {
-    if (!active) {
+    if (!isActive) {
       scheduleStopSource()
       return
     }
     startSource()
-  }, [active])
+  }, [isActive])
 }
 
 function subscribeStore(listener: () => void): () => void {

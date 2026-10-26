@@ -24,12 +24,12 @@ interface UseServiceReachabilityResult {
  * a real network switch so stale results never linger across networks.
  */
 export function useServiceReachability(
-  enabled: boolean,
+  isEnabled: boolean,
   networkKey?: string | null,
 ): UseServiceReachabilityResult {
   const resource = useBackendResource(
     window.networkAPI?.runServices,
-    enabled,
+    isEnabled,
     'Service check failed',
     { resetKey: networkKey, pollIntervalMs: SERVICE_POLL_INTERVAL_MS },
   )

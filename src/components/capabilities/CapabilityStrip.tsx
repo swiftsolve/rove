@@ -15,7 +15,7 @@ interface CapabilityStripProps {
   capabilities: CapabilityRating[]
   canRunTest: boolean
   /** A speed test is currently running (started here or from the Speed tab). */
-  testing: boolean
+  isTesting: boolean
   /** Epoch ms the last test finished — null until one completes. */
   completedAt: number | null
   onOpenDetails: (capabilityId: CapabilityId) => void
@@ -27,7 +27,7 @@ interface CapabilityStripProps {
 export default function CapabilityStrip({
   capabilities,
   canRunTest,
-  testing,
+  isTesting,
   completedAt,
   onOpenDetails,
   onRunTest,
@@ -45,7 +45,7 @@ export default function CapabilityStrip({
         <Tooltip
           placement="left"
           content={
-            testing
+            isTesting
               ? 'Speed test running'
               : hasResults
                 ? 'Run speed test again'
@@ -54,12 +54,12 @@ export default function CapabilityStrip({
         >
           <button
             type="button"
-            className={`btn-icon btn-icon-secondary${testing ? ' is-scanning' : ''}`}
+            className={`btn-icon btn-icon-secondary${isTesting ? ' is-scanning' : ''}`}
             onClick={onRunTest}
-            disabled={!canRunTest || testing}
+            disabled={!canRunTest || isTesting}
             aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
           >
-            {testing ? (
+            {isTesting ? (
               <ButtonSpinner size={14} />
             ) : hasResults ? (
               <RefreshIcon size={14} />
@@ -84,13 +84,13 @@ export default function CapabilityStrip({
                     <CapabilityIcon id={capability.id} size={16} />
                   </span>
                 </Tooltip>
-                <CapabilityMeter level="unsupported" showLabel={false} />
+                <CapabilityMeter level="unsupported" shouldShowLabel={false} />
               </div>
             ))}
           </div>
 
           <div className="capability-strip-footer capability-strip-footer--hint">
-            {testing ? (
+            {isTesting ? (
               <span className="text-meta">Testing…</span>
             ) : (
               <p className="text-hint capability-strip-hint">
@@ -101,7 +101,7 @@ export default function CapabilityStrip({
         </>
       ) : (
         <>
-          <div className={`capability-strip${testing ? ' capability-strip--testing' : ''}`} role="list">
+          <div className={`capability-strip${isTesting ? ' capability-strip--testing' : ''}`} role="list">
             {capabilities.map((capability) => (
               <div className="capability-strip-cell" key={capability.id} role="listitem">
                 <Tooltip
@@ -113,24 +113,24 @@ export default function CapabilityStrip({
                   align="left"
                   placement="top"
                   offset={4}
-                  disabled={testing}
+                  isDisabled={isTesting}
                 >
                   <button
                     type="button"
                     className={`capability-strip-item capability-icon-tile level-${capability.level}`}
                     onClick={() => onOpenDetails(capability.id)}
-                    disabled={testing}
+                    disabled={isTesting}
                     aria-label={`${capability.label}: ${CAPABILITY_LEVEL_LABELS[capability.level]}`}
                   >
                     <CapabilityIcon id={capability.id} size={16} />
                   </button>
                 </Tooltip>
-                <CapabilityMeter level={capability.level} showLabel={false} />
+                <CapabilityMeter level={capability.level} shouldShowLabel={false} />
               </div>
             ))}
           </div>
 
-          {testing ? (
+          {isTesting ? (
             <div className="capability-strip-footer">
               <span className="text-meta">Testing…</span>
             </div>

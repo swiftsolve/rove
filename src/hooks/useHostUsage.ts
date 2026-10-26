@@ -19,7 +19,7 @@ interface UseHostUsageResult {
  * fill in over the first few polls as the backend resolves them), and a missing
  * bridge degrades to a clear message rather than a hung spinner.
  */
-export function useHostUsage(enabled: boolean): UseHostUsageResult {
+export function useHostUsage(isEnabled: boolean): UseHostUsageResult {
   const api = window.networkAPI
   const fetchUsage = useMemo(
     () => (api?.getHostUsage ? () => api.getHostUsage() : undefined),
@@ -28,9 +28,9 @@ export function useHostUsage(enabled: boolean): UseHostUsageResult {
 
   const { data, isBusy, error } = useBackendResource(
     fetchUsage,
-    enabled,
+    isEnabled,
     'Failed to load per-app host usage.',
-    { refetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
+    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
   )
 
   if (!fetchUsage) {

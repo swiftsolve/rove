@@ -51,7 +51,7 @@ export default function SpeedView({
   const {
     internetSpeed,
     capabilities,
-    testing,
+    isTesting,
     progress,
     error: speedTestError,
     completedAt,
@@ -108,7 +108,7 @@ export default function SpeedView({
         icon={<SpeedIcon size={18} />}
         title="Speed"
         subtitle={
-          testing ? (
+          isTesting ? (
             <>
               <span className="view-header-status">Testing…</span>
               {completedAt != null && (
@@ -129,9 +129,9 @@ export default function SpeedView({
           )
         }
         subtitleClassName="speed-header-sub"
-        subtitleShown={completedAt != null}
+        isSubtitleShown={completedAt != null}
         actions={
-          testing ? (
+          isTesting ? (
             <button
               type="button"
               className="btn-primary speed-run-btn is-stop"
@@ -171,7 +171,7 @@ export default function SpeedView({
         internetSpeed={internetSpeed}
         linkCapacityMbps={footerLinkCapacityMbps}
         connection={footerConnection}
-        testing={testing}
+        isTesting={isTesting}
         canTest={canTest}
         error={speedTestError}
         progress={progress}
@@ -182,7 +182,7 @@ export default function SpeedView({
       <CapabilityList
         capabilities={capabilities}
         hasRunTest={hasRunTest}
-        testing={testing}
+        isTesting={isTesting}
         onOpenDetails={onOpenDetails}
       />
     </div>

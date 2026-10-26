@@ -9,7 +9,7 @@ interface UseDevicesResult {
   rescan: () => Promise<void>
 }
 
-export function useDevices(enabled: boolean, networkKey?: string | null): UseDevicesResult {
+export function useDevices(isEnabled: boolean, networkKey?: string | null): UseDevicesResult {
   const api = window.networkAPI
   // "no bridge → no-op" behaviour: an undefined fetcher when the bridge is absent.
   const fetchDevices = useMemo(
@@ -27,9 +27,9 @@ export function useDevices(enabled: boolean, networkKey?: string | null): UseDev
   // scan), which turned into an endless self-triggering rescan loop.
   const { data, isBusy, error, reload } = useBackendResource(
     fetchDevices,
-    enabled,
+    isEnabled,
     'Failed to scan for devices',
-    { resetKey: networkKey, refetchOnEnable: true },
+    { resetKey: networkKey, shouldRefetchOnEnable: true },
   )
 
   return { scan: data, isScanning: isBusy, error, rescan: reload }
