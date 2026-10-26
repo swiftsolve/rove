@@ -8,7 +8,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--gap-tight);
-  row-gap: 2px;
+  row-gap: var(--gap-2xs);
 }
 
 /* Each half pairs its arrow with the count. The icon inherits the span's colour

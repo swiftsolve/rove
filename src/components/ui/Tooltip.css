@@ -5,7 +5,7 @@
 
 .tooltip-bubble {
   width: max-content;
-  padding: 8px 10px;
+  padding: var(--gap-sm) var(--gap-stack);
   border-radius: var(--radius-sm);
   background: var(--bg-panel-hi);
   border: 1px solid var(--border-strong);

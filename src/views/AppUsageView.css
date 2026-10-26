@@ -25,7 +25,7 @@
 
 /* Same faint wash as the Speed page's capability rows. */
 .app-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--fill-row-hover);
 }
 
 /* The whole row links into that app's hosts. A transparent overlay button covers
@@ -88,7 +88,7 @@
 .app-row-end {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-sm);
   flex-shrink: 0;
 }
 
@@ -105,7 +105,7 @@
 .app-row-id {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-sm);
   min-width: 0;
 }
 
@@ -159,7 +159,7 @@
   display: flex;
   align-items: center;
   gap: var(--gap-md);
-  margin-left: -2px;
+  margin-left: calc(-1 * var(--gap-2xs));
 }
 
 .app-row-figure {
@@ -201,8 +201,8 @@
   /* Cancel the pill's padding (and the glyphs' empty edges) on both sides, so
      the dot between the two links sits the standard 8px from each. */
   margin: 0 -9px 0 -9.5px;
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: var(--gap-2xs) var(--gap-sm);
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: inherit;
   font-weight: var(--weight-medium);

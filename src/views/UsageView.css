@@ -9,7 +9,7 @@
 .usage-metric-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-tight);
   /* Match the speed-test hero's label→value rhythm (`.bench-hero-cell` gap). */
   margin-bottom: var(--gap-sm);
 }

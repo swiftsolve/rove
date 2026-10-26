@@ -4,7 +4,7 @@
 .devices-subnet {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--gap-tight);
 }
 
 /* The shared slot for the online tally and the scan status. Positioned so a
@@ -16,7 +16,7 @@
 .devices-indicator {
   position: relative;
   display: inline-block;
-  margin-left: 2px;
+  margin-left: var(--gap-2xs);
 }
 
 /* The one that's on its way out overlays the slot's start rather than taking
@@ -55,7 +55,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--positive);
-  margin-right: 8px;
+  margin-right: var(--gap-sm);
   /* Centre on the cap/digit height of the numbers beside it ("16", the subnet),
      which sits a touch above the x-height middle vertical-align gives. */
   vertical-align: middle;
@@ -110,7 +110,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--positive);
-  margin-right: 8px;
+  margin-right: var(--gap-sm);
   /* Same centering as the online dot, so both land in the exact same spot. */
   vertical-align: middle;
   position: relative;
@@ -166,7 +166,7 @@
   display: flex;
   /* Icon pinned to the top-left; the body column fills the rest. */
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--gap-md);
   padding: var(--section-header-y) var(--section-header-x);
 }
 
@@ -371,8 +371,8 @@
    copy of it is laid out by <EmptyState> instead. */
 .device-list > .devices-hint {
   max-width: 40ch;
-  margin-top: 10px;
-  padding: 0 4px;
+  margin-top: var(--gap-stack);
+  padding: 0 var(--gap-xs);
   line-height: 1.45;
   font-size: var(--text-small);
 }

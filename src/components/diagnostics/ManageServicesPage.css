@@ -25,7 +25,7 @@
 .mgsvc-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--gap-2xs);
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -130,7 +130,7 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--gap-2xs);
   min-width: 112px;
   padding: var(--gap-xs);
   background: var(--bg-panel-hi);
@@ -207,8 +207,8 @@
   align-items: center;
   gap: 5px;
   margin-left: -9.5px;
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: var(--gap-2xs) var(--gap-sm);
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: inherit;
   font-weight: var(--weight-medium);
@@ -257,7 +257,7 @@ button.mgsvc-add {
   color: var(--text-on-fill);
   background: var(--accent-fill);
   /* A step up from the base .btn-primary size, matching the Run test button. */
-  padding: 10px 14px;
+  padding: var(--gap-stack) var(--section-pad);
   font-size: var(--text-small);
 }
 

@@ -27,8 +27,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-lg);
-  padding: var(--row-py) 8px;
-  margin: 0 -8px;
+  padding: var(--row-py) var(--gap-sm);
+  margin: 0 calc(-1 * var(--gap-sm));
   width: calc(100% + 16px);
   border-radius: var(--radius-sm);
   text-align: left;
@@ -37,7 +37,7 @@
 }
 
 .setting-link-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--fill-row-hover);
 }
 
 /* Focus is the ring alone, no wash — like the nav-flash highlight minus its
@@ -100,7 +100,7 @@
 
 .setting-input {
   width: 100%;
-  padding: 8px 10px;
+  padding: var(--gap-sm) var(--gap-stack);
   font-size: var(--text-body);
   font-family: inherit;
   color: var(--text-primary);
@@ -198,7 +198,7 @@
 .theme-segmented {
   display: inline-flex;
   gap: var(--gap-2xs);
-  padding: 2px;
+  padding: var(--gap-2xs);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -208,7 +208,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--gap-tight);
-  padding: 5px 10px;
+  padding: 5px var(--gap-stack);
   border: none;
   background: transparent;
   border-radius: var(--radius-xs);

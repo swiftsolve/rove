@@ -43,6 +43,6 @@
 .view-header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--gap-xs);
   flex-shrink: 0;
 }

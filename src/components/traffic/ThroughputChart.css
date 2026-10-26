@@ -41,7 +41,7 @@
 .tp-chart-axis {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: var(--gap-tight);
   padding-right: 26px;
   font-size: var(--text-micro);
   line-height: 1;

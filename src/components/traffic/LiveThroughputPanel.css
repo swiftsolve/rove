@@ -23,7 +23,7 @@
   /* A rounded dark pill wrapping the dot + label so the badge reads as a
      discrete status chip against the panel. */
   padding: var(--gap-xs) var(--gap-sm);
-  border-radius: 99px;
+  border-radius: var(--radius-full);
   background: var(--bg-inset);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);

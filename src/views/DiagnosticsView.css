@@ -20,7 +20,7 @@
 }
 
 .diag-dns .data-row {
-  padding: 6px 0;
+  padding: var(--gap-tight) 0;
 }
 
 .diag-router .data-row:first-child,

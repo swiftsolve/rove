@@ -88,7 +88,7 @@
 .host-app-id {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-sm);
   min-width: 0;
 }
 
@@ -108,8 +108,8 @@
 .host-app-count {
   flex-shrink: 0;
   min-width: 18px;
-  padding: 1px 6px;
-  border-radius: var(--radius-pill, 999px);
+  padding: 1px var(--gap-tight);
+  border-radius: var(--radius-pill, var(--radius-full));
   background: var(--bg-inset);
   color: var(--text-tertiary);
   font-size: var(--text-caption);
@@ -163,7 +163,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: var(--text-body);
   line-height: 1;
   /* Twemoji flag glyphs first so the country flags render on Windows (which has
      no flag emoji); the SVG-icon fallbacks for LAN/unresolved peers aren't text
@@ -198,7 +198,7 @@
 .host-name-tip-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--gap-2xs);
 }
 
 .host-name-tip-name {
