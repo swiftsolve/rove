@@ -126,7 +126,7 @@
   justify-content: center;
   /* Nudge the spinner down slightly so it sits closer to the vertical centre of
      the card body rather than riding high under the title. */
-  padding-top: 6px;
+  padding-top: var(--gap-tight);
 }
 
 /* The macOS Devices widget before its first scan: a plain container (not a
@@ -162,8 +162,8 @@
   align-items: center;
   gap: var(--gap-xs);
   /* Tighter horizontal padding than the base .btn-secondary (12px). */
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: var(--gap-sm);
+  padding-right: var(--gap-sm);
   /* Nudge the button a touch lower toward the card's bottom edge. */
-  margin-bottom: -4px;
+  margin-bottom: calc(-1 * var(--gap-xs));
 }

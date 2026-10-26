@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--gap-xl);
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--scrim);
   animation: svc-dialog-fade var(--duration-fast) var(--ease-out);
 }
 
@@ -40,14 +40,14 @@
 
 .svc-dialog-title {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--text-dialog);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .svc-dialog-sub {
-  margin: 4px 0 0;
+  margin: var(--gap-xs) 0 0;
   font-size: var(--text-small);
   color: var(--text-secondary);
 }
@@ -78,7 +78,7 @@
 
 .svc-dialog-field-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: var(--gap-tight);
   font-size: var(--text-small);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
@@ -88,7 +88,7 @@
   width: 100%;
   /* Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
      fixed-height control centred beside it lands on a symmetric gap. */
-  padding: 10px 12px;
+  padding: var(--gap-stack) var(--gap-md);
   line-height: 18px;
   background: var(--bg-inset);
   border: 1px solid var(--border);
@@ -118,7 +118,7 @@
   display: flex;
   align-items: center;
   gap: var(--gap-xs);
-  padding-right: 6px;
+  padding-right: var(--gap-tight);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -211,7 +211,7 @@
      so the result reads as the same-sized box swapping in. */
   min-height: 40px;
   gap: var(--gap-sm);
-  padding: 0 12px;
+  padding: 0 var(--gap-md);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -250,7 +250,7 @@
   justify-content: center;
   gap: var(--gap-tight);
   min-width: 76px;
-  padding: 10px 14px;
+  padding: var(--gap-stack) var(--section-pad);
   border-radius: var(--radius-sm);
   font-size: var(--text-small);
   font-weight: var(--weight-semibold);

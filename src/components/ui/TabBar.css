@@ -9,7 +9,7 @@
   /* Narrow icon-only rail. Horizontal padding is symmetric so the active pill
      and the left accent bar read as evenly inset; top padding matches the
      content area's so the first nav item aligns with the first widget. */
-  padding: var(--gap-md) 11px;
+  padding: var(--gap-md) var(--gap-inset);
   background: var(--bg-app-2);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
@@ -51,7 +51,7 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--radius-nav);
   color: var(--text-tertiary);
   transition:
     color var(--duration-fast) var(--ease-in-out),

@@ -33,7 +33,7 @@
    hairline, or the thin bars blur across subpixel boundaries and read fuzzy. */
 .capability-strip-cell .capability-meter {
   height: 9px;
-  gap: 2px;
+  gap: var(--gap-2xs);
 }
 
 .capability-strip-cell .capability-seg {

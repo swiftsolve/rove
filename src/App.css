@@ -63,7 +63,7 @@
   scrollbar-gutter: stable;
   /* Left/right inset matches the nav rail's 11px so the content sits the same
      distance from the window edge as the nav icons do. */
-  padding: var(--gap-md) 11px var(--gap-xl);
+  padding: var(--gap-md) var(--gap-inset) var(--gap-xl);
 }
 
 .loading-screen {
@@ -72,7 +72,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: var(--section-pad);
   animation: fade-in var(--duration-normal) var(--ease-out);
 }
 
@@ -104,7 +104,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(247, 123, 123, 0.1);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint-soft), transparent);
   color: var(--negative);
 }
 
@@ -151,7 +151,7 @@
   min-height: 56px;
   /* Left inset aligns the brand mark with the nav rail below; right inset keeps
      the window controls at the standard header edge. */
-  padding: 0 var(--section-header-x) 0 16px;
+  padding: 0 var(--section-header-x) 0 var(--gap-lg);
   background: var(--bg-app-2);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
@@ -188,14 +188,14 @@
 .status-bar-left {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--gap-md);
   min-width: 0;
 }
 
 .status-bar-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-tight);
   /* Nudge down a hair so the label optically aligns with the wordmark's
      center rather than sitting slightly high next to it. */
   margin-top: 1px;
@@ -210,7 +210,7 @@
 .win-controls {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-tight);
   -webkit-app-region: no-drag;
 }
 
@@ -298,7 +298,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--gap-tight);
-  padding: 6px 12px;
+  padding: var(--gap-tight) var(--gap-md);
   border-radius: var(--radius-sm);
   background: var(--bg-inset);
   color: var(--text-secondary);
@@ -382,12 +382,12 @@
 }
 
 .btn-icon-stop {
-  background: rgba(247, 123, 123, 0.14);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
   color: var(--negative);
 }
 
 .btn-icon-stop:hover {
-  background: rgba(247, 123, 123, 0.22);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint-hover), transparent);
 }
 
 .btn-icon-stop svg {
@@ -404,7 +404,7 @@
 .inline-error {
   padding: var(--gap-sm) var(--gap-md);
   border-radius: var(--radius-sm);
-  background: rgba(248, 113, 113, 0.08);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint-faint), transparent);
   color: var(--negative-text);
   font-size: var(--text-body);
   line-height: 1.45;
@@ -418,7 +418,7 @@
   gap: var(--gap-sm);
   padding: var(--gap-xs) var(--gap-sm) var(--gap-xs) var(--gap-md);
   border-radius: var(--radius-sm);
-  background: rgba(248, 113, 113, 0.08);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint-faint), transparent);
   color: var(--negative-text);
   font-size: var(--text-body);
   line-height: 1.45;
@@ -440,7 +440,7 @@
   align-items: center;
   gap: var(--gap-tight);
   flex-shrink: 0;
-  padding: 4px 10px;
+  padding: var(--gap-xs) var(--gap-stack);
   border-radius: var(--radius-sm);
   color: var(--negative-text);
   font-size: var(--text-caption);
@@ -449,7 +449,7 @@
 }
 
 .error-banner-action:hover {
-  background: rgba(248, 113, 113, 0.14);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
 }
 
 .error-banner-dismiss {
@@ -460,7 +460,7 @@
 }
 
 .error-banner-dismiss:hover {
-  background: rgba(248, 113, 113, 0.14);
+  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
 }
 
 /* The global error above .app-main has no flex gap to lean on. */

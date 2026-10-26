@@ -20,7 +20,7 @@
 .ui-section-heading {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-sm);
   min-width: 0;
 }
 
@@ -41,10 +41,10 @@
    VPN/proxy flag; sized to sit unobtrusively where the brand icon would. */
 .ui-section-badge {
   flex-shrink: 0;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 600;
+  padding: 1px var(--gap-tight);
+  border-radius: var(--radius-full);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--warning-text);

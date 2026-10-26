@@ -26,7 +26,7 @@
   flex-shrink: 0;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--radius-nav);
   color: var(--text-secondary);
   background: var(--fill-chip);
   transition:

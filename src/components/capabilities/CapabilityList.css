@@ -15,8 +15,8 @@
   gap: var(--gap-md);
   /* Negative margin lets the hover highlight bleed into the section padding
      while the content stays aligned to the 16px edge. */
-  padding: var(--row-py) 8px;
-  margin: 0 -8px;
+  padding: var(--row-py) var(--gap-sm);
+  margin: 0 calc(-1 * var(--gap-sm));
   width: calc(100% + 16px);
   border-radius: var(--radius-sm);
   text-align: left;
@@ -24,7 +24,7 @@
 }
 
 .capability-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--fill-row-hover);
 }
 
 /* Focus is the ring alone, no wash — like the nav-flash highlight minus its
@@ -44,7 +44,7 @@
 .capability-row-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--gap-md);
   min-width: 0;
   flex: 1;
 }
@@ -82,7 +82,7 @@
 .capability-row-status {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--gap-stack);
   flex-shrink: 0;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .capability-list--testing .capability-row .capability-seg.on {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--fill-track-lit);
 }
 
 .capability-list--testing .capability-row {
