@@ -3,9 +3,9 @@ import type { ServiceEvent } from '@/types'
 
 interface UseServiceHistoryResult {
   /** The timeline, newest first. Empty until the first read lands. */
-  readonly events: readonly ServiceEvent[]
+  events: ServiceEvent[]
   /** Wipe the stored timeline, then re-read (which yields an empty log). */
-  readonly clear: () => Promise<void>
+  clear: () => Promise<void>
 }
 
 /**
@@ -17,7 +17,7 @@ interface UseServiceHistoryResult {
  * that starts while the timeline is on screen appears without a manual refresh.
  */
 export function useServiceHistory(): UseServiceHistoryResult {
-  const [events, setEvents] = useState<readonly ServiceEvent[]>([])
+  const [events, setEvents] = useState<ServiceEvent[]>([])
 
   const read = useCallback(async (): Promise<void> => {
     const history = await window.networkAPI?.getServiceHistory()

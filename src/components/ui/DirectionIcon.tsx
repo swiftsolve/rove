@@ -3,8 +3,8 @@ import { ArrowDownIcon, ArrowUpIcon } from '@/components/ui/Icons'
 import './DirectionIcon.css'
 
 interface DirectionIconProps {
-  readonly series: SpeedSeries
-  readonly size?: number
+  series: SpeedSeries
+  size?: number
 }
 
 /**

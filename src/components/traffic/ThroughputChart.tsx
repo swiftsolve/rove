@@ -7,16 +7,16 @@ import { formatChartWindowLabel } from '@/components/traffic/throughput-history'
 import './ThroughputChart.css'
 
 interface ThroughputChartProps {
-  readonly download: readonly number[]
-  readonly upload: readonly number[]
-  readonly speedTestRunning?: boolean
-  readonly linkCapacityMbps?: number | null
+  download: number[]
+  upload: number[]
+  speedTestRunning?: boolean
+  linkCapacityMbps?: number | null
 }
 
 interface ChartDatum {
-  readonly index: number
-  readonly down: number
-  readonly up: number
+  index: number
+  down: number
+  up: number
 }
 
 /** Trim to a clean, consistent tick: no trailing ".0", 1 decimal only below 10. */
@@ -72,7 +72,7 @@ export default function ThroughputChart({
   // A single endpoint marker on the latest sample, matching the old design.
   const renderEndDot =
     (color: string, radius: number) =>
-    (props: { readonly cx?: number; readonly cy?: number; readonly index?: number }) => {
+    (props: { cx?: number; cy?: number; index?: number }) => {
       const { cx, cy, index } = props
       if (index !== lastIndex || cx == null || cy == null) return <g key={`e-${index}`} />
       return <circle key={`e-${index}`} cx={cx} cy={cy} r={radius} fill={color} />

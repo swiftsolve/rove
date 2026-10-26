@@ -8,16 +8,16 @@ import { ChevronRightIcon, ZapIcon } from '@/components/ui/Icons'
 import './CapabilityList.css'
 
 interface CapabilityListProps {
-  readonly capabilities: readonly CapabilityRating[]
-  readonly hasRunTest: boolean
+  capabilities: CapabilityRating[]
+  hasRunTest: boolean
   /** A speed test is currently running — grey out the stale rows until it lands. */
-  readonly testing: boolean
-  readonly onOpenDetails: (capabilityId: CapabilityId) => void
+  testing: boolean
+  onOpenDetails: (capabilityId: CapabilityId) => void
 }
 
 // A few headline use-cases previewed in the empty state before any test runs —
 // the full breakdown appears once results come in.
-const PREVIEW_IDS: readonly CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
+const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
 const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
   (id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!,
 )
@@ -27,9 +27,9 @@ function CapabilityRow({
   testing,
   onOpen,
 }: {
-  readonly capability: CapabilityRating
-  readonly testing: boolean
-  readonly onOpen: () => void
+  capability: CapabilityRating
+  testing: boolean
+  onOpen: () => void
 }): JSX.Element {
   return (
     <button type="button" className="capability-row" onClick={onOpen} disabled={testing}>

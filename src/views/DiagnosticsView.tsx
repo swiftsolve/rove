@@ -12,13 +12,13 @@ import { ViewHeader } from '@/components/ui/ViewHeader'
 import './DiagnosticsView.css'
 
 interface DiagnosticsViewProps {
-  readonly diagnostics: NetworkDiagnostics | null
+  diagnostics: NetworkDiagnostics | null
   /** Negotiated link rate of the local connection to the router (Wi-Fi/Ethernet),
    *  or null when disconnected or the OS doesn't report it. */
-  readonly linkSpeedMbps: number | null
-  readonly isRunning: boolean
-  readonly error: string | null
-  readonly onRun: () => void
+  linkSpeedMbps: number | null
+  isRunning: boolean
+  error: string | null
+  onRun: () => void
 }
 
 function formatPercent(pct: number): string {

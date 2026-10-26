@@ -18,16 +18,16 @@ import { useNow } from '@/hooks/useNow'
 import './SpeedView.css'
 
 interface SpeedViewProps {
-  readonly info: NetworkInfo
+  info: NetworkInfo
   /** The subpage currently layered over the Speed tab, or null for its main
    *  page. Owned by the app's navigation stack so Back pops the right screen. */
-  readonly sub: SpeedSub | null
+  sub: SpeedSub | null
   /** Open the capability details subpage, scrolled to this capability. */
-  readonly onOpenDetails: (target: CapabilityId | null) => void
+  onOpenDetails: (target: CapabilityId | null) => void
   /** Open the speed-test history subpage. */
-  readonly onOpenHistory: () => void
+  onOpenHistory: () => void
   /** Return to the previous screen. */
-  readonly onBack: () => void
+  onBack: () => void
 }
 
 function connectionFromNetworkInfo(info: NetworkInfo): SpeedTestConnection | null {

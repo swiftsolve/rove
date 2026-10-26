@@ -3,10 +3,10 @@ import type { LanDeviceScan } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface UseDevicesResult {
-  readonly scan: LanDeviceScan | null
-  readonly isScanning: boolean
-  readonly error: string | null
-  readonly rescan: () => Promise<void>
+  scan: LanDeviceScan | null
+  isScanning: boolean
+  error: string | null
+  rescan: () => Promise<void>
 }
 
 export function useDevices(enabled: boolean, networkKey?: string | null): UseDevicesResult {

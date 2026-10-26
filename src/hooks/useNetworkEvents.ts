@@ -3,10 +3,10 @@ import type { NetworkEvent } from '@/types'
 import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface UseNetworkEventsResult {
-  readonly events: readonly NetworkEvent[]
-  readonly isLoading: boolean
-  readonly error: string | null
-  readonly reload: () => Promise<void>
+  events: NetworkEvent[]
+  isLoading: boolean
+  error: string | null
+  reload: () => Promise<void>
 }
 
 /**

@@ -18,13 +18,13 @@ import type { InternetStatus, ServiceReachability } from '@/types'
 /** One latency reading for a service at a point in time. */
 export interface LatencySample {
   /** Epoch milliseconds when the sample was taken. */
-  readonly ts: number
+  ts: number
   /** TLS-handshake latency in ms, or null when the probe failed (service down). */
-  readonly ms: number | null
+  ms: number | null
 }
 
 /** Recent samples keyed by host, oldest first. */
-export type LatencyHistory = Readonly<Record<string, readonly LatencySample[]>>
+export type LatencyHistory = Record<string, LatencySample[]>
 
 const STORAGE_KEY = 'rove.service-latency.v1'
 
@@ -50,7 +50,7 @@ export function readLatencyHistory(): LatencyHistory {
   try {
     const parsed: unknown = JSON.parse(raw)
     if (typeof parsed !== 'object' || parsed == null || Array.isArray(parsed)) return {}
-    const out: Record<string, readonly LatencySample[]> = {}
+    const out: Record<string, LatencySample[]> = {}
     for (const [host, samples] of Object.entries(parsed as Record<string, unknown>)) {
       if (Array.isArray(samples)) out[host] = samples.filter(isSample)
     }
@@ -82,7 +82,7 @@ export function writeLatencyHistory(history: LatencyHistory): void {
  */
 export function appendSamples(
   history: LatencyHistory,
-  reachability: readonly ServiceReachability[],
+  reachability: ServiceReachability[],
   internet: InternetStatus | undefined,
 ): LatencyHistory {
   if (reachability.length === 0) return history
@@ -91,7 +91,7 @@ export function appendSamples(
   if (offline) return history
 
   const now = Date.now()
-  const next: Record<string, readonly LatencySample[]> = {}
+  const next: Record<string, LatencySample[]> = {}
   for (const svc of reachability) {
     const prev = history[svc.host] ?? []
     const appended = [...prev, { ts: now, ms: svc.latencyMs }]
@@ -123,7 +123,7 @@ const listeners = new Set<() => void>()
  * while offline or with no services — so it's safe to call on every poll.
  */
 export function recordLatency(
-  reachability: readonly ServiceReachability[],
+  reachability: ServiceReachability[],
   internet: InternetStatus | undefined,
 ): void {
   const next = appendSamples(cache, reachability, internet)
@@ -141,7 +141,7 @@ export function recordLatency(
  * populated rather than drawing their first lone sample.
  */
 export function seedLatencyHistory(seed: LatencyHistory): void {
-  const next: Record<string, readonly LatencySample[]> = { ...cache }
+  const next: Record<string, LatencySample[]> = { ...cache }
   for (const [host, samples] of Object.entries(seed)) {
     next[host] = samples.slice(Math.max(0, samples.length - MAX_SAMPLES))
   }

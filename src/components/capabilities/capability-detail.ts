@@ -3,20 +3,20 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 
 export interface RequirementCheck {
-  readonly label: string
-  readonly need: string
-  readonly have: string
-  readonly pass: boolean
+  label: string
+  need: string
+  have: string
+  pass: boolean
 }
 
 export interface CapabilityExplanation {
-  readonly summary: string
-  readonly checks: readonly RequirementCheck[]
+  summary: string
+  checks: RequirementCheck[]
 }
 
 const DEFINITIONS = new Map(CAPABILITY_DEFINITIONS.map((definition) => [definition.id, definition]))
 
-function listPhrase(words: readonly string[]): string {
+function listPhrase(words: string[]): string {
   if (words.length <= 1) return words[0] ?? ''
   if (words.length === 2) return `${words[0]} and ${words[1]}`
   return `${words.slice(0, -1).join(', ')}, and ${words[words.length - 1]}`
@@ -30,12 +30,12 @@ function activityPhrase(label: string): string {
     .join(' ')
 }
 
-function metricPhrase(words: readonly string[]): string {
+function metricPhrase(words: string[]): string {
   const phrase = listPhrase(words)
   return phrase.charAt(0).toUpperCase() + phrase.slice(1)
 }
 
-function summarize(level: CapabilityLevel, label: string, failing: readonly string[]): string {
+function summarize(level: CapabilityLevel, label: string, failing: string[]): string {
   const activity = activityPhrase(label)
 
   switch (level) {
@@ -65,7 +65,7 @@ export function explainCapability(
   if (!definition) return { summary: '', checks: [] }
 
   const { requirements } = definition
-  const checks: readonly RequirementCheck[] = [
+  const checks: RequirementCheck[] = [
     {
       label: 'Download',
       need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps)}`,

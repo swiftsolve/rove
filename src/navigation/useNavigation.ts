@@ -4,28 +4,28 @@ import type { AppTab } from '@/navigation/tabs'
 
 /** A subpage layered over the Speed tab. `null` means the tab's main page. */
 export type SpeedSub =
-  | { readonly view: 'details'; readonly target: CapabilityId | null }
-  | { readonly view: 'history' }
+  | { view: 'details'; target: CapabilityId | null }
+  | { view: 'history' }
 
 /** A subpage layered over the Services tab. `null` means the tab's main page. */
-export type ServicesSub = { readonly view: 'timeline' }
+export type ServicesSub = { view: 'timeline' }
 
 /** A subpage layered over the Apps tab. `null` means the tab's main page.
  *  `'hosts'` is the per-app remote-host breakdown — `app` names the group to
  *  open expanded (others collapsed), omitted for the plain "All hosts" entry
  *  point. `'traffic'` is the flat by-protocol breakdown ("All traffic types"). */
 export type AppsSub =
-  | { readonly view: 'hosts'; readonly app?: string | null }
-  | { readonly view: 'traffic' }
+  | { view: 'hosts'; app?: string | null }
+  | { view: 'traffic' }
 
 /** A single screen the app can show — a tab, optionally with a subpage. */
 export interface AppLocation {
-  readonly tab: AppTab
-  readonly speedSub: SpeedSub | null
+  tab: AppTab
+  speedSub: SpeedSub | null
   /** Subpage over the Services tab (the timeline); omit for the main page. */
-  readonly servicesSub?: ServicesSub | null
+  servicesSub?: ServicesSub | null
   /** Subpage over the Apps tab (the Hosts view); omit for the main page. */
-  readonly appsSub?: AppsSub | null
+  appsSub?: AppsSub | null
 }
 
 export const HOME_LOCATION: AppLocation = { tab: 'home', speedSub: null }
@@ -70,11 +70,11 @@ function sameLocation(a: AppLocation, b: AppLocation): boolean {
 }
 
 export interface Navigation {
-  readonly location: AppLocation
+  location: AppLocation
   /** Push a new screen onto the history stack. */
-  readonly navigate: (to: AppLocation) => void
+  navigate: (to: AppLocation) => void
   /** Return to the previous screen (same as the browser/OS back button). */
-  readonly back: () => void
+  back: () => void
 }
 
 // We stash the location on `history.state` under a namespaced key rather than

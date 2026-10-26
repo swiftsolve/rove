@@ -8,21 +8,21 @@ import HomeStats from '@/components/home/HomeStats'
 import LiveThroughputPanel from '@/components/traffic/LiveThroughputPanel'
 
 interface HomeViewProps {
-  readonly info: NetworkInfo
-  readonly usage: DataUsageSummary
-  readonly usageLoading: boolean
-  readonly deviceCount: number | null
-  readonly deviceOnline: number | null
-  readonly devicesLoading: boolean
+  info: NetworkInfo
+  usage: DataUsageSummary
+  usageLoading: boolean
+  deviceCount: number | null
+  deviceOnline: number | null
+  devicesLoading: boolean
   /** macOS only: trigger a device scan from the Home widget (no auto-scan there). */
-  readonly onScanDevices?: () => void
-  readonly onOpenCapabilities: (capabilityId: CapabilityId) => void
+  onScanDevices?: () => void
+  onOpenCapabilities: (capabilityId: CapabilityId) => void
   /** Switch to the Speed tab (where the running test's UI lives). */
-  readonly onRunSpeedTest: () => void
+  onRunSpeedTest: () => void
   /** Navigate to the Speed page. */
-  readonly onOpenSpeed: () => void
-  readonly onOpenUsage: () => void
-  readonly onOpenDevices: () => void
+  onOpenSpeed: () => void
+  onOpenUsage: () => void
+  onOpenDevices: () => void
 }
 
 export default function HomeView({

@@ -18,14 +18,14 @@ import './SettingsView.css'
 
 interface SettingsViewProps {
   /** The current colour-theme preference. */
-  readonly themeMode: ThemeMode
+  themeMode: ThemeMode
   /** Change the colour-theme preference. */
-  readonly onThemeModeChange: (mode: ThemeMode) => void
+  onThemeModeChange: (mode: ThemeMode) => void
   /** Navigate to the About page. */
-  readonly onOpenAbout: () => void
+  onOpenAbout: () => void
 }
 
-const THEME_OPTIONS: ReadonlyArray<{ readonly value: ThemeMode; readonly label: string; readonly icon: JSX.Element }> = [
+const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} /> },
   { value: 'light', label: 'Light', icon: <SunIcon size={15} /> },
   { value: 'system', label: 'System', icon: <ComputerIcon size={15} /> },
@@ -36,8 +36,8 @@ function ThemeSegmented({
   value,
   onChange,
 }: {
-  readonly value: ThemeMode
-  readonly onChange: (mode: ThemeMode) => void
+  value: ThemeMode
+  onChange: (mode: ThemeMode) => void
 }): JSX.Element {
   return (
     <div className="theme-segmented" role="radiogroup" aria-label="Theme">
@@ -64,9 +64,9 @@ function SettingRow({
   description,
   control,
 }: {
-  readonly title: string
-  readonly description: string
-  readonly control: ReactNode
+  title: string
+  description: string
+  control: ReactNode
 }): JSX.Element {
   return (
     <div className="setting-row">
@@ -80,11 +80,11 @@ function SettingRow({
 }
 
 type CheckState =
-  | { readonly kind: 'idle' }
-  | { readonly kind: 'checking' }
-  | { readonly kind: 'up-to-date' }
-  | { readonly kind: 'available'; readonly update: PendingUpdate }
-  | { readonly kind: 'error' }
+  | { kind: 'idle' }
+  | { kind: 'checking' }
+  | { kind: 'up-to-date' }
+  | { kind: 'available'; update: PendingUpdate }
+  | { kind: 'error' }
 
 export default function SettingsView({
   themeMode,

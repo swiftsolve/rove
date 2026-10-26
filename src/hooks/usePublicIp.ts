@@ -2,8 +2,8 @@ import { useMemo, useRef } from 'react'
 import { useBackendResource } from '@/hooks/useBackendResource'
 
 interface PublicIpState {
-  readonly publicIp: string | null
-  readonly isLoading: boolean
+  publicIp: string | null
+  isLoading: boolean
 }
 
 /**

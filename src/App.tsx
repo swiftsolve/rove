@@ -41,9 +41,9 @@ import { useTheme } from '@/hooks/useTheme'
 import './App.css'
 
 interface NetworkErrorInfo {
-  readonly kind: 'timeout' | 'backend' | 'offline'
-  readonly title: string
-  readonly hint: string
+  kind: 'timeout' | 'backend' | 'offline'
+  title: string
+  hint: string
 }
 
 // Turn a raw error string into a title + plain-language hint so a stalled
@@ -64,7 +64,7 @@ function describeNetworkError(message: string): NetworkErrorInfo {
   return { kind: 'offline', title: 'Can’t reach your network', hint: message }
 }
 
-function NetworkErrorIcon({ kind, size }: { readonly kind: NetworkErrorInfo['kind']; readonly size: number }): JSX.Element {
+function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size: number }): JSX.Element {
   return kind === 'offline' ? <OfflineIcon size={size} /> : <AlertIcon size={size} />
 }
 
@@ -72,8 +72,8 @@ function LoadingScreen({
   error,
   onRetry,
 }: {
-  readonly error: string | null
-  readonly onRetry: () => void
+  error: string | null
+  onRetry: () => void
 }): JSX.Element {
   const info = error ? describeNetworkError(error) : null
 
@@ -116,9 +116,9 @@ function ErrorBanner({
   onRetry,
   onDismiss,
 }: {
-  readonly error: string
-  readonly onRetry: () => void
-  readonly onDismiss: () => void
+  error: string
+  onRetry: () => void
+  onDismiss: () => void
 }): JSX.Element {
   const { kind, title } = describeNetworkError(error)
   return (
@@ -183,8 +183,8 @@ function StatusBar({
   tone,
   label,
 }: {
-  readonly tone: StatusTone
-  readonly label: string
+  tone: StatusTone
+  label: string
 }): JSX.Element {
   return (
     <header className="status-bar" data-tauri-drag-region>

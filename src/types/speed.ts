@@ -1,20 +1,20 @@
 export interface PingStats {
-  readonly avgMs: number
-  readonly jitterMs: number
-  readonly packetLoss: number
+  avgMs: number
+  jitterMs: number
+  packetLoss: number
 }
 
 export interface SpeedResult {
-  readonly downloadMbps: number
-  readonly uploadMbps: number
-  readonly latencyMs: number
-  readonly jitterMs: number
-  readonly packetLoss: number
+  downloadMbps: number
+  uploadMbps: number
+  latencyMs: number
+  jitterMs: number
+  packetLoss: number
 }
 
 export interface Throughput {
-  readonly downloadMbps: number
-  readonly uploadMbps: number
+  downloadMbps: number
+  uploadMbps: number
 }
 
 export const SPEED_TEST_PHASES = ['idle', 'internet', 'complete', 'error'] as const
@@ -22,10 +22,10 @@ export const SPEED_TEST_PHASES = ['idle', 'internet', 'complete', 'error'] as co
 export type SpeedTestPhase = (typeof SPEED_TEST_PHASES)[number]
 
 export interface SpeedTestProgress {
-  readonly phase: SpeedTestPhase
-  readonly message: string
+  phase: SpeedTestPhase
+  message: string
   /** Progress percentage from 0 to 100. */
-  readonly progress: number
+  progress: number
 }
 
 export type ProgressReporter = (progress: SpeedTestProgress) => void

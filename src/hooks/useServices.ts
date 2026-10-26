@@ -3,12 +3,12 @@ import type { ServiceDefinition } from '@/types'
 
 interface UseServicesResult {
   /** The user's ordered service list, or null before the first load resolves. */
-  readonly services: readonly ServiceDefinition[] | null
-  readonly error: string | null
+  services: ServiceDefinition[] | null
+  error: string | null
   /** Add a service and adopt the returned list. */
-  readonly add: (name: string, host: string) => Promise<void>
+  add: (name: string, host: string) => Promise<void>
   /** Remove the service with this host and adopt the returned list. */
-  readonly remove: (host: string) => Promise<void>
+  remove: (host: string) => Promise<void>
 }
 
 /**
@@ -21,7 +21,7 @@ interface UseServicesResult {
  * matched to these rows by host in the view.
  */
 export function useServices(enabled: boolean): UseServicesResult {
-  const [services, setServices] = useState<readonly ServiceDefinition[] | null>(null)
+  const [services, setServices] = useState<ServiceDefinition[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

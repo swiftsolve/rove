@@ -2,18 +2,18 @@ import type { ReactNode } from 'react'
 import './EmptyState.css'
 
 interface IconProps {
-  readonly size?: number
-  readonly className?: string
+  size?: number
+  className?: string
 }
 
 interface EmptyStateProps {
   /** Glyph above the title — any alias from `Icons`, drawn at the shared size. */
-  readonly icon: (props: IconProps) => JSX.Element
-  readonly title: string
+  icon: (props: IconProps) => JSX.Element
+  title: string
   /** A line or two naming what will fill the page, or why it can't. */
-  readonly hint?: ReactNode
+  hint?: ReactNode
   /** Control below the hint, usually a retry button. */
-  readonly action?: ReactNode
+  action?: ReactNode
 }
 
 /**

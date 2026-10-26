@@ -4,11 +4,11 @@ import { isDisconnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types
 export type ConnectionDisplayVariant = 'wifi' | 'ethernet' | 'disconnected'
 
 export interface ConnectionDisplay {
-  readonly variant: ConnectionDisplayVariant
-  readonly badge: string
-  readonly title: string
-  readonly subtitle: string
-  readonly isConnected: boolean
+  variant: ConnectionDisplayVariant
+  badge: string
+  title: string
+  subtitle: string
+  isConnected: boolean
 }
 
 export function getConnectionDisplay(info: NetworkInfo): ConnectionDisplay {

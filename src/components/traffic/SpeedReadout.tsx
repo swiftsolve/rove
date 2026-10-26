@@ -12,10 +12,10 @@ export type SpeedSeries = 'down' | 'up'
 const LIVE_FLOOR_MBPS = 0.1
 
 interface SpeedReadoutProps {
-  readonly label: string
-  readonly mbps: number
-  readonly series: SpeedSeries
-  readonly compact?: boolean
+  label: string
+  mbps: number
+  series: SpeedSeries
+  compact?: boolean
 }
 
 function SpeedReadout({

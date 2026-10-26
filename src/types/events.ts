@@ -28,23 +28,23 @@ export type NetworkEventSeverity = 'info' | 'warning' | 'critical'
  * to a 7-day window.
  */
 export interface NetworkEvent {
-  readonly id: number
+  id: number
   /** Epoch milliseconds. */
-  readonly ts: number
-  readonly type: NetworkEventType
-  readonly severity: NetworkEventSeverity
-  readonly mac: string | null
-  readonly ip: string | null
+  ts: number
+  type: NetworkEventType
+  severity: NetworkEventSeverity
+  mac: string | null
+  ip: string | null
   /** Best-effort device label captured when the event fired. */
-  readonly name: string | null
+  name: string | null
   /** Device category (the same kind the Devices view shows), read live from the
    *  current roster for device-subject events. Null when unknown or the event
    *  isn't about a single device (an SSID, a count, a gateway change). */
-  readonly kind: LanDeviceKind | null
+  kind: LanDeviceKind | null
   /** Change events only: the value before and after (e.g. old/new IP). */
-  readonly oldValue: string | null
-  readonly newValue: string | null
+  oldValue: string | null
+  newValue: string | null
   /** The device's MAC was privacy-randomized — presence events for it are
    *  noisier (a phone re-randomizes ~daily), so the UI flags them. */
-  readonly randomized: boolean
+  randomized: boolean
 }

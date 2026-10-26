@@ -24,24 +24,24 @@ const failedFavicons = new Set<string>()
 
 interface ServiceIconProps {
   /** Hostname whose favicon to show, e.g. "netflix.com". */
-  readonly host: string
+  host: string
   /** Service label, used for the monogram fallback and alt text. */
-  readonly name: string
+  name: string
   /** Rendered edge length in px. */
-  readonly size?: number
+  size?: number
   /**
    * A ready-to-render icon (e.g. a `data:` URI for an app's real OS icon) that
    * takes precedence over the favicon. Falls through to the favicon/monogram if
    * it's absent or fails to load.
    */
-  readonly src?: string | null
+  src?: string | null
   /**
    * What to render when no icon resolves. `'monogram'` (the default) keeps a
    * list's rows aligned by always occupying the box. `'none'` renders nothing —
    * for a standalone slot, where a bare letter reads as a glitch rather than as
    * a brand.
    */
-  readonly fallback?: 'monogram' | 'none'
+  fallback?: 'monogram' | 'none'
 }
 
 /** An icon for a service or app, resolved in three tiers: an explicit `src`

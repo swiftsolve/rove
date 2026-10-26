@@ -50,20 +50,20 @@ const tauriNetworkApi: NetworkAPI = {
   getNetworkInfo: () => invoke<NetworkInfo>('get_network_info'),
   getWifiShare: () => invoke<WifiShare>('get_wifi_share'),
   getPublicIp: () => invoke<string | null>('get_public_ip'),
-  getInterfaces: () => invoke<readonly NetworkInterfaceSummary[]>('get_interfaces'),
+  getInterfaces: () => invoke<NetworkInterfaceSummary[]>('get_interfaces'),
   getDevices: () => invoke<LanDeviceScan>('get_devices'),
-  getNetworkEvents: () => invoke<readonly NetworkEvent[]>('get_network_events'),
+  getNetworkEvents: () => invoke<NetworkEvent[]>('get_network_events'),
   runDiagnostics: () => invoke<NetworkDiagnostics>('run_diagnostics'),
   runDiagnosticsLive: () => invoke<LiveDiagnostics>('run_diagnostics_live'),
   runServices: () => invoke<ServicesReport>('run_services'),
   getInternetStatus: () => invoke<InternetStatus | null>('get_internet_status'),
   testService: (host: string) => invoke<number | null>('test_service', { host }),
-  listServices: () => invoke<readonly ServiceDefinition[]>('list_services'),
+  listServices: () => invoke<ServiceDefinition[]>('list_services'),
   addService: (name: string, host: string) =>
-    invoke<readonly ServiceDefinition[]>('add_service', { name, host }),
+    invoke<ServiceDefinition[]>('add_service', { name, host }),
   deleteService: (host: string) =>
-    invoke<readonly ServiceDefinition[]>('delete_service', { host }),
-  getServiceHistory: () => invoke<readonly ServiceEvent[]>('get_service_history'),
+    invoke<ServiceDefinition[]>('delete_service', { host }),
+  getServiceHistory: () => invoke<ServiceEvent[]>('get_service_history'),
   clearServiceHistory: () => invoke<void>('clear_service_history'),
   onServicesTimeline: (callback: () => void) => subscribeEvent('services-timeline', callback),
   runSpeedTest: () => invoke<SpeedTestResult>('run_speed_test'),
@@ -72,9 +72,9 @@ const tauriNetworkApi: NetworkAPI = {
   getAppUsage: () => invoke<AppUsageSummary>('get_app_usage'),
   getHostUsage: () => invoke<HostUsageSummary>('get_host_usage'),
   getTrafficUsage: () => invoke<TrafficUsageSummary>('get_traffic_usage'),
-  getSpeedHistory: () => invoke<readonly SpeedHistoryEntry[]>('get_speed_history'),
+  getSpeedHistory: () => invoke<SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
-  importSpeedHistory: (entries: readonly SpeedHistoryEntry[]) =>
+  importSpeedHistory: (entries: SpeedHistoryEntry[]) =>
     invoke<void>('import_speed_history', { entries }),
   clearSpeedHistory: () => invoke<void>('clear_speed_history'),
 

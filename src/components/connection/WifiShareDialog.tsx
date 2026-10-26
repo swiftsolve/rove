@@ -13,7 +13,7 @@ import './WifiShareDialog.css'
  * passphrase is read behind an OS auth prompt, so the fetch can take a moment
  * (or come back without a password if the user declines).
  */
-export default function WifiShareDialog({ onClose }: { readonly onClose: () => void }): JSX.Element {
+export default function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
   const [share, setShare] = useState<WifiShare | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)

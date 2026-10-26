@@ -26,12 +26,12 @@ export interface NetworkAPI {
    *  when there's no Wi-Fi link to share. */
   getWifiShare(): Promise<WifiShare>
   getPublicIp(): Promise<string | null>
-  getInterfaces(): Promise<readonly NetworkInterfaceSummary[]>
+  getInterfaces(): Promise<NetworkInterfaceSummary[]>
   /** Scan the LAN for connected devices. */
   getDevices(): Promise<LanDeviceScan>
   /** The network-change feed (new devices, departures, identity changes),
    *  newest first. Populated as a side effect of device scans. */
-  getNetworkEvents(): Promise<readonly NetworkEvent[]>
+  getNetworkEvents(): Promise<NetworkEvent[]>
   getDataUsage(): Promise<DataUsageSummary>
   /** Per-app network usage since Rove started watching, busiest first. */
   getAppUsage(): Promise<AppUsageSummary>
@@ -57,17 +57,17 @@ export interface NetworkAPI {
   testService(host: string): Promise<number | null>
   /** The user's reachability service list — the built-in defaults plus any the
    *  user added, minus any they removed. Ordered as shown. */
-  listServices(): Promise<readonly ServiceDefinition[]>
+  listServices(): Promise<ServiceDefinition[]>
   /** Add a service to the list; returns the updated list. Re-adding an existing
    *  host updates its label rather than duplicating it. */
-  addService(name: string, host: string): Promise<readonly ServiceDefinition[]>
+  addService(name: string, host: string): Promise<ServiceDefinition[]>
   /** Remove the service with this host (built-in or custom); returns the
    *  updated list. */
-  deleteService(host: string): Promise<readonly ServiceDefinition[]>
+  deleteService(host: string): Promise<ServiceDefinition[]>
   /** The services outage timeline, newest first. Recorded by the always-on
    *  backend heartbeat, so it covers outages that happened while the Services
    *  tab — or the whole window — was closed. */
-  getServiceHistory(): Promise<readonly ServiceEvent[]>
+  getServiceHistory(): Promise<ServiceEvent[]>
   /** Wipe the timeline and the baseline behind it, so the next probe re-seeds. */
   clearServiceHistory(): Promise<void>
   /** Fires when the services heartbeat has folded a fresh probe into the
@@ -76,11 +76,11 @@ export interface NetworkAPI {
   runSpeedTest(): Promise<SpeedTestResult>
   cancelSpeedTest(): Promise<void>
   /** Past speed-test results, newest first, from the local database. */
-  getSpeedHistory(): Promise<readonly SpeedHistoryEntry[]>
+  getSpeedHistory(): Promise<SpeedHistoryEntry[]>
   /** Persist one completed speed-test result. */
   saveSpeedResult(entry: SpeedHistoryEntry): Promise<void>
   /** Bulk-insert results (used once to migrate legacy localStorage history). */
-  importSpeedHistory(entries: readonly SpeedHistoryEntry[]): Promise<void>
+  importSpeedHistory(entries: SpeedHistoryEntry[]): Promise<void>
   clearSpeedHistory(): Promise<void>
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
@@ -102,8 +102,8 @@ declare global {
   interface Window {
     // Optional: the plain web build (`build:web`) ships without a bridge, so
     // every consumer must guard. Use `getNetworkApi()` where a throw is fine.
-    readonly networkAPI?: NetworkAPI
-    readonly windowControls?: WindowControls
+    networkAPI?: NetworkAPI
+    windowControls?: WindowControls
   }
 }
 

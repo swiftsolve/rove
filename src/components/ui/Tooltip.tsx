@@ -16,39 +16,39 @@ import './Tooltip.css'
 
 interface TooltipProps {
   /** Label shown on hover / keyboard focus. */
-  readonly content: ReactNode
+  content: ReactNode
   /** The trigger element (usually an icon button). */
-  readonly children: ReactNode
+  children: ReactNode
   /**
    * Which edge the bubble aligns to. `right` (the default) pins the bubble's
    * right edge to the trigger and grows leftward, so a trigger near the app's
    * right edge never spills the bubble outside the window.
    */
-  readonly align?: 'left' | 'right'
+  align?: 'left' | 'right'
   /**
    * Where the bubble opens relative to the trigger. `top`/`bottom` stack the
    * bubble vertically (honouring `align` for horizontal edge); `left`/`right`
    * place it beside the trigger, vertically centred — used by the icon rail.
    * Each side flips to its opposite when it would spill out of the viewport.
    */
-  readonly placement?: 'top' | 'bottom' | 'left' | 'right'
+  placement?: 'top' | 'bottom' | 'left' | 'right'
   /**
    * Vertical nudge (px) applied to the bubble's final position for `top`/`bottom`
    * placements — positive moves the bubble down. Lets a caller close the gap to
    * the trigger without changing the shared default for every tooltip.
    */
-  readonly offset?: number
+  offset?: number
   /** When true, the tooltip never opens — used to hide stale content (e.g. a
    *  capability rating while a fresh test is running). */
-  readonly disabled?: boolean
+  disabled?: boolean
   /** Extra class on the wrapper span, so a caller can make the trigger participate
    *  in its own flex layout (e.g. shrink/truncate) rather than sit at intrinsic
    *  width. */
-  readonly className?: string
+  className?: string
   /** Max width (px) of the bubble before its content wraps. Defaults to
    *  `MAX_WIDTH`; raise it for content that reads better on fewer lines (e.g. a
    *  hostname, which otherwise wraps and leaves the box padded out to the cap). */
-  readonly maxWidth?: number
+  maxWidth?: number
 }
 
 const GAP = 6

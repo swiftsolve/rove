@@ -29,7 +29,7 @@ const HOST_USAGE_UNSUPPORTED_HINT =
 
 /** One remote host beneath its app: flag + hostname on the left, the download /
  *  upload split on the right — the country flag sitting alongside the host. */
-function HostRow({ host }: { readonly host: HostConn }): JSX.Element {
+function HostRow({ host }: { host: HostConn }): JSX.Element {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
   const label = host.host ?? host.ip
@@ -113,9 +113,9 @@ function AppGroup({
   expanded,
   onToggle,
 }: {
-  readonly app: AppHosts
-  readonly expanded: boolean
-  readonly onToggle: () => void
+  app: AppHosts
+  expanded: boolean
+  onToggle: () => void
 }): JSX.Element {
   const total = app.rxBytes + app.txBytes
   const count = app.hosts.length
@@ -154,14 +154,14 @@ function AppGroup({
 }
 
 interface HostsViewProps {
-  readonly usage: HostUsageSummary
-  readonly isLoading: boolean
-  readonly error?: string | null
+  usage: HostUsageSummary
+  isLoading: boolean
+  error?: string | null
   /** When set (arrived by clicking an app), open only this app's group and
    *  collapse the rest; when null, every group starts collapsed. */
-  readonly focusApp?: string | null
+  focusApp?: string | null
   /** Return to the Apps list (the subpage's Back button). */
-  readonly onBack: () => void
+  onBack: () => void
 }
 
 export default function HostsView({
@@ -179,7 +179,7 @@ export default function HostsView({
   // than dumping every host at once. Either way groups that appear on a later
   // poll stay collapsed. The view remounts on each navigation, so seeding from
   // `focusApp` here is enough.
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() =>
+  const [expanded, setExpanded] = useState<Set<string>>(() =>
     focusApp ? new Set([focusApp]) : new Set(),
   )
   const isExpanded = (name: string): boolean => expanded.has(name)

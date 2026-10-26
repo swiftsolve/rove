@@ -12,9 +12,9 @@ import {
 } from '@/components/ui/Icons'
 
 interface CapabilityIconProps {
-  readonly id: CapabilityId
-  readonly size?: number
-  readonly className?: string
+  id: CapabilityId
+  size?: number
+  className?: string
 }
 
 const ICONS: Record<CapabilityId, typeof BrowsingIcon> = {

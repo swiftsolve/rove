@@ -29,10 +29,10 @@ import ShareWifiButton from './ShareWifiButton'
 import './ConnectionCard.css'
 
 interface ConnectionCardProps {
-  readonly info: NetworkInfo
+  info: NetworkInfo
 }
 
-function ConnectionIcon({ variant }: { readonly variant: string }): JSX.Element {
+function ConnectionIcon({ variant }: { variant: string }): JSX.Element {
   if (variant === 'wifi') return <WifiIcon size={16} />
   if (variant === 'ethernet') return <EthernetIcon size={16} />
   return <OfflineIcon size={16} />
@@ -53,7 +53,7 @@ function signalLevelClass(strength: number): string {
   return 'sig-weak'
 }
 
-function SignalMeter({ strength }: { readonly strength: number }): JSX.Element {
+function SignalMeter({ strength }: { strength: number }): JSX.Element {
   const label = formatSignalStrength(strength)
   const filled = signalBarCount(strength)
 
@@ -97,8 +97,8 @@ function SecurityBadge({
   security,
   short = false,
 }: {
-  readonly security: string | null
-  readonly short?: boolean
+  security: string | null
+  short?: boolean
 }): JSX.Element | null {
   const secured = isSecuredWifi(security)
   if (secured == null || security == null) return null
@@ -121,8 +121,8 @@ function WifiExtras({
   info,
   linkSpeed,
 }: {
-  readonly info: WifiNetworkInfo
-  readonly linkSpeed: string | null
+  info: WifiNetworkInfo
+  linkSpeed: string | null
 }): JSX.Element {
   return (
     <>
@@ -164,8 +164,8 @@ function EthernetExtras({
   info,
   linkSpeed,
 }: {
-  readonly info: EthernetNetworkInfo
-  readonly linkSpeed: string | null
+  info: EthernetNetworkInfo
+  linkSpeed: string | null
 }): JSX.Element {
   return (
     <>

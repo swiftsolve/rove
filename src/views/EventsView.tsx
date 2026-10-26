@@ -33,16 +33,16 @@ const EMPTY_HINT =
   'Devices joining, leaving, or changing appear here. Run a scan to check.'
 
 interface EventsViewProps {
-  readonly events: readonly NetworkEvent[]
-  readonly isLoading: boolean
+  events: NetworkEvent[]
+  isLoading: boolean
   /** A scan (which is what produces new events) is in flight. */
-  readonly isScanning: boolean
-  readonly error: string | null
+  isScanning: boolean
+  error: string | null
   /** Kick a fresh scan so any changes since last time surface as events. */
-  readonly onRefresh: () => void
+  onRefresh: () => void
 }
 
-type IconComponent = (props: { readonly size?: number }) => JSX.Element
+type IconComponent = (props: { size?: number }) => JSX.Element
 
 // The node's colour category. The glyph says *what* happened; this tint says how
 // to read it at a glance — arrivals/connections read positive (green), the
@@ -52,8 +52,8 @@ type IconComponent = (props: { readonly size?: number }) => JSX.Element
 type EventTone = 'join' | 'leave' | 'baseline' | 'alert' | 'danger'
 
 interface EventStyle {
-  readonly icon: IconComponent
-  readonly tone: EventTone
+  icon: IconComponent
+  tone: EventTone
 }
 
 const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
@@ -95,7 +95,7 @@ const INTERNET_SUBTITLES: Partial<Record<NetworkEventType, string>> = {
 // restored event's id) so the recovery row can show how long we were offline —
 // the same "Offline for …" the services timeline shows. Events arrive
 // newest-first, so we walk oldest-first tracking the last unmatched loss.
-function offlineDurations(newestFirst: readonly NetworkEvent[]): Map<number, number> {
+function offlineDurations(newestFirst: NetworkEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostTs: number | null = null
   for (let i = newestFirst.length - 1; i >= 0; i--) {
@@ -170,12 +170,12 @@ function formatDayHeading(ts: number, nowMs: number): string {
 // Slice the (already time-ordered) feed into consecutive same-day runs, keeping
 // the incoming order so the timeline stays continuous within each day.
 interface DayGroup {
-  readonly key: string
-  readonly heading: string
-  readonly events: readonly NetworkEvent[]
+  key: string
+  heading: string
+  events: NetworkEvent[]
 }
 
-function groupByDay(events: readonly NetworkEvent[], now: number): DayGroup[] {
+function groupByDay(events: NetworkEvent[], now: number): DayGroup[] {
   const groups: DayGroup[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
@@ -189,7 +189,7 @@ function groupByDay(events: readonly NetworkEvent[], now: number): DayGroup[] {
   return groups
 }
 
-function EventIcon({ type }: { readonly type: NetworkEventType }): JSX.Element {
+function EventIcon({ type }: { type: NetworkEventType }): JSX.Element {
   const Icon = EVENT_STYLES[type]?.icon ?? ActivityIcon
   return <Icon size={15} />
 }
@@ -205,9 +205,9 @@ function TimelineItem({
   event,
   offlineMs,
 }: {
-  readonly event: NetworkEvent
+  event: NetworkEvent
   /** For `internet_restored`, how long we were offline before reconnecting. */
-  readonly offlineMs?: number
+  offlineMs?: number
 }): JSX.Element {
   const isInitial = event.type === 'initial_scan'
   // Internet up/down events describe this machine's own WAN reachability, not a

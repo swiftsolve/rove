@@ -8,10 +8,10 @@ import { ActivityIcon } from '@/components/ui/Icons'
 import './LiveThroughputPanel.css'
 
 interface LiveThroughputPanelProps {
-  readonly throughput: LiveThroughput
-  readonly history: ThroughputHistory
-  readonly speedTestRunning?: boolean
-  readonly linkCapacityMbps?: number | null
+  throughput: LiveThroughput
+  history: ThroughputHistory
+  speedTestRunning?: boolean
+  linkCapacityMbps?: number | null
 }
 
 function LiveThroughputPanel({

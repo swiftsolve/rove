@@ -8,9 +8,9 @@ const REFRESH_INTERVAL_MS = 5_000
 const EMPTY_USAGE = createEmptyTrafficUsage()
 
 interface UseTrafficUsageResult {
-  readonly usage: TrafficUsageSummary
-  readonly isLoading: boolean
-  readonly error: string | null
+  usage: TrafficUsageSummary
+  isLoading: boolean
+  error: string | null
 }
 
 /**

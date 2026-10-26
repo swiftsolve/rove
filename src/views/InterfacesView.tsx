@@ -9,19 +9,19 @@ import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, f
 import './InterfacesView.css'
 
 interface InterfacesViewProps {
-  readonly interfaces: readonly NetworkInterfaceSummary[]
-  readonly isLoading: boolean
-  readonly error: string | null
-  readonly onRefresh: () => void
+  interfaces: NetworkInterfaceSummary[]
+  isLoading: boolean
+  error: string | null
+  onRefresh: () => void
 }
 
-function InterfaceIcon({ iface }: { readonly iface: NetworkInterfaceSummary }): JSX.Element {
+function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
   if (iface.connectionType === 'ethernet') return <EthernetIcon size={15} />
   return <LayersIcon size={15} />
 }
 
-function InterfacePanel({ iface }: { readonly iface: NetworkInterfaceSummary }): JSX.Element {
+function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
     <section
       className={`ui-section iface-panel ${iface.connectionType} ${iface.isDefault ? 'default' : ''}`}
@@ -59,7 +59,7 @@ function InterfacePanel({ iface }: { readonly iface: NetworkInterfaceSummary }):
 }
 
 /** Per-category counts, e.g. ["1 Wi‑Fi", "1 Ethernet", "2 Virtual"]. */
-function interfaceTypeSummaryParts(interfaces: readonly NetworkInterfaceSummary[]): string[] {
+function interfaceTypeSummaryParts(interfaces: NetworkInterfaceSummary[]): string[] {
   const counts = { wifi: 0, ethernet: 0, virtual: 0, other: 0 }
   for (const iface of interfaces) {
     if (iface.isVirtual) counts.virtual++

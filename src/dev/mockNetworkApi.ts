@@ -65,7 +65,7 @@ function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntr
   return 'poor'
 }
 
-function assessCapabilities(speed: SpeedResult): readonly CapabilityRating[] {
+function assessCapabilities(speed: SpeedResult): CapabilityRating[] {
   return CAPABILITY_DEFINITIONS.map((definition) => ({
     id: definition.id,
     label: definition.label,
@@ -144,7 +144,7 @@ const MOCK_WIFI_SHARE: WifiShare = {
   qrSvg: mockQrSvg(),
 }
 
-const MOCK_INTERFACES: readonly NetworkInterfaceSummary[] = [
+const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   {
     name: 'wlan0',
     connectionType: 'wifi',
@@ -266,7 +266,7 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     // name (shared with Archer routers), so with no other signal the classifier
     // leans "Smart home", not "Network" — a low-confidence call the UI hedges.
     { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'iot', kindConfidence: 'low', mac: '1c:3b:f3:85:8f:43', vendor: 'TP-Link', isRandomizedMac: false, isGateway: false, isSelf: false, reachable: true },
-  ] satisfies readonly MockLanDevice[]).map((device) => ({
+  ] satisfies MockLanDevice[]).map((device) => ({
     ...device,
     model: humanizeModel(device.model),
     kindConfidence: device.kindConfidence ?? 'high',
@@ -282,7 +282,7 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
 function seedNetworkEvents(): NetworkEvent[] {
   const min = 60_000
   const hour = 3_600_000
-  const rows: readonly (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
+  const rows: (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
     { ago: 3 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, randomized: false },
     { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, randomized: true },
     { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: '192.168.1.51', name: 'en0', kind: null, oldValue: null, newValue: null, randomized: false },
@@ -308,7 +308,7 @@ function seedNetworkEvents(): NetworkEvent[] {
 // background sync/update daemons. [name, downMB, upMB]. Busiest first, as the
 // real sampler returns them. Every name here needs an entry in getHostUsage —
 // each Apps row links into that app's host group.
-const MOCK_APP_ROWS: readonly [string, number, number][] = [
+const MOCK_APP_ROWS: [string, number, number][] = [
   ['firefox', 842, 63],
   ['Spotify', 214, 8],
   ['com.apple.WebKit.Networking', 118, 11],
@@ -355,7 +355,7 @@ const mockServiceHistory: ServiceEvent[] = (() => {
 // all three reachability bands (good <= 120 ms, warn <= 300, bad above) so the
 // Services rows exercise every colour during design work instead of the uniform
 // wall of green a single band would give. `spread` is how far a poll can wander.
-const MOCK_LATENCY_PROFILES: Record<string, { readonly base: number; readonly spread: number }> = {
+const MOCK_LATENCY_PROFILES: Record<string, { base: number; spread: number }> = {
   'cloudflare.com': { base: 14, spread: 5 }, // anycast edge, a few hops away
   'google.com': { base: 26, spread: 7 },
   'youtube.com': { base: 72, spread: 26 }, // a livelier line, and one dropped probe
@@ -365,7 +365,7 @@ const MOCK_LATENCY_PROFILES: Record<string, { readonly base: number; readonly sp
 
 const FALLBACK_PROFILE = { base: 60, spread: 20 }
 
-function latencyProfile(host: string): { readonly base: number; readonly spread: number } {
+function latencyProfile(host: string): { base: number; spread: number } {
   return MOCK_LATENCY_PROFILES[host] ?? FALLBACK_PROFILE
 }
 
@@ -417,7 +417,7 @@ const MOCK_POLL_INTERVAL_MS = 15_000
 
 // One brief outage in the seeded window, a few polls back, so the sparkline's gap
 // and baseline tick are visible during design work without a row being down.
-const MOCK_SEEDED_BLIP: Readonly<Record<string, number>> = { 'youtube.com': 5 }
+const MOCK_SEEDED_BLIP: Record<string, number> = { 'youtube.com': 5 }
 
 /**
  * A full window of backdated latency history per reachable host, so the Services
@@ -488,7 +488,7 @@ const MOCK_SPEED_CONTEXT = {
 // first; values wobble around the current result the way a real link does.
 function seedSpeedHistory(): SpeedHistoryEntry[] {
   const hour = 3_600_000
-  const points: readonly (Omit<SpeedResult, never> & { agoHours: number })[] = [
+  const points: (Omit<SpeedResult, never> & { agoHours: number })[] = [
     { downloadMbps: 611.2, uploadMbps: 40.6, latencyMs: 12, jitterMs: 1.9, packetLoss: 0, agoHours: 6 },
     { downloadMbps: 598.7, uploadMbps: 39.1, latencyMs: 13, jitterMs: 2.4, packetLoss: 0, agoHours: 27 },
     { downloadMbps: 642.9, uploadMbps: 42.3, latencyMs: 10, jitterMs: 1.4, packetLoss: 0, agoHours: 52 },
@@ -627,7 +627,7 @@ function createMockNetworkApi(): NetworkAPI {
       const gb = 1_000_000_000
       // A believable week — lighter midweek, heavier on the weekend, today still
       // filling in. Index 0 is six days ago, index 6 is today. [downGB, upGB].
-      const byDay: readonly [number, number][] = [
+      const byDay: [number, number][] = [
         [5.1, 0.7],
         [3.4, 0.5],
         [6.2, 0.9],
@@ -674,7 +674,7 @@ function createMockNetworkApi(): NetworkAPI {
       //
       // Per-app sums stay at or under that app's getAppUsage totals: hosts count
       // TCP-connection traffic only, so they're a subset of the app's bytes.
-      const apps: readonly [string, [string | null, string, string | null, number, number][]][] = [
+      const apps: [string, [string | null, string, string | null, number, number][]][] = [
         ['firefox', [
           ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 342, 27],
           ['edge-star.facebook.com', '157.240.22.35', 'US', 268, 20],
@@ -736,7 +736,7 @@ function createMockNetworkApi(): NetworkAPI {
       // A believable protocol mix for the session above: the web dominates,
       // then a QUIC/HTTP3 slice, DNS, push keepalives, an ssh session's upload,
       // and a long tail of unrecognised ports. [id, label, downMB, upMB].
-      const rows: readonly [string, string, number, number][] = [
+      const rows: [string, string, number, number][] = [
         ['https', 'HTTPS', 1180, 132],
         ['fileshare', 'File sharing', 96, 14],
         ['media', 'Streaming media', 88, 3],
@@ -900,7 +900,7 @@ function createMockNetworkApi(): NetworkAPI {
     saveSpeedResult: async (entry: SpeedHistoryEntry) => {
       mockHistory = [entry, ...mockHistory].slice(0, 50)
     },
-    importSpeedHistory: async (entries: readonly SpeedHistoryEntry[]) => {
+    importSpeedHistory: async (entries: SpeedHistoryEntry[]) => {
       mockHistory = [...entries, ...mockHistory].slice(0, 50)
     },
     clearSpeedHistory: async () => {

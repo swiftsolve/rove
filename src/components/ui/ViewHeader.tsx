@@ -3,20 +3,20 @@ import './ViewHeader.css'
 
 interface ViewHeaderProps {
   /** Nav-matched glyph shown in the rounded chip, e.g. `<DevicesIcon size={18} />`. */
-  readonly icon: ReactNode
-  readonly title: ReactNode
+  icon: ReactNode
+  title: ReactNode
   /**
    * Subtitle line under the title. Omit to collapse the slot entirely (the
    * title then centres alone); when rendered, the slot reserves its line height
    * so the title never shifts as the content resolves.
    */
-  readonly subtitle?: ReactNode
+  subtitle?: ReactNode
   /** Extra class for view-specific subtitle layout (gaps, truncation). */
-  readonly subtitleClassName?: string
+  subtitleClassName?: string
   /** Toggling this on runs the subtitle's fade-in once (class swap → animation). */
-  readonly subtitleShown?: boolean
+  subtitleShown?: boolean
   /** Controls grouped at the header's end (refresh/help buttons, actions). */
-  readonly actions?: ReactNode
+  actions?: ReactNode
 }
 
 /**

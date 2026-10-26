@@ -8,11 +8,11 @@ const SERVICE_POLL_INTERVAL_MS = 15_000
 
 interface UseServiceReachabilityResult {
   /** The latest probe set, or null before the first read lands. */
-  readonly report: ServicesReport | null
-  readonly error: string | null
+  report: ServicesReport | null
+  error: string | null
   /** Re-probe now, ahead of the poll — used after a service is added or removed
    *  so the changed row's latency lands immediately. */
-  readonly run: () => Promise<void>
+  run: () => Promise<void>
 }
 
 /**

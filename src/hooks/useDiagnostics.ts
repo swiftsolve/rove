@@ -9,10 +9,10 @@ import { useBackendResource } from '@/hooks/useBackendResource'
 const LIVE_POLL_INTERVAL_MS = 15_000
 
 interface UseDiagnosticsResult {
-  readonly diagnostics: NetworkDiagnostics | null
-  readonly isRunning: boolean
-  readonly error: string | null
-  readonly run: () => Promise<void>
+  diagnostics: NetworkDiagnostics | null
+  isRunning: boolean
+  error: string | null
+  run: () => Promise<void>
 }
 
 export function useDiagnostics(enabled: boolean, networkKey?: string | null): UseDiagnosticsResult {

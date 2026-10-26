@@ -26,8 +26,8 @@ function roundNiceScale(mbps: number): number {
 }
 
 function peakInWindow(
-  download: readonly number[],
-  upload: readonly number[],
+  download: number[],
+  upload: number[],
   window: number,
 ): number {
   const count = download.length
@@ -42,7 +42,7 @@ function peakInWindow(
 }
 
 /** Peak for axis scaling — drops stale bursts once recent traffic has settled. */
-function trafficPeak(download: readonly number[], upload: readonly number[]): number {
+function trafficPeak(download: number[], upload: number[]): number {
   const recent = peakInWindow(download, upload, RECENT_PEAK_WINDOW)
   if (recent === 0) return 0
 
@@ -62,8 +62,8 @@ function trafficPeak(download: readonly number[], upload: readonly number[]): nu
 }
 
 interface ResolveChartScaleOptions {
-  readonly linkCapacityMbps?: number | null
-  readonly speedTestRunning?: boolean
+  linkCapacityMbps?: number | null
+  speedTestRunning?: boolean
 }
 
 /**
@@ -71,8 +71,8 @@ interface ResolveChartScaleOptions {
  * Otherwise scale to fit the data — never jump to full link speed on light traffic.
  */
 export function resolveChartScale(
-  download: readonly number[],
-  upload: readonly number[],
+  download: number[],
+  upload: number[],
   options: ResolveChartScaleOptions = {},
 ): number {
   const { linkCapacityMbps, speedTestRunning = false } = options

@@ -7,20 +7,20 @@ import { ButtonSpinner } from '@/components/ui/ButtonSpinner'
 import './HomeStats.css'
 
 interface StatCardProps {
-  readonly icon: ReactNode
-  readonly label: string
+  icon: ReactNode
+  label: string
   /** The card body: a colour-keyed readout (or split of readouts). */
-  readonly body: ReactNode
-  readonly ariaLabel: string
+  body: ReactNode
+  ariaLabel: string
   /** Navigate into the tab when the card (or its caret) is tapped. */
-  readonly onOpen?: () => void
+  onOpen?: () => void
   /**
    * The body carries its own interactive control (e.g. the Devices widget's
    * Scan button). A button can't nest inside a button, so when set the card
    * renders as a clickable div (role="button") instead — the whole widget still
    * navigates, and the nested control stops propagation to run its own action.
    */
-  readonly staticBody?: boolean
+  staticBody?: boolean
 }
 
 function StatCard({ icon, label, body, ariaLabel, onOpen, staticBody }: StatCardProps): JSX.Element {
@@ -77,9 +77,9 @@ function StatCard({ icon, label, body, ariaLabel, onOpen, staticBody }: StatCard
 
 interface StatReadoutProps {
   /** Colour of the key dot / direction of the arrow. */
-  readonly keyClass: 'down' | 'up' | 'online'
-  readonly value: string
-  readonly unit: string
+  keyClass: 'down' | 'up' | 'online'
+  value: string
+  unit: string
 }
 
 /** A direction icon (or key dot) inline with a compact value. */
@@ -100,15 +100,15 @@ function StatReadout({ keyClass, value, unit }: StatReadoutProps): JSX.Element {
 }
 
 interface HomeStatsProps {
-  readonly usage: DataUsageSummary
-  readonly usageLoading: boolean
-  readonly deviceCount: number | null
-  readonly deviceOnline: number | null
-  readonly devicesLoading: boolean
+  usage: DataUsageSummary
+  usageLoading: boolean
+  deviceCount: number | null
+  deviceOnline: number | null
+  devicesLoading: boolean
   /** macOS only: scan from the widget instead of auto-scanning on Home load. */
-  readonly onScanDevices?: () => void
-  readonly onOpenUsage: () => void
-  readonly onOpenDevices: () => void
+  onScanDevices?: () => void
+  onOpenUsage: () => void
+  onOpenDevices: () => void
 }
 
 export default function HomeStats({

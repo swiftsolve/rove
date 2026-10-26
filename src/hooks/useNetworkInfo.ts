@@ -17,11 +17,11 @@ const NETWORK_INFO_TIMEOUT_MS = 20_000
 const FAILURE_GRACE = 3
 
 interface UseNetworkInfoResult {
-  readonly info: NetworkInfo | null
-  readonly error: string | null
-  readonly isLoading: boolean
-  readonly refresh: () => Promise<void>
-  readonly setError: (message: string | null) => void
+  info: NetworkInfo | null
+  error: string | null
+  isLoading: boolean
+  refresh: () => Promise<void>
+  setError: (message: string | null) => void
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {

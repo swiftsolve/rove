@@ -24,8 +24,8 @@ export default function CapabilityMeter({
   level,
   showLabel = true,
 }: {
-  readonly level: CapabilityLevel
-  readonly showLabel?: boolean
+  level: CapabilityLevel
+  showLabel?: boolean
 }): JSX.Element {
   const rank = LEVEL_RANK[level]
 

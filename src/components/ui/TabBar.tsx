@@ -18,27 +18,27 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import './TabBar.css'
 
 interface TabBarProps {
-  readonly activeTab: AppTab
-  readonly onChange: (tab: AppTab) => void
+  activeTab: AppTab
+  onChange: (tab: AppTab) => void
   /** Whether the light theme is active — drives the toggle's icon and label. */
-  readonly lightMode: boolean
+  lightMode: boolean
   /** Flip between light and dark themes. */
-  readonly onToggleTheme: () => void
+  onToggleTheme: () => void
 }
 
 interface TabIconProps {
-  readonly size?: number
-  readonly className?: string
+  size?: number
+  className?: string
 }
 
 interface TabDefinition {
-  readonly id: AppTab
-  readonly label: string
-  readonly Icon: (props: TabIconProps) => JSX.Element
+  id: AppTab
+  label: string
+  Icon: (props: TabIconProps) => JSX.Element
 }
 
 // Primary navigation — the top group of the rail.
-const TAB_DEFINITIONS: readonly TabDefinition[] = [
+const TAB_DEFINITIONS: TabDefinition[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'speed', label: 'Speed', Icon: SpeedIcon },
   { id: 'devices', label: 'Devices', Icon: DevicesIcon },
@@ -59,9 +59,9 @@ function NavItem({
   active,
   onChange,
 }: {
-  readonly tab: TabDefinition
-  readonly active: boolean
-  readonly onChange: (tab: AppTab) => void
+  tab: TabDefinition
+  active: boolean
+  onChange: (tab: AppTab) => void
 }): JSX.Element {
   return (
     <Tooltip content={tab.label} placement="right">
@@ -82,8 +82,8 @@ function ThemeToggle({
   lightMode,
   onToggle,
 }: {
-  readonly lightMode: boolean
-  readonly onToggle: () => void
+  lightMode: boolean
+  onToggle: () => void
 }): JSX.Element {
   // Show the glyph for the mode you'll switch *to*, matching the tooltip.
   const label = lightMode ? 'Switch to dark mode' : 'Switch to light mode'

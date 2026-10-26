@@ -3,14 +3,14 @@ import { ArrowLeftIcon } from '@/components/ui/Icons'
 import './Subpage.css'
 
 interface SubpageProps {
-  readonly title: string
-  readonly description?: ReactNode
+  title: string
+  description?: ReactNode
   /** Optional control rendered opposite the back button. */
-  readonly action?: ReactNode
+  action?: ReactNode
   /** Extra class on the page root, for per-page tweaks to the shared layout. */
-  readonly className?: string
-  readonly onBack: () => void
-  readonly children: ReactNode
+  className?: string
+  onBack: () => void
+  children: ReactNode
 }
 
 export default function Subpage({

@@ -11,8 +11,8 @@ export function ButtonSpinner({
   size = 14,
   color = 'currentColor',
 }: {
-  readonly size?: number
-  readonly color?: string
+  size?: number
+  color?: string
 }): JSX.Element {
   return <Ring size={size} stroke={2} bgOpacity={0.2} speed={2} color={color} />
 }

@@ -1,11 +1,11 @@
 import { Component, type ReactNode } from 'react'
 
 interface AppErrorBoundaryProps {
-  readonly children: ReactNode
+  children: ReactNode
 }
 
 interface AppErrorBoundaryState {
-  readonly error: Error | null
+  error: Error | null
 }
 
 /**

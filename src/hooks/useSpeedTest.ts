@@ -51,30 +51,30 @@ const INITIAL_PROGRESS = {
 } as const satisfies SpeedTestProgress
 
 interface SpeedTestState {
-  readonly internetSpeed: SpeedResult | null
-  readonly capabilities: readonly CapabilityRating[]
-  readonly testing: boolean
-  readonly progress: SpeedTestProgress
-  readonly error: string | null
+  internetSpeed: SpeedResult | null
+  capabilities: CapabilityRating[]
+  testing: boolean
+  progress: SpeedTestProgress
+  error: string | null
   /** Epoch ms the current result finished — null until a test completes. */
-  readonly completedAt: number | null
+  completedAt: number | null
   /** Link capacity captured when the last test finished. */
-  readonly linkCapacityMbps: number | null
+  linkCapacityMbps: number | null
   /** Connection metadata captured when the last test finished. */
-  readonly runConnection: SpeedTestConnection | null
+  runConnection: SpeedTestConnection | null
   /**
    * Running peak of the live throughput per direction *during* the current
    * test. Lives in this module store (not component state) so it survives the
    * Speed view unmounting mid-test — otherwise switching tabs and back would
    * zero the on-screen download/upload figures.
    */
-  readonly livePeakDownloadMbps: number
-  readonly livePeakUploadMbps: number
+  livePeakDownloadMbps: number
+  livePeakUploadMbps: number
 }
 
 interface UseSpeedTestResult extends SpeedTestState {
-  readonly runTest: () => Promise<void>
-  readonly cancelTest: () => void
+  runTest: () => Promise<void>
+  cancelTest: () => void
 }
 
 // A module-level store, not component state: the last result and an in-flight
