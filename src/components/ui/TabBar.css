@@ -64,7 +64,7 @@
 
 .nav-item:hover:not(.active) {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--fill-hover-subtle);
 }
 
 .nav-item.active {

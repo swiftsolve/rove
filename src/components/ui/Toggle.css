@@ -28,7 +28,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--text-on-fill);
   transform: translateY(-50%);
   transition: transform var(--duration-fast) var(--ease-in-out);
 }

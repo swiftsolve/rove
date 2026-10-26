@@ -59,7 +59,7 @@
   justify-content: center;
   flex-shrink: 0;
   z-index: 1;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
 }
 
 /* A service dropping off reads as an alarm (red); a recovery reads positive

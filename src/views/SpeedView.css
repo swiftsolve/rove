@@ -70,23 +70,23 @@ button.speed-run-btn {
 }
 
 .speed-run-btn:not(.is-stop) {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill);
 }
 
 .speed-run-btn:not(.is-stop):hover:not(:disabled) {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill-hover);
 }
 
 /* Stop variant, shown while a test runs — the same solid treatment in negative red
    so the toggle keeps its fill rather than flipping to a faint wash mid-test. */
 .speed-run-btn.is-stop {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--negative-fill);
 }
 
 .speed-run-btn.is-stop:hover:not(:disabled) {
-  color: #fff;
-  background: color-mix(in srgb, var(--negative-fill) 84%, #000);
+  color: var(--text-on-fill);
+  background: var(--negative-fill-hover);
 }

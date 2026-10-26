@@ -6,7 +6,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
 }
 
 .capability-icon-tile.level-excellent { color: var(--positive); }

@@ -41,12 +41,12 @@
 
 .iface-panel.wifi .iface-panel-icon {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .iface-panel.ethernet .iface-panel-icon {
   color: var(--positive);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .iface-panel-name {

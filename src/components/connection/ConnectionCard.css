@@ -79,17 +79,17 @@
 
 .conn-card.wifi .conn-strip-icon {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .conn-card.ethernet .conn-strip-icon {
   color: var(--positive);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .conn-card.disconnected .conn-strip-icon {
   color: var(--negative);
-  background: color-mix(in srgb, currentColor 8%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-faint), transparent);
 }
 
 .conn-strip-text {
@@ -172,7 +172,7 @@
 .signal-bar {
   width: 3px;
   border-radius: 1px 1px 0 0;
-  background: color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-unlit), transparent);
 }
 
 .signal-bar:nth-child(1) { height: 3px; }

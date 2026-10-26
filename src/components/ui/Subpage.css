@@ -28,7 +28,7 @@
   height: 38px;
   border-radius: 10px;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--fill-chip);
   transition:
     color var(--duration-fast) var(--ease-in-out),
     background var(--duration-fast) var(--ease-in-out);

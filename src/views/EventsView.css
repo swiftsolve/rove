@@ -78,7 +78,7 @@
    tone uses the same faint currentColor wash for its fill; only the glyph
    colour changes. */
 .tl-marker[class*='tone-'] {
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
 }
 
 /* Arrivals & connections — a device joined, came back, or linked up. */

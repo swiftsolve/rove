@@ -254,7 +254,7 @@
    size; the element+class selectors override that ghost style's colour and hover
    with the filled accent fill. */
 button.mgsvc-add {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill);
   /* A step up from the base .btn-primary size, matching the Run test button. */
   padding: 10px 14px;
@@ -262,6 +262,6 @@ button.mgsvc-add {
 }
 
 button.mgsvc-add:hover:not(:disabled) {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill-hover);
 }
