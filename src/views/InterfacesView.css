@@ -1,7 +1,7 @@
 .interface-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }
 
 /* Interface cards are entity headers (icon tile + name), like the connection
@@ -10,7 +10,7 @@
   height: auto;
   /* Trim the bottom pad: with no divider, the header pad + body pad stacked into
      too big a gap below the name. */
-  padding: var(--section-header-y) var(--section-header-x) var(--gap-sm);
+  padding: var(--section-header-padding-y) var(--section-header-padding-x) var(--space-8);
   /* Entity cards read as one unit — no divider between the name and its fields. */
   border-bottom: none;
 }
@@ -18,13 +18,13 @@
 /* No divider here, so the header sets most of the gap above the fields; a small
    top pad adds a little breathing room between the name and the first label. */
 .iface-panel .ui-section-body {
-  padding-top: var(--gap-tight);
+  padding-top: var(--space-6);
 }
 
 /* Interface cards carry only a few fields, so the default 8px row padding
    leaves too much air between values. Tighten just these rows. */
 .iface-panel .data-row {
-  padding: var(--gap-xs) 0;
+  padding: var(--space-4) 0;
 }
 
 .iface-panel-icon {
@@ -41,12 +41,12 @@
 
 .iface-panel.wifi .iface-panel-icon {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .iface-panel.ethernet .iface-panel-icon {
-  color: var(--positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .iface-panel-name {
@@ -60,7 +60,7 @@
    The compound selector outranks the .text-title utility regardless of CSS
    load order. */
 .iface-panel-name.text-title {
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
 }
 
 .iface-tag {
@@ -72,13 +72,13 @@
 }
 
 .iface-panel.default .iface-tag:not(.muted) {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }
 
 .iface-state {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   flex-shrink: 0;
   text-transform: capitalize;
 }
@@ -91,5 +91,5 @@
 }
 
 .iface-state.up {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }

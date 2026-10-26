@@ -7,8 +7,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--gap-xl);
-  background: var(--scrim);
+  padding: var(--space-20);
+  background: var(--bg-scrim);
   animation: svc-dialog-fade var(--duration-fast) var(--ease-out);
 }
 
@@ -20,7 +20,7 @@
   padding: 0;
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
   animation: svc-dialog-rise var(--duration-normal) var(--ease-out);
 }
@@ -30,8 +30,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--gap-sm);
-  padding: var(--gap-lg);
+  gap: var(--space-8);
+  padding: var(--space-16);
 }
 
 .svc-dialog-heading {
@@ -40,15 +40,15 @@
 
 .svc-dialog-title {
   margin: 0;
-  font-size: var(--text-dialog);
+  font-size: var(--font-size-xl);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .svc-dialog-sub {
-  margin: var(--gap-xs) 0 0;
-  font-size: var(--text-small);
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -57,14 +57,14 @@
    outweighs .btn-icon-secondary's background. */
 .svc-dialog-head .svc-dialog-close {
   flex-shrink: 0;
-  margin: calc(-1 * var(--gap-xs)) calc(-1 * var(--gap-xs)) 0 0;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 0;
   background: transparent;
 }
 
 /* The middle section sits a step below the header/footer surfaces — a recessed
    well that frames the fields between the two dividers. */
 .svc-dialog-body {
-  padding: var(--gap-lg);
+  padding: var(--space-16);
   background: var(--bg-chrome);
 }
 
@@ -73,13 +73,13 @@
 }
 
 .svc-dialog-field + .svc-dialog-field {
-  margin-top: var(--gap-lg);
+  margin-top: var(--space-16);
 }
 
 .svc-dialog-field-label {
   display: block;
-  margin-bottom: var(--gap-tight);
-  font-size: var(--text-small);
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
@@ -88,13 +88,13 @@
   width: 100%;
   /* Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
      fixed-height control centred beside it lands on a symmetric gap. */
-  padding: var(--gap-stack) var(--gap-md);
+  padding: var(--space-10) var(--space-12);
   line-height: 18px;
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   transition: border-color var(--duration-fast) var(--ease-in-out);
 }
 
@@ -108,7 +108,7 @@
 }
 
 .svc-dialog-input[aria-invalid='true'] {
-  border-color: var(--negative);
+  border-color: var(--status-negative);
 }
 
 /* The address field carries its Test action inline: the group owns the border
@@ -117,8 +117,8 @@
 .svc-dialog-inputgroup {
   display: flex;
   align-items: center;
-  gap: var(--gap-xs);
-  padding-right: var(--gap-tight);
+  gap: var(--space-4);
+  padding-right: var(--space-6);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -130,7 +130,7 @@
 }
 
 .svc-dialog-inputgroup[data-invalid='true'] {
-  border-color: var(--negative);
+  border-color: var(--status-negative);
 }
 
 .svc-dialog-inputgroup .svc-dialog-input {
@@ -154,12 +154,12 @@
   justify-content: center;
   min-width: 52px;
   height: 30px;
-  padding: 0 var(--gap-stack);
+  padding: 0 var(--space-10);
   border: none;
   border-radius: var(--radius-sm);
-  color: var(--accent-text);
+  color: var(--text-accent);
   background: var(--accent-muted);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   transition:
@@ -168,7 +168,7 @@
 }
 
 .svc-dialog-test:hover:not(:disabled) {
-  color: var(--accent-text);
+  color: var(--text-accent);
   background: var(--accent-muted);
 }
 
@@ -181,7 +181,7 @@
 }
 
 .svc-dialog-test:disabled {
-  opacity: 0.45;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -192,26 +192,26 @@
 .svc-dialog-result {
   display: flex;
   align-items: center;
-  margin-top: var(--gap-sm);
+  margin-top: var(--space-8);
 }
 
 .svc-dialog-note {
   min-height: 18px;
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   line-height: 1.4;
   color: var(--text-tertiary);
 }
 
 .svc-dialog-note-error {
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .svc-dialog-result {
   /* Match the address field's outer height (line-height 18 + 20 padding + 2 border)
      so the result reads as the same-sized box swapping in. */
   min-height: 40px;
-  gap: var(--gap-sm);
-  padding: 0 var(--gap-md);
+  gap: var(--space-8);
+  padding: 0 var(--space-12);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -223,14 +223,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
 }
 
 .svc-dialog-result-status {
   flex-shrink: 0;
   font-family: var(--font-numeric);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
 }
 
 /* The confirm sits in its own footer; the darker body above sets it apart, so it
@@ -238,7 +238,7 @@
 .svc-dialog-foot {
   display: flex;
   justify-content: flex-end;
-  padding: var(--gap-lg);
+  padding: var(--space-16);
 }
 
 /* Matches the size of the manage page's "Add service": the same text, weight, and
@@ -248,11 +248,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   min-width: 76px;
-  padding: var(--gap-stack) var(--section-pad);
+  padding: var(--space-10) var(--section-padding);
   border-radius: var(--radius-sm);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   color: var(--text-secondary);
@@ -281,7 +281,7 @@
 }
 
 .svc-dialog-btn:disabled {
-  opacity: 0.45;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

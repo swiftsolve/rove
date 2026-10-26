@@ -1,12 +1,12 @@
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .history-card {
   /* No bottom padding — the footer banner bleeds to the card's bottom edge. */
-  padding: var(--section-body) var(--section-body) 0;
+  padding: var(--section-body-padding) var(--section-body-padding) 0;
   /* Clip the full-bleed footer banner to the card's rounded corners. */
   overflow: hidden;
 }
@@ -15,23 +15,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
-  margin-bottom: var(--gap-md);
+  gap: var(--space-12);
+  margin-bottom: var(--space-12);
 }
 
 /* Connection badge, tinted by medium. */
 .history-conn {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   min-width: 0;
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
 
 .history-conn.conn-wifi { color: var(--series-down); }
-.history-conn.conn-ethernet { color: var(--positive); }
+.history-conn.conn-ethernet { color: var(--status-positive); }
 
 .history-conn-name {
   min-width: 0;
@@ -45,38 +45,38 @@
    truncates first, the band holds its width. */
 .history-conn-band {
   flex-shrink: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-weight: var(--weight-regular);
 }
 
 .history-card-time {
   flex-shrink: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
 .history-card-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .history-metric {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .history-metric-label {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 .history-metric-value {
-  font-size: var(--text-title);
+  font-size: var(--font-size-2xl);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -84,7 +84,7 @@
 
 .history-metric-unit {
   font-family: var(--font);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-regular);
   color: var(--text-secondary);
 }
@@ -95,23 +95,23 @@
    right. Trim the horizontal padding by the border width so its content stays
    aligned with the metrics grid above. */
 .history-card-footer {
-  margin: var(--gap-sm) calc(-1 * var(--section-body)) 0;
-  padding: var(--gap-md) calc(var(--section-body) - 1px);
+  margin: var(--space-8) calc(-1 * var(--section-body-padding)) 0;
+  padding: var(--space-12) calc(var(--section-body-padding) - 1px);
   background: var(--bg-app);
   border: 1px solid var(--bg-inset);
   border-top: 0;
-  border-bottom-left-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 .history-footnote {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   width: 100%;
   min-width: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
@@ -153,9 +153,9 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
   min-width: 112px;
-  padding: var(--gap-xs);
+  padding: var(--space-4);
   background: var(--bg-raised);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
@@ -166,11 +166,11 @@
 .history-menuitem {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   width: 100%;
-  padding: var(--gap-sm);
+  padding: var(--space-8);
   border-radius: var(--radius-xs);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
   text-align: left;
@@ -190,12 +190,12 @@
 }
 
 .history-menuitem.is-danger {
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .history-menuitem.is-danger:hover {
-  color: var(--negative-text);
-  background: color-mix(in srgb, var(--negative) 14%, transparent);
+  color: var(--text-negative);
+  background: color-mix(in srgb, var(--status-negative) 14%, transparent);
 }
 
 @keyframes history-menu-in {

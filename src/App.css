@@ -63,7 +63,7 @@
   scrollbar-gutter: stable;
   /* Left/right inset matches the nav rail's 11px so the content sits the same
      distance from the window edge as the nav icons do. */
-  padding: var(--gap-md) var(--gap-inset) var(--gap-xl);
+  padding: var(--space-12) var(--space-11) var(--space-20);
 }
 
 .loading-screen {
@@ -72,12 +72,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--section-pad);
+  gap: var(--section-padding);
   animation: fade-in var(--duration-normal) var(--ease-out);
 }
 
 .loading-screen p {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -85,7 +85,7 @@
    primary label so it reassures rather than alarms. */
 .loading-screen-slow {
   /* Override .loading-screen p (0,1,1). */
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
@@ -93,8 +93,8 @@
    specific reason, and a real button — so a failed detection reads as a
    recoverable state rather than a stray line of grey text. */
 .loading-screen-error {
-  gap: var(--gap-lg);
-  padding: var(--gap-xl);
+  gap: var(--space-16);
+  padding: var(--space-20);
 }
 
 .loading-screen-icon {
@@ -104,20 +104,20 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint-soft), transparent);
-  color: var(--negative);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-sm), transparent);
+  color: var(--status-negative);
 }
 
 .loading-screen-text {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   text-align: center;
 }
 
 .loading-screen-error .loading-screen-title {
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
 }
@@ -129,7 +129,7 @@
 }
 
 .loading-screen-retry {
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 .spinner {
@@ -151,7 +151,7 @@
   min-height: 56px;
   /* Left inset aligns the brand mark with the nav rail below; right inset keeps
      the window controls at the standard header edge. */
-  padding: 0 var(--section-header-x) 0 var(--gap-lg);
+  padding: 0 var(--section-header-padding-x) 0 var(--space-16);
   background: var(--bg-chrome);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
@@ -164,7 +164,7 @@
 .status-bar-brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   -webkit-app-region: drag;
 }
 
@@ -179,7 +179,7 @@
 }
 
 .brand-name {
-  font-size: var(--text-title);
+  font-size: var(--font-size-2xl);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -188,18 +188,18 @@
 .status-bar-left {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   min-width: 0;
 }
 
 .status-bar-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   /* Nudge down a hair so the label optically aligns with the wordmark's
      center rather than sitting slightly high next to it. */
   margin-top: 1px;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
   -webkit-app-region: no-drag;
@@ -210,7 +210,7 @@
 .win-controls {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   -webkit-app-region: no-drag;
 }
 
@@ -233,18 +233,18 @@
 }
 
 .win-btn-close:hover {
-  background: var(--close-hover);
+  background: var(--window-close-hover);
   color: var(--text-on-fill);
 }
 
 .status-bar-link.on {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }
 
 /* Link up, but the public internet is unreachable — red to set it apart from
    both the green "connected" and the neutral "offline" (no link) states. */
 .status-bar-link.bad {
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .status-bar-dot {
@@ -265,12 +265,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--gap-tight);
-  padding: var(--gap-sm) var(--gap-stack);
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-10);
   background: transparent;
   color: var(--accent);
   border-radius: var(--radius-sm);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   transition:
@@ -281,7 +281,7 @@
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-muted);
-  color: var(--accent-text);
+  color: var(--text-accent);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -297,12 +297,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--gap-tight);
-  padding: var(--gap-tight) var(--gap-md);
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-12);
   border-radius: var(--radius-sm);
   background: var(--bg-inset);
   color: var(--text-secondary);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-medium);
   transition:
     color var(--duration-fast) var(--ease-in-out),
@@ -382,12 +382,12 @@
 }
 
 .btn-icon-stop {
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
-  color: var(--negative);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
+  color: var(--status-negative);
 }
 
 .btn-icon-stop:hover {
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint-hover), transparent);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-lg), transparent);
 }
 
 .btn-icon-stop svg {
@@ -402,11 +402,11 @@
 /* ---- Misc ---- */
 
 .inline-error {
-  padding: var(--gap-sm) var(--gap-md);
+  padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint-faint), transparent);
-  color: var(--negative-text);
-  font-size: var(--text-body);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+  color: var(--text-negative);
+  font-size: var(--font-size-md);
   line-height: 1.45;
 }
 
@@ -415,12 +415,12 @@
 .error-banner {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
-  padding: var(--gap-xs) var(--gap-sm) var(--gap-xs) var(--gap-md);
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint-faint), transparent);
-  color: var(--negative-text);
-  font-size: var(--text-body);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+  color: var(--text-negative);
+  font-size: var(--font-size-md);
   line-height: 1.45;
   animation: fade-in var(--duration-fast) var(--ease-out);
 }
@@ -438,43 +438,43 @@
 .error-banner-action {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   flex-shrink: 0;
-  padding: var(--gap-xs) var(--gap-stack);
+  padding: var(--space-4) var(--space-10);
   border-radius: var(--radius-sm);
-  color: var(--negative-text);
-  font-size: var(--text-caption);
+  color: var(--text-negative);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-medium);
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
 .error-banner-action:hover {
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
 }
 
 .error-banner-dismiss {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .error-banner-dismiss:hover {
-  background: color-mix(in srgb, var(--negative) var(--opacity-tint), transparent);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
 }
 
 /* The global error above .app-main has no flex gap to lean on. */
 .app-scroll > .error-banner {
-  margin-bottom: var(--gap-md);
+  margin-bottom: var(--space-12);
 }
 
 .inline-error {
-  margin-bottom: var(--gap-md);
+  margin-bottom: var(--space-12);
 }
 
 .app-main {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }

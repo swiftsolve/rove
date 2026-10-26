@@ -8,8 +8,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--gap-xl);
-  background: var(--scrim);
+  padding: var(--space-20);
+  background: var(--bg-scrim);
   animation: wifi-share-fade var(--duration-fast) var(--ease-out);
 }
 
@@ -22,7 +22,7 @@
   overflow: hidden;
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
   animation: wifi-share-rise var(--duration-normal) var(--ease-out);
 }
@@ -32,8 +32,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--gap-sm);
-  padding: var(--gap-lg);
+  gap: var(--space-8);
+  padding: var(--space-16);
 }
 
 .wifi-share-heading {
@@ -42,15 +42,15 @@
 
 .wifi-share-title {
   margin: 0;
-  font-size: var(--text-dialog);
+  font-size: var(--font-size-xl);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .wifi-share-sub {
-  margin: var(--gap-xs) 0 0;
-  font-size: var(--text-small);
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -59,7 +59,7 @@
    outweighs .btn-icon-secondary's background. */
 .wifi-share-head .wifi-share-close {
   flex-shrink: 0;
-  margin: calc(-1 * var(--gap-xs)) calc(-1 * var(--gap-xs)) 0 0;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 0;
   background: transparent;
 }
 
@@ -70,7 +70,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: var(--gap-lg);
+  padding: var(--space-16);
   background: var(--bg-chrome);
 }
 
@@ -78,20 +78,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-md);
-  padding: var(--gap-lg) 0;
+  gap: var(--space-12);
+  padding: var(--space-16) 0;
   text-align: center;
 }
 
-/* Match the full-page loading label (--text-small) so the dialog's "Generating
+/* Match the full-page loading label (--font-size-sm) so the dialog's "Generating
    QR code…" doesn't read a step larger than the app's other loading text. */
 .wifi-share-state .text-muted {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
 }
 
 .wifi-share-error {
   margin: 0;
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -99,11 +99,11 @@
 .wifi-share-qr {
   display: flex;
   justify-content: center;
-  margin-bottom: var(--gap-md);
-  padding: var(--gap-lg);
+  margin-bottom: var(--space-12);
+  padding: var(--space-16);
   background: #ffffff;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 
 .wifi-share-qr img {
@@ -114,15 +114,15 @@
 
 .wifi-share-ssid {
   margin: 0;
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
   overflow-wrap: anywhere;
 }
 
 .wifi-share-note {
-  margin: var(--gap-md) 0 0;
-  font-size: var(--text-caption);
+  margin: var(--space-12) 0 0;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 

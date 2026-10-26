@@ -3,15 +3,15 @@
 .usage-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap-lg);
+  gap: var(--space-16);
 }
 
 .usage-metric-label {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   /* Match the speed-test hero's label→value rhythm (`.bench-hero-cell` gap). */
-  margin-bottom: var(--gap-sm);
+  margin-bottom: var(--space-8);
 }
 
 .usage-inline-icon {
@@ -24,9 +24,9 @@
    left/right/bottom edges (the card's overflow:hidden rounds the bottom
    corners). Used by both the Today and Last-7-days cards. */
 .usage-footer {
-  margin: var(--gap-md) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
+  margin: var(--space-12) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
   /* Match the speed-test widget's footer (`.bench-footer`) vertical rhythm. */
-  padding: var(--section-body);
+  padding: var(--section-body-padding);
   background: var(--bg-app);
 }
 
@@ -35,19 +35,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .usage-footer-metrics {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .usage-footer-metric {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
 }
 
 /* Beneath the chart's inset band the footer sits flush, so the two darker tiers
@@ -64,9 +64,9 @@
   position: relative;
   /* Trim a touch of the section body's top padding so the band sits a little
      closer under the title. */
-  margin: -2px calc(-1 * var(--section-body)) 0;
+  margin: -2px calc(-1 * var(--section-body-padding)) 0;
   /* Less air above the chart so the header doesn't sit high with a big gap
      below it — pull the inset band up closer to the title. */
-  padding: var(--gap-xs) var(--section-body) var(--gap-sm);
+  padding: var(--space-4) var(--section-body-padding) var(--space-8);
   background: var(--bg-inset);
 }

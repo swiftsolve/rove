@@ -3,7 +3,7 @@
 .stl-timeline {
   display: flex;
   flex-direction: column;
-  padding: var(--gap-tight) var(--gap-xs) var(--gap-sm) 0;
+  padding: var(--space-6) var(--space-4) var(--space-8) 0;
 }
 
 .stl-day {
@@ -16,9 +16,9 @@
 }
 
 .stl-day-heading {
-  margin: 0 0 var(--section-pad);
+  margin: 0 0 var(--section-padding);
   color: var(--text-tertiary);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -28,7 +28,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 28px 1fr;
-  gap: var(--section-pad);
+  gap: var(--section-padding);
   padding-left: 5px;
   padding-bottom: 22px;
 }
@@ -59,31 +59,31 @@
   justify-content: center;
   flex-shrink: 0;
   z-index: 1;
-  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
 /* A service dropping off reads as an alarm (red); a recovery reads positive
    (green) — the same colour language as the reachability numbers. */
 .stl-marker.is-down {
-  color: var(--negative);
+  color: var(--status-negative);
 }
 
 .stl-marker.is-up {
-  color: var(--positive);
+  color: var(--status-positive);
 }
 
 /* A healthy summary ("N services running") — the same positive tint as a
    recovery, glyphed with a check. */
 .stl-marker.is-running {
-  color: var(--positive);
+  color: var(--status-positive);
 }
 
 .stl-content {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
-  padding-top: var(--gap-2xs);
+  padding-top: var(--space-2);
 }
 
 .stl-content > * {
@@ -93,7 +93,7 @@
 .stl-head {
   display: flex;
   align-items: baseline;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }
 
 .stl-title {
@@ -101,14 +101,14 @@
   min-width: 0;
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
   overflow-wrap: anywhere;
 }
 
 .stl-time {
   flex-shrink: 0;
   color: var(--text-tertiary);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   white-space: nowrap;
 }
 
@@ -117,10 +117,10 @@
 .stl-subject {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
   color: var(--text-secondary);
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
 }
 
 .stl-subject-name {
@@ -143,15 +143,15 @@
 }
 
 .stl-conn-line .stl-meta-duration {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
 }
 
 .stl-meta {
   display: flex;
   align-items: baseline;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
   color: var(--text-tertiary);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   letter-spacing: 0.02em;
 }
 
@@ -199,7 +199,7 @@
   right: 0;
   z-index: 20;
   min-width: 148px;
-  padding: var(--gap-xs);
+  padding: var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: var(--bg-raised);
@@ -209,12 +209,12 @@
 .stl-menuitem {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   width: 100%;
-  padding: var(--gap-sm);
+  padding: var(--space-8);
   border-radius: var(--radius-xs);
   color: var(--text-secondary);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   text-align: left;
   transition:
     color var(--duration-fast) var(--ease-in-out),
@@ -231,10 +231,10 @@
 }
 
 .stl-menuitem.is-danger {
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .stl-menuitem.is-danger:hover {
-  color: var(--negative-text);
-  background: color-mix(in srgb, var(--negative) 14%, transparent);
+  color: var(--text-negative);
+  background: color-mix(in srgb, var(--status-negative) 14%, transparent);
 }

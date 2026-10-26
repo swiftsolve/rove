@@ -21,7 +21,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  font-size: var(--text-micro);
+  font-size: var(--font-size-2xs);
   line-height: 1;
   color: var(--text-tertiary);
   pointer-events: none;
@@ -41,9 +41,9 @@
 .tp-chart-axis {
   display: flex;
   justify-content: space-between;
-  margin-top: var(--gap-tight);
+  margin-top: var(--space-6);
   padding-right: 26px;
-  font-size: var(--text-micro);
+  font-size: var(--font-size-2xs);
   line-height: 1;
   color: var(--text-tertiary);
 }

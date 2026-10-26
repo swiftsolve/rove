@@ -1,17 +1,17 @@
 .settings-header {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 /* Match the Speed page's capability list: rows carry their own symmetric
-   vertical padding (--row-py) and the column has no extra gap between them. */
+   vertical padding (--row-padding-y) and the column has no extra gap between them. */
 .setting-list {
   display: flex;
   flex-direction: column;
 }
 
-/* Drop the body's default top padding: the first row's own --row-py already
+/* Drop the body's default top padding: the first row's own --row-padding-y already
    supplies enough breathing room, so this pulls the content up closer to the
    section title. */
 .ui-section-body.setting-list {
@@ -19,16 +19,16 @@
 }
 
 /* A whole-row link (e.g. About) that reads and behaves like a Speed-page
-   capability row: symmetric --row-py padding, hover highlight bleeding into the
+   capability row: symmetric --row-padding-y padding, hover highlight bleeding into the
    section padding via negative margin, and an always-faint chevron that
    brightens on hover/focus. */
 .setting-link-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-lg);
-  padding: var(--row-py) var(--gap-sm);
-  margin: 0 calc(-1 * var(--gap-sm));
+  gap: var(--space-16);
+  padding: var(--row-padding-y) var(--space-8);
+  margin: 0 calc(-1 * var(--space-8));
   width: calc(100% + 16px);
   border-radius: var(--radius-sm);
   text-align: left;
@@ -62,8 +62,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-lg);
-  padding: var(--row-py) 0;
+  gap: var(--space-16);
+  padding: var(--row-padding-y) 0;
 }
 
 /* Stack the control beneath the label + description instead of placing it on the
@@ -72,24 +72,24 @@
 .setting-row-stacked {
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .setting-row-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .setting-row-title {
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
 }
 
 .setting-row-desc {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.4;
 }
@@ -102,8 +102,8 @@
    default secondary button so it sits more comfortably against the two-line row
    text beside it. */
 .setting-row-control .btn-secondary {
-  padding-top: var(--gap-sm);
-  padding-bottom: var(--gap-sm);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
 }
 
 /* "Check now" borrows the Speed page's Run test button shape — semibold label,
@@ -129,7 +129,7 @@
 }
 
 /* Pull the status band up close to the last row: drop the body's bottom padding
-   so only the row's own --row-py sits between the last row and the band. Only
+   so only the row's own --row-padding-y sits between the last row and the band. Only
    applies when a footer band is actually present — when idle (no footer) the body
    keeps its default bottom padding so the card doesn't look cramped. */
 .settings-updates .ui-section-body:has(+ .ui-section-footer) {
@@ -140,17 +140,17 @@
    separate sunken band: no top divider, and symmetric vertical padding so the
    status text sits centred within the inset band. */
 .settings-updates .ui-section-footer {
-  margin-top: var(--gap-md);
-  padding-top: var(--gap-md);
-  padding-bottom: var(--gap-md);
+  margin-top: var(--space-12);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
   border-top: none;
 }
 
 .settings-status {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
-  font-size: var(--text-caption);
+  gap: var(--space-6);
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
 }
 
@@ -163,12 +163,12 @@
 }
 
 .settings-status.ok {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }
 
 .settings-update {
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 /* Three-way theme picker: a pill track holding dark / light / system segments,
@@ -176,8 +176,8 @@
    the two Appearance controls read as a set. */
 .theme-segmented {
   display: inline-flex;
-  gap: var(--gap-2xs);
-  padding: var(--gap-2xs);
+  gap: var(--space-2);
+  padding: var(--space-2);
   background: var(--bg-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -186,12 +186,12 @@
 .theme-seg {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
-  padding: 5px var(--gap-stack);
+  gap: var(--space-6);
+  padding: 5px var(--space-10);
   border: none;
   background: transparent;
   border-radius: var(--radius-xs);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
   cursor: pointer;
@@ -210,7 +210,7 @@
 
 .theme-seg.is-active {
   background: var(--accent-muted);
-  color: var(--accent-text);
+  color: var(--text-accent);
 }
 
 /* Segments sit 2px inside their track, so the ring goes inside the segment

@@ -1,6 +1,6 @@
 .ui-section {
   background: var(--bg-panel);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel);
   overflow: hidden;
   contain: content;
@@ -10,17 +10,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   /* Fixed height so a header with a button isn't taller than a title-only one —
      keeps the title's vertical position identical across every widget. */
-  height: var(--section-header-h);
-  padding: 0 var(--section-header-x);
+  height: var(--section-header-height);
+  padding: 0 var(--section-header-padding-x);
 }
 
 .ui-section-heading {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
 }
 
@@ -41,14 +41,14 @@
    VPN/proxy flag; sized to sit unobtrusively where the brand icon would. */
 .ui-section-badge {
   flex-shrink: 0;
-  padding: 1px var(--gap-tight);
+  padding: 1px var(--space-6);
   border-radius: var(--radius-full);
-  font-size: var(--text-micro);
+  font-size: var(--font-size-2xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--warning-text);
-  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--text-warning);
+  background: color-mix(in srgb, var(--status-warning) 15%, transparent);
 }
 
 .ui-section-action {
@@ -60,7 +60,7 @@
 .ui-section-body {
   /* A little top padding gives the content a touch more room below the title
      than the title has above it — a slightly grounded heading. */
-  padding: var(--gap-xs) var(--section-body) var(--section-body);
+  padding: var(--space-4) var(--section-body-padding) var(--section-body-padding);
 }
 
 .ui-section-body > .text-hint:first-child:last-child {
@@ -70,7 +70,7 @@
 /* A distinct sunken band below the body — sits flush to the card edges and reads
    as a separate footnote/status area rather than part of the readout above it. */
 .ui-section-footer {
-  padding: var(--gap-sm) var(--section-body);
+  padding: var(--space-8) var(--section-body-padding);
   background: var(--bg-inset);
   border-top: 1px solid var(--border);
 }

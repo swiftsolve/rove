@@ -1,32 +1,32 @@
 /* Full-bleed inset panel at the card bottom — same treatment as live throughput chart. */
 .bench-progress,
 .bench-footer {
-  margin: var(--gap-lg) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
-  padding: var(--section-body);
+  margin: var(--space-16) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
+  padding: var(--section-body-padding);
   background: var(--bg-inset);
 }
 
 .bench-progress {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 .bench-progress-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .bench-progress-message {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .bench-progress-pct {
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-regular);
   color: var(--accent);
 }
@@ -93,24 +93,24 @@
 .bench-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap-lg);
+  gap: var(--space-16);
 }
 
 .bench-substats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--gap-lg);
-  margin-top: var(--gap-lg);
+  gap: var(--space-16);
+  margin-top: var(--space-16);
 }
 
 .bench-substat {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
 }
 
 .bench-substat-value {
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
 }
@@ -128,17 +128,17 @@
 .bench-hero-cell {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 .bench-hero-label {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 .bench-empty {
-  font-size: var(--text-display);
+  font-size: var(--font-size-3xl);
 }
 
 /* Footer strip under the results: connection left, link speed right. */
@@ -151,10 +151,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   width: 100%;
   min-width: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
 }
 
 .bench-footnote-link {
@@ -165,10 +165,10 @@
 .bench-conn {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
 
 .bench-conn.conn-wifi svg { color: var(--series-down); }
-.bench-conn.conn-ethernet svg { color: var(--positive); }
+.bench-conn.conn-ethernet svg { color: var(--status-positive); }

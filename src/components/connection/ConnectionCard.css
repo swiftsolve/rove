@@ -1,6 +1,6 @@
 .conn-card {
   background: var(--bg-panel);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel);
   overflow: hidden;
 }
@@ -9,10 +9,10 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   width: 100%;
-  min-height: var(--section-header-min);
-  padding: var(--section-header-y) var(--section-header-x);
+  min-height: var(--section-header-min-height);
+  padding: var(--section-header-padding-y) var(--section-header-padding-x);
   text-align: left;
   transition: background var(--duration-fast) var(--ease-in-out);
 }
@@ -79,17 +79,17 @@
 
 .conn-card.wifi .conn-strip-icon {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .conn-card.ethernet .conn-strip-icon {
-  color: var(--positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .conn-card.disconnected .conn-strip-icon {
-  color: var(--negative);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-faint), transparent);
+  color: var(--status-negative);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-xs), transparent);
 }
 
 .conn-strip-text {
@@ -97,8 +97,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--gap-2xs);
-  padding: var(--gap-2xs) 0;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
 }
 
 .conn-strip-title,
@@ -139,30 +139,30 @@
 /* Dark inset panel below the header — same treatment as live-chart-wrap /
    bench-footer: full card width, square top edge, card overflow rounds bottom. */
 .conn-details-wrap.open .conn-details {
-  padding: var(--section-header-y) var(--section-body);
+  padding: var(--section-header-padding-y) var(--section-body-padding);
   background: var(--bg-inset);
 }
 
 /* Match the tighter row rhythm of the interface cards' fields. */
 .conn-details .data-row {
-  padding: var(--gap-xs) 0;
+  padding: var(--space-4) 0;
 }
 
 .signal-meter {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
-  color: var(--positive);
+  gap: var(--space-8);
+  color: var(--status-positive);
 }
 
-.signal-meter.sig-good { color: var(--positive); }
-.signal-meter.sig-fair { color: var(--warning); }
-.signal-meter.sig-weak { color: var(--negative); }
+.signal-meter.sig-good { color: var(--status-positive); }
+.signal-meter.sig-fair { color: var(--status-warning); }
+.signal-meter.sig-weak { color: var(--status-negative); }
 
 .signal-bars {
   display: inline-flex;
   align-items: flex-end;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
   height: 12px;
 }
 
@@ -192,7 +192,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 .signal-detail .signal-bars {
@@ -215,7 +215,7 @@
 .security-badge {
   display: flex;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
 }
 
@@ -233,8 +233,8 @@
   text-overflow: ellipsis;
 }
 
-.security-badge.secured svg { color: var(--positive); }
-.security-badge.open { color: var(--negative-text); }
+.security-badge.secured svg { color: var(--status-positive); }
+.security-badge.open { color: var(--text-negative); }
 
 /* Expanded row: right-align the badge in the value cell, and centre the row
    (same baseline fix as Signal) so the label stays level with it. */

@@ -2,8 +2,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--gap-lg);
-  padding: var(--row-py) 0;
+  gap: var(--space-16);
+  padding: var(--row-padding-y) 0;
 }
 
 .data-row .field-label {
@@ -23,5 +23,5 @@
 }
 
 .data-row + .text-hint {
-  margin-top: var(--gap-sm);
+  margin-top: var(--space-8);
 }

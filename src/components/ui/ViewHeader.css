@@ -6,7 +6,7 @@
 .view-header-row {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   position: relative;
   z-index: 20;
 }
@@ -14,7 +14,7 @@
 .view-header-text {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
   flex: 1;
 }
@@ -22,9 +22,9 @@
 /* Reserve the subtitle line's height even while it only holds a status
    placeholder, so the title above never shifts when the real content resolves. */
 .view-header-sub {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  min-height: calc(var(--text-caption) * 1.35);
+  min-height: calc(var(--font-size-xs) * 1.35);
 }
 
 /* Fade the subtitle in the moment it resolves (class toggles on → animation runs). */
@@ -43,6 +43,6 @@
 .view-header-actions {
   display: flex;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   flex-shrink: 0;
 }

@@ -4,17 +4,19 @@
 .home-stats {
   display: grid;
   grid-template-columns: 3fr 2fr;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }
 
 .home-stat {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
-  padding: var(--section-body);
+  gap: var(--space-6);
+  padding: var(--section-body-padding);
   text-align: left;
   cursor: pointer;
-  transition: box-shadow 120ms ease, transform 120ms ease;
+  transition:
+    box-shadow var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
 }
 
 .home-stat:hover {
@@ -28,7 +30,7 @@
 .home-stat-head {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 .home-stat-icon {
@@ -43,7 +45,7 @@
 .home-stat-caret {
   margin-left: auto;
   color: var(--text-tertiary);
-  transition: color 120ms ease;
+  transition: color var(--duration-fast) var(--ease-in-out);
 }
 
 .home-stat:hover .home-stat-caret,
@@ -53,15 +55,15 @@
 
 /* Line 2: the big value + unit. */
 .home-stat-metric {
-  margin-top: var(--gap-2xs);
+  margin-top: var(--space-2);
 }
 
 /* Line 3: the detail line below the value. */
 .home-stat-sub {
   display: flex;
   align-items: center;
-  gap: var(--gap-xs);
-  font-size: var(--text-caption);
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
@@ -70,18 +72,18 @@
 .home-usage-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   width: 100%;
   /* Match the Traffic panel's breathing room between title and readouts
      (~18px total, vs the 8px the tighter card gap would give on its own). */
-  margin-top: var(--gap-md);
+  margin-top: var(--space-12);
 }
 
 .home-usage-readout {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
 }
 
@@ -93,18 +95,18 @@
 }
 
 .home-usage-key.online {
-  background: var(--positive);
+  background: var(--status-positive);
 }
 
 /* Devices card: a single readout, sharing the usage card's top offset. The key
    dot is small, so give it a touch more room before the count than the usage
    arrows get. */
 .home-usage-single {
-  margin-top: var(--gap-md);
+  margin-top: var(--space-12);
 }
 
 .home-usage-single .home-usage-readout {
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 /* Centre the loading wave in the space below the title. flex:1 claims the
@@ -119,7 +121,7 @@
   justify-content: center;
   /* Nudge the spinner down slightly so it sits closer to the vertical centre of
      the card body rather than riding high under the title. */
-  padding-top: var(--gap-tight);
+  padding-top: var(--space-6);
 }
 
 /* The macOS Devices widget before its first scan: a plain container (not a
@@ -153,10 +155,10 @@
 .home-stat-scan .btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   /* Tighter horizontal padding than the base .btn-secondary (12px). */
-  padding-left: var(--gap-sm);
-  padding-right: var(--gap-sm);
+  padding-left: var(--space-8);
+  padding-right: var(--space-8);
   /* Nudge the button a touch lower toward the card's bottom edge. */
-  margin-bottom: calc(-1 * var(--gap-xs));
+  margin-bottom: calc(-1 * var(--space-4));
 }

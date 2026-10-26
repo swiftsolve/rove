@@ -18,7 +18,7 @@
    the row. */
 .host-app {
   /* Breathing room when a focused group is scrolled to the top of the list. */
-  scroll-margin-top: var(--gap-md);
+  scroll-margin-top: var(--space-12);
 }
 
 /* The line between app groups only — clipped to the card's rounded corners by
@@ -33,15 +33,15 @@
    Match the card's curve on whichever edges the group actually touches. The
    group has no fill, so the radius is invisible the rest of the time. */
 .host-app:first-child {
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .host-app:last-child {
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .host-app:only-child {
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 
 /* The header toggles the whole group, so focus frames the group — header and,
@@ -58,9 +58,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   width: 100%;
-  padding: var(--gap-md) var(--section-body);
+  padding: var(--space-12) var(--section-body-padding);
   border: none;
   background: none;
   font: inherit;
@@ -73,7 +73,7 @@
 /* Expanded, the hosts sit gap-sm below the header, as before the header took
    over the row's padding. */
 .host-app-header[aria-expanded='true'] {
-  padding-bottom: var(--gap-sm);
+  padding-bottom: var(--space-8);
 }
 
 /* The ring is drawn on the whole group instead (see .host-app:has above). */
@@ -88,7 +88,7 @@
 .host-app-id {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
 }
 
@@ -108,17 +108,17 @@
 .host-app-count {
   flex-shrink: 0;
   min-width: 18px;
-  padding: 1px var(--gap-tight);
+  padding: 1px var(--space-6);
   border-radius: var(--radius-full);
   background: var(--bg-inset);
   color: var(--text-tertiary);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
 .host-app-name {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -126,7 +126,7 @@
 }
 
 .host-app-total {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -137,15 +137,15 @@
 .host-app-hosts {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
-  padding: 0 var(--section-body) var(--gap-md) calc(var(--section-body) + 21px);
+  gap: var(--space-8);
+  padding: 0 var(--section-body-padding) var(--space-12) calc(var(--section-body-padding) + 21px);
 }
 
 .host-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .host-row-id {
@@ -163,7 +163,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   line-height: 1;
   /* Twemoji flag glyphs first so the country flags render on Windows (which has
      no flag emoji); the SVG-icon fallbacks for LAN/unresolved peers aren't text
@@ -177,7 +177,7 @@
 }
 
 .host-name {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,7 +198,7 @@
 .host-name-tip-content {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
 }
 
 .host-name-tip-name {
@@ -217,7 +217,7 @@
 .host-row-figures {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   flex-shrink: 0;
 }
 
@@ -225,7 +225,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 

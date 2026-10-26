@@ -1,16 +1,16 @@
 .capability-status {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   flex-shrink: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-medium);
 }
 
 .capability-meter {
   display: inline-flex;
   align-items: flex-end;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
   height: 12px;
 }
 
@@ -40,12 +40,12 @@
 /* The bars take the fill colour (the same as the row's icon); the level word
    beside them takes the darker text shade, which needs 4.5:1 where the bars
    only need 3:1. */
-.capability-status.level-excellent { color: var(--positive); }
-.capability-status.level-good { color: var(--good); }
-.capability-status.level-fair { color: var(--warning); }
-.capability-status.level-poor { color: var(--poor); }
-.capability-status.level-excellent .capability-level { color: var(--positive-text); }
-.capability-status.level-good .capability-level { color: var(--good-text); }
-.capability-status.level-fair .capability-level { color: var(--warning-text); }
-.capability-status.level-poor .capability-level { color: var(--poor-text); }
+.capability-status.level-excellent { color: var(--status-positive); }
+.capability-status.level-good { color: var(--status-good); }
+.capability-status.level-fair { color: var(--status-warning); }
+.capability-status.level-poor { color: var(--status-poor); }
+.capability-status.level-excellent .capability-level { color: var(--text-positive); }
+.capability-status.level-good .capability-level { color: var(--text-good); }
+.capability-status.level-fair .capability-level { color: var(--text-warning); }
+.capability-status.level-poor .capability-level { color: var(--text-poor); }
 .capability-status.level-unsupported { color: var(--text-tertiary); }

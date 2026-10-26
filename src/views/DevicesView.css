@@ -4,7 +4,7 @@
 .devices-subnet {
   display: inline-flex;
   align-items: baseline;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 /* The shared slot for the online tally and the scan status. Positioned so a
@@ -16,7 +16,7 @@
 .devices-indicator {
   position: relative;
   display: inline-block;
-  margin-left: var(--gap-2xs);
+  margin-left: var(--space-2);
 }
 
 /* The one that's on its way out overlays the slot's start rather than taking
@@ -54,8 +54,8 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--positive);
-  margin-right: var(--gap-sm);
+  background: var(--status-positive);
+  margin-right: var(--space-8);
   /* Centre on the cap/digit height of the numbers beside it ("16", the subnet),
      which sits a touch above the x-height middle vertical-align gives. */
   vertical-align: middle;
@@ -109,8 +109,8 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--positive);
-  margin-right: var(--gap-sm);
+  background: var(--status-positive);
+  margin-right: var(--space-8);
   /* Same centering as the online dot, so both land in the exact same spot. */
   vertical-align: middle;
   position: relative;
@@ -159,21 +159,21 @@
 .device-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }
 
 .device-row {
   display: flex;
   /* Icon pinned to the top-left; the body column fills the rest. */
   align-items: flex-start;
-  gap: var(--gap-md);
-  padding: var(--section-header-y) var(--section-header-x);
+  gap: var(--space-12);
+  padding: var(--section-header-padding-y) var(--section-header-padding-x);
 }
 
 .device-row-body {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
   flex: 1;
 }
@@ -183,10 +183,10 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   /* A touch more air below the (larger) name so the type subtitle doesn't read
      cramped against it — on top of the body's base 4px row gap. */
-  margin-bottom: var(--gap-2xs);
+  margin-bottom: var(--space-2);
 }
 
 /* Bottom row: MAC on the left, IP pinned to the bottom-right. */
@@ -194,7 +194,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 .device-row-icon {
@@ -210,8 +210,8 @@
 }
 
 .device-row.gateway .device-row-icon {
-  color: var(--positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 /* Known device kinds get a quiet tint so categories scan at a glance;
@@ -221,26 +221,26 @@
 .device-row:not(.gateway) .device-row-icon.kind-tablet,
 .device-row:not(.gateway) .device-row-icon.kind-phone {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-tv,
 .device-row:not(.gateway) .device-row-icon.kind-console,
 .device-row:not(.gateway) .device-row-icon.kind-printer {
   color: var(--series-up);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-iot,
 .device-row:not(.gateway) .device-row-icon.kind-camera,
 .device-row:not(.gateway) .device-row-icon.kind-speaker {
-  color: var(--warning);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  color: var(--status-warning);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-router {
-  color: var(--positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
 /* Let a long name use up to two lines rather than truncating; the card grows
@@ -260,7 +260,7 @@
    The compound selector outranks the .text-title utility regardless of CSS
    load order. */
 .device-row-name.text-title {
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
 }
 
 /* The subtitle line beneath the name: device type on the left, and for an
@@ -268,7 +268,7 @@
 .device-row-meta {
   display: flex;
   align-items: baseline;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
 }
 
@@ -307,13 +307,13 @@
 /* The green "Gateway" role that leads the gateway's meta line; the maker/model
    that follow inherit the muted meta colour, giving name › role › details. */
 .device-row-gateway-role {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }
 
 .device-row-mac {
   display: inline-flex;
   align-items: baseline;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -323,7 +323,7 @@
 /* Randomized note, set off from the MAC by a small dot. */
 .device-row-random {
   position: relative;
-  padding-left: var(--gap-md);
+  padding-left: var(--space-12);
   letter-spacing: 0;
   color: var(--text-tertiary);
   white-space: nowrap;
@@ -351,9 +351,9 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   color: var(--text-tertiary);
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
 }
 
 .device-row-dot {
@@ -364,15 +364,15 @@
 }
 
 .device-row-state.reachable {
-  color: var(--positive-text);
+  color: var(--text-positive);
 }
 
 /* The Local Network hint trailing a scan that did find devices. The blank-state
    copy of it is laid out by <EmptyState> instead. */
 .device-list > .devices-hint {
   max-width: 40ch;
-  margin-top: var(--gap-stack);
-  padding: 0 var(--gap-xs);
+  margin-top: var(--space-10);
+  padding: 0 var(--space-4);
   line-height: 1.45;
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
 }
