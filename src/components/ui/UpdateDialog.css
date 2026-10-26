@@ -85,7 +85,7 @@
    share body. Only rendered when the release ships notes. */
 .update-body {
   padding: var(--gap-lg);
-  background: var(--bg-app-2);
+  background: var(--bg-chrome);
   border-top: 1px solid var(--border);
 }
 
@@ -132,7 +132,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   color: var(--text-secondary);
-  background: var(--bg-panel-hi);
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   transition:
     background var(--duration-fast) var(--ease-in-out),

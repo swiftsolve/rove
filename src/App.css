@@ -152,7 +152,7 @@
   /* Left inset aligns the brand mark with the nav rail below; right inset keeps
      the window controls at the standard header edge. */
   padding: 0 var(--section-header-x) 0 var(--gap-lg);
-  background: var(--bg-app-2);
+  background: var(--bg-chrome);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
   /* Chrome sits above the scrollable content so nothing (buttons, tooltips,
