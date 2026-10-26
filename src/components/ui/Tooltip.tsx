@@ -162,10 +162,7 @@ export function Tooltip({
   }, [align, placement, offset])
 
   useLayoutEffect(() => {
-    if (!isOpen) {
-      setCoords(null)
-      return
-    }
+    if (!isOpen) return
 
     updatePosition()
     window.addEventListener('scroll', updatePosition, true)
@@ -173,6 +170,9 @@ export function Tooltip({
     return () => {
       window.removeEventListener('scroll', updatePosition, true)
       window.removeEventListener('resize', updatePosition)
+      // Forget the position so the next open measures afresh instead of
+      // flashing the bubble where it last stood.
+      setCoords(null)
     }
   }, [isOpen, updatePosition, content])
 

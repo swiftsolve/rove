@@ -103,12 +103,15 @@ function writeState(location: AppLocation): Record<string, unknown> {
  * previous entry's location, which we mirror into React state.
  */
 export function useNavigation(): Navigation {
-  const [location, setLocation] = useState<AppLocation>(HOME_LOCATION)
+  // Adopt the location a reload left in history, or start at home.
+  const [location, setLocation] = useState<AppLocation>(
+    () => readLocation(window.history.state) ?? HOME_LOCATION,
+  )
   // Mirror `location` in a ref so `navigate` can compare against the current
   // screen without a stale closure — and, crucially, without doing the
   // pushState side effect inside a setState updater (StrictMode invokes those
   // twice in dev, which would push two entries and make Back need two presses).
-  const locationRef = useRef<AppLocation>(HOME_LOCATION)
+  const locationRef = useRef<AppLocation>(location)
   // How many of *our* entries sit behind the active one — i.e. how many times we
   // can call `history.back()` and stay inside the app. `navigate` pushes one on
   // (increment); popping one off via back/forward (popstate) takes one back. It
@@ -124,15 +127,12 @@ export function useNavigation(): Navigation {
   }, [])
 
   // Seed the first history entry with our location (via replaceState, so we
-  // don't grow the stack), or adopt one a reload left behind. Runs once.
+  // don't grow the stack) unless a reload already left one. Runs once.
   useEffect(() => {
-    const existing = readLocation(window.history.state)
-    if (existing) {
-      applyLocation(existing)
-    } else {
+    if (!readLocation(window.history.state)) {
       window.history.replaceState(writeState(HOME_LOCATION), '')
     }
-  }, [applyLocation])
+  }, [])
 
   // Mirror back/forward — the app's back buttons, the mouse thumb button, and
   // Alt+←/→ all arrive here.
