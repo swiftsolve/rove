@@ -12,16 +12,16 @@ interface UseNetworkInterfacesResult {
   refresh: () => Promise<void>
 }
 
-export function useNetworkInterfaces(enabled: boolean): UseNetworkInterfacesResult {
+export function useNetworkInterfaces(isEnabled: boolean): UseNetworkInterfacesResult {
   const { data, isBusy, error, reload } = useBackendResource(
     window.networkAPI?.getInterfaces,
-    enabled,
+    isEnabled,
     'Failed to load interfaces',
-    { refetchOnEnable: true, pollIntervalMs: POLL_INTERVAL_MS },
+    { shouldRefetchOnEnable: true, pollIntervalMs: POLL_INTERVAL_MS },
   )
 
   // Network changed — refresh at once instead of waiting out the poll interval.
-  useOnNetworkChanged(() => void reload(), enabled)
+  useOnNetworkChanged(() => void reload(), isEnabled)
 
   return { interfaces: data ?? [], isLoading: isBusy, error, refresh: reload }
 }

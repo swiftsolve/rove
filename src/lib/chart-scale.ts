@@ -63,7 +63,7 @@ function trafficPeak(download: number[], upload: number[]): number {
 
 interface ResolveChartScaleOptions {
   linkCapacityMbps?: number | null
-  speedTestRunning?: boolean
+  isSpeedTestRunning?: boolean
 }
 
 /**
@@ -75,12 +75,12 @@ export function resolveChartScale(
   upload: number[],
   options: ResolveChartScaleOptions = {},
 ): number {
-  const { linkCapacityMbps, speedTestRunning = false } = options
+  const { linkCapacityMbps, isSpeedTestRunning = false } = options
   const hasLink = linkCapacityMbps != null && linkCapacityMbps > 0
   const linkScale = hasLink ? roundNiceScale(linkCapacityMbps) : null
   const recent = trafficPeak(download, upload)
 
-  if (speedTestRunning && linkScale != null) {
+  if (isSpeedTestRunning && linkScale != null) {
     return linkScale
   }
 

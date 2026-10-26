@@ -59,13 +59,13 @@ function BytesMetric({
 }
 
 function UsageTooltip({
-  active,
+  active: isActive,
   payload,
 }: {
   active?: boolean
   payload?: { payload: UsageDatum }[]
 }): JSX.Element | null {
-  const point = active ? payload?.[0]?.payload : undefined
+  const point = isActive ? payload?.[0]?.payload : undefined
   if (!point) return null
   // Nothing transferred that day — skip the tooltip rather than showing "0 B / 0 B".
   if (point.down === 0 && point.up === 0) return null
@@ -219,7 +219,7 @@ export default function UsageView({ usage, isLoading, error }: UsageViewProps): 
         icon={<UsageIcon size={18} />}
         title="Usage"
         subtitle={subtitle}
-        subtitleShown={!(isLoading && !hasData)}
+        isSubtitleShown={!(isLoading && !hasData)}
         actions={
           <UiTooltip content={USAGE_INFO_HINT}>
             <button

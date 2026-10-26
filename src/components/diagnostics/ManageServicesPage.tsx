@@ -33,13 +33,13 @@ function isServiceErroring(httpStatus: number | null): boolean {
  *  which host's menu is open). */
 function RowMenu({
   service,
-  open,
+  isOpen,
   onOpenChange,
   onEdit,
   onRemove,
 }: {
   service: ServiceDefinition
-  open: boolean
+  isOpen: boolean
   onOpenChange: (host: string | null) => void
   onEdit: () => void
   onRemove: () => void
@@ -47,7 +47,7 @@ function RowMenu({
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!isOpen) return
     const onDocDown = (e: MouseEvent): void => {
       if (ref.current && !ref.current.contains(e.target as Node)) onOpenChange(null)
     }
@@ -60,7 +60,7 @@ function RowMenu({
       document.removeEventListener('mousedown', onDocDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [open, onOpenChange])
+  }, [isOpen, onOpenChange])
 
   return (
     <div className="mgsvc-menu" ref={ref}>
@@ -68,13 +68,13 @@ function RowMenu({
         type="button"
         className="mgsvc-kebab"
         aria-haspopup="menu"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label={`Options for ${service.name}`}
-        onClick={() => onOpenChange(open ? null : service.host)}
+        onClick={() => onOpenChange(isOpen ? null : service.host)}
       >
         <MoreVerticalIcon size={16} />
       </button>
-      {open && (
+      {isOpen && (
         <div className="mgsvc-dropdown" role="menu">
           <button type="button" role="menuitem" className="mgsvc-menuitem" onClick={onEdit}>
             <EditIcon size={14} />
@@ -137,10 +137,10 @@ export function ManageServicesPage({
   // Same rule as the Services card: with the internet unreachable when this batch
   // ran, a failed probe is our fault, not the service's — so read those rows as
   // unknown.
-  const cannotReachInternet = internet === 'noInternet' || internet === 'offline'
+  const isInternetUnreachable = internet === 'noInternet' || internet === 'offline'
   // There's nothing to probe against while offline right now, so adding a
   // service is disabled until we're back.
-  const offlineNow = liveInternet === 'noInternet' || liveInternet === 'offline'
+  const isOfflineNow = liveInternet === 'noInternet' || liveInternet === 'offline'
   // The same live up/down count the timeline header shows, ahead of the timeline
   // link. Null until the first probes land, so the link stands alone until then.
   const tally = serviceTally(reachability, liveInternet)
@@ -173,7 +173,7 @@ export function ManageServicesPage({
     void remove(host).then(onRefresh)
   }
 
-  const addButton = offlineNow ? (
+  const addButton = isOfflineNow ? (
     <Tooltip content="Connect to the internet first">
       <button type="button" className="btn-primary mgsvc-add" disabled aria-label="Add service">
         <PlusIcon size={14} />
@@ -212,7 +212,7 @@ export function ManageServicesPage({
             </button>
           </span>
         }
-        subtitleShown
+        isSubtitleShown
         actions={addButton}
       />
 
@@ -233,13 +233,13 @@ export function ManageServicesPage({
           {rows.map((svc) => {
             const probe = reachByHost.get(svc.host)
             const latency = probe ? probe.latencyMs : seededLatency.get(svc.host)
-            const erroring = probe ? isServiceErroring(probe.httpStatus) : false
+            const isErroring = probe ? isServiceErroring(probe.httpStatus) : false
             const samples = latencyHistory[svc.host] ?? []
             // Down the same way the status reads it: a failed path (only when the
             // internet is up, else it's our fault) or a reachable-but-erroring
             // host. A down row's sparkline is a flat red line, not its old trend.
             const isDown = probe
-              ? erroring || (probe.latencyMs === null && !cannotReachInternet)
+              ? isErroring || (probe.latencyMs === null && !isInternetUnreachable)
               : false
             return (
               <div className="mgsvc-row" key={svc.host}>
@@ -251,7 +251,7 @@ export function ManageServicesPage({
                       <Sparkline
                         samples={samples}
                         slots={MAX_SAMPLES}
-                        down={isDown}
+                        isDown={isDown}
                         width={64}
                         height={20}
                         label={svc.name}
@@ -266,12 +266,12 @@ export function ManageServicesPage({
                       ) : latency === null ? (
                         // Path failed. Only a genuine "Down" when we know the internet
                         // is up; otherwise the failure is ours, so read it as unknown.
-                        cannotReachInternet ? (
+                        isInternetUnreachable ? (
                           <span className="text-hint">—</span>
                         ) : (
                           <span className="val-bad">Down</span>
                         )
-                      ) : erroring ? (
+                      ) : isErroring ? (
                         <span className="val-bad">Down</span>
                       ) : (
                         <MetricValue value={latency} level={serviceLevel(latency)} format={formatLatencyMs} />
@@ -281,7 +281,7 @@ export function ManageServicesPage({
                 </div>
                 <RowMenu
                   service={svc}
-                  open={menuHost === svc.host}
+                  isOpen={menuHost === svc.host}
                   onOpenChange={setMenuHost}
                   onEdit={() => {
                     setMenuHost(null)

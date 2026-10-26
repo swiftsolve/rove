@@ -19,22 +19,22 @@ export default function UpdateDialog({
   update: PendingUpdate
   onDismiss: () => void
 }): JSX.Element {
-  const [installing, setInstalling] = useState(false)
+  const [isInstalling, setIsInstalling] = useState(false)
 
   const handleInstall = (): void => {
-    setInstalling(true)
+    setIsInstalling(true)
     // install() ends in relaunch(), so this promise never resolves on success;
     // only a failure returns control here, in which case we surface it and
     // let the user dismiss.
     update.install().catch((err) => {
       console.warn('Update install failed:', err)
-      setInstalling(false)
+      setIsInstalling(false)
       onDismiss()
     })
   }
 
   return (
-    <div className="update-overlay" role="presentation" onClick={installing ? undefined : onDismiss}>
+    <div className="update-overlay" role="presentation" onClick={isInstalling ? undefined : onDismiss}>
       <div
         className="update-dialog"
         role="dialog"
@@ -70,18 +70,18 @@ export default function UpdateDialog({
             type="button"
             className="update-btn"
             onClick={onDismiss}
-            disabled={installing}
+            disabled={isInstalling}
           >
             Later
           </button>
           <button
             type="button"
-            className={`update-btn is-primary${installing ? ' is-busy' : ''}`}
+            className={`update-btn is-primary${isInstalling ? ' is-busy' : ''}`}
             onClick={handleInstall}
-            disabled={installing}
+            disabled={isInstalling}
           >
-            {installing ? <ButtonSpinner size={14} color="#fff" /> : <DownloadIcon size={15} />}
-            {installing ? 'Installing…' : 'Install and restart'}
+            {isInstalling ? <ButtonSpinner size={14} color="#fff" /> : <DownloadIcon size={15} />}
+            {isInstalling ? 'Installing…' : 'Install and restart'}
           </button>
         </div>
       </div>

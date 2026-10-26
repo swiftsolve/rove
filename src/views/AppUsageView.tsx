@@ -137,7 +137,7 @@ export default function AppUsageView({
         icon={<AppsIcon size={18} />}
         title="Apps"
         subtitle={subtitle}
-        subtitleShown={!(isLoading && !hasData)}
+        isSubtitleShown={!(isLoading && !hasData)}
         actions={
           <UiTooltip content={APP_USAGE_INFO_HINT}>
             <button

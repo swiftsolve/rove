@@ -20,25 +20,25 @@ interface UseServicesResult {
  * Latency is deliberately NOT here — it comes from the diagnostics probes and is
  * matched to these rows by host in the view.
  */
-export function useServices(enabled: boolean): UseServicesResult {
+export function useServices(isEnabled: boolean): UseServicesResult {
   const [services, setServices] = useState<ServiceDefinition[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!enabled) return
-    let cancelled = false
+    if (!isEnabled) return
+    let isCancelled = false
     void (async () => {
       try {
         const list = await window.networkAPI?.listServices()
-        if (!cancelled && list) setServices(list)
+        if (!isCancelled && list) setServices(list)
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load services')
+        if (!isCancelled) setError(e instanceof Error ? e.message : 'Failed to load services')
       }
     })()
     return () => {
-      cancelled = true
+      isCancelled = true
     }
-  }, [enabled])
+  }, [isEnabled])
 
   const add = useCallback(async (name: string, host: string) => {
     setError(null)

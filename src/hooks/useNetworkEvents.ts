@@ -15,7 +15,7 @@ interface UseNetworkEventsResult {
  * background — new events accrue whenever a scan runs (here or on another tab),
  * and the poll surfaces them without the user hitting refresh.
  */
-export function useNetworkEvents(enabled: boolean): UseNetworkEventsResult {
+export function useNetworkEvents(isEnabled: boolean): UseNetworkEventsResult {
   const api = window.networkAPI
   const fetchEvents = useMemo(
     () => (api?.getNetworkEvents ? () => api.getNetworkEvents() : undefined),
@@ -24,9 +24,9 @@ export function useNetworkEvents(enabled: boolean): UseNetworkEventsResult {
 
   const { data, isBusy, error, reload } = useBackendResource(
     fetchEvents,
-    enabled,
+    isEnabled,
     'Failed to load network events',
-    { refetchOnEnable: true, pollIntervalMs: 5000 },
+    { shouldRefetchOnEnable: true, pollIntervalMs: 5000 },
   )
 
   return { events: data ?? [], isLoading: isBusy, error, reload }

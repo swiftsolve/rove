@@ -209,17 +209,17 @@ export default function App(): JSX.Element {
   const { location, navigate, back } = useNavigation()
   const activeTab = location.tab
   // Whether the Home summary keeps its connected-device count warm (Settings).
-  const [homeDeviceScan] = useSetting('homeDeviceScan', true)
+  const [isHomeDeviceScanEnabled] = useSetting('homeDeviceScan', true)
   // Colour theme — the nav rail's toggle flips it and Settings picks dark / light
   // / system. The hook resolves the preference to a light boolean and mirrors it
   // onto the document element as a class so index.css can remap its design tokens.
-  const { mode: themeMode, light: lightMode, setMode: setThemeMode, toggle: toggleTheme } = useTheme()
+  const { mode: themeMode, isLight: isLightMode, setMode: setThemeMode, toggle: toggleTheme } = useTheme()
   const screenKey = locationKey(location)
   const [pendingUpdate, setPendingUpdate] = useState<PendingUpdate | null>(null)
   const scrollRef = useRef<HTMLElement>(null)
   const mainRef = useRef<HTMLElement>(null)
   const { info, error, isLoading, refresh, setError } = useNetworkInfo()
-  const windowVisible = usePageVisible()
+  const isWindowVisible = usePageVisible()
 
   // Reset scroll to the top whenever the screen changes (tab or subpage), so a
   // new page never inherits the previous page's scroll position.
@@ -261,68 +261,68 @@ export default function App(): JSX.Element {
   // Own the live-throughput feed for the whole app, not per-view: keep sampling
   // the 60 s history while the window is visible (across every tab) so the Home
   // chart is already current on return instead of resuming a stale snapshot.
-  useLiveThroughputSource(windowVisible)
+  useLiveThroughputSource(isWindowVisible)
   // Identity of the current network — when it changes, tab data caches keyed on
   // it are invalidated so we never show the previous network's devices/results.
   const networkKey = info ? `${info.interfaceName ?? ''}|${info.ipAddress ?? ''}` : null
   const {
     interfaces,
-    isLoading: interfacesLoading,
+    isLoading: areInterfacesLoading,
     error: interfacesError,
     refresh: refreshInterfaces,
   } = useNetworkInterfaces(activeTab === 'interfaces')
   const {
     scan: deviceScan,
-    isScanning: devicesScanning,
+    isScanning: isScanningDevices,
     error: devicesError,
     rescan: rescanDevices,
     // On macOS, don't auto-scan when Home loads — device discovery needs the
     // Local Network permission, so we wait until the user opens Devices or taps
     // Scan on the Home widget. Elsewhere, warm the count on Home as before.
   } = useDevices(
-    activeTab === 'devices' || (activeTab === 'home' && !IS_MAC && homeDeviceScan),
+    activeTab === 'devices' || (activeTab === 'home' && !IS_MAC && isHomeDeviceScanEnabled),
     networkKey,
   )
-  const { usage, isLoading: usageLoading, error: usageError } = useDataUsage(
+  const { usage, isLoading: isUsageLoading, error: usageError } = useDataUsage(
     activeTab === 'usage' || activeTab === 'home',
   )
   const {
     usage: appUsage,
-    isLoading: appUsageLoading,
+    isLoading: isAppUsageLoading,
     error: appUsageError,
   } = useAppUsage(activeTab === 'apps')
   const {
     usage: hostUsage,
-    isLoading: hostUsageLoading,
+    isLoading: isHostUsageLoading,
     error: hostUsageError,
   } = useHostUsage(activeTab === 'apps' && location.appsSub?.view === 'hosts')
   const {
     usage: trafficUsage,
-    isLoading: trafficUsageLoading,
+    isLoading: isTrafficUsageLoading,
     error: trafficUsageError,
   } = useTrafficUsage(activeTab === 'apps' && location.appsSub?.view === 'traffic')
   const deviceCount = deviceScan ? deviceScan.devices.length : null
   const deviceOnline = deviceScan
-    ? deviceScan.devices.filter((device) => device.reachable).length
+    ? deviceScan.devices.filter((device) => device.isReachable).length
     : null
   // The change feed is a cheap DB read (populated as a side effect of scans), so
   // keep it enabled whenever the Events tab is open; it also polls quietly.
   const {
     events,
-    isLoading: eventsLoading,
+    isLoading: areEventsLoading,
     error: eventsError,
     reload: reloadEvents,
   } = useNetworkEvents(activeTab === 'events')
   // A scan is what generates new events, so pull the feed the moment one
-  // finishes (devicesScanning true→false) rather than waiting on the poll.
+  // finishes (isScanningDevices true→false) rather than waiting on the poll.
   const wasScanningRef = useRef(false)
   useEffect(() => {
-    if (wasScanningRef.current && !devicesScanning) void reloadEvents()
-    wasScanningRef.current = devicesScanning
-  }, [devicesScanning, reloadEvents])
+    if (wasScanningRef.current && !isScanningDevices) void reloadEvents()
+    wasScanningRef.current = isScanningDevices
+  }, [isScanningDevices, reloadEvents])
   const {
     diagnostics,
-    isRunning: diagnosticsRunning,
+    isRunning: areDiagnosticsRunning,
     error: diagnosticsError,
     run: runDiagnostics,
   } = useDiagnostics(activeTab === 'diagnostics', networkKey)
@@ -372,13 +372,13 @@ export default function App(): JSX.Element {
   // masquerading as connected; only a link that reaches the internet is "on".
   // `internet` is null until the first heartbeat lands — treat that as fine so
   // the bar doesn't flash a false outage on launch.
-  const internetDown = isConnected && (internet === 'noInternet' || internet === 'offline')
-  const statusTone: StatusTone = !isConnected ? 'off' : internetDown ? 'bad' : 'on'
+  const isInternetDown = isConnected && (internet === 'noInternet' || internet === 'offline')
+  const statusTone: StatusTone = !isConnected ? 'off' : isInternetDown ? 'bad' : 'on'
   const statusLabel = !info
     ? 'Connecting…'
     : !isConnected
       ? 'Offline'
-      : internetDown
+      : isInternetDown
         ? 'No internet'
         : formatConnectionType(info.connectionType)
   // The same verdict the title bar shows, for the Services headers — one source
@@ -388,7 +388,7 @@ export default function App(): JSX.Element {
     ? undefined
     : !isConnected
       ? 'offline'
-      : internetDown
+      : isInternetDown
         ? (internet ?? undefined)
         : 'online'
 
@@ -403,7 +403,7 @@ export default function App(): JSX.Element {
         <TabBar
           activeTab={activeTab}
           onChange={(tab) => navigate({ tab, speedSub: null })}
-          lightMode={lightMode}
+          isLightMode={isLightMode}
           onToggleTheme={toggleTheme}
         />
 
@@ -427,10 +427,10 @@ export default function App(): JSX.Element {
                 <HomeView
                   info={info}
                   usage={usage}
-                  usageLoading={usageLoading}
+                  isUsageLoading={isUsageLoading}
                   deviceCount={deviceCount}
                   deviceOnline={deviceOnline}
-                  devicesLoading={devicesScanning}
+                  areDevicesLoading={isScanningDevices}
                   // On macOS the Home widget offers a Scan button in place of an
                   // auto-scan; wiring it lets the count populate without leaving Home.
                   onScanDevices={IS_MAC ? () => void rescanDevices() : undefined}
@@ -464,7 +464,7 @@ export default function App(): JSX.Element {
               {activeTab === 'interfaces' && (
                 <InterfacesView
                   interfaces={interfaces}
-                  isLoading={interfacesLoading}
+                  isLoading={areInterfacesLoading}
                   error={interfacesError}
                   onRefresh={() => void refreshInterfaces()}
                 />
@@ -473,7 +473,7 @@ export default function App(): JSX.Element {
               {activeTab === 'devices' && (
                 <DevicesView
                   scan={deviceScan}
-                  isScanning={devicesScanning}
+                  isScanning={isScanningDevices}
                   error={devicesError}
                   onRescan={() => void rescanDevices()}
                 />
@@ -482,22 +482,22 @@ export default function App(): JSX.Element {
               {activeTab === 'events' && (
                 <EventsView
                   events={events}
-                  isLoading={eventsLoading}
-                  isScanning={devicesScanning}
+                  isLoading={areEventsLoading}
+                  isScanning={isScanningDevices}
                   error={eventsError}
                   onRefresh={() => void rescanDevices()}
                 />
               )}
 
               {activeTab === 'usage' && (
-                <UsageView usage={usage} isLoading={usageLoading} error={usageError} />
+                <UsageView usage={usage} isLoading={isUsageLoading} error={usageError} />
               )}
 
               {activeTab === 'apps' &&
                 (location.appsSub?.view === 'hosts' ? (
                   <HostsView
                     usage={hostUsage}
-                    isLoading={hostUsageLoading}
+                    isLoading={isHostUsageLoading}
                     error={hostUsageError}
                     focusApp={location.appsSub.app ?? null}
                     onBack={back}
@@ -505,14 +505,14 @@ export default function App(): JSX.Element {
                 ) : location.appsSub?.view === 'traffic' ? (
                   <TrafficView
                     usage={trafficUsage}
-                    isLoading={trafficUsageLoading}
+                    isLoading={isTrafficUsageLoading}
                     error={trafficUsageError}
                     onBack={back}
                   />
                 ) : (
                   <AppUsageView
                     usage={appUsage}
-                    isLoading={appUsageLoading}
+                    isLoading={isAppUsageLoading}
                     error={appUsageError}
                     onViewHosts={() =>
                       navigate({ tab: 'apps', speedSub: null, appsSub: { view: 'hosts' } })
@@ -530,7 +530,7 @@ export default function App(): JSX.Element {
                 <DiagnosticsView
                   diagnostics={diagnostics}
                   linkSpeedMbps={info ? getLinkCapacityMbps(info) : null}
-                  isRunning={diagnosticsRunning}
+                  isRunning={areDiagnosticsRunning}
                   error={diagnosticsError}
                   onRun={() => void runDiagnostics()}
                 />

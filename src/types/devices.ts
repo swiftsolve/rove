@@ -62,7 +62,7 @@ export interface LanDevice {
   /** This device is the machine Rove is running on. */
   isSelf: boolean
   /** Neighbor entry is currently reachable (vs. merely cached/stale). */
-  reachable: boolean
+  isReachable: boolean
   /**
    * Epoch-ms this device last answered. Present so an offline device can show
    * "last seen 3m ago"; null on a device that hasn't been reconciled with the

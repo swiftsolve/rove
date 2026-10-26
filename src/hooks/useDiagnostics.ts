@@ -15,14 +15,14 @@ interface UseDiagnosticsResult {
   run: () => Promise<void>
 }
 
-export function useDiagnostics(enabled: boolean, networkKey?: string | null): UseDiagnosticsResult {
+export function useDiagnostics(isEnabled: boolean, networkKey?: string | null): UseDiagnosticsResult {
   // Full snapshot: identity (gateway, DNS, vendor, model) + ISP. Fetched on
   // enable and whenever the network switches — never on the poll interval.
   const full = useBackendResource(
     window.networkAPI?.runDiagnostics,
-    enabled,
+    isEnabled,
     'Diagnostics failed',
-    { resetKey: networkKey, refetchOnEnable: true },
+    { resetKey: networkKey, shouldRefetchOnEnable: true },
   )
 
   // Live metrics, refreshed every 15s. Poll-only: the full run above already
@@ -32,12 +32,12 @@ export function useDiagnostics(enabled: boolean, networkKey?: string | null): Us
   // resume) and takes over once its first reading lands.
   const live = useBackendResource(
     window.networkAPI?.runDiagnosticsLive,
-    enabled,
+    isEnabled,
     'Diagnostics failed',
     {
       resetKey: networkKey,
       pollIntervalMs: LIVE_POLL_INTERVAL_MS,
-      fetchOnEnable: false,
+      shouldFetchOnEnable: false,
     },
   )
 

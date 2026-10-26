@@ -11,7 +11,7 @@ interface CapabilityListProps {
   capabilities: CapabilityRating[]
   hasRunTest: boolean
   /** A speed test is currently running — grey out the stale rows until it lands. */
-  testing: boolean
+  isTesting: boolean
   onOpenDetails: (capabilityId: CapabilityId) => void
 }
 
@@ -24,15 +24,15 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
 
 function CapabilityRow({
   capability,
-  testing,
+  isTesting,
   onOpen,
 }: {
   capability: CapabilityRating
-  testing: boolean
+  isTesting: boolean
   onOpen: () => void
 }): JSX.Element {
   return (
-    <button type="button" className="capability-row" onClick={onOpen} disabled={testing}>
+    <button type="button" className="capability-row" onClick={onOpen} disabled={isTesting}>
       <div className="capability-row-main">
         <span className={`capability-icon-tile level-${capability.level}`}>
           <CapabilityIcon id={capability.id} size={17} />
@@ -43,7 +43,7 @@ function CapabilityRow({
         </div>
       </div>
       <div className="capability-row-status">
-        <CapabilityMeter level={capability.level} showLabel={false} />
+        <CapabilityMeter level={capability.level} shouldShowLabel={false} />
         <ChevronRightIcon size={16} className="capability-chevron" />
       </div>
     </button>
@@ -53,7 +53,7 @@ function CapabilityRow({
 export default function CapabilityList({
   capabilities,
   hasRunTest,
-  testing,
+  isTesting,
   onOpenDetails,
 }: CapabilityListProps): JSX.Element {
   return (
@@ -61,7 +61,7 @@ export default function CapabilityList({
       title="Capabilities"
       icon={<ZapIcon size={15} />}
       action={
-        testing ? (
+        isTesting ? (
           <span className="capability-list-action" aria-label="Speed test running">
             <ButtonSpinner size={14} />
           </span>
@@ -88,12 +88,12 @@ export default function CapabilityList({
           ))}
         </div>
       ) : (
-        <div className={`capability-list${testing ? ' capability-list--testing' : ''}`}>
+        <div className={`capability-list${isTesting ? ' capability-list--testing' : ''}`}>
           {capabilities.map((capability) => (
             <CapabilityRow
               key={capability.id}
               capability={capability}
-              testing={testing}
+              isTesting={isTesting}
               onOpen={() => onOpenDetails(capability.id)}
             />
           ))}

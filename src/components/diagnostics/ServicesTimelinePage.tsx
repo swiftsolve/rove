@@ -147,19 +147,19 @@ function TransitionRow({
   event: ServiceTransitionEvent
   durationMs: number | undefined
 }): JSX.Element {
-  const down = event.status === 'down'
+  const isDown = event.status === 'down'
   // "Down for …" on a recovery is the outage it closed; on a still-down service
   // it's the live elapsed time since it dropped.
-  const showDuration = durationMs != null
+  const shouldShowDuration = durationMs != null
 
   return (
     <div className="stl-item">
-      <span className={`stl-marker ${down ? 'is-down' : 'is-up'}`} aria-hidden>
-        {down ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
+      <span className={`stl-marker ${isDown ? 'is-down' : 'is-up'}`} aria-hidden>
+        {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
       </span>
       <div className="stl-content">
         <span className="stl-head">
-          <span className="stl-title">{down ? 'Service went down' : 'Service came back up'}</span>
+          <span className="stl-title">{isDown ? 'Service went down' : 'Service came back up'}</span>
           <span className="stl-time">{formatTime(event.ts)}</span>
         </span>
         <span className="stl-subject">
@@ -168,7 +168,7 @@ function TransitionRow({
         </span>
         <span className="stl-meta">
           <span className="stl-meta-host">{event.host}</span>
-          {showDuration && (
+          {shouldShowDuration && (
             <span className="stl-meta-duration">Down for {formatDuration(durationMs)}</span>
           )}
         </span>
@@ -181,7 +181,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
   // A recovery summary covers every service, but a baseline recorded while one
   // was already down does not — so the subtext names the denominator rather than
   // calling a partial tally all-clear.
-  const allHealthy = event.count >= event.total
+  const areAllHealthy = event.count >= event.total
 
   return (
     <div className="stl-item">
@@ -196,7 +196,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
           <span className="stl-time">{formatTime(event.ts)}</span>
         </span>
         <span className="stl-subject stl-subject-muted">
-          {allHealthy
+          {areAllHealthy
             ? 'All services healthy'
             : `${event.count} of ${event.total} services healthy`}
         </span>
@@ -214,23 +214,23 @@ function ConnectionRow({
   event: ConnectionEvent
   durationMs: number | undefined
 }): JSX.Element {
-  const lost = event.status === 'lost'
-  const showDuration = !lost && durationMs != null
+  const isLost = event.status === 'lost'
+  const shouldShowDuration = !isLost && durationMs != null
 
   return (
     <div className="stl-item">
-      <span className={`stl-marker ${lost ? 'is-down' : 'is-up'}`} aria-hidden>
-        {lost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
+      <span className={`stl-marker ${isLost ? 'is-down' : 'is-up'}`} aria-hidden>
+        {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
       </span>
       <div className="stl-content">
         <span className="stl-head">
-          <span className="stl-title">{lost ? 'Internet disconnected' : 'Internet reconnected'}</span>
+          <span className="stl-title">{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
           <span className="stl-time">{formatTime(event.ts)}</span>
         </span>
         {/* Status on the left, offline duration flush right — both on one line. */}
         <span className="stl-subject stl-subject-muted stl-conn-line">
-          <span>{lost ? 'No internet connection detected.' : 'Connection restored.'}</span>
-          {showDuration && (
+          <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
+          {shouldShowDuration && (
             <span className="stl-meta-duration">Offline for {formatDuration(durationMs)}</span>
           )}
         </span>
@@ -242,16 +242,16 @@ function ConnectionRow({
 /** The header overflow menu: a kebab that opens a dropdown with Clear (drop all
  *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistory. */
 function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!isOpen) return
     const onDocDown = (e: MouseEvent): void => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
     }
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') setIsOpen(false)
     }
     document.addEventListener('mousedown', onDocDown)
     document.addEventListener('keydown', onKey)
@@ -259,7 +259,7 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
       document.removeEventListener('mousedown', onDocDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [isOpen])
 
   return (
     <div className="stl-menu" ref={ref}>
@@ -267,20 +267,20 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
         type="button"
         className="stl-kebab"
         aria-haspopup="menu"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label="Timeline options"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
         <MoreIcon size={16} />
       </button>
-      {open && (
+      {isOpen && (
         <div className="stl-dropdown" role="menu">
           <button
             type="button"
             role="menuitem"
             className="stl-menuitem is-danger"
             onClick={() => {
-              setOpen(false)
+              setIsOpen(false)
               onClear()
             }}
           >

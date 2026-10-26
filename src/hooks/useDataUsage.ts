@@ -13,7 +13,7 @@ interface UseDataUsageResult {
   error: string | null
 }
 
-export function useDataUsage(enabled: boolean): UseDataUsageResult {
+export function useDataUsage(isEnabled: boolean): UseDataUsageResult {
   const api = window.networkAPI
   // "no bridge → no-op" behaviour: an undefined fetcher when the bridge is absent.
   const fetchUsage = useMemo(
@@ -26,9 +26,9 @@ export function useDataUsage(enabled: boolean): UseDataUsageResult {
   // the window is hidden (with one fresh read on resume).
   const { data, isBusy, error } = useBackendResource(
     fetchUsage,
-    enabled,
+    isEnabled,
     'Failed to load data usage.',
-    { refetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
+    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
   )
 
   // No bridge: report it and skip the spinner rather than hang on "Loading…".

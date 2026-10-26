@@ -32,16 +32,16 @@ import type {
 } from '@/types'
 
 function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsubscribe {
-  let disposed = false
+  let isDisposed = false
   let dispose: (() => void) | null = null
 
   void listen<T>(event, (e) => callback(e.payload)).then((unlisten) => {
-    if (disposed) unlisten()
+    if (isDisposed) unlisten()
     else dispose = unlisten
   })
 
   return () => {
-    disposed = true
+    isDisposed = true
     dispose?.()
   }
 }

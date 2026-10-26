@@ -55,7 +55,7 @@ export function locationKey(location: AppLocation): string {
   return `${location.tab}:${location.speedSub?.view ?? ''}:${location.servicesSub?.view ?? ''}:${location.appsSub?.view ?? ''}:${appsSubApp(location.appsSub) ?? ''}`
 }
 
-function sameLocation(a: AppLocation, b: AppLocation): boolean {
+function isSameLocation(a: AppLocation, b: AppLocation): boolean {
   if (a.tab !== b.tab) return false
   if ((a.servicesSub?.view ?? null) !== (b.servicesSub?.view ?? null)) return false
   if ((a.appsSub?.view ?? null) !== (b.appsSub?.view ?? null)) return false
@@ -152,7 +152,7 @@ export function useNavigation(): Navigation {
   const navigate = useCallback((to: AppLocation): void => {
     // Ignore navigations that don't change the screen, so the back stack never
     // fills with duplicate entries (e.g. tapping the already-active tab).
-    if (sameLocation(locationRef.current, to)) return
+    if (isSameLocation(locationRef.current, to)) return
     window.history.pushState(writeState(to), '')
     appDepthRef.current += 1
     applyLocation(to)
@@ -170,7 +170,7 @@ export function useNavigation(): Navigation {
       return
     }
     const parent = parentLocation(locationRef.current)
-    if (sameLocation(locationRef.current, parent)) return
+    if (isSameLocation(locationRef.current, parent)) return
     window.history.replaceState(writeState(parent), '')
     applyLocation(parent)
   }, [applyLocation])

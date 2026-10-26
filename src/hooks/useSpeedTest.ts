@@ -53,7 +53,7 @@ const INITIAL_PROGRESS = {
 interface SpeedTestState {
   internetSpeed: SpeedResult | null
   capabilities: CapabilityRating[]
-  testing: boolean
+  isTesting: boolean
   progress: SpeedTestProgress
   error: string | null
   /** Epoch ms the current result finished — null until a test completes. */
@@ -83,7 +83,7 @@ interface UseSpeedTestResult extends SpeedTestState {
 let state: SpeedTestState = {
   internetSpeed: null,
   capabilities: [],
-  testing: false,
+  isTesting: false,
   progress: INITIAL_PROGRESS,
   error: null,
   completedAt: null,
@@ -106,7 +106,7 @@ function setState(next: SpeedTestState): void {
 // runs at the module level, independent of any mounted view, so the peaks keep
 // accumulating even while the Speed tab isn't on screen.
 subscribeLiveThroughput(() => {
-  if (!state.testing) return
+  if (!state.isTesting) return
   const { downloadMbps, uploadMbps } = getLiveThroughput().throughput
   const down = Math.max(state.livePeakDownloadMbps, downloadMbps)
   const up = Math.max(state.livePeakUploadMbps, uploadMbps)
@@ -138,7 +138,7 @@ let runSeq = 0
 let cancelledRun = 0
 
 async function runTest(): Promise<void> {
-  if (state.testing) return
+  if (state.isTesting) return
 
   const api = window.networkAPI
   if (!api) {
@@ -152,7 +152,7 @@ async function runTest(): Promise<void> {
 
   setState({
     ...state,
-    testing: true,
+    isTesting: true,
     error: null,
     progress: { phase: 'internet', message: 'Starting speed test…', progress: 0 },
     livePeakDownloadMbps: 0,
@@ -161,9 +161,9 @@ async function runTest(): Promise<void> {
 
   // `settled` stops trailing progress events (e.g. the backend's final
   // "complete" tick) from racing the terminal state write below.
-  let settled = false
+  let isSettled = false
   const unsubscribe = api.onSpeedTestProgress((progress) => {
-    if (settled || !isCurrent() || isCancelled()) return
+    if (isSettled || !isCurrent() || isCancelled()) return
     setState({ ...state, progress })
   })
 
@@ -177,7 +177,7 @@ async function runTest(): Promise<void> {
     const contextPromise = currentRunContext()
     const result = await api.runSpeedTest()
     const context = await contextPromise
-    settled = true
+    isSettled = true
     unsubscribe()
     await saveSpeedResult(result.internet, context)
     if (!isCurrent()) return
@@ -185,7 +185,7 @@ async function runTest(): Promise<void> {
       ...state,
       internetSpeed: result.internet,
       capabilities: result.capabilities,
-      testing: false,
+      isTesting: false,
       progress: { phase: 'complete', message: 'Done', progress: 100 },
       error: null,
       completedAt: Date.now(),
@@ -193,12 +193,12 @@ async function runTest(): Promise<void> {
       runConnection: connectionFromContext(context),
     })
   } catch (cause) {
-    settled = true
+    isSettled = true
     unsubscribe()
     if (!isCurrent()) return
     setState({
       ...state,
-      testing: false,
+      isTesting: false,
       // A user-initiated stop is not an error — just return to the previous state.
       error: isCancellation(cause)
         ? null
@@ -209,7 +209,7 @@ async function runTest(): Promise<void> {
 }
 
 function cancelTest(): void {
-  if (!state.testing) return
+  if (!state.isTesting) return
   // Mark the in-flight run cancelled so a stop during the pre-flight still aborts
   // it before kicking off the backend test.
   cancelledRun = runSeq
@@ -218,7 +218,7 @@ function cancelTest(): void {
   // the in-flight run non-current, so its trailing progress and terminal writes are
   // ignored and can't clobber the idle state we set here.
   runSeq++
-  setState({ ...state, testing: false, progress: INITIAL_PROGRESS, error: null })
+  setState({ ...state, isTesting: false, progress: INITIAL_PROGRESS, error: null })
   // Still ask the backend to actually stop its work (a no-op if it hasn't started —
   // which is exactly the case the run flag covers).
   void window.networkAPI?.cancelSpeedTest()

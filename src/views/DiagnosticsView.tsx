@@ -67,7 +67,7 @@ export default function DiagnosticsView({
             <span className="view-header-status">&nbsp;</span>
           )
         }
-        subtitleShown={hasDiagnostics && !isRunning}
+        isSubtitleShown={hasDiagnostics && !isRunning}
         actions={<RefreshIconButton label="Run again" isBusy={isRunning} onClick={onRun} />}
       />
 

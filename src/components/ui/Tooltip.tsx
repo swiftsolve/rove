@@ -40,7 +40,7 @@ interface TooltipProps {
   offset?: number
   /** When true, the tooltip never opens — used to hide stale content (e.g. a
    *  capability rating while a fresh test is running). */
-  disabled?: boolean
+  isDisabled?: boolean
   /** Extra class on the wrapper span, so a caller can make the trigger participate
    *  in its own flex layout (e.g. shrink/truncate) rather than sit at intrinsic
    *  width. */
@@ -135,19 +135,19 @@ export function Tooltip({
   align = 'right',
   placement = 'bottom',
   offset = 0,
-  disabled = false,
+  isDisabled = false,
   className,
   maxWidth = MAX_WIDTH,
 }: TooltipProps): JSX.Element {
   const bubbleId = useId()
   const wrapRef = useRef<HTMLSpanElement>(null)
   const bubbleRef = useRef<HTMLSpanElement>(null)
-  const [suppressed, setSuppressed] = useState(false)
-  const [hovered, setHovered] = useState(false)
-  const [focused, setFocused] = useState(false)
+  const [isSuppressed, setIsSuppressed] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null)
 
-  const open = (hovered || focused) && !suppressed && !disabled
+  const isOpen = (isHovered || isFocused) && !isSuppressed && !isDisabled
 
   const updatePosition = useCallback(() => {
     const wrap = wrapRef.current
@@ -162,7 +162,7 @@ export function Tooltip({
   }, [align, placement, offset])
 
   useLayoutEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       setCoords(null)
       return
     }
@@ -174,7 +174,7 @@ export function Tooltip({
       window.removeEventListener('scroll', updatePosition, true)
       window.removeEventListener('resize', updatePosition)
     }
-  }, [open, updatePosition, content])
+  }, [isOpen, updatePosition, content])
 
   const trigger = isValidElement(children)
     ? cloneElement(
@@ -186,7 +186,7 @@ export function Tooltip({
         {
           'aria-describedby': bubbleId,
           onPointerDown: (event: PointerEvent<HTMLElement>) => {
-            setSuppressed(true)
+            setIsSuppressed(true)
             children.props.onPointerDown?.(event)
           },
           onClick: (event: MouseEvent<HTMLElement>) => {
@@ -194,7 +194,7 @@ export function Tooltip({
             // activation (Enter/Space reports `detail === 0`) must keep focus on
             // the trigger, or it falls back to <body> and the Tab position is lost.
             if (event.detail !== 0) {
-              setSuppressed(true)
+              setIsSuppressed(true)
               ;(event.currentTarget as HTMLElement).blur()
             }
             children.props.onClick?.(event)
@@ -208,24 +208,24 @@ export function Tooltip({
       <span
         ref={wrapRef}
         className={className ? `tooltip-wrap ${className}` : 'tooltip-wrap'}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         onFocusCapture={(event) => {
-          setFocused(true)
+          setIsFocused(true)
           // Keyboard focus always shows the bubble, even if an earlier click left
           // it suppressed with the pointer still resting on the trigger.
-          if ((event.target as HTMLElement).matches(':focus-visible')) setSuppressed(false)
+          if ((event.target as HTMLElement).matches(':focus-visible')) setIsSuppressed(false)
         }}
         onBlurCapture={(event) => {
           if (!wrapRef.current?.contains(event.relatedTarget as Node | null)) {
-            setFocused(false)
+            setIsFocused(false)
           }
         }}
-        onPointerLeave={() => setSuppressed(false)}
+        onPointerLeave={() => setIsSuppressed(false)}
       >
         {trigger}
       </span>
-      {open &&
+      {isOpen &&
         createPortal(
           <span
             id={bubbleId}

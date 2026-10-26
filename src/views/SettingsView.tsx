@@ -91,8 +91,8 @@ export default function SettingsView({
   onThemeModeChange,
   onOpenAbout,
 }: SettingsViewProps): JSX.Element {
-  const [autoUpdate, setAutoUpdate] = useSetting('autoUpdate', true)
-  const [themeSounds, setThemeSounds] = useSetting('themeSounds', true)
+  const [isAutoUpdateEnabled, setIsAutoUpdateEnabled] = useSetting('autoUpdate', true)
+  const [areThemeSoundsEnabled, setAreThemeSoundsEnabled] = useSetting('themeSounds', true)
   const [check, setCheck] = useState<CheckState>({ kind: 'idle' })
 
   async function runCheck(): Promise<void> {
@@ -139,8 +139,8 @@ export default function SettingsView({
           description="Look for a newer signed release each time Rove launches."
           control={
             <Toggle
-              checked={autoUpdate}
-              onChange={setAutoUpdate}
+              isChecked={isAutoUpdateEnabled}
+              onChange={setIsAutoUpdateEnabled}
               label="Check for updates automatically"
             />
           }
@@ -177,8 +177,8 @@ export default function SettingsView({
           description="Play a soft click when toggling between light and dark."
           control={
             <Toggle
-              checked={themeSounds}
-              onChange={setThemeSounds}
+              isChecked={areThemeSoundsEnabled}
+              onChange={setAreThemeSoundsEnabled}
               label="Theme switch sound"
             />
           }

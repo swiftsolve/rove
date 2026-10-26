@@ -87,8 +87,8 @@ export function appendSamples(
 ): LatencyHistory {
   if (reachability.length === 0) return history
 
-  const offline = internet === 'noInternet' || internet === 'offline'
-  if (offline) return history
+  const isOffline = internet === 'noInternet' || internet === 'offline'
+  if (isOffline) return history
 
   const now = Date.now()
   const next: Record<string, LatencySample[]> = {}

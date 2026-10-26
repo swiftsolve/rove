@@ -69,7 +69,7 @@ function Metric({
 function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const download = splitSpeedMbps(entry.downloadMbps)
   const upload = splitSpeedMbps(entry.uploadMbps)
-  const validPing = Number.isFinite(entry.latencyMs) && entry.latencyMs < 999
+  const hasValidPing = Number.isFinite(entry.latencyMs) && entry.latencyMs < 999
 
   return (
     <div className="history-card surface">
@@ -83,8 +83,8 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
         <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
         <Metric
           label="Ping"
-          value={validPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
-          unit={validPing ? 'ms' : undefined}
+          value={hasValidPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
+          unit={hasValidPing ? 'ms' : undefined}
         />
       </div>
 
@@ -92,7 +92,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
         <p className="history-footnote num">
           <InlineMeta
             items={[
-              <>Jitter {validPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
+              <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
               <>{entry.packetLoss}% loss</>,
             ]}
           />
@@ -110,16 +110,16 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
 /** The header overflow menu: a kebab that opens a dropdown with Delete (clear
  *  all history). Closes on outside click or Escape. */
 function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!isOpen) return
     const onDocDown = (e: MouseEvent): void => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
     }
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') setIsOpen(false)
     }
     document.addEventListener('mousedown', onDocDown)
     document.addEventListener('keydown', onKey)
@@ -127,7 +127,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
       document.removeEventListener('mousedown', onDocDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [isOpen])
 
   return (
     <div className="history-menu" ref={ref}>
@@ -135,20 +135,20 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
         type="button"
         className="history-kebab"
         aria-haspopup="menu"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label="History options"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
         <MoreIcon size={16} />
       </button>
-      {open && (
+      {isOpen && (
         <div className="history-dropdown" role="menu">
           <button
             type="button"
             role="menuitem"
             className="history-menuitem is-danger"
             onClick={() => {
-              setOpen(false)
+              setIsOpen(false)
               onDelete()
             }}
           >
@@ -167,21 +167,21 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
   // frame. Track whether that load has resolved so we don't flash the tall
   // "no tests yet" placeholder — which fades in over the dark background and
   // then swaps to the list mid-transition — before we actually know it's empty.
-  const [loaded, setLoaded] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
   // Re-load whenever a test finishes so a result recorded while this view is
   // open shows up without a manual refresh. `completedAt` changes on each
   // completed run, driving the effect below.
   const { completedAt } = useSpeedTest()
 
   useEffect(() => {
-    let active = true
+    let isActive = true
     void getSpeedHistory().then((next) => {
-      if (!active) return
+      if (!isActive) return
       setEntries(next)
-      setLoaded(true)
+      setIsLoaded(true)
     })
     return () => {
-      active = false
+      isActive = false
     }
   }, [completedAt])
 
@@ -197,7 +197,7 @@ export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element
       onBack={onBack}
       action={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
     >
-      {!loaded ? null : entries.length === 0 ? (
+      {!isLoaded ? null : entries.length === 0 ? (
         <EmptyState
           icon={HistoryIcon}
           title="No speed tests yet"

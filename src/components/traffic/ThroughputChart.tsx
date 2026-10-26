@@ -9,7 +9,7 @@ import './ThroughputChart.css'
 interface ThroughputChartProps {
   download: number[]
   upload: number[]
-  speedTestRunning?: boolean
+  isSpeedTestRunning?: boolean
   linkCapacityMbps?: number | null
 }
 
@@ -34,7 +34,7 @@ function formatAxis(mbps: number): string {
 export default function ThroughputChart({
   download,
   upload,
-  speedTestRunning = false,
+  isSpeedTestRunning = false,
   linkCapacityMbps = null,
 }: ThroughputChartProps): JSX.Element {
   const gradientId = useId().replace(/:/g, '')
@@ -44,7 +44,7 @@ export default function ThroughputChart({
   // Scale + row data recompute together, only when the inputs change —
   // not on every 1 Hz render.
   const { data, maxValue } = useMemo(() => {
-    const max = resolveChartScale(download, upload, { linkCapacityMbps, speedTestRunning })
+    const max = resolveChartScale(download, upload, { linkCapacityMbps, isSpeedTestRunning })
     const total = Math.max(download.length, upload.length)
     const rows: ChartDatum[] = Array.from({ length: total }, (_, index) => ({
       index,
@@ -59,7 +59,7 @@ export default function ThroughputChart({
       rows.unshift({ index: first.index - 1, down: 0, up: 0 })
     }
     return { data: rows, maxValue: max }
-  }, [download, upload, linkCapacityMbps, speedTestRunning])
+  }, [download, upload, linkCapacityMbps, isSpeedTestRunning])
 
   // Glide the axis toward a smaller scale so the trace doesn't jump taller all
   // at once; spikes still expand the scale instantly (see useSmoothScale).

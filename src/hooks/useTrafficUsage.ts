@@ -19,7 +19,7 @@ interface UseTrafficUsageResult {
  * missing bridge degrades to a clear message rather than a hung spinner. Reads
  * off the same backend tracker the Hosts view does — no extra sampling.
  */
-export function useTrafficUsage(enabled: boolean): UseTrafficUsageResult {
+export function useTrafficUsage(isEnabled: boolean): UseTrafficUsageResult {
   const api = window.networkAPI
   const fetchUsage = useMemo(
     () => (api?.getTrafficUsage ? () => api.getTrafficUsage() : undefined),
@@ -28,9 +28,9 @@ export function useTrafficUsage(enabled: boolean): UseTrafficUsageResult {
 
   const { data, isBusy, error } = useBackendResource(
     fetchUsage,
-    enabled,
+    isEnabled,
     'Failed to load traffic-type usage.',
-    { refetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
+    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
   )
 
   if (!fetchUsage) {

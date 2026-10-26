@@ -18,7 +18,7 @@ interface SpeedTestSectionProps {
   internetSpeed: SpeedResult | null
   linkCapacityMbps: number | null
   connection: SpeedTestConnection | null
-  testing: boolean
+  isTesting: boolean
   canTest: boolean
   error: string | null
   progress: SpeedTestProgress
@@ -39,18 +39,18 @@ function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX
 
 function SpeedCell({
   mbps,
-  placeholder = false,
+  isPlaceholder = false,
 }: {
   mbps: number | null
-  placeholder?: boolean
+  isPlaceholder?: boolean
 }): JSX.Element {
   const animated = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animated)
 
   return (
-    <div className={`metric num${placeholder ? ' is-empty' : ''}`}>
-      <span className="metric-value">{placeholder ? '…' : value}</span>
-      {!placeholder && <span className="metric-unit">{unit}</span>}
+    <div className={`metric num${isPlaceholder ? ' is-empty' : ''}`}>
+      <span className="metric-value">{isPlaceholder ? '…' : value}</span>
+      {!isPlaceholder && <span className="metric-unit">{unit}</span>}
     </div>
   )
 }
@@ -278,7 +278,7 @@ function SpeedTestSection({
   internetSpeed,
   linkCapacityMbps,
   connection,
-  testing,
+  isTesting,
   canTest,
   error,
   progress,
@@ -289,15 +289,15 @@ function SpeedTestSection({
   // Empty state: connected and idle, but no test has run yet. We still lay out
   // the full metric grid with placeholder values so the empty and filled states
   // share the same structure.
-  const isEmpty = !hasResults && !testing
+  const isEmpty = !hasResults && !isTesting
   // While testing, show live (peak) throughput once a direction's phase has begun
   // (download at 15%, upload at 55%); otherwise show 0 so unset cells read as zero.
-  const downloadCell = testing
+  const downloadCell = isTesting
     ? progress.progress >= 15
       ? liveDownloadMbps
       : 0
     : (internetSpeed?.downloadMbps ?? null)
-  const uploadCell = testing
+  const uploadCell = isTesting
     ? progress.progress >= 55
       ? liveUploadMbps
       : 0
@@ -330,18 +330,18 @@ function SpeedTestSection({
             <DirectionIcon series="down" />
             <span className="field-label">Download</span>
           </div>
-          <SpeedCell mbps={downloadCell} placeholder={isEmpty} />
+          <SpeedCell mbps={downloadCell} isPlaceholder={isEmpty} />
         </div>
         <div className="bench-hero-cell">
           <div className="bench-hero-label">
             <DirectionIcon series="up" />
             <span className="field-label">Upload</span>
           </div>
-          <SpeedCell mbps={uploadCell} placeholder={isEmpty} />
+          <SpeedCell mbps={uploadCell} isPlaceholder={isEmpty} />
         </div>
       </div>
 
-      {!testing && (
+      {!isTesting && (
         <div className="bench-substats">
           <div className="bench-substat">
             <span className="field-label">Ping</span>
@@ -364,7 +364,7 @@ function SpeedTestSection({
         </div>
       )}
 
-      {testing ? (
+      {isTesting ? (
         <TestProgress progress={progress} />
       ) : (
         hasResults &&

@@ -88,7 +88,7 @@ function HostRow({ host }: { host: HostConn }): JSX.Element {
           align="left"
           className="host-name-tip"
           maxWidth={360}
-          disabled={!host.host}
+          isDisabled={!host.host}
         >
           <span className="host-name">{label}</span>
         </UiTooltip>
@@ -110,11 +110,11 @@ function HostRow({ host }: { host: HostConn }): JSX.Element {
 /** One app group: an icon + name header with the app's total, then its hosts. */
 function AppGroup({
   app,
-  expanded,
+  isExpanded,
   onToggle,
 }: {
   app: AppHosts
-  expanded: boolean
+  isExpanded: boolean
   onToggle: () => void
 }): JSX.Element {
   const total = app.rxBytes + app.txBytes
@@ -125,13 +125,13 @@ function AppGroup({
         type="button"
         className="host-app-header"
         onClick={onToggle}
-        aria-expanded={expanded}
+        aria-expanded={isExpanded}
         aria-label={`${app.name}, ${count} ${count === 1 ? 'host' : 'hosts'}`}
       >
         <span className="host-app-id">
           <ChevronDownIcon
             size={14}
-            className={`host-app-chevron ${expanded ? 'open' : ''}`}
+            className={`host-app-chevron ${isExpanded ? 'open' : ''}`}
             aria-hidden
           />
           <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
@@ -142,7 +142,7 @@ function AppGroup({
         </span>
         <MetricValue value={total} level="host-app-total num" format={formatBytes} />
       </button>
-      {expanded && (
+      {isExpanded && (
         <div className="host-app-hosts">
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
@@ -265,7 +265,7 @@ export default function HostsView({
               <AppGroup
                 key={app.name}
                 app={app}
-                expanded={isExpanded(app.name)}
+                isExpanded={isExpanded(app.name)}
                 onToggle={() => toggle(app.name)}
               />
             ))}

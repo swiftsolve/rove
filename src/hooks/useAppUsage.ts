@@ -19,7 +19,7 @@ interface UseAppUsageResult {
  * clear message rather than a hung spinner. Polls a little faster than the daily
  * usage summary since the underlying totals climb continuously.
  */
-export function useAppUsage(enabled: boolean): UseAppUsageResult {
+export function useAppUsage(isEnabled: boolean): UseAppUsageResult {
   const api = window.networkAPI
   const fetchUsage = useMemo(
     () => (api?.getAppUsage ? () => api.getAppUsage() : undefined),
@@ -28,9 +28,9 @@ export function useAppUsage(enabled: boolean): UseAppUsageResult {
 
   const { data, isBusy, error } = useBackendResource(
     fetchUsage,
-    enabled,
+    isEnabled,
     'Failed to load per-app usage.',
-    { refetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
+    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
   )
 
   if (!fetchUsage) {

@@ -56,20 +56,20 @@ export function ServiceIcon({
   src,
   fallback = 'monogram',
 }: ServiceIconProps): JSX.Element | null {
-  const [srcFailed, setSrcFailed] = useState(false)
+  const [hasSrcFailed, setHasSrcFailed] = useState(false)
   // Favicon failure is tracked per host in `failedFavicons`, not in state, so it
   // survives remounts; this only re-renders us when a load error records one.
   const [, noteFaviconFailure] = useState(0)
   const dimensions = { width: size, height: size }
 
-  if (src && !srcFailed) {
+  if (src && !hasSrcFailed) {
     return (
       <img
         className="service-icon"
         src={src}
         alt=""
         style={dimensions}
-        onError={() => setSrcFailed(true)}
+        onError={() => setHasSrcFailed(true)}
       />
     )
   }

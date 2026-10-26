@@ -116,17 +116,17 @@ export const WifiIcon = make(Wifi, 20)
 /**
  * The Rove Mark — a filled centre dot inside an open ring. By default it's drawn
  * in `currentColor` (fill + stroke) so it inherits the accent color from its
- * container, matching the tray glyph. Pass `gradient` for the app-icon treatment
+ * container, matching the tray glyph. Pass `hasGradient` for the app-icon treatment
  * — the same top-to-bottom blue the 1024px dock icon uses. This is the one brand
  * glyph that isn't a Lucide alias.
  */
 export function BrandIcon({
   size = 20,
   className,
-  gradient = false,
-}: IconProps & { gradient?: boolean }): JSX.Element {
+  hasGradient = false,
+}: IconProps & { hasGradient?: boolean }): JSX.Element {
   const gid = useId()
-  const paint = gradient ? `url(#${gid})` : 'currentColor'
+  const paint = hasGradient ? `url(#${gid})` : 'currentColor'
   return (
     <svg
       width={size}
@@ -136,7 +136,7 @@ export function BrandIcon({
       className={className}
       aria-hidden
     >
-      {gradient && (
+      {hasGradient && (
         <defs>
           <linearGradient id={gid} x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
             <stop offset="0" stopColor="#7aa4ff" />

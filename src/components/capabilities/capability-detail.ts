@@ -6,7 +6,7 @@ export interface RequirementCheck {
   label: string
   need: string
   have: string
-  pass: boolean
+  isMet: boolean
 }
 
 export interface CapabilityExplanation {
@@ -70,29 +70,29 @@ export function explainCapability(
       label: 'Download',
       need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps)}`,
       have: formatSpeedMbps(speed.downloadMbps),
-      pass: speed.downloadMbps >= requirements.minDownloadMbps,
+      isMet: speed.downloadMbps >= requirements.minDownloadMbps,
     },
     {
       label: 'Upload',
       need: `≥ ${formatSpeedMbps(requirements.minUploadMbps)}`,
       have: formatSpeedMbps(speed.uploadMbps),
-      pass: speed.uploadMbps >= requirements.minUploadMbps,
+      isMet: speed.uploadMbps >= requirements.minUploadMbps,
     },
     {
       label: 'Latency',
       need: `≤ ${requirements.maxLatencyMs} ms`,
       have: formatLatencyMs(speed.latencyMs),
-      pass: speed.latencyMs <= requirements.maxLatencyMs,
+      isMet: speed.latencyMs <= requirements.maxLatencyMs,
     },
     {
       label: 'Jitter',
       need: `≤ ${requirements.maxJitterMs} ms`,
       have: formatLatencyMs(speed.jitterMs),
-      pass: speed.jitterMs <= requirements.maxJitterMs,
+      isMet: speed.jitterMs <= requirements.maxJitterMs,
     },
   ]
 
-  const failing = checks.filter((check) => !check.pass).map((check) => check.label.toLowerCase())
+  const failing = checks.filter((check) => !check.isMet).map((check) => check.label.toLowerCase())
 
   return { summary: summarize(level, definition.label, failing), checks }
 }

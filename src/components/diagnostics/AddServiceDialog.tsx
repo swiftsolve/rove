@@ -51,20 +51,20 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const [name, setName] = useState(editing?.name ?? '')
   // In edit mode the name is the user's own from the start, so never auto-derive
   // over it as they touch the address.
-  const [nameTouched, setNameTouched] = useState(editing != null)
+  const [isNameTouched, setIsNameTouched] = useState(editing != null)
   const [phase, setPhase] = useState<'idle' | 'testing' | 'tested'>('idle')
   const [outcome, setOutcome] = useState<TestOutcome | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [adding, setAdding] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
 
   // Escape closes the dialog, the native expectation for a modal.
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && !adding) onClose()
+      if (e.key === 'Escape' && !isAdding) onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [adding, onClose])
+  }, [isAdding, onClose])
 
   const runTest = (): void => {
     const parsed = parseServiceInput(draft)
@@ -86,11 +86,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     })()
   }
 
-  const tested = phase === 'tested' && outcome != null
+  const hasTested = phase === 'tested' && outcome != null
 
   const confirm = (): void => {
     if (!outcome) return
-    setAdding(true)
+    setIsAdding(true)
     // The editable name wins over the auto-detected one; fall back to the
     // derived name if the field somehow ended up blank.
     const finalName = name.trim() || outcome.name
@@ -98,7 +98,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       .then(onClose)
       .catch(() => {
         setError('Could not add that service.')
-        setAdding(false)
+        setIsAdding(false)
       })
   }
 
@@ -109,7 +109,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     if (outcome) setOutcome(null)
     if (error) setError(null)
     // Keep the name in sync with the address until the user takes it over.
-    if (!nameTouched) {
+    if (!isNameTouched) {
       const parsed = parseServiceInput(value)
       setName(parsed ? parsed.name : '')
     }
@@ -120,11 +120,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     // Blanking the field hands the name back to auto-detection; re-derive from
     // the current address so it never lingers empty when a host is present.
     if (value.trim() === '') {
-      setNameTouched(false)
+      setIsNameTouched(false)
       const parsed = parseServiceInput(draft)
       if (parsed) setName(parsed.name)
     } else {
-      setNameTouched(true)
+      setIsNameTouched(true)
     }
   }
 
@@ -136,7 +136,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   }
 
   const overlay = (
-    <div className="svc-dialog-overlay" role="presentation" onClick={adding ? undefined : onClose}>
+    <div className="svc-dialog-overlay" role="presentation" onClick={isAdding ? undefined : onClose}>
       <div
         className="svc-dialog"
         role="dialog"
@@ -155,7 +155,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
             type="button"
             className="btn-icon btn-icon-secondary svc-dialog-close"
             onClick={onClose}
-            disabled={adding}
+            disabled={isAdding}
             aria-label="Close"
           >
             <CloseIcon size={15} />
@@ -230,9 +230,9 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
             type="button"
             className="svc-dialog-btn is-primary"
             onClick={confirm}
-            disabled={!tested || adding}
+            disabled={!hasTested || isAdding}
           >
-            {adding ? <ButtonSpinner size={14} /> : editing ? 'Save' : 'Add service'}
+            {isAdding ? <ButtonSpinner size={14} /> : editing ? 'Save' : 'Add service'}
           </button>
         </footer>
       </div>

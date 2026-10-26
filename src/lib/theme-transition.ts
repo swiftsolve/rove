@@ -12,7 +12,7 @@ interface ViewTransition {
 interface RunningSwap {
   transition: ViewTransition
   /** The theme the clip circle is currently heading toward. */
-  targetLight: boolean
+  isTargetLight: boolean
   /** The clip animation — null until `transition.ready` resolves and it exists. */
   animation: Animation | null
 }
@@ -35,7 +35,7 @@ let running: RunningSwap | null = null
  * `persist` stores the preference and re-renders React state; it always runs
  * exactly once, whether or not an animation plays.
  */
-export function swapResolvedTheme(nextLight: boolean, persist: () => void): void {
+export function swapResolvedTheme(isNextLight: boolean, persist: () => void): void {
   const root = document.documentElement
 
   // A swap is already animating. Rather than starting a second transition on
@@ -44,13 +44,13 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
   // circle from wherever it is right now; if it points the same way, just keep
   // the stored preference in sync.
   if (running) {
-    if (nextLight !== running.targetLight) {
-      running.targetLight = nextLight
+    if (isNextLight !== running.isTargetLight) {
+      running.isTargetLight = isNextLight
       // The snapshots cover the live DOM for the whole transition, so flipping
       // the class and re-rendering now is invisible until teardown — at which
       // point it must already match where the reversed circle lands.
-      root.classList.toggle('theme-light', nextLight)
-      playThemeSwitchSound(nextLight ? 'light' : 'dark')
+      root.classList.toggle('theme-light', isNextLight)
+      playThemeSwitchSound(isNextLight ? 'light' : 'dark')
       // Reverse the clip in place. Before `ready` resolves the animation
       // doesn't exist yet; the ready handler reconciles direction on its own.
       running.animation?.reverse()
@@ -61,20 +61,20 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
 
   // No visible change (e.g. choosing 'system' on an OS that already matches the
   // current theme) — persist the preference without an animation or sound.
-  if (nextLight === root.classList.contains('theme-light')) {
+  if (isNextLight === root.classList.contains('theme-light')) {
     persist()
     return
   }
 
   // A little mechanical click on every visible flip, regardless of which swap
   // path (animated or instant) runs below.
-  playThemeSwitchSound(nextLight ? 'light' : 'dark')
+  playThemeSwitchSound(isNextLight ? 'light' : 'dark')
 
   const doc = document as Document & {
     startViewTransition?: (callback: () => void) => ViewTransition
   }
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!doc.startViewTransition || reduceMotion || IS_WEBKIT_GTK) {
+  const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!doc.startViewTransition || shouldReduceMotion || IS_WEBKIT_GTK) {
     persist()
     return
   }
@@ -84,15 +84,15 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
   // light view back to the centre to reveal dark beneath. The `theme-to-dark`
   // class tells index.css which snapshot to stack on top; it's fixed for the
   // life of the transition, so a mid-flight reversal reuses it as-is.
-  root.classList.toggle('theme-to-dark', !nextLight)
+  root.classList.toggle('theme-to-dark', !isNextLight)
   const transition = doc.startViewTransition(() => {
     // flushSync so the snapshot captures the fully re-rendered UI (including the
     // toggle's own sun/moon icon), and toggle the class here too so the new
     // snapshot definitely paints in the incoming theme's colours.
     flushSync(persist)
-    root.classList.toggle('theme-light', nextLight)
+    root.classList.toggle('theme-light', isNextLight)
   })
-  const swap: RunningSwap = { transition, targetLight: nextLight, animation: null }
+  const swap: RunningSwap = { transition, isTargetLight: isNextLight, animation: null }
   running = swap
 
   transition.ready
@@ -103,7 +103,7 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
         {
           // Grow the incoming light circle outward; for dark, run the same
           // keyframes in reverse so the outgoing light circle shrinks inward.
-          clipPath: nextLight ? grow : [...grow].reverse(),
+          clipPath: isNextLight ? grow : [...grow].reverse(),
         },
         {
           // Snappy: short and reacts fast off the click (minimal ease-in) with
@@ -118,14 +118,14 @@ export function swapResolvedTheme(nextLight: boolean, persist: () => void): void
           fill: 'both',
           // To dark, animate the outgoing (light) snapshot as it collapses;
           // to light, animate the incoming (light) snapshot as it grows.
-          pseudoElement: nextLight ? '::view-transition-new(root)' : '::view-transition-old(root)',
+          pseudoElement: isNextLight ? '::view-transition-new(root)' : '::view-transition-old(root)',
         },
       )
       swap.animation = animation
       // If presses landed before the animation existed, the net direction may
       // already have flipped (an odd number of reversals) — start it reversed
       // so it lands on the current target rather than the original one.
-      if (swap.targetLight !== nextLight) animation.reverse()
+      if (swap.isTargetLight !== isNextLight) animation.reverse()
     })
     // If the browser skips the transition, `ready` rejects — the theme has
     // already swapped, so there's nothing to do but avoid an unhandled rejection.
