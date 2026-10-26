@@ -20,6 +20,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          # A persisted GITHUB_TOKEN header would override the design-tokens
+          # token below for every github.com request git makes in the repo.
+          persist-credentials: false
 
       - name: Linux system deps
         if: runner.os == 'Linux'
@@ -43,6 +47,8 @@ jobs:
         env:
           TOKEN: ${{ secrets.ROVE_DESIGN_TOKEN }}
         run: |
+          git -C "$RUNNER_TEMP" ls-remote --exit-code "https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design.git" HEAD > /dev/null \
+            || { echo "::error::ROVE_DESIGN_TOKEN can't read swiftsolve/rove-design"; exit 1; }
           for from in ssh://git@github.com/swiftsolve/rove-design https://github.com/swiftsolve/rove-design; do
             git config --global --add url."https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design".insteadOf "$from"
           done
