@@ -19,7 +19,7 @@
   color: var(--text-tertiary);
 }
 
-/* Footer strip: the darkest tier of the ladder, one shade darker than the card,
+/* Footer strip: the inset tier, same as the capabilities and speed-test footers,
    with no hairline — the colour step alone separates it. Bleeds to the card's
    left/right/bottom edges (the card's overflow:hidden rounds the bottom
    corners). Used by both the Today and Last-7-days cards. */
@@ -27,7 +27,7 @@
   margin: var(--space-12) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
   /* Match the speed-test widget's footer (`.bench-footer`) vertical rhythm. */
   padding: var(--section-body-padding);
-  background: var(--bg-app);
+  background: var(--bg-inset);
 }
 
 /* "Since boot" label pinned left, the down/up totals grouped at the right. */
@@ -50,23 +50,10 @@
   gap: var(--space-4);
 }
 
-/* Beneath the chart's inset band the footer sits flush, so the two darker tiers
-   read as one seamless stepped block. */
-.usage-chart-wrap + .usage-footer {
-  margin-top: 0;
-}
-
 /* ---- Week chart ---- */
 
-/* Week chart sits on the inset dark band — the middle tier of the ladder,
-   bleeding to the card's side edges, with breathing room below the title. */
+/* Week chart sits on the plain card surface, like the capability bars, so the
+   inset footer below is the only darker tier. */
 .usage-chart-wrap {
   position: relative;
-  /* Trim a touch of the section body's top padding so the band sits a little
-     closer under the title. */
-  margin: -2px calc(-1 * var(--section-body-padding)) 0;
-  /* Less air above the chart so the header doesn't sit high with a big gap
-     below it — pull the inset band up closer to the title. */
-  padding: var(--space-4) var(--section-body-padding) var(--space-8);
-  background: var(--bg-inset);
 }
