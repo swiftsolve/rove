@@ -2,13 +2,13 @@ import type { ReactNode } from 'react'
 import './Section.css'
 
 interface SectionProps {
-  readonly title: string
-  readonly icon?: ReactNode
-  readonly action?: ReactNode
-  readonly children: ReactNode
-  readonly footer?: ReactNode
-  readonly className?: string
-  readonly bodyClassName?: string
+  title: string
+  icon?: ReactNode
+  action?: ReactNode
+  children: ReactNode
+  footer?: ReactNode
+  className?: string
+  bodyClassName?: string
 }
 
 export default function Section({

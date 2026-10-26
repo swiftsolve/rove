@@ -16,8 +16,8 @@ export default function UpdateDialog({
   update,
   onDismiss,
 }: {
-  readonly update: PendingUpdate
-  readonly onDismiss: () => void
+  update: PendingUpdate
+  onDismiss: () => void
 }): JSX.Element {
   const [installing, setInstalling] = useState(false)
 

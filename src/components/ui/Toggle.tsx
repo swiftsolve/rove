@@ -1,11 +1,11 @@
 import './Toggle.css'
 
 interface ToggleProps {
-  readonly checked: boolean
-  readonly onChange: (checked: boolean) => void
+  checked: boolean
+  onChange: (checked: boolean) => void
   /** Accessible label — required since the switch renders no visible text. */
-  readonly label: string
-  readonly disabled?: boolean
+  label: string
+  disabled?: boolean
 }
 
 /** A compact on/off switch styled to match the app's accent + surface tokens. */

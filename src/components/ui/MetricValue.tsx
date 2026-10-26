@@ -10,9 +10,9 @@ export function MetricValue({
   level,
   format,
 }: {
-  readonly value: number
-  readonly level?: string
-  readonly format: (n: number) => string
+  value: number
+  level?: string
+  format: (n: number) => string
 }): JSX.Element {
   const animated = useCountUp(value)
   return <span className={level}>{format(animated)}</span>

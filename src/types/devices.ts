@@ -20,7 +20,7 @@ export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 /** How decisive the classifier's vote was — 'low' kinds render hedged. */
 export type LanDeviceKindConfidence = 'high' | 'low'
 
-export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
+export const LAN_DEVICE_KIND_LABELS: Record<LanDeviceKind, string> = {
   router: 'Network',
   nas: 'NAS / Server',
   computer: 'Computer',
@@ -39,36 +39,36 @@ export const LAN_DEVICE_KIND_LABELS: Readonly<Record<LanDeviceKind, string>> = {
 /** A single host discovered on the local network segment. */
 export interface LanDevice {
   /** Best-effort category — vendor OUIs only reveal so much. */
-  readonly kind: LanDeviceKind
+  kind: LanDeviceKind
   /** 'low' when the kind is a thin-margin guess, rendered hedged ("Phone?"). */
-  readonly kindConfidence: LanDeviceKindConfidence
-  readonly ip: string
-  readonly mac: string
+  kindConfidence: LanDeviceKindConfidence
+  ip: string
+  mac: string
   /** Best-effort vendor from the MAC OUI, or null when unknown/randomized. */
-  readonly vendor: string | null
+  vendor: string | null
   /** Reverse-DNS/mDNS hostname (suffix trimmed), or null when unresolvable. */
-  readonly hostname: string | null
+  hostname: string | null
   /** Hardware model from mDNS/UPnP (e.g. "MacBookPro18,3"), or null. */
-  readonly model: string | null
+  model: string | null
   /**
    * OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
    * "Apple"), or null when unknown.
    */
-  readonly os: string | null
+  os: string | null
   /** True when the MAC is locally administered (privacy-randomized). */
-  readonly isRandomizedMac: boolean
+  isRandomizedMac: boolean
   /** This device is the default gateway (router). */
-  readonly isGateway: boolean
+  isGateway: boolean
   /** This device is the machine Rove is running on. */
-  readonly isSelf: boolean
+  isSelf: boolean
   /** Neighbor entry is currently reachable (vs. merely cached/stale). */
-  readonly reachable: boolean
+  reachable: boolean
   /**
    * Epoch-ms this device last answered. Present so an offline device can show
    * "last seen 3m ago"; null on a device that hasn't been reconciled with the
    * roster. Offline devices are dropped from the list 24h after this.
    */
-  readonly lastSeen: number | null
+  lastSeen: number | null
 }
 
 /**
@@ -80,12 +80,12 @@ export interface LanDevice {
 export type DhcpStatus = 'starting' | 'active' | 'unavailable'
 
 export interface LanDeviceScan {
-  readonly devices: readonly LanDevice[]
+  devices: LanDevice[]
   /** CIDR of the scanned segment, e.g. "192.168.2.0/24". */
-  readonly subnet: string | null
-  readonly interfaceName: string | null
-  readonly scannedAt: number
-  readonly dhcpStatus: DhcpStatus
+  subnet: string | null
+  interfaceName: string | null
+  scannedAt: number
+  dhcpStatus: DhcpStatus
 }
 
 export function createEmptyDeviceScan(): LanDeviceScan {

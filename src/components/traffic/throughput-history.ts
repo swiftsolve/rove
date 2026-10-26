@@ -11,8 +11,8 @@ export function formatChartWindowLabel(): string {
 }
 
 export interface ThroughputHistory {
-  readonly download: readonly number[]
-  readonly upload: readonly number[]
+  download: number[]
+  upload: number[]
 }
 
 export const EMPTY_THROUGHPUT_HISTORY: ThroughputHistory = {
@@ -20,7 +20,7 @@ export const EMPTY_THROUGHPUT_HISTORY: ThroughputHistory = {
   upload: [],
 }
 
-function appendSample(samples: readonly number[], value: number): number[] {
+function appendSample(samples: number[], value: number): number[] {
   const next = [...samples, sanitizeRate(value)]
   if (next.length > THROUGHPUT_HISTORY_LENGTH) {
     return next.slice(next.length - THROUGHPUT_HISTORY_LENGTH)

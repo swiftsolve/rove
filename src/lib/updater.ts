@@ -6,9 +6,9 @@ import { relaunch } from '@tauri-apps/plugin-process'
  * presents it to the user and calls `install()` if they accept.
  */
 export interface PendingUpdate {
-  readonly version: string
-  readonly currentVersion: string
-  readonly notes: string
+  version: string
+  currentVersion: string
+  notes: string
   /** Download + install the update, then relaunch into the new build. */
   install(): Promise<void>
 }

@@ -6,8 +6,8 @@ export function DotSeparator(): JSX.Element {
 }
 
 interface InlineMetaProps {
-  readonly items: readonly (ReactNode | null | undefined | false)[]
-  readonly className?: string
+  items: (ReactNode | null | undefined | false)[]
+  className?: string
 }
 
 /** Inline metadata chunks separated by a tertiary dot icon. */

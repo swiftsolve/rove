@@ -38,11 +38,11 @@ function RowMenu({
   onEdit,
   onRemove,
 }: {
-  readonly service: ServiceDefinition
-  readonly open: boolean
-  readonly onOpenChange: (host: string | null) => void
-  readonly onEdit: () => void
-  readonly onRemove: () => void
+  service: ServiceDefinition
+  open: boolean
+  onOpenChange: (host: string | null) => void
+  onEdit: () => void
+  onRemove: () => void
 }): JSX.Element {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -97,23 +97,23 @@ function RowMenu({
 
 interface ManageServicesPageProps {
   /** The latest reachability probes; latency is matched to rows by host. */
-  readonly reachability: readonly ServiceReachability[] | undefined
+  reachability: ServiceReachability[] | undefined
   /** The internet reachability measured alongside `reachability` (same probe
    *  batch). When it isn't `online`, a probe in that batch that failed means "we
    *  couldn't check", not "the service is down", so those rows read as unknown
    *  ("—") rather than "Down" — matching the Services card. */
-  readonly internet: InternetStatus | undefined
+  internet: InternetStatus | undefined
   /** The app's live internet status — the same one the title bar shows. Drives
    *  the header ("No internet") and gates the Add button, so the page never
    *  disagrees with the title bar between probe batches. */
-  readonly liveInternet: InternetStatus | undefined
+  liveInternet: InternetStatus | undefined
   /** Re-run diagnostics so a just-added/removed service's latency refreshes. */
-  readonly onRefresh: () => void
+  onRefresh: () => void
   /** Open the services timeline (linked from the subtitle). */
-  readonly onTimeline: () => void
+  onTimeline: () => void
 }
 
-type DialogState = { readonly mode: 'add' } | { readonly mode: 'edit'; readonly service: ServiceDefinition }
+type DialogState = { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }
 
 /**
  * The Services page: the tracked-service list, where a service is added (by
@@ -148,7 +148,7 @@ export function ManageServicesPage({
   const [menuHost, setMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
   // edited row shows its measured value at once until the next diagnostics run.
-  const [seededLatency, setSeededLatency] = useState<ReadonlyMap<string, number | null>>(new Map())
+  const [seededLatency, setSeededLatency] = useState<Map<string, number | null>>(new Map())
 
   const reachByHost = useMemo(() => {
     const map = new Map<string, ServiceReachability>()
@@ -156,7 +156,7 @@ export function ManageServicesPage({
     return map
   }, [reachability])
 
-  const rows: readonly ServiceDefinition[] =
+  const rows: ServiceDefinition[] =
     services ?? (reachability ?? []).map(({ name, host }) => ({ name, host }))
 
   // Persist a confirmed add or edit. Re-adding the same host updates its label;

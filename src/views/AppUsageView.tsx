@@ -23,16 +23,16 @@ const APP_USAGE_UNSUPPORTED_HINT =
   'Run Rove as administrator to meter per-app usage on Windows.'
 
 interface AppUsageViewProps {
-  readonly usage: AppUsageSummary
-  readonly isLoading: boolean
-  readonly error?: string | null
+  usage: AppUsageSummary
+  isLoading: boolean
+  error?: string | null
   /** Open the per-app remote-host breakdown (the Hosts subpage). */
-  readonly onViewHosts: () => void
+  onViewHosts: () => void
   /** Open the by-protocol breakdown (the Traffic Types subpage). */
-  readonly onViewTraffic: () => void
+  onViewTraffic: () => void
   /** Open the Hosts subpage focused on a single app (that group expanded, the
    *  rest collapsed). Fired by clicking an app row. */
-  readonly onOpenApp: (name: string) => void
+  onOpenApp: (name: string) => void
 }
 
 /** One app's row, styled like a Services row: icon + name on the left, total on
@@ -45,9 +45,9 @@ function AppRow({
   max,
   onOpen,
 }: {
-  readonly app: AppUsage
-  readonly max: number
-  readonly onOpen: () => void
+  app: AppUsage
+  max: number
+  onOpen: () => void
 }): JSX.Element {
   const total = app.rxBytes + app.txBytes
   // Split the bar into down/up segments, each scaled against the busiest app so

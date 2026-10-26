@@ -38,10 +38,10 @@ const LOCAL_NETWORK_HINT =
   'Missing devices? Rove needs Local Network access. Enable it in System Settings › Privacy & Security › Local Network, then scan again.'
 
 interface DevicesViewProps {
-  readonly scan: LanDeviceScan | null
-  readonly isScanning: boolean
-  readonly error: string | null
-  readonly onRescan: () => void
+  scan: LanDeviceScan | null
+  isScanning: boolean
+  error: string | null
+  onRescan: () => void
 }
 
 // Singular device nouns for synthesizing a name — distinct from the category
@@ -134,7 +134,7 @@ const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Elemen
   unknown: UnknownDeviceIcon,
 }
 
-function KindIcon({ kind }: { readonly kind: LanDeviceKind }): JSX.Element {
+function KindIcon({ kind }: { kind: LanDeviceKind }): JSX.Element {
   const Icon = KIND_ICONS[kind]
   return <Icon size={16} />
 }
@@ -161,7 +161,7 @@ const SCAN_EXIT_MS = 220
 //
 // All three words are stacked (a hidden sizer holds the width to the longest
 // so the layout never jumps); the current one is driven by data-state.
-function ScanStatus({ active }: { readonly active: boolean }): JSX.Element | null {
+function ScanStatus({ active }: { active: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const [mounted, setMounted] = useState(active)
 
@@ -218,8 +218,8 @@ function OnlineIndicator({
   active,
   count,
 }: {
-  readonly active: boolean
-  readonly count: number
+  active: boolean
+  count: number
 }): JSX.Element | null {
   const [mounted, setMounted] = useState(active)
 
@@ -244,7 +244,7 @@ function OnlineIndicator({
   )
 }
 
-function DeviceRow({ device }: { readonly device: LanDevice }): JSX.Element {
+function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   // Coarse on purpose: `relativeAge` only ever renders whole minutes, and this
   // is a row in a list that can be long.
   const now = useNow(30_000)

@@ -8,9 +8,9 @@ const REFRESH_INTERVAL_MS = 5_000
 const EMPTY_USAGE = createEmptyHostUsage()
 
 interface UseHostUsageResult {
-  readonly usage: HostUsageSummary
-  readonly isLoading: boolean
-  readonly error: string | null
+  usage: HostUsageSummary
+  isLoading: boolean
+  error: string | null
 }
 
 /**

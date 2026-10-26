@@ -6,10 +6,10 @@ import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 const POLL_INTERVAL_MS = 15_000
 
 interface UseNetworkInterfacesResult {
-  readonly interfaces: readonly NetworkInterfaceSummary[]
-  readonly isLoading: boolean
-  readonly error: string | null
-  readonly refresh: () => Promise<void>
+  interfaces: NetworkInterfaceSummary[]
+  isLoading: boolean
+  error: string | null
+  refresh: () => Promise<void>
 }
 
 export function useNetworkInterfaces(enabled: boolean): UseNetworkInterfacesResult {

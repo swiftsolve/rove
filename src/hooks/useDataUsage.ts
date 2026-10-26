@@ -8,9 +8,9 @@ const REFRESH_INTERVAL_MS = 10_000
 const EMPTY_USAGE = createEmptyDataUsage()
 
 interface UseDataUsageResult {
-  readonly usage: DataUsageSummary
-  readonly isLoading: boolean
-  readonly error: string | null
+  usage: DataUsageSummary
+  isLoading: boolean
+  error: string | null
 }
 
 export function useDataUsage(enabled: boolean): UseDataUsageResult {

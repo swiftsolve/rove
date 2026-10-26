@@ -48,13 +48,13 @@ function resolveLight(mode: ThemeMode, sysLight: boolean): boolean {
 
 export interface Theme {
   /** The user's stored preference: 'dark' | 'light' | 'system'. */
-  readonly mode: ThemeMode
+  mode: ThemeMode
   /** The resolved theme currently on screen. */
-  readonly light: boolean
+  light: boolean
   /** Set an explicit preference (or 'system') with an animated swap + sound. */
-  readonly setMode: (mode: ThemeMode) => void
+  setMode: (mode: ThemeMode) => void
   /** Nav-rail toggle: flip to the explicit opposite of what's showing. */
-  readonly toggle: () => void
+  toggle: () => void
 }
 
 export function useTheme(): Theme {

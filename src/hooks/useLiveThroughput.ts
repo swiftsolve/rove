@@ -13,8 +13,8 @@ const IDLE_EXIT_MBPS = 0.15
 const IDLE_ENTER_MS = 3_000
 
 interface IdleTracker {
-  readonly isIdle: boolean
-  readonly lowSince: number | null
+  isIdle: boolean
+  lowSince: number | null
 }
 
 function nextIdleState(
@@ -44,9 +44,9 @@ function nextIdleState(
 }
 
 export interface LiveThroughputState {
-  readonly throughput: LiveThroughput
-  readonly history: ThroughputHistory
-  readonly isIdle: boolean
+  throughput: LiveThroughput
+  history: ThroughputHistory
+  isIdle: boolean
 }
 
 const INITIAL_STATE: LiveThroughputState = {

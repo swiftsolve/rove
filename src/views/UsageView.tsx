@@ -13,16 +13,16 @@ const USAGE_INFO_HINT =
   'Usage is measured while Rove is running, across all physical network interfaces.'
 
 interface UsageViewProps {
-  readonly usage: DataUsageSummary
-  readonly isLoading: boolean
-  readonly error?: string | null
+  usage: DataUsageSummary
+  isLoading: boolean
+  error?: string | null
 }
 
 interface UsageDatum {
-  readonly key: string
-  readonly label: string
-  readonly down: number
-  readonly up: number
+  key: string
+  label: string
+  down: number
+  up: number
 }
 
 function dayLabel(dateKey: string, isLast: boolean): string {
@@ -38,9 +38,9 @@ function BytesMetric({
   bytes,
   series,
 }: {
-  readonly label: string
-  readonly bytes: number
-  readonly series: 'down' | 'up'
+  label: string
+  bytes: number
+  series: 'down' | 'up'
 }): JSX.Element {
   const { value, unit } = splitBytes(bytes)
 
@@ -62,8 +62,8 @@ function UsageTooltip({
   active,
   payload,
 }: {
-  readonly active?: boolean
-  readonly payload?: ReadonlyArray<{ readonly payload: UsageDatum }>
+  active?: boolean
+  payload?: { payload: UsageDatum }[]
 }): JSX.Element | null {
   const point = active ? payload?.[0]?.payload : undefined
   if (!point) return null
@@ -93,9 +93,9 @@ function DayTick({
   y,
   payload,
 }: {
-  readonly x?: number
-  readonly y?: number
-  readonly payload?: { readonly value?: string }
+  x?: number
+  y?: number
+  payload?: { value?: string }
 }): JSX.Element {
   const value = payload?.value ?? ''
   const isToday = value === 'Today'
@@ -125,10 +125,10 @@ const renderActiveBar =
     width = 0,
     height = 0,
   }: {
-    readonly x?: number
-    readonly y?: number
-    readonly width?: number
-    readonly height?: number
+    x?: number
+    y?: number
+    width?: number
+    height?: number
   }): JSX.Element => (
     <g>
       <rect x={x} y={y} width={width} height={height} rx={2} ry={2} fill={color} />
@@ -146,7 +146,7 @@ const renderActiveBar =
     </g>
   )
 
-function WeekChart({ days }: { readonly days: readonly DailyUsage[] }): JSX.Element {
+function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
   const data: UsageDatum[] = days.map((day, index) => ({
     key: day.date,
     label: dayLabel(day.date, index === days.length - 1),

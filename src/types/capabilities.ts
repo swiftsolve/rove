@@ -11,10 +11,10 @@ export const CAPABILITY_LEVELS = [
 export type CapabilityLevel = (typeof CAPABILITY_LEVELS)[number]
 
 export interface CapabilityRequirement {
-  readonly minDownloadMbps: number
-  readonly minUploadMbps: number
-  readonly maxLatencyMs: number
-  readonly maxJitterMs: number
+  minDownloadMbps: number
+  minUploadMbps: number
+  maxLatencyMs: number
+  maxJitterMs: number
 }
 
 export const CAPABILITY_DEFINITIONS = [
@@ -79,28 +79,28 @@ export const CAPABILITY_DEFINITIONS = [
 export type CapabilityId = (typeof CAPABILITY_DEFINITIONS)[number]['id']
 
 export interface CapabilityDefinition {
-  readonly id: CapabilityId
-  readonly label: string
-  readonly description: string
-  readonly icon: string
-  readonly requirements: CapabilityRequirement
+  id: CapabilityId
+  label: string
+  description: string
+  icon: string
+  requirements: CapabilityRequirement
 }
 
 export interface CapabilityRating {
-  readonly id: CapabilityId
-  readonly label: string
-  readonly description: string
-  readonly icon: string
-  readonly level: CapabilityLevel
+  id: CapabilityId
+  label: string
+  description: string
+  icon: string
+  level: CapabilityLevel
 }
 
 export interface SpeedTestResult {
-  readonly internet: SpeedResult
-  readonly capabilities: readonly CapabilityRating[]
-  readonly linkCapacityMbps: number | null
+  internet: SpeedResult
+  capabilities: CapabilityRating[]
+  linkCapacityMbps: number | null
 }
 
-export const CAPABILITY_LEVEL_LABELS: Readonly<Record<CapabilityLevel, string>> = {
+export const CAPABILITY_LEVEL_LABELS: Record<CapabilityLevel, string> = {
   excellent: 'Excellent',
   good: 'Good',
   fair: 'Fair',

@@ -7,7 +7,7 @@ export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
 /** localStorage key used before history moved into the local database. */
 const LEGACY_STORAGE_KEY = 'rove.speed-history.v1'
 
-function hasCoreFields(value: unknown): value is SpeedResult & { readonly timestamp: number } {
+function hasCoreFields(value: unknown): value is SpeedResult & { timestamp: number } {
   if (typeof value !== 'object' || value == null) return false
   const entry = value as Record<string, unknown>
   return (
@@ -18,7 +18,7 @@ function hasCoreFields(value: unknown): value is SpeedResult & { readonly timest
 }
 
 /** Fill in fields absent from entries saved by older versions. */
-function normalize(value: SpeedResult & { readonly timestamp: number }): SpeedHistoryEntry {
+function normalize(value: SpeedResult & { timestamp: number }): SpeedHistoryEntry {
   const raw = value as unknown as Record<string, unknown>
   return {
     ...value,
@@ -30,7 +30,7 @@ function normalize(value: SpeedResult & { readonly timestamp: number }): SpeedHi
 }
 
 /** Past speed test results, newest first. */
-export async function getSpeedHistory(): Promise<readonly SpeedHistoryEntry[]> {
+export async function getSpeedHistory(): Promise<SpeedHistoryEntry[]> {
   try {
     return await getNetworkApi().getSpeedHistory()
   } catch {

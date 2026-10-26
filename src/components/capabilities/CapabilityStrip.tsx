@@ -12,16 +12,16 @@ import { useNow } from '@/hooks/useNow'
 import './CapabilityStrip.css'
 
 interface CapabilityStripProps {
-  readonly capabilities: readonly CapabilityRating[]
-  readonly canRunTest: boolean
+  capabilities: CapabilityRating[]
+  canRunTest: boolean
   /** A speed test is currently running (started here or from the Speed tab). */
-  readonly testing: boolean
+  testing: boolean
   /** Epoch ms the last test finished — null until one completes. */
-  readonly completedAt: number | null
-  readonly onOpenDetails: (capabilityId: CapabilityId) => void
-  readonly onRunTest: () => void
+  completedAt: number | null
+  onOpenDetails: (capabilityId: CapabilityId) => void
+  onRunTest: () => void
   /** Navigate to the Speed page. */
-  readonly onOpenSpeed: () => void
+  onOpenSpeed: () => void
 }
 
 export default function CapabilityStrip({

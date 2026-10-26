@@ -3,20 +3,20 @@ import { usePageVisible } from '@/hooks/usePageVisible'
 
 interface Options {
   /** Refetch every time `enabled` turns true (default: fetch only once). */
-  readonly refetchOnEnable?: boolean
+  refetchOnEnable?: boolean
   /**
    * Cache-invalidation token. When it changes, the cached data/error are
    * discarded and the resource is refetched — pass a value that changes with
    * the network (e.g. interface + IP) so a network switch never serves the
    * previous network's data.
    */
-  readonly resetKey?: unknown
+  resetKey?: unknown
   /**
    * While `enabled`, silently refetch on this interval (ms) so on-screen values
    * stay live without the user hitting refresh. Omit to fetch only on
    * enable/reset. The poll is a background refresh — it never toggles `isBusy`.
    */
-  readonly pollIntervalMs?: number
+  pollIntervalMs?: number
   /**
    * Fire the automatic fetch when `enabled`/`resetKey` first turn on? Default
    * true. Set false for a poll-only resource whose initial value is seeded
@@ -24,14 +24,14 @@ interface Options {
    * it then fetches only on its poll interval and on visibility-resume, so it
    * never adds a second probe of the same targets on open.
    */
-  readonly fetchOnEnable?: boolean
+  fetchOnEnable?: boolean
 }
 
 export interface BackendResource<T> {
-  readonly data: T | null
-  readonly isBusy: boolean
-  readonly error: string | null
-  readonly reload: () => Promise<void>
+  data: T | null
+  isBusy: boolean
+  error: string | null
+  reload: () => Promise<void>
 }
 
 /**

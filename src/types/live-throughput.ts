@@ -1,7 +1,7 @@
 export interface LiveThroughput {
-  readonly downloadMbps: number
-  readonly uploadMbps: number
-  readonly timestamp: number
+  downloadMbps: number
+  uploadMbps: number
+  timestamp: number
 }
 
 export const EMPTY_LIVE_THROUGHPUT: LiveThroughput = {

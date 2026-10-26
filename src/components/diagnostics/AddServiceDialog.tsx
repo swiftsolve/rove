@@ -17,18 +17,18 @@ function serviceLevel(ms: number): string {
 
 interface TestOutcome extends ServiceDefinition {
   /** Measured latency in ms, or null when the host couldn't be reached. */
-  readonly latencyMs: number | null
+  latencyMs: number | null
 }
 
 interface AddServiceDialogProps {
   /** Persist the confirmed service, passing the latency just measured by the
    *  test so the new row can show it at once instead of waiting for the next
    *  diagnostics run. Resolves once the list is updated. */
-  readonly onAdd: (name: string, host: string, latencyMs: number | null) => Promise<void>
-  readonly onClose: () => void
+  onAdd: (name: string, host: string, latencyMs: number | null) => Promise<void>
+  onClose: () => void
   /** When editing an existing service, its current name/host to pre-fill; the
    *  dialog re-tests and re-saves it. Omit for the add flow. */
-  readonly editing?: { readonly name: string; readonly host: string }
+  editing?: { name: string; host: string }
 }
 
 /**

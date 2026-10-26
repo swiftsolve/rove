@@ -4,16 +4,16 @@ import { Tooltip } from '@/components/ui/Tooltip'
 
 interface RefreshIconButtonProps {
   /** Tooltip text and accessible name, e.g. "Scan again". */
-  readonly label: string
+  label: string
   /** Swaps the refresh glyph for a spinner and gates clicks while true. */
-  readonly isBusy: boolean
-  readonly onClick: () => void
+  isBusy: boolean
+  onClick: () => void
   /**
    * How clicks are gated while busy: `disable` (default) greys the button out;
    * `ignore` keeps it interactive — the tooltip still shows on hover — and
    * simply drops the click, announcing the busy state via `aria-busy` instead.
    */
-  readonly busyBehavior?: 'disable' | 'ignore'
+  busyBehavior?: 'disable' | 'ignore'
 }
 
 /** The view headers' secondary refresh control: tooltip-wrapped icon button

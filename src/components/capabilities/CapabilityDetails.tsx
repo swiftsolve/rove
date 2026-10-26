@@ -13,27 +13,27 @@ import './CapabilityDetails.css'
 
 /** The verdict glyph: a tick when the connection clears the bar, a warning when
  *  it only just scrapes by, a cross when it falls short. */
-function VerdictIcon({ level }: { readonly level: CapabilityLevel }): JSX.Element {
+function VerdictIcon({ level }: { level: CapabilityLevel }): JSX.Element {
   if (level === 'excellent' || level === 'good') return <CheckIcon size={14} />
   if (level === 'fair') return <AlertIcon size={13} />
   return <CloseIcon size={14} />
 }
 
 interface CapabilityDetailsProps {
-  readonly capabilities: readonly CapabilityRating[]
-  readonly speed: SpeedResult
-  readonly completedAt: number | null
+  capabilities: CapabilityRating[]
+  speed: SpeedResult
+  completedAt: number | null
   /** Capability to scroll into view when the page opens (the one just clicked). */
-  readonly targetId?: CapabilityId | null
-  readonly onBack: () => void
+  targetId?: CapabilityId | null
+  onBack: () => void
 }
 
 function CapabilityDetailCard({
   capability,
   speed,
 }: {
-  readonly capability: CapabilityRating
-  readonly speed: SpeedResult
+  capability: CapabilityRating
+  speed: SpeedResult
 }): JSX.Element {
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 

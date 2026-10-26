@@ -6,39 +6,39 @@ export type ConnectionType = (typeof CONNECTION_TYPES)[number]
 
 /** Fields shared by every network snapshot. */
 export interface NetworkInfoBase {
-  readonly interfaceName: string
-  readonly isConnected: boolean
-  readonly ipAddress: string | null
-  readonly gateway: string | null
-  readonly macAddress: string | null
-  readonly dns: readonly string[]
+  interfaceName: string
+  isConnected: boolean
+  ipAddress: string | null
+  gateway: string | null
+  macAddress: string | null
+  dns: string[]
 }
 
 export interface WifiNetworkInfo extends NetworkInfoBase {
-  readonly connectionType: 'wifi'
-  readonly isConnected: true
-  readonly ssid: string | null
-  readonly signalStrength: number | null
-  readonly signalDbm: number | null
-  readonly channel: number | null
-  readonly frequency: number | null
-  readonly security: string | null
-  readonly wifiStandard: string | null
-  readonly linkSpeedMbps: number | null
+  connectionType: 'wifi'
+  isConnected: true
+  ssid: string | null
+  signalStrength: number | null
+  signalDbm: number | null
+  channel: number | null
+  frequency: number | null
+  security: string | null
+  wifiStandard: string | null
+  linkSpeedMbps: number | null
 }
 
 export interface EthernetNetworkInfo extends NetworkInfoBase {
-  readonly connectionType: 'ethernet'
-  readonly isConnected: true
-  readonly linkSpeedMbps: number | null
-  readonly duplex: string | null
-  readonly vendor: string | null
-  readonly product: string | null
+  connectionType: 'ethernet'
+  isConnected: true
+  linkSpeedMbps: number | null
+  duplex: string | null
+  vendor: string | null
+  product: string | null
 }
 
 export interface DisconnectedNetworkInfo extends NetworkInfoBase {
-  readonly connectionType: 'unknown'
-  readonly isConnected: false
+  connectionType: 'unknown'
+  isConnected: false
 }
 
 export type ConnectedNetworkInfo = WifiNetworkInfo | EthernetNetworkInfo
@@ -54,11 +54,11 @@ export type WifiEncryption = 'WPA' | 'WEP' | 'nopass'
  * networks and for secured ones whose saved secret the OS wouldn't hand over.
  */
 export interface WifiShare {
-  readonly ssid: string
-  readonly encryption: WifiEncryption
-  readonly password: string | null
+  ssid: string
+  encryption: WifiEncryption
+  password: string | null
   /** Self-contained SVG markup of the QR code, ready to inline as a data URI. */
-  readonly qrSvg: string
+  qrSvg: string
 }
 
 export type ConnectionDetails = {

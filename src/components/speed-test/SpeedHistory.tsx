@@ -16,10 +16,10 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import './SpeedHistory.css'
 
 interface SpeedHistoryProps {
-  readonly onBack: () => void
+  onBack: () => void
 }
 
-function ConnectionBadge({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Element {
+function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const { connectionType, networkName } = entry
   const Icon =
     connectionType === 'wifi' ? WifiIcon : connectionType === 'ethernet' ? EthernetIcon : GlobeIcon
@@ -47,10 +47,10 @@ function Metric({
   unit,
   series,
 }: {
-  readonly label: string
-  readonly value: string
-  readonly unit?: string
-  readonly series?: SpeedSeries
+  label: string
+  value: string
+  unit?: string
+  series?: SpeedSeries
 }): JSX.Element {
   return (
     <div className="history-metric">
@@ -66,7 +66,7 @@ function Metric({
   )
 }
 
-function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Element {
+function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const download = splitSpeedMbps(entry.downloadMbps)
   const upload = splitSpeedMbps(entry.uploadMbps)
   const validPing = Number.isFinite(entry.latencyMs) && entry.latencyMs < 999
@@ -109,7 +109,7 @@ function HistoryCard({ entry }: { readonly entry: SpeedHistoryEntry }): JSX.Elem
 
 /** The header overflow menu: a kebab that opens a dropdown with Delete (clear
  *  all history). Closes on outside click or Escape. */
-function HistoryMenu({ onDelete }: { readonly onDelete: () => void }): JSX.Element {
+function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -162,7 +162,7 @@ function HistoryMenu({ onDelete }: { readonly onDelete: () => void }): JSX.Eleme
 }
 
 export default function SpeedHistory({ onBack }: SpeedHistoryProps): JSX.Element {
-  const [entries, setEntries] = useState<readonly SpeedHistoryEntry[]>([])
+  const [entries, setEntries] = useState<SpeedHistoryEntry[]>([])
   // History loads over an async IPC call, so `entries` is empty on the first
   // frame. Track whether that load has resolved so we don't flash the tall
   // "no tests yet" placeholder — which fades in over the dark background and

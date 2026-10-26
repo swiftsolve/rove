@@ -11,7 +11,7 @@ import './ServiceTally.css'
  * function rather than a component, which would always render truthy.
  */
 export function serviceTally(
-  reachability: readonly ServiceReachability[] | undefined,
+  reachability: ServiceReachability[] | undefined,
   internet: InternetStatus | undefined,
 ): JSX.Element | null {
   // With the machine itself offline, every probe fails at once — a "6 down" tally

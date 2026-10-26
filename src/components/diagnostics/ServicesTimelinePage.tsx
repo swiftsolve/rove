@@ -57,14 +57,14 @@ function formatDayHeading(ts: number, nowMs: number): string {
 }
 
 interface DayGroup {
-  readonly key: string
-  readonly heading: string
-  readonly events: readonly ServiceEvent[]
+  key: string
+  heading: string
+  events: ServiceEvent[]
 }
 
 // Slice the (already newest-first) feed into consecutive same-day runs, keeping
 // the incoming order so the timeline stays continuous within each day.
-function groupByDay(events: readonly ServiceEvent[], now: number): DayGroup[] {
+function groupByDay(events: ServiceEvent[], now: number): DayGroup[] {
   const groups: DayGroup[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
@@ -81,7 +81,7 @@ function groupByDay(events: readonly ServiceEvent[], now: number): DayGroup[] {
 // Pair each recovery with the outage it ended, keyed by `${host}:${ts}`, so a
 // "came back up" row can show how long the service was down. Walks the log
 // oldest-first, tracking the last `down` per host.
-function outageDurations(newestFirst: readonly ServiceEvent[]): Map<string, number> {
+function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
   const durations = new Map<string, number>()
   const downAt = new Map<string, number>()
   for (let i = newestFirst.length - 1; i >= 0; i--) {
@@ -104,7 +104,7 @@ function outageDurations(newestFirst: readonly ServiceEvent[]): Map<string, numb
 // with no later `up`, its start ts — so the "went down" row can show a live
 // "Down for …" until it recovers. Events are newest-first, so the first
 // transition seen per host is its latest.
-function ongoingDownStarts(newestFirst: readonly ServiceEvent[]): Map<string, number> {
+function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
   const starts = new Map<string, number>()
   const seen = new Set<string>()
   for (const e of newestFirst) {
@@ -117,7 +117,7 @@ function ongoingDownStarts(newestFirst: readonly ServiceEvent[]): Map<string, nu
 
 // Pair each "connection restored" with the "lost" it ended, keyed by the
 // restored event's ts, so the recovery row can show how long we were offline.
-function offlineDurations(newestFirst: readonly ServiceEvent[]): Map<number, number> {
+function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostAt: number | null = null
   for (let i = newestFirst.length - 1; i >= 0; i--) {
@@ -144,8 +144,8 @@ function TransitionRow({
   event,
   durationMs,
 }: {
-  readonly event: ServiceTransitionEvent
-  readonly durationMs: number | undefined
+  event: ServiceTransitionEvent
+  durationMs: number | undefined
 }): JSX.Element {
   const down = event.status === 'down'
   // "Down for …" on a recovery is the outage it closed; on a still-down service
@@ -177,7 +177,7 @@ function TransitionRow({
   )
 }
 
-function RunningRow({ event }: { readonly event: ServicesRunningEvent }): JSX.Element {
+function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
   // A recovery summary covers every service, but a baseline recorded while one
   // was already down does not — so the subtext names the denominator rather than
   // calling a partial tally all-clear.
@@ -211,8 +211,8 @@ function ConnectionRow({
   event,
   durationMs,
 }: {
-  readonly event: ConnectionEvent
-  readonly durationMs: number | undefined
+  event: ConnectionEvent
+  durationMs: number | undefined
 }): JSX.Element {
   const lost = event.status === 'lost'
   const showDuration = !lost && durationMs != null
@@ -241,7 +241,7 @@ function ConnectionRow({
 
 /** The header overflow menu: a kebab that opens a dropdown with Clear (drop all
  *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistory. */
-function TimelineMenu({ onClear }: { readonly onClear: () => void }): JSX.Element {
+function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -295,12 +295,12 @@ function TimelineMenu({ onClear }: { readonly onClear: () => void }): JSX.Elemen
 
 interface ServicesTimelinePageProps {
   /** The latest reachability probes, for the up/down count in the header. */
-  readonly reachability: readonly ServiceReachability[] | undefined
+  reachability: ServiceReachability[] | undefined
   /** The app's live internet status — the same one the title bar shows — for
    *  the header tally: with no connection every probe fails at once, which is
    *  ours to own, not theirs. */
-  readonly internet: InternetStatus | undefined
-  readonly onBack: () => void
+  internet: InternetStatus | undefined
+  onBack: () => void
 }
 
 /**

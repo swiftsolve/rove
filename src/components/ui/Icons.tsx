@@ -89,8 +89,8 @@ import {
 } from 'lucide-react'
 
 interface IconProps {
-  readonly size?: number
-  readonly className?: string
+  size?: number
+  className?: string
 }
 
 function make(Base: LucideIcon, defaultSize: number) {
@@ -124,7 +124,7 @@ export function BrandIcon({
   size = 20,
   className,
   gradient = false,
-}: IconProps & { readonly gradient?: boolean }): JSX.Element {
+}: IconProps & { gradient?: boolean }): JSX.Element {
   const gid = useId()
   const paint = gradient ? `url(#${gid})` : 'currentColor'
   return (

@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import './DataRow.css'
 
 interface DataRowProps {
-  readonly label: ReactNode
-  readonly value?: string | null
-  readonly children?: ReactNode
+  label: ReactNode
+  value?: string | null
+  children?: ReactNode
 }
 
 export default function DataRow({ label, value, children }: DataRowProps): JSX.Element | null {

@@ -3,7 +3,7 @@
 // letter monogram for anything unrecognised. Ordered most-specific first (e.g.
 // chromium before chrome, webkit/safari before the generic apple). Not
 // exhaustive — the monogram covers the long tail (daemons, CLIs) cleanly.
-const APP_DOMAINS: readonly (readonly [string, string])[] = [
+const APP_DOMAINS: ([string, string])[] = [
   ['firefox', 'firefox.com'],
   ['chromium', 'google.com'],
   ['chrome', 'google.com'],

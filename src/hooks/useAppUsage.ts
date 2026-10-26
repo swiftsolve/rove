@@ -8,9 +8,9 @@ const REFRESH_INTERVAL_MS = 5_000
 const EMPTY_USAGE = createEmptyAppUsage()
 
 interface UseAppUsageResult {
-  readonly usage: AppUsageSummary
-  readonly isLoading: boolean
-  readonly error: string | null
+  usage: AppUsageSummary
+  isLoading: boolean
+  error: string | null
 }
 
 /**

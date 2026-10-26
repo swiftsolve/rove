@@ -6,11 +6,11 @@ import type { AppUsageSupport } from './app-usage'
 export interface TrafficType {
   /** Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
    *  The view keys its icon off this. */
-  readonly id: string
+  id: string
   /** Display name for the bucket (`'HTTPS'`, `'DNS'`, …). */
-  readonly label: string
-  readonly rxBytes: number
-  readonly txBytes: number
+  label: string
+  rxBytes: number
+  txBytes: number
 }
 
 /** Traffic broken down by kind for the Traffic Types view — a flat,
@@ -20,15 +20,15 @@ export interface TrafficType {
  *  alike. */
 export interface TrafficUsageSummary {
   /** Per-kind totals, busiest first. Empty before the first sample. */
-  readonly types: readonly TrafficType[]
+  types: TrafficType[]
   /**
    * `'supported'` where per-connection metering works (Linux, macOS), or
    * `'unsupported'` where it needs a facility Rove doesn't yet drive
    * (Windows/ETW) — the view shows an explanatory note rather than a bare list.
    */
-  readonly support: AppUsageSupport
+  support: AppUsageSupport
   /** Epoch ms of the first sample, or null before then. */
-  readonly trackingSince: number | null
+  trackingSince: number | null
 }
 
 export function createEmptyTrafficUsage(): TrafficUsageSummary {

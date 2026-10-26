@@ -12,28 +12,28 @@ function levelClass(ms: number | null): string {
 }
 
 interface Point {
-  readonly x: number
-  readonly y: number
-  readonly sample: LatencySample
+  x: number
+  y: number
+  sample: LatencySample
 }
 
 interface SparklineProps {
   /** Recent latency readings, oldest first. */
-  readonly samples: readonly LatencySample[]
-  readonly width?: number
-  readonly height?: number
+  samples: LatencySample[]
+  width?: number
+  height?: number
   /** Accessible label for the whole chart, e.g. the service name. */
-  readonly label?: string
+  label?: string
   /** How many samples the x-axis spans. Fixing this to the history window keeps
    *  the newest sample pinned to the right edge while a partial history fills in
    *  from the left, so a chart that's still filling grows the way a live trend
    *  reads instead of stretching (or sprouting from the middle at one sample).
    *  Defaults to the sample count, which stretches them across the full width. */
-  readonly slots?: number
+  slots?: number
   /** The service is currently down: draw a single flat red line instead of the
    *  latency trend, along the baseline, so an outage never reads as a
    *  healthy-looking chart. */
-  readonly down?: boolean
+  down?: boolean
 }
 
 // A little vertical inset so the stroke and the dots aren't clipped at the top

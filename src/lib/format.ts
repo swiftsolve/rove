@@ -7,8 +7,8 @@ export function formatSpeedMbps(mbps: number): string {
 }
 
 export interface SplitSpeed {
-  readonly value: string
-  readonly unit: string
+  value: string
+  unit: string
 }
 
 export function splitSpeedMbps(mbps: number): SplitSpeed {
@@ -118,8 +118,8 @@ export function isDisplayableMbps(mbps: number | null | undefined): mbps is numb
 const BYTE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
 
 export interface SplitBytes {
-  readonly value: string
-  readonly unit: string
+  value: string
+  unit: string
 }
 
 /** 1_530_000_000 → { value: "1.53", unit: "GB" } (decimal units, like ISPs bill). */

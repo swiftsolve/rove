@@ -42,8 +42,8 @@ const TRAFFIC_UNSUPPORTED_HINT =
   'Run Rove as administrator to break traffic down by protocol on Windows.'
 
 interface IconProps {
-  readonly size?: number
-  readonly className?: string
+  size?: number
+  className?: string
 }
 
 /** Glyph per traffic-type slug. Anything unmapped (including "other") falls back
@@ -71,7 +71,7 @@ const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
  *  proportional down/up bar and the byte figures beneath — the same visual
  *  language as an Apps row, minus the icon-fetch and the navigation caret (these
  *  rows aren't links). */
-function TrafficRow({ type, max }: { readonly type: TrafficType; readonly max: number }): JSX.Element {
+function TrafficRow({ type, max }: { type: TrafficType; max: number }): JSX.Element {
   const total = type.rxBytes + type.txBytes
   // Split the bar into down/up segments, each scaled against the busiest type so
   // the rows are comparable at a glance. Guard the divide for the all-zero case.
@@ -113,11 +113,11 @@ function TrafficRow({ type, max }: { readonly type: TrafficType; readonly max: n
 }
 
 interface TrafficViewProps {
-  readonly usage: TrafficUsageSummary
-  readonly isLoading: boolean
-  readonly error?: string | null
+  usage: TrafficUsageSummary
+  isLoading: boolean
+  error?: string | null
   /** Return to the Apps list (the subpage's Back button). */
-  readonly onBack: () => void
+  onBack: () => void
 }
 
 export default function TrafficView({

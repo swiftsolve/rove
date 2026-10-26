@@ -9,25 +9,25 @@ import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/ui/Icons'
 import './SpeedTestSection.css'
 
 export interface SpeedTestConnection {
-  readonly type: 'wifi' | 'ethernet'
-  readonly name: string | null
-  readonly band: string | null
+  type: 'wifi' | 'ethernet'
+  name: string | null
+  band: string | null
 }
 
 interface SpeedTestSectionProps {
-  readonly internetSpeed: SpeedResult | null
-  readonly linkCapacityMbps: number | null
-  readonly connection: SpeedTestConnection | null
-  readonly testing: boolean
-  readonly canTest: boolean
-  readonly error: string | null
-  readonly progress: SpeedTestProgress
+  internetSpeed: SpeedResult | null
+  linkCapacityMbps: number | null
+  connection: SpeedTestConnection | null
+  testing: boolean
+  canTest: boolean
+  error: string | null
+  progress: SpeedTestProgress
   /** Live (running-peak) throughput to show in the cells while a test runs. */
-  readonly liveDownloadMbps: number
-  readonly liveUploadMbps: number
+  liveDownloadMbps: number
+  liveUploadMbps: number
 }
 
-function ConnectionTag({ connection }: { readonly connection: SpeedTestConnection }): JSX.Element {
+function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX.Element {
   const name = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
   return (
     <span className={`bench-conn conn-${connection.type}`}>
@@ -41,8 +41,8 @@ function SpeedCell({
   mbps,
   placeholder = false,
 }: {
-  readonly mbps: number | null
-  readonly placeholder?: boolean
+  mbps: number | null
+  placeholder?: boolean
 }): JSX.Element {
   const animated = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animated)
@@ -119,7 +119,7 @@ function buildStaticWave(width: number): string {
   return d
 }
 
-function WavyProgress({ progress }: { readonly progress: number }): JSX.Element {
+function WavyProgress({ progress }: { progress: number }): JSX.Element {
   const target = Math.max(0, Math.min(100, progress))
   const targetRef = useRef(target)
   targetRef.current = target
@@ -253,7 +253,7 @@ function WavyProgress({ progress }: { readonly progress: number }): JSX.Element 
   )
 }
 
-function TestProgress({ progress }: { readonly progress: SpeedTestProgress }): JSX.Element {
+function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Element {
   return (
     <div className="bench-progress">
       <div className="bench-progress-head">
