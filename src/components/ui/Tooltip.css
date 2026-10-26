@@ -5,13 +5,13 @@
 
 .tooltip-bubble {
   width: max-content;
-  padding: var(--gap-sm) var(--gap-stack);
+  padding: var(--space-8) var(--space-10);
   border-radius: var(--radius-sm);
   background: var(--bg-raised);
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-raised);
   color: var(--text-secondary);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   line-height: 1.5;
   text-align: left;
   white-space: normal;
@@ -25,9 +25,9 @@
   visibility: hidden;
   transform: translateY(-3px);
   transition:
-    opacity 0.12s ease,
-    transform 0.12s ease,
-    visibility 0.12s;
+    opacity var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out),
+    visibility var(--duration-fast);
 }
 
 .tooltip-bubble-portal.is-visible {

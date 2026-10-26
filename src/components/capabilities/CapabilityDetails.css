@@ -1,7 +1,7 @@
 .cap-detail-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-lg);
+  gap: var(--space-16);
 }
 
 /* Three-tier card: an intro row (icon + name/description + bars) on the panel
@@ -11,17 +11,17 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: var(--section-header-y) var(--section-header-x) 0;
+  padding: var(--section-header-padding-y) var(--section-header-padding-x) 0;
   /* When opened by clicking a capability, that card is scrolled to the top of
      the viewport — leave a little air above it rather than butting the edge. */
-  scroll-margin-top: var(--gap-md);
+  scroll-margin-top: var(--space-12);
 }
 
 .cap-detail-head {
   display: flex;
   align-items: center;
-  gap: var(--gap-sm);
-  padding-bottom: var(--gap-md);
+  gap: var(--space-8);
+  padding-bottom: var(--space-12);
 }
 
 /* Tinted chip behind the glyph — the same treatment the capability rows use,
@@ -36,13 +36,13 @@
   border-radius: var(--radius-sm);
   flex-shrink: 0;
   color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
-.cap-detail-icon.level-excellent { color: var(--positive); }
-.cap-detail-icon.level-good { color: var(--good); }
-.cap-detail-icon.level-fair { color: var(--warning); }
-.cap-detail-icon.level-poor { color: var(--poor); }
+.cap-detail-icon.level-excellent { color: var(--status-positive); }
+.cap-detail-icon.level-good { color: var(--status-good); }
+.cap-detail-icon.level-fair { color: var(--status-warning); }
+.cap-detail-icon.level-poor { color: var(--status-poor); }
 .cap-detail-icon.level-unsupported { color: var(--text-tertiary); }
 
 /* Bars sit at the bottom of the 12px meter box; nudge up to sit optically
@@ -54,20 +54,20 @@
 .cap-detail-headtext {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
   flex: 1;
   min-width: 0;
 }
 
 .cap-detail-name {
-  font-size: var(--text-section);
+  font-size: var(--font-size-lg);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
 .cap-detail-desc {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.3;
 }
@@ -81,16 +81,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
-  margin: 0 calc(-1 * var(--section-header-x));
+  gap: var(--space-12);
+  margin: 0 calc(-1 * var(--section-header-padding-x));
   /* Trim the horizontal padding by the border width so the content stays aligned
      with the metrics grid above (14px from the card edge). */
-  padding: var(--gap-md) calc(var(--section-header-x) - 1px) var(--gap-md);
+  padding: var(--space-12) calc(var(--section-header-padding-x) - 1px) var(--space-12);
   background: var(--bg-app);
   border: 1px solid var(--bg-inset);
   border-top: 0;
-  border-bottom-left-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 .cap-detail-summary {
@@ -98,8 +98,8 @@
   min-width: 0;
   display: flex;
   align-items: flex-start;
-  gap: var(--gap-xs);
-  font-size: var(--text-small);
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.45;
 }
@@ -112,21 +112,21 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  height: calc(var(--text-small) * 1.45);
+  height: calc(var(--font-size-sm) * 1.45);
 }
 
-.cap-verdict-icon.level-excellent { color: var(--positive); }
-.cap-verdict-icon.level-good { color: var(--good); }
-.cap-verdict-icon.level-fair { color: var(--warning); }
-.cap-verdict-icon.level-poor { color: var(--poor); }
+.cap-verdict-icon.level-excellent { color: var(--status-positive); }
+.cap-verdict-icon.level-good { color: var(--status-good); }
+.cap-verdict-icon.level-fair { color: var(--status-warning); }
+.cap-verdict-icon.level-poor { color: var(--status-poor); }
 .cap-verdict-icon.level-unsupported { color: var(--text-tertiary); }
 
 .cap-verdict-status {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   flex-shrink: 0;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-semibold);
 }
 
@@ -139,10 +139,10 @@
   flex-shrink: 0;
 }
 
-.cap-verdict-status.level-excellent { color: var(--positive-text); }
-.cap-verdict-status.level-good { color: var(--good-text); }
-.cap-verdict-status.level-fair { color: var(--warning-text); }
-.cap-verdict-status.level-poor { color: var(--poor-text); }
+.cap-verdict-status.level-excellent { color: var(--text-positive); }
+.cap-verdict-status.level-good { color: var(--text-good); }
+.cap-verdict-status.level-fair { color: var(--text-warning); }
+.cap-verdict-status.level-poor { color: var(--text-poor); }
 .cap-verdict-status.level-unsupported { color: var(--text-tertiary); }
 
 /* All four requirements in a compact metric grid — your value colours red
@@ -150,16 +150,16 @@
 .cap-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--gap-md) var(--gap-sm);
-  margin: 0 calc(-1 * var(--section-header-x));
-  padding: var(--gap-md) var(--section-header-x);
+  gap: var(--space-12) var(--space-8);
+  margin: 0 calc(-1 * var(--section-header-padding-x));
+  padding: var(--space-12) var(--section-header-padding-x);
   background: var(--bg-inset);
 }
 
 .cap-metric {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -168,7 +168,7 @@
 }
 
 .cap-metric-value {
-  font-size: var(--text-body);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
   line-height: 1.25;
@@ -176,11 +176,11 @@
 }
 
 .cap-metric.fail .cap-metric-value {
-  color: var(--negative-text);
+  color: var(--text-negative);
 }
 
 .cap-metric-need {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.2;
   white-space: nowrap;

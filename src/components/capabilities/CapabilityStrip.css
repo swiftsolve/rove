@@ -11,8 +11,8 @@
   justify-content: space-between;
   /* Bleed past section body padding so icons span the full card width,
      same pattern as live-chart-wrap. */
-  margin: 0 calc(-1 * var(--section-body));
-  padding: 0 var(--section-body);
+  margin: 0 calc(-1 * var(--section-body-padding));
+  padding: 0 var(--section-body-padding);
 }
 
 .capability-strip > .capability-strip-cell {
@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
 }
 
 /* A smaller meter than the labelled one in the details list — the strip is a
@@ -33,7 +33,7 @@
    hairline, or the thin bars blur across subpixel boundaries and read fuzzy. */
 .capability-strip-cell .capability-meter {
   height: 9px;
-  gap: var(--gap-2xs);
+  gap: var(--space-2);
 }
 
 .capability-strip-cell .capability-seg {
@@ -56,7 +56,7 @@
 
 /* Focus is the ring alone; the tint and lift are hover feedback. */
 .capability-strip-item:hover {
-  background: color-mix(in srgb, currentColor var(--opacity-tint-hover), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-lg), transparent);
   transform: translateY(-1px);
 }
 
@@ -89,13 +89,13 @@
 
 .capability-strip--testing .capability-strip-item:hover,
 .capability-strip--placeholder .capability-strip-item:hover {
-  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
   transform: none;
 }
 
 /* Run-test CTA in the empty state: a touch more air above the button. */
 .capability-run-btn {
-  margin-top: var(--gap-2xs);
+  margin-top: var(--space-2);
 }
 
 /* Third row: a dark inset strip flush to the card's bottom edge — full-bleed
@@ -107,19 +107,19 @@
   justify-content: flex-end;
   /* Full-bleed to both card edges: the body content box plus the padding on
      each side, then negative margins pull it out over that padding. */
-  width: calc(100% + 2 * var(--section-body));
+  width: calc(100% + 2 * var(--section-body-padding));
   /* The results footer (icon + "Updated …") is taller than the plain hint, so
      its centred text sits lower and reads as extra space under the bars. Trim the
      top gap a touch (the --hint override pulls the shorter empty state in even
      closer). */
-  margin: var(--gap-lg) calc(-1 * var(--section-body)) calc(-1 * var(--section-body));
-  padding: var(--section-header-y) var(--section-body);
+  margin: var(--space-16) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
+  padding: var(--section-header-padding-y) var(--section-body-padding);
   background: var(--bg-inset);
   /* The strip full-bleeds to the card edge, and this section runs
      `overflow: visible` (so tooltips can escape) — so round the bottom corners
      ourselves to sit flush inside the card's radius. */
-  border-bottom-left-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 /* Empty-state variant: the hint sits right-aligned in the dark inset strip in
@@ -128,7 +128,7 @@
    doesn't need the same breathing room the populated results row gets. */
 .capability-strip-footer--hint {
   justify-content: flex-end;
-  margin-top: var(--gap-md);
+  margin-top: var(--space-12);
 }
 
 /* Scoped to the footer to outweigh the `.text-hint` base class, which lands
@@ -137,7 +137,7 @@
   margin: 0;
   /* Matches the "Updated … ago" caption this line stands in for, so the empty
      and populated footers read at the same weight. */
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
 }
 
 /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and
@@ -146,9 +146,9 @@
 .capability-strip-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
   color: var(--text-secondary);
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   white-space: nowrap;
   cursor: pointer;
   transition: color var(--duration-fast) var(--ease-in-out);

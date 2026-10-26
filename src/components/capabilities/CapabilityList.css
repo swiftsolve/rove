@@ -12,11 +12,11 @@
 .capability-row {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   /* Negative margin lets the hover highlight bleed into the section padding
      while the content stays aligned to the 16px edge. */
-  padding: var(--row-py) var(--gap-sm);
-  margin: 0 calc(-1 * var(--gap-sm));
+  padding: var(--row-padding-y) var(--space-8);
+  margin: 0 calc(-1 * var(--space-8));
   width: calc(100% + 16px);
   border-radius: var(--radius-sm);
   text-align: left;
@@ -44,7 +44,7 @@
 .capability-row-main {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
   min-width: 0;
   flex: 1;
 }
@@ -68,7 +68,7 @@
 }
 
 .capability-desc {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   line-height: 1.3;
 }
 
@@ -82,7 +82,7 @@
 .capability-row-status {
   display: flex;
   align-items: center;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
   flex-shrink: 0;
 }
 

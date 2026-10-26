@@ -13,7 +13,7 @@
   justify-content: center;
   background: var(--bg-hover);
   color: var(--text-secondary);
-  font-size: var(--text-micro);
+  font-size: var(--font-size-2xs);
   font-weight: var(--weight-semibold);
   line-height: 1;
 }

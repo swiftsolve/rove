@@ -6,7 +6,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--gap-stack);
+  gap: var(--space-10);
 }
 
 /* Mirror the top-level view header: chip on the left, title + subtitle, an
@@ -14,7 +14,7 @@
 .subpage-head {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 /* Chip-styled back button occupying the page icon's slot, so the subpage header
@@ -26,7 +26,7 @@
   flex-shrink: 0;
   width: 38px;
   height: 38px;
-  border-radius: var(--radius-nav);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   background: var(--fill-chip);
   transition:
@@ -43,13 +43,13 @@
   display: flex;
   flex-direction: column;
   /* Match the top-level view header's title/subtitle spacing (.view-header-text). */
-  gap: var(--gap-xs);
+  gap: var(--space-4);
   min-width: 0;
   flex: 1;
 }
 
 .subpage-desc {
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.35;
 }

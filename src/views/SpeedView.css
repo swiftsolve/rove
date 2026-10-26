@@ -4,7 +4,7 @@
 .speed-header-sub {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 /* "View history" reads as a quiet pill link after the "Updated …" meta:
@@ -16,7 +16,7 @@
   align-items: center;
   gap: 5px;
   margin-left: -9.5px;
-  padding: var(--gap-2xs) var(--gap-sm);
+  padding: var(--space-2) var(--space-8);
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: inherit;
@@ -65,8 +65,8 @@
    element+class selector out-specifies the base .btn-primary so the larger size
    wins regardless of stylesheet order. */
 button.speed-run-btn {
-  padding: var(--gap-stack) var(--section-pad);
-  font-size: var(--text-small);
+  padding: var(--space-10) var(--section-padding);
+  font-size: var(--font-size-sm);
 }
 
 .speed-run-btn:not(.is-stop) {
@@ -83,10 +83,10 @@ button.speed-run-btn {
    so the toggle keeps its fill rather than flipping to a faint wash mid-test. */
 .speed-run-btn.is-stop {
   color: var(--text-on-fill);
-  background: var(--negative-fill);
+  background: var(--status-negative-fill);
 }
 
 .speed-run-btn.is-stop:hover:not(:disabled) {
   color: var(--text-on-fill);
-  background: var(--negative-fill-hover);
+  background: var(--status-negative-fill-hover);
 }

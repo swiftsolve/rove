@@ -16,8 +16,8 @@
 .traffic-row {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
-  padding: var(--gap-md) var(--section-body);
+  gap: var(--space-8);
+  padding: var(--space-12) var(--section-body-padding);
 }
 
 /* The line between items — only between rows, running the full card width
@@ -30,13 +30,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .traffic-row-id {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
 }
 
@@ -46,7 +46,7 @@
 }
 
 .traffic-row-name {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -54,7 +54,7 @@
 }
 
 .traffic-row-total {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -92,14 +92,14 @@
 .traffic-row-figures {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 .traffic-row-figure {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 

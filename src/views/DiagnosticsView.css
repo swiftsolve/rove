@@ -6,8 +6,8 @@
    than a divided-off footnote: no top line, and a roomier vertical padding so
    the band has enough breathing room. */
 .diag-router-section .ui-section-footer {
-  padding-top: var(--gap-md);
-  padding-bottom: var(--gap-lg);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-16);
   border-top: none;
 }
 
@@ -16,11 +16,11 @@
    DNS sits a touch looser than Router since its repeated identical rows read
    denser at the same padding. */
 .diag-router .data-row {
-  padding: var(--gap-xs) 0;
+  padding: var(--space-4) 0;
 }
 
 .diag-dns .data-row {
-  padding: var(--gap-tight) 0;
+  padding: var(--space-6) 0;
 }
 
 .diag-router .data-row:first-child,

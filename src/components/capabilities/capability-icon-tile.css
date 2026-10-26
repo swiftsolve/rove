@@ -6,11 +6,11 @@
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
-.capability-icon-tile.level-excellent { color: var(--positive); }
-.capability-icon-tile.level-good { color: var(--good); }
-.capability-icon-tile.level-fair { color: var(--warning); }
-.capability-icon-tile.level-poor { color: var(--poor); }
+.capability-icon-tile.level-excellent { color: var(--status-positive); }
+.capability-icon-tile.level-good { color: var(--status-good); }
+.capability-icon-tile.level-fair { color: var(--status-warning); }
+.capability-icon-tile.level-poor { color: var(--status-poor); }
 .capability-icon-tile.level-unsupported { color: var(--text-tertiary); }

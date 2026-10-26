@@ -6,8 +6,8 @@
 .speed-readout-label {
   display: flex;
   align-items: center;
-  gap: var(--gap-tight);
-  margin-bottom: var(--gap-sm);
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .speed-readout .metric-value {

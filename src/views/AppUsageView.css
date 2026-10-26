@@ -18,8 +18,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--gap-sm);
-  padding: var(--gap-md) var(--section-body);
+  gap: var(--space-8);
+  padding: var(--space-12) var(--section-body-padding);
   transition: background var(--duration-fast) var(--ease-in-out);
 }
 
@@ -49,15 +49,15 @@
 }
 
 .app-row:first-child .app-row-toggle {
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .app-row:last-child .app-row-toggle {
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .app-row:only-child .app-row-toggle {
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 
 /* Keep the visual layers click-through so the overlay button owns all pointer
@@ -81,14 +81,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap-md);
+  gap: var(--space-12);
 }
 
 /* Total + navigation caret grouped at the row's right edge. */
 .app-row-end {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 
@@ -105,12 +105,12 @@
 .app-row-id {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-sm);
+  gap: var(--space-8);
   min-width: 0;
 }
 
 .app-row-name {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   /* Long process paths (e.g. macOS bundle identifiers) truncate rather than
      wrap, keeping the main line one row tall. */
@@ -120,7 +120,7 @@
 }
 
 .app-row-total {
-  font-size: var(--text-small);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -158,15 +158,15 @@
 .app-row-figures {
   display: flex;
   align-items: center;
-  gap: var(--gap-md);
-  margin-left: calc(-1 * var(--gap-2xs));
+  gap: var(--space-12);
+  margin-left: calc(-1 * var(--space-2));
 }
 
 .app-row-figure {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--text-caption);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
@@ -185,7 +185,7 @@
 .app-subtitle-links {
   display: inline-flex;
   align-items: center;
-  gap: var(--gap-tight);
+  gap: var(--space-6);
 }
 
 /* Header subtitle link into the Hosts subpage: the same quiet pill link as Speed's
@@ -201,7 +201,7 @@
   /* Cancel the pill's padding (and the glyphs' empty edges) on both sides, so
      the dot between the two links sits the standard 8px from each. */
   margin: 0 -9px 0 -9.5px;
-  padding: var(--gap-2xs) var(--gap-sm);
+  padding: var(--space-2) var(--space-8);
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: inherit;
