@@ -69,18 +69,18 @@
   color: var(--text-tertiary);
 }
 
-/* Disabled while testing — the bars go dark and dim so they read as inactive,
-   just faintly above the panel. The empty-state placeholder grid borrows the
-   same muted look. Override the segment fills directly (rather than tinting via
-   currentColor) to keep full control of the greys. */
-.capability-strip--testing .capability-strip-cell .capability-seg,
-.capability-strip--placeholder .capability-strip-cell .capability-seg {
-  background: rgba(255, 255, 255, 0.06);
+/* Testing and the empty-state placeholder share the one muted look an
+   unsupported capability already has: a grey tile over four unlit bars. Stale
+   results drop their lit bars, so every "no rating right now" cell reads the
+   same instead of three slightly different greys. */
+.capability-strip--testing .capability-strip-cell .capability-status,
+.capability-strip--placeholder .capability-strip-cell .capability-status {
+  color: var(--text-tertiary);
 }
 
 .capability-strip--testing .capability-strip-cell .capability-seg.on,
 .capability-strip--placeholder .capability-strip-cell .capability-seg.on {
-  background: rgba(255, 255, 255, 0.16);
+  background: color-mix(in srgb, currentColor 22%, transparent);
 }
 
 .capability-strip--testing .capability-strip-item {

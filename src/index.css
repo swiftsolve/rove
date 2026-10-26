@@ -239,14 +239,10 @@
 :root.theme-light .nav-item:hover:not(.active) { background: rgba(15, 18, 30, 0.05); }
 :root.theme-light .conn-strip:hover,
 :root.theme-light .capability-row:hover { background: rgba(15, 18, 30, 0.03); }
-:root.theme-light .capability-list--testing .capability-row .capability-seg,
-:root.theme-light .capability-strip--testing .capability-strip-cell .capability-seg,
-:root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg {
+:root.theme-light .capability-list--testing .capability-row .capability-seg {
   background: rgba(15, 18, 30, 0.07);
 }
-:root.theme-light .capability-list--testing .capability-row .capability-seg.on,
-:root.theme-light .capability-strip--testing .capability-strip-cell .capability-seg.on,
-:root.theme-light .capability-strip--placeholder .capability-strip-cell .capability-seg.on {
+:root.theme-light .capability-list--testing .capability-row .capability-seg.on {
   background: rgba(15, 18, 30, 0.18);
 }
 :root.theme-light .setting-link-row:hover {
