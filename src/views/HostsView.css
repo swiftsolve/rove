@@ -109,7 +109,7 @@
   flex-shrink: 0;
   min-width: 18px;
   padding: 1px var(--gap-tight);
-  border-radius: var(--radius-pill, var(--radius-full));
+  border-radius: var(--radius-full);
   background: var(--bg-inset);
   color: var(--text-tertiary);
   font-size: var(--text-caption);
@@ -172,7 +172,7 @@
 }
 
 .host-flag-fallback {
-  color: var(--text-quaternary, var(--text-tertiary));
+  color: var(--text-tertiary);
   opacity: 0.6;
 }
 

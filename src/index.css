@@ -322,8 +322,10 @@ button > svg.link-caret {
   transform: translateY(-1px);
 }
 
+/* Stat totals: two numbers share a half-width card, so the value steps down to
+   keep both on one line without clipping on narrow windows. */
 .metric-compact .metric-value {
-  font-size: var(--text-display-sm);
+  font-size: var(--text-title);
 }
 
 /* ---- Layout ---- */

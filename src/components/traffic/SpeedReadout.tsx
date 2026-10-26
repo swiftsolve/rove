@@ -15,14 +15,12 @@ interface SpeedReadoutProps {
   label: string
   mbps: number
   series: SpeedSeries
-  isCompact?: boolean
 }
 
 function SpeedReadout({
   label,
   mbps,
   series,
-  isCompact = false,
 }: SpeedReadoutProps): JSX.Element {
   const shown = mbps < LIVE_FLOOR_MBPS ? 0 : mbps
   const animated = useCountUp(shown)
@@ -37,7 +35,7 @@ function SpeedReadout({
       </div>
 
       <div
-        className={`metric num ${isCompact ? 'metric-compact' : ''}`}
+        className="metric num"
         aria-label={`${label}: ${actual.value} ${actual.unit}`}
       >
         <span className="metric-value">{value}</span>
