@@ -133,7 +133,7 @@
   gap: var(--gap-2xs);
   min-width: 112px;
   padding: var(--gap-xs);
-  background: var(--bg-panel-hi);
+  background: var(--bg-raised);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-raised);

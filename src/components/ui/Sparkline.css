@@ -81,7 +81,7 @@
   transform: translateX(-50%);
   padding: var(--gap-2xs) var(--gap-tight);
   border-radius: var(--radius-xs);
-  background: var(--bg-panel-hi);
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-panel);
   color: var(--text-primary);

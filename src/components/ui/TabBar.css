@@ -10,7 +10,7 @@
      and the left accent bar read as evenly inset; top padding matches the
      content area's so the first nav item aligns with the first widget. */
   padding: var(--gap-md) var(--gap-inset);
-  background: var(--bg-app-2);
+  background: var(--bg-chrome);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
   /* Sidebar chrome stays above the content column, like the title bar. */
@@ -64,7 +64,7 @@
 
 .nav-item:hover:not(.active) {
   color: var(--text-secondary);
-  background: var(--fill-hover-subtle);
+  background: var(--fill-nav-hover);
 }
 
 .nav-item.active {

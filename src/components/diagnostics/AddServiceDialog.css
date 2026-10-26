@@ -65,7 +65,7 @@
    well that frames the fields between the two dividers. */
 .svc-dialog-body {
   padding: var(--gap-lg);
-  background: var(--bg-app-2);
+  background: var(--bg-chrome);
 }
 
 .svc-dialog-field {
@@ -256,7 +256,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: 0.01em;
   color: var(--text-secondary);
-  background: var(--bg-panel-hi);
+  background: var(--bg-raised);
   border: 1px solid var(--border);
   transition:
     background var(--duration-fast) var(--ease-in-out),

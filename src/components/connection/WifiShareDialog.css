@@ -71,7 +71,7 @@
   align-items: center;
   text-align: center;
   padding: var(--gap-lg);
-  background: var(--bg-app-2);
+  background: var(--bg-chrome);
 }
 
 .wifi-share-state {
