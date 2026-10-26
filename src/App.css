@@ -7,7 +7,7 @@
      WebKitGTK renders reliably on Linux/NVIDIA — see run() in lib.rs), so a
      corner radius would just expose the window's background rather than the
      desktop. A hairline edge keeps the frameless window crisp. */
-  background: var(--bg-app);
+  background: var(--bg-shell);
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -233,8 +233,8 @@
 }
 
 .win-btn-close:hover {
-  background: #e5484d;
-  color: #fff;
+  background: var(--close-hover);
+  color: var(--text-on-fill);
 }
 
 .status-bar-link.on {
@@ -289,7 +289,7 @@
 }
 
 .btn-primary:disabled {
-  opacity: 0.4;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -319,7 +319,7 @@
 }
 
 .btn-secondary:disabled {
-  opacity: 0.4;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -352,7 +352,7 @@
 }
 
 .btn-icon:disabled {
-  opacity: 0.4;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

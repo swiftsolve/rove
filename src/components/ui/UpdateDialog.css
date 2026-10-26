@@ -149,14 +149,14 @@
 }
 
 .update-btn.is-primary {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill);
   border-color: transparent;
 }
 
 .update-btn.is-primary:hover:not(:disabled) {
   background: var(--accent-fill-hover);
-  color: #fff;
+  color: var(--text-on-fill);
 }
 
 .update-btn:disabled {

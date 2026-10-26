@@ -56,7 +56,7 @@
 
 /* Focus is the ring alone; the tint and lift are hover feedback. */
 .capability-strip-item:hover {
-  background: color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-hover), transparent);
   transform: translateY(-1px);
 }
 
@@ -80,7 +80,7 @@
 
 .capability-strip--testing .capability-strip-cell .capability-seg.on,
 .capability-strip--placeholder .capability-strip-cell .capability-seg.on {
-  background: color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-unlit), transparent);
 }
 
 .capability-strip--testing .capability-strip-item {
@@ -89,7 +89,7 @@
 
 .capability-strip--testing .capability-strip-item:hover,
 .capability-strip--placeholder .capability-strip-item:hover {
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
   transform: none;
 }
 

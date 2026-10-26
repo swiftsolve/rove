@@ -270,14 +270,14 @@
 
 /* Right-aligned confirm — the only action now that close lives in the header. */
 .svc-dialog-btn.is-primary {
-  color: #fff;
+  color: var(--text-on-fill);
   background: var(--accent-fill);
   border-color: transparent;
 }
 
 .svc-dialog-btn.is-primary:hover:not(:disabled) {
   background: var(--accent-fill-hover);
-  color: #fff;
+  color: var(--text-on-fill);
 }
 
 .svc-dialog-btn:disabled {

@@ -19,7 +19,7 @@
   border-radius: 99px;
   /* Inactive bars are a faded tint of the level colour, so the meter reads as
      one monochrome unit rather than colour-on-grey. */
-  background: color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-unlit), transparent);
 }
 
 .capability-seg:nth-child(1) { height: 6px; }

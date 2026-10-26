@@ -112,7 +112,7 @@
    just faintly above the panel. Override the segment fills directly (rather than
    tinting via currentColor) to keep full control of the greys. */
 .capability-list--testing .capability-row .capability-seg {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--fill-track);
 }
 
 .capability-list--testing .capability-row .capability-seg.on {

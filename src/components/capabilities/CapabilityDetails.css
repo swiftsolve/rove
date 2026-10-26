@@ -36,7 +36,7 @@
   border-radius: var(--radius-sm);
   flex-shrink: 0;
   color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint), transparent);
 }
 
 .cap-detail-icon.level-excellent { color: var(--positive); }

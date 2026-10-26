@@ -83,6 +83,30 @@
   --series-down: #6aa0ff;
   --series-up: #b39dff;
 
+  /* The content area behind the cards. Dark mode keeps it on the backdrop; light
+     mode greys it a touch so the white cards keep floating on it. */
+  --bg-shell: var(--bg-app);
+  /* Translucent fills that lift off whatever sits behind them: the nav hover, the
+     page-header icon chip, and unlit meter segments in a testing list. */
+  --fill-hover-subtle: rgba(255, 255, 255, 0.04);
+  --fill-chip: rgba(255, 255, 255, 0.05);
+  --fill-track: rgba(255, 255, 255, 0.06);
+
+  /* White labels and glyphs on solid fills (filled and stop buttons, the toggle
+     knob), and the red the close button fills with on hover. */
+  --text-on-fill: #fff;
+  --close-hover: #e5484d;
+  --negative-fill-hover: color-mix(in srgb, var(--negative-fill) 84%, #000);
+
+  /* Wash strengths for currentColor tints, so a tinted tile or an unlit bar reads
+     the same wherever it appears. Percentages, for color-mix(). */
+  --opacity-tint: 14%;
+  --opacity-tint-soft: 10%;
+  --opacity-tint-faint: 8%;
+  --opacity-tint-hover: 22%;
+  --opacity-unlit: 22%;
+  --opacity-disabled: 0.4;
+
   /* Soft lift so panels read as raised surfaces on the near-black backdrop —
      depth from shadow rather than hard outlines. */
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.22);
@@ -182,8 +206,8 @@
 
   --text-primary: #1a1c22;
   --text-secondary: #565a66;
-  /* The lightest grey that still clears AA (4.5:1) on the grey shell (#f0f2f6),
-     not just on the white cards. */
+  /* The lightest grey that still clears AA (4.5:1) on the grey shell
+     (--bg-shell), not just on the white cards. */
   --text-tertiary: #6a6d77;
 
   --accent: #3a69d5;
@@ -220,28 +244,25 @@
   --series-down: #3a69d5;
   --series-up: #7154e8;
 
+  /* The title bar and nav rail sit near-white (--bg-app-2) while the content
+     area stays a touch greyer, so the white cards keep floating on it rather
+     than washing out. Overlays flip from white-on-dark to black-on-light so they
+     darken rather than disappear on pale surfaces. */
+  --bg-shell: #f0f2f6;
+  --fill-hover-subtle: rgba(15, 18, 30, 0.05);
+  --fill-chip: rgba(15, 18, 30, 0.05);
+  --fill-track: rgba(15, 18, 30, 0.07);
+
   --shadow-panel: 0 1px 2px rgba(15, 20, 35, 0.06), 0 4px 12px rgba(15, 20, 35, 0.05);
   --shadow-raised: 0 12px 32px rgba(15, 20, 35, 0.14);
 }
-
-/* In light mode the title bar and nav rail sit near-white (--bg-app-2), while the
-   main content backdrop stays a touch greyer so the white cards keep floating on
-   it rather than washing out. The bar and rail paint their own --bg-app-2 over
-   the shell, so this only sets the mid content area's shade. */
-:root.theme-light .app-shell { background: #f0f2f6; }
 
 /* Overlays that are hardcoded white-on-dark for "lift" need to flip to
    black-on-light so they darken rather than disappear on pale surfaces. */
 :root.theme-light *::-webkit-scrollbar-thumb { background: rgba(15, 18, 30, 0.18); }
 :root.theme-light * { scrollbar-color: rgba(15, 18, 30, 0.18) transparent; }
-:root.theme-light .view-header-icon,
-:root.theme-light .subpage-back { background: rgba(15, 18, 30, 0.05); }
-:root.theme-light .nav-item:hover:not(.active) { background: rgba(15, 18, 30, 0.05); }
 :root.theme-light .conn-strip:hover,
 :root.theme-light .capability-row:hover { background: rgba(15, 18, 30, 0.03); }
-:root.theme-light .capability-list--testing .capability-row .capability-seg {
-  background: rgba(15, 18, 30, 0.07);
-}
 :root.theme-light .capability-list--testing .capability-row .capability-seg.on {
   background: rgba(15, 18, 30, 0.18);
 }
@@ -431,7 +452,7 @@ main[tabindex='-1']:focus {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--fill-chip);
   color: var(--text-secondary);
   flex-shrink: 0;
 }

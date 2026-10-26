@@ -211,7 +211,7 @@
 
 .device-row.gateway .device-row-icon {
   color: var(--positive);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 /* Known device kinds get a quiet tint so categories scan at a glance;
@@ -221,26 +221,26 @@
 .device-row:not(.gateway) .device-row-icon.kind-tablet,
 .device-row:not(.gateway) .device-row-icon.kind-phone {
   color: var(--series-down);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-tv,
 .device-row:not(.gateway) .device-row-icon.kind-console,
 .device-row:not(.gateway) .device-row-icon.kind-printer {
   color: var(--series-up);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-iot,
 .device-row:not(.gateway) .device-row-icon.kind-camera,
 .device-row:not(.gateway) .device-row-icon.kind-speaker {
   color: var(--warning);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 .device-row:not(.gateway) .device-row-icon.kind-router {
   color: var(--positive);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-soft), transparent);
 }
 
 /* Let a long name use up to two lines rather than truncating; the card grows
