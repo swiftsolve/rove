@@ -15,7 +15,6 @@
     "check": "npm run typecheck && npm run lint",
     "screenshots": "node scripts/screenshots.mjs",
     "a11y": "node scripts/a11y-audit.mjs",
-    "figma:present": "node scripts/figma-present.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
