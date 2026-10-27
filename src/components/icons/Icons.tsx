@@ -8,6 +8,7 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
+  AppWindowMac,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
@@ -21,7 +22,6 @@ import {
   Cctv,
   Clock,
   Cloud,
-  Compass,
   Cpu,
   Copy,
   Database,
@@ -324,7 +324,7 @@ export const RestoreIcon = make(Copy, 13)
 export const CloseIcon = make(X, 15)
 
 // Capability icons
-export const BrowsingIcon = make(Compass, 22)
+export const BrowsingIcon = make(AppWindowMac, 22)
 export const VideoCallIcon = make(Video, 22)
 export const GamepadIcon = make(Gamepad2, 22)
 export const DownloadIcon = make(Download, 22)
