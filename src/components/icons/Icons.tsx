@@ -119,14 +119,15 @@ function Glyph({ size, className, children }: IconProps & { children: ReactNode 
   )
 }
 
-// HD and 4K as bare lettering: one cap height (y 7–17), 2.5 between letters,
+// HD and 4K as bare lettering: one cap height (y 6.5–17.5), 3.5 between letters
+// (a stroke's width of clear space),
 // Inter's skeletons (a closed 4, a K whose arm meets the stem).
 
 export function HdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
   return (
     <Glyph size={size} className={className}>
-      <path d="M4.5 7v10M10.5 7v10M4.5 12h6" />
-      <path d="M13 7h2c2.485 0 4.5 2.238 4.5 5s-2.015 5-4.5 5h-2Z" />
+      <path d="M3.375 6.5v11M9.975 6.5v11M3.375 12h6.6" />
+      <path d="M13.475 6.5h2.2c2.7335 0 4.95 2.4618 4.95 5.5s-2.2165 5.5-4.95 5.5h-2.2Z" />
     </Glyph>
   )
 }
@@ -134,8 +135,8 @@ export function HdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
 export function UltraHdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
   return (
     <Glyph size={size} className={className}>
-      <path d="M11 14H4.5L9 7v10" />
-      <path d="M13.5 7v10M19.5 7l-6 6.5M15.7 11.1l3.8 5.9" />
+      <path d="M10.25 14.2H3.65L8.6 6.5v11" />
+      <path d="M13.75 6.5v11M20.35 6.5l-6.6 7.15M16.17 11.01l4.18 6.49" />
     </Glyph>
   )
 }
