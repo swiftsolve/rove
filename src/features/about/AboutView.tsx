@@ -4,10 +4,18 @@ import { DataRow } from '@/components/DataRow'
 import { BrandIcon } from '@/components/icons/Icons'
 import { IS_MAC } from '@/lib/platform'
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
-import styles from './AboutView.module.css'
 
 const REPO_URL = 'https://github.com/swiftsolve/rove'
 const COPYRIGHT_YEAR = 2026
+
+// The dock icon's tile: a charcoal squircle (corners ~22% of the tile) with a
+// soft blue glow just below centre, the same recipe the 1024px icon renders.
+// The glyph carries the icon's blue gradient (BrandIcon `hasGradient`).
+const APP_ICON_TILE = cx(
+  'mb-8 inline-flex size-[72px] items-center justify-center rounded-[16px]',
+  'bg-[radial-gradient(circle_at_50%_56%,rgba(91,140,255,0.22),rgba(91,140,255,0)_68%),linear-gradient(180deg,#1f2125_0%,#16171a_100%)]',
+  'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05),0_6px_16px_rgba(0,0,0,0.35)]',
+)
 
 function platformLabel(): string {
   if (IS_MAC) return 'macOS'
@@ -21,27 +29,35 @@ export function AboutView(): JSX.Element {
 
   return (
     <div className="view-page">
-      <div className={styles.hero}>
-        <span className={styles.logo} aria-hidden>
+      <div className="flex flex-col items-center gap-4 px-12 pt-16 pb-12 text-center">
+        <span className={APP_ICON_TILE} aria-hidden>
           <BrandIcon size={53} hasGradient />
         </span>
-        <h1 className={styles.name}>Rove</h1>
-        <p className={styles.tagline}>A fast, minimal network monitor for your desktop.</p>
-        {version && <span className={styles.version}>Version {version}</span>}
+        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-primary">Rove</h1>
+        <p className="max-w-[300px] text-md leading-[1.45] text-secondary">
+          A fast, minimal network monitor for your desktop.
+        </p>
+        {version && <span className="mt-4 text-xs text-tertiary tabular-nums">Version {version}</span>}
       </div>
 
       <Section title="Details" bodyAs="dl" bodyClassName="row-list">
         <DataRow label="Version" value={version ?? '—'} />
         <DataRow label="Platform" value={platformLabel()} />
         <DataRow label="Source">
-          <a className={styles.link} href={REPO_URL} target="_blank" rel="noreferrer">
+          {/* Focus shows the way hover does, accent + underline, not with a ring. */}
+          <a
+            className="text-accent no-underline hover:underline focus-visible:underline focus-visible:outline-none"
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
             github.com/swiftsolve/rove
             <span className="sr-only"> (opens in a new window)</span>
           </a>
         </DataRow>
       </Section>
 
-      <p className={cx(styles.footer, 'text-meta')}>© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
+      <p className="text-meta pt-8 pb-12 text-center">© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
     </div>
   )
 }

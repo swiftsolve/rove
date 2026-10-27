@@ -1,51 +1,54 @@
-/* The single count shares the Usage card's top offset. The key dot is small,
-   so it gets a touch more room before the count than the usage arrows get. */
-.count {
-  margin-top: var(--space-12);
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* The single count shares the Usage card's top offset. The key dot is small,
+     so it gets a touch more room before the count than the usage arrows get. */
+  .count {
+    margin-top: var(--space-12);
+  }
 
-.count .readout {
-  gap: var(--space-8);
-}
+  .count .readout {
+    gap: var(--space-8);
+  }
 
-/* Centre the loading wave in the space below the title. flex:1 claims the
-   card's remaining height (the card is grid-stretched to the taller Usage card
-   beside it) and centres the wave within it. No min-height — a floor here would
-   make the loading state taller than the count/scan states and push the whole
-   grid row up. */
-.loading {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  /* Nudge the spinner down slightly so it sits closer to the vertical centre of
-     the card body rather than riding high under the title. */
-  padding-top: var(--space-6);
-}
+  /* Centre the loading wave in the space below the title. flex:1 claims the
+     card's remaining height (the card is grid-stretched to the taller Usage card
+     beside it) and centres the wave within it. No min-height — a floor here would
+     make the loading state taller than the count/scan states and push the whole
+     grid row up. */
+  .loading {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    /* Nudge the spinner down slightly so it sits closer to the vertical centre of
+       the card body rather than riding high under the title. */
+    padding-top: var(--space-6);
+  }
 
-/* Centre the Discover button in the space below the title, matching the
-   loading wave. flex:1 claims the card's remaining height (the card is
-   grid-stretched to the taller Usage card beside it) and centres the button
-   within it. No min-height — a floor would push the whole grid row taller than
-   the Usage card. */
-.scan {
-  display: flex;
-  flex: 1;
-  align-items: flex-end;
-  justify-content: center;
-}
+  /* Centre the Discover button in the space below the title, matching the
+     loading wave. flex:1 claims the card's remaining height (the card is
+     grid-stretched to the taller Usage card beside it) and centres the button
+     within it. No min-height — a floor would push the whole grid row taller than
+     the Usage card. */
+  .scan {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    justify-content: center;
+  }
 
-/* Icon + label inside the Discover button. Raised above the card's
-   stretched open button so it takes its own clicks. */
-.scan .scan-button {
-  position: relative;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  /* Tighter horizontal padding than a secondary Button's (12px). */
-  padding-left: var(--space-8);
-  padding-right: var(--space-8);
-  /* Nudge the button a touch lower toward the card's bottom edge. */
-  margin-bottom: calc(-1 * var(--space-4));
+  /* Icon + label inside the Discover button. Raised above the card's
+     stretched open button so it takes its own clicks. */
+  .scan .scan-button {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4);
+    /* Tighter horizontal padding than a secondary Button's (12px). */
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+    /* Nudge the button a touch lower toward the card's bottom edge. */
+    margin-bottom: calc(-1 * var(--space-4));
+  }
 }

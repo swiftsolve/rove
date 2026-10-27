@@ -1,10 +1,13 @@
-/* Download and upload side by side. The top margin matches the Traffic panel's
-   breathing room between title and readouts (~18px total, vs the 8px the
-   tighter card gap would give on its own). */
-.split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-8);
-  width: 100%;
-  margin-top: var(--space-12);
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* Download and upload side by side. The top margin matches the Traffic panel's
+     breathing room between title and readouts (~18px total, vs the 8px the
+     tighter card gap would give on its own). */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    width: 100%;
+    margin-top: var(--space-12);
+  }
 }

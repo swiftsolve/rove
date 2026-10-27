@@ -1,244 +1,247 @@
-/* Per-app remote-host list. Each app is a group: an icon + name header with the
-   app's total on the right, then its hosts beneath — hostname + country flag on
-   the left of each host row, the download/upload split on the right. Styled to
-   sit next to the Apps list, with a hairline between app groups. */
-.list {
-  display: flex;
-  flex-direction: column;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* Per-app remote-host list. Each app is a group: an icon + name header with the
+     app's total on the right, then its hosts beneath — hostname + country flag on
+     the left of each host row, the download/upload split on the right. Styled to
+     sit next to the Apps list, with a hairline between app groups. */
+  .list {
+    display: flex;
+    flex-direction: column;
+  }
 
-/* Rows own the horizontal inset (not the body) so the hairlines run edge to
-   edge; no vertical padding here — each group carries its own. */
-:global(.ui-section-body).list {
-  padding: 0;
-}
+  /* Rows own the horizontal inset (not the body) so the hairlines run edge to
+     edge; no vertical padding here — each group carries its own. */
+  :global(.ui-section-body).list {
+    padding: 0;
+  }
 
-/* No padding of its own: the header button carries the row's inset, so the
-   whole row (not just its text) is the click target and the focus ring frames
-   the row. */
-.group {
-  /* Breathing room when a focused group is scrolled to the top of the list. */
-  scroll-margin-top: var(--space-12);
-}
+  /* No padding of its own: the header button carries the row's inset, so the
+     whole row (not just its text) is the click target and the focus ring frames
+     the row. */
+  .group {
+    /* Breathing room when a focused group is scrolled to the top of the list. */
+    scroll-margin-top: var(--space-12);
+  }
 
-/* The line between app groups only — clipped to the card's rounded corners by
-   the section's overflow:hidden. */
-.group + .group {
-  border-top: 1px solid var(--border);
-}
+  /* The line between app groups only — clipped to the card's rounded corners by
+     the section's overflow:hidden. */
+  .group + .group {
+    border-top: 1px solid var(--border);
+  }
 
-/* A group sits flush against the card edge and carries no radius of its own, so
-   a ring's corners — the nav-flash highlight's, or the focus ring's — would run
-   square into the card's rounded ones and get shaved off by its overflow:hidden.
-   Match the card's curve on whichever edges the group actually touches. The
-   group has no fill, so the radius is invisible the rest of the time. */
-.group:first-child {
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
+  /* A group sits flush against the card edge and carries no radius of its own, so
+     a ring's corners — the nav-flash highlight's, or the focus ring's — would run
+     square into the card's rounded ones and get shaved off by its overflow:hidden.
+     Match the card's curve on whichever edges the group actually touches. The
+     group has no fill, so the radius is invisible the rest of the time. */
+  .group:first-child {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
 
-.group:last-child {
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
+  .group:last-child {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
 
-.group:only-child {
-  border-radius: var(--radius-lg);
-}
+  .group:only-child {
+    border-radius: var(--radius-lg);
+  }
 
-/* The header toggles the whole group, so focus frames the group — header and,
-   when expanded, its hosts — rather than the header row alone. */
-.group:has(> .group-heading > .header:focus-visible) {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-inset);
-}
+  /* The header toggles the whole group, so focus frames the group — header and,
+     when expanded, its hosts — rather than the header row alone. */
+  .group:has(> .group-heading > .header:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-inset);
+  }
 
-/* The heading around the header button carries meaning only: it takes the
-   row's own font, so the button inside (font: inherit) renders as before. */
-.group-heading {
-  font: inherit;
-}
+  /* The heading around the header button carries meaning only: it takes the
+     row's own font, so the button inside (font: inherit) renders as before. */
+  .group-heading {
+    font: inherit;
+  }
 
-/* The group header is a full-width toggle button; strip the native button chrome
-   so it reads as a row, and give the whole strip a quiet hover to signal it's
-   clickable. */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-  width: 100%;
-  padding: var(--space-12) var(--section-body-padding);
-  border: none;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-in-out);
-}
+  /* The group header is a full-width toggle button; strip the native button chrome
+     so it reads as a row, and give the whole strip a quiet hover to signal it's
+     clickable. */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+    width: 100%;
+    padding: var(--space-12) var(--section-body-padding);
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-in-out);
+  }
 
-/* Expanded, the hosts sit gap-sm below the header, as before the header took
-   over the row's padding. */
-.header[aria-expanded='true'] {
-  padding-bottom: var(--space-8);
-}
+  /* Expanded, the hosts sit gap-sm below the header, as before the header took
+     over the row's padding. */
+  .header[aria-expanded='true'] {
+    padding-bottom: var(--space-8);
+  }
 
-/* The ring is drawn on the whole group instead (see .group:has above). */
-.header:focus-visible {
-  outline: none;
-}
+  /* The ring is drawn on the whole group instead (see .group:has above). */
+  .header:focus-visible {
+    outline: none;
+  }
 
-.header:hover {
-  color: var(--text-primary);
-}
+  .header:hover {
+    color: var(--text-primary);
+  }
 
-.app-id {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  min-width: 0;
-}
+  .app-id {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    min-width: 0;
+  }
 
-/* Points down (▼) when expanded, rotates to a right caret (▶) when collapsed. */
-.chevron {
-  flex-shrink: 0;
-  color: var(--text-tertiary);
-  transform: rotate(-90deg);
-  transition: transform var(--duration-normal) var(--ease-out);
-}
+  /* Points down (▼) when expanded, rotates to a right caret (▶) when collapsed. */
+  .chevron {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    transform: rotate(-90deg);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
 
-.chevron.is-open {
-  transform: rotate(0deg);
-}
+  .chevron.is-open {
+    transform: rotate(0deg);
+  }
 
-/* Small muted count of hosts in the group, sitting after the app name. */
-.count {
-  flex-shrink: 0;
-  min-width: 18px;
-  padding: 1px var(--space-6);
-  border-radius: var(--radius-full);
-  background: var(--bg-inset);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-xs);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
+  /* Small muted count of hosts in the group, sitting after the app name. */
+  .count {
+    flex-shrink: 0;
+    min-width: 18px;
+    padding: 1px var(--space-6);
+    border-radius: var(--radius-full);
+    background: var(--bg-inset);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
 
-.app-name {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .app-name {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.app-total {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
+  .app-total {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
 
-/* The app's hosts, indented so each 18px flag sits centered under the 16px app
-   icon above it (past the chevron gutter): chevron 14 + gap 8 + half of (16−18)
-   ≈ 21px. The flag column then reads as a continuation of the app-icon column. */
-.hosts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  padding: 0 var(--section-body-padding) var(--space-12) calc(var(--section-body-padding) + 21px);
-}
+  /* The app's hosts, indented so each 18px flag sits centered under the 16px app
+     icon above it (past the chevron gutter): chevron 14 + gap 8 + half of (16−18)
+     ≈ 21px. The flag column then reads as a continuation of the app-icon column. */
+  .hosts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    padding: 0 var(--section-body-padding) var(--space-12) calc(var(--section-body-padding) + 21px);
+  }
 
-.host-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-}
+  .host-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+  }
 
-.host-id {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-}
+  .host-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
 
-/* Fixed-width flag slot so hostnames stay aligned whether or not a flag (or the
-   globe fallback for an unresolved / LAN peer) is present. */
-.flag {
-  flex-shrink: 0;
-  width: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-md);
-  line-height: 1;
-  /* Twemoji flag glyphs first so the country flags render on Windows (which has
-     no flag emoji); the SVG-icon fallbacks for LAN/unresolved peers aren't text
-     and are unaffected. See the @font-face note in index.css. */
-  font-family: 'Twemoji Country Flags', var(--font);
-}
+  /* Fixed-width flag slot so hostnames stay aligned whether or not a flag (or the
+     globe fallback for an unresolved / LAN peer) is present. */
+  .flag {
+    flex-shrink: 0;
+    width: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-md);
+    line-height: 1;
+    /* Twemoji flag glyphs first so the country flags render on Windows (which has
+       no flag emoji); the SVG-icon fallbacks for LAN/unresolved peers aren't text
+       and are unaffected. See the @font-face note in index.css. */
+    font-family: 'Twemoji Country Flags', var(--font);
+  }
 
-.flag-fallback {
-  color: var(--text-tertiary);
-  opacity: 0.6;
-}
+  .flag-fallback {
+    color: var(--text-tertiary);
+    opacity: 0.6;
+  }
 
-.host-name {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .host-name {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-/* The tooltip wrapper around the hostname must itself shrink (and clip) so the
-   name still truncates inside the row rather than sizing to its full text. The
-   portalled bubble is unaffected by the clip. */
-.name-tip {
-  min-width: 0;
-  overflow: hidden;
-}
+  /* The tooltip wrapper around the hostname must itself shrink (and clip) so the
+     name still truncates inside the row rather than sizing to its full text. The
+     portalled bubble is unaffected by the clip. */
+  .name-tip {
+    min-width: 0;
+    overflow: hidden;
+  }
 
-/* The hover tooltip's body: the full hostname (which the row truncates) with its
-   IP beneath. The name wraps within the bubble's max width so even a long host
-   reads in full, across a couple of lines if need be. */
-.tip-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
+  /* The hover tooltip's body: the full hostname (which the row truncates) with its
+     IP beneath. The name wraps within the bubble's max width so even a long host
+     reads in full, across a couple of lines if need be. */
+  .tip-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
 
-.tip-name {
-  color: var(--text-primary);
-  /* Most hostnames fit the bubble's (widened) cap on one line, so the box hugs
-     them. One longer than the cap wraps and fills each line to the edge rather
-     than breaking at a hyphen and leaving the box padded out to the cap. */
-  word-break: break-all;
-}
+  .tip-name {
+    color: var(--text-primary);
+    /* Most hostnames fit the bubble's (widened) cap on one line, so the box hugs
+       them. One longer than the cap wraps and fills each line to the edge rather
+       than breaking at a hyphen and leaving the box padded out to the cap. */
+    word-break: break-all;
+  }
 
-.tip-ip {
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-}
+  .tip-ip {
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
 
-.host-figures {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-12);
-  flex-shrink: 0;
-}
+  .host-figures {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-12);
+    flex-shrink: 0;
+  }
 
-.figure {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-}
+  .figure {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+  }
 
-/* Right-align each figure's value in a fixed-width box so the down and up
-   columns line up across the rows in a group (the arrows stay in constant
-   columns instead of drifting with each value's width). */
-.figure :global(.num) {
-  min-width: 46px;
-  text-align: right;
+  /* Right-align each figure's value in a fixed-width box so the down and up
+     columns line up across the rows in a group (the arrows stay in constant
+     columns instead of drifting with each value's width). */
+  .figure :global(.num) {
+    min-width: 46px;
+    text-align: right;
+  }
 }

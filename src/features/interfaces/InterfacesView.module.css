@@ -1,98 +1,101 @@
-/* Keep the header subtitle's metadata on one line. */
-.header-sub:global(.inline-meta) {
-  display: flex;
-  overflow: hidden;
-  white-space: nowrap;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* Keep the header subtitle's metadata on one line. */
+  .header-sub:global(.inline-meta) {
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-10);
-}
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
 
-/* Interface cards are entity headers (icon tile + name), like the connection
-   card — they need more room around the tile than a plain section title. */
-.panel :global(.ui-section-header) {
-  height: auto;
-  /* Trim the bottom pad: with no divider, the header pad + body pad stacked into
-     too big a gap below the name. */
-  padding: var(--section-header-padding-y) var(--section-header-padding-x) var(--space-8);
-  /* Entity cards read as one unit — no divider between the name and its fields. */
-  border-bottom: none;
-}
+  /* Interface cards are entity headers (icon tile + name), like the connection
+     card — they need more room around the tile than a plain section title. */
+  .panel :global(.ui-section-header) {
+    height: auto;
+    /* Trim the bottom pad: with no divider, the header pad + body pad stacked into
+       too big a gap below the name. */
+    padding: var(--section-header-padding-y) var(--section-header-padding-x) var(--space-8);
+    /* Entity cards read as one unit — no divider between the name and its fields. */
+    border-bottom: none;
+  }
 
-/* No divider here, so the header sets most of the gap above the fields; a small
-   top pad adds a little breathing room between the name and the first label. */
-.panel :global(.ui-section-body) {
-  padding-top: var(--space-6);
-}
+  /* No divider here, so the header sets most of the gap above the fields; a small
+     top pad adds a little breathing room between the name and the first label. */
+  .panel :global(.ui-section-body) {
+    padding-top: var(--space-6);
+  }
 
-/* Interface cards carry only a few fields, so the default 8px row padding
-   leaves too much air between values. Tighten just these rows. */
-.panel :global(.data-row) {
-  padding: var(--space-4) 0;
-}
+  /* Interface cards carry only a few fields, so the default 8px row padding
+     leaves too much air between values. Tighten just these rows. */
+  .panel :global(.data-row) {
+    padding: var(--space-4) 0;
+  }
 
-.icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-inset);
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-inset);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
 
-.panel.connection-wifi .icon {
-  color: var(--series-down);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
-}
+  .panel.connection-wifi .icon {
+    color: var(--series-down);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+  }
 
-.panel.connection-ethernet .icon {
-  color: var(--status-positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
-}
+  .panel.connection-ethernet .icon {
+    color: var(--status-positive);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+  }
 
-.name {
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-/* Match the widget-title size (e.g. "Traffic"), not the larger text-title.
-   The compound selector outranks the .text-title utility regardless of CSS
-   load order. */
-.name:global(.text-title) {
-  font-size: var(--font-size-lg);
-}
+  /* Match the widget-title size (e.g. "Traffic"), not the larger text-title.
+     The compound selector outranks the .text-title utility regardless of CSS
+     load order. */
+  .name:global(.text-title) {
+    font-size: var(--font-size-lg);
+  }
 
-.tag {
-  color: var(--text-tertiary);
-}
+  .tag {
+    color: var(--text-tertiary);
+  }
 
-.panel.is-default .tag:not(.is-muted) {
-  color: var(--text-positive);
-}
+  .panel.is-default .tag:not(.is-muted) {
+    color: var(--text-positive);
+  }
 
-.state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-6);
-  flex-shrink: 0;
-  text-transform: capitalize;
-}
+  .state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+    flex-shrink: 0;
+    text-transform: capitalize;
+  }
 
-.state-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-}
+  .state-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
 
-.state.state-up {
-  color: var(--text-positive);
+  .state.state-up {
+    color: var(--text-positive);
+  }
 }

@@ -1,272 +1,275 @@
-/* Keep the subtitle's metadata on one line inside the narrow strip. */
-.strip-sub:global(.inline-meta) {
-  display: flex;
-  overflow: hidden;
-  white-space: nowrap;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* Keep the subtitle's metadata on one line inside the narrow strip. */
+  .strip-sub:global(.inline-meta) {
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
-.strip-sub:global(.inline-meta) :global(.inline-meta-item):first-child {
-  flex-shrink: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .strip-sub:global(.inline-meta) :global(.inline-meta-item):first-child {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.root {
-  background: var(--bg-panel);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
-  overflow: hidden;
-}
+  .root {
+    background: var(--bg-panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+    overflow: hidden;
+  }
 
-.strip {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-12);
-  width: 100%;
-  min-height: var(--section-header-min-height);
-  padding: var(--section-header-padding-y) var(--section-header-padding-x);
-  text-align: left;
-  transition: background var(--duration-fast) var(--ease-in-out);
-}
+  .strip {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-12);
+    width: 100%;
+    min-height: var(--section-header-min-height);
+    padding: var(--section-header-padding-y) var(--section-header-padding-x);
+    text-align: left;
+    transition: background var(--duration-fast) var(--ease-in-out);
+  }
 
-/* Transparent button filling the whole strip: it's the expand target, sitting
-   behind the content so the SSID/signal stay visible. The content is
-   click-through (pointer-events: none) so clicks anywhere fall to this toggle —
-   except the QR button, which raises itself and handles its own click. */
-.strip-toggle {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  cursor: pointer;
-}
+  /* Transparent button filling the whole strip: it's the expand target, sitting
+     behind the content so the SSID/signal stay visible. The content is
+     click-through (pointer-events: none) so clicks anywhere fall to this toggle —
+     except the QR button, which raises itself and handles its own click. */
+  .strip-toggle {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    cursor: pointer;
+  }
 
-/* The toggle expands the whole card, so focus frames the card — strip and, when
-   open, the details — just inside its edge, rather than the strip alone. */
-.strip-toggle:focus-visible {
-  outline: none;
-}
+  /* The toggle expands the whole card, so focus frames the card — strip and, when
+     open, the details — just inside its edge, rather than the strip alone. */
+  .strip-toggle:focus-visible {
+    outline: none;
+  }
 
-.root:has(> .strip > .strip-toggle:focus-visible) {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-inset);
-}
+  .root:has(> .strip > .strip-toggle:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-inset);
+  }
 
-.strip:hover {
-  background: var(--fill-row-hover);
-}
+  .strip:hover {
+    background: var(--fill-row-hover);
+  }
 
-.strip-icon,
-.strip-text,
-.strip > .signal-meter,
-.chevron {
-  position: relative;
-  z-index: 1;
-  pointer-events: none;
-}
+  .strip-icon,
+  .strip-text,
+  .strip > .signal-meter,
+  .chevron {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
 
-.strip-share {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-}
+  .strip-share {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+  }
 
-.strip-icon,
-.strip-share,
-.chevron,
-.strip > .signal-meter {
-  align-self: center;
-  flex-shrink: 0;
-}
+  .strip-icon,
+  .strip-share,
+  .chevron,
+  .strip > .signal-meter {
+    align-self: center;
+    flex-shrink: 0;
+  }
 
-.strip-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-inset);
-  color: var(--text-secondary);
-}
+  .strip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-inset);
+    color: var(--text-secondary);
+  }
 
-.root.variant-wifi .strip-icon {
-  color: var(--series-down);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
-}
+  .root.variant-wifi .strip-icon {
+    color: var(--series-down);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+  }
 
-.root.variant-ethernet .strip-icon {
-  color: var(--status-positive);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
-}
+  .root.variant-ethernet .strip-icon {
+    color: var(--status-positive);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+  }
 
-.root.variant-disconnected .strip-icon {
-  color: var(--status-negative);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-xs), transparent);
-}
+  .root.variant-disconnected .strip-icon {
+    color: var(--status-negative);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-xs), transparent);
+  }
 
-.strip-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-2) 0;
-}
+  .strip-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+  }
 
-.strip-title,
-.strip-sub {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .strip-title,
+  .strip-sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.strip-sub {
-  color: var(--text-secondary);
-}
+  .strip-sub {
+    color: var(--text-secondary);
+  }
 
-.chevron {
-  color: var(--text-tertiary);
-  transition: transform var(--duration-normal) var(--ease-out);
-}
+  .chevron {
+    color: var(--text-tertiary);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
 
-.chevron.is-open {
-  transform: rotate(180deg);
-}
+  .chevron.is-open {
+    transform: rotate(180deg);
+  }
 
-.details-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--duration-normal) var(--ease-out);
-}
+  .details-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--duration-normal) var(--ease-out);
+  }
 
-.details-wrap.is-open {
-  grid-template-rows: 1fr;
-}
+  .details-wrap.is-open {
+    grid-template-rows: 1fr;
+  }
 
-.details {
-  overflow: hidden;
-}
+  .details {
+    overflow: hidden;
+  }
 
-/* Dark inset panel below the header — same treatment as live-chart-wrap /
-   bench-footer: full card width, square top edge, card overflow rounds bottom. */
-.details-wrap.is-open .details {
-  padding: var(--section-header-padding-y) var(--section-body-padding);
-  background: var(--bg-inset);
-}
+  /* Dark inset panel below the header — same treatment as live-chart-wrap /
+     bench-footer: full card width, square top edge, card overflow rounds bottom. */
+  .details-wrap.is-open .details {
+    padding: var(--section-header-padding-y) var(--section-body-padding);
+    background: var(--bg-inset);
+  }
 
-/* Match the tighter row rhythm of the interface cards' fields. */
-.details :global(.data-row) {
-  padding: var(--space-4) 0;
-}
+  /* Match the tighter row rhythm of the interface cards' fields. */
+  .details :global(.data-row) {
+    padding: var(--space-4) 0;
+  }
 
-.signal-meter {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  color: var(--status-positive);
-}
+  .signal-meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    color: var(--status-positive);
+  }
 
-.signal-meter.level-good { color: var(--status-positive); }
-.signal-meter.level-fair { color: var(--status-warning); }
-.signal-meter.level-weak { color: var(--status-negative); }
+  .signal-meter.level-good { color: var(--status-positive); }
+  .signal-meter.level-fair { color: var(--status-warning); }
+  .signal-meter.level-weak { color: var(--status-negative); }
 
-.signal-bars {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: var(--space-2);
-  height: 12px;
-}
+  .signal-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    height: 12px;
+  }
 
-/* Flat bottoms so the bars share a crisp baseline, with only the tops softened:
-   a full pill radius on a 3px bar half-fades its top and bottom rows, which
-   reads as floating blobs. Heights step by 3px so each bar is distinct. */
-.signal-bar {
-  width: 3px;
-  border-radius: 1px 1px 0 0;
-  background: color-mix(in srgb, currentColor var(--opacity-unlit), transparent);
-}
+  /* Flat bottoms so the bars share a crisp baseline, with only the tops softened:
+     a full pill radius on a 3px bar half-fades its top and bottom rows, which
+     reads as floating blobs. Heights step by 3px so each bar is distinct. */
+  .signal-bar {
+    width: 3px;
+    border-radius: 1px 1px 0 0;
+    background: color-mix(in srgb, currentColor var(--opacity-unlit), transparent);
+  }
 
-.signal-bar:nth-child(1) { height: 3px; }
-.signal-bar:nth-child(2) { height: 6px; }
-.signal-bar:nth-child(3) { height: 9px; }
-.signal-bar:nth-child(4) { height: 12px; }
+  .signal-bar:nth-child(1) { height: 3px; }
+  .signal-bar:nth-child(2) { height: 6px; }
+  .signal-bar:nth-child(3) { height: 9px; }
+  .signal-bar:nth-child(4) { height: 12px; }
 
-.signal-bar.is-on {
-  background: currentColor;
-}
+  .signal-bar.is-on {
+    background: currentColor;
+  }
 
-/* Expanded "Signal" row: the meter bars sit alongside the status text, so the
-   quality reads inside the details rather than beside the header title.
-   Block flex (not inline-flex) avoids extra line-box strut height inside
-   .text-value, which otherwise misaligns the bars with the label text. */
-.signal-detail {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-8);
-}
+  /* Expanded "Signal" row: the meter bars sit alongside the status text, so the
+     quality reads inside the details rather than beside the header title.
+     Block flex (not inline-flex) avoids extra line-box strut height inside
+     .text-value, which otherwise misaligns the bars with the label text. */
+  .signal-detail {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-8);
+  }
 
-.signal-detail .signal-bars {
-  transform: translateY(-2px);
-}
+  .signal-detail .signal-bars {
+    transform: translateY(-2px);
+  }
 
-/* The Signal value is a flex box (meter + text), so it exposes no text baseline
-   to its .text-value cell. Under the row's default `align-items: baseline`, the
-   browser synthesizes that cell's baseline at its bottom edge and drops the
-   "Signal" label down to meet it — leaving a gap above the label. Centre just
-   this row so the label lines up with the meter instead. */
-.details :global(.data-row):has(.signal-detail) {
-  align-items: center;
-}
+  /* The Signal value is a flex box (meter + text), so it exposes no text baseline
+     to its .text-value cell. Under the row's default `align-items: baseline`, the
+     browser synthesizes that cell's baseline at its bottom edge and drops the
+     "Signal" label down to meet it — leaving a gap above the label. Centre just
+     this row so the label lines up with the meter instead. */
+  .details :global(.data-row):has(.signal-detail) {
+    align-items: center;
+  }
 
-/* Wi‑Fi security: lock + protocol, green when secured, red when open. Used in
-   the expanded Security row and beside the band in the collapsed strip. A
-   block flex box (not inline-flex) so the lock centres on the text instead of
-   sitting on the line's baseline, which drops it a couple of pixels low. */
-.security-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  min-width: 0;
-}
+  /* Wi‑Fi security: lock + protocol, green when secured, red when open. Used in
+     the expanded Security row and beside the band in the collapsed strip. A
+     block flex box (not inline-flex) so the lock centres on the text instead of
+     sitting on the line's baseline, which drops it a couple of pixels low. */
+  .security-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-width: 0;
+  }
 
-.security-badge svg {
-  flex-shrink: 0;
-  /* The lock is taller than the text's cap height and centring on the line box
-     leaves it reading low; lift it to sit level with the protocol text (same
-     optical nudge the signal bars get). */
-  transform: translateY(-1px);
-}
+  .security-badge svg {
+    flex-shrink: 0;
+    /* The lock is taller than the text's cap height and centring on the line box
+       leaves it reading low; lift it to sit level with the protocol text (same
+       optical nudge the signal bars get). */
+    transform: translateY(-1px);
+  }
 
-.security-badge-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .security-badge-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.security-badge.is-secured svg { color: var(--status-positive); }
-.security-badge.is-unsecured { color: var(--text-negative); }
+  .security-badge.is-secured svg { color: var(--status-positive); }
+  .security-badge.is-unsecured { color: var(--text-negative); }
 
-/* Expanded row: right-align the badge in the value cell, and centre the row
-   (same baseline fix as Signal) so the label stays level with it. */
-.details .security-badge {
-  justify-content: flex-end;
-}
+  /* Expanded row: right-align the badge in the value cell, and centre the row
+     (same baseline fix as Signal) so the label stays level with it. */
+  .details .security-badge {
+    justify-content: flex-end;
+  }
 
-.details :global(.data-row):has(.security-badge) {
-  align-items: center;
-}
+  .details :global(.data-row):has(.security-badge) {
+    align-items: center;
+  }
 
-/* Collapsed strip: the badge's item is a flex box too, so the strip's
-   `align-items: center` lines the lock up with the IP and band. When space runs
-   out the protocol text ellipsizes and the IP holds its full width (even a
-   sub-pixel squeeze would otherwise ellipsize it). */
-.strip-sub:global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
-  display: flex;
-  overflow: hidden;
-}
+  /* Collapsed strip: the badge's item is a flex box too, so the strip's
+     `align-items: center` lines the lock up with the IP and band. When space runs
+     out the protocol text ellipsizes and the IP holds its full width (even a
+     sub-pixel squeeze would otherwise ellipsize it). */
+  .strip-sub:global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
+    display: flex;
+    overflow: hidden;
+  }
 
-.strip-sub:global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
-  flex-shrink: 0;
+  .strip-sub:global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
+    flex-shrink: 0;
+  }
 }

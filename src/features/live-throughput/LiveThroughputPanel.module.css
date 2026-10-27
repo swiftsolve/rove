@@ -1,46 +1,48 @@
-.readouts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-16);
-  margin-bottom: var(--space-12);
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  .readouts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+    margin-bottom: var(--space-12);
+  }
 
-.chart-wrap {
-  /* Fill the whole bottom of the card: bleed left/right/bottom out past the
-     section body's padding to the card edges. The card's overflow:hidden rounds
-     the bottom corners; the top edge stays square where it meets the readouts. */
-  margin: 0 calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
-  /* Inset the graph + labels by the card's own padding so they line up with the
-     title and readouts above, even though the panel background is full-bleed. */
-  padding: var(--section-body-padding);
-  background: var(--bg-inset);
-}
+  .chart-wrap {
+    /* Fill the whole bottom of the card: bleed left/right/bottom out past the
+       section body's padding to the card edges. The card's overflow:hidden rounds
+       the bottom corners; the top edge stays square where it meets the readouts. */
+    margin: 0 calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
+    /* Inset the graph + labels by the card's own padding so they line up with the
+       title and readouts above, even though the panel background is full-bleed. */
+    padding: var(--section-body-padding);
+    background: var(--bg-inset);
+  }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-6);
-  /* A rounded dark pill wrapping the dot + label so the badge reads as a
-     discrete status chip against the panel. */
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-full);
-  background: var(--bg-inset);
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-tertiary);
-}
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+    /* A rounded dark pill wrapping the dot + label so the badge reads as a
+       discrete status chip against the panel. */
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-full);
+    background: var(--bg-inset);
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+  }
 
-.badge.is-live {
-  color: var(--text-positive);
-}
+  .badge.is-live {
+    color: var(--text-positive);
+  }
 
-.badge.is-live::before {
-  content: '';
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: global(status-pulse) 2s ease-in-out infinite;
+  .badge.is-live::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: global(status-pulse) 2s ease-in-out infinite;
+  }
 }
-

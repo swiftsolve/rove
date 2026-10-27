@@ -1,23 +1,25 @@
-.inline-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-6);
-  min-width: 0;
-  max-width: 100%;
-}
+@layer components {
+  .inline-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+    min-width: 0;
+    max-width: 100%;
+  }
 
-.inline-meta-item {
-  min-width: 0;
-}
+  .inline-meta-item {
+    min-width: 0;
+  }
 
-/* A dot gets 8px of air on each side: the rows it sits in space their items at
-   6px (--space-6), and the margin adds 2px on top for the dot alone, so the
-   gaps between other items in the same row stay at 6px. */
-.sep-dot {
-  flex-shrink: 0;
-  margin: 0 var(--space-2);
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
+  /* A dot gets 8px of air on each side: the rows it sits in space their items at
+     6px (--space-6), and the margin adds 2px on top for the dot alone, so the
+     gaps between other items in the same row stay at 6px. */
+  .sep-dot {
+    flex-shrink: 0;
+    margin: 0 var(--space-2);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+  }
 }

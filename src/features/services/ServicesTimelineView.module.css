@@ -1,246 +1,249 @@
-/* The timeline itself — a marker column and content beside it, connected by a
-   line, mirroring the network events feed. */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-6) var(--space-4) var(--space-8) 0;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* The timeline itself — a marker column and content beside it, connected by a
+     line, mirroring the network events feed. */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-6) var(--space-4) var(--space-8) 0;
+  }
 
-.day {
-  display: flex;
-  flex-direction: column;
-}
+  .day {
+    display: flex;
+    flex-direction: column;
+  }
 
-.day:not(:first-child) {
-  margin-top: 18px;
-}
+  .day:not(:first-child) {
+    margin-top: 18px;
+  }
 
-/* The day's events under its heading — the same column the day itself stacks in. */
-.day-events {
-  display: flex;
-  flex-direction: column;
-}
+  /* The day's events under its heading — the same column the day itself stacks in. */
+  .day-events {
+    display: flex;
+    flex-direction: column;
+  }
 
-.day-heading {
-  margin: 0 0 var(--section-padding);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
+  .day-heading {
+    margin: 0 0 var(--section-padding);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 
-.item {
-  position: relative;
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: var(--section-padding);
-  padding-left: 5px;
-  padding-bottom: 22px;
-}
+  .item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: var(--section-padding);
+    padding-left: 5px;
+    padding-bottom: 22px;
+  }
 
-.item:last-child {
-  padding-bottom: 0;
-}
+  .item:last-child {
+    padding-bottom: 0;
+  }
 
-/* The connecting line, from just below a node to the next within the same day;
-   dropped on a day's last node so it ends at the final marker. */
-.item:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 18px;
-  top: 30px;
-  bottom: 0;
-  width: 2px;
-  background: var(--border-strong);
-  border-radius: 1px;
-}
+  /* The connecting line, from just below a node to the next within the same day;
+     dropped on a day's last node so it ends at the final marker. */
+  .item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-strong);
+    border-radius: 1px;
+  }
 
-.marker {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  z-index: 1;
-  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
-}
+  .marker {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+    background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
+  }
 
-/* A service dropping off reads as an alarm (red); a recovery reads positive
-   (green) — the same colour language as the reachability numbers. */
-.marker.status-down {
-  color: var(--status-negative);
-}
+  /* A service dropping off reads as an alarm (red); a recovery reads positive
+     (green) — the same colour language as the reachability numbers. */
+  .marker.status-down {
+    color: var(--status-negative);
+  }
 
-.marker.status-up {
-  color: var(--status-positive);
-}
+  .marker.status-up {
+    color: var(--status-positive);
+  }
 
-/* A healthy summary ("N services running") — the same positive tint as a
-   recovery, glyphed with a check. */
-.marker.status-running {
-  color: var(--status-positive);
-}
+  /* A healthy summary ("N services running") — the same positive tint as a
+     recovery, glyphed with a check. */
+  .marker.status-running {
+    color: var(--status-positive);
+  }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-width: 0;
-  padding-top: var(--space-2);
-}
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+    padding-top: var(--space-2);
+  }
 
-.content > * {
-  line-height: 1.3;
-}
+  .content > * {
+    line-height: 1.3;
+  }
 
-.head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-10);
-}
+  .head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-10);
+  }
 
-.title {
-  flex: 1;
-  min-width: 0;
-  color: var(--text-primary);
-  font-weight: var(--weight-semibold);
-  font-size: var(--font-size-lg);
-  overflow-wrap: anywhere;
-}
+  .title {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-primary);
+    font-weight: var(--weight-semibold);
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
+  }
 
-.time {
-  flex-shrink: 0;
-  color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-}
+  .time {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+  }
 
-/* The subject line: the service's favicon and name, sitting under the title —
-   the events-feed shape (what happened on top, which service beneath). */
-.subject {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  min-width: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-md);
-}
+  /* The subject line: the service's favicon and name, sitting under the title —
+     the events-feed shape (what happened on top, which service beneath). */
+  .subject {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-width: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+  }
 
-.subject-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .subject-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-/* The running summary's subtitle is a quiet aside, not a service name. */
-.is-muted {
-  color: var(--text-tertiary);
-}
+  /* The running summary's subtitle is a quiet aside, not a service name. */
+  .is-muted {
+    color: var(--text-tertiary);
+  }
 
-/* The connection row keeps its status and offline duration on one line: the
-   status at the left, the duration flush right (pushed by its margin-left:auto).
-   Overrides the subject's inline-flex so the row spans the full content width. */
-.conn-line {
-  display: flex;
-  width: 100%;
-}
+  /* The connection row keeps its status and offline duration on one line: the
+     status at the left, the duration flush right (pushed by its margin-left:auto).
+     Overrides the subject's inline-flex so the row spans the full content width. */
+  .conn-line {
+    display: flex;
+    width: 100%;
+  }
 
-.conn-line .meta-duration {
-  font-size: var(--font-size-sm);
-}
+  .conn-line .meta-duration {
+    font-size: var(--font-size-sm);
+  }
 
-.meta {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-10);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
-  letter-spacing: 0.02em;
-}
+  .meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-10);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.02em;
+  }
 
-.meta-host {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .meta-host {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-/* The outage length sits at the far right of the meta row, no dot before it. */
-.meta-duration {
-  margin-left: auto;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
+  /* The outage length sits at the far right of the meta row, no dot before it. */
+  .meta-duration {
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 
-/* Header overflow menu — the kebab and its dropdown, matching the manage page's
-   row menu and the speed-history menu. */
-.menu {
-  position: relative;
-}
+  /* Header overflow menu — the kebab and its dropdown, matching the manage page's
+     row menu and the speed-history menu. */
+  .menu {
+    position: relative;
+  }
 
-.kebab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  transition:
-    color var(--duration-fast) var(--ease-in-out),
-    background var(--duration-fast) var(--ease-in-out);
-}
+  .kebab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    transition:
+      color var(--duration-fast) var(--ease-in-out),
+      background var(--duration-fast) var(--ease-in-out);
+  }
 
-.kebab:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
+  .kebab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
 
-.dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 20;
-  min-width: 148px;
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
-  background: var(--bg-raised);
-  box-shadow: var(--shadow-raised);
-}
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 20;
+    min-width: 148px;
+    padding: var(--space-4);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow-raised);
+  }
 
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  width: 100%;
-  padding: var(--space-8);
-  border-radius: var(--radius-xs);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  text-align: left;
-  transition:
-    color var(--duration-fast) var(--ease-in-out),
-    background var(--duration-fast) var(--ease-in-out);
-}
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    width: 100%;
+    padding: var(--space-8);
+    border-radius: var(--radius-xs);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    text-align: left;
+    transition:
+      color var(--duration-fast) var(--ease-in-out),
+      background var(--duration-fast) var(--ease-in-out);
+  }
 
-/* Items fill the menu edge to edge, so the ring goes inside the item. */
-.menu-item:focus-visible {
-  outline-offset: var(--focus-inset);
-}
+  /* Items fill the menu edge to edge, so the ring goes inside the item. */
+  .menu-item:focus-visible {
+    outline-offset: var(--focus-inset);
+  }
 
-.menu-item:hover {
-  background: var(--bg-hover);
-}
+  .menu-item:hover {
+    background: var(--bg-hover);
+  }
 
-.menu-item.is-danger {
-  color: var(--text-negative);
-}
+  .menu-item.is-danger {
+    color: var(--text-negative);
+  }
 
-.menu-item.is-danger:hover {
-  color: var(--text-negative);
-  background: color-mix(in srgb, var(--status-negative) 14%, transparent);
+  .menu-item.is-danger:hover {
+    color: var(--text-negative);
+    background: color-mix(in srgb, var(--status-negative) 14%, transparent);
+  }
 }

@@ -1,0 +1,140 @@
+/*
+ * Tailwind v4, built only from Rove's design tokens.
+ *
+ * The tokens come from @swiftsolve/rove-design (Figma is the source of truth)
+ * as CSS variables. The theme below maps them onto Tailwind utilities and
+ * clears Tailwind's own defaults, so only design-system values exist:
+ * `p-12` is `--space-12`, `text-md` is `--font-size-md`, `bg-panel` is
+ * `--bg-panel`, and there is no `p-7` or `text-blue-500` to reach for.
+ *
+ * `inline` makes each utility use the token itself (`padding: var(--space-12)`),
+ * so a theme switch or a token update flows straight through. `reference`
+ * stops Tailwind from also declaring these names on :root: several share a
+ * token's own name (`--radius-sm`, `--shadow-panel`), and `--radius-sm:
+ * var(--radius-sm)` would be a self-reference that invalidates the token.
+ *
+ * No preflight: index.css is the app's base reset. Only the one piece of
+ * preflight that border utilities rely on is added, in the base layer below.
+ */
+@layer theme, base, components, utilities;
+/* Scan only the app's source for class names, not docs or scripts. */
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '../';
+
+/* Plain :hover, as the app's CSS always used. Tailwind's default wraps hover
+   styles in @media (hover: hover). */
+@custom-variant hover (&:hover);
+
+@theme inline reference {
+  --*: initial;
+
+  /* Spacing: the --space-* scale, plus 1px for hairlines. */
+  --spacing-px: 1px;
+  --spacing-2: var(--space-2);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-11: var(--space-11);
+  --spacing-12: var(--space-12);
+  --spacing-14: var(--space-14);
+  --spacing-16: var(--space-16);
+  --spacing-20: var(--space-20);
+
+  /* Type */
+  --font-sans: var(--font);
+  --font-numeric: var(--font-numeric);
+  --text-2xs: var(--font-size-2xs);
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-md: var(--font-size-md);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+
+  /* Surfaces (bg-*) */
+  --color-app: var(--bg-app);
+  --color-chrome: var(--bg-chrome);
+  --color-shell: var(--bg-shell);
+  --color-panel: var(--bg-panel);
+  --color-raised: var(--bg-raised);
+  --color-inset: var(--bg-inset);
+  --color-hover: var(--bg-hover);
+  --color-scrim: var(--bg-scrim);
+
+  /* Text (text-*) */
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+  --color-accent-text: var(--text-accent);
+  --color-on-fill: var(--text-on-fill);
+  --color-positive: var(--text-positive);
+  --color-good: var(--text-good);
+  --color-warning: var(--text-warning);
+  --color-poor: var(--text-poor);
+  --color-negative: var(--text-negative);
+
+  /* Lines (border-*) */
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-hairline-top: var(--border-hairline-top);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-hover: var(--accent-fill-hover);
+
+  /* Status, for fills, dots and icons. Text uses the text-* colours above. */
+  --color-status-positive: var(--status-positive);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-poor: var(--status-poor);
+  --color-status-negative: var(--status-negative);
+  --color-status-negative-fill: var(--status-negative-fill);
+  --color-status-negative-fill-hover: var(--status-negative-fill-hover);
+
+  /* Data series: download and upload */
+  --color-series-down: var(--series-down);
+  --color-series-up: var(--series-up);
+
+  /* Quiet fills */
+  --color-fill-chip: var(--fill-chip);
+  --color-fill-nav-hover: var(--fill-nav-hover);
+  --color-fill-row-hover: var(--fill-row-hover);
+  --color-fill-track: var(--fill-track);
+  --color-fill-track-lit: var(--fill-track-lit);
+  --color-fill-scrollbar: var(--fill-scrollbar);
+  --color-fill-selection: var(--fill-selection);
+  --color-window-close-hover: var(--window-close-hover);
+
+  /* Shape and motion */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-raised: var(--shadow-raised);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+}
+
+/* Border utilities set only a width; they need a solid style to show. This is
+   the part of Tailwind's preflight they depend on. The base layer sits under
+   all of the app's own CSS, so an explicit border anywhere still wins. */
+@layer base {
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    border-width: 0;
+    border-style: solid;
+  }
+}
