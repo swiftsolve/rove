@@ -27,7 +27,7 @@ const ACTIVE_BAR = cx(
 
 const itemVariants = cva(
   [
-    'relative inline-flex items-center justify-center size-[38px] rounded-md',
+    'relative inline-flex items-center justify-center size-(--rail-item-size) rounded-md',
     'transition-[color,background] duration-(--duration-fast) ease-in-out',
   ],
   {
