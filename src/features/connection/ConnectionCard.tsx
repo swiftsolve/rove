@@ -60,11 +60,10 @@ const signalMeterVariants = cva('flex items-center gap-8', {
 
 const signalBarsVariants = cva('inline-flex items-end', {
   variants: {
-    // Beside the strip's title, a size up; in the Signal row, nudged down so the
-    // 9px bars span the text's cap height.
+    // Beside the strip's title, a size up; in the Signal row, centred on the text.
     placement: {
       strip: 'gap-2 h-[11px]',
-      details: 'gap-2 h-[9px] transform-[translateY(1px)]',
+      details: 'gap-2 h-[9px]',
     },
   },
 })

@@ -26,7 +26,7 @@ export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps)
     // `.page-empty` lays out the page; its gap is opened up here, and the action
     // button is nudged down from the copy above it.
     <div className="page-empty gap-16 text-center [&>button]:mt-4">
-      <Icon size={32} className="text-tertiary opacity-55" />
+      <Icon size={32} className="text-tertiary opacity-(--opacity-muted-glyph)" />
       {/* An h2 for the page outline, at the plain weight of the paragraph it replaced. */}
       <h2 className="text-md [font-weight:inherit] text-secondary">{title}</h2>
       {hint != null && <EmptyStateHint>{hint}</EmptyStateHint>}
