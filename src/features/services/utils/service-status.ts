@@ -14,17 +14,6 @@ export function latencyBand(ms: number): LatencyBand {
   return 'bad'
 }
 
-const LATENCY_LEVEL_CLASSES: Record<LatencyBand, string> = {
-  good: 'val-good',
-  warn: 'val-warn',
-  bad: 'val-bad',
-}
-
-/** The `val-*` text colour for a service latency, so it reads the same everywhere. */
-export function latencyLevelClass(ms: number): string {
-  return LATENCY_LEVEL_CLASSES[latencyBand(ms)]
-}
-
 /**
  * Whether a probed service reads as up or down: down when the network path
  * failed (no TLS handshake, so no latency) or the host answered but is erroring

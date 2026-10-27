@@ -13,8 +13,17 @@ import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { DotSeparator } from '@/components/DotSeparator'
 import { Spinner } from '@/components/Spinner'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
 import styles from './AppUsageView.module.css'
+
+/** One segment of a row's down/up bar, coloured by its series. */
+const segVariants = cva(styles.seg, {
+  variants: {
+    series: { down: styles.seriesDown, up: styles.seriesUp },
+  },
+})
 
 const APP_USAGE_INFO_HINT =
   'Bytes are attributed to the app that moved them, read from the OS per-process ' +
@@ -61,7 +70,7 @@ function AppRow({
           </span>
         </span>
         <span className={styles.end}>
-          <MetricValue value={total} level={cx(styles.total, 'num')} format={formatBytes} />
+          <MetricValue value={total} className={cx(styles.total, 'num')} format={formatBytes} />
           <ChevronRightIcon size={16} className={styles.caret} aria-hidden />
         </span>
       </div>
@@ -70,17 +79,17 @@ function AppRow({
         role="img"
         aria-label={`${formatBytes(app.rxBytes)} down, ${formatBytes(app.txBytes)} up`}
       >
-        <span className={styles.seg} data-series="down" style={{ width: `${downPct}%` }} />
-        <span className={styles.seg} data-series="up" style={{ width: `${upPct}%` }} />
+        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
+        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
       <div className={styles.figures}>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
-          <MetricValue value={app.rxBytes} level="num" format={formatBytes} />
+          <MetricValue value={app.rxBytes} className="num" format={formatBytes} />
         </span>
         <span className={styles.figure}>
           <DirectionIcon series="up" size={11} />
-          <MetricValue value={app.txBytes} level="num" format={formatBytes} />
+          <MetricValue value={app.txBytes} className="num" format={formatBytes} />
         </span>
       </div>
     </div>
@@ -180,13 +189,11 @@ export function AppUsageView(): JSX.Element {
         isSubtitleShown={!isFirstLoad}
         actions={
           <UiTooltip content={APP_USAGE_INFO_HINT}>
-            <button
-              type="button"
-              className="btn-icon btn-icon-secondary"
+            <IconButton
               aria-label="About per-app usage"
             >
               <HelpIcon size={16} />
-            </button>
+            </IconButton>
           </UiTooltip>
         }
       />

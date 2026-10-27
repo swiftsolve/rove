@@ -62,8 +62,8 @@
   color: var(--text-tertiary);
 }
 
-/* Parts of NetworkErrorBanner. The dismiss button is also a .btn-icon (which
-   loads after this file), so its own size rules are scoped one level deeper. */
+/* Parts of NetworkErrorBanner. The dismiss button is an IconButton, so its own
+   size rules are scoped one level deeper to outrank IconButton's. */
 
 .banner-icon {
   display: inline-flex;

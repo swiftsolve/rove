@@ -77,36 +77,36 @@
 /* The node is tinted by tone so the timeline is scannable at a glance. Every
    tone uses the same faint currentColor wash for its fill; only the glyph
    colour changes. */
-.marker[data-tone] {
+.marker.has-tone {
   background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
 /* Arrivals & connections — a device joined, came back, or linked up. */
-.marker[data-tone='join'] {
+.marker.tone-join {
   color: var(--status-positive);
 }
 
 /* A departure — quiet, not alarming; a known device just dropped off. Given a
    ring outline (rather than a filled wash) so the node reads as "hollow/gone",
    setting it apart from the filled arrival/change markers. */
-.marker[data-tone='leave'] {
+.marker.tone-leave {
   color: var(--text-tertiary);
   background: var(--bg-inset);
   box-shadow: inset 0 0 0 1.5px var(--border-strong);
 }
 
 /* The baseline snapshot — calm and neutral. */
-.marker[data-tone='baseline'] {
+.marker.tone-baseline {
   color: var(--accent);
 }
 
 /* Cautionary — a new access point appeared (warning severity). */
-.marker[data-tone='alert'] {
+.marker.tone-alert {
   color: var(--status-warning);
 }
 
 /* Alarming — the gateway changed (critical severity). */
-.marker[data-tone='danger'] {
+.marker.tone-danger {
   color: var(--status-negative);
 }
 

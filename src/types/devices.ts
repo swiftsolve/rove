@@ -20,22 +20,6 @@ export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 /** How decisive the classifier's vote was — 'low' kinds render hedged. */
 export type LanDeviceKindConfidence = 'high' | 'low'
 
-export const LAN_DEVICE_KIND_LABELS: Record<LanDeviceKind, string> = {
-  router: 'Network',
-  nas: 'NAS / Server',
-  computer: 'Computer',
-  tablet: 'Tablet',
-  phone: 'Phone',
-  watch: 'Watch',
-  console: 'Game console',
-  tv: 'TV / Media',
-  printer: 'Printer',
-  camera: 'Camera',
-  speaker: 'Speaker',
-  iot: 'Smart home',
-  unknown: 'Unknown',
-}
-
 /** A single host discovered on the local network segment. */
 export interface LanDevice {
   /** Best-effort category — vendor OUIs only reveal so much. */

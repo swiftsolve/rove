@@ -90,17 +90,17 @@
   color: var(--text-secondary);
 }
 
-.root[data-variant='wifi'] .strip-icon {
+.root.variant-wifi .strip-icon {
   color: var(--series-down);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.root[data-variant='ethernet'] .strip-icon {
+.root.variant-ethernet .strip-icon {
   color: var(--status-positive);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.root[data-variant='disconnected'] .strip-icon {
+.root.variant-disconnected .strip-icon {
   color: var(--status-negative);
   background: color-mix(in srgb, currentColor var(--opacity-tint-xs), transparent);
 }
@@ -167,9 +167,9 @@
   color: var(--status-positive);
 }
 
-.signal-meter[data-level='good'] { color: var(--status-positive); }
-.signal-meter[data-level='fair'] { color: var(--status-warning); }
-.signal-meter[data-level='weak'] { color: var(--status-negative); }
+.signal-meter.level-good { color: var(--status-positive); }
+.signal-meter.level-fair { color: var(--status-warning); }
+.signal-meter.level-weak { color: var(--status-negative); }
 
 .signal-bars {
   display: inline-flex;

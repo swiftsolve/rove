@@ -9,7 +9,7 @@ import { Tooltip } from '@/components/Tooltip'
 import { DotSeparator } from '@/components/DotSeparator'
 import { serviceTally } from '@/features/services/components/ServiceTally'
 import { MAX_SAMPLES, type LatencySample } from '@/features/services/utils/service-latency'
-import { isHttpErroring, latencyLevelClass } from '@/features/services/utils/service-status'
+import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
 import { Sparkline } from '@/features/services/components/Sparkline'
 import { useServices } from '@/features/services/hooks/useServices'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -18,7 +18,16 @@ import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
 import { formatLatencyMs } from '@/lib/format'
 import { cx } from '@/lib/cx'
+import { Button } from '@/components/Button'
+import { cva } from 'class-variance-authority'
 import styles from './ServicesView.module.css'
+
+const menuItemVariants = cva(styles.menuItem, {
+  variants: {
+    /** Destructive (Remove): red text and a red-tinted hover. */
+    isDanger: { true: styles.isDanger },
+  },
+})
 
 type DialogState = { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }
 
@@ -70,14 +79,14 @@ function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuPro
       </button>
       {isOpen && (
         <div className={styles.dropdown} role="menu">
-          <button type="button" role="menuitem" className={styles.menuItem} onClick={onEdit}>
+          <button type="button" role="menuitem" className={menuItemVariants()} onClick={onEdit}>
             <EditIcon size={14} />
             Edit
           </button>
           <button
             type="button"
             role="menuitem"
-            className={cx(styles.menuItem, styles.isDanger)}
+            className={menuItemVariants({ isDanger: true })}
             onClick={onRemove}
           >
             <TrashIcon size={14} />
@@ -109,7 +118,7 @@ function LatencyReadout({
     return isInternetUnreachable ? <span className="text-small">—</span> : <span className="val-bad">Down</span>
   }
   if (isErroring) return <span className="val-bad">Down</span>
-  return <MetricValue value={latencyMs} level={latencyLevelClass(latencyMs)} format={formatLatencyMs} />
+  return <MetricValue value={latencyMs} level={latencyBand(latencyMs)} format={formatLatencyMs} />
 }
 
 interface ServiceRowProps {
@@ -179,18 +188,18 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
   if (isOffline) {
     return (
       <Tooltip content="Connect to the internet first">
-        <button type="button" className="btn-primary btn-filled" disabled aria-label="Add service">
+        <Button variant="filled" disabled aria-label="Add service">
           <PlusIcon size={14} />
           Add service
-        </button>
+        </Button>
       </Tooltip>
     )
   }
   return (
-    <button type="button" className="btn-primary btn-filled" onClick={onClick} aria-haspopup="dialog">
+    <Button variant="filled" onClick={onClick} aria-haspopup="dialog">
       <PlusIcon size={14} />
       Add service
-    </button>
+    </Button>
   )
 }
 

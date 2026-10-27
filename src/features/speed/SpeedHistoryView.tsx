@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -18,6 +19,19 @@ import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { cx } from '@/lib/cx'
 import styles from './SpeedHistoryView.module.css'
 
+/** Connection badge, tinted by medium. */
+const connVariants = cva(styles.conn, {
+  variants: {
+    type: { wifi: styles.typeWifi, ethernet: styles.typeEthernet },
+  },
+})
+
+const menuItemVariants = cva(styles.menuItem, {
+  variants: {
+    isDanger: { true: styles.isDanger },
+  },
+})
+
 interface MetricProps {
   label: string
   value: string
@@ -27,6 +41,8 @@ interface MetricProps {
 
 interface ConnectionBadgeStyle {
   Icon: typeof WifiIcon
+  /** The badge's tint; none for an unknown medium. */
+  type: VariantProps<typeof connVariants>['type']
   /** Shown when the entry has no network name. */
   fallbackName: string
 }
@@ -37,18 +53,20 @@ function isMeasuredLatency(ms: number): boolean {
 }
 
 function connectionBadgeStyle(connectionType: string): ConnectionBadgeStyle {
-  if (connectionType === 'wifi') return { Icon: WifiIcon, fallbackName: 'Wi‑Fi' }
-  if (connectionType === 'ethernet') return { Icon: EthernetIcon, fallbackName: 'Ethernet' }
-  return { Icon: GlobeIcon, fallbackName: 'Unknown' }
+  if (connectionType === 'wifi') return { Icon: WifiIcon, type: 'wifi', fallbackName: 'Wi‑Fi' }
+  if (connectionType === 'ethernet') {
+    return { Icon: EthernetIcon, type: 'ethernet', fallbackName: 'Ethernet' }
+  }
+  return { Icon: GlobeIcon, type: null, fallbackName: 'Unknown' }
 }
 
 function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const { connectionType, networkName } = entry
-  const { Icon, fallbackName } = connectionBadgeStyle(connectionType)
+  const { Icon, type, fallbackName } = connectionBadgeStyle(connectionType)
   const band = formatBand(entry.frequency)
 
   return (
-    <span className={styles.conn} data-type={connectionType}>
+    <span className={connVariants({ type })}>
       <Icon size={13} />
       <span className={styles.connName}>{networkName ?? fallbackName}</span>
       {band != null && (
@@ -162,7 +180,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
           <button
             type="button"
             role="menuitem"
-            className={cx(styles.menuItem, styles.isDanger)}
+            className={menuItemVariants({ isDanger: true })}
             onClick={handleDelete}
           >
             <TrashIcon size={14} />

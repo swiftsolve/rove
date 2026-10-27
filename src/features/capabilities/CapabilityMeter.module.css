@@ -40,15 +40,15 @@
 /* The bars take the fill colour (the same as the row's icon); the level word
    beside them takes the darker text shade, which needs 4.5:1 where the bars
    only need 3:1. */
-.root[data-level='excellent'] { color: var(--status-positive); }
-.root[data-level='good'] { color: var(--status-good); }
-.root[data-level='fair'] { color: var(--status-warning); }
-.root[data-level='poor'] { color: var(--status-poor); }
-.root[data-level='excellent'] .label { color: var(--text-positive); }
-.root[data-level='good'] .label { color: var(--text-good); }
-.root[data-level='fair'] .label { color: var(--text-warning); }
-.root[data-level='poor'] .label { color: var(--text-poor); }
-.root[data-level='unsupported'] { color: var(--text-tertiary); }
+.root.level-excellent { color: var(--status-positive); }
+.root.level-good { color: var(--status-good); }
+.root.level-fair { color: var(--status-warning); }
+.root.level-poor { color: var(--status-poor); }
+.root.level-excellent .label { color: var(--text-positive); }
+.root.level-good .label { color: var(--text-good); }
+.root.level-fair .label { color: var(--text-warning); }
+.root.level-poor .label { color: var(--text-poor); }
+.root.level-unsupported { color: var(--text-tertiary); }
 
 /* Compact (the Home strip): a smaller meter than the labelled one in the details
    list — the strip is a compact glanceable row, so the bars read as an accent

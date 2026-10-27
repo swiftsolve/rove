@@ -2,8 +2,15 @@ import type { InternetStatus, ServiceReachability } from '@/types'
 import { DotSeparator } from '@/components/DotSeparator'
 import { ArrowDownIcon, ArrowUpIcon } from '@/components/icons/Icons'
 import { reachabilityStatus } from '@/features/services/utils/service-status'
-import { cx } from '@/lib/cx'
+import { cva } from 'class-variance-authority'
 import styles from './ServiceTally.module.css'
+
+const halfVariants = cva(styles.half, {
+  variants: {
+    /** The half's text (and arrow) colour: green for up, red for any down. */
+    tone: { good: 'val-good', bad: 'val-bad' },
+  },
+})
 
 /**
  * The live up/down count over the tracked services (e.g. "5 Up · 1 Down"), for
@@ -34,12 +41,12 @@ export function serviceTally(
 
   return (
     <span className={styles.root}>
-      <span className={cx(styles.half, 'val-good')}>
+      <span className={halfVariants({ tone: 'good' })}>
         <ArrowUpIcon size={13} className={styles.icon} />
         {upCount} Up
       </span>
       <DotSeparator />
-      <span className={cx(styles.half, downCount > 0 && 'val-bad')}>
+      <span className={halfVariants({ tone: downCount > 0 ? 'bad' : undefined })}>
         <ArrowDownIcon size={13} className={styles.icon} />
         {downCount} Down
       </span>

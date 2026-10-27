@@ -221,16 +221,33 @@ rove/
 - Component styles are CSS Modules (`Foo.module.css`, imported as `styles`).
   The module is the namespace, so class names carry no prefix and are named by
   role: `.row`, `.row-name`. In code they're camelCase: `styles.rowName`.
-- State is an `is-*` class: `cx(styles.row, isDown && styles.isDown)`.
-  Enumerations are data attributes: `data-level={level}` with
-  `.tile[data-level='good']`.
+- Variants go through CVA (class-variance-authority). An element whose classes
+  depend on state or a variant gets a recipe at the top of its file:
+
+  ```ts
+  const rowVariants = cva(styles.row, {
+    variants: {
+      isGateway: { true: styles.isGateway },
+      kind: { phone: styles.kindPhone, tv: styles.kindTv },
+    },
+  })
+  // <div className={rowVariants({ isGateway, kind: device.kind })}>
+  ```
+
+  States are `is-*` classes (`.is-open`); enumerations are
+  `<dimension>-<value>` classes (`.level-good`). Data attributes are never
+  styling hooks. `cx()` only joins fixed classes, or a recipe's output with a
+  `className` prop.
+- Buttons are `Button` (`variant`: `primary`, `filled`, `secondary`) and
+  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `stop`; `aria-label`
+  is required), never hand-written `<button>` classes.
 - A stylesheet only styles its own component. To adjust a child, pass it a
   `className` (the child merges it onto its root with `cx`).
-- The global layer is plain `.css`, and only it is global: `index.css`, the
-  shared classes in `styles/` (`btn-*`, `error-banner`, `inline-error`), and
-  the primitives in `components/` that many views build on (`Section.css`,
-  `ViewHeader.css`, `Subpage.css`, `DataRow.css`, `DotSeparator.css`). Inside
-  a module, reach them with `:global(.btn-secondary)`. Use a shared keyframe
+- The global layer is plain `.css`, and only it is global: `index.css`,
+  `styles/feedback.css` (`error-banner`, `inline-error`), and the primitives in
+  `components/` that many views build on (`Section.css`, `ViewHeader.css`,
+  `Subpage.css`, `DataRow.css`, `DotSeparator.css`). Inside a module, reach
+  them with `:global(.ui-section-body)`. Use a shared keyframe
   as `animation: global(fade-in) …`, or CSS Modules renames it and the
   animation silently stops.
 - `npm run lint` also runs `scripts/check-css-modules.mjs`. It fails on a

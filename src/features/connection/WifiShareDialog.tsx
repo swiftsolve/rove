@@ -4,7 +4,7 @@ import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/networkApi'
 import { CloseIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
-import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
 import styles from './WifiShareDialog.module.css'
 
 interface ShareBodyProps {
@@ -115,14 +115,13 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
             </h2>
             <p className={styles.sub}>Scan with a phone camera to join</p>
           </div>
-          <button
-            type="button"
-            className={cx('btn-icon', 'btn-icon-secondary', styles.close)}
+          <IconButton
+            className={styles.close}
             aria-label="Close"
             onClick={onClose}
           >
             <CloseIcon size={15} />
-          </button>
+          </IconButton>
         </header>
 
         <div className={styles.body}>

@@ -36,11 +36,11 @@
 }
 
 /* Icon + label inside the Discover button. */
-.scan :global(.btn-secondary) {
+.scan .scan-button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-4);
-  /* Tighter horizontal padding than the base .btn-secondary (12px). */
+  /* Tighter horizontal padding than a secondary Button's (12px). */
   padding-left: var(--space-8);
   padding-right: var(--space-8);
   /* Nudge the button a touch lower toward the card's bottom edge. */

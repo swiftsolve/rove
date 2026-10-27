@@ -17,8 +17,17 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
 import styles from './HostsView.module.css'
+
+/** An app group's disclosure chevron: points right when closed, down when open. */
+const chevronVariants = cva(styles.chevron, {
+  variants: {
+    isOpen: { true: styles.isOpen },
+  },
+})
 
 const HOST_USAGE_INFO_HINT =
   'The remote hosts each app has connected to, from the OS per-socket peer ' +
@@ -111,11 +120,11 @@ function HostRow({ host }: { host: HostConn }): JSX.Element {
       <span className={styles.hostFigures}>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
-          <MetricValue value={host.rxBytes} level="num" format={formatBytes} />
+          <MetricValue value={host.rxBytes} className="num" format={formatBytes} />
         </span>
         <span className={styles.figure}>
           <DirectionIcon series="up" size={11} />
-          <MetricValue value={host.txBytes} level="num" format={formatBytes} />
+          <MetricValue value={host.txBytes} className="num" format={formatBytes} />
         </span>
       </span>
     </div>
@@ -146,7 +155,7 @@ function AppGroup({
         <span className={styles.appId}>
           <ChevronDownIcon
             size={14}
-            className={cx(styles.chevron, isExpanded && styles.isOpen)}
+            className={chevronVariants({ isOpen: isExpanded })}
             aria-hidden
           />
           <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
@@ -155,7 +164,7 @@ function AppGroup({
           </span>
           <span className={styles.count}>{hostCount}</span>
         </span>
-        <MetricValue value={total} level={cx(styles.appTotal, 'num')} format={formatBytes} />
+        <MetricValue value={total} className={cx(styles.appTotal, 'num')} format={formatBytes} />
       </button>
       {isExpanded && (
         <div className={styles.hosts}>
@@ -238,13 +247,11 @@ export function HostsView(): JSX.Element {
       onBack={back}
       action={
         <UiTooltip content={HOST_USAGE_INFO_HINT}>
-          <button
-            type="button"
-            className="btn-icon btn-icon-secondary"
+          <IconButton
             aria-label="About per-app hosts"
           >
             <HelpIcon size={16} />
-          </button>
+          </IconButton>
         </UiTooltip>
       }
     >

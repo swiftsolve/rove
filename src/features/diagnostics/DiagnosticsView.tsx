@@ -4,7 +4,7 @@ import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataRow } from '@/components/DataRow'
 import { Section } from '@/components/Section'
 import { ConnectionIcon, DnsIcon, GlobeIcon, RouterIcon } from '@/components/icons/Icons'
-import { MetricValue } from '@/components/MetricValue'
+import { MetricValue, type MetricLevel } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
@@ -25,17 +25,17 @@ function formatPercent(pct: number): string {
   return `${Math.round(pct * 10) / 10}%`
 }
 
-function latencyLevel(ms: number): string {
-  if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'val-bad'
-  if (ms <= GOOD_LATENCY_MAX_MS) return 'val-good'
-  if (ms <= WARN_LATENCY_MAX_MS) return 'val-warn'
-  return 'val-bad'
+function latencyLevel(ms: number): MetricLevel {
+  if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'bad'
+  if (ms <= GOOD_LATENCY_MAX_MS) return 'good'
+  if (ms <= WARN_LATENCY_MAX_MS) return 'warn'
+  return 'bad'
 }
 
-function lossLevel(pct: number): string {
-  if (pct <= 0) return 'val-good'
-  if (pct <= WARN_LOSS_MAX_PCT) return 'val-warn'
-  return 'val-bad'
+function lossLevel(pct: number): MetricLevel {
+  if (pct <= 0) return 'good'
+  if (pct <= WARN_LOSS_MAX_PCT) return 'warn'
+  return 'bad'
 }
 
 function formatLocation(isp: IspInfo): string | null {

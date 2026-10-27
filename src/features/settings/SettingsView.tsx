@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { cva } from 'class-variance-authority'
 import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 import { useSetting } from '@/hooks/useSetting'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
@@ -17,6 +18,7 @@ import {
   SunIcon,
 } from '@/components/icons/Icons'
 import { cx } from '@/lib/cx'
+import { Button } from '@/components/Button'
 import styles from './SettingsView.module.css'
 
 type CheckState =
@@ -24,6 +26,31 @@ type CheckState =
   | { kind: 'checking' }
   | { kind: 'up-to-date' }
   | { kind: 'available'; update: PendingUpdate }
+
+const segmentVariants = cva(styles.segment, {
+  variants: {
+    isActive: { true: styles.isActive },
+  },
+})
+
+const rowVariants = cva(styles.row, {
+  variants: {
+    /** Text above the control instead of beside it (the theme picker). */
+    isStacked: { true: styles.isStacked },
+  },
+})
+
+const statusVariants = cva(styles.status, {
+  variants: {
+    kind: { 'up-to-date': styles.isOk, available: styles.update },
+  },
+})
+
+const checkNowVariants = cva(styles.checkNow, {
+  variants: {
+    isScanning: { true: styles.isScanning },
+  },
+})
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} /> },
@@ -43,7 +70,7 @@ function ThemeSegmented(): JSX.Element {
           type="button"
           role="radio"
           aria-checked={mode === option.value}
-          className={cx(styles.segment, mode === option.value && styles.isActive)}
+          className={segmentVariants({ isActive: mode === option.value })}
           onClick={() => setMode(option.value)}
         >
           {option.icon}
@@ -65,7 +92,7 @@ function SettingRow({
   control: ReactNode
 }): JSX.Element {
   return (
-    <div className={styles.row}>
+    <div className={rowVariants()}>
       <div className={styles.rowText}>
         <span className={styles.rowTitle}>{title}</span>
         <span className={styles.rowDesc}>{description}</span>
@@ -80,7 +107,7 @@ function SettingRow({
 function renderCheckResult(check: CheckState): ReactNode {
   if (check.kind === 'up-to-date') {
     return (
-      <p className={cx(styles.status, styles.isOk)}>
+      <p className={statusVariants({ kind: 'up-to-date' })}>
         <CheckIcon size={14} />
         You're on the latest version.
       </p>
@@ -88,15 +115,14 @@ function renderCheckResult(check: CheckState): ReactNode {
   }
   if (check.kind === 'available') {
     return (
-      <div className={cx(styles.status, styles.update)}>
+      <div className={statusVariants({ kind: 'available' })}>
         <span>Version {check.update.version} is available.</span>
-        <button
-          type="button"
-          className="btn-primary"
+        <Button
+          variant="primary"
           onClick={() => void check.update.install()}
         >
           Install &amp; restart
-        </button>
+        </Button>
       </div>
     )
   }
@@ -146,21 +172,21 @@ export function SettingsView(): JSX.Element {
           title="Check for updates now"
           description="Query GitHub Releases for the latest signed build."
           control={
-            <button
-              type="button"
-              className={cx('btn-primary', styles.checkNow, isChecking && styles.isScanning)}
+            <Button
+              variant="primary"
+              className={checkNowVariants({ isScanning: isChecking })}
               onClick={() => void runCheck()}
               disabled={isChecking}
             >
               {isChecking ? <ButtonSpinner size={14} /> : <RefreshIcon size={14} />}
               Check now
-            </button>
+            </Button>
           }
         />
       </Section>
 
       <Section title="Appearance" bodyClassName={styles.list}>
-        <div className={cx(styles.row, styles.isStacked)}>
+        <div className={rowVariants({ isStacked: true })}>
           <div className={styles.rowText}>
             <span className={styles.rowTitle}>Theme</span>
             <span className={styles.rowDesc}>

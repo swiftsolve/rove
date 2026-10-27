@@ -141,17 +141,17 @@
     transform var(--duration-normal) var(--ease-out);
 }
 
-.scan-phase[data-state='next'] {
+.scan-phase.state-next {
   opacity: 0;
   transform: translateY(5px);
 }
 
-.scan-phase[data-state='current'] {
+.scan-phase.state-current {
   opacity: 1;
   transform: none;
 }
 
-.scan-phase[data-state='past'] {
+.scan-phase.state-past {
   opacity: 0;
   transform: translateY(-5px);
 }
@@ -216,29 +216,29 @@
 
 /* Known device kinds get a quiet tint so categories scan at a glance;
    unknown stays neutral. Gateway's green wins via the rule above. */
-.row:not(.is-gateway) .icon[data-kind='computer'],
-.row:not(.is-gateway) .icon[data-kind='nas'],
-.row:not(.is-gateway) .icon[data-kind='tablet'],
-.row:not(.is-gateway) .icon[data-kind='phone'] {
+.row:not(.is-gateway) .icon.kind-computer,
+.row:not(.is-gateway) .icon.kind-nas,
+.row:not(.is-gateway) .icon.kind-tablet,
+.row:not(.is-gateway) .icon.kind-phone {
   color: var(--series-down);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.row:not(.is-gateway) .icon[data-kind='tv'],
-.row:not(.is-gateway) .icon[data-kind='console'],
-.row:not(.is-gateway) .icon[data-kind='printer'] {
+.row:not(.is-gateway) .icon.kind-tv,
+.row:not(.is-gateway) .icon.kind-console,
+.row:not(.is-gateway) .icon.kind-printer {
   color: var(--series-up);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.row:not(.is-gateway) .icon[data-kind='iot'],
-.row:not(.is-gateway) .icon[data-kind='camera'],
-.row:not(.is-gateway) .icon[data-kind='speaker'] {
+.row:not(.is-gateway) .icon.kind-iot,
+.row:not(.is-gateway) .icon.kind-camera,
+.row:not(.is-gateway) .icon.kind-speaker {
   color: var(--status-warning);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.row:not(.is-gateway) .icon[data-kind='router'] {
+.row:not(.is-gateway) .icon.kind-router {
   color: var(--status-positive);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }

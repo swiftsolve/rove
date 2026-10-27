@@ -30,8 +30,8 @@
   color: var(--text-secondary);
 }
 
-.conn[data-type='wifi'] { color: var(--series-down); }
-.conn[data-type='ethernet'] { color: var(--status-positive); }
+.conn.type-wifi { color: var(--series-down); }
+.conn.type-ethernet { color: var(--status-positive); }
 
 .conn-name {
   min-width: 0;

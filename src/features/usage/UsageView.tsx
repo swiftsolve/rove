@@ -9,6 +9,7 @@ import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Ico
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { Spinner } from '@/components/Spinner'
 import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
 import styles from './UsageView.module.css'
 
 interface UsageDatum {
@@ -243,13 +244,11 @@ export function UsageView(): JSX.Element {
         isSubtitleShown={!isFirstLoad}
         actions={
           <UiTooltip content={USAGE_INFO_HINT}>
-            <button
-              type="button"
-              className="btn-icon btn-icon-secondary"
+            <IconButton
               aria-label="About usage measurement"
             >
               <HelpIcon size={16} />
-            </button>
+            </IconButton>
           </UiTooltip>
         }
       />

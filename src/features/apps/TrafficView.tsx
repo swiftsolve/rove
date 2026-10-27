@@ -29,8 +29,17 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
 import styles from './TrafficView.module.css'
+
+/** One segment of a row's down/up bar, coloured by its series. */
+const segVariants = cva(styles.seg, {
+  variants: {
+    series: { down: styles.seriesDown, up: styles.seriesUp },
+  },
+})
 
 const TRAFFIC_INFO_HINT =
   'Your session’s traffic grouped by kind — the connection’s remote port ' +
@@ -97,24 +106,24 @@ function TrafficRow({
             {type.label}
           </span>
         </span>
-        <MetricValue value={total} level={cx(styles.total, 'num')} format={formatBytes} />
+        <MetricValue value={total} className={cx(styles.total, 'num')} format={formatBytes} />
       </div>
       <div
         className={styles.bar}
         role="img"
         aria-label={`${formatBytes(type.rxBytes)} down, ${formatBytes(type.txBytes)} up`}
       >
-        <span className={styles.seg} data-series="down" style={{ width: `${downPct}%` }} />
-        <span className={styles.seg} data-series="up" style={{ width: `${upPct}%` }} />
+        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
+        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
       <div className={styles.figures}>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
-          <MetricValue value={type.rxBytes} level="num" format={formatBytes} />
+          <MetricValue value={type.rxBytes} className="num" format={formatBytes} />
         </span>
         <span className={styles.figure}>
           <DirectionIcon series="up" size={11} />
-          <MetricValue value={type.txBytes} level="num" format={formatBytes} />
+          <MetricValue value={type.txBytes} className="num" format={formatBytes} />
         </span>
       </div>
     </div>
@@ -178,13 +187,11 @@ export function TrafficView(): JSX.Element {
       onBack={back}
       action={
         <UiTooltip content={TRAFFIC_INFO_HINT}>
-          <button
-            type="button"
-            className="btn-icon btn-icon-secondary"
+          <IconButton
             aria-label="About traffic types"
           >
             <HelpIcon size={16} />
-          </button>
+          </IconButton>
         </UiTooltip>
       }
     >

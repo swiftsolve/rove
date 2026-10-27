@@ -5,6 +5,7 @@ import { IS_MAC } from '@/lib/platform'
 import { DevicesIcon, SearchIcon } from '@/components/icons/Icons'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
+import { Button } from '@/components/Button'
 import styles from './DevicesCard.module.css'
 
 function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
@@ -94,10 +95,10 @@ function DevicesCardBody({
     }
     return (
       <div className={styles.scan}>
-        <button type="button" className="btn-secondary" onClick={handleScan}>
+        <Button className={styles.scanButton} onClick={handleScan}>
           <SearchIcon size={14} />
           Discover
-        </button>
+        </Button>
       </div>
     )
   }

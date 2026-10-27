@@ -64,17 +64,17 @@
 
 /* A service dropping off reads as an alarm (red); a recovery reads positive
    (green) — the same colour language as the reachability numbers. */
-.marker[data-status='down'] {
+.marker.status-down {
   color: var(--status-negative);
 }
 
-.marker[data-status='up'] {
+.marker.status-up {
   color: var(--status-positive);
 }
 
 /* A healthy summary ("N services running") — the same positive tint as a
    recovery, glyphed with a check. */
-.marker[data-status='running'] {
+.marker.status-running {
   color: var(--status-positive);
 }
 

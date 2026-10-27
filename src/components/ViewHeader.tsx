@@ -1,5 +1,15 @@
 import type { ReactNode } from 'react'
+import { cva } from 'class-variance-authority'
+import { cx } from '@/lib/cx'
 import './ViewHeader.css'
+
+const subtitleVariants = cva('view-header-sub', {
+  variants: {
+    /** Runs the fade-in once (class swap → animation). */
+    isSubtitleShown: { true: 'show' },
+  },
+  defaultVariants: { isSubtitleShown: false },
+})
 
 interface ViewHeaderProps {
   /** Nav-matched glyph shown in the rounded chip, e.g. `<DevicesIcon size={18} />`. */
@@ -29,23 +39,17 @@ export function ViewHeader({
   title,
   subtitle,
   subtitleClassName,
-  isSubtitleShown = false,
+  isSubtitleShown,
   actions,
 }: ViewHeaderProps): JSX.Element {
-  const subtitleClasses = [
-    'view-header-sub',
-    subtitleClassName,
-    isSubtitleShown ? 'show' : undefined,
-  ]
-    .filter(Boolean)
-    .join(' ')
-
   return (
     <div className="view-header view-header-row">
       <span className="view-header-icon">{icon}</span>
       <div className="view-header-text">
         <h1 className="view-header-title">{title}</h1>
-        {subtitle !== undefined && <span className={subtitleClasses}>{subtitle}</span>}
+        {subtitle !== undefined && (
+          <span className={cx(subtitleVariants({ isSubtitleShown }), subtitleClassName)}>{subtitle}</span>
+        )}
       </div>
       {actions !== undefined && <div className="view-header-actions">{actions}</div>}
     </div>
