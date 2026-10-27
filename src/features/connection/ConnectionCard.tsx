@@ -289,8 +289,10 @@ function WifiExtras({
     <>
       <DataRow label="Signal">
         {/* Block flex (not inline-flex) avoids extra line-box strut height inside
-            .text-value, which would misalign the bars with the label text. */}
-        <div className={cx(styles.signalDetail, 'flex items-center justify-end gap-8')}>
+            .text-value, which would misalign the bars with the label text. The
+            bars have no text, so baseline alignment sits their bottom on the
+            text's baseline; at 9px they then span its cap height exactly. */}
+        <div className={cx(styles.signalDetail, 'flex items-baseline justify-end gap-8')}>
           {info.signalStrength != null && (
             <SignalMeter strength={info.signalStrength} placement="details" />
           )}
