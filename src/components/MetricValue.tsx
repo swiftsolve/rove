@@ -1,5 +1,4 @@
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { useCountUp } from '@/hooks/useCountUp'
 
 const metricVariants = cva(undefined, {

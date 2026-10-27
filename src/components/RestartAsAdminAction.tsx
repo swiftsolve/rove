@@ -59,7 +59,7 @@ export function RestartAsAdminAction(): JSX.Element | null {
       <Button onClick={relaunchAsAdmin} disabled={isBusy}>
         {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
       </Button>
-      {wasDeclined && <EmptyStateHint>Elevation was declined.</EmptyStateHint>}
+      {wasDeclined && <EmptyStateHint role="status">Elevation was declined.</EmptyStateHint>}
       {detail && <EmptyStateHint>Details: {detail}</EmptyStateHint>}
     </>
   )

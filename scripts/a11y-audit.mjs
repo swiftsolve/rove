@@ -5,6 +5,7 @@
  *   npm run a11y                                   # starts its own dev server
  *   npm run a11y -- --url http://localhost:5173    # reuse a running dev server
  *   CHROME_PATH=/usr/bin/chromium npm run a11y     # no Google Chrome installed
+ *   npm run a11y -- --limit all                    # list every place, not the first 12
  *
  * Like the screenshot script, it runs against the Vite dev server and the
  * browser mock bridge, drives a real Chrome (the app pauses while hidden), and
@@ -26,22 +27,26 @@ const AXE_SOURCE = await readFile(resolve(ROOT, 'node_modules/axe-core/axe.min.j
 // WCAG 2.1 A and AA, plus axe's best practices (landmarks, heading order, …).
 const RULE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 
-/** Click the first button whose accessible label or text contains `label`. */
-const clickButton = (label) => () => {
-  const button = [...document.querySelectorAll('button, [role="button"]')].find(
-    (el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').includes(label),
-  )
+/** Runs in the page: click the first button whose label or text contains `label`
+ *  (or, with no label, the first disclosure button). Page functions can't close
+ *  over script variables, so the label travels as an argument. */
+function clickButton(label) {
+  const buttons = [...document.querySelectorAll('button, [role="button"]')]
+  const button = label
+    ? buttons.find((el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').includes(label))
+    : buttons.find((el) => el.hasAttribute('aria-expanded'))
   button?.click()
 }
 
-/** [name, location, optional action run on the page once it has settled]. */
+/** [name, location, optional label of a button to click once it has settled
+ *  ('' clicks the first disclosure button)]. */
 const SCENARIOS = [
   ['home', { tab: 'home' }],
-  ['home: details open', { tab: 'home' }, () => document.querySelector('button[aria-expanded]')?.click()],
-  ['home: share Wi-Fi', { tab: 'home' }, clickButton('Share Wi‑Fi')],
+  ['home: details open', { tab: 'home' }, ''],
+  ['home: share Wi-Fi', { tab: 'home' }, 'Share Wi‑Fi'],
   ['speed', { tab: 'speed' }],
   ['speed: results', { tab: 'speed', speedSub: { view: 'history' } }],
-  ['speed: results menu', { tab: 'speed', speedSub: { view: 'history' } }, clickButton('History options')],
+  ['speed: results menu', { tab: 'speed', speedSub: { view: 'history' } }, 'History options'],
   ['interfaces', { tab: 'interfaces' }],
   ['devices', { tab: 'devices' }],
   ['timeline', { tab: 'events' }],
@@ -51,8 +56,8 @@ const SCENARIOS = [
   ['apps: traffic', { tab: 'apps', appsSub: { view: 'traffic' } }],
   ['connection', { tab: 'diagnostics' }],
   ['services', { tab: 'services' }],
-  ['services: add dialog', { tab: 'services' }, clickButton('Add service')],
-  ['services: row menu', { tab: 'services' }, clickButton('Options for')],
+  ['services: add dialog', { tab: 'services' }, 'Add service'],
+  ['services: row menu', { tab: 'services' }, 'Options for'],
   ['services: timeline', { tab: 'services', servicesSub: { view: 'timeline' } }],
   ['settings', { tab: 'settings' }],
   ['about', { tab: 'about' }],
@@ -92,6 +97,8 @@ async function startDevServer() {
 }
 
 const existingUrl = flag('url', null)
+// How many places to list per rule; `--limit all` lists every one.
+const placeLimit = flag('limit', '12') === 'all' ? Infinity : Number(flag('limit', '12'))
 const server = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
@@ -108,7 +115,7 @@ try {
     await page.waitForSelector('[data-app-shell]')
     await page.waitForTimeout(3000)
 
-    for (const [name, location, action] of SCENARIOS) {
+    for (const [name, location, buttonLabel] of SCENARIOS) {
       await page.keyboard.press('Escape')
       await page.evaluate((to) => {
         const state = { ...(window.history.state ?? {}), __roveNav: to }
@@ -116,8 +123,8 @@ try {
         window.dispatchEvent(new PopStateEvent('popstate', { state }))
       }, location)
       await page.waitForTimeout(1500)
-      if (action) {
-        await page.evaluate(action)
+      if (buttonLabel !== undefined) {
+        await page.evaluate(clickButton, buttonLabel)
         await page.waitForTimeout(800)
       }
       await page.addScriptTag({ content: AXE_SOURCE })
@@ -127,7 +134,15 @@ try {
       )
       for (const v of result.violations) {
         const entry = violations.get(v.id) ?? { impact: v.impact, help: v.help, helpUrl: v.helpUrl, places: new Set() }
-        for (const node of v.nodes) entry.places.add(`${theme} ${name}: ${node.target.join(' ')}`)
+        for (const node of v.nodes) {
+          // Contrast failures carry the measured colours; show them so the fix
+          // can go to the right design token.
+          const contrast = node.any.find((check) => check.data?.contrastRatio)?.data
+          const detail = contrast
+            ? ` (${contrast.fgColor} on ${contrast.bgColor}: ${contrast.contrastRatio}:1, needs ${contrast.expectedContrastRatio})`
+            : ''
+          entry.places.add(`${theme} ${name}: ${node.target.join(' ')}${detail}`)
+        }
         violations.set(v.id, entry)
       }
     }
@@ -142,8 +157,8 @@ const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor']
 const sorted = [...violations].sort(([, a], [, b]) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact))
 for (const [id, v] of sorted) {
   console.log(`\n[${v.impact}] ${id}: ${v.help} (${v.places.size} places)\n  ${v.helpUrl}`)
-  for (const place of [...v.places].slice(0, 12)) console.log(`  - ${place}`)
-  if (v.places.size > 12) console.log(`  … and ${v.places.size - 12} more`)
+  for (const place of [...v.places].slice(0, placeLimit)) console.log(`  - ${place}`)
+  if (v.places.size > placeLimit) console.log(`  … and ${v.places.size - placeLimit} more`)
 }
 console.log(`\n${violations.size} rule${violations.size === 1 ? '' : 's'} violated across ${SCENARIOS.length} scenarios × 2 themes`)
 process.exit(violations.size > 0 ? 1 : 0)

@@ -28,10 +28,14 @@ export function HomeView(): JSX.Element | null {
       {isConnected && <LiveThroughputPanel />}
       {(isConnected || capabilities.length > 0) && <CapabilityStrip />}
 
-      <div className={styles.statCards}>
-        <UsageCard />
-        <DevicesCard />
-      </div>
+      <ul role="list" className={styles.statCards}>
+        <li className={styles.statCard}>
+          <UsageCard />
+        </li>
+        <li className={styles.statCard}>
+          <DevicesCard />
+        </li>
+      </ul>
     </div>
   )
 }

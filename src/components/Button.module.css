@@ -16,16 +16,16 @@
     transform var(--duration-fast) var(--ease-in-out);
 }
 
-.primary:hover:not(:disabled) {
+.primary:hover:not(:disabled, [aria-disabled='true']) {
   background: var(--accent-muted);
   color: var(--text-accent);
 }
 
-.primary:active:not(:disabled) {
+.primary:active:not(:disabled, [aria-disabled='true']) {
   transform: translateY(0.5px);
 }
 
-.primary:disabled {
+.primary:is(:disabled, [aria-disabled='true']) {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
@@ -41,7 +41,7 @@
   background: var(--accent-fill);
 }
 
-.filled:hover:not(:disabled) {
+.filled:hover:not(:disabled, [aria-disabled='true']) {
   color: var(--text-on-fill);
   background: var(--accent-fill-hover);
 }
@@ -50,7 +50,7 @@
   background: var(--status-negative-fill);
 }
 
-.filled.is-stop:hover:not(:disabled) {
+.filled.is-stop:hover:not(:disabled, [aria-disabled='true']) {
   background: var(--status-negative-fill-hover);
 }
 
@@ -70,16 +70,16 @@
     background var(--duration-fast) var(--ease-in-out);
 }
 
-.secondary:hover:not(:disabled) {
+.secondary:hover:not(:disabled, [aria-disabled='true']) {
   color: var(--text-primary);
   background: var(--bg-hover);
 }
 
-.secondary:active:not(:disabled) {
+.secondary:active:not(:disabled, [aria-disabled='true']) {
   transform: translateY(0.5px);
 }
 
-.secondary:disabled {
+.secondary:is(:disabled, [aria-disabled='true']) {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }

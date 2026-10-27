@@ -22,10 +22,10 @@ export const LiveThroughputPanel = memo(function LiveThroughputPanel(): JSX.Elem
       icon={<ActivityIcon size={15} />}
       action={<span className={badgeVariants({ isLive: true })}>Live</span>}
     >
-      <div className={styles.readouts}>
+      <dl className={styles.readouts}>
         <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" />
         <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" />
-      </div>
+      </dl>
 
       <div className={styles.chartWrap}>
         <ThroughputChart download={history.download} upload={history.upload} />

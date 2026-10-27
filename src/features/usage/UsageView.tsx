@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { DailyUsage } from '@/types'
 import { useAppData } from '@/app/hooks/useAppData'
@@ -8,7 +9,6 @@ import { ViewHeader } from '@/components/ViewHeader'
 import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { Spinner } from '@/components/Spinner'
-import { cx } from '@/lib/cx'
 import { IconButton } from '@/components/IconButton'
 import styles from './UsageView.module.css'
 
@@ -48,14 +48,14 @@ function BytesMetric({
 
   return (
     <div>
-      <div className={styles.metricLabel}>
+      <dt className={styles.metricLabel}>
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
-      </div>
-      <div className="metric num" aria-label={`${label}: ${value} ${unit}`}>
+      </dt>
+      <dd className="metric num">
         <span className="metric-value">{value}</span>
         <span className="metric-unit">{unit}</span>
-      </div>
+      </dd>
     </div>
   )
 }
@@ -76,10 +76,12 @@ function TotalsFooter({
       <span className={styles.footerMetrics}>
         <span className={styles.footerMetric}>
           <DirectionIcon series="down" size={11} />
+          <span className="sr-only">Downloaded</span>
           <span className="num">{formatBytes(rxBytes)}</span>
         </span>
         <span className={styles.footerMetric}>
           <DirectionIcon series="up" size={11} />
+          <span className="sr-only">Uploaded</span>
           <span className="num">{formatBytes(txBytes)}</span>
         </span>
       </span>
@@ -194,6 +196,9 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <BarChart
           data={data}
+          // The wrapper is the chart's accessible image; the keyboard layer
+          // would put a focusable application inside it.
+          accessibilityLayer={false}
           margin={{ top: 8, right: 4, bottom: 0, left: 4 }}
           barCategoryGap="26%"
           barGap={3}
@@ -256,17 +261,17 @@ export function UsageView(): JSX.Element {
       {error && <div className="error-banner" role="alert">{error}</div>}
 
       {isFirstLoad ? (
-        <div className="view-empty">
+        <div className="view-empty" role="status">
           <Spinner />
           <p className="text-muted">Loading usage…</p>
         </div>
       ) : (
         <>
           <Section title="Today" icon={<TodayIcon size={15} />}>
-            <div className={styles.hero}>
+            <dl className={styles.hero}>
               <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
               <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
-            </div>
+            </dl>
             <TotalsFooter
               label="Since boot"
               rxBytes={usage.bootRxBytes}

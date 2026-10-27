@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { AppTab } from '@/app/utils/tabs'
 import {
   AppsIcon,
@@ -18,7 +18,6 @@ import {
 import { Tooltip } from '@/components/Tooltip'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
-import { cx } from '@/lib/cx'
 import styles from './TabBar.module.css'
 
 const itemVariants = cva(styles.item, {
@@ -94,16 +93,22 @@ function ThemeToggle(): JSX.Element {
 export function TabBar(): JSX.Element {
   return (
     <nav className={styles.rail} aria-label="Main navigation">
-      <div className={styles.group}>
+      <ul role="list" className={styles.group}>
         {TAB_DEFINITIONS.map((tab) => (
-          <NavItem key={tab.id} tab={tab} />
+          <li key={tab.id} className={styles.slot}>
+            <NavItem tab={tab} />
+          </li>
         ))}
-      </div>
-      <div className={cx(styles.group, styles.bottomGroup)}>
+      </ul>
+      <ul role="list" className={cx(styles.group, styles.bottomGroup)}>
         {/* Theme toggle sits above the gear; About lives inside the Settings page. */}
-        <ThemeToggle />
-        <NavItem tab={SETTINGS_TAB} />
-      </div>
+        <li className={styles.slot}>
+          <ThemeToggle />
+        </li>
+        <li className={styles.slot}>
+          <NavItem tab={SETTINGS_TAB} />
+        </li>
+      </ul>
     </nav>
   )
 }

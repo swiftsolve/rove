@@ -54,7 +54,8 @@ export function NetworkLoadingScreen(): JSX.Element {
   // and skip the retry button — there's nothing for the user to do but wait.
   if (!info || info.kind === 'timeout') {
     return (
-      <div className={loadingVariants()}>
+      // A status region, so the slow-detection note is announced when it appears.
+      <div className={loadingVariants()} role="status">
         <Spinner />
         <p>Looking for your network…</p>
         {info && <p className={styles.slowNote}>This is taking longer than usual.</p>}

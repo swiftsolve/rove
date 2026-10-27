@@ -35,8 +35,11 @@
   justify-content: center;
 }
 
-/* Icon + label inside the Discover button. */
+/* Icon + label inside the Discover button. Raised above the card's
+   stretched open button so it takes its own clicks. */
 .scan .scan-button {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: var(--space-4);

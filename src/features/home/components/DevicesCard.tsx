@@ -4,13 +4,18 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { IS_MAC } from '@/lib/platform'
 import { DevicesIcon, SearchIcon } from '@/components/icons/Icons'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
-import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
+import {
+  EmptyStatMetric,
+  focusStatCardOpenButton,
+  StatCard,
+  StatReadout,
+} from '@/features/home/components/StatCard'
 import { Button } from '@/components/Button'
 import styles from './DevicesCard.module.css'
 
 function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'
-  if (deviceCount == null) return 'Devices'
+  if (deviceCount == null) return 'Open Devices.'
   const onlinePrefix = onlineDeviceCount != null ? `${onlineDeviceCount} of ` : ''
   return `${onlinePrefix}${deviceCount} devices online. Open Devices.`
 }
@@ -36,9 +41,7 @@ export function DevicesCard(): JSX.Element {
       label="Devices"
       ariaLabel={ariaLabelFor(deviceCount, onlineDeviceCount, isScanning)}
       onOpen={() => navigate({ tab: 'devices' })}
-      // With a Discover button inside, the card renders as a clickable div so
-      // the button isn't nested in a button; tapping elsewhere still opens Devices.
-      hasInteractiveBody={shouldShowScanButton}
+      isBusy={isScanning}
     >
       <DevicesCardBody
         deviceCount={deviceCount}
@@ -88,9 +91,11 @@ function DevicesCardBody({
   }
 
   if (onScan) {
+    // Discover is a sibling of the card's open button (not inside it), so its
+    // click runs its own action only. The spinner replaces it once the scan
+    // starts, so focus moves to the open button rather than being lost.
     const handleScan = (event: MouseEvent<HTMLButtonElement>): void => {
-      // The card navigates on click; keep Discover to its own action.
-      event.stopPropagation()
+      focusStatCardOpenButton(event.currentTarget)
       onScan()
     }
     return (

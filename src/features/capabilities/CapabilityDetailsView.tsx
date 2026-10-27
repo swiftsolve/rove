@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -11,7 +11,6 @@ import { AlertIcon, CheckIcon, CloseIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
-import { cx } from '@/lib/cx'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityDetailsView.module.css'
 
@@ -99,13 +98,13 @@ function CapabilityDetailCard({
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
-    <section className={cx(styles.card, 'surface')} data-capability-id={capability.id}>
-      <header className={styles.head}>
+    <li className={cx(styles.card, 'surface')} data-capability-id={capability.id}>
+      <div className={styles.head}>
         <span className={iconVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={16} />
         </span>
         <div className={styles.headText}>
-          <span className={styles.name}>{capability.label}</span>
+          <h2 className={styles.name}>{capability.label}</h2>
           <span className={styles.desc}>{capability.description}</span>
         </div>
         <CapabilityMeter
@@ -113,17 +112,20 @@ function CapabilityDetailCard({
           shouldShowLabel={false}
           barsClassName={styles.meterBars}
         />
-      </header>
+      </div>
 
-      <div className={styles.metrics}>
+      <dl className={styles.metrics}>
         {checks.map((check) => (
           <div key={check.label} className={metricVariants({ isUnmet: !check.isMet })}>
-            <span className="field-label">{check.label}</span>
-            <span className={cx(styles.metricValue, 'num')}>{check.have}</span>
-            <span className={styles.metricNeed}>{check.need}</span>
+            <dt className="field-label">{check.label}</dt>
+            <dd className={cx(styles.metricValue, 'num')}>{check.have}</dd>
+            <dd className={styles.metricNeed}>
+              <span className="sr-only">Needs </span>
+              {check.need}
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
 
       <div className={styles.verdict}>
         <p className={styles.summary}>
@@ -137,7 +139,7 @@ function CapabilityDetailCard({
           {CAPABILITY_LEVEL_LABELS[capability.level]}
         </span>
       </div>
-    </section>
+    </li>
   )
 }
 
@@ -145,7 +147,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
   const { back } = useNavigation()
   const { capabilities, internetSpeed: speed, completedAt } = useSpeedTest()
   const now = useNow(TIME_AGO_RESOLUTION_MS)
-  const listRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
 
   // Scroll to the capability the user clicked, once on open. Deferred two
   // frames: opening the subpage changes the app's screen key, whose effect
@@ -172,17 +174,24 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
     <Subpage
       title="Capabilities"
       description={
-        completedAt != null ? `Updated ${formatTimeAgo(completedAt, now)}` : undefined
+        completedAt != null ? (
+          <>
+            Updated{' '}
+            <time dateTime={new Date(completedAt).toISOString()}>
+              {formatTimeAgo(completedAt, now)}
+            </time>
+          </>
+        ) : undefined
       }
       onBack={back}
     >
-      <div className={styles.list} ref={listRef}>
+      <ul role="list" className={styles.list} ref={listRef}>
         {/* The Speed view only opens this page once a result is in. */}
         {speed != null &&
           capabilities.map((capability) => (
             <CapabilityDetailCard key={capability.id} capability={capability} speed={speed} />
           ))}
-      </div>
+      </ul>
     </Subpage>
   )
 }

@@ -34,6 +34,18 @@
    :root, Light on :root.theme-light, which App.tsx toggles. Figma is their
    source of truth; change them there and bump the package. */
 
+/* Accessibility override — carry back into @swiftsolve/rove-design and the
+   Figma file. In the light theme the status colours read too light as text:
+   3.5–4.4:1 on our light surfaces, where WCAG AA needs 4.5:1. These text
+   variants are the same hues, darkened just enough to pass on every surface
+   they sit on. Icons, dots, fills and charts keep the --status-* values, which
+   only need 3:1 and already meet it. */
+:root.theme-light {
+  --text-positive: #017e40;
+  --text-negative: #c53b2f;
+  --text-warning: #926401;
+}
+
 /* ---- Theme switch transition ----
    The theme toggle (App.tsx) runs the swap inside a View Transition and drives
    a clip-path circle that grows from the window's centre. Suppress the built-in
@@ -151,6 +163,15 @@ button {
 h1[tabindex='-1']:focus,
 main[tabindex='-1']:focus {
   outline: none;
+}
+
+/* Lists are markup for meaning, not bullets: no markers, no indent. They carry
+   role="list" because WebKit stops announcing a list once its markers are off.
+   :where() keeps this at zero specificity, so a list's own class always wins. */
+:where(ul[role='list'], ol[role='list']) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* Present for assistive tech, invisible on screen. */

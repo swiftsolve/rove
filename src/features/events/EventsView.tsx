@@ -1,4 +1,4 @@
-import { useMemo, type JSX, type ReactNode } from 'react'
+import { useId, useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { formatDuration, formatMac } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -24,11 +24,10 @@ import {
   ShieldAlertIcon,
   WifiIcon,
 } from '@/components/icons/Icons'
-import { cx } from '@/lib/cx'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import styles from './EventsView.module.css'
 
 const markerVariants = cva([styles.marker, styles.hasTone], {
@@ -193,6 +192,15 @@ function formatTime(ts: number): string {
   })
 }
 
+/** The time of day as a machine-readable `<time>`. */
+function EventTime({ ts }: { ts: number }): JSX.Element {
+  return (
+    <time className={styles.time} dateTime={new Date(ts).toISOString()}>
+      {formatTime(ts)}
+    </time>
+  )
+}
+
 // A stable per-calendar-day key (local time) used to slice the feed into days.
 function dayKey(ts: number): string {
   const date = new Date(ts)
@@ -260,14 +268,14 @@ function TimelineItem({
   const metaItems = addressItems(event)
 
   return (
-    <div className={styles.item}>
+    <li className={styles.item}>
       <span className={markerVariants({ tone: EVENT_STYLES[event.type]?.tone })} aria-hidden>
         <EventIcon type={event.type} />
       </span>
       <div className={styles.content}>
         <span className={styles.head}>
           <span className={styles.title}>{title}</span>
-          <span className={styles.time}>{formatTime(event.ts)}</span>
+          <EventTime ts={event.ts} />
         </span>
         {subject && (
           <InlineMeta
@@ -286,7 +294,30 @@ function TimelineItem({
 
         {metaItems.length > 0 && <InlineMeta className={styles.meta} items={metaItems} />}
       </div>
-    </div>
+    </li>
+  )
+}
+
+/** One day of the feed: its date heading over the list of that day's events. */
+function TimelineDay({
+  group,
+  offlineDurationById,
+}: {
+  group: DayGroup
+  offlineDurationById: Map<number, number>
+}): JSX.Element {
+  const headingId = useId()
+  return (
+    <li className={styles.day}>
+      <h2 id={headingId} className={styles.dayHeading}>
+        {group.heading}
+      </h2>
+      <ul role="list" className={styles.dayEvents} aria-labelledby={headingId}>
+        {group.events.map((event) => (
+          <TimelineItem key={event.id} event={event} offlineMs={offlineDurationById.get(event.id)} />
+        ))}
+      </ul>
+    </li>
   )
 }
 
@@ -307,7 +338,7 @@ function EventsFeed({
   if (events.length === 0) {
     if (isLoading) {
       return (
-        <div className="view-empty">
+        <div className="view-empty" aria-busy="true">
           <Spinner />
           <p className="text-muted">Loading events…</p>
         </div>
@@ -328,16 +359,11 @@ function EventsFeed({
   }
 
   return (
-    <div className={styles.timeline}>
+    <ul role="list" className={styles.timeline}>
       {groupByDay(events, now).map((group) => (
-        <section className={styles.day} key={group.key}>
-          <h2 className={styles.dayHeading}>{group.heading}</h2>
-          {group.events.map((event) => (
-            <TimelineItem key={event.id} event={event} offlineMs={offlineDurationById.get(event.id)} />
-          ))}
-        </section>
+        <TimelineDay key={group.key} group={group} offlineDurationById={offlineDurationById} />
       ))}
-    </div>
+    </ul>
   )
 }
 
@@ -387,7 +413,11 @@ export function EventsView(): JSX.Element {
         }
       />
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       <EventsFeed
         events={visibleEvents}

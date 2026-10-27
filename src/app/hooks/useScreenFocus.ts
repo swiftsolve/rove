@@ -8,10 +8,10 @@ import { useEffect, useRef, type RefObject } from 'react'
  * scrolling container and the <main> region.
  */
 export function useScreenFocus(screenKey: string): {
-  scrollRef: RefObject<HTMLElement>
+  scrollRef: RefObject<HTMLDivElement>
   mainRef: RefObject<HTMLElement>
 } {
-  const scrollRef = useRef<HTMLElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const mainRef = useRef<HTMLElement>(null)
 
   // A new page never inherits the previous page's scroll position.

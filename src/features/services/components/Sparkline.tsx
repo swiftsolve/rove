@@ -36,7 +36,7 @@ interface SparklineProps {
   samples: LatencySample[]
   width?: number
   height?: number
-  /** Accessible label for the whole chart, e.g. the service name. */
+  /** What the chart is about, e.g. the service name; leads its spoken summary. */
   label?: string
   /** How many samples the x-axis spans. Fixing this to the history window keeps
    *  the newest sample pinned to the right edge while a partial history fills in
@@ -127,6 +127,23 @@ function areaPoints(run: Point[], baseline: number): string {
   return `${toSvgPoints(run)} ${lastX},${baseline} ${firstX},${baseline}`
 }
 
+/** The chart's spoken summary: how many checks it spans, their latency range and
+ *  how many failed, e.g. "GitHub latency over the last 24 checks: 18.2 ms to 42.0 ms, 1 failed". */
+function chartDescription(samples: LatencySample[], label: string | undefined): string {
+  const subject = label ? `${label} latency` : 'Latency'
+  const checks = `${samples.length} ${samples.length === 1 ? 'check' : 'checks'}`
+  const values = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
+  const failedCount = samples.length - values.length
+  const facts: string[] = []
+  if (values.length > 0) {
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    facts.push(min === max ? formatLatencyMs(min) : `${formatLatencyMs(min)} to ${formatLatencyMs(max)}`)
+  }
+  if (failedCount > 0) facts.push(`${failedCount} failed`)
+  return `${subject} over the last ${checks}: ${facts.join(', ')}`
+}
+
 /** The index of the point nearest to `x` horizontally. */
 function nearestPointIndex(points: Point[], x: number): number {
   let nearest = 0
@@ -187,7 +204,7 @@ export function Sparkline({
           <line className={lineVariants({ isFlat: true })} x1={0} y1={baseline} x2={width} y2={baseline} />
         </svg>
         {hoveredIndex !== null && (
-          <span className={styles.tip} style={{ left: '50%' }} role="status">
+          <span className={styles.tip} style={{ left: '50%' }} aria-hidden="true">
             Down
           </span>
         )}
@@ -219,7 +236,7 @@ export function Sparkline({
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label={label ? `${label} latency history` : 'Latency history'}
+        aria-label={chartDescription(samples, label)}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setHoveredIndex(null)}
       >
@@ -272,7 +289,7 @@ export function Sparkline({
         <span
           className={styles.tip}
           style={{ left: `${(hovered.x / width) * 100}%` }}
-          role="status"
+          aria-hidden="true"
         >
           {hovered.sample.ms === null ? 'Down' : formatLatencyMs(hovered.sample.ms)}
         </span>

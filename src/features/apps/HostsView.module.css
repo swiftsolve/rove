@@ -46,9 +46,15 @@
 
 /* The header toggles the whole group, so focus frames the group — header and,
    when expanded, its hosts — rather than the header row alone. */
-.group:has(> .header:focus-visible) {
+.group:has(> .group-heading > .header:focus-visible) {
   outline: var(--focus-ring);
   outline-offset: var(--focus-inset);
+}
+
+/* The heading around the header button carries meaning only: it takes the
+   row's own font, so the button inside (font: inherit) renders as before. */
+.group-heading {
+  font: inherit;
 }
 
 /* The group header is a full-width toggle button; strip the native button chrome

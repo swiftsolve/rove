@@ -1,4 +1,4 @@
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -8,7 +8,7 @@ import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import { Section } from '@/components/Section'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ChevronRightIcon, ZapIcon } from '@/components/icons/Icons'
-import { cx } from '@/lib/cx'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityList.module.css'
 
 // A few headline use-cases previewed in the empty state before any test runs —
@@ -55,28 +55,32 @@ function CapabilityRow({
   onOpen: () => void
 }): JSX.Element {
   return (
-    <button type="button" className={rowVariants()} onClick={onOpen} disabled={isTesting}>
-      <div className={styles.rowMain}>
-        <span className={tileVariants({ level: capability.level })}>
-          <CapabilityIcon id={capability.id} size={17} />
+    <li>
+      <button type="button" className={rowVariants()} onClick={onOpen} disabled={isTesting}>
+        <span className={styles.rowMain}>
+          <span className={tileVariants({ level: capability.level })}>
+            <CapabilityIcon id={capability.id} size={17} />
+          </span>
+          <span className={styles.rowText}>
+            <span className={cx('text-body', styles.name)}>{capability.label}</span>
+            <span className={cx('text-small', styles.desc)}>{capability.description}</span>
+          </span>
         </span>
-        <div className={styles.rowText}>
-          <span className={cx('text-body', styles.name)}>{capability.label}</span>
-          <span className={cx('text-small', styles.desc)}>{capability.description}</span>
-        </div>
-      </div>
-      <div className={styles.rowStatus}>
-        <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
-        <ChevronRightIcon size={16} className={styles.chevron} />
-      </div>
-    </button>
+        <span className={styles.rowStatus}>
+          <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
+          {/* The bars carry the rating visually; name it for screen readers. */}
+          <span className="sr-only">{CAPABILITY_LEVEL_LABELS[capability.level]}</span>
+          <ChevronRightIcon size={16} className={styles.chevron} />
+        </span>
+      </button>
+    </li>
   )
 }
 
 /** A greyed-out preview of a capability, shown before any test has run. */
 function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.Element {
   return (
-    <div className={rowVariants({ isEmpty: true })}>
+    <li className={rowVariants({ isEmpty: true })}>
       <div className={styles.rowMain}>
         <span className={tileVariants({ level: 'empty' })}>
           <CapabilityIcon id={definition.id} size={17} />
@@ -86,8 +90,8 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
           <span className={cx('text-small', styles.desc)}>{definition.description}</span>
         </div>
       </div>
-      <span className={styles.emptyValue}>…</span>
-    </div>
+      <span className={styles.emptyValue} aria-hidden>…</span>
+    </li>
   )
 }
 
@@ -96,7 +100,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
 function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | undefined {
   if (isTesting) {
     return (
-      <span className={styles.action} aria-label="Speed test running">
+      <span className={styles.action} role="img" aria-label="Speed test running">
         <ButtonSpinner size={14} />
       </span>
     )
@@ -118,13 +122,13 @@ export function CapabilityList(): JSX.Element {
       action={headerAction(isTesting, hasRunTest)}
     >
       {!hasRunTest ? (
-        <div className={listVariants()}>
+        <ul role="list" className={listVariants()}>
           {PREVIEW_CAPABILITIES.map((definition) => (
             <PreviewRow key={definition.id} definition={definition} />
           ))}
-        </div>
+        </ul>
       ) : (
-        <div className={listVariants({ isTesting })}>
+        <ul role="list" className={listVariants({ isTesting })}>
           {capabilities.map((capability) => (
             <CapabilityRow
               key={capability.id}
@@ -135,7 +139,7 @@ export function CapabilityList(): JSX.Element {
               }
             />
           ))}
-        </div>
+        </ul>
       )}
     </Section>
   )

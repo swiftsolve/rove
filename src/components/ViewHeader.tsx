@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import './ViewHeader.css'
 
 const subtitleVariants = cva('view-header-sub', {
@@ -43,8 +42,10 @@ export function ViewHeader({
   actions,
 }: ViewHeaderProps): JSX.Element {
   return (
-    <div className="view-header view-header-row">
-      <span className="view-header-icon">{icon}</span>
+    <header className="view-header view-header-row">
+      <span className="view-header-icon" aria-hidden>
+        {icon}
+      </span>
       <div className="view-header-text">
         <h1 className="view-header-title">{title}</h1>
         {subtitle !== undefined && (
@@ -52,6 +53,6 @@ export function ViewHeader({
         )}
       </div>
       {actions !== undefined && <div className="view-header-actions">{actions}</div>}
-    </div>
+    </header>
   )
 }

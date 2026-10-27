@@ -21,6 +21,7 @@ export function UsageCard(): JSX.Element {
       label="Usage"
       ariaLabel={`Usage: ${summary}. Open Usage.`}
       onOpen={() => navigate({ tab: 'usage' })}
+      isBusy={!isResolved}
     >
       {isResolved ? (
         <div className={styles.split} aria-hidden>

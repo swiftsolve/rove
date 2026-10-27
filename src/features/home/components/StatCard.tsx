@@ -1,5 +1,5 @@
-import type { KeyboardEvent, ReactNode } from 'react'
-import { cx } from '@/lib/cx'
+import type { ReactNode } from 'react'
+import { cx } from 'class-variance-authority'
 import { ChevronRightIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import styles from './StatCard.module.css'
@@ -7,65 +7,47 @@ import styles from './StatCard.module.css'
 interface StatCardProps {
   icon: ReactNode
   label: string
+  /** Name of the open button: the readout in words, then where it goes. */
   ariaLabel: string
   /** Navigate into the tab when the card (or its caret) is tapped. */
   onOpen: () => void
+  /** The readout is loading (e.g. a device scan in flight). */
+  isBusy?: boolean
   /**
-   * The body carries its own interactive control (e.g. the Devices card's
-   * Discover button). A button can't nest inside a button, so when set the card
-   * renders as a clickable div (role="button") instead — the whole card still
-   * navigates, and the nested control stops propagation to run its own action.
+   * The card body: a colour-keyed readout (or a split of readouts). It may hold
+   * its own control (the Devices card's Discover button), which sits beside the
+   * open button rather than inside it.
    */
-  hasInteractiveBody?: boolean
-  /** The card body: a colour-keyed readout (or a split of readouts). */
   children: ReactNode
 }
 
-/** One of the small summary cards on Home: an icon + title row over a readout. */
-export function StatCard({
-  icon,
-  label,
-  ariaLabel,
-  onOpen,
-  hasInteractiveBody,
-  children,
-}: StatCardProps): JSX.Element {
-  const head = (
-    <div className={styles.head}>
-      <span className={styles.icon}>{icon}</span>
-      <h2 className="section-title">{label}</h2>
-      <ChevronRightIcon size={16} className={styles.caret} />
+/**
+ * One of the small summary cards on Home: an icon + title row over a readout.
+ * The title is a real heading, and a transparent button stretched over the
+ * whole card opens the tab, so a control in the body is its sibling, never
+ * nested inside it.
+ */
+export function StatCard({ icon, label, ariaLabel, onOpen, isBusy, children }: StatCardProps): JSX.Element {
+  return (
+    <div className={cx(styles.card, 'surface')} aria-busy={isBusy || undefined}>
+      <div className={styles.head}>
+        <span className={styles.icon}>{icon}</span>
+        <h2 className="section-title">{label}</h2>
+        <ChevronRightIcon size={16} className={styles.caret} />
+      </div>
+      <button type="button" className={styles.open} onClick={onOpen} aria-label={ariaLabel} />
+      {children}
     </div>
   )
+}
 
-  if (hasInteractiveBody) {
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        onOpen()
-      }
-    }
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        className={cx(styles.card, 'surface')}
-        onClick={onOpen}
-        onKeyDown={handleKeyDown}
-        aria-label={ariaLabel}
-      >
-        {head}
-        {children}
-      </div>
-    )
-  }
-
-  return (
-    <button type="button" className={cx(styles.card, 'surface')} onClick={onOpen} aria-label={ariaLabel}>
-      {head}
-      {children}
-    </button>
-  )
+/**
+ * Move focus to the open button of the card holding `element`. For a control
+ * in the body that's about to unmount (Discover, replaced by the scan spinner),
+ * so keyboard focus stays in the card instead of falling back to the page.
+ */
+export function focusStatCardOpenButton(element: HTMLElement): void {
+  element.closest(`.${styles.card}`)?.querySelector<HTMLElement>(`:scope > .${styles.open}`)?.focus()
 }
 
 interface StatReadoutProps {

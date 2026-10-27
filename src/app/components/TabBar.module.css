@@ -44,6 +44,12 @@
   background: var(--border);
 }
 
+/* A list item round each control. Flex, so it shrinks to the 38px control
+   instead of growing a line box (and its descender gap) round it. */
+.slot {
+  display: flex;
+}
+
 .item {
   position: relative;
   display: inline-flex;

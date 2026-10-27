@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import { ViewHeader } from '@/components/ViewHeader'
 import { MetricValue } from '@/components/MetricValue'
@@ -17,9 +17,9 @@ import { useAppData } from '@/app/hooks/useAppData'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
 import { formatLatencyMs } from '@/lib/format'
-import { cx } from '@/lib/cx'
 import { Button } from '@/components/Button'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
+import { useMenu } from '@/hooks/useMenu'
 import styles from './ServicesView.module.css'
 
 const menuItemVariants = cva(styles.menuItem, {
@@ -44,48 +44,32 @@ interface RowMenuProps {
 }
 
 /** The per-row overflow menu: a kebab that opens a dropdown with Edit and Remove.
- *  Closes on outside click or Escape. Only one is open at a time (the parent owns
- *  which host's menu is open). */
+ *  Keyboard and focus behaviour come from `useMenu`. Only one is open at a time
+ *  (the parent owns which host's menu is open). */
 function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuProps): JSX.Element {
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onDocumentMouseDown = (e: MouseEvent): void => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onOpenChange(null)
-    }
-    const onDocumentKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onOpenChange(null)
-    }
-    document.addEventListener('mousedown', onDocumentMouseDown)
-    document.addEventListener('keydown', onDocumentKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', onDocumentMouseDown)
-      document.removeEventListener('keydown', onDocumentKeyDown)
-    }
-  }, [isOpen, onOpenChange])
+  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => onOpenChange(null))
 
   return (
-    <div className={styles.menu} ref={menuRef}>
+    <div className={styles.menu} ref={rootRef}>
       <button
         type="button"
         className={styles.kebab}
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
+        {...triggerProps}
         aria-label={`Options for ${service.name}`}
         onClick={() => onOpenChange(isOpen ? null : service.host)}
       >
         <MoreVerticalIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} role="menu">
-          <button type="button" role="menuitem" className={menuItemVariants()} onClick={onEdit}>
+        <div className={styles.dropdown} {...menuProps}>
+          <button type="button" role="menuitem" tabIndex={-1} className={menuItemVariants()} onClick={onEdit}>
             <EditIcon size={14} />
             Edit
           </button>
           <button
             type="button"
             role="menuitem"
+            tabIndex={-1}
             className={menuItemVariants({ isDanger: true })}
             onClick={onRemove}
           >
@@ -95,6 +79,16 @@ function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuPro
         </div>
       )}
     </div>
+  )
+}
+
+/** A glyph standing in for a latency ("…", "—"), read aloud as a word instead. */
+function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }): JSX.Element {
+  return (
+    <span className="text-small">
+      <span aria-hidden="true">{glyph}</span>
+      <span className="sr-only">{spoken}</span>
+    </span>
   )
 }
 
@@ -111,11 +105,15 @@ function LatencyReadout({
   isErroring: boolean
   isInternetUnreachable: boolean
 }): JSX.Element {
-  if (latencyMs === undefined) return <span className="text-small">…</span>
+  if (latencyMs === undefined) return <PlaceholderReadout glyph="…" spoken="Measuring" />
   if (latencyMs === null) {
     // Path failed. Only a genuine "Down" when we know the internet is up;
     // otherwise the failure is ours, so read it as unknown.
-    return isInternetUnreachable ? <span className="text-small">—</span> : <span className="val-bad">Down</span>
+    return isInternetUnreachable ? (
+      <PlaceholderReadout glyph="—" spoken="Unknown" />
+    ) : (
+      <span className="val-bad">Down</span>
+    )
   }
   if (isErroring) return <span className="val-bad">Down</span>
   return <MetricValue value={latencyMs} level={latencyBand(latencyMs)} format={formatLatencyMs} />
@@ -151,7 +149,7 @@ function ServiceRow({
     : false
 
   return (
-    <div className={styles.row}>
+    <li className={styles.row}>
       <div className={styles.body}>
         <div className={styles.line}>
           <ServiceIcon host={service.host} name={service.name} />
@@ -179,7 +177,7 @@ function ServiceRow({
         </div>
       </div>
       {menu}
-    </div>
+    </li>
   )
 }
 
@@ -188,7 +186,7 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
   if (isOffline) {
     return (
       <Tooltip content="Connect to the internet first">
-        <Button variant="filled" disabled aria-label="Add service">
+        <Button variant="filled" isDisabled>
           <PlusIcon size={14} />
           Add service
         </Button>
@@ -308,7 +306,7 @@ export function ServicesView(): JSX.Element {
       )}
 
       {listedServices.length > 0 ? (
-        <div className={cx(styles.list, 'surface')}>
+        <ul role="list" className={cx(styles.list, 'surface')} aria-label="Tracked services">
           {listedServices.map((svc) => (
             <ServiceRow
               key={svc.host}
@@ -334,7 +332,7 @@ export function ServicesView(): JSX.Element {
               }
             />
           ))}
-        </div>
+        </ul>
       ) : (
         <EmptyState
           icon={CloudIcon}

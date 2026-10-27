@@ -16,7 +16,8 @@ const halfVariants = cva(styles.half, {
  * The live up/down count over the tracked services (e.g. "5 Up · 1 Down"), for
  * the Services and Services Timeline headers. Returns `null` when there's
  * nothing to count yet, so each caller picks its own fallback — hence a plain
- * function rather than a component, which would always render truthy.
+ * function rather than a component, which would always render truthy. A polite
+ * live region, so a service going down is announced as the count changes.
  */
 export function serviceTally(
   reachability: ServiceReachability[] | undefined,
@@ -28,7 +29,7 @@ export function serviceTally(
   // so the two always agree.
   if (internet === 'noInternet' || internet === 'offline') {
     return (
-      <span className={styles.root}>
+      <span className={styles.root} role="status">
         <span className="val-bad">No internet</span>
       </span>
     )
@@ -40,7 +41,7 @@ export function serviceTally(
   const downCount = probes.length - upCount
 
   return (
-    <span className={styles.root}>
+    <span className={styles.root} role="status">
       <span className={halfVariants({ tone: 'good' })}>
         <ArrowUpIcon size={13} className={styles.icon} />
         {upCount} Up

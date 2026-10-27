@@ -1,4 +1,4 @@
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -13,7 +13,6 @@ import { Tooltip } from '@/components/Tooltip'
 import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
-import { cx } from '@/lib/cx'
 import { IconButton } from '@/components/IconButton'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityStrip.module.css'
@@ -82,7 +81,7 @@ function RunTestButton({
       <IconButton
         isBusy={isTesting}
         onClick={handleRunTest}
-        disabled={!canRunTest || isTesting}
+        isDisabled={!canRunTest || isTesting}
         aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
       >
         <RunButtonIcon isTesting={isTesting} hasResults={hasResults} />
@@ -95,22 +94,22 @@ function RunTestButton({
 function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
   return (
     <>
-      <div
-        className={listVariants({ isPlaceholder: true })}
+      <ul
         role="list"
+        className={listVariants({ isPlaceholder: true })}
         aria-hidden
       >
         {CAPABILITY_DEFINITIONS.map((capability) => (
-          <div className={styles.cell} key={capability.id} role="listitem">
+          <li className={styles.cell} key={capability.id}>
             <Tooltip content={capability.label} align="left" placement="top">
               <span className={tileVariants({ level: 'unsupported' })}>
                 <CapabilityIcon id={capability.id} size={16} />
               </span>
             </Tooltip>
             <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
 
       <div className={footerVariants({ isHint: true })}>
         {isTesting ? (
@@ -137,7 +136,7 @@ function ResultCell({
   const levelLabel = CAPABILITY_LEVEL_LABELS[capability.level]
 
   return (
-    <div className={styles.cell} role="listitem">
+    <li className={styles.cell}>
       <Tooltip
         content={<InlineMeta items={[capability.label, levelLabel]} />}
         align="left"
@@ -161,7 +160,7 @@ function ResultCell({
         isCompact
         isMuted={isTesting}
       />
-    </div>
+    </li>
   )
 }
 
@@ -188,12 +187,14 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
         type="button"
         className={styles.link}
         onClick={() => navigate({ tab: 'speed' })}
-        aria-label="Go to speed test"
       >
         <HistoryIcon size={13} />
         <span className={styles.updated}>
-          Updated {formatTimeAgo(completedAt, now)}
+          Updated{' '}
+          <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
         </span>
+        {/* The visible text leads the name; this says where the link goes. */}
+        <span className="sr-only">, open Speed</span>
       </button>
     </div>
   )
@@ -222,7 +223,7 @@ export function CapabilityStrip(): JSX.Element {
         <PlaceholderStrip isTesting={isTesting} />
       ) : (
         <>
-          <div className={listVariants({ isTesting })} role="list">
+          <ul role="list" className={listVariants({ isTesting })}>
             {capabilities.map((capability) => (
               <ResultCell
                 key={capability.id}
@@ -231,7 +232,7 @@ export function CapabilityStrip(): JSX.Element {
                 onOpenDetails={openDetails}
               />
             ))}
-          </div>
+          </ul>
 
           <ResultFooter isTesting={isTesting} />
         </>

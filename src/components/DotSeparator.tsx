@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
-import { cx } from '@/lib/cx'
+import { cx } from 'class-variance-authority'
 import './DotSeparator.css'
 
 export function DotSeparator(): JSX.Element {

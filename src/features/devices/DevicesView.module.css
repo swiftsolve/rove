@@ -162,6 +162,14 @@
   gap: var(--space-10);
 }
 
+/* The device cards themselves, spaced like the .list around them (which also
+   holds the trailing Local Network hint, kept out of the list). */
+.devices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
 .row {
   display: flex;
   /* Icon pinned to the top-left; the body column fills the rest. */

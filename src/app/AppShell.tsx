@@ -33,13 +33,14 @@ export function AppShell(): JSX.Element {
         {/* Dialogs portal in here so they cover the content column, not the window. */}
         <div className={styles.column} data-modal-root>
           <div className={styles.frame}>
-            <section ref={scrollRef} className={styles.scroll} data-scroll-root aria-label="Main content">
+            {/* A plain div, not a landmark: <main> inside it must be top-level. */}
+            <div ref={scrollRef} className={styles.scroll} data-scroll-root>
               {network.error && network.info && <NetworkErrorBanner />}
 
               <main ref={mainRef} className={styles.main}>
                 {isWaitingForNetworkInfo ? <NetworkLoadingScreen /> : <CurrentScreen />}
               </main>
-            </section>
+            </div>
           </div>
         </div>
       </div>

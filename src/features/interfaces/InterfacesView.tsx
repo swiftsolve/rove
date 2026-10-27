@@ -1,13 +1,12 @@
 import type { NetworkInterfaceSummary } from '@/types'
 import { EthernetIcon, LayersIcon, WifiIcon } from '@/components/icons/Icons'
-import { DataRow } from '@/components/DataRow'
+import { DataList, DataRow } from '@/components/DataRow'
 import { InlineMeta } from '@/components/DotSeparator'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import { useAppData } from '@/app/hooks/useAppData'
 import { Button } from '@/components/Button'
 import styles from './InterfacesView.module.css'
@@ -42,13 +41,13 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Eleme
 
 function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
-    <section className={panelVariants({ isDefault: iface.isDefault, connection: iface.connectionType })}>
-      <header className="ui-section-header">
+    <li className={panelVariants({ isDefault: iface.isDefault, connection: iface.connectionType })}>
+      <div className="ui-section-header">
         <div className="panel-head-main">
           <span className={styles.icon}>
             <InterfaceIcon iface={iface} />
           </span>
-          <span className={cx('text-title', styles.name)}>{iface.name}</span>
+          <h2 className={cx('text-title', styles.name)}>{iface.name}</h2>
           {iface.isDefault && (
             <span className={tagVariants()} title="Used for internet traffic">
               Active
@@ -60,9 +59,9 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           <span className={styles.stateDot} aria-hidden />
           {formatOperState(iface.operState)}
         </span>
-      </header>
+      </div>
 
-      <div className="ui-section-body row-list">
+      <DataList className="ui-section-body row-list">
         <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
         <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
         <DataRow
@@ -70,8 +69,8 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
         />
         <DataRow label="MAC" value={formatMac(iface.macAddress)} />
-      </div>
-    </section>
+      </DataList>
+    </li>
   )
 }
 
@@ -112,7 +111,7 @@ function InterfacesBody({
 }): JSX.Element {
   if (isLoading && interfaces.length === 0) {
     return (
-      <div className="view-empty">
+      <div className="view-empty" role="status">
         <Spinner />
         <p className="text-muted">Loading network interfaces…</p>
       </div>
@@ -129,11 +128,11 @@ function InterfacesBody({
     )
   }
   return (
-    <div className={styles.list}>
+    <ul role="list" aria-label="Network interfaces" aria-busy={isLoading} className={styles.list}>
       {interfaces.map((iface) => (
         <InterfacePanel key={iface.name} iface={iface} />
       ))}
-    </div>
+    </ul>
   )
 }
 
@@ -154,7 +153,11 @@ export function InterfacesView(): JSX.Element {
         actions={<RefreshIconButton label="Refresh" isBusy={isLoading} onClick={onRefresh} />}
       />
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       <InterfacesBody interfaces={interfaces} isLoading={isLoading} onRefresh={onRefresh} />
     </div>

@@ -12,8 +12,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import styles from './Tooltip.module.css'
 
 const bubbleVariants = cva([styles.bubble, styles.portal], {
@@ -217,7 +216,8 @@ export function Tooltip({
     ? cloneElement(
         children as ReactElement<TriggerProps>,
         {
-          'aria-describedby': bubbleId,
+          // Only while the bubble is in the DOM: a reference to a missing id is invalid.
+          'aria-describedby': isOpen ? bubbleId : undefined,
           onPointerDown: (event: PointerEvent<HTMLElement>) => {
             setIsSuppressed(true)
             children.props.onPointerDown?.(event)
