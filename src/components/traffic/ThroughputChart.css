@@ -21,9 +21,6 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  font-size: var(--font-size-2xs);
-  line-height: 1;
-  color: var(--text-tertiary);
   pointer-events: none;
 }
 
@@ -37,13 +34,11 @@
   transform: translateY(50%);
 }
 
-/* Matches .tp-chart-scale exactly so the x and y labels read as one set. */
+/* Same .text-chart-label type as .tp-chart-scale, so the x and y labels read as
+   one set. */
 .tp-chart-axis {
   display: flex;
   justify-content: space-between;
   margin-top: var(--space-6);
   padding-right: 26px;
-  font-size: var(--font-size-2xs);
-  line-height: 1;
-  color: var(--text-tertiary);
 }

@@ -195,7 +195,7 @@ function StatusBar({
           </span>
           <span className="brand-name">Rove</span>
         </div>
-        <span className={`status-bar-link ${tone === 'off' ? '' : tone}`}>
+        <span className={`text-meta-strong status-bar-link ${tone === 'off' ? '' : tone}`}>
           <span className="status-bar-dot" aria-hidden />
           {label}
         </span>

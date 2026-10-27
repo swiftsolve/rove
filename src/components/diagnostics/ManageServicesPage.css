@@ -248,20 +248,3 @@
 .mgsvc-timeline-link:focus-visible svg {
   opacity: 1;
 }
-
-/* The header's "Add service" is a solid accent button matching the add-service
-   popup's confirm — just with a plus icon. It borrows .btn-primary for layout and
-   size; the element+class selectors override that ghost style's colour and hover
-   with the filled accent fill. */
-button.mgsvc-add {
-  color: var(--text-on-fill);
-  background: var(--accent-fill);
-  /* A step up from the base .btn-primary size, matching the Run test button. */
-  padding: var(--space-10) var(--section-padding);
-  font-size: var(--font-size-sm);
-}
-
-button.mgsvc-add:hover:not(:disabled) {
-  color: var(--text-on-fill);
-  background: var(--accent-fill-hover);
-}

@@ -87,7 +87,7 @@ export default function DiagnosticsView({
             bodyClassName="row-list diag-router"
             footer={
               ping && ping.packetLoss > 0 ? (
-                <p className="text-hint diag-warning">
+                <p className="text-small diag-warning">
                   Packet loss can cause slow or unstable connections.
                 </p>
               ) : undefined
@@ -142,7 +142,7 @@ export default function DiagnosticsView({
                 <DataRow key={server} label="Server" value={server} />
               ))
             ) : (
-              <p className="text-hint">No DNS servers found.</p>
+              <p className="text-small">No DNS servers found.</p>
             )}
           </Section>
 
@@ -193,7 +193,7 @@ export default function DiagnosticsView({
               // here when we couldn't even learn our own public IP — i.e. offline.
               // Guard the copy on the known internet state anyway, so a transient
               // echo-service blip while online doesn't claim we're offline.
-              <p className="text-hint">
+              <p className="text-small">
                 {diagnostics?.internet === 'online'
                   ? 'Provider details are momentarily unavailable.'
                   : 'Provider details are unavailable offline.'}

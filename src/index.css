@@ -261,8 +261,17 @@ main[tabindex='-1']:focus {
   line-height: 1.45;
 }
 
-.text-hint {
+/** Helper text and hints — e.g. "No DNS servers found." */
+.text-small {
   font-size: var(--font-size-sm);
+  font-weight: var(--weight-regular);
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+/** Card footer hints — e.g. "Available after speed test" */
+.text-hint {
+  font-size: var(--font-size-xs);
   font-weight: var(--weight-regular);
   color: var(--text-tertiary);
   line-height: 1.5;
@@ -296,6 +305,21 @@ button > svg.link-caret {
   font-weight: var(--weight-regular);
   color: var(--text-tertiary);
   line-height: 1.35;
+}
+
+/** Medium-weight meta — e.g. the title bar's connection status */
+.text-meta-strong {
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+/** Chart axes and scale; pair with .num for the numeric face */
+.text-chart-label {
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+  line-height: 1;
 }
 
 .metric {

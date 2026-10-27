@@ -228,7 +228,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
         <footer className="svc-dialog-foot">
           <button
             type="button"
-            className="svc-dialog-btn is-primary"
+            className="btn-primary btn-filled svc-dialog-btn"
             onClick={confirm}
             disabled={!hasTested || isAdding}
           >

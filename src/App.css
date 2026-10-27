@@ -199,9 +199,6 @@
   /* Nudge down a hair so the label optically aligns with the wordmark's
      center rather than sitting slightly high next to it. */
   margin-top: 1px;
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-tertiary);
   -webkit-app-region: no-drag;
 }
 
@@ -291,6 +288,30 @@
 .btn-primary:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
+}
+
+/* Large filled button for a page's main action (Run test, Add service): the
+   .btn-primary layout a step bigger, on a solid accent fill. `.is-stop` turns it
+   red while a test runs. Defined after .btn-primary so it wins at equal
+   specificity. */
+.btn-filled {
+  padding: var(--space-10) var(--section-padding);
+  font-size: var(--font-size-sm);
+  color: var(--text-on-fill);
+  background: var(--accent-fill);
+}
+
+.btn-filled:hover:not(:disabled) {
+  color: var(--text-on-fill);
+  background: var(--accent-fill-hover);
+}
+
+.btn-filled.is-stop {
+  background: var(--status-negative-fill);
+}
+
+.btn-filled.is-stop:hover:not(:disabled) {
+  background: var(--status-negative-fill-hover);
 }
 
 .btn-secondary {

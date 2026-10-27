@@ -134,7 +134,7 @@ export default function SpeedView({
           isTesting ? (
             <button
               type="button"
-              className="btn-primary speed-run-btn is-stop"
+              className="btn-primary btn-filled is-stop"
               onClick={cancelTest}
               aria-label="Stop test"
             >
@@ -144,7 +144,7 @@ export default function SpeedView({
           ) : canTest ? (
             <button
               type="button"
-              className="btn-primary speed-run-btn"
+              className="btn-primary btn-filled"
               onClick={() => void runTest()}
               aria-label={hasRunTest ? 'Test again' : 'Run test'}
             >
@@ -155,7 +155,7 @@ export default function SpeedView({
             <Tooltip content="Connect to a network first">
               <button
                 type="button"
-                className="btn-primary speed-run-btn"
+                className="btn-primary btn-filled"
                 disabled
                 aria-label="Run test"
               >

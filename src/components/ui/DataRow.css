@@ -22,6 +22,6 @@
   padding-bottom: 0;
 }
 
-.data-row + .text-hint {
+.data-row + .text-small {
   margin-top: var(--space-8);
 }

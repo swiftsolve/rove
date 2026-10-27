@@ -131,13 +131,9 @@
   margin-top: var(--space-12);
 }
 
-/* Scoped to the footer to outweigh the `.text-hint` base class, which lands
-   later in the sheet (index.css is imported after App's component CSS). */
+/* The hint is a <p>; drop its default margin so it centres in the strip. */
 .capability-strip-footer .capability-strip-hint {
   margin: 0;
-  /* Matches the "Updated … ago" caption this line stands in for, so the empty
-     and populated footers read at the same weight. */
-  font-size: var(--font-size-xs);
 }
 
 /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and

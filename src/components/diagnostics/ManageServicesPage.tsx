@@ -175,7 +175,7 @@ export function ManageServicesPage({
 
   const addButton = isOfflineNow ? (
     <Tooltip content="Connect to the internet first">
-      <button type="button" className="btn-primary mgsvc-add" disabled aria-label="Add service">
+      <button type="button" className="btn-primary btn-filled" disabled aria-label="Add service">
         <PlusIcon size={14} />
         Add service
       </button>
@@ -183,7 +183,7 @@ export function ManageServicesPage({
   ) : (
     <button
       type="button"
-      className="btn-primary mgsvc-add"
+      className="btn-primary btn-filled"
       onClick={() => setDialog({ mode: 'add' })}
       aria-haspopup="dialog"
     >
@@ -262,12 +262,12 @@ export function ManageServicesPage({
                     <span className="mgsvc-host">{svc.host}</span>
                     <span className="mgsvc-status num">
                       {latency === undefined ? (
-                        <span className="text-hint">…</span>
+                        <span className="text-small">…</span>
                       ) : latency === null ? (
                         // Path failed. Only a genuine "Down" when we know the internet
                         // is up; otherwise the failure is ours, so read it as unknown.
                         isInternetUnreachable ? (
-                          <span className="text-hint">—</span>
+                          <span className="text-small">—</span>
                         ) : (
                           <span className="val-bad">Down</span>
                         )
