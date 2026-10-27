@@ -22,7 +22,7 @@
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.2.2",
     "@hugeicons/react": "^1.1.9",
-    "@swiftsolve/rove-design": "github:swiftsolve/rove-design#v5.0.2",
+    "@swiftsolve/rove-design": "github:swiftsolve/rove-design#v5.0.3",
     "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-query": "^5.105.0",
     "@tauri-apps/api": "^2.2.0",
