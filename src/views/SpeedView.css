@@ -57,36 +57,3 @@
 .speed-history-link:focus-visible svg {
   opacity: 1;
 }
-
-/* The header's Run test button is a solid accent button, matching the app's other
-   primary actions (Add service), deepening to --accent-hover on hover. Sized a
-   step up from the base .btn-primary so this headline action reads a little
-   bigger; the Add-service buttons carry the same bump to stay matched. The
-   element+class selector out-specifies the base .btn-primary so the larger size
-   wins regardless of stylesheet order. */
-button.speed-run-btn {
-  padding: var(--space-10) var(--section-padding);
-  font-size: var(--font-size-sm);
-}
-
-.speed-run-btn:not(.is-stop) {
-  color: var(--text-on-fill);
-  background: var(--accent-fill);
-}
-
-.speed-run-btn:not(.is-stop):hover:not(:disabled) {
-  color: var(--text-on-fill);
-  background: var(--accent-fill-hover);
-}
-
-/* Stop variant, shown while a test runs — the same solid treatment in negative red
-   so the toggle keeps its fill rather than flipping to a faint wash mid-test. */
-.speed-run-btn.is-stop {
-  color: var(--text-on-fill);
-  background: var(--status-negative-fill);
-}
-
-.speed-run-btn.is-stop:hover:not(:disabled) {
-  color: var(--text-on-fill);
-  background: var(--status-negative-fill-hover);
-}

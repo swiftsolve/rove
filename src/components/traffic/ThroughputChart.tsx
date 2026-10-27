@@ -142,14 +142,14 @@ export default function ThroughputChart({
           </AreaChart>
         </ResponsiveContainer>
 
-        <div className="tp-chart-scale num" aria-hidden>
+        <div className="tp-chart-scale text-chart-label num" aria-hidden>
           <span>{formatAxis(scaleMax)}</span>
           <span>{formatAxis(scaleMax / 2)}</span>
           <span>0</span>
         </div>
       </div>
 
-      <div className="tp-chart-axis num" aria-hidden>
+      <div className="tp-chart-axis text-chart-label num" aria-hidden>
         <span>{formatChartWindowLabel()}</span>
         <span>Now</span>
       </div>

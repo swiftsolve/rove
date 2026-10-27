@@ -63,7 +63,7 @@
   padding: var(--space-4) var(--section-body-padding) var(--section-body-padding);
 }
 
-.ui-section-body > .text-hint:first-child:last-child {
+.ui-section-body > .text-small:first-child:last-child {
   margin: 0;
 }
 

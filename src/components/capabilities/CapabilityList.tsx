@@ -39,7 +39,7 @@ function CapabilityRow({
         </span>
         <div className="capability-row-text">
           <span className="text-body capability-name">{capability.label}</span>
-          <span className="text-hint capability-desc">{capability.description}</span>
+          <span className="text-small capability-desc">{capability.description}</span>
         </div>
       </div>
       <div className="capability-row-status">
@@ -80,7 +80,7 @@ export default function CapabilityList({
                 </span>
                 <div className="capability-row-text">
                   <span className="text-body capability-name">{definition.label}</span>
-                  <span className="text-hint capability-desc">{definition.description}</span>
+                  <span className="text-small capability-desc">{definition.description}</span>
                 </div>
               </div>
               <span className="capability-empty-value">…</span>
