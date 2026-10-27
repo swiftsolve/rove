@@ -120,11 +120,11 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
           >
             <defs>
               <linearGradient id={downFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--series-down)" stopOpacity={0.28} />
+                <stop offset="0%" stopColor="var(--series-down)" className="[stop-opacity:var(--opacity-area-down)]" />
                 <stop offset="100%" stopColor="var(--series-down)" stopOpacity={0} />
               </linearGradient>
               <linearGradient id={upFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--series-up)" stopOpacity={0.08} />
+                <stop offset="0%" stopColor="var(--series-up)" className="[stop-opacity:var(--opacity-area-up)]" />
                 <stop offset="100%" stopColor="var(--series-up)" stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -144,7 +144,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
               stroke="var(--series-up)"
               strokeWidth={1.5}
               strokeDasharray="4 3"
-              strokeOpacity={0.8}
+              className="[stroke-opacity:var(--opacity-series-up-line)]"
               strokeLinecap="round"
               fill={`url(#${upFill})`}
               fillOpacity={1}
