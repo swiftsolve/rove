@@ -1,0 +1,19 @@
+.root {
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  object-fit: contain;
+  /* No backing chip: favicons render on the panel directly, so logos with
+     transparent padding blend in instead of flashing a white square. Most
+     service favicons carry their own background, so this reads cleanly. */
+}
+
+.monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}

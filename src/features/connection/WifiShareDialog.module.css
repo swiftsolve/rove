@@ -1,0 +1,141 @@
+/* Absolute (not fixed) and portaled into the app's content column
+   ([data-modal-root]), so it covers and centres over the main content area
+   rather than the whole window. Mirrors the Add Service dialog's sectioned
+   shell so the two popups read as one family. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-20);
+  background: var(--bg-scrim);
+  animation: fade var(--duration-fast) var(--ease-out);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 340px;
+  /* No padding on the shell itself — the header and body own their own insets;
+     overflow clips the recessed body's square corners to the shell radius. */
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-raised);
+  animation: rise var(--duration-normal) var(--ease-out);
+}
+
+/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-16);
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Pull the close button toward the panel's corner without cramping the title.
+   It blends into the header with no dark fill of its own — the scoped selector
+   outweighs .btn-icon-secondary's background. */
+.head .close {
+  flex-shrink: 0;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 0;
+  background: transparent;
+}
+
+/* The content sits a step below the header — a recessed well that frames the QR
+   between the header and the shell's bottom edge. */
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-16);
+  background: var(--bg-chrome);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-16) 0;
+  text-align: center;
+}
+
+/* Match the full-page loading label (--font-size-sm) so the dialog's "Generating
+   QR code…" doesn't read a step larger than the app's other loading text. */
+.state :global(.text-muted) {
+  font-size: var(--font-size-sm);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* White plate so the QR keeps its quiet zone and contrast in dark mode. */
+.qr {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-12);
+  padding: var(--space-16);
+  background: #ffffff;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.qr img {
+  display: block;
+  width: 240px;
+  height: 240px;
+}
+
+.ssid {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.note {
+  margin: var(--space-12) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

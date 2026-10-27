@@ -1,0 +1,206 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.card {
+  /* No bottom padding — the footer banner bleeds to the card's bottom edge. */
+  padding: var(--section-body-padding) var(--section-body-padding) 0;
+  /* Clip the full-bleed footer banner to the card's rounded corners. */
+  overflow: hidden;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  margin-bottom: var(--space-12);
+}
+
+/* Connection badge, tinted by medium. */
+.conn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.conn[data-type='wifi'] { color: var(--series-down); }
+.conn[data-type='ethernet'] { color: var(--status-positive); }
+
+.conn-name {
+  min-width: 0;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Band label sits beside the network name as secondary metadata — the name
+   truncates first, the band holds its width. */
+.conn-band {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--weight-regular);
+}
+
+.card-time {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-12);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.metric-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.metric-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.metric-unit {
+  font-family: var(--font);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-regular);
+  color: var(--text-secondary);
+}
+
+/* Closing banner on the darkest panel, matching the capabilities detail card's
+   verdict strip: framed on three sides with the inset colour, rounded to the
+   card's bottom corners. Carries jitter/loss on the left, link speed on the
+   right. Trim the horizontal padding by the border width so its content stays
+   aligned with the metrics grid above. */
+.card-footer {
+  margin: var(--space-8) calc(-1 * var(--section-body-padding)) 0;
+  padding: var(--space-12) calc(var(--section-body-padding) - 1px);
+  background: var(--bg-app);
+  border: 1px solid var(--bg-inset);
+  border-top: 0;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+.footnote {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  width: 100%;
+  min-width: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.footnote-link {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Header overflow menu: a kebab that opens a small dropdown with Delete. Mirrors
+   the per-row menu on the manage-services page so the two read the same. */
+.menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.kebab:hover,
+.kebab[aria-expanded='true'] {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 112px;
+  padding: var(--space-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+  animation: menu-in var(--duration-fast) var(--ease-out);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  padding: var(--space-8);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  text-align: left;
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+/* Items fill the menu edge to edge, so the ring goes inside the item. */
+.menu-item:focus-visible {
+  outline-offset: var(--focus-inset);
+}
+
+.menu-item:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.menu-item.is-danger {
+  color: var(--text-negative);
+}
+
+.menu-item.is-danger:hover {
+  color: var(--text-negative);
+  background: color-mix(in srgb, var(--status-negative) 14%, transparent);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

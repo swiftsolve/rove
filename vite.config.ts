@@ -8,6 +8,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  css: {
+    modules: {
+      // `.row-name` in a .module.css file is `styles.rowName` in code.
+      localsConvention: 'camelCaseOnly',
+      // Readable in devtools: `ServicesView-module_row_a1b2c`.
+      generateScopedName: '[name]_[local]_[hash:base64:5]',
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

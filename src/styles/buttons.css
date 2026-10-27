@@ -1,0 +1,163 @@
+/* Shared button classes, used across every feature. */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-10);
+  background: transparent;
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.btn-primary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Large filled button for a page's main action (Run test, Add service): the
+   .btn-primary layout a step bigger, on a solid accent fill. `.is-stop` turns it
+   red while a test runs. Defined after .btn-primary so it wins at equal
+   specificity. */
+.btn-filled {
+  padding: var(--space-10) var(--section-padding);
+  font-size: var(--font-size-sm);
+  color: var(--text-on-fill);
+  background: var(--accent-fill);
+}
+
+.btn-filled:hover:not(:disabled) {
+  color: var(--text-on-fill);
+  background: var(--accent-fill-hover);
+}
+
+.btn-filled.is-stop {
+  background: var(--status-negative-fill);
+}
+
+.btn-filled.is-stop:hover:not(:disabled) {
+  background: var(--status-negative-fill-hover);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-medium);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.btn-secondary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Busy (spinner) state stays full-opacity — the spinner conveys the wait, so no
+   dimming — while ignoring input. Defined after `:disabled` so its opacity wins
+   for buttons that stay `disabled` while in flight (matches `.btn-icon`). */
+.btn-secondary.is-scanning {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ---- Icon buttons ---- */
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.btn-icon:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.btn-icon:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Spinning (busy) icon buttons stay full-opacity — the spinner conveys the
+   busy state, so no dimming — but ignore pointer input while in flight. The
+   explicit opacity wins over `.btn-icon:disabled` (equal specificity, defined
+   later) so buttons that stay `disabled` while busy don't fade the spinner. */
+.btn-icon.is-scanning {
+  cursor: default;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.btn-icon-primary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn-icon-primary:hover:not(:disabled) {
+  background: var(--accent-muted);
+  color: var(--accent-hover);
+}
+
+.btn-icon-secondary {
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+}
+
+.btn-icon-stop {
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
+  color: var(--status-negative);
+}
+
+.btn-icon-stop:hover {
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-lg), transparent);
+}
+
+.btn-icon-stop svg {
+  fill: currentColor;
+}
+
+.btn-icon-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}

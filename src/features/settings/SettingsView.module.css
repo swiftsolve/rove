@@ -1,0 +1,220 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+/* Match the Speed page's capability list: rows carry their own symmetric
+   vertical padding (--row-padding-y) and the column has no extra gap between them. */
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Drop the body's default top padding: the first row's own --row-padding-y already
+   supplies enough breathing room, so this pulls the content up closer to the
+   section title. */
+:global(.ui-section-body).list {
+  padding-top: 0;
+}
+
+/* A whole-row link (e.g. About) that reads and behaves like a Speed-page
+   capability row: symmetric --row-padding-y padding, hover highlight bleeding into the
+   section padding via negative margin, and an always-faint chevron that
+   brightens on hover/focus. */
+.link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--row-padding-y) var(--space-8);
+  margin: 0 calc(-1 * var(--space-8));
+  width: calc(100% + 16px);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+.link-row:hover {
+  background: var(--fill-row-hover);
+}
+
+/* Focus is the ring alone, no wash — like the nav-flash highlight minus its
+   fill. The row bleeds 8px into the section padding; draw the ring inside it. */
+.link-row:focus-visible {
+  outline-offset: var(--focus-inset);
+}
+
+.link-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  opacity: 0.3;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.link-row:hover .link-chevron,
+.link-row:focus-visible .link-chevron {
+  opacity: 0.7;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--row-padding-y) 0;
+}
+
+/* Stack the control beneath the label + description instead of placing it on the
+   right — used when the control is too wide to sit comfortably inline (e.g. the
+   three-segment theme picker). */
+.is-stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-12);
+}
+
+.row-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.row-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.row-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.row-control {
+  flex-shrink: 0;
+}
+
+/* Give the row's action button (e.g. "Check now") a taller hit area than the
+   default secondary button so it sits more comfortably against the two-line row
+   text beside it. */
+.row-control :global(.btn-secondary) {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+}
+
+/* "Check now" borrows the Speed page's Run test button shape — semibold label,
+   faint wash at rest that deepens on hover — but stays in a neutral palette
+   rather than the accent purple, since it's a routine action, not the primary
+   call to action on the screen. */
+.row-control .check-now {
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+}
+
+.row-control .check-now:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Busy (spinner) state: stay full-opacity and ignore input while the check runs,
+   mirroring .btn-secondary.is-scanning. */
+.check-now.is-scanning {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Pull the status band up close to the last row: drop the body's bottom padding
+   so only the row's own --row-padding-y sits between the last row and the band. Only
+   applies when a footer band is actually present — when idle (no footer) the body
+   keeps its default bottom padding so the card doesn't look cramped. */
+.updates :global(.ui-section-body):has(+ :global(.ui-section-footer)) {
+  padding-bottom: 0;
+}
+
+/* The update-status footer reads as a continuation of the row list rather than a
+   separate sunken band: no top divider, and symmetric vertical padding so the
+   status text sits centred within the inset band. */
+.updates :global(.ui-section-footer) {
+  margin-top: var(--space-12);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  border-top: none;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Geometric centring leaves the glyph sitting a touch high against the text's
+   x-height (the check's mass and the lowercase body both centre below the line
+   box). A 1px nudge optically settles it onto the text. */
+.status svg {
+  flex-shrink: 0;
+  transform: translateY(1px);
+}
+
+.status.is-ok {
+  color: var(--text-positive);
+}
+
+.update {
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+/* Three-way theme picker: a pill track holding dark / light / system segments,
+   the active one lit with the accent. Mirrors the Toggle's inset-track look so
+   the two Appearance controls read as a set. */
+.segmented {
+  display: inline-flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 5px var(--space-10);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+
+.segment svg {
+  flex-shrink: 0;
+}
+
+.segment:hover:not(.is-active) {
+  color: var(--text-secondary);
+}
+
+.segment.is-active {
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+/* Segments sit 2px inside their track, so the ring goes inside the segment
+   rather than spilling over the track's edge and its neighbours. */
+.segment:focus-visible {
+  outline-offset: var(--focus-inset);
+}

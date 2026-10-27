@@ -1,0 +1,242 @@
+/* Per-app usage list, styled after the Services list: compact rows with a
+   hairline between each. Each row is icon + name + total on the main line, with
+   the download/upload split as a quiet second line. */
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Own the horizontal inset on the rows, not the section body, so the hairline
+   dividers can run edge to edge. No vertical padding here: every row carries its
+   own equal top/bottom padding, so the card frame stays consistent with the
+   spacing inside each item and the first/last rows aren't special-cased. */
+:global(.ui-section-body).list {
+  padding: 0;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--section-body-padding);
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+
+/* Same faint wash as the Speed page's capability rows. */
+.row:hover {
+  background: var(--fill-row-hover);
+}
+
+/* The whole row links into that app's hosts. A transparent overlay button covers
+   it — so the row's block content (bar, figures) needn't nest inside a button —
+   and, being absolutely positioned, paints above the static content to catch the
+   click while staying invisible. */
+.toggle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Rows run edge to edge in the card, so the ring goes just inside the row, like
+   the nav-flash highlight: square corners, except where the first and last rows
+   meet the card's rounded ones. */
+.toggle:focus-visible {
+  outline-offset: var(--focus-inset);
+}
+
+.row:first-child .toggle {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.row:last-child .toggle {
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.row:only-child .toggle {
+  border-radius: var(--radius-lg);
+}
+
+/* Keep the visual layers click-through so the overlay button owns all pointer
+   interaction (cursor + click). Without this, content painted above the overlay
+   — notably the caret — swallows the click and shows the default cursor. Mirrors
+   the ConnectionCard strip pattern. */
+.main,
+.bar,
+.figures {
+  pointer-events: none;
+}
+
+/* The line between items — only between rows. Each row spans the full card
+   width, so the hairline goes end to end (clipped to the card's rounded corners
+   by the section's overflow:hidden). */
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+/* Total + navigation caret grouped at the row's right edge. */
+.end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-shrink: 0;
+}
+
+.caret {
+  color: var(--text-tertiary);
+  opacity: 0.35;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.row:hover .caret {
+  opacity: 0.75;
+}
+
+.id {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  /* Long process paths (e.g. macOS bundle identifiers) truncate rather than
+     wrap, keeping the main line one row tall. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.total {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* A single track whose two segments sit side by side, each scaled against the
+   busiest app so rows read comparably; an empty segment collapses to zero width.
+   Starts flush with the app icon's left edge. */
+.bar {
+  display: flex;
+  height: 3px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--bg-inset);
+}
+
+.seg {
+  height: 100%;
+  /* Ease the segment widths as the totals change (and as the busiest-app scale
+     shifts), so the bars glide in step with the count-up figures rather than
+     snapping. Neutralised under prefers-reduced-motion by the global rule. */
+  transition: width 400ms var(--ease-out);
+}
+
+.seg[data-series='down'] {
+  background: var(--series-down);
+}
+
+.seg[data-series='up'] {
+  background: var(--series-up);
+}
+
+/* Download/upload figures, pulled left by the arrow glyph's side bearing (the
+   lucide arrow's stroke starts ~4/24 into its box, ~2px at 11px) so the drawn
+   arrow lines up with the app icon's and bar's left edge. */
+.figures {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-left: calc(-1 * var(--space-2));
+}
+
+.figure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* Right-align each figure's value in a fixed-width box so the down and up
+   columns line up across app rows — the up arrow no longer drifts with the
+   width of the download value beside it. Matches the Hosts view. */
+.figure :global(.num) {
+  min-width: 46px;
+  text-align: right;
+}
+
+/* The two subtitle links ("All hosts" · "All traffic types") sit in a row with a
+   tertiary dot between them (see Speed's subtitle), spaced the same 8px as
+   every other dot separator; the links cancel their own pill padding so it
+   doesn't add to that gap (see .link). */
+.subtitle-links {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* Header subtitle link into the Hosts subpage: the same quiet pill link as Speed's
+   "All Results" (see .speed-history-link) and Services' "View timeline", down to the
+   geometry and weight — only the globe glyph differs. The button reset carries the font
+   family across but not the size, so font-size: inherit is what keeps it at the
+   subtitle's caption size. The negative margins cancel the pill's padding, so the
+   first link's globe sits flush under the title and the dot keeps its 8px. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  /* Cancel the pill's padding (and the glyphs' empty edges) on both sides, so
+     the dot between the two links sits the standard 8px from each. */
+  margin: 0 -9px 0 -9.5px;
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.link:focus-visible {
+  outline: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+}
+
+.link:hover .link-text,
+.link:focus-visible .link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Share the link's (animating) color so the glyph and label shift together on
+   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+   there's a single color animation rather than two that drift out of sync. */
+.link svg {
+  color: inherit;
+  opacity: 0.72;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.link:hover svg,
+.link:focus-visible svg {
+  opacity: 1;
+}

@@ -1,0 +1,59 @@
+/* The "Updated …" meta, dot and history link sit on one centred line. The rest
+   of the subtitle treatment (size, colour, reserved height, fade-in) comes from
+   the shared .view-header-sub. */
+.header-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* "View history" reads as a quiet pill link after the "Updated …" meta:
+   subtle at rest, picking up the accent tint on hover. The negative left margin
+   cancels the pill's padding and the glyph's empty edge, so the dot keeps the
+   same 8px to the clock as to the text before it. */
+.history-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: -9.5px;
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+/* Text links show focus the way they show hover — accent + underline — not
+   with a ring. */
+.history-link:focus-visible {
+  outline: none;
+}
+
+.history-link:hover,
+.history-link:focus-visible {
+  color: var(--accent);
+}
+
+/* Underline only the label on hover (not the clock glyph), so the link reads
+   as a link while the pill tint carries the accent. */
+.history-link:hover .history-link-text,
+.history-link:focus-visible .history-link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Share the link's (animating) color so the glyph and label shift together on
+   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+   there's a single color animation rather than two that drift out of sync. */
+.history-link svg {
+  color: inherit;
+  opacity: 0.72;
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.history-link:hover svg,
+.history-link:focus-visible svg {
+  opacity: 1;
+}

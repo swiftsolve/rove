@@ -158,22 +158,30 @@ flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter
 ```
 rove/
 ├── src/                        React UI (Vite)
-│   ├── main.tsx, App.tsx       entry + shell (header, nav, view switching)
-│   ├── views/                  one file per page: Home, Interfaces, Devices,
-│   │                           Usage, Diagnostics
-│   ├── components/
-│   │   ├── ui/                 app-agnostic chrome: Section, DataRow, Subpage,
-│   │   │                       TabBar, Icons (lucide re-exports)
-│   │   ├── connection/         connection card + display helpers
-│   │   ├── traffic/            live throughput panel, chart, readouts
-│   │   ├── speed-test/         speed test section + history (+ storage)
-│   │   └── capabilities/       capability list, details, meter, icon, rating
-│   ├── hooks/                  data hooks over window.networkAPI
-│   │                           (useBackendResource is the shared fetch shape)
-│   ├── lib/                    generic helpers (format, chart geometry)
+│   ├── main.tsx                entry: installs the bridge, mounts the app
+│   ├── app/                    the shell, laid out like a feature: App.tsx
+│   │                           (providers) and AppShell.tsx at the top, then
+│   │                           components/ (title bar, nav rail,
+│   │                           CurrentScreen), context/ (navigation, theme,
+│   │                           app data), hooks/ and utils/
+│   ├── features/               one folder per area: home, speed,
+│   │   │                       capabilities, connection, live-throughput,
+│   │   │                       interfaces, devices, events, usage, apps,
+│   │   │                       diagnostics, services, settings, about
+│   │   └── <area>/             its views (+ their CSS) at the top
+│   │       ├── components/     parts of those views, when a view has them
+│   │       ├── context/        its own context, if it ever needs one
+│   │       ├── hooks/          that area's data and state hooks
+│   │       └── utils/          its plain helpers (no React)
+│   │                           (capabilities, connection and live-throughput
+│   │                           have no view, so their parts sit at the top)
+│   ├── components/             shared UI used across features: Section,
+│   │                           DataRow, Subpage, Tooltip, Icons, …
+│   ├── hooks/                  shared hooks (useBackendResource is the
+│   │                           fetch shape every data hook builds on)
+│   ├── lib/                    shared helpers (format, platform, highlight)
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
-│   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
 │                               deps — compiles and tests anywhere): network_info,
@@ -183,6 +191,50 @@ rove/
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
                                 service, events, capabilities, window config
 ```
+
+### Frontend conventions
+
+**State: context, not prop drilling**
+
+- No component takes a prop only to pass it down. App-wide state comes from
+  context, read where it's used: `useNavigation()` (location, `navigate`,
+  `back`), `useTheme()`, and `useAppData()` (network info, internet status and
+  each screen's cached data). That's why every view renders with no props.
+- Props are for a component's own inputs: the item a row shows, a dialog's
+  `onClose`. Shared components in `src/components` take only props and never
+  read app context.
+
+**Where code goes**
+
+- `app/` and every feature use the same subfolders: `components/`,
+  `context/` (providers and their context objects), `hooks/` and `utils/`.
+- A custom hook lives in its own file in a `hooks/` folder, never inside a
+  component file.
+- `src/types` is only the backend contract, mirrored in Rust. A type only the
+  UI uses lives next to the code that owns it, such as
+  `features/speed/types.ts`.
+- Each component's stylesheet sits next to it and has the same name:
+  `DevicesCard.tsx` and `DevicesCard.module.css`.
+
+**Styles: CSS Modules plus a small global layer**
+
+- Component styles are CSS Modules (`Foo.module.css`, imported as `styles`).
+  The module is the namespace, so class names carry no prefix and are named by
+  role: `.row`, `.row-name`. In code they're camelCase: `styles.rowName`.
+- State is an `is-*` class: `cx(styles.row, isDown && styles.isDown)`.
+  Enumerations are data attributes: `data-level={level}` with
+  `.tile[data-level='good']`.
+- A stylesheet only styles its own component. To adjust a child, pass it a
+  `className` (the child merges it onto its root with `cx`).
+- The global layer is plain `.css`, and only it is global: `index.css`, the
+  shared classes in `styles/` (`btn-*`, `error-banner`, `inline-error`), and
+  the primitives in `components/` that many views build on (`Section.css`,
+  `ViewHeader.css`, `Subpage.css`, `DataRow.css`, `DotSeparator.css`). Inside
+  a module, reach them with `:global(.btn-secondary)`. Use a shared keyframe
+  as `animation: global(fade-in) …`, or CSS Modules renames it and the
+  animation silently stops.
+- `npm run lint` also runs `scripts/check-css-modules.mjs`. It fails on a
+  `styles.x` that has no matching class, and on a class nothing uses.
 
 ## Design
 

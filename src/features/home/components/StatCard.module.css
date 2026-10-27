@@ -1,0 +1,71 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--section-body-padding);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-raised);
+}
+
+.card:active {
+  transform: translateY(1px);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Push the caret to the far edge; always visible, brightening on hover. */
+.caret {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-in-out);
+}
+
+.card:hover .caret,
+.card:focus-visible .caret {
+  color: var(--text-secondary);
+}
+
+/* The "no reading" value. */
+.empty-metric {
+  margin-top: var(--space-2);
+}
+
+/* A direction arrow (or key dot) beside a compact value, mirroring the Traffic
+   panel's readouts. */
+.readout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.key {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.key.is-online {
+  background: var(--status-positive);
+}

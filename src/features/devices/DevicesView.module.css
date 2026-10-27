@@ -1,0 +1,378 @@
+/* "Subnet" label and value sit on one line, aligned on their baselines. The
+   rest of the subtitle treatment (size, colour, reserved height, fade-in)
+   comes from the shared .view-header-sub. */
+.subnet {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-6);
+}
+
+/* The shared slot for the online tally and the scan status. Positioned so a
+   leaving indicator can be pulled out of flow and overlaid at left:0 while the
+   entering one holds the width — they cross-slide in the same place instead of
+   pushing each other sideways. The 2px set-off on top of the row's 6px gap puts
+   the dot 8px from the subnet, the same as from its count and the spacing every
+   dot separator in the app keeps (see .sep-dot). */
+.indicator {
+  position: relative;
+  display: inline-block;
+  margin-left: var(--space-2);
+}
+
+/* The one that's on its way out overlays the slot's start rather than taking
+   layout space, so the incoming one doesn't get shoved right then snap back. */
+.online.is-leaving,
+.scan.is-leaving {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Count of devices that answered the last scan, sitting between the subnet and
+   the scan-status word. A static green dot marks it as a live/online tally
+   (distinct from the scan indicator's pulsing dot). */
+/* Sits on the same text baseline as the subnet value (inherits the row's
+   align-items: baseline — no align-self override). The dot is an inline element
+   nudged to the middle of the text so only the marker floats, not the label.
+   Same spacing as the scan indicator so the dot + text land in the exact
+   same spot when the subtitle toggles between "N online" and the scan status. */
+.online {
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  /* Slides in from the left when a scan finishes — same motion as the scan
+     status it replaces (shared keyframes below). */
+  animation: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
+}
+
+/* Slide back out to the left when the next scan starts and the status returns. */
+.online.is-leaving {
+  animation: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+}
+
+.online-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--status-positive);
+  margin-right: var(--space-8);
+  /* Centre on the cap/digit height of the numbers beside it ("16", the subnet),
+     which sits a touch above the x-height middle vertical-align gives. */
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.online :global(.num) {
+  color: var(--text-secondary);
+}
+
+/* Live rescan indicator trailing the subnet: a pulsing green dot + one-word
+   stage. Inline (not flex) so the dot can be nudged to the text's optical middle
+   with vertical-align — flex centering put it on the line-box centre, which
+   reads a touch low. Sits on the subnet's baseline, set off with a little room. */
+.scan {
+  display: inline-block;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  /* Slide in from the left when a scan starts; .is-leaving reverses the motion
+     back out (the component lingers mounted just long enough for it to play).
+     The set-off from the subnet lives on the .indicator wrapper; on
+     first load (no devices) the status renders bare in the subtitle with none. */
+  animation: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
+}
+
+.scan.is-leaving {
+  animation: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes scan-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scan-slide-out {
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.scan-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--status-positive);
+  margin-right: var(--space-8);
+  /* Same centering as the online dot, so both land in the exact same spot. */
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+  animation: global(status-pulse) 1.6s ease-in-out infinite;
+}
+
+/* Stack the stage words so they cross-fade in place; a hidden sizer (the
+   longest label) holds the box to a stable width so nothing reflows. */
+.scan-phases {
+  position: relative;
+  display: inline-block;
+}
+
+.scan-phase-sizer {
+  visibility: hidden;
+}
+
+/* Each word fades upward through three states: it waits below, settles into
+   place as the current stage, then drifts on up as it hands off — so entering
+   and leaving read as one continuous rising motion. */
+.scan-phase {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+
+.scan-phase[data-state='next'] {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.scan-phase[data-state='current'] {
+  opacity: 1;
+  transform: none;
+}
+
+.scan-phase[data-state='past'] {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.row {
+  display: flex;
+  /* Icon pinned to the top-left; the body column fills the rest. */
+  align-items: flex-start;
+  gap: var(--space-12);
+  padding: var(--section-header-padding-y) var(--section-header-padding-x);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  flex: 1;
+}
+
+/* Top row: name on the left, online/cached status aligned to the right. */
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+  /* A touch more air below the (larger) name so the type subtitle doesn't read
+     cramped against it — on top of the body's base 4px row gap. */
+  margin-bottom: var(--space-2);
+}
+
+/* Bottom row: MAC on the left, IP pinned to the bottom-right. */
+.bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.row.is-gateway .icon {
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+}
+
+/* Known device kinds get a quiet tint so categories scan at a glance;
+   unknown stays neutral. Gateway's green wins via the rule above. */
+.row:not(.is-gateway) .icon[data-kind='computer'],
+.row:not(.is-gateway) .icon[data-kind='nas'],
+.row:not(.is-gateway) .icon[data-kind='tablet'],
+.row:not(.is-gateway) .icon[data-kind='phone'] {
+  color: var(--series-down);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+}
+
+.row:not(.is-gateway) .icon[data-kind='tv'],
+.row:not(.is-gateway) .icon[data-kind='console'],
+.row:not(.is-gateway) .icon[data-kind='printer'] {
+  color: var(--series-up);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+}
+
+.row:not(.is-gateway) .icon[data-kind='iot'],
+.row:not(.is-gateway) .icon[data-kind='camera'],
+.row:not(.is-gateway) .icon[data-kind='speaker'] {
+  color: var(--status-warning);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+}
+
+.row:not(.is-gateway) .icon[data-kind='router'] {
+  color: var(--status-positive);
+  background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
+}
+
+/* Let a long name use up to two lines rather than truncating; the card grows
+   to fit. Takes the row width the status doesn't. */
+.name {
+  min-width: 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* Match the widget-title size (e.g. "Capabilities"), not the larger text-title.
+   The compound selector outranks the .text-title utility regardless of CSS
+   load order. */
+.name:global(.text-title) {
+  font-size: var(--font-size-lg);
+}
+
+/* The subtitle line beneath the name: device type on the left, and for an
+   offline device its last-seen age pinned to the right edge. */
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+/* On the meta line the type stays on a single line and ellipsizes when space is
+   tight, so the age remains a clean right-hand column instead of wrapping
+   beneath the type. */
+.meta > .kind {
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.meta > .kind :global(.inline-meta-item) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Device category as a subtitle line beneath the name — a step brighter than
+   the MAC so the hierarchy reads name › type › address. */
+.kind {
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+}
+
+/* "5h ago" for an offline device — right-aligned on the subtitle line and
+   dimmer than the type, so it reads as status rather than another attribute.
+   margin-left:auto keeps it flush right even when the type label is absent. */
+.last-seen {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+/* The green "Gateway" role that leads the gateway's meta line; the maker/model
+   that follow inherit the muted meta colour, giving name › role › details. */
+.gateway-role {
+  color: var(--text-positive);
+}
+
+.mac {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+
+/* Randomized note, set off from the MAC by a small dot. */
+.random {
+  position: relative;
+  padding-left: var(--space-12);
+  letter-spacing: 0;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.random::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  transform: translateY(-50%);
+}
+
+.ip {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-6);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.state.is-reachable {
+  color: var(--text-positive);
+}
+
+/* The Local Network hint trailing a scan that did find devices. The blank-state
+   copy of it is laid out by <EmptyState> instead. */
+.list > .hint {
+  max-width: 40ch;
+  margin-top: var(--space-10);
+  padding: 0 var(--space-4);
+  line-height: 1.45;
+  font-size: var(--font-size-sm);
+}

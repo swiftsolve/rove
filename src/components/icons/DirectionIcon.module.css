@@ -1,0 +1,13 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.root[data-series='down'] {
+  color: var(--series-down);
+}
+
+.root[data-series='up'] {
+  color: var(--series-up);
+}
