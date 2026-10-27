@@ -1,4 +1,5 @@
 import { useId, useMemo } from 'react'
+import { cx } from 'class-variance-authority'
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getLinkCapacityMbps, sanitizeRate } from '@/types'
 import { useAppData } from '@/app/hooks/useAppData'
@@ -6,7 +7,6 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
-import { cx } from '@/lib/cx'
 import styles from './ThroughputChart.module.css'
 
 interface ThroughputChartProps {

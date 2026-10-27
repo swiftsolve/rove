@@ -17,6 +17,12 @@
   margin-top: 18px;
 }
 
+/* The day's events under its heading — the same column the day itself stacks in. */
+.day-events {
+  display: flex;
+  flex-direction: column;
+}
+
 /* The date divider — quiet, uppercase, sitting above the day's first node and
    flush with the left edge (no indent, so no empty space beside the date). */
 .day-heading {

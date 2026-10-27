@@ -1,7 +1,6 @@
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/icons/Icons'
 import { useAppData } from '@/app/hooks/useAppData'
-import { cx } from '@/lib/cx'
 import styles from './StatusBar.module.css'
 
 const linkVariants = cva(['text-meta-strong', styles.link], {
@@ -58,7 +57,8 @@ export function StatusBar(): JSX.Element {
           </span>
           <span className={styles.brandName}>Rove</span>
         </div>
-        <span className={linkVariants({ tone })}>
+        {/* Polite live region: the link state changes on its own. */}
+        <span className={linkVariants({ tone })} role="status">
           <span className={styles.dot} aria-hidden />
           {label}
         </span>

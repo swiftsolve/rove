@@ -1,13 +1,32 @@
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   padding: var(--section-body-padding);
   text-align: left;
+  /* The card used to be the <button> itself. Keep the text settings its
+     contents inherited from it (the button resets these), so the title and
+     readouts render exactly as before. */
+  line-height: normal;
+  white-space: nowrap;
+  font-feature-settings: normal;
+  text-rendering: auto;
   cursor: pointer;
   transition:
     box-shadow var(--duration-fast) var(--ease-in-out),
     transform var(--duration-fast) var(--ease-in-out);
+}
+
+/* The open button: transparent and stretched over the whole card, above the
+   title and readout so a click anywhere lands on it. Its focus ring follows the
+   card's corners. Not a flex item (absolutely positioned), so the layout is
+   unchanged. A control in the body raises itself above it. */
+.open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
 }
 
 .card:hover {
@@ -40,7 +59,7 @@
 }
 
 .card:hover .caret,
-.card:focus-visible .caret {
+.card:has(> .open:focus-visible) .caret {
   color: var(--text-secondary);
 }
 

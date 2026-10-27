@@ -29,8 +29,7 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
 import styles from './TrafficView.module.css'
 
@@ -98,7 +97,7 @@ function TrafficRow({
   const upPct = type.txBytes * scale
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return (
-    <div className={styles.row}>
+    <li className={styles.row}>
       <div className={styles.main}>
         <span className={styles.id}>
           <Icon size={15} className={styles.glyph} />
@@ -116,7 +115,8 @@ function TrafficRow({
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
-      <div className={styles.figures}>
+      {/* The bar's label above already reads these figures out. */}
+      <div className={styles.figures} aria-hidden>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
           <MetricValue value={type.rxBytes} className="num" format={formatBytes} />
@@ -126,7 +126,7 @@ function TrafficRow({
           <MetricValue value={type.txBytes} className="num" format={formatBytes} />
         </span>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -152,7 +152,7 @@ function TrafficBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="view-empty">
+      <div className="view-empty" role="status">
         <Spinner />
         <p className="text-muted">Measuring traffic types…</p>
       </div>
@@ -165,11 +165,11 @@ function TrafficBody({
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
   return (
     <div className="ui-section">
-      <div className={cx('ui-section-body', styles.list)}>
+      <ul role="list" aria-label="Traffic types by usage" className={cx('ui-section-body', styles.list)}>
         {types.map((type) => (
           <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
         ))}
-      </div>
+      </ul>
     </div>
   )
 }

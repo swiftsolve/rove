@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataRow } from '@/components/DataRow'
@@ -10,7 +11,6 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
-import { cx } from '@/lib/cx'
 import { useAppData } from '@/app/hooks/useAppData'
 import styles from './DiagnosticsView.module.css'
 
@@ -49,6 +49,12 @@ function headerSubtitle(isRunning: boolean, hasDiagnostics: boolean): ReactNode 
   return <span className="view-header-status">&nbsp;</span>
 }
 
+/** What the screen-reader status line says: each run's start and its end. */
+function runStatusText(isRunning: boolean, hasDiagnostics: boolean): string {
+  if (isRunning) return 'Checking your connection…'
+  return hasDiagnostics ? 'Connection checks finished.' : ''
+}
+
 function latencyValue(ping: PingStats | null | undefined): ReactNode {
   if (ping == null) return '—'
   if (ping.avgMs >= FAILED_PING.avgMs) return <span className="val-bad">Down</span>
@@ -74,6 +80,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
       className={styles.routerSection}
       icon={<RouterIcon size={15} />}
       bodyClassName={cx('row-list', styles.tightRows)}
+      bodyAs="dl"
       footer={
         ping && ping.packetLoss > 0 ? (
           <p className={cx('text-small', styles.warning)}>
@@ -113,7 +120,13 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
 
 function DnsSection({ servers }: { servers: string[] }): JSX.Element {
   return (
-    <Section title="DNS" icon={<DnsIcon size={15} />} bodyClassName={cx('row-list', styles.dnsRows)}>
+    <Section
+      title="DNS"
+      icon={<DnsIcon size={15} />}
+      bodyClassName={cx('row-list', styles.dnsRows)}
+      // Label/value pairs when there are servers; otherwise a single note.
+      bodyAs={servers.length > 0 ? 'dl' : 'div'}
+    >
       {servers.length > 0 ? (
         servers.map((server) => <DataRow key={server} label="Server" value={server} />)
       ) : (
@@ -145,6 +158,7 @@ function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
       title={isp?.isVpn ? 'VPN' : 'ISP'}
       icon={<GlobeIcon size={15} />}
       bodyClassName={cx('row-list', styles.tightRows)}
+      bodyAs={isp ? 'dl' : 'div'}
       action={ispBadge(isp)}
     >
       {isp ? (
@@ -194,10 +208,18 @@ export function DiagnosticsView(): JSX.Element {
         actions={<RefreshIconButton label="Run again" isBusy={isRunning} onClick={runDiagnostics} />}
       />
 
-      {error && <div className="error-banner">{error}</div>}
+      <p className="sr-only" role="status">
+        {runStatusText(isRunning, hasDiagnostics)}
+      </p>
+
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       {isFirstCheck ? (
-        <div className="view-empty">
+        <div className="view-empty" aria-busy="true">
           <Spinner />
           <p className="text-muted">Checking your connection…</p>
         </div>

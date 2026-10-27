@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import type {
   ConnectionEvent,
   ServiceEvent,
@@ -24,8 +24,8 @@ import { useNow } from '@/hooks/useNow'
 import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useAppData } from '@/app/hooks/useAppData'
-import { cx } from '@/lib/cx'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
+import { useMenu } from '@/hooks/useMenu'
 import styles from './ServicesTimelineView.module.css'
 
 const markerVariants = cva(styles.marker, {
@@ -77,6 +77,15 @@ function formatTime(ts: number): string {
     minute: '2-digit',
     hour12: true,
   })
+}
+
+/** The time of day as a machine-readable `<time>`. */
+function EventTime({ ts }: { ts: number }): JSX.Element {
+  return (
+    <time className={styles.time} dateTime={new Date(ts).toISOString()}>
+      {formatTime(ts)}
+    </time>
+  )
 }
 
 // A stable per-calendar-day key (local time) used to slice the feed into days.
@@ -194,14 +203,14 @@ function TransitionRow({
   const shouldShowDuration = durationMs != null
 
   return (
-    <div className={styles.item}>
+    <li className={styles.item}>
       <span className={markerVariants({ status: isDown ? 'down' : 'up' })} aria-hidden>
         {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
       </span>
       <div className={styles.content}>
         <span className={styles.head}>
           <span className={styles.title}>{isDown ? 'Service went down' : 'Service came back up'}</span>
-          <span className={styles.time}>{formatTime(event.ts)}</span>
+          <EventTime ts={event.ts} />
         </span>
         <span className={subjectVariants()}>
           <ServiceIcon host={event.host} name={event.name} />
@@ -214,7 +223,7 @@ function TransitionRow({
           )}
         </span>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -225,7 +234,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
   const areAllHealthy = event.count >= event.total
 
   return (
-    <div className={styles.item}>
+    <li className={styles.item}>
       <span className={markerVariants({ status: 'running' })} aria-hidden>
         <CheckIcon size={15} />
       </span>
@@ -234,7 +243,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
           <span className={styles.title}>
             {event.count} {event.count === 1 ? 'service' : 'services'} running
           </span>
-          <span className={styles.time}>{formatTime(event.ts)}</span>
+          <EventTime ts={event.ts} />
         </span>
         <span className={subjectVariants({ isMuted: true })}>
           {areAllHealthy
@@ -242,7 +251,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
             : `${event.count} of ${event.total} services healthy`}
         </span>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -259,14 +268,14 @@ function ConnectionRow({
   const shouldShowDuration = !isLost && durationMs != null
 
   return (
-    <div className={styles.item}>
+    <li className={styles.item}>
       <span className={markerVariants({ status: isLost ? 'down' : 'up' })} aria-hidden>
         {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
       </span>
       <div className={styles.content}>
         <span className={styles.head}>
           <span className={styles.title}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
-          <span className={styles.time}>{formatTime(event.ts)}</span>
+          <EventTime ts={event.ts} />
         </span>
         {/* Status on the left, offline duration flush right — both on one line. */}
         <span className={cx(subjectVariants({ isMuted: true }), styles.connLine)}>
@@ -276,7 +285,7 @@ function ConnectionRow({
           )}
         </span>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -284,41 +293,25 @@ function ConnectionRow({
  *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistoryView. */
 function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onDocumentMouseDown = (e: MouseEvent): void => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false)
-    }
-    const onDocumentKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('mousedown', onDocumentMouseDown)
-    document.addEventListener('keydown', onDocumentKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', onDocumentMouseDown)
-      document.removeEventListener('keydown', onDocumentKeyDown)
-    }
-  }, [isOpen])
+  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => setIsOpen(false))
 
   return (
-    <div className={styles.menu} ref={menuRef}>
+    <div className={styles.menu} ref={rootRef}>
       <button
         type="button"
         className={styles.kebab}
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
+        {...triggerProps}
         aria-label="Timeline options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
         <MoreIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} role="menu">
+        <div className={styles.dropdown} {...menuProps}>
           <button
             type="button"
             role="menuitem"
+            tabIndex={-1}
             className={menuItemVariants({ isDanger: true })}
             onClick={() => {
               setIsOpen(false)
@@ -348,6 +341,23 @@ function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: E
     return <ConnectionRow event={event} durationMs={durations.offlineByTs.get(event.ts)} />
   }
   return <TransitionRow event={event} durationMs={transitionDurationMs(event, durations)} />
+}
+
+/** One day of the timeline: its date heading over the list of that day's events. */
+function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDurations }): JSX.Element {
+  const headingId = useId()
+  return (
+    <li className={styles.day}>
+      <h2 id={headingId} className={styles.dayHeading}>
+        {group.heading}
+      </h2>
+      <ul role="list" className={styles.dayEvents} aria-labelledby={headingId}>
+        {group.events.map((event) => (
+          <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
+        ))}
+      </ul>
+    </li>
+  )
 }
 
 /**
@@ -400,16 +410,11 @@ export function ServicesTimelineView(): JSX.Element {
           hint="Outages for tracked services appear here while the Connection tab is open."
         />
       ) : (
-        <div className={styles.timeline}>
+        <ul role="list" className={styles.timeline}>
           {groupByDay(events, now).map((group) => (
-            <section className={styles.day} key={group.key}>
-              <h2 className={styles.dayHeading}>{group.heading}</h2>
-              {group.events.map((event) => (
-                <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
-              ))}
-            </section>
+            <TimelineDay key={group.key} group={group} durations={durations} />
           ))}
-        </div>
+        </ul>
       )}
     </Subpage>
   )

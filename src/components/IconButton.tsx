@@ -1,6 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import styles from './IconButton.module.css'
 
 const iconButtonVariants = cva(styles.root, {
@@ -25,6 +24,12 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof iconButtonVariants> & {
     /** Required: an icon-only button has no visible text to name it. */
     'aria-label': string
+    /**
+     * Unavailable, but still focusable so its reason (usually a Tooltip) can be
+     * reached by keyboard and read by screen readers: sets `aria-disabled`,
+     * ignores clicks, and looks the same as `disabled`.
+     */
+    isDisabled?: boolean
   }
 
 /** A square, icon-only button. Extra props pass straight to the `<button>`. */
@@ -33,12 +38,16 @@ export function IconButton({
   isBusy,
   className,
   type = 'button',
+  isDisabled,
+  onClick,
   ...buttonProps
 }: IconButtonProps): JSX.Element {
   return (
     <button
       type={type}
       className={cx(iconButtonVariants({ tone, isBusy }), className)}
+      aria-disabled={isDisabled || undefined}
+      onClick={isDisabled ? undefined : onClick}
       {...buttonProps}
     />
   )

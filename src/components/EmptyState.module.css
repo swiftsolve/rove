@@ -11,8 +11,10 @@
   opacity: 0.55;
 }
 
+/* An h2 for the page outline, at the plain weight of the paragraph it replaced. */
 .root .title {
   font-size: var(--font-size-md);
+  font-weight: inherit;
   color: var(--text-secondary);
 }
 

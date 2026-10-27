@@ -27,18 +27,18 @@ export const SpeedReadout = memo(function SpeedReadout({
 
   return (
     <div className={styles.root}>
-      <div className={styles.label}>
+      <dt className={styles.label}>
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
-      </div>
+      </dt>
 
-      <div
-        className="metric num"
-        aria-label={`${label}: ${actual.value} ${actual.unit}`}
-      >
-        <span className="metric-value">{value}</span>
-        <span className="metric-unit">{unit}</span>
-      </div>
+      {/* The visible digits count up between polls; screen readers get the
+          settled value instead of a mid-animation one. */}
+      <dd className="metric num">
+        <span className="metric-value" aria-hidden>{value}</span>
+        <span className="metric-unit" aria-hidden>{unit}</span>
+        <span className="sr-only">{`${actual.value} ${actual.unit}`}</span>
+      </dd>
     </div>
   )
 })

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { useEffect, useState } from 'react'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -16,7 +16,7 @@ import { FAILED_PING } from '@/types'
 import { EthernetIcon, GlobeIcon, HistoryIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
 import { EmptyState } from '@/components/EmptyState'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
-import { cx } from '@/lib/cx'
+import { useMenu } from '@/hooks/useMenu'
 import styles from './SpeedHistoryView.module.css'
 
 /** Connection badge, tinted by medium. */
@@ -82,14 +82,14 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
 function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
   return (
     <div className={styles.metric}>
-      <span className={styles.metricLabel}>
+      <dt className={styles.metricLabel}>
         {series && <DirectionIcon series={series} size={13} />}
         <span className="field-label">{label}</span>
-      </span>
-      <span className={cx(styles.metricValue, 'num')}>
+      </dt>
+      <dd className={cx(styles.metricValue, 'num')}>
         {value}
         {unit && <span className={styles.metricUnit}> {unit}</span>}
-      </span>
+      </dd>
     </div>
   )
 }
@@ -100,13 +100,15 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
 
   return (
-    <div className={cx(styles.card, 'surface')}>
+    <li className={cx(styles.card, 'surface')}>
       <div className={styles.cardHead}>
         <ConnectionBadge entry={entry} />
-        <span className={styles.cardTime}>{formatHistoryTimestamp(entry.timestamp)}</span>
+        <time className={styles.cardTime} dateTime={new Date(entry.timestamp).toISOString()}>
+          {formatHistoryTimestamp(entry.timestamp)}
+        </time>
       </div>
 
-      <div className={styles.cardMetrics}>
+      <dl className={styles.cardMetrics}>
         <Metric label="Download" value={download.value} unit={download.unit} series="down" />
         <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
         <Metric
@@ -114,7 +116,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
           value={hasValidPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
           unit={hasValidPing ? 'ms' : undefined}
         />
-      </div>
+      </dl>
 
       <div className={styles.cardFooter}>
         <p className={cx(styles.footnote, 'num')}>
@@ -131,7 +133,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
           )}
         </p>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -139,24 +141,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
  *  all history). Closes on outside click or Escape. */
 function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handleMouseDown = (event: MouseEvent): void => {
-      const menu = menuRef.current
-      if (menu && !menu.contains(event.target as Node)) setIsOpen(false)
-    }
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleMouseDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', handleMouseDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen])
+  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => setIsOpen(false))
 
   const handleDelete = (): void => {
     setIsOpen(false)
@@ -164,22 +149,22 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
   }
 
   return (
-    <div className={styles.menu} ref={menuRef}>
+    <div className={styles.menu} ref={rootRef}>
       <button
         type="button"
         className={styles.kebab}
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
+        {...triggerProps}
         aria-label="History options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
         <MoreIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} role="menu">
+        <div className={styles.dropdown} {...menuProps}>
           <button
             type="button"
             role="menuitem"
+            tabIndex={-1}
             className={menuItemVariants({ isDanger: true })}
             onClick={handleDelete}
           >
@@ -204,11 +189,11 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
   }
 
   return (
-    <div className={styles.list}>
+    <ul role="list" className={styles.list}>
       {entries.map((entry, index) => (
         <HistoryCard key={`${entry.timestamp}-${index}`} entry={entry} />
       ))}
-    </div>
+    </ul>
   )
 }
 

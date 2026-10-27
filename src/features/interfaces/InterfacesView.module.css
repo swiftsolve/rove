@@ -74,10 +74,6 @@
   color: var(--text-tertiary);
 }
 
-.tag.is-muted {
-  opacity: 0.7;
-}
-
 .panel.is-default .tag:not(.is-muted) {
   color: var(--text-positive);
 }

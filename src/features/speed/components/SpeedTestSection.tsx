@@ -1,6 +1,6 @@
 import { memo, useEffect, useId, useRef, type CSSProperties } from 'react'
-import { cva } from 'class-variance-authority'
-import type { NetworkInfo, SpeedTestProgress } from '@/types'
+import { cva, cx } from 'class-variance-authority'
+import type { NetworkInfo, SpeedResult, SpeedTestProgress } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import { useAppData } from '@/app/hooks/useAppData'
@@ -14,7 +14,6 @@ import { useLatestRef } from '@/hooks/useLatestRef'
 import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/icons/Icons'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import type { SpeedTestConnection } from '@/features/speed/types'
-import { cx } from '@/lib/cx'
 import styles from './SpeedTestSection.module.css'
 
 /** The connection the footer names, its glyph tinted by medium. */
@@ -138,6 +137,19 @@ function heroCellMbps(
   return progressPct >= phaseStartPct ? liveMbps : 0
 }
 
+/** What the live region announces: the current phase while a test runs, the
+ *  headline result once one completes, and nothing after a stop or failure (a
+ *  failure has its own alert). */
+function testStatusText(
+  isTesting: boolean,
+  progress: SpeedTestProgress,
+  result: SpeedResult | null,
+): string {
+  if (isTesting) return progress.message || 'Starting…'
+  if (progress.phase !== 'complete' || result == null) return ''
+  return `Speed test complete. Download ${formatSpeedMbps(result.downloadMbps)}, upload ${formatSpeedMbps(result.uploadMbps)}.`
+}
+
 /** A substat's text: the measured value, or a placeholder when there's none. */
 function substatText(measured: string | null, isEmpty: boolean): string {
   if (measured != null) return measured
@@ -176,10 +188,10 @@ function SpeedCell({
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
   return (
-    <div className={speedCellVariants({ isPlaceholder })}>
+    <dd className={speedCellVariants({ isPlaceholder })}>
       <span className="metric-value">{isPlaceholder ? '…' : value}</span>
       {!isPlaceholder && <span className="metric-unit">{unit}</span>}
-    </div>
+    </dd>
   )
 }
 
@@ -325,10 +337,10 @@ function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Elemen
       <div
         className={styles.progressTrack}
         role="progressbar"
-        aria-valuenow={progress.progress}
+        aria-label="Speed test progress"
+        aria-valuenow={Math.round(progress.progress)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuetext={progress.message}
       >
         <WavyProgress progress={progress.progress} />
       </div>
@@ -349,10 +361,10 @@ function HeroCell({
 }): JSX.Element {
   return (
     <div className={styles.heroCell}>
-      <div className={styles.heroLabel}>
+      <dt className={styles.heroLabel}>
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
-      </div>
+      </dt>
       <SpeedCell mbps={mbps} isPlaceholder={isPlaceholder} />
     </div>
   )
@@ -369,8 +381,8 @@ function Substat({
 }): JSX.Element {
   return (
     <div className={styles.substat}>
-      <span className="field-label">{label}</span>
-      <span className={substatValueVariants({ isEmpty })}>{text}</span>
+      <dt className="field-label">{label}</dt>
+      <dd className={substatValueVariants({ isEmpty })}>{text}</dd>
     </div>
   )
 }
@@ -457,25 +469,31 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
       icon={<SpeedIcon size={15} />}
       action={isEmpty && canTest ? <span className="text-meta">No tests yet</span> : undefined}
     >
-      {error && <p className="inline-error">{error}</p>}
+      {error && <p className="inline-error" role="alert">{error}</p>}
 
-      <div className={styles.hero}>
+      <dl className={styles.hero}>
         <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
         <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
-      </div>
+      </dl>
 
       {!isTesting && (
-        <div className={styles.substats}>
+        <dl className={styles.substats}>
           <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />
-        </div>
+        </dl>
       )}
 
       {isTesting && <TestProgress progress={progress} />}
       {!isTesting && hasResults && hasFooterInfo && (
         <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
       )}
+
+      {/* Always mounted so screen readers hear each phase and the result as they
+          land; the visible readouts count up every frame, so they can't be live. */}
+      <p className="sr-only" role="status">
+        {testStatusText(isTesting, progress, internetSpeed)}
+      </p>
     </Section>
   )
 })

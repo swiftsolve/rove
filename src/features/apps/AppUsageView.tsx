@@ -13,8 +13,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { DotSeparator } from '@/components/DotSeparator'
 import { Spinner } from '@/components/Spinner'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
 import styles from './AppUsageView.module.css'
 
@@ -55,7 +54,7 @@ function AppRow({
   const downPct = app.rxBytes * scale
   const upPct = app.txBytes * scale
   return (
-    <div className={styles.row}>
+    <li className={styles.row}>
       <button
         type="button"
         className={styles.toggle}
@@ -82,7 +81,8 @@ function AppRow({
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
-      <div className={styles.figures}>
+      {/* The bar's label above already reads these figures out. */}
+      <div className={styles.figures} aria-hidden>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
           <MetricValue value={app.rxBytes} className="num" format={formatBytes} />
@@ -92,7 +92,7 @@ function AppRow({
           <MetricValue value={app.txBytes} className="num" format={formatBytes} />
         </span>
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -143,7 +143,7 @@ function AppUsageBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="view-empty">
+      <div className="view-empty" role="status">
         <Spinner />
         <p className="text-muted">Measuring per-app usage…</p>
       </div>
@@ -156,7 +156,7 @@ function AppUsageBody({
   const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)
   return (
     <div className="ui-section">
-      <div className={cx('ui-section-body', styles.list)}>
+      <ul role="list" aria-label="Apps by usage" className={cx('ui-section-body', styles.list)}>
         {apps.map((app) => (
           <AppRow
             key={app.name}
@@ -165,7 +165,7 @@ function AppUsageBody({
             onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
           />
         ))}
-      </div>
+      </ul>
     </div>
   )
 }

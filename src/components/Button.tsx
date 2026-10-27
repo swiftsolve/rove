@@ -1,6 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import styles from './Button.module.css'
 
 const buttonVariants = cva(undefined, {
@@ -21,7 +20,15 @@ const buttonVariants = cva(undefined, {
   defaultVariants: { variant: 'secondary' },
 })
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof buttonVariants>
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+  /**
+   * Unavailable, but still focusable so its reason (usually a Tooltip) can be
+   * reached by keyboard and read by screen readers: sets `aria-disabled`,
+   * ignores clicks, and looks the same as `disabled`.
+   */
+  isDisabled?: boolean
+  }
 
 /** A text button. Extra props (aria-*, handlers from a Tooltip) pass straight to the `<button>`. */
 export function Button({
@@ -30,12 +37,16 @@ export function Button({
   isBusy,
   className,
   type = 'button',
+  isDisabled,
+  onClick,
   ...buttonProps
 }: ButtonProps): JSX.Element {
   return (
     <button
       type={type}
       className={cx(buttonVariants({ variant, isStop, isBusy }), className)}
+      aria-disabled={isDisabled || undefined}
+      onClick={isDisabled ? undefined : onClick}
       {...buttonProps}
     />
   )

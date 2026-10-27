@@ -1,6 +1,5 @@
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { CapabilityLevel } from '@/types'
-import { cx } from '@/lib/cx'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityMeter.module.css'
 
@@ -59,7 +58,8 @@ export function CapabilityMeter({
   const rank = LEVEL_RANK[level]
 
   return (
-    <div className={rootVariants({ level, isCompact, isMuted, isDimmed })}>
+    // A <span> (styled inline-flex) so the meter can sit inside a button row.
+    <span className={rootVariants({ level, isCompact, isMuted, isDimmed })}>
       <span className={cx(styles.bars, barsClassName)} aria-hidden>
         {SEGMENTS.map((i) => (
           <span key={i} className={segVariants({ isOn: i < rank })} />
@@ -68,6 +68,6 @@ export function CapabilityMeter({
       {shouldShowLabel && (
         <span className={styles.label}>{CAPABILITY_LEVEL_LABELS[level]}</span>
       )}
-    </div>
+    </span>
   )
 }

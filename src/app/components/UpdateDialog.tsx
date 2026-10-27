@@ -3,6 +3,7 @@ import { cva } from 'class-variance-authority'
 import type { PendingUpdate } from '@/app/utils/updater'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { BrandIcon, ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
+import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './UpdateDialog.module.css'
 
 const buttonVariants = cva(styles.button, {
@@ -30,6 +31,8 @@ export function UpdateDialog({
   onDismiss: () => void
 }): JSX.Element {
   const [isInstalling, setIsInstalling] = useState(false)
+  // Focus stays in the dialog while it's open; Escape dismisses it (not mid-install).
+  const dialogRef = useModalFocus(onDismiss, !isInstalling)
 
   const handleInstall = (): void => {
     setIsInstalling(true)
@@ -47,6 +50,8 @@ export function UpdateDialog({
     <div className={styles.overlay} role="presentation" onClick={isInstalling ? undefined : onDismiss}>
       <div
         className={styles.dialog}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="update-title"
@@ -63,6 +68,7 @@ export function UpdateDialog({
             <p className={styles.versions}>
               <span className={styles.versionOld}>{update.currentVersion}</span>
               <ArrowRightIcon />
+              <span className="sr-only">{' to '}</span>
               <span className={styles.versionNew}>{update.version}</span>
             </p>
           </div>
@@ -70,7 +76,7 @@ export function UpdateDialog({
 
         {update.notes && (
           <div className={styles.body}>
-            <p className={styles.notesLabel}>What&rsquo;s new</p>
+            <h3 className={styles.notesLabel}>What&rsquo;s new</h3>
             <div className={styles.notes}>{update.notes}</div>
           </div>
         )}
@@ -94,6 +100,9 @@ export function UpdateDialog({
             {isInstalling ? 'Installing…' : 'Install and restart'}
           </button>
         </div>
+        <p className="sr-only" role="status">
+          {isInstalling ? 'Installing the update. Rove will restart when it’s done.' : ''}
+        </p>
       </div>
     </div>
   )

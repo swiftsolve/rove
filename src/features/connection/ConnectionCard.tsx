@@ -1,5 +1,5 @@
-import { memo, type ReactNode } from 'react'
-import { cva } from 'class-variance-authority'
+import { memo, useId, type ReactNode } from 'react'
+import { cva, cx } from 'class-variance-authority'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isConnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
 import {
@@ -20,7 +20,7 @@ import {
   formatWifiStandard,
   isSecuredWifi,
 } from '@/lib/format'
-import { DataRow } from '@/components/DataRow'
+import { DataList, DataRow } from '@/components/DataRow'
 import { InlineMeta } from '@/components/DotSeparator'
 import {
   ChevronDownIcon,
@@ -31,7 +31,6 @@ import {
   WifiIcon,
 } from '@/components/icons/Icons'
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
-import { cx } from '@/lib/cx'
 import styles from './ConnectionCard.module.css'
 
 const rootVariants = cva(styles.root, {
@@ -172,12 +171,13 @@ function SecurityBadge({
   if (isSecured) label = isShort ? shortSecurityLabel(full) : full
   const description = isSecured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
-    <span
-      className={securityBadgeVariants({ isSecured })}
-      title={description}
-    >
+    <span className={securityBadgeVariants({ isSecured })} title={description}>
       {isSecured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
-      <span className={styles.securityBadgeLabel}>{label}</span>
+      <span className={styles.securityBadgeLabel} aria-hidden>
+        {label}
+      </span>
+      {/* The hover title isn't announced; the full description is. */}
+      <span className="sr-only">{description}</span>
     </span>
   )
 }
@@ -192,10 +192,10 @@ function WifiExtras({
   return (
     <>
       <DataRow label="Signal">
-        <span className={styles.signalDetail}>
+        <div className={styles.signalDetail}>
           {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
           {formatSignalDetail(info)}
-        </span>
+        </div>
       </DataRow>
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Band" value={formatBand(info.frequency)} />
@@ -251,10 +251,11 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   )
   const linkSpeed = formatLinkSpeed(info)
   const subItems = stripMetaItems(info, linkSpeed)
-  const detailsLabel = isExpanded ? 'Hide connection details' : 'Show connection details'
+  const titleId = useId()
+  const detailsId = useId()
 
   return (
-    <section className={rootVariants({ variant: display.variant })}>
+    <section className={rootVariants({ variant: display.variant })} aria-labelledby={titleId}>
       <div className={styles.strip}>
         {/* A transparent full-strip button keeps the whole row one expand target
             without wrapping the QR button inside another button (invalid HTML).
@@ -265,13 +266,16 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           className={styles.stripToggle}
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
-          aria-label={detailsLabel}
+          aria-controls={detailsId}
+          aria-label="Connection details"
         />
         <div className={styles.stripIcon}>
           <ConnectionIcon variant={display.variant} />
         </div>
         <div className={styles.stripText}>
-          <div className={cx('text-title', styles.stripTitle)}>{display.title}</div>
+          <h2 id={titleId} className={cx('text-title', styles.stripTitle)}>
+            {display.title}
+          </h2>
           {subItems.length > 0 ? (
             <InlineMeta className={cx('text-secondary', styles.stripSub)} items={subItems} />
           ) : (
@@ -293,8 +297,14 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         />
       </div>
 
-      <div className={detailsWrapVariants({ isOpen: isExpanded })}>
-        <div className={cx(styles.details, 'row-list')}>
+      {/* Collapsed, the rows are clipped to nothing but still in the DOM (for the
+          height animation), so hide them from assistive tech too. */}
+      <div
+        id={detailsId}
+        className={detailsWrapVariants({ isOpen: isExpanded })}
+        aria-hidden={!isExpanded}
+      >
+        <DataList className={cx(styles.details, 'row-list')}>
           <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
           <DataRow
             label="Public IP"
@@ -310,7 +320,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           {isEthernetNetwork(info) && <EthernetExtras info={info} linkSpeed={linkSpeed} />}
           <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
           <DataRow label="MAC" value={formatMac(info.macAddress)} />
-        </div>
+        </DataList>
       </div>
     </section>
   )

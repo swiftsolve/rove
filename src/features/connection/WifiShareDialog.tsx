@@ -5,6 +5,7 @@ import { getNetworkApi } from '@/bridge/networkApi'
 import { CloseIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
 import { IconButton } from '@/components/IconButton'
+import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './WifiShareDialog.module.css'
 
 interface ShareBodyProps {
@@ -27,7 +28,9 @@ function ShareBody({ share, error, isLoading }: ShareBodyProps): JSX.Element | n
   if (error) {
     return (
       <div className={styles.state}>
-        <p className={styles.error}>{error}</p>
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
       </div>
     )
   }
@@ -91,29 +94,29 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
     }
   }, [])
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  // Focus stays in the dialog while it's open; Escape closes it.
+  const dialogRef = useModalFocus(onClose)
 
   const overlay = (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
       <div
         className={styles.dialog}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="wifi-share-title"
+        aria-describedby="wifi-share-sub"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className={styles.head}>
+        <div className={styles.head}>
           <div className={styles.heading}>
             <h2 id="wifi-share-title" className={styles.title}>
               Share Wi‑Fi
             </h2>
-            <p className={styles.sub}>Scan with a phone camera to join</p>
+            <p id="wifi-share-sub" className={styles.sub}>
+              Scan with a phone camera to join
+            </p>
           </div>
           <IconButton
             className={styles.close}
@@ -122,9 +125,11 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           >
             <CloseIcon size={15} />
           </IconButton>
-        </header>
+        </div>
 
-        <div className={styles.body}>
+        {/* Live, so the QR code, note or error is announced when it replaces the
+            loading state. */}
+        <div className={styles.body} aria-live="polite" aria-busy={isLoading}>
           <ShareBody share={share} error={error} isLoading={isLoading} />
         </div>
       </div>

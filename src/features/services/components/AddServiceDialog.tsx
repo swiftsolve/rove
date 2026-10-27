@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { ServiceDefinition } from '@/types'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
@@ -10,6 +10,7 @@ import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { cva } from 'class-variance-authority'
+import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './AddServiceDialog.module.css'
 
 const inputGroupVariants = cva(styles.inputGroup, {
@@ -73,7 +74,13 @@ function AddressFeedback({
   outcome: TestOutcome | null
   name: string
 }): JSX.Element {
-  if (error) return <p className={noteVariants({ isError: true })}>{error}</p>
+  if (error) {
+    return (
+      <p className={noteVariants({ isError: true })} role="alert">
+        {error}
+      </p>
+    )
+  }
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
     return (
@@ -97,6 +104,12 @@ function AddressFeedback({
 function confirmLabel(isAdding: boolean, isEditing: boolean): ReactNode {
   if (isAdding) return <ButtonSpinner size={14} />
   return isEditing ? 'Save' : 'Add service'
+}
+
+/** The confirm's spoken name while it shows only a spinner. */
+function busyConfirmName(isAdding: boolean, isEditing: boolean): string | undefined {
+  if (!isAdding) return undefined
+  return isEditing ? 'Saving' : 'Adding service'
 }
 
 /**
@@ -125,14 +138,13 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const [error, setError] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
 
-  // Escape closes the dialog, the native expectation for a modal.
-  useEffect(() => {
-    const onWindowKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && !isAdding) onClose()
-    }
-    window.addEventListener('keydown', onWindowKeyDown)
-    return () => window.removeEventListener('keydown', onWindowKeyDown)
-  }, [isAdding, onClose])
+  // Focus stays in the dialog while it's open; Escape closes it (not mid-add).
+  const dialogRef = useModalFocus(onClose, !isAdding)
+  const titleId = useId()
+  const descriptionId = useId()
+  const addressId = useId()
+  const feedbackId = useId()
+  const isTesting = phase === 'testing'
 
   const runTest = (): void => {
     const parsed = parseServiceInput(address)
@@ -208,17 +220,22 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     <div className={styles.overlay} role="presentation" onClick={isAdding ? undefined : onClose}>
       <div
         className={styles.dialog}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="add-service-title"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className={styles.head}>
+        <div className={styles.head}>
           <div className={styles.heading}>
-            <h2 id="add-service-title" className={styles.title}>
+            <h2 id={titleId} className={styles.title}>
               {editing ? 'Edit service' : 'Add a service'}
             </h2>
-            <p className={styles.sub}>Track a service by URL or IP address.</p>
+            <p id={descriptionId} className={styles.sub}>
+              Track a service by URL or IP address.
+            </p>
           </div>
           <IconButton
             className={styles.close}
@@ -228,34 +245,44 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           >
             <CloseIcon size={15} />
           </IconButton>
-        </header>
+        </div>
 
         <div className={styles.body}>
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Address</span>
+          {/* A div, not a wrapping label: the field also holds the Test button and
+              the feedback below it, which a label can't contain. */}
+          <div className={styles.field}>
+            <label htmlFor={addressId} className={styles.fieldLabel}>
+              Address
+            </label>
             <div className={inputGroupVariants({ isInvalid: error != null })}>
               <input
+                id={addressId}
                 type="text"
                 className={styles.input}
                 value={address}
                 onChange={(e) => onAddressChange(e.target.value)}
                 onKeyDown={onFieldKeyDown}
                 placeholder="example.com or 192.168.1.1"
-                aria-label="Service URL or IP address"
                 aria-invalid={error != null}
+                aria-describedby={feedbackId}
                 autoFocus
               />
               <button
                 type="button"
-                className={testVariants({ isLoading: phase === 'testing' })}
+                className={testVariants({ isLoading: isTesting })}
                 onClick={runTest}
-                disabled={!address.trim() || phase === 'testing'}
+                disabled={!address.trim() || isTesting}
+                aria-label={isTesting ? 'Testing' : undefined}
               >
-                {phase === 'testing' ? <ButtonSpinner size={13} /> : 'Test'}
+                {isTesting ? <ButtonSpinner size={13} /> : 'Test'}
               </button>
             </div>
-            <AddressFeedback error={error} phase={phase} outcome={outcome} name={name} />
-          </label>
+            {/* One persistent live region, so "Testing…", the result and any
+                error are announced as they swap in. */}
+            <div id={feedbackId} role="status">
+              <AddressFeedback error={error} phase={phase} outcome={outcome} name={name} />
+            </div>
+          </div>
 
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Name</span>
@@ -266,21 +293,22 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
               onChange={(e) => onNameChange(e.target.value)}
               onKeyDown={onFieldKeyDown}
               placeholder="Auto-detected from the address"
-              aria-label="Service name"
             />
           </label>
         </div>
 
-        <footer className={styles.foot}>
+        <div className={styles.foot}>
           <Button
             variant="filled"
             className={styles.confirm}
             onClick={confirm}
             disabled={!hasTested || isAdding}
+            aria-busy={isAdding}
+            aria-label={busyConfirmName(isAdding, editing != null)}
           >
             {confirmLabel(isAdding, editing != null)}
           </Button>
-        </footer>
+        </div>
       </div>
     </div>
   )

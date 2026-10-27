@@ -1,4 +1,4 @@
-import type { RefObject } from 'react'
+import { useId, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
 import { formatBytes } from '@/lib/format'
 import { useAppData } from '@/app/hooks/useAppData'
@@ -17,8 +17,7 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
 import styles from './HostsView.module.css'
 
@@ -67,6 +66,7 @@ function HostGlyph({ host }: { host: HostConn }): JSX.Element {
   const glyph = (
     <span
       className={styles.flag}
+      role={label ? 'img' : undefined}
       aria-hidden={isDecorative ? true : undefined}
       aria-label={label ?? undefined}
     >
@@ -112,7 +112,7 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
  *  upload split on the right. */
 function HostRow({ host }: { host: HostConn }): JSX.Element {
   return (
-    <div className={styles.hostRow}>
+    <li className={styles.hostRow}>
       <span className={styles.hostId}>
         <HostGlyph host={host} />
         <HostName host={host} />
@@ -120,14 +120,16 @@ function HostRow({ host }: { host: HostConn }): JSX.Element {
       <span className={styles.hostFigures}>
         <span className={styles.figure}>
           <DirectionIcon series="down" size={11} />
+          <span className="sr-only">Down</span>
           <MetricValue value={host.rxBytes} className="num" format={formatBytes} />
         </span>
         <span className={styles.figure}>
           <DirectionIcon series="up" size={11} />
+          <span className="sr-only">Up</span>
           <MetricValue value={host.txBytes} className="num" format={formatBytes} />
         </span>
       </span>
-    </div>
+    </li>
   )
 }
 
@@ -141,39 +143,45 @@ function AppGroup({
   isExpanded: boolean
   onToggle: () => void
 }): JSX.Element {
+  const hostsId = useId()
   const total = app.rxBytes + app.txBytes
   const hostCount = app.hosts.length
   return (
-    <div className={styles.group} data-app={app.name}>
-      <button
-        type="button"
-        className={styles.header}
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-        aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}`}
-      >
-        <span className={styles.appId}>
-          <ChevronDownIcon
-            size={14}
-            className={chevronVariants({ isOpen: isExpanded })}
-            aria-hidden
-          />
-          <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
-          <span className={styles.appName} title={app.name}>
-            {app.name}
+    <li className={styles.group} data-app={app.name}>
+      {/* An accordion header: the heading names the group, the button inside it
+          toggles the hosts beneath. */}
+      <h2 className={styles.groupHeading}>
+        <button
+          type="button"
+          className={styles.header}
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-controls={isExpanded ? hostsId : undefined}
+          aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
+        >
+          <span className={styles.appId}>
+            <ChevronDownIcon
+              size={14}
+              className={chevronVariants({ isOpen: isExpanded })}
+              aria-hidden
+            />
+            <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
+            <span className={styles.appName} title={app.name}>
+              {app.name}
+            </span>
+            <span className={styles.count}>{hostCount}</span>
           </span>
-          <span className={styles.count}>{hostCount}</span>
-        </span>
-        <MetricValue value={total} className={cx(styles.appTotal, 'num')} format={formatBytes} />
-      </button>
+          <MetricValue value={total} className={cx(styles.appTotal, 'num')} format={formatBytes} />
+        </button>
+      </h2>
       {isExpanded && (
-        <div className={styles.hosts}>
+        <ul role="list" id={hostsId} aria-label={`Hosts for ${app.name}`} className={styles.hosts}>
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </li>
   )
 }
 
@@ -188,7 +196,7 @@ function HostsBody({
 }: {
   usage: HostUsageSummary
   isFirstLoad: boolean
-  listRef: RefObject<HTMLDivElement>
+  listRef: RefObject<HTMLUListElement>
   isExpanded: (name: string) => boolean
   onToggle: (name: string) => void
 }): JSX.Element {
@@ -205,7 +213,7 @@ function HostsBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="view-empty">
+      <div className="view-empty" role="status">
         <Spinner />
         <p className="text-muted">Measuring per-app hosts…</p>
       </div>
@@ -216,7 +224,7 @@ function HostsBody({
   }
   return (
     <div className="ui-section">
-      <div className={cx('ui-section-body', styles.list)} ref={listRef}>
+      <ul role="list" aria-label="Apps" className={cx('ui-section-body', styles.list)} ref={listRef}>
         {apps.map((app) => (
           <AppGroup
             key={app.name}
@@ -225,7 +233,7 @@ function HostsBody({
             onToggle={() => onToggle(app.name)}
           />
         ))}
-      </div>
+      </ul>
     </div>
   )
 }

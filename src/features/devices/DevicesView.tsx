@@ -26,8 +26,7 @@ import { Tooltip } from '@/components/Tooltip'
 import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import { formatMac } from '@/lib/format'
-import { cva } from 'class-variance-authority'
-import { cx } from '@/lib/cx'
+import { cva, cx } from 'class-variance-authority'
 import { useAppData } from '@/app/hooks/useAppData'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
@@ -281,7 +280,16 @@ function KindIcon({ kind }: { kind: LanDeviceKind }): JSX.Element {
 //
 // All three words are stacked (a hidden sizer holds the width to the longest
 // so the layout never jumps); each one's state class (past, current, next) places it.
-function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
+//
+// `isLiveRegion` makes it its own polite live region; off when it shares the
+// subnet's indicator slot, which is the live region there.
+function ScanStatus({
+  isActive,
+  isLiveRegion,
+}: {
+  isActive: boolean
+  isLiveRegion: boolean
+}): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const [isMounted, setIsMounted] = useState(isActive)
   if (isActive && !isMounted) setIsMounted(true)
@@ -309,7 +317,11 @@ function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
 
   if (!isMounted) return null
   return (
-    <span className={scanVariants({ isLeaving: !isActive })} role="status">
+    <span
+      className={scanVariants({ isLeaving: !isActive })}
+      role={isLiveRegion ? 'status' : undefined}
+      aria-hidden={isActive ? undefined : true}
+    >
       <span className={styles.scanDot} aria-hidden />
       <span className={styles.scanPhases}>
         <span className={styles.scanPhaseSizer} aria-hidden>
@@ -355,6 +367,7 @@ function OnlineIndicator({
     <span
       className={onlineVariants({ isLeaving: !isActive })}
       title="Responding to the last scan"
+      aria-hidden={isActive ? undefined : true}
     >
       <span className={styles.onlineDot} aria-hidden />
       <span className="num">{count}</span> online
@@ -409,13 +422,13 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <section className={rowVariants({ isGateway: device.isGateway })}>
+    <li className={rowVariants({ isGateway: device.isGateway })}>
       <span className={iconVariants({ kind: device.kind })}>
         <KindIcon kind={device.kind} />
       </span>
       <div className={styles.body}>
         <div className={styles.top}>
-          <span className={cx('text-title', styles.name)}>{name}</span>
+          <h2 className={cx('text-title', styles.name)}>{name}</h2>
           <span
             className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
@@ -429,17 +442,24 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
         <div className={styles.bottom}>
           <span className={cx('text-meta', styles.mac)}>
-            <span>{formatMac(device.mac)}</span>
+            <span>
+              <span className="sr-only">MAC address </span>
+              {formatMac(device.mac)}
+            </span>
             {shouldShowRandomizedTag && (
               <span className={styles.random} title="Privacy-randomized MAC address">
-                Randomized
+                <span aria-hidden>Randomized</span>
+                <span className="sr-only">, privacy-randomized</span>
               </span>
             )}
           </span>
-          <span className={cx(styles.ip, 'num')}>{device.ip}</span>
+          <span className={cx(styles.ip, 'num')}>
+            <span className="sr-only">IP address </span>
+            {device.ip}
+          </span>
         </div>
       </div>
-    </section>
+    </li>
   )
 }
 
@@ -467,15 +487,17 @@ function renderSubtitle(
         {/* One slot shared by the online tally and the scan status. The
             entering one holds the slot's width while the leaving one is
             overlaid absolutely (see CSS), so they cross-slide in place
-            instead of shoving each other sideways. */}
-        <span className={styles.indicator}>
+            instead of shoving each other sideways. The slot is the live
+            region, so both the scan stages and the final tally are read out;
+            the leaving one is hidden from it. */}
+        <span className={styles.indicator} role="status">
           <OnlineIndicator isActive={!isScanning} count={onlineCount} />
-          <ScanStatus isActive={isScanning} />
+          <ScanStatus isActive={isScanning} isLiveRegion={false} />
         </span>
       </>
     )
   }
-  if (isScanning) return <ScanStatus isActive />
+  if (isScanning) return <ScanStatus isActive isLiveRegion />
   return undefined
 }
 
@@ -516,9 +538,11 @@ function DevicesBody({
   }
   return (
     <div className={styles.list}>
-      {devices.map((device) => (
-        <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
-      ))}
+      <ul role="list" aria-label="Devices" aria-busy={isScanning} className={styles.devices}>
+        {devices.map((device) => (
+          <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
+        ))}
+      </ul>
       {shouldShowLocalNetworkHint && <p className={cx('text-muted', styles.hint)}>{LOCAL_NETWORK_HINT}</p>}
     </div>
   )
@@ -565,7 +589,11 @@ export function DevicesView(): JSX.Element {
         }
       />
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       <DevicesBody
         devices={devices}

@@ -15,6 +15,12 @@
   margin-top: 18px;
 }
 
+/* The day's events under its heading — the same column the day itself stacks in. */
+.day-events {
+  display: flex;
+  flex-direction: column;
+}
+
 .day-heading {
   margin: 0 0 var(--section-padding);
   color: var(--text-tertiary);

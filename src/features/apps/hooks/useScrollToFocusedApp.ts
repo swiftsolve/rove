@@ -14,8 +14,8 @@ import { flashHighlight } from '@/lib/highlight'
 export function useScrollToFocusedApp(
   focusApp: string | null | undefined,
   apps: AppHosts[],
-): RefObject<HTMLDivElement> {
-  const listRef = useRef<HTMLDivElement>(null)
+): RefObject<HTMLUListElement> {
+  const listRef = useRef<HTMLUListElement>(null)
   const hasScrolledRef = useRef(false)
   useEffect(() => {
     if (!focusApp || hasScrolledRef.current) return

@@ -1,9 +1,9 @@
+import { cx } from 'class-variance-authority'
 import { Section } from '@/components/Section'
 import { DataRow } from '@/components/DataRow'
 import { BrandIcon } from '@/components/icons/Icons'
 import { IS_MAC } from '@/lib/platform'
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
-import { cx } from '@/lib/cx'
 import styles from './AboutView.module.css'
 
 const REPO_URL = 'https://github.com/swiftsolve/rove'
@@ -30,12 +30,13 @@ export function AboutView(): JSX.Element {
         {version && <span className={styles.version}>Version {version}</span>}
       </div>
 
-      <Section title="Details" bodyClassName="row-list">
+      <Section title="Details" bodyAs="dl" bodyClassName="row-list">
         <DataRow label="Version" value={version ?? '—'} />
         <DataRow label="Platform" value={platformLabel()} />
         <DataRow label="Source">
           <a className={styles.link} href={REPO_URL} target="_blank" rel="noreferrer">
             github.com/swiftsolve/rove
+            <span className="sr-only"> (opens in a new window)</span>
           </a>
         </DataRow>
       </Section>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { cx } from '@/lib/cx'
+import { cx } from 'class-variance-authority'
 import styles from './ServiceIcon.module.css'
 
 // Suffixes that only ever name something on the local network, so the public

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cx } from '@/lib/cx'
+import { cx } from 'class-variance-authority'
 import styles from './EmptyState.module.css'
 
 interface IconProps {
@@ -27,7 +27,7 @@ export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps)
   return (
     <div className={cx('view-empty', styles.root)}>
       <Icon size={32} className={styles.icon} />
-      <p className={styles.title}>{title}</p>
+      <h2 className={styles.title}>{title}</h2>
       {hint != null && <EmptyStateHint>{hint}</EmptyStateHint>}
       {action}
     </div>
@@ -35,6 +35,17 @@ export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps)
 }
 
 /** A line of explanation under the title — also for extra notes an `action` adds. */
-export function EmptyStateHint({ children }: { children: ReactNode }): JSX.Element {
-  return <p className={styles.hint}>{children}</p>
+export function EmptyStateHint({
+  children,
+  role,
+}: {
+  children: ReactNode
+  /** `status` for a note that appears in answer to an action, so it's announced. */
+  role?: 'status'
+}): JSX.Element {
+  return (
+    <p className={styles.hint} role={role}>
+      {children}
+    </p>
+  )
 }

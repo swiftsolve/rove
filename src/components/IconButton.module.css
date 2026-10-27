@@ -11,11 +11,11 @@
     transform var(--duration-fast) var(--ease-in-out);
 }
 
-.root:active:not(:disabled) {
+.root:active:not(:disabled, [aria-disabled='true']) {
   transform: translateY(0.5px);
 }
 
-.root:disabled {
+.root:is(:disabled, [aria-disabled='true']) {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
@@ -35,7 +35,7 @@
   color: var(--accent);
 }
 
-.primary:hover:not(:disabled) {
+.primary:hover:not(:disabled, [aria-disabled='true']) {
   background: var(--accent-muted);
   color: var(--accent-hover);
 }
@@ -58,7 +58,7 @@
   fill: currentColor;
 }
 
-.secondary:hover:not(:disabled) {
+.secondary:hover:not(:disabled, [aria-disabled='true']) {
   background: var(--bg-hover);
   color: var(--text-primary);
 }

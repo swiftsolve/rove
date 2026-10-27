@@ -54,7 +54,10 @@ function HeaderSubtitle(): JSX.Element {
   if (completedAt != null) {
     return (
       <>
-        Updated {formatTimeAgo(completedAt, now)}
+        <span>
+          Updated{' '}
+          <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+        </span>
         <DotSeparator />
         <HistoryLink />
       </>
@@ -86,11 +89,7 @@ function TestButton(): JSX.Element {
   if (!canTest) {
     return (
       <Tooltip content="Connect to a network first">
-        <Button
-          variant="filled"
-          disabled
-          aria-label="Run test"
-        >
+        <Button variant="filled" isDisabled>
           <PlayIcon size={13} />
           Run test
         </Button>
