@@ -2,28 +2,45 @@ import { useId, useMemo, useRef, useState } from 'react'
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { latencyBand, type LatencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
-import { cva } from 'class-variance-authority'
-import styles from './Sparkline.module.css'
+import { cva, cx } from 'class-variance-authority'
 
-const chartVariants = cva(styles.chart, {
+// A row-sized latency chart. The wrapper is the positioning context for the
+// floating hover label, which is anchored to the hovered point's x.
+const ROOT = 'relative inline-block shrink-0'
+
+const chartVariants = cva('cursor-crosshair overflow-visible', {
   variants: {
     /** The health band, which colours the line via currentColor. */
     level: {
-      good: styles.levelGood,
-      warn: styles.levelWarn,
-      bad: styles.levelBad,
+      none: 'text-tertiary',
+      good: 'text-status-positive',
+      warn: 'text-status-warning',
+      bad: 'text-status-negative',
     },
-    /** Nothing recorded yet: an empty box that holds the row's space. */
-    isEmpty: { true: styles.isEmpty },
+    /** Nothing recorded yet: an empty box that holds the row's space, so rows
+     *  don't reflow once history starts to land. */
+    isEmpty: { true: 'inline-block', false: 'block' },
   },
+  defaultVariants: { level: 'none', isEmpty: false },
 })
 
-const lineVariants = cva(styles.line, {
+const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [stroke-linejoin:round]', {
   variants: {
-    /** The down state's flat baseline, with square ends. */
-    isFlat: { true: styles.isFlat },
+    /** The down state's flat baseline. It keeps the trend's stroke weight but
+     *  runs the full width with square ends, so it lines up flush with the
+     *  status text under it instead of stopping a pad short of either edge. */
+    isFlat: { true: '[stroke-linecap:butt]', false: '[stroke-linecap:round]' },
   },
+  defaultVariants: { isFlat: false },
 })
+
+// The value bubble that follows the hovered point. Centred over its x and lifted
+// above the chart; translate keeps it from clipping at the chart's edges.
+const TIP = cx(
+  'pointer-events-none absolute bottom-[calc(100%+3px)] z-3 -translate-x-1/2 whitespace-nowrap',
+  'rounded-xs border border-line bg-raised px-6 py-2 shadow-panel',
+  'font-numeric text-2xs leading-[1.2] text-primary tabular-nums',
+)
 
 interface Point {
   x: number
@@ -190,7 +207,7 @@ export function Sparkline({
   // reads as "nothing" rather than a mid-range reading. Hovering it says "Down".
   if (isDown) {
     return (
-      <span className={styles.root} style={{ width, height }}>
+      <span className={ROOT} style={{ width, height }}>
         <svg
           className={chartVariants({ level: 'bad' })}
           width={width}
@@ -204,7 +221,7 @@ export function Sparkline({
           <line className={lineVariants({ isFlat: true })} x1={0} y1={baseline} x2={width} y2={baseline} />
         </svg>
         {hoveredIndex !== null && (
-          <span className={styles.tip} style={{ left: '50%' }} aria-hidden="true">
+          <span className={TIP} style={{ left: '50%' }} aria-hidden="true">
             Down
           </span>
         )}
@@ -228,7 +245,7 @@ export function Sparkline({
   }
 
   return (
-    <span className={styles.root} style={{ width, height }}>
+    <span className={ROOT} style={{ width, height }}>
       <svg
         ref={svgRef}
         className={chartVariants({ level: chartLevel(latestMs) })}
@@ -249,10 +266,11 @@ export function Sparkline({
             <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
           </linearGradient>
         </defs>
+        {/* Its fill is the gradient above; it never draws an outline. */}
         {areaRuns.map((run, i) => (
           <polygon
             key={`area-${i}`}
-            className={styles.area}
+            className="stroke-none"
             points={areaPoints(run, baseline)}
             fill={`url(#${fillId})`}
           />
@@ -263,31 +281,31 @@ export function Sparkline({
           ) : (
             // A lone reachable sample between gaps: draw it as a dot, since a
             // one-point polyline renders nothing.
-            <circle key={i} className={styles.soloDot} cx={run[0]!.x} cy={run[0]!.y} r={DOT_RADIUS} />
+            <circle key={i} className="fill-current" cx={run[0]!.x} cy={run[0]!.y} r={DOT_RADIUS} />
           ),
         )}
-        {/* Baseline ticks for failed probes. */}
+        {/* Baseline ticks for failed probes, red whatever the line's band. */}
         {points.map((p, i) =>
           p.sample.ms === null ? (
-            <circle key={`down-${i}`} className={styles.downMark} cx={p.x} cy={p.y} r={DOT_RADIUS} />
+            <circle key={`down-${i}`} className="fill-status-negative" cx={p.x} cy={p.y} r={DOT_RADIUS} />
           ) : null,
         )}
         {hovered && (
           <>
             <line
-              className={styles.cursor}
+              className="stroke-line-strong stroke-1"
               x1={hovered.x}
               y1={VERTICAL_PAD}
               x2={hovered.x}
               y2={baseline}
             />
-            <circle className={styles.cursorDot} cx={hovered.x} cy={hovered.y} r={CURSOR_DOT_RADIUS} />
+            <circle className="fill-current stroke-panel stroke-[1.5]" cx={hovered.x} cy={hovered.y} r={CURSOR_DOT_RADIUS} />
           </>
         )}
       </svg>
       {hovered && (
         <span
-          className={styles.tip}
+          className={TIP}
           style={{ left: `${(hovered.x / width) * 100}%` }}
           aria-hidden="true"
         >

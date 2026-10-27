@@ -10,7 +10,6 @@ import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Ico
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { Spinner } from '@/components/Spinner'
 import { IconButton } from '@/components/IconButton'
-import styles from './UsageView.module.css'
 
 interface UsageDatum {
   key: string
@@ -25,6 +24,17 @@ const USAGE_INFO_HINT =
 const CHART_HEIGHT = 124
 const BAR_MAX_WIDTH = 9
 const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
+
+// The footer strip: the inset tier, same as the capabilities and speed-test
+// footers, with no hairline (the colour step alone separates it). It bleeds to
+// the card's left, right and bottom edges, and the card's overflow:hidden rounds
+// its bottom corners. Its padding matches the speed-test footer's rhythm. The
+// "Since boot" label sits left, the down/up totals grouped at the right.
+const TOTALS_FOOTER = cx(
+  'text-meta flex items-center justify-between gap-12',
+  'mt-12 -mx-(--section-body-padding) -mb-(--section-body-padding) p-(--section-body-padding)',
+  'bg-inset',
+)
 
 const WEEKDAY_FORMAT = new Intl.DateTimeFormat(undefined, { weekday: 'short' })
 
@@ -48,7 +58,8 @@ function BytesMetric({
 
   return (
     <div>
-      <dt className={styles.metricLabel}>
+      {/* mb-8 matches the speed-test hero's label→value rhythm. */}
+      <dt className="mb-8 flex items-center gap-6">
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
       </dt>
@@ -71,15 +82,15 @@ function TotalsFooter({
   txBytes: number
 }): JSX.Element {
   return (
-    <p className={cx('text-meta', styles.footer, styles.isSplit)}>
+    <p className={TOTALS_FOOTER}>
       <span>{label}</span>
-      <span className={styles.footerMetrics}>
-        <span className={styles.footerMetric}>
+      <span className="inline-flex items-center gap-12">
+        <span className="inline-flex items-center gap-4">
           <DirectionIcon series="down" size={11} />
           <span className="sr-only">Downloaded</span>
           <span className="num">{formatBytes(rxBytes)}</span>
         </span>
-        <span className={styles.footerMetric}>
+        <span className="inline-flex items-center gap-4">
           <DirectionIcon series="up" size={11} />
           <span className="sr-only">Uploaded</span>
           <span className="num">{formatBytes(txBytes)}</span>
@@ -192,7 +203,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
       .join('. ')
 
   return (
-    <div className={styles.chartWrap} role="img" aria-label={chartLabel}>
+    <div className="relative" role="img" aria-label={chartLabel}>
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <BarChart
           data={data}
@@ -268,7 +279,9 @@ export function UsageView(): JSX.Element {
       ) : (
         <>
           <Section title="Today" icon={<TodayIcon size={15} />}>
-            <dl className={styles.hero}>
+            {/* Today metrics sit on the plain card surface; the section body's top
+                padding is the only gap below the title. */}
+            <dl className="grid grid-cols-[1fr_1fr] gap-16">
               <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
               <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
             </dl>

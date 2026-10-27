@@ -6,7 +6,6 @@ import { CapabilityStrip } from '@/features/capabilities/CapabilityStrip'
 import { UsageCard } from '@/features/home/components/UsageCard'
 import { DevicesCard } from '@/features/home/components/DevicesCard'
 import { LiveThroughputPanel } from '@/features/live-throughput/LiveThroughputPanel'
-import styles from './HomeView.module.css'
 
 export function HomeView(): JSX.Element | null {
   const { info } = useNetwork()
@@ -28,8 +27,9 @@ export function HomeView(): JSX.Element | null {
       {isConnected && <LiveThroughputPanel />}
       {(isConnected || capabilities.length > 0) && <CapabilityStrip />}
 
-      {/* Two different summaries side by side, not a list: each card is its own section. */}
-      <div className={styles.statCards}>
+      {/* Two different summaries side by side, not a list: each card is its own
+          section. Usage carries two numbers, so it gets the wider column. */}
+      <div className="grid grid-cols-[3fr_2fr] gap-10">
         <UsageCard />
         <DevicesCard />
       </div>

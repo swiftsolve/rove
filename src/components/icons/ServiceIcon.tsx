@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import { cx } from 'class-variance-authority'
-import styles from './ServiceIcon.module.css'
 
 // Suffixes that only ever name something on the local network, so the public
 // icon service has nothing to serve for them and answers 404.
 const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', '.localdomain']
 const IPV4_LITERAL = /^\d{1,3}(\.\d{1,3}){3}$/
+// No backing chip: favicons render on the panel directly, so logos with
+// transparent padding blend in instead of flashing a white square. Most service
+// favicons carry their own background, so this reads cleanly.
+const ICON = 'shrink-0 rounded-xs object-contain'
+const MONOGRAM = cx(
+  ICON,
+  'inline-flex items-center justify-center bg-hover',
+  'text-2xs font-semibold leading-none text-(--text-secondary)',
+)
+
 // Requested well above the rendered size so it stays crisp on high-DPI screens.
 const FAVICON_REQUEST_PX = 64
 
@@ -73,7 +82,7 @@ export function ServiceIcon({
   if (src && !hasSrcFailed) {
     return (
       <img
-        className={styles.root}
+        className={ICON}
         src={src}
         alt=""
         style={dimensions}
@@ -85,7 +94,7 @@ export function ServiceIcon({
   if (mayHaveFavicon(host) && !failedFavicons.has(host)) {
     return (
       <img
-        className={styles.root}
+        className={ICON}
         src={faviconUrl(host)}
         alt=""
         style={dimensions}
@@ -101,7 +110,7 @@ export function ServiceIcon({
   if (fallback === 'none') return null
 
   return (
-    <span className={cx(styles.root, styles.monogram)} style={dimensions} aria-hidden="true">
+    <span className={MONOGRAM} style={dimensions} aria-hidden="true">
       {name.trim().charAt(0).toUpperCase() || '?'}
     </span>
   )

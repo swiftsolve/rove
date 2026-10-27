@@ -19,14 +19,68 @@ import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
-import styles from './HostsView.module.css'
 
-/** An app group's disclosure chevron: points right when closed, down when open. */
-const chevronVariants = cva(styles.chevron, {
-  variants: {
-    isOpen: { true: styles.isOpen },
+/** An app group's disclosure chevron: points down when open, rotates to a right
+ *  caret when closed. */
+const chevronVariants = cva(
+  'shrink-0 text-tertiary transition-[transform] duration-(--duration-normal) ease-out',
+  {
+    variants: {
+      isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
+    },
   },
-})
+)
+
+// An app group sits flush against the card edge with no radius of its own, so a
+// ring's corners (the nav-flash highlight's, or the focus ring's) would run
+// square into the card's rounded ones and get shaved off by its overflow:hidden.
+// It matches the card's curve on whichever edges it touches; with no fill, the
+// radius is invisible the rest of the time. The header toggles the whole group,
+// so focus frames the group (header and, when expanded, its hosts) rather than
+// the header row alone. Scroll margin gives breathing room when a focused group
+// is scrolled to the top of the list.
+const GROUP = cx(
+  'scroll-mt-12 first:rounded-t-lg last:rounded-b-lg',
+  'has-[>h2>button:focus-visible]:[outline:var(--focus-ring)]',
+  'has-[>h2>button:focus-visible]:outline-offset-(--focus-inset)',
+)
+
+// The group header is a full-width toggle that carries the row's inset, so the
+// whole row is the click target, with a quiet hover to signal it. Expanded, the
+// hosts sit 8px below it. Its own ring is drawn on the group instead.
+const GROUP_HEADER = cx(
+  'flex w-full items-center justify-between gap-12 px-(--section-body-padding) py-12 aria-expanded:pb-8',
+  '[font:inherit] text-left text-inherit hover:text-primary focus-visible:outline-none',
+  'transition-[color] duration-(--duration-fast) ease-in-out',
+)
+
+// Fixed-width flag slot so hostnames stay aligned whether or not a flag (or a
+// fallback glyph) is present. Twemoji flag glyphs come first so the country flags
+// render on Windows, which has no flag emoji; the SVG fallbacks aren't text and
+// are unaffected. See the @font-face note in index.css.
+const FLAG_SLOT = cx(
+  'inline-flex w-[18px] shrink-0 items-center justify-center',
+  "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font)]",
+)
+
+// Download/upload figures, right-aligned in a fixed-width box so the down and up
+// columns line up across the rows in a group.
+const HOST_COUNT = cx(
+  'min-w-[18px] shrink-0 rounded-full bg-inset px-6 py-px',
+  'text-center text-xs text-tertiary tabular-nums',
+)
+
+// The app's hosts, indented so each 18px flag sits centred under the 16px app
+// icon above it (past the chevron gutter): chevron 14 + gap 8 + half of
+// (16 − 18) ≈ 21px. The flag column then reads as a continuation of the
+// app-icon column.
+const HOSTS = cx(
+  'flex flex-col gap-8',
+  'pr-(--section-body-padding) pb-12 pl-[calc(var(--section-body-padding)+21px)]',
+)
+
+const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const HOST_USAGE_INFO_HINT =
   'The remote hosts each app has connected to, from the OS per-socket peer ' +
@@ -65,12 +119,12 @@ function HostGlyph({ host }: { host: HostConn }): JSX.Element {
 
   const glyph = (
     <span
-      className={styles.flag}
+      className={FLAG_SLOT}
       role={label ? 'img' : undefined}
       aria-hidden={isDecorative ? true : undefined}
       aria-label={label ?? undefined}
     >
-      {flag ?? <FallbackIcon size={12} className={styles.flagFallback} />}
+      {flag ?? <FallbackIcon size={12} className="text-tertiary opacity-60" />}
     </span>
   )
   if (!label) return glyph
@@ -92,18 +146,23 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
   return (
     <UiTooltip
       content={
-        <span className={styles.tipContent}>
-          <span className={styles.tipName}>{host.host}</span>
-          <span className={styles.tipIp}>{host.ip}</span>
+        <span className="flex flex-col gap-2">
+          {/* Most hostnames fit the bubble's widened cap on one line, so the box
+              hugs them; a longer one fills each line to the edge rather than
+              breaking at a hyphen and leaving the box padded out to the cap. */}
+          <span className="text-primary break-all">{host.host}</span>
+          <span className="text-tertiary tabular-nums">{host.ip}</span>
         </span>
       }
       placement="top"
       align="left"
-      className={styles.nameTip}
+      // The wrapper must itself shrink and clip so the name still truncates
+      // inside the row; the portalled bubble is unaffected by the clip.
+      className="min-w-[0] overflow-hidden"
       maxWidth={360}
       isDisabled={!host.host}
     >
-      <span className={styles.hostName}>{host.host ?? host.ip}</span>
+      <span className="truncate text-xs text-(--text-secondary)">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }
@@ -112,21 +171,21 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
  *  upload split on the right. */
 function HostRow({ host }: { host: HostConn }): JSX.Element {
   return (
-    <li className={styles.hostRow}>
-      <span className={styles.hostId}>
+    <li className="flex items-center justify-between gap-12">
+      <span className="inline-flex min-w-[0] items-center gap-[7px]">
         <HostGlyph host={host} />
         <HostName host={host} />
       </span>
-      <span className={styles.hostFigures}>
-        <span className={styles.figure}>
+      <span className="inline-flex shrink-0 items-center gap-12">
+        <span className={FIGURE}>
           <DirectionIcon series="down" size={11} />
           <span className="sr-only">Down</span>
-          <MetricValue value={host.rxBytes} className="num" format={formatBytes} />
+          <MetricValue value={host.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
-        <span className={styles.figure}>
+        <span className={FIGURE}>
           <DirectionIcon series="up" size={11} />
           <span className="sr-only">Up</span>
-          <MetricValue value={host.txBytes} className="num" format={formatBytes} />
+          <MetricValue value={host.txBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
       </span>
     </li>
@@ -147,35 +206,42 @@ function AppGroup({
   const total = app.rxBytes + app.txBytes
   const hostCount = app.hosts.length
   return (
-    <li className={styles.group} data-app={app.name}>
+    <li className={GROUP} data-app={app.name}>
       {/* An accordion header: the heading names the group, the button inside it
-          toggles the hosts beneath. */}
-      <h2 className={styles.groupHeading}>
+          toggles the hosts beneath. The heading carries meaning only: it takes
+          the row's own font, so the button inside (font: inherit) renders as
+          before. */}
+      <h2 className="[font:inherit]">
         <button
           type="button"
-          className={styles.header}
+          className={GROUP_HEADER}
           onClick={onToggle}
           aria-expanded={isExpanded}
           aria-controls={isExpanded ? hostsId : undefined}
           aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
         >
-          <span className={styles.appId}>
+          <span className="inline-flex min-w-[0] items-center gap-8">
             <ChevronDownIcon
               size={14}
               className={chevronVariants({ isOpen: isExpanded })}
               aria-hidden
             />
             <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
-            <span className={styles.appName} title={app.name}>
+            <span className="truncate text-sm text-primary" title={app.name}>
               {app.name}
             </span>
-            <span className={styles.count}>{hostCount}</span>
+            {/* Small muted count of hosts in the group, after the app name. */}
+            <span className={HOST_COUNT}>{hostCount}</span>
           </span>
-          <MetricValue value={total} className={cx(styles.appTotal, 'num')} format={formatBytes} />
+          <MetricValue
+            value={total}
+            className="num shrink-0 text-sm text-(--text-secondary)"
+            format={formatBytes}
+          />
         </button>
       </h2>
       {isExpanded && (
-        <ul role="list" id={hostsId} aria-label={`Hosts for ${app.name}`} className={styles.hosts}>
+        <ul role="list" id={hostsId} aria-label={`Hosts for ${app.name}`} className={HOSTS}>
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
           ))}
@@ -224,7 +290,14 @@ function HostsBody({
   }
   return (
     <div className="ui-section">
-      <ul role="list" aria-label="Apps" className={cx('ui-section-body', styles.list)} ref={listRef}>
+      {/* The groups own the inset (p-[0] here), so the hairlines between them
+          run edge to edge, clipped to the card's rounded corners. */}
+      <ul
+        role="list"
+        aria-label="Apps"
+        className="ui-section-body flex flex-col p-[0] [&>li+li]:border-t [&>li+li]:border-t-line"
+        ref={listRef}
+      >
         {apps.map((app) => (
           <AppGroup
             key={app.name}

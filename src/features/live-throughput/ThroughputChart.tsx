@@ -7,7 +7,14 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
-import styles from './ThroughputChart.module.css'
+
+// Scale labels are HTML rather than recharts ticks: recharts' own tick labels
+// ghost/duplicate when the domain changes. The 4px inset matches the AreaChart
+// margin ({ top: 4, bottom: 4 }) so the ticks line up with the plot.
+const SCALE = cx(
+  'pointer-events-none absolute top-[4px] right-[0] bottom-[4px] w-[26px]',
+  'flex flex-col items-end justify-between',
+)
 
 interface ThroughputChartProps {
   download: number[]
@@ -93,9 +100,9 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
     }
 
   return (
-    <div className={styles.root}>
+    <div className="relative [contain:layout]">
       <div
-        className={styles.plot}
+        className="relative h-[80px]"
         role="img"
         aria-label={`Throughput over time. Currently ${currentDown.toFixed(1)} megabits per second down, ${currentUp.toFixed(1)} up`}
       >
@@ -160,14 +167,17 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
           </AreaChart>
         </ResponsiveContainer>
 
-        <div className={cx(styles.scale, 'text-chart-label', 'num')} aria-hidden>
-          <span>{formatAxis(scaleMax)}</span>
+        <div className={cx(SCALE, 'text-chart-label', 'num')} aria-hidden>
+          <span className="translate-y-[-50%]">{formatAxis(scaleMax)}</span>
           <span>{formatAxis(scaleMax / 2)}</span>
-          <span>0</span>
+          {/* Centred on the bottom edge (the y=0 baseline), mirroring the top
+              label, so it lines up with the reference line. */}
+          <span className="translate-y-[50%]">0</span>
         </div>
       </div>
 
-      <div className={cx(styles.axis, 'text-chart-label', 'num')} aria-hidden>
+      {/* Same .text-chart-label type as the scale, so the x and y labels read as one set. */}
+      <div className={cx('mt-6 flex justify-between pr-[26px]', 'text-chart-label', 'num')} aria-hidden>
         <span>{formatChartWindowLabel()}</span>
         <span>Now</span>
       </div>

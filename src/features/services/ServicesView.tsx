@@ -23,12 +23,83 @@ import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
 import styles from './ServicesView.module.css'
 
-const menuItemVariants = cva(styles.menuItem, {
-  variants: {
-    /** Destructive (Remove): red text and a red-tinted hover. */
-    isDanger: { true: styles.isDanger },
+// Per-row overflow menu: a kebab button anchoring a dropdown.
+//
+// On hover-capable pointers the kebab is collapsed to zero width until its row is
+// hovered, then grows and fades in, nudging the latency column aside as it slides
+// in. It stays shown while its menu is open or it has keyboard focus. Touch keeps
+// it always visible.
+const KEBAB = cx(
+  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-tertiary',
+  'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
+  '[@media(hover:hover)]:w-[0] [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
+  'group-hover/row:w-[30px] group-hover/row:opacity-100',
+  'focus-visible:w-[30px] focus-visible:opacity-100',
+  'aria-expanded:w-[30px] aria-expanded:opacity-100',
+  'hover:bg-hover hover:text-primary aria-expanded:bg-hover aria-expanded:text-primary',
+)
+
+// The dropdown's entrance animation lives in the module (`styles.dropdown`).
+const DROPDOWN = cx(
+  styles.dropdown,
+  'absolute top-[calc(100%+4px)] right-[0] z-20 flex min-w-[112px] flex-col gap-2 p-4',
+  'rounded-sm border border-line-strong bg-raised shadow-raised',
+)
+
+const menuItemVariants = cva(
+  [
+    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm font-medium',
+    'transition-[color,background] duration-(--duration-fast) ease-in-out',
+    // Items fill the menu edge to edge, so the ring goes inside the item.
+    'focus-visible:outline-offset-(--focus-inset)',
+  ],
+  {
+    variants: {
+      /** Destructive (Remove): red text and a red-tinted hover. */
+      isDanger: {
+        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
+        false: 'text-(--text-secondary) hover:bg-hover hover:text-primary',
+      },
+    },
+    defaultVariants: { isDanger: false },
   },
-})
+)
+
+// One line of a row's body: left-hand text that ellipsises, right-hand value
+// that holds its width.
+const LINE = 'flex min-w-[0] items-center gap-12'
+
+// Timeline link sitting in the header subtitle: the same quiet pill link as
+// Speed's "All Results" (see SpeedView's history link), down to the geometry and
+// weight; only the glyph differs. The button reset carries the font family
+// across but not the size, so font-size: inherit is what keeps it at the
+// subtitle's caption size. The negative left margin cancels the pill's padding
+// and the glyph's empty edge, so the dot keeps the same 8px to the glyph as to
+// the text before it.
+// The dot is a plain subtitle child, so a window narrow enough to wrap the link
+// can strand it at the start of a line, where it reads as a bullet; only the web
+// demo's phone widths get that narrow, and the app's own window never does.
+//
+// Text links show focus the way they show hover (accent + underline), not with a
+// ring. The glyphs share the link's (animating) colour so glyph and label shift
+// together; they sit a touch dimmer at rest via opacity, so there's a single
+// colour animation rather than two that drift out of sync.
+const TIMELINE_LINK = cx(
+  'group/link inline-flex cursor-pointer items-center gap-[5px] ml-[-9.5px] rounded-full px-8 py-2',
+  '[font-size:inherit] font-medium text-(--text-secondary)',
+  'transition-[color] duration-(--duration-fast) ease-in-out',
+  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
+  '[&_svg]:text-inherit [&_svg]:opacity-72',
+  '[&_svg]:transition-[opacity] [&_svg]:duration-(--duration-fast) [&_svg]:ease-in-out',
+  'hover:[&_svg]:opacity-100 focus-visible:[&_svg]:opacity-100',
+)
+
+// Underline only the label on hover (not the glyph), matching the Speed history
+// link, so it reads as a link while the whole control picks up the accent.
+const TIMELINE_LINK_TEXT = cx(
+  'group-hover/link:underline group-hover/link:underline-offset-2',
+  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+)
 
 type DialogState = { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }
 
@@ -51,10 +122,10 @@ function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuPro
   const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => onOpenChange(null))
 
   return (
-    <div className={styles.menu} ref={rootRef}>
+    <div className="relative shrink-0" ref={rootRef}>
       <button
         type="button"
-        className={styles.kebab}
+        className={KEBAB}
         {...triggerProps}
         aria-label={`Options for ${service.name}`}
         onClick={() => onOpenChange(isOpen ? null : service.host)}
@@ -62,7 +133,7 @@ function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuPro
         <MoreVerticalIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} {...menuProps}>
+        <div className={DROPDOWN} {...menuProps}>
           <button type="button" role="menuitem" tabIndex={-1} className={menuItemVariants()} onClick={onEdit}>
             <EditIcon size={14} />
             Edit
@@ -150,11 +221,15 @@ function ServiceRow({
     : false
 
   return (
-    <li className={styles.row}>
-      <div className={styles.body}>
-        <div className={styles.line}>
+    // Less right padding than left so the kebab sits closer to the card edge: its
+    // 30px hit area already carries visual breathing room around the dots.
+    <li className="group/row flex items-center gap-8 py-12 pr-6 pl-16">
+      {/* Two stacked lines: favicon + name + trend on top, URL + status below.
+          Takes the row's free width so both lines can ellipsis their left-hand text. */}
+      <div className="flex min-w-[0] flex-auto flex-col gap-2">
+        <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
-          <span className={styles.name}>{service.name}</span>
+          <span className="min-w-[0] flex-auto truncate text-primary">{service.name}</span>
           {(samples.length > 0 || isDown) && (
             <Sparkline
               samples={samples}
@@ -166,9 +241,13 @@ function ServiceRow({
             />
           )}
         </div>
-        <div className={cx(styles.line, styles.lineSub)}>
-          <span className={styles.host}>{service.host}</span>
-          <span className={cx(styles.status, 'num')}>
+        {/* Indent the URL line so it starts under the name, clearing the favicon
+            (16px) and its gap that lead the line above. */}
+        <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--space-12))]')}>
+          <span className="min-w-[0] flex-auto truncate text-sm text-tertiary">{service.host}</span>
+          {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
+              the animated latency number changes width poll to poll. */}
+          <span className="num min-w-[4.5em] shrink-0 text-right font-numeric text-sm text-(--text-secondary)">
             <LatencyReadout
               latencyMs={latencyMs}
               isErroring={isErroring}
@@ -275,17 +354,20 @@ export function ServicesView(): JSX.Element {
       <ViewHeader
         icon={<CloudIcon size={18} />}
         title="Services"
+        // The up/down tally, then the timeline link. Wraps the link onto its own
+        // line when the two can't share one, so a narrow window breaks between
+        // them rather than inside either.
         subtitle={
-          <span className={styles.subtitle}>
+          <span className="inline-flex flex-wrap items-center gap-x-6 gap-y-4">
             {tally && (
               <>
                 {tally}
                 <DotSeparator />
               </>
             )}
-            <button type="button" className={styles.timelineLink} onClick={openTimeline}>
+            <button type="button" className={TIMELINE_LINK} onClick={openTimeline}>
               <EventsIcon size={13} />
-              <span className={styles.timelineLinkText}>View timeline</span>
+              <span className={TIMELINE_LINK_TEXT}>View timeline</span>
               <ChevronRightIcon size={13} className="link-caret" />
             </button>
           </span>
@@ -307,7 +389,9 @@ export function ServicesView(): JSX.Element {
       )}
 
       {listedServices.length > 0 ? (
-        <ul role="list" className={cx(styles.list, 'surface')} aria-label="Tracked services">
+        // Rows are separated by the same hairline the data cards use, running edge
+        // to edge: the rows, not the list, carry the horizontal padding.
+        <ul role="list" className="surface [&>li+li]:border-t [&>li+li]:border-t-line" aria-label="Tracked services">
           {listedServices.map((svc) => (
             <ServiceRow
               key={svc.host}

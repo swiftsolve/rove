@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -13,7 +14,24 @@ import { ChevronRightIcon, HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { Button } from '@/components/Button'
-import styles from './SpeedView.module.css'
+
+// The "View history" pill link after the "Updated …" meta: quiet at rest, the
+// accent on hover. The negative left margin cancels the pill's padding and the
+// glyph's empty edge, so the dot keeps the same 8px to the clock as to the text
+// before it. Focus shows the way hover does, not with a ring. The glyphs share
+// the link's (animating) colour and sit dimmer at rest through opacity, so there's
+// one colour animation rather than two that drift apart.
+// (`text-(--text-secondary)`, not `text-secondary`: that name is also the global
+// .text-secondary type style, which would bring its size and line height along.)
+const HISTORY_LINK = cx(
+  'group/link ml-[-9.5px] inline-flex items-center gap-[5px] rounded-full px-8 py-2',
+  'cursor-pointer text-[length:inherit] font-medium text-(--text-secondary)',
+  'transition-[color] duration-(--duration-fast) ease-in-out',
+  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
+  '[&_svg]:text-inherit [&_svg]:opacity-72',
+  '[&_svg]:transition-opacity [&_svg]:duration-(--duration-fast) [&_svg]:ease-in-out',
+  'hover:[&_svg]:opacity-100 focus-visible:[&_svg]:opacity-100',
+)
 
 /** Opens the speed-test history subpage. */
 function HistoryLink(): JSX.Element {
@@ -21,11 +39,19 @@ function HistoryLink(): JSX.Element {
   return (
     <button
       type="button"
-      className={styles.historyLink}
+      className={HISTORY_LINK}
       onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}
     >
       <HistoryIcon size={13} />
-      <span className={styles.historyLinkText}>All Results</span>
+      {/* Only the label underlines, not the clock glyph. */}
+      <span
+        className={cx(
+          'group-hover/link:underline group-hover/link:underline-offset-2',
+          'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+        )}
+      >
+        All Results
+      </span>
       <ChevronRightIcon size={13} className="link-caret" />
     </button>
   )
@@ -136,7 +162,8 @@ export function SpeedView(): JSX.Element | null {
         icon={<SpeedIcon size={18} />}
         title="Speed"
         subtitle={<HeaderSubtitle />}
-        subtitleClassName={styles.headerSub}
+        // The "Updated …" meta, dot and history link sit on one centred line.
+        subtitleClassName="inline-flex items-center gap-6"
         isSubtitleShown={completedAt != null}
         actions={<TestButton />}
       />

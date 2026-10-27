@@ -1,18 +1,49 @@
 import { cva, cx } from 'class-variance-authority'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/icons/Icons'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
-import styles from './StatusBar.module.css'
 
-const linkVariants = cva(['text-meta-strong', styles.link], {
+// Nudged down a hair so the label optically aligns with the wordmark's centre
+// rather than sitting slightly high next to it.
+const linkVariants = cva(
+  ['text-meta-strong', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'],
+  {
+    variants: {
+      tone: {
+        on: 'text-positive',
+        /** Link up, but the public internet is unreachable: red, to set it apart
+         *  from both the green "connected" and the neutral offline states. */
+        bad: 'text-negative',
+        /** Connecting or offline: the base look. */
+        off: null,
+      },
+    },
+  },
+)
+
+const dotVariants = cva('size-[5px] rounded-[50%] bg-current', {
   variants: {
     tone: {
-      on: styles.isOn,
-      bad: styles.isBad,
-      /** Connecting or offline: the base look. */
+      on: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
+      bad: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
       off: null,
     },
   },
 })
+
+const windowButtonVariants = cva(
+  [
+    'inline-flex items-center justify-center w-[28px] h-[26px] rounded-xs text-tertiary',
+    'transition-[color,background] duration-(--duration-fast) ease-in-out',
+  ],
+  {
+    variants: {
+      action: {
+        minimize: 'hover:bg-hover hover:text-primary',
+        close: 'hover:bg-window-close-hover hover:text-on-fill',
+      },
+    },
+  },
+)
 
 // Kept out of the Tab order, like a native title bar: otherwise the first Tab
 // lands on Minimize/Close at the top-right instead of the nav rail, and a stray
@@ -22,10 +53,10 @@ function WindowControls(): JSX.Element {
   if (!controls) return <></>
 
   return (
-    <div className={styles.windowControls}>
+    <div className="inline-flex items-center gap-6 [-webkit-app-region:no-drag]">
       <button
         type="button"
-        className={styles.windowButton}
+        className={windowButtonVariants({ action: 'minimize' })}
         onClick={() => controls.minimize()}
         aria-label="Minimize"
         tabIndex={-1}
@@ -34,7 +65,7 @@ function WindowControls(): JSX.Element {
       </button>
       <button
         type="button"
-        className={cx(styles.windowButton, styles.closeButton)}
+        className={windowButtonVariants({ action: 'close' })}
         onClick={() => controls.close()}
         aria-label="Close"
         tabIndex={-1}
@@ -49,17 +80,28 @@ function WindowControls(): JSX.Element {
 export function StatusBar(): JSX.Element {
   const { tone, label } = useConnectionStatus()
   return (
-    <header className={styles.bar} data-tauri-drag-region>
-      <div className={styles.left}>
-        <div className={styles.brand}>
-          <span className={styles.logo} aria-hidden>
+    // The left inset aligns the brand mark with the nav rail below; the right
+    // keeps the window controls at the standard header edge. The bar stays above
+    // the scrolling content, so nothing (buttons, tooltips, escaped absolutes)
+    // can ever paint over it.
+    <header
+      className={cx(
+        'relative z-100 flex items-center justify-between shrink-0 min-h-[56px]',
+        'pl-16 pr-(--section-header-padding-x) bg-chrome border-b border-line [-webkit-app-region:drag]',
+      )}
+      data-tauri-drag-region
+    >
+      <div className="inline-flex items-center gap-12 min-w-[0]">
+        <div className="inline-flex items-center gap-8 [-webkit-app-region:drag]">
+          {/* The brand mark: just the glyph, in the accent colour, no tile. */}
+          <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
-          <span className={styles.brandName}>Rove</span>
+          <span className="text-2xl font-semibold tracking-[-0.02em] text-primary">Rove</span>
         </div>
         {/* Polite live region: the link state changes on its own. */}
         <span className={linkVariants({ tone })} role="status">
-          <span className={styles.dot} aria-hidden />
+          <span className={dotVariants({ tone })} aria-hidden />
           {label}
         </span>
       </div>

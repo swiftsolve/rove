@@ -29,20 +29,63 @@ import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
-import styles from './EventsView.module.css'
 
-const markerVariants = cva([styles.marker, styles.hasTone], {
+// One node on the line: a marker column and the content beside it. The marker
+// column is nudged in 5px from the left so the icons aren't flush against the
+// edge (the day heading stays flush). No trailing gap after a day's final node:
+// the per-node padding only spaces one node from the next.
+//
+// The connecting line runs from just below this node down to the next one
+// within the same day. It's dropped on a day's last node so the line ends at the
+// final marker of each day rather than running on beside the next date heading.
+// left: padding-left (5) + centre of the 28px marker column, minus half the 2px
+// line. top: marker height (28) + a 2px gap so it starts below the node.
+const ITEM = cx(
+  'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
+  "not-last:before:absolute not-last:before:content-['']",
+  'not-last:before:top-[30px] not-last:before:bottom-[0] not-last:before:left-[18px] not-last:before:w-[2px]',
+  'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
+)
+
+// Every tone but a departure uses the same faint currentColor wash for its
+// fill; only the glyph colour changes.
+const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
+
+// The node sits above the connector (z-index) so the line reads as passing
+// behind it, and is tinted by tone so the timeline is scannable at a glance.
+const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-center rounded-[50%]', {
   variants: {
     tone: {
-      join: styles.toneJoin,
-      leave: styles.toneLeave,
-      baseline: styles.toneBaseline,
-      alert: styles.toneAlert,
-      danger: styles.toneDanger,
+      /** Arrivals & connections: a device joined, came back, or linked up. */
+      join: ['text-status-positive', MARKER_WASH],
+      /** A departure: quiet, not alarming; a known device just dropped off. A
+       *  ring outline (rather than a filled wash) reads as "hollow/gone",
+       *  setting it apart from the filled arrival/change markers. */
+      leave: 'bg-inset text-tertiary shadow-[inset_0_0_0_1.5px_var(--border-strong)]',
+      /** The baseline snapshot: calm and neutral. */
+      baseline: ['text-accent', MARKER_WASH],
+      /** Cautionary: a new access point appeared (warning severity). */
+      alert: ['text-status-warning', MARKER_WASH],
+      /** Alarming: the gateway changed (critical severity). */
+      danger: ['text-status-negative', MARKER_WASH],
     },
   },
   defaultVariants: { tone: 'baseline' },
 })
+
+// One gap value governs the spacing between every line (time, title, device,
+// change, address), with no per-line margins, and every line gets the same line
+// box, so the visual gap matches the flex gap and doesn't drift with each line's
+// font size. Nudged down so the timestamp's cap-height lines up with the marker.
+const CONTENT = 'flex min-w-[0] flex-col gap-4 pt-2 *:leading-[1.3]'
+
+// Title on the left, time pinned to the right edge on the same line. The time
+// takes only the width it needs and never wraps, so a long title flows beneath
+// it rather than pushing it around.
+const HEAD = 'flex items-baseline gap-10'
+const TITLE = 'min-w-[0] flex-1 text-lg font-semibold text-primary wrap-anywhere'
+
+const SUBJECT = 'flex-wrap text-md text-(--text-secondary)'
 
 const FEED_HINT =
   'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
@@ -196,7 +239,7 @@ function formatTime(ts: number): string {
 /** The time of day as a machine-readable `<time>`. */
 function EventTime({ ts }: { ts: number }): JSX.Element {
   return (
-    <time className={styles.time} dateTime={new Date(ts).toISOString()}>
+    <time className="shrink-0 text-sm whitespace-nowrap text-tertiary" dateTime={new Date(ts).toISOString()}>
       {formatTime(ts)}
     </time>
   )
@@ -269,31 +312,41 @@ function TimelineItem({
   const metaItems = addressItems(event)
 
   return (
-    <li className={styles.item}>
+    <li className={ITEM}>
       <span className={markerVariants({ tone: EVENT_STYLES[event.type]?.tone })} aria-hidden>
         <EventIcon type={event.type} />
       </span>
-      <div className={styles.content}>
-        <span className={styles.head}>
-          <span className={styles.title}>{title}</span>
+      <div className={CONTENT}>
+        <span className={HEAD}>
+          <span className={TITLE}>{title}</span>
           <EventTime ts={event.ts} />
         </span>
         {subject && (
           <InlineMeta
-            className={styles.subject}
-            items={[subject, kindLabel && <span className={styles.subjectKind}>{kindLabel}</span>]}
+            className={SUBJECT}
+            // The device category after the name ("Apple · Phone"), a step quieter
+            // so the name still leads.
+            items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
           />
         )}
         {isInternet && INTERNET_SUBTITLES[event.type] && (
-          <span className={cx(styles.subject, styles.connLine)}>
+          // Status at the left, offline duration flush right (pushed by its
+          // margin-left:auto), on one line spanning the full content width.
+          <span className={cx(SUBJECT, 'flex w-full')}>
             <span>{INTERNET_SUBTITLES[event.type]}</span>
             {offlineMs != null && (
-              <span className={styles.connDuration}>Offline for {formatDuration(offlineMs)}</span>
+              <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">Offline for {formatDuration(offlineMs)}</span>
             )}
           </span>
         )}
 
-        {metaItems.length > 0 && <InlineMeta className={styles.meta} items={metaItems} />}
+        {/* The address line, one step quieter than everything above it. */}
+        {metaItems.length > 0 && (
+          <InlineMeta
+            className="flex-wrap items-center text-sm tracking-[0.02em] text-tertiary tabular-nums"
+            items={metaItems}
+          />
+        )}
       </div>
     </li>
   )
@@ -309,11 +362,15 @@ function TimelineDay({
 }): JSX.Element {
   const headingId = useId()
   return (
-    <li className={styles.day}>
-      <h2 id={headingId} className={styles.dayHeading}>
+    <li className="flex flex-col not-first:mt-[18px]">
+      {/* The date divider: quiet, uppercase, flush with the left edge. */}
+      <h2
+        id={headingId}
+        className="mb-(--section-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
+      >
         {group.heading}
       </h2>
-      <ul role="list" className={styles.dayEvents} aria-labelledby={headingId}>
+      <ul role="list" className="flex flex-col" aria-labelledby={headingId}>
         {group.events.map((event) => (
           <TimelineItem key={event.id} event={event} offlineMs={offlineDurationById.get(event.id)} />
         ))}
@@ -360,7 +417,9 @@ function EventsFeed({
   }
 
   return (
-    <ul role="list" className={styles.timeline}>
+    // No left pad so the marker column sits flush with the header icon; the small
+    // right pad keeps timestamps off the very edge.
+    <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
       {groupByDay(events, now).map((group) => (
         <TimelineDay key={group.key} group={group} offlineDurationById={offlineDurationById} />
       ))}
