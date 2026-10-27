@@ -3,10 +3,10 @@ import { cx } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { ArrowLeftIcon } from '@/components/icons/Icons'
 
-// A chip-styled back button in the page icon's slot (38px box, 10px radius), so
+// A chip-styled back button in the page icon's slot (a rail item's box, 10px radius), so
 // a subpage header reads like a top-level view's.
 const BACK = cx(
-  'subpage-back inline-flex size-[38px] shrink-0 items-center justify-center rounded-md',
+  'subpage-back inline-flex size-(--rail-item-size) shrink-0 items-center justify-center rounded-md',
   'bg-fill-chip text-secondary hover:bg-hover hover:text-primary',
   'transition-[color,background] duration-(--duration-fast) ease-in-out',
 )

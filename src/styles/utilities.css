@@ -234,14 +234,14 @@
 }
 
 /* The nav-matched glyph left of a page title, in the selected nav item's chip
-   (38px box, 10px radius), centred on the title block. */
+   (a rail item's box, 10px radius), centred on the title block. */
 @utility page-header-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 38px;
-  height: 38px;
+  width: var(--rail-item-size);
+  height: var(--rail-item-size);
   border-radius: var(--radius-md);
   background: var(--fill-chip);
   color: var(--text-secondary);

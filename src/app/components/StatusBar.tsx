@@ -86,7 +86,7 @@ export function StatusBar(): JSX.Element {
     // can ever paint over it.
     <header
       className={cx(
-        'relative z-100 flex items-center justify-between shrink-0 min-h-[56px]',
+        'relative z-100 flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
         'pl-16 pr-(--section-header-padding-x) bg-chrome border-b border-line [-webkit-app-region:drag]',
       )}
       data-tauri-drag-region
