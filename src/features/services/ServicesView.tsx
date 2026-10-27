@@ -240,7 +240,7 @@ function ServiceRow({
         </div>
         {/* Indent the URL line so it starts under the name, clearing the favicon
             (16px) and its gap that lead the line above. */}
-        <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--space-12))]')}>
+        <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--spacing-12))]')}>
           <span className="min-w-0 flex-auto truncate text-sm text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}

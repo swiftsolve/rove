@@ -4,13 +4,13 @@
  * The tokens come from @swiftsolve/rove-design (Figma is the source of truth)
  * as CSS variables. The theme below maps them onto Tailwind utilities and
  * clears Tailwind's own defaults, so only design-system values exist:
- * `p-12` is `--space-12`, `text-md` is `--font-size-md`, `bg-panel` is
+ * `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-panel` is
  * `--bg-panel`, and there is no `p-7` or `text-blue-500` to reach for.
  *
- * `inline` makes each utility use the token itself (`padding: var(--space-12)`),
+ * `inline` makes each utility use the token itself (`padding: var(--spacing-12)`),
  * so a theme switch or a token update flows straight through. `reference`
  * stops Tailwind from also declaring these names on :root: several share a
- * token's own name (`--radius-sm`, `--shadow-panel`), and `--radius-sm:
+ * token's own name (`--spacing-12`, `--radius-sm`), and `--radius-sm:
  * var(--radius-sm)` would be a self-reference that invalidates the token.
  *
  * No preflight: base.css is the app's base reset, with the one piece of
@@ -18,8 +18,7 @@
  * styles, page layout) are `@utility` definitions in utilities.css.
  */
 @layer theme, base, components, utilities;
-/* The tokens, unlayered, ahead of base.css: its light-theme contrast override
-   must come after them to win. */
+/* The design tokens, unlayered. */
 @import '@swiftsolve/rove-design/tokens.css';
 /* Fonts, resets and app-wide behaviour (the base layer). */
 @import './base.css';
@@ -39,20 +38,20 @@
   /* Spacing: the --space-* scale, plus 0 for resets and 1px for hairlines. */
   --spacing-0: 0px;
   --spacing-px: 1px;
-  --spacing-2: var(--space-2);
-  --spacing-4: var(--space-4);
-  --spacing-6: var(--space-6);
-  --spacing-8: var(--space-8);
-  --spacing-10: var(--space-10);
-  --spacing-11: var(--space-11);
-  --spacing-12: var(--space-12);
-  --spacing-14: var(--space-14);
-  --spacing-16: var(--space-16);
-  --spacing-20: var(--space-20);
+  --spacing-2: var(--spacing-2);
+  --spacing-4: var(--spacing-4);
+  --spacing-6: var(--spacing-6);
+  --spacing-8: var(--spacing-8);
+  --spacing-10: var(--spacing-10);
+  --spacing-11: var(--spacing-11);
+  --spacing-12: var(--spacing-12);
+  --spacing-14: var(--spacing-14);
+  --spacing-16: var(--spacing-16);
+  --spacing-20: var(--spacing-20);
 
   /* Type */
-  --font-sans: var(--font);
-  --font-numeric: var(--font-numeric);
+  --font-sans: var(--font-family-sans);
+  --font-numeric: var(--font-family-numeric);
   --text-2xs: var(--font-size-2xs);
   --text-xs: var(--font-size-xs);
   --text-sm: var(--font-size-sm);
@@ -125,12 +124,12 @@
   --color-negative: var(--text-negative);
 
   /* Lines (border-*) */
-  --color-line: var(--border);
+  --color-line: var(--border-default);
   --color-line-strong: var(--border-strong);
   --color-hairline-top: var(--border-hairline-top);
 
   /* Accent */
-  --color-accent: var(--accent);
+  --color-accent: var(--accent-default);
   --color-accent-hover: var(--accent-hover);
   --color-accent-press: var(--accent-press);
   --color-accent-muted: var(--accent-muted);
