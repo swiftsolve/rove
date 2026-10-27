@@ -163,7 +163,9 @@ rove/
 │   │                           (providers) and AppShell.tsx at the top, then
 │   │                           components/ (title bar, nav rail,
 │   │                           CurrentScreen), context/ (navigation, theme,
-│   │                           app data), hooks/ and utils/
+│   │                           network), hooks/ (useNetwork,
+│   │                           useInternetStatus, useConnectionStatus, …)
+│   │                           and utils/ (incl. the TanStack query client)
 │   ├── features/               one folder per area: home, speed,
 │   │   │                       capabilities, connection, live-throughput,
 │   │   │                       interfaces, devices, events, usage, apps,
@@ -177,8 +179,8 @@ rove/
 │   │                           have no view, so their parts sit at the top)
 │   ├── components/             shared UI used across features: Section,
 │   │                           DataRow, Subpage, Tooltip, Icons, …
-│   ├── hooks/                  shared hooks (useBackendResource is the
-│   │                           fetch shape every data hook builds on)
+│   ├── hooks/                  shared hooks (useBackendQuery is the
+│   │                           useQuery shape every data hook builds on)
 │   ├── lib/                    shared helpers (format, platform, highlight)
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
@@ -198,8 +200,19 @@ rove/
 
 - No component takes a prop only to pass it down. App-wide state comes from
   context, read where it's used: `useNavigation()` (location, `navigate`,
-  `back`), `useTheme()`, and `useAppData()` (network info, internet status and
-  each screen's cached data). That's why every view renders with no props.
+  `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()`
+  and `useConnectionStatus()` (the title bar's verdict). Each has its own small
+  context, so a reader re-renders only when its value changes. That's why every
+  view renders with no props.
+- Backend data comes from TanStack Query. Each feature owns its data hook in
+  `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
+  `useBackendQuery`, and the components that show the data call it directly.
+  Callers of the same hook share one cache entry, so `DevicesView` and
+  `DevicesCard` see the same scan.
+- A query key names the data, plus the network for data that belongs to one
+  (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
+  fresh results. A query fetches while a screen that shows it is open and polls
+  per its hook; the hooks' comments say when and why.
 - Props are for a component's own inputs: the item a row shows, a dialog's
   `onClose`. Shared components in `src/components` take only props and never
   read app context.

@@ -1,5 +1,5 @@
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { SpeedTestSection } from '@/features/speed/components/SpeedTestSection'
@@ -113,7 +113,7 @@ function TestButton(): JSX.Element {
 
 export function SpeedView(): JSX.Element | null {
   const { location } = useNavigation()
-  const { info } = useAppData().network
+  const { info } = useNetwork()
   const { internetSpeed, completedAt } = useSpeedTest()
 
   if (!info) return null

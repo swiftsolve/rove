@@ -1,7 +1,7 @@
 import { cx } from 'class-variance-authority'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { DailyUsage } from '@/types'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
 import { Section } from '@/components/Section'
 import { Tooltip as UiTooltip } from '@/components/Tooltip'
@@ -234,7 +234,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
 }
 
 export function UsageView(): JSX.Element {
-  const { usage, isLoading, error } = useAppData().screens.usage
+  const { usage, isLoading, error } = useDataUsage()
   const today = usage.days[usage.days.length - 1]
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)
   const weekTx = usage.days.reduce((sum, day) => sum + day.txBytes, 0)

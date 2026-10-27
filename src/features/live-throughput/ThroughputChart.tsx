@@ -2,7 +2,7 @@ import { useId, useMemo } from 'react'
 import { cx } from 'class-variance-authority'
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getLinkCapacityMbps, sanitizeRate } from '@/types'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
@@ -61,7 +61,7 @@ function buildChartRows(download: number[], upload: number[]): ChartDatum[] {
 export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX.Element {
   // A running speed test saturates the link, and the link's capacity bounds the
   // scale, so both feed the y-axis.
-  const { info } = useAppData().network
+  const { info } = useNetwork()
   const { isTesting: isSpeedTestRunning } = useSpeedTest()
   const linkCapacityMbps = info ? getLinkCapacityMbps(info) : null
   const gradientId = useId().replace(/:/g, '')

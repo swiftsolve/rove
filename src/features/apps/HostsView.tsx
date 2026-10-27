@@ -1,7 +1,7 @@
 import { useId, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
 import { formatBytes } from '@/lib/format'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
 import { isPrivateIp } from '@/features/apps/utils/ip'
@@ -239,7 +239,7 @@ function HostsBody({
 }
 
 export function HostsView(): JSX.Element {
-  const { usage, isLoading, error } = useAppData().screens.hostUsage
+  const { usage, isLoading, error } = useHostUsage()
   const { location, back } = useNavigation()
   // Arrived by clicking an app: open only that app's group and collapse the
   // rest. Otherwise every group starts collapsed.

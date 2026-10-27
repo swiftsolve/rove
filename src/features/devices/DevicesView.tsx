@@ -27,7 +27,7 @@ import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import { formatMac } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useDevices } from '@/features/devices/hooks/useDevices'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
@@ -549,7 +549,7 @@ function DevicesBody({
 }
 
 export function DevicesView(): JSX.Element {
-  const { scan, isScanning, error, rescan } = useAppData().screens.devices
+  const { scan, isScanning, error, rescan } = useDevices()
   const onRescan = (): void => void rescan()
   const devices = sortDevices(scan?.devices ?? [])
   const hasDevices = devices.length > 0

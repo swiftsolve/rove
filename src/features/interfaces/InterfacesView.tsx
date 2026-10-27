@@ -7,7 +7,7 @@ import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { Button } from '@/components/Button'
 import styles from './InterfacesView.module.css'
 
@@ -51,6 +51,8 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           {iface.isDefault && (
             <span className={tagVariants()} title="Used for internet traffic">
               Active
+              {/* The hover title isn't announced; say it for screen readers too. */}
+              <span className="sr-only">, used for internet traffic</span>
             </span>
           )}
           {iface.isVirtual && <span className={tagVariants({ isMuted: true })}>Virtual</span>}
@@ -137,7 +139,7 @@ function InterfacesBody({
 }
 
 export function InterfacesView(): JSX.Element {
-  const { interfaces, isLoading, error, refresh } = useAppData().screens.interfaces
+  const { interfaces, isLoading, error, refresh } = useNetworkInterfaces()
   const onRefresh = (): void => void refresh()
 
   return (

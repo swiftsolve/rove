@@ -23,7 +23,8 @@ import { formatDuration } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
+import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
 import styles from './ServicesTimelineView.module.css'
@@ -371,13 +372,12 @@ function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDu
  */
 export function ServicesTimelineView(): JSX.Element {
   const { back } = useNavigation()
-  const { screens, connection } = useAppData()
   // The latest reachability probes, for the up/down count in the header.
-  const reachability = screens.services.report?.services
+  const reachability = useServiceReachability().report?.services
   // The app's live internet status — the same one the title bar shows — for the
   // header tally: with no connection every probe fails at once, which is ours to
   // own, not theirs.
-  const liveInternet = connection.internet
+  const liveInternet = useConnectionStatus().internet
   const { events, clear } = useServiceHistory()
 
   const outageByKey = useMemo(() => outageDurations(events), [events])

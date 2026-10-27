@@ -12,11 +12,11 @@ interface SectionProps {
   className?: string
   bodyClassName?: string
   /**
-   * What the body holds: plain content (`div`, the default), a list of rows
-   * (`ul`, each child an `<li>`), or label/value pairs (`dl`, each child a
-   * `DataRow`). Only the element changes; the look stays the same.
+   * What the body holds: plain content (`div`, the default) or label/value
+   * pairs (`dl`, each child a `DataRow`). Only the element changes; the look
+   * stays the same.
    */
-  bodyAs?: 'div' | 'ul' | 'dl'
+  bodyAs?: 'div' | 'dl'
 }
 
 function SectionBody({
@@ -28,13 +28,6 @@ function SectionBody({
   className: string
   children: ReactNode
 }): JSX.Element {
-  if (as === 'ul') {
-    return (
-      <ul role="list" className={className}>
-        {children}
-      </ul>
-    )
-  }
   if (as === 'dl') return <DataList className={className}>{children}</DataList>
   return <div className={className}>{children}</div>
 }

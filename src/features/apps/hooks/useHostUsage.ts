@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
 import type { HostUsageSummary } from '@/types'
 import { createEmptyHostUsage } from '@/types'
-import { useBackendResource } from '@/hooks/useBackendResource'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 const REFRESH_INTERVAL_MS = 5_000
 
@@ -19,19 +18,17 @@ interface UseHostUsageResult {
  * fill in over the first few polls as the backend resolves them), and a missing
  * bridge degrades to a clear message rather than a hung spinner.
  */
-export function useHostUsage(isEnabled: boolean): UseHostUsageResult {
+export function useHostUsage(): UseHostUsageResult {
   const api = window.networkAPI
-  const fetchUsage = useMemo(
-    () => (api?.getHostUsage ? () => api.getHostUsage() : undefined),
-    [api],
-  )
+  const fetchUsage = api ? () => api.getHostUsage() : undefined
 
-  const { data, isBusy, error } = useBackendResource(
-    fetchUsage,
-    isEnabled,
-    'Failed to load per-app host usage.',
-    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
-  )
+  const { data, isBusy, error } = useBackendQuery({
+    queryKey: ['hostUsage'],
+    queryFn: fetchUsage,
+    isEnabled: true,
+    errorMessage: 'Failed to load per-app host usage.',
+    pollIntervalMs: REFRESH_INTERVAL_MS,
+  })
 
   if (!fetchUsage) {
     return {

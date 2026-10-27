@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useBackendResource } from '@/hooks/useBackendResource'
+import { useState } from 'react'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 interface PublicIpState {
   publicIp: string | null
@@ -7,25 +7,20 @@ interface PublicIpState {
 }
 
 /**
- * Fetches the machine's public (WAN) IP address. Re-runs whenever `refetchKey`
- * changes (e.g. the local IP), since switching networks can change the WAN IP.
+ * Fetches the machine's public (WAN) IP address. Keyed by the local IP, since
+ * switching networks can change the WAN IP; refetched each time Home opens.
  */
-export function usePublicIp(isEnabled: boolean, refetchKey: string | null): PublicIpState {
+export function usePublicIp(isEnabled: boolean, localIp: string | null): PublicIpState {
   const api = window.networkAPI
-  const fetchIp = useMemo(
-    () => (api?.getPublicIp ? () => api.getPublicIp() : undefined),
-    [api],
-  )
-
-  const { data, isBusy } = useBackendResource(
-    fetchIp,
+  const { data, isBusy } = useBackendQuery({
+    queryKey: ['publicIp', localIp],
+    queryFn: api ? () => api.getPublicIp() : undefined,
     isEnabled,
-    'Failed to fetch the public IP.',
-    { shouldRefetchOnEnable: true, resetKey: refetchKey },
-  )
+    errorMessage: 'Failed to fetch the public IP.',
+  })
 
   // Keep the last known value rather than flashing to "—" on a blip: a network
-  // switch (resetKey change) or transient failure clears/keeps `data` null, but
+  // switch (new key) or a lookup that came back empty leaves `data` null, but
   // the WAN IP rarely changes — show the previous one until the refetch lands.
   const [lastIp, setLastIp] = useState<string | null>(null)
   if (data != null && data !== lastIp) setLastIp(data)

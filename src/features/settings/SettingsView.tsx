@@ -125,7 +125,7 @@ function SettingRow({
 }): JSX.Element {
   const descriptionId = useId()
   return (
-    <li className={rowVariants()}>
+    <div className={rowVariants()}>
       <div className={styles.rowText}>
         <span className={styles.rowTitle}>{title}</span>
         <span id={descriptionId} className={styles.rowDesc}>
@@ -133,7 +133,7 @@ function SettingRow({
         </span>
       </div>
       <div className={styles.rowControl}>{control(descriptionId)}</div>
-    </li>
+    </div>
   )
 }
 
@@ -199,7 +199,6 @@ export function SettingsView(): JSX.Element {
       <Section
         title="Updates"
         className={styles.updates}
-        bodyAs="ul"
         bodyClassName={styles.list}
         footer={renderCheckResult(check)}
       >
@@ -233,8 +232,8 @@ export function SettingsView(): JSX.Element {
         />
       </Section>
 
-      <Section title="Appearance" bodyAs="ul" bodyClassName={styles.list}>
-        <li className={rowVariants({ isStacked: true })}>
+      <Section title="Appearance" bodyClassName={styles.list}>
+        <div className={rowVariants({ isStacked: true })}>
           <div className={styles.rowText}>
             <span id={themeLabelId} className={styles.rowTitle}>
               Theme
@@ -244,7 +243,7 @@ export function SettingsView(): JSX.Element {
             </span>
           </div>
           <ThemeSegmented labelId={themeLabelId} descriptionId={themeDescriptionId} />
-        </li>
+        </div>
         <SettingRow
           title="Theme switch sound"
           description="Play a soft click when toggling between light and dark."

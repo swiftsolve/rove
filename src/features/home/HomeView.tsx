@@ -1,5 +1,5 @@
 import { isConnectedNetwork } from '@/types'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { ConnectionCard } from '@/features/connection/ConnectionCard'
 import { CapabilityStrip } from '@/features/capabilities/CapabilityStrip'
@@ -9,7 +9,7 @@ import { LiveThroughputPanel } from '@/features/live-throughput/LiveThroughputPa
 import styles from './HomeView.module.css'
 
 export function HomeView(): JSX.Element | null {
-  const { info } = useAppData().network
+  const { info } = useNetwork()
   // Earlier results keep the capability strip on screen even while offline.
   const { capabilities } = useSpeedTest()
 
@@ -28,14 +28,11 @@ export function HomeView(): JSX.Element | null {
       {isConnected && <LiveThroughputPanel />}
       {(isConnected || capabilities.length > 0) && <CapabilityStrip />}
 
-      <ul role="list" className={styles.statCards}>
-        <li className={styles.statCard}>
-          <UsageCard />
-        </li>
-        <li className={styles.statCard}>
-          <DevicesCard />
-        </li>
-      </ul>
+      {/* Two different summaries side by side, not a list: each card is its own section. */}
+      <div className={styles.statCards}>
+        <UsageCard />
+        <DevicesCard />
+      </div>
     </div>
   )
 }

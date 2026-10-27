@@ -3,7 +3,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { NetworkInfo, SpeedResult, SpeedTestProgress } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { Section } from '@/components/Section'
@@ -409,7 +409,7 @@ function ResultFooter({
 }
 
 export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
-  const { info } = useAppData().network
+  const { info } = useNetwork()
   const {
     internetSpeed,
     isTesting,

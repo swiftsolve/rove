@@ -1,6 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/icons/Icons'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import styles from './StatusBar.module.css'
 
 const linkVariants = cva(['text-meta-strong', styles.link], {
@@ -47,7 +47,7 @@ function WindowControls(): JSX.Element {
 
 /** The full-width title bar: brand, connection status and window controls. */
 export function StatusBar(): JSX.Element {
-  const { tone, label } = useAppData().connection
+  const { tone, label } = useConnectionStatus()
   return (
     <header className={styles.bar} data-tauri-drag-region>
       <div className={styles.left}>
