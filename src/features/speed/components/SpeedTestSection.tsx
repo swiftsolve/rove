@@ -14,13 +14,9 @@ import { useLatestRef } from '@/hooks/useLatestRef'
 import { EthernetIcon, SpeedIcon, WifiIcon } from '@/components/icons/Icons'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import type { SpeedTestConnection } from '@/features/speed/types'
-import styles from './SpeedTestSection.module.css'
-
-// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
-// .text-secondary type style, which would bring its size and line height along.
 
 /** The connection the footer names, its glyph tinted by medium. */
-const connVariants = cva('inline-flex items-center gap-6 font-medium text-(--text-secondary)', {
+const connVariants = cva('inline-flex items-center gap-6 font-medium text-secondary', {
   variants: {
     type: { wifi: '[&_svg]:text-series-down', ethernet: '[&_svg]:text-status-positive' },
   },
@@ -221,8 +217,8 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
   const trackRef = useRef<SVGLineElement>(null)
 
   // The wave *shape* is fixed; only its horizontal offset scrolls, and that's a
-  // CSS transform on the scroll group (compositor-driven — see .wavy-scroll in
-  // SpeedTestSection.module.css).
+  // CSS transform on the scroll group (compositor-driven — see `animate-wavy-scroll`
+  // in styles/tailwind.css).
   // So the expensive work — building the squiggle `d` string and re-parsing it —
   // happens only when the width changes, here, not 60×/s. The per-frame loop
   // below is left with a couple of trivial attribute writes.
@@ -305,7 +301,7 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
   // by the loop) reveals the filled portion; the dot rides its leading edge and
   // masks the clip's straight cut. The dot stays on the centerline, so cy is fixed.
   return (
-    <div ref={wrapRef} className="block h-[16px] w-full leading-[0]" aria-hidden>
+    <div ref={wrapRef} className="block h-16 w-full leading-[0]" aria-hidden>
       <svg ref={svgRef} height={WAVE_HEIGHT}>
         <defs>
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
@@ -314,7 +310,7 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
         </defs>
         <g clipPath={`url(#${clipId})`}>
           <g
-            className={cx(styles.wavyScroll, 'will-change-transform')}
+            className="animate-wavy-scroll will-change-transform motion-reduce:animate-none"
             style={
               {
                 '--wave-length': `${WAVE_LENGTH}px`,
@@ -347,7 +343,7 @@ function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Elemen
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
-        <span className="text-sm leading-[1.4] text-(--text-secondary)">{progress.message || 'Starting…'}</span>
+        <span className="text-sm leading-small text-secondary">{progress.message || 'Starting…'}</span>
         <span className="num text-md font-regular text-accent">{Math.round(progress.progress)}%</span>
       </div>
       <div
@@ -414,7 +410,7 @@ function ResultFooter({
     // The strip under the results: connection left, link speed right. The text
     // size comes from .text-meta.
     <div className={cx(INSET_PANEL, 'flex items-center')}>
-      <p className="text-meta flex w-full min-w-[0] items-center justify-between gap-12">
+      <p className="text-meta flex w-full min-w-0 items-center justify-between gap-12">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
           <span className="ml-auto shrink-0">
@@ -489,13 +485,13 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
     >
       {error && <p className="inline-error" role="alert">{error}</p>}
 
-      <dl className="grid grid-cols-[1fr_1fr] gap-16">
+      <dl className="grid grid-cols-2 gap-16">
         <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
         <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
       </dl>
 
       {!isTesting && (
-        <dl className="mt-16 grid grid-cols-[repeat(3,1fr)] gap-16">
+        <dl className="mt-16 grid grid-cols-3 gap-16">
           <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />

@@ -14,7 +14,7 @@ const badgeVariants = cva(['text-meta', 'inline-flex items-center gap-6 rounded-
     isLive: {
       true: cx(
         'text-positive',
-        "before:inline-block before:size-[5px] before:rounded-[50%] before:bg-current before:content-['']",
+        "before:inline-block before:size-[5px] before:rounded-full before:bg-current before:content-['']",
         'before:animate-[status-pulse_2s_ease-in-out_infinite]',
       ),
     },
@@ -30,7 +30,7 @@ export const LiveThroughputPanel = memo(function LiveThroughputPanel(): JSX.Elem
       icon={<ActivityIcon size={15} />}
       action={<span className={badgeVariants({ isLive: true })}>Live</span>}
     >
-      <dl className="mb-12 grid grid-cols-[1fr_1fr] gap-16">
+      <dl className="mb-12 grid grid-cols-2 gap-16">
         <SpeedReadout label="Download" mbps={throughput.downloadMbps} series="down" />
         <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" />
       </dl>

@@ -43,7 +43,7 @@ import { cva, cx, type VariantProps } from 'class-variance-authority'
 const ITEM = cx(
   'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
-  'not-last:before:top-[30px] not-last:before:bottom-[0] not-last:before:left-[18px] not-last:before:w-[2px]',
+  'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
   'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
 )
 
@@ -53,7 +53,7 @@ const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),t
 
 // The node sits above the connector (z-index) so the line reads as passing
 // behind it, and is tinted by tone so the timeline is scannable at a glance.
-const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-center rounded-[50%]', {
+const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-center rounded-full', {
   variants: {
     tone: {
       /** Arrivals & connections: a device joined, came back, or linked up. */
@@ -77,15 +77,15 @@ const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-c
 // change, address), with no per-line margins, and every line gets the same line
 // box, so the visual gap matches the flex gap and doesn't drift with each line's
 // font size. Nudged down so the timestamp's cap-height lines up with the marker.
-const CONTENT = 'flex min-w-[0] flex-col gap-4 pt-2 *:leading-[1.3]'
+const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 
 // Title on the left, time pinned to the right edge on the same line. The time
 // takes only the width it needs and never wraps, so a long title flows beneath
 // it rather than pushing it around.
 const HEAD = 'flex items-baseline gap-10'
-const TITLE = 'min-w-[0] flex-1 text-lg font-semibold text-primary wrap-anywhere'
+const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
-const SUBJECT = 'flex-wrap text-md text-(--text-secondary)'
+const SUBJECT = 'flex-wrap text-md text-secondary'
 
 const FEED_HINT =
   'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
@@ -343,7 +343,7 @@ function TimelineItem({
         {/* The address line, one step quieter than everything above it. */}
         {metaItems.length > 0 && (
           <InlineMeta
-            className="flex-wrap items-center text-sm tracking-[0.02em] text-tertiary tabular-nums"
+            className="flex-wrap items-center text-sm text-tertiary tabular-nums"
             items={metaItems}
           />
         )}
@@ -396,7 +396,7 @@ function EventsFeed({
   if (events.length === 0) {
     if (isLoading) {
       return (
-        <div className="view-empty" aria-busy="true">
+        <div className="page-empty" aria-busy="true">
           <Spinner />
           <p className="text-muted">Loading events…</p>
         </div>
@@ -444,7 +444,7 @@ export function EventsView(): JSX.Element {
   const offlineDurationById = useMemo(() => offlineDurations(visibleEvents), [visibleEvents])
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<EventsIcon size={18} />}
         title="Timeline"

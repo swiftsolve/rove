@@ -22,7 +22,7 @@ const iconButtonVariants = cva(
         ),
         /** Neutral inset chip: refresh, close, overflow menus. */
         secondary: cx(
-          'bg-inset text-(--text-secondary)',
+          'bg-inset text-secondary',
           'not-disabled:not-aria-disabled:hover:bg-hover not-disabled:not-aria-disabled:hover:text-primary',
         ),
         /** Red, for stopping something in progress. */

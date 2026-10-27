@@ -30,12 +30,14 @@ import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
 import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
+import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-type scale) change, so the bars glide in step
  *  with the count-up figures; the global reduced-motion rule neutralises it. */
-const segVariants = cva('h-full transition-[width] duration-[400ms] ease-out', {
+const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
   variants: {
     series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
@@ -105,7 +107,7 @@ function TrafficRow({
   return (
     <li className="flex flex-col gap-8 px-(--section-body-padding) py-12">
       <div className="flex items-center justify-between gap-12">
-        <span className="inline-flex min-w-[0] items-center gap-8">
+        <span className="inline-flex min-w-0 items-center gap-8">
           <Icon size={15} className="shrink-0 text-tertiary" />
           <span className="truncate text-sm text-primary" title={type.label}>
             {type.label}
@@ -113,7 +115,7 @@ function TrafficRow({
         </span>
         <MetricValue
           value={total}
-          className="num shrink-0 text-sm text-(--text-secondary)"
+          className="num shrink-0 text-sm text-secondary"
           format={formatBytes}
         />
       </div>
@@ -166,7 +168,7 @@ function TrafficBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="view-empty" role="status">
+      <div className="page-empty" role="status">
         <Spinner />
         <p className="text-muted">Measuring traffic types…</p>
       </div>
@@ -178,13 +180,13 @@ function TrafficBody({
 
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
   return (
-    <div className="ui-section">
-      {/* The rows own the inset (p-[0] here), so the hairlines between them run
+    <div className={SECTION_CARD}>
+      {/* The rows own the inset (p-0 here), so the hairlines between them run
           edge to edge, clipped to the card's rounded corners. */}
       <ul
         role="list"
         aria-label="Traffic types by usage"
-        className="ui-section-body flex flex-col p-[0] [&>li+li]:border-t [&>li+li]:border-t-line"
+        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
       >
         {types.map((type) => (
           <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />

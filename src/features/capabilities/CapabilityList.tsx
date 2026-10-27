@@ -57,8 +57,8 @@ const tileVariants = cva(
   },
 )
 
-const ROW_MAIN = 'flex min-w-[0] flex-1 items-center gap-12'
-const ROW_TEXT = 'flex min-w-[0] flex-col'
+const ROW_MAIN = 'flex min-w-0 flex-1 items-center gap-12'
+const ROW_TEXT = 'flex min-w-0 flex-col'
 
 function CapabilityRow({
   capability,
@@ -133,11 +133,9 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
   if (isTesting) {
     return (
       // Secondary, to match the Devices/refresh button spinners (tertiary read
-      // as washed-out); the spinner takes it through currentColor. Written
-      // `text-(--text-secondary)` because `text-secondary` is also the global
-      // .text-secondary type style, which would bring its size and line height.
+      // as washed-out); the spinner takes it through currentColor.
       <span
-        className="inline-flex items-center text-(--text-secondary)"
+        className="inline-flex items-center text-secondary"
         role="img"
         aria-label="Speed test running"
       >

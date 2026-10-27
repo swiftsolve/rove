@@ -1,7 +1,8 @@
-/* In the components layer with the global CSS. What's left here reaches into
-   the DOM of the shared InlineMeta and DataRow, keyed on the security badge and
-   signal detail inside them; everything else is utilities in ConnectionCard.tsx. */
-@layer components {
+/* What's left here reaches into the DOM of the shared InlineMeta and DataRow,
+   keyed on the security badge and signal detail inside them; everything else is
+   utilities in ConnectionCard.tsx. In the utilities layer, so it overrides those
+   components' own utilities (DataRow's `items-baseline`). */
+@layer utilities {
   /* Collapsed strip, as an InlineMeta row: the first item (the IP) ellipsizes
      when space runs out. */
   .strip-sub:global(.inline-meta) :global(.inline-meta-item):first-child {

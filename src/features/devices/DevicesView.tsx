@@ -27,28 +27,29 @@ import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import { formatMac } from '@/lib/format'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
+import { SECTION_CARD } from '@/components/Section'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
-import styles from './DevicesView.module.css'
 
 // The one on its way out overlays the slot's start rather than taking layout
 // space, so the incoming one doesn't get shoved right then snap back.
-const LEAVING = ['absolute top-[0] left-[0]', styles.slideOut]
+const LEAVING = ['absolute top-0 left-0', 'animate-scan-slide-out']
 
 /** The scan status and the online tally: `isLeaving` plays the slide-out. The
  *  scan status is inline-block, not flex, so its dot can be nudged to the text's
  *  optical middle with vertical-align (flex centring reads a touch low). */
 const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: LEAVING, false: styles.slideIn },
+    isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
   },
 })
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: LEAVING, false: styles.slideIn },
+    isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
   },
 })
 
@@ -57,13 +58,13 @@ const onlineVariants = cva('whitespace-nowrap text-tertiary', {
 // in both so the dot lands in the exact same spot when the two swap.
 const STATUS_DOT = cx(
   'relative -top-px mr-8 inline-block size-[5px] align-middle',
-  'rounded-[50%] bg-status-positive',
+  'rounded-full bg-status-positive',
 )
 
 /** One stage word: waits below, settles as the current stage, then drifts up,
  *  so entering and leaving read as one continuous rising motion. */
 const scanPhaseVariants = cva(
-  'absolute top-[0] left-[0] transition-[opacity,transform] duration-(--duration-normal) ease-out',
+  'absolute top-0 left-0 transition-[opacity,transform] duration-(--duration-normal) ease-out',
   {
     variants: {
       state: {
@@ -76,8 +77,9 @@ const scanPhaseVariants = cva(
 )
 
 // The device card: icon pinned to the top-left, the body column fills the rest.
-const DEVICE_ROW = cx(
-  'ui-section flex items-start gap-12',
+const DEVICE_ROW = cn(
+  SECTION_CARD,
+  'flex items-start gap-12',
   'px-(--section-header-padding-x) py-(--section-header-padding-y)',
 )
 
@@ -89,7 +91,7 @@ const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),tra
 const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center rounded-sm', {
   variants: {
     tone: {
-      neutral: 'bg-inset text-(--text-secondary)',
+      neutral: 'bg-inset text-secondary',
       down: ['text-series-down', ICON_TINT],
       up: ['text-series-up', ICON_TINT],
       warning: ['text-status-warning', ICON_TINT],
@@ -127,25 +129,25 @@ const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
 // fit. It takes the row width the status doesn't. text-lg: the widget-title size
 // (e.g. "Capabilities"), not text-title's larger one.
 const DEVICE_NAME = cx(
-  'text-title min-w-[0] flex-1 text-lg',
+  'text-title min-w-0 flex-1 text-lg',
   'line-clamp-2 [line-clamp:2] wrap-anywhere',
 )
 
 // Device kind, vendor, OS and model as a subtitle line under the name. It stays
 // on one line and ellipsizes when space is tight, so an offline device's age
 // remains a clean right-hand column instead of wrapping beneath it.
-const DEVICE_META = 'flex min-w-[0] items-baseline gap-8'
+const DEVICE_META = 'flex min-w-0 items-baseline gap-8'
 
 const DEVICE_KIND = cx(
-  'text-meta min-w-[0] flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap',
+  'text-meta min-w-0 flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap',
   '[&_.inline-meta-item]:overflow-hidden [&_.inline-meta-item]:text-ellipsis',
 )
 
 // The privacy-randomized note, set off from the MAC by a small dot.
 const RANDOMIZED_TAG = cx(
   'relative whitespace-nowrap pl-12 tracking-[0] text-tertiary',
-  "before:absolute before:top-[50%] before:left-[0] before:size-[3px] before:content-['']",
-  'before:rounded-[50%] before:bg-current before:opacity-55 before:transform-[translateY(-50%)]',
+  "before:absolute before:top-1/2 before:left-0 before:size-[3px] before:content-['']",
+  'before:rounded-full before:bg-current before:opacity-55 before:-translate-y-1/2',
 )
 
 type ScanPhaseState = 'past' | 'current' | 'next'
@@ -210,7 +212,7 @@ const SCAN_PHASES = ['Sweeping', 'Listening', 'Identifying'] as const
 const SCAN_PHASE_MS = 1300
 
 // How long the exit slide plays before the indicator unmounts. Matches
-// --duration-normal in index.css.
+// --duration-normal, the length of `animate-scan-slide-out`.
 const SCAN_EXIT_MS = 220
 
 function capitalize(text: string): string {
@@ -433,7 +435,7 @@ function OnlineIndicator({
       aria-hidden={isActive ? undefined : true}
     >
       <span className={STATUS_DOT} aria-hidden />
-      <span className="num text-(--text-secondary)">{count}</span> online
+      <span className="num text-secondary">{count}</span> online
     </span>
   )
 }
@@ -490,7 +492,7 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
       <span className={iconVariants({ tone: device.isGateway ? 'positive' : KIND_TONES[device.kind] })}>
         <KindIcon kind={device.kind} />
       </span>
-      <div className="flex min-w-[0] flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
         {/* Name on the left, status on the right. mb-2 adds a touch more air
             below the (larger) name, on top of the column's 4px gap. */}
         <div className="mb-2 flex items-start justify-between gap-8">
@@ -499,7 +501,7 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
             className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
-            <span className="size-[5px] rounded-[50%] bg-current" aria-hidden />
+            <span className="size-[5px] rounded-full bg-current" aria-hidden />
             {device.isReachable ? 'Online' : 'Offline'}
           </span>
         </div>
@@ -508,7 +510,7 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
         {/* MAC on the left, IP pinned to the bottom-right. */}
         <div className="flex items-baseline justify-between gap-8">
-          <span className="text-meta inline-flex min-w-[0] items-baseline gap-8 tabular-nums tracking-[0.02em]">
+          <span className="text-meta inline-flex min-w-0 items-baseline gap-8 tabular-nums">
             <span>
               <span className="sr-only">MAC address </span>
               {formatMac(device.mac)}
@@ -520,7 +522,7 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
               </span>
             )}
           </span>
-          <span className="num shrink-0 text-(--text-secondary)">
+          <span className="num shrink-0 text-secondary">
             <span className="sr-only">IP address </span>
             {device.ip}
           </span>
@@ -585,7 +587,7 @@ function DevicesBody({
 }): JSX.Element {
   if (isScanning && devices.length === 0) {
     return (
-      <div className="view-empty">
+      <div className="page-empty">
         <Spinner />
         <p className="text-muted">Scanning your network…</p>
       </div>
@@ -615,7 +617,7 @@ function DevicesBody({
       {/* The Local Network hint trailing a scan that did find devices; the
           blank-state copy is laid out by <EmptyState>. */}
       {shouldShowLocalNetworkHint && (
-        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-[1.45]">{LOCAL_NETWORK_HINT}</p>
+        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-small">{LOCAL_NETWORK_HINT}</p>
       )}
     </div>
   )
@@ -634,7 +636,7 @@ export function DevicesView(): JSX.Element {
   const shouldShowLocalNetworkHint = IS_MAC && isOnlySelf
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<DevicesIcon size={18} />}
         title={headerTitle(devices.length)}

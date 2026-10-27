@@ -12,7 +12,7 @@ const ICON = 'shrink-0 rounded-xs object-contain'
 const MONOGRAM = cx(
   ICON,
   'inline-flex items-center justify-center bg-hover',
-  'text-2xs font-semibold leading-none text-(--text-secondary)',
+  'text-2xs font-semibold leading-none text-secondary',
 )
 
 // Requested well above the rendered size so it stays crisp on high-DPI screens.

@@ -20,7 +20,7 @@ const linkVariants = cva(
   },
 )
 
-const dotVariants = cva('size-[5px] rounded-[50%] bg-current', {
+const dotVariants = cva('size-[5px] rounded-full bg-current', {
   variants: {
     tone: {
       on: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
@@ -91,13 +91,13 @@ export function StatusBar(): JSX.Element {
       )}
       data-tauri-drag-region
     >
-      <div className="inline-flex items-center gap-12 min-w-[0]">
+      <div className="inline-flex items-center gap-12 min-w-0">
         <div className="inline-flex items-center gap-8 [-webkit-app-region:drag]">
           {/* The brand mark: just the glyph, in the accent colour, no tile. */}
           <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
-          <span className="text-2xl font-semibold tracking-[-0.02em] text-primary">Rove</span>
+          <span className="text-2xl font-semibold tracking-title text-primary">Rove</span>
         </div>
         {/* Polite live region: the link state changes on its own. */}
         <span className={linkVariants({ tone })} role="status">

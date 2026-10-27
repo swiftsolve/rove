@@ -124,7 +124,7 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
   // Direction is a mirror: dark→light grows the incoming light view outward
   // from the centre; light→dark plays the reverse, collapsing the outgoing
   // light view back to the centre to reveal dark beneath. The `theme-to-dark`
-  // class tells index.css which snapshot to stack on top; it's fixed for the
+  // class tells styles/base.css which snapshot to stack on top; it's fixed for the
   // life of the transition, so a mid-flight reversal reuses it as-is.
   root.classList.toggle('theme-to-dark', !isNextLight)
   const transition = doc.startViewTransition(() => {

@@ -170,7 +170,7 @@ rove/
 │   │   │                       capabilities, connection, live-throughput,
 │   │   │                       interfaces, devices, events, usage, apps,
 │   │   │                       diagnostics, services, settings, about
-│   │   └── <area>/             its views (+ their CSS) at the top
+│   │   └── <area>/             its views at the top
 │   │       ├── components/     parts of those views, when a view has them
 │   │       ├── context/        its own context, if it ever needs one
 │   │       ├── hooks/          that area's data and state hooks
@@ -181,7 +181,12 @@ rove/
 │   │                           DataRow, Subpage, Tooltip, Icons, …
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
-│   ├── lib/                    shared helpers (format, platform, highlight)
+│   ├── lib/                    shared helpers (format, platform, highlight,
+│   │                           cn)
+│   ├── styles/                 the global CSS: tailwind.css (the theme from
+│   │                           the tokens; imports the rest), base.css
+│   │                           (fonts, resets) and utilities.css (shared
+│   │                           type styles and layout, as utilities)
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
@@ -226,45 +231,49 @@ rove/
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
-- Each component's stylesheet sits next to it and has the same name:
-  `DevicesCard.tsx` and `DevicesCard.module.css`.
+- The rare stylesheet a component needs sits next to it with the same name:
+  `ConnectionCard.tsx` and `ConnectionCard.module.css`.
 
-**Styles: CSS Modules plus a small global layer**
+**Styles: Tailwind utilities from the design tokens**
 
-- Component styles are CSS Modules (`Foo.module.css`, imported as `styles`).
-  The module is the namespace, so class names carry no prefix and are named by
-  role: `.row`, `.row-name`. In code they're camelCase: `styles.rowName`.
-- Variants go through CVA (class-variance-authority). An element whose classes
-  depend on state or a variant gets a recipe at the top of its file:
+- Components are styled with Tailwind v4 utilities in the TSX. The theme in
+  `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
+  `--space-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
+  there are no Tailwind defaults to reach for. There's no preflight:
+  `styles/base.css` is the reset.
+- Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,
+  `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
+  `styles/utilities.css`. They take variants and sort with the other
+  utilities.
+- Variants go through CVA (class-variance-authority), with utility strings. An
+  element whose classes depend on state or a variant gets a recipe at the top
+  of its file:
 
   ```ts
-  const rowVariants = cva(styles.row, {
+  const rowVariants = cva('flex items-center gap-12', {
     variants: {
-      isGateway: { true: styles.isGateway },
-      kind: { phone: styles.kindPhone, tv: styles.kindTv },
+      isGateway: { true: 'bg-inset' },
+      level: { good: 'text-good', poor: 'text-poor' },
     },
   })
-  // <div className={rowVariants({ isGateway, kind: device.kind })}>
+  // <div className={rowVariants({ isGateway, level })}>
   ```
 
-  States are `is-*` classes (`.is-open`); enumerations are
-  `<dimension>-<value>` classes (`.level-good`). Data attributes are never
-  styling hooks. `cx()` only joins fixed classes, or a recipe's output with a
-  `className` prop.
+- `cn()` (`lib/cn.ts`) joins classes and lets a later utility override an
+  earlier one that sets the same thing; use it wherever a component merges a
+  `className` from outside, which is how a view adjusts a child. `cx` only
+  joins fixed classes.
+- Shared components keep a plain marker class on their parts (`data-row`,
+  `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
+  outside: `[&_.ui-section-footer]:pt-12`.
 - Buttons are `Button` (`variant`: `primary`, `filled`, `secondary`) and
   `IconButton` (`tone`: `plain`, `primary`, `secondary`, `stop`; `aria-label`
   is required), never hand-written `<button>` classes.
-- A stylesheet only styles its own component. To adjust a child, pass it a
-  `className` (the child merges it onto its root with `cx`).
-- The global layer is plain `.css`, and only it is global: `index.css`,
-  `styles/feedback.css` (`error-banner`, `inline-error`), and the primitives in
-  `components/` that many views build on (`Section.css`, `ViewHeader.css`,
-  `Subpage.css`, `DataRow.css`, `DotSeparator.css`). Inside a module, reach
-  them with `:global(.ui-section-body)`. Use a shared keyframe
-  as `animation: global(fade-in) …`, or CSS Modules renames it and the
-  animation silently stops.
-- `npm run lint` also runs `scripts/check-css-modules.mjs`. It fails on a
-  `styles.x` that has no matching class, and on a class nothing uses.
+- Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
+  their keyframes. A `.module.css` file is only for what utilities can't say:
+  selectors into another component's DOM keyed on `:has()`. `npm run lint`
+  also runs `scripts/check-css-modules.mjs`, which fails on a `styles.x` with
+  no matching class and on a class nothing uses.
 
 ## Design
 

@@ -1,8 +1,18 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import './DataRow.css'
+import { cx } from 'class-variance-authority'
 
 // True inside a DataList, where each row's label and value are a <dt>/<dd> pair.
 const DataListContext = createContext(false)
+
+// Label left, value right, on a shared baseline. The first row sits flush to
+// the top of its container and the last to the bottom. `data-row` is a marker
+// views target to change the rhythm (`[&_.data-row:not(:first-child)]:pt-4`).
+const ROW = cx(
+  'data-row flex items-baseline justify-between gap-16',
+  'py-(--row-padding-y) first:pt-0 last:pb-0',
+)
+const LABEL = 'field-label shrink-0'
+const VALUE = 'text-value num text-right'
 
 interface DataListProps {
   className?: string
@@ -35,17 +45,17 @@ export function DataRow({ label, value, children }: DataRowProps): JSX.Element |
 
   if (isInDataList) {
     return (
-      <div className="data-row">
-        <dt className="field-label">{label}</dt>
-        <dd className="text-value num">{children ?? value}</dd>
+      <div className={ROW}>
+        <dt className={LABEL}>{label}</dt>
+        <dd className={VALUE}>{children ?? value}</dd>
       </div>
     )
   }
 
   return (
-    <div className="data-row">
-      <span className="field-label">{label}</span>
-      <span className="text-value num">{children ?? value}</span>
+    <div className={ROW}>
+      <span className={LABEL}>{label}</span>
+      <span className={VALUE}>{children ?? value}</span>
     </div>
   )
 }

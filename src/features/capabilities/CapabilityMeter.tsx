@@ -18,10 +18,10 @@ const LEVEL_RANK: Record<CapabilityLevel, number> = {
 // Each bar's height, shortest first. The compact ones stay on whole pixels, or
 // the thin bars blur across subpixel boundaries and read fuzzy.
 const SEGMENTS = [
-  { height: 'h-[6px]', compactHeight: 'h-[3px]' },
-  { height: 'h-[8px]', compactHeight: 'h-[5px]' },
-  { height: 'h-[10px]', compactHeight: 'h-[7px]' },
-  { height: 'h-[12px]', compactHeight: 'h-[9px]' },
+  { height: 'h-6', compactHeight: 'h-[3px]' },
+  { height: 'h-8', compactHeight: 'h-[5px]' },
+  { height: 'h-10', compactHeight: 'h-[7px]' },
+  { height: 'h-12', compactHeight: 'h-[9px]' },
 ]
 
 // The bars take the level's fill colour (the same as the row's icon); muted is
@@ -35,7 +35,7 @@ const rootVariants = cva('inline-flex shrink-0 items-center gap-8 text-xs font-m
 
 const barsVariants = cva('inline-flex items-end gap-2', {
   variants: {
-    isCompact: { true: 'h-[9px]', false: 'h-[12px]' },
+    isCompact: { true: 'h-[9px]', false: 'h-12' },
   },
 })
 
@@ -43,7 +43,7 @@ const segVariants = cva('', {
   variants: {
     // Compact (the Home strip) drops the pill radius to a hairline, again so the
     // thin bars stay sharp.
-    isCompact: { true: 'w-[2px] rounded-[1px]', false: 'w-[3px] rounded-full' },
+    isCompact: { true: 'w-2 rounded-[1px]', false: 'w-[3px] rounded-full' },
     fill: {
       lit: 'bg-current',
       // A faded tint of the level colour, so the meter reads as one monochrome

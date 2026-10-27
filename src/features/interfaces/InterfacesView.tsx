@@ -6,9 +6,11 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { Button } from '@/components/Button'
+import { SECTION_BODY, SECTION_CARD, SECTION_HEADER } from '@/components/Section'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
 const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
@@ -18,7 +20,7 @@ const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center 
     connection: {
       wifi: ['text-series-down', ICON_TINT],
       ethernet: ['text-status-positive', ICON_TINT],
-      unknown: 'bg-inset text-(--text-secondary)',
+      unknown: 'bg-inset text-secondary',
     },
   },
 })
@@ -41,17 +43,19 @@ const stateVariants = cva('text-meta inline-flex shrink-0 items-center gap-6 cap
 // card, so they need more room around the tile than a plain section title. The
 // bottom pad is trimmed: with no divider, the header pad and body pad stacked
 // into too big a gap below the name. No divider either: the card reads as one unit.
-const PANEL_HEADER = cx(
-  'ui-section-header h-auto border-b-0',
+const PANEL_HEADER = cn(
+  SECTION_HEADER,
+  'h-auto border-b-0',
   'px-(--section-header-padding-x) pt-(--section-header-padding-y) pb-8',
 )
 
 // With no divider the header sets most of the gap above the fields; a small top
 // pad adds a little room between the name and the first label. The rows carry
 // only a few fields, so they tighten from the default 8px to 4px. The first
-// row's top and the last row's bottom stay at 0 (.row-list / .data-row).
-const PANEL_BODY = cx(
-  'ui-section-body row-list pt-6',
+// row's top and the last row's bottom stay at 0 (row-list, DataRow).
+const PANEL_BODY = cn(
+  SECTION_BODY,
+  'row-list pt-6',
   '*:not-first:pt-4 *:not-last:pb-4',
 )
 
@@ -63,14 +67,14 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Eleme
 
 function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
-    <li className="ui-section">
+    <li className={SECTION_CARD}>
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <span className={iconVariants({ connection: iface.connectionType })}>
             <InterfaceIcon iface={iface} />
           </span>
           {/* text-lg: the widget-title size (e.g. "Traffic"), not text-title's larger one. */}
-          <h2 className="text-title min-w-[0] truncate text-lg">{iface.name}</h2>
+          <h2 className="text-title min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
             <span className={tagVariants({ isPositive: true })} title="Used for internet traffic">
               Active
@@ -81,7 +85,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           {iface.isVirtual && <span className={tagVariants()}>Virtual</span>}
         </div>
         <span className={stateVariants({ state: iface.operState })}>
-          <span className="size-[5px] rounded-[50%] bg-current" aria-hidden />
+          <span className="size-[5px] rounded-full bg-current" aria-hidden />
           {formatOperState(iface.operState)}
         </span>
       </div>
@@ -140,7 +144,7 @@ function InterfacesBody({
 }): JSX.Element {
   if (isLoading && interfaces.length === 0) {
     return (
-      <div className="view-empty" role="status">
+      <div className="page-empty" role="status">
         <Spinner />
         <p className="text-muted">Loading network interfaces…</p>
       </div>
@@ -148,7 +152,7 @@ function InterfacesBody({
   }
   if (interfaces.length === 0) {
     return (
-      <div className="view-empty">
+      <div className="page-empty">
         <p className="text-muted">No network interfaces found.</p>
         <Button onClick={onRefresh}>
           Refresh
@@ -170,7 +174,7 @@ export function InterfacesView(): JSX.Element {
   const onRefresh = (): void => void refresh()
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<LayersIcon size={18} />}
         title={headerTitle(interfaces.length)}

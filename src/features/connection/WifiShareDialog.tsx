@@ -7,7 +7,6 @@ import { CloseIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
 import { IconButton } from '@/components/IconButton'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import styles from './WifiShareDialog.module.css'
 
 const STATE = 'flex flex-col items-center gap-12 py-16 text-center'
 
@@ -32,7 +31,7 @@ function ShareBody({ share, error, isLoading }: ShareBodyProps): JSX.Element | n
   if (error) {
     return (
       <div className={STATE}>
-        <p className="text-sm text-(--text-secondary)" role="alert">
+        <p className="text-sm text-secondary" role="alert">
           {error}
         </p>
       </div>
@@ -111,15 +110,15 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
     // recessed body's square corners to its radius.
     <div
       className={cx(
-        styles.overlay,
-        'absolute inset-[0] z-90 flex items-center justify-center p-20 bg-scrim',
+        'animate-overlay-in',
+        'absolute inset-0 z-90 flex items-center justify-center p-20 bg-scrim',
       )}
       role="presentation"
       onClick={onClose}
     >
       <div
         className={cx(
-          styles.dialog,
+          'animate-dialog-in',
           'w-full max-w-[340px] overflow-hidden',
           'bg-panel border border-line-strong rounded-lg shadow-raised',
         )}
@@ -133,14 +132,14 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
       >
         {/* The darker body below sets the header apart, so it needs no divider. */}
         <div className="flex items-start justify-between gap-8 p-16">
-          <div className="min-w-[0]">
+          <div className="min-w-0">
             <h2
               id="wifi-share-title"
-              className="text-xl font-semibold tracking-[-0.01em] text-primary"
+              className="text-dialog-title"
             >
               Share Wi‑Fi
             </h2>
-            <p id="wifi-share-sub" className="mt-4 text-sm text-(--text-secondary)">
+            <p id="wifi-share-sub" className="mt-4 text-sm text-secondary">
               Scan with a phone camera to join
             </p>
           </div>
@@ -150,7 +149,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           <IconButton
             tone="plain"
             className={cx(
-              'shrink-0 -mt-4 -mr-4 text-(--text-secondary)',
+              'shrink-0 -mt-4 -mr-4 text-secondary',
               'not-disabled:not-aria-disabled:hover:bg-hover not-disabled:not-aria-disabled:hover:text-primary',
             )}
             aria-label="Close"

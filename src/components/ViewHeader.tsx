@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
-import { cva, cx } from 'class-variance-authority'
-import './ViewHeader.css'
+import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 
-const subtitleVariants = cva('view-header-sub', {
+// Reserves the subtitle line's height even while it only holds a status
+// placeholder, so the title above never shifts when the real content resolves.
+const subtitleVariants = cva('page-header-sub min-h-[calc(var(--font-size-xs)*1.35)] text-xs text-tertiary', {
   variants: {
     /** Runs the fade-in once (class swap → animation). */
-    isSubtitleShown: { true: 'show' },
+    isSubtitleShown: { true: 'animate-fade-in' },
   },
   defaultVariants: { isSubtitleShown: false },
 })
@@ -20,7 +22,7 @@ interface ViewHeaderProps {
    * so the title never shifts as the content resolves.
    */
   subtitle?: ReactNode
-  /** Extra class for view-specific subtitle layout (gaps, truncation). */
+  /** Extra class for a view's own subtitle layout (gaps, truncation). */
   subtitleClassName?: string
   /** Toggling this on runs the subtitle's fade-in once (class swap → animation). */
   isSubtitleShown?: boolean
@@ -30,8 +32,11 @@ interface ViewHeaderProps {
 
 /**
  * Shared page header for the top-level views: icon tile, title with an
- * optional fade-in subtitle beneath it, and action controls on the right.
- * The `.view-header` frame (edge-to-edge divider) comes from index.css.
+ * optional fade-in subtitle beneath it, and action controls on the right, over
+ * the `page-header` frame's edge-to-edge divider. It sits above the view
+ * content (z-20), so its tooltips aren't painted over by the later siblings
+ * they drop into. The actions hold their size, so a long subtitle wraps in the
+ * text column instead of squeezing them.
  */
 export function ViewHeader({
   icon,
@@ -42,17 +47,19 @@ export function ViewHeader({
   actions,
 }: ViewHeaderProps): JSX.Element {
   return (
-    <header className="view-header view-header-row">
-      <span className="view-header-icon" aria-hidden>
+    <header className="page-header page-header-row relative z-20 flex items-center gap-12">
+      <span className="page-header-icon" aria-hidden>
         {icon}
       </span>
-      <div className="view-header-text">
-        <h1 className="view-header-title">{title}</h1>
+      <div className="page-header-text flex min-w-0 flex-1 flex-col gap-4">
+        <h1 className="page-header-title">{title}</h1>
         {subtitle !== undefined && (
-          <span className={cx(subtitleVariants({ isSubtitleShown }), subtitleClassName)}>{subtitle}</span>
+          <span className={cn(subtitleVariants({ isSubtitleShown }), subtitleClassName)}>{subtitle}</span>
         )}
       </div>
-      {actions !== undefined && <div className="view-header-actions">{actions}</div>}
+      {actions !== undefined && (
+        <div className="page-header-actions flex shrink-0 items-center gap-4">{actions}</div>
+      )}
     </header>
   )
 }

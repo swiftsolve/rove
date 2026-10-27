@@ -21,7 +21,6 @@ import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
-import styles from './ServicesView.module.css'
 
 // Per-row overflow menu: a kebab button anchoring a dropdown.
 //
@@ -32,17 +31,15 @@ import styles from './ServicesView.module.css'
 const KEBAB = cx(
   'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-tertiary',
   'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
-  '[@media(hover:hover)]:w-[0] [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
+  '[@media(hover:hover)]:w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
   'group-hover/row:w-[30px] group-hover/row:opacity-100',
   'focus-visible:w-[30px] focus-visible:opacity-100',
   'aria-expanded:w-[30px] aria-expanded:opacity-100',
   'hover:bg-hover hover:text-primary aria-expanded:bg-hover aria-expanded:text-primary',
 )
 
-// The dropdown's entrance animation lives in the module (`styles.dropdown`).
 const DROPDOWN = cx(
-  styles.dropdown,
-  'absolute top-[calc(100%+4px)] right-[0] z-20 flex min-w-[112px] flex-col gap-2 p-4',
+  'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
   'rounded-sm border border-line-strong bg-raised shadow-raised',
 )
 
@@ -58,7 +55,7 @@ const menuItemVariants = cva(
       /** Destructive (Remove): red text and a red-tinted hover. */
       isDanger: {
         true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
-        false: 'text-(--text-secondary) hover:bg-hover hover:text-primary',
+        false: 'text-secondary hover:bg-hover hover:text-primary',
       },
     },
     defaultVariants: { isDanger: false },
@@ -67,7 +64,7 @@ const menuItemVariants = cva(
 
 // One line of a row's body: left-hand text that ellipsises, right-hand value
 // that holds its width.
-const LINE = 'flex min-w-[0] items-center gap-12'
+const LINE = 'flex min-w-0 items-center gap-12'
 
 // Timeline link sitting in the header subtitle: the same quiet pill link as
 // Speed's "All Results" (see SpeedView's history link), down to the geometry and
@@ -86,7 +83,7 @@ const LINE = 'flex min-w-[0] items-center gap-12'
 // colour animation rather than two that drift out of sync.
 const TIMELINE_LINK = cx(
   'group/link inline-flex cursor-pointer items-center gap-[5px] ml-[-9.5px] rounded-full px-8 py-2',
-  '[font-size:inherit] font-medium text-(--text-secondary)',
+  '[font-size:inherit] font-medium text-secondary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
   'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
   '[&_svg]:text-inherit [&_svg]:opacity-72',
@@ -226,10 +223,10 @@ function ServiceRow({
     <li className="group/row flex items-center gap-8 py-12 pr-6 pl-16">
       {/* Two stacked lines: favicon + name + trend on top, URL + status below.
           Takes the row's free width so both lines can ellipsis their left-hand text. */}
-      <div className="flex min-w-[0] flex-auto flex-col gap-2">
+      <div className="flex min-w-0 flex-auto flex-col gap-2">
         <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
-          <span className="min-w-[0] flex-auto truncate text-primary">{service.name}</span>
+          <span className="min-w-0 flex-auto truncate text-primary">{service.name}</span>
           {(samples.length > 0 || isDown) && (
             <Sparkline
               samples={samples}
@@ -244,10 +241,10 @@ function ServiceRow({
         {/* Indent the URL line so it starts under the name, clearing the favicon
             (16px) and its gap that lead the line above. */}
         <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--space-12))]')}>
-          <span className="min-w-[0] flex-auto truncate text-sm text-tertiary">{service.host}</span>
+          <span className="min-w-0 flex-auto truncate text-sm text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}
-          <span className="num min-w-[4.5em] shrink-0 text-right font-numeric text-sm text-(--text-secondary)">
+          <span className="num min-w-[4.5em] shrink-0 text-right font-numeric text-sm text-secondary">
             <LatencyReadout
               latencyMs={latencyMs}
               isErroring={isErroring}
@@ -350,7 +347,7 @@ export function ServicesView(): JSX.Element {
   }
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<CloudIcon size={18} />}
         title="Services"

@@ -28,13 +28,13 @@ export function AboutView(): JSX.Element {
   const version = useAppVersion()
 
   return (
-    <div className="view-page">
+    <div className="page">
       <div className="flex flex-col items-center gap-4 px-12 pt-16 pb-12 text-center">
         <span className={APP_ICON_TILE} aria-hidden>
           <BrandIcon size={53} hasGradient />
         </span>
-        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-primary">Rove</h1>
-        <p className="max-w-[300px] text-md leading-[1.45] text-secondary">
+        <h1 className="text-3xl font-semibold tracking-title text-primary">Rove</h1>
+        <p className="max-w-[300px] text-md leading-body text-secondary">
           A fast, minimal network monitor for your desktop.
         </p>
         {version && <span className="mt-4 text-xs text-tertiary tabular-nums">Version {version}</span>}

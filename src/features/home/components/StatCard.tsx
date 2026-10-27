@@ -68,7 +68,7 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isBusy, children }: S
           follows the card's corners. A control in the body raises itself above it. */}
       <button
         type="button"
-        className="absolute inset-[0] z-1 rounded-[inherit]"
+        className="absolute inset-0 z-1 rounded-[inherit]"
         data-stat-card-open
         onClick={onOpen}
         aria-label={ariaLabel}
@@ -98,9 +98,9 @@ interface StatReadoutProps {
 /** A direction arrow (or key dot) inline with a compact value. */
 export function StatReadout({ marker, value, unit, className }: StatReadoutProps): JSX.Element {
   return (
-    <div className={cn('flex flex-row items-center gap-4 min-w-[0]', className)}>
+    <div className={cn('flex flex-row items-center gap-4 min-w-0', className)}>
       {marker === 'online' ? (
-        <span className="size-[6px] rounded-[50%] shrink-0 bg-status-positive" aria-hidden />
+        <span className="size-6 rounded-full shrink-0 bg-status-positive" aria-hidden />
       ) : (
         <DirectionIcon series={marker} size={12} />
       )}

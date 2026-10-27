@@ -4,14 +4,13 @@ import type { PendingUpdate } from '@/app/utils/updater'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { BrandIcon, ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import styles from './UpdateDialog.module.css'
 
 // Dialog action buttons, mirroring the Add service dialog's so the two read as
 // one control set: a bordered secondary and a filled-accent primary.
 const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-6 min-w-[76px] px-(--section-padding) py-10',
-    'rounded-sm border text-sm font-semibold tracking-[0.01em]',
+    'rounded-sm border text-sm font-semibold tracking-button-large',
     'transition-[background,color] duration-(--duration-fast) ease-in-out',
     'not-disabled:active:transform-[translateY(0.5px)]',
   ],
@@ -21,7 +20,7 @@ const buttonVariants = cva(
       isPrimary: {
         true: 'text-on-fill bg-accent-fill border-transparent not-disabled:hover:bg-accent-fill-hover',
         false: cx(
-          'text-(--text-secondary) bg-raised border-line',
+          'text-secondary bg-raised border-line',
           'not-disabled:hover:bg-hover not-disabled:hover:text-primary',
         ),
       },
@@ -69,8 +68,8 @@ export function UpdateDialog({
   return (
     <div
       className={cx(
-        styles.overlay,
-        'fixed inset-[0] z-100 flex items-center justify-center p-20 bg-scrim',
+        'animate-overlay-in',
+        'fixed inset-0 z-100 flex items-center justify-center p-20 bg-scrim',
       )}
       role="presentation"
       onClick={isInstalling ? undefined : onDismiss}
@@ -80,7 +79,7 @@ export function UpdateDialog({
           recessed well's square corners to its radius. */}
       <div
         className={cx(
-          styles.dialog,
+          'animate-dialog-in',
           'w-full max-w-[360px] overflow-hidden',
           'bg-panel border border-line-strong rounded-lg shadow-raised',
         )}
@@ -102,10 +101,10 @@ export function UpdateDialog({
           >
             <BrandIcon size={20} />
           </div>
-          <div className="min-w-[0]">
+          <div className="min-w-0">
             <h2
               id="update-title"
-              className="text-xl font-semibold tracking-[-0.01em] text-primary"
+              className="text-dialog-title"
             >
               Update available
             </h2>
@@ -123,14 +122,14 @@ export function UpdateDialog({
             the release ships notes. */}
         {update.notes && (
           <div className="p-16 bg-chrome border-t border-line">
-            <h3 className="mb-8 text-2xs font-semibold tracking-[0.06em] uppercase text-tertiary">
+            <h3 className="mb-8 text-2xs font-semibold tracking-field-label uppercase text-tertiary">
               What&rsquo;s new
             </h3>
             <div
               className={cx(
                 'max-h-[168px] overflow-y-auto px-12 py-10',
                 'bg-inset border border-line rounded-sm',
-                'text-md leading-[1.5] text-(--text-secondary) whitespace-pre-wrap',
+                'text-md leading-body text-secondary whitespace-pre-wrap',
               )}
             >
               {update.notes}

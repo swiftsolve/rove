@@ -16,7 +16,7 @@ import { cx } from 'class-variance-authority'
 // left/right insets stay equal; those insets match the nav rail's 11px. The
 // error banner above <main> has no flex gap to lean on.
 const SCROLL = cx(
-  'flex flex-1 flex-col min-w-[0] min-h-[0]',
+  'flex flex-1 flex-col min-w-0 min-h-0',
   'overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]',
   'px-11 pt-12 pb-20',
   '[&>.error-banner]:mb-12',
@@ -46,13 +46,13 @@ export function AppShell(): JSX.Element {
       <StatusBar />
 
       {/* Everything below the full-width title bar: the nav rail, then the content column. */}
-      <div className="flex flex-1 flex-row min-h-[0] overflow-hidden">
+      <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
         <TabBar />
 
         {/* Dialogs portal in here so they cover the content column, not the
             window; it is their positioning context. */}
-        <div className="relative flex flex-1 flex-col min-w-[0] overflow-hidden" data-modal-root>
-          <div className="flex flex-1 flex-col w-full min-h-[0] overflow-hidden animate-[fade-in_var(--duration-normal)_var(--ease-out)_both]">
+        <div className="relative flex flex-1 flex-col min-w-0 overflow-hidden" data-modal-root>
+          <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
             {/* A plain div, not a landmark: <main> inside it must be top-level. */}
             <div ref={scrollRef} className={SCROLL} data-scroll-root>
               {network.error && network.info && <NetworkErrorBanner />}

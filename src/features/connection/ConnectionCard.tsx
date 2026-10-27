@@ -58,7 +58,7 @@ const signalMeterVariants = cva('flex items-center gap-8', {
   },
 })
 
-const signalBarsVariants = cva('inline-flex items-end gap-2 h-[12px]', {
+const signalBarsVariants = cva('inline-flex items-end gap-2 h-12', {
   variants: {
     // In the Signal row, lifted to sit level with the status text.
     placement: { strip: null, details: 'transform-[translateY(-2px)]' },
@@ -77,14 +77,14 @@ const signalBarVariants = cva('w-[3px] rounded-[1px_1px_0_0]', {
   },
 })
 
-const SIGNAL_BAR_HEIGHTS = ['h-[3px]', 'h-[6px]', 'h-[9px]', 'h-[12px]']
+const SIGNAL_BAR_HEIGHTS = ['h-[3px]', 'h-6', 'h-[9px]', 'h-12']
 
 // Lock + protocol, green when secured, red when open. A block flex box (not
 // inline-flex) so the lock centres on the text instead of sitting on the line's
 // baseline, which drops it a couple of pixels low. In the expanded rows (the
 // details' <dl>) it right-aligns in the value cell.
 const securityBadgeVariants = cva(
-  [styles.securityBadge, 'flex items-center gap-4 min-w-[0] in-[dl]:justify-end'],
+  [styles.securityBadge, 'flex items-center gap-4 min-w-0 in-[dl]:justify-end'],
   {
     variants: {
       isSecured: { true: null, false: 'text-negative' },
@@ -104,7 +104,7 @@ const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
 const chevronVariants = cva(
   [
     'relative z-1 pointer-events-none self-center shrink-0 text-tertiary',
-    'transition-[transform] duration-(--duration-normal) ease-out',
+    'transition-transform duration-(--duration-normal) ease-out',
   ],
   {
     variants: {
@@ -144,7 +144,7 @@ const detailsVariants = cva(
 
 // Keep the subtitle on one line inside the narrow strip: a flex row when it's
 // an InlineMeta, so its items can shrink (see ConnectionCard.module.css).
-const STRIP_SUB = cx('text-secondary', styles.stripSub, 'truncate [&.inline-meta]:flex')
+const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate [&.inline-meta]:flex')
 
 interface ConnectionCardProps {
   info: NetworkInfo
@@ -259,7 +259,7 @@ function SecurityBadge({
       ) : (
         <UnlockIcon size={12} className={securityIconVariants({ isSecured })} />
       )}
-      <span className="min-w-[0] overflow-hidden text-ellipsis" aria-hidden>
+      <span className="min-w-0 overflow-hidden text-ellipsis" aria-hidden>
         {label}
       </span>
       {/* The hover title isn't announced; the full description is. */}
@@ -368,7 +368,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
             the QR button opts back in and handles its own click. */}
         <button
           type="button"
-          className="absolute inset-[0] z-0 cursor-pointer focus-visible:outline-none"
+          className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
           aria-controls={detailsId}
@@ -377,7 +377,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         <div className={stripIconVariants({ variant: display.variant })}>
           <ConnectionIcon variant={display.variant} />
         </div>
-        <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-[0] py-2">
+        <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
           <h2 id={titleId} className="text-title truncate">
             {display.title}
           </h2>
