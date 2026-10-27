@@ -35,8 +35,8 @@ import type {
   WindowControls,
 } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
-import type { LatencySample } from '@/components/diagnostics/service-latency'
-import { MAX_SAMPLES, seedLatencyHistory } from '@/components/diagnostics/service-latency'
+import type { LatencySample } from '@/features/services/utils/service-latency'
+import { MAX_SAMPLES, seedLatencyHistory } from '@/features/services/utils/service-latency'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
@@ -191,7 +191,6 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   },
 ]
 
-// A lived-in home network: mostly named and classified, with one offline camera,
 // An Apple hardware model identifier: a product family followed by a
 // "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
 // Mirrors is_apple_model in crates/rove-core/src/devices/mod.rs.
@@ -234,6 +233,7 @@ function humanizeModel(model: string | null): string | null {
 type MockLanDevice = Omit<LanDevice, 'kindConfidence' | 'lastSeen'> &
   Partial<Pick<LanDevice, 'kindConfidence' | 'lastSeen'>>
 
+// A lived-in home network: mostly named and classified, with one offline camera,
 // one privacy-randomized guest phone and one genuine unknown — the messiness a
 // real scan turns up. Self matches the connection card (same IP + MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
@@ -488,7 +488,7 @@ const MOCK_SPEED_CONTEXT = {
 // first; values wobble around the current result the way a real link does.
 function seedSpeedHistory(): SpeedHistoryEntry[] {
   const hour = 3_600_000
-  const points: (Omit<SpeedResult, never> & { agoHours: number })[] = [
+  const points: (SpeedResult & { agoHours: number })[] = [
     { downloadMbps: 611.2, uploadMbps: 40.6, latencyMs: 12, jitterMs: 1.9, packetLoss: 0, agoHours: 6 },
     { downloadMbps: 598.7, uploadMbps: 39.1, latencyMs: 13, jitterMs: 2.4, packetLoss: 0, agoHours: 27 },
     { downloadMbps: 642.9, uploadMbps: 42.3, latencyMs: 10, jitterMs: 1.4, packetLoss: 0, agoHours: 52 },
@@ -506,6 +506,16 @@ function seedSpeedHistory(): SpeedHistoryEntry[] {
 }
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** `base` nudged by up to ±spread/2, rounded to one decimal. */
+function wobble(base: number, spread: number): number {
+  return Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
+}
+
+// How far back the usage views claim tracking started.
+const MOCK_TRACKING_SINCE_AGO_MS = 42 * 60_000
+// Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store.rs.
+const MOCK_SPEED_HISTORY_LIMIT = 50
 
 /** Smoothstep easing (0..1) for organic-looking ramps. */
 function smoothstep(x: number): number {
@@ -662,7 +672,7 @@ function createMockNetworkApi(): NetworkAPI {
         // The mock has no real OS icons; rows fall back to favicon/monogram.
         icon: null,
       }))
-      return { apps, support: 'supported', trackingSince: Date.now() - 42 * 60_000 }
+      return { apps, support: 'supported', trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS }
     },
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
@@ -727,7 +737,7 @@ function createMockNetworkApi(): NetworkAPI {
           }
         }),
         support: 'supported',
-        trackingSince: Date.now() - 42 * 60_000,
+        trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS,
       }
     },
     getTrafficUsage: async (): Promise<TrafficUsageSummary> => {
@@ -757,7 +767,7 @@ function createMockNetworkApi(): NetworkAPI {
           txBytes: Math.round(up * mb),
         }))
         .sort((a, b) => b.rxBytes + b.txBytes - (a.rxBytes + a.txBytes))
-      return { types, support: 'supported', trackingSince: Date.now() - 42 * 60_000 }
+      return { types, support: 'supported', trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS }
     },
     runDiagnostics: async () => {
       await delay(700)
@@ -767,8 +777,6 @@ function createMockNetworkApi(): NetworkAPI {
     // animation is visibly exercised in the browser mock.
     runDiagnosticsLive: async (): Promise<LiveDiagnostics> => {
       await delay(300)
-      const wobble = (base: number, spread: number): number =>
-        Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
       const basePing = MOCK_DIAGNOSTICS.gatewayPing
       return {
         gatewayPing: basePing
@@ -784,8 +792,6 @@ function createMockNetworkApi(): NetworkAPI {
     // The Services view's own probe, wobbled per poll like the live metrics above.
     runServices: async (): Promise<ServicesReport> => {
       await delay(300)
-      const wobble = (base: number, spread: number): number =>
-        Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
       return {
         internet: 'online',
         services: mockServiceReachability().map((service) => ({
@@ -898,10 +904,10 @@ function createMockNetworkApi(): NetworkAPI {
     },
     getSpeedHistory: async () => mockHistory,
     saveSpeedResult: async (entry: SpeedHistoryEntry) => {
-      mockHistory = [entry, ...mockHistory].slice(0, 50)
+      mockHistory = [entry, ...mockHistory].slice(0, MOCK_SPEED_HISTORY_LIMIT)
     },
     importSpeedHistory: async (entries: SpeedHistoryEntry[]) => {
-      mockHistory = [...entries, ...mockHistory].slice(0, 50)
+      mockHistory = [...entries, ...mockHistory].slice(0, MOCK_SPEED_HISTORY_LIMIT)
     },
     clearSpeedHistory: async () => {
       mockHistory = []

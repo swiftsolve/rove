@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
+/** Fraction of the remaining distance covered each frame: the ease's speed. */
+const EASE_FACTOR = 0.18
+/** Closer than this, the value snaps onto the target and the loop stops. */
+const SNAP_THRESHOLD = 0.05
+
 /**
  * Eases a displayed number toward `target` each animation frame, so the value
  * visibly counts up or down instead of snapping. Used for the speed-test cells
@@ -10,20 +15,20 @@ export function useCountUp(target: number): number {
   const currentRef = useRef(target)
 
   useEffect(() => {
-    let raf = 0
+    let frameId = 0
     const step = (): void => {
-      const diff = target - currentRef.current
-      if (Math.abs(diff) < 0.05) {
+      const remaining = target - currentRef.current
+      if (Math.abs(remaining) < SNAP_THRESHOLD) {
         currentRef.current = target
         setValue(target)
         return
       }
-      currentRef.current += diff * 0.18
+      currentRef.current += remaining * EASE_FACTOR
       setValue(currentRef.current)
-      raf = requestAnimationFrame(step)
+      frameId = requestAnimationFrame(step)
     }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
+    frameId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(frameId)
   }, [target])
 
   return value

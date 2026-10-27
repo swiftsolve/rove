@@ -1,0 +1,69 @@
+import { locationKey } from '@/app/utils/location'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { useNetwork } from '@/app/hooks/useNetwork'
+import { useScreenFocus } from '@/app/hooks/useScreenFocus'
+import { TabBar } from '@/app/components/TabBar'
+import { UpdatePrompt } from '@/app/components/UpdatePrompt'
+import { StatusBar } from '@/app/components/StatusBar'
+import { NetworkErrorBanner, NetworkLoadingScreen } from '@/app/components/NetworkInfoStates'
+import { CurrentScreen, needsNetworkInfo } from '@/app/components/CurrentScreen'
+import { cx } from 'class-variance-authority'
+
+// The scrolling content area. Column flex so <main> can grow to fill the
+// visible area, which centres the first-launch loading screen in the content
+// region instead of overflowing a fixed 100vh. The scrollbar's space is reserved
+// on the trailing edge only, so content doesn't jump when it appears and the
+// left/right insets stay equal; those insets match the nav rail's 11px. The
+// error banner above <main> has no flex gap to lean on.
+const SCROLL = cx(
+  'flex flex-1 flex-col min-w-0 min-h-0',
+  'overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]',
+  'px-11 pt-12 pb-20',
+  '[&>.error-banner]:mb-12',
+)
+
+/**
+ * The window's layout: title bar, nav rail and the scrolling content column.
+ * The screen inside it is picked by `CurrentScreen` from the current location.
+ */
+export function AppShell(): JSX.Element {
+  const { location } = useNavigation()
+  const network = useNetwork()
+  const { scrollRef, mainRef } = useScreenFocus(locationKey(location))
+
+  // Show the loading/error state only in the content area (not full-screen) so
+  // the window chrome and tabs stay usable even before info arrives.
+  const isWaitingForNetworkInfo = !network.info && needsNetworkInfo(location)
+
+  return (
+    // The shell owns the app background and clips every child to the window
+    // edge. Square corners: the window is opaque (Tauri transparent:false,
+    // required so WebKitGTK renders reliably on Linux/NVIDIA — see run() in
+    // lib.rs), so a corner radius would just expose the window's background
+    // rather than the desktop. A hairline edge keeps the frameless window crisp.
+    <div className="flex flex-col h-full bg-shell border border-line overflow-hidden" data-app-shell>
+      <UpdatePrompt />
+      <StatusBar />
+
+      {/* Everything below the full-width title bar: the nav rail, then the content column. */}
+      <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
+        <TabBar />
+
+        {/* Dialogs portal in here so they cover the content column, not the
+            window; it is their positioning context. */}
+        <div className="relative flex flex-1 flex-col min-w-0 overflow-hidden" data-modal-root>
+          <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
+            {/* A plain div, not a landmark: <main> inside it must be top-level. */}
+            <div ref={scrollRef} className={SCROLL} data-scroll-root>
+              {network.error && network.info && <NetworkErrorBanner />}
+
+              <main ref={mainRef} className="flex flex-1 flex-col gap-10">
+                {isWaitingForNetworkInfo ? <NetworkLoadingScreen /> : <CurrentScreen />}
+              </main>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

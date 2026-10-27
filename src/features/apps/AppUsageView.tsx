@@ -1,0 +1,289 @@
+import type { AppUsage, AppUsageSummary } from '@/types'
+import { formatBytes } from '@/lib/format'
+import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { appDomain } from '@/features/apps/utils/app-domain'
+import { Tooltip as UiTooltip } from '@/components/Tooltip'
+import { ViewHeader } from '@/components/ViewHeader'
+import { ServiceIcon } from '@/components/icons/ServiceIcon'
+import { MetricValue } from '@/components/MetricValue'
+import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, InfoIcon, LayersIcon } from '@/components/icons/Icons'
+import { DirectionIcon } from '@/components/icons/DirectionIcon'
+import { EmptyState } from '@/components/EmptyState'
+import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
+import { DotSeparator } from '@/components/DotSeparator'
+import { Spinner } from '@/components/Spinner'
+import { cva, cx } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
+import { IconButton } from '@/components/IconButton'
+import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+
+/** One segment of a row's down/up bar, coloured by its series. Its width eases
+ *  as the totals (and the busiest-app scale) change, so the bars glide in step
+ *  with the count-up figures; the global reduced-motion rule neutralises it. */
+const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
+  variants: {
+    series: { down: 'bg-series-down', up: 'bg-series-up' },
+  },
+})
+
+// A row runs edge to edge in the card and owns the horizontal inset, so the
+// hairlines between rows (on the list) span the full width. Every row carries
+// equal top and bottom padding, so the first and last aren't special-cased.
+// Hover gets the Speed page's capability-row wash.
+const ROW = cx(
+  'group/row relative flex flex-col gap-8 px-(--section-body-padding) py-12',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+)
+
+// The whole row links into that app's hosts: a transparent overlay button
+// covers it, so the block content needn't nest inside a button, and being
+// absolutely positioned it paints above the static content to catch the click.
+// Its focus ring sits just inside the row (rows run edge to edge), square except
+// where the first and last rows meet the card's rounded corners.
+const ROW_LINK = cx(
+  'absolute inset-0 w-full focus-visible:outline-offset-(--focus-inset)',
+  'group-first/row:rounded-t-lg group-last/row:rounded-b-lg',
+)
+
+// Download/upload figures, right-aligned in a fixed-width box so the down and up
+// columns line up across rows (matches the Hosts view).
+const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+const FIGURE_VALUE = 'num min-w-[46px] text-right'
+
+// The quiet pill link in the header subtitle, like Speed's "All Results" and
+// Services' "View timeline". The button reset carries the font family but not
+// the size, so it inherits the subtitle's caption size. The negative margins
+// cancel the pill's padding (and the glyphs' empty edges), so the first link's
+// globe sits flush under the title and the dot between the links keeps its 8px.
+// Focus shows the way hover does, accent + underline, not with a ring.
+const SUBTITLE_LINK = cx(
+  'group/link inline-flex items-center gap-[5px] mr-[-9px] ml-[-9.5px] px-8 py-2 rounded-full',
+  'text-[length:inherit] font-medium text-secondary',
+  'transition-[color] duration-(--duration-fast) ease-in-out',
+  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
+)
+
+const SUBTITLE_LINK_TEXT = cx(
+  'group-hover/link:underline group-hover/link:underline-offset-2',
+  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+)
+
+// The glyphs share the link's (animating) colour so they shift together on
+// hover; "a touch dimmer at rest" is opacity, so there's a single colour
+// animation rather than two that drift out of sync.
+const SUBTITLE_LINK_GLYPH = cx(
+  'text-inherit opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
+  'group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
+)
+
+const APP_USAGE_INFO_HINT =
+  'Bytes are attributed to the app that moved them, read from the OS per-process ' +
+  'network counters while Rove is running. Totals reset when Rove restarts.'
+
+const APP_USAGE_EMPTY_HINT = 'Usage appears here as your apps send and receive.'
+
+const APP_USAGE_UNSUPPORTED_HINT =
+  'Run Rove as administrator to meter per-app usage on Windows.'
+
+/** One app's row, styled like a Services row: icon + name on the left, total on
+ *  the right, then a proportional down/up bar and the byte figures beneath. The
+ *  whole row is a link into that app's hosts — a transparent overlay button
+ *  covers it (so the block content needn't nest inside a button) and a caret on
+ *  the right signals it's navigable. */
+function AppRow({
+  app,
+  busiestTotal,
+  onOpen,
+}: {
+  app: AppUsage
+  busiestTotal: number
+  onOpen: () => void
+}): JSX.Element {
+  const total = app.rxBytes + app.txBytes
+  // Split the bar into down/up segments, each scaled against the busiest app so
+  // the rows are comparable at a glance. Guard the divide for the all-zero case.
+  const scale = busiestTotal > 0 ? 100 / busiestTotal : 0
+  const downPct = app.rxBytes * scale
+  const upPct = app.txBytes * scale
+  return (
+    <li className={ROW}>
+      <button
+        type="button"
+        className={ROW_LINK}
+        onClick={onOpen}
+        aria-label={`View hosts for ${app.name}`}
+      />
+      {/* The visual layers are click-through, so the overlay button owns all
+          pointer interaction (cursor and click), the caret included. */}
+      <div className="pointer-events-none flex items-center justify-between gap-12">
+        <span className="inline-flex min-w-0 items-center gap-8">
+          <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
+          {/* Long process paths (e.g. macOS bundle identifiers) truncate rather
+              than wrap, keeping the main line one row tall. */}
+          <span className="truncate text-sm text-primary" title={app.name}>
+            {app.name}
+          </span>
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-8">
+          <MetricValue
+            value={total}
+            className="num shrink-0 text-sm text-secondary"
+            format={formatBytes}
+          />
+          <ChevronRightIcon
+            size={16}
+            className={cx(
+              'text-tertiary opacity-35 transition-opacity duration-(--duration-fast) ease-in-out',
+              'group-hover/row:opacity-75',
+            )}
+            aria-hidden
+          />
+        </span>
+      </div>
+      {/* One track, two segments side by side, each scaled against the busiest
+          app so rows read comparably; an empty segment collapses to zero width.
+          Starts flush with the app icon's left edge. */}
+      <div
+        className="pointer-events-none flex h-[3px] overflow-hidden rounded-xs bg-inset"
+        role="img"
+        aria-label={`${formatBytes(app.rxBytes)} down, ${formatBytes(app.txBytes)} up`}
+      >
+        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
+        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
+      </div>
+      {/* The bar's label above already reads these figures out. Pulled left by
+          the arrow glyph's side bearing (~2px at 11px) so the drawn arrow lines
+          up with the app icon's and bar's left edge. */}
+      <div className="pointer-events-none -ml-2 flex items-center gap-12" aria-hidden>
+        <span className={FIGURE}>
+          <DirectionIcon series="down" size={11} />
+          <MetricValue value={app.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
+        </span>
+        <span className={FIGURE}>
+          <DirectionIcon series="up" size={11} />
+          <MetricValue value={app.txBytes} className={FIGURE_VALUE} format={formatBytes} />
+        </span>
+      </div>
+    </li>
+  )
+}
+
+/** The header subtitle once there's data: links into the per-app host breakdown
+ *  and the by-protocol breakdown (mirrors the Services view's "View timeline"
+ *  link). */
+function AppSubtitleLinks(): JSX.Element {
+  const { navigate } = useNavigation()
+  const onViewHosts = (): void => navigate({ tab: 'apps', appsSub: { view: 'hosts' } })
+  const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
+  return (
+    <span className="inline-flex items-center gap-6">
+      <button type="button" className={SUBTITLE_LINK} onClick={onViewHosts}>
+        <GlobeIcon size={13} className={SUBTITLE_LINK_GLYPH} />
+        <span className={SUBTITLE_LINK_TEXT}>All hosts</span>
+        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
+      </button>
+      <DotSeparator />
+      <button type="button" className={SUBTITLE_LINK} onClick={onViewTraffic}>
+        <LayersIcon size={13} className={SUBTITLE_LINK_GLYPH} />
+        <span className={SUBTITLE_LINK_TEXT}>All traffic types</span>
+        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
+      </button>
+    </span>
+  )
+}
+
+/** The page body: the admin prompt, a first-load spinner, an empty state, or
+ *  the app list. */
+function AppUsageBody({
+  usage,
+  isFirstLoad,
+}: {
+  usage: AppUsageSummary
+  isFirstLoad: boolean
+}): JSX.Element {
+  const { navigate } = useNavigation()
+  const { apps, support } = usage
+  if (support === 'unsupported') {
+    return (
+      <EmptyState
+        icon={InfoIcon}
+        title="Administrator access needed"
+        hint={APP_USAGE_UNSUPPORTED_HINT}
+        action={<RestartAsAdminAction />}
+      />
+    )
+  }
+  if (isFirstLoad) {
+    return (
+      <div className="page-empty" role="status">
+        <Spinner />
+        <p className="text-muted">Measuring per-app usage…</p>
+      </div>
+    )
+  }
+  if (apps.length === 0) {
+    return <EmptyState icon={AppsIcon} title="No app usage yet" hint={APP_USAGE_EMPTY_HINT} />
+  }
+
+  const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)
+  return (
+    <div className={SECTION_CARD}>
+      {/* The rows own the inset (p-0 here), so the hairlines between them run
+          edge to edge, clipped to the card's rounded corners. */}
+      <ul
+        role="list"
+        aria-label="Apps by usage"
+        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
+      >
+        {apps.map((app) => (
+          <AppRow
+            key={app.name}
+            app={app}
+            busiestTotal={busiestTotal}
+            onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function AppUsageView(): JSX.Element {
+  const { usage, isLoading, error } = useAppUsage()
+  const isFirstLoad = isLoading && usage.apps.length === 0
+
+  return (
+    <div className="page">
+      <ViewHeader
+        icon={<AppsIcon size={18} />}
+        title="Apps"
+        subtitle={
+          isFirstLoad ? (
+            'Loading…'
+          ) : (
+            <AppSubtitleLinks />
+          )
+        }
+        isSubtitleShown={!isFirstLoad}
+        actions={
+          <UiTooltip content={APP_USAGE_INFO_HINT}>
+            <IconButton
+              aria-label="About per-app usage"
+            >
+              <HelpIcon size={16} />
+            </IconButton>
+          </UiTooltip>
+        }
+      />
+
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
+
+      <AppUsageBody usage={usage} isFirstLoad={isFirstLoad} />
+    </div>
+  )
+}

@@ -1,0 +1,234 @@
+/*
+ * Tailwind v4, built only from Rove's design tokens.
+ *
+ * The tokens come from @swiftsolve/rove-design (Figma is the source of truth)
+ * as CSS variables. The theme below maps them onto Tailwind utilities and
+ * clears Tailwind's own defaults, so only design-system values exist:
+ * `p-12` is `--space-12`, `text-md` is `--font-size-md`, `bg-panel` is
+ * `--bg-panel`, and there is no `p-7` or `text-blue-500` to reach for.
+ *
+ * `inline` makes each utility use the token itself (`padding: var(--space-12)`),
+ * so a theme switch or a token update flows straight through. `reference`
+ * stops Tailwind from also declaring these names on :root: several share a
+ * token's own name (`--radius-sm`, `--shadow-panel`), and `--radius-sm:
+ * var(--radius-sm)` would be a self-reference that invalidates the token.
+ *
+ * No preflight: base.css is the app's base reset, with the one piece of
+ * preflight that border utilities rely on. The app's shared styles (type
+ * styles, page layout) are `@utility` definitions in utilities.css.
+ */
+@layer theme, base, components, utilities;
+/* The tokens, unlayered, ahead of base.css: its light-theme contrast override
+   must come after them to win. */
+@import '@swiftsolve/rove-design/tokens.css';
+/* Fonts, resets and app-wide behaviour (the base layer). */
+@import './base.css';
+/* Scan only the app's source for class names, not docs or scripts. */
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '../';
+/* The app's shared type styles and layout pieces, as utilities. */
+@import './utilities.css';
+
+/* Plain :hover, as the app's CSS always used. Tailwind's default wraps hover
+   styles in @media (hover: hover). */
+@custom-variant hover (&:hover);
+
+@theme inline reference {
+  --*: initial;
+
+  /* Spacing: the --space-* scale, plus 0 for resets and 1px for hairlines. */
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-2: var(--space-2);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-11: var(--space-11);
+  --spacing-12: var(--space-12);
+  --spacing-14: var(--space-14);
+  --spacing-16: var(--space-16);
+  --spacing-20: var(--space-20);
+
+  /* Type */
+  --font-sans: var(--font);
+  --font-numeric: var(--font-numeric);
+  --text-2xs: var(--font-size-2xs);
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-md: var(--font-size-md);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  /* Line height and letter spacing by Figma text style (`leading-body`,
+     `tracking-title`), for text that matches a style but takes its own colour
+     or size. The type utilities in utilities.css set all of a style at once. */
+  --leading-title: var(--type-title-line-height);
+  --leading-section-title: var(--type-section-title-line-height);
+  --leading-dialog-title: var(--type-dialog-title-line-height);
+  --leading-field-label: var(--type-field-label-line-height);
+  --leading-body: var(--type-body-line-height);
+  --leading-meta: var(--type-meta-line-height);
+  --leading-meta-strong: var(--type-meta-strong-line-height);
+  --leading-hint: var(--type-hint-line-height);
+  --leading-small: var(--type-small-line-height);
+  --leading-value: var(--type-value-line-height);
+  --leading-chart-label: var(--type-chart-label-line-height);
+  --leading-metric-display: var(--type-metric-display-line-height);
+  --leading-metric-compact: var(--type-metric-compact-line-height);
+  --leading-metric-unit: var(--type-metric-unit-line-height);
+  --leading-button-large: var(--type-button-large-line-height);
+  --leading-button-default: var(--type-button-default-line-height);
+  --leading-button-secondary: var(--type-button-secondary-line-height);
+  --tracking-title: var(--type-title-letter-spacing);
+  --tracking-section-title: var(--type-section-title-letter-spacing);
+  --tracking-dialog-title: var(--type-dialog-title-letter-spacing);
+  --tracking-field-label: var(--type-field-label-letter-spacing);
+  --tracking-body: var(--type-body-letter-spacing);
+  --tracking-meta: var(--type-meta-letter-spacing);
+  --tracking-meta-strong: var(--type-meta-strong-letter-spacing);
+  --tracking-hint: var(--type-hint-letter-spacing);
+  --tracking-small: var(--type-small-letter-spacing);
+  --tracking-value: var(--type-value-letter-spacing);
+  --tracking-chart-label: var(--type-chart-label-letter-spacing);
+  --tracking-metric-display: var(--type-metric-display-letter-spacing);
+  --tracking-metric-compact: var(--type-metric-compact-letter-spacing);
+  --tracking-metric-unit: var(--type-metric-unit-letter-spacing);
+  --tracking-button-large: var(--type-button-large-letter-spacing);
+  --tracking-button-default: var(--type-button-default-letter-spacing);
+  --tracking-button-secondary: var(--type-button-secondary-letter-spacing);
+
+  /* Surfaces (bg-*) */
+  --color-app: var(--bg-app);
+  --color-chrome: var(--bg-chrome);
+  --color-shell: var(--bg-shell);
+  --color-panel: var(--bg-panel);
+  --color-raised: var(--bg-raised);
+  --color-inset: var(--bg-inset);
+  --color-hover: var(--bg-hover);
+  --color-scrim: var(--bg-scrim);
+
+  /* Text (text-*) */
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+  --color-accent-text: var(--text-accent);
+  --color-on-fill: var(--text-on-fill);
+  --color-positive: var(--text-positive);
+  --color-good: var(--text-good);
+  --color-warning: var(--text-warning);
+  --color-poor: var(--text-poor);
+  --color-negative: var(--text-negative);
+
+  /* Lines (border-*) */
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-hairline-top: var(--border-hairline-top);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-hover: var(--accent-fill-hover);
+
+  /* Status, for fills, dots and icons. Text uses the text-* colours above. */
+  --color-status-positive: var(--status-positive);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-poor: var(--status-poor);
+  --color-status-negative: var(--status-negative);
+  --color-status-negative-fill: var(--status-negative-fill);
+  --color-status-negative-fill-hover: var(--status-negative-fill-hover);
+
+  /* Data series: download and upload */
+  --color-series-down: var(--series-down);
+  --color-series-up: var(--series-up);
+
+  /* Quiet fills */
+  --color-fill-chip: var(--fill-chip);
+  --color-fill-nav-hover: var(--fill-nav-hover);
+  --color-fill-row-hover: var(--fill-row-hover);
+  --color-fill-track: var(--fill-track);
+  --color-fill-track-lit: var(--fill-track-lit);
+  --color-fill-scrollbar: var(--fill-scrollbar);
+  --color-fill-selection: var(--fill-selection);
+  --color-window-close-hover: var(--window-close-hover);
+
+  /* Shape and motion */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-raised: var(--shadow-raised);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+}
+
+/* Entrance and exit animations (`animate-*`), with their keyframes. */
+@theme inline {
+  /* A dialog's backdrop fades in and the dialog rises into place. */
+  --animate-overlay-in: overlay-in var(--duration-fast) var(--ease-out);
+  --animate-dialog-in: dialog-in var(--duration-normal) var(--ease-out);
+  /* A view, a header subtitle or a status message fades in (keyframes in base.css). */
+  --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
+  /* A dropdown menu drops into place. */
+  --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
+  /* The Devices header's scan status and online tally trade places. */
+  --animate-scan-slide-in: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
+  --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+  /* The speed test's squiggle scrolls one wavelength (`--wave-length`) per
+     loop; the element sets the duration inline, in step with the JS. */
+  --animate-wavy-scroll: wavy-scroll linear infinite;
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes scan-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes scan-slide-out {
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @keyframes wavy-scroll {
+    to {
+      transform: translateX(var(--wave-length));
+    }
+  }
+}

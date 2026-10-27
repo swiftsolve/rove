@@ -1,12 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   base: './',
   build: {
     outDir: 'dist',
+  },
+  css: {
+    modules: {
+      // `.row-name` in a .module.css file is `styles.rowName` in code.
+      localsConvention: 'camelCaseOnly',
+      // Readable in devtools: `ServicesView-module_row_a1b2c`.
+      generateScopedName: '[name]_[local]_[hash:base64:5]',
+    },
   },
   resolve: {
     alias: {
