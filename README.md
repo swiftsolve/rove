@@ -238,7 +238,7 @@ rove/
 
 - Components are styled with Tailwind v4 utilities in the TSX. The theme in
   `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
-  `--space-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
+  `--spacing-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
   there are no Tailwind defaults to reach for. There's no preflight:
   `styles/base.css` is the reset.
 - Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,

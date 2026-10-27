@@ -137,7 +137,7 @@
 /* ---- Numbers ---- */
 
 @utility num {
-  font-family: var(--font-numeric);
+  font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
@@ -145,11 +145,11 @@
 @utility metric {
   display: flex;
   align-items: baseline;
-  gap: var(--space-4);
+  gap: var(--spacing-4);
 }
 
 @utility metric-value {
-  font-family: var(--font-numeric);
+  font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
   font-size: var(--type-metric-display-size);
   /* Semibold, where the Figma style is Regular: Questrial has one weight, so
@@ -161,7 +161,7 @@
 }
 
 @utility metric-unit {
-  font-family: var(--font);
+  font-family: var(--font-family-sans);
   font-size: var(--type-metric-unit-size);
   font-weight: var(--type-metric-unit-weight);
   letter-spacing: var(--type-metric-unit-letter-spacing);
@@ -193,7 +193,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-10);
+  gap: var(--spacing-10);
 
   & > *,
   & > .error-banner {
@@ -219,9 +219,9 @@
    the viewport edge; the matching padding keeps the content aligned with the
    cards. The top margin cancels the scroll area's top padding. */
 @utility page-header {
-  margin: calc(-1 * var(--space-12)) -40px 0 calc(-1 * var(--space-11));
-  padding: var(--space-12) 40px var(--space-12) var(--space-11);
-  border-bottom: 1px solid var(--border);
+  margin: calc(-1 * var(--spacing-12)) -40px 0 calc(-1 * var(--spacing-11));
+  padding: var(--spacing-12) 40px var(--spacing-12) var(--spacing-11);
+  border-bottom: 1px solid var(--border-default);
 }
 
 /** View titles: the connection card strip title's scale. */
@@ -256,9 +256,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-12);
+  gap: var(--spacing-12);
   min-height: 140px;
-  padding: var(--space-16);
+  padding: var(--spacing-16);
 
   & p {
     font-size: var(--font-size-sm);
@@ -269,7 +269,7 @@
 @utility panel-head-main {
   display: flex;
   align-items: center;
-  gap: var(--space-10);
+  gap: var(--spacing-10);
   min-width: 0;
   flex: 1;
 }
@@ -298,7 +298,7 @@
    space: the label sits ~6px from it, and a following dot keeps its 8px. */
 @utility link-caret {
   button > & {
-    margin: 0 calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
+    margin: 0 calc(-1 * var(--spacing-4)) 0 calc(-1 * var(--spacing-4));
   }
 }
 
@@ -307,8 +307,8 @@
 @utility chart-tip {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-12);
+  gap: var(--spacing-6);
+  padding: var(--spacing-8) var(--spacing-12);
   min-width: 150px;
   border-radius: var(--radius-sm);
   background: var(--bg-raised);
@@ -326,7 +326,7 @@
 @utility chart-tip-row {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--spacing-8);
 }
 
 @utility chart-tip-label {
@@ -336,7 +336,7 @@
 
 @utility chart-tip-value {
   margin-left: auto;
-  padding-left: var(--space-16);
+  padding-left: var(--spacing-16);
   font-size: var(--font-size-sm);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
@@ -345,20 +345,20 @@
 /* Error feedback: `inline-error` for a line inside a card, `error-banner` for
    a strip above a page. NetworkErrorBanner adds its parts on top. */
 @utility inline-error {
-  padding: var(--space-8) var(--space-12);
+  padding: var(--spacing-8) var(--spacing-12);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
   color: var(--text-negative);
   font-size: var(--type-body-size);
   line-height: var(--type-body-line-height);
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--spacing-12);
 }
 
 @utility error-banner {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  gap: var(--spacing-8);
+  padding: var(--spacing-4) var(--spacing-8) var(--spacing-4) var(--spacing-12);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
   color: var(--text-negative);

@@ -43,7 +43,7 @@ const chevronVariants = cva(
 // is scrolled to the top of the list.
 const GROUP = cx(
   'scroll-mt-12 first:rounded-t-lg last:rounded-b-lg',
-  'has-[>h2>button:focus-visible]:[outline:var(--focus-ring)]',
+  'has-[>h2>button:focus-visible]:[outline:var(--focus-outline)]',
   'has-[>h2>button:focus-visible]:outline-offset-(--focus-inset)',
 )
 
@@ -62,7 +62,7 @@ const GROUP_HEADER = cx(
 // are unaffected. See the @font-face note in styles/base.css.
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
-  "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font)]",
+  "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)]",
 )
 
 // Download/upload figures, right-aligned in a fixed-width box so the down and up
