@@ -1,16 +1,14 @@
 /**
- * App icons — thin aliases over lucide-react (plus two Hugeicons badges and two
- * hand-drawn glyphs) so every glyph shares the same optical size and stroke.
- * Import these semantic names; swap the underlying icon here in one place if
- * the design changes.
+ * App icons — thin aliases over lucide-react (plus a few hand-drawn glyphs) so
+ * every glyph shares the same optical size and stroke. Import these semantic
+ * names; swap the underlying icon here in one place if the design changes.
  */
 import { useId } from 'react'
+import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { HugeiconsIcon } from '@hugeicons/react'
-import type { IconSvgElement } from '@hugeicons/react'
-import { FourKIcon, HdIcon } from '@hugeicons/core-free-icons'
 import {
   Activity,
+  AppWindowMac,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
@@ -24,7 +22,6 @@ import {
   Cctv,
   Clock,
   Cloud,
-  Compass,
   Cpu,
   Copy,
   Database,
@@ -46,7 +43,6 @@ import {
   History,
   House,
   Info,
-  Joystick,
   Laptop,
   LayoutGrid,
   Layers,
@@ -101,19 +97,76 @@ function make(Base: LucideIcon, defaultSize: number): IconComponent {
   }
 }
 
-// Hugeicons equivalent of `make` — Hugeicons ship as SVG data rendered through
-// the shared <HugeiconsIcon> component. They're drawn on the same 24-grid as the
-// Lucide aliases but at a native 1.5 stroke, which we keep here for the enclosed
-// HD/4K badge glyphs.
-function makeHuge(icon: IconSvgElement, defaultSize: number): IconComponent {
-  return function Icon({ size = defaultSize, className }: IconProps): JSX.Element {
-    return (
-      <HugeiconsIcon icon={icon} size={size} strokeWidth={1.5} className={className} aria-hidden />
-    )
-  }
+// Hand-drawn glyphs (no fitting Lucide icon)
+
+/** The 24-grid stroke frame the hand-drawn glyphs share with the Lucide aliases. */
+function Glyph({ size, className, children }: IconProps & { children: ReactNode }): JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      {children}
+    </svg>
+  )
 }
 
-// Hand-drawn glyphs (no fitting Lucide icon)
+// HD and 4K as bare lettering: one cap height (y 6.5–17.5), 3.5 between letters
+// (a stroke's width of clear space),
+// Inter's skeletons (a closed 4, a K whose arm meets the stem).
+
+export function HdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
+  return (
+    <Glyph size={size} className={className}>
+      <path d="M3.375 6.5v11M9.975 6.5v11M3.375 12h6.6" />
+      <path d="M13.475 6.5h2.2c2.7335 0 4.95 2.4618 4.95 5.5s-2.2165 5.5-4.95 5.5h-2.2Z" />
+    </Glyph>
+  )
+}
+
+export function UltraHdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
+  return (
+    <Glyph size={size} className={className}>
+      <path d="M10.25 14.2H3.65L8.6 6.5v11" />
+      <path d="M13.75 6.5v11M20.35 6.5l-6.6 7.15M16.17 11.01l4.18 6.49" />
+    </Glyph>
+  )
+}
+
+// Lucide's cloud, mirrored and at 0.4 scale, in the top-right corner.
+const SMALL_CLOUD = 'M16.3 6.6h3.4a2.8 2.8 0 1 0-2.684-3.6H16.3a1.8 1.8 0 1 0 0 3.6Z'
+
+/**
+ * Lucide's gamepad-2 with a small cloud on its corner. The mask cuts the
+ * controller 1.5 units clear of the cloud's stroke (4.75 = 1.75 + 2 × 1.5), so
+ * the gap shows whatever is behind the icon.
+ */
+export function CloudGamingIcon({ size = 22, className }: IconProps): JSX.Element {
+  const maskId = useId()
+  return (
+    <Glyph size={size} className={className}>
+      <defs>
+        <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+          <rect width="24" height="24" fill="white" stroke="none" />
+          <path d={SMALL_CLOUD} fill="black" stroke="black" strokeWidth={4.75} />
+        </mask>
+      </defs>
+      <g mask={`url(#${maskId})`}>
+        <path d="M6 11h4M8 9v4M15 12h.01M18 10h.01" />
+        <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" />
+      </g>
+      <path d={SMALL_CLOUD} />
+    </Glyph>
+  )
+}
 
 /**
  * The Rove Mark — a filled centre dot inside an open ring. By default it's drawn
@@ -272,12 +325,9 @@ export const RestoreIcon = make(Copy, 13)
 export const CloseIcon = make(X, 15)
 
 // Capability icons
-export const BrowsingIcon = make(Compass, 22)
-export const HdStreamIcon = makeHuge(HdIcon, 22)
-export const UltraHdStreamIcon = makeHuge(FourKIcon, 22)
+export const BrowsingIcon = make(AppWindowMac, 22)
 export const VideoCallIcon = make(Video, 22)
 export const GamepadIcon = make(Gamepad2, 22)
-export const CloudGamingIcon = make(Joystick, 22)
 export const DownloadIcon = make(Download, 22)
 export const LiveStreamIcon = make(Radio, 22)
 export const GlobeStreamIcon = make(Globe, 22)

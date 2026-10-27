@@ -47,6 +47,13 @@ export const CAPABILITY_DEFINITIONS = [
     requirements: { minDownloadMbps: 5, minUploadMbps: 4, maxLatencyMs: 150, maxJitterMs: 30 },
   },
   {
+    id: 'live-streaming',
+    label: 'Live Streaming',
+    description: 'Twitch, YouTube live broadcasting',
+    icon: '📡',
+    requirements: { minDownloadMbps: 5, minUploadMbps: 6, maxLatencyMs: 100, maxJitterMs: 30 },
+  },
+  {
     id: 'gaming',
     label: 'Online Gaming',
     description: 'Low-latency multiplayer games',
@@ -66,13 +73,6 @@ export const CAPABILITY_DEFINITIONS = [
     description: 'Game updates, file transfers',
     icon: '⬇️',
     requirements: { minDownloadMbps: 50, minUploadMbps: 2, maxLatencyMs: 200, maxJitterMs: 50 },
-  },
-  {
-    id: 'live-streaming',
-    label: 'Live Streaming',
-    description: 'Twitch, YouTube live broadcasting',
-    icon: '📡',
-    requirements: { minDownloadMbps: 5, minUploadMbps: 6, maxLatencyMs: 100, maxJitterMs: 30 },
   },
 ] as const
 
