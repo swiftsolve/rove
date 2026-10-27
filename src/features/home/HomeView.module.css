@@ -1,7 +1,10 @@
-/* The Usage and Devices cards side by side. Usage carries two numbers, so it
-   gets the wider column; the single-count Devices card takes the narrower one. */
-.stat-cards {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: var(--space-10);
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* The Usage and Devices cards side by side. Usage carries two numbers, so it
+     gets the wider column; the single-count Devices card takes the narrower one. */
+  .stat-cards {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: var(--space-10);
+  }
 }

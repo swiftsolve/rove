@@ -1,3 +1,5 @@
+// First, so the cascade layers are declared before any CSS uses them.
+import '@/styles/tailwind.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from '@/app/App'

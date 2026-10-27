@@ -1,92 +1,93 @@
-.ui-section {
-  background: var(--bg-panel);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
-  overflow: hidden;
-  contain: content;
-}
+@layer components {
+  .ui-section {
+    background: var(--bg-panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+    overflow: hidden;
+    contain: content;
+  }
 
-.ui-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-  /* Fixed height so a header with a button isn't taller than a title-only one —
-     keeps the title's vertical position identical across every widget. */
-  height: var(--section-header-height);
-  padding: 0 var(--section-header-padding-x);
-}
+  .ui-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+    /* Fixed height so a header with a button isn't taller than a title-only one —
+       keeps the title's vertical position identical across every widget. */
+    height: var(--section-header-height);
+    padding: 0 var(--section-header-padding-x);
+  }
 
-.ui-section-heading {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  min-width: 0;
-}
+  .ui-section-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    min-width: 0;
+  }
 
-.ui-section-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-}
+  .ui-section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
 
-.ui-section-header .section-title {
-  line-height: 1.2;
-}
+  .ui-section-header .section-title {
+    line-height: 1.2;
+  }
 
-/* A small status pill for the section's right-hand slot — amber, to read as
-   "heads up" without the alarm of an error colour. Used for the ISP card's
-   VPN/proxy flag; sized to sit unobtrusively where the brand icon would. */
-.ui-section-badge {
-  flex-shrink: 0;
-  padding: 1px var(--space-6);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-2xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-warning);
-  background: color-mix(in srgb, var(--status-warning) 15%, transparent);
-}
+  /* A small status pill for the section's right-hand slot — amber, to read as
+     "heads up" without the alarm of an error colour. Used for the ISP card's
+     VPN/proxy flag; sized to sit unobtrusively where the brand icon would. */
+  .ui-section-badge {
+    flex-shrink: 0;
+    padding: 1px var(--space-6);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-warning);
+    background: color-mix(in srgb, var(--status-warning) 15%, transparent);
+  }
 
-.ui-section-action {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
+  .ui-section-action {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
 
-.ui-section-body {
-  /* A little top padding gives the content a touch more room below the title
-     than the title has above it — a slightly grounded heading. */
-  padding: var(--space-4) var(--section-body-padding) var(--section-body-padding);
-}
+  .ui-section-body {
+    /* A little top padding gives the content a touch more room below the title
+       than the title has above it — a slightly grounded heading. */
+    padding: var(--space-4) var(--section-body-padding) var(--section-body-padding);
+  }
 
-.ui-section-body > .text-small:first-child:last-child {
-  margin: 0;
-}
+  .ui-section-body > .text-small:first-child:last-child {
+    margin: 0;
+  }
 
-/* A distinct sunken band below the body — sits flush to the card edges and reads
-   as a separate footnote/status area rather than part of the readout above it. */
-.ui-section-footer {
-  padding: var(--space-8) var(--section-body-padding);
-  background: var(--bg-inset);
-  border-top: 1px solid var(--border);
-}
+  /* A distinct sunken band below the body — sits flush to the card edges and reads
+     as a separate footnote/status area rather than part of the readout above it. */
+  .ui-section-footer {
+    padding: var(--space-8) var(--section-body-padding);
+    background: var(--bg-inset);
+    border-top: 1px solid var(--border);
+  }
 
-.ui-section-body.is-loading {
-  position: relative;
-  opacity: 0.55;
-  pointer-events: none;
-}
+  .ui-section-body.is-loading {
+    position: relative;
+    opacity: 0.55;
+    pointer-events: none;
+  }
 
-.section-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
+  .section-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
 }
-

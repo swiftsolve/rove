@@ -1,64 +1,67 @@
-.root {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  transition:
-    color var(--duration-fast) var(--ease-in-out),
-    background var(--duration-fast) var(--ease-in-out),
-    transform var(--duration-fast) var(--ease-in-out);
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  .root {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    transition:
+      color var(--duration-fast) var(--ease-in-out),
+      background var(--duration-fast) var(--ease-in-out),
+      transform var(--duration-fast) var(--ease-in-out);
+  }
 
-.root:active:not(:disabled, [aria-disabled='true']) {
-  transform: translateY(0.5px);
-}
+  .root:active:not(:disabled, [aria-disabled='true']) {
+    transform: translateY(0.5px);
+  }
 
-.root:is(:disabled, [aria-disabled='true']) {
-  opacity: var(--opacity-disabled);
-  cursor: not-allowed;
-}
+  .root:is(:disabled, [aria-disabled='true']) {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
 
-/* Spinning (busy) icon buttons stay full-opacity — the spinner conveys the
-   busy state, so no dimming — but ignore pointer input while in flight. The
-   explicit opacity wins over `.root:disabled` (equal specificity, defined
-   later) so buttons that stay `disabled` while busy don't fade the spinner. */
-.root.is-busy {
-  cursor: default;
-  pointer-events: none;
-  opacity: 1;
-}
+  /* Spinning (busy) icon buttons stay full-opacity — the spinner conveys the
+     busy state, so no dimming — but ignore pointer input while in flight. The
+     explicit opacity wins over `.root:disabled` (equal specificity, defined
+     later) so buttons that stay `disabled` while busy don't fade the spinner. */
+  .root.is-busy {
+    cursor: default;
+    pointer-events: none;
+    opacity: 1;
+  }
 
-.primary {
-  background: transparent;
-  color: var(--accent);
-}
+  .primary {
+    background: transparent;
+    color: var(--accent);
+  }
 
-.primary:hover:not(:disabled, [aria-disabled='true']) {
-  background: var(--accent-muted);
-  color: var(--accent-hover);
-}
+  .primary:hover:not(:disabled, [aria-disabled='true']) {
+    background: var(--accent-muted);
+    color: var(--accent-hover);
+  }
 
-.secondary {
-  background: var(--bg-inset);
-  color: var(--text-secondary);
-}
+  .secondary {
+    background: var(--bg-inset);
+    color: var(--text-secondary);
+  }
 
-.stop {
-  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
-  color: var(--status-negative);
-}
+  .stop {
+    background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
+    color: var(--status-negative);
+  }
 
-.stop:hover {
-  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-lg), transparent);
-}
+  .stop:hover {
+    background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-lg), transparent);
+  }
 
-.stop svg {
-  fill: currentColor;
-}
+  .stop svg {
+    fill: currentColor;
+  }
 
-.secondary:hover:not(:disabled, [aria-disabled='true']) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  .secondary:hover:not(:disabled, [aria-disabled='true']) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
 }

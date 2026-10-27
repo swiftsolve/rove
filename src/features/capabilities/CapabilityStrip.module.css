@@ -1,165 +1,168 @@
-/* Top-placement tooltips must not be clipped by the section card. */
-.section:global(.ui-section) {
-  overflow: visible;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  /* Top-placement tooltips must not be clipped by the section card. */
+  .section:global(.ui-section) {
+    overflow: visible;
+  }
 
-.list {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  /* Bleed past section body padding so icons span the full card width,
-     same pattern as the live throughput chart. */
-  margin: 0 calc(-1 * var(--section-body-padding));
-  padding: 0 var(--section-body-padding);
-}
+  .list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Bleed past section body padding so icons span the full card width,
+       same pattern as the live throughput chart. */
+    margin: 0 calc(-1 * var(--section-body-padding));
+    padding: 0 var(--section-body-padding);
+  }
 
-.list > .cell {
-  flex: 0 0 auto;
-}
+  .list > .cell {
+    flex: 0 0 auto;
+  }
 
-/* Each column: the icon tile with its signal meter centred beneath it. The
-   meter's compact size is CapabilityMeter's `isCompact`. */
-.cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-8);
-}
+  /* Each column: the icon tile with its signal meter centred beneath it. The
+     meter's compact size is CapabilityMeter's `isCompact`. */
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+  }
 
-/* The tinted chip a CapabilityIcon sits in — the level sets its accent color.
-   The same chip as CapabilityList's tile. */
-.tile {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-tertiary);
-  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
-}
+  /* The tinted chip a CapabilityIcon sits in — the level sets its accent color.
+     The same chip as CapabilityList's tile. */
+  .tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
+  }
 
-.tile.level-excellent { color: var(--status-positive); }
-.tile.level-good { color: var(--status-good); }
-.tile.level-fair { color: var(--status-warning); }
-.tile.level-poor { color: var(--status-poor); }
-.tile.level-unsupported { color: var(--text-tertiary); }
+  .tile.level-excellent { color: var(--status-positive); }
+  .tile.level-good { color: var(--status-good); }
+  .tile.level-fair { color: var(--status-warning); }
+  .tile.level-poor { color: var(--status-poor); }
+  .tile.level-unsupported { color: var(--text-tertiary); }
 
-/* 32px, the same as CapabilityList's tile. */
-.item {
-  width: 32px;
-  height: 32px;
-  transition:
-    background var(--duration-fast) var(--ease-in-out),
-    transform var(--duration-fast) var(--ease-in-out);
-}
+  /* 32px, the same as CapabilityList's tile. */
+  .item {
+    width: 32px;
+    height: 32px;
+    transition:
+      background var(--duration-fast) var(--ease-in-out),
+      transform var(--duration-fast) var(--ease-in-out);
+  }
 
-/* Focus is the ring alone; the tint and lift are hover feedback. */
-.item:hover {
-  background: color-mix(in srgb, currentColor var(--opacity-tint-lg), transparent);
-  transform: translateY(-1px);
-}
+  /* Focus is the ring alone; the tint and lift are hover feedback. */
+  .item:hover {
+    background: color-mix(in srgb, currentColor var(--opacity-tint-lg), transparent);
+    transform: translateY(-1px);
+  }
 
-/* While a test is running the strip shows stale results, so mute every tile and
-   meter to grey and drop the interactive affordances until the run completes.
-   These need to outrank the `.tile.level-*` colour rules (two-class), so
-   match with three. The meters mute through CapabilityMeter's `isMuted`. */
-.is-testing .item.tile,
-.is-placeholder .item.tile {
-  color: var(--text-tertiary);
-}
+  /* While a test is running the strip shows stale results, so mute every tile and
+     meter to grey and drop the interactive affordances until the run completes.
+     These need to outrank the `.tile.level-*` colour rules (two-class), so
+     match with three. The meters mute through CapabilityMeter's `isMuted`. */
+  .is-testing .item.tile,
+  .is-placeholder .item.tile {
+    color: var(--text-tertiary);
+  }
 
-.is-testing .item {
-  cursor: default;
-}
+  .is-testing .item {
+    cursor: default;
+  }
 
-.is-testing .item:hover,
-.is-placeholder .item:hover {
-  background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
-  transform: none;
-}
+  .is-testing .item:hover,
+  .is-placeholder .item:hover {
+    background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
+    transform: none;
+  }
 
-/* Third row: a dark inset strip flush to the card's bottom edge — full-bleed
-   like ConnectionCard's details / the speed test footer. The strip itself isn't
-   clickable; only the link inside it is. */
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  /* Full-bleed to both card edges: the body content box plus the padding on
-     each side, then negative margins pull it out over that padding. */
-  width: calc(100% + 2 * var(--section-body-padding));
-  /* The results footer (icon + "Updated …") is taller than the plain hint, so
-     its centred text sits lower and reads as extra space under the bars. Trim the
-     top gap a touch (the .is-hint override pulls the shorter empty state in even
-     closer). */
-  margin: var(--space-16) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
-  padding: var(--section-header-padding-y) var(--section-body-padding);
-  background: var(--bg-inset);
-  /* The strip full-bleeds to the card edge, and this section runs
-     `overflow: visible` (so tooltips can escape) — so round the bottom corners
-     ourselves to sit flush inside the card's radius. */
-  border-bottom-left-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
-}
+  /* Third row: a dark inset strip flush to the card's bottom edge — full-bleed
+     like ConnectionCard's details / the speed test footer. The strip itself isn't
+     clickable; only the link inside it is. */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Full-bleed to both card edges: the body content box plus the padding on
+       each side, then negative margins pull it out over that padding. */
+    width: calc(100% + 2 * var(--section-body-padding));
+    /* The results footer (icon + "Updated …") is taller than the plain hint, so
+       its centred text sits lower and reads as extra space under the bars. Trim the
+       top gap a touch (the .is-hint override pulls the shorter empty state in even
+       closer). */
+    margin: var(--space-16) calc(-1 * var(--section-body-padding)) calc(-1 * var(--section-body-padding));
+    padding: var(--section-header-padding-y) var(--section-body-padding);
+    background: var(--bg-inset);
+    /* The strip full-bleeds to the card edge, and this section runs
+       `overflow: visible` (so tooltips can escape) — so round the bottom corners
+       ourselves to sit flush inside the card's radius. */
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+  }
 
-/* Empty-state variant: the hint sits right-aligned in the dark inset strip in
-   place of the "Updated …" link, so the run affordance lives up in the header.
-   Pull the inset strip closer to the placeholder bars — the muted empty state
-   doesn't need the same breathing room the populated results row gets. */
-.is-hint {
-  justify-content: flex-end;
-  margin-top: var(--space-12);
-}
+  /* Empty-state variant: the hint sits right-aligned in the dark inset strip in
+     place of the "Updated …" link, so the run affordance lives up in the header.
+     Pull the inset strip closer to the placeholder bars — the muted empty state
+     doesn't need the same breathing room the populated results row gets. */
+  .is-hint {
+    justify-content: flex-end;
+    margin-top: var(--space-12);
+  }
 
-/* The hint is a <p>; drop its default margin so it centres in the strip. */
-.footer .hint {
-  margin: 0;
-}
+  /* The hint is a <p>; drop its default margin so it centres in the strip. */
+  .footer .hint {
+    margin: 0;
+  }
 
-/* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and
-   picks up the accent tint and an underline on hover, same affordance as the
-   Speed page's "All Results". Only this navigates to the Speed page. */
-.link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-6);
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-in-out);
-}
+  /* The clickable link: a quiet clock + "Updated … ago" that's muted at rest and
+     picks up the accent tint and an underline on hover, same affordance as the
+     Speed page's "All Results". Only this navigates to the Speed page. */
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-in-out);
+  }
 
-.updated {
-  font-weight: var(--weight-medium);
-}
+  .updated {
+    font-weight: var(--weight-medium);
+  }
 
-/* Share the link's (animating) color so the glyph and label shift together on
-   hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
-   there's a single color animation rather than two that drift out of sync. */
-.link svg {
-  color: inherit;
-  opacity: 0.72;
-  transition: opacity var(--duration-fast) var(--ease-in-out);
-}
+  /* Share the link's (animating) color so the glyph and label shift together on
+     hover; carry the "glyph sits a touch dimmer at rest" intent via opacity so
+     there's a single color animation rather than two that drift out of sync. */
+  .link svg {
+    color: inherit;
+    opacity: 0.72;
+    transition: opacity var(--duration-fast) var(--ease-in-out);
+  }
 
-/* Text link: focus mirrors hover (accent + underline) rather than a ring. */
-.link:focus-visible {
-  outline: none;
-}
+  /* Text link: focus mirrors hover (accent + underline) rather than a ring. */
+  .link:focus-visible {
+    outline: none;
+  }
 
-.link:hover,
-.link:focus-visible {
-  color: var(--accent);
-}
+  .link:hover,
+  .link:focus-visible {
+    color: var(--accent);
+  }
 
-.link:hover svg,
-.link:focus-visible svg {
-  opacity: 1;
-}
+  .link:hover svg,
+  .link:focus-visible svg {
+    opacity: 1;
+  }
 
-.link:hover .updated,
-.link:focus-visible .updated {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  .link:hover .updated,
+  .link:focus-visible .updated {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }

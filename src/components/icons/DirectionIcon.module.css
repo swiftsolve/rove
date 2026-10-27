@@ -1,13 +1,16 @@
-.root {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-}
+/* In the components layer with the global CSS until this moves to Tailwind. */
+@layer components {
+  .root {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
 
-.root.series-down {
-  color: var(--series-down);
-}
+  .root.series-down {
+    color: var(--series-down);
+  }
 
-.root.series-up {
-  color: var(--series-up);
+  .root.series-up {
+    color: var(--series-up);
+  }
 }

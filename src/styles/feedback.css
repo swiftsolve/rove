@@ -1,25 +1,27 @@
-/* Shared error feedback: .inline-error for a line inside a card, .error-banner
-   for a strip above a page. NetworkErrorBanner adds its parts on top. */
+@layer components {
+  /* Shared error feedback: .inline-error for a line inside a card, .error-banner
+     for a strip above a page. NetworkErrorBanner adds its parts on top. */
 
-.inline-error {
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
-  color: var(--text-negative);
-  font-size: var(--font-size-md);
-  line-height: 1.45;
-  margin-bottom: var(--space-12);
-}
+  .inline-error {
+    padding: var(--space-8) var(--space-12);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+    color: var(--text-negative);
+    font-size: var(--font-size-md);
+    line-height: 1.45;
+    margin-bottom: var(--space-12);
+  }
 
-.error-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
-  color: var(--text-negative);
-  font-size: var(--font-size-md);
-  line-height: 1.45;
-  animation: fade-in var(--duration-fast) var(--ease-out);
+  .error-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+    color: var(--text-negative);
+    font-size: var(--font-size-md);
+    line-height: 1.45;
+    animation: fade-in var(--duration-fast) var(--ease-out);
+  }
 }

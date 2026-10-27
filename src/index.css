@@ -29,11 +29,6 @@
   src: url('./assets/fonts/TwemojiCountryFlags.woff2') format('woff2');
 }
 
-/* Design tokens (colour, spacing, radius, type, motion) come from
-   @swiftsolve/rove-design, imported in main.tsx ahead of this file: Dark on
-   :root, Light on :root.theme-light, which App.tsx toggles. Figma is their
-   source of truth; change them there and bump the package. */
-
 /* Accessibility override, already applied to the Figma variables (text/positive,
    text/warning, text/negative, Light mode). Delete this block once a release of
    @swiftsolve/rove-design carries them. In the light theme the status colours
@@ -41,551 +36,563 @@
    3.5–4.4:1 on our light surfaces, where WCAG AA needs 4.5:1. These text
    variants are the same hues, darkened just enough to pass on every surface
    they sit on. Icons, dots, fills and charts keep the --status-* values, which
-   only need 3:1 and already meet it. */
+   only need 3:1 and already meet it. Outside the layer below on purpose: the
+   tokens themselves are unlayered, and a layered override would lose to them. */
 :root.theme-light {
   --text-positive: #017e40;
   --text-negative: #c53b2f;
   --text-warning: #926401;
 }
 
-/* ---- Theme switch transition ----
-   The theme toggle (App.tsx) runs the swap inside a View Transition and drives
-   a clip-path circle that grows from the window's centre. Suppress the built-in
-   cross-fade so only the circular reveal plays, and keep the incoming theme's
-   snapshot stacked above the outgoing one so it's revealed on top. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-/* Dark → light: the incoming light snapshot grows outward on top. */
-::view-transition-old(root) { z-index: 0; }
-::view-transition-new(root) { z-index: 1; }
-/* Light → dark: mirror it — the outgoing light snapshot stays on top and
-   collapses to the centre, revealing the dark snapshot beneath. */
-:root.theme-to-dark::view-transition-old(root) { z-index: 1; }
-:root.theme-to-dark::view-transition-new(root) { z-index: 0; }
-
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  font-family: var(--font);
-  /* Transparent so the window's rounded corners (clipped on the app shell) reveal
-     the desktop behind them instead of a square opaque backdrop. The app's
-     background lives on the app shell (App.module.css). */
-  background: transparent;
-  color: var(--text-primary);
-  line-height: 1.45;
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-regular);
-  font-optical-sizing: auto;
-  font-feature-settings: 'cv11' 1, 'ss01' 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  user-select: none;
-  cursor: default;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* The app-wide `user-select: none` on <body> gives the desktop-app feel, but it
-   inherits into form controls — and WebView2 (Windows) honours it there, which
-   makes <input>/<textarea> impossible to type in. WebKit (macOS/Linux webview)
-   exempts form controls, so the break only shows on Windows. Re-enable selection
-   on editable elements so they're typeable on every platform. */
-input,
-textarea,
-select,
-[contenteditable]:not([contenteditable='false']) {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-.num,
-.data-row-value,
-.metric-value {
-  font-family: var(--font-numeric);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-
-::selection {
-  background: var(--fill-selection);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--fill-scrollbar) transparent;
-}
-
-*::-webkit-scrollbar {
-  width: 5px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: var(--fill-scrollbar);
-  border-radius: var(--radius-full);
-}
-
-#root {
-  height: 100%;
-  overflow: hidden;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  background: none;
-  white-space: nowrap;
-}
-
-/* The one default focus ring: outside the control, following its border-radius.
-   :where() keeps it at zero specificity so a component can restyle it (e.g. draw
-   it inset) with a single class. */
-:where(button, a[href], input, select, textarea, [tabindex], [role='button'], svg):focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
-}
-
-/* Headings and <main> only take focus programmatically, on navigation, to
-   announce the new page. They aren't controls, so they get no focus ring. */
-h1[tabindex='-1']:focus,
-main[tabindex='-1']:focus {
-  outline: none;
-}
-
-/* Lists are markup for meaning, not bullets: no markers, no indent. They carry
-   role="list" because WebKit stops announcing a list once its markers are off.
-   :where() keeps this at zero specificity, so a list's own class always wins. */
-:where(ul[role='list'], ol[role='list']) {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* Present for assistive tech, invisible on screen. */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* ---- Typography ---- */
-
-/** Panel headings — e.g. Live usage, Speed test */
-.section-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-/** Labels above values — e.g. Download, IP address */
-.field-label {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
-}
-
-.text-title {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-/** Page-level view titles — same scale as the connection card strip title */
-.view-header-title {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-/** Page header: an edge-to-edge divider below the title, separating the header
-    from the section stack. The divider spans the full content viewport, past the
-    card stack's 11px inset on both sides. Left cancels that inset to reach the
-    viewport's left edge. The right can't just cancel the inset: the scroll root
-    ([data-scroll-root]) reserves a scrollbar gutter on its trailing edge
-    (scrollbar-gutter: stable)
-    whose width is engine-dependent (~5–15px), so a fixed cancel stops short of —
-    or overshoots — the edge. Instead the right bleeds well past any gutter and
-    lets the scroll root's overflow clip it exactly at the viewport's right edge, so
-    the divider meets that edge regardless of gutter width. The matching right
-    padding keeps the header's own content aligned with the cards. The negative
-    top margin cancels the scroll area's top padding for a symmetric rhythm. */
-.view-header {
-  margin: calc(-1 * var(--space-12)) -40px 0 calc(-1 * var(--space-11));
-  padding: var(--space-12) 40px var(--space-12) var(--space-11);
-  border-bottom: 1px solid var(--border);
-}
-
-/** Nav-matched glyph in a rounded chip, sitting to the left of a page title.
-    Vertically centred against the title/subtitle block so it lines up with the
-    action button on the right; the subtitle stays in the text column, under the
-    title. */
-.view-header-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  /* Match the selected nav item's chip so the page icon and its rail counterpart
-     read as the same control (see .nav-item: 38px box, 10px radius). */
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-md);
-  background: var(--fill-chip);
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-.text-body {
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-regular);
-  color: var(--text-primary);
-  line-height: 1.45;
-}
-
-.text-secondary {
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-regular);
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.text-muted {
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-regular);
-  color: var(--text-tertiary);
-  line-height: 1.45;
-}
-
-/** Helper text and hints — e.g. "No DNS servers found." */
-.text-small {
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-regular);
-  color: var(--text-tertiary);
-  line-height: 1.45;
-}
-
-/** Card footer hints — e.g. "Available after speed test" */
-.text-hint {
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-regular);
-  color: var(--text-tertiary);
-  line-height: 1.5;
-}
-
-.text-value {
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
-  line-height: 1.35;
-}
-
-/* Semantic value states — encode health in colour, only where it's earned */
-.val-good { color: var(--text-positive); }
-.val-warn { color: var(--text-warning); }
-.val-bad { color: var(--text-negative); }
-
-/* Trailing chevron on the quiet header links ("All Results", "View timeline",
-   "All hosts"). Their labels sit in the subtitle's grey until hovered, so this is
-   the cue at rest that they open a page, the same › the Home cards use; it stays
-   put on hover. The glyph's ink is only the middle quarter of its box, so the
-   negative margins trim that empty space and the gaps are set by the ink: the
-   label sits ~6px from the caret, as from its leading icon, and a following dot
-   keeps its 8px (see .sep-dot). */
-button > svg.link-caret {
-  margin: 0 calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
-}
-
-.text-meta {
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-regular);
-  color: var(--text-tertiary);
-  line-height: 1.35;
-}
-
-/** Medium-weight meta — e.g. the title bar's connection status */
-.text-meta-strong {
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-tertiary);
-  line-height: 1.45;
-}
-
-/** Chart axes and scale; pair with .num for the numeric face */
-.text-chart-label {
-  font-size: var(--font-size-2xs);
-  color: var(--text-tertiary);
-  line-height: 1;
-}
-
-.metric {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-4);
-}
-
-.metric-value {
-  font-family: var(--font-numeric);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-3xl);
-  font-weight: var(--weight-semibold);
-  letter-spacing: -0.01em;
-  line-height: 1;
-  color: var(--text-primary);
-}
-
-.metric-unit {
-  font-family: var(--font);
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-regular);
-  color: var(--text-secondary);
-  transform: translateY(-1px);
-}
-
-/* Stat totals: two numbers share a half-width card, so the value steps down to
-   keep both on one line without clipping on narrow windows. */
-.metric-compact .metric-value {
-  font-size: var(--font-size-2xl);
-}
-
-/* ---- Layout ---- */
-
-/** Centered empty state inside a section body */
-.section-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-10);
-  padding: var(--space-12) var(--space-8) var(--space-8);
-}
-
-.section-placeholder-icon {
-  color: var(--text-tertiary);
-}
-
-.section-placeholder .text-hint {
-  max-width: 264px;
-}
-
-.view-page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-10);
-}
-
-.view-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-  min-height: 32px;
-  padding: 0 var(--space-2);
-}
-
-.panel-head-main {
-  display: flex;
-  align-items: center;
-  gap: var(--space-10);
-  min-width: 0;
-  flex: 1;
-}
-
-.row-list > :first-child {
-  padding-top: 0;
-}
-
-.row-list > :last-child {
-  padding-bottom: 0;
-}
-
-/* Grow to fill the space below the view header so the spinner + text centre
-   vertically in the whole content region, not within a fixed 140px box pinned
-   near the top. The min-height is a floor for the rare case the page is short. */
-.view-empty {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-12);
-  min-height: 140px;
-  padding: var(--space-16);
-}
-
-.view-empty p {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-}
-
-.surface {
-  background: var(--bg-panel);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(7px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* ---- Shared chart tooltip (throughput + usage) ---- */
-
-/* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
-   follows the arrow keys) still needs a visible ring; one that isn't never gets
-   focus. Only the wrapper's own outline goes. */
-.recharts-wrapper {
-  outline: none;
-}
-
-.recharts-surface:focus-visible {
-  border-radius: var(--radius-sm);
-}
-
-.chart-tip {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-12);
-  min-width: 150px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-raised);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-raised);
-  pointer-events: none;
-}
-
-.chart-tip-title {
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--text-secondary);
-}
-
-/* Each row: colour dot + label on the left, value right-aligned — so the two
-   values line up in a column. No divider lines. */
-.chart-tip-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.chart-tip-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.chart-tip-value {
-  margin-left: auto;
-  padding-left: var(--space-16);
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-}
-
-/* Considered entrance: content settles in with a light stagger on mount / tab change.
-   fill-mode `backwards` (not `both`) holds the pre-animation state during the
-   stagger delay but reverts transform to `none` afterwards — `both` would leave
-   an identity-matrix transform that turns every row into a stacking context,
-   trapping header tooltips behind later siblings. */
-.view-page > *,
-.subpage > * {
-  animation: fade-up var(--duration-normal) var(--ease-out) backwards;
-}
-.view-page > *:nth-child(2),
-.subpage > *:nth-child(2) { animation-delay: 45ms; }
-.view-page > *:nth-child(3),
-.subpage > *:nth-child(3) { animation-delay: 90ms; }
-.view-page > *:nth-child(4),
-.subpage > *:nth-child(4) { animation-delay: 135ms; }
-/* Everything from the 5th child on shares the final step so a longer page (e.g.
-   the Connection view's ISP card, its 5th child) still settles in after the
-   staggered cards above it instead of popping in at delay 0, out of order. */
-.view-page > *:nth-child(n + 5),
-.subpage > *:nth-child(n + 5) { animation-delay: 180ms; }
-
-/* The ring drawn around an item a navigation just scrolled to (see
-   lib/highlight.ts). An outline rather than a border so it costs no layout, and
-   inset by its own width so a row inside an overflow-clipped card doesn't get
-   its ring shaved off at the card's edge. Holds briefly at full strength before
-   fading, so the eye has time to land before it goes.
-
-   The fill is a gradient layer rather than a background-color: an animation
-   overrides the property it animates for its whole run, so tweening the colour
-   would blow away a target's own background (.surface's panel fill among them)
-   and flash the app background through it. A background-image composites over
-   that instead. */
-.nav-flash {
-  animation: nav-flash 1.5s var(--ease-out) forwards;
-}
-
-@keyframes nav-flash {
-  0% {
-    outline: 1px solid transparent;
-    outline-offset: -1px;
-    background-image: linear-gradient(transparent, transparent);
+/* All of the app's global CSS sits in Tailwind's `components` layer, so a
+   utility on an element always wins over it, and its rules keep their old
+   order among themselves. */
+@layer components {
+  /* Design tokens (colour, spacing, radius, type, motion) come from
+     @swiftsolve/rove-design, imported in main.tsx ahead of this file: Dark on
+     :root, Light on :root.theme-light, which App.tsx toggles. Figma is their
+     source of truth; change them there and bump the package. */
+
+
+  /* ---- Theme switch transition ----
+     The theme toggle (App.tsx) runs the swap inside a View Transition and drives
+     a clip-path circle that grows from the window's centre. Suppress the built-in
+     cross-fade so only the circular reveal plays, and keep the incoming theme's
+     snapshot stacked above the outgoing one so it's revealed on top. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
-  15%,
-  55% {
-    outline: 1px solid var(--accent);
-    outline-offset: -1px;
-    background-image: linear-gradient(var(--accent-muted), var(--accent-muted));
-  }
-  100% {
-    outline: 1px solid transparent;
-    outline-offset: -1px;
-    background-image: linear-gradient(transparent, transparent);
-  }
-}
+  /* Dark → light: the incoming light snapshot grows outward on top. */
+  ::view-transition-old(root) { z-index: 0; }
+  ::view-transition-new(root) { z-index: 1; }
+  /* Light → dark: mirror it — the outgoing light snapshot stays on top and
+     collapses to the centre, revealing the dark snapshot beneath. */
+  :root.theme-to-dark::view-transition-old(root) { z-index: 1; }
+  :root.theme-to-dark::view-transition-new(root) { z-index: 0; }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: var(--font);
+    /* Transparent so the window's rounded corners (clipped on the app shell) reveal
+       the desktop behind them instead of a square opaque backdrop. The app's
+       background lives on the app shell (App.module.css). */
+    background: transparent;
+    color: var(--text-primary);
+    line-height: 1.45;
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-regular);
+    font-optical-sizing: auto;
+    font-feature-settings: 'cv11' 1, 'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+    cursor: default;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* The app-wide `user-select: none` on <body> gives the desktop-app feel, but it
+     inherits into form controls — and WebView2 (Windows) honours it there, which
+     makes <input>/<textarea> impossible to type in. WebKit (macOS/Linux webview)
+     exempts form controls, so the break only shows on Windows. Re-enable selection
+     on editable elements so they're typeable on every platform. */
+  input,
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .num,
+  .data-row-value,
+  .metric-value {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background: var(--fill-selection);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--fill-scrollbar) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--fill-scrollbar);
+    border-radius: var(--radius-full);
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: none;
+    white-space: nowrap;
+  }
+
+  /* The one default focus ring: outside the control, following its border-radius.
+     :where() keeps it at zero specificity so a component can restyle it (e.g. draw
+     it inset) with a single class. */
+  :where(button, a[href], input, select, textarea, [tabindex], [role='button'], svg):focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* Headings and <main> only take focus programmatically, on navigation, to
+     announce the new page. They aren't controls, so they get no focus ring. */
+  h1[tabindex='-1']:focus,
+  main[tabindex='-1']:focus {
+    outline: none;
+  }
+
+  /* Lists are markup for meaning, not bullets: no markers, no indent. They carry
+     role="list" because WebKit stops announcing a list once its markers are off.
+     :where() keeps this at zero specificity, so a list's own class always wins. */
+  :where(ul[role='list'], ol[role='list']) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Present for assistive tech, invisible on screen. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---- Typography ---- */
+
+  /** Panel headings — e.g. Live usage, Speed test */
+  .section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /** Labels above values — e.g. Download, IP address */
+  .field-label {
+    font-size: var(--font-size-2xs);
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+  }
+
+  .text-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  /** Page-level view titles — same scale as the connection card strip title */
+  .view-header-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  /** Page header: an edge-to-edge divider below the title, separating the header
+      from the section stack. The divider spans the full content viewport, past the
+      card stack's 11px inset on both sides. Left cancels that inset to reach the
+      viewport's left edge. The right can't just cancel the inset: the scroll root
+      ([data-scroll-root]) reserves a scrollbar gutter on its trailing edge
+      (scrollbar-gutter: stable)
+      whose width is engine-dependent (~5–15px), so a fixed cancel stops short of —
+      or overshoots — the edge. Instead the right bleeds well past any gutter and
+      lets the scroll root's overflow clip it exactly at the viewport's right edge, so
+      the divider meets that edge regardless of gutter width. The matching right
+      padding keeps the header's own content aligned with the cards. The negative
+      top margin cancels the scroll area's top padding for a symmetric rhythm. */
+  .view-header {
+    margin: calc(-1 * var(--space-12)) -40px 0 calc(-1 * var(--space-11));
+    padding: var(--space-12) 40px var(--space-12) var(--space-11);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /** Nav-matched glyph in a rounded chip, sitting to the left of a page title.
+      Vertically centred against the title/subtitle block so it lines up with the
+      action button on the right; the subtitle stays in the text column, under the
+      title. */
+  .view-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    /* Match the selected nav item's chip so the page icon and its rail counterpart
+       read as the same control (see .nav-item: 38px box, 10px radius). */
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--fill-chip);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .text-body {
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-regular);
+    color: var(--text-primary);
+    line-height: 1.45;
+  }
+
+  .text-secondary {
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-regular);
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  .text-muted {
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-regular);
+    color: var(--text-tertiary);
+    line-height: 1.45;
+  }
+
+  /** Helper text and hints — e.g. "No DNS servers found." */
+  .text-small {
+    font-size: var(--font-size-sm);
+    font-weight: var(--weight-regular);
+    color: var(--text-tertiary);
+    line-height: 1.45;
+  }
+
+  /** Card footer hints — e.g. "Available after speed test" */
+  .text-hint {
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-regular);
+    color: var(--text-tertiary);
+    line-height: 1.5;
+  }
+
+  .text-value {
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
+  /* Semantic value states — encode health in colour, only where it's earned */
+  .val-good { color: var(--text-positive); }
+  .val-warn { color: var(--text-warning); }
+  .val-bad { color: var(--text-negative); }
+
+  /* Trailing chevron on the quiet header links ("All Results", "View timeline",
+     "All hosts"). Their labels sit in the subtitle's grey until hovered, so this is
+     the cue at rest that they open a page, the same › the Home cards use; it stays
+     put on hover. The glyph's ink is only the middle quarter of its box, so the
+     negative margins trim that empty space and the gaps are set by the ink: the
+     label sits ~6px from the caret, as from its leading icon, and a following dot
+     keeps its 8px (see .sep-dot). */
+  button > svg.link-caret {
+    margin: 0 calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
+  }
+
+  .text-meta {
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-regular);
+    color: var(--text-tertiary);
+    line-height: 1.35;
+  }
+
+  /** Medium-weight meta — e.g. the title bar's connection status */
+  .text-meta-strong {
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    line-height: 1.45;
+  }
+
+  /** Chart axes and scale; pair with .num for the numeric face */
+  .text-chart-label {
+    font-size: var(--font-size-2xs);
+    color: var(--text-tertiary);
+    line-height: 1;
+  }
+
+  .metric {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+  }
+
+  .metric-value {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  .metric-unit {
+    font-family: var(--font);
+    font-size: var(--font-size-sm);
+    font-weight: var(--weight-regular);
+    color: var(--text-secondary);
+    transform: translateY(-1px);
+  }
+
+  /* Stat totals: two numbers share a half-width card, so the value steps down to
+     keep both on one line without clipping on narrow windows. */
+  .metric-compact .metric-value {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* ---- Layout ---- */
+
+  /** Centered empty state inside a section body */
+  .section-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-10);
+    padding: var(--space-12) var(--space-8) var(--space-8);
+  }
+
+  .section-placeholder-icon {
+    color: var(--text-tertiary);
+  }
+
+  .section-placeholder .text-hint {
+    max-width: 264px;
+  }
+
+  .view-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .view-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+    min-height: 32px;
+    padding: 0 var(--space-2);
+  }
+
+  .panel-head-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-10);
+    min-width: 0;
+    flex: 1;
+  }
+
+  .row-list > :first-child {
+    padding-top: 0;
+  }
+
+  .row-list > :last-child {
+    padding-bottom: 0;
+  }
+
+  /* Grow to fill the space below the view header so the spinner + text centre
+     vertically in the whole content region, not within a fixed 140px box pinned
+     near the top. The min-height is a floor for the rare case the page is short. */
+  .view-empty {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-12);
+    min-height: 140px;
+    padding: var(--space-16);
+  }
+
+  .view-empty p {
+    font-size: var(--font-size-sm);
+    color: var(--text-tertiary);
+  }
+
+  .surface {
+    background: var(--bg-panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(7px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---- Shared chart tooltip (throughput + usage) ---- */
+
+  /* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
+     follows the arrow keys) still needs a visible ring; one that isn't never gets
+     focus. Only the wrapper's own outline goes. */
+  .recharts-wrapper {
+    outline: none;
+  }
+
+  .recharts-surface:focus-visible {
+    border-radius: var(--radius-sm);
+  }
+
+  .chart-tip {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-8) var(--space-12);
+    min-width: 150px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-raised);
+    pointer-events: none;
+  }
+
+  .chart-tip-title {
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+  }
+
+  /* Each row: colour dot + label on the left, value right-aligned — so the two
+     values line up in a column. No divider lines. */
+  .chart-tip-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .chart-tip-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .chart-tip-value {
+    margin-left: auto;
+    padding-left: var(--space-16);
+    font-size: var(--font-size-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+  }
+
+  /* Considered entrance: content settles in with a light stagger on mount / tab change.
+     fill-mode `backwards` (not `both`) holds the pre-animation state during the
+     stagger delay but reverts transform to `none` afterwards — `both` would leave
+     an identity-matrix transform that turns every row into a stacking context,
+     trapping header tooltips behind later siblings. */
+  .view-page > *,
+  .subpage > * {
+    animation: fade-up var(--duration-normal) var(--ease-out) backwards;
+  }
+  .view-page > *:nth-child(2),
+  .subpage > *:nth-child(2) { animation-delay: 45ms; }
+  .view-page > *:nth-child(3),
+  .subpage > *:nth-child(3) { animation-delay: 90ms; }
+  .view-page > *:nth-child(4),
+  .subpage > *:nth-child(4) { animation-delay: 135ms; }
+  /* Everything from the 5th child on shares the final step so a longer page (e.g.
+     the Connection view's ISP card, its 5th child) still settles in after the
+     staggered cards above it instead of popping in at delay 0, out of order. */
+  .view-page > *:nth-child(n + 5),
+  .subpage > *:nth-child(n + 5) { animation-delay: 180ms; }
+
+  /* The ring drawn around an item a navigation just scrolled to (see
+     lib/highlight.ts). An outline rather than a border so it costs no layout, and
+     inset by its own width so a row inside an overflow-clipped card doesn't get
+     its ring shaved off at the card's edge. Holds briefly at full strength before
+     fading, so the eye has time to land before it goes.
+
+     The fill is a gradient layer rather than a background-color: an animation
+     overrides the property it animates for its whole run, so tweening the colour
+     would blow away a target's own background (.surface's panel fill among them)
+     and flash the app background through it. A background-image composites over
+     that instead. */
+  .nav-flash {
+    animation: nav-flash 1.5s var(--ease-out) forwards;
+  }
+
+  @keyframes nav-flash {
+    0% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+    15%,
+    55% {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+      background-image: linear-gradient(var(--accent-muted), var(--accent-muted));
+    }
+    100% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
