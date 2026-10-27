@@ -1,5 +1,5 @@
 import type { TrafficType, TrafficUsageSummary } from '@/types'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { formatBytes } from '@/lib/format'
 import { Tooltip as UiTooltip } from '@/components/Tooltip'
@@ -175,7 +175,7 @@ function TrafficBody({
 }
 
 export function TrafficView(): JSX.Element {
-  const { usage, isLoading, error } = useAppData().screens.trafficUsage
+  const { usage, isLoading, error } = useTrafficUsage()
   const { back } = useNavigation()
   const isFirstLoad = isLoading && usage.types.length === 0
   const subtitle = isFirstLoad ? 'Loading…' : 'Traffic by kind across every app, busiest first'

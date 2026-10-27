@@ -1,5 +1,5 @@
 import { splitBytes } from '@/lib/format'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { TodayIcon } from '@/components/icons/Icons'
 import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
@@ -7,7 +7,7 @@ import styles from './UsageCard.module.css'
 
 /** Today's download and upload totals; opens the Usage tab. */
 export function UsageCard(): JSX.Element {
-  const { usage, isLoading } = useAppData().screens.usage
+  const { usage, isLoading } = useDataUsage()
   const { navigate } = useNavigation()
   const today = usage.days[usage.days.length - 1]
   const isResolved = today != null || !isLoading

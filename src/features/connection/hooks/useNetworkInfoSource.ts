@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { getNetworkApi } from '@/bridge/networkApi'
@@ -17,7 +17,8 @@ const NETWORK_INFO_TIMEOUT_MS = 20_000
 // polls fail back-to-back (~a sustained outage, not one unlucky poll).
 const FAILURES_BEFORE_ERROR = 3
 
-interface UseNetworkInfoResult {
+/** The local link (Wi-Fi / Ethernet): `info` is null until the first read lands. */
+export interface NetworkState {
   info: NetworkInfo | null
   error: string | null
   isLoading: boolean
@@ -49,7 +50,12 @@ function getNetworkApiError(): string | null {
   return null
 }
 
-export function useNetworkInfo(): UseNetworkInfoResult {
+/**
+ * Creates the app's network state: reads network info on mount, polls it while
+ * the window is visible and refreshes on the backend's network-changed nudge.
+ * Called once, by `NetworkProvider`; components read it with `useNetwork()`.
+ */
+export function useNetworkInfoSource(): NetworkState {
   const [info, setInfo] = useState<NetworkInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -139,5 +145,10 @@ export function useNetworkInfo(): UseNetworkInfoResult {
   // Network changed — refresh at once instead of waiting out the poll interval.
   useOnNetworkChanged(() => void refresh(true))
 
-  return { info, error, isLoading, refresh: () => refresh(false), setError }
+  // Stable identities, so `useNetwork()` readers re-render only when a value changes.
+  const refreshNow = useCallback((): Promise<void> => refresh(false), [refresh])
+  return useMemo(
+    () => ({ info, error, isLoading, refresh: refreshNow, setError }),
+    [info, error, isLoading, refreshNow],
+  )
 }

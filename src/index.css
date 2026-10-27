@@ -34,8 +34,10 @@
    :root, Light on :root.theme-light, which App.tsx toggles. Figma is their
    source of truth; change them there and bump the package. */
 
-/* Accessibility override — carry back into @swiftsolve/rove-design and the
-   Figma file. In the light theme the status colours read too light as text:
+/* Accessibility override, already applied to the Figma variables (text/positive,
+   text/warning, text/negative, Light mode). Delete this block once a release of
+   @swiftsolve/rove-design carries them. In the light theme the status colours
+   read too light as text:
    3.5–4.4:1 on our light surfaces, where WCAG AA needs 4.5:1. These text
    variants are the same hues, darkened just enough to pass on every surface
    they sit on. Icons, dots, fills and charts keep the --status-* values, which

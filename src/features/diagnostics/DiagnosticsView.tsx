@@ -11,7 +11,8 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
+import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 import styles from './DiagnosticsView.module.css'
 
 /** Gateway round trips up to this read as healthy (green). */
@@ -68,7 +69,7 @@ function jitterValue(ping: PingStats | null | undefined): ReactNode {
 }
 
 function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
-  const { info } = useAppData().network
+  const { info } = useNetwork()
   const ping = diagnostics?.gatewayPing
   // Negotiated link rate of the local connection to the router (Wi-Fi/Ethernet),
   // or null when disconnected or the OS doesn't report it.
@@ -191,7 +192,7 @@ function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
 }
 
 export function DiagnosticsView(): JSX.Element {
-  const { diagnostics, isRunning, error, run } = useAppData().screens.diagnostics
+  const { diagnostics, isRunning, error, run } = useDiagnostics()
   const runDiagnostics = (): void => {
     void run()
   }

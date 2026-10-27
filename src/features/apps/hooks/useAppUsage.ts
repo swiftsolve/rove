@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
 import type { AppUsageSummary } from '@/types'
 import { createEmptyAppUsage } from '@/types'
-import { useBackendResource } from '@/hooks/useBackendResource'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 const REFRESH_INTERVAL_MS = 5_000
 
@@ -19,19 +18,17 @@ interface UseAppUsageResult {
  * clear message rather than a hung spinner. Polls a little faster than the daily
  * usage summary since the underlying totals climb continuously.
  */
-export function useAppUsage(isEnabled: boolean): UseAppUsageResult {
+export function useAppUsage(): UseAppUsageResult {
   const api = window.networkAPI
-  const fetchUsage = useMemo(
-    () => (api?.getAppUsage ? () => api.getAppUsage() : undefined),
-    [api],
-  )
+  const fetchUsage = api ? () => api.getAppUsage() : undefined
 
-  const { data, isBusy, error } = useBackendResource(
-    fetchUsage,
-    isEnabled,
-    'Failed to load per-app usage.',
-    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
-  )
+  const { data, isBusy, error } = useBackendQuery({
+    queryKey: ['appUsage'],
+    queryFn: fetchUsage,
+    isEnabled: true,
+    errorMessage: 'Failed to load per-app usage.',
+    pollIntervalMs: REFRESH_INTERVAL_MS,
+  })
 
   if (!fetchUsage) {
     return {

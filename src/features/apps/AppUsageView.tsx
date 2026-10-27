@@ -1,6 +1,6 @@
 import type { AppUsage, AppUsageSummary } from '@/types'
 import { formatBytes } from '@/lib/format'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
 import { Tooltip as UiTooltip } from '@/components/Tooltip'
@@ -171,7 +171,7 @@ function AppUsageBody({
 }
 
 export function AppUsageView(): JSX.Element {
-  const { usage, isLoading, error } = useAppData().screens.appUsage
+  const { usage, isLoading, error } = useAppUsage()
   const isFirstLoad = isLoading && usage.apps.length === 0
 
   return (

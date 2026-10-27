@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
 import type { DataUsageSummary } from '@/types'
 import { createEmptyDataUsage } from '@/types'
-import { useBackendResource } from '@/hooks/useBackendResource'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 const REFRESH_INTERVAL_MS = 10_000
 
@@ -13,23 +12,21 @@ interface UseDataUsageResult {
   error: string | null
 }
 
-export function useDataUsage(isEnabled: boolean): UseDataUsageResult {
+export function useDataUsage(): UseDataUsageResult {
   const api = window.networkAPI
   // "no bridge → no-op" behaviour: an undefined fetcher when the bridge is absent.
-  const fetchUsage = useMemo(
-    () => (api?.getDataUsage ? () => api.getDataUsage() : undefined),
-    [api],
-  )
+  const fetchUsage = api ? () => api.getDataUsage() : undefined
 
   // Polls are silent background refreshes: a failed one keeps showing the last
   // summary while surfacing that the refresh failed, and polling pauses while
   // the window is hidden (with one fresh read on resume).
-  const { data, isBusy, error } = useBackendResource(
-    fetchUsage,
-    isEnabled,
-    'Failed to load data usage.',
-    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
-  )
+  const { data, isBusy, error } = useBackendQuery({
+    queryKey: ['dataUsage'],
+    queryFn: fetchUsage,
+    isEnabled: true,
+    errorMessage: 'Failed to load data usage.',
+    pollIntervalMs: REFRESH_INTERVAL_MS,
+  })
 
   // No bridge: report it and skip the spinner rather than hang on "Loading…".
   if (!fetchUsage) {

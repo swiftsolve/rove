@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 import { AlertIcon, CloseIcon, OfflineIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import styles from './NetworkInfoStates.module.css'
@@ -44,7 +44,7 @@ function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size
 
 /** Fills the content area while the first network info hasn't arrived yet. */
 export function NetworkLoadingScreen(): JSX.Element {
-  const { network } = useAppData()
+  const network = useNetwork()
   // While a read is in flight, any earlier error is stale: show the spinner.
   const error = network.isLoading ? null : network.error
   const info = error ? describeNetworkError(error) : null
@@ -86,7 +86,7 @@ export function NetworkLoadingScreen(): JSX.Element {
 // actionable (retry + dismiss) instead of leaving a dead red bar the user can't
 // clear.
 export function NetworkErrorBanner(): JSX.Element | null {
-  const { network } = useAppData()
+  const network = useNetwork()
   if (!network.error) return null
   const { kind, title } = describeNetworkError(network.error)
   return (

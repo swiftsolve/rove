@@ -2,7 +2,8 @@ import { useId, useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { formatDuration, formatMac } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useDevices } from '@/features/devices/hooks/useDevices'
+import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { InlineMeta } from '@/components/DotSeparator'
 import { EmptyState } from '@/components/EmptyState'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
@@ -368,8 +369,8 @@ function EventsFeed({
 }
 
 export function EventsView(): JSX.Element {
-  const { events: eventsData, devices } = useAppData().screens
-  const { events, isLoading, error } = eventsData
+  const { events, isLoading, error } = useNetworkEvents()
+  const devices = useDevices()
   // A device scan is what produces new events, so refreshing means scanning again.
   const isScanning = devices.isScanning
   const rescan = (): void => {

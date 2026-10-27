@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { ChevronRightIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
@@ -28,16 +28,23 @@ interface StatCardProps {
  * nested inside it.
  */
 export function StatCard({ icon, label, ariaLabel, onOpen, isBusy, children }: StatCardProps): JSX.Element {
+  const titleId = useId()
   return (
-    <div className={cx(styles.card, 'surface')} aria-busy={isBusy || undefined}>
+    <section
+      className={cx(styles.card, 'surface')}
+      aria-labelledby={titleId}
+      aria-busy={isBusy || undefined}
+    >
       <div className={styles.head}>
         <span className={styles.icon}>{icon}</span>
-        <h2 className="section-title">{label}</h2>
+        <h2 id={titleId} className="section-title">
+          {label}
+        </h2>
         <ChevronRightIcon size={16} className={styles.caret} />
       </div>
       <button type="button" className={styles.open} onClick={onOpen} aria-label={ariaLabel} />
       {children}
-    </div>
+    </section>
   )
 }
 

@@ -5,10 +5,3 @@
   grid-template-columns: 3fr 2fr;
   gap: var(--space-10);
 }
-
-/* Each card's list item. A one-cell grid, so the card fills the item the way
-   it used to fill its grid cell (the Devices card stretches to the Usage
-   card's height). */
-.stat-card {
-  display: grid;
-}

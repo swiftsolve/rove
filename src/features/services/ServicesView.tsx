@@ -13,7 +13,8 @@ import { isHttpErroring, latencyBand } from '@/features/services/utils/service-s
 import { Sparkline } from '@/features/services/components/Sparkline'
 import { useServices } from '@/features/services/hooks/useServices'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
+import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
 import { formatLatencyMs } from '@/lib/format'
@@ -210,21 +211,21 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
  */
 export function ServicesView(): JSX.Element {
   const { navigate } = useNavigation()
-  const { screens, connection } = useAppData()
+  const { report, run: reprobe } = useServiceReachability()
   // The latest reachability probes; latency is matched to rows by host.
-  const reachability = screens.services.report?.services
+  const reachability = report?.services
   // The internet reachability measured alongside `reachability` (same probe
   // batch). When it isn't `online`, a probe in that batch that failed means "we
   // couldn't check", not "the service is down", so those rows read as unknown
   // ("—") rather than "Down".
-  const internet = screens.services.report?.internet
+  const internet = report?.internet
   // The app's live internet status — the same one the title bar shows. Drives
   // the header ("No internet") and gates the Add button, so the page never
   // disagrees with the title bar between probe batches.
-  const liveInternet = connection.internet
+  const liveInternet = useConnectionStatus().internet
   // Re-probe the services so a just-added/removed service's latency refreshes.
   const refreshServices = (): void => {
-    void screens.services.run()
+    void reprobe()
   }
   const openTimeline = (): void => navigate({ tab: 'services', servicesSub: { view: 'timeline' } })
   const { services, add, remove } = useServices(true)

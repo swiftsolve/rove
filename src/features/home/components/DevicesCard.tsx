@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { IS_MAC } from '@/lib/platform'
 import { DevicesIcon, SearchIcon } from '@/components/icons/Icons'
@@ -22,7 +22,7 @@ function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | nu
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard(): JSX.Element {
-  const devices = useAppData().screens.devices
+  const devices = useDevices()
   const { navigate } = useNavigation()
   const { scan, isScanning } = devices
   // Devices found by the last scan, or null before the first scan lands.

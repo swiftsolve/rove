@@ -1,6 +1,6 @@
 import { locationKey } from '@/app/utils/location'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useAppData } from '@/app/hooks/useAppData'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useScreenFocus } from '@/app/hooks/useScreenFocus'
 import { TabBar } from '@/app/components/TabBar'
 import { UpdatePrompt } from '@/app/components/UpdatePrompt'
@@ -15,7 +15,7 @@ import styles from './AppShell.module.css'
  */
 export function AppShell(): JSX.Element {
   const { location } = useNavigation()
-  const { network } = useAppData()
+  const network = useNetwork()
   const { scrollRef, mainRef } = useScreenFocus(locationKey(location))
 
   // Show the loading/error state only in the content area (not full-screen) so

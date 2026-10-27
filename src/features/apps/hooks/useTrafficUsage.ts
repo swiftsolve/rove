@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
 import type { TrafficUsageSummary } from '@/types'
 import { createEmptyTrafficUsage } from '@/types'
-import { useBackendResource } from '@/hooks/useBackendResource'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 const REFRESH_INTERVAL_MS = 5_000
 
@@ -19,19 +18,17 @@ interface UseTrafficUsageResult {
  * missing bridge degrades to a clear message rather than a hung spinner. Reads
  * off the same backend tracker the Hosts view does — no extra sampling.
  */
-export function useTrafficUsage(isEnabled: boolean): UseTrafficUsageResult {
+export function useTrafficUsage(): UseTrafficUsageResult {
   const api = window.networkAPI
-  const fetchUsage = useMemo(
-    () => (api?.getTrafficUsage ? () => api.getTrafficUsage() : undefined),
-    [api],
-  )
+  const fetchUsage = api ? () => api.getTrafficUsage() : undefined
 
-  const { data, isBusy, error } = useBackendResource(
-    fetchUsage,
-    isEnabled,
-    'Failed to load traffic-type usage.',
-    { shouldRefetchOnEnable: true, pollIntervalMs: REFRESH_INTERVAL_MS },
-  )
+  const { data, isBusy, error } = useBackendQuery({
+    queryKey: ['trafficUsage'],
+    queryFn: fetchUsage,
+    isEnabled: true,
+    errorMessage: 'Failed to load traffic-type usage.',
+    pollIntervalMs: REFRESH_INTERVAL_MS,
+  })
 
   if (!fetchUsage) {
     return {
