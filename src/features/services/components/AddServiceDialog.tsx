@@ -29,7 +29,7 @@ const DIALOG = cx(
 // It blends into the header with no fill of its own at rest; the secondary
 // IconButton's hover fill still shows.
 const CLOSE = cx(
-  'mt-[calc(-1*var(--space-4))] mr-[calc(-1*var(--space-4))] shrink-0 bg-transparent',
+  'mt-[calc(-1*var(--spacing-4))] mr-[calc(-1*var(--spacing-4))] shrink-0 bg-transparent',
   "[&:hover:not(:disabled,[aria-disabled='true'])]:bg-hover",
 )
 

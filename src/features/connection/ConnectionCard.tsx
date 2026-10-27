@@ -350,7 +350,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
     <section
       className={cx(
         'bg-panel rounded-lg shadow-panel overflow-hidden',
-        'has-[>div>button:focus-visible]:[outline:var(--focus-ring)]',
+        'has-[>div>button:focus-visible]:[outline:var(--focus-outline)]',
         'has-[>div>button:focus-visible]:outline-offset-(--focus-inset)',
       )}
       aria-labelledby={titleId}
