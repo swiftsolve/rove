@@ -4,10 +4,10 @@
   flex-shrink: 0;
 }
 
-.root[data-series='down'] {
+.root.series-down {
   color: var(--series-down);
 }
 
-.root[data-series='up'] {
+.root.series-up {
   color: var(--series-up);
 }

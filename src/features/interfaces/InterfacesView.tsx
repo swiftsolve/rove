@@ -6,9 +6,33 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
 import { useAppData } from '@/app/hooks/useAppData'
+import { Button } from '@/components/Button'
 import styles from './InterfacesView.module.css'
+
+/** An interface card: the default route's tags turn green, and Wi-Fi and Ethernet tint the icon. */
+const panelVariants = cva(['ui-section', styles.panel], {
+  variants: {
+    isDefault: { true: styles.isDefault },
+    connection: { wifi: styles.connectionWifi, ethernet: styles.connectionEthernet, unknown: null },
+  },
+})
+
+/** A small tag beside the name ("Active", "Virtual"). */
+const tagVariants = cva(['text-meta', styles.tag], {
+  variants: {
+    isMuted: { true: styles.isMuted },
+  },
+})
+
+/** The link state: green while up. */
+const stateVariants = cva(['text-meta', styles.state], {
+  variants: {
+    state: { up: styles.stateUp, down: null, unknown: null },
+  },
+})
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
@@ -18,10 +42,7 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Eleme
 
 function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
-    <section
-      className={cx('ui-section', styles.panel, iface.isDefault && styles.isDefault)}
-      data-connection={iface.connectionType}
-    >
+    <section className={panelVariants({ isDefault: iface.isDefault, connection: iface.connectionType })}>
       <header className="ui-section-header">
         <div className="panel-head-main">
           <span className={styles.icon}>
@@ -29,13 +50,13 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           </span>
           <span className={cx('text-title', styles.name)}>{iface.name}</span>
           {iface.isDefault && (
-            <span className={cx('text-meta', styles.tag)} title="Used for internet traffic">
+            <span className={tagVariants()} title="Used for internet traffic">
               Active
             </span>
           )}
-          {iface.isVirtual && <span className={cx('text-meta', styles.tag, styles.isMuted)}>Virtual</span>}
+          {iface.isVirtual && <span className={tagVariants({ isMuted: true })}>Virtual</span>}
         </div>
-        <span className={cx('text-meta', styles.state)} data-state={iface.operState}>
+        <span className={stateVariants({ state: iface.operState })}>
           <span className={styles.stateDot} aria-hidden />
           {formatOperState(iface.operState)}
         </span>
@@ -101,9 +122,9 @@ function InterfacesBody({
     return (
       <div className="view-empty">
         <p className="text-muted">No network interfaces found.</p>
-        <button type="button" className="btn-secondary" onClick={onRefresh}>
+        <Button onClick={onRefresh}>
           Refresh
-        </button>
+        </Button>
       </div>
     )
   }

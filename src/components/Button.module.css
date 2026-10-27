@@ -1,0 +1,94 @@
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-10);
+  background: transparent;
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+.primary:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.primary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Large filled button for a page's main action (Run test, Add service): the
+   .primary layout a step bigger, on a solid accent fill. `.is-stop` turns it
+   red while a test runs. Defined after .primary so it wins at equal
+   specificity. */
+.filled {
+  padding: var(--space-10) var(--section-padding);
+  font-size: var(--font-size-sm);
+  color: var(--text-on-fill);
+  background: var(--accent-fill);
+}
+
+.filled:hover:not(:disabled) {
+  color: var(--text-on-fill);
+  background: var(--accent-fill-hover);
+}
+
+.filled.is-stop {
+  background: var(--status-negative-fill);
+}
+
+.filled.is-stop:hover:not(:disabled) {
+  background: var(--status-negative-fill-hover);
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-medium);
+  transition:
+    color var(--duration-fast) var(--ease-in-out),
+    background var(--duration-fast) var(--ease-in-out);
+}
+
+.secondary:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.secondary:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.secondary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Busy (spinner) state stays full-opacity — the spinner conveys the wait, so no
+   dimming — while ignoring input. Defined after `:disabled` so its opacity wins
+   for buttons that stay `disabled` while in flight (matches IconButton). */
+.secondary.is-busy {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+}

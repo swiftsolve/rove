@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { ArrowLeftIcon } from '@/components/icons/Icons'
+import { cx } from '@/lib/cx'
 import './Subpage.css'
 
 interface SubpageProps {
@@ -22,7 +23,7 @@ export function Subpage({
   children,
 }: SubpageProps): JSX.Element {
   return (
-    <div className={className != null ? `subpage ${className}` : 'subpage'}>
+    <div className={cx('subpage', className)}>
       <header className="view-header subpage-head">
         <button
           type="button"

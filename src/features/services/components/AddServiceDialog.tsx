@@ -5,10 +5,39 @@ import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { CloseIcon } from '@/components/icons/Icons'
 import { parseServiceInput } from '@/features/services/utils/service-input'
-import { latencyLevelClass } from '@/features/services/utils/service-status'
+import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
-import { cx } from '@/lib/cx'
+import { Button } from '@/components/Button'
+import { IconButton } from '@/components/IconButton'
+import { cva } from 'class-variance-authority'
 import styles from './AddServiceDialog.module.css'
+
+const inputGroupVariants = cva(styles.inputGroup, {
+  variants: {
+    /** The address failed to parse or test: a red border. */
+    isInvalid: { true: styles.isInvalid },
+  },
+})
+
+const testVariants = cva(styles.test, {
+  variants: {
+    /** Testing: the label is a spinner, so the button collapses to a square. */
+    isLoading: { true: styles.isLoading },
+  },
+})
+
+const noteVariants = cva(styles.note, {
+  variants: {
+    isError: { true: styles.isError },
+  },
+})
+
+const resultStatusVariants = cva(styles.resultStatus, {
+  variants: {
+    /** The measured latency's health band, or bad when the host was down. */
+    level: { good: 'val-good', warn: 'val-warn', bad: 'val-bad' },
+  },
+})
 
 type TestPhase = 'idle' | 'testing' | 'tested'
 
@@ -44,7 +73,7 @@ function AddressFeedback({
   outcome: TestOutcome | null
   name: string
 }): JSX.Element {
-  if (error) return <p className={cx(styles.note, styles.isError)}>{error}</p>
+  if (error) return <p className={noteVariants({ isError: true })}>{error}</p>
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
     return (
@@ -52,17 +81,17 @@ function AddressFeedback({
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
         <span className={styles.resultName}>{shownName}</span>
         {outcome.latencyMs == null ? (
-          <span className={cx(styles.resultStatus, 'val-bad')}>Down</span>
+          <span className={resultStatusVariants({ level: 'bad' })}>Down</span>
         ) : (
-          <span className={cx(styles.resultStatus, latencyLevelClass(outcome.latencyMs))}>
+          <span className={resultStatusVariants({ level: latencyBand(outcome.latencyMs) })}>
             {formatLatencyMs(outcome.latencyMs)}
           </span>
         )}
       </div>
     )
   }
-  if (phase === 'testing') return <p className={styles.note}>Testing…</p>
-  return <p className={styles.note}>Test the connection before adding.</p>
+  if (phase === 'testing') return <p className={noteVariants()}>Testing…</p>
+  return <p className={noteVariants()}>Test the connection before adding.</p>
 }
 
 function confirmLabel(isAdding: boolean, isEditing: boolean): ReactNode {
@@ -191,21 +220,20 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
             </h2>
             <p className={styles.sub}>Track a service by URL or IP address.</p>
           </div>
-          <button
-            type="button"
-            className={cx('btn-icon btn-icon-secondary', styles.close)}
+          <IconButton
+            className={styles.close}
             onClick={onClose}
             disabled={isAdding}
             aria-label="Close"
           >
             <CloseIcon size={15} />
-          </button>
+          </IconButton>
         </header>
 
         <div className={styles.body}>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Address</span>
-            <div className={styles.inputGroup} data-invalid={error != null}>
+            <div className={inputGroupVariants({ isInvalid: error != null })}>
               <input
                 type="text"
                 className={styles.input}
@@ -219,7 +247,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
               />
               <button
                 type="button"
-                className={cx(styles.test, phase === 'testing' && styles.isLoading)}
+                className={testVariants({ isLoading: phase === 'testing' })}
                 onClick={runTest}
                 disabled={!address.trim() || phase === 'testing'}
               >
@@ -244,14 +272,14 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
         </div>
 
         <footer className={styles.foot}>
-          <button
-            type="button"
-            className={cx('btn-primary btn-filled', styles.confirm)}
+          <Button
+            variant="filled"
+            className={styles.confirm}
             onClick={confirm}
             disabled={!hasTested || isAdding}
           >
             {confirmLabel(isAdding, editing != null)}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>

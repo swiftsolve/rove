@@ -100,10 +100,3 @@ export interface SpeedTestResult {
   linkCapacityMbps: number | null
 }
 
-export const CAPABILITY_LEVEL_LABELS: Record<CapabilityLevel, string> = {
-  excellent: 'Excellent',
-  good: 'Good',
-  fair: 'Fair',
-  poor: 'Poor',
-  unsupported: 'Unsupported',
-}

@@ -46,12 +46,12 @@
   flex-shrink: 0;
 }
 
-.panel[data-connection='wifi'] .icon {
+.panel.connection-wifi .icon {
   color: var(--series-down);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
 
-.panel[data-connection='ethernet'] .icon {
+.panel.connection-ethernet .icon {
   color: var(--status-positive);
   background: color-mix(in srgb, currentColor var(--opacity-tint-sm), transparent);
 }
@@ -97,6 +97,6 @@
   background: currentColor;
 }
 
-.state[data-state='up'] {
+.state.state-up {
   color: var(--text-positive);
 }

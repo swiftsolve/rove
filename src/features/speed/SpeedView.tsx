@@ -12,6 +12,7 @@ import { ViewHeader } from '@/components/ViewHeader'
 import { ChevronRightIcon, HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
+import { Button } from '@/components/Button'
 import styles from './SpeedView.module.css'
 
 /** Opens the speed-test history subpage. */
@@ -70,30 +71,29 @@ function TestButton(): JSX.Element {
 
   if (isTesting) {
     return (
-      <button
-        type="button"
-        className="btn-primary btn-filled is-stop"
+      <Button
+        variant="filled"
+        isStop
         onClick={cancelTest}
         aria-label="Stop test"
       >
         <StopIcon size={12} />
         Stop
-      </button>
+      </Button>
     )
   }
 
   if (!canTest) {
     return (
       <Tooltip content="Connect to a network first">
-        <button
-          type="button"
-          className="btn-primary btn-filled"
+        <Button
+          variant="filled"
           disabled
           aria-label="Run test"
         >
           <PlayIcon size={13} />
           Run test
-        </button>
+        </Button>
       </Tooltip>
     )
   }
@@ -101,15 +101,14 @@ function TestButton(): JSX.Element {
   const hasRunTest = internetSpeed != null
   const runLabel = hasRunTest ? 'Test again' : 'Run test'
   return (
-    <button
-      type="button"
-      className="btn-primary btn-filled"
+    <Button
+      variant="filled"
       onClick={() => void runTest()}
       aria-label={runLabel}
     >
       <PlayIcon size={13} />
       {runLabel}
-    </button>
+    </Button>
   )
 }
 

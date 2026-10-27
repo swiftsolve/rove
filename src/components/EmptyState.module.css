@@ -23,7 +23,7 @@
   color: var(--text-tertiary);
 }
 
-/* Nudge the action down from the copy above it. */
-.root :global(.btn-secondary) {
+/* Nudge the action button down from the copy above it. */
+.root > button {
   margin-top: var(--space-4);
 }

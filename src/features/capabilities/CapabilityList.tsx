@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -17,6 +18,33 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
   (id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!,
 )
 
+const listVariants = cva(styles.list, {
+  variants: {
+    isTesting: { true: styles.isTesting },
+  },
+})
+
+const rowVariants = cva(styles.row, {
+  variants: {
+    isEmpty: { true: styles.isEmpty },
+  },
+})
+
+/** The tinted chip a CapabilityIcon sits in, coloured by the level (`empty`
+ *  before any test has run). */
+const tileVariants = cva(styles.tile, {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+      empty: styles.levelEmpty,
+    },
+  },
+})
+
 function CapabilityRow({
   capability,
   isTesting,
@@ -27,9 +55,9 @@ function CapabilityRow({
   onOpen: () => void
 }): JSX.Element {
   return (
-    <button type="button" className={styles.row} onClick={onOpen} disabled={isTesting}>
+    <button type="button" className={rowVariants()} onClick={onOpen} disabled={isTesting}>
       <div className={styles.rowMain}>
-        <span className={styles.tile} data-level={capability.level}>
+        <span className={tileVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={17} />
         </span>
         <div className={styles.rowText}>
@@ -48,9 +76,9 @@ function CapabilityRow({
 /** A greyed-out preview of a capability, shown before any test has run. */
 function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.Element {
   return (
-    <div className={cx(styles.row, styles.isEmpty)}>
+    <div className={rowVariants({ isEmpty: true })}>
       <div className={styles.rowMain}>
-        <span className={styles.tile} data-level="empty">
+        <span className={tileVariants({ level: 'empty' })}>
           <CapabilityIcon id={definition.id} size={17} />
         </span>
         <div className={styles.rowText}>
@@ -90,13 +118,13 @@ export function CapabilityList(): JSX.Element {
       action={headerAction(isTesting, hasRunTest)}
     >
       {!hasRunTest ? (
-        <div className={styles.list}>
+        <div className={listVariants()}>
           {PREVIEW_CAPABILITIES.map((definition) => (
             <PreviewRow key={definition.id} definition={definition} />
           ))}
         </div>
       ) : (
-        <div className={cx(styles.list, isTesting && styles.isTesting)}>
+        <div className={listVariants({ isTesting })}>
           {capabilities.map((capability) => (
             <CapabilityRow
               key={capability.id}

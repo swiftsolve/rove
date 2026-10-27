@@ -144,11 +144,11 @@
   transition: width 400ms var(--ease-out);
 }
 
-.seg[data-series='down'] {
+.seg.series-down {
   background: var(--series-down);
 }
 
-.seg[data-series='up'] {
+.seg.series-up {
   background: var(--series-up);
 }
 

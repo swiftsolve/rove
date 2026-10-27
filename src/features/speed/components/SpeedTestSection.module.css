@@ -166,5 +166,5 @@
   color: var(--text-secondary);
 }
 
-.conn[data-type='wifi'] svg { color: var(--series-down); }
-.conn[data-type='ethernet'] svg { color: var(--status-positive); }
+.conn.type-wifi svg { color: var(--series-down); }
+.conn.type-ethernet svg { color: var(--status-positive); }

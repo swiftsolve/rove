@@ -1,5 +1,11 @@
-import { cx } from '@/lib/cx'
+import { cva } from 'class-variance-authority'
 import styles from './Toggle.module.css'
+
+const rootVariants = cva(styles.root, {
+  variants: {
+    isChecked: { true: styles.isOn },
+  },
+})
 
 interface ToggleProps {
   isChecked: boolean
@@ -18,7 +24,7 @@ export function Toggle({ isChecked, onChange, label, isDisabled }: ToggleProps):
       aria-checked={isChecked}
       aria-label={label}
       disabled={isDisabled}
-      className={cx(styles.root, isChecked && styles.isOn)}
+      className={rootVariants({ isChecked })}
       onClick={() => onChange(!isChecked)}
     >
       <span className={styles.knob} aria-hidden />

@@ -21,6 +21,7 @@ export default tseslint.config(
         clearTimeout: 'readonly',
         localStorage: 'readonly',
         window: 'readonly',
+        document: 'readonly',
         PopStateEvent: 'readonly',
       },
     },

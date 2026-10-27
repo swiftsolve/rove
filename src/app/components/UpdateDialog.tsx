@@ -1,9 +1,18 @@
 import { useState } from 'react'
+import { cva } from 'class-variance-authority'
 import type { PendingUpdate } from '@/app/utils/updater'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { BrandIcon, ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
-import { cx } from '@/lib/cx'
 import styles from './UpdateDialog.module.css'
+
+const buttonVariants = cva(styles.button, {
+  variants: {
+    /** Accent fill: Install and restart. */
+    isPrimary: { true: styles.isPrimary },
+    /** Installing: the spinner shows the wait. */
+    isBusy: { true: styles.isBusy },
+  },
+})
 
 /**
  * Non-blocking update prompt. Replaces window.confirm, which freezes the
@@ -69,7 +78,7 @@ export function UpdateDialog({
         <div className={styles.actions}>
           <button
             type="button"
-            className={styles.button}
+            className={buttonVariants()}
             onClick={onDismiss}
             disabled={isInstalling}
           >
@@ -77,7 +86,7 @@ export function UpdateDialog({
           </button>
           <button
             type="button"
-            className={cx(styles.button, styles.isPrimary, isInstalling && styles.isBusy)}
+            className={buttonVariants({ isPrimary: true, isBusy: isInstalling })}
             onClick={handleInstall}
             disabled={isInstalling}
           >

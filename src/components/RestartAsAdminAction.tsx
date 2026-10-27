@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { IS_WINDOWS } from '@/lib/platform'
 import { isTauri } from '@/bridge/tauriNetworkApi'
 import { EmptyStateHint } from '@/components/EmptyState'
+import { Button } from '@/components/Button'
 
 /**
  * The "needs administrator" control for the per-app usage views (Apps, Hosts,
@@ -55,9 +56,9 @@ export function RestartAsAdminAction(): JSX.Element | null {
 
   return (
     <>
-      <button type="button" className="btn-secondary" onClick={relaunchAsAdmin} disabled={isBusy}>
+      <Button onClick={relaunchAsAdmin} disabled={isBusy}>
         {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
-      </button>
+      </Button>
       {wasDeclined && <EmptyStateHint>Elevation was declined.</EmptyStateHint>}
       {detail && <EmptyStateHint>Details: {detail}</EmptyStateHint>}
     </>

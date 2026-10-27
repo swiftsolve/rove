@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { cva } from 'class-variance-authority'
 import type { AppTab } from '@/app/utils/tabs'
 import {
   AppsIcon,
@@ -19,6 +20,12 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
 import { cx } from '@/lib/cx'
 import styles from './TabBar.module.css'
+
+const itemVariants = cva(styles.item, {
+  variants: {
+    isActive: { true: styles.isActive },
+  },
+})
 
 interface TabIconProps {
   size?: number
@@ -58,7 +65,7 @@ function NavItem({ tab }: { tab: TabDefinition }): JSX.Element {
     <Tooltip content={tab.label} placement="right">
       <button
         type="button"
-        className={cx(styles.item, isActive && styles.isActive)}
+        className={itemVariants({ isActive })}
         onClick={() => navigate({ tab: tab.id })}
         aria-current={isActive ? 'page' : undefined}
         aria-label={tab.label}
@@ -76,7 +83,7 @@ function ThemeToggle(): JSX.Element {
   const Icon = isLight ? MoonIcon : SunIcon
   return (
     <Tooltip content={label} placement="right">
-      <button type="button" className={styles.item} onClick={toggle} aria-label={label}>
+      <button type="button" className={itemVariants()} onClick={toggle} aria-label={label}>
         <Icon size={18} className={styles.icon} />
       </button>
     </Tooltip>

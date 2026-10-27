@@ -1,4 +1,5 @@
 import { memo, type ReactNode } from 'react'
+import { cva } from 'class-variance-authority'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isConnectedNetwork, isEthernetNetwork, isWifiNetwork } from '@/types'
 import {
@@ -32,6 +33,46 @@ import {
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import { cx } from '@/lib/cx'
 import styles from './ConnectionCard.module.css'
+
+const rootVariants = cva(styles.root, {
+  variants: {
+    variant: {
+      wifi: styles.variantWifi,
+      ethernet: styles.variantEthernet,
+      disconnected: styles.variantDisconnected,
+    },
+  },
+})
+
+const signalMeterVariants = cva(styles.signalMeter, {
+  variants: {
+    level: { good: styles.levelGood, fair: styles.levelFair, weak: styles.levelWeak },
+  },
+})
+
+const signalBarVariants = cva(styles.signalBar, {
+  variants: {
+    isOn: { true: styles.isOn },
+  },
+})
+
+const securityBadgeVariants = cva(styles.securityBadge, {
+  variants: {
+    isSecured: { true: styles.isSecured, false: styles.isUnsecured },
+  },
+})
+
+const chevronVariants = cva(styles.chevron, {
+  variants: {
+    isOpen: { true: styles.isOpen },
+  },
+})
+
+const detailsWrapVariants = cva(styles.detailsWrap, {
+  variants: {
+    isOpen: { true: styles.isOpen },
+  },
+})
 
 interface ConnectionCardProps {
   info: NetworkInfo
@@ -95,8 +136,7 @@ function SignalMeter({ strength }: { strength: number }): JSX.Element {
 
   return (
     <div
-      className={styles.signalMeter}
-      data-level={signalLevel(strength)}
+      className={signalMeterVariants({ level: signalLevel(strength) })}
       role="meter"
       aria-label={`Wi‑Fi signal: ${label}`}
       aria-valuenow={strength}
@@ -105,7 +145,7 @@ function SignalMeter({ strength }: { strength: number }): JSX.Element {
     >
       <span className={styles.signalBars} aria-hidden>
         {SIGNAL_BARS.map((bar) => (
-          <span key={bar} className={cx(styles.signalBar, bar < filledBars && styles.isOn)} />
+          <span key={bar} className={signalBarVariants({ isOn: bar < filledBars })} />
         ))}
       </span>
     </div>
@@ -133,7 +173,7 @@ function SecurityBadge({
   const description = isSecured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
     <span
-      className={cx(styles.securityBadge, isSecured ? styles.isSecured : styles.isUnsecured)}
+      className={securityBadgeVariants({ isSecured })}
       title={description}
     >
       {isSecured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
@@ -214,7 +254,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   const detailsLabel = isExpanded ? 'Hide connection details' : 'Show connection details'
 
   return (
-    <section className={styles.root} data-variant={display.variant}>
+    <section className={rootVariants({ variant: display.variant })}>
       <div className={styles.strip}>
         {/* A transparent full-strip button keeps the whole row one expand target
             without wrapping the QR button inside another button (invalid HTML).
@@ -248,12 +288,12 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         )}
         <ChevronDownIcon
           size={14}
-          className={cx(styles.chevron, isExpanded && styles.isOpen)}
+          className={chevronVariants({ isOpen: isExpanded })}
           aria-hidden
         />
       </div>
 
-      <div className={cx(styles.detailsWrap, isExpanded && styles.isOpen)}>
+      <div className={detailsWrapVariants({ isOpen: isExpanded })}>
         <div className={cx(styles.details, 'row-list')}>
           <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
           <DataRow

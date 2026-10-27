@@ -1,4 +1,5 @@
 import { memo, useEffect, useId, useRef, type CSSProperties } from 'react'
+import { cva } from 'class-variance-authority'
 import type { NetworkInfo, SpeedTestProgress } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
@@ -15,6 +16,26 @@ import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import type { SpeedTestConnection } from '@/features/speed/types'
 import { cx } from '@/lib/cx'
 import styles from './SpeedTestSection.module.css'
+
+/** The connection the footer names, its glyph tinted by medium. */
+const connVariants = cva(styles.conn, {
+  variants: {
+    type: { wifi: styles.typeWifi, ethernet: styles.typeEthernet },
+  },
+})
+
+/** A hero speed readout; muted "…" before any test has run. */
+const speedCellVariants = cva(['metric', 'num'], {
+  variants: {
+    isPlaceholder: { true: styles.isEmpty },
+  },
+})
+
+const substatValueVariants = cva([styles.substatValue, 'num'], {
+  variants: {
+    isEmpty: { true: styles.isEmpty },
+  },
+})
 
 // Material 3 "wavy" determinate progress, matching Android's LinearWavyProgressIndicator:
 // a scrolling squiggle for the active portion with a dot riding its leading edge,
@@ -137,7 +158,7 @@ function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnectio
 function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX.Element {
   const name = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
   return (
-    <span className={styles.conn} data-type={connection.type}>
+    <span className={connVariants({ type: connection.type })}>
       {connection.type === 'wifi' ? <WifiIcon size={12} /> : <EthernetIcon size={12} />}
       <InlineMeta items={[name, connection.band]} />
     </span>
@@ -155,7 +176,7 @@ function SpeedCell({
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
   return (
-    <div className={cx('metric', 'num', isPlaceholder && styles.isEmpty)}>
+    <div className={speedCellVariants({ isPlaceholder })}>
       <span className="metric-value">{isPlaceholder ? '…' : value}</span>
       {!isPlaceholder && <span className="metric-unit">{unit}</span>}
     </div>
@@ -349,7 +370,7 @@ function Substat({
   return (
     <div className={styles.substat}>
       <span className="field-label">{label}</span>
-      <span className={cx(styles.substatValue, 'num', isEmpty && styles.isEmpty)}>{text}</span>
+      <span className={substatValueVariants({ isEmpty })}>{text}</span>
     </div>
   )
 }

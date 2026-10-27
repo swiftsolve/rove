@@ -1,6 +1,7 @@
+import { cva } from 'class-variance-authority'
 import type { CapabilityLevel } from '@/types'
-import { CAPABILITY_LEVEL_LABELS } from '@/types'
 import { cx } from '@/lib/cx'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityMeter.module.css'
 
 const LEVEL_RANK: Record<CapabilityLevel, number> = {
@@ -12,6 +13,27 @@ const LEVEL_RANK: Record<CapabilityLevel, number> = {
 }
 
 const SEGMENTS = [0, 1, 2, 3]
+
+const rootVariants = cva(styles.root, {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+    },
+    isCompact: { true: styles.isCompact },
+    isMuted: { true: styles.isMuted },
+    isDimmed: { true: styles.isDimmed },
+  },
+})
+
+const segVariants = cva(styles.seg, {
+  variants: {
+    isOn: { true: styles.isOn },
+  },
+})
 
 interface CapabilityMeterProps {
   level: CapabilityLevel
@@ -37,18 +59,10 @@ export function CapabilityMeter({
   const rank = LEVEL_RANK[level]
 
   return (
-    <div
-      className={cx(
-        styles.root,
-        isCompact && styles.isCompact,
-        isMuted && styles.isMuted,
-        isDimmed && styles.isDimmed,
-      )}
-      data-level={level}
-    >
+    <div className={rootVariants({ level, isCompact, isMuted, isDimmed })}>
       <span className={cx(styles.bars, barsClassName)} aria-hidden>
         {SEGMENTS.map((i) => (
-          <span key={i} className={cx(styles.seg, i < rank && styles.isOn)} />
+          <span key={i} className={segVariants({ isOn: i < rank })} />
         ))}
       </span>
       {shouldShowLabel && (

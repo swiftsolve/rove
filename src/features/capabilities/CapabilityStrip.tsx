@@ -1,5 +1,6 @@
+import { cva } from 'class-variance-authority'
 import type { CapabilityId, CapabilityRating } from '@/types'
-import { CAPABILITY_DEFINITIONS, CAPABILITY_LEVEL_LABELS } from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
@@ -13,7 +14,34 @@ import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { cx } from '@/lib/cx'
+import { IconButton } from '@/components/IconButton'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityStrip.module.css'
+
+const listVariants = cva(styles.list, {
+  variants: {
+    isTesting: { true: styles.isTesting },
+    isPlaceholder: { true: styles.isPlaceholder },
+  },
+})
+
+const tileVariants = cva([styles.item, styles.tile], {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+    },
+  },
+})
+
+const footerVariants = cva(styles.footer, {
+  variants: {
+    isHint: { true: styles.isHint },
+  },
+})
 
 function runButtonTooltip(isTesting: boolean, hasResults: boolean): string {
   if (isTesting) return 'Speed test running'
@@ -51,15 +79,14 @@ function RunTestButton({
 
   return (
     <Tooltip placement="left" content={runButtonTooltip(isTesting, hasResults)}>
-      <button
-        type="button"
-        className={cx('btn-icon', 'btn-icon-secondary', isTesting && 'is-scanning')}
+      <IconButton
+        isBusy={isTesting}
         onClick={handleRunTest}
         disabled={!canRunTest || isTesting}
         aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
       >
         <RunButtonIcon isTesting={isTesting} hasResults={hasResults} />
-      </button>
+      </IconButton>
     </Tooltip>
   )
 }
@@ -69,14 +96,14 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
   return (
     <>
       <div
-        className={cx(styles.list, styles.isPlaceholder)}
+        className={listVariants({ isPlaceholder: true })}
         role="list"
         aria-hidden
       >
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <div className={styles.cell} key={capability.id} role="listitem">
             <Tooltip content={capability.label} align="left" placement="top">
-              <span className={cx(styles.item, styles.tile)} data-level="unsupported">
+              <span className={tileVariants({ level: 'unsupported' })}>
                 <CapabilityIcon id={capability.id} size={16} />
               </span>
             </Tooltip>
@@ -85,7 +112,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
         ))}
       </div>
 
-      <div className={cx(styles.footer, styles.isHint)}>
+      <div className={footerVariants({ isHint: true })}>
         {isTesting ? (
           <span className="text-meta">Testing…</span>
         ) : (
@@ -120,8 +147,7 @@ function ResultCell({
       >
         <button
           type="button"
-          className={cx(styles.item, styles.tile)}
-          data-level={capability.level}
+          className={tileVariants({ level: capability.level })}
           onClick={() => onOpenDetails(capability.id)}
           disabled={isTesting}
           aria-label={`${capability.label}: ${levelLabel}`}
@@ -148,7 +174,7 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
 
   if (isTesting) {
     return (
-      <div className={styles.footer}>
+      <div className={footerVariants()}>
         <span className="text-meta">Testing…</span>
       </div>
     )
@@ -157,7 +183,7 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
   if (completedAt == null) return null
 
   return (
-    <div className={styles.footer}>
+    <div className={footerVariants()}>
       <button
         type="button"
         className={styles.link}
@@ -196,7 +222,7 @@ export function CapabilityStrip(): JSX.Element {
         <PlaceholderStrip isTesting={isTesting} />
       ) : (
         <>
-          <div className={cx(styles.list, isTesting && styles.isTesting)} role="list">
+          <div className={listVariants({ isTesting })} role="list">
             {capabilities.map((capability) => (
               <ResultCell
                 key={capability.id}

@@ -25,7 +25,33 @@ import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useAppData } from '@/app/hooks/useAppData'
 import { cx } from '@/lib/cx'
+import { cva } from 'class-variance-authority'
 import styles from './ServicesTimelineView.module.css'
+
+const markerVariants = cva(styles.marker, {
+  variants: {
+    /** Down reads red; a recovery or a healthy summary reads green. */
+    status: {
+      down: styles.statusDown,
+      up: styles.statusUp,
+      running: styles.statusRunning,
+    },
+  },
+})
+
+const subjectVariants = cva(styles.subject, {
+  variants: {
+    /** A quiet aside (the running summary, the connection status), not a service name. */
+    isMuted: { true: styles.isMuted },
+  },
+})
+
+const menuItemVariants = cva(styles.menuItem, {
+  variants: {
+    /** Destructive (Clear history): red text and a red-tinted hover. */
+    isDanger: { true: styles.isDanger },
+  },
+})
 
 interface DayGroup {
   key: string
@@ -169,7 +195,7 @@ function TransitionRow({
 
   return (
     <div className={styles.item}>
-      <span className={styles.marker} data-status={isDown ? 'down' : 'up'} aria-hidden>
+      <span className={markerVariants({ status: isDown ? 'down' : 'up' })} aria-hidden>
         {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
       </span>
       <div className={styles.content}>
@@ -177,7 +203,7 @@ function TransitionRow({
           <span className={styles.title}>{isDown ? 'Service went down' : 'Service came back up'}</span>
           <span className={styles.time}>{formatTime(event.ts)}</span>
         </span>
-        <span className={styles.subject}>
+        <span className={subjectVariants()}>
           <ServiceIcon host={event.host} name={event.name} />
           <span className={styles.subjectName}>{event.name}</span>
         </span>
@@ -200,7 +226,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
 
   return (
     <div className={styles.item}>
-      <span className={styles.marker} data-status="running" aria-hidden>
+      <span className={markerVariants({ status: 'running' })} aria-hidden>
         <CheckIcon size={15} />
       </span>
       <div className={styles.content}>
@@ -210,7 +236,7 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
           </span>
           <span className={styles.time}>{formatTime(event.ts)}</span>
         </span>
-        <span className={cx(styles.subject, styles.isMuted)}>
+        <span className={subjectVariants({ isMuted: true })}>
           {areAllHealthy
             ? 'All services healthy'
             : `${event.count} of ${event.total} services healthy`}
@@ -234,7 +260,7 @@ function ConnectionRow({
 
   return (
     <div className={styles.item}>
-      <span className={styles.marker} data-status={isLost ? 'down' : 'up'} aria-hidden>
+      <span className={markerVariants({ status: isLost ? 'down' : 'up' })} aria-hidden>
         {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
       </span>
       <div className={styles.content}>
@@ -243,7 +269,7 @@ function ConnectionRow({
           <span className={styles.time}>{formatTime(event.ts)}</span>
         </span>
         {/* Status on the left, offline duration flush right — both on one line. */}
-        <span className={cx(styles.subject, styles.isMuted, styles.connLine)}>
+        <span className={cx(subjectVariants({ isMuted: true }), styles.connLine)}>
           <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
           {shouldShowDuration && (
             <span className={styles.metaDuration}>Offline for {formatDuration(durationMs)}</span>
@@ -293,7 +319,7 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
           <button
             type="button"
             role="menuitem"
-            className={cx(styles.menuItem, styles.isDanger)}
+            className={menuItemVariants({ isDanger: true })}
             onClick={() => {
               setIsOpen(false)
               onClear()

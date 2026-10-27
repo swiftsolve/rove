@@ -38,11 +38,11 @@
   background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
-.tile[data-level='excellent'] { color: var(--status-positive); }
-.tile[data-level='good'] { color: var(--status-good); }
-.tile[data-level='fair'] { color: var(--status-warning); }
-.tile[data-level='poor'] { color: var(--status-poor); }
-.tile[data-level='unsupported'] { color: var(--text-tertiary); }
+.tile.level-excellent { color: var(--status-positive); }
+.tile.level-good { color: var(--status-good); }
+.tile.level-fair { color: var(--status-warning); }
+.tile.level-poor { color: var(--status-poor); }
+.tile.level-unsupported { color: var(--text-tertiary); }
 
 /* 32px, the same as CapabilityList's tile. */
 .item {
@@ -61,7 +61,7 @@
 
 /* While a test is running the strip shows stale results, so mute every tile and
    meter to grey and drop the interactive affordances until the run completes.
-   These need to outrank the `.tile[data-level]` colour rules (two-class), so
+   These need to outrank the `.tile.level-*` colour rules (two-class), so
    match with three. The meters mute through CapabilityMeter's `isMuted`. */
 .is-testing .item.tile,
 .is-placeholder .item.tile {

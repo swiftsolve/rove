@@ -1,6 +1,7 @@
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { RefreshIcon } from '@/components/icons/Icons'
 import { Tooltip } from '@/components/Tooltip'
+import { IconButton } from '@/components/IconButton'
 
 interface RefreshIconButtonProps {
   /** Tooltip text and accessible name, e.g. "Scan again". */
@@ -28,16 +29,15 @@ export function RefreshIconButton({
 
   return (
     <Tooltip content={label}>
-      <button
-        type="button"
-        className={`btn-icon btn-icon-secondary${isBusy ? ' is-scanning' : ''}`}
+      <IconButton
+        isBusy={isBusy}
         onClick={ignoresWhileBusy && isBusy ? undefined : onClick}
         disabled={!ignoresWhileBusy && isBusy}
         aria-busy={ignoresWhileBusy ? isBusy : undefined}
         aria-label={label}
       >
         {isBusy ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
-      </button>
+      </IconButton>
     </Tooltip>
   )
 }

@@ -39,11 +39,11 @@
   background: color-mix(in srgb, currentColor var(--opacity-tint-md), transparent);
 }
 
-.icon[data-level='excellent'] { color: var(--status-positive); }
-.icon[data-level='good'] { color: var(--status-good); }
-.icon[data-level='fair'] { color: var(--status-warning); }
-.icon[data-level='poor'] { color: var(--status-poor); }
-.icon[data-level='unsupported'] { color: var(--text-tertiary); }
+.icon.level-excellent { color: var(--status-positive); }
+.icon.level-good { color: var(--status-good); }
+.icon.level-fair { color: var(--status-warning); }
+.icon.level-poor { color: var(--status-poor); }
+.icon.level-unsupported { color: var(--text-tertiary); }
 
 /* Bars sit at the bottom of the 12px meter box; nudge up to sit optically
    centred against the two-line title block. */
@@ -115,11 +115,11 @@
   height: calc(var(--font-size-sm) * 1.45);
 }
 
-.verdict-icon[data-level='excellent'] { color: var(--status-positive); }
-.verdict-icon[data-level='good'] { color: var(--status-good); }
-.verdict-icon[data-level='fair'] { color: var(--status-warning); }
-.verdict-icon[data-level='poor'] { color: var(--status-poor); }
-.verdict-icon[data-level='unsupported'] { color: var(--text-tertiary); }
+.verdict-icon.level-excellent { color: var(--status-positive); }
+.verdict-icon.level-good { color: var(--status-good); }
+.verdict-icon.level-fair { color: var(--status-warning); }
+.verdict-icon.level-poor { color: var(--status-poor); }
+.verdict-icon.level-unsupported { color: var(--text-tertiary); }
 
 .verdict-status {
   display: inline-flex;
@@ -139,11 +139,11 @@
   flex-shrink: 0;
 }
 
-.verdict-status[data-level='excellent'] { color: var(--text-positive); }
-.verdict-status[data-level='good'] { color: var(--text-good); }
-.verdict-status[data-level='fair'] { color: var(--text-warning); }
-.verdict-status[data-level='poor'] { color: var(--text-poor); }
-.verdict-status[data-level='unsupported'] { color: var(--text-tertiary); }
+.verdict-status.level-excellent { color: var(--text-positive); }
+.verdict-status.level-good { color: var(--text-good); }
+.verdict-status.level-fair { color: var(--text-warning); }
+.verdict-status.level-poor { color: var(--text-poor); }
+.verdict-status.level-unsupported { color: var(--text-tertiary); }
 
 /* All four requirements in a compact metric grid — your value colours red
    only when it misses the threshold, which stays a small muted line. */

@@ -2,8 +2,28 @@ import { useId, useMemo, useRef, useState } from 'react'
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { latencyBand, type LatencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
-import { cx } from '@/lib/cx'
+import { cva } from 'class-variance-authority'
 import styles from './Sparkline.module.css'
+
+const chartVariants = cva(styles.chart, {
+  variants: {
+    /** The health band, which colours the line via currentColor. */
+    level: {
+      good: styles.levelGood,
+      warn: styles.levelWarn,
+      bad: styles.levelBad,
+    },
+    /** Nothing recorded yet: an empty box that holds the row's space. */
+    isEmpty: { true: styles.isEmpty },
+  },
+})
+
+const lineVariants = cva(styles.line, {
+  variants: {
+    /** The down state's flat baseline, with square ends. */
+    isFlat: { true: styles.isFlat },
+  },
+})
 
 interface Point {
   x: number
@@ -155,8 +175,7 @@ export function Sparkline({
     return (
       <span className={styles.root} style={{ width, height }}>
         <svg
-          className={styles.chart}
-          data-level="bad"
+          className={chartVariants({ level: 'bad' })}
           width={width}
           height={height}
           viewBox={`0 0 ${width} ${height}`}
@@ -165,7 +184,7 @@ export function Sparkline({
           onMouseMove={() => setHoveredIndex(0)}
           onMouseLeave={() => setHoveredIndex(null)}
         >
-          <line className={cx(styles.line, styles.isFlat)} x1={0} y1={baseline} x2={width} y2={baseline} />
+          <line className={lineVariants({ isFlat: true })} x1={0} y1={baseline} x2={width} y2={baseline} />
         </svg>
         {hoveredIndex !== null && (
           <span className={styles.tip} style={{ left: '50%' }} role="status">
@@ -177,7 +196,7 @@ export function Sparkline({
   }
 
   if (samples.length === 0) {
-    return <span className={cx(styles.chart, styles.isEmpty)} style={{ width, height }} aria-hidden="true" />
+    return <span className={chartVariants({ isEmpty: true })} style={{ width, height }} aria-hidden="true" />
   }
 
   const latestMs = samples[samples.length - 1]!.ms
@@ -195,8 +214,7 @@ export function Sparkline({
     <span className={styles.root} style={{ width, height }}>
       <svg
         ref={svgRef}
-        className={styles.chart}
-        data-level={chartLevel(latestMs)}
+        className={chartVariants({ level: chartLevel(latestMs) })}
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
@@ -224,7 +242,7 @@ export function Sparkline({
         ))}
         {runs.map((run, i) =>
           run.length > 1 ? (
-            <polyline key={i} className={styles.line} points={toSvgPoints(run)} />
+            <polyline key={i} className={lineVariants()} points={toSvgPoints(run)} />
           ) : (
             // A lone reachable sample between gaps: draw it as a dot, since a
             // one-point polyline renders nothing.

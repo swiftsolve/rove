@@ -1,6 +1,5 @@
 import { useMemo, type JSX, type ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
-import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import { formatDuration, formatMac } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { useAppData } from '@/app/hooks/useAppData'
@@ -26,7 +25,24 @@ import {
   WifiIcon,
 } from '@/components/icons/Icons'
 import { cx } from '@/lib/cx'
+import { Button } from '@/components/Button'
+import { IconButton } from '@/components/IconButton'
+import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
+import { cva, type VariantProps } from 'class-variance-authority'
 import styles from './EventsView.module.css'
+
+const markerVariants = cva([styles.marker, styles.hasTone], {
+  variants: {
+    tone: {
+      join: styles.toneJoin,
+      leave: styles.toneLeave,
+      baseline: styles.toneBaseline,
+      alert: styles.toneAlert,
+      danger: styles.toneDanger,
+    },
+  },
+  defaultVariants: { tone: 'baseline' },
+})
 
 const FEED_HINT =
   'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
@@ -44,7 +60,7 @@ type IconComponent = (props: { size?: number }) => JSX.Element
 // baseline calm (blue), a departure quiet (grey), a new access point or gateway
 // change cautionary (amber), a lost connection alarming (red). Warning/critical
 // events keep the loud colours severity used before.
-type EventTone = 'join' | 'leave' | 'baseline' | 'alert' | 'danger'
+type EventTone = NonNullable<VariantProps<typeof markerVariants>['tone']>
 
 interface EventStyle {
   icon: IconComponent
@@ -245,11 +261,7 @@ function TimelineItem({
 
   return (
     <div className={styles.item}>
-      <span
-        className={styles.marker}
-        data-tone={EVENT_STYLES[event.type]?.tone ?? 'baseline'}
-        aria-hidden
-      >
+      <span className={markerVariants({ tone: EVENT_STYLES[event.type]?.tone })} aria-hidden>
         <EventIcon type={event.type} />
       </span>
       <div className={styles.content}>
@@ -307,9 +319,9 @@ function EventsFeed({
         title="No events yet"
         hint={EMPTY_HINT}
         action={
-          <button type="button" className="btn-secondary" onClick={onRefresh}>
+          <Button onClick={onRefresh}>
             Scan now
-          </button>
+          </Button>
         }
       />
     )
@@ -359,13 +371,11 @@ export function EventsView(): JSX.Element {
         actions={
           <>
             <Tooltip content={FEED_HINT}>
-              <button
-                type="button"
-                className="btn-icon btn-icon-secondary"
+              <IconButton
                 aria-label="About network events"
               >
                 <HelpIcon size={16} />
-              </button>
+              </IconButton>
             </Tooltip>
             <RefreshIconButton
               label="Scan for changes"

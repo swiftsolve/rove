@@ -14,13 +14,13 @@
   color: var(--text-tertiary);
 }
 
-.chart[data-level='good'] {
+.chart.level-good {
   color: var(--status-positive);
 }
-.chart[data-level='warn'] {
+.chart.level-warn {
   color: var(--status-warning);
 }
-.chart[data-level='bad'] {
+.chart.level-bad {
   color: var(--status-negative);
 }
 

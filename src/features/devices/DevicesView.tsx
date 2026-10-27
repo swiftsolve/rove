@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { LanDevice, LanDeviceKind } from '@/types'
-import { LAN_DEVICE_KIND_LABELS } from '@/types'
 import { InlineMeta } from '@/components/DotSeparator'
 import { EmptyState } from '@/components/EmptyState'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
@@ -27,9 +26,67 @@ import { Tooltip } from '@/components/Tooltip'
 import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import { formatMac } from '@/lib/format'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
 import { useAppData } from '@/app/hooks/useAppData'
+import { Button } from '@/components/Button'
+import { IconButton } from '@/components/IconButton'
+import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
 import styles from './DevicesView.module.css'
+
+/** The scan status and the online tally: `isLeaving` plays the slide-out. */
+const scanVariants = cva(styles.scan, {
+  variants: {
+    isLeaving: { true: styles.isLeaving },
+  },
+})
+
+const onlineVariants = cva(styles.online, {
+  variants: {
+    isLeaving: { true: styles.isLeaving },
+  },
+})
+
+/** One stage word: waits below, settles as the current stage, then drifts up. */
+const scanPhaseVariants = cva(styles.scanPhase, {
+  variants: {
+    state: { past: styles.statePast, current: styles.stateCurrent, next: styles.stateNext },
+  },
+})
+
+const rowVariants = cva(['ui-section', styles.row], {
+  variants: {
+    isGateway: { true: styles.isGateway },
+  },
+})
+
+/** A device's kind glyph, tinted by category. Watches and unknown devices stay neutral. */
+const iconVariants = cva(styles.icon, {
+  variants: {
+    kind: {
+      router: styles.kindRouter,
+      nas: styles.kindNas,
+      computer: styles.kindComputer,
+      tablet: styles.kindTablet,
+      phone: styles.kindPhone,
+      watch: null,
+      console: styles.kindConsole,
+      tv: styles.kindTv,
+      printer: styles.kindPrinter,
+      camera: styles.kindCamera,
+      speaker: styles.kindSpeaker,
+      iot: styles.kindIot,
+      unknown: null,
+    },
+  },
+})
+
+/** The Online / Offline status beside a device's name. */
+const stateVariants = cva(styles.state, {
+  variants: {
+    isReachable: { true: styles.isReachable },
+  },
+})
 
 type ScanPhaseState = 'past' | 'current' | 'next'
 
@@ -223,7 +280,7 @@ function KindIcon({ kind }: { kind: LanDeviceKind }): JSX.Element {
 // after the scan ends so the slide-out can play.
 //
 // All three words are stacked (a hidden sizer holds the width to the longest
-// so the layout never jumps); the current one is driven by data-state.
+// so the layout never jumps); each one's state class (past, current, next) places it.
 function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const [isMounted, setIsMounted] = useState(isActive)
@@ -252,7 +309,7 @@ function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
 
   if (!isMounted) return null
   return (
-    <span className={cx(styles.scan, !isActive && styles.isLeaving)} role="status">
+    <span className={scanVariants({ isLeaving: !isActive })} role="status">
       <span className={styles.scanDot} aria-hidden />
       <span className={styles.scanPhases}>
         <span className={styles.scanPhaseSizer} aria-hidden>
@@ -261,8 +318,7 @@ function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
         {SCAN_PHASES.map((label, i) => (
           <span
             key={label}
-            className={styles.scanPhase}
-            data-state={scanPhaseState(i, phase)}
+            className={scanPhaseVariants({ state: scanPhaseState(i, phase) })}
             aria-hidden={i !== phase}
           >
             {label}
@@ -297,7 +353,7 @@ function OnlineIndicator({
   if (!isMounted) return null
   return (
     <span
-      className={cx(styles.online, !isActive && styles.isLeaving)}
+      className={onlineVariants({ isLeaving: !isActive })}
       title="Responding to the last scan"
     >
       <span className={styles.onlineDot} aria-hidden />
@@ -353,15 +409,15 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <section className={cx('ui-section', styles.row, device.isGateway && styles.isGateway)}>
-      <span className={styles.icon} data-kind={device.kind}>
+    <section className={rowVariants({ isGateway: device.isGateway })}>
+      <span className={iconVariants({ kind: device.kind })}>
         <KindIcon kind={device.kind} />
       </span>
       <div className={styles.body}>
         <div className={styles.top}>
           <span className={cx('text-title', styles.name)}>{name}</span>
           <span
-            className={cx(styles.state, device.isReachable && styles.isReachable)}
+            className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
             <span className={styles.dot} aria-hidden />
@@ -451,9 +507,9 @@ function DevicesBody({
         title="No devices yet"
         hint={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
         action={
-          <button type="button" className="btn-secondary" onClick={onRescan}>
+          <Button onClick={onRescan}>
             Try again
-          </button>
+          </Button>
         }
       />
     )
@@ -491,13 +547,11 @@ export function DevicesView(): JSX.Element {
         actions={
           <>
             <Tooltip content={SCAN_HINT}>
-              <button
-                type="button"
-                className="btn-icon btn-icon-secondary"
+              <IconButton
                 aria-label="About device scanning"
               >
                 <HelpIcon size={16} />
-              </button>
+              </IconButton>
             </Tooltip>
             {/* Kept clickable while scanning (busy clicks are ignored) so the
                 tooltip still answers "why is this spinning". */}

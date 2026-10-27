@@ -98,14 +98,6 @@
   flex-shrink: 0;
 }
 
-/* Give the row's action button (e.g. "Check now") a taller hit area than the
-   default secondary button so it sits more comfortably against the two-line row
-   text beside it. */
-.row-control :global(.btn-secondary) {
-  padding-top: var(--space-8);
-  padding-bottom: var(--space-8);
-}
-
 /* "Check now" borrows the Speed page's Run test button shape — semibold label,
    faint wash at rest that deepens on hover — but stays in a neutral palette
    rather than the accent purple, since it's a routine action, not the primary
@@ -121,7 +113,7 @@
 }
 
 /* Busy (spinner) state: stay full-opacity and ignore input while the check runs,
-   mirroring .btn-secondary.is-scanning. */
+   mirroring a busy Button. */
 .check-now.is-scanning {
   opacity: 1;
   cursor: default;

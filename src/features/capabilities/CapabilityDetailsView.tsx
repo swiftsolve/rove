@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { cva } from 'class-variance-authority'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
-import { CAPABILITY_LEVEL_LABELS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { explainCapability } from '@/features/capabilities/utils/capability-detail'
@@ -12,7 +12,50 @@ import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
 import { cx } from '@/lib/cx'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import styles from './CapabilityDetailsView.module.css'
+
+const iconVariants = cva(styles.icon, {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+    },
+  },
+})
+
+const metricVariants = cva(styles.metric, {
+  variants: {
+    isUnmet: { true: styles.isUnmet },
+  },
+})
+
+const verdictIconVariants = cva(styles.verdictIcon, {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+    },
+  },
+})
+
+const verdictStatusVariants = cva(styles.verdictStatus, {
+  variants: {
+    level: {
+      excellent: styles.levelExcellent,
+      good: styles.levelGood,
+      fair: styles.levelFair,
+      poor: styles.levelPoor,
+      unsupported: styles.levelUnsupported,
+    },
+  },
+})
 
 interface CapabilityDetailsViewProps {
   /** Capability to scroll into view when the page opens (the one just clicked). */
@@ -58,7 +101,7 @@ function CapabilityDetailCard({
   return (
     <section className={cx(styles.card, 'surface')} data-capability-id={capability.id}>
       <header className={styles.head}>
-        <span className={styles.icon} data-level={capability.level}>
+        <span className={iconVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={16} />
         </span>
         <div className={styles.headText}>
@@ -74,7 +117,7 @@ function CapabilityDetailCard({
 
       <div className={styles.metrics}>
         {checks.map((check) => (
-          <div key={check.label} className={cx(styles.metric, !check.isMet && styles.isUnmet)}>
+          <div key={check.label} className={metricVariants({ isUnmet: !check.isMet })}>
             <span className="field-label">{check.label}</span>
             <span className={cx(styles.metricValue, 'num')}>{check.have}</span>
             <span className={styles.metricNeed}>{check.need}</span>
@@ -84,12 +127,12 @@ function CapabilityDetailCard({
 
       <div className={styles.verdict}>
         <p className={styles.summary}>
-          <span className={styles.verdictIcon} data-level={capability.level} aria-hidden>
+          <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
             <VerdictIcon level={capability.level} />
           </span>
           <span>{summary}</span>
         </p>
-        <span className={styles.verdictStatus} data-level={capability.level}>
+        <span className={verdictStatusVariants({ level: capability.level })}>
           <span className={styles.verdictDot} aria-hidden />
           {CAPABILITY_LEVEL_LABELS[capability.level]}
         </span>

@@ -55,7 +55,7 @@
 
 /* Pull the close button toward the panel's corner without cramping the title.
    It blends into the header with no dark fill of its own — the scoped selector
-   outweighs .btn-icon-secondary's background. */
+   outweighs the secondary IconButton's background. */
 .head .close {
   flex-shrink: 0;
   margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 0;
@@ -130,7 +130,7 @@
   border-color: var(--accent);
 }
 
-.input-group[data-invalid='true'] {
+.input-group.is-invalid {
   border-color: var(--status-negative);
 }
 
@@ -242,7 +242,7 @@
   padding: var(--space-16);
 }
 
-/* Right-aligned confirm (a .btn-filled), the only action now that close lives in
+/* Right-aligned confirm (a filled Button), the only action now that close lives in
    the header. A minimum width keeps it from shrinking to the spinner while it
    adds. */
 .confirm {

@@ -12,8 +12,16 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { cva } from 'class-variance-authority'
 import { cx } from '@/lib/cx'
 import styles from './Tooltip.module.css'
+
+const bubbleVariants = cva([styles.bubble, styles.portal], {
+  variants: {
+    /** Placed: hidden until the first measure gives it real coordinates. */
+    isVisible: { true: styles.isVisible },
+  },
+})
 
 interface TooltipProps {
   /** Label shown on hover / keyboard focus. */
@@ -255,7 +263,7 @@ export function Tooltip({
           <span
             id={bubbleId}
             ref={bubbleRef}
-            className={cx(styles.bubble, styles.portal, coords != null && styles.isVisible)}
+            className={bubbleVariants({ isVisible: coords != null })}
             role="tooltip"
             style={{
               top: coords?.top ?? OFFSCREEN,

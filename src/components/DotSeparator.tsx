@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { cx } from '@/lib/cx'
 import './DotSeparator.css'
 
 export function DotSeparator(): JSX.Element {
@@ -19,7 +20,7 @@ export function InlineMeta({ items, className }: InlineMetaProps): JSX.Element {
   }
 
   return (
-    <span className={['inline-meta', className].filter(Boolean).join(' ')}>
+    <span className={cx('inline-meta', className)}>
       {visibleItems.map((item, index) => (
         <Fragment key={index}>
           {index > 0 && <DotSeparator />}

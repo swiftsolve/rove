@@ -1,7 +1,19 @@
+import { cva } from 'class-variance-authority'
 import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/icons/Icons'
 import { useAppData } from '@/app/hooks/useAppData'
 import { cx } from '@/lib/cx'
 import styles from './StatusBar.module.css'
+
+const linkVariants = cva(['text-meta-strong', styles.link], {
+  variants: {
+    tone: {
+      on: styles.isOn,
+      bad: styles.isBad,
+      /** Connecting or offline: the base look. */
+      off: null,
+    },
+  },
+})
 
 // Kept out of the Tab order, like a native title bar: otherwise the first Tab
 // lands on Minimize/Close at the top-right instead of the nav rail, and a stray
@@ -46,7 +58,7 @@ export function StatusBar(): JSX.Element {
           </span>
           <span className={styles.brandName}>Rove</span>
         </div>
-        <span className={cx('text-meta-strong', styles.link, tone === 'on' && styles.isOn, tone === 'bad' && styles.isBad)}>
+        <span className={linkVariants({ tone })}>
           <span className={styles.dot} aria-hidden />
           {label}
         </span>

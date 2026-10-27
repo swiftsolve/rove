@@ -57,7 +57,7 @@
 
 /* Pull the close button toward the panel's corner without cramping the title.
    It blends into the header with no dark fill of its own — the scoped selector
-   outweighs .btn-icon-secondary's background. */
+   outweighs the secondary IconButton's background. */
 .head .close {
   flex-shrink: 0;
   margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 0;
