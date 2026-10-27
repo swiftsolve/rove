@@ -279,7 +279,8 @@ rove/
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma is the source of truth for tokens and components. The UI consumes its
-tokens through the `@swiftsolve/rove-design` package.
+tokens through the `@swiftsolve/rove-design` package. To browse it without
+Figma, see the published slideshow: <https://swiftsolve.github.io/rove-design/>.
 
 ## Development
 
