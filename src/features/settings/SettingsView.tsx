@@ -57,14 +57,14 @@ const statusVariants = cva('flex items-center text-xs', {
   variants: {
     kind: {
       'up-to-date': 'gap-6 text-positive',
-      available: 'justify-between gap-12 text-(--text-secondary)',
+      available: 'justify-between gap-12 text-secondary',
     },
   },
 })
 
 // Rows carry their own symmetric vertical padding, like the Speed page's
 // capability list, so the column has no gap and the body no top padding.
-const LIST = 'flex flex-col pt-[0]'
+const LIST = 'flex flex-col pt-0'
 
 // The update-status footer reads as a continuation of the row list rather than
 // a separate sunken band: no top divider, and symmetric padding so the status
@@ -75,18 +75,18 @@ const UPDATES_SECTION = cx(
   '[&_.ui-section-footer]:mt-12 [&_.ui-section-footer]:pt-12 [&_.ui-section-footer]:pb-12',
   '[&_.ui-section-footer]:[border-top:none]',
 )
-const UPDATES_LIST = cx(LIST, 'has-[+.ui-section-footer]:pb-[0]')
+const UPDATES_LIST = cx(LIST, 'has-[+.ui-section-footer]:pb-0')
 
 // "Check now" borrows the Run test button's shape but stays in a neutral
 // palette: it's a routine action, not the screen's main call to action.
 const CHECK_NOW = cx(
-  'text-(--text-secondary) bg-inset',
+  'text-secondary bg-inset',
   'not-disabled:not-aria-disabled:hover:text-primary not-disabled:not-aria-disabled:hover:bg-hover',
 )
 
-const ROW_TEXT = 'flex flex-col gap-4 min-w-[0]'
+const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
 const ROW_TITLE = 'text-md font-medium text-primary'
-const ROW_DESC = 'text-xs leading-[1.4] text-tertiary'
+const ROW_DESC = 'text-xs leading-meta text-tertiary'
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
@@ -229,12 +229,12 @@ export function SettingsView(): JSX.Element {
   }
 
   return (
-    <div className="view-page">
-      <header className="view-header flex items-center gap-12">
-        <span className="view-header-icon" aria-hidden>
+    <div className="page">
+      <header className="page-header flex items-center gap-12">
+        <span className="page-header-icon" aria-hidden>
           <SettingsIcon size={18} />
         </span>
-        <h1 className="view-header-title">Settings</h1>
+        <h1 className="page-header-title">Settings</h1>
       </header>
 
       <Section

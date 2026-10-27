@@ -19,7 +19,7 @@ const DIMMED = cx(
 // step bigger, on a solid accent fill.
 const ACCENT_BASE = cx(
   'inline-flex items-center justify-center gap-6 rounded-sm',
-  'font-semibold tracking-[0.01em]',
+  'font-semibold',
   'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
   PRESS,
 )
@@ -29,13 +29,13 @@ const buttonVariants = cva(undefined, {
     variant: {
       /** Quiet accent text: secondary actions and links in a header. No fill at
        *  rest: the global button reset leaves it transparent. */
-      primary: [ACCENT_BASE, 'px-10 py-8 text-xs text-accent', ACCENT_HOVER],
+      primary: [ACCENT_BASE, 'px-10 py-8 text-xs tracking-button-default text-accent', ACCENT_HOVER],
       /** Solid accent fill: a page's main action (Run test, Add service). */
-      filled: [ACCENT_BASE, 'px-(--section-padding) py-10 text-sm text-on-fill'],
+      filled: [ACCENT_BASE, 'px-(--section-padding) py-10 text-sm tracking-button-large text-on-fill'],
       /** Neutral inset: retries and other in-place actions. */
       secondary: [
         'inline-flex items-center justify-center gap-6 px-12 py-6 rounded-sm',
-        'text-xs font-medium bg-inset text-(--text-secondary)',
+        'text-xs font-medium bg-inset text-secondary',
         'transition-[color,background] duration-(--duration-fast) ease-in-out',
         'not-disabled:not-aria-disabled:hover:text-primary not-disabled:not-aria-disabled:hover:bg-hover',
         PRESS,

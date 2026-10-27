@@ -11,21 +11,18 @@ import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { cva, cx } from 'class-variance-authority'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import styles from './AddServiceDialog.module.css'
 
 // Absolute (not fixed) and portaled into the app's content column
 // ([data-modal-root]), so it covers and centres over the main content area
-// rather than the whole window. Its fade-in lives in the module.
+// rather than the whole window. It fades in.
 const OVERLAY = cx(
-  styles.overlay,
-  'absolute inset-[0] z-90 flex items-center justify-center bg-scrim p-20',
+  'animate-overlay-in absolute inset-0 z-90 flex items-center justify-center bg-scrim p-20',
 )
 
 // No padding on the shell itself: the header and body own their own insets.
-// Its rise-in lives in the module.
+// It rises into place.
 const DIALOG = cx(
-  styles.dialog,
-  'w-full max-w-[340px] rounded-lg border border-line-strong bg-panel shadow-raised',
+  'animate-dialog-in w-full max-w-[340px] rounded-lg border border-line-strong bg-panel shadow-raised',
 )
 
 // Pull the close button toward the panel's corner without cramping the title.
@@ -36,7 +33,7 @@ const CLOSE = cx(
   "[&:hover:not(:disabled,[aria-disabled='true'])]:bg-hover",
 )
 
-const FIELD_LABEL = 'mb-6 block text-sm font-medium text-(--text-secondary)'
+const FIELD_LABEL = 'mb-6 block text-sm font-medium text-secondary'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height control centred beside it lands on a symmetric gap.
@@ -55,7 +52,7 @@ const BORDERED_INPUT = cx(
 // The address field carries its Test action inline: the group owns the border
 // and focus/invalid state, and the input inside goes borderless so the two read
 // as one control.
-const GROUPED_INPUT = cx(INPUT, 'min-w-[0] flex-auto border-none bg-transparent')
+const GROUPED_INPUT = cx(INPUT, 'min-w-0 flex-auto border-none bg-transparent')
 
 const inputGroupVariants = cva(
   [
@@ -77,7 +74,7 @@ const inputGroupVariants = cva(
 const testVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
-    'bg-accent-muted text-xs font-semibold tracking-[0.01em] text-accent-text',
+    'bg-accent-muted text-xs font-semibold tracking-button-default text-accent-text',
     'transition-[background,color] duration-(--duration-fast) ease-in-out',
     'disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)',
   ],
@@ -85,7 +82,7 @@ const testVariants = cva(
     variants: {
       /** Testing: the label is just a small spinner, so the button collapses to
        *  a square instead of holding the full "Test" width around it. */
-      isLoading: { true: 'w-[30px] min-w-[0]', false: 'min-w-[52px] px-10' },
+      isLoading: { true: 'w-[30px] min-w-0', false: 'min-w-[52px] px-10' },
     },
     defaultVariants: { isLoading: false },
   },
@@ -94,7 +91,7 @@ const testVariants = cva(
 // Feedback tucked directly under the address field: the idle hint, an error, or
 // the tested result. The hint is a snug one-line caption; the result is a taller
 // inset row, so it swaps in the moment a test lands.
-const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-[1.4]', {
+const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-small', {
   variants: {
     isError: { true: 'text-negative', false: 'text-tertiary' },
   },
@@ -158,7 +155,7 @@ function AddressFeedback({
     return (
       <div className={RESULT}>
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
-        <span className="min-w-[0] flex-auto truncate text-sm text-primary">{shownName}</span>
+        <span className="min-w-0 flex-auto truncate text-sm text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
           <span className={resultStatusVariants({ level: 'bad' })}>Down</span>
         ) : (
@@ -302,11 +299,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       >
         {/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */}
         <div className="flex items-start justify-between gap-8 p-16">
-          <div className="min-w-[0]">
-            <h2 id={titleId} className="text-xl font-semibold tracking-[-0.01em] text-primary">
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-dialog-title">
               {editing ? 'Edit service' : 'Add a service'}
             </h2>
-            <p id={descriptionId} className="mt-4 text-sm text-(--text-secondary)">
+            <p id={descriptionId} className="mt-4 text-sm text-secondary">
               Track a service by URL or IP address.
             </p>
           </div>

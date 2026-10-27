@@ -17,9 +17,6 @@ import {
   CAPABILITY_LEVEL_TEXT_COLORS,
 } from '@/features/capabilities/utils/capability-level-colors'
 
-// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
-// .text-secondary type style, which would bring its size and line height along.
-
 // Three-tier card: an intro row (icon + name/description + bars) on the panel
 // surface, a metrics grid on an inset panel, and the verdict on the darkest panel
 // at the very bottom: a clear elevation ladder top to bottom. When opened by
@@ -45,7 +42,7 @@ const iconVariants = cva(
 // All four requirements in a compact metric grid. Your value turns red only when
 // it misses the threshold, which stays a small muted line.
 const METRICS = cx(
-  'grid grid-cols-[repeat(4,1fr)] gap-x-8 gap-y-12',
+  'grid grid-cols-4 gap-x-8 gap-y-12',
   '-mx-(--section-header-padding-x) bg-inset px-(--section-header-padding-x) py-12',
 )
 
@@ -132,9 +129,9 @@ function CapabilityDetailCard({
         <span className={iconVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={16} />
         </span>
-        <div className="flex min-w-[0] flex-1 flex-col gap-2">
-          <h2 className="text-lg leading-[1.2] font-semibold tracking-[-0.01em]">{capability.label}</h2>
-          <span className="text-xs leading-[1.3] text-tertiary">{capability.description}</span>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <h2 className="text-lg leading-section-title font-semibold tracking-section-title">{capability.label}</h2>
+          <span className="text-xs leading-meta text-tertiary">{capability.description}</span>
         </div>
         {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
             optically centred against the two-line title block. */}
@@ -147,7 +144,7 @@ function CapabilityDetailCard({
 
       <dl className={METRICS}>
         {checks.map((check) => (
-          <div key={check.label} className="flex min-w-[0] flex-col gap-6">
+          <div key={check.label} className="flex min-w-0 flex-col gap-6">
             <dt className="field-label leading-[1.15]">{check.label}</dt>
             <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
             <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
@@ -159,7 +156,7 @@ function CapabilityDetailCard({
       </dl>
 
       <div className={VERDICT}>
-        <p className="flex min-w-[0] flex-1 items-start gap-4 text-sm leading-[1.45] text-(--text-secondary)">
+        <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-small text-secondary">
           <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
             <VerdictIcon level={capability.level} />
           </span>
@@ -167,7 +164,7 @@ function CapabilityDetailCard({
         </p>
         <span className={verdictStatusVariants({ level: capability.level })}>
           {/* The status dot takes the level colour from the label. */}
-          <span className="size-[6px] shrink-0 rounded-[50%] bg-current" aria-hidden />
+          <span className="size-6 shrink-0 rounded-full bg-current" aria-hidden />
           {CAPABILITY_LEVEL_LABELS[capability.level]}
         </span>
       </div>

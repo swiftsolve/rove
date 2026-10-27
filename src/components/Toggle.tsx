@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority'
 
 const rootVariants = cva(
   [
-    'relative shrink-0 w-[36px] h-[20px] rounded-full border',
+    'relative shrink-0 w-[36px] h-20 rounded-full border',
     'transition-[background,border-color] duration-(--duration-fast) ease-in-out',
     'disabled:opacity-(--opacity-disabled) disabled:cursor-not-allowed',
   ],
@@ -15,12 +15,12 @@ const rootVariants = cva(
 
 const knobVariants = cva(
   [
-    'absolute top-1/2 left-[2px] size-[14px] rounded-[50%] bg-on-fill',
-    'transition-[transform] duration-(--duration-fast) ease-in-out',
+    'absolute top-1/2 left-2 size-14 rounded-full bg-on-fill',
+    'transition-transform duration-(--duration-fast) ease-in-out',
   ],
   {
     variants: {
-      isChecked: { true: 'transform-[translate(16px,-50%)]', false: 'transform-[translateY(-50%)]' },
+      isChecked: { true: 'translate-x-16 -translate-y-1/2', false: '-translate-y-1/2' },
     },
   },
 )

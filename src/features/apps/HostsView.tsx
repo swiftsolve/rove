@@ -18,12 +18,14 @@ import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
+import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
  *  caret when closed. */
 const chevronVariants = cva(
-  'shrink-0 text-tertiary transition-[transform] duration-(--duration-normal) ease-out',
+  'shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out',
   {
     variants: {
       isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
@@ -57,7 +59,7 @@ const GROUP_HEADER = cx(
 // Fixed-width flag slot so hostnames stay aligned whether or not a flag (or a
 // fallback glyph) is present. Twemoji flag glyphs come first so the country flags
 // render on Windows, which has no flag emoji; the SVG fallbacks aren't text and
-// are unaffected. See the @font-face note in index.css.
+// are unaffected. See the @font-face note in styles/base.css.
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
   "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font)]",
@@ -158,11 +160,11 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
       align="left"
       // The wrapper must itself shrink and clip so the name still truncates
       // inside the row; the portalled bubble is unaffected by the clip.
-      className="min-w-[0] overflow-hidden"
+      className="min-w-0 overflow-hidden"
       maxWidth={360}
       isDisabled={!host.host}
     >
-      <span className="truncate text-xs text-(--text-secondary)">{host.host ?? host.ip}</span>
+      <span className="truncate text-xs text-secondary">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }
@@ -172,7 +174,7 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
 function HostRow({ host }: { host: HostConn }): JSX.Element {
   return (
     <li className="flex items-center justify-between gap-12">
-      <span className="inline-flex min-w-[0] items-center gap-[7px]">
+      <span className="inline-flex min-w-0 items-center gap-[7px]">
         <HostGlyph host={host} />
         <HostName host={host} />
       </span>
@@ -220,7 +222,7 @@ function AppGroup({
           aria-controls={isExpanded ? hostsId : undefined}
           aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
         >
-          <span className="inline-flex min-w-[0] items-center gap-8">
+          <span className="inline-flex min-w-0 items-center gap-8">
             <ChevronDownIcon
               size={14}
               className={chevronVariants({ isOpen: isExpanded })}
@@ -235,7 +237,7 @@ function AppGroup({
           </span>
           <MetricValue
             value={total}
-            className="num shrink-0 text-sm text-(--text-secondary)"
+            className="num shrink-0 text-sm text-secondary"
             format={formatBytes}
           />
         </button>
@@ -279,7 +281,7 @@ function HostsBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="view-empty" role="status">
+      <div className="page-empty" role="status">
         <Spinner />
         <p className="text-muted">Measuring per-app hosts…</p>
       </div>
@@ -289,13 +291,13 @@ function HostsBody({
     return <EmptyState icon={GlobeIcon} title="No hosts yet" hint={HOST_USAGE_EMPTY_HINT} />
   }
   return (
-    <div className="ui-section">
-      {/* The groups own the inset (p-[0] here), so the hairlines between them
+    <div className={SECTION_CARD}>
+      {/* The groups own the inset (p-0 here), so the hairlines between them
           run edge to edge, clipped to the card's rounded corners. */}
       <ul
         role="list"
         aria-label="Apps"
-        className="ui-section-body flex flex-col p-[0] [&>li+li]:border-t [&>li+li]:border-t-line"
+        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
         ref={listRef}
       >
         {apps.map((app) => (

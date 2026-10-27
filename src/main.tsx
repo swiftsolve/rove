@@ -1,10 +1,9 @@
-// First, so the cascade layers are declared before any CSS uses them.
+// First, so the cascade layers are declared before any CSS uses them. It
+// brings in the tokens and every global stylesheet.
 import '@/styles/tailwind.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from '@/app/App'
-import '@swiftsolve/rove-design/tokens.css'
-import './index.css'
 
 import { installTauriBridge, isTauri } from '@/bridge/tauriNetworkApi'
 import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'

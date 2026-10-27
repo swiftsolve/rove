@@ -17,9 +17,9 @@ import { cn } from '@/lib/cn'
 
 const bubbleVariants = cva(
   [
-    'fixed z-[9999] w-max px-10 py-8 rounded-sm',
+    'fixed z-9999 w-max px-10 py-8 rounded-sm',
     'bg-raised border border-line-strong shadow-raised',
-    'text-xs leading-[1.5] text-(--text-secondary) text-left whitespace-normal pointer-events-none',
+    'text-xs leading-hint text-secondary text-left whitespace-normal pointer-events-none',
     '[transition:opacity_var(--duration-fast)_var(--ease-in-out),transform_var(--duration-fast)_var(--ease-in-out),visibility_var(--duration-fast)]',
   ],
   {

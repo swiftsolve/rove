@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataRow } from '@/components/DataRow'
-import { Section } from '@/components/Section'
+import { Section, SectionBadge } from '@/components/Section'
 import { ConnectionIcon, DnsIcon, GlobeIcon, RouterIcon } from '@/components/icons/Icons'
 import { MetricValue, type MetricLevel } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
@@ -31,7 +31,7 @@ const ROUTER_FOOTER = cx(
 
 // Tighter row rhythm for the Router (and ISP) and DNS readouts: less vertical
 // air between each label/value pair than the default 8px. First/last stay flush
-// to the body (the global .data-row rules zero them). DNS sits a touch looser
+// to the body (DataRow zeroes them). DNS sits a touch looser
 // than Router since its repeated identical rows read denser at the same padding.
 const TIGHT_ROWS = cx(
   '[&_.data-row:not(:first-child)]:pt-4',
@@ -65,9 +65,9 @@ function formatLocation(isp: IspInfo): string | null {
 }
 
 function headerSubtitle(isRunning: boolean, hasDiagnostics: boolean): ReactNode {
-  if (isRunning) return <span className="view-header-status">Checking…</span>
+  if (isRunning) return <span className="page-header-status text-tertiary">Checking…</span>
   if (hasDiagnostics) return 'Router, DNS, and ISP'
-  return <span className="view-header-status">&nbsp;</span>
+  return <span className="page-header-status text-tertiary">&nbsp;</span>
 }
 
 /** What the screen-reader status line says: each run's start and its end. */
@@ -164,7 +164,7 @@ function DnsSection({ servers }: { servers: string[] }): JSX.Element {
 // a glitch rather than a brand, so this slot stays empty rather than falling
 // back to a monogram. A VPN exit has no brand domain, so the two never contend.
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
-  if (isp?.isVpn) return <span className="ui-section-badge">VPN</span>
+  if (isp?.isVpn) return <SectionBadge>VPN</SectionBadge>
   if (isp?.domain) {
     return <ServiceIcon host={isp.domain} name={isp.name ?? 'ISP'} size={18} fallback="none" />
   }
@@ -220,7 +220,7 @@ export function DiagnosticsView(): JSX.Element {
   const isFirstCheck = isRunning && !diagnostics
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<ConnectionIcon size={18} />}
         title="Connection"
@@ -240,7 +240,7 @@ export function DiagnosticsView(): JSX.Element {
       )}
 
       {isFirstCheck ? (
-        <div className="view-empty" aria-busy="true">
+        <div className="page-empty" aria-busy="true">
           <Spinner />
           <p className="text-muted">Checking your connection…</p>
         </div>

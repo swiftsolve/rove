@@ -81,8 +81,8 @@ export function useThemeState(): Theme {
 
   const isLight = isResolvedLight(mode, isSystemLight)
 
-  // Mirror the resolved theme onto the document element as a class so index.css
-  // can remap its design tokens. Covers passive changes too (an OS flip while on
+  // Mirror the resolved theme onto the document element as a class so the design
+  // tokens switch to their Light values. Covers passive changes too (an OS flip while on
   // 'system'), which arrive here without going through the animated setMode path.
   useEffect(() => {
     document.documentElement.classList.toggle('theme-light', isLight)

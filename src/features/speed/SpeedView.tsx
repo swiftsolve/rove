@@ -21,11 +21,9 @@ import { Button } from '@/components/Button'
 // before it. Focus shows the way hover does, not with a ring. The glyphs share
 // the link's (animating) colour and sit dimmer at rest through opacity, so there's
 // one colour animation rather than two that drift apart.
-// (`text-(--text-secondary)`, not `text-secondary`: that name is also the global
-// .text-secondary type style, which would bring its size and line height along.)
 const HISTORY_LINK = cx(
   'group/link ml-[-9.5px] inline-flex items-center gap-[5px] rounded-full px-8 py-2',
-  'cursor-pointer text-[length:inherit] font-medium text-(--text-secondary)',
+  'cursor-pointer text-[length:inherit] font-medium text-secondary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
   'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
   '[&_svg]:text-inherit [&_svg]:opacity-72',
@@ -66,7 +64,7 @@ function HeaderSubtitle(): JSX.Element {
   if (isTesting) {
     return (
       <>
-        <span className="view-header-status">Testing…</span>
+        <span className="page-header-status text-tertiary">Testing…</span>
         {completedAt != null && (
           <>
             <DotSeparator />
@@ -157,7 +155,7 @@ export function SpeedView(): JSX.Element | null {
   }
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<SpeedIcon size={18} />}
         title="Speed"

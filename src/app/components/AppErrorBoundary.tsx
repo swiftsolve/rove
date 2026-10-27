@@ -25,7 +25,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
     if (!error) return this.props.children
 
     return (
-      <div className="view-empty" style={{ height: '100vh' }} role="alert">
+      <div className="page-empty" style={{ height: '100vh' }} role="alert">
         <p className="text-muted">Something went wrong. Please restart Rove.</p>
         {import.meta.env.DEV && (
           <pre

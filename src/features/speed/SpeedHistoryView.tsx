@@ -17,18 +17,14 @@ import { EthernetIcon, GlobeIcon, HistoryIcon, MoreIcon, TrashIcon, WifiIcon } f
 import { EmptyState } from '@/components/EmptyState'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { useMenu } from '@/hooks/useMenu'
-import styles from './SpeedHistoryView.module.css'
-
-// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
-// .text-secondary type style, which would bring its size and line height along.
 
 /** Connection badge, tinted by medium. */
-const connVariants = cva('inline-flex min-w-[0] items-center gap-6 text-sm font-medium', {
+const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-medium', {
   variants: {
     type: {
       wifi: 'text-series-down',
       ethernet: 'text-status-positive',
-      unknown: 'text-(--text-secondary)',
+      unknown: 'text-secondary',
     },
   },
 })
@@ -42,8 +38,7 @@ const KEBAB = cx(
 )
 
 const DROPDOWN = cx(
-  styles.dropdown,
-  'absolute top-[calc(100%+4px)] right-[0] z-20 flex min-w-[112px] flex-col gap-2 p-4',
+  'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
   'rounded-sm border border-line-strong bg-raised shadow-raised',
 )
 
@@ -58,7 +53,7 @@ const menuItemVariants = cva(
     variants: {
       isDanger: {
         true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)]',
-        false: 'text-(--text-secondary) hover:bg-hover hover:text-primary',
+        false: 'text-secondary hover:bg-hover hover:text-primary',
       },
     },
     defaultVariants: { isDanger: false },
@@ -101,7 +96,7 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   return (
     <span className={connVariants({ type })}>
       <Icon size={13} />
-      <span className="min-w-[0] truncate text-primary">{networkName ?? fallbackName}</span>
+      <span className="min-w-0 truncate text-primary">{networkName ?? fallbackName}</span>
       {band != null && (
         <>
           <DotSeparator />
@@ -115,14 +110,14 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
 
 function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
   return (
-    <div className="flex min-w-[0] flex-col gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
       <dt className="flex items-center gap-6">
         {series && <DirectionIcon series={series} size={13} />}
         <span className="field-label">{label}</span>
       </dt>
       <dd className="num text-2xl font-semibold text-primary">
         {value}
-        {unit && <span className="font-sans text-xs font-regular text-(--text-secondary)"> {unit}</span>}
+        {unit && <span className="font-sans text-xs font-regular text-secondary"> {unit}</span>}
       </dd>
     </div>
   )
@@ -153,7 +148,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
         </time>
       </div>
 
-      <dl className="grid grid-cols-[repeat(3,1fr)] gap-12">
+      <dl className="grid grid-cols-3 gap-12">
         <Metric label="Download" value={download.value} unit={download.unit} series="down" />
         <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
         <Metric
@@ -164,7 +159,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
       </dl>
 
       <div className={CARD_FOOTER}>
-        <p className="num flex w-full min-w-[0] items-center justify-between gap-12 text-xs text-tertiary">
+        <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
           <InlineMeta
             items={[
               <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,

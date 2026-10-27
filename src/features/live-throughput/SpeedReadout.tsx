@@ -25,7 +25,7 @@ export const SpeedReadout = memo(function SpeedReadout({
   const actual = splitSpeedMbps(shown)
 
   return (
-    <div className="min-w-[0] flex-1">
+    <div className="min-w-0 flex-1">
       <dt className="mb-8 flex items-center gap-6">
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>

@@ -87,11 +87,9 @@ const footerVariants = cva(
 // Results". Focus mirrors hover rather than showing a ring. The glyph shares the
 // link's (animating) colour and sits dimmer at rest through opacity, so there's
 // one colour animation rather than two that drift apart.
-// (`text-(--text-secondary)`, not `text-secondary`: that name is also the global
-// .text-secondary type style, which would bring its size and line height along.)
 const LINK = cx(
   'group/link inline-flex items-center gap-6 whitespace-nowrap',
-  'cursor-pointer text-xs text-(--text-secondary)',
+  'cursor-pointer text-xs text-secondary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
   'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
   '[&_svg]:text-inherit [&_svg]:opacity-72',

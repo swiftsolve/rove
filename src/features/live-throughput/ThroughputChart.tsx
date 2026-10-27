@@ -12,7 +12,7 @@ import { formatChartWindowLabel } from '@/features/live-throughput/utils/through
 // ghost/duplicate when the domain changes. The 4px inset matches the AreaChart
 // margin ({ top: 4, bottom: 4 }) so the ticks line up with the plot.
 const SCALE = cx(
-  'pointer-events-none absolute top-[4px] right-[0] bottom-[4px] w-[26px]',
+  'pointer-events-none absolute top-4 right-0 bottom-4 w-[26px]',
   'flex flex-col items-end justify-between',
 )
 

@@ -1,0 +1,247 @@
+/*
+ * The app's base: fonts, the light-theme contrast override, and the base
+ * layer of element resets and app-wide behaviour. Imported by tailwind.css,
+ * after the tokens.
+ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Questrial';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Questrial-Regular.woff2') format('woff2');
+}
+
+/* Country-flag glyphs for the Hosts view. Windows ships no flag emoji (Segoe UI
+   Emoji omits them), so the regional-indicator pairs `flag.ts` emits render as
+   blank/boxed letters in WebView2. This Twemoji subset supplies only the flag
+   glyphs — applied ahead of the UI font on the flag slot, it draws the flags on
+   Windows while every other character falls through to the normal font. macOS
+   and Linux already have their own flags; the font just makes the artwork
+   consistent. Twemoji art, CC BY 4.0 (see README). */
+@font-face {
+  font-family: 'Twemoji Country Flags';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/TwemojiCountryFlags.woff2') format('woff2');
+}
+
+/* Accessibility override, already applied to the Figma variables (text/positive,
+   text/warning, text/negative, Light mode). Delete this block once a release of
+   @swiftsolve/rove-design carries them. In the light theme the status colours
+   read too light as text:
+   3.5–4.4:1 on our light surfaces, where WCAG AA needs 4.5:1. These text
+   variants are the same hues, darkened just enough to pass on every surface
+   they sit on. Icons, dots, fills and charts keep the --status-* values, which
+   only need 3:1 and already meet it. Outside the layer below on purpose: the
+   tokens themselves are unlayered, and a layered override would lose to them. */
+:root.theme-light {
+  --text-positive: #017e40;
+  --text-negative: #c53b2f;
+  --text-warning: #926401;
+}
+
+/* Element resets and app-wide behaviour, under every component and utility. */
+@layer base {
+  /* Border utilities set only a width; they need a solid style to show. This
+     is the one piece of Tailwind's preflight the app uses. */
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    border-width: 0;
+    border-style: solid;
+  }
+
+  /* ---- Theme switch transition ----
+     The theme toggle (App.tsx) runs the swap inside a View Transition and drives
+     a clip-path circle that grows from the window's centre. Suppress the built-in
+     cross-fade so only the circular reveal plays, and keep the incoming theme's
+     snapshot stacked above the outgoing one so it's revealed on top. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  /* Dark → light: the incoming light snapshot grows outward on top. */
+  ::view-transition-old(root) { z-index: 0; }
+  ::view-transition-new(root) { z-index: 1; }
+  /* Light → dark: mirror it — the outgoing light snapshot stays on top and
+     collapses to the centre, revealing the dark snapshot beneath. */
+  :root.theme-to-dark::view-transition-old(root) { z-index: 1; }
+  :root.theme-to-dark::view-transition-new(root) { z-index: 0; }
+
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: var(--font);
+    /* Transparent so the window's rounded corners (clipped on the app shell) reveal
+       the desktop behind them instead of a square opaque backdrop. The app's
+       background lives on the app shell (AppShell.tsx). */
+    background: transparent;
+    color: var(--text-primary);
+    line-height: 1.45;
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-regular);
+    font-optical-sizing: auto;
+    font-feature-settings: 'cv11' 1, 'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+    cursor: default;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* The app-wide `user-select: none` on <body> gives the desktop-app feel, but it
+     inherits into form controls — and WebView2 (Windows) honours it there, which
+     makes <input>/<textarea> impossible to type in. WebKit (macOS/Linux webview)
+     exempts form controls, so the break only shows on Windows. Re-enable selection
+     on editable elements so they're typeable on every platform. */
+  input,
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  ::selection {
+    background: var(--fill-selection);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--fill-scrollbar) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--fill-scrollbar);
+    border-radius: var(--radius-full);
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: none;
+    white-space: nowrap;
+  }
+
+  /* The one default focus ring: outside the control, following its border-radius.
+     :where() keeps it at zero specificity so a component can restyle it (e.g. draw
+     it inset) with a single class. */
+  :where(button, a[href], input, select, textarea, [tabindex], [role='button'], svg):focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* Headings and <main> only take focus programmatically, on navigation, to
+     announce the new page. They aren't controls, so they get no focus ring. */
+  h1[tabindex='-1']:focus,
+  main[tabindex='-1']:focus {
+    outline: none;
+  }
+
+  /* Lists are markup for meaning, not bullets: no markers, no indent. They carry
+     role="list" because WebKit stops announcing a list once its markers are off.
+     :where() keeps this at zero specificity, so a list's own class always wins. */
+  :where(ul[role='list'], ol[role='list']) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(7px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* The ring around an item a navigation just scrolled to (the nav-flash
+     utility). */
+  @keyframes nav-flash {
+    0% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+    15%,
+    55% {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+      background-image: linear-gradient(var(--accent-muted), var(--accent-muted));
+    }
+    100% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+  }
+
+  /* ---- Recharts ---- */
+
+  /* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
+     follows the arrow keys) still needs a visible ring; one that isn't never gets
+     focus. Only the wrapper's own outline goes. */
+  .recharts-wrapper {
+    outline: none;
+  }
+
+  .recharts-surface:focus-visible {
+    border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

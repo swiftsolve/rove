@@ -10,7 +10,7 @@ import { IconButton } from '@/components/IconButton'
 const loadingVariants = cva(
   [
     'flex flex-1 flex-col items-center justify-center',
-    'animate-[fade-in_var(--duration-normal)_var(--ease-out)]',
+    'animate-fade-in',
   ],
   {
     variants: {
@@ -24,7 +24,7 @@ const loadingVariants = cva(
 
 // The lines under the spinner: the label and, when detection runs slow, a
 // second note in the same style.
-const LOADING_LINE = 'text-sm text-(--text-secondary)'
+const LOADING_LINE = 'text-sm text-secondary'
 
 interface NetworkErrorInfo {
   kind: 'timeout' | 'backend' | 'offline'
@@ -80,7 +80,7 @@ export function NetworkLoadingScreen(): JSX.Element {
     <div className={loadingVariants({ isError: true })} role="alert">
       <span
         className={cx(
-          'inline-flex items-center justify-center size-[48px] rounded-[50%] text-status-negative',
+          'inline-flex items-center justify-center size-[48px] rounded-full text-status-negative',
           'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
         )}
         aria-hidden
@@ -112,7 +112,7 @@ export function NetworkErrorBanner(): JSX.Element | null {
       <span className="inline-flex shrink-0" aria-hidden>
         <NetworkErrorIcon kind={kind} size={16} />
       </span>
-      <span className="flex-1 min-w-[0]">{title}</span>
+      <span className="flex-1 min-w-0">{title}</span>
       <button
         type="button"
         className={cx(

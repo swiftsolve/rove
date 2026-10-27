@@ -37,14 +37,14 @@ import { useMenu } from '@/hooks/useMenu'
 const ITEM = cx(
   'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
-  'not-last:before:top-[30px] not-last:before:bottom-[0] not-last:before:left-[18px] not-last:before:w-[2px]',
+  'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
   'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
 )
 
 const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
 
 const markerVariants = cva(
-  ['z-1 flex size-[28px] shrink-0 items-center justify-center rounded-[50%]', MARKER_WASH],
+  ['z-1 flex size-[28px] shrink-0 items-center justify-center rounded-full', MARKER_WASH],
   {
     variants: {
       /** A service dropping off reads as an alarm (red); a recovery, or a healthy
@@ -61,10 +61,10 @@ const markerVariants = cva(
 
 // The subject line: the service's favicon and name, sitting under the title
 // (the events-feed shape: what happened on top, which service beneath).
-const subjectVariants = cva('min-w-[0] items-center gap-4 text-md', {
+const subjectVariants = cva('min-w-0 items-center gap-4 text-md', {
   variants: {
     /** A quiet aside (the running summary, the connection status), not a service name. */
-    isMuted: { true: 'text-tertiary', false: 'text-(--text-secondary)' },
+    isMuted: { true: 'text-tertiary', false: 'text-secondary' },
     /** The connection row keeps its status and offline duration on one line,
      *  spanning the full content width: the status at the left, the duration
      *  flush right (pushed by its margin-left:auto). */
@@ -75,11 +75,11 @@ const subjectVariants = cva('min-w-[0] items-center gap-4 text-md', {
 
 // Nudged down so the first line lines up with the marker. Every line gets the
 // same line box, so the visual gap between lines matches the flex gap.
-const CONTENT = 'flex min-w-[0] flex-col gap-4 pt-2 *:leading-[1.3]'
+const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 
 // Title on the left, time pinned to the right edge on the same line.
 const HEAD = 'flex items-baseline gap-10'
-const TITLE = 'min-w-[0] flex-1 text-lg font-semibold text-primary wrap-anywhere'
+const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
 // The outage length sits at the far right of its row, no dot before it.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
@@ -87,13 +87,13 @@ const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 // The header overflow menu: the kebab and its dropdown, matching the manage
 // page's row menu and the speed-history menu.
 const KEBAB = cx(
-  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-(--text-secondary)',
+  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-secondary',
   'transition-[color,background] duration-(--duration-fast) ease-in-out',
   'hover:bg-hover hover:text-primary',
 )
 
 const DROPDOWN = cx(
-  'absolute top-[calc(100%+4px)] right-[0] z-20 min-w-[148px] p-4',
+  'absolute top-[calc(100%+4px)] right-0 z-20 min-w-[148px] p-4',
   'rounded-sm border border-line-strong bg-raised shadow-raised',
 )
 
@@ -109,7 +109,7 @@ const menuItemVariants = cva(
       /** Destructive (Clear history): red text and a red-tinted hover. */
       isDanger: {
         true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
-        false: 'text-(--text-secondary) hover:bg-hover',
+        false: 'text-secondary hover:bg-hover',
       },
     },
     defaultVariants: { isDanger: false },
@@ -279,8 +279,8 @@ function TransitionRow({
           <ServiceIcon host={event.host} name={event.name} />
           <span className="truncate">{event.name}</span>
         </span>
-        <span className="flex items-baseline gap-10 text-sm tracking-[0.02em] text-tertiary">
-          <span className="min-w-[0] truncate">{event.host}</span>
+        <span className="flex items-baseline gap-10 text-sm text-tertiary">
+          <span className="min-w-0 truncate">{event.host}</span>
           {shouldShowDuration && (
             <span className={DURATION}>Down for {formatDuration(durationMs)}</span>
           )}

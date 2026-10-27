@@ -1,5 +1,6 @@
-import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { useCountUp } from '@/hooks/useCountUp'
+import { cn } from '@/lib/cn'
 
 const metricVariants = cva(undefined, {
   variants: {
@@ -28,5 +29,5 @@ export function MetricValue({
   className?: string
 }): JSX.Element {
   const animated = useCountUp(value)
-  return <span className={cx(metricVariants({ level }), className) || undefined}>{format(animated)}</span>
+  return <span className={cn(metricVariants({ level }), className) || undefined}>{format(animated)}</span>
 }

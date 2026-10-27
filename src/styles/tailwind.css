@@ -13,13 +13,21 @@
  * token's own name (`--radius-sm`, `--shadow-panel`), and `--radius-sm:
  * var(--radius-sm)` would be a self-reference that invalidates the token.
  *
- * No preflight: index.css is the app's base reset. Only the one piece of
- * preflight that border utilities rely on is added, in the base layer below.
+ * No preflight: base.css is the app's base reset, with the one piece of
+ * preflight that border utilities rely on. The app's shared styles (type
+ * styles, page layout) are `@utility` definitions in utilities.css.
  */
 @layer theme, base, components, utilities;
+/* The tokens, unlayered, ahead of base.css: its light-theme contrast override
+   must come after them to win. */
+@import '@swiftsolve/rove-design/tokens.css';
+/* Fonts, resets and app-wide behaviour (the base layer). */
+@import './base.css';
 /* Scan only the app's source for class names, not docs or scripts. */
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @source '../';
+/* The app's shared type styles and layout pieces, as utilities. */
+@import './utilities.css';
 
 /* Plain :hover, as the app's CSS always used. Tailwind's default wraps hover
    styles in @media (hover: hover). */
@@ -28,7 +36,8 @@
 @theme inline reference {
   --*: initial;
 
-  /* Spacing: the --space-* scale, plus 1px for hairlines. */
+  /* Spacing: the --space-* scale, plus 0 for resets and 1px for hairlines. */
+  --spacing-0: 0px;
   --spacing-px: 1px;
   --spacing-2: var(--space-2);
   --spacing-4: var(--space-4);
@@ -55,6 +64,43 @@
   --font-weight-regular: var(--weight-regular);
   --font-weight-medium: var(--weight-medium);
   --font-weight-semibold: var(--weight-semibold);
+  /* Line height and letter spacing by Figma text style (`leading-body`,
+     `tracking-title`), for text that matches a style but takes its own colour
+     or size. The type utilities in utilities.css set all of a style at once. */
+  --leading-title: var(--type-title-line-height);
+  --leading-section-title: var(--type-section-title-line-height);
+  --leading-dialog-title: var(--type-dialog-title-line-height);
+  --leading-field-label: var(--type-field-label-line-height);
+  --leading-body: var(--type-body-line-height);
+  --leading-meta: var(--type-meta-line-height);
+  --leading-meta-strong: var(--type-meta-strong-line-height);
+  --leading-hint: var(--type-hint-line-height);
+  --leading-small: var(--type-small-line-height);
+  --leading-value: var(--type-value-line-height);
+  --leading-chart-label: var(--type-chart-label-line-height);
+  --leading-metric-display: var(--type-metric-display-line-height);
+  --leading-metric-compact: var(--type-metric-compact-line-height);
+  --leading-metric-unit: var(--type-metric-unit-line-height);
+  --leading-button-large: var(--type-button-large-line-height);
+  --leading-button-default: var(--type-button-default-line-height);
+  --leading-button-secondary: var(--type-button-secondary-line-height);
+  --tracking-title: var(--type-title-letter-spacing);
+  --tracking-section-title: var(--type-section-title-letter-spacing);
+  --tracking-dialog-title: var(--type-dialog-title-letter-spacing);
+  --tracking-field-label: var(--type-field-label-letter-spacing);
+  --tracking-body: var(--type-body-letter-spacing);
+  --tracking-meta: var(--type-meta-letter-spacing);
+  --tracking-meta-strong: var(--type-meta-strong-letter-spacing);
+  --tracking-hint: var(--type-hint-letter-spacing);
+  --tracking-small: var(--type-small-letter-spacing);
+  --tracking-value: var(--type-value-letter-spacing);
+  --tracking-chart-label: var(--type-chart-label-letter-spacing);
+  --tracking-metric-display: var(--type-metric-display-letter-spacing);
+  --tracking-metric-compact: var(--type-metric-compact-letter-spacing);
+  --tracking-metric-unit: var(--type-metric-unit-letter-spacing);
+  --tracking-button-large: var(--type-button-large-letter-spacing);
+  --tracking-button-default: var(--type-button-default-letter-spacing);
+  --tracking-button-secondary: var(--type-button-secondary-letter-spacing);
 
   /* Surfaces (bg-*) */
   --color-app: var(--bg-app);
@@ -126,15 +172,63 @@
   --ease-in-out: var(--ease-in-out);
 }
 
-/* Border utilities set only a width; they need a solid style to show. This is
-   the part of Tailwind's preflight they depend on. The base layer sits under
-   all of the app's own CSS, so an explicit border anywhere still wins. */
-@layer base {
-  *,
-  ::before,
-  ::after,
-  ::backdrop {
-    border-width: 0;
-    border-style: solid;
+/* Entrance and exit animations (`animate-*`), with their keyframes. */
+@theme inline {
+  /* A dialog's backdrop fades in and the dialog rises into place. */
+  --animate-overlay-in: overlay-in var(--duration-fast) var(--ease-out);
+  --animate-dialog-in: dialog-in var(--duration-normal) var(--ease-out);
+  /* A view, a header subtitle or a status message fades in (keyframes in base.css). */
+  --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
+  /* A dropdown menu drops into place. */
+  --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
+  /* The Devices header's scan status and online tally trade places. */
+  --animate-scan-slide-in: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
+  --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
+  /* The speed test's squiggle scrolls one wavelength (`--wave-length`) per
+     loop; the element sets the duration inline, in step with the JS. */
+  --animate-wavy-scroll: wavy-scroll linear infinite;
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes scan-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes scan-slide-out {
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @keyframes wavy-scroll {
+    to {
+      transform: translateX(var(--wave-length));
+    }
   }
 }

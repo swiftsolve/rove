@@ -21,8 +21,8 @@ import { useTheme } from '@/app/hooks/useTheme'
 
 // The active item's vertical accent bar, hugging the rail's left edge.
 const ACTIVE_BAR = cx(
-  "before:absolute before:-left-11 before:top-1/2 before:transform-[translateY(-50%)] before:content-['']",
-  'before:w-[3px] before:h-[20px] before:rounded-[0_3px_3px_0] before:bg-accent',
+  "before:absolute before:-left-11 before:top-1/2 before:-translate-y-1/2 before:content-['']",
+  'before:w-[3px] before:h-20 before:rounded-[0_3px_3px_0] before:bg-accent',
 )
 
 const itemVariants = cva(
@@ -137,7 +137,7 @@ export function TabBar(): JSX.Element {
         className={cx(
           GROUP,
           'relative pt-12',
-          "before:absolute before:top-[0] before:-left-11 before:-right-11 before:h-px before:bg-line before:content-['']",
+          "before:absolute before:top-0 before:-left-11 before:-right-11 before:h-px before:bg-line before:content-['']",
         )}
       >
         {/* Theme toggle sits above the gear; About lives inside the Settings page. */}

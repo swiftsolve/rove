@@ -252,7 +252,7 @@ export function UsageView(): JSX.Element {
   const isFirstLoad = isLoading && usage.days.length === 0
 
   return (
-    <div className="view-page">
+    <div className="page">
       <ViewHeader
         icon={<UsageIcon size={18} />}
         title="Usage"
@@ -272,7 +272,7 @@ export function UsageView(): JSX.Element {
       {error && <div className="error-banner" role="alert">{error}</div>}
 
       {isFirstLoad ? (
-        <div className="view-empty" role="status">
+        <div className="page-empty" role="status">
           <Spinner />
           <p className="text-muted">Loading usage…</p>
         </div>
@@ -281,7 +281,7 @@ export function UsageView(): JSX.Element {
           <Section title="Today" icon={<TodayIcon size={15} />}>
             {/* Today metrics sit on the plain card surface; the section body's top
                 padding is the only gap below the title. */}
-            <dl className="grid grid-cols-[1fr_1fr] gap-16">
+            <dl className="grid grid-cols-2 gap-16">
               <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
               <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
             </dl>
