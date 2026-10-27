@@ -1,7 +1,6 @@
 /*
- * The app's base: fonts, the light-theme contrast override, and the base
- * layer of element resets and app-wide behaviour. Imported by tailwind.css,
- * after the tokens.
+ * The app's base: fonts and the base layer of element resets and app-wide
+ * behaviour. Imported by tailwind.css, after the tokens.
  */
 
 @font-face {
@@ -33,21 +32,6 @@
   font-weight: 400;
   font-display: swap;
   src: url('../assets/fonts/TwemojiCountryFlags.woff2') format('woff2');
-}
-
-/* Accessibility override, already applied to the Figma variables (text/positive,
-   text/warning, text/negative, Light mode). Delete this block once a release of
-   @swiftsolve/rove-design carries them. In the light theme the status colours
-   read too light as text:
-   3.5–4.4:1 on our light surfaces, where WCAG AA needs 4.5:1. These text
-   variants are the same hues, darkened just enough to pass on every surface
-   they sit on. Icons, dots, fills and charts keep the --status-* values, which
-   only need 3:1 and already meet it. Outside the layer below on purpose: the
-   tokens themselves are unlayered, and a layered override would lose to them. */
-:root.theme-light {
-  --text-positive: #017e40;
-  --text-negative: #c53b2f;
-  --text-warning: #926401;
 }
 
 /* Element resets and app-wide behaviour, under every component and utility. */

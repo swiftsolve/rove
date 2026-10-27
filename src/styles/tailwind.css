@@ -18,8 +18,7 @@
  * styles, page layout) are `@utility` definitions in utilities.css.
  */
 @layer theme, base, components, utilities;
-/* The tokens, unlayered, ahead of base.css: its light-theme contrast override
-   must come after them to win. */
+/* The design tokens, unlayered. */
 @import '@swiftsolve/rove-design/tokens.css';
 /* Fonts, resets and app-wide behaviour (the base layer). */
 @import './base.css';
