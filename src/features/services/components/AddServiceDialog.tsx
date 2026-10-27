@@ -9,31 +9,103 @@ import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './AddServiceDialog.module.css'
 
-const inputGroupVariants = cva(styles.inputGroup, {
-  variants: {
-    /** The address failed to parse or test: a red border. */
-    isInvalid: { true: styles.isInvalid },
+// Absolute (not fixed) and portaled into the app's content column
+// ([data-modal-root]), so it covers and centres over the main content area
+// rather than the whole window. Its fade-in lives in the module.
+const OVERLAY = cx(
+  styles.overlay,
+  'absolute inset-[0] z-90 flex items-center justify-center bg-scrim p-20',
+)
+
+// No padding on the shell itself: the header and body own their own insets.
+// Its rise-in lives in the module.
+const DIALOG = cx(
+  styles.dialog,
+  'w-full max-w-[340px] rounded-lg border border-line-strong bg-panel shadow-raised',
+)
+
+// Pull the close button toward the panel's corner without cramping the title.
+// It blends into the header with no fill of its own at rest; the secondary
+// IconButton's hover fill still shows.
+const CLOSE = cx(
+  'mt-[calc(-1*var(--space-4))] mr-[calc(-1*var(--space-4))] shrink-0 bg-transparent',
+  "[&:hover:not(:disabled,[aria-disabled='true'])]:bg-hover",
+)
+
+const FIELD_LABEL = 'mb-6 block text-sm font-medium text-(--text-secondary)'
+
+// Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
+// fixed-height control centred beside it lands on a symmetric gap.
+const INPUT = cx(
+  'w-full rounded-sm px-12 py-10 text-md leading-[18px] text-primary placeholder:text-tertiary',
+  'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
+)
+
+// The standalone field draws its own border.
+const BORDERED_INPUT = cx(
+  INPUT,
+  'border border-line bg-inset',
+  'focus-visible:border-accent aria-invalid:border-status-negative',
+)
+
+// The address field carries its Test action inline: the group owns the border
+// and focus/invalid state, and the input inside goes borderless so the two read
+// as one control.
+const GROUPED_INPUT = cx(INPUT, 'min-w-[0] flex-auto border-none bg-transparent')
+
+const inputGroupVariants = cva(
+  [
+    'flex items-center gap-4 rounded-sm border bg-inset pr-6',
+    'transition-[border-color] duration-(--duration-fast) ease-in-out',
+  ],
+  {
+    variants: {
+      /** The address failed to parse or test: a red border. */
+      isInvalid: { true: 'border-status-negative', false: 'border-line focus-within:border-accent' },
+    },
+    defaultVariants: { isInvalid: false },
   },
+)
+
+// The inline Test action is a quiet, transparent accent button (a faint accent
+// wash with an accent-coloured label) so it reads as secondary to the solid
+// "Add service" confirm below.
+const testVariants = cva(
+  [
+    'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
+    'bg-accent-muted text-xs font-semibold tracking-[0.01em] text-accent-text',
+    'transition-[background,color] duration-(--duration-fast) ease-in-out',
+    'disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)',
+  ],
+  {
+    variants: {
+      /** Testing: the label is just a small spinner, so the button collapses to
+       *  a square instead of holding the full "Test" width around it. */
+      isLoading: { true: 'w-[30px] min-w-[0]', false: 'min-w-[52px] px-10' },
+    },
+    defaultVariants: { isLoading: false },
+  },
+)
+
+// Feedback tucked directly under the address field: the idle hint, an error, or
+// the tested result. The hint is a snug one-line caption; the result is a taller
+// inset row, so it swaps in the moment a test lands.
+const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-[1.4]', {
+  variants: {
+    isError: { true: 'text-negative', false: 'text-tertiary' },
+  },
+  defaultVariants: { isError: false },
 })
 
-const testVariants = cva(styles.test, {
-  variants: {
-    /** Testing: the label is a spinner, so the button collapses to a square. */
-    isLoading: { true: styles.isLoading },
-  },
-})
+// Matches the address field's outer height (line-height 18 + 20 padding + 2
+// border), so the result reads as the same-sized box swapping in.
+const RESULT = 'mt-8 flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
-const noteVariants = cva(styles.note, {
-  variants: {
-    isError: { true: styles.isError },
-  },
-})
-
-const resultStatusVariants = cva(styles.resultStatus, {
+const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
   variants: {
     /** The measured latency's health band, or bad when the host was down. */
     level: { good: 'val-good', warn: 'val-warn', bad: 'val-bad' },
@@ -84,9 +156,9 @@ function AddressFeedback({
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
     return (
-      <div className={styles.result}>
+      <div className={RESULT}>
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
-        <span className={styles.resultName}>{shownName}</span>
+        <span className="min-w-[0] flex-auto truncate text-sm text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
           <span className={resultStatusVariants({ level: 'bad' })}>Down</span>
         ) : (
@@ -217,9 +289,9 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   }
 
   const overlay = (
-    <div className={styles.overlay} role="presentation" onClick={isAdding ? undefined : onClose}>
+    <div className={OVERLAY} role="presentation" onClick={isAdding ? undefined : onClose}>
       <div
-        className={styles.dialog}
+        className={DIALOG}
         ref={dialogRef}
         tabIndex={-1}
         role="dialog"
@@ -228,17 +300,18 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
         aria-describedby={descriptionId}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={styles.head}>
-          <div className={styles.heading}>
-            <h2 id={titleId} className={styles.title}>
+        {/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */}
+        <div className="flex items-start justify-between gap-8 p-16">
+          <div className="min-w-[0]">
+            <h2 id={titleId} className="text-xl font-semibold tracking-[-0.01em] text-primary">
               {editing ? 'Edit service' : 'Add a service'}
             </h2>
-            <p id={descriptionId} className={styles.sub}>
+            <p id={descriptionId} className="mt-4 text-sm text-(--text-secondary)">
               Track a service by URL or IP address.
             </p>
           </div>
           <IconButton
-            className={styles.close}
+            className={CLOSE}
             onClick={onClose}
             disabled={isAdding}
             aria-label="Close"
@@ -247,18 +320,20 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           </IconButton>
         </div>
 
-        <div className={styles.body}>
+        {/* The middle section sits a step below the header/footer surfaces: a
+            recessed well that frames the fields. */}
+        <div className="bg-chrome p-16">
           {/* A div, not a wrapping label: the field also holds the Test button and
               the feedback below it, which a label can't contain. */}
-          <div className={styles.field}>
-            <label htmlFor={addressId} className={styles.fieldLabel}>
+          <div className="block">
+            <label htmlFor={addressId} className={FIELD_LABEL}>
               Address
             </label>
             <div className={inputGroupVariants({ isInvalid: error != null })}>
               <input
                 id={addressId}
                 type="text"
-                className={styles.input}
+                className={GROUPED_INPUT}
                 value={address}
                 onChange={(e) => onAddressChange(e.target.value)}
                 onKeyDown={onFieldKeyDown}
@@ -284,11 +359,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
             </div>
           </div>
 
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Name</span>
+          <label className="mt-16 block">
+            <span className={FIELD_LABEL}>Name</span>
             <input
               type="text"
-              className={styles.input}
+              className={BORDERED_INPUT}
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               onKeyDown={onFieldKeyDown}
@@ -297,10 +372,13 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           </label>
         </div>
 
-        <div className={styles.foot}>
+        {/* The confirm sits in its own footer; the darker body above sets it apart,
+            so it needs no divider. */}
+        <div className="flex justify-end p-16">
           <Button
             variant="filled"
-            className={styles.confirm}
+            // A minimum width keeps it from shrinking to the spinner while it adds.
+            className="min-w-[76px]"
             onClick={confirm}
             disabled={!hasTested || isAdding}
             aria-busy={isAdding}

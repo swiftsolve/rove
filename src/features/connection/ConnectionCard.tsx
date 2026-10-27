@@ -33,45 +33,118 @@ import {
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
 
-const rootVariants = cva(styles.root, {
+// The connection glyph's chip, tinted by the kind of connection.
+const stripIconVariants = cva(
+  [
+    'relative z-1 pointer-events-none self-center shrink-0',
+    'flex items-center justify-center size-[36px] rounded-sm',
+  ],
+  {
+    variants: {
+      variant: {
+        wifi: 'text-series-down bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]',
+        ethernet: 'text-status-positive bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]',
+        disconnected: 'text-status-negative bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-xs),transparent)]',
+      },
+    },
+  },
+)
+
+const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
-    variant: {
-      wifi: styles.variantWifi,
-      ethernet: styles.variantEthernet,
-      disconnected: styles.variantDisconnected,
+    level: { good: 'text-status-positive', fair: 'text-status-warning', weak: 'text-status-negative' },
+    /** Beside the strip's title, or inside the expanded Signal row. */
+    placement: { strip: 'relative z-1 pointer-events-none self-center shrink-0', details: null },
+  },
+})
+
+const signalBarsVariants = cva('inline-flex items-end gap-2 h-[12px]', {
+  variants: {
+    // In the Signal row, lifted to sit level with the status text.
+    placement: { strip: null, details: 'transform-[translateY(-2px)]' },
+  },
+})
+
+// Flat bottoms so the bars share a crisp baseline, with only the tops softened:
+// a full pill radius on a 3px bar half-fades its top and bottom rows, which
+// reads as floating blobs. Heights step by 3px so each bar is distinct.
+const signalBarVariants = cva('w-[3px] rounded-[1px_1px_0_0]', {
+  variants: {
+    isOn: {
+      true: 'bg-current',
+      false: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-unlit),transparent)]',
     },
   },
 })
 
-const signalMeterVariants = cva(styles.signalMeter, {
+const SIGNAL_BAR_HEIGHTS = ['h-[3px]', 'h-[6px]', 'h-[9px]', 'h-[12px]']
+
+// Lock + protocol, green when secured, red when open. A block flex box (not
+// inline-flex) so the lock centres on the text instead of sitting on the line's
+// baseline, which drops it a couple of pixels low. In the expanded rows (the
+// details' <dl>) it right-aligns in the value cell.
+const securityBadgeVariants = cva(
+  [styles.securityBadge, 'flex items-center gap-4 min-w-[0] in-[dl]:justify-end'],
+  {
+    variants: {
+      isSecured: { true: null, false: 'text-negative' },
+    },
+  },
+)
+
+// The lock is taller than the text's cap height, and centring on the line box
+// leaves it reading low; lift it to sit level with the protocol text (the same
+// optical nudge the signal bars get).
+const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
   variants: {
-    level: { good: styles.levelGood, fair: styles.levelFair, weak: styles.levelWeak },
+    isSecured: { true: 'text-status-positive', false: null },
   },
 })
 
-const signalBarVariants = cva(styles.signalBar, {
-  variants: {
-    isOn: { true: styles.isOn },
+const chevronVariants = cva(
+  [
+    'relative z-1 pointer-events-none self-center shrink-0 text-tertiary',
+    'transition-[transform] duration-(--duration-normal) ease-out',
+  ],
+  {
+    variants: {
+      isOpen: { true: 'transform-[rotate(180deg)]', false: null },
+    },
   },
-})
+)
 
-const securityBadgeVariants = cva(styles.securityBadge, {
-  variants: {
-    isSecured: { true: styles.isSecured, false: styles.isUnsecured },
+const detailsWrapVariants = cva(
+  'grid transition-[grid-template-rows] duration-(--duration-normal) ease-out',
+  {
+    variants: {
+      isOpen: { true: 'grid-rows-[1fr]', false: 'grid-rows-[0fr]' },
+    },
   },
-})
+)
 
-const chevronVariants = cva(styles.chevron, {
-  variants: {
-    isOpen: { true: styles.isOpen },
+// Open, the rows sit on a dark inset panel below the header (like the live
+// chart and bench footer): full card width, square top edge, and the card's
+// overflow rounds the bottom. The rows take the interface cards' tighter
+// rhythm; `row-list` keeps the first row's top and last row's bottom at 0.
+const detailsVariants = cva(
+  [
+    styles.details,
+    'row-list overflow-hidden',
+    '[&>.data-row:not(:first-child)]:pt-4 [&>.data-row:not(:last-child)]:pb-4',
+  ],
+  {
+    variants: {
+      isOpen: {
+        true: 'py-(--section-header-padding-y) px-(--section-body-padding) bg-inset',
+        false: null,
+      },
+    },
   },
-})
+)
 
-const detailsWrapVariants = cva(styles.detailsWrap, {
-  variants: {
-    isOpen: { true: styles.isOpen },
-  },
-})
+// Keep the subtitle on one line inside the narrow strip: a flex row when it's
+// an InlineMeta, so its items can shrink (see ConnectionCard.module.css).
+const STRIP_SUB = cx('text-secondary', styles.stripSub, 'truncate [&.inline-meta]:flex')
 
 interface ConnectionCardProps {
   info: NetworkInfo
@@ -129,22 +202,31 @@ function ConnectionIcon({ variant }: { variant: ConnectionDisplayVariant }): JSX
   return <OfflineIcon size={16} />
 }
 
-function SignalMeter({ strength }: { strength: number }): JSX.Element {
+function SignalMeter({
+  strength,
+  placement,
+}: {
+  strength: number
+  placement: 'strip' | 'details'
+}): JSX.Element {
   const label = formatSignalStrength(strength)
   const filledBars = signalBarCount(strength)
 
   return (
     <div
-      className={signalMeterVariants({ level: signalLevel(strength) })}
+      className={signalMeterVariants({ level: signalLevel(strength), placement })}
       role="meter"
       aria-label={`Wi‑Fi signal: ${label}`}
       aria-valuenow={strength}
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <span className={styles.signalBars} aria-hidden>
+      <span className={signalBarsVariants({ placement })} aria-hidden>
         {SIGNAL_BARS.map((bar) => (
-          <span key={bar} className={signalBarVariants({ isOn: bar < filledBars })} />
+          <span
+            key={bar}
+            className={cx(signalBarVariants({ isOn: bar < filledBars }), SIGNAL_BAR_HEIGHTS[bar])}
+          />
         ))}
       </span>
     </div>
@@ -172,8 +254,12 @@ function SecurityBadge({
   const description = isSecured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
     <span className={securityBadgeVariants({ isSecured })} title={description}>
-      {isSecured ? <LockIcon size={12} /> : <UnlockIcon size={12} />}
-      <span className={styles.securityBadgeLabel} aria-hidden>
+      {isSecured ? (
+        <LockIcon size={12} className={securityIconVariants({ isSecured })} />
+      ) : (
+        <UnlockIcon size={12} className={securityIconVariants({ isSecured })} />
+      )}
+      <span className="min-w-[0] overflow-hidden text-ellipsis" aria-hidden>
         {label}
       </span>
       {/* The hover title isn't announced; the full description is. */}
@@ -192,8 +278,12 @@ function WifiExtras({
   return (
     <>
       <DataRow label="Signal">
-        <div className={styles.signalDetail}>
-          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
+        {/* Block flex (not inline-flex) avoids extra line-box strut height inside
+            .text-value, which would misalign the bars with the label text. */}
+        <div className={cx(styles.signalDetail, 'flex items-center justify-end gap-8')}>
+          {info.signalStrength != null && (
+            <SignalMeter strength={info.signalStrength} placement="details" />
+          )}
           {formatSignalDetail(info)}
         </div>
       </DataRow>
@@ -255,40 +345,56 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   const detailsId = useId()
 
   return (
-    <section className={rootVariants({ variant: display.variant })} aria-labelledby={titleId}>
-      <div className={styles.strip}>
+    // The card's focus frame: the strip's toggle expands the whole card, so focus
+    // rings the card (strip and, when open, the details) just inside its edge.
+    <section
+      className={cx(
+        'bg-panel rounded-lg shadow-panel overflow-hidden',
+        'has-[>div>button:focus-visible]:[outline:var(--focus-ring)]',
+        'has-[>div>button:focus-visible]:outline-offset-(--focus-inset)',
+      )}
+      aria-labelledby={titleId}
+    >
+      <div
+        className={cx(
+          'relative flex items-start gap-12 w-full text-left',
+          'min-h-(--section-header-min-height) py-(--section-header-padding-y) px-(--section-header-padding-x)',
+          'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+        )}
+      >
         {/* A transparent full-strip button keeps the whole row one expand target
             without wrapping the QR button inside another button (invalid HTML).
             The content above it stays click-through so the overlay still toggles;
             the QR button opts back in and handles its own click. */}
         <button
           type="button"
-          className={styles.stripToggle}
+          className="absolute inset-[0] z-0 cursor-pointer focus-visible:outline-none"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
           aria-controls={detailsId}
           aria-label="Connection details"
         />
-        <div className={styles.stripIcon}>
+        <div className={stripIconVariants({ variant: display.variant })}>
           <ConnectionIcon variant={display.variant} />
         </div>
-        <div className={styles.stripText}>
-          <h2 id={titleId} className={cx('text-title', styles.stripTitle)}>
+        <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-[0] py-2">
+          <h2 id={titleId} className="text-title truncate">
             {display.title}
           </h2>
           {subItems.length > 0 ? (
-            <InlineMeta className={cx('text-secondary', styles.stripSub)} items={subItems} />
+            <InlineMeta className={STRIP_SUB} items={subItems} />
           ) : (
-            <div className={cx('text-secondary', styles.stripSub)}>{display.subtitle}</div>
+            <div className={STRIP_SUB}>{display.subtitle}</div>
           )}
         </div>
         {isWifiNetwork(info) && (
-          <span className={styles.stripShare}>
+          // Raised above the toggle, so it takes its own click.
+          <span className="relative z-1 inline-flex self-center shrink-0">
             <ShareWifiButton />
           </span>
         )}
         {isWifiNetwork(info) && info.signalStrength != null && (
-          <SignalMeter strength={info.signalStrength} />
+          <SignalMeter strength={info.signalStrength} placement="strip" />
         )}
         <ChevronDownIcon
           size={14}
@@ -304,7 +410,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         className={detailsWrapVariants({ isOpen: isExpanded })}
         aria-hidden={!isExpanded}
       >
-        <DataList className={cx(styles.details, 'row-list')}>
+        <DataList className={detailsVariants({ isOpen: isExpanded })}>
           <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
           <DataRow
             label="Public IP"

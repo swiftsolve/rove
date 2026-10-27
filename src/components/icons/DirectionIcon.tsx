@@ -1,10 +1,9 @@
 import { cva } from 'class-variance-authority'
 import { ArrowDownIcon, ArrowUpIcon } from '@/components/icons/Icons'
-import styles from './DirectionIcon.module.css'
 
-const rootVariants = cva(styles.root, {
+const rootVariants = cva('inline-flex items-center shrink-0', {
   variants: {
-    series: { down: styles.seriesDown, up: styles.seriesUp },
+    series: { down: 'text-series-down', up: 'text-series-up' },
   },
 })
 
@@ -20,7 +19,7 @@ interface DirectionIconProps {
  * The colour-keyed direction glyph that marks a download/upload readout: a blue
  * down-arrow for download, a purple up-arrow for upload. Replaces the plain
  * colour dots so the icon itself carries the meaning. Colour comes from the
- * `--series-*` variables via the `.series-*` class; the icon inherits it through
+ * `--series-*` variables via the `text-series-*` utility; the icon inherits it through
  * `currentColor`.
  */
 export function DirectionIcon({ series, size = 14 }: DirectionIconProps): JSX.Element {

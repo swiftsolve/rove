@@ -12,15 +12,26 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { cva, cx } from 'class-variance-authority'
-import styles from './Tooltip.module.css'
+import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 
-const bubbleVariants = cva([styles.bubble, styles.portal], {
-  variants: {
-    /** Placed: hidden until the first measure gives it real coordinates. */
-    isVisible: { true: styles.isVisible },
+const bubbleVariants = cva(
+  [
+    'fixed z-[9999] w-max px-10 py-8 rounded-sm',
+    'bg-raised border border-line-strong shadow-raised',
+    'text-xs leading-[1.5] text-(--text-secondary) text-left whitespace-normal pointer-events-none',
+    '[transition:opacity_var(--duration-fast)_var(--ease-in-out),transform_var(--duration-fast)_var(--ease-in-out),visibility_var(--duration-fast)]',
+  ],
+  {
+    variants: {
+      /** Placed: hidden until the first measure gives it real coordinates. */
+      isVisible: {
+        true: 'opacity-100 visible transform-[translateY(0)]',
+        false: 'opacity-0 invisible transform-[translateY(-3px)]',
+      },
+    },
   },
-})
+)
 
 interface TooltipProps {
   /** Label shown on hover / keyboard focus. */
@@ -240,7 +251,7 @@ export function Tooltip({
     <>
       <span
         ref={wrapRef}
-        className={cx(styles.wrap, className)}
+        className={cn('relative inline-flex', className)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onFocusCapture={(event) => {

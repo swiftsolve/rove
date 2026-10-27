@@ -13,7 +13,6 @@ import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
-import styles from './DiagnosticsView.module.css'
 
 /** Gateway round trips up to this read as healthy (green). */
 const GOOD_LATENCY_MAX_MS = 40
@@ -21,6 +20,27 @@ const GOOD_LATENCY_MAX_MS = 40
 const WARN_LATENCY_MAX_MS = 120
 /** Any packet loss is worth flagging; past this it reads as bad, not just amber. */
 const WARN_LOSS_MAX_PCT = 2
+
+// The packet-loss warning band reads as a continuation of the readout rather
+// than a divided-off footnote: no top line, and a roomier vertical padding so
+// the band has enough breathing room.
+const ROUTER_FOOTER = cx(
+  '[&_.ui-section-footer]:pt-12 [&_.ui-section-footer]:pb-16',
+  '[&_.ui-section-footer]:border-t-0',
+)
+
+// Tighter row rhythm for the Router (and ISP) and DNS readouts: less vertical
+// air between each label/value pair than the default 8px. First/last stay flush
+// to the body (the global .data-row rules zero them). DNS sits a touch looser
+// than Router since its repeated identical rows read denser at the same padding.
+const TIGHT_ROWS = cx(
+  '[&_.data-row:not(:first-child)]:pt-4',
+  '[&_.data-row:not(:last-child)]:pb-4',
+)
+const DNS_ROWS = cx(
+  '[&_.data-row:not(:first-child)]:pt-6',
+  '[&_.data-row:not(:last-child)]:pb-6',
+)
 
 function formatPercent(pct: number): string {
   return `${Math.round(pct * 10) / 10}%`
@@ -78,13 +98,13 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
   return (
     <Section
       title="Router"
-      className={styles.routerSection}
+      className={ROUTER_FOOTER}
       icon={<RouterIcon size={15} />}
-      bodyClassName={cx('row-list', styles.tightRows)}
+      bodyClassName={cx('row-list', TIGHT_ROWS)}
       bodyAs="dl"
       footer={
         ping && ping.packetLoss > 0 ? (
-          <p className={cx('text-small', styles.warning)}>
+          <p className="text-small">
             Packet loss can cause slow or unstable connections.
           </p>
         ) : undefined
@@ -124,7 +144,7 @@ function DnsSection({ servers }: { servers: string[] }): JSX.Element {
     <Section
       title="DNS"
       icon={<DnsIcon size={15} />}
-      bodyClassName={cx('row-list', styles.dnsRows)}
+      bodyClassName={cx('row-list', DNS_ROWS)}
       // Label/value pairs when there are servers; otherwise a single note.
       bodyAs={servers.length > 0 ? 'dl' : 'div'}
     >
@@ -158,7 +178,7 @@ function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
     <Section
       title={isp?.isVpn ? 'VPN' : 'ISP'}
       icon={<GlobeIcon size={15} />}
-      bodyClassName={cx('row-list', styles.tightRows)}
+      bodyClassName={cx('row-list', TIGHT_ROWS)}
       bodyAs={isp ? 'dl' : 'div'}
       action={ispBadge(isp)}
     >

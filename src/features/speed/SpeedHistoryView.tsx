@@ -19,18 +19,51 @@ import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { useMenu } from '@/hooks/useMenu'
 import styles from './SpeedHistoryView.module.css'
 
+// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
+// .text-secondary type style, which would bring its size and line height along.
+
 /** Connection badge, tinted by medium. */
-const connVariants = cva(styles.conn, {
+const connVariants = cva('inline-flex min-w-[0] items-center gap-6 text-sm font-medium', {
   variants: {
-    type: { wifi: styles.typeWifi, ethernet: styles.typeEthernet },
+    type: {
+      wifi: 'text-series-down',
+      ethernet: 'text-status-positive',
+      unknown: 'text-(--text-secondary)',
+    },
   },
 })
 
-const menuItemVariants = cva(styles.menuItem, {
-  variants: {
-    isDanger: { true: styles.isDanger },
+// Header overflow menu: a kebab that opens a small dropdown with Delete. Mirrors
+// the per-row menu on the manage-services page so the two read the same.
+const KEBAB = cx(
+  'inline-flex size-[30px] items-center justify-center rounded-sm text-tertiary',
+  'transition-[color,background] duration-(--duration-fast) ease-in-out',
+  'hover:bg-hover hover:text-primary aria-expanded:bg-hover aria-expanded:text-primary',
+)
+
+const DROPDOWN = cx(
+  styles.dropdown,
+  'absolute top-[calc(100%+4px)] right-[0] z-20 flex min-w-[112px] flex-col gap-2 p-4',
+  'rounded-sm border border-line-strong bg-raised shadow-raised',
+)
+
+const menuItemVariants = cva(
+  [
+    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm font-medium',
+    'transition-[color,background] duration-(--duration-fast) ease-in-out',
+    // Items fill the menu edge to edge, so the ring goes inside the item.
+    'focus-visible:outline-offset-(--focus-inset)',
+  ],
+  {
+    variants: {
+      isDanger: {
+        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)]',
+        false: 'text-(--text-secondary) hover:bg-hover hover:text-primary',
+      },
+    },
+    defaultVariants: { isDanger: false },
   },
-})
+)
 
 interface MetricProps {
   label: string
@@ -41,7 +74,7 @@ interface MetricProps {
 
 interface ConnectionBadgeStyle {
   Icon: typeof WifiIcon
-  /** The badge's tint; none for an unknown medium. */
+  /** The badge's tint: the medium's colour, or plain for an unknown one. */
   type: VariantProps<typeof connVariants>['type']
   /** Shown when the entry has no network name. */
   fallbackName: string
@@ -57,7 +90,7 @@ function connectionBadgeStyle(connectionType: string): ConnectionBadgeStyle {
   if (connectionType === 'ethernet') {
     return { Icon: EthernetIcon, type: 'ethernet', fallbackName: 'Ethernet' }
   }
-  return { Icon: GlobeIcon, type: null, fallbackName: 'Unknown' }
+  return { Icon: GlobeIcon, type: 'unknown', fallbackName: 'Unknown' }
 }
 
 function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
@@ -68,11 +101,12 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   return (
     <span className={connVariants({ type })}>
       <Icon size={13} />
-      <span className={styles.connName}>{networkName ?? fallbackName}</span>
+      <span className="min-w-[0] truncate text-primary">{networkName ?? fallbackName}</span>
       {band != null && (
         <>
           <DotSeparator />
-          <span className={styles.connBand}>{band}</span>
+          {/* Secondary to the name: the name truncates first, the band holds its width. */}
+          <span className="shrink-0 text-xs font-regular text-tertiary">{band}</span>
         </>
       )}
     </span>
@@ -81,18 +115,27 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
 
 function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
   return (
-    <div className={styles.metric}>
-      <dt className={styles.metricLabel}>
+    <div className="flex min-w-[0] flex-col gap-4">
+      <dt className="flex items-center gap-6">
         {series && <DirectionIcon series={series} size={13} />}
         <span className="field-label">{label}</span>
       </dt>
-      <dd className={cx(styles.metricValue, 'num')}>
+      <dd className="num text-2xl font-semibold text-primary">
         {value}
-        {unit && <span className={styles.metricUnit}> {unit}</span>}
+        {unit && <span className="font-sans text-xs font-regular text-(--text-secondary)"> {unit}</span>}
       </dd>
     </div>
   )
 }
+
+// Closing banner on the darkest panel, matching the capabilities detail card's
+// verdict strip: framed on three sides with the inset colour, rounded to the card's
+// bottom corners. The horizontal padding is trimmed by the border width so its
+// content stays aligned with the metrics grid above.
+const CARD_FOOTER = cx(
+  '-mx-(--section-body-padding) mt-8 px-[calc(var(--section-body-padding)-1px)] py-12',
+  'rounded-b-lg border border-t-0 border-inset bg-app',
+)
 
 function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const download = splitSpeedMbps(entry.downloadMbps)
@@ -100,15 +143,17 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
 
   return (
-    <li className={cx(styles.card, 'surface')}>
-      <div className={styles.cardHead}>
+    // No bottom padding: the footer banner bleeds to the card's bottom edge, and
+    // overflow clips it to the rounded corners.
+    <li className="surface overflow-hidden px-(--section-body-padding) pt-(--section-body-padding)">
+      <div className="mb-12 flex items-center justify-between gap-12">
         <ConnectionBadge entry={entry} />
-        <time className={styles.cardTime} dateTime={new Date(entry.timestamp).toISOString()}>
+        <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
           {formatHistoryTimestamp(entry.timestamp)}
         </time>
       </div>
 
-      <dl className={styles.cardMetrics}>
+      <dl className="grid grid-cols-[repeat(3,1fr)] gap-12">
         <Metric label="Download" value={download.value} unit={download.unit} series="down" />
         <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
         <Metric
@@ -118,8 +163,8 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
         />
       </dl>
 
-      <div className={styles.cardFooter}>
-        <p className={cx(styles.footnote, 'num')}>
+      <div className={CARD_FOOTER}>
+        <p className="num flex w-full min-w-[0] items-center justify-between gap-12 text-xs text-tertiary">
           <InlineMeta
             items={[
               <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
@@ -127,7 +172,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
             ]}
           />
           {entry.linkSpeedMbps != null && (
-            <span className={styles.footnoteLink}>
+            <span className="ml-auto shrink-0">
               Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps)}</span>
             </span>
           )}
@@ -149,10 +194,10 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
   }
 
   return (
-    <div className={styles.menu} ref={rootRef}>
+    <div className="relative shrink-0" ref={rootRef}>
       <button
         type="button"
-        className={styles.kebab}
+        className={KEBAB}
         {...triggerProps}
         aria-label="History options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
@@ -160,7 +205,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
         <MoreIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} {...menuProps}>
+        <div className={DROPDOWN} {...menuProps}>
           <button
             type="button"
             role="menuitem"
@@ -189,7 +234,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
   }
 
   return (
-    <ul role="list" className={styles.list}>
+    <ul role="list" className="flex flex-col gap-12">
       {entries.map((entry, index) => (
         <HistoryCard key={`${entry.timestamp}-${index}`} entry={entry} />
       ))}

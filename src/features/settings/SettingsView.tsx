@@ -18,7 +18,6 @@ import {
   SunIcon,
 } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
-import styles from './SettingsView.module.css'
 
 type CheckState =
   | { kind: 'idle' }
@@ -26,35 +25,73 @@ type CheckState =
   | { kind: 'up-to-date' }
   | { kind: 'available'; update: PendingUpdate }
 
-const segmentVariants = cva(styles.segment, {
+// Segments sit 2px inside their track, so the focus ring goes inside the
+// segment rather than spilling over the track's edge and its neighbours.
+const segmentVariants = cva(
+  [
+    'inline-flex items-center gap-6 py-[5px] px-10 border-none rounded-xs cursor-pointer',
+    'text-xs font-medium',
+    'transition-[background,color] duration-(--duration-fast) ease-in-out',
+    'focus-visible:outline-offset-(--focus-inset)',
+  ],
+  {
+    variants: {
+      isActive: {
+        true: 'bg-accent-muted text-accent-text',
+        false: 'bg-transparent text-tertiary hover:text-secondary',
+      },
+    },
+  },
+)
+
+const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
   variants: {
-    isActive: { true: styles.isActive },
+    /** Text above the control instead of beside it: for a control too wide to
+     *  sit inline (the three-segment theme picker). */
+    isStacked: { true: 'flex-col items-start gap-12', false: 'items-center gap-16' },
+  },
+  defaultVariants: { isStacked: false },
+})
+
+const statusVariants = cva('flex items-center text-xs', {
+  variants: {
+    kind: {
+      'up-to-date': 'gap-6 text-positive',
+      available: 'justify-between gap-12 text-(--text-secondary)',
+    },
   },
 })
 
-const rowVariants = cva(styles.row, {
-  variants: {
-    /** Text above the control instead of beside it (the theme picker). */
-    isStacked: { true: styles.isStacked },
-  },
-})
+// Rows carry their own symmetric vertical padding, like the Speed page's
+// capability list, so the column has no gap and the body no top padding.
+const LIST = 'flex flex-col pt-[0]'
 
-const statusVariants = cva(styles.status, {
-  variants: {
-    kind: { 'up-to-date': styles.isOk, available: styles.update },
-  },
-})
+// The update-status footer reads as a continuation of the row list rather than
+// a separate sunken band: no top divider, and symmetric padding so the status
+// text sits centred in the inset band. With the band present, the body drops its
+// bottom padding so only the last row's own padding sits above it; when idle
+// (no band) the body keeps it so the card doesn't look cramped.
+const UPDATES_SECTION = cx(
+  '[&_.ui-section-footer]:mt-12 [&_.ui-section-footer]:pt-12 [&_.ui-section-footer]:pb-12',
+  '[&_.ui-section-footer]:[border-top:none]',
+)
+const UPDATES_LIST = cx(LIST, 'has-[+.ui-section-footer]:pb-[0]')
 
-const checkNowVariants = cva(styles.checkNow, {
-  variants: {
-    isScanning: { true: styles.isScanning },
-  },
-})
+// "Check now" borrows the Run test button's shape but stays in a neutral
+// palette: it's a routine action, not the screen's main call to action.
+const CHECK_NOW = cx(
+  'text-(--text-secondary) bg-inset',
+  'not-disabled:not-aria-disabled:hover:text-primary not-disabled:not-aria-disabled:hover:bg-hover',
+)
+
+const ROW_TEXT = 'flex flex-col gap-4 min-w-[0]'
+const ROW_TITLE = 'text-md font-medium text-primary'
+const ROW_DESC = 'text-xs leading-[1.4] text-tertiary'
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
-  { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} /> },
-  { value: 'light', label: 'Light', icon: <SunIcon size={15} /> },
-  { value: 'system', label: 'System', icon: <ComputerIcon size={15} /> },
+  { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
+  { value: 'light', label: 'Light', icon: <SunIcon size={15} className="shrink-0" /> },
+  { value: 'system', label: 'System', icon: <ComputerIcon size={15} className="shrink-0" /> },
 ]
 
 // How far each arrow key moves the selection in the theme picker.
@@ -86,8 +123,10 @@ function ThemeSegmented({
   }
 
   return (
+    // A pill track like the Toggle's inset one, so the two Appearance controls
+    // read as a set; the active segment is lit with the accent.
     <div
-      className={styles.segmented}
+      className="inline-flex gap-2 p-2 bg-inset border border-line rounded-sm"
       role="radiogroup"
       aria-labelledby={labelId}
       aria-describedby={descriptionId}
@@ -126,13 +165,13 @@ function SettingRow({
   const descriptionId = useId()
   return (
     <div className={rowVariants()}>
-      <div className={styles.rowText}>
-        <span className={styles.rowTitle}>{title}</span>
-        <span id={descriptionId} className={styles.rowDesc}>
+      <div className={ROW_TEXT}>
+        <span className={ROW_TITLE}>{title}</span>
+        <span id={descriptionId} className={ROW_DESC}>
           {description}
         </span>
       </div>
-      <div className={styles.rowControl}>{control(descriptionId)}</div>
+      <div className="shrink-0">{control(descriptionId)}</div>
     </div>
   )
 }
@@ -143,7 +182,9 @@ function renderCheckResult(check: CheckState): ReactNode {
   if (check.kind === 'up-to-date') {
     return (
       <p className={statusVariants({ kind: 'up-to-date' })}>
-        <CheckIcon size={14} />
+        {/* Centring leaves the check a touch high against the text's x-height;
+            1px lower settles it onto the text. */}
+        <CheckIcon size={14} className="shrink-0 transform-[translateY(1px)]" />
         You're on the latest version.
       </p>
     )
@@ -189,7 +230,7 @@ export function SettingsView(): JSX.Element {
 
   return (
     <div className="view-page">
-      <header className={cx('view-header', styles.header)}>
+      <header className="view-header flex items-center gap-12">
         <span className="view-header-icon" aria-hidden>
           <SettingsIcon size={18} />
         </span>
@@ -198,8 +239,8 @@ export function SettingsView(): JSX.Element {
 
       <Section
         title="Updates"
-        className={styles.updates}
-        bodyClassName={styles.list}
+        className={UPDATES_SECTION}
+        bodyClassName={UPDATES_LIST}
         footer={renderCheckResult(check)}
       >
         <SettingRow
@@ -221,7 +262,8 @@ export function SettingsView(): JSX.Element {
             <Button
               aria-describedby={descriptionId}
               variant="primary"
-              className={checkNowVariants({ isScanning: isChecking })}
+              className={CHECK_NOW}
+              isBusy={isChecking}
               onClick={() => void runCheck()}
               disabled={isChecking}
             >
@@ -232,13 +274,13 @@ export function SettingsView(): JSX.Element {
         />
       </Section>
 
-      <Section title="Appearance" bodyClassName={styles.list}>
+      <Section title="Appearance" bodyClassName={LIST}>
         <div className={rowVariants({ isStacked: true })}>
-          <div className={styles.rowText}>
-            <span id={themeLabelId} className={styles.rowTitle}>
+          <div className={ROW_TEXT}>
+            <span id={themeLabelId} className={ROW_TITLE}>
               Theme
             </span>
-            <span id={themeDescriptionId} className={styles.rowDesc}>
+            <span id={themeDescriptionId} className={ROW_DESC}>
               Use a dark or light appearance, or match your system setting.
             </span>
           </div>
@@ -258,13 +300,33 @@ export function SettingsView(): JSX.Element {
         />
       </Section>
 
-      <Section title="About" bodyClassName={styles.list}>
-        <button type="button" className={styles.linkRow} onClick={() => navigate({ tab: 'about' })}>
-          <div className={styles.rowText}>
-            <span className={styles.rowTitle}>About Rove</span>
-            <span className={styles.rowDesc}>Version, platform, and source.</span>
+      <Section title="About" bodyClassName={LIST}>
+        {/* A whole-row link that reads like a Speed-page capability row: the hover
+            highlight bleeds 8px into the section padding, so the focus ring (the
+            ring alone, no wash) is drawn inside it. The chevron is always faint
+            and brightens on hover and focus. */}
+        <button
+          type="button"
+          className={cx(
+            'group flex items-center justify-between gap-16 w-[calc(100%+16px)] -mx-8',
+            'px-8 py-(--row-padding-y) rounded-sm text-left cursor-pointer',
+            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+            'focus-visible:outline-offset-(--focus-inset)',
+          )}
+          onClick={() => navigate({ tab: 'about' })}
+        >
+          <div className={ROW_TEXT}>
+            <span className={ROW_TITLE}>About Rove</span>
+            <span className={ROW_DESC}>Version, platform, and source.</span>
           </div>
-          <ChevronRightIcon size={16} className={styles.linkChevron} />
+          <ChevronRightIcon
+            size={16}
+            className={cx(
+              'shrink-0 text-tertiary opacity-30',
+              'transition-[opacity] duration-(--duration-fast) ease-in-out',
+              'group-hover:opacity-70 group-focus-visible:opacity-70',
+            )}
+          />
         </button>
       </Section>
 

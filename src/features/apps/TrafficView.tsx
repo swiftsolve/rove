@@ -29,16 +29,22 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
-import styles from './TrafficView.module.css'
 
-/** One segment of a row's down/up bar, coloured by its series. */
-const segVariants = cva(styles.seg, {
+/** One segment of a row's down/up bar, coloured by its series. Its width eases
+ *  as the totals (and the busiest-type scale) change, so the bars glide in step
+ *  with the count-up figures; the global reduced-motion rule neutralises it. */
+const segVariants = cva('h-full transition-[width] duration-[400ms] ease-out', {
   variants: {
-    series: { down: styles.seriesDown, up: styles.seriesUp },
+    series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
 })
+
+// Download/upload figures, right-aligned in a fixed-width box so the down and up
+// columns line up across rows (matches the Apps and Hosts views).
+const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const TRAFFIC_INFO_HINT =
   'Your session’s traffic grouped by kind — the connection’s remote port ' +
@@ -97,33 +103,41 @@ function TrafficRow({
   const upPct = type.txBytes * scale
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return (
-    <li className={styles.row}>
-      <div className={styles.main}>
-        <span className={styles.id}>
-          <Icon size={15} className={styles.glyph} />
-          <span className={styles.name} title={type.label}>
+    <li className="flex flex-col gap-8 px-(--section-body-padding) py-12">
+      <div className="flex items-center justify-between gap-12">
+        <span className="inline-flex min-w-[0] items-center gap-8">
+          <Icon size={15} className="shrink-0 text-tertiary" />
+          <span className="truncate text-sm text-primary" title={type.label}>
             {type.label}
           </span>
         </span>
-        <MetricValue value={total} className={cx(styles.total, 'num')} format={formatBytes} />
+        <MetricValue
+          value={total}
+          className="num shrink-0 text-sm text-(--text-secondary)"
+          format={formatBytes}
+        />
       </div>
+      {/* One track, two segments side by side, each scaled against the busiest
+          type so rows read comparably; an empty segment collapses to zero width.
+          Sits just inside the glyph's left edge, like the Apps bar. */}
       <div
-        className={styles.bar}
+        className="ml-[3px] flex h-[3px] overflow-hidden rounded-xs bg-inset"
         role="img"
         aria-label={`${formatBytes(type.rxBytes)} down, ${formatBytes(type.txBytes)} up`}
       >
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
-      {/* The bar's label above already reads these figures out. */}
-      <div className={styles.figures} aria-hidden>
-        <span className={styles.figure}>
+      {/* The bar's label above already reads these figures out. The down arrow
+          sits centred under the type glyph, echoing the Apps and Hosts views. */}
+      <div className="flex items-center gap-12" aria-hidden>
+        <span className={FIGURE}>
           <DirectionIcon series="down" size={11} />
-          <MetricValue value={type.rxBytes} className="num" format={formatBytes} />
+          <MetricValue value={type.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
-        <span className={styles.figure}>
+        <span className={FIGURE}>
           <DirectionIcon series="up" size={11} />
-          <MetricValue value={type.txBytes} className="num" format={formatBytes} />
+          <MetricValue value={type.txBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
       </div>
     </li>
@@ -165,7 +179,13 @@ function TrafficBody({
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
   return (
     <div className="ui-section">
-      <ul role="list" aria-label="Traffic types by usage" className={cx('ui-section-body', styles.list)}>
+      {/* The rows own the inset (p-[0] here), so the hairlines between them run
+          edge to edge, clipped to the card's rounded corners. */}
+      <ul
+        role="list"
+        aria-label="Traffic types by usage"
+        className="ui-section-body flex flex-col p-[0] [&>li+li]:border-t [&>li+li]:border-t-line"
+      >
         {types.map((type) => (
           <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
         ))}

@@ -16,25 +16,36 @@ import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import type { SpeedTestConnection } from '@/features/speed/types'
 import styles from './SpeedTestSection.module.css'
 
+// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
+// .text-secondary type style, which would bring its size and line height along.
+
 /** The connection the footer names, its glyph tinted by medium. */
-const connVariants = cva(styles.conn, {
+const connVariants = cva('inline-flex items-center gap-6 font-medium text-(--text-secondary)', {
   variants: {
-    type: { wifi: styles.typeWifi, ethernet: styles.typeEthernet },
+    type: { wifi: '[&_svg]:text-series-down', ethernet: '[&_svg]:text-status-positive' },
   },
 })
 
-/** A hero speed readout; muted "…" before any test has run. */
-const speedCellVariants = cva(['metric', 'num'], {
+/** A hero speed's digits; muted "…" before any test has run, so the labels lead
+ *  and the "…" reads as pending, not zeroed. */
+const speedValueVariants = cva('metric-value', {
   variants: {
-    isPlaceholder: { true: styles.isEmpty },
+    isPlaceholder: { true: 'text-tertiary' },
   },
 })
 
-const substatValueVariants = cva([styles.substatValue, 'num'], {
+const substatValueVariants = cva(['num', 'text-md font-medium'], {
   variants: {
-    isEmpty: { true: styles.isEmpty },
+    isEmpty: { true: 'text-tertiary', false: 'text-primary' },
   },
 })
+
+// Full-bleed inset panel at the card bottom, the same treatment as the live
+// throughput chart.
+const INSET_PANEL = cx(
+  '-mx-(--section-body-padding) mt-16 -mb-(--section-body-padding)',
+  'bg-inset p-(--section-body-padding)',
+)
 
 // Material 3 "wavy" determinate progress, matching Android's LinearWavyProgressIndicator:
 // a scrolling squiggle for the active portion with a dot riding its leading edge,
@@ -188,8 +199,8 @@ function SpeedCell({
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
   return (
-    <dd className={speedCellVariants({ isPlaceholder })}>
-      <span className="metric-value">{isPlaceholder ? '…' : value}</span>
+    <dd className="metric num">
+      <span className={speedValueVariants({ isPlaceholder })}>{isPlaceholder ? '…' : value}</span>
       {!isPlaceholder && <span className="metric-unit">{unit}</span>}
     </dd>
   )
@@ -294,7 +305,7 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
   // by the loop) reveals the filled portion; the dot rides its leading edge and
   // masks the clip's straight cut. The dot stays on the centerline, so cy is fixed.
   return (
-    <div ref={wrapRef} className={styles.wavy} aria-hidden>
+    <div ref={wrapRef} className="block h-[16px] w-full leading-[0]" aria-hidden>
       <svg ref={svgRef} height={WAVE_HEIGHT}>
         <defs>
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
@@ -303,7 +314,7 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
         </defs>
         <g clipPath={`url(#${clipId})`}>
           <g
-            className={styles.wavyScroll}
+            className={cx(styles.wavyScroll, 'will-change-transform')}
             style={
               {
                 '--wave-length': `${WAVE_LENGTH}px`,
@@ -311,17 +322,22 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
               } as CSSProperties
             }
           >
-            <path ref={fillRef} className={styles.wavyFill} />
+            <path
+              ref={fillRef}
+              className="fill-none stroke-accent stroke-3 [stroke-linecap:round] [stroke-linejoin:round]"
+            />
           </g>
         </g>
+        {/* The remaining portion: the same accent, dimmed, as Android draws the
+            track at reduced emphasis behind the active indicator. */}
         <line
           ref={trackRef}
-          className={styles.wavyTrack}
+          className="stroke-accent stroke-3 opacity-24 [stroke-linecap:round]"
           y1={WAVE_MID}
           y2={WAVE_MID}
           style={{ display: 'none' }}
         />
-        <circle ref={dotRef} className={styles.wavyDot} cy={WAVE_MID} r={LEAD_DOT_R} />
+        <circle ref={dotRef} className="fill-accent" cy={WAVE_MID} r={LEAD_DOT_R} />
       </svg>
     </div>
   )
@@ -329,13 +345,13 @@ function WavyProgress({ progress }: { progress: number }): JSX.Element {
 
 function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Element {
   return (
-    <div className={styles.progress}>
-      <div className={styles.progressHead}>
-        <span className={styles.progressMessage}>{progress.message || 'Starting…'}</span>
-        <span className={cx(styles.progressPct, 'num')}>{Math.round(progress.progress)}%</span>
+    <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
+      <div className="flex items-baseline justify-between gap-12">
+        <span className="text-sm leading-[1.4] text-(--text-secondary)">{progress.message || 'Starting…'}</span>
+        <span className="num text-md font-regular text-accent">{Math.round(progress.progress)}%</span>
       </div>
       <div
-        className={styles.progressTrack}
+        className="w-full"
         role="progressbar"
         aria-label="Speed test progress"
         aria-valuenow={Math.round(progress.progress)}
@@ -360,8 +376,8 @@ function HeroCell({
   isPlaceholder: boolean
 }): JSX.Element {
   return (
-    <div className={styles.heroCell}>
-      <dt className={styles.heroLabel}>
+    <div className="flex flex-col gap-8">
+      <dt className="flex items-center gap-6">
         <DirectionIcon series={series} />
         <span className="field-label">{label}</span>
       </dt>
@@ -380,7 +396,7 @@ function Substat({
   isEmpty: boolean
 }): JSX.Element {
   return (
-    <div className={styles.substat}>
+    <div className="flex flex-col gap-4">
       <dt className="field-label">{label}</dt>
       <dd className={substatValueVariants({ isEmpty })}>{text}</dd>
     </div>
@@ -395,11 +411,13 @@ function ResultFooter({
   linkCapacityMbps: number | null
 }): JSX.Element {
   return (
-    <div className={styles.footer}>
-      <p className={cx('text-meta', styles.footnote)}>
+    // The strip under the results: connection left, link speed right. The text
+    // size comes from .text-meta.
+    <div className={cx(INSET_PANEL, 'flex items-center')}>
+      <p className="text-meta flex w-full min-w-[0] items-center justify-between gap-12">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
-          <span className={styles.footnoteLink}>
+          <span className="ml-auto shrink-0">
             Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
           </span>
         )}
@@ -471,13 +489,13 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
     >
       {error && <p className="inline-error" role="alert">{error}</p>}
 
-      <dl className={styles.hero}>
+      <dl className="grid grid-cols-[1fr_1fr] gap-16">
         <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
         <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
       </dl>
 
       {!isTesting && (
-        <dl className={styles.substats}>
+        <dl className="mt-16 grid grid-cols-[repeat(3,1fr)] gap-16">
           <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
           <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />

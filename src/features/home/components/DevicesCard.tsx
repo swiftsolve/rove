@@ -11,7 +11,6 @@ import {
   StatReadout,
 } from '@/features/home/components/StatCard'
 import { Button } from '@/components/Button'
-import styles from './DevicesCard.module.css'
 
 function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'
@@ -71,7 +70,10 @@ function DevicesCardBody({
   // replaces the count during a real scan, not every refresh.
   if (isScanning) {
     return (
-      <div className={styles.loading} aria-hidden>
+      // Centres the wave in the card's remaining height (the card is
+      // grid-stretched to the taller Usage card), nudged down a little toward the
+      // body's centre. No min-height: a floor would push the grid row taller.
+      <div className="flex flex-1 items-center justify-center pt-6" aria-hidden>
         <ButtonSpinner size={14} color="var(--text-secondary)" />
       </div>
     )
@@ -79,12 +81,14 @@ function DevicesCardBody({
 
   if (deviceCount != null) {
     return (
-      <div className={styles.count} aria-hidden>
+      // The count shares the Usage card's top offset. The key dot is small, so it
+      // gets a touch more room before the count than the usage arrows get.
+      <div className="mt-12" aria-hidden>
         <StatReadout
           marker="online"
           value={String(onlineDeviceCount ?? deviceCount)}
           unit="online"
-          className={styles.readout}
+          className="gap-8"
         />
       </div>
     )
@@ -99,8 +103,11 @@ function DevicesCardBody({
       onScan()
     }
     return (
-      <div className={styles.scan}>
-        <Button className={styles.scanButton} onClick={handleScan}>
+      // Centred at the foot of the card's remaining height, like the loading wave.
+      // The button rises above the card's stretched open button to take its own
+      // clicks, with tighter sides than a secondary Button's and a nudge lower.
+      <div className="flex flex-1 items-end justify-center">
+        <Button className="relative z-2 gap-4 px-8 -mb-4" onClick={handleScan}>
           <SearchIcon size={14} />
           Discover
         </Button>

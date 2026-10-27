@@ -26,66 +26,127 @@ import { Tooltip } from '@/components/Tooltip'
 import { useNow } from '@/hooks/useNow'
 import { IS_MAC } from '@/lib/platform'
 import { formatMac } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
 import styles from './DevicesView.module.css'
 
-/** The scan status and the online tally: `isLeaving` plays the slide-out. */
-const scanVariants = cva(styles.scan, {
+// The one on its way out overlays the slot's start rather than taking layout
+// space, so the incoming one doesn't get shoved right then snap back.
+const LEAVING = ['absolute top-[0] left-[0]', styles.slideOut]
+
+/** The scan status and the online tally: `isLeaving` plays the slide-out. The
+ *  scan status is inline-block, not flex, so its dot can be nudged to the text's
+ *  optical middle with vertical-align (flex centring reads a touch low). */
+const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: styles.isLeaving },
+    isLeaving: { true: LEAVING, false: styles.slideIn },
   },
 })
 
-const onlineVariants = cva(styles.online, {
+const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: styles.isLeaving },
+    isLeaving: { true: LEAVING, false: styles.slideIn },
   },
 })
 
-/** One stage word: waits below, settles as the current stage, then drifts up. */
-const scanPhaseVariants = cva(styles.scanPhase, {
-  variants: {
-    state: { past: styles.statePast, current: styles.stateCurrent, next: styles.stateNext },
-  },
-})
+// The green dot before the online tally and the scan status. Nudged up 1px from
+// vertical-align's x-height middle to centre on the digits' cap height, the same
+// in both so the dot lands in the exact same spot when the two swap.
+const STATUS_DOT = cx(
+  'relative -top-px mr-8 inline-block size-[5px] align-middle',
+  'rounded-[50%] bg-status-positive',
+)
 
-const rowVariants = cva(['ui-section', styles.row], {
-  variants: {
-    isGateway: { true: styles.isGateway },
+/** One stage word: waits below, settles as the current stage, then drifts up,
+ *  so entering and leaving read as one continuous rising motion. */
+const scanPhaseVariants = cva(
+  'absolute top-[0] left-[0] transition-[opacity,transform] duration-(--duration-normal) ease-out',
+  {
+    variants: {
+      state: {
+        past: 'opacity-0 transform-[translateY(-5px)]',
+        current: 'opacity-100 transform-none',
+        next: 'opacity-0 transform-[translateY(5px)]',
+      },
+    },
   },
-})
+)
 
-/** A device's kind glyph, tinted by category. Watches and unknown devices stay neutral. */
-const iconVariants = cva(styles.icon, {
+// The device card: icon pinned to the top-left, the body column fills the rest.
+const DEVICE_ROW = cx(
+  'ui-section flex items-start gap-12',
+  'px-(--section-header-padding-x) py-(--section-header-padding-y)',
+)
+
+const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
+
+/** A device's kind glyph, in a tile tinted by category so categories scan at a
+ *  glance. The gateway is green whatever its kind; watches and unknown devices
+ *  stay neutral. */
+const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center rounded-sm', {
   variants: {
-    kind: {
-      router: styles.kindRouter,
-      nas: styles.kindNas,
-      computer: styles.kindComputer,
-      tablet: styles.kindTablet,
-      phone: styles.kindPhone,
-      watch: null,
-      console: styles.kindConsole,
-      tv: styles.kindTv,
-      printer: styles.kindPrinter,
-      camera: styles.kindCamera,
-      speaker: styles.kindSpeaker,
-      iot: styles.kindIot,
-      unknown: null,
+    tone: {
+      neutral: 'bg-inset text-(--text-secondary)',
+      down: ['text-series-down', ICON_TINT],
+      up: ['text-series-up', ICON_TINT],
+      warning: ['text-status-warning', ICON_TINT],
+      positive: ['text-status-positive', ICON_TINT],
     },
   },
 })
 
+type IconTone = NonNullable<VariantProps<typeof iconVariants>['tone']>
+
+const KIND_TONES: Record<LanDeviceKind, IconTone> = {
+  router: 'positive',
+  nas: 'down',
+  computer: 'down',
+  tablet: 'down',
+  phone: 'down',
+  watch: 'neutral',
+  console: 'up',
+  tv: 'up',
+  printer: 'up',
+  camera: 'warning',
+  speaker: 'warning',
+  iot: 'warning',
+  unknown: 'neutral',
+}
+
 /** The Online / Offline status beside a device's name. */
-const stateVariants = cva(styles.state, {
+const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
   variants: {
-    isReachable: { true: styles.isReachable },
+    isReachable: { true: 'text-positive', false: 'text-tertiary' },
   },
 })
+
+// A long name uses up to two lines rather than truncating; the card grows to
+// fit. It takes the row width the status doesn't. text-lg: the widget-title size
+// (e.g. "Capabilities"), not text-title's larger one.
+const DEVICE_NAME = cx(
+  'text-title min-w-[0] flex-1 text-lg',
+  'line-clamp-2 [line-clamp:2] wrap-anywhere',
+)
+
+// Device kind, vendor, OS and model as a subtitle line under the name. It stays
+// on one line and ellipsizes when space is tight, so an offline device's age
+// remains a clean right-hand column instead of wrapping beneath it.
+const DEVICE_META = 'flex min-w-[0] items-baseline gap-8'
+
+const DEVICE_KIND = cx(
+  'text-meta min-w-[0] flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap',
+  '[&_.inline-meta-item]:overflow-hidden [&_.inline-meta-item]:text-ellipsis',
+)
+
+// The privacy-randomized note, set off from the MAC by a small dot.
+const RANDOMIZED_TAG = cx(
+  'relative whitespace-nowrap pl-12 tracking-[0] text-tertiary',
+  "before:absolute before:top-[50%] before:left-[0] before:size-[3px] before:content-['']",
+  'before:rounded-[50%] before:bg-current before:opacity-55 before:transform-[translateY(-50%)]',
+)
 
 type ScanPhaseState = 'past' | 'current' | 'next'
 
@@ -322,9 +383,11 @@ function ScanStatus({
       role={isLiveRegion ? 'status' : undefined}
       aria-hidden={isActive ? undefined : true}
     >
-      <span className={styles.scanDot} aria-hidden />
-      <span className={styles.scanPhases}>
-        <span className={styles.scanPhaseSizer} aria-hidden>
+      <span className={cx(STATUS_DOT, 'animate-[status-pulse_1.6s_ease-in-out_infinite]')} aria-hidden />
+      {/* The stage words are stacked so they cross-fade in place; a hidden sizer
+          (the longest label) holds the box to a stable width so nothing reflows. */}
+      <span className="relative inline-block">
+        <span className="invisible" aria-hidden>
           Identifying
         </span>
         {SCAN_PHASES.map((label, i) => (
@@ -369,8 +432,8 @@ function OnlineIndicator({
       title="Responding to the last scan"
       aria-hidden={isActive ? undefined : true}
     >
-      <span className={styles.onlineDot} aria-hidden />
-      <span className="num">{count}</span> online
+      <span className={STATUS_DOT} aria-hidden />
+      <span className="num text-(--text-secondary)">{count}</span> online
     </span>
   )
 }
@@ -391,15 +454,15 @@ function DeviceMetaLine({
   if (device.isGateway) {
     const product = gatewayProduct(device)
     return (
-      <div className={styles.meta}>
+      <div className={DEVICE_META}>
         <InlineMeta
           items={[
-            <span key="role" className={styles.gatewayRole}>
+            <span key="role" className="text-positive">
               Gateway
             </span>,
             ...(product ? [product] : []),
           ]}
-          className={cx('text-meta', styles.kind)}
+          className={DEVICE_KIND}
         />
       </div>
     )
@@ -408,9 +471,10 @@ function DeviceMetaLine({
   const metaParts = deviceMetaParts(device, name)
   if (metaParts.length === 0 && !lastSeenLabel) return null
   return (
-    <div className={styles.meta}>
-      {metaParts.length > 0 && <InlineMeta items={metaParts} className={cx('text-meta', styles.kind)} />}
-      {lastSeenLabel && <span className={cx('text-meta', styles.lastSeen)}>{lastSeenLabel}</span>}
+    <div className={DEVICE_META}>
+      {metaParts.length > 0 && <InlineMeta items={metaParts} className={DEVICE_KIND} />}
+      {/* ml-auto keeps the age flush right even when the type label is absent. */}
+      {lastSeenLabel && <span className="text-meta ml-auto shrink-0">{lastSeenLabel}</span>}
     </div>
   )
 }
@@ -422,38 +486,41 @@ function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <li className={rowVariants({ isGateway: device.isGateway })}>
-      <span className={iconVariants({ kind: device.kind })}>
+    <li className={DEVICE_ROW}>
+      <span className={iconVariants({ tone: device.isGateway ? 'positive' : KIND_TONES[device.kind] })}>
         <KindIcon kind={device.kind} />
       </span>
-      <div className={styles.body}>
-        <div className={styles.top}>
-          <h2 className={cx('text-title', styles.name)}>{name}</h2>
+      <div className="flex min-w-[0] flex-1 flex-col gap-4">
+        {/* Name on the left, status on the right. mb-2 adds a touch more air
+            below the (larger) name, on top of the column's 4px gap. */}
+        <div className="mb-2 flex items-start justify-between gap-8">
+          <h2 className={DEVICE_NAME}>{name}</h2>
           <span
             className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
-            <span className={styles.dot} aria-hidden />
+            <span className="size-[5px] rounded-[50%] bg-current" aria-hidden />
             {device.isReachable ? 'Online' : 'Offline'}
           </span>
         </div>
 
         <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
 
-        <div className={styles.bottom}>
-          <span className={cx('text-meta', styles.mac)}>
+        {/* MAC on the left, IP pinned to the bottom-right. */}
+        <div className="flex items-baseline justify-between gap-8">
+          <span className="text-meta inline-flex min-w-[0] items-baseline gap-8 tabular-nums tracking-[0.02em]">
             <span>
               <span className="sr-only">MAC address </span>
               {formatMac(device.mac)}
             </span>
             {shouldShowRandomizedTag && (
-              <span className={styles.random} title="Privacy-randomized MAC address">
+              <span className={RANDOMIZED_TAG} title="Privacy-randomized MAC address">
                 <span aria-hidden>Randomized</span>
                 <span className="sr-only">, privacy-randomized</span>
               </span>
             )}
           </span>
-          <span className={cx(styles.ip, 'num')}>
+          <span className="num shrink-0 text-(--text-secondary)">
             <span className="sr-only">IP address </span>
             {device.ip}
           </span>
@@ -490,7 +557,9 @@ function renderSubtitle(
             instead of shoving each other sideways. The slot is the live
             region, so both the scan stages and the final tally are read out;
             the leaving one is hidden from it. */}
-        <span className={styles.indicator} role="status">
+        {/* The 2px set-off on top of the row's 6px gap puts the dot 8px from the
+            subnet, the spacing every dot separator keeps (see .sep-dot). */}
+        <span className="relative ml-2 inline-block" role="status">
           <OnlineIndicator isActive={!isScanning} count={onlineCount} />
           <ScanStatus isActive={isScanning} isLiveRegion={false} />
         </span>
@@ -537,13 +606,17 @@ function DevicesBody({
     )
   }
   return (
-    <div className={styles.list}>
-      <ul role="list" aria-label="Devices" aria-busy={isScanning} className={styles.devices}>
+    <div className="flex flex-col gap-10">
+      <ul role="list" aria-label="Devices" aria-busy={isScanning} className="flex flex-col gap-10">
         {devices.map((device) => (
           <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
         ))}
       </ul>
-      {shouldShowLocalNetworkHint && <p className={cx('text-muted', styles.hint)}>{LOCAL_NETWORK_HINT}</p>}
+      {/* The Local Network hint trailing a scan that did find devices; the
+          blank-state copy is laid out by <EmptyState>. */}
+      {shouldShowLocalNetworkHint && (
+        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-[1.45]">{LOCAL_NETWORK_HINT}</p>
+      )}
     </div>
   )
 }
@@ -566,7 +639,8 @@ export function DevicesView(): JSX.Element {
         icon={<DevicesIcon size={18} />}
         title={headerTitle(devices.length)}
         subtitle={renderSubtitle(subnet, hasDevices, isScanning, onlineCount)}
-        subtitleClassName={styles.subnet}
+        // "Subnet" label and value on one line, aligned on their baselines.
+        subtitleClassName="inline-flex items-baseline gap-6"
         isSubtitleShown={hasDevices && subnet != null}
         actions={
           <>

@@ -15,14 +15,65 @@ import { DotSeparator } from '@/components/DotSeparator'
 import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
 import { IconButton } from '@/components/IconButton'
-import styles from './AppUsageView.module.css'
 
-/** One segment of a row's down/up bar, coloured by its series. */
-const segVariants = cva(styles.seg, {
+/** One segment of a row's down/up bar, coloured by its series. Its width eases
+ *  as the totals (and the busiest-app scale) change, so the bars glide in step
+ *  with the count-up figures; the global reduced-motion rule neutralises it. */
+const segVariants = cva('h-full transition-[width] duration-[400ms] ease-out', {
   variants: {
-    series: { down: styles.seriesDown, up: styles.seriesUp },
+    series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
 })
+
+// A row runs edge to edge in the card and owns the horizontal inset, so the
+// hairlines between rows (on the list) span the full width. Every row carries
+// equal top and bottom padding, so the first and last aren't special-cased.
+// Hover gets the Speed page's capability-row wash.
+const ROW = cx(
+  'group/row relative flex flex-col gap-8 px-(--section-body-padding) py-12',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+)
+
+// The whole row links into that app's hosts: a transparent overlay button
+// covers it, so the block content needn't nest inside a button, and being
+// absolutely positioned it paints above the static content to catch the click.
+// Its focus ring sits just inside the row (rows run edge to edge), square except
+// where the first and last rows meet the card's rounded corners.
+const ROW_LINK = cx(
+  'absolute inset-[0] w-full focus-visible:outline-offset-(--focus-inset)',
+  'group-first/row:rounded-t-lg group-last/row:rounded-b-lg',
+)
+
+// Download/upload figures, right-aligned in a fixed-width box so the down and up
+// columns line up across rows (matches the Hosts view).
+const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+const FIGURE_VALUE = 'num min-w-[46px] text-right'
+
+// The quiet pill link in the header subtitle, like Speed's "All Results" and
+// Services' "View timeline". The button reset carries the font family but not
+// the size, so it inherits the subtitle's caption size. The negative margins
+// cancel the pill's padding (and the glyphs' empty edges), so the first link's
+// globe sits flush under the title and the dot between the links keeps its 8px.
+// Focus shows the way hover does, accent + underline, not with a ring.
+const SUBTITLE_LINK = cx(
+  'group/link inline-flex items-center gap-[5px] mr-[-9px] ml-[-9.5px] px-8 py-2 rounded-full',
+  'text-[length:inherit] font-medium text-(--text-secondary)',
+  'transition-[color] duration-(--duration-fast) ease-in-out',
+  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
+)
+
+const SUBTITLE_LINK_TEXT = cx(
+  'group-hover/link:underline group-hover/link:underline-offset-2',
+  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+)
+
+// The glyphs share the link's (animating) colour so they shift together on
+// hover; "a touch dimmer at rest" is opacity, so there's a single colour
+// animation rather than two that drift out of sync.
+const SUBTITLE_LINK_GLYPH = cx(
+  'text-inherit opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
+  'group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
+)
 
 const APP_USAGE_INFO_HINT =
   'Bytes are attributed to the app that moved them, read from the OS per-process ' +
@@ -54,42 +105,62 @@ function AppRow({
   const downPct = app.rxBytes * scale
   const upPct = app.txBytes * scale
   return (
-    <li className={styles.row}>
+    <li className={ROW}>
       <button
         type="button"
-        className={styles.toggle}
+        className={ROW_LINK}
         onClick={onOpen}
         aria-label={`View hosts for ${app.name}`}
       />
-      <div className={styles.main}>
-        <span className={styles.id}>
+      {/* The visual layers are click-through, so the overlay button owns all
+          pointer interaction (cursor and click), the caret included. */}
+      <div className="pointer-events-none flex items-center justify-between gap-12">
+        <span className="inline-flex min-w-[0] items-center gap-8">
           <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
-          <span className={styles.name} title={app.name}>
+          {/* Long process paths (e.g. macOS bundle identifiers) truncate rather
+              than wrap, keeping the main line one row tall. */}
+          <span className="truncate text-sm text-primary" title={app.name}>
             {app.name}
           </span>
         </span>
-        <span className={styles.end}>
-          <MetricValue value={total} className={cx(styles.total, 'num')} format={formatBytes} />
-          <ChevronRightIcon size={16} className={styles.caret} aria-hidden />
+        <span className="inline-flex shrink-0 items-center gap-8">
+          <MetricValue
+            value={total}
+            className="num shrink-0 text-sm text-(--text-secondary)"
+            format={formatBytes}
+          />
+          <ChevronRightIcon
+            size={16}
+            className={cx(
+              'text-tertiary opacity-35 transition-opacity duration-(--duration-fast) ease-in-out',
+              'group-hover/row:opacity-75',
+            )}
+            aria-hidden
+          />
         </span>
       </div>
+      {/* One track, two segments side by side, each scaled against the busiest
+          app so rows read comparably; an empty segment collapses to zero width.
+          Starts flush with the app icon's left edge. */}
       <div
-        className={styles.bar}
+        className="pointer-events-none flex h-[3px] overflow-hidden rounded-xs bg-inset"
         role="img"
         aria-label={`${formatBytes(app.rxBytes)} down, ${formatBytes(app.txBytes)} up`}
       >
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
       </div>
-      {/* The bar's label above already reads these figures out. */}
-      <div className={styles.figures} aria-hidden>
-        <span className={styles.figure}>
+      {/* The bar's label above already reads these figures out. Pulled left by
+          the arrow glyph's side bearing (~2px at 11px) so the drawn arrow lines
+          up with the app icon's and bar's left edge. */}
+      <div className="pointer-events-none -ml-2 flex items-center gap-12" aria-hidden>
+        <span className={FIGURE}>
           <DirectionIcon series="down" size={11} />
-          <MetricValue value={app.rxBytes} className="num" format={formatBytes} />
+          <MetricValue value={app.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
-        <span className={styles.figure}>
+        <span className={FIGURE}>
           <DirectionIcon series="up" size={11} />
-          <MetricValue value={app.txBytes} className="num" format={formatBytes} />
+          <MetricValue value={app.txBytes} className={FIGURE_VALUE} format={formatBytes} />
         </span>
       </div>
     </li>
@@ -104,17 +175,17 @@ function AppSubtitleLinks(): JSX.Element {
   const onViewHosts = (): void => navigate({ tab: 'apps', appsSub: { view: 'hosts' } })
   const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
   return (
-    <span className={styles.subtitleLinks}>
-      <button type="button" className={styles.link} onClick={onViewHosts}>
-        <GlobeIcon size={13} />
-        <span className={styles.linkText}>All hosts</span>
-        <ChevronRightIcon size={13} className="link-caret" />
+    <span className="inline-flex items-center gap-6">
+      <button type="button" className={SUBTITLE_LINK} onClick={onViewHosts}>
+        <GlobeIcon size={13} className={SUBTITLE_LINK_GLYPH} />
+        <span className={SUBTITLE_LINK_TEXT}>All hosts</span>
+        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
       </button>
       <DotSeparator />
-      <button type="button" className={styles.link} onClick={onViewTraffic}>
-        <LayersIcon size={13} />
-        <span className={styles.linkText}>All traffic types</span>
-        <ChevronRightIcon size={13} className="link-caret" />
+      <button type="button" className={SUBTITLE_LINK} onClick={onViewTraffic}>
+        <LayersIcon size={13} className={SUBTITLE_LINK_GLYPH} />
+        <span className={SUBTITLE_LINK_TEXT}>All traffic types</span>
+        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
       </button>
     </span>
   )
@@ -156,7 +227,13 @@ function AppUsageBody({
   const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)
   return (
     <div className="ui-section">
-      <ul role="list" aria-label="Apps by usage" className={cx('ui-section-body', styles.list)}>
+      {/* The rows own the inset (p-[0] here), so the hairlines between them run
+          edge to edge, clipped to the card's rounded corners. */}
+      <ul
+        role="list"
+        aria-label="Apps by usage"
+        className="ui-section-body flex flex-col p-[0] [&>li+li]:border-t [&>li+li]:border-t-line"
+      >
         {apps.map((app) => (
           <AppRow
             key={app.name}

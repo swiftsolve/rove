@@ -27,32 +27,94 @@ import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
-import styles from './ServicesTimelineView.module.css'
 
-const markerVariants = cva(styles.marker, {
-  variants: {
-    /** Down reads red; a recovery or a healthy summary reads green. */
-    status: {
-      down: styles.statusDown,
-      up: styles.statusUp,
-      running: styles.statusRunning,
+// The timeline itself: a marker column and content beside it, connected by a
+// line, mirroring the network events feed.
+
+// One node on the line. The connecting line runs from just below a node to the
+// next within the same day; it's dropped on a day's last node so it ends at the
+// final marker.
+const ITEM = cx(
+  'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
+  "not-last:before:absolute not-last:before:content-['']",
+  'not-last:before:top-[30px] not-last:before:bottom-[0] not-last:before:left-[18px] not-last:before:w-[2px]',
+  'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
+)
+
+const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
+
+const markerVariants = cva(
+  ['z-1 flex size-[28px] shrink-0 items-center justify-center rounded-[50%]', MARKER_WASH],
+  {
+    variants: {
+      /** A service dropping off reads as an alarm (red); a recovery, or a healthy
+       *  summary ("N services running", glyphed with a check), reads positive
+       *  (green): the same colour language as the reachability numbers. */
+      status: {
+        down: 'text-status-negative',
+        up: 'text-status-positive',
+        running: 'text-status-positive',
+      },
     },
   },
-})
+)
 
-const subjectVariants = cva(styles.subject, {
+// The subject line: the service's favicon and name, sitting under the title
+// (the events-feed shape: what happened on top, which service beneath).
+const subjectVariants = cva('min-w-[0] items-center gap-4 text-md', {
   variants: {
     /** A quiet aside (the running summary, the connection status), not a service name. */
-    isMuted: { true: styles.isMuted },
+    isMuted: { true: 'text-tertiary', false: 'text-(--text-secondary)' },
+    /** The connection row keeps its status and offline duration on one line,
+     *  spanning the full content width: the status at the left, the duration
+     *  flush right (pushed by its margin-left:auto). */
+    isFullWidth: { true: 'flex w-full', false: 'inline-flex' },
   },
+  defaultVariants: { isMuted: false, isFullWidth: false },
 })
 
-const menuItemVariants = cva(styles.menuItem, {
-  variants: {
-    /** Destructive (Clear history): red text and a red-tinted hover. */
-    isDanger: { true: styles.isDanger },
+// Nudged down so the first line lines up with the marker. Every line gets the
+// same line box, so the visual gap between lines matches the flex gap.
+const CONTENT = 'flex min-w-[0] flex-col gap-4 pt-2 *:leading-[1.3]'
+
+// Title on the left, time pinned to the right edge on the same line.
+const HEAD = 'flex items-baseline gap-10'
+const TITLE = 'min-w-[0] flex-1 text-lg font-semibold text-primary wrap-anywhere'
+
+// The outage length sits at the far right of its row, no dot before it.
+const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
+
+// The header overflow menu: the kebab and its dropdown, matching the manage
+// page's row menu and the speed-history menu.
+const KEBAB = cx(
+  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-(--text-secondary)',
+  'transition-[color,background] duration-(--duration-fast) ease-in-out',
+  'hover:bg-hover hover:text-primary',
+)
+
+const DROPDOWN = cx(
+  'absolute top-[calc(100%+4px)] right-[0] z-20 min-w-[148px] p-4',
+  'rounded-sm border border-line-strong bg-raised shadow-raised',
+)
+
+const menuItemVariants = cva(
+  [
+    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm',
+    'transition-[color,background] duration-(--duration-fast) ease-in-out',
+    // Items fill the menu edge to edge, so the ring goes inside the item.
+    'focus-visible:outline-offset-(--focus-inset)',
+  ],
+  {
+    variants: {
+      /** Destructive (Clear history): red text and a red-tinted hover. */
+      isDanger: {
+        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
+        false: 'text-(--text-secondary) hover:bg-hover',
+      },
+    },
+    defaultVariants: { isDanger: false },
   },
-})
+)
 
 interface DayGroup {
   key: string
@@ -83,7 +145,7 @@ function formatTime(ts: number): string {
 /** The time of day as a machine-readable `<time>`. */
 function EventTime({ ts }: { ts: number }): JSX.Element {
   return (
-    <time className={styles.time} dateTime={new Date(ts).toISOString()}>
+    <time className="shrink-0 text-sm whitespace-nowrap text-tertiary" dateTime={new Date(ts).toISOString()}>
       {formatTime(ts)}
     </time>
   )
@@ -204,23 +266,23 @@ function TransitionRow({
   const shouldShowDuration = durationMs != null
 
   return (
-    <li className={styles.item}>
+    <li className={ITEM}>
       <span className={markerVariants({ status: isDown ? 'down' : 'up' })} aria-hidden>
         {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
       </span>
-      <div className={styles.content}>
-        <span className={styles.head}>
-          <span className={styles.title}>{isDown ? 'Service went down' : 'Service came back up'}</span>
+      <div className={CONTENT}>
+        <span className={HEAD}>
+          <span className={TITLE}>{isDown ? 'Service went down' : 'Service came back up'}</span>
           <EventTime ts={event.ts} />
         </span>
         <span className={subjectVariants()}>
           <ServiceIcon host={event.host} name={event.name} />
-          <span className={styles.subjectName}>{event.name}</span>
+          <span className="truncate">{event.name}</span>
         </span>
-        <span className={styles.meta}>
-          <span className={styles.metaHost}>{event.host}</span>
+        <span className="flex items-baseline gap-10 text-sm tracking-[0.02em] text-tertiary">
+          <span className="min-w-[0] truncate">{event.host}</span>
           {shouldShowDuration && (
-            <span className={styles.metaDuration}>Down for {formatDuration(durationMs)}</span>
+            <span className={DURATION}>Down for {formatDuration(durationMs)}</span>
           )}
         </span>
       </div>
@@ -235,13 +297,13 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
   const areAllHealthy = event.count >= event.total
 
   return (
-    <li className={styles.item}>
+    <li className={ITEM}>
       <span className={markerVariants({ status: 'running' })} aria-hidden>
         <CheckIcon size={15} />
       </span>
-      <div className={styles.content}>
-        <span className={styles.head}>
-          <span className={styles.title}>
+      <div className={CONTENT}>
+        <span className={HEAD}>
+          <span className={TITLE}>
             {event.count} {event.count === 1 ? 'service' : 'services'} running
           </span>
           <EventTime ts={event.ts} />
@@ -269,20 +331,20 @@ function ConnectionRow({
   const shouldShowDuration = !isLost && durationMs != null
 
   return (
-    <li className={styles.item}>
+    <li className={ITEM}>
       <span className={markerVariants({ status: isLost ? 'down' : 'up' })} aria-hidden>
         {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
       </span>
-      <div className={styles.content}>
-        <span className={styles.head}>
-          <span className={styles.title}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
+      <div className={CONTENT}>
+        <span className={HEAD}>
+          <span className={TITLE}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
           <EventTime ts={event.ts} />
         </span>
         {/* Status on the left, offline duration flush right — both on one line. */}
-        <span className={cx(subjectVariants({ isMuted: true }), styles.connLine)}>
+        <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
           <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
           {shouldShowDuration && (
-            <span className={styles.metaDuration}>Offline for {formatDuration(durationMs)}</span>
+            <span className={cx(DURATION, 'text-sm')}>Offline for {formatDuration(durationMs)}</span>
           )}
         </span>
       </div>
@@ -297,10 +359,10 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
   const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => setIsOpen(false))
 
   return (
-    <div className={styles.menu} ref={rootRef}>
+    <div className="relative" ref={rootRef}>
       <button
         type="button"
-        className={styles.kebab}
+        className={KEBAB}
         {...triggerProps}
         aria-label="Timeline options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
@@ -308,7 +370,7 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
         <MoreIcon size={16} />
       </button>
       {isOpen && (
-        <div className={styles.dropdown} {...menuProps}>
+        <div className={DROPDOWN} {...menuProps}>
           <button
             type="button"
             role="menuitem"
@@ -348,11 +410,14 @@ function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: E
 function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDurations }): JSX.Element {
   const headingId = useId()
   return (
-    <li className={styles.day}>
-      <h2 id={headingId} className={styles.dayHeading}>
+    <li className="flex flex-col not-first:mt-[18px]">
+      <h2
+        id={headingId}
+        className="mb-(--section-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
+      >
         {group.heading}
       </h2>
-      <ul role="list" className={styles.dayEvents} aria-labelledby={headingId}>
+      <ul role="list" className="flex flex-col" aria-labelledby={headingId}>
         {group.events.map((event) => (
           <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
         ))}
@@ -410,7 +475,7 @@ export function ServicesTimelineView(): JSX.Element {
           hint="Outages for tracked services appear here while the Connection tab is open."
         />
       ) : (
-        <ul role="list" className={styles.timeline}>
+        <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
           {groupByDay(events, now).map((group) => (
             <TimelineDay key={group.key} group={group} durations={durations} />
           ))}

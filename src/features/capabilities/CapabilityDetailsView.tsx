@@ -12,49 +12,78 @@ import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
-import styles from './CapabilityDetailsView.module.css'
+import {
+  CAPABILITY_LEVEL_FILL_COLORS,
+  CAPABILITY_LEVEL_TEXT_COLORS,
+} from '@/features/capabilities/utils/capability-level-colors'
 
-const iconVariants = cva(styles.icon, {
+// `text-(--text-secondary)`, not `text-secondary`: that name is also the global
+// .text-secondary type style, which would bring its size and line height along.
+
+// Three-tier card: an intro row (icon + name/description + bars) on the panel
+// surface, a metrics grid on an inset panel, and the verdict on the darkest panel
+// at the very bottom: a clear elevation ladder top to bottom. When opened by
+// clicking a capability, that card is scrolled to the top of the viewport; the
+// scroll margin leaves a little air above it.
+const CARD = cx(
+  'flex flex-col overflow-hidden scroll-mt-12',
+  'px-(--section-header-padding-x) pt-(--section-header-padding-y)',
+)
+
+/** Tinted chip behind the glyph, the same treatment the capability rows use:
+ *  the glyph in the level colour, the background a faint tint of it. */
+const iconVariants = cva(
+  [
+    'inline-flex size-[30px] shrink-0 items-center justify-center rounded-sm',
+    'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]',
+  ],
+  {
+    variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
+  },
+)
+
+// All four requirements in a compact metric grid. Your value turns red only when
+// it misses the threshold, which stays a small muted line.
+const METRICS = cx(
+  'grid grid-cols-[repeat(4,1fr)] gap-x-8 gap-y-12',
+  '-mx-(--section-header-padding-x) bg-inset px-(--section-header-padding-x) py-12',
+)
+
+const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-nowrap', {
   variants: {
-    level: {
-      excellent: styles.levelExcellent,
-      good: styles.levelGood,
-      fair: styles.levelFair,
-      poor: styles.levelPoor,
-      unsupported: styles.levelUnsupported,
-    },
+    isUnmet: { true: 'text-negative', false: 'text-primary' },
   },
 })
 
-const metricVariants = cva(styles.metric, {
-  variants: {
-    isUnmet: { true: styles.isUnmet },
-  },
-})
+// Verdict: the plain-language summary paired with a colour-keyed status, on the
+// darkest panel so it reads as the card's closing takeaway. Framed on three sides
+// (not the top) with the metrics' inset colour, so the near-black block sits
+// within the card edge rather than bleeding to it, seamless with the metrics
+// above. The horizontal padding is trimmed by the border width so the content
+// stays aligned with the metrics grid (14px from the card edge).
+const VERDICT = cx(
+  'flex items-center justify-between gap-12',
+  '-mx-(--section-header-padding-x) px-[calc(var(--section-header-padding-x)-1px)] py-12',
+  'rounded-b-lg border border-t-0 border-inset bg-app',
+)
 
-const verdictIconVariants = cva(styles.verdictIcon, {
-  variants: {
-    level: {
-      excellent: styles.levelExcellent,
-      good: styles.levelGood,
-      fair: styles.levelFair,
-      poor: styles.levelPoor,
-      unsupported: styles.levelUnsupported,
-    },
+/** The verdict glyph, left of the summary in the level colour. Its box is
+ *  exactly one line of summary text tall and centres the glyph, so the tick sits
+ *  against the middle of the first line (the summary stays top-aligned when it
+ *  wraps). */
+const verdictIconVariants = cva(
+  'inline-flex h-[calc(var(--font-size-sm)*1.45)] shrink-0 items-center',
+  {
+    variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
   },
-})
+)
 
-const verdictStatusVariants = cva(styles.verdictStatus, {
-  variants: {
-    level: {
-      excellent: styles.levelExcellent,
-      good: styles.levelGood,
-      fair: styles.levelFair,
-      poor: styles.levelPoor,
-      unsupported: styles.levelUnsupported,
-    },
+const verdictStatusVariants = cva(
+  'inline-flex shrink-0 items-center gap-6 text-xs font-semibold',
+  {
+    variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
   },
-})
+)
 
 interface CapabilityDetailsViewProps {
   /** Capability to scroll into view when the page opens (the one just clicked). */
@@ -98,28 +127,30 @@ function CapabilityDetailCard({
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
-    <li className={cx(styles.card, 'surface')} data-capability-id={capability.id}>
-      <div className={styles.head}>
+    <li className={cx(CARD, 'surface')} data-capability-id={capability.id}>
+      <div className="flex items-center gap-8 pb-12">
         <span className={iconVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={16} />
         </span>
-        <div className={styles.headText}>
-          <h2 className={styles.name}>{capability.label}</h2>
-          <span className={styles.desc}>{capability.description}</span>
+        <div className="flex min-w-[0] flex-1 flex-col gap-2">
+          <h2 className="text-lg leading-[1.2] font-semibold tracking-[-0.01em]">{capability.label}</h2>
+          <span className="text-xs leading-[1.3] text-tertiary">{capability.description}</span>
         </div>
+        {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
+            optically centred against the two-line title block. */}
         <CapabilityMeter
           level={capability.level}
           shouldShowLabel={false}
-          barsClassName={styles.meterBars}
+          barsClassName="[transform:translateY(-1px)]"
         />
       </div>
 
-      <dl className={styles.metrics}>
+      <dl className={METRICS}>
         {checks.map((check) => (
-          <div key={check.label} className={metricVariants({ isUnmet: !check.isMet })}>
-            <dt className="field-label">{check.label}</dt>
-            <dd className={cx(styles.metricValue, 'num')}>{check.have}</dd>
-            <dd className={styles.metricNeed}>
+          <div key={check.label} className="flex min-w-[0] flex-col gap-6">
+            <dt className="field-label leading-[1.15]">{check.label}</dt>
+            <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
+            <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
               <span className="sr-only">Needs </span>
               {check.need}
             </dd>
@@ -127,15 +158,16 @@ function CapabilityDetailCard({
         ))}
       </dl>
 
-      <div className={styles.verdict}>
-        <p className={styles.summary}>
+      <div className={VERDICT}>
+        <p className="flex min-w-[0] flex-1 items-start gap-4 text-sm leading-[1.45] text-(--text-secondary)">
           <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
             <VerdictIcon level={capability.level} />
           </span>
           <span>{summary}</span>
         </p>
         <span className={verdictStatusVariants({ level: capability.level })}>
-          <span className={styles.verdictDot} aria-hidden />
+          {/* The status dot takes the level colour from the label. */}
+          <span className="size-[6px] shrink-0 rounded-[50%] bg-current" aria-hidden />
           {CAPABILITY_LEVEL_LABELS[capability.level]}
         </span>
       </div>
@@ -185,7 +217,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
       }
       onBack={back}
     >
-      <ul role="list" className={styles.list} ref={listRef}>
+      <ul role="list" className="flex flex-col gap-16" ref={listRef}>
         {/* The Speed view only opens this page once a result is in. */}
         {speed != null &&
           capabilities.map((capability) => (

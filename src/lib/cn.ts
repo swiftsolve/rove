@@ -7,6 +7,8 @@ import { extendTailwindMerge } from 'tailwind-merge'
 const SPACING = ['px', '2', '4', '6', '8', '10', '11', '12', '14', '16', '20']
 const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']
 const COLORS = [
+  // Tailwind's built-ins, which exist alongside the theme's colours.
+  'transparent', 'current', 'inherit',
   'app', 'chrome', 'shell', 'panel', 'raised', 'inset', 'hover', 'scrim',
   'primary', 'secondary', 'tertiary', 'accent-text', 'on-fill',
   'positive', 'good', 'warning', 'poor', 'negative',

@@ -18,13 +18,30 @@ import {
 import { Tooltip } from '@/components/Tooltip'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
-import styles from './TabBar.module.css'
 
-const itemVariants = cva(styles.item, {
-  variants: {
-    isActive: { true: styles.isActive },
+// The active item's vertical accent bar, hugging the rail's left edge.
+const ACTIVE_BAR = cx(
+  "before:absolute before:-left-11 before:top-1/2 before:transform-[translateY(-50%)] before:content-['']",
+  'before:w-[3px] before:h-[20px] before:rounded-[0_3px_3px_0] before:bg-accent',
+)
+
+const itemVariants = cva(
+  [
+    'relative inline-flex items-center justify-center size-[38px] rounded-md',
+    'transition-[color,background] duration-(--duration-fast) ease-in-out',
+  ],
+  {
+    variants: {
+      isActive: {
+        true: ['bg-accent-muted text-accent', ACTIVE_BAR],
+        false: 'text-tertiary hover:text-secondary hover:bg-fill-nav-hover',
+      },
+    },
+    defaultVariants: { isActive: false },
   },
-})
+)
+
+const GROUP = 'flex flex-col items-center gap-12'
 
 interface TabIconProps {
   size?: number
@@ -69,7 +86,7 @@ function NavItem({ tab }: { tab: TabDefinition }): JSX.Element {
         aria-current={isActive ? 'page' : undefined}
         aria-label={tab.label}
       >
-        <tab.Icon size={18} className={styles.icon} />
+        <tab.Icon size={18} className="shrink-0" />
       </button>
     </Tooltip>
   )
@@ -83,7 +100,7 @@ function ThemeToggle(): JSX.Element {
   return (
     <Tooltip content={label} placement="right">
       <button type="button" className={itemVariants()} onClick={toggle} aria-label={label}>
-        <Icon size={18} className={styles.icon} />
+        <Icon size={18} className="shrink-0" />
       </button>
     </Tooltip>
   )
@@ -92,20 +109,42 @@ function ThemeToggle(): JSX.Element {
 /** The nav rail: one button per tab, plus the theme toggle and Settings at the foot. */
 export function TabBar(): JSX.Element {
   return (
-    <nav className={styles.rail} aria-label="Main navigation">
-      <ul role="list" className={styles.group}>
+    // Narrow icon-only rail: the primary items at the top, the utility group
+    // pushed to the bottom edge. Horizontal padding is symmetric so the active pill
+    // and the accent bar read as evenly inset; the top padding matches the content
+    // area's so the first item aligns with the first widget. Like the title bar, it
+    // stays above the content column.
+    <nav
+      className={cx(
+        'relative z-100 flex flex-col items-center justify-between gap-12 shrink-0',
+        'px-11 py-12 bg-chrome border-r border-line',
+      )}
+      aria-label="Main navigation"
+    >
+      <ul role="list" className={GROUP}>
+        {/* Flex items, so each shrinks to its 38px control instead of growing a
+            line box (and its descender gap) round it. */}
         {TAB_DEFINITIONS.map((tab) => (
-          <li key={tab.id} className={styles.slot}>
+          <li key={tab.id} className="flex">
             <NavItem tab={tab} />
           </li>
         ))}
       </ul>
-      <ul role="list" className={cx(styles.group, styles.bottomGroup)}>
+      {/* Separated from the primary items by a hairline that cancels the rail's
+          11px side padding, so it runs edge to edge like the panel borders. */}
+      <ul
+        role="list"
+        className={cx(
+          GROUP,
+          'relative pt-12',
+          "before:absolute before:top-[0] before:-left-11 before:-right-11 before:h-px before:bg-line before:content-['']",
+        )}
+      >
         {/* Theme toggle sits above the gear; About lives inside the Settings page. */}
-        <li className={styles.slot}>
+        <li className="flex">
           <ThemeToggle />
         </li>
-        <li className={styles.slot}>
+        <li className="flex">
           <NavItem tab={SETTINGS_TAB} />
         </li>
       </ul>

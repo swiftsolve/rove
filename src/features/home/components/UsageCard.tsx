@@ -3,7 +3,6 @@ import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { TodayIcon } from '@/components/icons/Icons'
 import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
-import styles from './UsageCard.module.css'
 
 /** Today's download and upload totals; opens the Usage tab. */
 export function UsageCard(): JSX.Element {
@@ -24,7 +23,9 @@ export function UsageCard(): JSX.Element {
       isBusy={!isResolved}
     >
       {isResolved ? (
-        <div className={styles.split} aria-hidden>
+        // Download and upload side by side. The top margin matches the Traffic
+        // panel's breathing room between title and readouts.
+        <div className="grid grid-cols-[1fr_1fr] gap-8 w-full mt-12" aria-hidden>
           <StatReadout marker="down" value={down.value} unit={down.unit} />
           <StatReadout marker="up" value={up.value} unit={up.unit} />
         </div>

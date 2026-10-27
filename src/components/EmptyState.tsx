@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react'
-import { cx } from 'class-variance-authority'
-import styles from './EmptyState.module.css'
 
 interface IconProps {
   size?: number
@@ -25,9 +23,12 @@ interface EmptyStateProps {
  */
 export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps): JSX.Element {
   return (
-    <div className={cx('view-empty', styles.root)}>
-      <Icon size={32} className={styles.icon} />
-      <h2 className={styles.title}>{title}</h2>
+    // `.view-empty` lays out the page; its gap is opened up here, and the action
+    // button is nudged down from the copy above it.
+    <div className="view-empty gap-16 text-center [&>button]:mt-4">
+      <Icon size={32} className="text-tertiary opacity-55" />
+      {/* An h2 for the page outline, at the plain weight of the paragraph it replaced. */}
+      <h2 className="text-md [font-weight:inherit] text-(--text-secondary)">{title}</h2>
       {hint != null && <EmptyStateHint>{hint}</EmptyStateHint>}
       {action}
     </div>
@@ -44,7 +45,7 @@ export function EmptyStateHint({
   role?: 'status'
 }): JSX.Element {
   return (
-    <p className={styles.hint} role={role}>
+    <p className="max-w-[42ch] text-sm leading-[1.45] text-tertiary" role={role}>
       {children}
     </p>
   )
