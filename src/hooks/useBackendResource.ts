@@ -64,7 +64,7 @@ export function useBackendResource<T>(
   // under React 18 StrictMode: its simulated unmount bumped the sequence, the
   // remount was skipped by the `hasRunRef` guard, and the in-flight result was
   // then dropped — so `isBusy` never cleared and the spinner hung forever.
-  const mountedRef = useRef(true)
+  const isMountedRef = useRef(true)
 
   // Pause polling while the app is backgrounded; refresh once on resume. Without
   // this, the webview's throttled interval wakes up and fires a burst of stale
@@ -75,8 +75,8 @@ export function useBackendResource<T>(
   // `isSilent` skips the busy/error churn so a background poll refreshes values
   // in place without flashing a spinner or clearing a visible error.
   const reload = useCallback(async (isSilent = false): Promise<void> => {
-    const fetch = fetcherRef.current
-    if (!fetch) return
+    const fetchData = fetcherRef.current
+    if (!fetchData) return
 
     // Guard against overlapping loads resolving out of order: only the latest
     // call is allowed to write state, and only while still mounted.
@@ -88,20 +88,20 @@ export function useBackendResource<T>(
     }
 
     try {
-      const result = await fetch()
-      if (seq === reloadSeqRef.current && mountedRef.current) {
+      const result = await fetchData()
+      if (seq === reloadSeqRef.current && isMountedRef.current) {
         setData(result)
         if (isSilent) setError(null)
       }
     } catch (cause) {
-      if (seq === reloadSeqRef.current && mountedRef.current) {
+      if (seq === reloadSeqRef.current && isMountedRef.current) {
         setError(cause instanceof Error ? cause.message : errorMessage)
       }
     } finally {
       // Clear busy when the owning (non-silent) reload settles, even if a
       // silent poll superseded it for data — comparing against reloadSeqRef
       // here is what used to leave the spinner stuck after such an overlap.
-      if (!isSilent && seq === busySeqRef.current && mountedRef.current) setIsBusy(false)
+      if (!isSilent && seq === busySeqRef.current && isMountedRef.current) setIsBusy(false)
     }
   }, [errorMessage, fetcherRef])
 
@@ -156,9 +156,9 @@ export function useBackendResource<T>(
     // remount flips it true again before the in-flight fetch resolves, so the
     // initial load still lands instead of being orphaned. A real network switch
     // or overlapping reload is superseded separately by reload()'s sequence bump.
-    mountedRef.current = true
+    isMountedRef.current = true
     return () => {
-      mountedRef.current = false
+      isMountedRef.current = false
     }
   }, [])
 

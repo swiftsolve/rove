@@ -66,9 +66,9 @@ html {
 
 body {
   font-family: var(--font);
-  /* Transparent so the window's rounded corners (clipped on .app-shell) reveal
+  /* Transparent so the window's rounded corners (clipped on the app shell) reveal
      the desktop behind them instead of a square opaque backdrop. The app's
-     background lives on .app-shell. */
+     background lives on the app shell (App.module.css). */
   background: transparent;
   color: var(--text-primary);
   line-height: 1.45;
@@ -207,11 +207,12 @@ main[tabindex='-1']:focus {
 /** Page header: an edge-to-edge divider below the title, separating the header
     from the section stack. The divider spans the full content viewport, past the
     card stack's 11px inset on both sides. Left cancels that inset to reach the
-    viewport's left edge. The right can't just cancel the inset: `.app-scroll`
-    reserves a scrollbar gutter on its trailing edge (scrollbar-gutter: stable)
+    viewport's left edge. The right can't just cancel the inset: the scroll root
+    ([data-scroll-root]) reserves a scrollbar gutter on its trailing edge
+    (scrollbar-gutter: stable)
     whose width is engine-dependent (~5–15px), so a fixed cancel stops short of —
     or overshoots — the edge. Instead the right bleeds well past any gutter and
-    lets `.app-scroll`'s overflow clip it exactly at the viewport's right edge, so
+    lets the scroll root's overflow clip it exactly at the viewport's right edge, so
     the divider meets that edge regardless of gutter width. The matching right
     padding keeps the header's own content aligned with the cards. The negative
     top margin cancels the scroll area's top padding for a symmetric rhythm. */

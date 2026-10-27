@@ -1,12 +1,12 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App'
+import { App } from '@/app/App'
 import '@swiftsolve/rove-design/tokens.css'
 import './index.css'
 
 import { installTauriBridge, isTauri } from '@/bridge/tauriNetworkApi'
-import { AppErrorBoundary } from '@/components/AppErrorBoundary'
-import { migrateLegacySpeedHistory } from '@/components/speed-test/speed-history'
+import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'
+import { migrateLegacySpeedHistory } from '@/features/speed/utils/speed-history'
 
 if (isTauri()) {
   installTauriBridge()

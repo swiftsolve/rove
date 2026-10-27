@@ -52,9 +52,9 @@ const WIFI_STANDARD_LABELS: Record<string, string> = {
 
 /** Prettify a Wi‑Fi standard, dropping uninformative generic values. */
 export function formatWifiStandard(standard: string | null | undefined): string | null {
-  const value = standard?.trim().toLowerCase()
-  if (!value || value === 'wireless' || value === 'unknown') return null
-  return WIFI_STANDARD_LABELS[value] ?? standard!.trim()
+  const normalized = standard?.trim().toLowerCase()
+  if (!normalized || normalized === 'wireless' || normalized === 'unknown') return null
+  return WIFI_STANDARD_LABELS[normalized] ?? standard!.trim()
 }
 
 export function formatSignalStrength(strength: number): string {
@@ -95,8 +95,8 @@ export function formatMac(mac: string | null | undefined): string {
  */
 export function isSecuredWifi(security: string | null | undefined): boolean | null {
   if (security == null) return null
-  const s = security.trim().toUpperCase()
-  return !(s === '' || s === '--' || s === 'NONE' || s === 'OPEN')
+  const normalized = security.trim().toUpperCase()
+  return !(normalized === '' || normalized === '--' || normalized === 'NONE' || normalized === 'OPEN')
 }
 
 export function formatDuplex(duplex: string | null | undefined): string | null {
@@ -122,25 +122,32 @@ export interface SplitBytes {
   unit: string
 }
 
+/** Three significant figures, e.g. 153 / 15.3 / 1.53; whole bytes never get decimals. */
+function byteFractionDigits(value: number, unitIndex: number): number {
+  if (value >= 100 || unitIndex === 0) return 0
+  if (value >= 10) return 1
+  return 2
+}
+
 /** 1_530_000_000 → { value: "1.53", unit: "GB" } (decimal units, like ISPs bill). */
 export function splitBytes(bytes: number): SplitBytes {
   if (!Number.isFinite(bytes) || bytes < 0) return { value: '0', unit: 'B' }
   let value = bytes
-  let unit = 0
-  while (value >= 1000 && unit < BYTE_UNITS.length - 1) {
+  let unitIndex = 0
+  while (value >= 1000 && unitIndex < BYTE_UNITS.length - 1) {
     value /= 1000
-    unit += 1
+    unitIndex += 1
   }
-  const digits = value >= 100 || unit === 0 ? 0 : value >= 10 ? 1 : 2
-  return { value: value.toFixed(digits), unit: BYTE_UNITS[unit] ?? 'B' }
+  return {
+    value: value.toFixed(byteFractionDigits(value, unitIndex)),
+    unit: BYTE_UNITS[unitIndex] ?? 'B',
+  }
 }
 
 export function formatBytes(bytes: number): string {
   const { value, unit } = splitBytes(bytes)
   return `${value} ${unit}`
 }
-
-const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
 
 /** Absolute timestamp, e.g. "Jul 4, 8:30 PM" — matches speed history cards. */
 export function formatDateTime(timestamp: number): string {
@@ -174,6 +181,9 @@ export function formatDuration(ms: number): string {
  *  finest boundary is "just now", at 45 s, so 10 s keeps the label honest
  *  without re-rendering every caller once a second. */
 export const TIME_AGO_RESOLUTION_MS = 10_000
+
+/** Past this age `formatTimeAgo` switches from relative to an absolute date. */
+const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
 
 /** Relative timestamp for recent times; absolute date after 24 h. `now` is the
  *  clock to measure against — see `useNow`, which is what makes the label age on

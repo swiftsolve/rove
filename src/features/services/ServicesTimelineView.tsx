@@ -1,0 +1,390 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type {
+  ConnectionEvent,
+  ServiceEvent,
+  ServicesRunningEvent,
+  ServiceTransitionEvent,
+} from '@/types'
+import { Subpage } from '@/components/Subpage'
+import { ServiceIcon } from '@/components/icons/ServiceIcon'
+import { serviceTally } from '@/features/services/components/ServiceTally'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  GlobeIcon,
+  HistoryIcon,
+  MoreIcon,
+  OfflineIcon,
+  TrashIcon,
+} from '@/components/icons/Icons'
+import { EmptyState } from '@/components/EmptyState'
+import { formatDuration } from '@/lib/format'
+import { useNow } from '@/hooks/useNow'
+import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { useAppData } from '@/app/hooks/useAppData'
+import { cx } from '@/lib/cx'
+import styles from './ServicesTimelineView.module.css'
+
+interface DayGroup {
+  key: string
+  heading: string
+  events: ServiceEvent[]
+}
+
+/** The precomputed durations the timeline rows read, plus the live clock. */
+interface EventDurations {
+  /** Closed outages, keyed by `outageKey` of the recovery. */
+  outageByKey: Map<string, number>
+  /** Offline spells, keyed by the "connection restored" event's ts. */
+  offlineByTs: Map<number, number>
+  /** When each still-down host dropped. */
+  ongoingDownStartByHost: Map<string, number>
+  now: number
+}
+
+// 12h time only, e.g. "1:24 PM" — the day is carried by the group heading above.
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+// A stable per-calendar-day key (local time) used to slice the feed into days.
+function dayKey(ts: number): string {
+  const date = new Date(ts)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+// "Today" / "Yesterday" for the two most recent days, otherwise "Monday, 12
+// January" (with the year appended when it isn't the current one).
+function formatDayHeading(ts: number, nowMs: number): string {
+  const date = new Date(ts)
+  const now = new Date(nowMs)
+  if (dayKey(ts) === dayKey(now.getTime())) return 'Today'
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+  if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
+
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'long' })
+  const month = date.toLocaleDateString(undefined, { month: 'long' })
+  const base = `${weekday}, ${date.getDate()} ${month}`
+  return date.getFullYear() === now.getFullYear() ? base : `${base} ${date.getFullYear()}`
+}
+
+// Slice the (already newest-first) feed into consecutive same-day runs, keeping
+// the incoming order so the timeline stays continuous within each day.
+function groupByDay(events: ServiceEvent[], now: number): DayGroup[] {
+  const groups: DayGroup[] = []
+  for (const event of events) {
+    const key = dayKey(event.ts)
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) {
+      last.events.push(event)
+    } else {
+      groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })
+    }
+  }
+  return groups
+}
+
+// The lookup key for a recovery's outage duration.
+function outageKey(host: string, ts: number): string {
+  return `${host}:${ts}`
+}
+
+// Pair each recovery with the outage it ended, keyed by `outageKey`, so a
+// "came back up" row can show how long the service was down. Walks the log
+// oldest-first, tracking the last `down` per host.
+function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
+  const durations = new Map<string, number>()
+  const downAt = new Map<string, number>()
+  for (let i = newestFirst.length - 1; i >= 0; i--) {
+    const e = newestFirst[i]!
+    if (e.type !== 'transition') continue
+    if (e.status === 'down') {
+      downAt.set(e.host, e.ts)
+    } else {
+      const start = downAt.get(e.host)
+      if (start != null) {
+        durations.set(outageKey(e.host, e.ts), e.ts - start)
+        downAt.delete(e.host)
+      }
+    }
+  }
+  return durations
+}
+
+// The still-open outage per host: if a host's most recent transition is a `down`
+// with no later `up`, its start ts — so the "went down" row can show a live
+// "Down for …" until it recovers. Events are newest-first, so the first
+// transition seen per host is its latest.
+function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
+  const starts = new Map<string, number>()
+  const seen = new Set<string>()
+  for (const e of newestFirst) {
+    if (e.type !== 'transition' || seen.has(e.host)) continue
+    seen.add(e.host)
+    if (e.status === 'down') starts.set(e.host, e.ts)
+  }
+  return starts
+}
+
+// Pair each "connection restored" with the "lost" it ended, keyed by the
+// restored event's ts, so the recovery row can show how long we were offline.
+function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
+  const durations = new Map<number, number>()
+  let lostAt: number | null = null
+  for (let i = newestFirst.length - 1; i >= 0; i--) {
+    const e = newestFirst[i]!
+    if (e.type !== 'connection') continue
+    if (e.status === 'lost') {
+      lostAt = e.ts
+    } else if (lostAt != null) {
+      durations.set(e.ts, e.ts - lostAt)
+      lostAt = null
+    }
+  }
+  return durations
+}
+
+// A stable key per event for React lists.
+function eventKey(event: ServiceEvent): string {
+  if (event.type === 'running') return `running:${event.ts}`
+  if (event.type === 'connection') return `connection:${event.status}:${event.ts}`
+  return `${event.host}:${event.ts}:${event.status}`
+}
+
+function TransitionRow({
+  event,
+  durationMs,
+}: {
+  event: ServiceTransitionEvent
+  durationMs: number | undefined
+}): JSX.Element {
+  const isDown = event.status === 'down'
+  const shouldShowDuration = durationMs != null
+
+  return (
+    <div className={styles.item}>
+      <span className={styles.marker} data-status={isDown ? 'down' : 'up'} aria-hidden>
+        {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
+      </span>
+      <div className={styles.content}>
+        <span className={styles.head}>
+          <span className={styles.title}>{isDown ? 'Service went down' : 'Service came back up'}</span>
+          <span className={styles.time}>{formatTime(event.ts)}</span>
+        </span>
+        <span className={styles.subject}>
+          <ServiceIcon host={event.host} name={event.name} />
+          <span className={styles.subjectName}>{event.name}</span>
+        </span>
+        <span className={styles.meta}>
+          <span className={styles.metaHost}>{event.host}</span>
+          {shouldShowDuration && (
+            <span className={styles.metaDuration}>Down for {formatDuration(durationMs)}</span>
+          )}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
+  // A recovery summary covers every service, but a baseline recorded while one
+  // was already down does not — so the subtext names the denominator rather than
+  // calling a partial tally all-clear.
+  const areAllHealthy = event.count >= event.total
+
+  return (
+    <div className={styles.item}>
+      <span className={styles.marker} data-status="running" aria-hidden>
+        <CheckIcon size={15} />
+      </span>
+      <div className={styles.content}>
+        <span className={styles.head}>
+          <span className={styles.title}>
+            {event.count} {event.count === 1 ? 'service' : 'services'} running
+          </span>
+          <span className={styles.time}>{formatTime(event.ts)}</span>
+        </span>
+        <span className={cx(styles.subject, styles.isMuted)}>
+          {areAllHealthy
+            ? 'All services healthy'
+            : `${event.count} of ${event.total} services healthy`}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/** This machine's own network dropping or returning. Stands in for the wall of
+ *  per-service "down"s the probes would otherwise produce while we're offline. */
+function ConnectionRow({
+  event,
+  durationMs,
+}: {
+  event: ConnectionEvent
+  durationMs: number | undefined
+}): JSX.Element {
+  const isLost = event.status === 'lost'
+  const shouldShowDuration = !isLost && durationMs != null
+
+  return (
+    <div className={styles.item}>
+      <span className={styles.marker} data-status={isLost ? 'down' : 'up'} aria-hidden>
+        {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
+      </span>
+      <div className={styles.content}>
+        <span className={styles.head}>
+          <span className={styles.title}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
+          <span className={styles.time}>{formatTime(event.ts)}</span>
+        </span>
+        {/* Status on the left, offline duration flush right — both on one line. */}
+        <span className={cx(styles.subject, styles.isMuted, styles.connLine)}>
+          <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
+          {shouldShowDuration && (
+            <span className={styles.metaDuration}>Offline for {formatDuration(durationMs)}</span>
+          )}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/** The header overflow menu: a kebab that opens a dropdown with Clear (drop all
+ *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistoryView. */
+function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onDocumentMouseDown = (e: MouseEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    const onDocumentKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('mousedown', onDocumentMouseDown)
+    document.addEventListener('keydown', onDocumentKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onDocumentMouseDown)
+      document.removeEventListener('keydown', onDocumentKeyDown)
+    }
+  }, [isOpen])
+
+  return (
+    <div className={styles.menu} ref={menuRef}>
+      <button
+        type="button"
+        className={styles.kebab}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-label="Timeline options"
+        onClick={() => setIsOpen((wasOpen) => !wasOpen)}
+      >
+        <MoreIcon size={16} />
+      </button>
+      {isOpen && (
+        <div className={styles.dropdown} role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className={cx(styles.menuItem, styles.isDanger)}
+            onClick={() => {
+              setIsOpen(false)
+              onClear()
+            }}
+          >
+            <TrashIcon size={14} />
+            Clear history
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// "Down for …" on a recovery is the outage it closed; on the latest drop of a
+// still-down service it's the live elapsed time since then. Older drops get none.
+function transitionDurationMs(event: ServiceTransitionEvent, durations: EventDurations): number | undefined {
+  if (event.status === 'up') return durations.outageByKey.get(outageKey(event.host, event.ts))
+  if (durations.ongoingDownStartByHost.get(event.host) === event.ts) return durations.now - event.ts
+  return undefined
+}
+
+function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: EventDurations }): JSX.Element {
+  if (event.type === 'running') return <RunningRow event={event} />
+  if (event.type === 'connection') {
+    return <ConnectionRow event={event} durationMs={durations.offlineByTs.get(event.ts)} />
+  }
+  return <TransitionRow event={event} durationMs={transitionDurationMs(event, durations)} />
+}
+
+/**
+ * A timeline of service outages and recoveries: when each tracked service went
+ * down and when it came back, newest first and grouped by day.
+ *
+ * The log itself is the backend's (see `service_events`), recorded by the
+ * always-on services heartbeat rather than by this page — so it covers outages
+ * that happened while the window was closed. The live probes this page
+ * receives only feed the header tally.
+ */
+export function ServicesTimelineView(): JSX.Element {
+  const { back } = useNavigation()
+  const { screens, connection } = useAppData()
+  // The latest reachability probes, for the up/down count in the header.
+  const reachability = screens.services.report?.services
+  // The app's live internet status — the same one the title bar shows — for the
+  // header tally: with no connection every probe fails at once, which is ours to
+  // own, not theirs.
+  const liveInternet = connection.internet
+  const { events, clear } = useServiceHistory()
+
+  const outageByKey = useMemo(() => outageDurations(events), [events])
+  const offlineByTs = useMemo(() => offlineDurations(events), [events])
+  const ongoingDownStartByHost = useMemo(() => ongoingDownStarts(events), [events])
+  // The live "Down for …" on open outages, and the day headings. Ticks at the
+  // second, because that's the finest unit `formatDuration` renders.
+  const now = useNow()
+  const durations: EventDurations = { outageByKey, offlineByTs, ongoingDownStartByHost, now }
+
+  // The current up/down tally, straight from the live probes. Until the first
+  // probes land there's nothing to count, so the header falls back to prose.
+  const subtitle = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
+
+  const handleClear = (): void => {
+    void clear()
+  }
+
+  return (
+    <Subpage
+      title="Services Timeline"
+      description={subtitle}
+      onBack={back}
+      action={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
+    >
+      {events.length === 0 ? (
+        <EmptyState
+          icon={HistoryIcon}
+          title="No outages yet"
+          hint="Outages for tracked services appear here while the Connection tab is open."
+        />
+      ) : (
+        <div className={styles.timeline}>
+          {groupByDay(events, now).map((group) => (
+            <section className={styles.day} key={group.key}>
+              <h2 className={styles.dayHeading}>{group.heading}</h2>
+              {group.events.map((event) => (
+                <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
+              ))}
+            </section>
+          ))}
+        </div>
+      )}
+    </Subpage>
+  )
+}

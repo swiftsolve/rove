@@ -1,0 +1,37 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.bubble {
+  width: max-content;
+  padding: var(--space-8) var(--space-10);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.portal {
+  position: fixed;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-in-out),
+    visibility var(--duration-fast);
+}
+
+.portal.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

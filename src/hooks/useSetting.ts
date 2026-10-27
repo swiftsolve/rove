@@ -9,12 +9,21 @@ import { useCallback, useEffect, useState } from 'react'
  * and any storage error (private mode, quota) is swallowed so a preference can
  * never crash the app.
  */
-const PREFIX = 'rove.setting.'
+const KEY_PREFIX = 'rove.setting.'
 
 function readSetting(key: string, fallback: boolean): boolean {
   try {
-    const raw = window.localStorage.getItem(PREFIX + key)
+    const raw = window.localStorage.getItem(KEY_PREFIX + key)
     return raw == null ? fallback : raw === 'true'
+  } catch {
+    return fallback
+  }
+}
+
+function readStringSetting(key: string, fallback: string): string {
+  try {
+    const raw = window.localStorage.getItem(KEY_PREFIX + key)
+    return raw == null ? fallback : raw
   } catch {
     return fallback
   }
@@ -26,17 +35,17 @@ export function useSetting(key: string, fallback: boolean): [boolean, (value: bo
   // Adopt cross-tab/webview changes to the same key so two open surfaces agree.
   useEffect(() => {
     const onStorage = (event: StorageEvent): void => {
-      if (event.key === PREFIX + key) setValue(readSetting(key, fallback))
+      if (event.key === KEY_PREFIX + key) setValue(readSetting(key, fallback))
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
   }, [key, fallback])
 
-  const set = useCallback(
+  const setAndPersist = useCallback(
     (next: boolean): void => {
       setValue(next)
       try {
-        window.localStorage.setItem(PREFIX + key, String(next))
+        window.localStorage.setItem(KEY_PREFIX + key, String(next))
       } catch {
         // Persisting is best-effort; the in-memory value still updates.
       }
@@ -44,26 +53,12 @@ export function useSetting(key: string, fallback: boolean): [boolean, (value: bo
     [key],
   )
 
-  return [value, set]
+  return [value, setAndPersist]
 }
 
 /** Read a persisted boolean once, outside React (e.g. at launch). */
 export function getSetting(key: string, fallback: boolean): boolean {
   return readSetting(key, fallback)
-}
-
-function readStringSetting(key: string, fallback: string): string {
-  try {
-    const raw = window.localStorage.getItem(PREFIX + key)
-    return raw == null ? fallback : raw
-  } catch {
-    return fallback
-  }
-}
-
-/** Read a persisted string once, outside React (e.g. when building a request). */
-export function getSettingString(key: string, fallback: string): string {
-  return readStringSetting(key, fallback)
 }
 
 /**
@@ -78,23 +73,28 @@ export function useSettingString(
 
   useEffect(() => {
     const onStorage = (event: StorageEvent): void => {
-      if (event.key === PREFIX + key) setValue(readStringSetting(key, fallback))
+      if (event.key === KEY_PREFIX + key) setValue(readStringSetting(key, fallback))
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
   }, [key, fallback])
 
-  const set = useCallback(
+  const setAndPersist = useCallback(
     (next: string): void => {
       setValue(next)
       try {
-        window.localStorage.setItem(PREFIX + key, next)
+        window.localStorage.setItem(KEY_PREFIX + key, next)
       } catch {
-        // Best-effort persistence; in-memory value still updates.
+        // Persisting is best-effort; the in-memory value still updates.
       }
     },
     [key],
   )
 
-  return [value, set]
+  return [value, setAndPersist]
+}
+
+/** Read a persisted string once, outside React (e.g. when building a request). */
+export function getSettingString(key: string, fallback: string): string {
+  return readStringSetting(key, fallback)
 }

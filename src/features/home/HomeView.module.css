@@ -1,0 +1,7 @@
+/* The Usage and Devices cards side by side. Usage carries two numbers, so it
+   gets the wider column; the single-count Devices card takes the narrower one. */
+.stat-cards {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-10);
+}

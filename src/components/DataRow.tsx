@@ -1,0 +1,19 @@
+import type { ReactNode } from 'react'
+import './DataRow.css'
+
+interface DataRowProps {
+  label: ReactNode
+  value?: string | null
+  children?: ReactNode
+}
+
+export function DataRow({ label, value, children }: DataRowProps): JSX.Element | null {
+  if (value == null && !children) return null
+
+  return (
+    <div className="data-row">
+      <span className="field-label">{label}</span>
+      <span className="text-value num">{children ?? value}</span>
+    </div>
+  )
+}

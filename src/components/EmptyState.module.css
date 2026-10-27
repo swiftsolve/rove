@@ -1,0 +1,29 @@
+/* The blank state shared by every view — icon + title + hint, generously
+   spaced and centred. Titles and hints carry two classes so they outrank the
+   `.view-empty p` defaults in index.css whatever order the sheets land in. */
+:global(.view-empty).root {
+  gap: var(--space-16);
+  text-align: center;
+}
+
+.icon {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.root .title {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.root .hint {
+  max-width: 42ch;
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/* Nudge the action down from the copy above it. */
+.root :global(.btn-secondary) {
+  margin-top: var(--space-4);
+}

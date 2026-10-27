@@ -10,8 +10,11 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/check-css-modules.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint",
     "screenshots": "node scripts/screenshots.mjs",
+    "figma:present": "node scripts/figma-present.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
