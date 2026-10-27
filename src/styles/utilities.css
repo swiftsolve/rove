@@ -1,0 +1,377 @@
+/*
+ * The app's shared styles, as Tailwind utilities: type styles, numeric and
+ * metric faces, page layout and a few shared pieces. Being utilities, they take
+ * variants (`hover:text-meta`) and sort with the rest, so an element's other
+ * utilities override them the same way they override each other.
+ */
+
+/* ---- Type ----
+   Each type utility is one Figma text style, read from its --type-* tokens. */
+
+/** Panel headings: Live usage, Speed test. */
+@utility section-title {
+  font-size: var(--type-section-title-size);
+  font-weight: var(--type-section-title-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-section-title-letter-spacing);
+  line-height: var(--type-section-title-line-height);
+}
+
+/** Dialog headings: Add a service, Update available. */
+@utility text-dialog-title {
+  font-size: var(--type-dialog-title-size);
+  font-weight: var(--type-dialog-title-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-dialog-title-letter-spacing);
+  line-height: var(--type-dialog-title-line-height);
+}
+
+/** Labels above values: Download, IP address. */
+@utility field-label {
+  font-size: var(--type-field-label-size);
+  font-weight: var(--type-field-label-weight);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--type-field-label-letter-spacing);
+  line-height: var(--type-field-label-line-height);
+}
+
+@utility text-title {
+  font-size: var(--type-title-size);
+  font-weight: var(--type-title-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-title-letter-spacing);
+  line-height: var(--type-title-line-height);
+}
+
+@utility text-body {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-body-letter-spacing);
+  line-height: var(--type-body-line-height);
+}
+
+/** Body-size text in the secondary colour. */
+@utility text-body-secondary {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  color: var(--text-secondary);
+  letter-spacing: var(--type-body-letter-spacing);
+  line-height: var(--type-body-line-height);
+}
+
+@utility text-muted {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-body-letter-spacing);
+  line-height: var(--type-body-line-height);
+}
+
+/** Helper text and hints: "No DNS servers found." */
+@utility text-small {
+  font-size: var(--type-small-size);
+  font-weight: var(--type-small-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-small-letter-spacing);
+  line-height: var(--type-small-line-height);
+}
+
+/** Card footer hints: "Available after speed test". */
+@utility text-hint {
+  font-size: var(--type-hint-size);
+  font-weight: var(--type-hint-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-hint-letter-spacing);
+  line-height: var(--type-hint-line-height);
+}
+
+@utility text-value {
+  font-size: var(--type-value-size);
+  font-weight: var(--type-value-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-value-letter-spacing);
+  line-height: var(--type-value-line-height);
+}
+
+@utility text-meta {
+  font-size: var(--type-meta-size);
+  font-weight: var(--type-meta-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-meta-letter-spacing);
+  line-height: var(--type-meta-line-height);
+}
+
+/** Medium-weight meta: the title bar's connection status. */
+@utility text-meta-strong {
+  font-size: var(--type-meta-strong-size);
+  font-weight: var(--type-meta-strong-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-meta-strong-letter-spacing);
+  line-height: var(--type-meta-strong-line-height);
+}
+
+/** Chart axes and scale; pair with `num` for the numeric face. */
+@utility text-chart-label {
+  font-size: var(--type-chart-label-size);
+  font-weight: var(--type-chart-label-weight);
+  color: var(--text-tertiary);
+  letter-spacing: var(--type-chart-label-letter-spacing);
+  line-height: var(--type-chart-label-line-height);
+}
+
+/* Value states: health in colour, only where it's earned. */
+@utility val-good {
+  color: var(--text-positive);
+}
+
+@utility val-warn {
+  color: var(--text-warning);
+}
+
+@utility val-bad {
+  color: var(--text-negative);
+}
+
+/* ---- Numbers ---- */
+
+@utility num {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+@utility metric {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+@utility metric-value {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-metric-display-size);
+  /* Semibold, where the Figma style is Regular: Questrial has one weight, so
+     the browser emboldens it. Figma draws the same with an outside stroke. */
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--type-metric-display-letter-spacing);
+  line-height: var(--type-metric-display-line-height);
+  color: var(--text-primary);
+}
+
+@utility metric-unit {
+  font-family: var(--font);
+  font-size: var(--type-metric-unit-size);
+  font-weight: var(--type-metric-unit-weight);
+  letter-spacing: var(--type-metric-unit-letter-spacing);
+  /* Line height inherits: the unit sits on its value's line, and the stat
+     cards set their own (StatCard). */
+  color: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+/* Stat totals: two numbers share a half-width card, so the value steps down to
+   keep both on one line on narrow windows. */
+@utility metric-compact {
+  & .metric-value {
+    font-size: var(--type-metric-compact-size);
+    letter-spacing: var(--type-metric-compact-letter-spacing);
+    line-height: var(--type-metric-compact-line-height);
+  }
+}
+
+/* ---- Page layout ---- */
+
+/* A view's column of cards. They settle in with a light stagger on mount and
+   tab change. Fill mode `backwards`, not `both`: `both` would leave an identity
+   transform on every child, making each a stacking context that traps header
+   tooltips behind later siblings. From the 5th child on they share the last
+   step, so a long page still settles in order. An error banner in the page
+   staggers in with it rather than running its own fade. */
+@utility page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-10);
+
+  & > *,
+  & > .error-banner {
+    animation: fade-up var(--duration-normal) var(--ease-out) backwards;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 45ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 135ms;
+  }
+  & > *:nth-child(n + 5) {
+    animation-delay: 180ms;
+  }
+}
+
+/* Page header: an edge-to-edge divider under the title. The left margin cancels
+   the card stack's 11px inset. The right bleeds well past the scroll root's
+   scrollbar gutter (its width varies by engine) and the scroll root clips it at
+   the viewport edge; the matching padding keeps the content aligned with the
+   cards. The top margin cancels the scroll area's top padding. */
+@utility page-header {
+  margin: calc(-1 * var(--space-12)) -40px 0 calc(-1 * var(--space-11));
+  padding: var(--space-12) 40px var(--space-12) var(--space-11);
+  border-bottom: 1px solid var(--border);
+}
+
+/** View titles: the connection card strip title's scale. */
+@utility page-header-title {
+  font-size: var(--type-title-size);
+  font-weight: var(--type-title-weight);
+  color: var(--text-primary);
+  letter-spacing: var(--type-title-letter-spacing);
+  line-height: var(--type-title-line-height);
+}
+
+/* The nav-matched glyph left of a page title, in the selected nav item's chip
+   (38px box, 10px radius), centred on the title block. */
+@utility page-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--fill-chip);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Fills the space below the view header, so the spinner and text centre in the
+   whole content region. The min-height is a floor for a short page. */
+@utility page-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-12);
+  min-height: 140px;
+  padding: var(--space-16);
+
+  & p {
+    font-size: var(--font-size-sm);
+    color: var(--text-tertiary);
+  }
+}
+
+@utility panel-head-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  min-width: 0;
+  flex: 1;
+}
+
+/* Rows flush to their container: no top padding on the first, no bottom on
+   the last. */
+@utility row-list {
+  & > :first-child {
+    padding-top: 0;
+  }
+  & > :last-child {
+    padding-bottom: 0;
+  }
+}
+
+@utility surface {
+  background: var(--bg-panel);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+}
+
+/* ---- Shared pieces ---- */
+
+/* Trailing chevron on the quiet header links ("All Results", "View timeline").
+   The glyph's ink is the middle of its box, so negative margins trim the empty
+   space: the label sits ~6px from it, and a following dot keeps its 8px. */
+@utility link-caret {
+  button > & {
+    margin: 0 calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
+  }
+}
+
+/* Chart tooltip (throughput and usage): a dot and label on the left, the value
+   right-aligned, so the values line up in a column. */
+@utility chart-tip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-12);
+  min-width: 150px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  pointer-events: none;
+}
+
+@utility chart-tip-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+}
+
+@utility chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+@utility chart-tip-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+@utility chart-tip-value {
+  margin-left: auto;
+  padding-left: var(--space-16);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Error feedback: `inline-error` for a line inside a card, `error-banner` for
+   a strip above a page. NetworkErrorBanner adds its parts on top. */
+@utility inline-error {
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+  color: var(--text-negative);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line-height);
+  margin-bottom: var(--space-12);
+}
+
+@utility error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
+  color: var(--text-negative);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line-height);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+/* The ring around an item a navigation just scrolled to (lib/highlight.ts): an
+   outline, so it costs no layout, inset by its width so an overflow-clipped
+   card doesn't shave it. It holds, then fades. The fill is a gradient layer,
+   not a background-color: animating the colour would replace the target's own
+   background (a surface's panel fill) for the whole run. */
+@utility nav-flash {
+  animation: nav-flash 1.5s var(--ease-out) forwards;
+}

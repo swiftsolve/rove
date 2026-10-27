@@ -19,7 +19,7 @@
  *    it would sit on the loading screen forever.
  *  - We move between screens by writing history state directly. The app has no
  *    URL per screen: navigation lives on history.state (see
- *    navigation/useNavigation.ts), so pushing an entry and firing popstate is
+ *    app/hooks/useHistoryNavigation.ts), so pushing an entry and firing popstate is
  *    exactly what the tab bar does.
  */
 import { chromium } from 'playwright-core'
@@ -115,7 +115,7 @@ try {
   }, theme)
 
   await page.goto(server.url, { waitUntil: 'networkidle' })
-  await page.waitForSelector('.app-shell')
+  await page.waitForSelector('[data-app-shell]')
   // The mock answers on a delay and the views fetch on mount; give the first
   // screen room to settle before we start shooting.
   await page.waitForTimeout(3000)

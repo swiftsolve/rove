@@ -1,0 +1,229 @@
+import type { TrafficType, TrafficUsageSummary } from '@/types'
+import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { formatBytes } from '@/lib/format'
+import { Tooltip as UiTooltip } from '@/components/Tooltip'
+import { Subpage } from '@/components/Subpage'
+import { MetricValue } from '@/components/MetricValue'
+import {
+  BellIcon,
+  ClockIcon,
+  ComputerIcon,
+  ConnectionIcon,
+  DatabaseIcon,
+  DnsIcon,
+  FileTransferIcon,
+  GlobeIcon,
+  HelpIcon,
+  InfoIcon,
+  LayersIcon,
+  MailIcon,
+  MessageIcon,
+  NasIcon,
+  PlayIcon,
+  PulseIcon,
+  ShareIcon,
+  TerminalIcon,
+} from '@/components/icons/Icons'
+import { DirectionIcon } from '@/components/icons/DirectionIcon'
+import { EmptyState } from '@/components/EmptyState'
+import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
+import { Spinner } from '@/components/Spinner'
+import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
+import { IconButton } from '@/components/IconButton'
+import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+
+/** One segment of a row's down/up bar, coloured by its series. Its width eases
+ *  as the totals (and the busiest-type scale) change, so the bars glide in step
+ *  with the count-up figures; the global reduced-motion rule neutralises it. */
+const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
+  variants: {
+    series: { down: 'bg-series-down', up: 'bg-series-up' },
+  },
+})
+
+// Download/upload figures, right-aligned in a fixed-width box so the down and up
+// columns line up across rows (matches the Apps and Hosts views).
+const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+const FIGURE_VALUE = 'num min-w-[46px] text-right'
+
+const TRAFFIC_INFO_HINT =
+  'Your session’s traffic grouped by kind — the connection’s remote port ' +
+  'names the service, so :443 is HTTPS, :53 is DNS, and so on. It’s the same ' +
+  'traffic the Hosts view meters (TCP and connected UDP/QUIC), just bucketed by ' +
+  'protocol instead of by host, and it resets when Rove restarts. Local ' +
+  'broadcast chatter (mDNS, SSDP) isn’t counted — it has no remote host.'
+
+const TRAFFIC_EMPTY_HINT = 'Traffic appears here as your apps send and receive.'
+
+const TRAFFIC_UNSUPPORTED_HINT =
+  'Run Rove as administrator to break traffic down by protocol on Windows.'
+
+interface IconProps {
+  size?: number
+  className?: string
+}
+
+/** Glyph per traffic-type slug. Anything unmapped (including "other") falls back
+ *  to the layers glyph, so a new backend bucket never renders blank. */
+const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
+  https: GlobeIcon,
+  http: GlobeIcon,
+  dns: DnsIcon,
+  ssh: TerminalIcon,
+  ftp: FileTransferIcon,
+  email: MailIcon,
+  ntp: ClockIcon,
+  stun: PulseIcon,
+  push: BellIcon,
+  database: DatabaseIcon,
+  vpn: ConnectionIcon,
+  media: PlayIcon,
+  remote: ComputerIcon,
+  fileshare: NasIcon,
+  p2p: ShareIcon,
+  messaging: MessageIcon,
+}
+
+/** One traffic-type row: glyph + name + total on the main line, then a
+ *  proportional down/up bar and the byte figures beneath — the same visual
+ *  language as an Apps row, minus the icon-fetch and the navigation caret (these
+ *  rows aren't links). */
+function TrafficRow({
+  type,
+  busiestTotal,
+}: {
+  type: TrafficType
+  busiestTotal: number
+}): JSX.Element {
+  const total = type.rxBytes + type.txBytes
+  // Split the bar into down/up segments, each scaled against the busiest type so
+  // the rows are comparable at a glance. Guard the divide for the all-zero case.
+  const scale = busiestTotal > 0 ? 100 / busiestTotal : 0
+  const downPct = type.rxBytes * scale
+  const upPct = type.txBytes * scale
+  const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
+  return (
+    <li className="flex flex-col gap-8 px-(--section-body-padding) py-12">
+      <div className="flex items-center justify-between gap-12">
+        <span className="inline-flex min-w-0 items-center gap-8">
+          <Icon size={15} className="shrink-0 text-tertiary" />
+          <span className="truncate text-sm text-primary" title={type.label}>
+            {type.label}
+          </span>
+        </span>
+        <MetricValue
+          value={total}
+          className="num shrink-0 text-sm text-secondary"
+          format={formatBytes}
+        />
+      </div>
+      {/* One track, two segments side by side, each scaled against the busiest
+          type so rows read comparably; an empty segment collapses to zero width.
+          Sits just inside the glyph's left edge, like the Apps bar. */}
+      <div
+        className="ml-[3px] flex h-[3px] overflow-hidden rounded-xs bg-inset"
+        role="img"
+        aria-label={`${formatBytes(type.rxBytes)} down, ${formatBytes(type.txBytes)} up`}
+      >
+        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
+        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
+      </div>
+      {/* The bar's label above already reads these figures out. The down arrow
+          sits centred under the type glyph, echoing the Apps and Hosts views. */}
+      <div className="flex items-center gap-12" aria-hidden>
+        <span className={FIGURE}>
+          <DirectionIcon series="down" size={11} />
+          <MetricValue value={type.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
+        </span>
+        <span className={FIGURE}>
+          <DirectionIcon series="up" size={11} />
+          <MetricValue value={type.txBytes} className={FIGURE_VALUE} format={formatBytes} />
+        </span>
+      </div>
+    </li>
+  )
+}
+
+/** The page body: the admin prompt, a first-load spinner, an empty state, or
+ *  the list of traffic types. */
+function TrafficBody({
+  usage,
+  isFirstLoad,
+}: {
+  usage: TrafficUsageSummary
+  isFirstLoad: boolean
+}): JSX.Element {
+  const { types, support } = usage
+  if (support === 'unsupported') {
+    return (
+      <EmptyState
+        icon={InfoIcon}
+        title="Administrator access needed"
+        hint={TRAFFIC_UNSUPPORTED_HINT}
+        action={<RestartAsAdminAction />}
+      />
+    )
+  }
+  if (isFirstLoad) {
+    return (
+      <div className="page-empty" role="status">
+        <Spinner />
+        <p className="text-muted">Measuring traffic types…</p>
+      </div>
+    )
+  }
+  if (types.length === 0) {
+    return <EmptyState icon={LayersIcon} title="No traffic yet" hint={TRAFFIC_EMPTY_HINT} />
+  }
+
+  const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
+  return (
+    <div className={SECTION_CARD}>
+      {/* The rows own the inset (p-0 here), so the hairlines between them run
+          edge to edge, clipped to the card's rounded corners. */}
+      <ul
+        role="list"
+        aria-label="Traffic types by usage"
+        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
+      >
+        {types.map((type) => (
+          <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function TrafficView(): JSX.Element {
+  const { usage, isLoading, error } = useTrafficUsage()
+  const { back } = useNavigation()
+  const isFirstLoad = isLoading && usage.types.length === 0
+  const subtitle = isFirstLoad ? 'Loading…' : 'Traffic by kind across every app, busiest first'
+
+  return (
+    <Subpage
+      title="Traffic types"
+      description={subtitle}
+      onBack={back}
+      action={
+        <UiTooltip content={TRAFFIC_INFO_HINT}>
+          <IconButton
+            aria-label="About traffic types"
+          >
+            <HelpIcon size={16} />
+          </IconButton>
+        </UiTooltip>
+      }
+    >
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
+
+      <TrafficBody usage={usage} isFirstLoad={isFirstLoad} />
+    </Subpage>
+  )
+}

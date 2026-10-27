@@ -158,22 +158,37 @@ flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter
 ```
 rove/
 ├── src/                        React UI (Vite)
-│   ├── main.tsx, App.tsx       entry + shell (header, nav, view switching)
-│   ├── views/                  one file per page: Home, Interfaces, Devices,
-│   │                           Usage, Diagnostics
-│   ├── components/
-│   │   ├── ui/                 app-agnostic chrome: Section, DataRow, Subpage,
-│   │   │                       TabBar, Icons (lucide re-exports)
-│   │   ├── connection/         connection card + display helpers
-│   │   ├── traffic/            live throughput panel, chart, readouts
-│   │   ├── speed-test/         speed test section + history (+ storage)
-│   │   └── capabilities/       capability list, details, meter, icon, rating
-│   ├── hooks/                  data hooks over window.networkAPI
-│   │                           (useBackendResource is the shared fetch shape)
-│   ├── lib/                    generic helpers (format, chart geometry)
+│   ├── main.tsx                entry: installs the bridge, mounts the app
+│   ├── app/                    the shell, laid out like a feature: App.tsx
+│   │                           (providers) and AppShell.tsx at the top, then
+│   │                           components/ (title bar, nav rail,
+│   │                           CurrentScreen), context/ (navigation, theme,
+│   │                           network), hooks/ (useNetwork,
+│   │                           useInternetStatus, useConnectionStatus, …)
+│   │                           and utils/ (incl. the TanStack query client)
+│   ├── features/               one folder per area: home, speed,
+│   │   │                       capabilities, connection, live-throughput,
+│   │   │                       interfaces, devices, events, usage, apps,
+│   │   │                       diagnostics, services, settings, about
+│   │   └── <area>/             its views at the top
+│   │       ├── components/     parts of those views, when a view has them
+│   │       ├── context/        its own context, if it ever needs one
+│   │       ├── hooks/          that area's data and state hooks
+│   │       └── utils/          its plain helpers (no React)
+│   │                           (capabilities, connection and live-throughput
+│   │                           have no view, so their parts sit at the top)
+│   ├── components/             shared UI used across features: Section,
+│   │                           DataRow, Subpage, Tooltip, Icons, …
+│   ├── hooks/                  shared hooks (useBackendQuery is the
+│   │                           useQuery shape every data hook builds on)
+│   ├── lib/                    shared helpers (format, platform, highlight,
+│   │                           cn)
+│   ├── styles/                 the global CSS: tailwind.css (the theme from
+│   │                           the tokens; imports the rest), base.css
+│   │                           (fonts, resets) and utilities.css (shared
+│   │                           type styles and layout, as utilities)
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
-│   ├── navigation/             tab definitions
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
 │                               deps — compiles and tests anywhere): network_info,
@@ -183,6 +198,82 @@ rove/
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
                                 service, events, capabilities, window config
 ```
+
+### Frontend conventions
+
+**State: context, not prop drilling**
+
+- No component takes a prop only to pass it down. App-wide state comes from
+  context, read where it's used: `useNavigation()` (location, `navigate`,
+  `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()`
+  and `useConnectionStatus()` (the title bar's verdict). Each has its own small
+  context, so a reader re-renders only when its value changes. That's why every
+  view renders with no props.
+- Backend data comes from TanStack Query. Each feature owns its data hook in
+  `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
+  `useBackendQuery`, and the components that show the data call it directly.
+  Callers of the same hook share one cache entry, so `DevicesView` and
+  `DevicesCard` see the same scan.
+- A query key names the data, plus the network for data that belongs to one
+  (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
+  fresh results. A query fetches while a screen that shows it is open and polls
+  per its hook; the hooks' comments say when and why.
+- Props are for a component's own inputs: the item a row shows, a dialog's
+  `onClose`. Shared components in `src/components` take only props and never
+  read app context.
+
+**Where code goes**
+
+- `app/` and every feature use the same subfolders: `components/`,
+  `context/` (providers and their context objects), `hooks/` and `utils/`.
+- A custom hook lives in its own file in a `hooks/` folder, never inside a
+  component file.
+- `src/types` is only the backend contract, mirrored in Rust. A type only the
+  UI uses lives next to the code that owns it, such as
+  `features/speed/types.ts`.
+- The rare stylesheet a component needs sits next to it with the same name:
+  `ConnectionCard.tsx` and `ConnectionCard.module.css`.
+
+**Styles: Tailwind utilities from the design tokens**
+
+- Components are styled with Tailwind v4 utilities in the TSX. The theme in
+  `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
+  `--space-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
+  there are no Tailwind defaults to reach for. There's no preflight:
+  `styles/base.css` is the reset.
+- Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,
+  `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
+  `styles/utilities.css`. They take variants and sort with the other
+  utilities.
+- Variants go through CVA (class-variance-authority), with utility strings. An
+  element whose classes depend on state or a variant gets a recipe at the top
+  of its file:
+
+  ```ts
+  const rowVariants = cva('flex items-center gap-12', {
+    variants: {
+      isGateway: { true: 'bg-inset' },
+      level: { good: 'text-good', poor: 'text-poor' },
+    },
+  })
+  // <div className={rowVariants({ isGateway, level })}>
+  ```
+
+- `cn()` (`lib/cn.ts`) joins classes and lets a later utility override an
+  earlier one that sets the same thing; use it wherever a component merges a
+  `className` from outside, which is how a view adjusts a child. `cx` only
+  joins fixed classes.
+- Shared components keep a plain marker class on their parts (`data-row`,
+  `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
+  outside: `[&_.ui-section-footer]:pt-12`.
+- Buttons are `Button` (`variant`: `primary`, `filled`, `secondary`) and
+  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `stop`; `aria-label`
+  is required), never hand-written `<button>` classes.
+- Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
+  their keyframes. A `.module.css` file is only for what utilities can't say:
+  selectors into another component's DOM keyed on `:has()`. `npm run lint`
+  also runs `scripts/check-css-modules.mjs`, which fails on a `styles.x` with
+  no matching class and on a class nothing uses.
 
 ## Design
 

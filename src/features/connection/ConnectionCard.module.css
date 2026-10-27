@@ -1,0 +1,36 @@
+/* What's left here reaches into the DOM of the shared InlineMeta and DataRow,
+   keyed on the security badge and signal detail inside them; everything else is
+   utilities in ConnectionCard.tsx. In the utilities layer, so it overrides those
+   components' own utilities (DataRow's `items-baseline`). */
+@layer utilities {
+  /* Collapsed strip, as an InlineMeta row: the first item (the IP) ellipsizes
+     when space runs out. */
+  .strip-sub:global(.inline-meta) :global(.inline-meta-item):first-child {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* The security badge's item is a flex box too, so the strip's centring lines
+     the lock up with the IP and band. When space runs out the protocol text
+     ellipsizes and the IP holds its full width (even a sub-pixel squeeze would
+     otherwise ellipsize it). */
+  .strip-sub:global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
+    display: flex;
+    overflow: hidden;
+  }
+
+  .strip-sub:global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
+    flex-shrink: 0;
+  }
+
+  /* The Signal and Security values are flex boxes, so they expose no text
+     baseline to their .text-value cell. Under the row's default `align-items:
+     baseline`, the browser synthesizes that cell's baseline at its bottom edge
+     and drops the label down to meet it, leaving a gap above the label. Centre
+     just these rows so the label lines up with the value. */
+  .details :global(.data-row):has(.signal-detail),
+  .details :global(.data-row):has(.security-badge) {
+    align-items: center;
+  }
+}
