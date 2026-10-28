@@ -29,6 +29,8 @@ for what. Read it before writing or changing UI. For where files live, see
 
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
+  Only a context's provider and hook import its object; everything else calls
+  the hook. `npm run lint` enforces it.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
   component file.
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
