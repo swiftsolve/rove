@@ -83,10 +83,13 @@ const MOCK_FREQUENCY = 5745
 const MOCK_SELF_IP = '192.168.1.42'
 const MOCK_SELF_MAC = 'a4:c3:f0:1b:2d:9e'
 const MOCK_GATEWAY = '192.168.1.1'
+const MOCK_ETHERNET_ADAPTER = 'en5'
+// Realtek's prefix: the chip in most USB-C Ethernet adapters.
+const MOCK_ETHERNET_MAC = '00:e0:4c:68:12:7a'
 
 const MOCK_NETWORK_INFO: NetworkInfo = {
   connectionType: 'wifi',
-  interfaceName: 'wlan0',
+  interfaceName: 'en0',
   isConnected: true,
   ipAddress: MOCK_SELF_IP,
   gateway: MOCK_GATEWAY,
@@ -146,7 +149,7 @@ const MOCK_WIFI_SHARE: WifiShare = {
 
 const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   {
-    name: 'wlan0',
+    name: 'en0',
     connectionType: 'wifi',
     operState: 'up',
     isDefault: true,
@@ -157,29 +160,30 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
     duplex: null,
   },
   {
-    name: 'eth0',
+    // A USB-C Ethernet adapter, unplugged (see the seeded events).
+    name: MOCK_ETHERNET_ADAPTER,
     connectionType: 'ethernet',
     operState: 'down',
     isDefault: false,
     isVirtual: false,
     ipAddress: null,
-    macAddress: '3c:52:82:04:7a:11',
+    macAddress: MOCK_ETHERNET_MAC,
     speedMbps: null,
     duplex: null,
   },
   {
-    name: 'docker0',
+    name: 'bridge0',
     connectionType: 'unknown',
     operState: 'down',
     isDefault: false,
     isVirtual: true,
-    ipAddress: '172.17.0.1',
-    macAddress: '02:42:9d:6c:8f:aa',
+    ipAddress: null,
+    macAddress: '36:a1:0f:5c:e2:40',
     speedMbps: null,
     duplex: null,
   },
   {
-    name: 'lo',
+    name: 'lo0',
     connectionType: 'unknown',
     operState: 'up',
     isDefault: false,
@@ -238,7 +242,7 @@ type MockLanDevice = Omit<LanDevice, 'kindConfidence' | 'lastSeen'> &
 // real scan turns up. Self matches the connection card (same IP + MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
   subnet: '192.168.1.0/24',
-  interfaceName: 'wlan0',
+  interfaceName: 'en0',
   scannedAt: Date.now(),
   dhcpStatus: 'active',
   devices: ([
@@ -283,12 +287,12 @@ function seedNetworkEvents(): NetworkEvent[] {
   const min = 60_000
   const hour = 3_600_000
   const rows: (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
-    { ago: 3 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, isRandomized: false },
+    { ago: 74 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, isRandomized: false },
     { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, isRandomized: true },
-    { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: '192.168.1.51', name: 'en0', kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 75 * min, type: 'connection_lost', severity: 'warning', mac: null, ip: null, name: 'en0', kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 70 * min, type: 'internet_lost', severity: 'warning', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 62 * min, type: 'internet_restored', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
+    { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_ETHERNET_MAC, ip: '192.168.1.51', name: MOCK_ETHERNET_ADAPTER, kind: null, oldValue: null, newValue: null, isRandomized: false },
+    { ago: 75 * min, type: 'connection_lost', severity: 'warning', mac: null, ip: null, name: MOCK_ETHERNET_ADAPTER, kind: null, oldValue: null, newValue: null, isRandomized: false },
+    { ago: 27 * hour, type: 'internet_lost', severity: 'warning', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
+    { ago: 26 * hour, type: 'internet_restored', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
     { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, isRandomized: false },
     { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, isRandomized: false },
     { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, isRandomized: false },
@@ -351,16 +355,17 @@ const mockServiceHistory: ServiceEvent[] = (() => {
   ]
 })()
 
-// A latency character per built-in host. The baselines deliberately spread across
-// all three reachability bands (good <= 120 ms, warn <= 300, bad above) so the
-// Services rows exercise every colour during design work instead of the uniform
-// wall of green a single band would give. `spread` is how far a poll can wander.
+// A latency character per built-in host: the probe's DNS + TCP + TLS time (about
+// three round trips, see `service_latency` in diagnostics.rs) from San Francisco
+// on the connection above, so it scales with each host's distance. Zoom's site
+// is the farthest and noisiest, and drifts into the warn band (over 120 ms) now
+// and then. `spread` is how far a poll can wander.
 const MOCK_LATENCY_PROFILES: Record<string, { base: number; spread: number }> = {
-  'cloudflare.com': { base: 14, spread: 5 }, // anycast edge, a few hops away
-  'google.com': { base: 26, spread: 7 },
-  'youtube.com': { base: 72, spread: 26 }, // a livelier line, and one dropped probe
-  'netflix.com': { base: 168, spread: 40 }, // warm: a distant CDN pop
-  'zoom.us': { base: 340, spread: 90 }, // hot: the call everyone complains about
+  'cloudflare.com': { base: 38, spread: 8 }, // anycast edge in the Bay Area
+  'google.com': { base: 52, spread: 10 },
+  'youtube.com': { base: 61, spread: 14 },
+  'netflix.com': { base: 84, spread: 18 },
+  'zoom.us': { base: 108, spread: 34 },
 }
 
 const FALLBACK_PROFILE = { base: 60, spread: 20 }
@@ -449,13 +454,14 @@ function mockServiceReachability(): ServicesReport['services'] {
 
 const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   gateway: MOCK_GATEWAY,
-  defaultInterface: 'wlan0',
+  defaultInterface: 'en0',
   dnsServers: [MOCK_GATEWAY, '1.1.1.1', '8.8.8.8'],
-  gatewayPing: { avgMs: 2.1, jitterMs: 0.4, packetLoss: 0 },
+  // Over the same contended 5 GHz channel as the speed test's jitter.
+  gatewayPing: { avgMs: 3.8, jitterMs: 2.9, packetLoss: 0 },
   internet: 'online',
-  gatewayVendor: 'Sagemcom Broadband SAS',
-  gatewayModel: 'Giga Hub 2.0',
-  gatewayName: 'Giga Hub 2.0 Internet Gateway Device',
+  gatewayVendor: 'Ubiquiti Inc.',
+  gatewayModel: 'UniFi Dream Router',
+  gatewayName: 'UniFi Dream Router',
   isp: {
     name: 'Comcast Cable Communications',
     asn: 'AS7922',
@@ -468,16 +474,16 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   },
 }
 
-// A typical cable plan: plenty of download, a thin upload, and middling latency
-// and jitter. Download alone would rate every capability Excellent, so it's the
-// other three that spread the strip across levels (see `rateCapability`): live
-// streaming wants more upload, gaming and 4K a lower ping, cloud gaming less
-// jitter and a lower ping.
+// Comcast's 200 Mbps cable tier over a busy apartment-block 5 GHz channel. The
+// upload is the tier's 5 Mbps, which falls short of live streaming's 6, and the
+// contended channel's jitter goes past cloud gaming's 10 ms (see
+// `rateCapability`), so those two read Fair and the rest Excellent. The ping
+// is to 1.1.1.1, so it sits near the Cloudflare service's round trip.
 const MOCK_SPEED_RESULT: SpeedResult = {
   downloadMbps: 186.4,
-  uploadMbps: 5.2,
-  latencyMs: 42,
-  jitterMs: 12.4,
+  uploadMbps: 5.4,
+  latencyMs: 16,
+  jitterMs: 11.2,
   packetLoss: 0,
 }
 
@@ -494,14 +500,14 @@ const MOCK_SPEED_CONTEXT = {
 function seedSpeedHistory(): SpeedHistoryEntry[] {
   const hour = 3_600_000
   const points: (SpeedResult & { agoHours: number })[] = [
-    { downloadMbps: 181.9, uploadMbps: 5.1, latencyMs: 44, jitterMs: 13.1, packetLoss: 0, agoHours: 6 },
-    { downloadMbps: 174.6, uploadMbps: 4.8, latencyMs: 47, jitterMs: 14.6, packetLoss: 0, agoHours: 27 },
-    { downloadMbps: 192.3, uploadMbps: 5.4, latencyMs: 39, jitterMs: 11.2, packetLoss: 0, agoHours: 52 },
-    { downloadMbps: 158.2, uploadMbps: 4.6, latencyMs: 53, jitterMs: 17.8, packetLoss: 0, agoHours: 74 },
-    { downloadMbps: 188.7, uploadMbps: 5.3, latencyMs: 41, jitterMs: 12.0, packetLoss: 0, agoHours: 121 },
-    { downloadMbps: 179.4, uploadMbps: 5.0, latencyMs: 43, jitterMs: 12.9, packetLoss: 0, agoHours: 168 },
-    { downloadMbps: 166.8, uploadMbps: 4.7, latencyMs: 49, jitterMs: 15.3, packetLoss: 1, agoHours: 240 },
-    { downloadMbps: 194.5, uploadMbps: 5.5, latencyMs: 38, jitterMs: 10.8, packetLoss: 0, agoHours: 312 },
+    { downloadMbps: 181.9, uploadMbps: 5.3, latencyMs: 17, jitterMs: 12.1, packetLoss: 0, agoHours: 6 },
+    { downloadMbps: 174.6, uploadMbps: 5.1, latencyMs: 19, jitterMs: 13.6, packetLoss: 0, agoHours: 27 },
+    { downloadMbps: 192.3, uploadMbps: 5.5, latencyMs: 15, jitterMs: 8.4, packetLoss: 0, agoHours: 52 },
+    { downloadMbps: 158.2, uploadMbps: 4.9, latencyMs: 22, jitterMs: 16.8, packetLoss: 0, agoHours: 74 },
+    { downloadMbps: 188.7, uploadMbps: 5.4, latencyMs: 16, jitterMs: 10.6, packetLoss: 0, agoHours: 121 },
+    { downloadMbps: 179.4, uploadMbps: 5.2, latencyMs: 17, jitterMs: 11.9, packetLoss: 0, agoHours: 168 },
+    { downloadMbps: 166.8, uploadMbps: 5.0, latencyMs: 20, jitterMs: 14.3, packetLoss: 1, agoHours: 240 },
+    { downloadMbps: 194.5, uploadMbps: 5.5, latencyMs: 14, jitterMs: 7.9, packetLoss: 0, agoHours: 312 },
   ]
   return points.map(({ agoHours, ...speed }) => ({
     ...speed,
