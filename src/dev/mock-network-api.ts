@@ -468,11 +468,16 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   },
 }
 
+// A typical cable plan: plenty of download, a thin upload, and middling latency
+// and jitter. Download alone would rate every capability Excellent, so it's the
+// other three that spread the strip across levels (see `rateCapability`): live
+// streaming wants more upload, gaming and 4K a lower ping, cloud gaming less
+// jitter and a lower ping.
 const MOCK_SPEED_RESULT: SpeedResult = {
-  downloadMbps: 623.4,
-  uploadMbps: 41.8,
-  latencyMs: 11,
-  jitterMs: 1.6,
+  downloadMbps: 186.4,
+  uploadMbps: 5.2,
+  latencyMs: 42,
+  jitterMs: 12.4,
   packetLoss: 0,
 }
 
@@ -489,14 +494,14 @@ const MOCK_SPEED_CONTEXT = {
 function seedSpeedHistory(): SpeedHistoryEntry[] {
   const hour = 3_600_000
   const points: (SpeedResult & { agoHours: number })[] = [
-    { downloadMbps: 611.2, uploadMbps: 40.6, latencyMs: 12, jitterMs: 1.9, packetLoss: 0, agoHours: 6 },
-    { downloadMbps: 598.7, uploadMbps: 39.1, latencyMs: 13, jitterMs: 2.4, packetLoss: 0, agoHours: 27 },
-    { downloadMbps: 642.9, uploadMbps: 42.3, latencyMs: 10, jitterMs: 1.4, packetLoss: 0, agoHours: 52 },
-    { downloadMbps: 570.4, uploadMbps: 38.0, latencyMs: 15, jitterMs: 3.1, packetLoss: 0, agoHours: 74 },
-    { downloadMbps: 629.1, uploadMbps: 41.5, latencyMs: 11, jitterMs: 1.7, packetLoss: 0, agoHours: 121 },
-    { downloadMbps: 604.8, uploadMbps: 40.0, latencyMs: 12, jitterMs: 2.0, packetLoss: 0, agoHours: 168 },
-    { downloadMbps: 583.3, uploadMbps: 37.6, latencyMs: 14, jitterMs: 2.7, packetLoss: 1, agoHours: 240 },
-    { downloadMbps: 655.0, uploadMbps: 43.1, latencyMs: 10, jitterMs: 1.3, packetLoss: 0, agoHours: 312 },
+    { downloadMbps: 181.9, uploadMbps: 5.1, latencyMs: 44, jitterMs: 13.1, packetLoss: 0, agoHours: 6 },
+    { downloadMbps: 174.6, uploadMbps: 4.8, latencyMs: 47, jitterMs: 14.6, packetLoss: 0, agoHours: 27 },
+    { downloadMbps: 192.3, uploadMbps: 5.4, latencyMs: 39, jitterMs: 11.2, packetLoss: 0, agoHours: 52 },
+    { downloadMbps: 158.2, uploadMbps: 4.6, latencyMs: 53, jitterMs: 17.8, packetLoss: 0, agoHours: 74 },
+    { downloadMbps: 188.7, uploadMbps: 5.3, latencyMs: 41, jitterMs: 12.0, packetLoss: 0, agoHours: 121 },
+    { downloadMbps: 179.4, uploadMbps: 5.0, latencyMs: 43, jitterMs: 12.9, packetLoss: 0, agoHours: 168 },
+    { downloadMbps: 166.8, uploadMbps: 4.7, latencyMs: 49, jitterMs: 15.3, packetLoss: 1, agoHours: 240 },
+    { downloadMbps: 194.5, uploadMbps: 5.5, latencyMs: 38, jitterMs: 10.8, packetLoss: 0, agoHours: 312 },
   ]
   return points.map(({ agoHours, ...speed }) => ({
     ...speed,
