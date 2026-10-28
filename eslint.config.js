@@ -40,4 +40,24 @@ export default tseslint.config(
       // `useLatestRef`, and text that ages reads the clock through `useNow`.
     },
   },
+  {
+    // A context object is read only through its hook (useTheme, useNetwork…),
+    // which also fails loudly outside the provider. Its provider and hook are
+    // the only code that imports it.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/context/**', 'src/**/hooks/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/context/*-context'],
+              message: 'Read a context through its hook (useTheme(), useNetwork()…), not useContext.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 )
