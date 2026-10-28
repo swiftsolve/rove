@@ -1,20 +1,8 @@
 import type { JSX } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { AppTab } from '@/app/utils/tabs'
-import {
-  AppsIcon,
-  CloudIcon,
-  ConnectionIcon,
-  DevicesIcon,
-  EventsIcon,
-  HomeIcon,
-  LayersIcon,
-  MoonIcon,
-  SettingsIcon,
-  SpeedIcon,
-  SunIcon,
-  UsageIcon,
-} from '@/components/icons/Icons'
+import { APP_TABS, type AppTab } from '@/app/utils/tabs'
+import { TABS } from '@/app/utils/tab-registry'
+import { MoonIcon, SunIcon } from '@/components/icons/Icons'
 import { Tooltip } from '@/components/Tooltip'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
@@ -43,46 +31,19 @@ const itemVariants = cva(
 
 const GROUP = 'flex flex-col items-center gap-12'
 
-interface TabIconProps {
-  size?: number
-  className?: string
-}
+const MAIN_TABS = APP_TABS.filter((id) => TABS[id].rail === 'main')
+const FOOT_TABS = APP_TABS.filter((id) => TABS[id].rail === 'foot')
 
-interface TabDefinition {
-  id: AppTab
-  label: string
-  Icon: (props: TabIconProps) => JSX.Element
-}
-
-// Primary navigation — the top group of the rail.
-const TAB_DEFINITIONS: TabDefinition[] = [
-  { id: 'home', label: 'Home', Icon: HomeIcon },
-  { id: 'speed', label: 'Speed', Icon: SpeedIcon },
-  { id: 'devices', label: 'Devices', Icon: DevicesIcon },
-  { id: 'apps', label: 'Apps', Icon: AppsIcon },
-  { id: 'services', label: 'Services', Icon: CloudIcon },
-  { id: 'events', label: 'Timeline', Icon: EventsIcon },
-  { id: 'interfaces', label: 'Interfaces', Icon: LayersIcon },
-  { id: 'diagnostics', label: 'Connection', Icon: ConnectionIcon },
-  { id: 'usage', label: 'Usage', Icon: UsageIcon },
-]
-
-// The gear sitting on its own at the foot of the rail. About is reached from
-// within the Settings page rather than the rail.
-const SETTINGS_TAB: TabDefinition = { id: 'settings', label: 'Settings', Icon: SettingsIcon }
-
-// Settings also stays lit on About, which is reached from inside Settings.
-const SUBPAGE_TABS: Partial<Record<AppTab, AppTab[]>> = { settings: ['about'] }
-
-function NavItem({ tab }: { tab: TabDefinition }): JSX.Element {
+function NavItem({ id }: { id: AppTab }): JSX.Element {
   const { location, navigate } = useNavigation()
-  const isActive = location.tab === tab.id || (SUBPAGE_TABS[tab.id]?.includes(location.tab) ?? false)
+  const tab = TABS[id]
+  const isActive = (TABS[location.tab].railTab ?? location.tab) === id
   return (
     <Tooltip content={tab.label} placement="right">
       <button
         type="button"
         className={itemVariants({ isActive })}
-        onClick={() => navigate({ tab: tab.id })}
+        onClick={() => navigate({ tab: id })}
         aria-current={isActive ? 'page' : undefined}
         aria-label={tab.label}
       >
@@ -124,9 +85,9 @@ export function TabBar(): JSX.Element {
       <ul role="list" className={GROUP}>
         {/* Flex items, so each shrinks to its 38px control instead of growing a
             line box (and its descender gap) round it. */}
-        {TAB_DEFINITIONS.map((tab) => (
-          <li key={tab.id} className="flex">
-            <NavItem tab={tab} />
+        {MAIN_TABS.map((id) => (
+          <li key={id} className="flex">
+            <NavItem id={id} />
           </li>
         ))}
       </ul>
@@ -144,9 +105,11 @@ export function TabBar(): JSX.Element {
         <li className="flex">
           <ThemeToggle />
         </li>
-        <li className="flex">
-          <NavItem tab={SETTINGS_TAB} />
-        </li>
+        {FOOT_TABS.map((id) => (
+          <li key={id} className="flex">
+            <NavItem id={id} />
+          </li>
+        ))}
       </ul>
     </nav>
   )

@@ -31,6 +31,9 @@ for what. Read it before writing or changing UI. For where files live, see
   `context/` (providers and their context objects), `hooks/` and `utils/`.
   Only a context's provider and hook import its object; everything else calls
   the hook. `npm run lint` enforces it.
+- Each tab's label, rail icon and placement, screen and subpages are one entry
+  in `TABS` (`app/utils/tab-registry.ts`); `TabBar` and `CurrentScreen` read
+  it. A new tab is its id in `app/utils/tabs.ts` plus that entry.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
   component file.
 - A view file holds the page and its layout; the rows, cards and widgets it is
