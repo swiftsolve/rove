@@ -65,7 +65,9 @@ for what. Read it before writing or changing UI. For where files live, see
 - `cn()` (`lib/cn.ts`) joins classes and lets a later utility override an
   earlier one that sets the same thing; use it wherever a component merges a
   `className` from outside, which is how a view adjusts a child. `cx` only
-  joins fixed classes.
+  joins fixed classes. `cn` lists every theme name so tailwind-merge can group
+  them; when you add one to `tailwind.css`, add it there too.
+  `npm run lint` runs `scripts/check-cn-theme.mjs`, which fails until you do.
 - Shared components keep a plain marker class on their parts (`data-row`,
   `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
   outside: `[&_.ui-section-footer]:pt-12`.

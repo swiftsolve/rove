@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "lint": "eslint . && node scripts/check-css-modules.mjs",
+    "lint": "eslint . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint",
     "screenshots": "node scripts/screenshots.mjs",
