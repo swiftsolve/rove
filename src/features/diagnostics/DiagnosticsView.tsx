@@ -37,15 +37,14 @@ const TIGHT_ROWS = cx(
   '[&_.data-row:not(:first-child)]:pt-4',
   '[&_.data-row:not(:last-child)]:pb-4',
 )
-// The Router and ISP readouts come in groups (Router: quality, connection,
-// device; ISP: provider, address) split by a hairline that runs the card's full
-// width, like the connection card's details: the body drops its side inset and
-// each group carries it instead.
-const GROUPED_BODY = cx(
+// The Router readout comes in three groups (quality, connection, device) split
+// by a hairline that runs the card's full width, like the connection card's
+// details: the body drops its side inset and each group carries it instead.
+const ROUTER_BODY = cx(
   'row-list px-0',
   'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
 )
-const ROW_GROUP = cx('row-list px-(--section-body-padding)', TIGHT_ROWS)
+const ROUTER_GROUP = cx('row-list px-(--section-body-padding)', TIGHT_ROWS)
 const DNS_ROWS = cx(
   '[&_.data-row:not(:first-child)]:pt-6',
   '[&_.data-row:not(:last-child)]:pb-6',
@@ -118,7 +117,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
       title="Router"
       className={ROUTER_FOOTER}
       icon={<RouterIcon size={15} />}
-      bodyClassName={GROUPED_BODY}
+      bodyClassName={ROUTER_BODY}
       footer={
         ping && ping.packetLoss > 0 ? (
           <p className="text-small">
@@ -127,7 +126,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
         ) : undefined
       }
     >
-      <DataList className={ROW_GROUP}>
+      <DataList className={ROUTER_GROUP}>
         <DataRow label="Latency">{latencyValue(ping)}</DataRow>
         <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
         <DataRow label="Packet loss">
@@ -138,7 +137,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
           )}
         </DataRow>
       </DataList>
-      <DataList className={ROW_GROUP}>
+      <DataList className={ROUTER_GROUP}>
         <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
         <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
         {linkSpeedMbps != null && (
@@ -148,7 +147,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
         )}
       </DataList>
       {hasDeviceRows && (
-        <DataList className={ROW_GROUP}>
+        <DataList className={ROUTER_GROUP}>
           <DataRow label="Name" value={diagnostics?.gatewayName || null} />
           <DataRow label="Model" value={model} />
           <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
@@ -192,36 +191,28 @@ function ispBadge(isp: IspInfo | null | undefined): ReactNode {
 
 function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
   const isp = diagnostics?.isp
-  const location = isp ? formatLocation(isp) : null
 
   return (
     <Section
       title={isp?.isVpn ? 'VPN' : 'ISP'}
       icon={<GlobeIcon size={15} />}
-      bodyClassName={isp ? GROUPED_BODY : cx('row-list', TIGHT_ROWS)}
+      bodyClassName={cx('row-list', TIGHT_ROWS)}
+      bodyAs={isp ? 'dl' : 'div'}
       action={ispBadge(isp)}
     >
       {isp ? (
         <>
-          {(isp.name || isp.domain || isp.asn) && (
-            <DataList className={ROW_GROUP}>
-              {/* "Provider", not "ISP": the card's title already says ISP, and
-                  under a VPN the value is the exit node's hosting company, which
-                  "Provider" describes either way. */}
-              <DataRow label="Provider" value={isp.name} />
-              {/* "Website", not "Domain" — in a network tool the latter reads
-                  as a DHCP search domain. DataRow hides itself when null, so
-                  a lookup that named no domain simply has no row. */}
-              <DataRow label="Website" value={isp.domain} />
-              <DataRow label="ASN" value={isp.asn} />
-            </DataList>
-          )}
-          {(isp.publicIp || location) && (
-            <DataList className={ROW_GROUP}>
-              <DataRow label="Public IP" value={isp.publicIp} />
-              <DataRow label="Location" value={location} />
-            </DataList>
-          )}
+          {/* "Provider", not "ISP": the card's title already says ISP, and
+              under a VPN the value is the exit node's hosting company, which
+              "Provider" describes either way. */}
+          <DataRow label="Provider" value={isp.name} />
+          {/* "Website", not "Domain" — in a network tool the latter reads
+              as a DHCP search domain. DataRow hides itself when null, so
+              a lookup that named no domain simply has no row. */}
+          <DataRow label="Website" value={isp.domain} />
+          <DataRow label="ASN" value={isp.asn} />
+          <DataRow label="Public IP" value={isp.publicIp} />
+          <DataRow label="Location" value={formatLocation(isp)} />
         </>
       ) : (
         // The card resolves ISP/ASN/country on-device, so it only lands here
