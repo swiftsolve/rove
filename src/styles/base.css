@@ -63,6 +63,13 @@
      collapses to the centre, revealing the dark snapshot beneath. */
   :root.theme-to-dark::view-transition-old(root) { z-index: 1; }
   :root.theme-to-dark::view-transition-new(root) { z-index: 0; }
+  /* While the theme class flips, every control takes its new colours at once
+     rather than playing its hover transition (see applyThemeClass). */
+  :root.theme-switching *,
+  :root.theme-switching *::before,
+  :root.theme-switching *::after {
+    transition: none !important;
+  }
 
 
   * {

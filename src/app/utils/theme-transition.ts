@@ -33,6 +33,24 @@ function themeName(isLight: boolean): 'light' | 'dark' {
 }
 
 /**
+ * Put the document in the light or dark theme, all at once. Buttons and rows
+ * transition their colour and background for hover, and a theme flip would
+ * otherwise play those too, so each control fades in after the page around it.
+ * `theme-switching` (styles/base.css) turns transitions off while the new
+ * colours are computed, and comes off once they're in place.
+ */
+export function applyThemeClass(isLight: boolean): void {
+  const root = document.documentElement
+  if (root.classList.contains('theme-light') === isLight) return
+  root.classList.add('theme-switching')
+  root.classList.toggle('theme-light', isLight)
+  // Compute styles now, under `theme-switching`, so the colours land without a transition.
+  void getComputedStyle(root).color
+  void root.offsetHeight
+  requestAnimationFrame(() => root.classList.remove('theme-switching'))
+}
+
+/**
  * Fold a press into the swap already animating rather than starting a second
  * transition on top of it (which snaps the first to its end and visibly jumps):
  * if it points the opposite way, reverse the clip circle from wherever it is
@@ -44,7 +62,7 @@ function foldIntoRunningSwap(swap: RunningSwap, isNextLight: boolean, persist: (
     // The snapshots cover the live DOM for the whole transition, so flipping
     // the class and re-rendering now is invisible until teardown — at which
     // point it must already match where the reversed circle lands.
-    document.documentElement.classList.toggle('theme-light', isNextLight)
+    applyThemeClass(isNextLight)
     playThemeSwitchSound(themeName(isNextLight))
     // Reverse the clip in place. Before `ready` resolves the animation
     // doesn't exist yet; the ready handler reconciles direction on its own.
@@ -132,7 +150,7 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
     // toggle's own sun/moon icon), and toggle the class here too so the new
     // snapshot definitely paints in the incoming theme's colours.
     flushSync(persist)
-    root.classList.toggle('theme-light', isNextLight)
+    applyThemeClass(isNextLight)
   })
   const swap: RunningSwap = { transition, isTargetLight: isNextLight, animation: null }
   running = swap
