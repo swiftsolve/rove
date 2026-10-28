@@ -5,7 +5,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from '@/app/App'
 
-import { installTauriBridge, isTauri } from '@/bridge/tauriNetworkApi'
+import { installTauriBridge, isTauri } from '@/bridge/tauri-network-api'
 import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'
 import { migrateLegacySpeedHistory } from '@/features/speed/utils/speed-history'
 
@@ -13,7 +13,7 @@ if (isTauri()) {
   installTauriBridge()
 } else if (import.meta.env.DEV) {
   // Plain browser (Vite dev server): stand in a mock bridge for design work.
-  const { installMockNetworkApiIfNeeded } = await import('./dev/mockNetworkApi')
+  const { installMockNetworkApiIfNeeded } = await import('./dev/mock-network-api')
   installMockNetworkApiIfNeeded()
 }
 

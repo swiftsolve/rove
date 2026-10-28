@@ -41,7 +41,7 @@ Rove is two programs talking over a thin, typed bridge:
 - **The contract** — TypeScript types in `src/types/` define every payload; the
   Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
   (serde renames everything to camelCase on the wire). The UI never knows it's
-  talking to Rust: `src/bridge/tauriNetworkApi.ts` implements the same
+  talking to Rust: `src/bridge/tauri-network-api.ts` implements the same
   `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
   which is why `npm run dev` works in a plain browser for UI work.
 

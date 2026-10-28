@@ -38,6 +38,11 @@ for what. Read it before writing or changing UI. For where files live, see
   `features/speed/types.ts`.
 - The rare stylesheet a component needs sits next to it with the same name:
   `ConnectionCard.tsx` and `ConnectionCard.module.css`.
+- File names say what a file is. A component is PascalCase (`ThemeProvider.tsx`),
+  a hook is camelCase starting with `use` (`useTheme.ts`), and everything else
+  is kebab-case: contexts, utils and types (`theme-context.ts`), global
+  stylesheets (`base.css`) and folders (`live-throughput/`). `npm run lint`
+  runs `scripts/check-file-names.mjs`, which fails on a name that fits none.
 
 ## Styles: Tailwind utilities from the design tokens
 

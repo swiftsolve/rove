@@ -6,7 +6,7 @@ import {
   type SpeedRunContext,
 } from '@/features/speed/utils/speed-history'
 import { formatBand } from '@/lib/format'
-import { getNetworkApi } from '@/bridge/networkApi'
+import { getNetworkApi } from '@/bridge/network-api'
 import { getLiveThroughput, subscribeLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
 import type { SpeedTestConnection } from '@/features/speed/types'
 

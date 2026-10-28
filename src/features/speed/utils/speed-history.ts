@@ -1,5 +1,5 @@
 import type { SpeedHistoryEntry, SpeedResult, SpeedRunContext } from '@/types'
-import { getNetworkApi } from '@/bridge/networkApi'
+import { getNetworkApi } from '@/bridge/network-api'
 
 // Re-exported so existing imports from this module keep resolving.
 export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'

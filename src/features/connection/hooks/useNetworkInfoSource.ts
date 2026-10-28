@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { NetworkInfo } from '@/types'
 import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
-import { getNetworkApi } from '@/bridge/networkApi'
+import { getNetworkApi } from '@/bridge/network-api'
 import { useLatestRef } from '@/hooks/useLatestRef'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'

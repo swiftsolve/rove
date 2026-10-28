@@ -3,7 +3,7 @@
  *
  * When the app runs in a plain browser (e.g. viewing the Vite dev server over a
  * forwarded port), `window.networkAPI` doesn't exist because there's no Tauri
- * backend to install the real bridge (see bridge/tauriNetworkApi.ts). This
+ * backend to install the real bridge (see bridge/tauri-network-api.ts). This
  * installs a faithful, in-memory stand-in so the UI renders fully populated for
  * design/polish work. It is only wired up in dev builds and only when the real
  * bridge is absent — see `installMockNetworkApiIfNeeded`.
