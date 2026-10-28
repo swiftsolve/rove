@@ -13,8 +13,13 @@ export type CapabilityLevel = (typeof CAPABILITY_LEVELS)[number]
 export interface CapabilityRequirement {
   minDownloadMbps: number
   minUploadMbps: number
-  maxLatencyMs: number
-  maxJitterMs: number
+  /** Null when latency doesn't affect it. */
+  maxLatencyMs: number | null
+  /** Null when jitter doesn't affect it. */
+  maxJitterMs: number | null
+  /** False when a slow connection only makes it slow, so it bottoms out at
+   *  'poor' instead of 'unsupported'. True when left out. */
+  canBeUnsupported?: boolean
 }
 
 // Each speed comes from the provider or guide named beside it. Providers don't
@@ -84,8 +89,17 @@ export const CAPABILITY_DEFINITIONS = [
     label: 'Large Downloads',
     description: 'Game updates, file transfers',
     icon: '⬇️',
-    // No provider figure: Rove's own, a 10 GB game update in under half an hour.
-    requirements: { minDownloadMbps: 50, minUploadMbps: 2, maxLatencyMs: 200, maxJitterMs: 50 },
+    // Down: the FCC's broadband benchmark (100 Mbps), a 100 GB game in about two
+    // hours. Only download speed sets how long a download takes, so there's no
+    // latency or jitter limit, and the upload just carries its acknowledgements
+    // (1-2% of the download). A slow line still downloads, so never unsupported.
+    requirements: {
+      minDownloadMbps: 100,
+      minUploadMbps: 1,
+      maxLatencyMs: null,
+      maxJitterMs: null,
+      canBeUnsupported: false,
+    },
   },
 ] as const
 

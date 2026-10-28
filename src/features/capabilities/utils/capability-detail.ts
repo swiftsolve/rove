@@ -1,4 +1,4 @@
-import type { CapabilityId, CapabilityLevel, SpeedResult } from '@/types'
+import type { CapabilityId, CapabilityLevel, CapabilityRequirement, SpeedResult } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 
@@ -64,7 +64,7 @@ export function explainCapability(
   const definition = DEFINITIONS.get(id)
   if (!definition) return { summary: '', checks: [] }
 
-  const { requirements } = definition
+  const requirements: CapabilityRequirement = definition.requirements
   const checks: RequirementCheck[] = [
     {
       label: 'Download',
@@ -78,19 +78,24 @@ export function explainCapability(
       have: formatSpeedMbps(speed.uploadMbps),
       isMet: speed.uploadMbps >= requirements.minUploadMbps,
     },
-    {
+  ]
+  // A limit left out doesn't affect this capability, so it gets no row.
+  if (requirements.maxLatencyMs !== null) {
+    checks.push({
       label: 'Latency',
       need: `≤ ${requirements.maxLatencyMs} ms`,
       have: formatLatencyMs(speed.latencyMs),
       isMet: speed.latencyMs <= requirements.maxLatencyMs,
-    },
-    {
+    })
+  }
+  if (requirements.maxJitterMs !== null) {
+    checks.push({
       label: 'Jitter',
       need: `≤ ${requirements.maxJitterMs} ms`,
       have: formatLatencyMs(speed.jitterMs),
       isMet: speed.jitterMs <= requirements.maxJitterMs,
-    },
-  ]
+    })
+  }
 
   const failing = checks.filter((check) => !check.isMet).map((check) => check.label.toLowerCase())
 
