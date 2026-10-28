@@ -46,6 +46,8 @@ Rove is two programs talking over a thin, typed bridge:
   which is why `npm run dev` works in a plain browser for UI work.
 
 > **Deeper dives**
+> - [Rove frontend](docs/frontend.md): how the UI is organised and styled, and
+>   which component to use for what.
 > - [How Rove Is Put Together](docs/architecture.md) — the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
 > - [Learning Rust & Tauri through Rove](docs/learning-rust-and-tauri.md) — the
@@ -199,88 +201,16 @@ rove/
                                 service, events, capabilities, window config
 ```
 
-### Frontend conventions
+## Frontend
 
-**State: context, not prop drilling**
-
-- No component takes a prop only to pass it down. App-wide state comes from
-  context, read where it's used: `useNavigation()` (location, `navigate`,
-  `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()`
-  and `useConnectionStatus()` (the title bar's verdict). Each has its own small
-  context, so a reader re-renders only when its value changes. That's why every
-  view renders with no props.
-- Backend data comes from TanStack Query. Each feature owns its data hook in
-  `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
-  `useBackendQuery`, and the components that show the data call it directly.
-  Callers of the same hook share one cache entry, so `DevicesView` and
-  `DevicesCard` see the same scan.
-- A query key names the data, plus the network for data that belongs to one
-  (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
-  fresh results. A query fetches while a screen that shows it is open and polls
-  per its hook; the hooks' comments say when and why.
-- Props are for a component's own inputs: the item a row shows, a dialog's
-  `onClose`. Shared components in `src/components` take only props and never
-  read app context.
-
-**Where code goes**
-
-- `app/` and every feature use the same subfolders: `components/`,
-  `context/` (providers and their context objects), `hooks/` and `utils/`.
-- A custom hook lives in its own file in a `hooks/` folder, never inside a
-  component file.
-- `src/types` is only the backend contract, mirrored in Rust. A type only the
-  UI uses lives next to the code that owns it, such as
-  `features/speed/types.ts`.
-- The rare stylesheet a component needs sits next to it with the same name:
-  `ConnectionCard.tsx` and `ConnectionCard.module.css`.
-
-**Styles: Tailwind utilities from the design tokens**
-
-- Components are styled with Tailwind v4 utilities in the TSX. The theme in
-  `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
-  `--spacing-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
-  there are no Tailwind defaults to reach for. There's no preflight:
-  `styles/base.css` is the reset.
-- Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,
-  `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
-  `styles/utilities.css`. They take variants and sort with the other
-  utilities.
-- Variants go through CVA (class-variance-authority), with utility strings. An
-  element whose classes depend on state or a variant gets a recipe at the top
-  of its file:
-
-  ```ts
-  const rowVariants = cva('flex items-center gap-12', {
-    variants: {
-      isGateway: { true: 'bg-inset' },
-      level: { good: 'text-good', poor: 'text-poor' },
-    },
-  })
-  // <div className={rowVariants({ isGateway, level })}>
-  ```
-
-- `cn()` (`lib/cn.ts`) joins classes and lets a later utility override an
-  earlier one that sets the same thing; use it wherever a component merges a
-  `className` from outside, which is how a view adjusts a child. `cx` only
-  joins fixed classes.
-- Shared components keep a plain marker class on their parts (`data-row`,
-  `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
-  outside: `[&_.ui-section-footer]:pt-12`.
-- Buttons are `Button` (`variant`: `primary`, `filled`, `secondary`) and
-  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `stop`; `aria-label`
-  is required), never hand-written `<button>` classes.
-- Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
-  their keyframes. A `.module.css` file is only for what utilities can't say:
-  selectors into another component's DOM keyed on `:has()`. `npm run lint`
-  also runs `scripts/check-css-modules.mjs`, which fails on a `styles.x` with
-  no matching class and on a class nothing uses.
-
-## Design
+The UI follows a few conventions: state from context and TanStack Query, never
+props passed through; Tailwind utilities built only from the design tokens;
+shared components before new markup. [docs/frontend.md](docs/frontend.md) has
+them all, with the component table.
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma is the source of truth for tokens and components. The UI consumes its
-tokens through the `@swiftsolve/rove-design` package. To browse it without
-Figma, see the published slideshow: <https://swiftsolve.github.io/rove-design/>.
+in Figma is the source of truth for tokens and components. To browse it without
+Figma, see the [slideshow](https://swiftsolve.github.io/rove-design/).
 
 ## Development
 
