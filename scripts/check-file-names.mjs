@@ -5,7 +5,8 @@
  *     CSS Module takes its name (`ConnectionCard.module.css`);
  *   - hooks are camelCase starting with `use` (`useTheme.ts`, `.tsx` if it renders);
  *   - everything else is kebab-case: modules (`theme-context.ts`), global
- *     stylesheets (`base.css`) and folders (`live-throughput/`).
+ *     stylesheets (`base.css`) and folders (`live-throughput/`);
+ *   - a unit test takes its module's name plus `.test` (`chart-scale.test.ts`).
  *
  * `main.tsx` is Vite's entry point and keeps its name. Assets keep the names
  * they came with (`InterVariable.woff2`), so `src/assets` isn't checked.
@@ -26,7 +27,7 @@ const PASCAL = '[A-Z][A-Za-z0-9]*'
 const HOOK = 'use[A-Z][A-Za-z0-9]*'
 
 // A kebab-case `use-…` name is a hook named the wrong way, not a module.
-const SCRIPT = new RegExp(`^(?:${PASCAL}\\.tsx|${HOOK}\\.tsx?|(?!use-)${KEBAB}(?:\\.d)?\\.ts)$`)
+const SCRIPT = new RegExp(`^(?:${PASCAL}\\.tsx|${HOOK}\\.tsx?|(?!use-)${KEBAB}(?:\\.d|\\.test)?\\.ts)$`)
 const STYLESHEET = new RegExp(`^(?:${PASCAL}\\.module|${KEBAB})\\.css$`)
 const FOLDER = new RegExp(`^${KEBAB}$`)
 
