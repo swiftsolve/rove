@@ -259,6 +259,7 @@ for the job and degrades gracefully (missing values render as “—”):
 | Neighbor table | `ip neigh` | `arp -a` | `arp -a` |
 | Reverse hostnames | `getent` | `dscacheutil` | `System.Net.Dns` |
 | Interface state | sysfs | `ifconfig` | `Get-NetAdapter` |
+| App icons | `.desktop` entries, icon theme | AppKit | Shell (`.exe` icon) |
 | mDNS, sweep, speed test, throughput, usage | pure Rust everywhere | ✓ | ✓ |
 
 Platform branches are runtime `cfg!()` checks, so every path typechecks on

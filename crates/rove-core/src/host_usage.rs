@@ -138,7 +138,7 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
 /// Reuses [`crate::app_usage`]'s field/proc-name readers so the two `ss` parsers
 /// stay consistent.
 #[cfg(any(target_os = "linux", test))]
-use crate::app_usage::{field_u64, ss_proc_name};
+use crate::app_usage::{field_u64, ss_proc_name, ss_proc_pid};
 
 /// Parse `ss -tinHp` into per-socket peer readings. Each socket is a header line
 /// (`STATE recvq sendq LOCAL PEER users:((...))`) followed by an indented info
@@ -147,8 +147,8 @@ use crate::app_usage::{field_u64, ss_proc_name};
 #[cfg(any(target_os = "linux", test))]
 fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
-    // (app, conn_key, peer_ip, peer_port) awaiting its following info line.
-    let mut pending: Option<(String, String, String, Option<u16>)> = None;
+    // (app, conn_key, peer_ip, peer_port, pid) awaiting its following info line.
+    let mut pending: Option<(String, String, String, Option<u16>, Option<u32>)> = None;
 
     for line in output.lines() {
         let trimmed = line.trim();
@@ -157,10 +157,10 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
         }
 
         if trimmed.contains("bytes_sent:") || trimmed.contains("bytes_received:") {
-            if let Some((app, conn_key, ip, port)) = pending.take() {
+            if let Some((app, conn_key, ip, port, pid)) = pending.take() {
                 let tx = field_u64(trimmed, "bytes_sent:").unwrap_or(0);
                 let rx = field_u64(trimmed, "bytes_received:").unwrap_or(0);
-                readings.push(PeerReading { conn_key, app, ip, port, rx, tx, pid: None });
+                readings.push(PeerReading { conn_key, app, ip, port, rx, tx, pid });
             }
             continue;
         }
@@ -172,7 +172,7 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
                 let peer = cols.next();
                 match (local, peer, peer.and_then(routable_peer_ip)) {
                     (Some(local), Some(peer), Some(ip)) => {
-                        Some((app, format!("{local}|{peer}"), ip, peer_port(peer)))
+                        Some((app, format!("{local}|{peer}"), ip, peer_port(peer), ss_proc_pid(trimmed)))
                     }
                     // A socket with no routable peer (listener/loopback) resets
                     // the pairing so its info line isn't misattributed.
@@ -591,6 +591,7 @@ LISTEN 0 128 127.0.0.1:5432 0.0.0.0:* users:((\"postgres\",pid=99,fd=7))
         assert_eq!(r[0].port, Some(443));
         assert_eq!(r[0].rx, 18422);
         assert_eq!(r[0].tx, 5231);
+        assert_eq!(r[0].pid, Some(1234));
         // IPv6 peer in ss bracket form: IP kept without the port, port read off.
         assert_eq!(r[1].app, "spotify");
         assert_eq!(r[1].ip, "2606:4700::6810:85e5");

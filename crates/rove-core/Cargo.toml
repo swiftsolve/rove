@@ -64,6 +64,13 @@ windows = { version = "0.61", features = [
 png = "0.18"
 base64 = "0.21"
 
+# Real per-app icons: the icon a process's .desktop entry names, read from the
+# icon theme, PNGs scaled down to 64px, and passed to the frontend as a data:
+# URI. See platform/app_icon.rs.
+[target.'cfg(target_os = "linux")'.dependencies]
+png = "0.18"
+base64 = "0.21"
+
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.
 [target.'cfg(target_os = "macos")'.dependencies]

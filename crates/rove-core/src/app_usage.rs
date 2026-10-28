@@ -234,6 +234,16 @@ pub(crate) fn ss_proc_name(line: &str) -> Option<String> {
     Some(line[start..start + end].to_string())
 }
 
+/// The pid that goes with [`ss_proc_name`], i.e. the `123` in
+/// `users:(("NAME",pid=123,fd=45))`.
+#[cfg(any(target_os = "linux", test))]
+pub(crate) fn ss_proc_pid(line: &str) -> Option<u32> {
+    let marker = ",pid=";
+    let start = line.find(marker)? + marker.len();
+    let digits = line[start..].bytes().take_while(u8::is_ascii_digit).count();
+    line[start..start + digits].parse().ok()
+}
+
 /// Parse `ss -tinHp` output into per-socket cumulative readings. Each socket is
 /// two lines: a header (`STATE recvq sendq LOCAL PEER users:((...))`) carrying
 /// the addresses and owning process, then an indented info line carrying
@@ -247,7 +257,7 @@ pub(crate) fn ss_proc_name(line: &str) -> Option<String> {
 fn parse_ss(output: &str) -> Vec<UsageUnit> {
     let mut units = Vec::new();
     // The header we're waiting to pair with its following info line.
-    let mut pending: Option<(String, String)> = None; // (name, socket key)
+    let mut pending: Option<(String, String, Option<u32>)> = None; // (name, socket key, pid)
 
     for line in output.lines() {
         let trimmed = line.trim();
@@ -258,10 +268,10 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
         // Info/continuation line: the byte counters live here. `bytes_sent` is
         // what this host transmitted (tx); `bytes_received` what it took in (rx).
         if trimmed.contains("bytes_sent:") || trimmed.contains("bytes_received:") {
-            if let Some((name, key)) = pending.take() {
+            if let Some((name, key, pid)) = pending.take() {
                 let tx = field_u64(trimmed, "bytes_sent:").unwrap_or(0);
                 let rx = field_u64(trimmed, "bytes_received:").unwrap_or(0);
-                units.push(UsageUnit { key, name, rx, tx, pid: None });
+                units.push(UsageUnit { key, name, rx, tx, pid });
             }
             continue;
         }
@@ -275,11 +285,13 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
                 let mut cols = trimmed.split_whitespace();
                 let local = cols.nth(3);
                 let peer = cols.next();
-                // Socket-keyed accounting: no per-process icon lookup on Linux,
-                // so pid is left unset. A non-routable peer (loopback, listener)
-                // drops the pairing so its info line isn't banked.
+                // The pid is only for the icon lookup; accounting stays keyed by
+                // socket. A non-routable peer (loopback, listener) drops the
+                // pairing so its info line isn't banked.
                 pending = match (local, peer, peer.and_then(crate::net_util::routable_peer_ip)) {
-                    (Some(local), Some(peer), Some(_)) => Some((name, format!("{local}|{peer}"))),
+                    (Some(local), Some(peer), Some(_)) => {
+                        Some((name, format!("{local}|{peer}"), ss_proc_pid(trimmed)))
+                    }
                     _ => None,
                 };
             }
@@ -1162,10 +1174,11 @@ TIME-WAIT 0 0 192.168.1.42:40120 35.186.224.25:443
                 name: "firefox".into(),
                 rx: 18422,
                 tx: 5231,
-                pid: None,
+                pid: Some(1234),
             }
         );
         assert_eq!(units[1].name, "spotify");
+        assert_eq!(units[1].pid, Some(567));
         assert_eq!(units[1].rx, 900);
         assert_eq!(units[1].tx, 1200);
     }
