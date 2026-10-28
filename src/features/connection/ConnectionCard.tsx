@@ -60,10 +60,11 @@ const signalMeterVariants = cva('flex items-center gap-8', {
 
 const signalBarsVariants = cva('inline-flex items-end', {
   variants: {
-    // Beside the strip's title, a size up; in the Signal row, centred on the text.
+    // Beside the strip's title, a size up; in the Signal row, as tall as the
+    // text's capitals.
     placement: {
       strip: 'gap-2 h-[11px]',
-      details: 'gap-2 h-[9px]',
+      details: 'gap-2 h-[10px]',
     },
   },
 })
@@ -83,7 +84,9 @@ const signalBarVariants = cva('', {
 
 const SIGNAL_BAR_HEIGHTS = {
   strip: ['h-[5px]', 'h-[7px]', 'h-[9px]', 'h-[11px]'],
-  details: ['h-[3px]', 'h-[5px]', 'h-[7px]', 'h-[9px]'],
+  // The tallest rounds the value text's cap height (9.46px in Inter at 13px) up to
+  // a whole pixel; 9px read short.
+  details: ['h-[4px]', 'h-[6px]', 'h-[8px]', 'h-[10px]'],
 }
 
 // Lock + protocol, green when secured, red when open. A block flex box (not
@@ -291,7 +294,7 @@ function WifiExtras({
         {/* Block flex (not inline-flex) avoids extra line-box strut height inside
             .text-value, which would misalign the bars with the label text. The
             bars have no text, so baseline alignment sits their bottom on the
-            text's baseline; at 9px they then span its cap height exactly. */}
+            text's baseline, and at 10px they reach its capitals. */}
         <div className={cx(styles.signalDetail, 'flex items-baseline justify-end gap-8')}>
           {info.signalStrength != null && (
             <SignalMeter strength={info.signalStrength} placement="details" />
