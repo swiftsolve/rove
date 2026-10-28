@@ -132,24 +132,24 @@ const detailsWrapVariants = cva(
   },
 )
 
-// Open, the rows sit on a dark inset panel below the header (like the live
-// chart and bench footer): full card width, square top edge, and the card's
-// overflow rounds the bottom. The rows take the interface cards' tighter
-// rhythm; `row-list` keeps the first row's top and last row's bottom at 0.
-const detailsVariants = cva(
-  [
-    styles.details,
-    'row-list overflow-hidden',
-    '[&>.data-row:not(:first-child)]:pt-4 [&>.data-row:not(:last-child)]:pb-4',
-  ],
-  {
-    variants: {
-      isOpen: {
-        true: 'py-(--section-header-padding-y) px-(--section-body-padding) bg-inset',
-        false: null,
-      },
-    },
-  },
+// The rows sit on a dark inset panel below the header (like the live chart and
+// bench footer): full card width, square top edge, and the card's overflow
+// rounds the bottom. The panel keeps its padding whether open or not, so the
+// rows hold their inset for the whole height animation; the wrapper around it
+// does the clipping. Its groups (link, addresses, hardware) are split by a
+// hairline that runs the card's full width, with a row gap either side.
+const DETAILS = cx(
+  styles.details,
+  'row-list bg-inset py-(--section-header-padding-y)',
+  'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
+)
+
+// A group carries the side inset (so the hairlines between groups don't) and
+// the interface cards' tighter rhythm; `row-list` keeps its first row's top and
+// last row's bottom at 0.
+const DETAILS_GROUP = cx(
+  'row-list px-(--section-body-padding)',
+  '[&>.data-row:not(:first-child)]:pt-4 [&>.data-row:not(:last-child)]:pb-4',
 )
 
 // Keep the subtitle on one line inside the narrow strip: a flex row when it's
@@ -281,7 +281,7 @@ function SecurityBadge({
   )
 }
 
-function WifiExtras({
+function WifiLinkRows({
   info,
   linkSpeed,
 }: {
@@ -290,6 +290,9 @@ function WifiExtras({
 }): JSX.Element {
   return (
     <>
+      {/* The strip's title falls back to "WiFi Network" when the OS withholds
+          the name (e.g. without location permission); here the row just drops. */}
+      <DataRow label="Network name" value={info.ssid || null} />
       <DataRow label="Signal">
         {/* Block flex (not inline-flex) avoids extra line-box strut height inside
             .text-value, which would misalign the bars with the label text. The
@@ -317,7 +320,7 @@ function WifiExtras({
   )
 }
 
-function EthernetExtras({
+function EthernetLinkRows({
   info,
   linkSpeed,
 }: {
@@ -328,8 +331,6 @@ function EthernetExtras({
     <>
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Duplex" value={formatDisplayValue(formatDuplex(info.duplex))} />
-      <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
-      <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
     </>
   )
 }
@@ -425,23 +426,45 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         className={detailsWrapVariants({ isOpen: isExpanded })}
         aria-hidden={!isExpanded}
       >
-        <DataList className={detailsVariants({ isOpen: isExpanded })}>
-          <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
-          <DataRow
-            label="Public IP"
-            value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
-          />
-          {/* Grouped by topic: addresses, then the link itself, then the
-              hardware it runs over. */}
-          <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
-          {info.dns.length > 0 && (
-            <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
-          )}
-          {isWifiNetwork(info) && <WifiExtras info={info} linkSpeed={linkSpeed} />}
-          {isEthernetNetwork(info) && <EthernetExtras info={info} linkSpeed={linkSpeed} />}
-          <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-          <DataRow label="MAC" value={formatMac(info.macAddress)} />
-        </DataList>
+        {/* The grid row's only child, shrinking to nothing when collapsed;
+            `min-h-0` lets it go below the panel's padding. */}
+        <div className="min-h-0 overflow-hidden">
+          {/* Grouped by topic: the link itself, then the addresses from the
+              device outward, then the hardware it runs over. */}
+          <div className={DETAILS}>
+            {isWifiNetwork(info) && (
+              <DataList className={DETAILS_GROUP}>
+                <WifiLinkRows info={info} linkSpeed={linkSpeed} />
+              </DataList>
+            )}
+            {isEthernetNetwork(info) && (
+              <DataList className={DETAILS_GROUP}>
+                <EthernetLinkRows info={info} linkSpeed={linkSpeed} />
+              </DataList>
+            )}
+            <DataList className={DETAILS_GROUP}>
+              <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
+              <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
+              {info.dns.length > 0 && (
+                <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
+              )}
+              <DataRow
+                label="Public IP"
+                value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
+              />
+            </DataList>
+            <DataList className={DETAILS_GROUP}>
+              {isEthernetNetwork(info) && (
+                <>
+                  <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
+                  <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
+                </>
+              )}
+              <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
+              <DataRow label="MAC" value={formatMac(info.macAddress)} />
+            </DataList>
+          </div>
+        </div>
       </div>
     </section>
   )
