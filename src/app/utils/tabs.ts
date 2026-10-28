@@ -1,13 +1,14 @@
+// In nav-rail order: TabBar lists the tabs in this order.
 export const APP_TABS = [
   'home',
   'speed',
-  'interfaces',
   'devices',
-  'events',
-  'usage',
   'apps',
-  'diagnostics',
   'services',
+  'events',
+  'interfaces',
+  'diagnostics',
+  'usage',
   'settings',
   'about',
 ] as const
