@@ -3,7 +3,8 @@ import { extendTailwindMerge } from 'tailwind-merge'
 
 // tailwind-merge must know the theme's names (src/styles/tailwind.css), or it
 // can't tell a font size from a colour: `text-md` and `text-secondary` would
-// look like two text colours, and it would drop one.
+// look like two text colours, and it would drop one. `npm run lint` checks
+// these lists against the theme (scripts/check-cn-theme.mjs).
 const SPACING = ['0', 'px', '2', '4', '6', '8', '10', '11', '12', '14', '16', '20']
 // The Figma text styles, as `leading-*` and `tracking-*` names.
 const TYPE_STYLES = [
@@ -33,12 +34,14 @@ const mergeClasses = extendTailwindMerge({
       spacing: SPACING,
       text: FONT_SIZES,
       color: COLORS,
+      font: ['sans', 'numeric'],
       'font-weight': ['regular', 'medium', 'semibold'],
       leading: TYPE_STYLES,
       tracking: TYPE_STYLES,
       radius: ['xs', 'sm', 'md', 'lg', 'full'],
       shadow: ['panel', 'raised'],
       ease: ['out', 'in-out'],
+      animate: ['overlay-in', 'dialog-in', 'fade-in', 'menu-in', 'scan-slide-in', 'scan-slide-out', 'wavy-scroll'],
     },
   },
 })
