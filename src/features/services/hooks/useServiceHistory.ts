@@ -1,41 +1,49 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import type { ServiceEvent } from '@/types'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import { queryClient } from '@/app/utils/query-client'
+
+const SERVICE_HISTORY_KEY = ['services', 'history']
 
 interface UseServiceHistoryResult {
   /** The timeline, newest first. Empty until the first read lands. */
   events: ServiceEvent[]
-  /** Wipe the stored timeline, then re-read (which yields an empty log). */
+  /** Wipe the stored timeline, and the cached copy with it. */
   clear: () => Promise<void>
 }
 
 /**
  * The services outage timeline, owned by the backend store and recorded by the
  * always-on services heartbeat — so it holds outages that happened while this
- * page, or the whole window, was closed.
+ * page, or the whole window, was closed. It re-reads each time the timeline
+ * opens, showing the cached copy meanwhile.
  *
  * Re-reads whenever the heartbeat says it folded in a fresh probe, so an outage
  * that starts while the timeline is on screen appears without a manual refresh.
  */
 export function useServiceHistory(): UseServiceHistoryResult {
-  const [events, setEvents] = useState<ServiceEvent[]>([])
+  const api = window.networkAPI
+  const { data } = useBackendQuery({
+    queryKey: SERVICE_HISTORY_KEY,
+    queryFn: api ? () => api.getServiceHistory() : undefined,
+    isEnabled: true,
+    errorMessage: 'Failed to load the services timeline',
+  })
 
-  const read = useCallback(
-    async (): Promise<void> =>
-      window.networkAPI?.getServiceHistory().then((history) => {
-        if (history) setEvents(history)
-      }),
-    [],
+  useEffect(
+    () => api?.onServicesTimeline(() => void queryClient.invalidateQueries({ queryKey: SERVICE_HISTORY_KEY })),
+    [api],
   )
 
-  useEffect(() => {
-    void read()
-    return window.networkAPI?.onServicesTimeline(() => void read())
-  }, [read])
+  const clearMutation = useMutation({
+    mutationFn: async () => api?.clearServiceHistory(),
+    onSuccess: () => queryClient.setQueryData<ServiceEvent[]>(SERVICE_HISTORY_KEY, []),
+  })
 
-  const clear = useCallback(async (): Promise<void> => {
-    await window.networkAPI?.clearServiceHistory()
-    await read()
-  }, [read])
+  const clear = async (): Promise<void> => {
+    await clearMutation.mutateAsync()
+  }
 
-  return { events, clear }
+  return { events: data ?? [], clear }
 }

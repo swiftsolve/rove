@@ -304,7 +304,7 @@ export function ServicesView(): JSX.Element {
     void reprobe()
   }
   const openTimeline = (): void => navigate({ tab: 'services', servicesSub: { view: 'timeline' } })
-  const { services, add, remove } = useServices(true)
+  const { services, add, remove } = useServices()
   // Rolling per-host latency history for each row's trend sparkline, appended
   // on each services poll (see `useServiceReachability`).
   const latencyHistory = useServiceLatency()
