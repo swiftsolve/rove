@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { swapResolvedTheme } from '@/app/utils/theme-transition'
+import { applyThemeClass, swapResolvedTheme } from '@/app/utils/theme-transition'
 
 /**
  * The colour-theme preference: an explicit choice, or `system` to follow the
@@ -85,7 +85,7 @@ export function useThemeState(): Theme {
   // tokens switch to their Light values. Covers passive changes too (an OS flip while on
   // 'system'), which arrive here without going through the animated setMode path.
   useEffect(() => {
-    document.documentElement.classList.toggle('theme-light', isLight)
+    applyThemeClass(isLight)
   }, [isLight])
 
   const setMode = useCallback((nextMode: ThemeMode): void => {
