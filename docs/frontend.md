@@ -102,8 +102,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
 | Page header | `ViewHeader` | Top of every page except Home: icon chip, title, subtitle and actions, over a full-width divider. |
-| Button | `Button` | Filled for the main action, Stop to cancel it, Secondary for quiet actions, Text for low-key prompts like Install & restart. |
-| Icon button | `IconButton` | Icon-only button. Use a 14px icon for Play. |
+| Button | `Button` | Filled (`variant="filled"`) for the main action, Stop (`filled` with `isStop`) to cancel it, Secondary (`secondary`) for quiet actions, Text (`primary`) for low-key prompts like Install & restart. |
+| Icon button | `IconButton` | Icon-only button; `tone` is `plain`, `primary`, `secondary` or `stop`. Use a 14px icon for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
 | Section header | `Section` | 44px card header with an optional badge (`SectionBadge`) or button. |
