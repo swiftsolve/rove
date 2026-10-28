@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { IS_WINDOWS } from '@/lib/platform'
-import { isTauri } from '@/bridge/tauriNetworkApi'
+import { isTauri } from '@/bridge/tauri-network-api'
 import { EmptyStateHint } from '@/components/EmptyState'
 import { Button } from '@/components/Button'
 

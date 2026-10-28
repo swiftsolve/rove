@@ -24,8 +24,8 @@ nothing above the line can tell which one did.
 </div>
 
 `src/types/api.ts` declares the interface. Two files implement it:
-`src/bridge/tauriNetworkApi.ts` forwards each method to a Tauri command, and
-`src/dev/mockNetworkApi.ts` answers from memory. `src/main.tsx` picks one at
+`src/bridge/tauri-network-api.ts` forwards each method to a Tauri command, and
+`src/dev/mock-network-api.ts` answers from memory. `src/main.tsx` picks one at
 startup:
 
 ```ts

@@ -367,9 +367,9 @@ Rove's actual files.
 
 Notice that Rove's React components **never call `invoke` directly.** They call
 `window.networkAPI.getDataUsage()`. That `window.networkAPI` object is installed
-at startup by `src/bridge/tauriNetworkApi.ts` (`installTauriBridge`), and it's the
+at startup by `src/bridge/tauri-network-api.ts` (`installTauriBridge`), and it's the
 *only* file that imports `invoke`. Why the indirection? Because there's a second
-implementation, `src/dev/mockNetworkApi.ts`, used when the UI runs in a plain
+implementation, `src/dev/mock-network-api.ts`, used when the UI runs in a plain
 browser (no Rust backend). The components are written against an interface
 (`NetworkAPI`); at runtime either the real Tauri bridge or the mock is slotted in.
 This is the same "program to an interface" idea as `rove-core` staying
@@ -380,7 +380,7 @@ Tauri-free — swappable implementations behind a stable boundary.
 Trace `get_data_usage`, the Home screen's usage numbers:
 
 1. **React** wants data, calls `window.networkAPI.getDataUsage()`.
-2. **Bridge** (`tauriNetworkApi.ts:48`): `() => invoke<DataUsageSummary>('get_data_usage')`.
+2. **Bridge** (`tauri-network-api.ts:48`): `() => invoke<DataUsageSummary>('get_data_usage')`.
    `invoke` is from `@tauri-apps/api/core`. The `<DataUsageSummary>` is just a
    TypeScript type annotation for *your* benefit — it does nothing at runtime; it
    promises the compiler that whatever comes back is shaped like that type.
@@ -431,7 +431,7 @@ sample every second. Trace `live-throughput`:
    `emit` serializes `sample` (a `LiveThroughput`, which derives `Serialize`) and
    broadcasts it to the webview as a named event. The `let _ =` deliberately
    ignores the `Result` — if the UI window is gone, a failed emit is harmless.
-2. **JS is listening.** In the bridge, `onLiveThroughput` (`tauriNetworkApi.ts:63`)
+2. **JS is listening.** In the bridge, `onLiveThroughput` (`tauri-network-api.ts:63`)
    calls `subscribeEvent('live-throughput', callback)`, which uses `listen` from
    `@tauri-apps/api/event` to register a handler for that event name.
 3. **Each emit fires the callback** with the deserialized payload, which flows into
@@ -612,9 +612,9 @@ Say you want to surface the machine's uptime:
    the classic "command not found" error.
 4. **Declare the type** in `src/types/` and add the method to the `NetworkAPI`
    interface — the contract both bridge implementations must satisfy.
-5. **Implement the bridge** in `src/bridge/tauriNetworkApi.ts`
+5. **Implement the bridge** in `src/bridge/tauri-network-api.ts`
    (`() => invoke<number | null>('get_uptime')`) *and* mirror it in
-   `src/dev/mockNetworkApi.ts` so `npm run dev` keeps working in a plain browser.
+   `src/dev/mock-network-api.ts` so `npm run dev` keeps working in a plain browser.
 6. **Consume it** from a hook via `useBackendResource` and render it in a view.
 
 Notice what *doesn't* change: the IPC plumbing, the serialization, the event

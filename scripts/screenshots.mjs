@@ -7,7 +7,7 @@
  *   npm run screenshots -- --url http://localhost:5173   # reuse a running dev server
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
- * (src/dev/mockNetworkApi.ts) — so the shots show the mock's network, not
+ * (src/dev/mock-network-api.ts) — so the shots show the mock's network, not
  * yours. That's the point: they're reproducible, and they don't leak the SSID
  * and devices of whoever ran the script.
  *
