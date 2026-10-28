@@ -13,6 +13,7 @@ import type {
   HostUsageSummary,
   TrafficUsageSummary,
   CapabilityLevel,
+  CapabilityRequirement,
   CapabilityRating,
   LanDevice,
   LanDeviceScan,
@@ -40,24 +41,29 @@ import { MAX_SAMPLES, seedLatencyHistory } from '@/features/services/utils/servi
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
+/** Whether `value` is within `limit` scaled by `factor`; no limit always is. */
+function isWithin(value: number, limit: number | null, factor: number): boolean {
+  return limit === null || value <= limit * factor
+}
+
 /** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
-  const { requirements } = definition
+  const requirements: CapabilityRequirement = definition.requirements
   const { downloadMbps, uploadMbps, latencyMs, jitterMs } = speed
 
-  if (downloadMbps < requirements.minDownloadMbps * 0.5 || latencyMs > requirements.maxLatencyMs * 2) {
-    return 'unsupported'
-  }
+  const isUnusable =
+    downloadMbps < requirements.minDownloadMbps * 0.5 || !isWithin(latencyMs, requirements.maxLatencyMs, 2)
+  if ((requirements.canBeUnsupported ?? true) && isUnusable) return 'unsupported'
 
   const meetsRequirements =
     downloadMbps >= requirements.minDownloadMbps &&
     uploadMbps >= requirements.minUploadMbps &&
-    latencyMs <= requirements.maxLatencyMs &&
-    jitterMs <= requirements.maxJitterMs
+    isWithin(latencyMs, requirements.maxLatencyMs, 1) &&
+    isWithin(jitterMs, requirements.maxJitterMs, 1)
 
   if (meetsRequirements) {
     const isExcellent =
-      downloadMbps >= requirements.minDownloadMbps * 2 && latencyMs <= requirements.maxLatencyMs * 0.5
+      downloadMbps >= requirements.minDownloadMbps * 2 && isWithin(latencyMs, requirements.maxLatencyMs, 0.5)
     return isExcellent ? 'excellent' : 'good'
   }
 
