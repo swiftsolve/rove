@@ -229,6 +229,7 @@ npm install
 npm run tauri:dev            # run the desktop app (hot-reloads the UI)
 npm run dev                  # UI only, in a browser, against the mock bridge
 npm run screenshots          # refresh docs/screenshots — every screen, at window size
+npm test                     # unit tests for the UI's pure logic (Vitest)
 cargo check -p rove-core   # typecheck the service layer alone
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```

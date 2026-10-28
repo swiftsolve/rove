@@ -33,6 +33,12 @@ for what. Read it before writing or changing UI. For where files live, see
   the hook. `npm run lint` enforces it.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
   component file.
+- A view file holds the page and its layout; the rows, cards and widgets it is
+  built from go in the feature's `components/`, and the logic behind the copy
+  (names, ages, grouping) in `utils/` as plain functions.
+- An element that animates out stays mounted through its leave animation with
+  `usePresence(isActive, exitMs)` (`hooks/usePresence.ts`), styled as leaving
+  while `isActive` is false, rather than `{isActive && …}`.
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
@@ -43,6 +49,13 @@ for what. Read it before writing or changing UI. For where files live, see
   is kebab-case: contexts, utils and types (`theme-context.ts`), global
   stylesheets (`base.css`) and folders (`live-throughput/`). `npm run lint`
   runs `scripts/check-file-names.mjs`, which fails on a name that fits none.
+
+## Tests
+
+Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
+module plus `.test` (`chart-scale.test.ts`). They run in Node with Vitest
+(`npm test`, part of `npm run check`) and never touch the DOM or the bridge, so
+keep logic worth testing out of components and hooks.
 
 ## Styles: Tailwind utilities from the design tokens
 
