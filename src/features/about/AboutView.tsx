@@ -33,7 +33,7 @@ export function AboutView(): JSX.Element {
         <span className={APP_ICON_TILE} aria-hidden>
           <BrandIcon size={53} hasGradient />
         </span>
-        <h1 className="text-3xl font-semibold tracking-title text-primary">Rove</h1>
+        <h1 className="text-title">Rove</h1>
         <p className="max-w-[300px] text-md leading-body text-secondary">
           A fast, minimal network monitor for your desktop.
         </p>
