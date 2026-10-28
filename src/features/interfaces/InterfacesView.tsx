@@ -92,11 +92,11 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
 
       <DataList className={PANEL_BODY}>
         <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
-        <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
         <DataRow
           label="Link speed"
           value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
         />
+        <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
         <DataRow label="MAC" value={formatMac(iface.macAddress)} />
       </DataList>
     </li>
