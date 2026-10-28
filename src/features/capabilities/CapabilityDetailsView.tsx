@@ -18,8 +18,8 @@ import {
 } from '@/features/capabilities/utils/capability-level-colors'
 
 // Three-tier card: an intro row (icon + name/description + bars) on the panel
-// surface, a metrics grid on an inset panel, and the verdict on the darkest panel
-// at the very bottom: a clear elevation ladder top to bottom. When opened by
+// surface, a metrics grid on an inset panel, and the verdict on the chrome panel
+// at the very bottom, set apart from the metrics in both themes. When opened by
 // clicking a capability, that card is scrolled to the top of the viewport; the
 // scroll margin leaves a little air above it.
 const CARD = cx(
@@ -53,15 +53,16 @@ const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-n
 })
 
 // Verdict: the plain-language summary paired with a colour-keyed status, on the
-// darkest panel so it reads as the card's closing takeaway. Framed on three sides
-// (not the top) with the metrics' inset colour, so the near-black block sits
+// chrome panel so it reads as the card's closing takeaway: a shade below the
+// metrics in dark mode, a shade above them in light. Framed on three sides
+// (not the top) with the metrics' inset colour, so the block sits
 // within the card edge rather than bleeding to it, seamless with the metrics
 // above. The horizontal padding is trimmed by the border width so the content
 // stays aligned with the metrics grid (14px from the card edge).
 const VERDICT = cx(
   'flex items-center justify-between gap-12',
   '-mx-(--section-header-padding-x) px-[calc(var(--section-header-padding-x)-1px)] py-12',
-  'rounded-b-lg border border-t-0 border-inset bg-app',
+  'rounded-b-lg border border-t-0 border-inset bg-chrome',
 )
 
 /** The verdict glyph, left of the summary in the level colour. Its box is

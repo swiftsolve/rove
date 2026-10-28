@@ -123,13 +123,13 @@ function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
   )
 }
 
-// Closing banner on the darkest panel, matching the capabilities detail card's
+// Closing banner on the chrome panel, matching the capabilities detail card's
 // verdict strip: framed on three sides with the inset colour, rounded to the card's
 // bottom corners. The horizontal padding is trimmed by the border width so its
 // content stays aligned with the metrics grid above.
 const CARD_FOOTER = cx(
   '-mx-(--section-body-padding) mt-8 px-[calc(var(--section-body-padding)-1px)] py-12',
-  'rounded-b-lg border border-t-0 border-inset bg-app',
+  'rounded-b-lg border border-t-0 border-inset bg-chrome',
 )
 
 function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
