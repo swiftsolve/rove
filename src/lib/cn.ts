@@ -12,7 +12,7 @@ const TYPE_STYLES = [
   'hint', 'small', 'value', 'chart-label', 'metric-display', 'metric-compact', 'metric-unit',
   'button-large', 'button-default', 'button-secondary',
 ]
-const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl']
+const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']
 const COLORS = [
   // Tailwind's built-ins, which exist alongside the theme's colours.
   'transparent', 'current', 'inherit',
