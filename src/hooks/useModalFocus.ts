@@ -61,7 +61,13 @@ export function useModalFocus(onClose: () => void, canClose = true): RefObject<H
     document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
-      if (opener?.isConnected) opener.focus()
+      // Only a dialog that has left the page hands focus back. StrictMode's dev
+      // re-run tears this effect down with the dialog still in place; handing
+      // focus back then would make the re-run move it from the autofocused
+      // field to the first control.
+      queueMicrotask(() => {
+        if (!dialog.isConnected && opener?.isConnected) opener.focus()
+      })
     }
   }, [onCloseRef, canCloseRef, opener])
 
