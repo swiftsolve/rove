@@ -19,7 +19,7 @@ interface UsageDatum {
 }
 
 const USAGE_INFO_HINT =
-  'Usage is measured while Rove is running, across all physical network interfaces.'
+  'Measured while Rove runs, across all physical interfaces.'
 
 const CHART_HEIGHT = 124
 const BAR_MAX_WIDTH = 9

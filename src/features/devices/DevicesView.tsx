@@ -16,12 +16,12 @@ import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { sortDevices } from '@/features/devices/utils/device-display'
 
 const SCAN_HINT =
-  'Rove probes every address on your subnet and reads mDNS, SSDP, NetBIOS and HTTP replies to name devices. Sleeping devices, guest networks and subnets larger than /24 can hide some.'
+  'Rove probes your subnet and listens for device announcements. Sleeping devices, guest networks and subnets over /24 can hide some.'
 
 // Local Network access can't be queried on macOS, so when discovery comes up
 // empty we surface the most likely cause rather than implying the LAN is bare.
 const LOCAL_NETWORK_HINT =
-  'Missing devices? Rove needs Local Network access. Enable it in System Settings › Privacy & Security › Local Network, then scan again.'
+  'Missing devices? Allow Rove in System Settings › Privacy & Security › Local Network, then scan again.'
 
 /** "3 devices" once some are listed, else the plain page name. */
 function headerTitle(count: number): string {

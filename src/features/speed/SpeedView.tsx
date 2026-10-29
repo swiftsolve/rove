@@ -24,7 +24,7 @@ import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 
 const SPEED_HINT =
-  'Tests this computer’s connection to public test servers, so Wi-Fi signal counts. On fast connections one test can use over 1 GB of data.'
+  'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
 
 // The "View history" pill link after the "Updated …" meta: quiet at rest, the
 // accent on hover. The negative left margin cancels the pill's padding and the
@@ -174,7 +174,7 @@ export function SpeedView(): JSX.Element | null {
         // The "Updated …" meta, dot and history link sit on one centred line.
         subtitleClassName="inline-flex items-center gap-6"
         isSubtitleShown={completedAt != null}
-        // The header's 4px gap pairs icon chips; beside a full button the help
+        // The header's 6px gap pairs icon chips; beside a full button the help
         // chip needs the wider 10px step to read as its own control.
         actions={
           <div className="flex items-center gap-10">

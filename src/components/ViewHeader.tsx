@@ -58,7 +58,7 @@ export function ViewHeader({
         )}
       </div>
       {actions !== undefined && (
-        <div className="page-header-actions flex shrink-0 items-center gap-4">{actions}</div>
+        <div className="page-header-actions flex shrink-0 items-center gap-6">{actions}</div>
       )}
     </header>
   )

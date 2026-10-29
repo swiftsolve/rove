@@ -85,10 +85,7 @@ const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
 const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const HOST_USAGE_INFO_HINT =
-  'The remote hosts each app has connected to, from the OS per-socket peer ' +
-  'addresses. Hostnames come from reverse DNS and flags from an IP-geolocation ' +
-  'lookup, both filled in shortly after a host is first seen. Bytes cover TCP ' +
-  'connections only and reset when Rove restarts.'
+  'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
 
 const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps open connections.'
 

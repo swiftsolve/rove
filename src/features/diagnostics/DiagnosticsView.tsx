@@ -17,7 +17,7 @@ import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 
 const DIAGNOSTICS_HINT =
-  'Latency comes from pinging your router, and some routers answer pings slowly on purpose. ISP details are looked up from your public IP.'
+  'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'
 
 /** Gateway round trips up to this read as healthy (green). */
 const GOOD_LATENCY_MAX_MS = 40

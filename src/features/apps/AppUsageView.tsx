@@ -78,8 +78,7 @@ const SUBTITLE_LINK_GLYPH = cx(
 )
 
 const APP_USAGE_INFO_HINT =
-  'Bytes are attributed to the app that moved them, read from the OS per-process ' +
-  'network counters while Rove is running. Totals reset when Rove restarts.'
+  'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 
 const APP_USAGE_EMPTY_HINT = 'Usage appears here as your apps send and receive.'
 

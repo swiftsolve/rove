@@ -16,7 +16,7 @@ import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
 import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
 
 const FEED_HINT =
-  'Rove logs what changes between scans, like devices and access points joining or leaving. Events are kept for 7 days.'
+  'Devices and access points joining or leaving between scans. Kept for 7 days.'
 
 const EMPTY_HINT =
   'Devices joining, leaving, or changing appear here. Run a scan to check.'

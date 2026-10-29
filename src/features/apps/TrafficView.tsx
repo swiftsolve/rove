@@ -49,11 +49,7 @@ const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
 const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const TRAFFIC_INFO_HINT =
-  'Your session’s traffic grouped by kind — the connection’s remote port ' +
-  'names the service, so :443 is HTTPS, :53 is DNS, and so on. It’s the same ' +
-  'traffic the Hosts view meters (TCP and connected UDP/QUIC), just bucketed by ' +
-  'protocol instead of by host, and it resets when Rove restarts. Local ' +
-  'broadcast chatter (mDNS, SSDP) isn’t counted — it has no remote host.'
+  'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
 
 const TRAFFIC_EMPTY_HINT = 'Traffic appears here as your apps send and receive.'
 
