@@ -11,14 +11,16 @@ import { cx } from 'class-variance-authority'
 
 // The scrolling content area. Column flex so <main> can grow to fill the
 // visible area, which centres the first-launch loading screen in the content
-// region instead of overflowing a fixed 100vh. The scrollbar's space is reserved
-// on the trailing edge only, so content doesn't jump when it appears and the
-// left/right insets stay equal; those insets match the nav rail's 11px. The
-// error banner above <main> has no flex gap to lean on.
+// region instead of overflowing a fixed 100vh. The scrollbar is always laid
+// out (overflow-y: scroll; it has no thumb until there is something to scroll)
+// rather than reserved with scrollbar-gutter, which WebKitGTK ignores until the
+// content overflows. Both insets match the nav rail's 11px: the right one is
+// 6px of padding plus the 5px scrollbar (base.css). The error banner above
+// <main> has no flex gap to lean on.
 const SCROLL = cx(
   'flex flex-1 flex-col min-w-0 min-h-0',
-  'overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]',
-  'px-11 pt-12 pb-20',
+  'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
+  'pl-11 pr-6 pt-12 pb-20',
   '[&>.error-banner]:mb-12',
 )
 

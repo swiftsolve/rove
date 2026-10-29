@@ -121,9 +121,14 @@
     background: var(--fill-selection);
   }
 
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--fill-scrollbar) transparent;
+  /* Firefox only: Chromium honours these too, and either one makes it drop the
+     5px ::-webkit-scrollbar below for its own 10px thin bar, which the content
+     column's always-on scrollbar then takes from its right inset. */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--fill-scrollbar) transparent;
+    }
   }
 
   *::-webkit-scrollbar {
