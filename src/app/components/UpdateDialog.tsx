@@ -122,7 +122,7 @@ export function UpdateDialog({
             the release ships notes. */}
         {update.notes && (
           <div className="p-16 bg-chrome border-t border-line">
-            <h3 className="mb-8 text-2xs font-semibold tracking-field-label uppercase text-tertiary">
+            <h3 className="field-label mb-8">
               What&rsquo;s new
             </h3>
             <div

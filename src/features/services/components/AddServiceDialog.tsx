@@ -33,7 +33,7 @@ const CLOSE = cx(
   "[&:hover:not(:disabled,[aria-disabled='true'])]:bg-hover",
 )
 
-const FIELD_LABEL = 'mb-6 block text-sm font-medium text-secondary'
+const FIELD_LABEL = 'field-label mb-6 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height control centred beside it lands on a symmetric gap.
