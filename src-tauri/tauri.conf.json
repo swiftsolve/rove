@@ -19,6 +19,7 @@
         "height": 660,
         "minWidth": 420,
         "minHeight": 560,
+        "visible": false,
         "resizable": false,
         "maximizable": false,
         "fullscreen": false,

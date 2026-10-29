@@ -133,6 +133,14 @@ pub fn run() {
                 ),
             }
 
+            // The window is created hidden (`visible: false` in tauri.conf.json)
+            // and shown here. On Linux tao maps a visible window before it drops
+            // the decorations, and GTK keeps the decorated size for a
+            // non-resizable window, so it came up ~52px larger each way.
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+            }
+
             Ok(())
         })
         .on_window_event(|window, event| match event {
