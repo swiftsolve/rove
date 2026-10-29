@@ -3,7 +3,16 @@ import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/t
 import { ViewHeader } from '@/components/ViewHeader'
 import { MetricValue } from '@/components/MetricValue'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { ChevronRightIcon, CloudIcon, EditIcon, EventsIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from '@/components/icons/Icons'
+import {
+  ChevronRightIcon,
+  CloudIcon,
+  EditIcon,
+  EventsIcon,
+  HelpIcon,
+  MoreVerticalIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@/components/icons/Icons'
 import { EmptyState } from '@/components/EmptyState'
 import { Tooltip } from '@/components/Tooltip'
 import { DotSeparator } from '@/components/DotSeparator'
@@ -21,6 +30,10 @@ import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
+import { IconButton } from '@/components/IconButton'
+
+const SERVICES_HINT =
+  'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'
 
 // Per-row overflow menu: a kebab button anchoring a dropdown.
 //
@@ -370,7 +383,19 @@ export function ServicesView(): JSX.Element {
           </span>
         }
         isSubtitleShown
-        actions={<AddServiceButton isOffline={isOfflineNow} onClick={() => setDialog({ mode: 'add' })} />}
+        // Beside a full button the help chip takes the 10px step, as on Speed.
+        actions={
+          <div className="flex items-center gap-10">
+            <Tooltip content={SERVICES_HINT}>
+              <IconButton
+                aria-label="About service checks"
+              >
+                <HelpIcon size={16} />
+              </IconButton>
+            </Tooltip>
+            <AddServiceButton isOffline={isOfflineNow} onClick={() => setDialog({ mode: 'add' })} />
+          </div>
+        }
       />
 
       {dialog && (
