@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import type { CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
@@ -10,7 +11,7 @@ import { Section } from '@/components/Section'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { InlineMeta } from '@/components/DotSeparator'
 import { Tooltip } from '@/components/Tooltip'
-import { HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
+import { ChevronRightIcon, HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { IconButton } from '@/components/IconButton'
@@ -82,11 +83,12 @@ const footerVariants = cva(
   },
 )
 
-// The clickable link: a quiet clock + "Updated … ago", muted at rest, the accent
-// and an underline on hover, the same affordance as the Speed page's "All
-// Results". Focus mirrors hover rather than showing a ring. The glyph shares the
-// link's (animating) colour and sits dimmer at rest through opacity, so there's
-// one colour animation rather than two that drift apart.
+// The footer's link to the Speed page: its message (and a clock once there's a
+// result) with a trailing caret, muted at rest, the accent and an underline on
+// hover, the same affordance as the Speed page's "All Results". Focus mirrors
+// hover rather than showing a ring. The glyphs share the link's (animating)
+// colour and sit dimmer at rest through opacity, so there's one colour animation
+// rather than two that drift apart.
 const LINK = cx(
   'group/link inline-flex items-center gap-6 whitespace-nowrap',
   'cursor-pointer text-xs text-secondary',
@@ -114,7 +116,8 @@ function RunButtonIcon({
   return <PlayIcon size={14} />
 }
 
-/** Starts a test and jumps to the Speed tab so its progress is visible. */
+/** Starts a test in place; the Speed tab shows the same run (one shared store),
+ *  and the footer links there. */
 function RunTestButton({
   isTesting,
   hasResults,
@@ -122,12 +125,10 @@ function RunTestButton({
   isTesting: boolean
   hasResults: boolean
 }): JSX.Element {
-  const { navigate } = useNavigation()
   const { runTest } = useSpeedTest()
   const canRunTest = useCanRunSpeedTest()
 
   const handleRunTest = (): void => {
-    navigate({ tab: 'speed' })
     void runTest()
   }
 
@@ -142,6 +143,36 @@ function RunTestButton({
         <RunButtonIcon isTesting={isTesting} hasResults={hasResults} />
       </IconButton>
     </Tooltip>
+  )
+}
+
+/** The footer's message as a link to the Speed page. */
+function SpeedLink({
+  icon,
+  children,
+}: {
+  icon?: JSX.Element
+  children: ReactNode
+}): JSX.Element {
+  const { navigate } = useNavigation()
+
+  return (
+    <button type="button" className={LINK} onClick={() => navigate({ tab: 'speed' })}>
+      {icon}
+      {/* Only the label underlines, not the glyphs. */}
+      <span
+        className={cx(
+          'font-medium',
+          'group-hover/link:underline group-hover/link:underline-offset-2',
+          'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+        )}
+      >
+        {children}
+      </span>
+      {/* The visible text leads the name; this says where the link goes. */}
+      <span className="sr-only">, open Speed</span>
+      <ChevronRightIcon size={13} className="link-caret" />
+    </button>
   )
 }
 
@@ -163,11 +194,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
       </ul>
 
       <div className={footerVariants({ isHint: true })}>
-        {isTesting ? (
-          <span className="text-meta">Testing…</span>
-        ) : (
-          <p className="text-hint">Available after speed test</p>
-        )}
+        <SpeedLink>{isTesting ? 'Testing…' : 'Available after speed test'}</SpeedLink>
       </div>
     </>
   )
@@ -216,17 +243,16 @@ function ResultCell({
   )
 }
 
-/** "Testing…" while a test runs, otherwise when the last result landed (linking
- *  to the Speed page). Nothing before the first result. */
+/** "Testing…" while a test runs, otherwise when the last result landed; both
+ *  link to the Speed page. Nothing before the first result. */
 function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
-  const { navigate } = useNavigation()
   const { completedAt } = useSpeedTest()
 
   if (isTesting) {
     return (
       <div className={footerVariants()}>
-        <span className="text-meta">Testing…</span>
+        <SpeedLink>Testing…</SpeedLink>
       </div>
     )
   }
@@ -235,25 +261,10 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
 
   return (
     <div className={footerVariants()}>
-      <button
-        type="button"
-        className={LINK}
-        onClick={() => navigate({ tab: 'speed' })}
-      >
-        <HistoryIcon size={13} />
-        <span
-          className={cx(
-            'font-medium',
-            'group-hover/link:underline group-hover/link:underline-offset-2',
-            'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
-          )}
-        >
-          Updated{' '}
-          <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
-        </span>
-        {/* The visible text leads the name; this says where the link goes. */}
-        <span className="sr-only">, open Speed</span>
-      </button>
+      <SpeedLink icon={<HistoryIcon size={13} />}>
+        Updated{' '}
+        <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+      </SpeedLink>
     </div>
   )
 }
