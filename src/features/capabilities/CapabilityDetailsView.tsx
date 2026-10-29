@@ -217,7 +217,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
       }
       onBack={back}
     >
-      <ul role="list" className="flex flex-col gap-16" ref={listRef}>
+      <ul role="list" className="flex flex-col gap-10" ref={listRef}>
         {/* The Speed view only opens this page once a result is in. */}
         {speed != null &&
           capabilities.map((capability) => (

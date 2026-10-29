@@ -228,7 +228,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
   }
 
   return (
-    <ul role="list" className="flex flex-col gap-12">
+    <ul role="list" className="flex flex-col gap-10">
       {entries.map((entry, index) => (
         <HistoryCard key={`${entry.timestamp}-${index}`} entry={entry} />
       ))}
