@@ -9,6 +9,8 @@ const SERVICE_HISTORY_KEY = ['services', 'history']
 interface UseServiceHistoryResult {
   /** The timeline, newest first. Empty until the first read lands. */
   events: ServiceEvent[]
+  /** The first read has landed, so an empty `events` really means none. */
+  isLoaded: boolean
   /** Wipe the stored timeline, and the cached copy with it. */
   clear: () => Promise<void>
 }
@@ -45,5 +47,5 @@ export function useServiceHistory(): UseServiceHistoryResult {
     await clearMutation.mutateAsync()
   }
 
-  return { events: data ?? [], clear }
+  return { events: data ?? [], isLoaded: data !== undefined, clear }
 }

@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react'
+import { memo, useId, useMemo, useState } from 'react'
 import type {
   ConnectionEvent,
   ServiceEvent,
@@ -20,12 +20,18 @@ import {
 import { EmptyState } from '@/components/EmptyState'
 import { formatDuration } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
+import { useIncrementalCount } from '@/hooks/useIncrementalCount'
 import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
+
+// Rows rendered with the page (more than the window holds), and how many more
+// each step after it has settled.
+const INITIAL_ROWS = 20
+const ROWS_PER_STEP = 40
 
 // The timeline itself: a marker column and content beside it, connected by a
 // line, mirroring the network events feed.
@@ -254,7 +260,9 @@ function eventKey(event: ServiceEvent): string {
   return `${event.host}:${event.ts}:${event.status}`
 }
 
-function TransitionRow({
+// The rows are memoised: the clock ticks every second, and only a row whose
+// duration it moves should re-render, not a few hundred of them.
+const TransitionRow = memo(function TransitionRow({
   event,
   durationMs,
 }: {
@@ -287,9 +295,9 @@ function TransitionRow({
       </div>
     </li>
   )
-}
+})
 
-function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
+const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
   // A recovery summary covers every service, but a baseline recorded while one
   // was already down does not — so the subtext names the denominator rather than
   // calling a partial tally all-clear.
@@ -315,11 +323,11 @@ function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
       </div>
     </li>
   )
-}
+})
 
 /** This machine's own network dropping or returning. Stands in for the wall of
  *  per-service "down"s the probes would otherwise produce while we're offline. */
-function ConnectionRow({
+const ConnectionRow = memo(function ConnectionRow({
   event,
   durationMs,
 }: {
@@ -349,7 +357,7 @@ function ConnectionRow({
       </div>
     </li>
   )
-}
+})
 
 /** The header overflow menu: a kebab that opens a dropdown with Clear (drop all
  *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistoryView. */
@@ -442,7 +450,10 @@ export function ServicesTimelineView(): JSX.Element {
   // header tally: with no connection every probe fails at once, which is ours to
   // own, not theirs.
   const liveInternet = useConnectionStatus().internet
-  const { events, clear } = useServiceHistory()
+  const { events, isLoaded, clear } = useServiceHistory()
+  // A full log is a few hundred rows: render the first screenful with the page
+  // and the rest once it has settled in.
+  const shownCount = useIncrementalCount(events.length, INITIAL_ROWS, ROWS_PER_STEP)
 
   const outageByKey = useMemo(() => outageDurations(events), [events])
   const offlineByTs = useMemo(() => offlineDurations(events), [events])
@@ -467,14 +478,16 @@ export function ServicesTimelineView(): JSX.Element {
       onBack={back}
       action={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
     >
-      {events.length === 0 ? (
+      {/* Nothing until the first read lands, so "No outages yet" doesn't flash
+          before the log arrives. */}
+      {!isLoaded ? null : events.length === 0 ? (
         <EmptyState
           title="No outages yet"
           hint="Outages appear here when a tracked service goes down."
         />
       ) : (
         <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
-          {groupByDay(events, now).map((group) => (
+          {groupByDay(events.slice(0, shownCount), now).map((group) => (
             <TimelineDay key={group.key} group={group} durations={durations} />
           ))}
         </ul>
