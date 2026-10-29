@@ -15,7 +15,6 @@ import {
   FileTransferIcon,
   GlobeIcon,
   HelpIcon,
-  InfoIcon,
   LayersIcon,
   MailIcon,
   MessageIcon,
@@ -155,7 +154,7 @@ function TrafficBody({
   if (support === 'unsupported') {
     return (
       <EmptyState
-        icon={InfoIcon}
+        isLocked
         title="Administrator access needed"
         hint={TRAFFIC_UNSUPPORTED_HINT}
         action={<RestartAsAdminAction />}

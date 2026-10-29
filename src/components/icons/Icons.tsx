@@ -42,7 +42,6 @@ import {
   HelpCircle,
   History,
   House,
-  Info,
   Laptop,
   LayoutGrid,
   Layers,
@@ -279,7 +278,6 @@ export const UsageIcon = make(BarChart3, 18)
 export const SettingsIcon = make(Settings, 18)
 export const SunIcon = make(Sun, 18)
 export const MoonIcon = make(Moon, 18)
-export const InfoIcon = make(Info, 18)
 export const TodayIcon = make(Clock, 18)
 export const WeekIcon = make(CalendarRange, 18)
 export const ComputerIcon = make(Laptop, 16)

@@ -7,7 +7,7 @@ import { Tooltip as UiTooltip } from '@/components/Tooltip'
 import { ViewHeader } from '@/components/ViewHeader'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { MetricValue } from '@/components/MetricValue'
-import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, InfoIcon, LayersIcon } from '@/components/icons/Icons'
+import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, LayersIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
@@ -206,7 +206,7 @@ function AppUsageBody({
   if (support === 'unsupported') {
     return (
       <EmptyState
-        icon={InfoIcon}
+        isLocked
         title="Administrator access needed"
         hint={APP_USAGE_UNSUPPORTED_HINT}
         action={<RestartAsAdminAction />}

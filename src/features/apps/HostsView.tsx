@@ -12,7 +12,7 @@ import { Tooltip as UiTooltip } from '@/components/Tooltip'
 import { Subpage } from '@/components/Subpage'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { MetricValue } from '@/components/MetricValue'
-import { ChevronDownIcon, GlobeIcon, HelpIcon, InfoIcon, IpIcon } from '@/components/icons/Icons'
+import { ChevronDownIcon, GlobeIcon, HelpIcon, IpIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
@@ -269,7 +269,7 @@ function HostsBody({
   if (support === 'unsupported') {
     return (
       <EmptyState
-        icon={InfoIcon}
+        isLocked
         title="Administrator access needed"
         hint={HOST_USAGE_UNSUPPORTED_HINT}
         action={<RestartAsAdminAction />}

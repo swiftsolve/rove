@@ -146,6 +146,6 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Stat card | `StatCard` | Home summary card: Usage or Devices. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
 | Error banner | `NetworkErrorBanner` | A failure the user can retry, with Retry and dismiss buttons. |
-| Empty state | `EmptyState` | Blank page: two faded placeholder rows (or an icon, for a notice), title, hint and an optional action. |
+| Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |
 | Ring spinner | `ButtonSpinner` | Loading indicator inside buttons, in the button's icon colour. |

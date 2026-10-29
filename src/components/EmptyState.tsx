@@ -1,17 +1,12 @@
 import type { ReactNode } from 'react'
-
-interface IconProps {
-  size?: number
-  className?: string
-}
+import { LockIcon } from '@/components/icons/Icons'
 
 interface EmptyStateProps {
   /**
-   * Glyph above the title, for a notice rather than a list waiting to fill
-   * (admin access needed) — any alias from `Icons`, drawn at the shared size.
-   * Without one, faded placeholder rows stand in for the list.
+   * A lock badge over the placeholder rows, for a list that can't fill until
+   * the user acts (admin access needed) rather than one waiting for data.
    */
-  icon?: (props: IconProps) => JSX.Element
+  isLocked?: boolean
   title: string
   /** A line or two naming what will fill the page, or why it can't. */
   hint?: ReactNode
@@ -27,22 +22,18 @@ const PLACEHOLDER_ROWS = [
 ] as const
 
 /**
- * The shared "nothing here yet" page: faded placeholder rows (or a muted glyph
- * for a notice), a title, a short explanation and an optional action, centred
+ * The shared "nothing here yet" page: faded placeholder rows (with a lock badge
+ * when the list is locked), a title, a short explanation and an optional action, centred
  * in the content region. Every view's blank state goes through this so they
  * line up on one rhythm and one measure.
  */
-export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps): JSX.Element {
+export function EmptyState({ isLocked = false, title, hint, action }: EmptyStateProps): JSX.Element {
   return (
     // `.page-empty` lays out the page; the bottom pad lifts the group a little
     // above centre, under the header, and the action is nudged down from the
     // copy above it.
     <div className="page-empty gap-8 pb-[56px] text-center [&>button]:mt-8">
-      {Icon ? (
-        <Icon size={32} className="mb-8 text-tertiary opacity-(--opacity-muted-glyph)" />
-      ) : (
-        <PlaceholderRows />
-      )}
+      <PlaceholderRows isLocked={isLocked} />
       {/* An h2 for the page outline. */}
       <h2 className="text-md font-semibold text-primary">{title}</h2>
       {hint != null && <EmptyStateHint>{hint}</EmptyStateHint>}
@@ -52,22 +43,27 @@ export function EmptyState({ icon: Icon, title, hint, action }: EmptyStateProps)
 }
 
 /** The shape of the list to come: one row, and a second fading out below it. */
-function PlaceholderRows(): JSX.Element {
+function PlaceholderRows({ isLocked }: { isLocked: boolean }): JSX.Element {
   return (
-    <div
-      aria-hidden
-      className="mb-12 flex w-[min(300px,80%)] flex-col gap-8 [mask-image:linear-gradient(to_bottom,#000_45%,transparent_105%)]"
-    >
-      {PLACEHOLDER_ROWS.map(([titleWidth, metaWidth]) => (
-        <div key={titleWidth} className="flex items-center gap-10 rounded-lg bg-panel px-12 py-10">
-          <div className="size-[22px] shrink-0 rounded-sm bg-fill-track" />
-          <div className="flex flex-1 flex-col gap-6">
-            <div className={`h-6 rounded-full bg-fill-track ${titleWidth}`} />
-            <div className={`h-4 rounded-full bg-fill-track ${metaWidth}`} />
+    <div aria-hidden className="relative mb-12 w-[min(300px,80%)]">
+      <div className="flex flex-col gap-8 [mask-image:linear-gradient(to_bottom,#000_45%,transparent_105%)]">
+        {PLACEHOLDER_ROWS.map(([titleWidth, metaWidth]) => (
+          <div key={titleWidth} className="flex items-center gap-10 rounded-lg bg-panel px-12 py-10">
+            <div className="size-[22px] shrink-0 rounded-sm bg-fill-track" />
+            <div className="flex flex-1 flex-col gap-6">
+              <div className={`h-6 rounded-full bg-fill-track ${titleWidth}`} />
+              <div className={`h-4 rounded-full bg-fill-track ${metaWidth}`} />
+            </div>
+            <div className="h-6 w-[36px] rounded-full bg-fill-track" />
           </div>
-          <div className="h-6 w-[36px] rounded-full bg-fill-track" />
+        ))}
+      </div>
+      {/* Outside the fade, so the badge stays crisp over the rows. */}
+      {isLocked && (
+        <div className="absolute top-1/2 left-1/2 flex size-[36px] -translate-1/2 items-center justify-center rounded-full bg-raised text-tertiary shadow-raised">
+          <LockIcon size={20} />
         </div>
-      ))}
+      )}
     </div>
   )
 }
