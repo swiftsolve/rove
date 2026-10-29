@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { hashKey, skipToken, useQuery, type QueryKey } from '@tanstack/react-query'
 
 interface BackendQueryOptions<T> {
@@ -79,6 +79,8 @@ export function useBackendQuery<T>({
   pollIntervalMs,
 }: BackendQueryOptions<T>): BackendQuery<T> {
   const canFetch = queryFn !== undefined
+  // Whether this screen's opening fetch has landed, as of its last commit.
+  const isOpenedRef = useRef(false)
   const query = useQuery({
     queryKey,
     queryFn: queryFn ?? skipToken,
@@ -87,8 +89,16 @@ export function useBackendQuery<T>({
     refetchOnMount: false,
     refetchInterval: pollIntervalMs ?? false,
     refetchOnWindowFocus: pollIntervalMs ? 'always' : false,
+    // `isFetching` only matters until the opening fetch lands (it drives
+    // `isBusy`). After that, a poll re-renders the screen only when its data or
+    // error changes, not once as it starts and again as it ends.
+    notifyOnChangeProps: () =>
+      isOpenedRef.current ? ['data', 'error'] : ['data', 'error', 'isFetching', 'isFetchedAfterMount'],
   })
   const { data, isFetching, isFetchedAfterMount, refetch } = query
+  useLayoutEffect(() => {
+    isOpenedRef.current = isFetchedAfterMount
+  })
 
   const queryHash = hashKey(queryKey)
   useEffect(() => {

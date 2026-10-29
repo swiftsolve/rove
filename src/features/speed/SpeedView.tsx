@@ -70,7 +70,8 @@ function HistoryLink(): JSX.Element {
  *  link to the history once there is a result. */
 function HeaderSubtitle(): JSX.Element {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
-  const { isTesting, completedAt } = useSpeedTest()
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const completedAt = useSpeedTest((test) => test.completedAt)
 
   if (isTesting) {
     return (
@@ -104,7 +105,10 @@ function HeaderSubtitle(): JSX.Element {
 
 /** Stop while a test runs; otherwise Run (or Test again), disabled offline. */
 function TestButton(): JSX.Element {
-  const { internetSpeed, isTesting, runTest, cancelTest } = useSpeedTest()
+  const hasRunTest = useSpeedTest((test) => test.internetSpeed != null)
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const runTest = useSpeedTest((test) => test.runTest)
+  const cancelTest = useSpeedTest((test) => test.cancelTest)
   const canTest = useCanRunSpeedTest()
 
   if (isTesting) {
@@ -132,7 +136,6 @@ function TestButton(): JSX.Element {
     )
   }
 
-  const hasRunTest = internetSpeed != null
   const runLabel = hasRunTest ? 'Test again' : 'Run test'
   return (
     <Button
@@ -149,7 +152,8 @@ function TestButton(): JSX.Element {
 export function SpeedView(): JSX.Element | null {
   const { location } = useNavigation()
   const { info } = useNetwork()
-  const { internetSpeed, completedAt } = useSpeedTest()
+  const internetSpeed = useSpeedTest((test) => test.internetSpeed)
+  const completedAt = useSpeedTest((test) => test.completedAt)
 
   if (!info) return null
 

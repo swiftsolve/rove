@@ -1,9 +1,10 @@
 import type { AppLocation } from '@/app/utils/location'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { TABS, renderScreen } from '@/app/utils/tab-registry'
+import { NetworkInfoGate } from '@/app/components/NetworkInfoStates'
 
 /** Home and Speed can't render without network info; the other tabs can. */
-export function needsNetworkInfo(location: AppLocation): boolean {
+function needsNetworkInfo(location: AppLocation): boolean {
   return TABS[location.tab].needsNetworkInfo ?? false
 }
 
@@ -14,5 +15,7 @@ export function needsNetworkInfo(location: AppLocation): boolean {
  */
 export function CurrentScreen(): JSX.Element {
   const { location } = useNavigation()
-  return renderScreen(location)
+  // Show the loading/error state only in the content area (not full-screen) so
+  // the window chrome and tabs stay usable even before info arrives.
+  return <NetworkInfoGate isNeeded={needsNetworkInfo(location)}>{renderScreen(location)}</NetworkInfoGate>
 }

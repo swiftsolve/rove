@@ -210,7 +210,7 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
     // Live (running-peak) throughput to show in the cells while a test runs.
     livePeakDownloadMbps: liveDownloadMbps,
     livePeakUploadMbps: liveUploadMbps,
-  } = useSpeedTest()
+  } = useSpeedTest((test) => test)
   const canTest = useCanRunSpeedTest()
 
   const hasResults = internetSpeed != null

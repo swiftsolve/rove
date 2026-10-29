@@ -247,7 +247,7 @@ export function SpeedHistoryView(): JSX.Element {
   // Re-load whenever a test finishes so a result recorded while this view is
   // open shows up without a manual refresh. `completedAt` changes on each
   // completed run, driving the effect below.
-  const { completedAt } = useSpeedTest()
+  const completedAt = useSpeedTest((test) => test.completedAt)
 
   useEffect(() => {
     let isActive = true

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import { AlertIcon, CloseIcon, OfflineIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
@@ -99,13 +100,25 @@ export function NetworkLoadingScreen(): JSX.Element {
   )
 }
 
+/**
+ * The screen, or the loading screen in its place while a screen that needs
+ * network info waits for it. Network info is read here rather than in the
+ * shell, so a reading that changes (a Wi‑Fi signal does, most polls) re-renders
+ * only the screens that show it: `children` keeps its identity, so React skips
+ * a screen that doesn't read the network itself.
+ */
+export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; children: ReactNode }): JSX.Element {
+  const { info } = useNetwork()
+  return isNeeded && !info ? <NetworkLoadingScreen /> : <>{children}</>
+}
+
 // The compact counterpart to NetworkLoadingScreen: shown when a background
 // refresh fails while we already have network info on screen. It stays
 // actionable (retry + dismiss) instead of leaving a dead red bar the user can't
 // clear.
 export function NetworkErrorBanner(): JSX.Element | null {
   const network = useNetwork()
-  if (!network.error) return null
+  if (!network.error || !network.info) return null
   const { kind, title } = describeNetworkError(network.error)
   return (
     <div className="error-banner" role="alert">

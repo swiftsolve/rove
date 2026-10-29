@@ -175,7 +175,9 @@ function CapabilityDetailCard({
 
 export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps): JSX.Element {
   const { back } = useNavigation()
-  const { capabilities, internetSpeed: speed, completedAt } = useSpeedTest()
+  const capabilities = useSpeedTest((test) => test.capabilities)
+  const speed = useSpeedTest((test) => test.internetSpeed)
+  const completedAt = useSpeedTest((test) => test.completedAt)
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   const listRef = useRef<HTMLUListElement>(null)
 

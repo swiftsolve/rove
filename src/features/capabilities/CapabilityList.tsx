@@ -150,8 +150,9 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
 export function CapabilityList(): JSX.Element {
   const { navigate } = useNavigation()
   // While a test runs, the stale rows grey out until the new result lands.
-  const { capabilities, internetSpeed, isTesting } = useSpeedTest()
-  const hasRunTest = internetSpeed != null
+  const capabilities = useSpeedTest((test) => test.capabilities)
+  const hasRunTest = useSpeedTest((test) => test.internetSpeed != null)
+  const isTesting = useSpeedTest((test) => test.isTesting)
 
   return (
     <Section

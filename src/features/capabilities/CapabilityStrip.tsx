@@ -126,7 +126,7 @@ function RunTestButton({
   isTesting: boolean
   hasResults: boolean
 }): JSX.Element {
-  const { runTest } = useSpeedTest()
+  const runTest = useSpeedTest((test) => test.runTest)
   const canRunTest = useCanRunSpeedTest()
 
   const handleRunTest = (): void => {
@@ -250,7 +250,7 @@ function ResultCell({
  *  link to the Speed page. Nothing before the first result. */
 function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
-  const { completedAt } = useSpeedTest()
+  const completedAt = useSpeedTest((test) => test.completedAt)
 
   if (isTesting) {
     return (
@@ -275,7 +275,11 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
 export function CapabilityStrip(): JSX.Element {
   const { navigate } = useNavigation()
   // A test can be started here or from the Speed tab; either way it greys the strip.
-  const { capabilities, isTesting, progress, internetSpeed, error } = useSpeedTest()
+  const capabilities = useSpeedTest((test) => test.capabilities)
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const progress = useSpeedTest((test) => test.progress)
+  const internetSpeed = useSpeedTest((test) => test.internetSpeed)
+  const error = useSpeedTest((test) => test.error)
   const hasResults = capabilities.length > 0
 
   const openDetails = (capabilityId: CapabilityId): void => {

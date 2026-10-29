@@ -1,6 +1,6 @@
 import { useId, useMemo } from 'react'
 import { cx } from 'class-variance-authority'
-import { Area, AreaChart, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getLinkCapacityMbps, sanitizeRate } from '@/types'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -27,13 +27,9 @@ interface ChartDatum {
   up: number
 }
 
-interface EndDotProps {
-  cx?: number
-  cy?: number
-  index?: number
-}
-
 const CHART_HEIGHT = 80
+// Hoisted so each render hands recharts the same object.
+const CHART_MARGIN = { top: 4, right: 28, bottom: 4, left: 2 }
 
 /** Trim to a clean, consistent tick: no trailing ".0", 1 decimal only below 10. */
 function trimNumber(value: number): string {
@@ -69,7 +65,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
   // A running speed test saturates the link, and the link's capacity bounds the
   // scale, so both feed the y-axis.
   const { info } = useNetwork()
-  const { isTesting: isSpeedTestRunning } = useSpeedTest()
+  const isSpeedTestRunning = useSpeedTest((test) => test.isTesting)
   const linkCapacityMbps = info ? getLinkCapacityMbps(info) : null
   const gradientId = useId().replace(/:/g, '')
   const downFill = `${gradientId}-down`
@@ -86,18 +82,9 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
   // at once; spikes still expand the scale instantly (see useSmoothScale).
   const scaleMax = useSmoothScale(maxValue)
 
-  const lastIndex = data.length - 1
+  const latest = data.at(-1)
   const currentDown = sanitizeRate(download.at(-1) ?? 0)
   const currentUp = sanitizeRate(upload.at(-1) ?? 0)
-
-  // A single endpoint marker on the latest sample.
-  const renderEndDot =
-    (color: string, radius: number) =>
-    (props: EndDotProps) => {
-      const { cx: centerX, cy: centerY, index } = props
-      if (index !== lastIndex || centerX == null || centerY == null) return <g key={`e-${index}`} />
-      return <circle key={`e-${index}`} cx={centerX} cy={centerY} r={radius} fill={color} />
-    }
 
   return (
     <div className="relative [contain:layout]">
@@ -113,7 +100,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
         >
           <AreaChart
             data={data}
-            margin={{ top: 4, right: 28, bottom: 4, left: 2 }}
+            margin={CHART_MARGIN}
             // The wrapper's role="img" label already describes the chart, and there's
             // no tooltip to drive — so don't let the SVG take a dead Tab stop.
             accessibilityLayer={false}
@@ -149,7 +136,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
               fill={`url(#${upFill})`}
               fillOpacity={1}
               isAnimationActive={false}
-              dot={renderEndDot('var(--series-up)', 2.25)}
+              dot={false}
               activeDot={false}
             />
             <Area
@@ -161,9 +148,19 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
               fill={`url(#${downFill})`}
               fillOpacity={1}
               isAnimationActive={false}
-              dot={renderEndDot('var(--series-down)', 2.5)}
+              dot={false}
               activeDot={false}
             />
+
+            {/* One endpoint marker per series on the latest sample. A reference
+                dot draws just that one, where an Area's `dot` renderer runs for
+                every point on every frame the scale eases. */}
+            {latest && (
+              <>
+                <ReferenceDot x={latest.index} y={latest.up} r={2.25} fill="var(--series-up)" stroke="none" ifOverflow="visible" />
+                <ReferenceDot x={latest.index} y={latest.down} r={2.5} fill="var(--series-down)" stroke="none" ifOverflow="visible" />
+              </>
+            )}
           </AreaChart>
         </ResponsiveContainer>
 

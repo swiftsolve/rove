@@ -1,4 +1,4 @@
-import { useId, type RefObject } from 'react'
+import { memo, useId, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
 import { formatBytes } from '@/lib/format'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
@@ -167,8 +167,9 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
 }
 
 /** One remote host beneath its app: flag + hostname on the left, the download /
- *  upload split on the right. */
-function HostRow({ host }: { host: HostConn }): JSX.Element {
+ *  upload split on the right. Memoised, like `AppGroup`: each poll keeps an
+ *  unchanged host's object, so only the hosts that moved re-render. */
+const HostRow = memo(function HostRow({ host }: { host: HostConn }): JSX.Element {
   return (
     <li className="flex items-center justify-between gap-12">
       <span className="inline-flex min-w-0 items-center gap-[7px]">
@@ -189,17 +190,18 @@ function HostRow({ host }: { host: HostConn }): JSX.Element {
       </span>
     </li>
   )
-}
+})
 
-/** One app group: an icon + name header with the app's total, then its hosts. */
-function AppGroup({
+/** One app group: an icon + name header with the app's total, then its hosts.
+ *  Memoised: each poll keeps an idle app's object, so its group skips the render. */
+const AppGroup = memo(function AppGroup({
   app,
   isExpanded,
   onToggle,
 }: {
   app: AppHosts
   isExpanded: boolean
-  onToggle: () => void
+  onToggle: (name: string) => void
 }): JSX.Element {
   const hostsId = useId()
   const total = app.rxBytes + app.txBytes
@@ -214,7 +216,7 @@ function AppGroup({
         <button
           type="button"
           className={GROUP_HEADER}
-          onClick={onToggle}
+          onClick={() => onToggle(app.name)}
           aria-expanded={isExpanded}
           aria-controls={isExpanded ? hostsId : undefined}
           aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
@@ -248,7 +250,7 @@ function AppGroup({
       )}
     </li>
   )
-}
+})
 
 /** The page body: the admin prompt, a first-load spinner, an empty state, or
  *  the grouped host list. */
@@ -302,7 +304,7 @@ function HostsBody({
             key={app.name}
             app={app}
             isExpanded={isExpanded(app.name)}
-            onToggle={() => onToggle(app.name)}
+            onToggle={onToggle}
           />
         ))}
       </ul>

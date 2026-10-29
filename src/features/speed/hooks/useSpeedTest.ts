@@ -34,7 +34,8 @@ interface SpeedTestState {
   livePeakUploadMbps: number
 }
 
-interface UseSpeedTestResult extends SpeedTestState {
+/** The store's state and the actions that change it, as `useSpeedTest` selects from. */
+export interface SpeedTest extends SpeedTestState {
   runTest: () => Promise<void>
   cancelTest: () => void
 }
@@ -105,10 +106,16 @@ let state: SpeedTestState = {
   livePeakUploadMbps: 0,
 }
 
+// What `useSpeedTest` selects from: rebuilt only when the state changes, so a
+// selector that returns it whole (or any field of it) returns the same value
+// until then. The actions are function declarations, hoisted above this.
+let snapshot: SpeedTest = { ...state, runTest, cancelTest }
+
 const listeners = new Set<() => void>()
 
 function setState(next: SpeedTestState): void {
   state = next
+  snapshot = { ...next, runTest, cancelTest }
   for (const listener of listeners) listener()
 }
 
@@ -232,7 +239,12 @@ function cancelTest(): void {
   void window.networkAPI?.cancelSpeedTest()
 }
 
-export function useSpeedTest(): UseSpeedTestResult {
-  const snapshot = useSyncExternalStore(subscribe, () => state)
-  return { ...snapshot, runTest, cancelTest }
+/**
+ * Reads what `select` picks from the speed test. A component re-renders only
+ * when its pick changes, so one that shows the result doesn't re-render on each
+ * live-peak update while a test runs. Pick a field, or the whole `SpeedTest`;
+ * a new object built in `select` would never compare equal.
+ */
+export function useSpeedTest<T>(select: (test: SpeedTest) => T): T {
+  return useSyncExternalStore(subscribe, () => select(snapshot))
 }

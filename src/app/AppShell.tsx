@@ -1,12 +1,11 @@
 import { locationKey } from '@/app/utils/location'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useNetwork } from '@/app/hooks/useNetwork'
 import { useScreenFocus } from '@/app/hooks/useScreenFocus'
 import { TabBar } from '@/app/components/TabBar'
 import { UpdatePrompt } from '@/app/components/UpdatePrompt'
 import { StatusBar } from '@/app/components/StatusBar'
-import { NetworkErrorBanner, NetworkLoadingScreen } from '@/app/components/NetworkInfoStates'
-import { CurrentScreen, needsNetworkInfo } from '@/app/components/CurrentScreen'
+import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
+import { CurrentScreen } from '@/app/components/CurrentScreen'
 import { cx } from 'class-variance-authority'
 
 // The scrolling content area. Column flex so <main> can grow to fill the
@@ -30,13 +29,10 @@ const SCROLL = cx(
  */
 export function AppShell(): JSX.Element {
   const { location } = useNavigation()
-  const network = useNetwork()
   const { scrollRef, mainRef } = useScreenFocus(locationKey(location))
 
-  // Show the loading/error state only in the content area (not full-screen) so
-  // the window chrome and tabs stay usable even before info arrives.
-  const isWaitingForNetworkInfo = !network.info && needsNetworkInfo(location)
-
+  // No network info is read here: the banner and `CurrentScreen` read it
+  // themselves, so a new reading doesn't re-render the title bar and nav rail.
   return (
     // The shell owns the app background and clips every child to the window
     // edge. Square corners: the window is opaque (Tauri transparent:false,
@@ -57,10 +53,10 @@ export function AppShell(): JSX.Element {
           <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
             {/* A plain div, not a landmark: <main> inside it must be top-level. */}
             <div ref={scrollRef} className={SCROLL} data-scroll-root>
-              {network.error && network.info && <NetworkErrorBanner />}
+              <NetworkErrorBanner />
 
               <main ref={mainRef} className="flex flex-1 flex-col gap-10">
-                {isWaitingForNetworkInfo ? <NetworkLoadingScreen /> : <CurrentScreen />}
+                <CurrentScreen />
               </main>
             </div>
           </div>

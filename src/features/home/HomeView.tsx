@@ -10,7 +10,7 @@ import { LiveThroughputPanel } from '@/features/live-throughput/LiveThroughputPa
 export function HomeView(): JSX.Element | null {
   const { info } = useNetwork()
   // Earlier results keep the capability strip on screen even while offline.
-  const { capabilities } = useSpeedTest()
+  const hasCapabilities = useSpeedTest((test) => test.capabilities.length > 0)
 
   // Home can't render without network info; the shell shows its own state until then.
   if (!info) return null
@@ -25,7 +25,7 @@ export function HomeView(): JSX.Element | null {
       <ConnectionCard info={info} />
 
       {isConnected && <LiveThroughputPanel />}
-      {(isConnected || capabilities.length > 0) && <CapabilityStrip />}
+      {(isConnected || hasCapabilities) && <CapabilityStrip />}
 
       {/* Two different summaries side by side, not a list: each card is its own
           section. Usage carries two numbers, so it gets the wider column. */}
