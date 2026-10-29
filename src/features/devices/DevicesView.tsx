@@ -20,6 +20,8 @@ const SCAN_HINT =
 
 // Local Network access can't be queried on macOS, so when discovery comes up
 // empty we surface the most likely cause rather than implying the LAN is bare.
+const NO_DEVICES_HINT = 'Nothing answered on this network. Check you’re on the right Wi-Fi.'
+
 const LOCAL_NETWORK_HINT =
   'Missing devices? Allow Rove in System Settings › Privacy & Security › Local Network, then scan again.'
 
@@ -87,12 +89,11 @@ function DevicesBody({
   if (devices.length === 0) {
     return (
       <EmptyState
-        icon={DevicesIcon}
-        title="No devices yet"
-        hint={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : undefined}
+        title="No devices found"
+        hint={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : NO_DEVICES_HINT}
         action={
           <Button onClick={onRescan}>
-            Try again
+            Scan again
           </Button>
         }
       />

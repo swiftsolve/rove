@@ -443,9 +443,8 @@ export function ServicesView(): JSX.Element {
         </ul>
       ) : (
         <EmptyState
-          icon={CloudIcon}
           title="No services yet"
-          hint="Add a service to start tracking it."
+          hint="Add a site or server to watch its uptime."
         />
       )}
     </div>

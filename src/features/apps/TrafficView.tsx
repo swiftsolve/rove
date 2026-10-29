@@ -51,7 +51,7 @@ const FIGURE_VALUE = 'num min-w-[46px] text-right'
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
 
-const TRAFFIC_EMPTY_HINT = 'Traffic appears here as your apps send and receive.'
+const TRAFFIC_EMPTY_HINT = 'Traffic appears here as your apps use the network.'
 
 const TRAFFIC_UNSUPPORTED_HINT =
   'Run Rove as administrator to break traffic down by protocol on Windows.'
@@ -171,7 +171,7 @@ function TrafficBody({
     )
   }
   if (types.length === 0) {
-    return <EmptyState icon={LayersIcon} title="No traffic yet" hint={TRAFFIC_EMPTY_HINT} />
+    return <EmptyState title="No traffic yet" hint={TRAFFIC_EMPTY_HINT} />
   }
 
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)

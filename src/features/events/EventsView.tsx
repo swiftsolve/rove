@@ -8,7 +8,7 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { Tooltip } from '@/components/Tooltip'
-import { ActivityIcon, EventsIcon, HelpIcon } from '@/components/icons/Icons'
+import { EventsIcon, HelpIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
@@ -18,8 +18,7 @@ import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-co
 const FEED_HINT =
   'Devices and access points joining or leaving between scans. Kept for 7 days.'
 
-const EMPTY_HINT =
-  'Devices joining, leaving, or changing appear here. Run a scan to check.'
+const EMPTY_HINT = 'Devices joining or leaving show up here.'
 
 // Only the day headings need the clock, and they only turn over at midnight.
 const DAY_HEADING_TICK_MS = 60_000
@@ -76,7 +75,6 @@ function EventsFeed({
     }
     return (
       <EmptyState
-        icon={ActivityIcon}
         title="No events yet"
         hint={EMPTY_HINT}
         action={

@@ -87,7 +87,7 @@ const FIGURE_VALUE = 'num min-w-[46px] text-right'
 const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
 
-const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps open connections.'
+const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps connect.'
 
 const HOST_USAGE_UNSUPPORTED_HINT =
   'Run Rove as administrator to attribute hosts to apps on Windows.'
@@ -285,7 +285,7 @@ function HostsBody({
     )
   }
   if (apps.length === 0) {
-    return <EmptyState icon={GlobeIcon} title="No hosts yet" hint={HOST_USAGE_EMPTY_HINT} />
+    return <EmptyState title="No hosts yet" hint={HOST_USAGE_EMPTY_HINT} />
   }
   return (
     <div className={SECTION_CARD}>

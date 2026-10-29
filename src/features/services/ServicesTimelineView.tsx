@@ -13,7 +13,6 @@ import {
   ArrowUpIcon,
   CheckIcon,
   GlobeIcon,
-  HistoryIcon,
   MoreIcon,
   OfflineIcon,
   TrashIcon,
@@ -470,9 +469,8 @@ export function ServicesTimelineView(): JSX.Element {
     >
       {events.length === 0 ? (
         <EmptyState
-          icon={HistoryIcon}
           title="No outages yet"
-          hint="Outages for tracked services appear here while the Connection tab is open."
+          hint="Outages appear here when a tracked service goes down."
         />
       ) : (
         <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">

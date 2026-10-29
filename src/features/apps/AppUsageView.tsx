@@ -80,7 +80,7 @@ const SUBTITLE_LINK_GLYPH = cx(
 const APP_USAGE_INFO_HINT =
   'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 
-const APP_USAGE_EMPTY_HINT = 'Usage appears here as your apps send and receive.'
+const APP_USAGE_EMPTY_HINT = 'Apps appear here as they use the network.'
 
 const APP_USAGE_UNSUPPORTED_HINT =
   'Run Rove as administrator to meter per-app usage on Windows.'
@@ -222,7 +222,7 @@ function AppUsageBody({
     )
   }
   if (apps.length === 0) {
-    return <EmptyState icon={AppsIcon} title="No app usage yet" hint={APP_USAGE_EMPTY_HINT} />
+    return <EmptyState title="No app usage yet" hint={APP_USAGE_EMPTY_HINT} />
   }
 
   const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)

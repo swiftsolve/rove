@@ -13,7 +13,7 @@ import { Subpage } from '@/components/Subpage'
 import { DotSeparator, InlineMeta } from '@/components/DotSeparator'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { FAILED_PING } from '@/types'
-import { EthernetIcon, GlobeIcon, HistoryIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
+import { EthernetIcon, GlobeIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
 import { EmptyState } from '@/components/EmptyState'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { useMenu } from '@/hooks/useMenu'
@@ -221,9 +221,8 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
   if (entries.length === 0) {
     return (
       <EmptyState
-        icon={HistoryIcon}
         title="No speed tests yet"
-        hint="Results appear here each time you run a speed test."
+        hint="Run a test to start your history."
       />
     )
   }
