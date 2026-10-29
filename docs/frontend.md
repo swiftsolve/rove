@@ -145,6 +145,7 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Capabilities card | `CapabilityStrip` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
 | Stat card | `StatCard` | Home summary card: Usage or Devices. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
+| Dialog | `Dialog` | Modal: title, optional description and close, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
 | Error banner | `NetworkErrorBanner` | A failure the user can retry, with Retry and dismiss buttons. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |

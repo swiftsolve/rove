@@ -78,6 +78,7 @@ import {
   Watch,
   Waypoints,
   Wifi,
+  WifiOff,
   X,
   Zap,
 } from 'lucide-react'
@@ -245,6 +246,7 @@ export function ConnectionIcon({ size = 18, className }: IconProps): JSX.Element
 // Lucide aliases
 
 export const WifiIcon = make(Wifi, 20)
+export const WifiOffIcon = make(WifiOff, 20)
 export const EthernetIcon = make(EthernetPort, 20)
 export const OfflineIcon = make(GlobeOff, 20)
 export const ActivityIcon = make(Activity, 18)

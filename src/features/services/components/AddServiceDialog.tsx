@@ -1,37 +1,13 @@
 import { useId, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 import type { ServiceDefinition } from '@/types'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { CloseIcon } from '@/components/icons/Icons'
+import { Dialog } from '@/components/Dialog'
 import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
-import { IconButton } from '@/components/IconButton'
 import { cva, cx } from 'class-variance-authority'
-import { useModalFocus } from '@/hooks/useModalFocus'
-
-// Absolute (not fixed) and portaled into the app's content column
-// ([data-modal-root]), so it covers and centres over the main content area
-// rather than the whole window. It fades in.
-const OVERLAY = cx(
-  'animate-overlay-in absolute inset-0 z-90 flex items-center justify-center bg-scrim p-20',
-)
-
-// No padding on the shell itself: the header and body own their own insets.
-// It rises into place.
-const DIALOG = cx(
-  'animate-dialog-in w-full max-w-[340px] rounded-lg border border-line-strong bg-panel shadow-raised',
-)
-
-// Pull the close button toward the panel's corner without cramping the title.
-// It blends into the header with no fill of its own at rest; the secondary
-// IconButton's hover fill still shows.
-const CLOSE = cx(
-  'mt-[calc(-1*var(--spacing-4))] mr-[calc(-1*var(--spacing-4))] shrink-0 bg-transparent',
-  "[&:hover:not(:disabled,[aria-disabled='true'])]:bg-hover",
-)
 
 const FIELD_LABEL = 'field-label mb-6 block'
 
@@ -117,6 +93,8 @@ interface TestOutcome extends ServiceDefinition {
 }
 
 interface AddServiceDialogProps {
+  /** False while the dialog leaves (see `Dialog`). */
+  isOpen: boolean
   /** Persist the confirmed service, passing the latency just measured by the
    *  test so the new row can show it at once instead of waiting for the next
    *  services poll; undefined when an edit only renamed it and nothing was
@@ -129,7 +107,7 @@ interface AddServiceDialogProps {
 }
 
 /**
- * Feedback for the address sits right under it: the "test first" hint while
+ * Feedback for the address sits right under it: the "tested on add" hint while
  * idle, the error when one occurs, or the measured result once a test lands —
  * so the hint is gone the moment the test is done.
  */
@@ -138,11 +116,13 @@ function AddressFeedback({
   phase,
   outcome,
   name,
+  isEditing,
 }: {
   error: string | null
   phase: TestPhase
   outcome: TestOutcome | null
   name: string
+  isEditing: boolean
 }): JSX.Element {
   if (error) {
     return (
@@ -168,26 +148,28 @@ function AddressFeedback({
     )
   }
   if (phase === 'testing') return <p className={noteVariants()}>Testing…</p>
-  return <p className={noteVariants()}>Test the connection before adding.</p>
+  return <p className={noteVariants()}>{isEditing ? 'Tested when you save it.' : 'Tested when you add it.'}</p>
 }
 
-function confirmLabel(isAdding: boolean, isEditing: boolean): ReactNode {
-  if (isAdding) return <ButtonSpinner size={14} />
+function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): ReactNode {
+  if (isBusy) return <ButtonSpinner size={14} />
+  if (isDown) return isEditing ? 'Save anyway' : 'Add anyway'
   return isEditing ? 'Save' : 'Add service'
 }
 
 /** The confirm's spoken name while it shows only a spinner. */
-function busyConfirmName(isAdding: boolean, isEditing: boolean): string | undefined {
-  if (!isAdding) return undefined
+function busyConfirmName(isBusy: boolean, isEditing: boolean): string | undefined {
+  if (!isBusy) return undefined
   return isEditing ? 'Saving' : 'Adding service'
 }
 
 /**
- * The "add a service" popup: enter a URL/IP, **test** its reachability, then
- * **confirm** to add it. The test probes the host without storing it (see
- * `testService`), so the user sees whether it's reachable — and its latency —
- * before committing. Editing the address after a test clears the result, so the
- * confirm always reflects what was actually measured.
+ * The "add a service" popup: enter a URL/IP and **add** it. Adding tests the
+ * host first (see `testService`, which probes without storing it): a reachable
+ * one goes straight in, while a down one shows its result and waits for "Add
+ * anyway". The inline Test checks an address without adding it. Editing the
+ * address after a test clears the result, so the confirm always reflects what
+ * was actually measured.
  *
  * The display name is auto-detected from the address (github.com → "Github") but
  * stays editable: once the user types their own name, we stop overwriting it.
@@ -197,7 +179,7 @@ function busyConfirmName(isAdding: boolean, isEditing: boolean): string | undefi
  * the flow is otherwise identical (test, then save), and the caller decides how to
  * persist (re-adding the same host updates its label; a changed host is a move).
  */
-export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
+export function AddServiceDialog({ isOpen, onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
   const [address, setAddress] = useState(editing?.host ?? '')
   const [name, setName] = useState(editing?.name ?? '')
   // In edit mode the name is the user's own from the start, so never auto-derive
@@ -207,45 +189,29 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const [outcome, setOutcome] = useState<TestOutcome | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  // The test was started by Add (not the inline Test), so it adds once it lands.
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Focus stays in the dialog while it's open; Escape closes it (not mid-add).
-  const dialogRef = useModalFocus(onClose, !isAdding)
-  const titleId = useId()
-  const descriptionId = useId()
   const addressId = useId()
   const feedbackId = useId()
+  const isEditing = editing != null
   const isTesting = phase === 'testing'
-
-  const runTest = (): void => {
-    const parsed = parseServiceInput(address)
-    if (!parsed) {
-      setError('Enter a valid URL or IP address.')
-      return
-    }
-    setError(null)
-    setPhase('testing')
-    void (async () => {
-      try {
-        const latencyMs = (await window.networkAPI?.testService(parsed.host)) ?? null
-        setOutcome({ ...parsed, latencyMs })
-        setPhase('tested')
-      } catch {
-        setError('Could not test that address. Try again.')
-        setPhase('idle')
-      }
-    })()
-  }
 
   const hasTested = phase === 'tested' && outcome != null
   // An edit that leaves the address alone is just a rename: it saves without a
   // re-test, since the host it would probe is the one already tracked.
   const parsedAddress = parseServiceInput(address)
-  const isRenameOnly =
-    editing != null && parsedAddress?.host === editing.host && name.trim() !== editing.name
-  const canConfirm = hasTested || (isRenameOnly && !isTesting)
+  const isSameHost = editing != null && parsedAddress?.host === editing.host
+  const isRenameOnly = isSameHost && name.trim() !== editing.name
+  // An edit with nothing changed has nothing to save.
+  const isUnchanged = isSameHost && name.trim() === editing.name
+  const canConfirm = hasTested || isRenameOnly
+  const isDown = hasTested && outcome.latencyMs == null
+  const isBusy = isAdding || isSubmitting
+  const isDirty = address.trim() !== (editing?.host ?? '') || name.trim() !== (editing?.name ?? '')
 
-  const confirm = (): void => {
-    const target = outcome ?? (isRenameOnly && parsedAddress ? { ...parsedAddress, latencyMs: undefined } : null)
+  const confirm = (tested: TestOutcome | null = outcome): void => {
+    const target = tested ?? (isRenameOnly && parsedAddress ? { ...parsedAddress, latencyMs: undefined } : null)
     if (!target) return
     setIsAdding(true)
     // The editable name wins over the auto-detected one; fall back to the
@@ -257,6 +223,39 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
         setError('Could not add that service.')
         setIsAdding(false)
       })
+  }
+
+  const runTest = (shouldConfirm = false): void => {
+    const parsed = parseServiceInput(address)
+    if (!parsed) {
+      setError('Enter a valid URL or IP address.')
+      return
+    }
+    setError(null)
+    setPhase('testing')
+    setIsSubmitting(shouldConfirm)
+    void (async () => {
+      try {
+        const latencyMs = (await window.networkAPI?.testService(parsed.host)) ?? null
+        const tested = { ...parsed, latencyMs }
+        setOutcome(tested)
+        setPhase('tested')
+        // A reachable host goes straight in; a down one waits for "Add anyway".
+        if (shouldConfirm && latencyMs != null) confirm(tested)
+      } catch {
+        setError('Could not test that address. Try again.')
+        setPhase('idle')
+      } finally {
+        setIsSubmitting(false)
+      }
+    })()
+  }
+
+  // Add: save what was tested (or a rename), otherwise test first.
+  const submit = (): void => {
+    if (isTesting || isAdding || isUnchanged) return
+    if (canConfirm) confirm()
+    else if (address.trim()) runTest(true)
   }
 
   const onAddressChange = (value: string): void => {
@@ -279,120 +278,84 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     setIsNameTouched(value.trim() !== '')
   }
 
-  // Enter advances the flow: confirm once tested, otherwise run the test.
+  // Enter does what the Add button does.
   const onFieldKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    if (canConfirm) confirm()
-    else if (address.trim() && phase !== 'testing') runTest()
+    submit()
   }
 
-  const overlay = (
-    <div className={OVERLAY} role="presentation" onClick={isAdding ? undefined : onClose}>
-      <div
-        className={DIALOG}
-        ref={dialogRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header + subtitle. The darker body below sets it apart, so no divider is needed. */}
-        <div className="flex items-start justify-between gap-8 p-16">
-          <div className="min-w-0">
-            <h2 id={titleId} className="text-dialog-title">
-              {editing ? 'Edit service' : 'Add a service'}
-            </h2>
-            <p id={descriptionId} className="mt-4 text-sm text-secondary">
-              Track a service by URL or IP address.
-            </p>
-          </div>
-          <IconButton
-            className={CLOSE}
-            onClick={onClose}
-            disabled={isAdding}
-            aria-label="Close"
+  return (
+    <Dialog
+      isOpen={isOpen}
+      title={isEditing ? 'Edit service' : 'Add a service'}
+      description="Track a service by URL or IP address."
+      onClose={onClose}
+      canClose={!isAdding}
+      isDirty={isDirty}
+      cancelLabel="Cancel"
+      actions={
+        <Button
+          variant="filled"
+          // A minimum width keeps it from shrinking to the spinner while it adds.
+          className="min-w-[76px]"
+          onClick={submit}
+          disabled={!address.trim() || isTesting || isUnchanged}
+          isBusy={isBusy}
+          aria-busy={isBusy}
+          aria-label={busyConfirmName(isBusy, isEditing)}
+        >
+          {confirmLabel(isBusy, isEditing, isDown)}
+        </Button>
+      }
+    >
+      {/* A div, not a wrapping label: the field also holds the Test button and
+          the feedback below it, which a label can't contain. */}
+      <div className="block">
+        <label htmlFor={addressId} className={FIELD_LABEL}>
+          Address
+        </label>
+        <div className={inputGroupVariants({ isInvalid: error != null })}>
+          <input
+            id={addressId}
+            type="text"
+            className={GROUPED_INPUT}
+            value={address}
+            onChange={(e) => onAddressChange(e.target.value)}
+            onKeyDown={onFieldKeyDown}
+            placeholder="example.com or 192.168.1.1"
+            aria-invalid={error != null}
+            aria-describedby={feedbackId}
+            autoFocus
+          />
+          <button
+            type="button"
+            className={testVariants({ isLoading: isTesting })}
+            onClick={() => runTest()}
+            disabled={!address.trim() || isTesting || isAdding}
+            aria-label={isTesting ? 'Testing' : undefined}
           >
-            <CloseIcon size={15} />
-          </IconButton>
+            {isTesting ? <ButtonSpinner size={13} /> : 'Test'}
+          </button>
         </div>
-
-        {/* The middle section sits a step below the header/footer surfaces: a
-            recessed well that frames the fields. */}
-        <div className="bg-chrome p-16">
-          {/* A div, not a wrapping label: the field also holds the Test button and
-              the feedback below it, which a label can't contain. */}
-          <div className="block">
-            <label htmlFor={addressId} className={FIELD_LABEL}>
-              Address
-            </label>
-            <div className={inputGroupVariants({ isInvalid: error != null })}>
-              <input
-                id={addressId}
-                type="text"
-                className={GROUPED_INPUT}
-                value={address}
-                onChange={(e) => onAddressChange(e.target.value)}
-                onKeyDown={onFieldKeyDown}
-                placeholder="example.com or 192.168.1.1"
-                aria-invalid={error != null}
-                aria-describedby={feedbackId}
-                autoFocus
-              />
-              <button
-                type="button"
-                className={testVariants({ isLoading: isTesting })}
-                onClick={runTest}
-                disabled={!address.trim() || isTesting}
-                aria-label={isTesting ? 'Testing' : undefined}
-              >
-                {isTesting ? <ButtonSpinner size={13} /> : 'Test'}
-              </button>
-            </div>
-            {/* One persistent live region, so "Testing…", the result and any
-                error are announced as they swap in. */}
-            <div id={feedbackId} role="status">
-              <AddressFeedback error={error} phase={phase} outcome={outcome} name={name} />
-            </div>
-          </div>
-
-          <label className="mt-16 block">
-            <span className={FIELD_LABEL}>Name</span>
-            <input
-              type="text"
-              className={BORDERED_INPUT}
-              value={name}
-              onChange={(e) => onNameChange(e.target.value)}
-              onKeyDown={onFieldKeyDown}
-              placeholder="Auto-detected from the address"
-            />
-          </label>
-        </div>
-
-        {/* The confirm sits in its own footer; the darker body above sets it apart,
-            so it needs no divider. */}
-        <div className="flex justify-end p-16">
-          <Button
-            variant="filled"
-            // A minimum width keeps it from shrinking to the spinner while it adds.
-            className="min-w-[76px]"
-            onClick={confirm}
-            disabled={!canConfirm || isAdding}
-            aria-busy={isAdding}
-            aria-label={busyConfirmName(isAdding, editing != null)}
-          >
-            {confirmLabel(isAdding, editing != null)}
-          </Button>
+        {/* One persistent live region, so "Testing…", the result and any
+            error are announced as they swap in. */}
+        <div id={feedbackId} role="status">
+          <AddressFeedback error={error} phase={phase} outcome={outcome} name={name} isEditing={isEditing} />
         </div>
       </div>
-    </div>
-  )
 
-  // Anchor the modal to the main content column so it centres over the page
-  // area, not the whole window (the nav rail stays uncovered). Fall back to
-  // inline rendering if the column isn't in the DOM.
-  const portalTarget = typeof document !== 'undefined' ? document.querySelector('[data-modal-root]') : null
-  return portalTarget ? createPortal(overlay, portalTarget) : overlay
+      <label className="mt-16 block">
+        <span className={FIELD_LABEL}>Name</span>
+        <input
+          type="text"
+          className={BORDERED_INPUT}
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          onKeyDown={onFieldKeyDown}
+          placeholder="Auto-detected from the address"
+        />
+      </label>
+    </Dialog>
+  )
 }

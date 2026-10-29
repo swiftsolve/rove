@@ -173,9 +173,12 @@
 
 /* Entrance and exit animations (`animate-*`), with their keyframes. */
 @theme inline {
-  /* A dialog's backdrop fades in and the dialog rises into place. */
+  /* A dialog's backdrop fades in and the dialog rises into place; closing
+     plays the same in reverse, quicker (`DIALOG_EXIT_MS` in Dialog.tsx). */
   --animate-overlay-in: overlay-in var(--duration-fast) var(--ease-out);
   --animate-dialog-in: dialog-in var(--duration-normal) var(--ease-out);
+  --animate-overlay-out: overlay-out var(--duration-fast) var(--ease-in-out) forwards;
+  --animate-dialog-out: dialog-out var(--duration-fast) var(--ease-in-out) forwards;
   /* A view, a header subtitle or a status message fades in (keyframes in base.css). */
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
   /* A dropdown menu drops into place. */
@@ -195,6 +198,19 @@
 
   @keyframes dialog-in {
     from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes overlay-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dialog-out {
+    to {
       opacity: 0;
       transform: translateY(6px) scale(0.98);
     }

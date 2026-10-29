@@ -3,6 +3,8 @@ import { QrCodeIcon } from '@/components/icons/Icons'
 import { Tooltip } from '@/components/Tooltip'
 import { WifiShareDialog } from '@/features/connection/WifiShareDialog'
 import { IconButton } from '@/components/IconButton'
+import { DIALOG_EXIT_MS } from '@/components/Dialog'
+import { usePresence } from '@/hooks/usePresence'
 
 /**
  * A QR button that opens the Wi-Fi share dialog, shown beside the signal meter
@@ -11,6 +13,8 @@ import { IconButton } from '@/components/IconButton'
  */
 export function ShareWifiButton(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
+  // Mounted through the dialog's leave animation.
+  const isMounted = usePresence(isOpen, DIALOG_EXIT_MS)
 
   return (
     <>
@@ -22,7 +26,7 @@ export function ShareWifiButton(): JSX.Element {
           <QrCodeIcon size={16} />
         </IconButton>
       </Tooltip>
-      {isOpen && <WifiShareDialog onClose={() => setIsOpen(false)} />}
+      {isMounted && <WifiShareDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />}
     </>
   )
 }

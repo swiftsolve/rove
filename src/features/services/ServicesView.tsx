@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { usePresence } from '@/hooks/usePresence'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import { ViewHeader } from '@/components/ViewHeader'
 import { MetricValue } from '@/components/MetricValue'
@@ -26,6 +27,7 @@ import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
+import { DIALOG_EXIT_MS } from '@/components/Dialog'
 import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
@@ -111,7 +113,9 @@ const TIMELINE_LINK_TEXT = cx(
   'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
 )
 
-type DialogState = { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }
+/** What the add/edit dialog shows. `openCount` tells one opening from the next,
+ *  so reopening while the last one leaves starts it fresh. */
+type DialogState = ({ mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }) & { openCount: number }
 
 function isInternetDown(status: InternetStatus | undefined): boolean {
   return status === 'noInternet' || status === 'offline'
@@ -329,7 +333,14 @@ export function ServicesView(): JSX.Element {
   // The same live up/down count the timeline header shows, ahead of the timeline
   // link. Null until the first probes land, so the link stands alone until then.
   const tally = serviceTally(reachability, liveInternet)
+  // The dialog's content outlives its closing, so it can play its leave animation.
   const [dialog, setDialog] = useState<DialogState | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const isDialogMounted = usePresence(isDialogOpen, DIALOG_EXIT_MS)
+  const openDialog = (next: { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }): void => {
+    setDialog({ ...next, openCount: (dialog?.openCount ?? 0) + 1 })
+    setIsDialogOpen(true)
+  }
   const [openMenuHost, setOpenMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
   // edited row shows its measured value at once until the next services poll.
@@ -394,20 +405,22 @@ export function ServicesView(): JSX.Element {
                 <HelpIcon size={16} />
               </IconButton>
             </Tooltip>
-            <AddServiceButton isOffline={isOfflineNow} onClick={() => setDialog({ mode: 'add' })} />
+            <AddServiceButton isOffline={isOfflineNow} onClick={() => openDialog({ mode: 'add' })} />
           </div>
         }
       />
 
-      {dialog && (
+      {isDialogMounted && dialog && (
         <AddServiceDialog
+          key={dialog.openCount}
+          isOpen={isDialogOpen}
           editing={
             dialog.mode === 'edit'
               ? { name: dialog.service.name, host: dialog.service.host }
               : undefined
           }
           onAdd={saveService}
-          onClose={() => setDialog(null)}
+          onClose={() => setIsDialogOpen(false)}
         />
       )}
 
@@ -430,7 +443,7 @@ export function ServicesView(): JSX.Element {
                   onOpenChange={setOpenMenuHost}
                   onEdit={() => {
                     setOpenMenuHost(null)
-                    setDialog({ mode: 'edit', service: svc })
+                    openDialog({ mode: 'edit', service: svc })
                   }}
                   onRemove={() => {
                     setOpenMenuHost(null)
