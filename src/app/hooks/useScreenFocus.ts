@@ -23,12 +23,14 @@ export function useScreenFocus(screenKey: string): {
   // the main region if the page has none yet, e.g. still loading). This is the
   // standard SPA route-change pattern: screen readers announce the new page, and
   // the next Tab enters its content instead of walking the rest of the nav rail.
-  const isFirstScreenRef = useRef(true)
+  // Compared against the last screen focused rather than a first-run flag:
+  // StrictMode runs this twice on mount, and a flag spent on the first run
+  // would let the second pull focus into <main> at launch, so Tab skipped the
+  // rail and Shift+Tab landed on Settings.
+  const focusedKeyRef = useRef(screenKey)
   useEffect(() => {
-    if (isFirstScreenRef.current) {
-      isFirstScreenRef.current = false
-      return
-    }
+    if (focusedKeyRef.current === screenKey) return
+    focusedKeyRef.current = screenKey
     const main = mainRef.current
     if (!main) return
     const target = main.querySelector<HTMLElement>('h1') ?? main
