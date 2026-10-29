@@ -50,6 +50,112 @@ export function applyThemeClass(isLight: boolean): void {
   requestAnimationFrame(() => root.classList.remove('theme-switching'))
 }
 
+/** A cross-fade in progress (see `fadeThemeClass`). */
+interface RunningFade {
+  /** Each colour token the themes disagree on, with its dark and light value. */
+  tokens: Array<{ name: string; dark: string; light: string }>
+  /** 0 is all dark, 1 all light. */
+  progress: number
+  isTargetLight: boolean
+  lastFrameAt: number
+}
+
+let fade: RunningFade | null = null
+
+/** The tokens the light theme overrides, read from the stylesheet so the list follows rove-design. */
+function lightThemeTokenNames(rules: CSSRuleList): string[] {
+  for (const rule of Array.from(rules)) {
+    if (rule instanceof CSSStyleRule && rule.selectorText === ':root.theme-light') {
+      return Array.from(rule.style).filter((name) => name.startsWith('--'))
+    }
+    if ('cssRules' in rule) {
+      const names = lightThemeTokenNames((rule as CSSGroupingRule).cssRules)
+      if (names.length > 0) return names
+    }
+  }
+  return []
+}
+
+function themeTokenNames(): string[] {
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList
+    try {
+      rules = sheet.cssRules
+    } catch {
+      continue // A cross-origin sheet; the tokens aren't in one.
+    }
+    const names = lightThemeTokenNames(rules)
+    if (names.length > 0) return names
+  }
+  return []
+}
+
+// Ease in and out, so the fade neither jumps off the press nor stops dead.
+function easeInOut(progress: number): number {
+  return 0.5 - Math.cos(Math.PI * progress) / 2
+}
+
+function stepFade(now: number): void {
+  if (!fade) return
+  const root = document.documentElement
+  const delta = (now - fade.lastFrameAt) / SWAP_DURATION_MS
+  fade.lastFrameAt = now
+  fade.progress = Math.min(1, Math.max(0, fade.progress + (fade.isTargetLight ? delta : -delta)))
+
+  if (fade.progress === (fade.isTargetLight ? 1 : 0)) {
+    // Landed: hand the tokens back to the stylesheet, which the theme class
+    // already points at the target.
+    for (const { name } of fade.tokens) root.style.removeProperty(name)
+    root.classList.remove('theme-switching')
+    fade = null
+    return
+  }
+
+  const lightPercent = easeInOut(fade.progress) * 100
+  for (const { name, dark, light } of fade.tokens) {
+    root.style.setProperty(name, `color-mix(in srgb, ${light} ${lightPercent}%, ${dark})`)
+  }
+  requestAnimationFrame(stepFade)
+}
+
+/**
+ * Put the document in the light or dark theme with a cross-fade, where the
+ * circular reveal can't run. It fades the colour tokens themselves rather than
+ * each element's colours, so the background and everything on it are the same
+ * step of the way on every frame. `theme-switching` keeps hover transitions
+ * from trailing behind. A press mid-fade turns it around from where it is.
+ */
+function fadeThemeClass(isLight: boolean): void {
+  const root = document.documentElement
+  if (root.classList.contains('theme-light') === isLight) return
+
+  if (fade) {
+    fade.isTargetLight = isLight
+    root.classList.toggle('theme-light', isLight)
+    return
+  }
+
+  const names = themeTokenNames()
+  const readValue = (style: CSSStyleDeclaration, name: string): string => style.getPropertyValue(name).trim()
+  const style = getComputedStyle(root)
+  const before = names.map((name) => ({ name, value: readValue(style, name) }))
+  root.classList.add('theme-switching')
+  root.classList.toggle('theme-light', isLight)
+  // `style` is live, so it now reads the incoming theme.
+  const tokens = before
+    .map(({ name, value }) => {
+      const incoming = readValue(style, name)
+      return isLight ? { name, dark: value, light: incoming } : { name, dark: incoming, light: value }
+    })
+    // Colours only: shadows and the like just switch.
+    .filter(({ dark, light }) => dark !== light && CSS.supports('color', dark) && CSS.supports('color', light))
+
+  fade = { tokens, progress: isLight ? 0 : 1, isTargetLight: isLight, lastFrameAt: performance.now() }
+  // Hold the outgoing colours for the first paint; the frames take it from there.
+  tokens.forEach(({ name, dark, light }) => root.style.setProperty(name, isLight ? dark : light))
+  requestAnimationFrame(stepFade)
+}
+
 /**
  * Fold a press into the swap already animating rather than starting a second
  * transition on top of it (which snaps the first to its end and visibly jumps):
@@ -104,9 +210,10 @@ function animateClipCircle(root: HTMLElement, isNextLight: boolean): Animation {
  * circle from the centre of the window rather than the browser's default
  * cross-fade. The View Transitions API snapshots the old and new states; we then
  * animate a clip circle over them (see `animateClipCircle`). Engines without
- * the API, WebKitGTK (where it's advertised but segfaults — see IS_WEBKIT_GTK),
- * and users who prefer reduced motion just get an instant swap — the state change
- * still applies, only the animation is skipped.
+ * the API, and WebKitGTK (where it's advertised but segfaults — see
+ * IS_WEBKIT_GTK), cross-fade instead (see `fadeThemeClass`). Users who prefer
+ * reduced motion get an instant swap — the state change still applies, only the
+ * animation is skipped.
  *
  * `persist` stores the preference and re-renders React state; it always runs
  * exactly once, whether or not an animation plays.
@@ -134,7 +241,14 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
     startViewTransition?: (callback: () => void) => ViewTransition
   }
   const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!doc.startViewTransition || shouldReduceMotion || IS_WEBKIT_GTK) {
+  if (shouldReduceMotion) {
+    persist()
+    return
+  }
+  if (!doc.startViewTransition || IS_WEBKIT_GTK) {
+    // Flip the class before React re-renders, so the effect that mirrors the
+    // theme onto the document finds it already set and doesn't redo it.
+    fadeThemeClass(isNextLight)
     persist()
     return
   }
