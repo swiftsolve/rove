@@ -175,9 +175,9 @@ export function SpeedView(): JSX.Element | null {
         subtitleClassName="inline-flex items-center gap-6"
         isSubtitleShown={completedAt != null}
         // The header's 4px gap pairs icon chips; beside a full button the help
-        // chip needs the wider 8px step to read as its own control.
+        // chip needs the wider 10px step to read as its own control.
         actions={
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-10">
             <Tooltip content={SPEED_HINT}>
               <IconButton
                 aria-label="About speed tests"
