@@ -24,9 +24,11 @@ const MIN_TRACK_PX = 0.5 // hide the track once less than this is left of it
 // The smoothed fill leads the backend's coarse steps, so it must outlive the
 // component: switching tabs mid-test and coming back should resume the bar
 // where it had crept to, not snap back to the last backend step. Kept at module
-// scope (like the store's live-peak throughput) so it survives remounts; a new
-// run rewinds the backend to 0, which is our cue to clear the carried-over fill.
-let persistedFillPct = 0
+// scope (like the store's live-peak throughput) so it survives remounts, and
+// tagged with its run: a test started from Home runs while this is unmounted,
+// so the bar can't count on seeing it start, and must not resume the last run's
+// full bar.
+const persistedFill = { runId: 0, pct: 0 }
 
 // Full amplitude throughout — the wave stays wavy from the start right up to the
 // rounded cap at the leading edge, like Android's.
@@ -54,7 +56,7 @@ function buildStaticWave(width: number): string {
   return path
 }
 
-export function WavyProgress({ progress }: { progress: number }): JSX.Element {
+export function WavyProgress({ progress, runId }: { progress: number; runId: number }): JSX.Element {
   const targetPct = Math.max(0, Math.min(100, progress))
   const targetRef = useLatestRef(targetPct)
 
@@ -99,7 +101,7 @@ export function WavyProgress({ progress }: { progress: number }): JSX.Element {
     // Per-frame work is just advancing the fill length: a clip rect grows to
     // reveal more of the (already-drawn, GPU-scrolled) wave, and the dot rides
     // its leading edge. No geometry is rebuilt, so the loop is nearly free.
-    let fillPct = persistedFillPct
+    let fillPct = persistedFill.runId === runId ? persistedFill.pct : 0
     let lastFillEnd = -1
     let lastTrackStart = -1
     let frameId = 0
@@ -129,12 +131,10 @@ export function WavyProgress({ progress }: { progress: number }): JSX.Element {
     }
 
     const loop = (): void => {
-      const backendPct = targetRef.current
-      // A new run rewinds the backend to 0 — mirror that in the local fill so the
-      // bar restarts instead of holding a stale value carried over the remount.
-      if (backendPct === 0) fillPct = 0
-      fillPct = advanceFill(fillPct, backendPct)
-      persistedFillPct = fillPct // survive a remount mid-test
+      fillPct = advanceFill(fillPct, targetRef.current)
+      // survive a remount mid-test
+      persistedFill.runId = runId
+      persistedFill.pct = fillPct
 
       const clip = clipRef.current
       const dot = dotRef.current
@@ -147,7 +147,7 @@ export function WavyProgress({ progress }: { progress: number }): JSX.Element {
       cancelAnimationFrame(frameId)
       observer.disconnect()
     }
-  }, [targetRef])
+  }, [targetRef, runId])
 
   // Static shell. The wave is drawn once and scrolls via CSS; a clip rect (grown
   // by the loop) reveals the filled portion; the dot rides its leading edge and

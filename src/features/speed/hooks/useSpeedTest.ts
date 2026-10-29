@@ -15,6 +15,8 @@ interface SpeedTestState {
   capabilities: CapabilityRating[]
   isTesting: boolean
   progress: SpeedTestProgress
+  /** The run in flight, or the last one; tells a new run's progress from an old one's. */
+  runId: number
   error: string | null
   /** Epoch ms the current result finished — null until a test completes. */
   completedAt: number | null
@@ -94,6 +96,7 @@ let state: SpeedTestState = {
   capabilities: [],
   isTesting: false,
   progress: INITIAL_PROGRESS,
+  runId: 0,
   error: null,
   completedAt: null,
   linkCapacityMbps: null,
@@ -159,6 +162,7 @@ async function runTest(): Promise<void> {
     isTesting: true,
     error: null,
     progress: { phase: 'internet', message: 'Starting speed test…', progress: 0 },
+    runId,
     livePeakDownloadMbps: 0,
     livePeakUploadMbps: 0,
   })

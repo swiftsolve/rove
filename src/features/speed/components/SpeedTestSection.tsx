@@ -114,7 +114,7 @@ function SpeedCell({
   )
 }
 
-function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Element {
+function TestProgress({ progress, runId }: { progress: SpeedTestProgress; runId: number }): JSX.Element {
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
@@ -129,7 +129,7 @@ function TestProgress({ progress }: { progress: SpeedTestProgress }): JSX.Elemen
         aria-valuemin={0}
         aria-valuemax={100}
       >
-        <WavyProgress progress={progress.progress} />
+        <WavyProgress progress={progress.progress} runId={runId} />
       </div>
     </div>
   )
@@ -203,6 +203,7 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
     internetSpeed,
     isTesting,
     progress,
+    runId,
     error,
     linkCapacityMbps: testLinkCapacityMbps,
     runConnection,
@@ -273,7 +274,7 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
         </dl>
       )}
 
-      {isTesting && <TestProgress progress={progress} />}
+      {isTesting && <TestProgress progress={progress} runId={runId} />}
       {!isTesting && hasResults && hasFooterInfo && (
         <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
       )}
