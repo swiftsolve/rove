@@ -266,15 +266,9 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
 
   const onNameChange = (value: string): void => {
     setName(value)
-    // Blanking the field hands the name back to auto-detection; re-derive from
-    // the current address so it never lingers empty when a host is present.
-    if (value.trim() === '') {
-      setIsNameTouched(false)
-      const parsed = parseServiceInput(address)
-      if (parsed) setName(parsed.name)
-    } else {
-      setIsNameTouched(true)
-    }
+    // Blanking the field hands the name back to auto-detection: it stays empty
+    // (the placeholder says so) and the confirm falls back to the derived name.
+    setIsNameTouched(value.trim() !== '')
   }
 
   // Enter advances the flow: confirm once tested, otherwise run the test.
