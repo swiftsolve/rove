@@ -10,10 +10,21 @@ import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
 import { Tooltip } from '@/components/Tooltip'
 import { DotSeparator } from '@/components/DotSeparator'
 import { ViewHeader } from '@/components/ViewHeader'
-import { ChevronRightIcon, HistoryIcon, PlayIcon, SpeedIcon, StopIcon } from '@/components/icons/Icons'
+import {
+  ChevronRightIcon,
+  HelpIcon,
+  HistoryIcon,
+  PlayIcon,
+  SpeedIcon,
+  StopIcon,
+} from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { Button } from '@/components/Button'
+import { IconButton } from '@/components/IconButton'
+
+const SPEED_HINT =
+  'Tests this computer’s connection to public test servers, so Wi-Fi signal counts. On fast connections one test can use over 1 GB of data.'
 
 // The "View history" pill link after the "Updated …" meta: quiet at rest, the
 // accent on hover. The negative left margin cancels the pill's padding and the
@@ -163,7 +174,20 @@ export function SpeedView(): JSX.Element | null {
         // The "Updated …" meta, dot and history link sit on one centred line.
         subtitleClassName="inline-flex items-center gap-6"
         isSubtitleShown={completedAt != null}
-        actions={<TestButton />}
+        // The header's 4px gap pairs icon chips; beside a full button the help
+        // chip needs the wider 8px step to read as its own control.
+        actions={
+          <div className="flex items-center gap-8">
+            <Tooltip content={SPEED_HINT}>
+              <IconButton
+                aria-label="About speed tests"
+              >
+                <HelpIcon size={16} />
+              </IconButton>
+            </Tooltip>
+            <TestButton />
+          </div>
+        }
       />
 
       <SpeedTestSection />

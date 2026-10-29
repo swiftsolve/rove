@@ -70,26 +70,35 @@ byte counters (via `sysinfo`), converts deltas to Mbps, smooths them with an
 exponential moving average, and emits an event. Virtual interfaces (docker,
 veth, vpn…) are excluded.
 
-**Devices.** A four-step pipeline (`crates/rove-core/src/devices/`):
+**Devices.** A five-stage pipeline (`crates/rove-core/src/devices/`), walked
+in full in [docs/device-discovery.md](docs/device-discovery.md):
 
 <div align="center">
-  <img src="docs/assets/devices-pipeline-v2.svg" width="820" alt="Device discovery pipeline: sweep, mDNS, neighbor table, enrich" />
+  <img src="docs/assets/pipeline-glance.svg" width="820" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
 </div>
 
-1. *Sweep* — ping every host in your /24 (64 concurrent probes). The point is
-   not the ICMP reply but the ARP exchange it forces: idle devices enter the
-   kernel neighbor table even if they block ping.
-2. *mDNS*: concurrently, listen ~3 s for service announcements (`_googlecast`,
-   `_ipp`, `_hap`, `_raop`, …). Devices literally say what they are, often with
-   a friendly name and hardware model.
-3. *Neighbor table*: `ip neigh` (or `arp -a`) is then read as the ground truth
-   of who exists.
-4. *Enrich & classify*: each host gets a vendor (MAC OUI table), a hostname
-   (reverse DNS/mDNS, junk names filtered), and a best-effort kind. Signals are
-   ranked by trust: role flags → mDNS service type → mDNS hardware model →
-   hostname patterns → vendor patterns → weak mDNS hints → "unknown".
-   A device that blocks ping *and* announces nothing can still hide; the
-   router's admin page stays authoritative.
+1. *Scope*: take the active interface's subnet (e.g. `192.168.1.0/24`).
+2. *Provoke*: for ~3 s, ping every host and try a TCP connect to a dozen
+   tell-tale ports (80, 443, 9100, 8009, 62078, …), while listening for mDNS
+   (`_googlecast`, `_ipp`, `_hap`, …) and SSDP/UPnP announcements. The replies
+   matter less than the ARP lookup each probe forces: a device enters the
+   kernel neighbor table even if it drops ping and refuses every port. Ports
+   that accept double as type hints. Active probing runs on /24–/30 subnets only.
+3. *Read*: `ip neigh` (or `arp -a`) is the ground truth of who exists.
+4. *Enrich & classify*: each host gets a vendor (MAC OUI table, randomized
+   MACs flagged), a hostname (reverse DNS, mDNS, HTTP banner, NetBIOS; junk
+   names filtered), and a best-effort kind from a trust-weighted vote over
+   mDNS services and models, SSDP descriptions, open ports, and hostname and
+   vendor patterns. The router also gets an SNMP `sysDescr` read, and DHCP
+   fingerprints count when the passive listener can bind :67.
+5. *Assemble*: add this machine, sort gateway → self → by address, dedupe by
+   MAC.
+
+A device that blocks every probe still appears, just unnamed. What gets missed
+is a device that's asleep and doesn't answer ARP, a client on a guest network
+or behind AP isolation, another VLAN, and, on subnets larger than /24, anything
+that neither announces itself nor already sits in the neighbor table. The
+router's admin page stays authoritative.
 
 **Speed test.** Saturates the link ~6 s per direction: parallel HTTPS streams
 from public test endpoints (download) and random-payload POSTs (upload), then

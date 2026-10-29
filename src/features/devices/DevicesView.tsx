@@ -16,7 +16,7 @@ import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { sortDevices } from '@/features/devices/utils/device-display'
 
 const SCAN_HINT =
-  'Rove scans your subnet and reads mDNS, SSDP/UPnP, NetBIOS and HTTP replies to identify devices. A device that blocks every probe and announces nothing at all can still be missed.'
+  'Rove probes every address on your subnet and reads mDNS, SSDP, NetBIOS and HTTP replies to name devices. Sleeping devices, guest networks and subnets larger than /24 can hide some.'
 
 // Local Network access can't be queried on macOS, so when discovery comes up
 // empty we surface the most likely cause rather than implying the LAN is bare.

@@ -4,7 +4,9 @@ import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataList, DataRow } from '@/components/DataRow'
 import { Section, SectionBadge } from '@/components/Section'
-import { ConnectionIcon, DnsIcon, GlobeIcon, RouterIcon } from '@/components/icons/Icons'
+import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RouterIcon } from '@/components/icons/Icons'
+import { IconButton } from '@/components/IconButton'
+import { Tooltip } from '@/components/Tooltip'
 import { MetricValue, type MetricLevel } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
@@ -13,6 +15,9 @@ import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
+
+const DIAGNOSTICS_HINT =
+  'Latency comes from pinging your router, and some routers answer pings slowly on purpose. ISP details are looked up from your public IP.'
 
 /** Gateway round trips up to this read as healthy (green). */
 const GOOD_LATENCY_MAX_MS = 40
@@ -244,7 +249,18 @@ export function DiagnosticsView(): JSX.Element {
         title="Connection"
         subtitle={headerSubtitle(isRunning, hasDiagnostics)}
         isSubtitleShown={hasDiagnostics && !isRunning}
-        actions={<RefreshIconButton label="Run again" isBusy={isRunning} onClick={runDiagnostics} />}
+        actions={
+          <>
+            <Tooltip content={DIAGNOSTICS_HINT}>
+              <IconButton
+                aria-label="About connection checks"
+              >
+                <HelpIcon size={16} />
+              </IconButton>
+            </Tooltip>
+            <RefreshIconButton label="Run again" isBusy={isRunning} onClick={runDiagnostics} />
+          </>
+        }
       />
 
       <p className="sr-only" role="status">
