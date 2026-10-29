@@ -8,7 +8,6 @@ import {
   useState,
   type MouseEvent,
   type PointerEvent,
-  type ReactElement,
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
@@ -60,6 +59,10 @@ interface TooltipProps {
   /** When true, the tooltip never opens — used to hide stale content (e.g. a
    *  capability rating while a fresh test is running). */
   isDisabled?: boolean
+  /** False when the content only repeats the trigger's accessible name, so a
+   *  screen reader doesn't read it twice. A string equal to the trigger's
+   *  `aria-label` is caught without it. */
+  shouldDescribe?: boolean
   /** Extra class on the wrapper span, so a caller can make the trigger participate
    *  in its own flex layout (e.g. shrink/truncate) rather than sit at intrinsic
    *  width. */
@@ -85,6 +88,7 @@ interface BubbleSize {
 
 /** The trigger props the tooltip wires into its child. */
 interface TriggerProps {
+  'aria-label'?: string
   'aria-describedby'?: string
   onPointerDown?: (event: PointerEvent<HTMLElement>) => void
   onClick?: (event: MouseEvent<HTMLElement>) => void
@@ -183,10 +187,11 @@ export function Tooltip({
   placement = 'bottom',
   offset = 0,
   isDisabled = false,
+  shouldDescribe = true,
   className,
   maxWidth = MAX_WIDTH,
 }: TooltipProps): JSX.Element {
-  const bubbleId = useId()
+  const descriptionId = useId()
   const wrapRef = useRef<HTMLSpanElement>(null)
   const bubbleRef = useRef<HTMLSpanElement>(null)
   const [isSuppressed, setIsSuppressed] = useState(false)
@@ -223,12 +228,17 @@ export function Tooltip({
     }
   }, [isOpen, updatePosition, content])
 
-  const trigger = isValidElement(children)
+  const isTriggerElement = isValidElement<TriggerProps>(children)
+  const isLabelRepeat = isTriggerElement && typeof content === 'string' && content === children.props['aria-label']
+  const isDescribing = isTriggerElement && shouldDescribe && !isDisabled && !isLabelRepeat
+
+  const trigger = isTriggerElement
     ? cloneElement(
-        children as ReactElement<TriggerProps>,
+        children,
         {
-          // Only while the bubble is in the DOM: a reference to a missing id is invalid.
-          'aria-describedby': isOpen ? bubbleId : undefined,
+          // Points at the hidden copy below, not the bubble, so the hint is
+          // there before focus lands and in browse mode, where focus never moves.
+          'aria-describedby': isDescribing ? descriptionId : undefined,
           onPointerDown: (event: PointerEvent<HTMLElement>) => {
             setIsSuppressed(true)
             children.props.onPointerDown?.(event)
@@ -268,14 +278,20 @@ export function Tooltip({
         onPointerLeave={() => setIsSuppressed(false)}
       >
         {trigger}
+        {isDescribing && (
+          <span id={descriptionId} hidden>
+            {content}
+          </span>
+        )}
       </span>
       {isOpen &&
         createPortal(
+          // Visual only: screen readers get the hidden copy as the trigger's
+          // description.
           <span
-            id={bubbleId}
             ref={bubbleRef}
             className={bubbleVariants({ isVisible: coords != null })}
-            role="tooltip"
+            aria-hidden
             style={{
               top: coords?.top ?? OFFSCREEN,
               left: coords?.left ?? OFFSCREEN,

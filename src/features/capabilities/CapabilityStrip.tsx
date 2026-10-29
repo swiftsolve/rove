@@ -5,6 +5,7 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
+import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import { Section } from '@/components/Section'
@@ -219,6 +220,8 @@ function ResultCell({
         placement="top"
         offset={4}
         isDisabled={isTesting}
+        // The button's label already says the same.
+        shouldDescribe={false}
       >
         <button
           type="button"
@@ -272,7 +275,7 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
 export function CapabilityStrip(): JSX.Element {
   const { navigate } = useNavigation()
   // A test can be started here or from the Speed tab; either way it greys the strip.
-  const { capabilities, isTesting } = useSpeedTest()
+  const { capabilities, isTesting, progress, internetSpeed, error } = useSpeedTest()
   const hasResults = capabilities.length > 0
 
   const openDetails = (capabilityId: CapabilityId): void => {
@@ -307,6 +310,12 @@ export function CapabilityStrip(): JSX.Element {
           <ResultFooter isTesting={isTesting} />
         </>
       )}
+
+      {/* The Speed page's announcements, for a test run from here. Home shows no
+          failure, so the error is read out too. */}
+      <p className="sr-only" role="status">
+        {error ?? testStatusText(isTesting, progress, internetSpeed)}
+      </p>
     </Section>
   )
 }

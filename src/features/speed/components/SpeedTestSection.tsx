@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { NetworkInfo, SpeedResult, SpeedTestProgress } from '@/types'
+import type { NetworkInfo, SpeedTestProgress } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import { useNetwork } from '@/app/hooks/useNetwork'
@@ -18,6 +18,7 @@ import {
   DOWNLOAD_PHASE_START_PCT,
   UPLOAD_PHASE_START_PCT,
 } from '@/features/speed/utils/progress-fill'
+import { testStatusText } from '@/features/speed/utils/test-status'
 
 /** The connection the footer names, its glyph tinted by medium. */
 const connVariants = cva('inline-flex items-center gap-6 font-medium text-secondary', {
@@ -66,19 +67,6 @@ function heroCellMbps(
 ): number | null {
   if (!isTesting) return resultMbps ?? null
   return progressPct >= phaseStartPct ? liveMbps : 0
-}
-
-/** What the live region announces: the current phase while a test runs, the
- *  headline result once one completes, and nothing after a stop or failure (a
- *  failure has its own alert). */
-function testStatusText(
-  isTesting: boolean,
-  progress: SpeedTestProgress,
-  result: SpeedResult | null,
-): string {
-  if (isTesting) return progress.message || 'Starting…'
-  if (progress.phase !== 'complete' || result == null) return ''
-  return `Speed test complete. Download ${formatSpeedMbps(result.downloadMbps)}, upload ${formatSpeedMbps(result.uploadMbps)}.`
 }
 
 /** A substat's text: the measured value, or a placeholder when there's none. */
