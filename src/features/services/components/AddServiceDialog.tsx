@@ -119,8 +119,9 @@ interface TestOutcome extends ServiceDefinition {
 interface AddServiceDialogProps {
   /** Persist the confirmed service, passing the latency just measured by the
    *  test so the new row can show it at once instead of waiting for the next
-   *  services poll. Resolves once the list is updated. */
-  onAdd: (name: string, host: string, latencyMs: number | null) => Promise<void>
+   *  services poll; undefined when an edit only renamed it and nothing was
+   *  measured. Resolves once the list is updated. */
+  onAdd: (name: string, host: string, latencyMs: number | null | undefined) => Promise<void>
   onClose: () => void
   /** When editing an existing service, its current name/host to pre-fill; the
    *  dialog re-tests and re-saves it. Omit for the add flow. */
@@ -236,14 +237,21 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   }
 
   const hasTested = phase === 'tested' && outcome != null
+  // An edit that leaves the address alone is just a rename: it saves without a
+  // re-test, since the host it would probe is the one already tracked.
+  const parsedAddress = parseServiceInput(address)
+  const isRenameOnly =
+    editing != null && parsedAddress?.host === editing.host && name.trim() !== editing.name
+  const canConfirm = hasTested || (isRenameOnly && !isTesting)
 
   const confirm = (): void => {
-    if (!outcome) return
+    const target = outcome ?? (isRenameOnly && parsedAddress ? { ...parsedAddress, latencyMs: undefined } : null)
+    if (!target) return
     setIsAdding(true)
     // The editable name wins over the auto-detected one; fall back to the
     // derived name if the field somehow ended up blank.
-    const finalName = name.trim() || outcome.name
-    void onAdd(finalName, outcome.host, outcome.latencyMs)
+    const finalName = name.trim() || target.name
+    void onAdd(finalName, target.host, target.latencyMs)
       .then(onClose)
       .catch(() => {
         setError('Could not add that service.')
@@ -275,7 +283,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const onFieldKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    if (phase === 'tested') confirm()
+    if (canConfirm) confirm()
     else if (address.trim() && phase !== 'testing') runTest()
   }
 
@@ -371,7 +379,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
             // A minimum width keeps it from shrinking to the spinner while it adds.
             className="min-w-[76px]"
             onClick={confirm}
-            disabled={!hasTested || isAdding}
+            disabled={!canConfirm || isAdding}
             aria-busy={isAdding}
             aria-label={busyConfirmName(isAdding, editing != null)}
           >

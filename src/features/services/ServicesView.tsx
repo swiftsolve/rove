@@ -347,8 +347,9 @@ export function ServicesView(): JSX.Element {
 
   // Persist a confirmed add or edit. Re-adding the same host updates its label;
   // an edit that changed the host is a move, so drop the old host first.
-  const saveService = (name: string, host: string, latencyMs: number | null): Promise<void> => {
-    setSeededLatency((prev) => new Map(prev).set(host, latencyMs))
+  const saveService = (name: string, host: string, latencyMs: number | null | undefined): Promise<void> => {
+    // A rename measured nothing, so the row keeps its live readout.
+    if (latencyMs !== undefined) setSeededLatency((prev) => new Map(prev).set(host, latencyMs))
     const oldHost = dialog?.mode === 'edit' ? dialog.service.host : null
     const persist =
       oldHost && oldHost !== host ? remove(oldHost).then(() => add(name, host)) : add(name, host)
