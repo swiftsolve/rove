@@ -13,7 +13,7 @@ import {
   ArrowUpIcon,
   CheckIcon,
   GlobeIcon,
-  MoreIcon,
+  MoreVerticalIcon,
   OfflineIcon,
   TrashIcon,
 } from '@/components/icons/Icons'
@@ -374,7 +374,7 @@ function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
         aria-label="Timeline options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
-        <MoreIcon size={16} />
+        <MoreVerticalIcon size={16} />
       </button>
       {isOpen && (
         <div className={DROPDOWN} {...menuProps}>

@@ -31,7 +31,6 @@ import {
   HardDrive,
   Minus,
   MonitorSmartphone,
-  MoreHorizontal,
   MoreVertical,
   Play,
   RotateCw,
@@ -308,7 +307,6 @@ export const ShieldAlertIcon = make(ShieldAlert, 16)
 export const TrashIcon = make(Trash2, 16)
 export const PlusIcon = make(Plus, 16)
 export const EditIcon = make(Pencil, 15)
-export const MoreIcon = make(MoreHorizontal, 16)
 export const MoreVerticalIcon = make(MoreVertical, 16)
 export const StopIcon = make(Square, 14)
 export const PlayIcon = make(Play, 16)

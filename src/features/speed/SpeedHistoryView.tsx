@@ -13,7 +13,7 @@ import { Subpage } from '@/components/Subpage'
 import { DotSeparator, InlineMeta } from '@/components/DotSeparator'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { FAILED_PING } from '@/types'
-import { EthernetIcon, GlobeIcon, MoreIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
+import { EthernetIcon, GlobeIcon, MoreVerticalIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
 import { EmptyState } from '@/components/EmptyState'
 import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { useMenu } from '@/hooks/useMenu'
@@ -197,7 +197,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
         aria-label="History options"
         onClick={() => setIsOpen((wasOpen) => !wasOpen)}
       >
-        <MoreIcon size={16} />
+        <MoreVerticalIcon size={16} />
       </button>
       {isOpen && (
         <div className={DROPDOWN} {...menuProps}>
