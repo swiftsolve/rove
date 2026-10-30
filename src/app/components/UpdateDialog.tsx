@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { cx } from 'class-variance-authority'
 import type { PendingUpdate } from '@/app/utils/updater'
+import { releaseNoteItems } from '@/app/utils/release-notes'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
-import { BrandIcon, ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
+import { ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { Dialog } from '@/components/Dialog'
 
@@ -10,7 +11,7 @@ import { Dialog } from '@/components/Dialog'
  * Non-blocking update prompt. Replaces window.confirm, which freezes the
  * webview on Linux/WebKitGTK because native JS dialogs block the GTK loop.
  *
- * The header carries the brand mark and a version-diff line; a recessed
+ * The header carries a version-diff line; a recessed
  * "What's new" well follows when the release ships notes. A failed install
  * stays open with the error, to try again or leave for later.
  */
@@ -52,15 +53,6 @@ export function UpdateDialog({
           <span className="font-semibold text-accent">{update.version}</span>
         </p>
       }
-      // An accent-tinted tile holding the Rove mark: the dialog's visual anchor.
-      icon={
-        <div
-          className="flex size-[40px] shrink-0 items-center justify-center rounded-sm border border-line bg-accent-muted text-accent"
-          aria-hidden
-        >
-          <BrandIcon size={20} />
-        </div>
-      }
       onClose={onDismiss}
       canClose={!isInstalling}
       cancelLabel="Later"
@@ -87,15 +79,17 @@ export function UpdateDialog({
           {update.notes && (
             <>
               <h3 className="field-label mb-8">What&rsquo;s new</h3>
-              <div
+              <ul
                 className={cx(
-                  'max-h-[168px] overflow-y-auto px-12 py-10',
+                  'max-h-[168px] list-disc overflow-y-auto py-10 pr-12 pl-[26px]',
                   'rounded-sm border border-line bg-inset',
-                  'whitespace-pre-wrap text-md leading-body text-secondary',
+                  'text-md leading-body text-secondary marker:text-tertiary',
                 )}
               >
-                {update.notes}
-              </div>
+                {releaseNoteItems(update.notes).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
             </>
           )}
         </>
