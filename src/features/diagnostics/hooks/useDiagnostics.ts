@@ -77,9 +77,11 @@ export function useDiagnostics(): UseDiagnosticsResult {
     await Promise.all([reloadFull(), api ? refetchLive() : undefined])
   }, [api, reloadFull, refetchLive])
 
-  // While the snapshot reruns, an old live error is stale too.
+  // Hidden while the first snapshot loads, like the snapshot's own error. A
+  // rerun keeps it until it lands, so the banner can show its Retry running.
+  const isFirstLoad = full.isBusy && full.data === undefined
   const liveError =
-    full.isBusy || live.error == null ? null : live.error instanceof Error ? live.error.message : ERROR_MESSAGE
+    isFirstLoad || live.error == null ? null : live.error instanceof Error ? live.error.message : ERROR_MESSAGE
 
   return {
     diagnostics: overlayLiveMetrics(full.data ?? null, live.data ?? null),

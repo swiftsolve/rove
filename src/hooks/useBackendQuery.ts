@@ -20,6 +20,7 @@ export interface BackendQuery<T> {
   data: T | undefined
   /** A first load, an open-time refetch or a manual reload is running. Never a background poll. */
   isBusy: boolean
+  /** Null during the opening fetch; a reload keeps it until the reload lands. */
   error: string | null
   /** Fetch now and show the busy state, cancelling any background poll in flight. */
   reload: () => Promise<void>
@@ -62,9 +63,10 @@ function errorText(error: unknown, fallback: string): string {
  * - **Poll.** With `pollIntervalMs` it refetches quietly while open. TanStack
  *   pauses the poll while the window is hidden and reads once when it's shown.
  * - **Busy.** `isBusy` is true for the first load, the open-time refetch and a
- *   manual `reload()`, never for a poll. While busy, `error` reads null, so a
- *   reload clears the old error when it starts. A failed poll keeps the last
- *   data and reports its error.
+ *   manual `reload()`, never for a poll. During the opening fetch `error` reads
+ *   null, so an error from a visit before doesn't flash up. A reload keeps the
+ *   current error until it lands, so the banner that offered Retry can show it
+ *   running. A failed poll keeps the last data and reports its error.
  *
  * StrictMode can't double-fetch: TanStack shares one in-flight fetch between
  * the mount and the dev remount, and busy comes from the query's own state,
@@ -126,7 +128,7 @@ export function useBackendQuery<T>({
   // open-time refetch. Any later one without a reload is a poll.
   const isOpeningFetch = isFetching && !isFetchedAfterMount
   const isBusy = isOpeningFetch || reloadCount > 0
-  const error = isBusy || query.error == null ? null : errorText(query.error, errorMessage)
+  const error = isOpeningFetch || query.error == null ? null : errorText(query.error, errorMessage)
 
   return { data, isBusy, error, reload }
 }
