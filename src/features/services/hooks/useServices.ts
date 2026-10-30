@@ -11,6 +11,8 @@ interface UseServicesResult {
   error: string | null
   /** Add a service and adopt the returned list. Never rejects: a failure shows in `error`. */
   add: (name: string, host: string) => Promise<void>
+  /** Edit the service listed under `oldHost` in place and adopt the returned list. Never rejects. */
+  update: (oldHost: string, name: string, host: string) => Promise<void>
   /** Remove the service with this host and adopt the returned list. Never rejects. */
   remove: (host: string) => Promise<void>
 }
@@ -27,8 +29,8 @@ function adoptList(list: ServiceDefinition[] | undefined): void {
 /**
  * The editable reachability service list (built-in defaults + user additions,
  * minus removals), owned by the backend store. Only this app edits it, so it
- * loads once and stays cached: a return to Services shows it at once. Add and
- * remove persist through the bridge and put the authoritative list they return
+ * loads once and stays cached: a return to Services shows it at once. Add, edit
+ * and remove persist through the bridge and put the authoritative list they return
  * into the cache, so the list updates without waiting for the next services poll.
  *
  * Latency is deliberately NOT here — it comes from the services probes and is
@@ -48,23 +50,36 @@ export function useServices(): UseServicesResult {
     mutationFn: async ({ name, host }: { name: string; host: string }) => api?.addService(name, host),
     onSuccess: adoptList,
   })
+  const updateMutation = useMutation({
+    mutationFn: async ({ oldHost, name, host }: { oldHost: string; name: string; host: string }) =>
+      api?.updateService(oldHost, name, host),
+    onSuccess: adoptList,
+  })
   const removeMutation = useMutation({
     mutationFn: async (host: string) => api?.deleteService(host),
     onSuccess: adoptList,
   })
 
   const add = async (name: string, host: string): Promise<void> => {
+    updateMutation.reset()
     removeMutation.reset()
     await addMutation.mutateAsync({ name, host }).catch(() => undefined)
   }
+  const update = async (oldHost: string, name: string, host: string): Promise<void> => {
+    addMutation.reset()
+    removeMutation.reset()
+    await updateMutation.mutateAsync({ oldHost, name, host }).catch(() => undefined)
+  }
   const remove = async (host: string): Promise<void> => {
     addMutation.reset()
+    updateMutation.reset()
     await removeMutation.mutateAsync(host).catch(() => undefined)
   }
 
   const mutationError =
     errorText(addMutation.error, 'Failed to add service') ??
+    errorText(updateMutation.error, 'Failed to update service') ??
     errorText(removeMutation.error, 'Failed to remove service')
 
-  return { services: data ?? null, error: mutationError ?? error, add, remove }
+  return { services: data ?? null, error: mutationError ?? error, add, update, remove }
 }

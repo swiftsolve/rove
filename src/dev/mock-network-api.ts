@@ -836,6 +836,21 @@ function createMockNetworkApi(): NetworkAPI {
       else mockServices.push({ name, host })
       return mockServices.map((s) => ({ ...s }))
     },
+    updateService: async (oldHost: string, name: string, host: string) => {
+      await delay(160)
+      const at = mockServices.findIndex((s) => s.host === oldHost)
+      const taken = host !== oldHost && mockServices.some((s) => s.host === host)
+      if (at >= 0 && !taken) {
+        mockServices[at] = { name, host }
+      } else {
+        // Like the store: fold into the row that already has the host, or append.
+        if (at >= 0) mockServices.splice(at, 1)
+        const existing = mockServices.findIndex((s) => s.host === host)
+        if (existing >= 0) mockServices[existing] = { name, host }
+        else mockServices.push({ name, host })
+      }
+      return mockServices.map((s) => ({ ...s }))
+    },
     deleteService: async (host: string) => {
       await delay(160)
       const at = mockServices.findIndex((s) => s.host === host)

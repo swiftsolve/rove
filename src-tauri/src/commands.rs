@@ -187,6 +187,16 @@ pub async fn add_service(
 }
 
 #[tauri::command]
+pub async fn update_service(
+    store: tauri::State<'_, Arc<Store>>,
+    old_host: String,
+    name: String,
+    host: String,
+) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+    store.update_service(&old_host, &name, &host).map_err(err_str)
+}
+
+#[tauri::command]
 pub async fn delete_service(
     store: tauri::State<'_, Arc<Store>>,
     host: String,

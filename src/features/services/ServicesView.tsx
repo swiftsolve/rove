@@ -321,7 +321,7 @@ export function ServicesView(): JSX.Element {
     void reprobe()
   }
   const openTimeline = (): void => navigate({ tab: 'services', servicesSub: { view: 'timeline' } })
-  const { services, add, remove } = useServices()
+  const { services, add, update, remove } = useServices()
   // Rolling per-host latency history for each row's trend sparkline, appended
   // on each services poll (see `useServiceReachability`).
   const latencyHistory = useServiceLatency()
@@ -357,13 +357,12 @@ export function ServicesView(): JSX.Element {
     services ?? (reachability ?? []).map(({ name, host }) => ({ name, host }))
 
   // Persist a confirmed add or edit. Re-adding the same host updates its label;
-  // an edit that changed the host is a move, so drop the old host first.
+  // an edit keeps the row's place in the list, even when it changed the host.
   const saveService = (name: string, host: string, latencyMs: number | null | undefined): Promise<void> => {
     // A rename measured nothing, so the row keeps its live readout.
     if (latencyMs !== undefined) setSeededLatency((prev) => new Map(prev).set(host, latencyMs))
     const oldHost = dialog?.mode === 'edit' ? dialog.service.host : null
-    const persist =
-      oldHost && oldHost !== host ? remove(oldHost).then(() => add(name, host)) : add(name, host)
+    const persist = oldHost ? update(oldHost, name, host) : add(name, host)
     return persist.then(refreshServices)
   }
 
