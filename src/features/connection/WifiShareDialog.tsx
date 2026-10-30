@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { cva } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/network-api'
 import { AlertIcon, LockIcon, RefreshIcon, WifiOffIcon } from '@/components/icons/Icons'
@@ -9,20 +9,13 @@ import { Dialog } from '@/components/Dialog'
 
 const STATE = 'flex flex-col items-center gap-12 py-16 text-center'
 
-/** The icon chip over a notice: red for a failure, amber for a partial result. */
-const chipVariants = cva('inline-flex size-[40px] items-center justify-center rounded-full', {
-  variants: {
-    tone: {
-      negative:
-        'text-status-negative bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
-      warning:
-        'text-status-warning bg-[color-mix(in_srgb,var(--status-warning)_var(--opacity-tint-sm),transparent)]',
-    },
-  },
-})
+/** The red icon chip over a notice. */
+const CHIP = cx(
+  'inline-flex size-[40px] items-center justify-center rounded-full text-status-negative',
+  'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
+)
 
 interface Notice {
-  tone: 'negative' | 'warning'
   icon: ReactNode
   title: string
   hint: string
@@ -31,23 +24,21 @@ interface Notice {
 /** The backend's error, as a title and a line of help. */
 function describeShareError(message: string): Notice {
   if (/not connected/i.test(message)) {
-    return { tone: 'negative', icon: <WifiOffIcon size={20} />, title: 'Not on Wi‑Fi', hint: 'Connect to a Wi‑Fi network to share it.' }
+    return { icon: <WifiOffIcon size={20} />, title: 'Not on Wi‑Fi', hint: 'Connect to a Wi‑Fi network to share it.' }
   }
   if (/name is unavailable/i.test(message)) {
     // macOS withholds the SSID without Location Services, so point there
     // without asserting it.
     return {
-      tone: 'negative',
       icon: <WifiOffIcon size={20} />,
       title: 'Network name hidden',
       hint: 'Your system withheld it. On a Mac, check Location Services.',
     }
   }
-  return { tone: 'negative', icon: <AlertIcon size={20} />, title: 'Couldn’t make a QR code', hint: message }
+  return { icon: <AlertIcon size={20} />, title: 'Couldn’t make a QR code', hint: message }
 }
 
 const MISSING_PASSWORD: Notice = {
-  tone: 'warning',
   icon: <LockIcon size={20} />,
   title: 'Password not available',
   hint: 'Allow access when asked, so the code can include it.',
@@ -56,7 +47,7 @@ const MISSING_PASSWORD: Notice = {
 function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void }): JSX.Element {
   return (
     <div className={STATE} role="alert">
-      <span className={chipVariants({ tone: notice.tone })} aria-hidden>
+      <span className={CHIP} aria-hidden>
         {notice.icon}
       </span>
       <div className="flex flex-col items-center gap-4">
