@@ -32,6 +32,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
 import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-type scale) change, so the bars glide in step
@@ -192,7 +193,7 @@ function TrafficBody({
 }
 
 export function TrafficView(): JSX.Element {
-  const { usage, isLoading, error } = useTrafficUsage()
+  const { usage, isLoading, error, reload } = useTrafficUsage()
   const { back } = useNavigation()
   const isFirstLoad = isLoading && usage.types.length === 0
   const subtitle = isFirstLoad ? 'Loading…' : 'Traffic by kind across every app, busiest first'
@@ -212,11 +213,7 @@ export function TrafficView(): JSX.Element {
         </UiTooltip>
       }
     >
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <TrafficBody usage={usage} isFirstLoad={isFirstLoad} />
     </Subpage>

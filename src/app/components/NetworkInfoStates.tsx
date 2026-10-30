@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { AlertIcon, CloseIcon, OfflineIcon, RefreshIcon } from '@/components/icons/Icons'
+import { AlertIcon, OfflineIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Spinner } from '@/components/Spinner'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { Button } from '@/components/Button'
-import { IconButton } from '@/components/IconButton'
+import { ErrorBanner } from '@/components/ErrorBanner'
+import { useNow } from '@/hooks/useNow'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 
 // What the app shows while network info is missing or its refresh failed.
 
@@ -112,44 +114,31 @@ export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; chi
   return isNeeded && !info ? <NetworkLoadingScreen /> : <>{children}</>
 }
 
-// The compact counterpart to NetworkLoadingScreen: shown when a background
-// refresh fails while we already have network info on screen. It stays
-// actionable (retry + dismiss) instead of leaving a dead red bar the user can't
-// clear.
+// The compact counterpart to NetworkLoadingScreen: shown when background
+// refreshes keep failing while we already have network info on screen. That
+// info is now stale, so the banner says how old it is.
 export function NetworkErrorBanner(): JSX.Element | null {
-  const network = useNetwork()
-  if (!network.error || !network.info) return null
-  const { kind, title } = describeNetworkError(network.error)
+  const { info, error, lastReadAt, refresh } = useNetwork()
+  if (!error || !info || lastReadAt === null) return null
+  return <StaleNetworkBanner error={error} lastReadAt={lastReadAt} onRetry={refresh} />
+}
+
+// Its own component so only a shown banner reads the clock.
+function StaleNetworkBanner({
+  error,
+  lastReadAt,
+  onRetry,
+}: {
+  error: string
+  lastReadAt: number
+  onRetry: () => Promise<void>
+}): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
   return (
-    <div className="error-banner" role="alert">
-      <span className="inline-flex shrink-0" aria-hidden>
-        <NetworkErrorIcon kind={kind} size={16} />
-      </span>
-      <span className="flex-1 min-w-0">{title}</span>
-      <button
-        type="button"
-        className={cx(
-          'inline-flex items-center gap-6 shrink-0 px-10 py-4 rounded-sm',
-          'text-xs font-medium text-negative',
-          'transition-[background] duration-(--duration-fast) ease-in-out',
-          'hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
-        )}
-        onClick={() => void network.refresh()}
-      >
-        <RefreshIcon size={13} />
-        Retry
-      </button>
-      <IconButton
-        tone="plain"
-        className={cx(
-          'size-[24px] shrink-0 text-negative',
-          'hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
-        )}
-        onClick={() => network.setError(null)}
-        aria-label="Dismiss"
-      >
-        <CloseIcon size={13} />
-      </IconButton>
-    </div>
+    <ErrorBanner
+      title={describeNetworkError(error).title}
+      description={`Last updated ${formatTimeAgo(lastReadAt, now)}.`}
+      onRetry={onRetry}
+    />
   )
 }

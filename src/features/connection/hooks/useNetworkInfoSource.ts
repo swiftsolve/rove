@@ -21,9 +21,14 @@ const FAILURES_BEFORE_ERROR = 3
 export interface NetworkState {
   info: NetworkInfo | null
   error: string | null
+  /**
+   * When the last good reading landed, as of the latest error: the age of the
+   * `info` an error banner sits over. Set only when an error is raised, so a
+   * successful poll doesn't re-render every reader.
+   */
+  lastReadAt: number | null
   isLoading: boolean
   refresh: () => Promise<void>
-  setError: (message: string | null) => void
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
@@ -58,6 +63,8 @@ function getNetworkApiError(): string | null {
 export function useNetworkInfoSource(): NetworkState {
   const [info, setInfo] = useState<NetworkInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [lastReadAt, setLastReadAt] = useState<number | null>(null)
+  const lastReadAtRef = useRef<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const infoRef = useLatestRef(info)
   // Count consecutive failures so a lone slow poll stays invisible but a real
@@ -100,6 +107,7 @@ export function useNetworkInfoSource(): NetworkState {
 
       if (generation !== generationRef.current) return
       failuresRef.current = 0
+      lastReadAtRef.current = Date.now()
       setInfo((previous) => (isNetworkInfoEqual(previous, nextInfo) ? previous : nextInfo))
       setError(null)
     } catch (unknownError) {
@@ -116,6 +124,7 @@ export function useNetworkInfoSource(): NetworkState {
       // once enough polls have failed in a row to mean a real outage.
       if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
         setError(message)
+        setLastReadAt(lastReadAtRef.current)
       }
     } finally {
       // Only the current generation owns the in-flight slot; a superseded poll
@@ -148,7 +157,7 @@ export function useNetworkInfoSource(): NetworkState {
   // Stable identities, so `useNetwork()` readers re-render only when a value changes.
   const refreshNow = useCallback((): Promise<void> => refresh(false), [refresh])
   return useMemo(
-    () => ({ info, error, isLoading, refresh: refreshNow, setError }),
-    [info, error, isLoading, refreshNow],
+    () => ({ info, error, lastReadAt, isLoading, refresh: refreshNow }),
+    [info, error, lastReadAt, isLoading, refreshNow],
   )
 }

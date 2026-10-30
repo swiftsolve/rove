@@ -10,6 +10,7 @@ interface UseDataUsageResult {
   usage: DataUsageSummary
   isLoading: boolean
   error: string | null
+  reload: () => Promise<void>
 }
 
 export function useDataUsage(): UseDataUsageResult {
@@ -20,18 +21,18 @@ export function useDataUsage(): UseDataUsageResult {
   // Polls are silent background refreshes: a failed one keeps showing the last
   // summary while surfacing that the refresh failed, and polling pauses while
   // the window is hidden (with one fresh read on resume).
-  const { data, isBusy, error } = useBackendQuery({
+  const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['dataUsage'],
     queryFn: fetchUsage,
     isEnabled: true,
-    errorMessage: 'Failed to load data usage.',
+    errorMessage: 'Couldn’t load data usage',
     pollIntervalMs: REFRESH_INTERVAL_MS,
   })
 
   // No bridge: report it and skip the spinner rather than hang on "Loading…".
   if (!fetchUsage) {
-    return { usage: EMPTY_USAGE, isLoading: false, error: 'Unable to reach the backend for data usage.' }
+    return { usage: EMPTY_USAGE, isLoading: false, error: 'Can’t reach the app', reload }
   }
 
-  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error }
+  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error, reload }
 }

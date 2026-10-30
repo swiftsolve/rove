@@ -14,6 +14,7 @@ import { IconButton } from '@/components/IconButton'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
 import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 const FEED_HINT =
   'Devices and access points joining or leaving between scans. Kept for 7 days.'
@@ -98,7 +99,7 @@ function EventsFeed({
 }
 
 export function EventsView(): JSX.Element {
-  const { events, isLoading, error } = useNetworkEvents()
+  const { events, isLoading, error, reload } = useNetworkEvents()
   const devices = useDevices()
   // A device scan is what produces new events, so refreshing means scanning again.
   const isScanning = devices.isScanning
@@ -143,11 +144,7 @@ export function EventsView(): JSX.Element {
         }
       />
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <EventsFeed
         events={visibleEvents}

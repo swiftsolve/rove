@@ -10,7 +10,7 @@ import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 // on tab open and network change, so an external lookup isn't hit every poll.
 const LIVE_POLL_INTERVAL_MS = 15_000
 
-const ERROR_MESSAGE = 'Diagnostics failed'
+const ERROR_MESSAGE = 'Couldn’t check your connection'
 
 interface UseDiagnosticsResult {
   diagnostics: NetworkDiagnostics | null

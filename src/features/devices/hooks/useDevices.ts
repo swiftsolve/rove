@@ -59,7 +59,7 @@ export function useDevices(): UseDevicesResult {
     queryKey: ['devices', networkKey],
     queryFn: api ? () => scanDevices(api) : undefined,
     isEnabled: shouldScanOnOpen && networkKey != null,
-    errorMessage: 'Failed to scan for devices',
+    errorMessage: 'Couldn’t scan for devices',
   })
 
   return { scan: data ?? null, isScanning: isBusy, error, rescan: reload }

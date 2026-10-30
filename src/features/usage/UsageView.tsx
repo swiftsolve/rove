@@ -10,6 +10,7 @@ import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Ico
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { Spinner } from '@/components/Spinner'
 import { IconButton } from '@/components/IconButton'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 interface UsageDatum {
   key: string
@@ -245,7 +246,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
 }
 
 export function UsageView(): JSX.Element {
-  const { usage, isLoading, error } = useDataUsage()
+  const { usage, isLoading, error, reload } = useDataUsage()
   const today = usage.days[usage.days.length - 1]
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)
   const weekTx = usage.days.reduce((sum, day) => sum + day.txBytes, 0)
@@ -269,7 +270,7 @@ export function UsageView(): JSX.Element {
         }
       />
 
-      {error && <div className="error-banner" role="alert">{error}</div>}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       {isFirstLoad ? (
         <div className="page-empty" role="status">

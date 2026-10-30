@@ -10,6 +10,7 @@ interface UseHostUsageResult {
   usage: HostUsageSummary
   isLoading: boolean
   error: string | null
+  reload: () => Promise<void>
 }
 
 /**
@@ -22,11 +23,11 @@ export function useHostUsage(): UseHostUsageResult {
   const api = window.networkAPI
   const fetchUsage = api ? () => api.getHostUsage() : undefined
 
-  const { data, isBusy, error } = useBackendQuery({
+  const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['hostUsage'],
     queryFn: fetchUsage,
     isEnabled: true,
-    errorMessage: 'Failed to load per-app host usage.',
+    errorMessage: 'Couldn’t load hosts',
     pollIntervalMs: REFRESH_INTERVAL_MS,
   })
 
@@ -34,9 +35,10 @@ export function useHostUsage(): UseHostUsageResult {
     return {
       usage: EMPTY_USAGE,
       isLoading: false,
-      error: 'Unable to reach the backend for per-app host usage.',
+      error: 'Can’t reach the app',
+      reload,
     }
   }
 
-  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error }
+  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error, reload }
 }

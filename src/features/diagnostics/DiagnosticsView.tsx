@@ -15,6 +15,7 @@ import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
+import { ErrorBanner } from '@/components/ErrorBanner'
 
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'
@@ -267,11 +268,11 @@ export function DiagnosticsView(): JSX.Element {
         {runStatusText(isRunning, hasDiagnostics)}
       </p>
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner
+          title={error}
+          description={diagnostics ? 'Showing the last check.' : 'Try again in a moment.'}
+          onRetry={run}
+        />}
 
       {isFirstCheck ? (
         <div className="page-empty" aria-busy="true">

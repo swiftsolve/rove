@@ -17,6 +17,7 @@ import { cva, cx } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
 import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-app scale) change, so the bars glide in step
@@ -249,7 +250,7 @@ function AppUsageBody({
 }
 
 export function AppUsageView(): JSX.Element {
-  const { usage, isLoading, error } = useAppUsage()
+  const { usage, isLoading, error, reload } = useAppUsage()
   const isFirstLoad = isLoading && usage.apps.length === 0
 
   return (
@@ -276,11 +277,7 @@ export function AppUsageView(): JSX.Element {
         }
       />
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <AppUsageBody usage={usage} isFirstLoad={isFirstLoad} />
     </div>

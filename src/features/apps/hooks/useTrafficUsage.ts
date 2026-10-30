@@ -10,6 +10,7 @@ interface UseTrafficUsageResult {
   usage: TrafficUsageSummary
   isLoading: boolean
   error: string | null
+  reload: () => Promise<void>
 }
 
 /**
@@ -22,11 +23,11 @@ export function useTrafficUsage(): UseTrafficUsageResult {
   const api = window.networkAPI
   const fetchUsage = api ? () => api.getTrafficUsage() : undefined
 
-  const { data, isBusy, error } = useBackendQuery({
+  const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['trafficUsage'],
     queryFn: fetchUsage,
     isEnabled: true,
-    errorMessage: 'Failed to load traffic-type usage.',
+    errorMessage: 'Couldn’t load traffic types',
     pollIntervalMs: REFRESH_INTERVAL_MS,
   })
 
@@ -34,9 +35,10 @@ export function useTrafficUsage(): UseTrafficUsageResult {
     return {
       usage: EMPTY_USAGE,
       isLoading: false,
-      error: 'Unable to reach the backend for traffic-type usage.',
+      error: 'Can’t reach the app',
+      reload,
     }
   }
 
-  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error }
+  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error, reload }
 }

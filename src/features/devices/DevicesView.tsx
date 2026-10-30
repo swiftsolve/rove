@@ -14,6 +14,7 @@ import { DeviceRow } from '@/features/devices/components/DeviceRow'
 import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { sortDevices } from '@/features/devices/utils/device-display'
+import { ErrorBanner } from '@/components/ErrorBanner'
 
 const SCAN_HINT =
   'Rove probes your subnet and listens for device announcements. Sleeping devices, guest networks and subnets over /24 can hide some.'
@@ -157,11 +158,11 @@ export function DevicesView(): JSX.Element {
         }
       />
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner
+          title={error}
+          description={scan ? 'Showing the last scan.' : 'Try again in a moment.'}
+          onRetry={rescan}
+        />}
 
       <DevicesBody
         devices={devices}

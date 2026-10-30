@@ -11,6 +11,7 @@ import { cn } from '@/lib/cn'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { Button } from '@/components/Button'
 import { SECTION_BODY, SECTION_CARD, SECTION_HEADER } from '@/components/Section'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
 const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
@@ -186,11 +187,7 @@ export function InterfacesView(): JSX.Element {
         actions={<RefreshIconButton label="Refresh" isBusy={isLoading} onClick={onRefresh} />}
       />
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}
 
       <InterfacesBody interfaces={interfaces} isLoading={isLoading} onRefresh={onRefresh} />
     </div>

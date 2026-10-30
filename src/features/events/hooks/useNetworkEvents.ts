@@ -36,7 +36,7 @@ export function useNetworkEvents(): UseNetworkEventsResult {
     queryKey: NETWORK_EVENTS_KEY,
     queryFn: api ? () => api.getNetworkEvents() : undefined,
     isEnabled: true,
-    errorMessage: 'Failed to load network events',
+    errorMessage: 'Couldn’t load network events',
     pollIntervalMs: EVENTS_POLL_INTERVAL_MS,
   })
 

@@ -21,6 +21,7 @@ import { cva, cx } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
 import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
  *  caret when closed. */
@@ -313,7 +314,7 @@ function HostsBody({
 }
 
 export function HostsView(): JSX.Element {
-  const { usage, isLoading, error } = useHostUsage()
+  const { usage, isLoading, error, reload } = useHostUsage()
   const { location, back } = useNavigation()
   // Arrived by clicking an app: open only that app's group and collapse the
   // rest. Otherwise every group starts collapsed.
@@ -337,11 +338,7 @@ export function HostsView(): JSX.Element {
         </UiTooltip>
       }
     >
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <HostsBody
         usage={usage}

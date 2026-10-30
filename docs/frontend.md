@@ -146,7 +146,7 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Stat card | `StatCard` | Home summary card: Usage or Devices. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
 | Dialog | `Dialog` | Modal: title, optional description and close, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
-| Error banner | `NetworkErrorBanner` | A failure the user can retry, with Retry and dismiss buttons. |
+| Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |
 | Ring spinner | `ButtonSpinner` | Loading indicator inside buttons, in the button's icon colour. |

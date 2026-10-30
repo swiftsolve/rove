@@ -10,6 +10,7 @@ interface UseAppUsageResult {
   usage: AppUsageSummary
   isLoading: boolean
   error: string | null
+  reload: () => Promise<void>
 }
 
 /**
@@ -22,11 +23,11 @@ export function useAppUsage(): UseAppUsageResult {
   const api = window.networkAPI
   const fetchUsage = api ? () => api.getAppUsage() : undefined
 
-  const { data, isBusy, error } = useBackendQuery({
+  const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['appUsage'],
     queryFn: fetchUsage,
     isEnabled: true,
-    errorMessage: 'Failed to load per-app usage.',
+    errorMessage: 'Couldn’t load app usage',
     pollIntervalMs: REFRESH_INTERVAL_MS,
   })
 
@@ -34,9 +35,10 @@ export function useAppUsage(): UseAppUsageResult {
     return {
       usage: EMPTY_USAGE,
       isLoading: false,
-      error: 'Unable to reach the backend for per-app usage.',
+      error: 'Can’t reach the app',
+      reload,
     }
   }
 
-  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error }
+  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error, reload }
 }

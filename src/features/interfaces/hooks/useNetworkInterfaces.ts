@@ -18,7 +18,7 @@ export function useNetworkInterfaces(): UseNetworkInterfacesResult {
     queryKey: ['interfaces'],
     queryFn: api ? () => api.getInterfaces() : undefined,
     isEnabled: true,
-    errorMessage: 'Failed to load interfaces',
+    errorMessage: 'Couldn’t load interfaces',
     pollIntervalMs: POLL_INTERVAL_MS,
   })
 
