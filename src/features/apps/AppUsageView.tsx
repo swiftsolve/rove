@@ -3,7 +3,7 @@ import { formatBytes } from '@/lib/format'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { MetricValue } from '@/components/MetricValue'
 import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, LayersIcon } from '@/components/icons/Icons'
@@ -245,17 +245,11 @@ export function AppUsageView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<AppsIcon size={18} />}
         title="Apps"
-        subtitle={
-          isFirstLoad ? (
-            'Loading…'
-          ) : (
-            <AppSubtitleLinks />
-          )
-        }
-        isSubtitleShown={!isFirstLoad}
+        description={<AppSubtitleLinks />}
+        status={isFirstLoad ? 'Loading…' : undefined}
         actions={
           <IconButton label="About per-app usage" icon={HelpIcon} tooltip={APP_USAGE_INFO_HINT} />
         }

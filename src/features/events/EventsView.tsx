@@ -5,7 +5,7 @@ import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { EmptyState } from '@/components/EmptyState'
 import { Spinner } from '@/components/Spinner'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { EventsIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
@@ -114,15 +114,10 @@ export function EventsView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<EventsIcon size={18} />}
         title="Timeline"
-        subtitle={
-          hasEvents ? (
-            <span className="text-caption">What’s changed in the past week</span>
-          ) : undefined
-        }
-        isSubtitleShown={hasEvents}
+        description={hasEvents ? <span className="text-caption">What’s changed in the past week</span> : undefined}
         actions={
           <>
             <IconButton label="About network events" icon={HelpIcon} tooltip={FEED_HINT} />

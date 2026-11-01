@@ -143,8 +143,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Window button | `StatusBar` | Minimise or close (`action`). Close hovers to `--status-negative-fill`. |
 | Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
-| Page header | `ViewHeader` | Top of every page except Home: icon chip, title, subtitle and actions, over a full-width divider. |
-| Subpage header | `Subpage` | Top of a page layered over a tab: back, title, an optional description and one action. |
+| Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs; the description fades in when it clears. |
+| Subpage header | `PageHeader` (`onBack`) | Top of a page layered over a tab: a back button in the icon's place, title, an optional description and actions. |
 | Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. Icon (`icon`) and Loading (`isLoading`) as in Figma. |
 | Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |

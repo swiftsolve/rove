@@ -9,7 +9,7 @@ import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import { Tooltip as UiTooltip } from '@/components/Tooltip'
-import { Subpage } from '@/components/Subpage'
+import { PageHeader } from '@/components/PageHeader'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { MetricValue } from '@/components/MetricValue'
 import { ChevronDownIcon, GlobeIcon, HelpIcon, IpIcon } from '@/components/icons/Icons'
@@ -314,14 +314,16 @@ export function HostsView(): JSX.Element {
   const listRef = useScrollToFocusedApp(focusApp, usage.apps)
 
   return (
-    <Subpage
-      title="Hosts"
-      description={isFirstLoad ? 'Loading…' : 'Remote hosts by application, busiest first'}
-      onBack={back}
-      action={
-        <IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />
-      }
-    >
+    <div className="page">
+      <PageHeader
+        title="Hosts"
+        description="Remote hosts by application, busiest first"
+        status={isFirstLoad ? 'Loading…' : undefined}
+        onBack={back}
+        actions={
+          <IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />
+        }
+      />
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <HostsBody
@@ -331,6 +333,6 @@ export function HostsView(): JSX.Element {
         isExpanded={isExpanded}
         onToggle={toggle}
       />
-    </Subpage>
+    </div>
   )
 }

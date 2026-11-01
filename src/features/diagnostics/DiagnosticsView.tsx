@@ -10,7 +10,7 @@ import { MetricValue, type MetricStatus } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { Spinner } from '@/components/Spinner'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 import { ErrorBanner } from '@/components/ErrorBanner'
@@ -63,12 +63,6 @@ function lossStatus(pct: number): MetricStatus {
 function formatLocation(isp: IspInfo): string | null {
   const parts = [isp.city, isp.region, isp.country].filter(Boolean)
   return parts.length > 0 ? parts.join(', ') : null
-}
-
-function headerSubtitle(isRunning: boolean, hasDiagnostics: boolean): ReactNode {
-  if (isRunning) return <span className="page-header-status text-tertiary">Checking…</span>
-  if (hasDiagnostics) return 'Router, DNS, and ISP'
-  return <span className="page-header-status text-tertiary">&nbsp;</span>
 }
 
 /** What the screen-reader status line says: each run's start and its end. */
@@ -224,11 +218,11 @@ export function DiagnosticsView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<ConnectionIcon size={18} />}
         title="Connection"
-        subtitle={headerSubtitle(isRunning, hasDiagnostics)}
-        isSubtitleShown={hasDiagnostics && !isRunning}
+        description={hasDiagnostics ? 'Router, DNS, and ISP' : null}
+        status={isRunning ? 'Checking…' : undefined}
         actions={
           <>
             <IconButton label="About connection checks" icon={HelpIcon} tooltip={DIAGNOSTICS_HINT} />

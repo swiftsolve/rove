@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { usePresence } from '@/hooks/usePresence'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { MetricValue } from '@/components/MetricValue'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import {
@@ -371,13 +371,13 @@ export function ServicesView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<CloudIcon size={18} />}
         title="Services"
         // The up/down tally, then the timeline link. Wraps the link onto its own
         // line when the two can't share one, so a narrow window breaks between
         // them rather than inside either.
-        subtitle={
+        description={
           <span className="inline-flex flex-wrap items-center gap-x-6 gap-y-4">
             {tally && (
               <>
@@ -392,7 +392,6 @@ export function ServicesView(): JSX.Element {
             </button>
           </span>
         }
-        isSubtitleShown
         // Beside a full button the help chip takes the 10px step, as on Speed.
         actions={
           <div className="flex items-center gap-10">

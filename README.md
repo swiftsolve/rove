@@ -189,7 +189,7 @@ rove/
 │   │                           (capabilities, connection and live-throughput
 │   │                           have no view, so their parts sit at the top)
 │   ├── components/             shared UI used across features: Card,
-│   │                           DataRow, Subpage, Tooltip, Icons, …
+│   │                           DataRow, PageHeader, Tooltip, Icons, …
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
 │   ├── lib/                    shared helpers (format, platform, highlight,

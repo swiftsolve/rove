@@ -4,7 +4,7 @@ import type { DailyUsage } from '@/types'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
 import { Card, CardHeader, CardBody } from '@/components/Card'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { Spinner } from '@/components/Spinner'
@@ -253,11 +253,11 @@ export function UsageView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<UsageIcon size={18} />}
         title="Usage"
-        subtitle={isFirstLoad ? 'Loading…' : 'Download and upload across all interfaces'}
-        isSubtitleShown={!isFirstLoad}
+        description="Download and upload across all interfaces"
+        status={isFirstLoad ? 'Loading…' : undefined}
         actions={
           <IconButton label="About usage measurement" icon={HelpIcon} tooltip={USAGE_INFO_HINT} />
         }

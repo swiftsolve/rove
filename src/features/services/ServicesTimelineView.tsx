@@ -5,7 +5,7 @@ import type {
   ServicesRunningEvent,
   ServiceTransitionEvent,
 } from '@/types'
-import { Subpage } from '@/components/Subpage'
+import { PageHeader } from '@/components/PageHeader'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { serviceTally } from '@/features/services/components/ServiceTally'
 import {
@@ -465,19 +465,20 @@ export function ServicesTimelineView(): JSX.Element {
 
   // The current up/down tally, straight from the live probes. Until the first
   // probes land there's nothing to count, so the header falls back to prose.
-  const subtitle = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
+  const description = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
 
   const handleClear = (): void => {
     void clear()
   }
 
   return (
-    <Subpage
-      title="Services Timeline"
-      description={subtitle}
-      onBack={back}
-      action={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
-    >
+    <div className="page">
+      <PageHeader
+        title="Services Timeline"
+        description={description}
+        onBack={back}
+        actions={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
+      />
       {/* Nothing until the first read lands, so "No outages yet" doesn't flash
           before the log arrives. */}
       {!isLoaded ? null : events.length === 0 ? (
@@ -492,6 +493,6 @@ export function ServicesTimelineView(): JSX.Element {
           ))}
         </ul>
       )}
-    </Subpage>
+    </div>
   )
 }

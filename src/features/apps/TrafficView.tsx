@@ -2,7 +2,7 @@ import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { formatBytes } from '@/lib/format'
-import { Subpage } from '@/components/Subpage'
+import { PageHeader } from '@/components/PageHeader'
 import { MetricValue } from '@/components/MetricValue'
 import {
   BellIcon,
@@ -186,20 +186,20 @@ export function TrafficView(): JSX.Element {
   const { usage, isLoading, error, reload } = useTrafficUsage()
   const { back } = useNavigation()
   const isFirstLoad = isLoading && usage.types.length === 0
-  const subtitle = isFirstLoad ? 'Loading…' : 'Traffic by kind across every app, busiest first'
-
   return (
-    <Subpage
-      title="Traffic types"
-      description={subtitle}
-      onBack={back}
-      action={
-        <IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />
-      }
-    >
+    <div className="page">
+      <PageHeader
+        title="Traffic types"
+        description="Traffic by kind across every app, busiest first"
+        status={isFirstLoad ? 'Loading…' : undefined}
+        onBack={back}
+        actions={
+          <IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />
+        }
+      />
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <TrafficBody usage={usage} isFirstLoad={isFirstLoad} />
-    </Subpage>
+    </div>
   )
 }

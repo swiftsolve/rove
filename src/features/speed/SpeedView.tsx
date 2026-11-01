@@ -9,7 +9,7 @@ import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetails
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
 import { Tooltip } from '@/components/Tooltip'
 import { DotSeparator } from '@/components/DotSeparator'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import {
   ChevronRightIcon,
   HelpIcon,
@@ -66,41 +66,38 @@ function HistoryLink(): JSX.Element {
   )
 }
 
-/** "Testing…" while a test runs, otherwise when the last result landed; both
- *  link to the history once there is a result. */
-function HeaderSubtitle(): JSX.Element {
-  const now = useNow(TIME_AGO_RESOLUTION_MS)
-  const isTesting = useSpeedTest((test) => test.isTesting)
+/** "Testing…" in the description's place while a test runs, still linking to
+ *  the history once there is a result. */
+function HeaderStatus(): JSX.Element {
   const completedAt = useSpeedTest((test) => test.completedAt)
+  return (
+    <span className="inline-flex items-center gap-6">
+      Testing…
+      {completedAt != null && (
+        <>
+          <DotSeparator />
+          <HistoryLink />
+        </>
+      )}
+    </span>
+  )
+}
 
-  if (isTesting) {
-    return (
-      <>
-        <span className="page-header-status text-tertiary">Testing…</span>
-        {completedAt != null && (
-          <>
-            <DotSeparator />
-            <HistoryLink />
-          </>
-        )}
-      </>
-    )
-  }
-
-  if (completedAt != null) {
-    return (
-      <>
-        <span>
-          Updated{' '}
-          <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
-        </span>
-        <DotSeparator />
-        <HistoryLink />
-      </>
-    )
-  }
-
-  return <>Measure your download and upload speeds</>
+/** When the last result landed, linking to the history; an intro before any. */
+function HeaderDescription(): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
+  const completedAt = useSpeedTest((test) => test.completedAt)
+  if (completedAt == null) return <>Measure your download and upload speeds</>
+  return (
+    <span className="inline-flex items-center gap-6">
+      <span>
+        Updated{' '}
+        <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+      </span>
+      <DotSeparator />
+      <HistoryLink />
+    </span>
+  )
 }
 
 /** Stop while a test runs; otherwise Run (or Test again), disabled offline. */
@@ -150,7 +147,7 @@ export function SpeedView(): JSX.Element | null {
   const { location } = useNavigation()
   const { info } = useNetwork()
   const internetSpeed = useSpeedTest((test) => test.internetSpeed)
-  const completedAt = useSpeedTest((test) => test.completedAt)
+  const isTesting = useSpeedTest((test) => test.isTesting)
 
   if (!info) return null
 
@@ -168,13 +165,11 @@ export function SpeedView(): JSX.Element | null {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<SpeedIcon size={18} />}
         title="Speed"
-        subtitle={<HeaderSubtitle />}
-        // The "Updated …" meta, dot and history link sit on one centred line.
-        subtitleClassName="inline-flex items-center gap-6"
-        isSubtitleShown={completedAt != null}
+        description={<HeaderDescription />}
+        status={isTesting ? <HeaderStatus /> : undefined}
         // The header's 6px gap pairs icon chips; beside a full button the help
         // chip needs the wider 10px step to read as its own control.
         actions={

@@ -4,7 +4,7 @@ import { DataList, DataRow } from '@/components/DataRow'
 import { InlineMeta } from '@/components/DotSeparator'
 import { IconButton } from '@/components/IconButton'
 import { Spinner } from '@/components/Spinner'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
@@ -165,10 +165,10 @@ export function InterfacesView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<LayersIcon size={18} />}
         title={headerTitle(interfaces.length)}
-        subtitle={
+        description={
           interfaces.length > 0 ? (
             // One line, so a long summary ellipsizes rather than wrapping.
             <InlineMeta shouldTruncate items={interfaceTypeSummaryParts(interfaces)} />

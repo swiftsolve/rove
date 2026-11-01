@@ -6,7 +6,7 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { Subpage } from '@/components/Subpage'
+import { PageHeader } from '@/components/PageHeader'
 import { AlertIcon, CheckIcon, CloseIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -203,20 +203,21 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
   }, [targetId])
 
   return (
-    <Subpage
-      title="Capabilities"
-      description={
-        completedAt != null ? (
-          <>
-            Updated{' '}
-            <time dateTime={new Date(completedAt).toISOString()}>
-              {formatTimeAgo(completedAt, now)}
-            </time>
-          </>
-        ) : undefined
-      }
-      onBack={back}
-    >
+    <div className="page">
+      <PageHeader
+        title="Capabilities"
+        description={
+          completedAt != null ? (
+            <>
+              Updated{' '}
+              <time dateTime={new Date(completedAt).toISOString()}>
+                {formatTimeAgo(completedAt, now)}
+              </time>
+            </>
+          ) : undefined
+        }
+        onBack={back}
+      />
       <ul role="list" className="flex flex-col gap-10" ref={listRef}>
         {/* The Speed view only opens this page once a result is in. */}
         {speed != null &&
@@ -224,6 +225,6 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
             <CapabilityDetailCard key={capability.id} capability={capability} speed={speed} />
           ))}
       </ul>
-    </Subpage>
+    </div>
   )
 }

@@ -6,6 +6,7 @@ import type { ThemeMode } from '@/app/hooks/useThemeState'
 import { useTheme } from '@/app/hooks/useTheme'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { Card, CardHeader, CardBody, CardFooter } from '@/components/Card'
+import { PageHeader } from '@/components/PageHeader'
 import { Toggle } from '@/components/Toggle'
 import {
   CheckIcon,
@@ -221,12 +222,7 @@ export function SettingsView(): JSX.Element {
 
   return (
     <div className="page">
-      <header className="page-header flex items-center gap-12">
-        <span className="page-header-icon" aria-hidden>
-          <SettingsIcon size={18} />
-        </span>
-        <h1 className="page-header-title">Settings</h1>
-      </header>
+      <PageHeader icon={<SettingsIcon size={18} />} title="Settings" />
 
       <Card>
         <CardHeader title="Updates" />

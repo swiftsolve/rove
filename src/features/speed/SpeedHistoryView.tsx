@@ -9,7 +9,7 @@ import {
   getSpeedHistory,
   type SpeedHistoryEntry,
 } from '@/features/speed/utils/speed-history'
-import { Subpage } from '@/components/Subpage'
+import { PageHeader } from '@/components/PageHeader'
 import { DotSeparator, InlineMeta } from '@/components/DotSeparator'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { FAILED_PING } from '@/types'
@@ -267,13 +267,14 @@ export function SpeedHistoryView(): JSX.Element {
   }
 
   return (
-    <Subpage
-      title="Speed Test Results"
-      description="Results from your past speed tests, newest first."
-      onBack={back}
-      action={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
-    >
+    <div className="page">
+      <PageHeader
+        title="Speed Test Results"
+        description="Results from your past speed tests, newest first."
+        onBack={back}
+        actions={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
+      />
       {isLoaded && <HistoryList entries={entries} />}
-    </Subpage>
+    </div>
   )
 }

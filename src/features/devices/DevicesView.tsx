@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { LanDevice } from '@/types'
 import { EmptyState } from '@/components/EmptyState'
 import { Spinner } from '@/components/Spinner'
-import { ViewHeader } from '@/components/ViewHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { DevicesIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
 import { IS_MAC } from '@/lib/platform'
 import { useDevices } from '@/features/devices/hooks/useDevices'
@@ -30,11 +30,10 @@ function headerTitle(count: number): string {
   return `${count} ${count === 1 ? 'device' : 'devices'}`
 }
 
-/** The header subtitle. The subnet fades in once the scan resolves; a scanning
- *  hint fills the slot (which reserves its height, so the title never shifts)
- *  until then. A plain function rather than a component: ViewHeader collapses
- *  the slot only when the subtitle is undefined. */
-function renderSubtitle(
+/** The header's description once the scan has a subnet; until then the scan's
+ *  status fills the line. A plain function rather than a component: PageHeader
+ *  collapses the line only when both are undefined. */
+function renderDescription(
   subnet: string | null,
   hasDevices: boolean,
   isScanning: boolean,
@@ -42,7 +41,8 @@ function renderSubtitle(
 ): ReactNode {
   if (hasDevices && subnet) {
     return (
-      <>
+      // "Subnet" label and value on one line, aligned on their baselines.
+      <span className="inline-flex items-baseline gap-6">
         <span className="text-overline">Subnet</span>
         <span className="num">{subnet}</span>
         {/* One slot shared by the online tally and the scan status. The
@@ -57,10 +57,9 @@ function renderSubtitle(
           <OnlineIndicator isActive={!isScanning} count={onlineCount} />
           <ScanStatus isActive={isScanning} isLiveRegion={false} />
         </span>
-      </>
+      </span>
     )
   }
-  if (isScanning) return <ScanStatus isActive isLiveRegion />
   return undefined
 }
 
@@ -128,13 +127,12 @@ export function DevicesView(): JSX.Element {
 
   return (
     <div className="page">
-      <ViewHeader
+      <PageHeader
         icon={<DevicesIcon size={18} />}
         title={headerTitle(devices.length)}
-        subtitle={renderSubtitle(subnet, hasDevices, isScanning, onlineCount)}
-        // "Subnet" label and value on one line, aligned on their baselines.
-        subtitleClassName="inline-flex items-baseline gap-6"
-        isSubtitleShown={hasDevices && subnet != null}
+        description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
+        // Until there's a subnet to show, the line is the scan's progress.
+        status={isScanning && !(hasDevices && subnet) ? <ScanStatus isActive isLiveRegion /> : undefined}
         actions={
           <>
             <IconButton label="About device scanning" icon={HelpIcon} tooltip={SCAN_HINT} />
