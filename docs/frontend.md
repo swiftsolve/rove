@@ -22,8 +22,8 @@ for what. Read it before writing or changing UI. For where files live, see
   fresh results. A query fetches while a screen that shows it is open and polls
   per its hook; the hooks' comments say when and why.
 - Props are for a component's own inputs: the item a row shows, a dialog's
-  `onClose`. Shared components in `src/components` take only props and never
-  read app context.
+  `onClose`. The UI library in `src/ui` takes only props and never reads app
+  context (see [The UI library](#the-ui-library)).
 
 ## Where code goes
 
@@ -40,7 +40,7 @@ for what. Read it before writing or changing UI. For where files live, see
   built from go in the feature's `components/`, and the logic behind the copy
   (names, ages, grouping) in `utils/` as plain functions.
 - An element that animates out stays mounted through its leave animation with
-  `usePresence(isActive, exitMs)` (`hooks/usePresence.ts`), styled as leaving
+  `usePresence(isActive, exitMs)` from `@/ui`, styled as leaving
   while `isActive` is false, rather than `{isActive && …}`.
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
@@ -55,10 +55,19 @@ for what. Read it before writing or changing UI. For where files live, see
 
 ## Tests
 
-Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
-module plus `.test` (`chart-scale.test.ts`). They run in Node with Vitest
-(`npm test`, part of `npm run check`) and never touch the DOM or the bridge, so
-keep logic worth testing out of components and hooks.
+- Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
+  module plus `.test` (`chart-scale.test.ts`). They run in Node and never touch
+  the DOM or the bridge, so keep logic worth testing out of components and
+  hooks.
+- Components have DOM tests beside them (`Button.test.tsx`), rendered into
+  happy-dom with Testing Library. They test behaviour and accessibility: roles,
+  names, keyboard, focus, disabled. Both kinds run with `npm test`, part of
+  `npm run check`.
+- Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
+  fake clock, seeded randomness and paused animations, so two runs of the same
+  code match exactly. Diff a run against one from before a change to prove a
+  refactor changed nothing on screen. With `--stable` it also shoots the open
+  menus, dialogs, tooltips, a focus ring and the gallery.
 
 ## Styles: Tailwind utilities from the design tokens
 
@@ -89,7 +98,7 @@ keep logic worth testing out of components and hooks.
   // <div className={rowVariants({ isGateway, level })}>
   ```
 
-- `cn()` (`lib/cn.ts`) joins classes and lets a later utility override an
+- `cn()` (from `@/ui`, in `ui/foundations/cn.ts`) joins classes and lets a later utility override an
   earlier one that sets the same thing; use it wherever a component merges a
   `className` from outside, which is how a view adjusts a child. `cx` only
   joins fixed classes. `cn` lists every theme name so tailwind-merge can group
@@ -101,15 +110,30 @@ keep logic worth testing out of components and hooks.
   (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
   variant. The one exception is a `:has()` selector in a `.module.css` (below);
   InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
-- Buttons are `Button` (`variant`: `filled`, `danger`, `secondary`) and
-  `IconButton` (`variant`: `secondary`, `plain`), never hand-written
-  `<button>` classes. Both take an `icon` component (`icon={RefreshIcon}`)
-  and draw it at the Figma size: 13px in a Button, 16px in an IconButton
-  (`iconSize={14}` for Play). `isLoading` swaps the icon for the ring spinner
-  and `isDisabled` dims; both drop clicks and stay focusable (so a tooltip can
-  say why). An IconButton's `label` names it and is its tooltip; `tooltip`
-  replaces the bubble's text when it should say more (a help button's hint).
-  Both share that behaviour through `components/utils/button-state.ts`.
+- Buttons are `Button` and `IconButton`, never a hand-written `<button>`.
+  - Button takes three axes:
+    - `variant`: `solid`, `soft`, `ghost` or `link`
+    - `tone`: `accent`, `neutral` or `negative`
+    - `size`: `sm`, `md` or `inherit`
+  - Only the design's pairs typecheck. Each variant defaults to its usual pair:
+    solid is accent at md, soft and ghost are neutral at sm, and a link
+    inherits its line's size.
+  - Button takes `icon` and `iconEnd` components and draws them at 13px.
+    IconButton draws its icon at 16px (`iconSize={14}` for a glyph that reads
+    large).
+  - `isLoading` swaps the icon for a spinner (`loadingLabel` can swap the
+    words). `isDisabled` dims.
+  - Both states swallow every activation, a form submit included, and keep the
+    button focusable, so a tooltip can say why. They mark the element with
+    `data-disabled` and `data-loading`.
+  - An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
+    bubble's text when it should say more.
+  - Everything pressable shares that behaviour through
+    `ui/primitives/button/pressable.ts`, and styles a hover or press that only
+    applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
+- Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
+  styled with our tokens: focus traps, positioning, roving focus, dismissal,
+  ARIA wiring. The library wraps it, so features never import Base UI directly.
 - Props share names across components and with Figma: `variant`, `isLoading`,
   `isDisabled`, `isChecked`; the text under a title is `description` and the
   controls a component holds are `actions`; a colour by role is `status` or `tone`
@@ -131,42 +155,75 @@ Figma, see the published slideshow: <https://swiftsolve.github.io/rove-design/>.
 Which token to use for what, with every value, is in the package's
 `DESIGN.md` (`node_modules/@swiftsolve/rove-design/DESIGN.md`).
 
+## The UI library
+
+`src/ui` is the component library: the Figma components in code. Features
+import it from `@/ui` and nothing else under `src/ui`. The library imports only
+itself (by relative path) and packages, never app code. `npm run lint` enforces
+both, and a raw `<button>` outside the library is a lint error.
+
+- `primitives/`: the building blocks, each in its own folder with its tests:
+  - button, link, tooltip, dialog and menu
+  - disclosure, toggle, segmented-control and text-field
+  - badge, status-dot, icon-tile and bar-meter
+  - spinner and separator
+- `components/`: compositions of primitives:
+  - card, data-list, list-row, page-header and readout
+  - empty-state, loading-state and error-banner
+  - nav-rail and title-bar
+- `foundations/` (`cn`), `hooks/` (generic UI hooks), `context/` (where
+  dialogs portal), and `icons/`.
+- `gallery/` renders every component in every state at `/?gallery`
+  (`&theme=light` for Light). Dev only.
+
+Every component follows the same rules:
+
+- It takes `className` for its place in a layout.
+- Styles are CVA recipes, with variant, tone and size as separate axes.
+- State is exposed as data attributes.
+- Composition happens through compound parts and slots, never `cloneElement`
+  or reaching into a child's DOM.
+
+A component that renders one element forwards its ref and passes extra props
+through to it.
+
 ## Components
 
-Each Figma component has a counterpart in the code; build from these before
-writing new markup. Icons come from `src/components/icons/Icons.tsx`
-(`<HomeIcon />`, the brand mark is `<BrandIcon />`); don't draw new ones inline.
+Each Figma component has a counterpart in the library; build from these before
+writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
+`<BrandIcon />`); don't draw new ones inline.
 
 | Figma | Code | Use |
 | --- | --- | --- |
-| Title bar | `TitleBar` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). |
-| Status link | `TitleBar` | Connection status in the title bar. `tone` (`positive`, `negative`, `neutral`) sets the colour, the label the words. |
-| Window button | `TitleBar` | Minimise or close (`action`). Close hovers to `--status-negative-fill`. |
-| Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
-| Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
-| Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs; the description fades in when it clears. |
-| Subpage header | `PageHeader` (`onBack`) | Top of a page layered over a tab: a back button in the icon's place, title, an optional description and actions. |
-| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. Icon (`icon`) and Loading (`isLoading`) as in Figma. |
-| Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
-| Toggle | `Toggle` | On/off switch for settings. |
-| Live badge | `TrafficCard` | Shows that traffic is updating live. |
-| Section header | `Card`, `CardHeader` | A card is `Card` with a `CardHeader` (44px: icon, title, and `actions` such as a `CardBadge` or a button), a `CardBody` and an optional `CardFooter` band. `Card as="li"`, `"div"` or `"ul"`, with no header, is the bare surface for a card that lays out its own content. `shouldClip={false}` lets a menu spill out of it. |
-| Data row | `DataRow`, `DataList` | Label and value; the value right-aligns. An optional accessory (signal bars, an icon) and detail sit before it, 6px apart. `DataList` makes the rows a `<dl>` and sets their `density` (`default`, `snug`, `compact`); `align="center"` suits a value with no text baseline. |
-| Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
-| Metric | `MetricValue` | A number with its unit, coloured by `status` when it's earned. |
-| Readout/Large | `SpeedReadout` | Live download or upload speed. |
-| Readout/Compact | `StatReadout` | Total data downloaded or uploaded. |
-| Throughput chart | `ThroughputChart` | Last 60 seconds of download (solid) and upload (dashed). |
-| Sparkline | `Sparkline` | Recent latency for a service row, coloured by `status`. Down is a flat `--status-negative` baseline. |
-| Signal bars | `ConnectionCard` | Wi‑Fi strength. Unlit bars use `--opacity-tint-lg`. |
-| Capability cell | `CapabilityMeter` | Icon tile over a 4-step meter. Unsupported also covers not yet tested and testing. |
-| Connection card | `ConnectionCard` | Current connection: Wi‑Fi, Ethernet or Disconnected. Expands to show details. |
-| Traffic card | `TrafficCard` | Live download and upload with the last 60 seconds charted. |
-| Capabilities card | `CapabilitiesCard` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
-| Stat card | `StatCard` | Home summary card: Usage or Devices. Devices is Empty when there's nothing to list. |
-| Tooltip | `Tooltip` | Short hint on hover. One line where possible. Opens on the trigger's `side` (`bottom` by default; `left` and `right` sit beside it), lined up with its `start` or `end` edge (`align`), `sideOffset` px away. |
+| Title bar | `TitleBar`, `TitleBarStatus`, `WindowButton` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). `AppTitleBar` fills it from the app. |
+| Nav rail | `NavRail`, `NavItem` | One item per page; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
+| Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. |
+| Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
+| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else), ghost (a quiet second choice), link (a quiet text link with glyphs). |
+| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint); `variant` soft or ghost. |
+| Link | `Link` | An accent `<a>` in running text; `isExternal` opens a new window and says so. |
+| Menu | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
-| Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
-| Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, `description` and optional `actions`. |
-| Spinner | `Spinner` | Loading indicator, in `--accent-default`. |
-| Ring spinner | `ButtonSpinner` | Loading indicator in the button's icon colour. Button and IconButton show it for `isLoading`; use it directly only outside a button. |
+| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, lined up with its `start` or `end` edge. Screen readers get it as the trigger's description. |
+| Toggle | `Toggle` | On/off switch for a setting. |
+| Segmented control | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
+| Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
+| Disclosure | `Disclosure`, `DisclosureTrigger`, `DisclosurePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole disclosure; `isAnimated` animates the panel's height. |
+| Section header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
+| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. `DataList` makes rows a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
+| List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
+| — | `StretchedButton` | A transparent button over a whole card or row, so a click anywhere opens it. |
+| Badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
+| Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
+| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `tint`); the button form opens something. |
+| Signal bars, Capability cell | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
+| Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
+| Metric | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |
+| Readout/Large, Readout/Compact | `Readout`, `ReadoutValue` | A labelled large figure (live speed, data used), or the bare figure at large or compact size. |
+| Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
+| Sparkline | `Sparkline` (services) | Recent latency for a service row. |
+| Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above. |
+| Error banner | `ErrorBanner` | A failure above a page: title, a line under it, then Dismiss and Retry. |
+| Empty state | `EmptyState` | Blank page: faded placeholder rows (a lock badge when `isLocked`), title, `description` and `actions`. |
+| Loading state | `LoadingState` | A page's first load: the spinner over a line, announced. |
+| Spinner | `Spinner`, `ButtonSpinner` | Loading indicators. Buttons show the ring for `isLoading`; use it directly only outside a button. |

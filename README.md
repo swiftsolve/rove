@@ -188,12 +188,11 @@ rove/
 │   │       └── utils/          its plain helpers (no React)
 │   │                           (capabilities, connection and live-throughput
 │   │                           have no view, so their parts sit at the top)
-│   ├── components/             shared UI used across features: Card,
-│   │                           DataRow, PageHeader, Tooltip, Icons, …
+│   ├── ui/                     the component library, imported from @/ui:
+│   │                           primitives, components, icons, a dev gallery
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
-│   ├── lib/                    shared helpers (format, platform, highlight,
-│   │                           cn)
+│   ├── lib/                    shared helpers (format, platform, highlight)
 │   ├── styles/                 the global CSS: tailwind.css (the theme from
 │   │                           the tokens; imports the rest), base.css
 │   │                           (fonts, resets) and utilities.css (shared
