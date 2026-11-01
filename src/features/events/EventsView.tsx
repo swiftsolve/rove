@@ -6,7 +6,7 @@ import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import {
   Button,
   EmptyState,
-  ErrorBanner,
+  Banner,
   EventsIcon,
   HelpIcon,
   IconButton,
@@ -133,7 +133,7 @@ export function EventsView(): JSX.Element {
         }
       />
 
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <EventsFeed
         events={visibleEvents}

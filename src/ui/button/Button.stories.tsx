@@ -10,7 +10,7 @@ const meta = {
   args: { children: 'Run test', onClick: fn() },
   argTypes: {
     variant: { control: 'inline-radio', options: ['solid', 'soft'] },
-    tone: { control: 'inline-radio', options: ['accent', 'negative'], if: { arg: 'variant', eq: 'solid' } },
+    tone: { control: 'inline-radio', options: ['neutral', 'accent', 'negative'] },
     size: { control: 'inline-radio', options: ['sm', 'md'] },
     icon: { control: false },
   },
@@ -28,6 +28,9 @@ export const SolidNegative: Story = { args: { variant: 'solid', tone: 'negative'
 /** Everything else. */
 export const Soft: Story = { args: { variant: 'soft' } }
 
+/** On a red surface, like an error Banner's Dismiss and Retry. */
+export const SoftNegative: Story = { args: { variant: 'soft', tone: 'negative', children: 'Dismiss' } }
+
 export const Loading: Story = { args: { variant: 'solid', icon: PlayIcon, isLoading: true, loadingLabel: 'Testing…' } }
 
 /** Still focusable, so a tooltip can say why. */
@@ -42,6 +45,7 @@ export const AllStates: Story = {
         { variant: 'solid' },
         { variant: 'solid', tone: 'negative' },
         { variant: 'soft' },
+        { variant: 'soft', tone: 'negative' },
         { variant: 'soft', size: 'md' },
       ] as const).map((appearance) => (
         <Fragment key={JSON.stringify(appearance)}>

@@ -4,7 +4,7 @@ import {
   Card,
   DataList,
   DataRow,
-  ErrorBanner,
+  Banner,
   EthernetIcon,
   IconButton,
   IconTile,
@@ -176,7 +176,7 @@ export function InterfacesView(): JSX.Element {
         actions={<IconButton label="Refresh" icon={RefreshIcon} isLoading={isLoading} onClick={onRefresh} />}
       />
 
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}
 
       <InterfacesBody interfaces={interfaces} isLoading={isLoading} onRefresh={onRefresh} />
     </div>

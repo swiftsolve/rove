@@ -13,7 +13,7 @@ import {
   Collapsible,
   CollapsiblePanel,
   CollapsibleTrigger,
-  ErrorBanner,
+  Banner,
   GlobeIcon,
   HelpIcon,
   IconButton,
@@ -255,7 +255,7 @@ export function HostsView(): JSX.Element {
           <IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />
         }
       />
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <UsageBody
         support={usage.support}

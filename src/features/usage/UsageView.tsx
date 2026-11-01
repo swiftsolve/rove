@@ -8,7 +8,7 @@ import {
   CardBody,
   CardHeader,
   DirectionIcon,
-  ErrorBanner,
+  Banner,
   HelpIcon,
   IconButton,
   LoadingState,
@@ -252,7 +252,7 @@ export function UsageView(): JSX.Element {
         }
       />
 
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       {isFirstLoad ? (
         <LoadingState label="Loading usage…" />

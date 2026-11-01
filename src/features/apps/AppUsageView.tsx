@@ -4,7 +4,7 @@ import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
   DotSeparator,
-  ErrorBanner,
+  Banner,
   GlobeIcon,
   HelpIcon,
   IconButton,
@@ -66,7 +66,7 @@ export function AppUsageView(): JSX.Element {
         }
       />
 
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <UsageBody
         support={usage.support}

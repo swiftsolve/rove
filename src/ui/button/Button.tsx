@@ -18,15 +18,21 @@ const buttonVariants = cva(
         /** A solid fill under a white label: a page's main action, or stopping it. */
         solid: 'text-on-fill',
         /** A quiet tinted chip: everything else. */
-        soft: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
+        soft: null,
       },
-      tone: { accent: null, negative: null },
+      tone: { neutral: null, accent: null, negative: null },
       size: {
         sm: 'gap-6 px-10 py-6 text-xs font-medium',
         md: 'gap-6 px-(--card-padding) py-10 text-sm font-semibold tracking-label-large',
       },
     },
     compoundVariants: [
+      { variant: 'soft', tone: 'neutral', class: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary' },
+      {
+        variant: 'soft',
+        tone: 'negative',
+        class: 'bg-status-negative/(--opacity-tint-md) text-negative usable:hover:bg-status-negative/(--opacity-tint-lg)',
+      },
       { variant: 'solid', tone: 'accent', class: 'bg-accent-fill usable:hover:bg-accent-fill-hover' },
       {
         variant: 'solid',
@@ -38,12 +44,13 @@ const buttonVariants = cva(
 )
 
 /**
- * What a button looks like. Only a solid button takes a tone: the accent, or
- * negative to stop something. A solid defaults to `md`, a soft one to `sm`.
+ * What a button looks like. A solid one is the accent, or negative to stop
+ * something; a soft one is neutral, or negative on a red surface (an error
+ * Banner). A solid defaults to `md`, a soft one to `sm`.
  */
 export type ButtonAppearance =
   | { variant: 'solid'; tone?: 'accent' | 'negative'; size?: 'sm' | 'md' }
-  | { variant?: 'soft'; tone?: never; size?: 'sm' | 'md' }
+  | { variant?: 'soft'; tone?: 'neutral' | 'negative'; size?: 'sm' | 'md' }
 
 type Variant = NonNullable<ButtonAppearance['variant']>
 type Size = NonNullable<ButtonAppearance['size']>
@@ -94,7 +101,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cn(
         buttonVariants({
           variant,
-          tone: variant === 'solid' ? (tone ?? 'accent') : undefined,
+          tone: tone ?? (variant === 'solid' ? 'accent' : 'neutral'),
           size: size ?? DEFAULT_SIZES[variant],
         }),
         className,

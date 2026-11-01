@@ -9,7 +9,7 @@ import {
   ConnectionIcon,
   DatabaseIcon,
   DnsIcon,
-  ErrorBanner,
+  Banner,
   FileTransferIcon,
   GlobeIcon,
   HelpIcon,
@@ -87,7 +87,7 @@ export function TrafficView(): JSX.Element {
           <IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />
         }
       />
-      {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <UsageBody
         support={usage.support}

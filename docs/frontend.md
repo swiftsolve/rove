@@ -100,7 +100,7 @@ for what. Read it before writing or changing UI. For where files live, see
   `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
   to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
 - Shared type styles and layout (`text-caption`, `text-overline`, `num`, `surface`,
-  `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
+  `page`, `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
   utilities.
 - Variants go through CVA (class-variance-authority), with utility strings. An
@@ -199,7 +199,7 @@ both, and a raw `<button>` outside the library is a lint error.
   - Inputs: text-field, toggle and segmented-control
   - Overlays: dialog and tooltip
   - Status and feedback: badge, status-dot, spinner, loading-state,
-    error-banner and empty-state
+    banner and empty-state
   - Data display: data-list, readout, metric-value, bar-meter, list-row and
     icon-tile
   - Containers: card, collapsible and separator
@@ -244,7 +244,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Nav rail | `NavRail`, `NavItem` | One item per page; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
 | Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. |
 | Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
-| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else). |
+| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else; `tone="negative"` on a red surface, like an error Banner). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no fill until hovered (a dialog's close). |
 | Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
@@ -268,7 +268,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above. |
-| Error banner | `ErrorBanner` | A failure above a page: title, a line under it, then Dismiss and Retry. |
+| Banner | `Banner` | A message above a page: title, a line under it, then Dismiss and Retry. `variant="error"` for a failure, with red buttons to match. |
 | Empty state | `EmptyState`, `EmptyStateDescription` | Blank page: faded placeholder rows (a lock badge when `isLocked`), title, `description` and `actions`. `EmptyStateDescription` is a further line an action adds (`role="status"` to announce it). |
 | Loading state | `LoadingState` | A page's first load: the spinner over a line, announced. |
 | Spinner | `Spinner`, `ButtonSpinner` | Loading indicators. Buttons show the ring for `isLoading`; use it directly only outside a button. |

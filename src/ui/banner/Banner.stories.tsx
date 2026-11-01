@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { ErrorBanner, POLLING_DESCRIPTION } from './ErrorBanner'
+import { Banner, POLLING_DESCRIPTION } from './Banner'
 
 const meta = {
-  title: 'Status and feedback/ErrorBanner',
-  component: ErrorBanner,
-  args: { title: "Couldn't load devices", description: POLLING_DESCRIPTION },
-  argTypes: { onRetry: { control: false } },
-} satisfies Meta<typeof ErrorBanner>
+  title: 'Status and feedback/Banner',
+  component: Banner,
+  args: { variant: 'error', title: "Couldn't load devices", description: POLLING_DESCRIPTION },
+  argTypes: { variant: { control: 'inline-radio', options: ['error'] }, onRetry: { control: false } },
+} satisfies Meta<typeof Banner>
 
 export default meta
 type Story = StoryObj<typeof meta>

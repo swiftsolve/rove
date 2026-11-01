@@ -23,7 +23,7 @@ export { StatusDot } from './status-dot/StatusDot'
 export { Spinner } from './spinner/Spinner'
 export { ButtonSpinner } from './spinner/ButtonSpinner'
 export { LoadingState } from './loading-state/LoadingState'
-export { ErrorBanner, POLLING_DESCRIPTION } from './error-banner/ErrorBanner'
+export { Banner, POLLING_DESCRIPTION } from './banner/Banner'
 export { EmptyState, EmptyStateDescription } from './empty-state/EmptyState'
 
 // Data display

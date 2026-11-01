@@ -12,7 +12,7 @@ import {
   DataListStack,
   DataRow,
   DnsIcon,
-  ErrorBanner,
+  Banner,
   GlobeIcon,
   HelpIcon,
   IconButton,
@@ -247,7 +247,8 @@ export function DiagnosticsView(): JSX.Element {
         {runStatusText(isRunning, hasDiagnostics)}
       </p>
 
-      {error && <ErrorBanner
+      {error && <Banner
+          variant="error"
           title={error}
           description={diagnostics ? 'Showing the last check.' : 'Try again in a moment.'}
           onRetry={run}

@@ -4,7 +4,7 @@ import {
   Button,
   DevicesIcon,
   EmptyState,
-  ErrorBanner,
+  Banner,
   HelpIcon,
   IconButton,
   LoadingState,
@@ -149,7 +149,8 @@ export function DevicesView(): JSX.Element {
         }
       />
 
-      {error && <ErrorBanner
+      {error && <Banner
+          variant="error"
           title={error}
           description={scan ? 'Showing the last scan.' : 'Try again in a moment.'}
           onRetry={rescan}

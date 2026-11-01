@@ -74,12 +74,12 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toHaveAccessibleName('Retry')
   })
 
-  it('takes a tone only when solid', () => {
+  it('takes only the tones its variant allows', () => {
     // Compile-time checks: each line below must fail to typecheck.
     // @ts-expect-error A solid button has no neutral tone.
     void (<Button variant="solid" tone="neutral" />)
-    // @ts-expect-error Only a solid button takes a tone.
-    void (<Button variant="soft" tone="negative" />)
+    // @ts-expect-error A soft button has no accent tone.
+    void (<Button variant="soft" tone="accent" />)
     // @ts-expect-error There is no `lg` size.
     void (<Button size="lg" />)
   })

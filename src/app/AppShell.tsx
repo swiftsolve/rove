@@ -22,7 +22,7 @@ const SCROLL = cx(
   'flex flex-1 flex-col min-w-0 min-h-0',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
   'pl-12 pr-6 pt-12 pb-20',
-  '[&>.error-banner]:mb-12',
+  '[&>.banner]:mb-12',
 )
 
 /**

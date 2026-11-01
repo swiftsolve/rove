@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { AlertIcon, Button, ErrorBanner, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
+import { AlertIcon, Button, Banner, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
@@ -131,7 +131,8 @@ function StaleNetworkBanner({
 }): JSX.Element {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   return (
-    <ErrorBanner
+    <Banner
+      variant="error"
       title={describeNetworkError(error).title}
       description={`Last updated ${formatTimeAgo(lastReadAt, now)}.`}
       onRetry={onRetry}

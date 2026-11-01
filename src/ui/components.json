@@ -36,7 +36,8 @@
         "tone": {
           "values": [
             "accent",
-            "negative"
+            "negative",
+            "neutral"
           ]
         },
         "variant": {
@@ -52,6 +53,7 @@
         "actions-button--solid",
         "actions-button--solid-negative",
         "actions-button--soft",
+        "actions-button--soft-negative",
         "actions-button--loading",
         "actions-button--disabled",
         "actions-button--all-states"
@@ -102,11 +104,18 @@
             "left",
             "right"
           ]
+        },
+        "variant": {
+          "values": [
+            "soft",
+            "ghost"
+          ]
         }
       },
       "hasElementProps": true,
       "stories": [
         "actions-iconbutton--default",
+        "actions-iconbutton--ghost",
         "actions-iconbutton--small-glyph",
         "actions-iconbutton--with-hint",
         "actions-iconbutton--loading",
@@ -426,7 +435,7 @@
     "Dialog": {
       "group": "Overlays",
       "source": "src/ui/dialog/Dialog.tsx",
-      "description": "A modal dialog: title, optional description and close button, a recessed\nbody, and a footer of actions. Focus moves in and stays inside while it's\nopen, the page behind is inert, and focus returns to the opener on close.\nEscape, the close button, Cancel and a click on the backdrop all call\n`onClose`.\n\nRender it inside a DialogRoot, which opens it and plays its leave animation.",
+      "description": "A modal dialog: title, optional description and close button, a recessed\nbody, an optional footnote, and a footer of actions. Focus moves in and\nstays inside while it's open, the page behind is inert, and focus returns to\nthe opener on close.\nEscape, the close button, Cancel and a click on the backdrop all call\n`onClose`.\n\nRender it inside a DialogRoot, which opens it and plays its leave animation.",
       "figma": {
         "name": "Dialog",
         "node": "372:235"
@@ -455,6 +464,10 @@
         "description": {
           "type": "ReactNode",
           "description": "The line under the title, read as the dialog's description."
+        },
+        "footnote": {
+          "type": "ReactNode",
+          "description": "A line under the body, on the panel: a caption or status."
         },
         "isDirty": {
           "type": "boolean",
@@ -704,12 +717,12 @@
         "status-and-feedback-loadingstate--scanning"
       ]
     },
-    "ErrorBanner": {
+    "Banner": {
       "group": "Status and feedback",
-      "source": "src/ui/error-banner/ErrorBanner.tsx",
-      "description": "A failure above a page: icon, title, a line under it, then Dismiss and\nRetry on the right. Dismiss hides this title until it changes or the banner\nunmounts, so a poll that fails the same way again doesn't bring it back; a\ncaller renders it only while there's an error, which is what resets it.",
+      "source": "src/ui/banner/Banner.tsx",
+      "description": "A message above a page: icon, title, a line under it, then Dismiss and\nRetry on the right. `error` is a failure. Dismiss hides this title until it changes or the banner\nunmounts, so a poll that fails the same way again doesn't bring it back; a\ncaller renders it only while there's an error, which is what resets it.",
       "figma": {
-        "name": "Error banner",
+        "name": "Banner",
         "node": "374:1346"
       },
       "props": {
@@ -725,12 +738,16 @@
         "title": {
           "type": "string",
           "isRequired": true
+        },
+        "variant": {
+          "type": "\"error\"",
+          "isRequired": true
         }
       },
       "stories": [
-        "status-and-feedback-errorbanner--polling",
-        "status-and-feedback-errorbanner--with-retry",
-        "status-and-feedback-errorbanner--stale"
+        "status-and-feedback-banner--polling",
+        "status-and-feedback-banner--with-retry",
+        "status-and-feedback-banner--stale"
       ]
     },
     "EmptyState": {
