@@ -94,6 +94,20 @@ The Figma pass works through this list and deletes the file when it's done.
 - **Colour** comes from what the item is: Wi‑Fi blue, Ethernet green, a
   capability level.
 
+### Bar meter (new)
+
+- **One component** for the capability meter and Wi‑Fi signal bars, which were
+  built separately: four rising bars, lit or unlit (a tint of the colour), or
+  dimmed greys.
+- **Sizes:**
+
+  | Size | Bar width | Heights | Where |
+  | --- | --- | --- | --- |
+  | xs | 2px | 3–9 | Home strip |
+  | sm | 2px | 4–10 | Signal row |
+  | md | 3px | 5–11 | Beside a title |
+  | lg | 3px | 6–12 | Capability list |
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

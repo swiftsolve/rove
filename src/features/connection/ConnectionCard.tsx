@@ -21,6 +21,7 @@ import {
   isSecuredWifi,
 } from '@/lib/format'
 import {
+  BarMeter,
   Card,
   ChevronDownIcon,
   DataList,
@@ -54,37 +55,6 @@ const signalMeterVariants = cva('flex items-center gap-8', {
     placement: { strip: 'relative z-1 pointer-events-none self-center shrink-0', details: null },
   },
 })
-
-const signalBarsVariants = cva('inline-flex items-end', {
-  variants: {
-    // Beside the strip's title, a size up; in the Signal row, as tall as the
-    // text's capitals.
-    placement: {
-      strip: 'gap-2 h-[11px]',
-      details: 'gap-2 h-10',
-    },
-  },
-})
-
-// The same bars as the Home capability strip (CapabilityMeter's `isCompact`):
-// whole-pixel sizes so they stay sharp, with ends rounded at half the width.
-// The strip's are a size up.
-const signalBarVariants = cva('', {
-  variants: {
-    placement: { strip: 'w-[3px] rounded-[1.5px]', details: 'w-2 rounded-[1px]' },
-    isOn: {
-      true: 'bg-current',
-      false: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-lg),transparent)]',
-    },
-  },
-})
-
-const SIGNAL_BAR_HEIGHTS = {
-  strip: ['h-[5px]', 'h-[7px]', 'h-[9px]', 'h-[11px]'],
-  // The tallest rounds the value text's cap height (9.46px in Inter at 13px) up to
-  // a whole pixel; 9px read short.
-  details: ['h-4', 'h-6', 'h-8', 'h-10'],
-}
 
 // Lock + protocol, green when secured, red when open. A block flex box (not
 // inline-flex) so the lock centres on the text instead of sitting on the line's
@@ -138,8 +108,6 @@ const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate')
 interface ConnectionCardProps {
   info: NetworkInfo
 }
-
-const SIGNAL_BARS = [0, 1, 2, 3]
 
 // Strongest first: the collapsed strip names the best protocol the network offers.
 const SECURITY_PROTOCOLS = ['WPA3', 'WPA2', 'WPA', 'OWE', 'WEP']
@@ -210,17 +178,8 @@ function SignalMeter({
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <span className={signalBarsVariants({ placement })} aria-hidden>
-        {SIGNAL_BARS.map((bar) => (
-          <span
-            key={bar}
-            className={cx(
-              signalBarVariants({ placement, isOn: bar < filledBars }),
-              SIGNAL_BAR_HEIGHTS[placement][bar],
-            )}
-          />
-        ))}
-      </span>
+      {/* A size up beside the strip's title; as tall as the text's capitals in the Signal row. */}
+      <BarMeter value={filledBars} size={placement === 'strip' ? 'md' : 'sm'} />
     </div>
   )
 }

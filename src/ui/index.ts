@@ -7,6 +7,7 @@ export { Menu, MenuContent, MenuItem, MenuTrigger } from './primitives/menu/Menu
 export { ButtonSpinner } from './primitives/spinner/ButtonSpinner'
 export { Badge, LiveBadge } from './primitives/badge/Badge'
 export { IconTile } from './primitives/icon-tile/IconTile'
+export { BarMeter } from './primitives/bar-meter/BarMeter'
 export { Spinner } from './primitives/spinner/Spinner'
 export { StatusDot } from './primitives/status-dot/StatusDot'
 export { Tooltip } from './primitives/tooltip/Tooltip'
