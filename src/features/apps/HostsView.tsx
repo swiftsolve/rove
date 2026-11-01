@@ -1,5 +1,5 @@
-import { memo, type RefObject } from 'react'
-import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
+import { memo } from 'react'
+import type { AppHosts, HostConn } from '@/types'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { isPrivateIp } from '@/features/apps/utils/ip'
@@ -13,20 +13,18 @@ import {
   Disclosure,
   DisclosurePanel,
   DisclosureTrigger,
-  EmptyState,
   ErrorBanner,
   GlobeIcon,
   HelpIcon,
   IconButton,
   IpIcon,
-  LoadingState,
   PageHeader,
   POLLING_DESCRIPTION,
   Tooltip as UiTooltip,
 } from '@/ui'
-import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { AppIcon } from '@/features/apps/components/AppIcon'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
@@ -90,10 +88,12 @@ const HOSTS = cx(
 const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
 
-const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps connect.'
-
-const HOST_USAGE_UNSUPPORTED_HINT =
-  'Run Rove as administrator to attribute hosts to apps on Windows.'
+const BODY_COPY: UsageBodyCopy = {
+  unsupported: 'Run Rove as administrator to attribute hosts to apps on Windows.',
+  loading: 'Measuring per-app hosts…',
+  emptyTitle: 'No hosts yet',
+  empty: 'Hosts appear here as your apps connect.',
+}
 
 /** The glyph left of a host's name: the country flag when geolocated, else a
  *  LAN or globe (public but unresolved) fallback. */
@@ -233,62 +233,15 @@ const AppGroup = memo(function AppGroup({
   )
 })
 
-/** The page body: the admin prompt, a first-load spinner, an empty state, or
- *  the grouped host list. */
-function HostsBody({
-  usage,
-  isFirstLoad,
-  listRef,
-  isExpanded,
-  onToggle,
-}: {
-  usage: HostUsageSummary
-  isFirstLoad: boolean
-  listRef: RefObject<HTMLUListElement>
-  isExpanded: (name: string) => boolean
-  onToggle: (name: string) => void
-}): JSX.Element {
-  const { apps, support } = usage
-  if (support === 'unsupported') {
-    return (
-      <EmptyState
-        isLocked
-        title="Administrator access needed"
-        description={HOST_USAGE_UNSUPPORTED_HINT}
-        actions={<RestartAsAdminAction />}
-      />
-    )
-  }
-  if (isFirstLoad) {
-    return (
-      <LoadingState label="Measuring per-app hosts…" />
-    )
-  }
-  if (apps.length === 0) {
-    return <EmptyState title="No hosts yet" description={HOST_USAGE_EMPTY_HINT} />
-  }
-  return (
-    <UsageList label="Apps" ref={listRef}>
-      {apps.map((app) => (
-        <AppGroup
-          key={app.name}
-          app={app}
-          isExpanded={isExpanded(app.name)}
-          onToggle={onToggle}
-        />
-      ))}
-    </UsageList>
-  )
-}
-
 export function HostsView(): JSX.Element {
   const { usage, isFirstLoad, error, reload } = useHostUsage()
   const { location, back } = useNavigation()
+  const { apps } = usage
   // Arrived by clicking an app: open only that app's group and collapse the
   // rest. Otherwise every group starts collapsed.
   const focusApp = location.appsSub?.view === 'hosts' ? location.appsSub.app ?? null : null
   const { isExpanded, toggle } = useExpandedApps(focusApp)
-  const listRef = useScrollToFocusedApp(focusApp, usage.apps)
+  const listRef = useScrollToFocusedApp(focusApp, apps)
 
   return (
     <div className="page">
@@ -303,13 +256,23 @@ export function HostsView(): JSX.Element {
       />
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
-      <HostsBody
-        usage={usage}
+      <UsageBody
+        support={usage.support}
         isFirstLoad={isFirstLoad}
-        listRef={listRef}
-        isExpanded={isExpanded}
-        onToggle={toggle}
-      />
+        isEmpty={apps.length === 0}
+        copy={BODY_COPY}
+      >
+        <UsageList label="Apps" ref={listRef}>
+          {apps.map((app) => (
+            <AppGroup
+              key={app.name}
+              app={app}
+              isExpanded={isExpanded(app.name)}
+              onToggle={toggle}
+            />
+          ))}
+        </UsageList>
+      </UsageBody>
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import type { AppUsageSummary } from '@/types'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { busiestTotal } from '@/features/apps/utils/transfer'
@@ -7,28 +6,28 @@ import {
   Button,
   ChevronRightIcon,
   DotSeparator,
-  EmptyState,
   ErrorBanner,
   GlobeIcon,
   HelpIcon,
   IconButton,
   LayersIcon,
-  LoadingState,
   PageHeader,
   POLLING_DESCRIPTION,
 } from '@/ui'
-import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { AppIcon } from '@/features/apps/components/AppIcon'
+import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
 
 const APP_USAGE_INFO_HINT =
   'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 
-const APP_USAGE_EMPTY_HINT = 'Apps appear here as they use the network.'
-
-const APP_USAGE_UNSUPPORTED_HINT =
-  'Run Rove as administrator to meter per-app usage on Windows.'
+const BODY_COPY: UsageBodyCopy = {
+  unsupported: 'Run Rove as administrator to meter per-app usage on Windows.',
+  loading: 'Measuring per-app usage…',
+  emptyTitle: 'No app usage yet',
+  empty: 'Apps appear here as they use the network.',
+}
 
 /** The header subtitle once there's data: links into the per-app host breakdown
  *  and the by-protocol breakdown (mirrors the Services view's "View timeline"
@@ -50,60 +49,11 @@ function AppSubtitleLinks(): JSX.Element {
   )
 }
 
-/** The page body: the admin prompt, a first-load spinner, an empty state, or
- *  the app list. */
-function AppUsageBody({
-  usage,
-  isFirstLoad,
-}: {
-  usage: AppUsageSummary
-  isFirstLoad: boolean
-}): JSX.Element {
-  const { navigate } = useNavigation()
-  const { apps, support } = usage
-  if (support === 'unsupported') {
-    return (
-      <EmptyState
-        isLocked
-        title="Administrator access needed"
-        description={APP_USAGE_UNSUPPORTED_HINT}
-        actions={<RestartAsAdminAction />}
-      />
-    )
-  }
-  if (isFirstLoad) {
-    return (
-      <LoadingState label="Measuring per-app usage…" />
-    )
-  }
-  if (apps.length === 0) {
-    return <EmptyState title="No app usage yet" description={APP_USAGE_EMPTY_HINT} />
-  }
-
-  const busiest = busiestTotal(apps)
-  return (
-    <UsageList label="Apps by usage">
-      {/* Each row links into that app's hosts. */}
-      {apps.map((app) => (
-        <UsageRow
-          key={app.name}
-          icon={<AppIcon app={app} />}
-          iconKind="tile"
-          name={app.name}
-          transfer={app}
-          busiest={busiest}
-          link={{
-            label: `View hosts for ${app.name}`,
-            onOpen: () => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } }),
-          }}
-        />
-      ))}
-    </UsageList>
-  )
-}
-
 export function AppUsageView(): JSX.Element {
   const { usage, isFirstLoad, error, reload } = useAppUsage()
+  const { navigate } = useNavigation()
+  const { apps } = usage
+  const busiest = busiestTotal(apps)
 
   return (
     <div className="page">
@@ -119,7 +69,30 @@ export function AppUsageView(): JSX.Element {
 
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
-      <AppUsageBody usage={usage} isFirstLoad={isFirstLoad} />
+      <UsageBody
+        support={usage.support}
+        isFirstLoad={isFirstLoad}
+        isEmpty={apps.length === 0}
+        copy={BODY_COPY}
+      >
+        <UsageList label="Apps by usage">
+          {/* Each row links into that app's hosts. */}
+          {apps.map((app) => (
+            <UsageRow
+              key={app.name}
+              icon={<AppIcon app={app} />}
+              iconKind="tile"
+              name={app.name}
+              transfer={app}
+              busiest={busiest}
+              link={{
+                label: `View hosts for ${app.name}`,
+                onOpen: () => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } }),
+              }}
+            />
+          ))}
+        </UsageList>
+      </UsageBody>
     </div>
   )
 }
