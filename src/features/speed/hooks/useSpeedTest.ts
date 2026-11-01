@@ -8,6 +8,8 @@ import {
 import { formatBand } from '@/lib/format'
 import { getNetworkApi } from '@/bridge/network-api'
 import { getLiveThroughput, subscribeLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
+import { SPEED_HISTORY_KEY } from '@/features/speed/hooks/useSpeedHistory'
+import { queryClient } from '@/app/utils/query-client'
 import type { SpeedTestConnection } from '@/features/speed/types'
 
 interface SpeedTestState {
@@ -195,6 +197,8 @@ async function runTest(): Promise<void> {
     isSettled = true
     unsubscribe()
     await saveSpeedResult(result.internet, context)
+    // A history page that's open re-reads now; a closed one reads when it opens.
+    void queryClient.invalidateQueries({ queryKey: SPEED_HISTORY_KEY })
     if (!isCurrentRun()) return
     setState({
       ...state,

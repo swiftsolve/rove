@@ -1,14 +1,8 @@
-import { useEffect, useState } from 'react'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import {
-  clearSpeedHistory,
-  formatHistoryTimestamp,
-  getSpeedHistory,
-  type SpeedHistoryEntry,
-} from '@/features/speed/utils/speed-history'
+import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
+import { formatHistoryTimestamp, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
 import {
   Card,
   DirectionIcon,
@@ -193,33 +187,10 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
 
 export function SpeedHistoryView(): JSX.Element {
   const { back } = useNavigation()
-  const [entries, setEntries] = useState<SpeedHistoryEntry[]>([])
-  // History loads over an async IPC call, so `entries` is empty on the first
-  // frame. Track whether that load has resolved so we don't flash the tall
-  // "no tests yet" placeholder — which fades in over the dark background and
-  // then swaps to the list mid-transition — before we actually know it's empty.
-  const [isLoaded, setIsLoaded] = useState(false)
-  // Re-load whenever a test finishes so a result recorded while this view is
-  // open shows up without a manual refresh. `completedAt` changes on each
-  // completed run, driving the effect below.
-  const completedAt = useSpeedTest((test) => test.completedAt)
-
-  useEffect(() => {
-    let isActive = true
-    void getSpeedHistory().then((loaded) => {
-      if (!isActive) return
-      setEntries(loaded)
-      setIsLoaded(true)
-    })
-    return () => {
-      isActive = false
-    }
-  }, [completedAt])
-
-  const handleClear = (): void => {
-    void clearSpeedHistory()
-    setEntries([])
-  }
+  // Undefined until the first read lands, so the tall "no tests yet"
+  // placeholder doesn't flash up (and swap to the list mid-transition) before
+  // we know the history is empty.
+  const { entries, clear } = useSpeedHistory()
 
   return (
     <div className="page">
@@ -227,9 +198,9 @@ export function SpeedHistoryView(): JSX.Element {
         title="Speed Test Results"
         description="Results from your past speed tests, newest first."
         onBack={back}
-        actions={entries.length > 0 ? <HistoryMenu onDelete={handleClear} /> : undefined}
+        actions={entries != null && entries.length > 0 ? <HistoryMenu onDelete={clear} /> : undefined}
       />
-      {isLoaded && <HistoryList entries={entries} />}
+      {entries != null && <HistoryList entries={entries} />}
     </div>
   )
 }
