@@ -79,15 +79,17 @@ const itemVariants = cva(
   [
     'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm font-medium',
     'transition-[color,background] duration-(--duration-fast) ease-in-out',
-    // Items fill the menu edge to edge, so the ring goes inside the item.
-    'focus-visible:outline-offset-(--focus-inset)',
+    // The pointer and the arrow keys highlight an item the same way, as in a
+    // native menu (Base UI's data-highlighted). The highlight is the focus
+    // indicator, so no ring.
+    'outline-none',
   ],
   {
     variants: {
       tone: {
-        neutral: 'text-secondary hover:bg-hover hover:text-primary',
-        /** Destructive (Remove, Clear history): red text on a red-tinted hover. */
-        negative: 'text-negative hover:bg-status-negative/(--opacity-tint-md)',
+        neutral: 'text-secondary data-highlighted:bg-hover data-highlighted:text-primary',
+        /** Destructive (Remove, Clear history): red text on a red-tinted highlight. */
+        negative: 'text-negative data-highlighted:bg-status-negative/(--opacity-tint-md)',
       },
     },
     defaultVariants: { tone: 'neutral' },
