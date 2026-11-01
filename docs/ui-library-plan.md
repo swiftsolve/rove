@@ -1,5 +1,39 @@
 # UI library: audit and plan
 
+## Status
+
+**Done:** phases 0–6, 8 and 11, most of 7, and part of 9.
+- `src/ui` is the library, behind lint boundaries.
+- Button has variant × tone × size on one pressable base.
+- These run on Base UI: Tooltip, Dialog, Menu, Toggle, SegmentedControl,
+  Disclosure and TextField.
+- New components: Badge, StatusDot, IconTile, LoadingState, ListRow,
+  StretchedButton, BarMeter, Readout, NavRail and TitleBar.
+- The Apps, Hosts and Traffic views are deduplicated.
+- The audit's bugs are fixed, and fetching moved from effects into query hooks.
+- A raw `<button>` outside the library is a lint error.
+- Gates: DOM tests, `screenshots --stable` diffs and the a11y audit.
+
+**Left as follow-ups:**
+- **Phase 7:**
+  - Split Sparkline's geometry from its latency logic.
+  - Make WavyProgress a library progress bar.
+  - Make one Timeline marker for Events and the services timeline.
+  - Promote TransferFigures and SplitBar from apps to the library.
+- **Phase 9:**
+  - Split the fat views (ServicesView, ServicesTimelineView, ConnectionCard,
+    SpeedHistoryView, UsageView, DiagnosticsView, HostsView's rows).
+  - Move their untested logic into tested `utils/`.
+  - Memoise the timeline's per-second grouping.
+- **Phase 6:**
+  - Hand-built full-bleed footers and padded `li` cards should become
+    CardFooter and Card variants.
+- **Phase 10:**
+  - Move component styles out of `utilities.css`.
+  - Split colour out of the type utilities.
+  - Add a page-inset layout token for PageHeader's bleed. It needs Figma and
+    rove-design first.
+
 Phase 1 of the component-library refactor. Nothing in `src/` has changed yet.
 Work happens on `refactor/ui-library`.
 

@@ -119,6 +119,12 @@ The Figma pass works through this list and deletes the file when it's done.
 - An accent text link for running text: no underline until hover or focus.
   Used for the About page's source link.
 
+## Token gaps
+
+- **Page inset.** The page header bleeds to the content column's edges by
+  repeating its padding (12px top and start, 6px end). A layout token pair
+  (`--page-inset-*`) would let both read one value.
+
 ## Open questions
 
 - **Devices card "Discover" button.** It has tighter sides than soft sm
