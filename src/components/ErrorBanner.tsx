@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { cx } from 'class-variance-authority'
 import { AlertIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
 
 // Retry is a negative tonal chip, a step stronger than the banner's own tint;
 // Dismiss has no fill until hovered.
@@ -64,8 +63,7 @@ export function ErrorBanner({ title, description, onRetry }: ErrorBannerProps): 
             Dismiss
           </Button>
           {onRetry && (
-            <Button className={RETRY} isLoading={isRetrying} onClick={() => void retry()}>
-              {isRetrying ? <ButtonSpinner size={13} /> : <RefreshIcon size={13} />}
+            <Button className={RETRY} icon={RefreshIcon} isLoading={isRetrying} onClick={() => void retry()}>
               {isRetrying ? 'Retrying…' : 'Retry'}
             </Button>
           )}

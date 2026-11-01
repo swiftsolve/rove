@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { cx } from 'class-variance-authority'
 import type { PendingUpdate } from '@/app/utils/updater'
 import { releaseNoteItems } from '@/app/utils/release-notes'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ArrowRightIcon, DownloadIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { Dialog } from '@/components/Dialog'
@@ -58,8 +57,7 @@ export function UpdateDialog({
       cancelLabel="Later"
       actions={
         <>
-          <Button variant="filled" onClick={handleInstall} isLoading={isInstalling}>
-            {isInstalling ? <ButtonSpinner size={14} /> : <DownloadIcon size={15} />}
+          <Button variant="filled" icon={DownloadIcon} onClick={handleInstall} isLoading={isInstalling}>
             {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}

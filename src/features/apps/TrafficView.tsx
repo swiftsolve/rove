@@ -2,7 +2,6 @@ import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { formatBytes } from '@/lib/format'
-import { Tooltip as UiTooltip } from '@/components/Tooltip'
 import { Subpage } from '@/components/Subpage'
 import { MetricValue } from '@/components/MetricValue'
 import {
@@ -195,13 +194,7 @@ export function TrafficView(): JSX.Element {
       description={subtitle}
       onBack={back}
       action={
-        <UiTooltip content={TRAFFIC_INFO_HINT}>
-          <IconButton
-            aria-label="About traffic types"
-          >
-            <HelpIcon size={16} />
-          </IconButton>
-        </UiTooltip>
+        <IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />
       }
     >
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}

@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useState } from 'react'
 import type { ServiceDefinition } from '@/types'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
@@ -151,16 +151,10 @@ function AddressFeedback({
   return <p className={noteVariants()}>{isEditing ? 'Tested when you save it.' : 'Tested when you add it.'}</p>
 }
 
-function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): ReactNode {
-  if (isBusy) return <ButtonSpinner size={14} />
+function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): string {
+  if (isBusy) return isEditing ? 'Saving…' : 'Adding…'
   if (isDown) return isEditing ? 'Save anyway' : 'Add anyway'
   return isEditing ? 'Save' : 'Add service'
-}
-
-/** The confirm's spoken name while it shows only a spinner. */
-function busyConfirmName(isBusy: boolean, isEditing: boolean): string | undefined {
-  if (!isBusy) return undefined
-  return isEditing ? 'Saving' : 'Adding service'
 }
 
 /**
@@ -297,12 +291,9 @@ export function AddServiceDialog({ isOpen, onAdd, onClose, editing }: AddService
       actions={
         <Button
           variant="filled"
-          // A minimum width keeps it from shrinking to the spinner while it adds.
-          className="min-w-[76px]"
           onClick={submit}
           isDisabled={!address.trim() || isTesting || isUnchanged}
           isLoading={isBusy}
-          aria-label={busyConfirmName(isBusy, isEditing)}
         >
           {confirmLabel(isBusy, isEditing, isDown)}
         </Button>

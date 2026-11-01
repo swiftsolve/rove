@@ -7,7 +7,6 @@ import { useTheme } from '@/app/hooks/useTheme'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { Section } from '@/components/Section'
 import { Toggle } from '@/components/Toggle'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -254,10 +253,10 @@ export function SettingsView(): JSX.Element {
             <Button
               aria-describedby={descriptionId}
               variant="secondary"
+              icon={RefreshIcon}
               isLoading={isChecking}
               onClick={() => void runCheck()}
             >
-              {isChecking ? <ButtonSpinner size={14} /> : <RefreshIcon size={14} />}
               Check now
             </Button>
           )}

@@ -4,12 +4,10 @@ import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataList, DataRow } from '@/components/DataRow'
 import { Section, SectionBadge } from '@/components/Section'
-import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RouterIcon } from '@/components/icons/Icons'
+import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RefreshIcon, RouterIcon } from '@/components/icons/Icons'
 import { IconButton } from '@/components/IconButton'
-import { Tooltip } from '@/components/Tooltip'
 import { MetricValue, type MetricStatus } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
-import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
@@ -240,14 +238,8 @@ export function DiagnosticsView(): JSX.Element {
         isSubtitleShown={hasDiagnostics && !isRunning}
         actions={
           <>
-            <Tooltip content={DIAGNOSTICS_HINT}>
-              <IconButton
-                aria-label="About connection checks"
-              >
-                <HelpIcon size={16} />
-              </IconButton>
-            </Tooltip>
-            <RefreshIconButton label="Run again" isLoading={isRunning} onClick={runDiagnostics} />
+            <IconButton label="About connection checks" icon={HelpIcon} tooltip={DIAGNOSTICS_HINT} />
+            <IconButton label="Run again" icon={RefreshIcon} isLoading={isRunning} onClick={runDiagnostics} />
           </>
         }
       />

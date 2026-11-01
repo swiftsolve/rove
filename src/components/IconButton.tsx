@@ -1,6 +1,9 @@
-import type { ButtonHTMLAttributes } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
+import { ButtonSpinner } from '@/components/ButtonSpinner'
+import { Tooltip } from '@/components/Tooltip'
+import type { IconComponent } from '@/components/icons/Icons'
 import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from '@/components/utils/button-state'
 
 const iconButtonVariants = cva(
@@ -12,7 +15,7 @@ const iconButtonVariants = cva(
   {
     variants: {
       variant: {
-        /** Neutral inset chip: refresh, overflow menus. */
+        /** Neutral inset chip: refresh, help, share. */
         secondary: [
           'bg-inset text-secondary',
           'not-aria-disabled:not-aria-busy:hover:bg-hover not-aria-disabled:not-aria-busy:hover:text-primary',
@@ -26,32 +29,53 @@ const iconButtonVariants = cva(
   },
 )
 
-type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
+type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-label' | 'children'> &
   VariantProps<typeof iconButtonVariants> & {
-    /** Required: an icon-only button has no visible text to name it. */
-    'aria-label': string
+    /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
+    label: string
+    icon: IconComponent
+    /** 16, or 14 for a glyph that reads large (Play). The spinner matches it. */
+    iconSize?: 16 | 14
+    /** The tooltip, when it should say more than the label (a help button's hint). */
+    tooltip?: ReactNode
+    tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right'
   }
 
 /**
- * A square, icon-only button. Disabled and loading work as on Button: both
- * drop clicks and stay focusable; only disabled dims. Extra props pass
- * straight to the `<button>`.
+ * A square, icon-only button with a tooltip. While `isLoading` a spinner takes
+ * the icon's place. Disabled and loading work as on Button: both drop clicks
+ * and stay focusable; only disabled dims. Extra props pass straight to the
+ * `<button>`.
  */
-export function IconButton({
-  variant,
-  isDisabled,
-  isLoading,
-  className,
-  type = 'button',
-  onClick,
-  ...buttonProps
-}: IconButtonProps): JSX.Element {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  {
+    variant,
+    label,
+    icon: Icon,
+    iconSize = 16,
+    tooltip,
+    tooltipPlacement,
+    isDisabled,
+    isLoading,
+    className,
+    type = 'button',
+    onClick,
+    ...buttonProps
+  },
+  ref,
+) {
   return (
-    <button
-      type={type}
-      className={cn(iconButtonVariants({ variant, isDisabled, isLoading }), className)}
-      {...buttonStateProps({ isDisabled, isLoading, onClick })}
-      {...buttonProps}
-    />
+    <Tooltip content={tooltip ?? label} placement={tooltipPlacement}>
+      <button
+        ref={ref}
+        type={type}
+        className={cn(iconButtonVariants({ variant, isDisabled, isLoading }), className)}
+        aria-label={label}
+        {...buttonStateProps({ isDisabled, isLoading, onClick })}
+        {...buttonProps}
+      >
+        {isLoading ? <ButtonSpinner size={iconSize} /> : <Icon size={iconSize} />}
+      </button>
+    </Tooltip>
   )
-}
+})

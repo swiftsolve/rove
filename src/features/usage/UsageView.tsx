@@ -4,7 +4,6 @@ import type { DailyUsage } from '@/types'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
 import { Section } from '@/components/Section'
-import { Tooltip as UiTooltip } from '@/components/Tooltip'
 import { ViewHeader } from '@/components/ViewHeader'
 import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
@@ -260,13 +259,7 @@ export function UsageView(): JSX.Element {
         subtitle={isFirstLoad ? 'Loading…' : 'Download and upload across all interfaces'}
         isSubtitleShown={!isFirstLoad}
         actions={
-          <UiTooltip content={USAGE_INFO_HINT}>
-            <IconButton
-              aria-label="About usage measurement"
-            >
-              <HelpIcon size={16} />
-            </IconButton>
-          </UiTooltip>
+          <IconButton label="About usage measurement" icon={HelpIcon} tooltip={USAGE_INFO_HINT} />
         }
       />
 

@@ -94,8 +94,7 @@ export function NetworkLoadingScreen(): JSX.Element {
         <p className="text-lg font-semibold text-primary">{title}</p>
         <p className="max-w-[260px] text-sm text-tertiary">{hint}</p>
       </div>
-      <Button onClick={() => void network.refresh()}>
-        <RefreshIcon size={14} />
+      <Button icon={RefreshIcon} onClick={() => void network.refresh()}>
         Try again
       </Button>
     </div>

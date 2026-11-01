@@ -3,7 +3,6 @@ import { formatBytes } from '@/lib/format'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
-import { Tooltip as UiTooltip } from '@/components/Tooltip'
 import { ViewHeader } from '@/components/ViewHeader'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import { MetricValue } from '@/components/MetricValue'
@@ -258,13 +257,7 @@ export function AppUsageView(): JSX.Element {
         }
         isSubtitleShown={!isFirstLoad}
         actions={
-          <UiTooltip content={APP_USAGE_INFO_HINT}>
-            <IconButton
-              aria-label="About per-app usage"
-            >
-              <HelpIcon size={16} />
-            </IconButton>
-          </UiTooltip>
+          <IconButton label="About per-app usage" icon={HelpIcon} tooltip={APP_USAGE_INFO_HINT} />
         }
       />
 

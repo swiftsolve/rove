@@ -83,12 +83,13 @@ import {
   Zap,
 } from 'lucide-react'
 
-interface IconProps {
+export interface IconProps {
   size?: number
   className?: string
 }
 
-type IconComponent = (props: IconProps) => JSX.Element
+/** An app icon: renders its glyph at `size`. What Button and IconButton take as `icon`. */
+export type IconComponent = (props: IconProps) => JSX.Element
 
 function make(Base: LucideIcon, defaultSize: number): IconComponent {
   return function Icon({ size = defaultSize, className }: IconProps): JSX.Element {

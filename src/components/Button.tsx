@@ -1,6 +1,8 @@
-import type { ButtonHTMLAttributes } from 'react'
+import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
+import { ButtonSpinner } from '@/components/ButtonSpinner'
+import type { IconComponent } from '@/components/icons/Icons'
 import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from '@/components/utils/button-state'
 
 // The filled buttons: a solid fill under a white label.
@@ -35,30 +37,36 @@ const buttonVariants = cva(undefined, {
   defaultVariants: { variant: 'secondary' },
 })
 
+/** Every variant's glyph, and the spinner that takes its place while loading. */
+const ICON_SIZE = 13
+
 type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
-  VariantProps<typeof buttonVariants>
+  VariantProps<typeof buttonVariants> & {
+    /** A glyph before the label, drawn at the button's icon size. */
+    icon?: IconComponent
+  }
 
 /**
- * A text button. `isDisabled` and `isLoading` both drop clicks but keep it
- * focusable, so a Tooltip explaining why still works: disabled dims it
- * (`aria-disabled`), loading doesn't (`aria-busy`). Extra props (aria-*,
- * handlers from a Tooltip) pass straight to the `<button>`.
+ * A text button, with an optional icon before its label. While `isLoading` a
+ * spinner takes the icon's place (or comes first, with no icon) and clicks drop;
+ * `isDisabled` dims it and drops clicks. Both keep it focusable, so a Tooltip
+ * explaining why still works. Extra props (aria-*, handlers from a Tooltip) pass
+ * straight to the `<button>`.
  */
-export function Button({
-  variant,
-  isDisabled,
-  isLoading,
-  className,
-  type = 'button',
-  onClick,
-  ...buttonProps
-}: ButtonProps): JSX.Element {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant, icon: Icon, isDisabled, isLoading, className, type = 'button', onClick, children, ...buttonProps },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type={type}
       className={cn(buttonVariants({ variant, isDisabled, isLoading }), className)}
       {...buttonStateProps({ isDisabled, isLoading, onClick })}
       {...buttonProps}
-    />
+    >
+      {isLoading ? <ButtonSpinner size={ICON_SIZE} /> : Icon && <Icon size={ICON_SIZE} />}
+      {children}
+    </button>
   )
-}
+})

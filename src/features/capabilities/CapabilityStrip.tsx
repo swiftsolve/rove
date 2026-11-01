@@ -9,7 +9,6 @@ import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import { Section } from '@/components/Section'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { InlineMeta } from '@/components/DotSeparator'
 import { Tooltip } from '@/components/Tooltip'
 import { ChevronRightIcon, HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
@@ -100,23 +99,6 @@ const LINK = cx(
   'hover:[&_svg]:opacity-100 focus-visible:[&_svg]:opacity-100',
 )
 
-function runButtonTooltip(isTesting: boolean, hasResults: boolean): string {
-  if (isTesting) return 'Speed test running'
-  return hasResults ? 'Run speed test again' : 'Run speed test'
-}
-
-function RunButtonIcon({
-  isTesting,
-  hasResults,
-}: {
-  isTesting: boolean
-  hasResults: boolean
-}): JSX.Element {
-  if (isTesting) return <ButtonSpinner size={14} />
-  if (hasResults) return <RefreshIcon size={14} />
-  return <PlayIcon size={14} />
-}
-
 /** Starts a test in place; the Speed tab shows the same run (one shared store),
  *  and the footer links there. */
 function RunTestButton({
@@ -134,16 +116,16 @@ function RunTestButton({
   }
 
   return (
-    <Tooltip placement="left" content={runButtonTooltip(isTesting, hasResults)}>
-      <IconButton
-        isLoading={isTesting}
-        onClick={handleRunTest}
-        isDisabled={!canRunTest}
-        aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
-      >
-        <RunButtonIcon isTesting={isTesting} hasResults={hasResults} />
-      </IconButton>
-    </Tooltip>
+    <IconButton
+      label={hasResults ? 'Run speed test again' : 'Run speed test'}
+      icon={hasResults ? RefreshIcon : PlayIcon}
+      iconSize={14}
+      tooltip={isTesting ? 'Speed test running' : undefined}
+      tooltipPlacement="left"
+      isLoading={isTesting}
+      isDisabled={!canRunTest}
+      onClick={handleRunTest}
+    />
   )
 }
 

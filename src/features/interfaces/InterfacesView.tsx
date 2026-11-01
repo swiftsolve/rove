@@ -1,8 +1,8 @@
 import type { NetworkInterfaceSummary } from '@/types'
-import { EthernetIcon, LayersIcon, WifiIcon } from '@/components/icons/Icons'
+import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/icons/Icons'
 import { DataList, DataRow } from '@/components/DataRow'
 import { InlineMeta } from '@/components/DotSeparator'
-import { RefreshIconButton } from '@/components/RefreshIconButton'
+import { IconButton } from '@/components/IconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
@@ -174,7 +174,7 @@ export function InterfacesView(): JSX.Element {
             <InlineMeta shouldTruncate items={interfaceTypeSummaryParts(interfaces)} />
           ) : undefined
         }
-        actions={<RefreshIconButton label="Refresh" isLoading={isLoading} onClick={onRefresh} />}
+        actions={<IconButton label="Refresh" icon={RefreshIcon} isLoading={isLoading} onClick={onRefresh} />}
       />
 
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}

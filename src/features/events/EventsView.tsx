@@ -4,11 +4,9 @@ import { useNow } from '@/hooks/useNow'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { EmptyState } from '@/components/EmptyState'
-import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
-import { Tooltip } from '@/components/Tooltip'
-import { EventsIcon, HelpIcon } from '@/components/icons/Icons'
+import { EventsIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
@@ -127,15 +125,10 @@ export function EventsView(): JSX.Element {
         isSubtitleShown={hasEvents}
         actions={
           <>
-            <Tooltip content={FEED_HINT}>
-              <IconButton
-                aria-label="About network events"
-              >
-                <HelpIcon size={16} />
-              </IconButton>
-            </Tooltip>
-            <RefreshIconButton
+            <IconButton label="About network events" icon={HelpIcon} tooltip={FEED_HINT} />
+            <IconButton
               label="Scan for changes"
+              icon={RefreshIcon}
               isLoading={isScanning}
               onClick={rescan}
             />

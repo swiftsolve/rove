@@ -280,16 +280,14 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
   if (isOffline) {
     return (
       <Tooltip content="Connect to the internet first">
-        <Button variant="filled" isDisabled>
-          <PlusIcon size={14} />
+        <Button variant="filled" icon={PlusIcon} isDisabled>
           Add service
         </Button>
       </Tooltip>
     )
   }
   return (
-    <Button variant="filled" onClick={onClick} aria-haspopup="dialog">
-      <PlusIcon size={14} />
+    <Button variant="filled" icon={PlusIcon} onClick={onClick} aria-haspopup="dialog">
       Add service
     </Button>
   )
@@ -398,13 +396,7 @@ export function ServicesView(): JSX.Element {
         // Beside a full button the help chip takes the 10px step, as on Speed.
         actions={
           <div className="flex items-center gap-10">
-            <Tooltip content={SERVICES_HINT}>
-              <IconButton
-                aria-label="About service checks"
-              >
-                <HelpIcon size={16} />
-              </IconButton>
-            </Tooltip>
+            <IconButton label="About service checks" icon={HelpIcon} tooltip={SERVICES_HINT} />
             <AddServiceButton isOffline={isOfflineNow} onClick={() => openDialog({ mode: 'add' })} />
           </div>
         }

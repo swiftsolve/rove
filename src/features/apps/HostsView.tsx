@@ -319,13 +319,7 @@ export function HostsView(): JSX.Element {
       description={isFirstLoad ? 'Loading…' : 'Remote hosts by application, busiest first'}
       onBack={back}
       action={
-        <UiTooltip content={HOST_USAGE_INFO_HINT}>
-          <IconButton
-            aria-label="About per-app hosts"
-          >
-            <HelpIcon size={16} />
-          </IconButton>
-        </UiTooltip>
+        <IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />
       }
     >
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}

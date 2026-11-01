@@ -54,8 +54,7 @@ function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void 
         <p className="text-lg font-semibold text-primary">{notice.title}</p>
         <p className="max-w-[260px] text-sm text-tertiary">{notice.hint}</p>
       </div>
-      <Button onClick={onRetry}>
-        <RefreshIcon size={14} />
+      <Button icon={RefreshIcon} onClick={onRetry}>
         Try again
       </Button>
     </div>

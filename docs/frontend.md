@@ -102,11 +102,14 @@ keep logic worth testing out of components and hooks.
   variant. The one exception is a `:has()` selector in a `.module.css` (below);
   InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
 - Buttons are `Button` (`variant`: `filled`, `danger`, `secondary`) and
-  `IconButton` (`variant`: `secondary`, `plain`; `aria-label` is required),
-  never hand-written `<button>` classes. Both take `isDisabled` and
-  `isLoading`: each drops clicks and stays focusable (so a tooltip can say
-  why), and only disabled dims. They share that behaviour through
-  `components/utils/button-state.ts`.
+  `IconButton` (`variant`: `secondary`, `plain`), never hand-written
+  `<button>` classes. Both take an `icon` component (`icon={RefreshIcon}`)
+  and draw it at the Figma size: 13px in a Button, 16px in an IconButton
+  (`iconSize={14}` for Play). `isLoading` swaps the icon for the ring spinner
+  and `isDisabled` dims; both drop clicks and stay focusable (so a tooltip can
+  say why). An IconButton's `label` names it and is its tooltip; `tooltip`
+  replaces the bubble's text when it should say more (a help button's hint).
+  Both share that behaviour through `components/utils/button-state.ts`.
 - Props share names across components and with Figma: `variant`, `isLoading`,
   `isDisabled`, `isChecked`; a colour by role is `status` or `tone`
   (`positive`, `warning`, `negative`, `neutral`); a quality rating is `level`
@@ -142,8 +145,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
 | Page header | `ViewHeader` | Top of every page except Home: icon chip, title, subtitle and actions, over a full-width divider. |
 | Subpage header | `Subpage` | Top of a page layered over a tab: back, title, an optional description and one action. |
-| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. |
-| Icon button | `IconButton` | Icon-only button; `variant` is `secondary` or `plain`. Use a 14px icon for Play. |
+| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. Icon (`icon`) and Loading (`isLoading`) as in Figma. |
+| Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
 | Card | `Section`, `SectionCard` | Header, a content slot and an optional footer (`footerClassName` adjusts it). Padding None (`bodyClassName`) lets the content run edge to edge. `SectionCard` is the surface alone, for a card that lays out its own content (`as="li"` in a list). |
@@ -166,4 +169,4 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |
-| Ring spinner | `ButtonSpinner` | Loading indicator inside buttons, in the button's icon colour. |
+| Ring spinner | `ButtonSpinner` | Loading indicator in the button's icon colour. Button and IconButton show it for `isLoading`; use it directly only outside a button. |

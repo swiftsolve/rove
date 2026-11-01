@@ -115,10 +115,10 @@ function TestButton(): JSX.Element {
     return (
       <Button
         variant="danger"
+        icon={StopIcon}
         onClick={cancelTest}
         aria-label="Stop test"
       >
-        <StopIcon size={12} />
         Stop
       </Button>
     )
@@ -127,8 +127,7 @@ function TestButton(): JSX.Element {
   if (!canTest) {
     return (
       <Tooltip content="Connect to a network first">
-        <Button variant="filled" isDisabled>
-          <PlayIcon size={13} />
+        <Button variant="filled" icon={PlayIcon} isDisabled>
           Run test
         </Button>
       </Tooltip>
@@ -139,10 +138,9 @@ function TestButton(): JSX.Element {
   return (
     <Button
       variant="filled"
+      icon={PlayIcon}
       onClick={() => void runTest()}
-      aria-label={runLabel}
     >
-      <PlayIcon size={13} />
       {runLabel}
     </Button>
   )
@@ -181,13 +179,7 @@ export function SpeedView(): JSX.Element | null {
         // chip needs the wider 10px step to read as its own control.
         actions={
           <div className="flex items-center gap-10">
-            <Tooltip content={SPEED_HINT}>
-              <IconButton
-                aria-label="About speed tests"
-              >
-                <HelpIcon size={16} />
-              </IconButton>
-            </Tooltip>
+            <IconButton label="About speed tests" icon={HelpIcon} tooltip={SPEED_HINT} />
             <TestButton />
           </div>
         }

@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react'
 import type { LanDevice } from '@/types'
 import { EmptyState } from '@/components/EmptyState'
-import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
-import { DevicesIcon, HelpIcon } from '@/components/icons/Icons'
-import { Tooltip } from '@/components/Tooltip'
+import { DevicesIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
 import { IS_MAC } from '@/lib/platform'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { Button } from '@/components/Button'
@@ -139,17 +137,12 @@ export function DevicesView(): JSX.Element {
         isSubtitleShown={hasDevices && subnet != null}
         actions={
           <>
-            <Tooltip content={SCAN_HINT}>
-              <IconButton
-                aria-label="About device scanning"
-              >
-                <HelpIcon size={16} />
-              </IconButton>
-            </Tooltip>
+            <IconButton label="About device scanning" icon={HelpIcon} tooltip={SCAN_HINT} />
             {/* Kept clickable while scanning (busy clicks are ignored) so the
                 tooltip still answers "why is this spinning". */}
-            <RefreshIconButton
+            <IconButton
               label="Scan again"
+              icon={RefreshIcon}
               isLoading={isScanning}
               onClick={onRescan}
             />

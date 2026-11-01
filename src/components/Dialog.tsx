@@ -119,9 +119,14 @@ export function Dialog({
               </div>
             )}
           </div>
-          <IconButton variant="plain" className={CLOSE} onClick={onClose} isDisabled={!isClosable} aria-label="Close">
-            <CloseIcon size={15} />
-          </IconButton>
+          <IconButton
+            variant="plain"
+            className={CLOSE}
+            label="Close"
+            icon={CloseIcon}
+            onClick={onClose}
+            isDisabled={!isClosable}
+          />
         </div>
 
         {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}

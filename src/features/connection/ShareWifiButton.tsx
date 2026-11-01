@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { QrCodeIcon } from '@/components/icons/Icons'
-import { Tooltip } from '@/components/Tooltip'
 import { WifiShareDialog } from '@/features/connection/WifiShareDialog'
 import { IconButton } from '@/components/IconButton'
 import { DIALOG_EXIT_MS } from '@/components/Dialog'
@@ -18,14 +17,7 @@ export function ShareWifiButton(): JSX.Element {
 
   return (
     <>
-      <Tooltip content="Share Wi‑Fi">
-        <IconButton
-          aria-label="Share Wi‑Fi"
-          onClick={() => setIsOpen(true)}
-        >
-          <QrCodeIcon size={16} />
-        </IconButton>
-      </Tooltip>
+      <IconButton label="Share Wi‑Fi" icon={QrCodeIcon} onClick={() => setIsOpen(true)} />
       {isMounted && <WifiShareDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />}
     </>
   )
