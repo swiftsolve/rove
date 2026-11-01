@@ -3,7 +3,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useScreenFocus } from '@/app/hooks/useScreenFocus'
 import { TabBar } from '@/app/components/TabBar'
 import { UpdatePrompt } from '@/app/components/UpdatePrompt'
-import { TitleBar } from '@/app/components/TitleBar'
+import { AppTitleBar } from '@/app/components/AppTitleBar'
 import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
 import { CurrentScreen } from '@/app/components/CurrentScreen'
 import { useState } from 'react'
@@ -48,7 +48,7 @@ export function AppShell(): JSX.Element {
           rather than the desktop. A hairline edge keeps the frameless window crisp. */}
       <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
         <UpdatePrompt />
-        <TitleBar />
+        <AppTitleBar />
 
         {/* Everything below the full-width title bar: the nav rail, then the content column. */}
         <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
