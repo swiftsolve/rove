@@ -1,0 +1,46 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as Icons from './Icons'
+import type { IconProps } from './Icons'
+
+// Every component the module exports (the types are gone at runtime), by name.
+const ICONS = Object.entries(Icons)
+  .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
+  .sort(([a], [b]) => a.localeCompare(b))
+
+const meta = {
+  title: 'Foundations/Icons',
+  argTypes: {
+    size: { control: { type: 'range', min: 12, max: 32, step: 1 }, description: 'Unset: each icon at its own default size.' },
+    className: { control: false },
+  },
+} satisfies Meta<IconProps>
+
+export default meta
+// No `component` to take the args from: the stories take an icon's props.
+type Story = StoryObj<IconProps>
+
+/** Every icon, named. Set `size` to see them all at one size. */
+export const Catalogue: Story = {
+  render: ({ size }) => (
+    <ul role="list" className="grid grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-8">
+      {ICONS.map(([name, Icon]) => (
+        <li key={name} className="flex flex-col items-center gap-8 rounded-sm bg-surface px-8 py-12 text-secondary">
+          <span className="flex h-[32px] items-center">
+            <Icon size={size} />
+          </span>
+          <span className="text-xs text-tertiary">{name}</span>
+        </li>
+      ))}
+    </ul>
+  ),
+}
+
+/** The Rove mark in the accent colour, and with the app icon's gradient. */
+export const Brand: Story = {
+  render: ({ size = 48 }) => (
+    <div className="flex items-center gap-20 text-accent">
+      <Icons.BrandIcon size={size} />
+      <Icons.BrandIcon size={size} hasGradient />
+    </div>
+  ),
+}

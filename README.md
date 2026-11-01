@@ -189,7 +189,8 @@ rove/
 │   │                           (capabilities, connection and live-throughput
 │   │                           have no view, so their parts sit at the top)
 │   ├── ui/                     the component library, imported from @/ui:
-│   │                           a folder per component, icons, a dev gallery
+│   │                           a folder per component (with its stories),
+│   │                           icons, a dev gallery
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
 │   ├── lib/                    shared helpers (format, platform, highlight)
@@ -236,6 +237,7 @@ Then:
 npm install
 npm run tauri:dev            # run the desktop app (hot-reloads the UI)
 npm run dev                  # UI only, in a browser, against the mock bridge
+npm run storybook            # the UI library's components, at localhost:6006
 npm run screenshots          # refresh docs/screenshots — every screen, at window size
 npm test                     # unit tests for the UI's pure logic (Vitest)
 cargo check -p rove-core   # typecheck the service layer alone

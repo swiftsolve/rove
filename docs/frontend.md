@@ -190,6 +190,12 @@ both, and a raw `<button>` outside the library is a lint error.
   `icons/`.
 - `gallery/` renders every component in every state at `/?gallery`
   (`&theme=light` for Light). Dev only.
+- Each component has stories beside it (`Button.stories.tsx`), titled by the
+  same groups (`Actions/Button`). `npm run storybook` serves them at
+  `localhost:6006`, with a Theme switch in the toolbar and an accessibility
+  check on every story; `npm run build:storybook` writes a static copy to
+  `storybook-static/`. Stories import the library by relative path, like the
+  library itself. A new component gets its stories in the same change.
 
 Every component follows the same rules:
 

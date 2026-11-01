@@ -1,0 +1,8 @@
+/* The app is one window-sized screen with a transparent body (base.css); a
+   story is a page that scrolls, on the app's background. */
+html,
+body {
+  height: auto;
+  overflow: visible;
+  background: var(--bg-base);
+}
