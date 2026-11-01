@@ -49,6 +49,21 @@ The Figma pass works through this list and deletes the file when it's done.
   - items are medium weight;
   - it animates in.
 
+### Text field (new)
+
+- **Parts:** an overline label; a 38px input on the inset fill, with an accent
+  border on focus and a negative one when invalid; and an optional action
+  inside the border.
+- **The action** (Test) is a 30px accent-muted button that collapses to a
+  square spinner while loading.
+- **Feedback line** under the field.
+- These are the add-service dialog's fields, now a component.
+
+### Segmented control (new in the library)
+
+- Settings' theme picker as a component: an inset track with 2px segments,
+  the checked one lit with the accent.
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

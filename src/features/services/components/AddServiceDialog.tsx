@@ -1,66 +1,11 @@
 import { useId, useState } from 'react'
 import type { ServiceDefinition } from '@/types'
-import { Button, ButtonSpinner, Dialog } from '@/ui'
+import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
-
-const FIELD_LABEL = 'text-overline mb-6 block'
-
-// Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
-// fixed-height control centred beside it lands on a symmetric gap.
-const INPUT = cx(
-  'w-full rounded-sm px-12 py-10 text-md leading-[18px] text-primary placeholder:text-tertiary',
-  'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
-)
-
-// The standalone field draws its own border.
-const BORDERED_INPUT = cx(
-  INPUT,
-  'border border-line bg-inset',
-  'focus-visible:border-accent aria-invalid:border-status-negative',
-)
-
-// The address field carries its Test action inline: the group owns the border
-// and focus/invalid state, and the input inside goes borderless so the two read
-// as one control.
-const GROUPED_INPUT = cx(INPUT, 'min-w-0 flex-auto border-none bg-transparent')
-
-const inputGroupVariants = cva(
-  [
-    'flex items-center gap-4 rounded-sm border bg-inset pr-6',
-    'transition-[border-color] duration-(--duration-fast) ease-in-out',
-  ],
-  {
-    variants: {
-      /** The address failed to parse or test: a red border. */
-      isInvalid: { true: 'border-status-negative', false: 'border-line focus-within:border-accent' },
-    },
-    defaultVariants: { isInvalid: false },
-  },
-)
-
-// The inline Test action is a quiet, transparent accent button (a faint accent
-// wash with an accent-coloured label) so it reads as secondary to the solid
-// "Add service" confirm below.
-const testVariants = cva(
-  [
-    'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
-    'bg-accent-muted text-xs font-semibold tracking-label-default text-accent-text',
-    'transition-[background,color] duration-(--duration-fast) ease-in-out',
-    'disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)',
-  ],
-  {
-    variants: {
-      /** Testing: the label is just a small spinner, so the button collapses to
-       *  a square instead of holding the full "Test" width around it. */
-      isLoading: { true: 'w-[30px] min-w-0', false: 'min-w-[52px] px-10' },
-    },
-    defaultVariants: { isLoading: false },
-  },
-)
+import { cva } from 'class-variance-authority'
 
 // Feedback tucked directly under the address field: the idle hint, an error, or
 // the tested result. The hint is a snug one-line caption; the result is a taller
@@ -182,8 +127,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   // The test was started by Add (not the inline Test), so it adds once it lands.
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const addressId = useId()
-  const feedbackId = useId()
+  const formId = useId()
   const isEditing = editing != null
   const isTesting = phase === 'testing'
 
@@ -268,13 +212,6 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     setIsNameTouched(value.trim() !== '')
   }
 
-  // Enter does what the Add button does.
-  const onFieldKeyDown = (e: React.KeyboardEvent): void => {
-    if (e.key !== 'Enter') return
-    e.preventDefault()
-    submit()
-  }
-
   return (
     <Dialog
       title={isEditing ? 'Edit service' : 'Add a service'}
@@ -286,7 +223,8 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       actions={
         <Button
           variant="solid"
-          onClick={submit}
+          type="submit"
+          form={formId}
           isDisabled={!address.trim() || isTesting || isUnchanged}
           isLoading={isBusy}
         >
@@ -294,53 +232,41 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
         </Button>
       }
     >
-      {/* A div, not a wrapping label: the field also holds the Test button and
-          the feedback below it, which a label can't contain. */}
-      <div className="block">
-        <label htmlFor={addressId} className={FIELD_LABEL}>
-          Address
-        </label>
-        <div className={inputGroupVariants({ isInvalid: error != null })}>
-          <input
-            id={addressId}
-            type="text"
-            className={GROUPED_INPUT}
-            value={address}
-            onChange={(e) => onAddressChange(e.target.value)}
-            onKeyDown={onFieldKeyDown}
-            placeholder="example.com or 192.168.1.1"
-            aria-invalid={error != null}
-            aria-describedby={feedbackId}
-            autoFocus
-          />
-          <button
-            type="button"
-            className={testVariants({ isLoading: isTesting })}
-            onClick={() => runTest()}
-            disabled={!address.trim() || isTesting || isAdding}
-            aria-label={isTesting ? 'Testing' : undefined}
-          >
-            {isTesting ? <ButtonSpinner size={13} /> : 'Test'}
-          </button>
-        </div>
-        {/* One persistent live region, so "Testing…", the result and any
-            error are announced as they swap in. */}
-        <div id={feedbackId} role="status">
-          <AddressFeedback error={error} phase={phase} outcome={outcome} name={name} isEditing={isEditing} />
-        </div>
-      </div>
-
-      <label className="mt-16 block">
-        <span className={FIELD_LABEL}>Name</span>
-        <input
-          type="text"
-          className={BORDERED_INPUT}
+      {/* Enter in either field submits, as the Add button does. */}
+      <form
+        id={formId}
+        onSubmit={(event) => {
+          event.preventDefault()
+          submit()
+        }}
+      >
+        <TextField
+          label="Address"
+          value={address}
+          onChange={onAddressChange}
+          placeholder="example.com or 192.168.1.1"
+          isInvalid={error != null}
+          autoFocus
+          action={
+            <TextFieldAction
+              onClick={() => runTest()}
+              isDisabled={!address.trim() || isTesting || isAdding}
+              isLoading={isTesting}
+              loadingLabel="Testing"
+            >
+              Test
+            </TextFieldAction>
+          }
+          feedback={<AddressFeedback error={error} phase={phase} outcome={outcome} name={name} isEditing={isEditing} />}
+        />
+        <TextField
+          className="mt-16"
+          label="Name"
           value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          onKeyDown={onFieldKeyDown}
+          onChange={onNameChange}
           placeholder="Auto-detected from the address"
         />
-      </label>
+      </form>
     </Dialog>
   )
 }

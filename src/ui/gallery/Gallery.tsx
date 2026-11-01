@@ -4,6 +4,7 @@ import { IconButton } from '../primitives/button/IconButton'
 import { ButtonSpinner } from '../primitives/spinner/ButtonSpinner'
 import { Spinner } from '../primitives/spinner/Spinner'
 import { Toggle } from '../primitives/toggle/Toggle'
+import { TextField, TextFieldAction } from '../primitives/text-field/TextField'
 import { SegmentedControl } from '../primitives/segmented-control/SegmentedControl'
 import { Dialog, DialogRoot } from '../primitives/dialog/Dialog'
 import { PortalProvider } from '../context/PortalProvider'
@@ -118,6 +119,13 @@ export function Gallery(): JSX.Element {
         <Row label="theme">
           <SegmentedDemo />
         </Row>
+      </Section>
+
+      <Section title="TextField">
+        <div className="grid grid-cols-2 gap-12">
+          <TextFieldDemo />
+          <TextField label="Invalid" value="not an address" onChange={() => {}} isInvalid feedback="Not an address." />
+        </div>
       </Section>
 
       <Section title="Spinner">
@@ -298,6 +306,24 @@ function DialogDemo(): JSX.Element {
         )}
       </PortalProvider>
     </div>
+  )
+}
+
+function TextFieldDemo(): JSX.Element {
+  const [address, setAddress] = useState('')
+  return (
+    <TextField
+      label="Address"
+      value={address}
+      onChange={setAddress}
+      placeholder="example.com or 192.168.1.1"
+      feedback="Tested when you add it."
+      action={
+        <TextFieldAction onClick={() => {}} isDisabled={!address}>
+          Test
+        </TextFieldAction>
+      }
+    />
   )
 }
 
