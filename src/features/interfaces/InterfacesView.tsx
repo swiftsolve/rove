@@ -64,7 +64,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <IconTile
-            tint={iface.connectionType === 'unknown' ? 'inset' : 'sm'}
+            tint={iface.connectionType === 'unknown' ? 'inset' : 'wash'}
             className={TILE_COLORS[iface.connectionType]}
           >
             <InterfaceIcon iface={iface} />

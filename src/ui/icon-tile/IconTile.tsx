@@ -8,18 +8,16 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
   variants: {
     size: { sm: 'size-[30px]', md: 'size-[32px]', lg: 'size-[36px]' },
     /**
-     * A wash of the glyph's own colour (`className` sets it: `text-series-down`),
-     * from the faintest (`xs`, an absent connection) to `md`; or `inset`, the
-     * neutral sunken fill with a secondary glyph, for something uncategorised.
+     * `wash`, a wash of the glyph's own colour (`className` sets it:
+     * `text-series-down`); or `inset`, the neutral sunken fill with a secondary
+     * glyph, for something uncategorised.
      */
     tint: {
-      xs: 'bg-current/(--opacity-tint-xs)',
-      sm: 'bg-current/(--opacity-tint-sm)',
-      md: 'bg-current/(--opacity-tint-md)',
+      wash: 'bg-current/(--opacity-tint-md)',
       inset: 'bg-inset text-secondary',
     },
   },
-  defaultVariants: { size: 'md', tint: 'md' },
+  defaultVariants: { size: 'md', tint: 'wash' },
 })
 
 interface TileLookProps {

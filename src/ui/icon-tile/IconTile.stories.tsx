@@ -4,7 +4,7 @@ import { DeviceIcon, RouterIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, Wif
 import { IconTile, IconTileButton } from './IconTile'
 
 const SIZES = ['sm', 'md', 'lg'] as const
-const TINTS = ['xs', 'sm', 'md', 'inset'] as const
+const TINTS = ['wash', 'inset'] as const
 
 const meta = {
   title: 'Data display/IconTile',
@@ -23,12 +23,9 @@ type Story = StoryObj<typeof meta>
 /** A wash of the glyph's own colour: a router in the device list. */
 export const Default: Story = {}
 
-/** A device list's tile, a shade lighter. */
-export const SoftTint: Story = { args: { tint: 'sm', className: 'text-series-down', children: <DeviceIcon size={16} /> } }
-
-/** The faintest wash: an absent connection. */
-export const Faint: Story = {
-  args: { size: 'lg', tint: 'xs', className: 'text-tertiary', children: <WifiOffIcon size={18} /> },
+/** An absent connection: the same wash, in the negative colour. */
+export const Disconnected: Story = {
+  args: { size: 'lg', className: 'text-status-negative', children: <WifiOffIcon size={18} /> },
 }
 
 /** Neutral, for something uncategorised. */
@@ -36,7 +33,7 @@ export const Inset: Story = { args: { tint: 'inset', className: undefined, child
 
 /** The connection strip's tile. */
 export const Large: Story = {
-  args: { size: 'lg', tint: 'sm', className: 'text-status-positive', children: <WifiIcon size={18} /> },
+  args: { size: 'lg', className: 'text-status-positive', children: <WifiIcon size={18} /> },
 }
 
 /** Opens what it stands for: hover deepens the tint and lifts it. */
@@ -62,7 +59,7 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
       {/* A grid, so each tint's column lines up across sizes. */}
-      <div className="grid grid-cols-[repeat(4,max-content)] items-center gap-12">
+      <div className="grid grid-cols-[repeat(2,max-content)] items-center gap-12">
         {SIZES.map((size) =>
           TINTS.map((tint) => (
             <IconTile

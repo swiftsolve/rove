@@ -49,7 +49,7 @@ type IconTone = keyof typeof TONE_COLORS
 
 function DeviceTile({ tone, children }: { tone: IconTone; children: JSX.Element }): JSX.Element {
   return (
-    <IconTile tint={tone === 'neutral' ? 'inset' : 'sm'} className={TONE_COLORS[tone]}>
+    <IconTile tint={tone === 'neutral' ? 'inset' : 'wash'} className={TONE_COLORS[tone]}>
       {children}
     </IconTile>
   )

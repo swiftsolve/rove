@@ -322,7 +322,6 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           />
           <IconTile
             size="lg"
-            tint={display.variant === 'disconnected' ? 'xs' : 'sm'}
             className={cx('relative z-1 pointer-events-none self-center', STRIP_ICON_COLORS[display.variant])}
           >
             <ConnectionIcon variant={display.variant} />
