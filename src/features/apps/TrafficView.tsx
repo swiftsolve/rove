@@ -181,9 +181,8 @@ function TrafficBody({
 }
 
 export function TrafficView(): JSX.Element {
-  const { usage, isLoading, error, reload } = useTrafficUsage()
+  const { usage, isFirstLoad, error, reload } = useTrafficUsage()
   const { back } = useNavigation()
-  const isFirstLoad = isLoading && usage.types.length === 0
   return (
     <div className="page">
       <PageHeader

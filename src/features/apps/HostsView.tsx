@@ -308,12 +308,11 @@ function HostsBody({
 }
 
 export function HostsView(): JSX.Element {
-  const { usage, isLoading, error, reload } = useHostUsage()
+  const { usage, isFirstLoad, error, reload } = useHostUsage()
   const { location, back } = useNavigation()
   // Arrived by clicking an app: open only that app's group and collapse the
   // rest. Otherwise every group starts collapsed.
   const focusApp = location.appsSub?.view === 'hosts' ? location.appsSub.app ?? null : null
-  const isFirstLoad = isLoading && usage.apps.length === 0
   const { isExpanded, toggle } = useExpandedApps(focusApp)
   const listRef = useScrollToFocusedApp(focusApp, usage.apps)
 

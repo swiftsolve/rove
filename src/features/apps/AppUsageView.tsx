@@ -215,8 +215,7 @@ function AppUsageBody({
 }
 
 export function AppUsageView(): JSX.Element {
-  const { usage, isLoading, error, reload } = useAppUsage()
-  const isFirstLoad = isLoading && usage.apps.length === 0
+  const { usage, isFirstLoad, error, reload } = useAppUsage()
 
   return (
     <div className="page">
