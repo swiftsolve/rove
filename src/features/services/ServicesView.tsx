@@ -349,7 +349,7 @@ export function ServicesView(): JSX.Element {
           as="ul"
           shouldClip={false}
           role="list"
-          className="[&>li+li]:border-t [&>li+li]:border-t-line"
+          isDivided
           aria-label="Tracked services"
         >
           {listedServices.map((svc) => (

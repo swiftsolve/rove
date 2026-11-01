@@ -44,10 +44,8 @@ const ALLOWED = [
   { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
   { file: 'src/ui/components/empty-state/EmptyState.tsx', value: '#000' },
-  // A breathing pulse wants a symmetric curve, and no easing token is one.
-  { file: 'src/app/components/TitleBar.tsx', value: 'ease-in-out' },
-  { file: 'src/features/devices/components/ScanStatus.tsx', value: 'ease-in-out' },
-  { file: 'src/features/live-throughput/TrafficCard.tsx', value: 'ease-in-out' },
+  // StatusDot's breathing pulses want a symmetric curve, and no easing token is one.
+  { file: 'src/styles/tailwind.css', value: 'ease-in-out' },
 ]
 
 async function listFiles(dir) {

@@ -32,12 +32,12 @@ export function EmptyState({ isLocked = false, title, description, actions }: Em
     // `.page-empty` lays out the page; the bottom pad lifts the group a little
     // above centre, under the header, and the action is nudged down from the
     // copy above it.
-    <div className="page-empty gap-8 pb-[56px] text-center [&>button]:mt-8">
+    <div className="page-empty gap-8 pb-[56px] text-center">
       <PlaceholderRows isLocked={isLocked} />
       {/* An h2 for the page outline. */}
       <h2 className="text-md font-semibold text-primary">{title}</h2>
       {description != null && <EmptyStateDescription>{description}</EmptyStateDescription>}
-      {actions}
+      {actions != null && <div className="mt-8">{actions}</div>}
     </div>
   )
 }

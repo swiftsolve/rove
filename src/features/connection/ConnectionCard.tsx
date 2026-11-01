@@ -24,6 +24,7 @@ import {
   Card,
   ChevronDownIcon,
   DataList,
+  DataListStack,
   DataRow,
   Disclosure,
   DisclosurePanel,
@@ -125,10 +126,7 @@ const chevronVariants = cva(
 // rows hold their inset for the whole height animation; the wrapper around it
 // does the clipping. Its groups (link, addresses, hardware) are split by a
 // hairline that runs the card's full width, with a row gap either side.
-const DETAILS = cx(
-  'row-list bg-inset py-(--card-header-padding-y)',
-  'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
-)
+const DETAILS = 'row-list bg-inset py-(--card-header-padding-y)'
 
 // A group carries the side inset, so the hairlines between groups don't.
 const DETAILS_GROUP = 'px-(--card-body-padding)'
@@ -341,17 +339,11 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   const titleId = useId()
 
   return (
-    // The card's focus frame: the strip's toggle expands the whole card, so focus
-    // rings the card (strip and, when open, the details) just inside its edge.
     // Named by its own heading, as it has no CardHeader.
-    <Card
-      className={cx(
-        'has-[button[aria-controls]:focus-visible]:[outline:var(--focus-outline)]',
-        'has-[button[aria-controls]:focus-visible]:outline-offset-(--focus-inset)',
-      )}
-      aria-labelledby={titleId}
-    >
-      <Disclosure isOpen={isExpanded} onOpenChange={toggleExpanded}>
+    <Card aria-labelledby={titleId}>
+      {/* The strip's toggle expands the whole card, so focus rings the card
+          (strip and, when open, the details) just inside its rounded edge. */}
+      <Disclosure isOpen={isExpanded} onOpenChange={toggleExpanded} hasFocusFrame className="rounded-[inherit]">
         <div
           className={cx(
             'relative flex items-start gap-12 w-full text-left',
@@ -403,7 +395,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         <DisclosurePanel isAnimated>
           {/* Grouped by topic: the link itself, then the addresses from the
               device outward, then the hardware it runs over. */}
-          <div className={DETAILS}>
+          <DataListStack className={DETAILS}>
             {isWifiNetwork(info) && (
               <DataList className={DETAILS_GROUP} density="compact">
                 <WifiLinkRows info={info} linkSpeed={linkSpeed} />
@@ -435,7 +427,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
               <DataRow label="MAC" value={formatMac(info.macAddress)} />
             </DataList>
-          </div>
+          </DataListStack>
         </DisclosurePanel>
       </Disclosure>
     </Card>

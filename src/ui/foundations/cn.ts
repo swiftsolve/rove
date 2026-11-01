@@ -40,7 +40,11 @@ const mergeClasses = extendTailwindMerge({
       radius: ['xs', 'sm', 'md', 'lg', 'full'],
       shadow: ['panel', 'raised'],
       ease: ['out', 'in-out'],
-      animate: ['overlay-in', 'dialog-in', 'overlay-out', 'dialog-out', 'fade-in', 'menu-in', 'scan-slide-in', 'scan-slide-out', 'wavy-scroll'],
+      animate: [
+        'overlay-in', 'dialog-in', 'overlay-out', 'dialog-out', 'fade-in', 'menu-in',
+        'pulse-calm', 'pulse-live', 'pulse-busy',
+        'scan-slide-in', 'scan-slide-out', 'wavy-scroll',
+      ],
     },
   },
 })

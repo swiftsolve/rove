@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react'
 import { Collapsible } from '@base-ui/react/collapsible'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import { cn } from '../../foundations/cn'
 
 type DisclosureProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
@@ -8,17 +8,37 @@ type DisclosureProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
   onOpenChange: (isOpen: boolean) => void
   /** `li` for a group in a list. */
   as?: 'div' | 'li'
+  /**
+   * Rings the whole disclosure (trigger and open panel) when the trigger has
+   * keyboard focus, instead of the trigger alone: for a trigger that spans a
+   * card's or group's header.
+   */
+  hasFocusFrame?: boolean
   /** A DisclosureTrigger and a DisclosurePanel, wherever the layout puts them. */
   children: ReactNode
 }
 
+const FOCUS_FRAME = cx(
+  'has-[[data-disclosure-trigger]:focus-visible]:[outline:var(--focus-outline)]',
+  'has-[[data-disclosure-trigger]:focus-visible]:outline-offset-(--focus-inset)',
+)
+
 /** Shows and hides a panel from a trigger: a card's details, a group's rows. */
-export function Disclosure({ isOpen, onOpenChange, as = 'div', children, ...props }: DisclosureProps): JSX.Element {
+export function Disclosure({
+  isOpen,
+  onOpenChange,
+  as = 'div',
+  hasFocusFrame = false,
+  className,
+  children,
+  ...props
+}: DisclosureProps): JSX.Element {
   return (
     <Collapsible.Root
       open={isOpen}
       onOpenChange={(isNowOpen) => onOpenChange(isNowOpen)}
       render={as === 'li' ? <li /> : <div />}
+      className={cn(hasFocusFrame && FOCUS_FRAME, className)}
       {...props}
     >
       {children}
@@ -32,7 +52,7 @@ export function Disclosure({ isOpen, onOpenChange, as = 'div', children, ...prop
  */
 export const DisclosureTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(
   function DisclosureTrigger(props, ref) {
-    return <Collapsible.Trigger ref={ref} {...props} />
+    return <Collapsible.Trigger ref={ref} data-disclosure-trigger="" {...props} />
   },
 )
 

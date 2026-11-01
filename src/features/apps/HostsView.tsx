@@ -52,8 +52,6 @@ const chevronVariants = cva(
 // is scrolled to the top of the list.
 const GROUP = cx(
   'scroll-mt-12 first:rounded-t-lg last:rounded-b-lg',
-  'has-[>h2>button:focus-visible]:[outline:var(--focus-outline)]',
-  'has-[>h2>button:focus-visible]:outline-offset-(--focus-inset)',
 )
 
 // The group header is a full-width toggle that carries the row's inset, so the
@@ -215,6 +213,7 @@ const AppGroup = memo(function AppGroup({
   return (
     <Disclosure
       as="li"
+      hasFocusFrame
       className={GROUP}
       data-app={app.name}
       isOpen={isExpanded}

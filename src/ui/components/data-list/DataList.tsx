@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '../../foundations/cn'
 
 // Label left, value right. The first row sits flush to the top of its
 // container and the last to the bottom, so `py` only sets the gap between rows.
@@ -67,6 +68,18 @@ export function DataRow({ label, value, children, align }: DataRowProps): JSX.El
     <div className={rowClassName}>
       <span className={LABEL}>{label}</span>
       <span className={VALUE}>{children ?? value}</span>
+    </div>
+  )
+}
+
+/**
+ * DataLists grouped by topic, one after another: a hairline between groups,
+ * with 12px of air either side of it.
+ */
+export function DataListStack({ className, children }: { className?: string; children: ReactNode }): JSX.Element {
+  return (
+    <div className={cn('divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12', className)}>
+      {children}
     </div>
   )
 }

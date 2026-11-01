@@ -31,4 +31,15 @@ describe('Disclosure', () => {
     await userEvent.keyboard('{Enter}')
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
   })
+
+  it('can frame itself, not just the trigger, when the trigger has focus', () => {
+    render(
+      <Disclosure isOpen={false} onOpenChange={() => {}} hasFocusFrame>
+        <DisclosureTrigger>Details</DisclosureTrigger>
+      </Disclosure>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Details' })
+    expect(trigger).toHaveAttribute('data-disclosure-trigger')
+    expect(trigger.parentElement?.className).toContain('has-[[data-disclosure-trigger]:focus-visible]')
+  })
 })

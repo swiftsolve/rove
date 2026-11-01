@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import {
@@ -10,6 +9,7 @@ import {
   CardHeader,
   ConnectionIcon,
   DataList,
+  DataListStack,
   DataRow,
   DnsIcon,
   ErrorBanner,
@@ -46,10 +46,7 @@ const ROUTER_FOOTER = 'border-t-0 pt-12 pb-16'
 // The Router readout comes in three groups (quality, connection, device) split
 // by a hairline that runs the card's full width, like the connection card's
 // details: the body drops its side inset and each group carries it instead.
-const ROUTER_BODY = cx(
-  'row-list px-0',
-  'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
-)
+const ROUTER_BODY = 'row-list px-0'
 const ROUTER_GROUP = 'row-list px-(--card-body-padding)'
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
@@ -112,33 +109,35 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
     <Card>
       <CardHeader title="Router" icon={<RouterIcon size={15} />} />
       <CardBody className={ROUTER_BODY}>
-        <DataList className={ROUTER_GROUP} density="compact">
-          <DataRow label="Latency">{latencyValue(ping)}</DataRow>
-          <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
-          <DataRow label="Packet loss">
-            {ping ? (
-              <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
-            ) : (
-              '—'
-            )}
-          </DataRow>
-        </DataList>
-        <DataList className={ROUTER_GROUP} density="compact">
-          <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
-          <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
-          {linkSpeedMbps != null && (
-            <DataRow label="Link speed">
-              <MetricValue value={linkSpeedMbps} format={formatSpeedMbps} />
-            </DataRow>
-          )}
-        </DataList>
-        {hasDeviceRows && (
+        <DataListStack>
           <DataList className={ROUTER_GROUP} density="compact">
-            <DataRow label="Name" value={diagnostics?.gatewayName || null} />
-            <DataRow label="Model" value={model} />
-            <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
+            <DataRow label="Latency">{latencyValue(ping)}</DataRow>
+            <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
+            <DataRow label="Packet loss">
+              {ping ? (
+                <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
+              ) : (
+                '—'
+              )}
+            </DataRow>
           </DataList>
-        )}
+          <DataList className={ROUTER_GROUP} density="compact">
+            <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
+            <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
+            {linkSpeedMbps != null && (
+              <DataRow label="Link speed">
+                <MetricValue value={linkSpeedMbps} format={formatSpeedMbps} />
+              </DataRow>
+            )}
+          </DataList>
+          {hasDeviceRows && (
+            <DataList className={ROUTER_GROUP} density="compact">
+              <DataRow label="Name" value={diagnostics?.gatewayName || null} />
+              <DataRow label="Model" value={model} />
+              <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
+            </DataList>
+          )}
+        </DataListStack>
       </CardBody>
       {ping && ping.packetLoss > 0 && (
         <CardFooter className={ROUTER_FOOTER}>

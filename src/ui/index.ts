@@ -18,7 +18,7 @@ export { SegmentedControl, type SegmentedOption } from './primitives/segmented-c
 export { DotSeparator, InlineMeta } from './primitives/separator/DotSeparator'
 
 export { Card, CardBody, CardFooter, CardHeader } from './components/card/Card'
-export { DataList, DataRow } from './components/data-list/DataList'
+export { DataList, DataListStack, DataRow } from './components/data-list/DataList'
 export { EmptyState, EmptyStateDescription } from './components/empty-state/EmptyState'
 export { ErrorBanner, POLLING_DESCRIPTION } from './components/error-banner/ErrorBanner'
 export { MetricValue, type MetricStatus } from './components/metric-value/MetricValue'

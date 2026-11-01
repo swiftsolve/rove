@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
+import { createContext, forwardRef, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { cn } from '../../foundations/cn'
 
@@ -14,6 +14,8 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
   as?: 'section' | 'div' | 'li' | 'ul'
   /** False for a card whose content pops out of it, such as a row's menu. */
   shouldClip?: boolean
+  /** A hairline between each of its children: a list that is one card. */
+  isDivided?: boolean
 }
 
 /**
@@ -21,18 +23,28 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
  * CardHeader, a CardBody and an optional CardFooter, or lay out your own
  * content in it.
  */
-export function Card({ as: Element = 'section', shouldClip = true, className, ...props }: CardProps): JSX.Element {
+export const Card = forwardRef<HTMLElement, CardProps>(function Card(
+  { as: Element = 'section', shouldClip = true, isDivided = false, className, ...props },
+  ref,
+) {
   const titleId = useId()
   return (
     <CardTitleContext.Provider value={titleId}>
       <Element
-        className={cn('surface', shouldClip && 'overflow-hidden contain-content', className)}
+        // One ref type for the four elements it can be.
+        ref={ref as never}
+        className={cn(
+          'surface',
+          shouldClip && 'overflow-hidden contain-content',
+          isDivided && '[&>*+*]:border-t [&>*+*]:border-t-line',
+          className,
+        )}
         aria-labelledby={Element === 'section' ? titleId : undefined}
         {...props}
       />
     </CardTitleContext.Provider>
   )
-}
+})
 
 // A fixed height, so a header with a button is no taller than one without.
 const HEADER = cx(

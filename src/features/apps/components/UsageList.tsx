@@ -12,20 +12,13 @@ interface UsageListProps {
  * The card the usage views list their rows in. The rows own the inset, so the
  * hairlines between them run edge to edge, clipped to the card's rounded corners.
  */
-export const UsageList = forwardRef<HTMLUListElement, UsageListProps>(function UsageList(
+export const UsageList = forwardRef<HTMLElement, UsageListProps>(function UsageList(
   { label, children },
   ref,
 ) {
   return (
-    <Card as="div">
-      <ul
-        ref={ref}
-        role="list"
-        aria-label={label}
-        className="flex flex-col [&>li+li]:border-t [&>li+li]:border-t-line"
-      >
-        {children}
-      </ul>
+    <Card as="ul" ref={ref} role="list" aria-label={label} className="flex flex-col" isDivided>
+      {children}
     </Card>
   )
 })
