@@ -6,7 +6,7 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { AlertIcon, Card, CheckIcon, CloseIcon, PageHeader } from '@/ui'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
@@ -24,18 +24,6 @@ import {
 const CARD = cx(
   'flex flex-col scroll-mt-12',
   'px-(--card-header-padding-x) pt-(--card-header-padding-y)',
-)
-
-/** Tinted chip behind the glyph, the same treatment the capability rows use:
- *  the glyph in the level colour, the background a faint tint of it. */
-const iconVariants = cva(
-  [
-    'inline-flex size-[30px] shrink-0 items-center justify-center rounded-sm',
-    'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]',
-  ],
-  {
-    variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
-  },
 )
 
 // All four requirements in a compact metric grid. Your value turns red only when
@@ -126,9 +114,10 @@ function CapabilityDetailCard({
   return (
     <Card as="li" className={CARD} data-capability-id={capability.id}>
       <div className="flex items-center gap-8 pb-12">
-        <span className={iconVariants({ level: capability.level })}>
+        {/* The glyph in the level colour on a faint tint of it, as in the capability rows. */}
+        <IconTile size="sm" className={CAPABILITY_LEVEL_FILL_COLORS[capability.level]}>
           <CapabilityIcon id={capability.id} size={16} />
-        </span>
+        </IconTile>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
           <span className="text-xs leading-caption text-tertiary">{capability.description}</span>

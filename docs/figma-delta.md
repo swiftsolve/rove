@@ -84,6 +84,16 @@ The Figma pass works through this list and deletes the file when it's done.
 - **The first-load block:** a spinner over a muted line, centred in the page.
 - **Seven pages** built it by hand before.
 
+### Icon tile (new)
+
+- **The tinted glyph square** used by device rows, interfaces, the connection
+  strip and capability details.
+- **`size`:** sm 30, md 32, lg 36.
+- **`tint`:** a wash of the glyph's own colour (`xs`, `sm` or `md` tint
+  opacity), or `inset` (neutral fill, secondary glyph).
+- **Colour** comes from what the item is: Wi‑Fi blue, Ethernet green, a
+  capability level.
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

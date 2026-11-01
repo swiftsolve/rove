@@ -6,6 +6,7 @@ import {
   ComputerIcon,
   ConsoleIcon,
   DeviceIcon,
+  IconTile,
   InlineMeta,
   NasIcon,
   PrinterIcon,
@@ -19,7 +20,7 @@ import {
 } from '@/ui'
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
-import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import {
   deviceMetaParts,
   deviceName,
@@ -33,24 +34,26 @@ const DEVICE_ROW = cx(
   'px-(--card-header-padding-x) py-(--card-header-padding-y)',
 )
 
-const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
-
 /** A device's kind glyph, in a tile tinted by category so categories scan at a
  *  glance. The gateway is green whatever its kind; watches and unknown devices
  *  stay neutral. */
-const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center rounded-sm', {
-  variants: {
-    tone: {
-      neutral: 'bg-inset text-secondary',
-      down: ['text-series-down', ICON_TINT],
-      up: ['text-series-up', ICON_TINT],
-      warning: ['text-status-warning', ICON_TINT],
-      positive: ['text-status-positive', ICON_TINT],
-    },
-  },
-})
+const TONE_COLORS = {
+  neutral: undefined,
+  down: 'text-series-down',
+  up: 'text-series-up',
+  warning: 'text-status-warning',
+  positive: 'text-status-positive',
+} as const
 
-type IconTone = NonNullable<VariantProps<typeof iconVariants>['tone']>
+type IconTone = keyof typeof TONE_COLORS
+
+function DeviceTile({ tone, children }: { tone: IconTone; children: JSX.Element }): JSX.Element {
+  return (
+    <IconTile tint={tone === 'neutral' ? 'inset' : 'sm'} className={TONE_COLORS[tone]}>
+      {children}
+    </IconTile>
+  )
+}
 
 const KIND_TONES: Record<LanDeviceKind, IconTone> = {
   router: 'positive',
@@ -172,9 +175,9 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
   return (
     <Card as="li" className={DEVICE_ROW}>
-      <span className={iconVariants({ tone: device.isGateway ? 'positive' : KIND_TONES[device.kind] })}>
+      <DeviceTile tone={device.isGateway ? 'positive' : KIND_TONES[device.kind]}>
         <KindIcon kind={device.kind} />
-      </span>
+      </DeviceTile>
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         {/* Name on the left, status on the right. mb-2 adds a touch more air
             below the (larger) name, on top of the column's 4px gap. */}

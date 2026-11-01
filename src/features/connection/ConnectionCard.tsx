@@ -29,6 +29,7 @@ import {
   DisclosurePanel,
   DisclosureTrigger,
   EthernetIcon,
+  IconTile,
   InlineMeta,
   LockIcon,
   OfflineIcon,
@@ -39,21 +40,11 @@ import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
 
 // The connection glyph's chip, tinted by the kind of connection.
-const stripIconVariants = cva(
-  [
-    'relative z-1 pointer-events-none self-center shrink-0',
-    'flex items-center justify-center size-[36px] rounded-sm',
-  ],
-  {
-    variants: {
-      variant: {
-        wifi: 'text-series-down bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]',
-        ethernet: 'text-status-positive bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]',
-        disconnected: 'text-status-negative bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-xs),transparent)]',
-      },
-    },
-  },
-)
+const STRIP_ICON_COLORS = {
+  wifi: 'text-series-down',
+  ethernet: 'text-status-positive',
+  disconnected: 'text-status-negative',
+} as const
 
 const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
@@ -376,9 +367,13 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
             className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
             aria-label="Connection details"
           />
-          <div className={stripIconVariants({ variant: display.variant })}>
+          <IconTile
+            size="lg"
+            tint={display.variant === 'disconnected' ? 'xs' : 'sm'}
+            className={cx('relative z-1 pointer-events-none self-center', STRIP_ICON_COLORS[display.variant])}
+          >
             <ConnectionIcon variant={display.variant} />
-          </div>
+          </IconTile>
           <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
             <h2 id={titleId} className="text-heading-large truncate">
               {display.title}

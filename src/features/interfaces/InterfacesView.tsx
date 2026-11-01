@@ -7,6 +7,7 @@ import {
   ErrorBanner,
   EthernetIcon,
   IconButton,
+  IconTile,
   InlineMeta,
   LayersIcon,
   LoadingState,
@@ -21,17 +22,7 @@ import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
-const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
-
-const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center rounded-sm', {
-  variants: {
-    connection: {
-      wifi: ['text-series-down', ICON_TINT],
-      ethernet: ['text-status-positive', ICON_TINT],
-      unknown: 'bg-inset text-secondary',
-    },
-  },
-})
+const TILE_COLORS = { wifi: 'text-series-down', ethernet: 'text-status-positive', unknown: undefined } as const
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
 const tagVariants = cva('text-caption', {
@@ -72,9 +63,12 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
     <Card as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
-          <span className={iconVariants({ connection: iface.connectionType })}>
+          <IconTile
+            tint={iface.connectionType === 'unknown' ? 'inset' : 'sm'}
+            className={TILE_COLORS[iface.connectionType]}
+          >
             <InterfaceIcon iface={iface} />
-          </span>
+          </IconTile>
           {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}
           <h2 className="text-heading-large min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
