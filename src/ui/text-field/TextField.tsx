@@ -5,7 +5,8 @@ import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { pressableProps } from '../foundations/pressable'
 
-const LABEL = 'text-overline mb-6 block'
+// The same 8px above the field as the feedback line below it.
+const LABEL = 'text-overline mb-8 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height action centred beside the text lands on a symmetric gap.
@@ -36,6 +37,14 @@ const groupVariants = cva(
     defaultVariants: { isInvalid: false },
   },
 )
+
+// The line under the field: a quiet caption, red when the value is invalid.
+const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
+  variants: {
+    isInvalid: { true: 'text-negative', false: 'text-tertiary' },
+  },
+  defaultVariants: { isInvalid: false },
+})
 
 type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className'> & {
   label: string
@@ -80,7 +89,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         </div>
       )}
       {feedback !== undefined && (
-        <Field.Description render={<div role="status" />}>{feedback}</Field.Description>
+        <Field.Description render={<div role="status" />} className={feedbackVariants({ isInvalid })}>
+          {feedback}
+        </Field.Description>
       )}
     </Field.Root>
   )
