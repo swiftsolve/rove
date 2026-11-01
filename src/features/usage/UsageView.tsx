@@ -92,6 +92,7 @@ function UsageTooltip({
   active: isActive,
   payload,
 }: {
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- Recharts names the prop it injects.
   active?: boolean
   payload?: { payload: UsageDatum }[]
 }): JSX.Element | null {

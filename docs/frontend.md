@@ -53,6 +53,24 @@ for what. Read it before writing or changing UI. For where files live, see
   stylesheets (`base.css`) and folders (`live-throughput/`). `npm run lint`
   runs `scripts/check-file-names.mjs`, which fails on a name that fits none.
 
+## Names and copy
+
+- A boolean reads as a yes/no question: `isOpen`, `areEventsLoading`,
+  `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
+  phrase (`needsNetworkInfo`). That covers props, `useState` pairs
+  (`[isOpen, setIsOpen]`), params, fields and module constants (`IS_MAC`).
+  Names the DOM or a library picks keep theirs: alias Recharts' `active` to
+  `isActive` where you read it.
+- No `readonly`, `Readonly<>`, `ReadonlyArray`, `ReadonlyMap` or
+  `ReadonlySet`; use the plain type.
+- Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
+  `·` or `•`. A string that would join parts with ` · ` returns the parts.
+- In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
+  states) are two short sentences at most, about 20 words: what's measured and
+  the one or two limits that matter. How it works belongs in the README.
+
+`npm run lint` enforces all but the last.
+
 ## Tests
 
 - Pure logic in `utils/` and `lib/` has unit tests beside it, named after its

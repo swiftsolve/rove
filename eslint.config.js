@@ -15,6 +15,28 @@ const APP_CODE = {
   message: 'The UI library imports only itself (relative paths) and packages; pass app values in as props.',
 }
 
+// Like the import patterns, `no-restricted-syntax` doesn't merge across
+// blocks, so the raw-button block repeats these.
+const NO_READONLY_MESSAGE = 'No readonly: use the plain type (T[], Map, Set, Record).'
+const NO_READONLY = [
+  "TSTypeOperator[operator='readonly']",
+  'TSPropertySignature[readonly=true]',
+  'TSIndexSignature[readonly=true]',
+  'PropertyDefinition[readonly=true]',
+  'TSParameterProperty[readonly=true]',
+  'TSTypeReference[typeName.name=/^Readonly(Array|Map|Set)?$/]',
+].map((selector) => ({ selector, message: NO_READONLY_MESSAGE }))
+// A typed dot sits on the baseline and scales with the font, so it never
+// matches the designed one.
+const NO_DOT_GLYPH_MESSAGE = 'Separate inline items with DotSeparator or InlineMeta from @/ui, not a typed "·" or "•".'
+const NO_DOT_GLYPH = ['Literal[value=/[·•]/]', 'TemplateElement[value.raw=/[·•]/]', 'JSXText[value=/[·•]/]'].map(
+  (selector) => ({ selector, message: NO_DOT_GLYPH_MESSAGE }),
+)
+const CODE_STYLE = [...NO_READONLY, ...NO_DOT_GLYPH]
+
+const BOOLEAN_PREFIXES = ['is', 'are', 'has', 'have', 'can', 'should', 'was', 'were', 'did', 'does', 'will', 'needs', 'meets', 'may']
+const BOOLEAN_EXEMPT = '^(_|aria-|data-)|^(value|fallback)$'
+
 export default tseslint.config(
   // The Rust backend and build outputs are not ours to lint.
   // .claude holds agent worktrees: other checkouts, not this one's code.
@@ -53,6 +75,42 @@ export default tseslint.config(
       // The React-Compiler-era hooks rules (refs, set-state-in-effect, purity)
       // stay at their default `error`. Latest-value refs go through
       // `useLatestRef`, and text that ages reads the clock through `useNow`.
+      'no-restricted-syntax': ['error', ...CODE_STYLE],
+    },
+  },
+  {
+    // A boolean reads as a yes/no question: isOpen, hasGradient, canRunTest,
+    // shouldShowLabel, wasDeclined, or a verb phrase (needsNetworkInfo,
+    // meetsRequirements). It needs types, so it covers src, as tsconfig does.
+    // Left alone: object literal keys and destructured names (the DOM's and
+    // libraries' own options), `aria-*` and `data-*` attributes, and a
+    // generic stored `value` or `fallback` (useSetting). A hook still starts
+    // with `use`.
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: ['variable', 'parameter', 'typeProperty', 'classProperty', 'accessor'],
+          types: ['boolean'],
+          format: null,
+          prefix: BOOLEAN_PREFIXES,
+          filter: { regex: BOOLEAN_EXEMPT, match: false },
+        },
+        {
+          // A module constant: IS_MAC.
+          selector: 'variable',
+          modifiers: ['const'],
+          types: ['boolean'],
+          format: ['UPPER_CASE'],
+          prefix: BOOLEAN_PREFIXES.map((prefix) => `${prefix.toUpperCase()}_`),
+          filter: { regex: '^[A-Z][A-Z0-9_]*$', match: true },
+        },
+        { selector: 'variable', modifiers: ['destructured'], types: ['boolean'], format: null },
+      ],
     },
   },
   // Import boundaries. ESLint doesn't merge one rule's options across blocks
@@ -96,6 +154,7 @@ export default tseslint.config(
           selector: "JSXOpeningElement[name.name='button']",
           message: 'Use a button from @/ui (Button, IconButton, ListRow, StretchedLink…), not a raw <button>.',
         },
+        ...CODE_STYLE,
       ],
     },
   },
