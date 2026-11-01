@@ -272,15 +272,6 @@
 
 /* ---- Shared pieces ---- */
 
-/* Trailing chevron on the quiet header links ("All Results", "View timeline").
-   The glyph's ink is the middle of its box, so negative margins trim the empty
-   space: the label sits ~6px from it, and a following dot keeps its 8px. */
-@utility link-caret {
-  button > & {
-    margin: 0 calc(-1 * var(--spacing-4)) 0 calc(-1 * var(--spacing-4));
-  }
-}
-
 /* Chart tooltip (throughput and usage): a dot and label on the left, the value
    right-aligned, so the values line up in a column. */
 @utility chart-tip {

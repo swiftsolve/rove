@@ -5,6 +5,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
 import {
   AppsIcon,
+  Button,
   ChevronRightIcon,
   DirectionIcon,
   DotSeparator,
@@ -15,8 +16,8 @@ import {
   IconButton,
   LayersIcon,
   MetricValue,
-  POLLING_DESCRIPTION,
   PageHeader,
+  POLLING_DESCRIPTION,
   Spinner,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
@@ -56,32 +57,6 @@ const ROW_LINK = cx(
 // columns line up across rows (matches the Hosts view).
 const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
 const FIGURE_VALUE = 'num min-w-[46px] text-right'
-
-// The quiet pill link in the header subtitle, like Speed's "All Results" and
-// Services' "View timeline". The button reset carries the font family but not
-// the size, so it inherits the subtitle's caption size. The negative margins
-// cancel the pill's padding (and the glyphs' empty edges), so the first link's
-// globe sits flush under the title and the dot between the links keeps its 8px.
-// Focus shows the way hover does, accent + underline, not with a ring.
-const SUBTITLE_LINK = cx(
-  'group/link inline-flex items-center gap-[5px] mr-[-9px] ml-[-9.5px] px-8 py-2 rounded-full',
-  'text-[length:inherit] font-medium text-secondary',
-  'transition-[color] duration-(--duration-fast) ease-in-out',
-  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
-)
-
-const SUBTITLE_LINK_TEXT = cx(
-  'group-hover/link:underline group-hover/link:underline-offset-2',
-  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
-)
-
-// The glyphs share the link's (animating) colour so they shift together on
-// hover; "a touch dimmer at rest" is opacity, so there's a single colour
-// animation rather than two that drift out of sync.
-const SUBTITLE_LINK_GLYPH = cx(
-  'text-inherit opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
-  'group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
-)
 
 const APP_USAGE_INFO_HINT =
   'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
@@ -183,17 +158,13 @@ function AppSubtitleLinks(): JSX.Element {
   const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
   return (
     <span className="inline-flex items-center gap-6">
-      <button type="button" className={SUBTITLE_LINK} onClick={onViewHosts}>
-        <GlobeIcon size={13} className={SUBTITLE_LINK_GLYPH} />
-        <span className={SUBTITLE_LINK_TEXT}>All hosts</span>
-        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
-      </button>
+      <Button variant="link" icon={GlobeIcon} iconEnd={ChevronRightIcon} onClick={onViewHosts}>
+        All hosts
+      </Button>
       <DotSeparator />
-      <button type="button" className={SUBTITLE_LINK} onClick={onViewTraffic}>
-        <LayersIcon size={13} className={SUBTITLE_LINK_GLYPH} />
-        <span className={SUBTITLE_LINK_TEXT}>All traffic types</span>
-        <ChevronRightIcon size={13} className={cx('link-caret', SUBTITLE_LINK_GLYPH)} />
-      </button>
+      <Button variant="link" icon={LayersIcon} iconEnd={ChevronRightIcon} onClick={onViewTraffic}>
+        All traffic types
+      </Button>
     </span>
   )
 }

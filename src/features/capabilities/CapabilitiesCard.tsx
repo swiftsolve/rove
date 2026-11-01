@@ -9,6 +9,7 @@ import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
@@ -20,6 +21,7 @@ import {
   RefreshIcon,
   Tooltip,
   ZapIcon,
+  type IconComponent,
 } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -91,22 +93,6 @@ const footerVariants = cva(
   },
 )
 
-// The footer's link to the Speed page: its message (and a clock once there's a
-// result) with a trailing caret, muted at rest, the accent and an underline on
-// hover, the same affordance as the Speed page's "All Results". Focus mirrors
-// hover rather than showing a ring. The glyphs share the link's (animating)
-// colour and sit dimmer at rest through opacity, so there's one colour animation
-// rather than two that drift apart.
-const LINK = cx(
-  'group/link inline-flex items-center gap-6 whitespace-nowrap',
-  'cursor-pointer text-xs text-secondary',
-  'transition-[color] duration-(--duration-fast) ease-in-out',
-  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
-  '[&_svg]:text-inherit [&_svg]:opacity-72',
-  '[&_svg]:transition-opacity [&_svg]:duration-(--duration-fast) [&_svg]:ease-in-out',
-  'hover:[&_svg]:opacity-100 focus-visible:[&_svg]:opacity-100',
-)
-
 /** Starts a test in place; the Speed tab shows the same run (one shared store),
  *  and the footer links there. */
 function RunTestButton({
@@ -142,28 +128,17 @@ function SpeedLink({
   icon,
   children,
 }: {
-  icon?: JSX.Element
+  icon?: IconComponent
   children: ReactNode
 }): JSX.Element {
   const { navigate } = useNavigation()
 
   return (
-    <button type="button" className={LINK} onClick={() => navigate({ tab: 'speed' })}>
-      {icon}
-      {/* Only the label underlines, not the glyphs. */}
-      <span
-        className={cx(
-          'font-medium',
-          'group-hover/link:underline group-hover/link:underline-offset-2',
-          'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
-        )}
-      >
-        {children}
-      </span>
+    <Button variant="link" size="sm" icon={icon} iconEnd={ChevronRightIcon} onClick={() => navigate({ tab: 'speed' })}>
+      {children}
       {/* The visible text leads the name; this says where the link goes. */}
       <span className="sr-only">, open Speed</span>
-      <ChevronRightIcon size={13} className="link-caret" />
-    </button>
+    </Button>
   )
 }
 
@@ -254,7 +229,7 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
 
   return (
     <div className={footerVariants()}>
-      <SpeedLink icon={<HistoryIcon size={13} />}>
+      <SpeedLink icon={HistoryIcon}>
         Updated{' '}
         <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
       </SpeedLink>

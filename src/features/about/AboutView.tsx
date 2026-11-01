@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow } from '@/ui'
+import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link } from '@/ui'
 import { IS_MAC } from '@/lib/platform'
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
 
@@ -45,16 +45,9 @@ export function AboutView(): JSX.Element {
             <DataRow label="Version" value={version ?? '—'} />
             <DataRow label="Platform" value={platformLabel()} />
             <DataRow label="Source">
-              {/* Focus shows the way hover does, accent + underline, not with a ring. */}
-              <a
-                className="text-accent no-underline hover:underline focus-visible:underline focus-visible:outline-none"
-                href={REPO_URL}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <Link href={REPO_URL} isExternal>
                 github.com/swiftsolve/rove
-                <span className="sr-only"> (opens in a new window)</span>
-              </a>
+              </Link>
             </DataRow>
           </DataList>
         </CardBody>

@@ -12,7 +12,9 @@ import { EmptyState } from '../components/empty-state/EmptyState'
 import { ErrorBanner } from '../components/error-banner/ErrorBanner'
 import { MetricValue } from '../components/metric-value/MetricValue'
 import { PageHeader } from '../components/page-header/PageHeader'
+import { Link } from '../primitives/link/Link'
 import {
+  ChevronRightIcon,
   GlobeIcon,
   HelpIcon,
   MoreVerticalIcon,
@@ -24,9 +26,14 @@ import {
 } from '../icons/Icons'
 
 const BUTTON_ROWS: [string, ButtonAppearance][] = [
-  ['filled', { variant: 'solid' }],
-  ['danger', { variant: 'solid', tone: 'negative' }],
-  ['secondary', { variant: 'soft' }],
+  ['solid', { variant: 'solid' }],
+  ['solid neg.', { variant: 'solid', tone: 'negative' }],
+  ['solid sm', { variant: 'solid', size: 'sm' }],
+  ['soft', { variant: 'soft' }],
+  ['soft md', { variant: 'soft', size: 'md' }],
+  ['soft neg.', { variant: 'soft', tone: 'negative' }],
+  ['ghost', { variant: 'ghost' }],
+  ['ghost neg.', { variant: 'ghost', tone: 'negative' }],
 ]
 
 /**
@@ -58,9 +65,33 @@ export function Gallery(): JSX.Element {
         ))}
       </Section>
 
+      <Section title="Link">
+        <Row label="link">
+          <span className="inline-flex items-center gap-12 text-caption">
+            <Button variant="link" icon={GlobeIcon} iconEnd={ChevronRightIcon}>
+              All hosts
+            </Button>
+            <Button variant="link" icon={GlobeIcon} isDisabled>
+              Disabled
+            </Button>
+          </span>
+          <Button variant="link" size="sm" icon={PlayIcon} iconEnd={ChevronRightIcon}>
+            Small link
+          </Button>
+        </Row>
+        <Row label="anchor">
+          <span className="text-sm text-secondary">
+            Source on{' '}
+            <Link href="https://github.com/swiftsolve/rove" isExternal>
+              github.com/swiftsolve/rove
+            </Link>
+          </span>
+        </Row>
+      </Section>
+
       <Section title="IconButton">
-        {([['secondary', 'soft'], ['plain', 'ghost']] as const).map(([name, variant]) => (
-          <Row key={variant} label={name}>
+        {(['soft', 'ghost'] as const).map((variant) => (
+          <Row key={variant} label={variant}>
             <IconButton variant={variant} label="Refresh" icon={RefreshIcon} />
             <IconButton variant={variant} label="Run" icon={PlayIcon} iconSize={14} />
             <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isLoading />

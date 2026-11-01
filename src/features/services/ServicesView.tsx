@@ -92,27 +92,6 @@ const LINE = 'flex min-w-0 items-center gap-12'
 // can strand it at the start of a line, where it reads as a bullet; only the web
 // demo's phone widths get that narrow, and the app's own window never does.
 //
-// Text links show focus the way they show hover (accent + underline), not with a
-// ring. The glyphs share the link's (animating) colour so glyph and label shift
-// together; they sit a touch dimmer at rest via opacity, so there's a single
-// colour animation rather than two that drift out of sync.
-const TIMELINE_LINK = cx(
-  'group/link inline-flex cursor-pointer items-center gap-[5px] ml-[-9.5px] rounded-full px-8 py-2',
-  '[font-size:inherit] font-medium text-secondary',
-  'transition-[color] duration-(--duration-fast) ease-in-out',
-  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
-  '[&_svg]:text-inherit [&_svg]:opacity-72',
-  '[&_svg]:transition-[opacity] [&_svg]:duration-(--duration-fast) [&_svg]:ease-in-out',
-  'hover:[&_svg]:opacity-100 focus-visible:[&_svg]:opacity-100',
-)
-
-// Underline only the label on hover (not the glyph), matching the Speed history
-// link, so it reads as a link while the whole control picks up the accent.
-const TIMELINE_LINK_TEXT = cx(
-  'group-hover/link:underline group-hover/link:underline-offset-2',
-  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
-)
-
 /** What the add/edit dialog shows. `openCount` tells one opening from the next,
  *  so reopening while the last one leaves starts it fresh. */
 type DialogState = ({ mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }) & { openCount: number }
@@ -384,11 +363,9 @@ export function ServicesView(): JSX.Element {
                 <DotSeparator />
               </>
             )}
-            <button type="button" className={TIMELINE_LINK} onClick={openTimeline}>
-              <EventsIcon size={13} />
-              <span className={TIMELINE_LINK_TEXT}>View timeline</span>
-              <ChevronRightIcon size={13} className="link-caret" />
-            </button>
+            <Button variant="link" icon={EventsIcon} iconEnd={ChevronRightIcon} onClick={openTimeline}>
+              View timeline
+            </Button>
           </span>
         }
         // Beside a full button the help chip takes the 10px step, as on Speed.

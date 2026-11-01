@@ -38,21 +38,27 @@ const buttonVariants = cva(['inline-flex items-center justify-center', STATE_CLA
       ],
     },
     tone: { accent: null, neutral: null, negative: null },
-    size: {
-      sm: 'gap-6 px-12 py-6 text-xs font-medium',
-      md: 'gap-6 px-(--card-padding) py-10 text-sm font-semibold tracking-label-large',
-      /**
-       * A link in a line of text, at its size. The pill's padding hangs
-       * outside the text (with the glyphs' empty edges), so the link lines up
-       * with the words around it.
-       */
-      inherit: 'gap-[5px] px-8 py-2 ml-[-9.5px] mr-[-9px] text-[length:inherit]',
-    },
+    // Each variant sizes itself (below): a link's `sm` is not a chip's.
+    size: { sm: null, md: null, inherit: null },
   },
   compoundVariants: [
-    { variant: ['solid', 'soft', 'ghost'], class: 'transition-[color,background,transform] duration-(--duration-fast) ease-in-out' },
+    {
+      variant: ['solid', 'soft', 'ghost'],
+      class: 'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
+    },
+    { variant: ['solid', 'soft', 'ghost'], size: 'sm', class: 'gap-6 px-12 py-6 text-xs font-medium' },
+    {
+      variant: ['solid', 'soft', 'ghost'],
+      size: 'md',
+      class: 'gap-6 px-(--card-padding) py-10 text-sm font-semibold tracking-label-large',
+    },
     { variant: 'link', class: 'transition-[color] duration-(--duration-fast) ease-in-out' },
-    { variant: 'link', size: 'sm', class: 'whitespace-nowrap' },
+    // A link in a line of text, at its size. The pill's padding hangs outside
+    // the text (with the glyphs' empty edges), so it lines up with the words
+    // around it.
+    { variant: 'link', size: 'inherit', class: 'gap-[5px] px-8 py-2 ml-[-9.5px] mr-[-9px] text-[length:inherit]' },
+    // A link on its own line, in small text: no pill to hang out.
+    { variant: 'link', size: 'sm', class: 'gap-6 text-xs whitespace-nowrap' },
     { variant: 'solid', tone: 'accent', class: 'bg-accent-fill usable:hover:bg-accent-fill-hover' },
     { variant: 'solid', tone: 'negative', class: 'bg-status-negative-fill usable:hover:bg-status-negative-fill-hover' },
     {

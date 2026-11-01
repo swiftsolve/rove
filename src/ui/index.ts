@@ -1,7 +1,8 @@
 // The library's public API: features import from `@/ui`, never a path inside it.
 
-export { Button } from './primitives/button/Button'
+export { Button, type ButtonAppearance, type ButtonProps } from './primitives/button/Button'
 export { IconButton } from './primitives/button/IconButton'
+export { Link } from './primitives/link/Link'
 export { ButtonSpinner } from './primitives/spinner/ButtonSpinner'
 export { Spinner } from './primitives/spinner/Spinner'
 export { Tooltip } from './primitives/tooltip/Tooltip'
