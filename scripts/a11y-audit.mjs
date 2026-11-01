@@ -27,6 +27,17 @@ const AXE_SOURCE = await readFile(resolve(ROOT, 'node_modules/axe-core/axe.min.j
 // WCAG 2.1 A and AA, plus axe's best practices (landmarks, heading order, …).
 const RULE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 
+// Base UI's focus guards: empty spans, hidden from screen readers but
+// focusable, that hand focus straight back into (or out of) an open popup.
+// Hidden-yet-focusable is the technique, so aria-hidden-focus would flag it.
+const EXCLUDED = [['[data-base-ui-focus-guard]']]
+
+/** An open menu is portalled to the end of <body>, outside the landmarks; it
+ *  belongs to its trigger, which is inside them. Only `region` is waived for it. */
+function isPortalledMenu(ruleId, node) {
+  return ruleId === 'region' && node.html.includes('role="menu"')
+}
+
 /** Runs in the page: click the first button whose label or text contains `label`
  *  (or, with no label, the first disclosure button). Page functions can't close
  *  over script variables, so the label travels as an argument. */
@@ -129,12 +140,14 @@ try {
       }
       await page.addScriptTag({ content: AXE_SOURCE })
       const result = await page.evaluate(
-        (tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags } }),
-        RULE_TAGS,
+        ({ tags, exclude }) =>
+          window.axe.run({ include: [['html']], exclude }, { runOnly: { type: 'tag', values: tags } }),
+        { tags: RULE_TAGS, exclude: EXCLUDED },
       )
       for (const v of result.violations) {
         const entry = violations.get(v.id) ?? { impact: v.impact, help: v.help, helpUrl: v.helpUrl, places: new Set() }
         for (const node of v.nodes) {
+          if (isPortalledMenu(v.id, node)) continue
           // Contrast failures carry the measured colours; show them so the fix
           // can go to the right design token.
           const contrast = node.any.find((check) => check.data?.contrastRatio)?.data
@@ -143,7 +156,7 @@ try {
             : ''
           entry.places.add(`${theme} ${name}: ${node.target.join(' ')}${detail}`)
         }
-        violations.set(v.id, entry)
+        if (entry.places.size > 0) violations.set(v.id, entry)
       }
     }
     await page.close()
