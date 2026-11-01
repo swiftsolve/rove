@@ -1,4 +1,4 @@
-import { memo, useId, useMemo, useState } from 'react'
+import { memo, useId, useMemo } from 'react'
 import type {
   ConnectionEvent,
   ServiceEvent,
@@ -11,7 +11,10 @@ import {
   CheckIcon,
   EmptyState,
   GlobeIcon,
-  MoreVerticalIcon,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
   OfflineIcon,
   PageHeader,
   TrashIcon,
@@ -26,7 +29,6 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { cva, cx } from 'class-variance-authority'
-import { useMenu } from '@/hooks/useMenu'
 
 // Rows rendered with the page (more than the window holds), and how many more
 // each step after it has settled.
@@ -88,38 +90,6 @@ const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
 // The outage length sits at the far right of its row, no dot before it.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
-
-// The header overflow menu: the kebab and its dropdown, matching the manage
-// page's row menu and the speed-history menu.
-const KEBAB = cx(
-  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-secondary',
-  'transition-[color,background] duration-(--duration-fast) ease-in-out',
-  'hover:bg-hover hover:text-primary',
-)
-
-const DROPDOWN = cx(
-  'absolute top-[calc(100%+4px)] right-0 z-20 min-w-[148px] p-4',
-  'rounded-sm border border-line-strong bg-surface shadow-raised',
-)
-
-const menuItemVariants = cva(
-  [
-    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm',
-    'transition-[color,background] duration-(--duration-fast) ease-in-out',
-    // Items fill the menu edge to edge, so the ring goes inside the item.
-    'focus-visible:outline-offset-(--focus-inset)',
-  ],
-  {
-    variants: {
-      /** Destructive (Clear history): red text and a red-tinted hover. */
-      isDanger: {
-        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
-        false: 'text-secondary hover:bg-hover',
-      },
-    },
-    defaultVariants: { isDanger: false },
-  },
-)
 
 interface DayGroup {
   key: string
@@ -359,41 +329,17 @@ const ConnectionRow = memo(function ConnectionRow({
   )
 })
 
-/** The header overflow menu: a kebab that opens a dropdown with Clear (drop all
- *  recorded history). Closes on outside click or Escape. Mirrors SpeedHistoryView. */
+/** The header overflow menu: Clear history, which drops everything recorded. */
 function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false)
-  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => setIsOpen(false))
-
   return (
-    <div className="relative" ref={rootRef}>
-      <button
-        type="button"
-        className={KEBAB}
-        {...triggerProps}
-        aria-label="Timeline options"
-        onClick={() => setIsOpen((wasOpen) => !wasOpen)}
-      >
-        <MoreVerticalIcon size={16} />
-      </button>
-      {isOpen && (
-        <div className={DROPDOWN} {...menuProps}>
-          <button
-            type="button"
-            role="menuitem"
-            tabIndex={-1}
-            className={menuItemVariants({ isDanger: true })}
-            onClick={() => {
-              setIsOpen(false)
-              onClear()
-            }}
-          >
-            <TrashIcon size={14} />
-            Clear history
-          </button>
-        </div>
-      )}
-    </div>
+    <Menu>
+      <MenuTrigger label="Timeline options" />
+      <MenuContent>
+        <MenuItem icon={TrashIcon} tone="negative" onClick={onClear}>
+          Clear history
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   )
 }
 

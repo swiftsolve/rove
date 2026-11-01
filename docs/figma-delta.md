@@ -38,6 +38,17 @@ The Figma pass works through this list and deletes the file when it's done.
 - Ghost now has its own colour: secondary text, hover fill and primary text.
   That's what a dialog's close button already looked like.
 
+### Menu (new, replaces three hand-built overflow menus)
+
+- **Parts:** a kebab trigger (30px, tertiary until hovered or open), a dropdown
+  (112px min, 4px padding, 2px gap) and items (14px glyph, sm medium text).
+  The `negative` item tone gives red text on a red tint.
+- **Timeline aligned.** The Services timeline's menu now matches the other two:
+  - its kebab is tertiary, not secondary;
+  - the dropdown is 112px wide, not 148px;
+  - items are medium weight;
+  - it animates in.
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

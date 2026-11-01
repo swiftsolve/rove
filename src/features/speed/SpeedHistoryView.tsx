@@ -17,14 +17,16 @@ import {
   EthernetIcon,
   GlobeIcon,
   InlineMeta,
-  MoreVerticalIcon,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
   PageHeader,
   TrashIcon,
   WifiIcon,
   type SpeedSeries,
 } from '@/ui'
 import { FAILED_PING } from '@/types'
-import { useMenu } from '@/hooks/useMenu'
 
 /** Connection badge, tinted by medium. */
 const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-medium', {
@@ -36,37 +38,6 @@ const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-me
     },
   },
 })
-
-// Header overflow menu: a kebab that opens a small dropdown with Delete. Mirrors
-// the per-row menu on the manage-services page so the two read the same.
-const KEBAB = cx(
-  'inline-flex size-[30px] items-center justify-center rounded-sm text-tertiary',
-  'transition-[color,background] duration-(--duration-fast) ease-in-out',
-  'hover:bg-hover hover:text-primary aria-expanded:bg-hover aria-expanded:text-primary',
-)
-
-const DROPDOWN = cx(
-  'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
-  'rounded-sm border border-line-strong bg-surface shadow-raised',
-)
-
-const menuItemVariants = cva(
-  [
-    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm font-medium',
-    'transition-[color,background] duration-(--duration-fast) ease-in-out',
-    // Items fill the menu edge to edge, so the ring goes inside the item.
-    'focus-visible:outline-offset-(--focus-inset)',
-  ],
-  {
-    variants: {
-      isDanger: {
-        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)]',
-        false: 'text-secondary hover:bg-hover hover:text-primary',
-      },
-    },
-    defaultVariants: { isDanger: false },
-  },
-)
 
 interface MetricProps {
   label: string
@@ -185,43 +156,17 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   )
 }
 
-/** The header overflow menu: a kebab that opens a dropdown with Delete (clear
- *  all history). Closes on outside click or Escape. */
+/** The header overflow menu: Delete, which clears all history. */
 function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false)
-  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => setIsOpen(false))
-
-  const handleDelete = (): void => {
-    setIsOpen(false)
-    onDelete()
-  }
-
   return (
-    <div className="relative shrink-0" ref={rootRef}>
-      <button
-        type="button"
-        className={KEBAB}
-        {...triggerProps}
-        aria-label="History options"
-        onClick={() => setIsOpen((wasOpen) => !wasOpen)}
-      >
-        <MoreVerticalIcon size={16} />
-      </button>
-      {isOpen && (
-        <div className={DROPDOWN} {...menuProps}>
-          <button
-            type="button"
-            role="menuitem"
-            tabIndex={-1}
-            className={menuItemVariants({ isDanger: true })}
-            onClick={handleDelete}
-          >
-            <TrashIcon size={14} />
-            Delete
-          </button>
-        </div>
-      )}
-    </div>
+    <Menu>
+      <MenuTrigger label="History options" />
+      <MenuContent>
+        <MenuItem icon={TrashIcon} tone="negative" onClick={onDelete}>
+          Delete
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   )
 }
 

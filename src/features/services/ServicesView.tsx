@@ -12,8 +12,11 @@ import {
   EventsIcon,
   HelpIcon,
   IconButton,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
   MetricValue,
-  MoreVerticalIcon,
   PageHeader,
   PlusIcon,
   Tooltip,
@@ -31,50 +34,21 @@ import { useServiceReachability } from '@/features/services/hooks/useServiceReac
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
 import { formatLatencyMs } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
-import { useMenu } from '@/hooks/useMenu'
+import { cx } from 'class-variance-authority'
 
 const SERVICES_HINT =
   'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'
 
-// Per-row overflow menu: a kebab button anchoring a dropdown.
-//
 // On hover-capable pointers the kebab is collapsed to zero width until its row is
 // hovered, then grows and fades in, nudging the latency column aside as it slides
 // in. It stays shown while its menu is open or it has keyboard focus. Touch keeps
 // it always visible.
-const KEBAB = cx(
-  'inline-flex h-[30px] w-[30px] items-center justify-center rounded-sm text-tertiary',
+const KEBAB_REVEAL = cx(
   'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
   '[@media(hover:hover)]:w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
   'group-hover/row:w-[30px] group-hover/row:opacity-100',
   'focus-visible:w-[30px] focus-visible:opacity-100',
-  'aria-expanded:w-[30px] aria-expanded:opacity-100',
-  'hover:bg-hover hover:text-primary aria-expanded:bg-hover aria-expanded:text-primary',
-)
-
-const DROPDOWN = cx(
-  'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
-  'rounded-sm border border-line-strong bg-surface shadow-raised',
-)
-
-const menuItemVariants = cva(
-  [
-    'flex w-full items-center gap-8 rounded-xs p-8 text-left text-sm font-medium',
-    'transition-[color,background] duration-(--duration-fast) ease-in-out',
-    // Items fill the menu edge to edge, so the ring goes inside the item.
-    'focus-visible:outline-offset-(--focus-inset)',
-  ],
-  {
-    variants: {
-      /** Destructive (Remove): red text and a red-tinted hover. */
-      isDanger: {
-        true: 'text-negative hover:bg-[color-mix(in_srgb,var(--status-negative)_14%,transparent)] hover:text-negative',
-        false: 'text-secondary hover:bg-hover hover:text-primary',
-      },
-    },
-    defaultVariants: { isDanger: false },
-  },
+  'data-popup-open:w-[30px] data-popup-open:opacity-100',
 )
 
 // One line of a row's body: left-hand text that ellipsises, right-hand value
@@ -102,48 +76,24 @@ function isInternetDown(status: InternetStatus | undefined): boolean {
 
 interface RowMenuProps {
   service: ServiceDefinition
-  isOpen: boolean
-  onOpenChange: (host: string | null) => void
   onEdit: () => void
   onRemove: () => void
 }
 
-/** The per-row overflow menu: a kebab that opens a dropdown with Edit and Remove.
- *  Keyboard and focus behaviour come from `useMenu`. Only one is open at a time
- *  (the parent owns which host's menu is open). */
-function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuProps): JSX.Element {
-  const { rootRef, triggerProps, menuProps } = useMenu(isOpen, () => onOpenChange(null))
-
+/** The per-row overflow menu: a kebab that opens Edit and Remove. */
+function RowMenu({ service, onEdit, onRemove }: RowMenuProps): JSX.Element {
   return (
-    <div className="relative shrink-0" ref={rootRef}>
-      <button
-        type="button"
-        className={KEBAB}
-        {...triggerProps}
-        aria-label={`Options for ${service.name}`}
-        onClick={() => onOpenChange(isOpen ? null : service.host)}
-      >
-        <MoreVerticalIcon size={16} />
-      </button>
-      {isOpen && (
-        <div className={DROPDOWN} {...menuProps}>
-          <button type="button" role="menuitem" tabIndex={-1} className={menuItemVariants()} onClick={onEdit}>
-            <EditIcon size={14} />
-            Edit
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            tabIndex={-1}
-            className={menuItemVariants({ isDanger: true })}
-            onClick={onRemove}
-          >
-            <TrashIcon size={14} />
-            Remove
-          </button>
-        </div>
-      )}
-    </div>
+    <Menu>
+      <MenuTrigger label={`Options for ${service.name}`} className={KEBAB_REVEAL} />
+      <MenuContent>
+        <MenuItem icon={EditIcon} onClick={onEdit}>
+          Edit
+        </MenuItem>
+        <MenuItem icon={TrashIcon} tone="negative" onClick={onRemove}>
+          Remove
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   )
 }
 
@@ -317,7 +267,6 @@ export function ServicesView(): JSX.Element {
     setDialog({ ...next, openCount: (dialog?.openCount ?? 0) + 1 })
     setIsDialogOpen(true)
   }
-  const [openMenuHost, setOpenMenuHost] = useState<string | null>(null)
   // Latency captured by the dialog's test, keyed by host, so a freshly added or
   // edited row shows its measured value at once until the next services poll.
   const [seededLatency, setSeededLatency] = useState<Map<string, number | null>>(new Map())
@@ -414,16 +363,8 @@ export function ServicesView(): JSX.Element {
               menu={
                 <RowMenu
                   service={svc}
-                  isOpen={openMenuHost === svc.host}
-                  onOpenChange={setOpenMenuHost}
-                  onEdit={() => {
-                    setOpenMenuHost(null)
-                    openDialog({ mode: 'edit', service: svc })
-                  }}
-                  onRemove={() => {
-                    setOpenMenuHost(null)
-                    removeService(svc.host)
-                  }}
+                  onEdit={() => openDialog({ mode: 'edit', service: svc })}
+                  onRemove={() => removeService(svc.host)}
                 />
               }
             />
