@@ -4,7 +4,7 @@ import { cn } from '../foundations/cn'
 import { ChevronRightIcon, type IconComponent } from '../icons/Icons'
 import { STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
-// Muted at rest and the accent on hover. Focus shows the way hover does
+// Muted at rest and the accent on hover, unless disabled. Focus shows the way hover does
 // (accent and underline), not with a ring. The pill's padding hangs outside
 // the text (with the glyphs' empty edges), so the words line up with the text
 // around them.
@@ -12,7 +12,7 @@ const VIEW_LINK = cx(
   'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 ml-[-9.5px] mr-[-9px]',
   'text-[length:inherit] font-medium whitespace-nowrap text-secondary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
-  'hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
+  'usable:hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
   STATE_CLASSES,
 )
 
@@ -20,12 +20,12 @@ const VIEW_LINK = cx(
 // through opacity, so there's one colour animation rather than two that drift.
 const GLYPH = cx(
   'opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
-  'group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
+  'group-usable/link:group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
 )
 
 // Only the label underlines, not the glyphs.
 const LABEL = cx(
-  'group-hover/link:underline group-hover/link:underline-offset-2',
+  'group-usable/link:group-hover/link:underline group-usable/link:group-hover/link:underline-offset-2',
   'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
 )
 

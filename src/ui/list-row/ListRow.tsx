@@ -14,11 +14,11 @@ const ROW = cx(
 )
 
 // Always faintly there, so the right edge is consistent and rows read as
-// tappable; brighter on hover and focus.
+// tappable; brighter on hover (unless disabled) and focus.
 const CHEVRON = cx(
   'shrink-0 text-tertiary opacity-30',
   'transition-opacity duration-(--duration-fast) ease-in-out',
-  'group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
+  'group-usable/row:group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
 )
 
 interface ListRowProps {
