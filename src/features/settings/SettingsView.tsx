@@ -1,7 +1,7 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 import { useSetting } from '@/hooks/useSetting'
+import { useManualUpdateCheck, type UpdateCheckState } from '@/features/settings/hooks/useManualUpdateCheck'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
 import { useTheme } from '@/app/hooks/useTheme'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -23,12 +23,6 @@ import {
   Toggle,
   type SegmentedOption,
 } from '@/ui'
-
-type CheckState =
-  | { kind: 'idle' }
-  | { kind: 'checking' }
-  | { kind: 'up-to-date' }
-  | { kind: 'available'; update: PendingUpdate }
 
 const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
   variants: {
@@ -118,7 +112,7 @@ function SettingRow({
 
 /** The Updates card's footer: the outcome of a manual check, or nothing
  *  while idle or checking (undefined drops the footer slot entirely). */
-function renderCheckResult(check: CheckState): ReactNode {
+function renderCheckResult(check: UpdateCheckState): ReactNode {
   if (check.kind === 'up-to-date') {
     return (
       <p className={statusVariants({ kind: 'up-to-date' })}>
@@ -143,7 +137,7 @@ function renderCheckResult(check: CheckState): ReactNode {
 }
 
 /** The same outcome in words, for the screen-reader status line. */
-function checkStatusText(check: CheckState): string {
+function checkStatusText(check: UpdateCheckState): string {
   if (check.kind === 'checking') return 'Checking for updates…'
   if (check.kind === 'up-to-date') return 'You’re on the latest version.'
   if (check.kind === 'available') return `Version ${check.update.version} is available.`
@@ -154,17 +148,11 @@ export function SettingsView(): JSX.Element {
   const { navigate } = useNavigation()
   const [isAutoUpdateEnabled, setIsAutoUpdateEnabled] = useSetting('autoUpdate', true)
   const [areThemeSoundsEnabled, setAreThemeSoundsEnabled] = useSetting('themeSounds', true)
-  const [check, setCheck] = useState<CheckState>({ kind: 'idle' })
+  const { check, runCheck } = useManualUpdateCheck()
   const isChecking = check.kind === 'checking'
   const checkResult = renderCheckResult(check)
   const themeLabelId = useId()
   const themeDescriptionId = useId()
-
-  async function runCheck(): Promise<void> {
-    setCheck({ kind: 'checking' })
-    const update = await checkForUpdates()
-    setCheck(update ? { kind: 'available', update } : { kind: 'up-to-date' })
-  }
 
   return (
     <div className="page">
