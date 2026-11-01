@@ -9,7 +9,7 @@ import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, f
 import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { Button } from '@/components/Button'
-import { SectionCard } from '@/components/Section'
+import { Card } from '@/components/Card'
 import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
@@ -40,18 +40,18 @@ const stateVariants = cva('text-caption inline-flex shrink-0 items-center gap-6 
 })
 
 // Interface cards are entity headers (icon tile + name), like the connection
-// card, so they need more room around the tile than a plain section title. The
+// card, so they need more room around the tile than a plain card title. The
 // bottom pad is trimmed: with no divider, the header pad and body pad stacked
 // into too big a gap below the name. No divider either: the card reads as one unit.
 const PANEL_HEADER = cx(
   'flex items-center justify-between gap-12',
-  'px-(--section-header-padding-x) pt-(--section-header-padding-y) pb-8',
+  'px-(--card-header-padding-x) pt-(--card-header-padding-y) pb-8',
 )
 
 // With no divider the header sets most of the gap above the fields; a small top
 // pad adds a little room between the name and the first label. The rows carry
 // only a few fields, so they're compact.
-const PANEL_BODY = 'px-(--section-body-padding) pt-6 pb-(--section-body-padding)'
+const PANEL_BODY = 'px-(--card-body-padding) pt-6 pb-(--card-body-padding)'
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
@@ -61,7 +61,7 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Eleme
 
 function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
-    <SectionCard as="li">
+    <Card as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <span className={iconVariants({ connection: iface.connectionType })}>
@@ -93,7 +93,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
         <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
         <DataRow label="MAC" value={formatMac(iface.macAddress)} />
       </DataList>
-    </SectionCard>
+    </Card>
   )
 }
 

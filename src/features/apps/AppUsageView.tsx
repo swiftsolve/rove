@@ -31,7 +31,7 @@ const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
 // equal top and bottom padding, so the first and last aren't special-cased.
 // Hover gets the Speed page's capability-row wash.
 const ROW = cx(
-  'group/row relative flex flex-col gap-8 px-(--section-body-padding) py-12',
+  'group/row relative flex flex-col gap-8 px-(--card-body-padding) py-12',
   'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
 )
 

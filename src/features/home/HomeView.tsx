@@ -2,10 +2,10 @@ import { isConnectedNetwork } from '@/types'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { ConnectionCard } from '@/features/connection/ConnectionCard'
-import { CapabilityStrip } from '@/features/capabilities/CapabilityStrip'
+import { CapabilitiesCard } from '@/features/capabilities/CapabilitiesCard'
 import { UsageCard } from '@/features/home/components/UsageCard'
 import { DevicesCard } from '@/features/home/components/DevicesCard'
-import { LiveThroughputPanel } from '@/features/live-throughput/LiveThroughputPanel'
+import { TrafficCard } from '@/features/live-throughput/TrafficCard'
 
 export function HomeView(): JSX.Element | null {
   const { info } = useNetwork()
@@ -24,8 +24,8 @@ export function HomeView(): JSX.Element | null {
       <h1 className="sr-only">Home</h1>
       <ConnectionCard info={info} />
 
-      {isConnected && <LiveThroughputPanel />}
-      {(isConnected || hasCapabilities) && <CapabilityStrip />}
+      {isConnected && <TrafficCard />}
+      {(isConnected || hasCapabilities) && <CapabilitiesCard />}
 
       {/* Two different summaries side by side, not a list: each card is its own
           section. Usage carries two numbers, so it gets the wider column. */}

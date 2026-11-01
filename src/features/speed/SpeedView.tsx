@@ -3,7 +3,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import { SpeedTestSection } from '@/features/speed/components/SpeedTestSection'
+import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
 import { CapabilityList } from '@/features/capabilities/CapabilityList'
 import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetailsView'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
@@ -185,7 +185,7 @@ export function SpeedView(): JSX.Element | null {
         }
       />
 
-      <SpeedTestSection />
+      <SpeedTestCard />
 
       <CapabilityList />
     </div>

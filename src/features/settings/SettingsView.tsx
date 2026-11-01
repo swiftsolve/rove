@@ -5,7 +5,7 @@ import { useSetting } from '@/hooks/useSetting'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
 import { useTheme } from '@/app/hooks/useTheme'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody, CardFooter } from '@/components/Card'
 import { Toggle } from '@/components/Toggle'
 import {
   CheckIcon,
@@ -166,7 +166,7 @@ function SettingRow({
   )
 }
 
-/** The Updates section's footer: the outcome of a manual check, or nothing
+/** The Updates card's footer: the outcome of a manual check, or nothing
  *  while idle or checking (undefined drops the footer slot entirely). */
 function renderCheckResult(check: CheckState): ReactNode {
   if (check.kind === 'up-to-date') {
@@ -228,99 +228,104 @@ export function SettingsView(): JSX.Element {
         <h1 className="page-header-title">Settings</h1>
       </header>
 
-      <Section
-        title="Updates"
-        bodyClassName={checkResult != null ? UPDATES_LIST_ABOVE_FOOTER : LIST}
-        footer={checkResult}
-        footerClassName={UPDATES_FOOTER}
-      >
-        <SettingRow
-          title="Check for updates automatically"
-          description="Look for a newer signed release each time Rove launches."
-          control={(descriptionId) => (
-            <Toggle
-              isChecked={isAutoUpdateEnabled}
-              onChange={setIsAutoUpdateEnabled}
-              label="Check for updates automatically"
-              describedBy={descriptionId}
-            />
-          )}
-        />
-        <SettingRow
-          title="Check for updates now"
-          description="Query GitHub Releases for the latest signed build."
-          control={(descriptionId) => (
-            <Button
-              aria-describedby={descriptionId}
-              variant="secondary"
-              icon={RefreshIcon}
-              isLoading={isChecking}
-              onClick={() => void runCheck()}
-            >
-              Check now
-            </Button>
-          )}
-        />
-      </Section>
-
-      <Section title="Appearance" bodyClassName={LIST}>
-        <div className={rowVariants({ isStacked: true })}>
-          <div className={ROW_TEXT}>
-            <span id={themeLabelId} className={ROW_TITLE}>
-              Theme
-            </span>
-            <span id={themeDescriptionId} className={ROW_DESC}>
-              Use a dark or light appearance, or match your system setting.
-            </span>
-          </div>
-          <ThemeSegmented labelId={themeLabelId} descriptionId={themeDescriptionId} />
-        </div>
-        <SettingRow
-          title="Theme switch sound"
-          description="Play a soft click when toggling between light and dark."
-          control={(descriptionId) => (
-            <Toggle
-              isChecked={areThemeSoundsEnabled}
-              onChange={setAreThemeSoundsEnabled}
-              label="Theme switch sound"
-              describedBy={descriptionId}
-            />
-          )}
-        />
-      </Section>
-
-      <Section title="About" bodyClassName={LIST}>
-        {/* A whole-row link that reads like a Speed-page capability row: the hover
-            highlight bleeds 8px into the section padding, so the focus ring (the
-            ring alone, no wash) is drawn inside it. The chevron is always faint
-            and brightens on hover and focus. */}
-        <button
-          type="button"
-          className={cx(
-            'group flex items-center justify-between gap-16 w-[calc(100%+16px)] -mx-8',
-            'px-8 py-(--row-padding-y) rounded-sm text-left cursor-pointer',
-            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
-            'focus-visible:outline-offset-(--focus-inset)',
-          )}
-          onClick={() => navigate({ tab: 'about' })}
-        >
-          <div className={ROW_TEXT}>
-            <span className={ROW_TITLE}>About Rove</span>
-            <span className={ROW_DESC}>Version, platform, and source.</span>
-          </div>
-          <ChevronRightIcon
-            size={16}
-            className={cx(
-              'shrink-0 text-tertiary opacity-30',
-              'transition-[opacity] duration-(--duration-fast) ease-in-out',
-              'group-hover:opacity-70 group-focus-visible:opacity-70',
+      <Card>
+        <CardHeader title="Updates" />
+        <CardBody className={checkResult != null ? UPDATES_LIST_ABOVE_FOOTER : LIST}>
+          <SettingRow
+            title="Check for updates automatically"
+            description="Look for a newer signed release each time Rove launches."
+            control={(descriptionId) => (
+              <Toggle
+                isChecked={isAutoUpdateEnabled}
+                onChange={setIsAutoUpdateEnabled}
+                label="Check for updates automatically"
+                describedBy={descriptionId}
+              />
             )}
           />
-        </button>
-      </Section>
+          <SettingRow
+            title="Check for updates now"
+            description="Query GitHub Releases for the latest signed build."
+            control={(descriptionId) => (
+              <Button
+                aria-describedby={descriptionId}
+                variant="secondary"
+                icon={RefreshIcon}
+                isLoading={isChecking}
+                onClick={() => void runCheck()}
+              >
+                Check now
+              </Button>
+            )}
+          />
+        </CardBody>
+        {checkResult != null && <CardFooter className={UPDATES_FOOTER}>{checkResult}</CardFooter>}
+      </Card>
+
+      <Card>
+        <CardHeader title="Appearance" />
+        <CardBody className={LIST}>
+          <div className={rowVariants({ isStacked: true })}>
+            <div className={ROW_TEXT}>
+              <span id={themeLabelId} className={ROW_TITLE}>
+                Theme
+              </span>
+              <span id={themeDescriptionId} className={ROW_DESC}>
+                Use a dark or light appearance, or match your system setting.
+              </span>
+            </div>
+            <ThemeSegmented labelId={themeLabelId} descriptionId={themeDescriptionId} />
+          </div>
+          <SettingRow
+            title="Theme switch sound"
+            description="Play a soft click when toggling between light and dark."
+            control={(descriptionId) => (
+              <Toggle
+                isChecked={areThemeSoundsEnabled}
+                onChange={setAreThemeSoundsEnabled}
+                label="Theme switch sound"
+                describedBy={descriptionId}
+              />
+            )}
+          />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="About" />
+        <CardBody className={LIST}>
+          {/* A whole-row link that reads like a Speed-page capability row: the hover
+              highlight bleeds 8px into the card padding, so the focus ring (the
+              ring alone, no wash) is drawn inside it. The chevron is always faint
+              and brightens on hover and focus. */}
+          <button
+            type="button"
+            className={cx(
+              'group flex items-center justify-between gap-16 w-[calc(100%+16px)] -mx-8',
+              'px-8 py-(--row-padding-y) rounded-sm text-left cursor-pointer',
+              'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
+              'focus-visible:outline-offset-(--focus-inset)',
+            )}
+            onClick={() => navigate({ tab: 'about' })}
+          >
+            <div className={ROW_TEXT}>
+              <span className={ROW_TITLE}>About Rove</span>
+              <span className={ROW_DESC}>Version, platform, and source.</span>
+            </div>
+            <ChevronRightIcon
+              size={16}
+              className={cx(
+                'shrink-0 text-tertiary opacity-30',
+                'transition-[opacity] duration-(--duration-fast) ease-in-out',
+                'group-hover:opacity-70 group-focus-visible:opacity-70',
+              )}
+            />
+          </button>
+        </CardBody>
+      </Card>
 
       {/* The update check's outcome, announced as it changes. Last in the page
-          so it doesn't shift the entrance stagger of the sections above. */}
+          so it doesn't shift the entrance stagger of the cards above. */}
       <p className="sr-only" role="status">
         {checkStatusText(check)}
       </p>

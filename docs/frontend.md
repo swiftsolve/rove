@@ -96,8 +96,8 @@ keep logic worth testing out of components and hooks.
   them; when you add one to `tailwind.css`, add it there too.
   `npm run lint` runs `scripts/check-cn-theme.mjs`, which fails until you do.
 - A view adjusts a shared component through its props: a variant
-  (`density`, `align`, `shouldTruncate`) or a class for one part
-  (`bodyClassName`, `footerClassName`), never a selector into its DOM
+  (`density`, `align`, `shouldTruncate`) or the `className` of one of its
+  parts (`CardBody`, `CardFooter`), never a selector into its DOM
   (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
   variant. The one exception is a `:has()` selector in a `.module.css` (below);
   InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
@@ -148,8 +148,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. Icon (`icon`) and Loading (`isLoading`) as in Figma. |
 | Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
-| Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
-| Section header | `Section` | 44px card header with an optional badge (`SectionBadge`) or button. |
+| Live badge | `TrafficCard` | Shows that traffic is updating live. |
+| Section header | `Card`, `CardHeader` | A card is `Card` with a `CardHeader` (44px: icon, title, and `actions` such as a `CardBadge` or a button), a `CardBody` and an optional `CardFooter` band. `Card as="li"` or `as="div"`, with no header, is the bare surface for a card that lays out its own content. |
 | Data row | `DataRow`, `DataList` | Label and value; the value right-aligns. An optional accessory (signal bars, an icon) and detail sit before it, 6px apart. `DataList` makes the rows a `<dl>` and sets their `density` (`default`, `snug`, `compact`); `align="center"` suits a value with no text baseline. |
 | Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric | `MetricValue` | A number with its unit, coloured by `status` when it's earned. |
@@ -160,8 +160,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Signal bars | `ConnectionCard` | Wi‑Fi strength. Unlit bars use `--opacity-tint-lg`. |
 | Capability cell | `CapabilityMeter` | Icon tile over a 4-step meter. Unsupported also covers not yet tested and testing. |
 | Connection card | `ConnectionCard` | Current connection: Wi‑Fi, Ethernet or Disconnected. Expands to show details. |
-| Traffic card | `LiveThroughputPanel` | Live download and upload with the last 60 seconds charted. |
-| Capabilities card | `CapabilityStrip` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
+| Traffic card | `TrafficCard` | Live download and upload with the last 60 seconds charted. |
+| Capabilities card | `CapabilitiesCard` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
 | Stat card | `StatCard` | Home summary card: Usage or Devices. Devices is Empty when there's nothing to list. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
 | Dialog | `Dialog` | Modal: title, optional description, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |

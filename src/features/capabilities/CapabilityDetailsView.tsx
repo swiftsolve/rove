@@ -24,7 +24,7 @@ import {
 // scroll margin leaves a little air above it.
 const CARD = cx(
   'flex flex-col overflow-hidden scroll-mt-12',
-  'px-(--section-header-padding-x) pt-(--section-header-padding-y)',
+  'px-(--card-header-padding-x) pt-(--card-header-padding-y)',
 )
 
 /** Tinted chip behind the glyph, the same treatment the capability rows use:
@@ -43,7 +43,7 @@ const iconVariants = cva(
 // it misses the threshold, which stays a small muted line.
 const METRICS = cx(
   'grid grid-cols-4 gap-x-8 gap-y-12',
-  '-mx-(--section-header-padding-x) bg-inset px-(--section-header-padding-x) py-12',
+  '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
 )
 
 const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-nowrap', {
@@ -61,7 +61,7 @@ const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-n
 // stays aligned with the metrics grid (14px from the card edge).
 const VERDICT = cx(
   'flex items-center justify-between gap-12',
-  '-mx-(--section-header-padding-x) px-[calc(var(--section-header-padding-x)-1px)] py-12',
+  '-mx-(--card-header-padding-x) px-[calc(var(--card-header-padding-x)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 

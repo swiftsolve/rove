@@ -128,7 +128,7 @@ function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
 // bottom corners. The horizontal padding is trimmed by the border width so its
 // content stays aligned with the metrics grid above.
 const CARD_FOOTER = cx(
-  '-mx-(--section-body-padding) mt-8 px-[calc(var(--section-body-padding)-1px)] py-12',
+  '-mx-(--card-body-padding) mt-8 px-[calc(var(--card-body-padding)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
@@ -140,7 +140,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   return (
     // No bottom padding: the footer banner bleeds to the card's bottom edge, and
     // overflow clips it to the rounded corners.
-    <li className="surface overflow-hidden px-(--section-body-padding) pt-(--section-body-padding)">
+    <li className="surface overflow-hidden px-(--card-body-padding) pt-(--card-body-padding)">
       <div className="mb-12 flex items-center justify-between gap-12">
         <ConnectionBadge entry={entry} />
         <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>

@@ -8,7 +8,7 @@ import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody } from '@/components/Card'
 import { InlineMeta } from '@/components/DotSeparator'
 import { Tooltip } from '@/components/Tooltip'
 import { ChevronRightIcon, HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
@@ -18,11 +18,11 @@ import { IconButton } from '@/components/IconButton'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { CAPABILITY_LEVEL_FILL_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 
-// Bleeds past the section body's padding so the icons span the full card width,
+// Bleeds past the card body's padding so the icons span the full card width,
 // the same pattern as the live throughput chart.
 const LIST = cx(
   'flex items-center justify-between',
-  '-mx-(--section-body-padding) px-(--section-body-padding)',
+  '-mx-(--card-body-padding) px-(--card-body-padding)',
 )
 
 // Each column: the icon tile with its signal meter centred beneath it. The
@@ -64,10 +64,10 @@ const footerVariants = cva(
     'flex items-center justify-end',
     // Full-bleed to both card edges: the body's content box plus the padding on
     // each side, then negative margins pull it out over that padding.
-    'w-[calc(100%+2*var(--section-body-padding))]',
-    '-mx-(--section-body-padding) -mb-(--section-body-padding)',
-    'bg-inset px-(--section-body-padding) py-(--section-header-padding-y)',
-    // The section runs `overflow: visible` (so tooltips can escape), so round the
+    'w-[calc(100%+2*var(--card-body-padding))]',
+    '-mx-(--card-body-padding) -mb-(--card-body-padding)',
+    'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
+    // The card runs `overflow: visible` (so tooltips can escape), so round the
     // bottom corners here to sit flush inside the card's radius.
     'rounded-b-lg',
   ],
@@ -254,7 +254,7 @@ function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null
   )
 }
 
-export function CapabilityStrip(): JSX.Element {
+export function CapabilitiesCard(): JSX.Element {
   const { navigate } = useNavigation()
   // A test can be started here or from the Speed tab; either way it greys the strip.
   const capabilities = useSpeedTest((test) => test.capabilities)
@@ -269,39 +269,41 @@ export function CapabilityStrip(): JSX.Element {
   }
 
   return (
-    <Section
-      title="Capabilities"
-      icon={<ZapIcon size={15} />}
-      // Top-placement tooltips must not be clipped by the section card.
-      className="overflow-visible"
-      action={
+    <Card className="overflow-visible">
+      // Top-placement tooltips must not be clipped by the card.
+      <CardHeader
+        title="Capabilities"
+        icon={<ZapIcon size={15} />}
+        actions={
         <RunTestButton isTesting={isTesting} hasResults={hasResults} />
       }
-    >
-      {!hasResults ? (
-        <PlaceholderStrip isTesting={isTesting} />
-      ) : (
-        <>
-          <ul role="list" className={LIST}>
-            {capabilities.map((capability) => (
-              <ResultCell
-                key={capability.id}
-                capability={capability}
-                isTesting={isTesting}
-                onOpenDetails={openDetails}
-              />
-            ))}
-          </ul>
+      />
+      <CardBody>
+        {!hasResults ? (
+          <PlaceholderStrip isTesting={isTesting} />
+        ) : (
+          <>
+            <ul role="list" className={LIST}>
+              {capabilities.map((capability) => (
+                <ResultCell
+                  key={capability.id}
+                  capability={capability}
+                  isTesting={isTesting}
+                  onOpenDetails={openDetails}
+                />
+              ))}
+            </ul>
 
-          <ResultFooter isTesting={isTesting} />
-        </>
-      )}
+            <ResultFooter isTesting={isTesting} />
+          </>
+        )}
 
-      {/* The Speed page's announcements, for a test run from here. Home shows no
-          failure, so the error is read out too. */}
-      <p className="sr-only" role="status">
-        {error ?? testStatusText(isTesting, progress, internetSpeed)}
-      </p>
-    </Section>
+        {/* The Speed page's announcements, for a test run from here. Home shows no
+            failure, so the error is read out too. */}
+        <p className="sr-only" role="status">
+          {error ?? testStatusText(isTesting, progress, internetSpeed)}
+        </p>
+      </CardBody>
+    </Card>
   )
 }

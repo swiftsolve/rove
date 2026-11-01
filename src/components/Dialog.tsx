@@ -44,7 +44,7 @@ const CLOSE = cn(
 )
 
 // The secondary button at the filled one's size, so the two sit level.
-const CANCEL = 'px-(--section-padding) py-10 text-sm font-semibold tracking-label-large'
+const CANCEL = 'px-(--card-padding) py-10 text-sm font-semibold tracking-label-large'
 
 interface DialogProps {
   /** False while the dialog plays its leave animation, before it unmounts. */

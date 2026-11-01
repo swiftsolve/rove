@@ -139,12 +139,12 @@ const detailsWrapVariants = cva(
 // does the clipping. Its groups (link, addresses, hardware) are split by a
 // hairline that runs the card's full width, with a row gap either side.
 const DETAILS = cx(
-  'row-list bg-inset py-(--section-header-padding-y)',
+  'row-list bg-inset py-(--card-header-padding-y)',
   'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
 )
 
 // A group carries the side inset, so the hairlines between groups don't.
-const DETAILS_GROUP = 'px-(--section-body-padding)'
+const DETAILS_GROUP = 'px-(--card-body-padding)'
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
 // `shouldTruncate`; the security badge's item in ConnectionCard.module.css).
@@ -368,7 +368,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
       <div
         className={cx(
           'relative flex items-start gap-12 w-full text-left',
-          'min-h-(--section-header-min-height) py-(--section-header-padding-y) px-(--section-header-padding-x)',
+          'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
           'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
         )}
       >

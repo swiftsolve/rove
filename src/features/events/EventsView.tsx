@@ -36,7 +36,7 @@ function TimelineDay({
       {/* The date divider: quiet, uppercase, flush with the left edge. */}
       <h2
         id={headingId}
-        className="mb-(--section-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
+        className="mb-(--card-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
       >
         {group.heading}
       </h2>

@@ -8,7 +8,7 @@ import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from '@/compone
 // The filled buttons: a solid fill under a white label.
 const FILLED_BASE = cx(
   'inline-flex items-center justify-center gap-6 rounded-sm',
-  'px-(--section-padding) py-10 text-sm font-semibold tracking-label-large text-on-fill',
+  'px-(--card-padding) py-10 text-sm font-semibold tracking-label-large text-on-fill',
   'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
   BUTTON_PRESS,
 )

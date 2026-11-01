@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody } from '@/components/Card'
 import { DataList, DataRow } from '@/components/DataRow'
 import { BrandIcon } from '@/components/icons/Icons'
 import { IS_MAC } from '@/lib/platform'
@@ -40,24 +40,27 @@ export function AboutView(): JSX.Element {
         {version && <span className="mt-4 text-xs text-tertiary tabular-nums">Version {version}</span>}
       </div>
 
-      <Section title="Details" bodyClassName="row-list">
-        <DataList>
-          <DataRow label="Version" value={version ?? '—'} />
-          <DataRow label="Platform" value={platformLabel()} />
-          <DataRow label="Source">
-            {/* Focus shows the way hover does, accent + underline, not with a ring. */}
-            <a
-              className="text-accent no-underline hover:underline focus-visible:underline focus-visible:outline-none"
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
-              github.com/swiftsolve/rove
-              <span className="sr-only"> (opens in a new window)</span>
-            </a>
-          </DataRow>
-        </DataList>
-      </Section>
+      <Card>
+        <CardHeader title="Details" />
+        <CardBody className="row-list">
+          <DataList>
+            <DataRow label="Version" value={version ?? '—'} />
+            <DataRow label="Platform" value={platformLabel()} />
+            <DataRow label="Source">
+              {/* Focus shows the way hover does, accent + underline, not with a ring. */}
+              <a
+                className="text-accent no-underline hover:underline focus-visible:underline focus-visible:outline-none"
+                href={REPO_URL}
+                target="_blank"
+                rel="noreferrer"
+              >
+                github.com/swiftsolve/rove
+                <span className="sr-only"> (opens in a new window)</span>
+              </a>
+            </DataRow>
+          </DataList>
+        </CardBody>
+      </Card>
 
       <p className="text-caption pt-8 pb-12 text-center">© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
     </div>

@@ -1,5 +1,5 @@
 import { forwardRef, type ReactNode } from 'react'
-import { SectionCard } from '@/components/Section'
+import { Card } from '@/components/Card'
 
 interface UsageListProps {
   /** Accessible name for the list, e.g. "Apps by usage". */
@@ -17,7 +17,7 @@ export const UsageList = forwardRef<HTMLUListElement, UsageListProps>(function U
   ref,
 ) {
   return (
-    <SectionCard>
+    <Card as="div">
       <ul
         ref={ref}
         role="list"
@@ -26,6 +26,6 @@ export const UsageList = forwardRef<HTMLUListElement, UsageListProps>(function U
       >
         {children}
       </ul>
-    </SectionCard>
+    </Card>
   )
 })

@@ -18,7 +18,7 @@ import {
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
-import { SectionCard } from '@/components/Section'
+import { Card } from '@/components/Card'
 import {
   deviceMetaParts,
   deviceName,
@@ -29,7 +29,7 @@ import {
 // The device card: icon pinned to the top-left, the body column fills the rest.
 const DEVICE_ROW = cx(
   'flex items-start gap-12',
-  'px-(--section-header-padding-x) py-(--section-header-padding-y)',
+  'px-(--card-header-padding-x) py-(--card-header-padding-y)',
 )
 
 const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'
@@ -170,7 +170,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <SectionCard as="li" className={DEVICE_ROW}>
+    <Card as="li" className={DEVICE_ROW}>
       <span className={iconVariants({ tone: device.isGateway ? 'positive' : KIND_TONES[device.kind] })}>
         <KindIcon kind={device.kind} />
       </span>
@@ -212,6 +212,6 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
           </span>
         </div>
       </div>
-    </SectionCard>
+    </Card>
   )
 }

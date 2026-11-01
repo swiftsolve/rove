@@ -3,7 +3,7 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recha
 import type { DailyUsage } from '@/types'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody } from '@/components/Card'
 import { ViewHeader } from '@/components/ViewHeader'
 import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
@@ -32,7 +32,7 @@ const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
 // "Since boot" label sits left, the down/up totals grouped at the right.
 const TOTALS_FOOTER = cx(
   'text-caption flex items-center justify-between gap-12',
-  'mt-12 -mx-(--section-body-padding) -mb-(--section-body-padding) p-(--section-body-padding)',
+  'mt-12 -mx-(--card-body-padding) -mb-(--card-body-padding) p-(--card-body-padding)',
   'bg-inset',
 )
 
@@ -71,7 +71,7 @@ function BytesMetric({
   )
 }
 
-/** A section footer: a label on the left, down / up byte totals on the right. */
+/** A card footer: a label on the left, down / up byte totals on the right. */
 function TotalsFooter({
   label,
   rxBytes,
@@ -272,24 +272,30 @@ export function UsageView(): JSX.Element {
         </div>
       ) : (
         <>
-          <Section title="Today" icon={<TodayIcon size={15} />}>
-            {/* Today metrics sit on the plain card surface; the section body's top
-                padding is the only gap below the title. */}
-            <dl className="grid grid-cols-2 gap-16">
-              <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
-              <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
-            </dl>
-            <TotalsFooter
-              label="Since boot"
-              rxBytes={usage.bootRxBytes}
-              txBytes={usage.bootTxBytes}
-            />
-          </Section>
+          <Card>
+            <CardHeader title="Today" icon={<TodayIcon size={15} />} />
+            <CardBody>
+              {/* Today metrics sit on the plain card surface; the card body's top
+                  padding is the only gap below the title. */}
+              <dl className="grid grid-cols-2 gap-16">
+                <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
+                <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
+              </dl>
+              <TotalsFooter
+                label="Since boot"
+                rxBytes={usage.bootRxBytes}
+                txBytes={usage.bootTxBytes}
+              />
+            </CardBody>
+          </Card>
 
-          <Section title="Last 7 days" icon={<WeekIcon size={15} />}>
-            <WeekChart days={usage.days} />
-            <TotalsFooter label="Week total" rxBytes={weekRx} txBytes={weekTx} />
-          </Section>
+          <Card>
+            <CardHeader title="Last 7 days" icon={<WeekIcon size={15} />} />
+            <CardBody>
+              <WeekChart days={usage.days} />
+              <TotalsFooter label="Week total" rxBytes={weekRx} txBytes={weekTx} />
+            </CardBody>
+          </Card>
         </>
       )}
     </div>

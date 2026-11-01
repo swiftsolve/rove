@@ -5,7 +5,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody } from '@/components/Card'
 import { ButtonSpinner } from '@/components/ButtonSpinner'
 import { ChevronRightIcon, ZapIcon } from '@/components/icons/Icons'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
@@ -20,13 +20,13 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
 
 // Every row keeps the same symmetric vertical padding, with no first/last special
 // casing, so both the spacing between rows and each row's hover highlight read
-// identically. The section body's own padding supplies the outer breathing room.
+// identically. The card body's own padding supplies the outer breathing room.
 const LIST = 'flex flex-col'
 
 const rowVariants = cva(
   [
     'group/row flex items-center gap-12 rounded-sm text-left',
-    // The negative margin lets the hover highlight bleed into the section padding
+    // The negative margin lets the hover highlight bleed into the card padding
     // while the content stays aligned to the 16px edge.
     '-mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)',
     'transition-[background] duration-(--duration-fast) ease-in-out',
@@ -42,7 +42,7 @@ const rowVariants = cva(
   },
 )
 
-/** The tinted chip a CapabilityIcon sits in, the same chip as CapabilityStrip's
+/** The tinted chip a CapabilityIcon sits in, the same chip as CapabilitiesCard's
  *  tile. Coloured by the level; muted (grey) before any test has run and while
  *  one runs. The meters dim through CapabilityMeter's `isDimmed`. */
 const tileVariants = cva(
@@ -127,7 +127,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
   )
 }
 
-/** The section header's trailing slot: a spinner while testing, a hint before
+/** The card header's actions: a spinner while testing, a hint before
  *  the first test, nothing once results are in. */
 function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | undefined {
   if (isTesting) {
@@ -155,31 +155,34 @@ export function CapabilityList(): JSX.Element {
   const isTesting = useSpeedTest((test) => test.isTesting)
 
   return (
-    <Section
-      title="Capabilities"
-      icon={<ZapIcon size={15} />}
-      action={headerAction(isTesting, hasRunTest)}
-    >
-      {!hasRunTest ? (
-        <ul role="list" className={LIST}>
-          {PREVIEW_CAPABILITIES.map((definition) => (
-            <PreviewRow key={definition.id} definition={definition} />
-          ))}
-        </ul>
-      ) : (
-        <ul role="list" className={LIST}>
-          {capabilities.map((capability) => (
-            <CapabilityRow
-              key={capability.id}
-              capability={capability}
-              isTesting={isTesting}
-              onOpen={() =>
-                navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })
-              }
-            />
-          ))}
-        </ul>
-      )}
-    </Section>
+    <Card>
+      <CardHeader
+        title="Capabilities"
+        icon={<ZapIcon size={15} />}
+        actions={headerAction(isTesting, hasRunTest)}
+      />
+      <CardBody>
+        {!hasRunTest ? (
+          <ul role="list" className={LIST}>
+            {PREVIEW_CAPABILITIES.map((definition) => (
+              <PreviewRow key={definition.id} definition={definition} />
+            ))}
+          </ul>
+        ) : (
+          <ul role="list" className={LIST}>
+            {capabilities.map((capability) => (
+              <CapabilityRow
+                key={capability.id}
+                capability={capability}
+                isTesting={isTesting}
+                onOpen={() =>
+                  navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })
+                }
+              />
+            ))}
+          </ul>
+        )}
+      </CardBody>
+    </Card>
   )
 }

@@ -10,7 +10,7 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 // `shadow-raised`: that composes a five-layer shadow list, which would cross-fade
 // from `.surface`'s shadow instead of morphing into it.
 const CARD = cx(
-  'group relative flex flex-col gap-6 p-(--section-body-padding) text-left cursor-pointer',
+  'group relative flex flex-col gap-6 p-(--card-body-padding) text-left cursor-pointer',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
   'transition-[box-shadow,transform] duration-(--duration-fast) ease-in-out',
   'hover:[box-shadow:var(--shadow-raised)] active:transform-[translateY(1px)]',

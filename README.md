@@ -188,7 +188,7 @@ rove/
 │   │       └── utils/          its plain helpers (no React)
 │   │                           (capabilities, connection and live-throughput
 │   │                           have no view, so their parts sit at the top)
-│   ├── components/             shared UI used across features: Section,
+│   ├── components/             shared UI used across features: Card,
 │   │                           DataRow, Subpage, Tooltip, Icons, …
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)

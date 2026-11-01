@@ -6,7 +6,7 @@ import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import { Section } from '@/components/Section'
+import { Card, CardHeader, CardBody } from '@/components/Card'
 import { InlineMeta } from '@/components/DotSeparator'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -44,8 +44,8 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
 // Full-bleed inset panel at the card bottom, the same treatment as the live
 // throughput chart.
 const INSET_PANEL = cx(
-  '-mx-(--section-body-padding) mt-16 -mb-(--section-body-padding)',
-  'bg-inset p-(--section-body-padding)',
+  '-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)',
+  'bg-inset p-(--card-body-padding)',
 )
 
 /** A latency that came back: finite and below the backend's failed-ping sentinel. */
@@ -197,7 +197,7 @@ function ResultFooter({
   )
 }
 
-export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
+export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
   const { info } = useNetwork()
   const {
     internetSpeed,
@@ -254,36 +254,39 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
   const measuredLoss = internetSpeed ? `${internetSpeed.packetLoss}%` : null
 
   return (
-    <Section
-      title="Speed test"
-      icon={<SpeedIcon size={15} />}
-      action={isEmpty && canTest ? <span className="text-caption">No tests yet</span> : undefined}
-    >
-      {error && <p className="inline-error" role="alert">{error}</p>}
+    <Card>
+      <CardHeader
+        title="Speed test"
+        icon={<SpeedIcon size={15} />}
+        actions={isEmpty && canTest ? <span className="text-caption">No tests yet</span> : undefined}
+      />
+      <CardBody>
+        {error && <p className="inline-error" role="alert">{error}</p>}
 
-      <dl className="grid grid-cols-2 gap-16">
-        <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
-        <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
-      </dl>
-
-      {!isTesting && (
-        <dl className="mt-16 grid grid-cols-3 gap-16">
-          <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
-          <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
-          <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />
+        <dl className="grid grid-cols-2 gap-16">
+          <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
+          <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
         </dl>
-      )}
 
-      {isTesting && <TestProgress progress={progress} runId={runId} />}
-      {!isTesting && hasResults && hasFooterInfo && (
-        <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
-      )}
+        {!isTesting && (
+          <dl className="mt-16 grid grid-cols-3 gap-16">
+            <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />
+          </dl>
+        )}
 
-      {/* Always mounted so screen readers hear each phase and the result as they
-          land; the visible readouts count up every frame, so they can't be live. */}
-      <p className="sr-only" role="status">
-        {testStatusText(isTesting, progress, internetSpeed)}
-      </p>
-    </Section>
+        {isTesting && <TestProgress progress={progress} runId={runId} />}
+        {!isTesting && hasResults && hasFooterInfo && (
+          <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
+        )}
+
+        {/* Always mounted so screen readers hear each phase and the result as they
+            land; the visible readouts count up every frame, so they can't be live. */}
+        <p className="sr-only" role="status">
+          {testStatusText(isTesting, progress, internetSpeed)}
+        </p>
+      </CardBody>
+    </Card>
   )
 })

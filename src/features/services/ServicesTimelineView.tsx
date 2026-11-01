@@ -40,7 +40,7 @@ const ROWS_PER_STEP = 40
 // next within the same day; it's dropped on a day's last node so it ends at the
 // final marker.
 const ITEM = cx(
-  'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
+  'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
   'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
   'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
@@ -420,7 +420,7 @@ function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDu
     <li className="flex flex-col not-first:mt-[18px]">
       <h2
         id={headingId}
-        className="mb-(--section-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
+        className="mb-(--card-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
       >
         {group.heading}
       </h2>

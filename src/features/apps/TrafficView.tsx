@@ -99,7 +99,7 @@ function TrafficRow({
   const upPct = type.txBytes * scale
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return (
-    <li className="flex flex-col gap-8 px-(--section-body-padding) py-12">
+    <li className="flex flex-col gap-8 px-(--card-body-padding) py-12">
       <div className="flex items-center justify-between gap-12">
         <span className="inline-flex min-w-0 items-center gap-8">
           <Icon size={15} className="shrink-0 text-tertiary" />

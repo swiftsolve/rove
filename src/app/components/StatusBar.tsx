@@ -87,7 +87,7 @@ export function StatusBar(): JSX.Element {
     <header
       className={cx(
         'relative z-100 flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
-        'pl-16 pr-(--section-header-padding-x) bg-base border-b border-line [-webkit-app-region:drag]',
+        'pl-16 pr-(--card-header-padding-x) bg-base border-b border-line [-webkit-app-region:drag]',
       )}
       data-tauri-drag-region
     >

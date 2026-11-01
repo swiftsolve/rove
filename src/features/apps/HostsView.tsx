@@ -51,7 +51,7 @@ const GROUP = cx(
 // whole row is the click target, with a quiet hover to signal it. Expanded, the
 // hosts sit 8px below it. Its own ring is drawn on the group instead.
 const GROUP_HEADER = cx(
-  'flex w-full items-center justify-between gap-12 px-(--section-body-padding) py-12 aria-expanded:pb-8',
+  'flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
   '[font:inherit] text-left text-inherit hover:text-primary focus-visible:outline-none',
   'transition-[color] duration-(--duration-fast) ease-in-out',
 )
@@ -78,7 +78,7 @@ const HOST_COUNT = cx(
 // app-icon column.
 const HOSTS = cx(
   'flex flex-col gap-8',
-  'pr-(--section-body-padding) pb-12 pl-[calc(var(--section-body-padding)+21px)]',
+  'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]',
 )
 
 const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'

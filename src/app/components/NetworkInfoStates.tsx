@@ -19,7 +19,7 @@ const loadingVariants = cva(
     variants: {
       /** A failed detection: an icon chip, a short heading, the reason and a real
        *  button, so it reads as recoverable rather than a stray grey line. */
-      isError: { true: 'gap-16 p-20', false: 'gap-(--section-padding)' },
+      isError: { true: 'gap-16 p-20', false: 'gap-(--card-padding)' },
     },
     defaultVariants: { isError: false },
   },

@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import { DataList, DataRow } from '@/components/DataRow'
-import { Section, SectionBadge } from '@/components/Section'
+import { Card, CardHeader, CardBody, CardFooter, CardBadge } from '@/components/Card'
 import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RefreshIcon, RouterIcon } from '@/components/icons/Icons'
 import { IconButton } from '@/components/IconButton'
 import { MetricValue, type MetricStatus } from '@/components/MetricValue'
@@ -37,7 +37,7 @@ const ROUTER_BODY = cx(
   'row-list px-0',
   'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
 )
-const ROUTER_GROUP = 'row-list px-(--section-body-padding)'
+const ROUTER_GROUP = 'row-list px-(--card-body-padding)'
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
   return a != null && b != null && a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -89,7 +89,7 @@ function jitterValue(ping: PingStats | null | undefined): ReactNode {
   return <MetricValue value={ping.jitterMs} format={formatLatencyMs} />
 }
 
-function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
+function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
   const { info } = useNetwork()
   const ping = diagnostics?.gatewayPing
   // Negotiated link rate of the local connection to the router (Wi-Fi/Ethernet),
@@ -102,69 +102,64 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
   const hasDeviceRows = Boolean(diagnostics?.gatewayName || model || diagnostics?.gatewayVendor)
 
   return (
-    <Section
-      title="Router"
-      icon={<RouterIcon size={15} />}
-      bodyClassName={ROUTER_BODY}
-      footerClassName={ROUTER_FOOTER}
-      footer={
-        ping && ping.packetLoss > 0 ? (
-          <p className="text-body-small">
-            Packet loss can cause slow or unstable connections.
-          </p>
-        ) : undefined
-      }
-    >
-      <DataList className={ROUTER_GROUP} density="compact">
-        <DataRow label="Latency">{latencyValue(ping)}</DataRow>
-        <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
-        <DataRow label="Packet loss">
-          {ping ? (
-            <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
-          ) : (
-            '—'
-          )}
-        </DataRow>
-      </DataList>
-      <DataList className={ROUTER_GROUP} density="compact">
-        <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
-        <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
-        {linkSpeedMbps != null && (
-          <DataRow label="Link speed">
-            <MetricValue value={linkSpeedMbps} format={formatSpeedMbps} />
-          </DataRow>
-        )}
-      </DataList>
-      {hasDeviceRows && (
+    <Card>
+      <CardHeader title="Router" icon={<RouterIcon size={15} />} />
+      <CardBody className={ROUTER_BODY}>
         <DataList className={ROUTER_GROUP} density="compact">
-          <DataRow label="Name" value={diagnostics?.gatewayName || null} />
-          <DataRow label="Model" value={model} />
-          <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
+          <DataRow label="Latency">{latencyValue(ping)}</DataRow>
+          <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
+          <DataRow label="Packet loss">
+            {ping ? (
+              <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
+            ) : (
+              '—'
+            )}
+          </DataRow>
         </DataList>
+        <DataList className={ROUTER_GROUP} density="compact">
+          <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
+          <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
+          {linkSpeedMbps != null && (
+            <DataRow label="Link speed">
+              <MetricValue value={linkSpeedMbps} format={formatSpeedMbps} />
+            </DataRow>
+          )}
+        </DataList>
+        {hasDeviceRows && (
+          <DataList className={ROUTER_GROUP} density="compact">
+            <DataRow label="Name" value={diagnostics?.gatewayName || null} />
+            <DataRow label="Model" value={model} />
+            <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
+          </DataList>
+        )}
+      </CardBody>
+      {ping && ping.packetLoss > 0 && (
+        <CardFooter className={ROUTER_FOOTER}>
+          <p className="text-body-small">Packet loss can cause slow or unstable connections.</p>
+        </CardFooter>
       )}
-    </Section>
+    </Card>
   )
 }
 
-function DnsSection({ servers }: { servers: string[] }): JSX.Element {
+function DnsCard({ servers }: { servers: string[] }): JSX.Element {
   return (
-    <Section
-      title="DNS"
-      icon={<DnsIcon size={15} />}
-      bodyClassName="row-list"
-    >
-      {servers.length > 0 ? (
-        // A touch looser than the Router's rows: repeated identical rows read
-        // denser at the same spacing.
-        <DataList density="snug">
-          {servers.map((server) => (
-            <DataRow key={server} label="Server" value={server} />
-          ))}
-        </DataList>
-      ) : (
-        <p className="text-body-small">No DNS servers found.</p>
-      )}
-    </Section>
+    <Card>
+      <CardHeader title="DNS" icon={<DnsIcon size={15} />} />
+      <CardBody className="row-list">
+        {servers.length > 0 ? (
+          // A touch looser than the Router's rows: repeated identical rows read
+          // denser at the same spacing.
+          <DataList density="snug">
+            {servers.map((server) => (
+              <DataRow key={server} label="Server" value={server} />
+            ))}
+          </DataList>
+        ) : (
+          <p className="text-body-small">No DNS servers found.</p>
+        )}
+      </CardBody>
+    </Card>
   )
 }
 
@@ -175,49 +170,47 @@ function DnsSection({ servers }: { servers: string[] }): JSX.Element {
 // a glitch rather than a brand, so this slot stays empty rather than falling
 // back to a monogram. A VPN exit has no brand domain, so the two never contend.
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
-  if (isp?.isVpn) return <SectionBadge>VPN</SectionBadge>
+  if (isp?.isVpn) return <CardBadge>VPN</CardBadge>
   if (isp?.domain) {
     return <ServiceIcon host={isp.domain} name={isp.name ?? 'ISP'} size={18} fallback="none" />
   }
   return undefined
 }
 
-function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
+function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
   const isp = diagnostics?.isp
 
   return (
-    <Section
-      title={isp?.isVpn ? 'VPN' : 'ISP'}
-      icon={<GlobeIcon size={15} />}
-      bodyClassName="row-list"
-      action={ispBadge(isp)}
-    >
-      {isp ? (
-        <DataList density="compact">
-          {/* "Provider", not "ISP": the card's title already says ISP, and
-              under a VPN the value is the exit node's hosting company, which
-              "Provider" describes either way. */}
-          <DataRow label="Provider" value={isp.name} />
-          {/* "Website", not "Domain" — in a network tool the latter reads
-              as a DHCP search domain. DataRow hides itself when null, so
-              a lookup that named no domain simply has no row. */}
-          <DataRow label="Website" value={isp.domain} />
-          <DataRow label="ASN" value={isp.asn} />
-          <DataRow label="Public IP" value={isp.publicIp} />
-          <DataRow label="Location" value={formatLocation(isp)} />
-        </DataList>
-      ) : (
-        // The card resolves ISP/ASN/country on-device, so it only lands here
-        // when we couldn't even learn our own public IP — i.e. offline. Guard
-        // the copy on the known internet state anyway, so a transient
-        // echo-service blip while online doesn't claim we're offline.
-        <p className="text-body-small">
-          {diagnostics?.internet === 'online'
-            ? 'Provider details are momentarily unavailable.'
-            : 'Provider details are unavailable offline.'}
-        </p>
-      )}
-    </Section>
+    <Card>
+      <CardHeader title={isp?.isVpn ? 'VPN' : 'ISP'} icon={<GlobeIcon size={15} />} actions={ispBadge(isp)} />
+      <CardBody className="row-list">
+        {isp ? (
+          <DataList density="compact">
+            {/* "Provider", not "ISP": the card's title already says ISP, and
+                under a VPN the value is the exit node's hosting company, which
+                "Provider" describes either way. */}
+            <DataRow label="Provider" value={isp.name} />
+            {/* "Website", not "Domain" — in a network tool the latter reads
+                as a DHCP search domain. DataRow hides itself when null, so
+                a lookup that named no domain simply has no row. */}
+            <DataRow label="Website" value={isp.domain} />
+            <DataRow label="ASN" value={isp.asn} />
+            <DataRow label="Public IP" value={isp.publicIp} />
+            <DataRow label="Location" value={formatLocation(isp)} />
+          </DataList>
+        ) : (
+          // The card resolves ISP/ASN/country on-device, so it only lands here
+          // when we couldn't even learn our own public IP — i.e. offline. Guard
+          // the copy on the known internet state anyway, so a transient
+          // echo-service blip while online doesn't claim we're offline.
+          <p className="text-body-small">
+            {diagnostics?.internet === 'online'
+              ? 'Provider details are momentarily unavailable.'
+              : 'Provider details are unavailable offline.'}
+          </p>
+        )}
+      </CardBody>
+    </Card>
   )
 }
 
@@ -261,9 +254,9 @@ export function DiagnosticsView(): JSX.Element {
         </div>
       ) : (
         <>
-          <RouterSection diagnostics={diagnostics} />
-          <DnsSection servers={diagnostics?.dnsServers ?? []} />
-          <IspSection diagnostics={diagnostics} />
+          <RouterCard diagnostics={diagnostics} />
+          <DnsCard servers={diagnostics?.dnsServers ?? []} />
+          <IspCard diagnostics={diagnostics} />
         </>
       )}
     </div>

@@ -36,7 +36,7 @@ import {
 // left: padding-left (5) + centre of the 28px marker column, minus half the 2px
 // line. top: marker height (28) + a 2px gap so it starts below the node.
 const ITEM = cx(
-  'relative grid grid-cols-[28px_1fr] gap-(--section-padding) pl-[5px] not-last:pb-[22px]',
+  'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
   'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
   'not-last:before:rounded-[1px] not-last:before:bg-line-strong',

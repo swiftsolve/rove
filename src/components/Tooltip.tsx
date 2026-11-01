@@ -178,7 +178,7 @@ function computePosition(
 
 /**
  * A small in-app tooltip. Renders the bubble in a portal with fixed positioning
- * so it is never clipped by `overflow: hidden` on section cards.
+ * so it is never clipped by `overflow: hidden` on cards.
  */
 export function Tooltip({
   content,

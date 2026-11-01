@@ -1,0 +1,104 @@
+import { createContext, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
+import { cx } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
+
+// The id a CardHeader gives its title, so a `section` card is named by it.
+const CardTitleContext = createContext<string | undefined>(undefined)
+
+interface CardProps extends HTMLAttributes<HTMLElement> {
+  /**
+   * `section` (the default) is named by its CardHeader's title, so give it one.
+   * `div` or `li` for a card with no header: a list's rows, or a card in a list.
+   */
+  as?: 'section' | 'div' | 'li'
+}
+
+/**
+ * The panel surface, clipped to its rounded corners. Build it from a
+ * CardHeader, a CardBody and an optional CardFooter, or lay out your own
+ * content in it.
+ */
+export function Card({ as: Element = 'section', className, ...props }: CardProps): JSX.Element {
+  const titleId = useId()
+  return (
+    <CardTitleContext.Provider value={titleId}>
+      <Element
+        className={cn('surface overflow-hidden contain-content', className)}
+        aria-labelledby={Element === 'section' ? titleId : undefined}
+        {...props}
+      />
+    </CardTitleContext.Provider>
+  )
+}
+
+// A fixed height, so a header with a button is no taller than one without.
+const HEADER = cx(
+  'flex items-center justify-between gap-12',
+  'h-(--card-header-height) px-(--card-header-padding-x)',
+)
+
+interface CardHeaderProps {
+  title: string
+  icon?: ReactNode
+  /** Controls or a badge at the end of the row. */
+  actions?: ReactNode
+}
+
+/** The card's 44px title row: an icon, the title and its actions. */
+export function CardHeader({ title, icon, actions }: CardHeaderProps): JSX.Element {
+  const titleId = useContext(CardTitleContext)
+  return (
+    <div className={HEADER}>
+      <div className="flex min-w-0 items-center gap-8">
+        {icon != null && (
+          <span className="inline-flex shrink-0 items-center justify-center text-tertiary" aria-hidden>
+            {icon}
+          </span>
+        )}
+        <h2 id={titleId} className="text-heading-small">
+          {title}
+        </h2>
+      </div>
+      {actions != null && <div className="flex shrink-0 items-center">{actions}</div>}
+    </div>
+  )
+}
+
+interface CardPartProps {
+  className?: string
+  children: ReactNode
+}
+
+/** The padded body. A little top padding gives the content more room below the title than above it. */
+export function CardBody({ className, children }: CardPartProps): JSX.Element {
+  return (
+    <div className={cn('px-(--card-body-padding) pt-4 pb-(--card-body-padding)', className)}>{children}</div>
+  )
+}
+
+/** A sunken band below the body, flush to the card's edges: a footnote or status. */
+export function CardFooter({ className, children }: CardPartProps): JSX.Element {
+  return (
+    <div className={cn('border-t border-t-line bg-inset px-(--card-body-padding) py-8', className)}>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * A small amber pill for a card header's actions: "heads up" without the
+ * alarm of an error colour. The ISP card's VPN flag.
+ */
+export function CardBadge({ children }: { children: ReactNode }): JSX.Element {
+  return (
+    <span
+      className={cx(
+        'shrink-0 rounded-full px-6 py-px',
+        'text-2xs font-semibold uppercase tracking-[0.04em] text-warning',
+        'bg-[color-mix(in_srgb,var(--status-warning)_15%,transparent)]',
+      )}
+    >
+      {children}
+    </span>
+  )
+}
