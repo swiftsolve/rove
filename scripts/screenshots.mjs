@@ -5,6 +5,7 @@
  *   npm run screenshots -- --theme light   # light theme
  *   npm run screenshots -- --out /tmp/shots
  *   npm run screenshots -- --url http://localhost:5173   # reuse a running dev server
+ *   CHROME_PATH=/usr/bin/chromium npm run screenshots    # no Google Chrome installed
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
  * (src/dev/mock-network-api.ts) — so the shots show the mock's network, not
@@ -103,8 +104,11 @@ console.log(`${existingUrl ? 'using' : 'started'} ${server.url}`)
 await mkdir(out, { recursive: true })
 
 // `channel: 'chrome'` uses the Chrome that's already installed, so playwright-core
-// stays a ~3 MB dependency with no browser download behind it.
-const browser = await chromium.launch({ channel: 'chrome' })
+// stays a ~3 MB dependency with no browser download behind it. CHROME_PATH
+// points it at another Chromium, as in a11y-audit.mjs.
+const browser = await chromium.launch(
+  process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
+)
 try {
   const page = await browser.newPage({
     viewport: { width, height },
