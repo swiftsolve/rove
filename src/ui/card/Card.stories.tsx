@@ -57,17 +57,7 @@ export const HeaderActions: Story = {
   ),
 }
 
-/** No header: a bare surface that lays out its own content. */
-export const Bare: Story = {
-  args: { as: 'div', className: 'p-12' },
-  render: (args) => (
-    <Card {...args}>
-      <p className="text-sm text-secondary">3 devices joined in the last hour.</p>
-    </Card>
-  ),
-}
-
-/** A list that is one card, with a hairline between its rows. */
+/** No header: a list that is one card, with a hairline between its rows. */
 export const DividedList: Story = {
   args: { as: 'ul', isDivided: true },
   render: (args) => (
@@ -91,7 +81,8 @@ export const AllStates: Story = {
     ),
   ],
   render: () => (
-    <div className="grid grid-cols-2 gap-12">
+    // Each card at its own height, not stretched to its row's tallest.
+    <div className="grid grid-cols-2 items-start gap-12">
       <Card>
         <CardHeader title="Wi‑Fi" icon={<WifiIcon size={16} />} actions={<Badge tone="warning">VPN</Badge>} />
         <CardBody>
@@ -109,9 +100,6 @@ export const AllStates: Story = {
         <CardBody>
           <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
         </CardBody>
-      </Card>
-      <Card as="div" className="p-12">
-        <p className="text-sm text-secondary">3 devices joined in the last hour.</p>
       </Card>
       <Card as="ul" isDivided>
         {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (

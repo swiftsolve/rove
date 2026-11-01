@@ -1197,7 +1197,6 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--bare",
         "containers-card--divided-list",
         "containers-card--all-states"
       ]
@@ -1218,7 +1217,6 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--bare",
         "containers-card--divided-list",
         "containers-card--all-states"
       ]
@@ -1239,7 +1237,6 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--bare",
         "containers-card--divided-list",
         "containers-card--all-states"
       ]
@@ -1268,7 +1265,6 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--bare",
         "containers-card--divided-list",
         "containers-card--all-states"
       ]
