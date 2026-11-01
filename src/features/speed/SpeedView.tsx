@@ -111,7 +111,8 @@ function TestButton(): JSX.Element {
   if (isTesting) {
     return (
       <Button
-        variant="danger"
+        variant="solid"
+        tone="negative"
         icon={StopIcon}
         onClick={cancelTest}
         aria-label="Stop test"
@@ -124,7 +125,7 @@ function TestButton(): JSX.Element {
   if (!canTest) {
     return (
       <Tooltip content="Connect to a network first">
-        <Button variant="filled" icon={PlayIcon} isDisabled>
+        <Button variant="solid" icon={PlayIcon} isDisabled>
           Run test
         </Button>
       </Tooltip>
@@ -134,7 +135,7 @@ function TestButton(): JSX.Element {
   const runLabel = hasRunTest ? 'Test again' : 'Run test'
   return (
     <Button
-      variant="filled"
+      variant="solid"
       icon={PlayIcon}
       onClick={() => void runTest()}
     >

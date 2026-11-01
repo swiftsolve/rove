@@ -285,7 +285,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       cancelLabel="Cancel"
       actions={
         <Button
-          variant="filled"
+          variant="solid"
           onClick={submit}
           isDisabled={!address.trim() || isTesting || isUnchanged}
           isLoading={isBusy}

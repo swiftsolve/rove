@@ -4,28 +4,25 @@ import { cn } from '../../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { Tooltip } from '../tooltip/Tooltip'
 import type { IconComponent } from '../../icons/Icons'
-import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from './button-state'
+import { PRESS, STATE_CLASSES, pressableProps } from './pressable'
 
 const iconButtonVariants = cva(
   [
     'inline-flex items-center justify-center size-[28px] rounded-sm',
     'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
-    BUTTON_PRESS,
+    STATE_CLASSES,
+    PRESS,
   ],
   {
     variants: {
       variant: {
-        /** Neutral inset chip: refresh, help, share. */
-        secondary: [
-          'bg-inset text-secondary',
-          'not-aria-disabled:not-aria-busy:hover:bg-hover not-aria-disabled:not-aria-busy:hover:text-primary',
-        ],
-        /** No fill or colour of its own; the context styles it (a dialog's close). */
-        plain: null,
+        /** A neutral inset chip: refresh, help, share. */
+        soft: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
+        /** No fill until hovered: a dialog's close. */
+        ghost: 'text-secondary usable:hover:bg-hover usable:hover:text-primary',
       },
-      ...BUTTON_STATE_VARIANTS,
     },
-    defaultVariants: { variant: 'secondary' },
+    defaultVariants: { variant: 'soft' },
   },
 )
 
@@ -39,13 +36,15 @@ type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' 
     /** The tooltip, when it should say more than the label (a help button's hint). */
     tooltip?: ReactNode
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
+    /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
+    isDisabled?: boolean
+    /** Drops input and swaps the glyph for a spinner. */
+    isLoading?: boolean
   }
 
 /**
- * A square, icon-only button with a tooltip. While `isLoading` a spinner takes
- * the icon's place. Disabled and loading work as on Button: both drop clicks
- * and stay focusable; only disabled dims. Extra props pass straight to the
- * `<button>`.
+ * A square, icon-only button with a tooltip. Disabled and loading work as on
+ * Button. Extra props pass straight to the `<button>`.
  */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   {
@@ -69,9 +68,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       <button
         ref={ref}
         type={type}
-        className={cn(iconButtonVariants({ variant, isDisabled, isLoading }), className)}
+        className={cn(iconButtonVariants({ variant }), className)}
         aria-label={label}
-        {...buttonStateProps({ isDisabled, isLoading, onClick })}
+        {...pressableProps({ isDisabled, isLoading, onClick })}
         {...buttonProps}
       >
         {isLoading ? <ButtonSpinner size={iconSize} /> : <Icon size={iconSize} />}

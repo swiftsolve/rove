@@ -1,72 +1,165 @@
-import { forwardRef, type ButtonHTMLAttributes } from 'react'
-import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { cva, cx } from 'class-variance-authority'
 import { cn } from '../../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import type { IconComponent } from '../../icons/Icons'
-import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from './button-state'
+import { PRESS, STATE_CLASSES, pressableProps } from './pressable'
 
-// The filled buttons: a solid fill under a white label.
-const FILLED_BASE = cx(
-  'inline-flex items-center justify-center gap-6 rounded-sm',
-  'px-(--card-padding) py-10 text-sm font-semibold tracking-label-large text-on-fill',
-  'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
-  BUTTON_PRESS,
+// The quiet text link's glyphs: the link's own (animating) colour, a touch
+// dimmer at rest through opacity, so there's one colour animation rather than
+// two that drift apart.
+const LINK_GLYPH = cx(
+  'opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
+  'group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
 )
 
-const buttonVariants = cva(undefined, {
+// Only a link's label underlines, not its glyphs.
+const LINK_LABEL = cx(
+  'group-hover/link:underline group-hover/link:underline-offset-2',
+  'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
+)
+
+const buttonVariants = cva(['inline-flex items-center justify-center', STATE_CLASSES], {
   variants: {
     variant: {
-      /** Solid accent fill: a page's main action (Run test, Add service). */
-      filled: [FILLED_BASE, 'bg-accent-fill not-aria-disabled:not-aria-busy:hover:bg-accent-fill-hover'],
-      /** Solid red fill: stops the main action (Stop while a test runs). */
-      danger: [
-        FILLED_BASE,
-        'bg-status-negative-fill not-aria-disabled:not-aria-busy:hover:bg-status-negative-fill-hover',
-      ],
-      /** Neutral inset: everything else (Rescan, Install & restart). */
-      secondary: [
-        'inline-flex items-center justify-center gap-6 px-12 py-6 rounded-sm',
-        'text-xs font-medium bg-inset text-secondary',
-        'transition-[color,background] duration-(--duration-fast) ease-in-out',
-        'not-aria-disabled:not-aria-busy:hover:text-primary not-aria-disabled:not-aria-busy:hover:bg-hover',
-        BUTTON_PRESS,
+      /** A solid fill under a white label: a page's main action, or stopping it. */
+      solid: ['rounded-sm text-on-fill', PRESS],
+      /** A quiet tinted chip: everything else. */
+      soft: ['rounded-sm', PRESS],
+      /** No fill until hovered: a secondary choice beside a soft one (Dismiss). */
+      ghost: ['rounded-sm', PRESS],
+      /**
+       * A text link with glyphs, muted at rest and the accent on hover. Focus
+       * shows the way hover does (accent and underline), not with a ring.
+       */
+      link: [
+        'group/link rounded-full font-medium text-secondary',
+        'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
       ],
     },
-    ...BUTTON_STATE_VARIANTS,
+    tone: { accent: null, neutral: null, negative: null },
+    size: {
+      sm: 'gap-6 px-12 py-6 text-xs font-medium',
+      md: 'gap-6 px-(--card-padding) py-10 text-sm font-semibold tracking-label-large',
+      /**
+       * A link in a line of text, at its size. The pill's padding hangs
+       * outside the text (with the glyphs' empty edges), so the link lines up
+       * with the words around it.
+       */
+      inherit: 'gap-[5px] px-8 py-2 ml-[-9.5px] mr-[-9px] text-[length:inherit]',
+    },
   },
-  defaultVariants: { variant: 'secondary' },
+  compoundVariants: [
+    { variant: ['solid', 'soft', 'ghost'], class: 'transition-[color,background,transform] duration-(--duration-fast) ease-in-out' },
+    { variant: 'link', class: 'transition-[color] duration-(--duration-fast) ease-in-out' },
+    { variant: 'link', size: 'sm', class: 'whitespace-nowrap' },
+    { variant: 'solid', tone: 'accent', class: 'bg-accent-fill usable:hover:bg-accent-fill-hover' },
+    { variant: 'solid', tone: 'negative', class: 'bg-status-negative-fill usable:hover:bg-status-negative-fill-hover' },
+    {
+      variant: 'soft',
+      tone: 'neutral',
+      class: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
+    },
+    {
+      variant: 'soft',
+      tone: 'negative',
+      class: 'bg-status-negative/(--opacity-tint-md) text-negative usable:hover:bg-status-negative/(--opacity-tint-lg)',
+    },
+    { variant: 'ghost', tone: 'neutral', class: 'text-secondary usable:hover:bg-hover usable:hover:text-primary' },
+    {
+      variant: 'ghost',
+      tone: 'negative',
+      class: 'text-secondary usable:hover:bg-status-negative/(--opacity-tint-md) usable:hover:text-primary',
+    },
+  ],
 })
 
-/** Every variant's glyph, and the spinner that takes its place while loading. */
+/**
+ * What a button looks like. Each variant takes only the tones and sizes the
+ * design has for it, and defaults to its usual pair: a solid is the accent at
+ * `md`, soft and ghost are neutral at `sm`, a link inherits its line's size.
+ */
+export type ButtonAppearance =
+  | { variant: 'solid'; tone?: 'accent' | 'negative'; size?: 'sm' | 'md' }
+  | { variant?: 'soft'; tone?: 'neutral' | 'negative'; size?: 'sm' | 'md' }
+  | { variant: 'ghost'; tone?: 'neutral' | 'negative'; size?: 'sm' | 'md' }
+  | { variant: 'link'; tone?: 'neutral'; size?: 'inherit' | 'sm' }
+
+type Variant = NonNullable<ButtonAppearance['variant']>
+type Tone = NonNullable<ButtonAppearance['tone']>
+type Size = NonNullable<ButtonAppearance['size']>
+
+const DEFAULTS: Record<Variant, { tone: Tone; size: Size }> = {
+  solid: { tone: 'accent', size: 'md' },
+  soft: { tone: 'neutral', size: 'sm' },
+  ghost: { tone: 'neutral', size: 'sm' },
+  link: { tone: 'neutral', size: 'inherit' },
+}
+
+/** Every glyph a button draws, and the spinner that takes the leading one's place. */
 const ICON_SIZE = 13
 
-type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
-  VariantProps<typeof buttonVariants> & {
-    /** A glyph before the label, drawn at the button's icon size. */
+export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
+  ButtonAppearance & {
+    /** A glyph before the label. */
     icon?: IconComponent
+    /** A glyph after the label: a link's caret. */
+    iconEnd?: IconComponent
+    /** Drops input and dims the button. It stays focusable, so a tooltip can say why. */
+    isDisabled?: boolean
+    /** Drops input and swaps the leading glyph (or, with none, adds one) for a spinner. */
+    isLoading?: boolean
+    /** The label while loading ("Retrying…"), when it should say so. */
+    loadingLabel?: ReactNode
   }
 
 /**
- * A text button, with an optional icon before its label. While `isLoading` a
- * spinner takes the icon's place (or comes first, with no icon) and clicks drop;
- * `isDisabled` dims it and drops clicks. Both keep it focusable, so a Tooltip
- * explaining why still works. Extra props (aria-*, handlers from a Tooltip) pass
- * straight to the `<button>`.
+ * A text button. Extra props (aria-*, a Tooltip's handlers) pass straight to
+ * the `<button>`, which is `type="button"` unless told otherwise.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, icon: Icon, isDisabled, isLoading, className, type = 'button', onClick, children, ...buttonProps },
+  {
+    variant = 'soft',
+    tone,
+    size,
+    icon: Icon,
+    iconEnd: IconEnd,
+    isDisabled,
+    isLoading,
+    loadingLabel,
+    className,
+    type = 'button',
+    onClick,
+    children,
+    ...buttonProps
+  },
   ref,
 ) {
+  const isLink = variant === 'link'
+  const glyphClassName = isLink ? LINK_GLYPH : undefined
+  const label = isLoading && loadingLabel != null ? loadingLabel : children
   return (
     <button
       ref={ref}
       type={type}
-      className={cn(buttonVariants({ variant, isDisabled, isLoading }), className)}
-      {...buttonStateProps({ isDisabled, isLoading, onClick })}
+      className={cn(
+        buttonVariants({
+          variant,
+          tone: tone ?? DEFAULTS[variant].tone,
+          size: size ?? DEFAULTS[variant].size,
+        }),
+        className,
+      )}
+      {...pressableProps({ isDisabled, isLoading, onClick })}
       {...buttonProps}
     >
-      {isLoading ? <ButtonSpinner size={ICON_SIZE} /> : Icon && <Icon size={ICON_SIZE} />}
-      {children}
+      {isLoading ? (
+        <ButtonSpinner size={ICON_SIZE} />
+      ) : (
+        Icon && <Icon size={ICON_SIZE} className={glyphClassName} />
+      )}
+      {isLink ? <span className={LINK_LABEL}>{label}</span> : label}
+      {IconEnd && <IconEnd size={ICON_SIZE} className={cx(glyphClassName, isLink && '-mx-4')} />}
     </button>
   )
 })

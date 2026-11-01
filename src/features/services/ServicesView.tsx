@@ -280,14 +280,14 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
   if (isOffline) {
     return (
       <Tooltip content="Connect to the internet first">
-        <Button variant="filled" icon={PlusIcon} isDisabled>
+        <Button variant="solid" icon={PlusIcon} isDisabled>
           Add service
         </Button>
       </Tooltip>
     )
   }
   return (
-    <Button variant="filled" icon={PlusIcon} onClick={onClick} aria-haspopup="dialog">
+    <Button variant="solid" icon={PlusIcon} onClick={onClick} aria-haspopup="dialog">
       Add service
     </Button>
   )

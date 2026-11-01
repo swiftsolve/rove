@@ -46,6 +46,55 @@ describe('Button', () => {
     expect(onClick).not.toHaveBeenCalled()
   })
 
+  it('never submits its form while disabled or loading', async () => {
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault())
+    render(
+      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+        <Button type="submit" isDisabled>
+          Add
+        </Button>
+        <Button type="submit" isLoading>
+          Save
+        </Button>
+      </form>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Add' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('says what it is doing while loading, when given a loading label', () => {
+    const { rerender } = render(
+      <Button isLoading loadingLabel="Retrying…">
+        Retry
+      </Button>,
+    )
+    expect(screen.getByRole('button')).toHaveAccessibleName('Retrying…')
+    rerender(<Button loadingLabel="Retrying…">Retry</Button>)
+    expect(screen.getByRole('button')).toHaveAccessibleName('Retry')
+  })
+
+  it('underlines only a link’s label, never its glyphs', () => {
+    render(
+      <Button variant="link" icon={PlayIcon} iconEnd={PlayIcon}>
+        View timeline
+      </Button>,
+    )
+    const label = screen.getByText('View timeline')
+    expect(label.tagName).toBe('SPAN')
+    expect(label.className).toContain('group-hover/link:underline')
+  })
+
+  it('only takes the tones and sizes a variant has', () => {
+    // Compile-time checks: each line below must fail to typecheck.
+    // @ts-expect-error A solid button has no neutral tone.
+    void (<Button variant="solid" tone="neutral" />)
+    // @ts-expect-error A link has no `md` size.
+    void (<Button variant="link" size="md" />)
+    // @ts-expect-error A soft button has no `inherit` size.
+    void (<Button size="inherit" />)
+  })
+
   it('passes extra props and a ref to the <button>', () => {
     const ref = { current: null as HTMLButtonElement | null }
     render(

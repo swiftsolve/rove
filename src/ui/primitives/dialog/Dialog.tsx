@@ -55,15 +55,8 @@ const panelVariants = cva(
 
 const HEADER = 'flex items-start justify-between gap-8 p-16'
 
-// Pulled toward the panel's corner without cramping the title, with no fill of
-// its own until hovered.
-const CLOSE = cn(
-  'shrink-0 self-start -mt-4 -mr-4 text-secondary',
-  'not-aria-disabled:not-aria-busy:hover:bg-hover not-aria-disabled:not-aria-busy:hover:text-primary',
-)
-
-// The secondary button at the filled one's size, so the two sit level.
-const CANCEL = 'px-(--card-padding) py-10 text-sm font-semibold tracking-label-large'
+// Pulled toward the panel's corner without cramping the title.
+const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
 
 interface DialogProps {
   title: ReactNode
@@ -137,7 +130,7 @@ export function Dialog({
             )}
           </div>
           <IconButton
-            variant="plain"
+            variant="ghost"
             className={CLOSE}
             label="Close"
             icon={CloseIcon}
@@ -150,8 +143,9 @@ export function Dialog({
 
         {hasFooter && (
           <div className="flex justify-end gap-8 p-16">
+            {/* At the main action's size, so the two sit level. */}
             {cancelLabel != null && (
-              <Button variant="secondary" className={CANCEL} onClick={onClose} isDisabled={!isClosable}>
+              <Button size="md" onClick={onClose} isDisabled={!isClosable}>
                 {cancelLabel}
               </Button>
             )}

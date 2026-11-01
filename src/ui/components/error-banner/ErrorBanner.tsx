@@ -1,19 +1,6 @@
 import { useState } from 'react'
-import { cx } from 'class-variance-authority'
 import { AlertIcon, RefreshIcon } from '../../icons/Icons'
 import { Button } from '../../primitives/button/Button'
-
-// Retry is a negative tonal chip, a step stronger than the banner's own tint;
-// Dismiss has no fill until hovered.
-const RETRY = cx(
-  'text-negative bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
-  'not-aria-disabled:not-aria-busy:hover:text-negative',
-  'not-aria-disabled:not-aria-busy:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-lg),transparent)]',
-)
-const DISMISS = cx(
-  'bg-[transparent]',
-  'not-aria-disabled:not-aria-busy:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
-)
 
 /** The second line for a page whose data polls: a failure there heals itself. */
 export const POLLING_DESCRIPTION = 'Rove keeps trying in the background.'
@@ -59,12 +46,18 @@ export function ErrorBanner({ title, description, onRetry }: ErrorBannerProps): 
           <p className="text-sm text-secondary">{description}</p>
         </div>
         <div className="flex justify-end gap-4">
-          <Button className={DISMISS} onClick={() => setDismissedTitle(title)}>
+          <Button variant="ghost" tone="negative" onClick={() => setDismissedTitle(title)}>
             Dismiss
           </Button>
           {onRetry && (
-            <Button className={RETRY} icon={RefreshIcon} isLoading={isRetrying} onClick={() => void retry()}>
-              {isRetrying ? 'Retrying…' : 'Retry'}
+            <Button
+              tone="negative"
+              icon={RefreshIcon}
+              isLoading={isRetrying}
+              loadingLabel="Retrying…"
+              onClick={() => void retry()}
+            >
+              Retry
             </Button>
           )}
         </div>

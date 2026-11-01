@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Button } from '../primitives/button/Button'
+import { Button, type ButtonAppearance } from '../primitives/button/Button'
 import { IconButton } from '../primitives/button/IconButton'
 import { ButtonSpinner } from '../primitives/spinner/ButtonSpinner'
 import { Spinner } from '../primitives/spinner/Spinner'
@@ -23,6 +23,12 @@ import {
   WifiIcon,
 } from '../icons/Icons'
 
+const BUTTON_ROWS: [string, ButtonAppearance][] = [
+  ['filled', { variant: 'solid' }],
+  ['danger', { variant: 'solid', tone: 'negative' }],
+  ['secondary', { variant: 'soft' }],
+]
+
 /**
  * Every library component in every state, on one page: open the dev server at
  * `/?gallery` (`&theme=light` for Light). It's what the stable screenshots diff
@@ -33,19 +39,19 @@ export function Gallery(): JSX.Element {
   return (
     <main className="flex flex-col gap-20 bg-base p-20 text-primary">
       <Section title="Button">
-        {(['filled', 'danger', 'secondary'] as const).map((variant) => (
-          <Row key={variant} label={variant}>
-            <Button variant={variant}>Label</Button>
-            <Button variant={variant} icon={PlayIcon}>
+        {BUTTON_ROWS.map(([name, appearance]) => (
+          <Row key={name} label={name}>
+            <Button {...appearance}>Label</Button>
+            <Button {...appearance} icon={PlayIcon}>
               With icon
             </Button>
-            <Button variant={variant} icon={PlayIcon} isLoading>
+            <Button {...appearance} icon={PlayIcon} isLoading>
               Loading
             </Button>
-            <Button variant={variant} isLoading>
+            <Button {...appearance} isLoading>
               No icon
             </Button>
-            <Button variant={variant} icon={PlayIcon} isDisabled>
+            <Button {...appearance} icon={PlayIcon} isDisabled>
               Disabled
             </Button>
           </Row>
@@ -53,8 +59,8 @@ export function Gallery(): JSX.Element {
       </Section>
 
       <Section title="IconButton">
-        {(['secondary', 'plain'] as const).map((variant) => (
-          <Row key={variant} label={variant}>
+        {([['secondary', 'soft'], ['plain', 'ghost']] as const).map(([name, variant]) => (
+          <Row key={variant} label={name}>
             <IconButton variant={variant} label="Refresh" icon={RefreshIcon} />
             <IconButton variant={variant} label="Run" icon={PlayIcon} iconSize={14} />
             <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isLoading />
@@ -166,7 +172,7 @@ export function Gallery(): JSX.Element {
             actions={
               <>
                 <IconButton label="Help" icon={HelpIcon} />
-                <Button variant="filled" icon={PlusIcon}>
+                <Button variant="solid" icon={PlusIcon}>
                   Add service
                 </Button>
               </>
@@ -193,7 +199,7 @@ export function Gallery(): JSX.Element {
               title="No services yet"
               description="Add one to see whether it's up."
               actions={
-                <Button variant="filled" icon={PlusIcon}>
+                <Button variant="solid" icon={PlusIcon}>
                   Add service
                 </Button>
               }
@@ -213,7 +219,7 @@ export function Gallery(): JSX.Element {
               description="Track a service by URL or IP address."
               cancelLabel="Cancel"
               onClose={() => {}}
-              actions={<Button variant="filled">Add</Button>}
+              actions={<Button variant="solid">Add</Button>}
             >
               <p className="text-sm text-secondary">The body sits in a recessed well.</p>
             </Dialog>

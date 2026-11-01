@@ -51,7 +51,7 @@ export function UpdateDialog({
       cancelLabel="Later"
       actions={
         <>
-          <Button variant="filled" icon={DownloadIcon} onClick={handleInstall} isLoading={isInstalling}>
+          <Button variant="solid" icon={DownloadIcon} onClick={handleInstall} isLoading={isInstalling}>
             {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}
