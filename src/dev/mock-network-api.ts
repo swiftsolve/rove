@@ -757,6 +757,12 @@ function createMockNetworkApi(): NetworkAPI {
         trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS,
       }
     },
+    // The mock's per-app usage is always supported, so there's no reason to
+    // give and no shell to elevate through.
+    getUsageSupportDetail: async () => null,
+    relaunchAsAdmin: async () => {
+      throw new Error('Relaunching as administrator needs the desktop app.')
+    },
     getTrafficUsage: async (): Promise<TrafficUsageSummary> => {
       await delay(200)
       const mb = 1_000_000

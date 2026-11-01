@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { useState } from 'react'
 import { IS_WINDOWS } from '@/lib/platform'
+import { getNetworkApi } from '@/bridge/network-api'
 import { isTauri } from '@/bridge/tauri-network-api'
+import { useUsageSupportDetail } from '@/features/apps/hooks/useUsageSupportDetail'
 import { Button, EmptyStateDescription } from '@/ui'
 
 /**
@@ -22,22 +23,11 @@ import { Button, EmptyStateDescription } from '@/ui'
 export function RestartAsAdminAction(): JSX.Element | null {
   const [isBusy, setIsBusy] = useState(false)
   const [wasDeclined, setWasDeclined] = useState(false)
-  const [detail, setDetail] = useState<string | null>(null)
 
   const isEnabled = IS_WINDOWS && isTauri()
-
-  // Pull the real reason the session won't open, so a failure that isn't about
+  // The real reason the session won't open, so a failure that isn't about
   // elevation (a policy block, a provider error) is visible rather than hidden.
-  useEffect(() => {
-    if (!isEnabled) return
-    let isAlive = true
-    void invoke<string | null>('usage_support_detail')
-      .then((reason) => isAlive && setDetail(reason))
-      .catch(() => isAlive && setDetail(null))
-    return () => {
-      isAlive = false
-    }
-  }, [isEnabled])
+  const detail = useUsageSupportDetail(isEnabled)
 
   if (!isEnabled) return null
 
@@ -45,7 +35,7 @@ export function RestartAsAdminAction(): JSX.Element | null {
     setIsBusy(true)
     setWasDeclined(false)
     try {
-      await invoke('relaunch_as_admin')
+      await getNetworkApi().relaunchAsAdmin()
       // On success the backend exits this process; nothing more to do.
     } catch {
       setWasDeclined(true)

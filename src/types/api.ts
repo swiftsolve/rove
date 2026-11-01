@@ -40,6 +40,12 @@ export interface NetworkAPI {
   /** Session traffic bucketed by kind (protocol), busiest first — the same
    *  connections as `getHostUsage`, grouped by service port instead of peer. */
   getTrafficUsage(): Promise<TrafficUsageSummary>
+  /** Why per-app usage can't be read, for the "needs administrator" state: on
+   *  Windows the ETW session's last start error, else (and once it's up) null. */
+  getUsageSupportDetail(): Promise<string | null>
+  /** Relaunch Rove as administrator, raising the UAC prompt (Windows only).
+   *  Rejects when the prompt is declined; on success this instance exits. */
+  relaunchAsAdmin(): Promise<void>
   runDiagnostics(): Promise<NetworkDiagnostics>
   /** The fast-changing gateway metrics only, for the Connection view's tight
    *  refresh loop. Service reachability is NOT here — see `runServices`. */
