@@ -1,17 +1,35 @@
-import { useId, type ReactNode } from 'react'
+import { createContext, useContext, useId, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { cva } from 'class-variance-authority'
 import { CloseIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/Button'
 import { IconButton } from '@/components/IconButton'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import { usePresence } from '@/hooks/usePresence'
 import { cn } from '@/lib/cn'
 
+// How long a closing dialog takes to leave (`--duration-fast`).
+const EXIT_MS = 140
+
+// False while the Dialog inside a DialogRoot plays its leave animation.
+const DialogOpenContext = createContext(true)
+
+interface DialogRootProps {
+  isOpen: boolean
+  /** The component that renders the Dialog: mounted while open and while it leaves. */
+  children: ReactNode
+}
+
 /**
- * How long a closing dialog takes to leave (`--duration-fast`). Keep it
- * mounted this long after `isOpen` turns false: `usePresence(isOpen, DIALOG_EXIT_MS)`.
+ * Opens and closes a Dialog. Its children mount when `isOpen` turns true and
+ * stay mounted through the Dialog's leave animation after it turns false, so
+ * the component that renders the Dialog (and its state) lives only that long.
  */
-export const DIALOG_EXIT_MS = 140
+export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element | null {
+  const isMounted = usePresence(isOpen, EXIT_MS)
+  if (!isMounted) return null
+  return <DialogOpenContext.Provider value={isOpen}>{children}</DialogOpenContext.Provider>
+}
 
 // Absolute (not fixed) and portaled into the content column
 // ([data-modal-root]), so it covers and centres over the page area rather than
@@ -47,8 +65,6 @@ const CLOSE = cn(
 const CANCEL = 'px-(--card-padding) py-10 text-sm font-semibold tracking-label-large'
 
 interface DialogProps {
-  /** False while the dialog plays its leave animation, before it unmounts. */
-  isOpen: boolean
   title: ReactNode
   /** The line under the title, read as the dialog's description. */
   description?: ReactNode
@@ -71,11 +87,9 @@ interface DialogProps {
  * body, and a footer of actions. Focus stays inside while it's open; Escape,
  * the close button, Cancel and a click on the backdrop all call `onClose`.
  *
- * It animates in on mount. To animate out, keep it mounted with
- * `usePresence(isOpen, DIALOG_EXIT_MS)` and pass `isOpen` false while it leaves.
+ * Render it inside a DialogRoot, which opens it and plays its leave animation.
  */
 export function Dialog({
-  isOpen,
   title,
   description,
   children,
@@ -86,6 +100,7 @@ export function Dialog({
   canClose = true,
   isDirty = false,
 }: DialogProps): JSX.Element {
+  const isOpen = useContext(DialogOpenContext)
   const isClosable = isOpen && canClose
   const dialogRef = useModalFocus(onClose, isClosable)
   const titleId = useId()

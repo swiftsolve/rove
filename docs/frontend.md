@@ -165,7 +165,7 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Capabilities card | `CapabilitiesCard` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
 | Stat card | `StatCard` | Home summary card: Usage or Devices. Devices is Empty when there's nothing to list. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
-| Dialog | `Dialog` | Modal: title, optional description, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
+| Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, `description` and optional `actions`. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |

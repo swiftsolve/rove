@@ -75,7 +75,7 @@ function shareNotice(share: WifiShare | null, error: string | null): Notice | nu
  * Try again; the passphrase is read behind an OS auth prompt, so the fetch can
  * take a moment (or come back without a password if the user declines).
  */
-export function WifiShareDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }): JSX.Element {
+export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
   const [share, setShare] = useState<WifiShare | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -111,7 +111,6 @@ export function WifiShareDialog({ isOpen, onClose }: { isOpen: boolean; onClose:
 
   return (
     <Dialog
-      isOpen={isOpen}
       title="Share Wi‑Fi"
       // Only true of the QR code, so a notice goes without it.
       description={notice ? undefined : 'Scan with a phone camera to join'}

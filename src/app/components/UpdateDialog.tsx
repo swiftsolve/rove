@@ -15,12 +15,9 @@ import { Dialog } from '@/components/Dialog'
  * stays open with the error, to try again or leave for later.
  */
 export function UpdateDialog({
-  isOpen,
   update,
   onDismiss,
 }: {
-  /** False while the dialog leaves (see `Dialog`). */
-  isOpen: boolean
   update: PendingUpdate
   onDismiss: () => void
 }): JSX.Element {
@@ -41,7 +38,6 @@ export function UpdateDialog({
 
   return (
     <Dialog
-      isOpen={isOpen}
       title="Update available"
       // The version diff: the current one dim, the new one in the accent.
       description={

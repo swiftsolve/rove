@@ -1,5 +1,4 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { usePresence } from '@/hooks/usePresence'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import { PageHeader } from '@/components/PageHeader'
 import { MetricValue } from '@/components/MetricValue'
@@ -27,7 +26,7 @@ import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
-import { DIALOG_EXIT_MS } from '@/components/Dialog'
+import { DialogRoot } from '@/components/Dialog'
 import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
@@ -334,7 +333,6 @@ export function ServicesView(): JSX.Element {
   // The dialog's content outlives its closing, so it can play its leave animation.
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const isDialogMounted = usePresence(isDialogOpen, DIALOG_EXIT_MS)
   const openDialog = (next: { mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }): void => {
     setDialog({ ...next, openCount: (dialog?.openCount ?? 0) + 1 })
     setIsDialogOpen(true)
@@ -401,19 +399,20 @@ export function ServicesView(): JSX.Element {
         }
       />
 
-      {isDialogMounted && dialog && (
-        <AddServiceDialog
-          key={dialog.openCount}
-          isOpen={isDialogOpen}
-          editing={
-            dialog.mode === 'edit'
-              ? { name: dialog.service.name, host: dialog.service.host }
-              : undefined
-          }
-          onAdd={saveService}
-          onClose={() => setIsDialogOpen(false)}
-        />
-      )}
+      <DialogRoot isOpen={isDialogOpen}>
+        {dialog && (
+          <AddServiceDialog
+            key={dialog.openCount}
+            editing={
+              dialog.mode === 'edit'
+                ? { name: dialog.service.name, host: dialog.service.host }
+                : undefined
+            }
+            onAdd={saveService}
+            onClose={() => setIsDialogOpen(false)}
+          />
+        )}
+      </DialogRoot>
 
       {listedServices.length > 0 ? (
         // Rows are separated by the same hairline the data cards use, running edge

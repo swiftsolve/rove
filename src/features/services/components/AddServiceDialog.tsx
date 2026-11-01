@@ -93,8 +93,6 @@ interface TestOutcome extends ServiceDefinition {
 }
 
 interface AddServiceDialogProps {
-  /** False while the dialog leaves (see `Dialog`). */
-  isOpen: boolean
   /** Persist the confirmed service, passing the latency just measured by the
    *  test so the new row can show it at once instead of waiting for the next
    *  services poll; undefined when an edit only renamed it and nothing was
@@ -173,7 +171,7 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
  * the flow is otherwise identical (test, then save), and the caller decides how to
  * persist (re-adding the same host updates its label; a changed host is a move).
  */
-export function AddServiceDialog({ isOpen, onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
+export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
   const [address, setAddress] = useState(editing?.host ?? '')
   const [name, setName] = useState(editing?.name ?? '')
   // In edit mode the name is the user's own from the start, so never auto-derive
@@ -281,7 +279,6 @@ export function AddServiceDialog({ isOpen, onAdd, onClose, editing }: AddService
 
   return (
     <Dialog
-      isOpen={isOpen}
       title={isEditing ? 'Edit service' : 'Add a service'}
       description="Track a service by URL or IP address."
       onClose={onClose}
