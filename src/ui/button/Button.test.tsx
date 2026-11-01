@@ -79,7 +79,7 @@ describe('Button', () => {
     // @ts-expect-error A solid button has no neutral tone.
     void (<Button variant="solid" tone="neutral" />)
     // @ts-expect-error Only a solid button takes a tone.
-    void (<Button variant="ghost" tone="negative" />)
+    void (<Button variant="soft" tone="negative" />)
     // @ts-expect-error There is no `lg` size.
     void (<Button size="lg" />)
   })

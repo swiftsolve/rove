@@ -125,10 +125,10 @@ for what. Read it before writing or changing UI. For where files live, see
 - Buttons are `Button`, `IconButton` and `ViewLink`, never a hand-written
   `<button>`.
   - Button takes three axes:
-    - `variant`: `solid`, `soft` or `ghost`
+    - `variant`: `solid` or `soft`
     - `tone`, on a solid only: `accent`, or `negative` to stop something
     - `size`: `sm` or `md`
-  - Solid defaults to md, soft and ghost to sm.
+  - Solid defaults to md, soft to sm.
   - Button takes an `icon` component and draws it at 13px.
     IconButton draws its icon at 16px (`iconSize={14}` for a glyph that reads
     large).
@@ -219,7 +219,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Nav rail | `NavRail`, `NavItem` | One item per page; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
 | Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. |
 | Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
-| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else), ghost (a quiet second choice). |
+| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint); `variant` soft or ghost. |
 | View link | `ViewLink` | A muted link to another view, at its text's size; always ends in a caret. |
 | Link | `Link` | An accent `<a>` in running text; `isExternal` opens a new window and says so. |

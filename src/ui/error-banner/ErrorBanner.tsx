@@ -46,7 +46,7 @@ export function ErrorBanner({ title, description, onRetry }: ErrorBannerProps): 
           <p className="text-sm text-secondary">{description}</p>
         </div>
         <div className="flex justify-end gap-4">
-          <Button variant="ghost" onClick={() => setDismissedTitle(title)}>
+          <Button onClick={() => setDismissedTitle(title)}>
             Dismiss
           </Button>
           {onRetry && (

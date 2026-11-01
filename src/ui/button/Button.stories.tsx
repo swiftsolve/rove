@@ -8,7 +8,7 @@ const meta = {
   component: Button,
   args: { children: 'Run test', onClick: fn() },
   argTypes: {
-    variant: { control: 'inline-radio', options: ['solid', 'soft', 'ghost'] },
+    variant: { control: 'inline-radio', options: ['solid', 'soft'] },
     tone: { control: 'inline-radio', options: ['accent', 'negative'], if: { arg: 'variant', eq: 'solid' } },
     size: { control: 'inline-radio', options: ['sm', 'md'] },
     icon: { control: false },
@@ -27,9 +27,6 @@ export const SolidNegative: Story = { args: { variant: 'solid', tone: 'negative'
 /** Everything else. */
 export const Soft: Story = { args: { variant: 'soft' } }
 
-/** A quiet second choice beside a soft one. */
-export const Ghost: Story = { args: { variant: 'ghost', children: 'Dismiss' } }
-
 export const Loading: Story = { args: { variant: 'solid', icon: PlayIcon, isLoading: true, loadingLabel: 'Testing…' } }
 
 /** Still focusable, so a tooltip can say why. */
@@ -44,7 +41,6 @@ export const AllStates: Story = {
         { variant: 'solid', tone: 'negative' },
         { variant: 'soft' },
         { variant: 'soft', size: 'md' },
-        { variant: 'ghost' },
       ] as const).map((appearance) => (
         <div key={JSON.stringify(appearance)} className="flex flex-wrap items-center gap-12">
           <Button {...appearance}>Label</Button>

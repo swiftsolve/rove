@@ -19,8 +19,6 @@ const buttonVariants = cva(
         solid: 'text-on-fill',
         /** A quiet tinted chip: everything else. */
         soft: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
-        /** No fill until hovered: a secondary choice beside a soft one (Dismiss). */
-        ghost: 'text-secondary usable:hover:bg-hover usable:hover:text-primary',
       },
       tone: { accent: null, negative: null },
       size: {
@@ -41,16 +39,16 @@ const buttonVariants = cva(
 
 /**
  * What a button looks like. Only a solid button takes a tone: the accent, or
- * negative to stop something. A solid defaults to `md`, soft and ghost to `sm`.
+ * negative to stop something. A solid defaults to `md`, a soft one to `sm`.
  */
 export type ButtonAppearance =
   | { variant: 'solid'; tone?: 'accent' | 'negative'; size?: 'sm' | 'md' }
-  | { variant?: 'soft' | 'ghost'; tone?: never; size?: 'sm' | 'md' }
+  | { variant?: 'soft'; tone?: never; size?: 'sm' | 'md' }
 
 type Variant = NonNullable<ButtonAppearance['variant']>
 type Size = NonNullable<ButtonAppearance['size']>
 
-const DEFAULT_SIZES: Record<Variant, Size> = { solid: 'md', soft: 'sm', ghost: 'sm' }
+const DEFAULT_SIZES: Record<Variant, Size> = { solid: 'md', soft: 'sm' }
 
 /** Every glyph a button draws, and the spinner that takes the leading one's place. */
 const ICON_SIZE = 13
