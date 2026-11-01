@@ -64,6 +64,26 @@ The Figma pass works through this list and deletes the file when it's done.
 - Settings' theme picker as a component: an inset track with 2px segments,
   the checked one lit with the accent.
 
+### Badge (was CardBadge) and Live badge
+
+- **Badge:** CardBadge becomes a general Badge with a `tone` (positive,
+  warning, negative), the same tinted uppercase pill. VPN uses warning.
+- **Live badge:** now draws its dot with Status dot (`pulse: live`).
+
+### Status dot (new)
+
+- **5px dot** in the current text colour.
+- **`pulse`** is one of three speeds:
+  - `calm` (2.4s): the title bar's connection status
+  - `live` (2s): the Live badge
+  - `busy` (1.6s): a device scan
+- These were three unnamed speeds before.
+
+### Loading state (new)
+
+- **The first-load block:** a spinner over a muted line, centred in the page.
+- **Seven pages** built it by hand before.
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

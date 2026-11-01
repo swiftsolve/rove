@@ -9,7 +9,8 @@ import { SegmentedControl } from '../primitives/segmented-control/SegmentedContr
 import { Dialog, DialogRoot } from '../primitives/dialog/Dialog'
 import { PortalProvider } from '../context/PortalProvider'
 import { DotSeparator, InlineMeta } from '../primitives/separator/DotSeparator'
-import { Card, CardBadge, CardBody, CardFooter, CardHeader } from '../components/card/Card'
+import { Card, CardBody, CardFooter, CardHeader } from '../components/card/Card'
+import { Badge } from '../primitives/badge/Badge'
 import { DataList, DataRow } from '../components/data-list/DataList'
 import { EmptyState } from '../components/empty-state/EmptyState'
 import { ErrorBanner } from '../components/error-banner/ErrorBanner'
@@ -159,7 +160,7 @@ export function Gallery(): JSX.Element {
             <CardHeader
               title="With everything"
               icon={<WifiIcon size={16} />}
-              actions={<CardBadge>VPN</CardBadge>}
+              actions={<Badge tone="warning">VPN</Badge>}
             />
             <CardBody>
               <DataList>

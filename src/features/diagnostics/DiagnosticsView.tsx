@@ -3,8 +3,8 @@ import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import {
+  Badge,
   Card,
-  CardBadge,
   CardBody,
   CardFooter,
   CardHeader,
@@ -177,7 +177,7 @@ function DnsCard({ servers }: { servers: string[] }): JSX.Element {
 // a glitch rather than a brand, so this slot stays empty rather than falling
 // back to a monogram. A VPN exit has no brand domain, so the two never contend.
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
-  if (isp?.isVpn) return <CardBadge>VPN</CardBadge>
+  if (isp?.isVpn) return <Badge tone="warning">VPN</Badge>
   if (isp?.domain) {
     return <ServiceIcon host={isp.domain} name={isp.name ?? 'ISP'} size={18} fallback="none" />
   }

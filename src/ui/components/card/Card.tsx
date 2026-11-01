@@ -87,21 +87,3 @@ export function CardFooter({ className, children }: CardPartProps): JSX.Element 
     </div>
   )
 }
-
-/**
- * A small amber pill for a card header's actions: "heads up" without the
- * alarm of an error colour. The ISP card's VPN flag.
- */
-export function CardBadge({ children }: { children: ReactNode }): JSX.Element {
-  return (
-    <span
-      className={cx(
-        'shrink-0 rounded-full px-6 py-px',
-        'text-2xs font-semibold uppercase tracking-[0.04em] text-warning',
-        'bg-[color-mix(in_srgb,var(--status-warning)_15%,transparent)]',
-      )}
-    >
-      {children}
-    </span>
-  )
-}
