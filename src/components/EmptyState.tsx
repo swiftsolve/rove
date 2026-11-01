@@ -9,9 +9,9 @@ interface EmptyStateProps {
   isLocked?: boolean
   title: string
   /** A line or two naming what will fill the page, or why it can't. */
-  hint?: ReactNode
-  /** Control below the hint, usually a retry button. */
-  action?: ReactNode
+  description?: ReactNode
+  /** Controls below the description, usually a retry button. */
+  actions?: ReactNode
 }
 
 // Widths of each placeholder row's title and meta bars, so the two rows don't
@@ -27,7 +27,7 @@ const PLACEHOLDER_ROWS = [
  * in the content region. Every view's blank state goes through this so they
  * line up on one rhythm and one measure.
  */
-export function EmptyState({ isLocked = false, title, hint, action }: EmptyStateProps): JSX.Element {
+export function EmptyState({ isLocked = false, title, description, actions }: EmptyStateProps): JSX.Element {
   return (
     // `.page-empty` lays out the page; the bottom pad lifts the group a little
     // above centre, under the header, and the action is nudged down from the
@@ -36,8 +36,8 @@ export function EmptyState({ isLocked = false, title, hint, action }: EmptyState
       <PlaceholderRows isLocked={isLocked} />
       {/* An h2 for the page outline. */}
       <h2 className="text-md font-semibold text-primary">{title}</h2>
-      {hint != null && <EmptyStateHint>{hint}</EmptyStateHint>}
-      {action}
+      {description != null && <EmptyStateDescription>{description}</EmptyStateDescription>}
+      {actions}
     </div>
   )
 }
@@ -68,8 +68,8 @@ function PlaceholderRows({ isLocked }: { isLocked: boolean }): JSX.Element {
   )
 }
 
-/** A line of explanation under the title — also for extra notes an `action` adds. */
-export function EmptyStateHint({
+/** A line of explanation under the title — also for extra notes the `actions` add. */
+export function EmptyStateDescription({
   children,
   role,
 }: {

@@ -155,8 +155,8 @@ function TrafficBody({
       <EmptyState
         isLocked
         title="Administrator access needed"
-        hint={TRAFFIC_UNSUPPORTED_HINT}
-        action={<RestartAsAdminAction />}
+        description={TRAFFIC_UNSUPPORTED_HINT}
+        actions={<RestartAsAdminAction />}
       />
     )
   }
@@ -169,7 +169,7 @@ function TrafficBody({
     )
   }
   if (types.length === 0) {
-    return <EmptyState title="No traffic yet" hint={TRAFFIC_EMPTY_HINT} />
+    return <EmptyState title="No traffic yet" description={TRAFFIC_EMPTY_HINT} />
   }
 
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)

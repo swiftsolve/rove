@@ -18,13 +18,13 @@ const CHIP = cx(
 interface Notice {
   icon: ReactNode
   title: string
-  hint: string
+  description: string
 }
 
 /** The backend's error, as a title and a line of help. */
 function describeShareError(message: string): Notice {
   if (/not connected/i.test(message)) {
-    return { icon: <WifiOffIcon size={20} />, title: 'Not on Wi‑Fi', hint: 'Connect to a Wi‑Fi network to share it.' }
+    return { icon: <WifiOffIcon size={20} />, title: 'Not on Wi‑Fi', description: 'Connect to a Wi‑Fi network to share it.' }
   }
   if (/name is unavailable/i.test(message)) {
     // macOS withholds the SSID without Location Services, so point there
@@ -32,16 +32,16 @@ function describeShareError(message: string): Notice {
     return {
       icon: <WifiOffIcon size={20} />,
       title: 'Network name hidden',
-      hint: 'Your system withheld it. On a Mac, check Location Services.',
+      description: 'Your system withheld it. On a Mac, check Location Services.',
     }
   }
-  return { icon: <AlertIcon size={20} />, title: 'Couldn’t make a QR code', hint: message }
+  return { icon: <AlertIcon size={20} />, title: 'Couldn’t make a QR code', description: message }
 }
 
 const MISSING_PASSWORD: Notice = {
   icon: <LockIcon size={20} />,
   title: 'Password not available',
-  hint: 'Allow access when asked, so the code can include it.',
+  description: 'Allow access when asked, so the code can include it.',
 }
 
 function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void }): JSX.Element {
@@ -52,7 +52,7 @@ function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void 
       </span>
       <div className="flex flex-col items-center gap-4">
         <p className="text-lg font-semibold text-primary">{notice.title}</p>
-        <p className="max-w-[260px] text-sm text-tertiary">{notice.hint}</p>
+        <p className="max-w-[260px] text-sm text-tertiary">{notice.description}</p>
       </div>
       <Button icon={RefreshIcon} onClick={onRetry}>
         Try again

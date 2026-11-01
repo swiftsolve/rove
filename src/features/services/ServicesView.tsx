@@ -448,7 +448,7 @@ export function ServicesView(): JSX.Element {
       ) : (
         <EmptyState
           title="No services yet"
-          hint="Add a site or server to watch its uptime."
+          description="Add a site or server to watch its uptime."
         />
       )}
     </div>

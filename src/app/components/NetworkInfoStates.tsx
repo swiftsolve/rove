@@ -32,10 +32,10 @@ const LOADING_LINE = 'text-sm text-secondary'
 interface NetworkErrorInfo {
   kind: 'timeout' | 'backend' | 'offline'
   title: string
-  hint: string
+  description: string
 }
 
-// Turn a raw error string into a title + plain-language hint so a stalled
+// Turn a raw error string into a title + plain-language description so a stalled
 // detection reads as a recoverable state, not a cryptic red line. A timeout in
 // particular isn't the same as "no network" — the connection may be fine while
 // the OS query is just slow — so it gets its own, calmer framing.
@@ -44,13 +44,13 @@ function describeNetworkError(message: string): NetworkErrorInfo {
     return {
       kind: 'timeout',
       title: 'Network detection is taking too long',
-      hint: 'This is usually temporary. Make sure you’re connected, then try again.',
+      description: 'This is usually temporary. Make sure you’re connected, then try again.',
     }
   }
   if (/backend|restart/i.test(message)) {
-    return { kind: 'backend', title: 'Can’t reach the app', hint: message }
+    return { kind: 'backend', title: 'Can’t reach the app', description: message }
   }
-  return { kind: 'offline', title: 'Can’t reach your network', hint: message }
+  return { kind: 'offline', title: 'Can’t reach your network', description: message }
 }
 
 function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size: number }): JSX.Element {
@@ -78,7 +78,7 @@ export function NetworkLoadingScreen(): JSX.Element {
     )
   }
 
-  const { kind, title, hint } = info
+  const { kind, title, description } = info
   return (
     <div className={loadingVariants({ isError: true })} role="alert">
       <span
@@ -92,7 +92,7 @@ export function NetworkLoadingScreen(): JSX.Element {
       </span>
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-lg font-semibold text-primary">{title}</p>
-        <p className="max-w-[260px] text-sm text-tertiary">{hint}</p>
+        <p className="max-w-[260px] text-sm text-tertiary">{description}</p>
       </div>
       <Button icon={RefreshIcon} onClick={() => void network.refresh()}>
         Try again

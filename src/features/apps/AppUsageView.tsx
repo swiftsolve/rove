@@ -207,8 +207,8 @@ function AppUsageBody({
       <EmptyState
         isLocked
         title="Administrator access needed"
-        hint={APP_USAGE_UNSUPPORTED_HINT}
-        action={<RestartAsAdminAction />}
+        description={APP_USAGE_UNSUPPORTED_HINT}
+        actions={<RestartAsAdminAction />}
       />
     )
   }
@@ -221,7 +221,7 @@ function AppUsageBody({
     )
   }
   if (apps.length === 0) {
-    return <EmptyState title="No app usage yet" hint={APP_USAGE_EMPTY_HINT} />
+    return <EmptyState title="No app usage yet" description={APP_USAGE_EMPTY_HINT} />
   }
 
   const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)

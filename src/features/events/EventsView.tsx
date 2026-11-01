@@ -75,8 +75,8 @@ function EventsFeed({
     return (
       <EmptyState
         title="No events yet"
-        hint={EMPTY_HINT}
-        action={
+        description={EMPTY_HINT}
+        actions={
           <Button onClick={onRefresh}>
             Scan now
           </Button>

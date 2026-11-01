@@ -273,8 +273,8 @@ function HostsBody({
       <EmptyState
         isLocked
         title="Administrator access needed"
-        hint={HOST_USAGE_UNSUPPORTED_HINT}
-        action={<RestartAsAdminAction />}
+        description={HOST_USAGE_UNSUPPORTED_HINT}
+        actions={<RestartAsAdminAction />}
       />
     )
   }
@@ -287,7 +287,7 @@ function HostsBody({
     )
   }
   if (apps.length === 0) {
-    return <EmptyState title="No hosts yet" hint={HOST_USAGE_EMPTY_HINT} />
+    return <EmptyState title="No hosts yet" description={HOST_USAGE_EMPTY_HINT} />
   }
   return (
     <UsageList label="Apps" ref={listRef}>

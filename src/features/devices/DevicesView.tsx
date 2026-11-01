@@ -88,8 +88,8 @@ function DevicesBody({
     return (
       <EmptyState
         title="No devices found"
-        hint={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : NO_DEVICES_HINT}
-        action={
+        description={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : NO_DEVICES_HINT}
+        actions={
           <Button onClick={onRescan}>
             Scan again
           </Button>

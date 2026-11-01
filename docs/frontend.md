@@ -111,7 +111,8 @@ keep logic worth testing out of components and hooks.
   replaces the bubble's text when it should say more (a help button's hint).
   Both share that behaviour through `components/utils/button-state.ts`.
 - Props share names across components and with Figma: `variant`, `isLoading`,
-  `isDisabled`, `isChecked`; a colour by role is `status` or `tone`
+  `isDisabled`, `isChecked`; the text under a title is `description` and the
+  controls a component holds are `actions`; a colour by role is `status` or `tone`
   (`positive`, `warning`, `negative`, `neutral`); a quality rating is `level`
   (`excellent`, `good`, `fair`, `poor`).
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
@@ -166,6 +167,6 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
 | Dialog | `Dialog` | Modal: title, optional description, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
-| Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
+| Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, `description` and optional `actions`. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |
 | Ring spinner | `ButtonSpinner` | Loading indicator in the button's icon colour. Button and IconButton show it for `isLoading`; use it directly only outside a button. |

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { IS_WINDOWS } from '@/lib/platform'
 import { isTauri } from '@/bridge/tauri-network-api'
-import { EmptyStateHint } from '@/components/EmptyState'
+import { EmptyStateDescription } from '@/components/EmptyState'
 import { Button } from '@/components/Button'
 
 /**
@@ -59,8 +59,8 @@ export function RestartAsAdminAction(): JSX.Element | null {
       <Button onClick={relaunchAsAdmin} isLoading={isBusy}>
         {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
       </Button>
-      {wasDeclined && <EmptyStateHint role="status">Elevation was declined.</EmptyStateHint>}
-      {detail && <EmptyStateHint>Details: {detail}</EmptyStateHint>}
+      {wasDeclined && <EmptyStateDescription role="status">Elevation was declined.</EmptyStateDescription>}
+      {detail && <EmptyStateDescription>Details: {detail}</EmptyStateDescription>}
     </>
   )
 }

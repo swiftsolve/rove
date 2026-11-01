@@ -222,7 +222,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
     return (
       <EmptyState
         title="No speed tests yet"
-        hint="Run a test to start your history."
+        description="Run a test to start your history."
       />
     )
   }
