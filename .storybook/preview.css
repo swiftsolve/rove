@@ -6,3 +6,9 @@ body {
   overflow: visible;
   background: var(--bg-base);
 }
+
+/* On a Docs page, Storybook frames each story in a white panel; give it the
+   app's background too, so the theme shows the same as in the app. */
+.docs-story {
+  background: var(--bg-base);
+}
