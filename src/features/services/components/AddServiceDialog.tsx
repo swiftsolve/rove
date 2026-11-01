@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { ServiceDefinition } from '@/types'
 import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
@@ -129,6 +129,18 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const [isAdding, setIsAdding] = useState(false)
   // The test was started by Add (not the inline Test), so it adds once it lands.
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // False once the dialog is closing or gone. It stays mounted through its leave
+  // animation, so a test that lands after Cancel must not update it or add.
+  const isOpenRef = useRef(true)
+  // The test in flight; an address edit moves past it, so its result is dropped.
+  const testIdRef = useRef(0)
+
+  useEffect(() => {
+    isOpenRef.current = true
+    return () => {
+      isOpenRef.current = false
+    }
+  }, [])
 
   const formId = useId()
   const isEditing = editing != null
@@ -147,6 +159,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const isBusy = isAdding || isSubmitting
   const isDirty = address.trim() !== (editing?.host ?? '') || name.trim() !== (editing?.name ?? '')
 
+  const close = (): void => {
+    isOpenRef.current = false
+    onClose()
+  }
+
   const confirm = (tested: TestOutcome | null = outcome): void => {
     const target = tested ?? (isRenameOnly && parsedAddress ? { ...parsedAddress, latencyMs: undefined } : null)
     if (!target) return
@@ -155,8 +172,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     // derived name if the field somehow ended up blank.
     const finalName = nameRef.current.trim() || target.name
     void onAdd(finalName, target.host, target.latencyMs)
-      .then(onClose)
+      .then(() => {
+        if (isOpenRef.current) close()
+      })
       .catch(() => {
+        if (!isOpenRef.current) return
         setError('Could not add that service.')
         setIsAdding(false)
       })
@@ -171,19 +191,23 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     setError(null)
     setPhase('testing')
     setIsSubmitting(shouldConfirm)
+    const testId = ++testIdRef.current
+    const isCurrent = (): boolean => isOpenRef.current && testId === testIdRef.current
     void (async () => {
       try {
         const latencyMs = (await window.networkAPI?.testService(parsed.host)) ?? null
+        if (!isCurrent()) return
         const tested = { ...parsed, latencyMs }
         setOutcome(tested)
         setPhase('tested')
         // A reachable host goes straight in; a down one waits for "Add anyway".
         if (shouldConfirm && latencyMs != null) confirm(tested)
       } catch {
+        if (!isCurrent()) return
         setError('Could not test that address. Try again.')
         setPhase('idle')
       } finally {
-        setIsSubmitting(false)
+        if (isCurrent()) setIsSubmitting(false)
       }
     })()
   }
@@ -202,8 +226,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
 
   const onAddressChange = (value: string): void => {
     setAddress(value)
-    // Any edit invalidates a prior test — the confirm must reflect a fresh probe.
-    if (phase === 'tested') setPhase('idle')
+    // Any edit invalidates a prior test, or one still running — the confirm
+    // must reflect a fresh probe of this address.
+    testIdRef.current += 1
+    if (phase !== 'idle') setPhase('idle')
+    if (isSubmitting) setIsSubmitting(false)
     if (outcome) setOutcome(null)
     if (error) setError(null)
     // Keep the name in sync with the address until the user takes it over.
@@ -224,7 +251,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     <Dialog
       title={isEditing ? 'Edit service' : 'Add a service'}
       description="Track a service by URL or IP address."
-      onClose={onClose}
+      onClose={close}
       canClose={!isAdding}
       isDirty={isDirty}
       cancelLabel="Cancel"
