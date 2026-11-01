@@ -23,6 +23,7 @@ export { DataList, DataListStack, DataRow } from './components/data-list/DataLis
 export { EmptyState, EmptyStateDescription } from './components/empty-state/EmptyState'
 export { ErrorBanner, POLLING_DESCRIPTION } from './components/error-banner/ErrorBanner'
 export { MetricValue, type MetricStatus } from './components/metric-value/MetricValue'
+export { ListRow } from './components/list-row/ListRow'
 export { LoadingState } from './components/loading-state/LoadingState'
 export { NavItem, NavRail } from './components/nav-rail/NavRail'
 export { PageHeader } from './components/page-header/PageHeader'

@@ -1,0 +1,50 @@
+import type { MouseEventHandler, ReactNode } from 'react'
+import { cx } from 'class-variance-authority'
+import { ChevronRightIcon } from '../../icons/Icons'
+import { pressableProps } from '../../primitives/button/pressable'
+
+// The hover wash bleeds 8px into the card's padding while the content stays on
+// the 16px edge, so the focus ring (the ring alone, no wash) goes inside it.
+const ROW = cx(
+  'group/row flex items-center gap-12 rounded-sm text-left',
+  '-mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)',
+  'transition-[background] duration-(--duration-fast) ease-in-out',
+  'focus-visible:outline-offset-(--focus-inset)',
+  'usable:hover:bg-fill-faint data-disabled:cursor-default',
+)
+
+// Always faintly there, so the right edge is consistent and rows read as
+// tappable; brighter on hover and focus.
+const CHEVRON = cx(
+  'shrink-0 text-tertiary opacity-30',
+  'transition-opacity duration-(--duration-fast) ease-in-out',
+  'group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
+)
+
+interface ListRowProps {
+  /** What the row opens. */
+  onClick: MouseEventHandler<HTMLButtonElement>
+  /**
+   * Inert for now (results that are being replaced): no hover, no action. It
+   * keeps its look and its place in the Tab order.
+   */
+  isDisabled?: boolean
+  /** Before the chevron, right-aligned: a meter, a value. */
+  trailing?: ReactNode
+  /** The row's content: an icon tile, a title and its description. */
+  children: ReactNode
+}
+
+/** A whole-row button in a card's list that opens something, with a trailing chevron. */
+export function ListRow({ onClick, isDisabled, trailing, children }: ListRowProps): JSX.Element {
+  return (
+    <button type="button" className={ROW} {...pressableProps({ isDisabled, onClick })}>
+      <span className="flex min-w-0 flex-1 items-center gap-12">{children}</span>
+      {/* One right-aligned unit, so every row's trailing column lines up. */}
+      <span className="flex shrink-0 items-center gap-10">
+        {trailing}
+        <ChevronRightIcon size={16} className={CHEVRON} />
+      </span>
+    </button>
+  )
+}
