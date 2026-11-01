@@ -57,6 +57,31 @@ const SCREENS = [
   ['15-about', { tab: 'about', speedSub: null }],
 ]
 
+/**
+ * With --stable, states a still screen never shows: open menus and dialogs,
+ * tooltips, a focus ring, then the UI library's gallery. Each is
+ * [name, location, what to do once it has settled].
+ */
+const SCENES = [
+  ['16-home-details', { tab: 'home', speedSub: null }, (page) => page.locator('button[aria-expanded]').first().click()],
+  ['17-home-share-wifi', { tab: 'home', speedSub: null }, (page) => button(page, 'Share Wi‑Fi').click()],
+  ['18-speed-history-menu', { tab: 'speed', speedSub: { view: 'history' } }, (page) => button(page, 'History options').first().click()],
+  ['19-services-add-dialog', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').click()],
+  ['20-services-row-menu', { tab: 'services', speedSub: null }, async (page) => {
+    // The kebab only shows on row hover or focus: open it from the keyboard.
+    await button(page, /^Options for/).first().focus()
+    await page.keyboard.press('Enter')
+  }],
+  ['21-services-timeline-menu', { tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } }, (page) => button(page, 'Timeline options').click()],
+  ['22-help-tooltip', { tab: 'services', speedSub: null }, (page) => button(page, 'About service checks').hover()],
+  ['23-rail-tooltip', { tab: 'home', speedSub: null }, (page) => button(page, 'Speed').hover()],
+  ['24-focus-ring', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').focus()],
+]
+
+function button(page, name) {
+  return page.getByRole('button', { name, exact: typeof name === 'string' })
+}
+
 function flag(name, fallback) {
   const at = process.argv.indexOf(`--${name}`)
   return at === -1 ? fallback : process.argv[at + 1]
@@ -82,6 +107,15 @@ function freePort() {
       probe.close(() => ok(port))
     })
   })
+}
+
+/** Moves the app to `location` the way the tab bar does. */
+function navigateTo(page, location) {
+  return page.evaluate((to) => {
+    const state = { ...(window.history.state ?? {}), __roveNav: to }
+    window.history.pushState(state, '')
+    window.dispatchEvent(new PopStateEvent('popstate', { state }))
+  }, location)
 }
 
 /** Start `vite` and resolve once it prints the URL it settled on. */
@@ -150,20 +184,36 @@ try {
   await settle(3000)
 
   for (const [name, location] of SCREENS) {
-    await page.evaluate((to) => {
-      const state = { ...(window.history.state ?? {}), __roveNav: to }
-      window.history.pushState(state, '')
-      window.dispatchEvent(new PopStateEvent('popstate', { state }))
-    }, location)
+    await navigateTo(page, location)
     await settle(2500)
     // Favicons and app icons load over the network, in real time.
     if (isStable) await page.waitForFunction(() => [...document.images].every((image) => image.complete))
     await page.screenshot({ path: `${out}/${name}.png`, ...(isStable && { animations: 'disabled' }) })
     console.log(`  ${name}.png`)
   }
+
+  if (isStable) {
+    for (const [name, location, act] of SCENES) {
+      await navigateTo(page, location)
+      await settle(2500)
+      await act(page)
+      await settle(600)
+      await page.screenshot({ path: `${out}/${name}.png`, animations: 'disabled' })
+      console.log(`  ${name}.png`)
+      // Close whatever opened and move the pointer off it, for the next scene.
+      await page.keyboard.press('Escape')
+      await page.mouse.move(0, 0)
+      await settle(600)
+    }
+
+    await page.goto(`${server.url}/?gallery&theme=${theme}`, { waitUntil: 'networkidle' })
+    await settle(1000)
+    await page.screenshot({ path: `${out}/25-gallery.png`, fullPage: true, animations: 'disabled' })
+    console.log('  25-gallery.png')
+  }
 } finally {
   await browser.close()
   server.stop()
 }
 
-console.log(`\n${SCREENS.length} screens at ${width}x${height} (@2x) -> ${out}`)
+console.log(`\n${SCREENS.length + (isStable ? SCENES.length + 1 : 0)} screens at ${width}x${height} (@2x) -> ${out}`)
