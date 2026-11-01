@@ -1,7 +1,7 @@
 import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
+import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   BellIcon,
   ClockIcon,
@@ -29,10 +29,7 @@ import {
 } from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { UsageList } from '@/features/apps/components/UsageList'
-import { ByteTotal } from '@/features/apps/components/ByteTotal'
-import { RowName } from '@/features/apps/components/RowName'
-import { SplitBar } from '@/features/apps/components/SplitBar'
-import { TransferFigures } from '@/features/apps/components/TransferFigures'
+import { UsageRow } from '@/features/apps/components/UsageRow'
 
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
@@ -68,39 +65,9 @@ const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   messaging: MessageIcon,
 }
 
-/** One traffic-type row: glyph + name + total on the main line, then a
- *  proportional down/up bar and the byte figures beneath — the same visual
- *  language as an Apps row, minus the icon-fetch and the navigation caret (these
- *  rows aren't links). */
-function TrafficRow({
-  type,
-  busiest,
-}: {
-  type: TrafficType
-  busiest: number
-}): JSX.Element {
-  const total = totalBytes(type)
+function TrafficIcon({ type }: { type: TrafficType }): JSX.Element {
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
-  return (
-    <li className="flex flex-col gap-8 px-(--card-body-padding) py-12">
-      <div className="flex items-center justify-between gap-12">
-        <RowName icon={<Icon size={15} className="shrink-0 text-tertiary" />} name={type.label} />
-        <ByteTotal bytes={total} />
-      </div>
-      {/* Scaled against the busiest type. Sits just inside the glyph's left
-          edge, like the Apps bar. */}
-      <SplitBar
-        down={type.rxBytes}
-        up={type.txBytes}
-        max={busiest}
-        label={transferLabel(type)}
-        className="ml-[3px]"
-      />
-      {/* The bar's label above already reads these figures out. The down arrow
-          sits centred under the type glyph, echoing the Apps and Hosts views. */}
-      <TransferFigures transfer={type} isDecorative />
-    </li>
-  )
+  return <Icon size={15} className="shrink-0 text-tertiary" />
 }
 
 /** The page body: the admin prompt, a first-load spinner, an empty state, or
@@ -135,8 +102,17 @@ function TrafficBody({
   const busiest = busiestTotal(types)
   return (
     <UsageList label="Traffic types by usage">
+      {/* The same rows as the Apps view's, minus the icon fetch and the caret:
+          these aren't links. */}
       {types.map((type) => (
-        <TrafficRow key={type.id} type={type} busiest={busiest} />
+        <UsageRow
+          key={type.id}
+          icon={<TrafficIcon type={type} />}
+          iconKind="glyph"
+          name={type.label}
+          transfer={type}
+          busiest={busiest}
+        />
       ))}
     </UsageList>
   )

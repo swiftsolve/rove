@@ -1,7 +1,7 @@
-import type { AppUsage, AppUsageSummary } from '@/types'
+import type { AppUsageSummary } from '@/types'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
+import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
   Button,
@@ -18,32 +18,9 @@ import {
   POLLING_DESCRIPTION,
 } from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { AppIcon } from '@/features/apps/components/AppIcon'
-import { ByteTotal } from '@/features/apps/components/ByteTotal'
-import { RowName } from '@/features/apps/components/RowName'
-import { SplitBar } from '@/features/apps/components/SplitBar'
-import { TransferFigures } from '@/features/apps/components/TransferFigures'
-
-// A row runs edge to edge in the card and owns the horizontal inset, so the
-// hairlines between rows (on the list) span the full width. Every row carries
-// equal top and bottom padding, so the first and last aren't special-cased.
-// Hover gets the Speed page's capability-row wash.
-const ROW = cx(
-  'group/row relative flex flex-col gap-8 px-(--card-body-padding) py-12',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
-)
-
-// The whole row links into that app's hosts: a transparent overlay button
-// covers it, so the block content needn't nest inside a button, and being
-// absolutely positioned it paints above the static content to catch the click.
-// Its focus ring sits just inside the row (rows run edge to edge), square except
-// where the first and last rows meet the card's rounded corners.
-const ROW_LINK = cx(
-  'absolute inset-0 w-full focus-visible:outline-offset-(--focus-inset)',
-  'group-first/row:rounded-t-lg group-last/row:rounded-b-lg',
-)
+import { UsageRow } from '@/features/apps/components/UsageRow'
 
 const APP_USAGE_INFO_HINT =
   'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
@@ -52,62 +29,6 @@ const APP_USAGE_EMPTY_HINT = 'Apps appear here as they use the network.'
 
 const APP_USAGE_UNSUPPORTED_HINT =
   'Run Rove as administrator to meter per-app usage on Windows.'
-
-/** One app's row, styled like a Services row: icon + name on the left, total on
- *  the right, then a proportional down/up bar and the byte figures beneath. The
- *  whole row is a link into that app's hosts — a transparent overlay button
- *  covers it (so the block content needn't nest inside a button) and a caret on
- *  the right signals it's navigable. */
-function AppRow({
-  app,
-  busiest,
-  onOpen,
-}: {
-  app: AppUsage
-  busiest: number
-  onOpen: () => void
-}): JSX.Element {
-  const total = totalBytes(app)
-  return (
-    <li className={ROW}>
-      <button
-        type="button"
-        className={ROW_LINK}
-        onClick={onOpen}
-        aria-label={`View hosts for ${app.name}`}
-      />
-      {/* The visual layers are click-through, so the overlay button owns all
-          pointer interaction (cursor and click), the caret included. */}
-      <div className="pointer-events-none flex items-center justify-between gap-12">
-        <RowName icon={<AppIcon app={app} />} name={app.name} />
-        <span className="inline-flex shrink-0 items-center gap-8">
-          <ByteTotal bytes={total} />
-          <ChevronRightIcon
-            size={16}
-            className={cx(
-              'text-tertiary opacity-35 transition-opacity duration-(--duration-fast) ease-in-out',
-              'group-hover/row:opacity-75',
-            )}
-            aria-hidden
-          />
-        </span>
-      </div>
-      {/* Scaled against the busiest app. Starts flush with the app icon's left
-          edge. */}
-      <SplitBar
-        down={app.rxBytes}
-        up={app.txBytes}
-        max={busiest}
-        label={transferLabel(app)}
-        className="pointer-events-none"
-      />
-      {/* The bar's label above already reads these figures out. Pulled left by
-          the arrow glyph's side bearing (~2px at 11px) so the drawn arrow lines
-          up with the app icon's and bar's left edge. */}
-      <TransferFigures transfer={app} isDecorative className="pointer-events-none -ml-2" />
-    </li>
-  )
-}
 
 /** The header subtitle once there's data: links into the per-app host breakdown
  *  and the by-protocol breakdown (mirrors the Services view's "View timeline"
@@ -162,12 +83,19 @@ function AppUsageBody({
   const busiest = busiestTotal(apps)
   return (
     <UsageList label="Apps by usage">
+      {/* Each row links into that app's hosts. */}
       {apps.map((app) => (
-        <AppRow
+        <UsageRow
           key={app.name}
-          app={app}
+          icon={<AppIcon app={app} />}
+          iconKind="tile"
+          name={app.name}
+          transfer={app}
           busiest={busiest}
-          onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
+          link={{
+            label: `View hosts for ${app.name}`,
+            onOpen: () => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } }),
+          }}
         />
       ))}
     </UsageList>
