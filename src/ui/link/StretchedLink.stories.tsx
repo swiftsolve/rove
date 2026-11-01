@@ -48,7 +48,7 @@ export const WithControl: Story = {
       <span className="text-md font-medium text-primary">Google</span>
       <span className="text-sm text-tertiary">18 ms</span>
       <StretchedLink {...args} />
-      <IconButton variant="ghost" label="Options for Google" icon={MoreVerticalIcon} className="relative z-2 ml-auto" />
+      <IconButton label="Options for Google" icon={MoreVerticalIcon} className="relative z-2 ml-auto" />
     </Card>
   ),
 }

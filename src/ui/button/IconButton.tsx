@@ -1,35 +1,21 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { cva } from 'class-variance-authority'
-import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { Tooltip } from '../tooltip/Tooltip'
 import type { IconComponent } from '../icons/Icons'
 import { PRESS, STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
-const iconButtonVariants = cva(
-  [
-    'inline-flex items-center justify-center size-[28px] rounded-sm',
-    'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
-    STATE_CLASSES,
-    PRESS,
-  ],
-  {
-    variants: {
-      variant: {
-        /** A neutral inset chip: refresh, help, share. */
-        soft: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
-        /** No fill until hovered: a dialog's close. */
-        ghost: 'text-secondary usable:hover:bg-hover usable:hover:text-primary',
-      },
-    },
-    defaultVariants: { variant: 'soft' },
-  },
-)
+/** A neutral inset chip, like a soft Button. */
+const ICON_BUTTON_CLASSES = [
+  'inline-flex items-center justify-center size-[28px] rounded-sm',
+  'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
+  'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
+  STATE_CLASSES,
+  PRESS,
+]
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-label' | 'children'> &
   {
-    variant?: VariantOf<typeof iconButtonVariants, 'variant'>
     /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
     label: string
     icon: IconComponent
@@ -50,7 +36,6 @@ type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' 
  */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   {
-    variant,
     label,
     icon: Icon,
     iconSize = 16,
@@ -70,7 +55,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       <button
         ref={ref}
         type={type}
-        className={cn(iconButtonVariants({ variant }), className)}
+        className={cn(ICON_BUTTON_CLASSES, className)}
         aria-label={label}
         {...pressableProps({ isDisabled, isLoading, onClick })}
         {...buttonProps}

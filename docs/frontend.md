@@ -220,7 +220,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. |
 | Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else). |
-| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint); `variant` soft or ghost. |
+| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip. |
 | View link | `ViewLink` | A muted link to another view, at its text's size; always ends in a caret. |
 | Link | `Link` | An accent `<a>` in running text; `isExternal` opens a new window and says so. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |

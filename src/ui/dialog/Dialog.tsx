@@ -131,7 +131,6 @@ export function Dialog({
                 )}
               </div>
               <IconButton
-                variant="ghost"
                 className={CLOSE}
                 label="Close"
                 icon={CloseIcon}
