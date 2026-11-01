@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { ChevronRightIcon } from '@/ui'
+import { ChevronRightIcon, StretchedButton } from '@/ui'
 import { totalBytes, transferLabel, type Transfer } from '@/features/apps/utils/transfer'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
@@ -48,15 +48,11 @@ const figuresVariants = cva(undefined, {
   },
 })
 
-// The whole row is the link: a transparent overlay button covers it, so the
-// block content needn't nest inside a button, and being absolutely positioned
-// it paints above the static content to catch the click. Its focus ring sits
-// just inside the row (rows run edge to edge), square except where the first
-// and last rows meet the card's rounded corners.
-const ROW_LINK = cx(
-  'absolute inset-0 w-full focus-visible:outline-offset-(--focus-inset)',
-  'group-first/row:rounded-t-lg group-last/row:rounded-b-lg',
-)
+// The whole row is the link, through a StretchedButton, so the block content
+// needn't nest inside a button. Its focus ring sits just inside the row (rows
+// run edge to edge), square except where the first and last rows meet the
+// card's rounded corners.
+const ROW_LINK = 'group-first/row:rounded-t-lg group-last/row:rounded-b-lg'
 
 const CARET = cx(
   'text-tertiary opacity-35 transition-opacity duration-(--duration-fast) ease-in-out',
@@ -91,7 +87,7 @@ export function UsageRow({
   return (
     <li className={rowVariants({ isLink })}>
       {link && (
-        <button type="button" className={ROW_LINK} onClick={link.onOpen} aria-label={link.label} />
+        <StretchedButton className={ROW_LINK} label={link.label} onClick={link.onOpen} />
       )}
       <div className={mainLineVariants({ isLink })}>
         <RowName icon={icon} name={name} />
