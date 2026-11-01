@@ -13,8 +13,8 @@ const CONTEXT_OBJECTS = {
   message: 'Read a context through its hook (useTheme(), useNetwork()…), not useContext.',
 }
 const APP_CODE = {
-  group: ['@/app/*', '@/features/*', '@/bridge/*', '@/types/*', '@/dev/*'],
-  message: 'The UI library takes props; it never imports app code. Pass the value in.',
+  group: ['@/**'],
+  message: 'The UI library imports only itself (relative paths) and packages; pass app values in as props.',
 }
 
 export default tseslint.config(
@@ -74,7 +74,12 @@ export default tseslint.config(
   },
   {
     // The library knows nothing about the app: no screens, no data, no bridge.
+    // It follows the same context rule inside itself.
     files: ['src/ui/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [APP_CODE, CONTEXT_OBJECTS] }] },
+  },
+  {
+    files: ['src/ui/**/context/**', 'src/ui/**/hooks/**'],
     rules: { 'no-restricted-imports': ['error', { patterns: [APP_CODE] }] },
   },
 )

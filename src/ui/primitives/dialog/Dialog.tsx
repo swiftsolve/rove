@@ -4,9 +4,10 @@ import { cva } from 'class-variance-authority'
 import { CloseIcon } from '../../icons/Icons'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
-import { useModalFocus } from '@/hooks/useModalFocus'
-import { usePresence } from '@/hooks/usePresence'
-import { cn } from '@/lib/cn'
+import { useModalFocus } from './useModalFocus'
+import { usePortalContainer } from '../../hooks/usePortalContainer'
+import { usePresence } from '../../hooks/usePresence'
+import { cn } from '../../foundations/cn'
 
 // How long a closing dialog takes to leave (`--duration-fast`).
 const EXIT_MS = 140
@@ -31,9 +32,9 @@ export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element |
   return <DialogOpenContext.Provider value={isOpen}>{children}</DialogOpenContext.Provider>
 }
 
-// Absolute (not fixed) and portaled into the content column
-// ([data-modal-root]), so it covers and centres over the page area rather than
-// the whole window: the nav rail stays uncovered.
+// Absolute (not fixed) and portaled into the PortalProvider's container, so it
+// covers and centres over that area (the app's content column) rather than the
+// whole window.
 const overlayVariants = cva('absolute inset-0 z-90 flex items-center justify-center bg-scrim p-20', {
   variants: {
     isLeaving: { true: 'pointer-events-none animate-overlay-out', false: 'animate-overlay-in' },
@@ -101,6 +102,7 @@ export function Dialog({
   isDirty = false,
 }: DialogProps): JSX.Element {
   const isOpen = useContext(DialogOpenContext)
+  const portalContainer = usePortalContainer()
   const isClosable = isOpen && canClose
   const dialogRef = useModalFocus(onClose, isClosable)
   const titleId = useId()
@@ -160,7 +162,5 @@ export function Dialog({
     </div>
   )
 
-  // Fall back to rendering in place if the content column isn't in the DOM.
-  const portalTarget = typeof document !== 'undefined' ? document.querySelector('[data-modal-root]') : null
-  return portalTarget ? createPortal(overlay, portalTarget) : overlay
+  return portalContainer ? createPortal(overlay, portalContainer) : overlay
 }

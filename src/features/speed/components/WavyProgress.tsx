@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, type CSSProperties } from 'react'
-import { useLatestRef } from '@/hooks/useLatestRef'
+import { useLatestRef } from '@/ui'
 import { advanceFill } from '@/features/speed/utils/progress-fill'
 
 // Material 3 "wavy" determinate progress, matching Android's LinearWavyProgressIndicator:

@@ -1,6 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 import type { CapabilityLevel } from '@/types'
-import { cn } from '@/lib/cn'
+import { cn } from '@/ui'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import {
   CAPABILITY_LEVEL_FILL_COLORS,

@@ -1,5 +1,5 @@
 /**
- * Check that cn()'s tailwind-merge theme (src/lib/cn.ts) names exactly what
+ * Check that cn()'s tailwind-merge theme (src/ui/foundations/cn.ts) names exactly what
  * the Tailwind theme (src/styles/tailwind.css) defines.
  *
  * tailwind-merge only knows a utility's group from these lists. A theme name
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const THEME_CSS = 'src/styles/tailwind.css'
-const CN_TS = 'src/lib/cn.ts'
+const CN_TS = 'src/ui/foundations/cn.ts'
 
 // Colours Tailwind has without a theme entry; cn.ts lists them so they still merge.
 const BUILT_IN_COLORS = ['transparent', 'current', 'inherit']

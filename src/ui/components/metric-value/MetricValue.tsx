@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import { useCountUp } from '@/hooks/useCountUp'
-import { cn } from '@/lib/cn'
+import { useCountUp } from '../../hooks/useCountUp'
+import { cn } from '../../foundations/cn'
 
 const metricVariants = cva(undefined, {
   variants: {

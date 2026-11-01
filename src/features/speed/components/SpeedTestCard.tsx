@@ -6,18 +6,7 @@ import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  DirectionIcon,
-  EthernetIcon,
-  InlineMeta,
-  SpeedIcon,
-  WifiIcon,
-  type SpeedSeries,
-} from '@/ui'
-import { useCountUp } from '@/hooks/useCountUp'
+import { Card, CardBody, CardHeader, DirectionIcon, EthernetIcon, InlineMeta, SpeedIcon, WifiIcon, useCountUp, type SpeedSeries } from '@/ui'
 import type { SpeedTestConnection } from '@/features/speed/types'
 import { WavyProgress } from '@/features/speed/components/WavyProgress'
 import {

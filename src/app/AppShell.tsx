@@ -6,7 +6,9 @@ import { UpdatePrompt } from '@/app/components/UpdatePrompt'
 import { TitleBar } from '@/app/components/TitleBar'
 import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
 import { CurrentScreen } from '@/app/components/CurrentScreen'
+import { useState } from 'react'
 import { cx } from 'class-variance-authority'
+import { PortalProvider } from '@/ui'
 
 // The scrolling content area. Column flex so <main> can grow to fill the
 // visible area, which centres the first-launch loading screen in the content
@@ -30,38 +32,43 @@ const SCROLL = cx(
 export function AppShell(): JSX.Element {
   const { location } = useNavigation()
   const { scrollRef, mainRef } = useScreenFocus(locationKey(location))
+  // State, not a ref: the provider has to re-render with the column once it mounts.
+  const [contentColumn, setContentColumn] = useState<HTMLDivElement | null>(null)
 
   // No network info is read here: the banner and `CurrentScreen` read it
   // themselves, so a new reading doesn't re-render the title bar and nav rail.
   return (
-    // The shell owns the app background and clips every child to the window
-    // edge. Square corners: the window is opaque (Tauri transparent:false,
-    // required so WebKitGTK renders reliably on Linux/NVIDIA — see run() in
-    // lib.rs), so a corner radius would just expose the window's background
-    // rather than the desktop. A hairline edge keeps the frameless window crisp.
-    <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
-      <UpdatePrompt />
-      <TitleBar />
+    // Dialogs anywhere in the shell, the update prompt's included, portal into
+    // the content column, so they cover it and not the window.
+    <PortalProvider container={contentColumn}>
+      {/* The shell owns the app background and clips every child to the window
+          edge. Square corners: the window is opaque (Tauri transparent:false,
+          required so WebKitGTK renders reliably on Linux/NVIDIA — see run() in
+          lib.rs), so a corner radius would just expose the window's background
+          rather than the desktop. A hairline edge keeps the frameless window crisp. */}
+      <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
+        <UpdatePrompt />
+        <TitleBar />
 
-      {/* Everything below the full-width title bar: the nav rail, then the content column. */}
-      <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
-        <TabBar />
+        {/* Everything below the full-width title bar: the nav rail, then the content column. */}
+        <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
+          <TabBar />
 
-        {/* Dialogs portal in here so they cover the content column, not the
-            window; it is their positioning context. */}
-        <div className="relative flex flex-1 flex-col min-w-0 overflow-hidden" data-modal-root>
-          <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
-            {/* A plain div, not a landmark: <main> inside it must be top-level. */}
-            <div ref={scrollRef} className={SCROLL} data-scroll-root>
-              <NetworkErrorBanner />
+          {/* The dialogs' portal container and positioning context. */}
+          <div ref={setContentColumn} className="relative flex flex-1 flex-col min-w-0 overflow-hidden">
+            <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
+              {/* A plain div, not a landmark: <main> inside it must be top-level. */}
+              <div ref={scrollRef} className={SCROLL} data-scroll-root>
+                <NetworkErrorBanner />
 
-              <main ref={mainRef} className="flex flex-1 flex-col gap-10">
-                <CurrentScreen />
-              </main>
+                <main ref={mainRef} className="flex flex-1 flex-col gap-10">
+                  <CurrentScreen />
+                </main>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PortalProvider>
   )
 }

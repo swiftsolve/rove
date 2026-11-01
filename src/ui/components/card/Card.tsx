@@ -1,6 +1,6 @@
 import { createContext, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
+import { cn } from '../../foundations/cn'
 
 // The id a CardHeader gives its title, so a `section` card is named by it.
 const CardTitleContext = createContext<string | undefined>(undefined)

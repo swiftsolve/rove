@@ -1,7 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
-import { Card, ChevronRightIcon, DirectionIcon } from '@/ui'
+import { Card, ChevronRightIcon, DirectionIcon, cn } from '@/ui'
 
 // The card used to be the <button> itself. It keeps the text settings its
 // contents inherited from it (a button resets these), so the title and readouts

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { usePresence } from '@/hooks/usePresence'
+import { usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 /** `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be

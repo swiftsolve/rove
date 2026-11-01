@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useLatestRef } from '@/hooks/useLatestRef'
+import { useLatestRef } from '@/ui'
 
 /**
  * Runs `callback` whenever the backend nudges us that the OS routing table

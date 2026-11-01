@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type RefObject } from 'react'
-import { useLatestRef } from '@/hooks/useLatestRef'
+import { useLatestRef } from '@/ui'
 
 interface MenuWiring {
   /** Wraps the trigger and the open menu; a mousedown outside it closes the menu. */

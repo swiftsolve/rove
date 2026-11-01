@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { splitSpeedMbps } from '@/lib/format'
-import { useCountUp } from '@/hooks/useCountUp'
-import { DirectionIcon, type SpeedSeries } from '@/ui'
+import { DirectionIcon, useCountUp, type SpeedSeries } from '@/ui'
 
 /** Live rates below this are background noise (OS chatter, keepalives). Show them
  *  as zero rather than letting toFixed(1) round them up to 0.1 Mbps — otherwise

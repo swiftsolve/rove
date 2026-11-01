@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
+import { cn } from '../../foundations/cn'
 
 /**
  * A dot gets 8px of air on each side: the rows it sits in space their items at

@@ -12,7 +12,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
+import { cn } from '../../foundations/cn'
 
 const bubbleVariants = cva(
   [

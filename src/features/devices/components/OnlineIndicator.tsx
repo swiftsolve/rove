@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import { usePresence } from '@/hooks/usePresence'
+import { usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
