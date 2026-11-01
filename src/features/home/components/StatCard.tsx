@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue, StretchedButton } from '@/ui'
+import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue, StretchedLink } from '@/ui'
 
 // The card used to be the <button> itself. It keeps the text settings its
 // contents inherited from it (a button resets these), so the title and readouts
@@ -17,7 +17,7 @@ const CARD = cx(
 interface StatCardProps {
   icon: ReactNode
   label: string
-  /** Name of the open button: the readout in words, then where it goes. */
+  /** Name of the card's link: the readout in words, then where it goes. */
   ariaLabel: string
   /** Navigate into the tab when the card (or its caret) is tapped. */
   onOpen: () => void
@@ -26,14 +26,14 @@ interface StatCardProps {
   /**
    * The card body: a colour-keyed readout (or a split of readouts). It may hold
    * its own control (the Devices card's Discover button), which sits beside the
-   * open button rather than inside it.
+   * link rather than inside it.
    */
   children: ReactNode
 }
 
 /**
  * One of the small summary cards on Home: an icon + title row over a readout.
- * The title is a real heading, and a transparent button stretched over the
+ * The title is a real heading, and a transparent link stretched over the
  * whole card opens the tab, so a control in the body is its sibling, never
  * nested inside it.
  */
@@ -48,29 +48,29 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }
           {label}
         </h2>
         {/* Pushed to the far edge; always visible, brightening while the card is
-            hovered or its open button has keyboard focus. */}
+            hovered or its link has keyboard focus. */}
         <ChevronRightIcon
           size={16}
           className={cx(
             'ml-auto text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
-            'group-hover:text-secondary group-has-[[data-stretched-button]:focus-visible]:text-secondary',
+            'group-hover:text-secondary group-has-[[data-stretched-link]:focus-visible]:text-secondary',
           )}
         />
       </div>
       {/* Over the title and readout, so a click anywhere lands on it. */}
-      <StretchedButton label={ariaLabel} onClick={onOpen} />
+      <StretchedLink label={ariaLabel} onClick={onOpen} />
       {children}
     </Card>
   )
 }
 
 /**
- * Move focus to the open button of the card holding `element`. For a control
+ * Move focus to the link of the card holding `element`. For a control
  * in the body that's about to unmount (Discover, replaced by the scan spinner),
  * so keyboard focus stays in the card instead of falling back to the page.
  */
-export function focusStatCardOpenButton(element: HTMLElement): void {
-  element.closest('[data-stat-card]')?.querySelector<HTMLElement>(':scope > [data-stretched-button]')?.focus()
+export function focusStatCardLink(element: HTMLElement): void {
+  element.closest('[data-stat-card]')?.querySelector<HTMLElement>(':scope > [data-stretched-link]')?.focus()
 }
 
 interface StatReadoutProps {

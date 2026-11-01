@@ -4,9 +4,9 @@
 // Actions
 export { Button, type ButtonAppearance, type ButtonProps } from './button/Button'
 export { IconButton } from './button/IconButton'
-export { StretchedButton } from './button/StretchedButton'
 export { Link } from './link/Link'
 export { ViewLink } from './link/ViewLink'
+export { StretchedLink } from './link/StretchedLink'
 export { Menu, MenuContent, MenuItem, MenuTrigger } from './menu/Menu'
 
 // Inputs

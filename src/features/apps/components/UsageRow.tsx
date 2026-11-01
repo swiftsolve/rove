@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { ChevronRightIcon, StretchedButton, type VariantOf } from '@/ui'
+import { ChevronRightIcon, StretchedLink, type VariantOf } from '@/ui'
 import { totalBytes, transferLabel, type Transfer } from '@/features/apps/utils/transfer'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
@@ -48,7 +48,7 @@ const figuresVariants = cva(null, {
   },
 })
 
-// The whole row is the link, through a StretchedButton, so the block content
+// The whole row is the link, through a StretchedLink, so the block content
 // needn't nest inside a button. Its focus ring sits just inside the row (rows
 // run edge to edge), square except where the first and last rows meet the
 // card's rounded corners.
@@ -87,7 +87,7 @@ export function UsageRow({
   return (
     <li className={rowVariants({ isLink })}>
       {link && (
-        <StretchedButton className={ROW_LINK} label={link.label} onClick={link.onOpen} />
+        <StretchedLink className={ROW_LINK} label={link.label} onClick={link.onOpen} />
       )}
       <div className={mainLineVariants({ isLink })}>
         <RowName icon={icon} name={name} />

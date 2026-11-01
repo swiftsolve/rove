@@ -5,7 +5,7 @@ import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, SearchIcon } from '@/ui'
 import {
   EmptyStatMetric,
-  focusStatCardOpenButton,
+  focusStatCardLink,
   StatCard,
   StatReadout,
 } from '@/features/home/components/StatCard'
@@ -93,16 +93,16 @@ function DevicesCardBody({
   }
 
   if (onScan) {
-    // Discover is a sibling of the card's open button (not inside it), so its
+    // Discover is a sibling of the card's link (not inside it), so its
     // click runs its own action only. The spinner replaces it once the scan
-    // starts, so focus moves to the open button rather than being lost.
+    // starts, so focus moves to the card's link rather than being lost.
     const handleScan = (event: MouseEvent<HTMLButtonElement>): void => {
-      focusStatCardOpenButton(event.currentTarget)
+      focusStatCardLink(event.currentTarget)
       onScan()
     }
     return (
       // Centred at the foot of the card's remaining height, like the loading wave.
-      // The button rises above the card's stretched open button to take its own
+      // The button rises above the card's stretched link to take its own
       // clicks, with tighter sides than a secondary Button's and a nudge lower.
       <div className="flex flex-1 items-end justify-center">
         <Button className="relative z-2 gap-4 px-8 -mb-4" icon={SearchIcon} onClick={handleScan}>

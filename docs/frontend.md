@@ -174,7 +174,7 @@ itself (by relative path) and packages, never app code. `npm run lint` enforces
 both, and a raw `<button>` outside the library is a lint error.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
-  its tests (`button/` holds Button, IconButton and StretchedButton). There are
+  its tests (`button/` holds Button and IconButton). There are
   no tiers: a component that starts using another stays where it is.
 - `index.ts` and the stories group them by purpose:
   - Actions: button, link and menu
@@ -233,7 +233,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Section header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
 | List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
-| — | `StretchedButton` | A transparent button over a whole card or row, so a click anywhere opens it. |
+| — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
 | Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `tint`); the button form opens something. |
