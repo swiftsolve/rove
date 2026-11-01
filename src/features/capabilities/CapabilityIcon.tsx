@@ -4,7 +4,6 @@ import {
   CloudGamingIcon,
   DownloadIcon,
   GamepadIcon,
-  GlobeStreamIcon,
   HdStreamIcon,
   LiveStreamIcon,
   UltraHdStreamIcon,
@@ -33,6 +32,6 @@ export function CapabilityIcon({
   size = 22,
   className,
 }: CapabilityIconProps): JSX.Element {
-  const Icon = ICONS[id] ?? GlobeStreamIcon
+  const Icon = ICONS[id]
   return <Icon size={size} className={className} />
 }

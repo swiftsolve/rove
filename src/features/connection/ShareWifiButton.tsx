@@ -9,7 +9,6 @@ import { WifiShareDialog } from '@/features/connection/WifiShareDialog'
  */
 export function ShareWifiButton(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
-  // Mounted through the dialog's leave animation.
 
   return (
     <>
