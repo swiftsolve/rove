@@ -1176,16 +1176,10 @@
           "values": [
             "section",
             "div",
-            "li",
-            "ul"
+            "li"
           ],
           "default": "section",
-          "description": "`section` (the default) is named by its CardHeader's title, so give it one.\n`div`, `li` or `ul` for a card with no header: a list's rows, a card in a\nlist, or a list that is one card."
-        },
-        "isDivided": {
-          "type": "boolean",
-          "default": "false",
-          "description": "A hairline between each of its children: a list that is one card."
+          "description": "`section` (the default) is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
         },
         "shouldClip": {
           "type": "boolean",
@@ -1197,7 +1191,7 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--divided-list",
+        "containers-card--list",
         "containers-card--all-states"
       ]
     },
@@ -1217,7 +1211,7 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--divided-list",
+        "containers-card--list",
         "containers-card--all-states"
       ]
     },
@@ -1237,7 +1231,7 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--divided-list",
+        "containers-card--list",
         "containers-card--all-states"
       ]
     },
@@ -1265,7 +1259,39 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
-        "containers-card--divided-list",
+        "containers-card--list",
+        "containers-card--all-states"
+      ]
+    },
+    "CardList": {
+      "group": "Containers",
+      "source": "src/ui/card/Card.tsx",
+      "description": "A list that is one card, with a hairline between its rows.",
+      "figma": {
+        "name": "Card list",
+        "node": "555:132"
+      },
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "The rows, as `<li>`s. They own their padding, so the hairlines run edge to edge."
+        },
+        "label": {
+          "type": "string",
+          "isRequired": true,
+          "description": "Names the list."
+        },
+        "shouldClip": {
+          "type": "boolean",
+          "default": "true",
+          "description": "False for rows whose content pops out of the card, such as a row's menu."
+        }
+      },
+      "hasElementProps": true,
+      "stories": [
+        "containers-card--with-everything",
+        "containers-card--header-actions",
+        "containers-card--list",
         "containers-card--all-states"
       ]
     },

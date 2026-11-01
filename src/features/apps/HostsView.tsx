@@ -9,6 +9,7 @@ import { totalBytes } from '@/features/apps/utils/transfer'
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import {
+  CardList,
   ChevronDownIcon,
   Collapsible,
   CollapsiblePanel,
@@ -23,7 +24,6 @@ import {
   Tooltip as UiTooltip,
 } from '@/ui'
 import { cva, cx } from 'class-variance-authority'
-import { UsageList } from '@/features/apps/components/UsageList'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { AppIcon } from '@/features/apps/components/AppIcon'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
@@ -263,7 +263,7 @@ export function HostsView(): JSX.Element {
         isEmpty={apps.length === 0}
         copy={BODY_COPY}
       >
-        <UsageList label="Apps" ref={listRef}>
+        <CardList label="Apps" ref={listRef}>
           {apps.map((app) => (
             <AppGroup
               key={app.name}
@@ -272,7 +272,7 @@ export function HostsView(): JSX.Element {
               onToggle={toggle}
             />
           ))}
-        </UsageList>
+        </CardList>
       </UsageBody>
     </div>
   )

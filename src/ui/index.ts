@@ -35,7 +35,7 @@ export { ListRow } from './list-row/ListRow'
 export { IconTile, IconTileButton } from './icon-tile/IconTile'
 
 // Containers
-export { Card, CardBody, CardFooter, CardHeader } from './card/Card'
+export { Card, CardBody, CardFooter, CardHeader, CardList } from './card/Card'
 export { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './collapsible/Collapsible'
 export { DotSeparator, InlineMeta } from './separator/DotSeparator'
 

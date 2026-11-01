@@ -4,6 +4,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   BellIcon,
+  CardList,
   ClockIcon,
   ComputerIcon,
   ConnectionIcon,
@@ -25,7 +26,6 @@ import {
   ShareIcon,
   TerminalIcon,
 } from '@/ui'
-import { UsageList } from '@/features/apps/components/UsageList'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
 
@@ -95,7 +95,7 @@ export function TrafficView(): JSX.Element {
         isEmpty={types.length === 0}
         copy={BODY_COPY}
       >
-        <UsageList label="Traffic types by usage">
+        <CardList label="Traffic types by usage">
           {/* The same rows as the Apps view's, minus the icon fetch and the caret:
               these aren't links. */}
           {types.map((type) => (
@@ -108,7 +108,7 @@ export function TrafficView(): JSX.Element {
               busiest={busiest}
             />
           ))}
-        </UsageList>
+        </CardList>
       </UsageBody>
     </div>
   )

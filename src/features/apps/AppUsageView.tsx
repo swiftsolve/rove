@@ -3,6 +3,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
+  CardList,
   DotSeparator,
   Banner,
   GlobeIcon,
@@ -13,7 +14,6 @@ import {
   POLLING_DESCRIPTION,
   Link,
 } from '@/ui'
-import { UsageList } from '@/features/apps/components/UsageList'
 import { AppIcon } from '@/features/apps/components/AppIcon'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
@@ -74,7 +74,7 @@ export function AppUsageView(): JSX.Element {
         isEmpty={apps.length === 0}
         copy={BODY_COPY}
       >
-        <UsageList label="Apps by usage">
+        <CardList label="Apps by usage">
           {/* Each row links into that app's hosts. */}
           {apps.map((app) => (
             <UsageRow
@@ -90,7 +90,7 @@ export function AppUsageView(): JSX.Element {
               }}
             />
           ))}
-        </UsageList>
+        </CardList>
       </UsageBody>
     </div>
   )

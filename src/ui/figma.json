@@ -38,6 +38,7 @@
     "CardBody": { "name": "Card", "node": "543:62" },
     "CardFooter": { "name": "Card", "node": "543:62" },
     "CardHeader": { "name": "Card header", "node": "4:65" },
+    "CardList": { "name": "Card list", "node": "555:132" },
     "Collapsible": null,
     "CollapsiblePanel": null,
     "CollapsibleTrigger": null,

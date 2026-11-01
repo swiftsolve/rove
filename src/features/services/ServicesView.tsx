@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import {
   Button,
-  Card,
+  CardList,
   CloudIcon,
   DialogRoot,
   DotSeparator,
@@ -345,13 +345,7 @@ export function ServicesView(): JSX.Element {
         // Rows are separated by the same hairline the data cards use, running edge
         // to edge: the rows, not the list, carry the horizontal padding.
         // Unclipped, so a row's menu and its sparkline's tooltip can spill out.
-        <Card
-          as="ul"
-          shouldClip={false}
-          role="list"
-          isDivided
-          aria-label="Tracked services"
-        >
+        <CardList label="Tracked services" shouldClip={false}>
           {listedServices.map((svc) => (
             <ServiceRow
               key={svc.host}
@@ -369,7 +363,7 @@ export function ServicesView(): JSX.Element {
               }
             />
           ))}
-        </Card>
+        </CardList>
       ) : (
         <EmptyState
           title="No services yet"

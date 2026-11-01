@@ -257,7 +257,8 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible; the panel animates its height. |
-| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
+| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div"` is a bare surface; `shouldClip={false}` lets content spill out. |
+| Card list | `CardList` | A list that is one card: its `<li>` rows, with a hairline between them running edge to edge. `label` names it; `shouldClip={false}` lets a row's menu spill out. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
 | List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
 | — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |

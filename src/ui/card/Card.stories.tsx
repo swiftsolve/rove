@@ -4,15 +4,15 @@ import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
 import { DataList, DataRow } from '../data-list/DataList'
 import { RefreshIcon, WifiIcon } from '../icons/Icons'
-import { Card, CardBody, CardFooter, CardHeader } from './Card'
+import { Card, CardBody, CardFooter, CardHeader, CardList } from './Card'
 
 const meta = {
   title: 'Containers/Card',
   component: Card,
-  subcomponents: { CardHeader, CardBody, CardFooter },
-  args: { as: 'section', shouldClip: true, isDivided: false },
+  subcomponents: { CardHeader, CardBody, CardFooter, CardList },
+  args: { as: 'section', shouldClip: true },
   argTypes: {
-    as: { control: 'inline-radio', options: ['section', 'div', 'li', 'ul'] },
+    as: { control: 'inline-radio', options: ['section', 'div', 'li'] },
     children: { control: false },
   },
   decorators: [
@@ -57,17 +57,16 @@ export const HeaderActions: Story = {
   ),
 }
 
-/** No header: a list that is one card, with a hairline between its rows. */
-export const DividedList: Story = {
-  args: { as: 'ul', isDivided: true },
-  render: (args) => (
-    <Card {...args}>
+/** CardList: a list that is one card, with a hairline between its rows. */
+export const List: Story = {
+  render: () => (
+    <CardList label="Devices">
       {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
         <li key={name} className="px-12 py-10 text-sm text-primary">
           {name}
         </li>
       ))}
-    </Card>
+    </CardList>
   ),
 }
 
@@ -101,13 +100,13 @@ export const AllStates: Story = {
           <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
         </CardBody>
       </Card>
-      <Card as="ul" isDivided>
+      <CardList label="Devices">
         {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
           <li key={name} className="px-12 py-10 text-sm text-primary">
             {name}
           </li>
         ))}
-      </Card>
+      </CardList>
     </div>
   ),
 }
