@@ -14,7 +14,10 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Over a card: a click anywhere opens what it summarises. */
+/**
+ * The button itself is invisible: it lies over the whole card, whose content
+ * shows through, so a click anywhere on the card opens what it summarises.
+ */
 export const OverCard: Story = {
   render: (args) => (
     <Card as="div" className="group relative flex max-w-[280px] flex-col gap-8 p-14">
@@ -27,6 +30,14 @@ export const OverCard: Story = {
       <span className="text-sm text-secondary">412 Mbps down, 38 Mbps up</span>
     </Card>
   ),
+}
+
+/** Focused from the keyboard: the ring shows the area the button covers. */
+export const Focused: Story = {
+  ...OverCard,
+  play: async ({ userEvent }) => {
+    await userEvent.tab()
+  },
 }
 
 /** A control in the container raises itself above the button and stays a sibling. */
