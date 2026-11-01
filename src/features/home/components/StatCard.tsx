@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue } from '@/ui'
+import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue, StretchedButton } from '@/ui'
 
 // The card used to be the <button> itself. It keeps the text settings its
 // contents inherited from it (a button resets these), so the title and readouts
@@ -53,21 +53,12 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }
           size={16}
           className={cx(
             'ml-auto text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
-            'group-hover:text-secondary group-has-[>button:focus-visible]:text-secondary',
+            'group-hover:text-secondary group-has-[[data-stretched-button]:focus-visible]:text-secondary',
           )}
         />
       </div>
-      {/* The open button: transparent and stretched over the whole card, above the
-          title and readout so a click anywhere lands on it, with a focus ring that
-          follows the card's corners just inside its edge, which clips. A control in
-          the body raises itself above it. */}
-      <button
-        type="button"
-        className="absolute inset-0 z-1 rounded-[inherit] focus-visible:outline-offset-(--focus-inset)"
-        data-stat-card-open
-        onClick={onOpen}
-        aria-label={ariaLabel}
-      />
+      {/* Over the title and readout, so a click anywhere lands on it. */}
+      <StretchedButton label={ariaLabel} onClick={onOpen} />
       {children}
     </Card>
   )
@@ -79,7 +70,7 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }
  * so keyboard focus stays in the card instead of falling back to the page.
  */
 export function focusStatCardOpenButton(element: HTMLElement): void {
-  element.closest('[data-stat-card]')?.querySelector<HTMLElement>(':scope > [data-stat-card-open]')?.focus()
+  element.closest('[data-stat-card]')?.querySelector<HTMLElement>(':scope > [data-stretched-button]')?.focus()
 }
 
 interface StatReadoutProps {

@@ -2,6 +2,7 @@
 
 export { Button, type ButtonAppearance, type ButtonProps } from './primitives/button/Button'
 export { IconButton } from './primitives/button/IconButton'
+export { StretchedButton } from './primitives/button/StretchedButton'
 export { Link } from './primitives/link/Link'
 export { Menu, MenuContent, MenuItem, MenuTrigger } from './primitives/menu/Menu'
 export { ButtonSpinner } from './primitives/spinner/ButtonSpinner'
