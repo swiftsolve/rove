@@ -207,7 +207,9 @@ rove/
 │                               live_throughput, data_usage, oui, geoip, shell
 │   └── data/                   bundled lookup tables (OUI, IP-to-country)
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
-                                service, events, capabilities, window config
+    │                           service, events, capabilities, window config
+    ├── linux/                  .deb install/remove scripts, AppArmor profile
+    └── macos/                  the optional root DHCP helper's LaunchDaemon
 ```
 
 ## Frontend
