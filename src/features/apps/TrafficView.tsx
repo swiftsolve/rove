@@ -1,7 +1,7 @@
 import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { busiestTotal, percentOf, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
+import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   BellIcon,
   ClockIcon,
@@ -28,19 +28,10 @@ import {
   TerminalIcon,
 } from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { cva } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { SplitBar } from '@/features/apps/components/SplitBar'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
-
-/** One segment of a row's down/up bar, coloured by its series. Its width eases
- *  as the totals (and the busiest-type scale) change, so the bars glide in step
- *  with the count-up figures; the global reduced-motion rule neutralises it. */
-const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
-  variants: {
-    series: { down: 'bg-series-down', up: 'bg-series-up' },
-  },
-})
 
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
@@ -88,10 +79,6 @@ function TrafficRow({
   busiest: number
 }): JSX.Element {
   const total = totalBytes(type)
-  // Split the bar into down/up segments, each scaled against the busiest type so
-  // the rows are comparable at a glance.
-  const downPct = percentOf(type.rxBytes, busiest)
-  const upPct = percentOf(type.txBytes, busiest)
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return (
     <li className="flex flex-col gap-8 px-(--card-body-padding) py-12">
@@ -104,17 +91,15 @@ function TrafficRow({
         </span>
         <ByteTotal bytes={total} />
       </div>
-      {/* One track, two segments side by side, each scaled against the busiest
-          type so rows read comparably; an empty segment collapses to zero width.
-          Sits just inside the glyph's left edge, like the Apps bar. */}
-      <div
-        className="ml-[3px] flex h-[3px] overflow-hidden rounded-xs bg-inset"
-        role="img"
-        aria-label={transferLabel(type)}
-      >
-        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
-        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
-      </div>
+      {/* Scaled against the busiest type. Sits just inside the glyph's left
+          edge, like the Apps bar. */}
+      <SplitBar
+        down={type.rxBytes}
+        up={type.txBytes}
+        max={busiest}
+        label={transferLabel(type)}
+        className="ml-[3px]"
+      />
       {/* The bar's label above already reads these figures out. The down arrow
           sits centred under the type glyph, echoing the Apps and Hosts views. */}
       <TransferFigures transfer={type} isDecorative />

@@ -2,7 +2,7 @@ import type { AppUsage, AppUsageSummary } from '@/types'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
-import { busiestTotal, percentOf, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
+import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
   Button,
@@ -20,19 +20,11 @@ import {
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { SplitBar } from '@/features/apps/components/SplitBar'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
-
-/** One segment of a row's down/up bar, coloured by its series. Its width eases
- *  as the totals (and the busiest-app scale) change, so the bars glide in step
- *  with the count-up figures; the global reduced-motion rule neutralises it. */
-const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
-  variants: {
-    series: { down: 'bg-series-down', up: 'bg-series-up' },
-  },
-})
 
 // A row runs edge to edge in the card and owns the horizontal inset, so the
 // hairlines between rows (on the list) span the full width. Every row carries
@@ -76,10 +68,6 @@ function AppRow({
   onOpen: () => void
 }): JSX.Element {
   const total = totalBytes(app)
-  // Split the bar into down/up segments, each scaled against the busiest app so
-  // the rows are comparable at a glance.
-  const downPct = percentOf(app.rxBytes, busiest)
-  const upPct = percentOf(app.txBytes, busiest)
   return (
     <li className={ROW}>
       <button
@@ -111,17 +99,15 @@ function AppRow({
           />
         </span>
       </div>
-      {/* One track, two segments side by side, each scaled against the busiest
-          app so rows read comparably; an empty segment collapses to zero width.
-          Starts flush with the app icon's left edge. */}
-      <div
-        className="pointer-events-none flex h-[3px] overflow-hidden rounded-xs bg-inset"
-        role="img"
-        aria-label={transferLabel(app)}
-      >
-        <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
-        <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
-      </div>
+      {/* Scaled against the busiest app. Starts flush with the app icon's left
+          edge. */}
+      <SplitBar
+        down={app.rxBytes}
+        up={app.txBytes}
+        max={busiest}
+        label={transferLabel(app)}
+        className="pointer-events-none"
+      />
       {/* The bar's label above already reads these figures out. Pulled left by
           the arrow glyph's side bearing (~2px at 11px) so the drawn arrow lines
           up with the app icon's and bar's left edge. */}
