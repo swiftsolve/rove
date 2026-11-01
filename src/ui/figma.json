@@ -29,7 +29,6 @@
     "DataListStack": { "name": "Data row", "node": "15:642" },
     "DataRow": { "name": "Data row", "node": "15:642" },
     "Readout": { "name": "Readout", "node": "4:106" },
-    "ReadoutValue": { "name": "Readout value", "node": "4:121" },
     "MetricValue": { "name": "Metric value", "node": "38:360" },
     "BarMeter": { "name": "Bar meter", "node": "495:1044" },
     "ListRow": { "name": "List row", "node": "496:745" },

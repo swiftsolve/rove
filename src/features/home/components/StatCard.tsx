@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue, StretchedLink } from '@/ui'
+import { Card, ChevronRightIcon, DirectionIcon, Readout, StretchedLink } from '@/ui'
 
 // The card used to be the <button> itself. It keeps the text settings its
 // contents inherited from it (a button resets these), so the title and readouts
@@ -83,16 +83,13 @@ interface StatReadoutProps {
 
 /** A direction arrow (or key dot) inline with a compact value. */
 export function StatReadout({ marker, value, unit, className }: StatReadoutProps): JSX.Element {
-  return (
-    <div className={cn('flex flex-row items-center gap-4 min-w-0', className)}>
-      {marker === 'online' ? (
-        <span className="size-6 rounded-full shrink-0 bg-status-positive" aria-hidden />
-      ) : (
-        <DirectionIcon series={marker} size={12} />
-      )}
-      <ReadoutValue size="compact" value={value} unit={unit} />
-    </div>
-  )
+  const icon =
+    marker === 'online' ? (
+      <span className="size-6 rounded-full shrink-0 bg-status-positive" aria-hidden />
+    ) : (
+      <DirectionIcon series={marker} size={12} />
+    )
+  return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
 /** The "no reading" body: a dash where the value would be. */

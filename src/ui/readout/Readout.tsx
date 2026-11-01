@@ -28,41 +28,39 @@ function ValueAndUnit({ value, unit, spokenValue }: ValueParts): JSX.Element {
 }
 
 interface ReadoutProps extends ValueParts {
-  label: string
-  /** A glyph before the label: the direction arrow. */
+  /** Names the figure ("Download", "Data used"). With one, render the readout inside a `<dl>`. */
+  label?: string
+  /** A glyph: before the label, or before the figure when there's no label. */
   icon?: ReactNode
+  /** `compact` for a summary card's figure. */
+  size?: 'large' | 'compact'
   className?: string
 }
 
 /**
- * A large labelled number (live speed, data used), as a term and description:
- * render it inside a `<dl>`.
+ * A number and its unit (live speed, data used), with an optional label and
+ * glyph. A labelled readout is a term and its description, so it goes inside a
+ * `<dl>`; without a label, the glyph sits inline with the figure.
  */
-export function Readout({ label, icon, className, ...valueParts }: ReadoutProps): JSX.Element {
+export function Readout({ label, icon, size = 'large', className, ...valueParts }: ReadoutProps): JSX.Element {
+  const figureClass = cn('metric num', size === 'compact' && 'metric-compact')
+  if (label == null) {
+    return (
+      <div className={cn(figureClass, 'min-w-0', className)}>
+        {icon != null && <span className="metric-glyph">{icon}</span>}
+        <ValueAndUnit {...valueParts} />
+      </div>
+    )
+  }
   return (
     <div className={className}>
       <dt className="mb-8 flex items-center gap-6">
         {icon}
         <span className="text-overline">{label}</span>
       </dt>
-      <dd className="metric num">
+      <dd className={figureClass}>
         <ValueAndUnit {...valueParts} />
       </dd>
-    </div>
-  )
-}
-
-interface ReadoutValueProps extends ValueParts {
-  /** `compact` for a summary card's figure. */
-  size?: 'large' | 'compact'
-  className?: string
-}
-
-/** A number and its unit, on their own, at a readout's size. */
-export function ReadoutValue({ size = 'large', className, ...valueParts }: ReadoutValueProps): JSX.Element {
-  return (
-    <div className={cn('metric num', size === 'compact' && 'metric-compact', className)}>
-      <ValueAndUnit {...valueParts} />
     </div>
   )
 }

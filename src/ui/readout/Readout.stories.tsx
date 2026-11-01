@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { DirectionIcon } from '../icons/DirectionIcon'
-import { Readout, ReadoutValue } from './Readout'
+import { Readout } from './Readout'
 
 const meta = {
   title: 'Data display/Readout',
@@ -28,13 +28,16 @@ export const WithoutIcon: Story = { args: { label: 'Data used', icon: undefined,
 /** Mid count-up: the digits show 96, a screen reader hears the settled 182 Mbps. */
 export const SpokenApart: Story = { args: { value: '96', spokenValue: '182 Mbps' } }
 
-/** The figure alone, at a readout's size. */
-export const Value: Story = { render: () => <ReadoutValue value="182" unit="Mbps" /> }
+/** No label: the glyph sits inline with the figure. */
+export const Unlabelled: Story = { args: { label: undefined }, render: (args) => <Readout {...args} /> }
 
-/** The figure on a summary card. */
-export const CompactValue: Story = { render: () => <ReadoutValue size="compact" value="4.6" unit="GB" /> }
+/** A summary card's figure. */
+export const Compact: Story = {
+  args: { label: undefined, size: 'compact', icon: <DirectionIcon series="down" size={12} />, value: '4.6', unit: 'GB' },
+  render: (args) => <Readout {...args} />,
+}
 
-/** A download and upload pair, then the bare figure at both sizes. */
+/** Labelled readouts in a list, then unlabelled ones at both sizes. */
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-20">
@@ -44,8 +47,9 @@ export const AllStates: Story = {
         <Readout className="min-w-0 flex-1" label="Data used" value="4.6" unit="GB" />
       </dl>
       <div className="flex items-baseline gap-20">
-        <ReadoutValue value="182" unit="Mbps" />
-        <ReadoutValue size="compact" value="4.6" unit="GB" />
+        <Readout value="182" unit="Mbps" />
+        <Readout size="compact" icon={<DirectionIcon series="down" size={12} />} value="4.6" unit="GB" />
+        <Readout size="compact" value="12" unit="ms" />
       </div>
     </div>
   ),

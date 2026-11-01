@@ -149,6 +149,24 @@
   transform: translateY(-1px);
 }
 
+/* A glyph before a figure. One cap of the figure's font tall and sitting on
+   its baseline, so the glyph centres on the digits rather than on the line
+   box, which runs below them. */
+@utility metric-glyph {
+  display: inline-flex;
+  align-items: center;
+  height: 1cap;
+  font-family: var(--font-family-numeric);
+  font-size: var(--type-number-display-size);
+
+  /* An empty first item, full height, so the span's baseline is its bottom
+     edge rather than the bottom of a glyph shorter than the cap. */
+  &::before {
+    content: '';
+    align-self: stretch;
+  }
+}
+
 /* Stat totals: two numbers share a half-width card, so the value steps down to
    keep both on one line on narrow windows. */
 @utility metric-compact {
@@ -156,6 +174,9 @@
     font-size: var(--type-number-large-size);
     letter-spacing: var(--type-number-large-letter-spacing);
     line-height: var(--type-number-large-line-height);
+  }
+  & .metric-glyph {
+    font-size: var(--type-number-large-size);
   }
 }
 

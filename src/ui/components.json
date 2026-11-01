@@ -902,7 +902,7 @@
     "Readout": {
       "group": "Data display",
       "source": "src/ui/readout/Readout.tsx",
-      "description": "A large labelled number (live speed, data used), as a term and description:\nrender it inside a `<dl>`.",
+      "description": "A number and its unit (live speed, data used), with an optional label and\nglyph. A labelled readout is a term and its description, so it goes inside a\n`<dl>`; without a label, the glyph sits inline with the figure.",
       "figma": {
         "name": "Readout",
         "node": "4:106"
@@ -913,47 +913,11 @@
         },
         "icon": {
           "type": "ReactNode",
-          "description": "A glyph before the label: the direction arrow."
+          "description": "A glyph: before the label, or before the figure when there's no label."
         },
         "label": {
           "type": "string",
-          "isRequired": true
-        },
-        "spokenValue": {
-          "type": "string",
-          "description": "What a screen reader hears instead, when the visible number is animating\n(\"182 Mbps\" while the digits still count up to it)."
-        },
-        "unit": {
-          "type": "string",
-          "isRequired": true
-        },
-        "value": {
-          "type": "string",
-          "isRequired": true,
-          "description": "The number, formatted: \"182\", \"4.6\"."
-        }
-      },
-      "stories": [
-        "data-display-readout--download",
-        "data-display-readout--upload",
-        "data-display-readout--without-icon",
-        "data-display-readout--spoken-apart",
-        "data-display-readout--value",
-        "data-display-readout--compact-value",
-        "data-display-readout--all-states"
-      ]
-    },
-    "ReadoutValue": {
-      "group": "Data display",
-      "source": "src/ui/readout/Readout.tsx",
-      "description": "A number and its unit, on their own, at a readout's size.",
-      "figma": {
-        "name": "Readout value",
-        "node": "4:121"
-      },
-      "props": {
-        "className": {
-          "type": "string"
+          "description": "Names the figure (\"Download\", \"Data used\"). With one, render the readout inside a `<dl>`."
         },
         "size": {
           "values": [
@@ -982,8 +946,8 @@
         "data-display-readout--upload",
         "data-display-readout--without-icon",
         "data-display-readout--spoken-apart",
-        "data-display-readout--value",
-        "data-display-readout--compact-value",
+        "data-display-readout--unlabelled",
+        "data-display-readout--compact",
         "data-display-readout--all-states"
       ]
     },

@@ -23,4 +23,10 @@ describe('Readout', () => {
     expect(value.querySelector('.sr-only')).toHaveTextContent('182 Mbps')
     expect(screen.getByText('97.4')).toHaveAttribute('aria-hidden', 'true')
   })
+
+  it('renders a bare figure, outside any list, without a label', () => {
+    render(<Readout size="compact" value="4.6" unit="GB" />)
+    expect(screen.queryByRole('term')).toBeNull()
+    expect(screen.getByText('4.6').closest('.metric')).toHaveClass('metric-compact')
+  })
 })

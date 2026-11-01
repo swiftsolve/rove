@@ -267,7 +267,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric value | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |
-| Readout, Readout value | `Readout`, `ReadoutValue` | A labelled large figure (live speed, data used), or the bare figure at large or compact size. |
+| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon` (any glyph). Labelled, it goes in a `<dl>`; without a label, the glyph sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above, on the Patterns page. |
