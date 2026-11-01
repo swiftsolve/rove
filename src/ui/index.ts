@@ -9,6 +9,7 @@ export { Spinner } from './primitives/spinner/Spinner'
 export { Tooltip } from './primitives/tooltip/Tooltip'
 export { Dialog, DialogRoot } from './primitives/dialog/Dialog'
 export { Toggle } from './primitives/toggle/Toggle'
+export { SegmentedControl, type SegmentedOption } from './primitives/segmented-control/SegmentedControl'
 export { DotSeparator, InlineMeta } from './primitives/separator/DotSeparator'
 
 export { Card, CardBadge, CardBody, CardFooter, CardHeader } from './components/card/Card'

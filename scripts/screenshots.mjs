@@ -179,6 +179,12 @@ try {
 
   await page.goto(server.url, { waitUntil: 'networkidle' })
   await page.waitForSelector('[data-app-shell]')
+  if (isStable) {
+    // A first visit can make Vite pre-bundle a newly imported dependency and
+    // reload the page; let that happen before the shots start.
+    await page.waitForTimeout(2000)
+    await page.waitForSelector('[data-app-shell]')
+  }
   // The mock answers on a delay and the views fetch on mount; give the first
   // screen room to settle before we start shooting.
   await settle(3000)

@@ -4,6 +4,7 @@ import { IconButton } from '../primitives/button/IconButton'
 import { ButtonSpinner } from '../primitives/spinner/ButtonSpinner'
 import { Spinner } from '../primitives/spinner/Spinner'
 import { Toggle } from '../primitives/toggle/Toggle'
+import { SegmentedControl } from '../primitives/segmented-control/SegmentedControl'
 import { Dialog, DialogRoot } from '../primitives/dialog/Dialog'
 import { PortalProvider } from '../context/PortalProvider'
 import { DotSeparator, InlineMeta } from '../primitives/separator/DotSeparator'
@@ -18,11 +19,13 @@ import {
   ChevronRightIcon,
   GlobeIcon,
   HelpIcon,
+  MoonIcon,
   MoreVerticalIcon,
   PlayIcon,
   PlusIcon,
   RefreshIcon,
   SearchIcon,
+  SunIcon,
   WifiIcon,
 } from '../icons/Icons'
 
@@ -108,6 +111,12 @@ export function Gallery(): JSX.Element {
           <ToggleDemo isInitiallyChecked={false} />
           <Toggle isChecked label="Disabled on" isDisabled onChange={() => {}} />
           <Toggle isChecked={false} label="Disabled off" isDisabled onChange={() => {}} />
+        </Row>
+      </Section>
+
+      <Section title="SegmentedControl">
+        <Row label="theme">
+          <SegmentedDemo />
         </Row>
       </Section>
 
@@ -289,6 +298,22 @@ function DialogDemo(): JSX.Element {
         )}
       </PortalProvider>
     </div>
+  )
+}
+
+function SegmentedDemo(): JSX.Element {
+  const [mode, setMode] = useState<'dark' | 'light' | 'system'>('dark')
+  return (
+    <SegmentedControl
+      options={[
+        { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} /> },
+        { value: 'light', label: 'Light', icon: <SunIcon size={15} /> },
+        { value: 'system', label: 'System' },
+      ]}
+      value={mode}
+      onChange={setMode}
+      aria-label="Theme"
+    />
   )
 }
 

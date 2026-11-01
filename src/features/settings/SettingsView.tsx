@@ -1,4 +1,4 @@
-import { useId, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 import { useSetting } from '@/hooks/useSetting'
@@ -17,9 +17,11 @@ import {
   MoonIcon,
   PageHeader,
   RefreshIcon,
+  SegmentedControl,
   SettingsIcon,
   SunIcon,
   Toggle,
+  type SegmentedOption,
 } from '@/ui'
 
 type CheckState =
@@ -27,25 +29,6 @@ type CheckState =
   | { kind: 'checking' }
   | { kind: 'up-to-date' }
   | { kind: 'available'; update: PendingUpdate }
-
-// Segments sit 2px inside their track, so the focus ring goes inside the
-// segment rather than spilling over the track's edge and its neighbours.
-const segmentVariants = cva(
-  [
-    'inline-flex items-center gap-6 py-[5px] px-10 border-none rounded-xs cursor-pointer',
-    'text-xs font-medium',
-    'transition-[background,color] duration-(--duration-fast) ease-in-out',
-    'focus-visible:outline-offset-(--focus-inset)',
-  ],
-  {
-    variants: {
-      isActive: {
-        true: 'bg-accent-muted text-accent-text',
-        false: 'bg-transparent text-tertiary hover:text-secondary',
-      },
-    },
-  },
-)
 
 const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
   variants: {
@@ -82,20 +65,13 @@ const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
 const ROW_TITLE = 'text-md font-medium text-primary'
 const ROW_DESC = 'text-xs leading-caption text-tertiary'
 
-const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
+const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
   { value: 'light', label: 'Light', icon: <SunIcon size={15} className="shrink-0" /> },
   { value: 'system', label: 'System', icon: <ComputerIcon size={15} className="shrink-0" /> },
 ]
 
-// How far each arrow key moves the selection in the theme picker.
-const ARROW_STEPS: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }
-
-/**
- * A three-way segmented picker for the colour theme (dark / light / system),
- * built as an ARIA radio group: one Tab stop (the selected option), and the
- * arrow keys select and focus the next or previous option, wrapping round.
- */
+/** The colour theme picker: dark, light or system. */
 function ThemeSegmented({
   labelId,
   descriptionId,
@@ -104,44 +80,14 @@ function ThemeSegmented({
   descriptionId: string
 }): JSX.Element {
   const { mode, setMode } = useTheme()
-
-  const selectByArrow = (event: KeyboardEvent<HTMLDivElement>): void => {
-    const step = ARROW_STEPS[event.key]
-    if (step === undefined) return
-    event.preventDefault()
-    const current = THEME_OPTIONS.findIndex((option) => option.value === mode)
-    const next = THEME_OPTIONS[(current + step + THEME_OPTIONS.length) % THEME_OPTIONS.length]
-    if (!next) return
-    setMode(next.value)
-    event.currentTarget.querySelector<HTMLElement>(`[data-value="${next.value}"]`)?.focus()
-  }
-
   return (
-    // A pill track like the Toggle's inset one, so the two Appearance controls
-    // read as a set; the active segment is lit with the accent.
-    <div
-      className="inline-flex gap-2 p-2 bg-inset border border-line rounded-sm"
-      role="radiogroup"
+    <SegmentedControl
+      options={THEME_OPTIONS}
+      value={mode}
+      onChange={setMode}
       aria-labelledby={labelId}
       aria-describedby={descriptionId}
-      onKeyDown={selectByArrow}
-    >
-      {THEME_OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={mode === option.value}
-          tabIndex={mode === option.value ? 0 : -1}
-          data-value={option.value}
-          className={segmentVariants({ isActive: mode === option.value })}
-          onClick={() => setMode(option.value)}
-        >
-          {option.icon}
-          <span>{option.label}</span>
-        </button>
-      ))}
-    </div>
+    />
   )
 }
 
@@ -235,7 +181,7 @@ export function SettingsView(): JSX.Element {
                 isChecked={isAutoUpdateEnabled}
                 onChange={setIsAutoUpdateEnabled}
                 label="Check for updates automatically"
-                describedBy={descriptionId}
+                aria-describedby={descriptionId}
               />
             )}
           />
@@ -279,7 +225,7 @@ export function SettingsView(): JSX.Element {
                 isChecked={areThemeSoundsEnabled}
                 onChange={setAreThemeSoundsEnabled}
                 label="Theme switch sound"
-                describedBy={descriptionId}
+                aria-describedby={descriptionId}
               />
             )}
           />

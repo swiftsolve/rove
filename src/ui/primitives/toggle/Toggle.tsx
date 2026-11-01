@@ -1,54 +1,43 @@
-import { cva } from 'class-variance-authority'
+import { Switch } from '@base-ui/react/switch'
+import { cx } from 'class-variance-authority'
 
-const rootVariants = cva(
-  [
-    'relative shrink-0 w-[36px] h-20 rounded-full border',
-    'transition-[background,border-color] duration-(--duration-fast) ease-in-out',
-    'disabled:opacity-(--opacity-disabled) disabled:cursor-not-allowed',
-  ],
-  {
-    variants: {
-      isChecked: { true: 'bg-accent border-accent', false: 'bg-inset border-line' },
-    },
-  },
+const TRACK = cx(
+  'relative shrink-0 w-[36px] h-20 rounded-full border',
+  'transition-[background,border-color] duration-(--duration-fast) ease-in-out',
+  'bg-inset border-line data-checked:bg-accent data-checked:border-accent',
+  'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled)',
 )
 
-const knobVariants = cva(
-  [
-    'absolute top-1/2 left-2 size-14 rounded-full bg-on-fill',
-    'transition-transform duration-(--duration-fast) ease-in-out',
-  ],
-  {
-    variants: {
-      isChecked: { true: 'translate-x-16 -translate-y-1/2', false: '-translate-y-1/2' },
-    },
-  },
+const KNOB = cx(
+  'absolute top-1/2 left-2 size-14 -translate-y-1/2 rounded-full bg-on-fill',
+  'transition-transform duration-(--duration-fast) ease-in-out',
+  'data-checked:translate-x-16',
 )
 
 interface ToggleProps {
   isChecked: boolean
   onChange: (isChecked: boolean) => void
-  /** Accessible label — required since the switch renders no visible text. */
+  /** Names the switch, which shows no text of its own. */
   label: string
   /** Id of the text that explains the setting, read after the label. */
-  describedBy?: string
+  'aria-describedby'?: string
   isDisabled?: boolean
 }
 
-/** A compact on/off switch styled to match the app's accent + surface tokens. */
-export function Toggle({ isChecked, onChange, label, describedBy, isDisabled }: ToggleProps): JSX.Element {
+/** An on/off switch for a setting. */
+export function Toggle({ isChecked, onChange, label, isDisabled, ...ariaProps }: ToggleProps): JSX.Element {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={isChecked}
-      aria-label={label}
-      aria-describedby={describedBy}
+    <Switch.Root
+      checked={isChecked}
+      onCheckedChange={(isNowChecked) => onChange(isNowChecked)}
       disabled={isDisabled}
-      className={rootVariants({ isChecked })}
-      onClick={() => onChange(!isChecked)}
+      aria-label={label}
+      nativeButton
+      render={<button type="button" />}
+      className={TRACK}
+      {...ariaProps}
     >
-      <span className={knobVariants({ isChecked })} aria-hidden />
-    </button>
+      <Switch.Thumb className={KNOB} />
+    </Switch.Root>
   )
 }
