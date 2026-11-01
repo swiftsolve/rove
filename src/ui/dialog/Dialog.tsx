@@ -142,7 +142,9 @@ export function Dialog({
             {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
 
             {hasFooter && (
-              <div className="flex justify-end gap-8 p-16">
+              // With no body, the header's bottom inset already spaces the
+              // actions; a full top inset too leaves a gap under the description.
+              <div className={cn('flex justify-end gap-8 p-16', children == null && 'pt-4')}>
                 {/* At the main action's size, so the two sit level. */}
                 {cancelLabel != null && (
                   <Button size="md" onClick={onClose} isDisabled={!isClosable}>
