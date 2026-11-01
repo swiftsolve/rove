@@ -64,7 +64,7 @@ const signalBarsVariants = cva('inline-flex items-end', {
     // text's capitals.
     placement: {
       strip: 'gap-2 h-[11px]',
-      details: 'gap-2 h-[10px]',
+      details: 'gap-2 h-10',
     },
   },
 })
@@ -86,7 +86,7 @@ const SIGNAL_BAR_HEIGHTS = {
   strip: ['h-[5px]', 'h-[7px]', 'h-[9px]', 'h-[11px]'],
   // The tallest rounds the value text's cap height (9.46px in Inter at 13px) up to
   // a whole pixel; 9px read short.
-  details: ['h-[4px]', 'h-[6px]', 'h-[8px]', 'h-[10px]'],
+  details: ['h-4', 'h-6', 'h-8', 'h-10'],
 }
 
 // Lock + protocol, green when secured, red when open. A block flex box (not

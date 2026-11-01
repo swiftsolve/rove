@@ -59,7 +59,7 @@ export function UpdateDialog({
       actions={
         <>
           <Button variant="filled" onClick={handleInstall} disabled={isInstalling} isBusy={isInstalling}>
-            {isInstalling ? <ButtonSpinner size={14} color="#fff" /> : <DownloadIcon size={15} />}
+            {isInstalling ? <ButtonSpinner size={14} /> : <DownloadIcon size={15} />}
             {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}

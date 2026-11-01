@@ -67,6 +67,10 @@ keep logic worth testing out of components and hooks.
   `--spacing-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
   there are no Tailwind defaults to reach for. There's no preflight:
   `styles/base.css` is the reset.
+- Colours and easings are always tokens, and so is any length, weight or
+  duration a token has: `p-12`, not `p-[12px]`. `npm run lint` runs
+  `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
+  to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
 - Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,
   `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
