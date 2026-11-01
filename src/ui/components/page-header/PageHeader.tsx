@@ -27,6 +27,8 @@ type PageHeaderProps = {
   /** Controls at the end of the header (help, refresh, the page's main action). */
   actions?: ReactNode
 } & (
+  // Exactly one of `icon` or `onBack`: each branch types the other as `never`,
+  // so passing both is an error.
   | {
       /** The page's nav glyph, in a chip: a top-level page. */
       icon: ReactNode
