@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
+import { Card } from '@/components/Card'
 import { ChevronRightIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 
@@ -8,7 +9,7 @@ import { DirectionIcon } from '@/components/icons/DirectionIcon'
 // contents inherited from it (a button resets these), so the title and readouts
 // render as before. Hover sets box-shadow directly rather than through
 // `shadow-raised`: that composes a five-layer shadow list, which would cross-fade
-// from `.surface`'s shadow instead of morphing into it.
+// from the card's shadow instead of morphing into it.
 const CARD = cx(
   'group relative flex flex-col gap-6 p-(--card-body-padding) text-left cursor-pointer',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
@@ -42,12 +43,8 @@ interface StatCardProps {
 export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
   const titleId = useId()
   return (
-    <section
-      className={cx(CARD, 'surface')}
-      data-stat-card
-      aria-labelledby={titleId}
-      aria-busy={isLoading || undefined}
-    >
+    // Named by its own heading, as it has no CardHeader.
+    <Card className={CARD} data-stat-card aria-labelledby={titleId} aria-busy={isLoading || undefined}>
       <div className="flex items-center gap-8">
         <span className="inline-flex items-center justify-center shrink-0 text-tertiary">{icon}</span>
         <h2 id={titleId} className="text-heading-small">
@@ -65,16 +62,17 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }
       </div>
       {/* The open button: transparent and stretched over the whole card, above the
           title and readout so a click anywhere lands on it, with a focus ring that
-          follows the card's corners. A control in the body raises itself above it. */}
+          follows the card's corners just inside its edge, which clips. A control in
+          the body raises itself above it. */}
       <button
         type="button"
-        className="absolute inset-0 z-1 rounded-[inherit]"
+        className="absolute inset-0 z-1 rounded-[inherit] focus-visible:outline-offset-(--focus-inset)"
         data-stat-card-open
         onClick={onOpen}
         aria-label={ariaLabel}
       />
       {children}
-    </section>
+    </Card>
   )
 }
 

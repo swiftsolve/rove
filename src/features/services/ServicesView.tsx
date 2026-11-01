@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import { PageHeader } from '@/components/PageHeader'
+import { Card } from '@/components/Card'
 import { MetricValue } from '@/components/MetricValue'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import {
@@ -417,7 +418,14 @@ export function ServicesView(): JSX.Element {
       {listedServices.length > 0 ? (
         // Rows are separated by the same hairline the data cards use, running edge
         // to edge: the rows, not the list, carry the horizontal padding.
-        <ul role="list" className="surface [&>li+li]:border-t [&>li+li]:border-t-line" aria-label="Tracked services">
+        // Unclipped, so a row's menu and its sparkline's tooltip can spill out.
+        <Card
+          as="ul"
+          shouldClip={false}
+          role="list"
+          className="[&>li+li]:border-t [&>li+li]:border-t-line"
+          aria-label="Tracked services"
+        >
           {listedServices.map((svc) => (
             <ServiceRow
               key={svc.host}
@@ -443,7 +451,7 @@ export function ServicesView(): JSX.Element {
               }
             />
           ))}
-        </ul>
+        </Card>
       ) : (
         <EmptyState
           title="No services yet"

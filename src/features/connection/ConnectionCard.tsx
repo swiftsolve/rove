@@ -20,6 +20,7 @@ import {
   formatWifiStandard,
   isSecuredWifi,
 } from '@/lib/format'
+import { Card } from '@/components/Card'
 import { DataList, DataRow } from '@/components/DataRow'
 import { InlineMeta } from '@/components/DotSeparator'
 import {
@@ -357,9 +358,9 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   return (
     // The card's focus frame: the strip's toggle expands the whole card, so focus
     // rings the card (strip and, when open, the details) just inside its edge.
-    <section
+    // Named by its own heading, as it has no CardHeader.
+    <Card
       className={cx(
-        'bg-surface rounded-lg shadow-panel overflow-hidden',
         'has-[>div>button:focus-visible]:[outline:var(--focus-outline)]',
         'has-[>div>button:focus-visible]:outline-offset-(--focus-inset)',
       )}
@@ -460,7 +461,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           </div>
         </div>
       </div>
-    </section>
+    </Card>
   )
 },
 (previous, next) => isNetworkInfoEqual(previous.info, next.info))

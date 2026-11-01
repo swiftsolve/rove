@@ -10,6 +10,7 @@ import {
   type SpeedHistoryEntry,
 } from '@/features/speed/utils/speed-history'
 import { PageHeader } from '@/components/PageHeader'
+import { Card } from '@/components/Card'
 import { DotSeparator, InlineMeta } from '@/components/DotSeparator'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { FAILED_PING } from '@/types'
@@ -140,7 +141,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   return (
     // No bottom padding: the footer banner bleeds to the card's bottom edge, and
     // overflow clips it to the rounded corners.
-    <li className="surface overflow-hidden px-(--card-body-padding) pt-(--card-body-padding)">
+    <Card as="li" className="px-(--card-body-padding) pt-(--card-body-padding)">
       <div className="mb-12 flex items-center justify-between gap-12">
         <ConnectionBadge entry={entry} />
         <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
@@ -173,7 +174,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
           )}
         </p>
       </div>
-    </li>
+    </Card>
   )
 }
 

@@ -150,7 +150,7 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `TrafficCard` | Shows that traffic is updating live. |
-| Section header | `Card`, `CardHeader` | A card is `Card` with a `CardHeader` (44px: icon, title, and `actions` such as a `CardBadge` or a button), a `CardBody` and an optional `CardFooter` band. `Card as="li"` or `as="div"`, with no header, is the bare surface for a card that lays out its own content. |
+| Section header | `Card`, `CardHeader` | A card is `Card` with a `CardHeader` (44px: icon, title, and `actions` such as a `CardBadge` or a button), a `CardBody` and an optional `CardFooter` band. `Card as="li"`, `"div"` or `"ul"`, with no header, is the bare surface for a card that lays out its own content. `shouldClip={false}` lets a menu spill out of it. |
 | Data row | `DataRow`, `DataList` | Label and value; the value right-aligns. An optional accessory (signal bars, an icon) and detail sit before it, 6px apart. `DataList` makes the rows a `<dl>` and sets their `density` (`default`, `snug`, `compact`); `align="center"` suits a value with no text baseline. |
 | Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric | `MetricValue` | A number with its unit, coloured by `status` when it's earned. |

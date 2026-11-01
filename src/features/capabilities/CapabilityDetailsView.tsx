@@ -7,6 +7,7 @@ import { explainCapability } from '@/features/capabilities/utils/capability-deta
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import { PageHeader } from '@/components/PageHeader'
+import { Card } from '@/components/Card'
 import { AlertIcon, CheckIcon, CloseIcon } from '@/components/icons/Icons'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -23,7 +24,7 @@ import {
 // clicking a capability, that card is scrolled to the top of the viewport; the
 // scroll margin leaves a little air above it.
 const CARD = cx(
-  'flex flex-col overflow-hidden scroll-mt-12',
+  'flex flex-col scroll-mt-12',
   'px-(--card-header-padding-x) pt-(--card-header-padding-y)',
 )
 
@@ -125,7 +126,7 @@ function CapabilityDetailCard({
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
-    <li className={cx(CARD, 'surface')} data-capability-id={capability.id}>
+    <Card as="li" className={CARD} data-capability-id={capability.id}>
       <div className="flex items-center gap-8 pb-12">
         <span className={iconVariants({ level: capability.level })}>
           <CapabilityIcon id={capability.id} size={16} />
@@ -169,7 +170,7 @@ function CapabilityDetailCard({
           {CAPABILITY_LEVEL_LABELS[capability.level]}
         </span>
       </div>
-    </li>
+    </Card>
   )
 }
 

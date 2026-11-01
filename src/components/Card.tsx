@@ -8,9 +8,12 @@ const CardTitleContext = createContext<string | undefined>(undefined)
 interface CardProps extends HTMLAttributes<HTMLElement> {
   /**
    * `section` (the default) is named by its CardHeader's title, so give it one.
-   * `div` or `li` for a card with no header: a list's rows, or a card in a list.
+   * `div`, `li` or `ul` for a card with no header: a list's rows, a card in a
+   * list, or a list that is one card.
    */
-  as?: 'section' | 'div' | 'li'
+  as?: 'section' | 'div' | 'li' | 'ul'
+  /** False for a card whose content pops out of it, such as a row's menu. */
+  shouldClip?: boolean
 }
 
 /**
@@ -18,12 +21,12 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
  * CardHeader, a CardBody and an optional CardFooter, or lay out your own
  * content in it.
  */
-export function Card({ as: Element = 'section', className, ...props }: CardProps): JSX.Element {
+export function Card({ as: Element = 'section', shouldClip = true, className, ...props }: CardProps): JSX.Element {
   const titleId = useId()
   return (
     <CardTitleContext.Provider value={titleId}>
       <Element
-        className={cn('surface overflow-hidden contain-content', className)}
+        className={cn('surface', shouldClip && 'overflow-hidden contain-content', className)}
         aria-labelledby={Element === 'section' ? titleId : undefined}
         {...props}
       />
