@@ -14,8 +14,9 @@ import {
   SearchIcon,
   ShieldAlertIcon,
   WifiIcon,
+  type VariantOf,
 } from '@/ui'
-import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import {
   EVENT_TITLES,
   INTERNET_SUBTITLES,
@@ -89,7 +90,7 @@ type IconComponent = (props: { size?: number }) => JSX.Element
 // baseline calm (blue), a departure quiet (grey), a new access point or gateway
 // change cautionary (amber), a lost connection alarming (red). Warning/critical
 // events keep the loud colours severity used before.
-type EventTone = NonNullable<VariantProps<typeof markerVariants>['tone']>
+type EventTone = VariantOf<typeof markerVariants, 'tone'>
 
 interface EventStyle {
   icon: IconComponent

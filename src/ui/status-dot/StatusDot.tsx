@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 
 const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full bg-current', {
@@ -17,7 +18,7 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full bg-curren
 })
 
 interface StatusDotProps {
-  pulse?: 'calm' | 'live' | 'busy'
+  pulse?: VariantOf<typeof dotVariants, 'pulse'>
   /** Its colour (`text-positive`) and place in a line. It's the text colour by default. */
   className?: string
 }

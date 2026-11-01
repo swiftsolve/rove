@@ -56,7 +56,7 @@ export const DisclosureTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttribu
   },
 )
 
-const panelVariants = cva(undefined, {
+const panelVariants = cva(null, {
   variants: {
     /** Grows and shrinks to its height, rather than appearing at once. */
     isAnimated: {

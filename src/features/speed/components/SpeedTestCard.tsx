@@ -34,6 +34,7 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
   variants: {
     isEmpty: { true: 'text-tertiary', false: 'text-primary' },
   },
+  defaultVariants: { isEmpty: false },
 })
 
 // Full-bleed inset panel at the card bottom, the same treatment as the live

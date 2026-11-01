@@ -37,6 +37,7 @@ const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-n
   variants: {
     isUnmet: { true: 'text-negative', false: 'text-primary' },
   },
+  defaultVariants: { isUnmet: false },
 })
 
 // Verdict: the plain-language summary paired with a colour-keyed status, on the

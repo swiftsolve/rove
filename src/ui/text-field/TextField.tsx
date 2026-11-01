@@ -33,6 +33,7 @@ const groupVariants = cva(
     variants: {
       isInvalid: { true: 'border-status-negative', false: 'border-line focus-within:border-accent' },
     },
+    defaultVariants: { isInvalid: false },
   },
 )
 
@@ -99,6 +100,7 @@ const actionVariants = cva(
     variants: {
       isLoading: { true: 'w-[30px] min-w-0 cursor-default', false: 'min-w-[52px] px-10' },
     },
+    defaultVariants: { isLoading: false },
   },
 )
 

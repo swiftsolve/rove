@@ -76,6 +76,7 @@ const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
   variants: {
     isReachable: { true: 'text-positive', false: 'text-tertiary' },
   },
+  defaultVariants: { isReachable: false },
 })
 
 // A long name uses up to two lines rather than truncating; the card grows to

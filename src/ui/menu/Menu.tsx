@@ -1,6 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Menu as BaseMenu } from '@base-ui/react/menu'
 import { cva, cx } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { MoreVerticalIcon, type IconComponent } from '../icons/Icons'
 
@@ -92,7 +93,7 @@ const itemVariants = cva(
 
 interface MenuItemProps {
   icon?: IconComponent
-  tone?: 'neutral' | 'negative'
+  tone?: VariantOf<typeof itemVariants, 'tone'>
   /** Runs the action; the menu closes. */
   onClick: () => void
   children: ReactNode

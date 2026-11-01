@@ -38,6 +38,7 @@ const chevronVariants = cva(
     variants: {
       isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
     },
+    defaultVariants: { isOpen: false },
   },
 )
 

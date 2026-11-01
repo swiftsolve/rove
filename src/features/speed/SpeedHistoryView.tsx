@@ -1,4 +1,4 @@
-import { cva, cx, type VariantProps } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
@@ -19,6 +19,7 @@ import {
   TrashIcon,
   WifiIcon,
   type SpeedSeries,
+  type VariantOf,
 } from '@/ui'
 import { FAILED_PING } from '@/types'
 
@@ -43,7 +44,7 @@ interface MetricProps {
 interface ConnectionBadgeStyle {
   Icon: typeof WifiIcon
   /** The badge's tint: the medium's colour, or plain for an unknown one. */
-  type: VariantProps<typeof connVariants>['type']
+  type: VariantOf<typeof connVariants, 'type'>
   /** Shown when the entry has no network name. */
   fallbackName: string
 }

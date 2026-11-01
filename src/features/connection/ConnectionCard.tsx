@@ -37,6 +37,7 @@ import {
   OfflineIcon,
   UnlockIcon,
   WifiIcon,
+  type VariantOf,
 } from '@/ui'
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
@@ -66,6 +67,7 @@ const securityBadgeVariants = cva(
     variants: {
       isSecured: { true: null, false: 'text-negative' },
     },
+    defaultVariants: { isSecured: false },
   },
 )
 
@@ -74,7 +76,7 @@ const securityBadgeVariants = cva(
 // optical nudge the signal bars get).
 const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
   variants: {
-    isSecured: { true: 'text-status-positive', false: null },
+    isSecured: { true: 'text-status-positive' },
   },
 })
 
@@ -85,7 +87,7 @@ const chevronVariants = cva(
   ],
   {
     variants: {
-      isOpen: { true: 'transform-[rotate(180deg)]', false: null },
+      isOpen: { true: 'transform-[rotate(180deg)]' },
     },
   },
 )
@@ -164,7 +166,7 @@ function SignalMeter({
   placement,
 }: {
   strength: number
-  placement: 'strip' | 'details'
+  placement: VariantOf<typeof signalMeterVariants, 'placement'>
 }): JSX.Element {
   const label = formatSignalStrength(strength)
   const filledBars = signalBarCount(strength)

@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { Tooltip } from '../tooltip/Tooltip'
@@ -27,7 +28,8 @@ const iconButtonVariants = cva(
 )
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-label' | 'children'> &
-  VariantProps<typeof iconButtonVariants> & {
+  {
+    variant?: VariantOf<typeof iconButtonVariants, 'variant'>
     /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
     label: string
     icon: IconComponent

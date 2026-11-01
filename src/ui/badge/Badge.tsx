@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { StatusDot } from '../status-dot/StatusDot'
 
 const badgeVariants = cva(
@@ -17,7 +18,7 @@ const badgeVariants = cva(
 )
 
 interface BadgeProps {
-  tone: 'positive' | 'warning' | 'negative'
+  tone: VariantOf<typeof badgeVariants, 'tone'>
   children: ReactNode
 }
 

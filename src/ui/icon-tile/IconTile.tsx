@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
 
@@ -22,8 +23,8 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
 })
 
 interface TileLookProps {
-  size?: 'sm' | 'md' | 'lg'
-  tint?: 'xs' | 'sm' | 'md' | 'inset'
+  size?: VariantOf<typeof tileVariants, 'size'>
+  tint?: VariantOf<typeof tileVariants, 'tint'>
   /** The glyph's colour, which the tint follows, and the tile's place in its row. */
   className?: string
   /** The glyph. */

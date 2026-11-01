@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 
 // The air between rows, set on the list as a variable its rows read, so it
 // reaches rows rendered by another component: 8px, or 6px and 4px for a short
 // or repeated list.
-const listVariants = cva('', {
+const listVariants = cva(null, {
   variants: {
     density: {
       default: '[--data-row-py:var(--row-padding-y)]',
@@ -29,7 +30,8 @@ const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt
 const LABEL = 'text-overline shrink-0'
 const VALUE = 'text-number num text-right'
 
-interface DataListProps extends VariantProps<typeof listVariants> {
+interface DataListProps {
+  density?: VariantOf<typeof listVariants, 'density'>
   className?: string
   /** DataRows, as direct children (fragments are fine). */
   children: ReactNode
@@ -43,7 +45,8 @@ export function DataList({ className, density, children }: DataListProps): JSX.E
   return <dl className={cn(listVariants({ density }), className)}>{children}</dl>
 }
 
-interface DataRowProps extends VariantProps<typeof rowVariants> {
+interface DataRowProps {
+  align?: VariantOf<typeof rowVariants, 'align'>
   label: ReactNode
   value?: string | null
   children?: ReactNode

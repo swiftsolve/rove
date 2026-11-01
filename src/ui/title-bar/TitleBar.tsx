@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { StatusDot } from '../status-dot/StatusDot'
 import { CloseIcon, MinimizeIcon } from '../icons/Icons'
 
@@ -57,7 +58,7 @@ const statusVariants = cva(
 )
 
 interface TitleBarStatusProps {
-  tone: 'positive' | 'negative' | 'neutral'
+  tone: VariantOf<typeof statusVariants, 'tone'>
   children: ReactNode
 }
 
@@ -91,12 +92,17 @@ const WINDOW_ACTIONS = {
   close: { label: 'Close', icon: CloseIcon },
 }
 
+interface WindowButtonProps {
+  action: VariantOf<typeof windowButtonVariants, 'action'>
+  onClick: () => void
+}
+
 /**
  * Minimise or close the window. Out of the Tab order, like a native title
  * bar's: otherwise the first Tab lands here instead of the nav rail, and a
  * stray Enter closes the window.
  */
-export function WindowButton({ action, onClick }: { action: 'minimize' | 'close'; onClick: () => void }): JSX.Element {
+export function WindowButton({ action, onClick }: WindowButtonProps): JSX.Element {
   const { label, icon: Icon } = WINDOW_ACTIONS[action]
   return (
     <button

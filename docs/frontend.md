@@ -98,6 +98,17 @@ for what. Read it before writing or changing UI. For where files live, see
   // <div className={rowVariants({ isGateway, level })}>
   ```
 
+  - A prop that picks a variant takes its type from the recipe:
+    `tone: VariantOf<typeof badgeVariants, 'tone'>` (from `@/ui`), so each
+    value is named once. A boolean axis stays `boolean`. A recipe keyed by a
+    domain type (`CapabilityLevel`, `SpeedSeries`) keeps that type.
+  - A recipe sets its resting look in `defaultVariants`. cva applies no branch
+    for `undefined`, so a `false` branch without a default is skipped when the
+    prop is left out.
+  - Something that adds no classes is `null`: a recipe with no base is
+    `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
+    boolean axis leaves out a branch that adds nothing.
+
 - `cn()` (from `@/ui`, in `ui/foundations/cn.ts`) joins classes and lets a later utility override an
   earlier one that sets the same thing; use it wherever a component merges a
   `className` from outside, which is how a view adjusts a child. `cx` only

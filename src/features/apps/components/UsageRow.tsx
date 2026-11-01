@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { ChevronRightIcon, StretchedButton } from '@/ui'
+import { ChevronRightIcon, StretchedButton, type VariantOf } from '@/ui'
 import { totalBytes, transferLabel, type Transfer } from '@/features/apps/utils/transfer'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
@@ -35,15 +35,15 @@ const mainLineVariants = cva('flex items-center justify-between gap-12', {
 // box, so the bar starts flush and the figures pull left by the arrow glyph's
 // side bearing (~2px at 11px). A line glyph is inset by its own bearing, so the
 // bar sits just inside it and the down arrow lands centred under it.
-const barVariants = cva(undefined, {
+const barVariants = cva(null, {
   variants: {
-    iconKind: { tile: '', glyph: 'ml-[3px]' },
+    iconKind: { tile: null, glyph: 'ml-[3px]' },
     isLink: { true: 'pointer-events-none' },
   },
 })
-const figuresVariants = cva(undefined, {
+const figuresVariants = cva(null, {
   variants: {
-    iconKind: { tile: '-ml-2', glyph: '' },
+    iconKind: { tile: '-ml-2', glyph: null },
     isLink: { true: 'pointer-events-none' },
   },
 })
@@ -63,7 +63,7 @@ interface UsageRowProps {
   icon: ReactNode
   /** How the icon is drawn: a `tile` (an app icon) fills its box, a `glyph` (a
    *  line icon) is inset. Lines the bar and figures up with it. */
-  iconKind: 'tile' | 'glyph'
+  iconKind: VariantOf<typeof barVariants, 'iconKind'>
   name: string
   transfer: Transfer
   /** The busiest row's total in the list, which every bar is scaled against. */

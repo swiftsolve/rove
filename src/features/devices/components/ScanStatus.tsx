@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cva } from 'class-variance-authority'
-import { StatusDot, usePresence } from '@/ui'
+import { StatusDot, usePresence, type VariantOf } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 /** `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be
@@ -10,6 +10,7 @@ const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   variants: {
     isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
   },
+  defaultVariants: { isLeaving: false },
 })
 
 /** One stage word: waits below, settles as the current stage, then drifts up,
@@ -27,7 +28,7 @@ const scanPhaseVariants = cva(
   },
 )
 
-type ScanPhaseState = 'past' | 'current' | 'next'
+type ScanPhaseState = VariantOf<typeof scanPhaseVariants, 'state'>
 
 // The scan runs its stages concurrently and reports no per-stage progress, so
 // ScanStatus steps through them on a timer — a forward-reading approximation, in

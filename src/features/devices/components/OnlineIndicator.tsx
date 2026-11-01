@@ -6,6 +6,7 @@ const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   variants: {
     isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
   },
+  defaultVariants: { isLeaving: false },
 })
 
 // The online tally shares the scan status's slot and motion: it slides in from

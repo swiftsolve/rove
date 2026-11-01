@@ -15,6 +15,7 @@ const metaVariants = cva('inline-meta min-w-0 max-w-full items-center gap-6', {
   variants: {
     shouldTruncate: { true: 'flex overflow-hidden whitespace-nowrap', false: 'inline-flex' },
   },
+  defaultVariants: { shouldTruncate: false },
 })
 
 const itemVariants = cva('inline-meta-item min-w-0', {

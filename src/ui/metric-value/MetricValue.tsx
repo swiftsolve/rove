@@ -1,8 +1,9 @@
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
 import { cn } from '../foundations/cn'
 
-const metricVariants = cva(undefined, {
+const metricVariants = cva(null, {
   variants: {
     /** How healthy the value is, in the status text colours. */
     status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
@@ -10,7 +11,7 @@ const metricVariants = cva(undefined, {
 })
 
 /** A readout's health: green, amber or red. */
-export type MetricStatus = NonNullable<VariantProps<typeof metricVariants>['status']>
+export type MetricStatus = VariantOf<typeof metricVariants, 'status'>
 
 /**
  * A numeric readout that eases toward its latest value each poll (up or down),
