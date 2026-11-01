@@ -1,4 +1,4 @@
-import { forwardRef, type MouseEventHandler, type ReactNode } from 'react'
+import { forwardRef, type HTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
@@ -21,7 +21,7 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
   defaultVariants: { size: 'md', tint: 'md' },
 })
 
-interface IconTileProps {
+interface TileLookProps {
   size?: 'sm' | 'md' | 'lg'
   tint?: 'xs' | 'sm' | 'md' | 'inset'
   /** The glyph's colour, which the tint follows, and the tile's place in its row. */
@@ -30,12 +30,24 @@ interface IconTileProps {
   children: ReactNode
 }
 
-/** A rounded square holding an item's glyph, tinted by what the item is. */
-export function IconTile({ size, tint, className, children }: IconTileProps): JSX.Element {
-  return <span className={cn(tileVariants({ size, tint }), className)}>{children}</span>
-}
+type IconTileProps = TileLookProps & Omit<HTMLAttributes<HTMLSpanElement>, keyof TileLookProps>
 
-type IconTileButtonProps = IconTileProps & {
+/**
+ * A rounded square holding an item's glyph, tinted by what the item is. It
+ * takes a ref and extra props, so it can be a Tooltip's trigger.
+ */
+export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function IconTile(
+  { size, tint, className, children, ...props },
+  ref,
+) {
+  return (
+    <span ref={ref} className={cn(tileVariants({ size, tint }), className)} {...props}>
+      {children}
+    </span>
+  )
+})
+
+type IconTileButtonProps = TileLookProps & {
   /** Names it: the glyph alone says nothing to a screen reader. */
   label: string
   onClick: MouseEventHandler<HTMLButtonElement>
