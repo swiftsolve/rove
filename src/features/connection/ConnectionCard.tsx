@@ -353,7 +353,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           />
         </div>
 
-        <CollapsiblePanel isAnimated>
+        <CollapsiblePanel>
           {/* Grouped by topic: the link itself, then the addresses from the
               device outward, then the hardware it runs over. */}
           <DataListStack className={DETAILS}>

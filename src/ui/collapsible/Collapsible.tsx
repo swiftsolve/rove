@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react'
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible'
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 
 type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
@@ -56,26 +56,22 @@ export const CollapsibleTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttrib
   },
 )
 
-const panelVariants = cva(null, {
-  variants: {
-    /** Grows and shrinks to its height, rather than appearing at once. */
-    isAnimated: {
-      true: [
-        'h-(--collapsible-panel-height) overflow-hidden',
-        'transition-[height] duration-(--duration-normal) ease-out',
-        'data-starting-style:h-0 data-ending-style:h-0',
-      ],
-    },
-  },
-})
+// Grows and shrinks to its measured height, rather than appearing at once.
+const PANEL = cx(
+  'h-(--collapsible-panel-height) overflow-hidden',
+  'transition-[height] duration-(--duration-normal) ease-out',
+  'data-starting-style:h-0 data-ending-style:h-0',
+)
 
 interface CollapsiblePanelProps {
-  isAnimated?: boolean
   className?: string
   children: ReactNode
 }
 
-/** What the trigger shows and hides; out of the page, and the accessibility tree, while closed. */
-export function CollapsiblePanel({ isAnimated = false, className, children }: CollapsiblePanelProps): JSX.Element {
-  return <BaseCollapsible.Panel className={cn(panelVariants({ isAnimated }), className)}>{children}</BaseCollapsible.Panel>
+/**
+ * What the trigger shows and hides, growing and shrinking to its height; out
+ * of the page, and the accessibility tree, while closed.
+ */
+export function CollapsiblePanel({ className, children }: CollapsiblePanelProps): JSX.Element {
+  return <BaseCollapsible.Panel className={cn(PANEL, className)}>{children}</BaseCollapsible.Panel>
 }

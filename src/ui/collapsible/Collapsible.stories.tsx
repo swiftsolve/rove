@@ -24,14 +24,14 @@ const CHEVRON = [
 const DETAILS = 'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)'
 
 /** The connection card's details: a trigger row and the rows it shows. */
-function details(isAnimated: boolean): JSX.Element {
+function details(): JSX.Element {
   return (
     <>
       <CollapsibleTrigger className={TRIGGER}>
         Connection details
         <ChevronDownIcon size={14} className={CHEVRON} />
       </CollapsibleTrigger>
-      <CollapsiblePanel isAnimated={isAnimated}>
+      <CollapsiblePanel>
         <DataList density="compact" className={DETAILS}>
           <DataRow label="IP address" value="192.168.1.20" />
           <DataRow label="Gateway" value="192.168.1.1" />
@@ -63,7 +63,7 @@ const meta = {
   title: 'Containers/Collapsible',
   component: Collapsible,
   subcomponents: { CollapsibleTrigger, CollapsiblePanel },
-  args: { isOpen: false, onOpenChange: fn(), hasFocusFrame: false, children: details(false) },
+  args: { isOpen: false, onOpenChange: fn(), hasFocusFrame: false, children: details() },
   argTypes: {
     as: { control: 'inline-radio', options: ['div', 'li'] },
     children: { control: false },
@@ -79,9 +79,6 @@ export const Closed: Story = {}
 
 export const Open: Story = { args: { isOpen: true } }
 
-/** The panel grows and shrinks to its height. */
-export const Animated: Story = { args: { children: details(true) } }
-
 /** Keyboard focus rings the whole collapsible, for a trigger that spans a card's header. Tab to it. */
 export const FocusFrame: Story = { args: { hasFocusFrame: true, isOpen: true, className: 'rounded-[inherit]' } }
 
@@ -91,9 +88,7 @@ export const AllStates: Story = {
     <div className="flex flex-col gap-12">
       <ControlledCollapsible {...args} />
       <ControlledCollapsible {...args} isOpen />
-      <ControlledCollapsible {...args} isOpen hasFocusFrame className="rounded-[inherit]">
-        {details(true)}
-      </ControlledCollapsible>
+      <ControlledCollapsible {...args} isOpen hasFocusFrame className="rounded-[inherit]" />
     </div>
   ),
 }
