@@ -14,6 +14,7 @@ import {
   LoadingState,
   PageHeader,
   POLLING_DESCRIPTION,
+  Readout,
   TodayIcon,
   UsageIcon,
   WeekIcon,
@@ -53,30 +54,9 @@ function dayLabel(dateKey: string, isLast: boolean): string {
   return WEEKDAY_FORMAT.format(new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1))
 }
 
-function BytesMetric({
-  label,
-  bytes,
-  series,
-}: {
-  label: string
-  bytes: number
-  series: 'down' | 'up'
-}): JSX.Element {
+function BytesMetric({ label, bytes, series }: { label: string; bytes: number; series: 'down' | 'up' }): JSX.Element {
   const { value, unit } = splitBytes(bytes)
-
-  return (
-    <div>
-      {/* mb-8 matches the speed-test hero's label→value rhythm. */}
-      <dt className="mb-8 flex items-center gap-6">
-        <DirectionIcon series={series} />
-        <span className="text-overline">{label}</span>
-      </dt>
-      <dd className="metric num">
-        <span className="metric-value">{value}</span>
-        <span className="metric-unit">{unit}</span>
-      </dd>
-    </div>
-  )
+  return <Readout label={label} icon={<DirectionIcon series={series} />} value={value} unit={unit} />
 }
 
 /** A card footer: a label on the left, down / up byte totals on the right. */

@@ -108,6 +108,12 @@ The Figma pass works through this list and deletes the file when it's done.
   | md | 3px | 5–11 | Beside a title |
   | lg | 3px | 6–12 | Capability list |
 
+### Readout (Readout/Large, Readout/Compact)
+
+- No visual change. In code, one component now covers both: `Readout` is the
+  labelled large figure and `ReadoutValue` the bare figure at large or compact
+  size. Usage's byte totals use it too.
+
 ### Link (new)
 
 - An accent text link for running text: no underline until hover or focus.

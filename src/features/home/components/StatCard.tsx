@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, ChevronRightIcon, DirectionIcon, cn } from '@/ui'
+import { Card, ChevronRightIcon, cn, DirectionIcon, ReadoutValue } from '@/ui'
 
 // The card used to be the <button> itself. It keeps the text settings its
 // contents inherited from it (a button resets these), so the title and readouts
@@ -99,10 +99,7 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
       ) : (
         <DirectionIcon series={marker} size={12} />
       )}
-      <div className="metric metric-compact num">
-        <span className="metric-value">{value}</span>
-        <span className="metric-unit">{unit}</span>
-      </div>
+      <ReadoutValue size="compact" value={value} unit={unit} />
     </div>
   )
 }

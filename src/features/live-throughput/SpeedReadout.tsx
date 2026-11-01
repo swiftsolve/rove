@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { splitSpeedMbps } from '@/lib/format'
-import { DirectionIcon, useCountUp, type SpeedSeries } from '@/ui'
+import { DirectionIcon, Readout, useCountUp, type SpeedSeries } from '@/ui'
 
 /** Live rates below this are background noise (OS chatter, keepalives). Show them
  *  as zero rather than letting toFixed(1) round them up to 0.1 Mbps — otherwise
@@ -23,20 +23,16 @@ export const SpeedReadout = memo(function SpeedReadout({
   const { value, unit } = splitSpeedMbps(animated)
   const actual = splitSpeedMbps(shown)
 
+  // The visible digits count up between polls; screen readers get the settled
+  // value instead of a mid-animation one.
   return (
-    <div className="min-w-0 flex-1">
-      <dt className="mb-8 flex items-center gap-6">
-        <DirectionIcon series={series} />
-        <span className="text-overline">{label}</span>
-      </dt>
-
-      {/* The visible digits count up between polls; screen readers get the
-          settled value instead of a mid-animation one. */}
-      <dd className="metric num">
-        <span className="metric-value text-primary" aria-hidden>{value}</span>
-        <span className="metric-unit" aria-hidden>{unit}</span>
-        <span className="sr-only">{`${actual.value} ${actual.unit}`}</span>
-      </dd>
-    </div>
+    <Readout
+      className="min-w-0 flex-1"
+      label={label}
+      icon={<DirectionIcon series={series} />}
+      value={value}
+      unit={unit}
+      spokenValue={`${actual.value} ${actual.unit}`}
+    />
   )
 })

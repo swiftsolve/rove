@@ -25,6 +25,7 @@ export { ErrorBanner, POLLING_DESCRIPTION } from './components/error-banner/Erro
 export { MetricValue, type MetricStatus } from './components/metric-value/MetricValue'
 export { LoadingState } from './components/loading-state/LoadingState'
 export { PageHeader } from './components/page-header/PageHeader'
+export { Readout, ReadoutValue } from './components/readout/Readout'
 
 export * from './icons/Icons'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
