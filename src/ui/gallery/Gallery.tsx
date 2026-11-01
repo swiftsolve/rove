@@ -17,8 +17,8 @@ import { ErrorBanner } from '../components/error-banner/ErrorBanner'
 import { MetricValue } from '../components/metric-value/MetricValue'
 import { PageHeader } from '../components/page-header/PageHeader'
 import { Link } from '../primitives/link/Link'
+import { ViewLink } from '../primitives/link/ViewLink'
 import {
-  ChevronRightIcon,
   GlobeIcon,
   HelpIcon,
   MoonIcon,
@@ -34,14 +34,10 @@ import {
 const BUTTON_ROWS: [string, ButtonAppearance][] = [
   ['solid', { variant: 'solid' }],
   ['solid neg.', { variant: 'solid', tone: 'negative' }],
-  ['solid sm', { variant: 'solid', size: 'sm' }],
   ['soft', { variant: 'soft' }],
   ['soft md', { variant: 'soft', size: 'md' }],
-  ['soft neg.', { variant: 'soft', tone: 'negative' }],
   ['ghost', { variant: 'ghost' }],
-  ['ghost neg.', { variant: 'ghost', tone: 'negative' }],
 ]
-
 /**
  * Every library component in every state, on one page: open the dev server at
  * `/?gallery` (`&theme=light` for Light). It's what the stable screenshots diff
@@ -72,18 +68,16 @@ export function Gallery(): JSX.Element {
       </Section>
 
       <Section title="Link">
-        <Row label="link">
+        <Row label="view link">
           <span className="inline-flex items-center gap-12 text-caption">
-            <Button variant="link" icon={GlobeIcon} iconEnd={ChevronRightIcon}>
-              All hosts
-            </Button>
-            <Button variant="link" icon={GlobeIcon} isDisabled>
+            <ViewLink icon={GlobeIcon}>All hosts</ViewLink>
+            <ViewLink icon={GlobeIcon} isDisabled>
               Disabled
-            </Button>
+            </ViewLink>
           </span>
-          <Button variant="link" size="sm" icon={PlayIcon} iconEnd={ChevronRightIcon}>
-            Small link
-          </Button>
+          <span className="text-xs">
+            <ViewLink icon={PlayIcon}>Small text</ViewLink>
+          </span>
         </Row>
         <Row label="anchor">
           <span className="text-sm text-secondary">

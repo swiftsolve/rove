@@ -3,7 +3,6 @@ import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/t
 import {
   Button,
   Card,
-  ChevronRightIcon,
   CloudIcon,
   DialogRoot,
   DotSeparator,
@@ -21,6 +20,7 @@ import {
   PlusIcon,
   Tooltip,
   TrashIcon,
+  ViewLink,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { serviceTally } from '@/features/services/components/ServiceTally'
@@ -312,9 +312,9 @@ export function ServicesView(): JSX.Element {
                 <DotSeparator />
               </>
             )}
-            <Button variant="link" icon={EventsIcon} iconEnd={ChevronRightIcon} onClick={openTimeline}>
+            <ViewLink icon={EventsIcon} onClick={openTimeline}>
               View timeline
-            </Button>
+            </ViewLink>
           </span>
         }
         // Beside a full button the help chip takes the 10px step, as on Speed.

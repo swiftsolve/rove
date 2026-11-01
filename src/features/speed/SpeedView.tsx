@@ -8,7 +8,6 @@ import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetails
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
 import {
   Button,
-  ChevronRightIcon,
   DotSeparator,
   HelpIcon,
   HistoryIcon,
@@ -18,6 +17,7 @@ import {
   SpeedIcon,
   StopIcon,
   Tooltip,
+  ViewLink,
 } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -29,14 +29,9 @@ const SPEED_HINT =
 function HistoryLink(): JSX.Element {
   const { navigate } = useNavigation()
   return (
-    <Button
-      variant="link"
-      icon={HistoryIcon}
-      iconEnd={ChevronRightIcon}
-      onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}
-    >
+    <ViewLink icon={HistoryIcon} onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}>
       All Results
-    </Button>
+    </ViewLink>
   )
 }
 

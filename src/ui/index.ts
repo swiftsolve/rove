@@ -4,6 +4,7 @@ export { Button, type ButtonAppearance, type ButtonProps } from './primitives/bu
 export { IconButton } from './primitives/button/IconButton'
 export { StretchedButton } from './primitives/button/StretchedButton'
 export { Link } from './primitives/link/Link'
+export { ViewLink } from './primitives/link/ViewLink'
 export { Menu, MenuContent, MenuItem, MenuTrigger } from './primitives/menu/Menu'
 export { ButtonSpinner } from './primitives/spinner/ButtonSpinner'
 export { Badge, LiveBadge } from './primitives/badge/Badge'

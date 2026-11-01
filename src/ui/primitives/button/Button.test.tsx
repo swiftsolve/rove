@@ -74,25 +74,14 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toHaveAccessibleName('Retry')
   })
 
-  it('underlines only a link’s label, never its glyphs', () => {
-    render(
-      <Button variant="link" icon={PlayIcon} iconEnd={PlayIcon}>
-        View timeline
-      </Button>,
-    )
-    const label = screen.getByText('View timeline')
-    expect(label.tagName).toBe('SPAN')
-    expect(label.className).toContain('group-hover/link:underline')
-  })
-
-  it('only takes the tones and sizes a variant has', () => {
+  it('takes a tone only when solid', () => {
     // Compile-time checks: each line below must fail to typecheck.
     // @ts-expect-error A solid button has no neutral tone.
     void (<Button variant="solid" tone="neutral" />)
-    // @ts-expect-error A link has no `md` size.
-    void (<Button variant="link" size="md" />)
-    // @ts-expect-error A soft button has no `inherit` size.
-    void (<Button size="inherit" />)
+    // @ts-expect-error Only a solid button takes a tone.
+    void (<Button variant="ghost" tone="negative" />)
+    // @ts-expect-error There is no `lg` size.
+    void (<Button size="lg" />)
   })
 
   it('passes extra props and a ref to the <button>', () => {

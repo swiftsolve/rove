@@ -4,7 +4,9 @@
 
 **Done:** phases 0–6, 8 and 11, most of 7, and part of 9.
 - `src/ui` is the library, behind lint boundaries.
-- Button has variant × tone × size on one pressable base.
+- Button has variant × tone × size on one pressable base. It was later cut
+  to solid, soft and ghost, with a tone on solid only; the link variant became
+  ViewLink, which always ends in a caret.
 - These run on Base UI: Tooltip, Dialog, Menu, Toggle, SegmentedControl,
   Disclosure and TextField.
 - New components: Badge, StatusDot, IconTile, LoadingState, ListRow,

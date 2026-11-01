@@ -9,11 +9,9 @@ import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import {
-  Button,
   Card,
   CardBody,
   CardHeader,
-  ChevronRightIcon,
   HistoryIcon,
   IconButton,
   IconTile,
@@ -22,6 +20,7 @@ import {
   PlayIcon,
   RefreshIcon,
   Tooltip,
+  ViewLink,
   ZapIcon,
   type IconComponent,
 } from '@/ui'
@@ -46,7 +45,7 @@ const CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
 // clickable; only the link inside it is.
 const footerVariants = cva(
   [
-    'flex items-center justify-end',
+    'flex items-center justify-end text-xs',
     // Full-bleed to both card edges: the body's content box plus the padding on
     // each side, then negative margins pull it out over that padding.
     'w-[calc(100%+2*var(--card-body-padding))]',
@@ -109,11 +108,12 @@ function SpeedLink({
   const { navigate } = useNavigation()
 
   return (
-    <Button variant="link" size="sm" icon={icon} iconEnd={ChevronRightIcon} onClick={() => navigate({ tab: 'speed' })}>
+    // The pill's padding hangs over the footer's own, so the footer keeps its height.
+    <ViewLink className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
       {children}
       {/* The visible text leads the name; this says where the link goes. */}
       <span className="sr-only">, open Speed</span>
-    </Button>
+    </ViewLink>
   )
 }
 

@@ -3,8 +3,6 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { busiestTotal } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
-  Button,
-  ChevronRightIcon,
   DotSeparator,
   ErrorBanner,
   GlobeIcon,
@@ -13,6 +11,7 @@ import {
   LayersIcon,
   PageHeader,
   POLLING_DESCRIPTION,
+  ViewLink,
 } from '@/ui'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { AppIcon } from '@/features/apps/components/AppIcon'
@@ -38,13 +37,13 @@ function AppSubtitleLinks(): JSX.Element {
   const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
   return (
     <span className="inline-flex items-center gap-6">
-      <Button variant="link" icon={GlobeIcon} iconEnd={ChevronRightIcon} onClick={onViewHosts}>
+      <ViewLink icon={GlobeIcon} onClick={onViewHosts}>
         All hosts
-      </Button>
+      </ViewLink>
       <DotSeparator />
-      <Button variant="link" icon={LayersIcon} iconEnd={ChevronRightIcon} onClick={onViewTraffic}>
+      <ViewLink icon={LayersIcon} onClick={onViewTraffic}>
         All traffic types
-      </Button>
+      </ViewLink>
     </span>
   )
 }
