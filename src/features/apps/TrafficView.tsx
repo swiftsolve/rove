@@ -2,6 +2,7 @@ import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { formatBytes } from '@/lib/format'
+import { busiestTotal, percentOf, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   BellIcon,
   ClockIcon,
@@ -87,17 +88,16 @@ const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
  *  rows aren't links). */
 function TrafficRow({
   type,
-  busiestTotal,
+  busiest,
 }: {
   type: TrafficType
-  busiestTotal: number
+  busiest: number
 }): JSX.Element {
-  const total = type.rxBytes + type.txBytes
+  const total = totalBytes(type)
   // Split the bar into down/up segments, each scaled against the busiest type so
-  // the rows are comparable at a glance. Guard the divide for the all-zero case.
-  const scale = busiestTotal > 0 ? 100 / busiestTotal : 0
-  const downPct = type.rxBytes * scale
-  const upPct = type.txBytes * scale
+  // the rows are comparable at a glance.
+  const downPct = percentOf(type.rxBytes, busiest)
+  const upPct = percentOf(type.txBytes, busiest)
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return (
     <li className="flex flex-col gap-8 px-(--card-body-padding) py-12">
@@ -120,7 +120,7 @@ function TrafficRow({
       <div
         className="ml-[3px] flex h-[3px] overflow-hidden rounded-xs bg-inset"
         role="img"
-        aria-label={`${formatBytes(type.rxBytes)} down, ${formatBytes(type.txBytes)} up`}
+        aria-label={transferLabel(type)}
       >
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
@@ -170,11 +170,11 @@ function TrafficBody({
     return <EmptyState title="No traffic yet" description={TRAFFIC_EMPTY_HINT} />
   }
 
-  const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
+  const busiest = busiestTotal(types)
   return (
     <UsageList label="Traffic types by usage">
       {types.map((type) => (
-        <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
+        <TrafficRow key={type.id} type={type} busiest={busiest} />
       ))}
     </UsageList>
   )

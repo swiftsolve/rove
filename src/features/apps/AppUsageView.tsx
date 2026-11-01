@@ -3,6 +3,7 @@ import { formatBytes } from '@/lib/format'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
+import { busiestTotal, percentOf, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
   Button,
@@ -73,19 +74,18 @@ const APP_USAGE_UNSUPPORTED_HINT =
  *  the right signals it's navigable. */
 function AppRow({
   app,
-  busiestTotal,
+  busiest,
   onOpen,
 }: {
   app: AppUsage
-  busiestTotal: number
+  busiest: number
   onOpen: () => void
 }): JSX.Element {
-  const total = app.rxBytes + app.txBytes
+  const total = totalBytes(app)
   // Split the bar into down/up segments, each scaled against the busiest app so
-  // the rows are comparable at a glance. Guard the divide for the all-zero case.
-  const scale = busiestTotal > 0 ? 100 / busiestTotal : 0
-  const downPct = app.rxBytes * scale
-  const upPct = app.txBytes * scale
+  // the rows are comparable at a glance.
+  const downPct = percentOf(app.rxBytes, busiest)
+  const upPct = percentOf(app.txBytes, busiest)
   return (
     <li className={ROW}>
       <button
@@ -127,7 +127,7 @@ function AppRow({
       <div
         className="pointer-events-none flex h-[3px] overflow-hidden rounded-xs bg-inset"
         role="img"
-        aria-label={`${formatBytes(app.rxBytes)} down, ${formatBytes(app.txBytes)} up`}
+        aria-label={transferLabel(app)}
       >
         <span className={segVariants({ series: 'down' })} style={{ width: `${downPct}%` }} />
         <span className={segVariants({ series: 'up' })} style={{ width: `${upPct}%` }} />
@@ -199,14 +199,14 @@ function AppUsageBody({
     return <EmptyState title="No app usage yet" description={APP_USAGE_EMPTY_HINT} />
   }
 
-  const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)
+  const busiest = busiestTotal(apps)
   return (
     <UsageList label="Apps by usage">
       {apps.map((app) => (
         <AppRow
           key={app.name}
           app={app}
-          busiestTotal={busiestTotal}
+          busiest={busiest}
           onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
         />
       ))}

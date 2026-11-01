@@ -6,6 +6,8 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
 import { isPrivateIp } from '@/features/apps/utils/ip'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
+import { appGroupLabel, hostGlyphLabel } from '@/features/apps/utils/host-labels'
+import { totalBytes } from '@/features/apps/utils/transfer'
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import {
@@ -98,16 +100,6 @@ const HOST_USAGE_EMPTY_HINT = 'Hosts appear here as your apps connect.'
 
 const HOST_USAGE_UNSUPPORTED_HINT =
   'Run Rove as administrator to attribute hosts to apps on Windows.'
-
-const LOCAL_PEER_LABEL = 'On your network'
-
-/** Accessible name and tooltip for a host's glyph: the country name when
- *  geolocated, a "local network" hint for a LAN peer, else nothing. */
-function hostGlyphLabel(flag: string | null, country: string | null, isLocal: boolean): string | null {
-  if (flag && country) return country
-  if (isLocal) return LOCAL_PEER_LABEL
-  return null
-}
 
 /** The glyph left of a host's name: the country flag when geolocated, else a
  *  LAN or globe (public but unresolved) fallback. */
@@ -208,7 +200,7 @@ const AppGroup = memo(function AppGroup({
   isExpanded: boolean
   onToggle: (name: string) => void
 }): JSX.Element {
-  const total = app.rxBytes + app.txBytes
+  const total = totalBytes(app)
   const hostCount = app.hosts.length
   return (
     <Disclosure
@@ -226,7 +218,7 @@ const AppGroup = memo(function AppGroup({
       <h2 className="[font:inherit]">
         <DisclosureTrigger
           className={GROUP_HEADER}
-          aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
+          aria-label={appGroupLabel(app.name, hostCount, total)}
         >
           <span className="inline-flex min-w-0 items-center gap-8">
             <ChevronDownIcon
