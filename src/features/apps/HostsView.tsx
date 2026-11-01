@@ -161,13 +161,11 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
       }
       side="top"
       align="start"
-      // The wrapper must itself shrink and clip so the name still truncates
-      // inside the row; the portalled bubble is unaffected by the clip.
-      className="min-w-0 overflow-hidden"
       maxWidth={360}
       isDisabled={!host.host}
     >
-      <span className="truncate text-xs text-secondary">{host.host ?? host.ip}</span>
+      {/* Shrinks with the row, so the name truncates; the portalled bubble isn't clipped. */}
+      <span className="min-w-0 truncate text-xs text-secondary">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }
