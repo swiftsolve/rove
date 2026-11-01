@@ -33,6 +33,7 @@ import {
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cva } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { ByteTotal } from '@/features/apps/components/ByteTotal'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-type scale) change, so the bars glide in step
@@ -108,11 +109,7 @@ function TrafficRow({
             {type.label}
           </span>
         </span>
-        <MetricValue
-          value={total}
-          className="num shrink-0 text-sm text-secondary"
-          format={formatBytes}
-        />
+        <ByteTotal bytes={total} />
       </div>
       {/* One track, two segments side by side, each scaled against the busiest
           type so rows read comparably; an empty segment collapses to zero width.

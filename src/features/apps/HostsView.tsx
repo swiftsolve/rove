@@ -32,6 +32,7 @@ import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { ByteTotal } from '@/features/apps/components/ByteTotal'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
  *  caret when closed. */
@@ -233,11 +234,7 @@ const AppGroup = memo(function AppGroup({
             {/* Small muted count of hosts in the group, after the app name. */}
             <span className={HOST_COUNT}>{hostCount}</span>
           </span>
-          <MetricValue
-            value={total}
-            className="num shrink-0 text-sm text-secondary"
-            format={formatBytes}
-          />
+          <ByteTotal bytes={total} />
         </DisclosureTrigger>
       </h2>
       <DisclosurePanel>

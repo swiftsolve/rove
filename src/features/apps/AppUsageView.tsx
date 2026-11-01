@@ -25,6 +25,7 @@ import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { ByteTotal } from '@/features/apps/components/ByteTotal'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-app scale) change, so the bars glide in step
@@ -106,11 +107,7 @@ function AppRow({
           </span>
         </span>
         <span className="inline-flex shrink-0 items-center gap-8">
-          <MetricValue
-            value={total}
-            className="num shrink-0 text-sm text-secondary"
-            format={formatBytes}
-          />
+          <ByteTotal bytes={total} />
           <ChevronRightIcon
             size={16}
             className={cx(
