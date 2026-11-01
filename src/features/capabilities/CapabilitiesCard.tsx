@@ -16,6 +16,8 @@ import {
   ChevronRightIcon,
   HistoryIcon,
   IconButton,
+  IconTile,
+  IconTileButton,
   InlineMeta,
   PlayIcon,
   RefreshIcon,
@@ -38,33 +40,6 @@ const LIST = cx(
 // Each column: the icon tile with its signal meter centred beneath it. The
 // meter's compact size is CapabilityMeter's `isCompact`.
 const CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
-
-/** The tinted 32px chip a CapabilityIcon sits in, the same chip as
- *  CapabilityList's tile. The level sets its colour. */
-const tileVariants = cva(
-  [
-    'inline-flex size-[32px] shrink-0 items-center justify-center rounded-sm',
-    'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]',
-    'transition-[background,transform] duration-(--duration-fast) ease-in-out',
-  ],
-  {
-    variants: {
-      // Muted: a running test (stale results) or the placeholder strip greys every
-      // tile. The meters mute through CapabilityMeter's `isMuted`.
-      tone: { ...CAPABILITY_LEVEL_FILL_COLORS, muted: 'text-tertiary' },
-      // Hover tints and lifts a live tile (focus is the ring alone). A running
-      // test drops the affordances until it completes; the placeholder has none.
-      state: {
-        live: cx(
-          'hover:bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-lg),transparent)]',
-          'hover:[transform:translateY(-1px)]',
-        ),
-        testing: 'cursor-default',
-        placeholder: '',
-      },
-    },
-  },
-)
 
 // Third row: a dark inset strip flush to the card's bottom edge, full-bleed like
 // ConnectionCard's details and the speed test footer. The strip itself isn't
@@ -150,9 +125,9 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
             <Tooltip content={capability.label} side="top" align="start">
-              <span className={tileVariants({ tone: 'muted', state: 'placeholder' })}>
+              <IconTile className="text-tertiary">
                 <CapabilityIcon id={capability.id} size={16} />
-              </span>
+              </IconTile>
             </Tooltip>
             <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
           </li>
@@ -188,18 +163,15 @@ function ResultCell({
         // The button's label already says the same.
         shouldDescribe={false}
       >
-        <button
-          type="button"
-          className={tileVariants({
-            tone: isTesting ? 'muted' : capability.level,
-            state: isTesting ? 'testing' : 'live',
-          })}
+        {/* Muted and inert while a test runs: the rating is about to change. */}
+        <IconTileButton
+          className={isTesting ? 'text-tertiary' : CAPABILITY_LEVEL_FILL_COLORS[capability.level]}
+          label={`${capability.label}: ${levelLabel}`}
           onClick={() => onOpenDetails(capability.id)}
-          disabled={isTesting}
-          aria-label={`${capability.label}: ${levelLabel}`}
+          isDisabled={isTesting}
         >
           <CapabilityIcon id={capability.id} size={16} />
-        </button>
+        </IconTileButton>
       </Tooltip>
       <CapabilityMeter
         level={capability.level}

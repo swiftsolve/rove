@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { forwardRef, type MouseEventHandler, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '../../foundations/cn'
+import { pressableProps } from '../button/pressable'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
   variants: {
@@ -33,3 +34,34 @@ interface IconTileProps {
 export function IconTile({ size, tint, className, children }: IconTileProps): JSX.Element {
   return <span className={cn(tileVariants({ size, tint }), className)}>{children}</span>
 }
+
+type IconTileButtonProps = IconTileProps & {
+  /** Names it: the glyph alone says nothing to a screen reader. */
+  label: string
+  onClick: MouseEventHandler<HTMLButtonElement>
+  /** Inert while what it opens is being replaced: no hover, no action, same look. */
+  isDisabled?: boolean
+}
+
+/** An IconTile that opens something: hover deepens the tint and lifts it a pixel. */
+export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
+  { size, tint, className, label, onClick, isDisabled, children },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        tileVariants({ size, tint }),
+        'transition-[background,transform] duration-(--duration-fast) ease-in-out data-disabled:cursor-default',
+        'usable:hover:bg-current/(--opacity-tint-lg) usable:hover:transform-[translateY(-1px)]',
+        className,
+      )}
+      aria-label={label}
+      {...pressableProps({ isDisabled, onClick })}
+    >
+      {children}
+    </button>
+  )
+})
