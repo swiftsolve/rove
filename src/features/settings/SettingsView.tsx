@@ -249,10 +249,11 @@ export function SettingsView(): JSX.Element {
             )}
             onClick={() => navigate({ tab: 'about' })}
           >
-            <div className={ROW_TEXT}>
+            {/* A span, as a button holds only phrasing content; ROW_TEXT makes it flex. */}
+            <span className={ROW_TEXT}>
               <span className={ROW_TITLE}>About Rove</span>
               <span className={ROW_DESC}>Version, platform, and source.</span>
-            </div>
+            </span>
             <ChevronRightIcon
               size={16}
               className={cx(
