@@ -61,15 +61,21 @@ export const ButtonDisabled: Story = {
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
-      {SIZES.map((size) => (
-        <div key={size} className="flex items-center gap-12">
-          {TINTS.map((tint) => (
-            <IconTile key={tint} size={size} tint={tint} className={tint === 'inset' ? undefined : 'text-series-down'}>
+      {/* A grid, so each tint's column lines up across sizes. */}
+      <div className="grid grid-cols-[repeat(4,max-content)] items-center gap-12">
+        {SIZES.map((size) =>
+          TINTS.map((tint) => (
+            <IconTile
+              key={`${size}-${tint}`}
+              size={size}
+              tint={tint}
+              className={tint === 'inset' ? undefined : 'text-series-down'}
+            >
               <DeviceIcon size={16} />
             </IconTile>
-          ))}
-        </div>
-      ))}
+          )),
+        )}
+      </div>
       <div className="flex items-center gap-12">
         <IconTileButton className="text-status-positive" label="Video calls: Excellent" onClick={fn()}>
           <VideoCallIcon size={16} />

@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BarMeter } from './BarMeter'
 
@@ -34,15 +35,16 @@ export const Dimmed: Story = { args: { isDimmed: true } }
 /** Every size at every value, then dimmed. */
 export const AllStates: Story = {
   render: () => (
-    <div className="flex flex-col gap-12">
+    // A grid, so each value's column lines up across sizes.
+    <div className="grid grid-cols-[repeat(7,max-content)] items-end gap-x-16 gap-y-12">
       {SIZES.map((size) => (
-        <div key={size} className="flex items-end gap-16">
+        <Fragment key={size}>
           <span className="w-[24px] text-xs text-tertiary">{size}</span>
           {COLORS.map((color, value) => (
             <BarMeter key={color} value={value} size={size} className={color} />
           ))}
           <BarMeter value={3} size={size} isDimmed />
-        </div>
+        </Fragment>
       ))}
     </div>
   ),

@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 import { PlayIcon, StopIcon } from '../icons/Icons'
@@ -35,14 +36,15 @@ export const Disabled: Story = { args: { variant: 'solid', icon: PlayIcon, isDis
 /** Every variant in every state. */
 export const AllStates: Story = {
   render: () => (
-    <div className="flex flex-col gap-12">
+    // A grid, so each state's column lines up across sizes.
+    <div className="grid grid-cols-[repeat(4,max-content)] items-center gap-12">
       {([
         { variant: 'solid' },
         { variant: 'solid', tone: 'negative' },
         { variant: 'soft' },
         { variant: 'soft', size: 'md' },
       ] as const).map((appearance) => (
-        <div key={JSON.stringify(appearance)} className="flex flex-wrap items-center gap-12">
+        <Fragment key={JSON.stringify(appearance)}>
           <Button {...appearance}>Label</Button>
           <Button {...appearance} icon={PlayIcon}>
             With icon
@@ -53,7 +55,7 @@ export const AllStates: Story = {
           <Button {...appearance} icon={PlayIcon} isDisabled>
             Disabled
           </Button>
-        </div>
+        </Fragment>
       ))}
     </div>
   ),
