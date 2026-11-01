@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { ServiceDefinition } from '@/types'
 import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
@@ -117,6 +117,9 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
 export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
   const [address, setAddress] = useState(editing?.host ?? '')
   const [name, setName] = useState(editing?.name ?? '')
+  // The name as last typed. A test started by Add confirms from the render
+  // that started it, so it reads the name here to keep what was typed meanwhile.
+  const nameRef = useRef(name)
   // In edit mode the name is the user's own from the start, so never auto-derive
   // over it as they touch the address.
   const [isNameTouched, setIsNameTouched] = useState(editing != null)
@@ -150,7 +153,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     setIsAdding(true)
     // The editable name wins over the auto-detected one; fall back to the
     // derived name if the field somehow ended up blank.
-    const finalName = name.trim() || target.name
+    const finalName = nameRef.current.trim() || target.name
     void onAdd(finalName, target.host, target.latencyMs)
       .then(onClose)
       .catch(() => {
@@ -192,6 +195,11 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     else if (address.trim()) runTest(true)
   }
 
+  const updateName = (value: string): void => {
+    nameRef.current = value
+    setName(value)
+  }
+
   const onAddressChange = (value: string): void => {
     setAddress(value)
     // Any edit invalidates a prior test — the confirm must reflect a fresh probe.
@@ -201,12 +209,12 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     // Keep the name in sync with the address until the user takes it over.
     if (!isNameTouched) {
       const parsed = parseServiceInput(value)
-      setName(parsed ? parsed.name : '')
+      updateName(parsed ? parsed.name : '')
     }
   }
 
   const onNameChange = (value: string): void => {
-    setName(value)
+    updateName(value)
     // Blanking the field hands the name back to auto-detection: it stays empty
     // (the placeholder says so) and the confirm falls back to the derived name.
     setIsNameTouched(value.trim() !== '')
