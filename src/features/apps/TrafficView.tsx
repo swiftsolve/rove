@@ -30,6 +30,7 @@ import {
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { RowName } from '@/features/apps/components/RowName'
 import { SplitBar } from '@/features/apps/components/SplitBar'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
@@ -83,12 +84,7 @@ function TrafficRow({
   return (
     <li className="flex flex-col gap-8 px-(--card-body-padding) py-12">
       <div className="flex items-center justify-between gap-12">
-        <span className="inline-flex min-w-0 items-center gap-8">
-          <Icon size={15} className="shrink-0 text-tertiary" />
-          <span className="truncate text-sm text-primary" title={type.label}>
-            {type.label}
-          </span>
-        </span>
+        <RowName icon={<Icon size={15} className="shrink-0 text-tertiary" />} name={type.label} />
         <ByteTotal bytes={total} />
       </div>
       {/* Scaled against the busiest type. Sits just inside the glyph's left

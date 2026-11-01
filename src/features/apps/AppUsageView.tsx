@@ -1,7 +1,6 @@
 import type { AppUsage, AppUsageSummary } from '@/types'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { appDomain } from '@/features/apps/utils/app-domain'
 import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   AppsIcon,
@@ -18,11 +17,12 @@ import {
   PageHeader,
   POLLING_DESCRIPTION,
 } from '@/ui'
-import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { AppIcon } from '@/features/apps/components/AppIcon'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { RowName } from '@/features/apps/components/RowName'
 import { SplitBar } from '@/features/apps/components/SplitBar'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
@@ -79,14 +79,7 @@ function AppRow({
       {/* The visual layers are click-through, so the overlay button owns all
           pointer interaction (cursor and click), the caret included. */}
       <div className="pointer-events-none flex items-center justify-between gap-12">
-        <span className="inline-flex min-w-0 items-center gap-8">
-          <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
-          {/* Long process paths (e.g. macOS bundle identifiers) truncate rather
-              than wrap, keeping the main line one row tall. */}
-          <span className="truncate text-sm text-primary" title={app.name}>
-            {app.name}
-          </span>
-        </span>
+        <RowName icon={<AppIcon app={app} />} name={app.name} />
         <span className="inline-flex shrink-0 items-center gap-8">
           <ByteTotal bytes={total} />
           <ChevronRightIcon

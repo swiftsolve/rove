@@ -2,7 +2,6 @@ import { memo, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { appDomain } from '@/features/apps/utils/app-domain'
 import { isPrivateIp } from '@/features/apps/utils/ip'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
 import { appGroupLabel, hostGlyphLabel } from '@/features/apps/utils/host-labels'
@@ -25,11 +24,12 @@ import {
   POLLING_DESCRIPTION,
   Tooltip as UiTooltip,
 } from '@/ui'
-import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
+import { AppIcon } from '@/features/apps/components/AppIcon'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { RowName } from '@/features/apps/components/RowName'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
@@ -203,19 +203,22 @@ const AppGroup = memo(function AppGroup({
           className={GROUP_HEADER}
           aria-label={appGroupLabel(app.name, hostCount, total)}
         >
-          <span className="inline-flex min-w-0 items-center gap-8">
-            <ChevronDownIcon
-              size={14}
-              className={chevronVariants({ isOpen: isExpanded })}
-              aria-hidden
-            />
-            <ServiceIcon src={app.icon} host={appDomain(app.name)} name={app.name} />
-            <span className="truncate text-sm text-primary" title={app.name}>
-              {app.name}
-            </span>
+          <RowName
+            icon={
+              <>
+                <ChevronDownIcon
+                  size={14}
+                  className={chevronVariants({ isOpen: isExpanded })}
+                  aria-hidden
+                />
+                <AppIcon app={app} />
+              </>
+            }
+            name={app.name}
+          >
             {/* Small muted count of hosts in the group, after the app name. */}
             <span className={HOST_COUNT}>{hostCount}</span>
-          </span>
+          </RowName>
           <ByteTotal bytes={total} />
         </DisclosureTrigger>
       </h2>
