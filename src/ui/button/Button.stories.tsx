@@ -37,7 +37,7 @@ export const Disabled: Story = { args: { variant: 'solid', icon: PlayIcon, isDis
 export const AllStates: Story = {
   render: () => (
     // A grid, so each state's column lines up across sizes.
-    <div className="grid grid-cols-[repeat(4,max-content)] items-center gap-12">
+    <div className="grid grid-cols-[repeat(4,max-content)] items-center justify-items-start gap-12">
       {([
         { variant: 'solid' },
         { variant: 'solid', tone: 'negative' },
