@@ -20,10 +20,10 @@ import {
   HelpIcon,
   IconButton,
   IpIcon,
+  LoadingState,
   MetricValue,
   PageHeader,
   POLLING_DESCRIPTION,
-  Spinner,
   Tooltip as UiTooltip,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
@@ -288,10 +288,7 @@ function HostsBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="page-empty" role="status">
-        <Spinner />
-        <p className="text-muted">Measuring per-app hosts…</p>
-      </div>
+      <LoadingState label="Measuring per-app hosts…" />
     )
   }
   if (apps.length === 0) {

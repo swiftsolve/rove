@@ -11,9 +11,9 @@ import {
   ErrorBanner,
   HelpIcon,
   IconButton,
-  POLLING_DESCRIPTION,
+  LoadingState,
   PageHeader,
-  Spinner,
+  POLLING_DESCRIPTION,
   TodayIcon,
   UsageIcon,
   WeekIcon,
@@ -274,10 +274,7 @@ export function UsageView(): JSX.Element {
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       {isFirstLoad ? (
-        <div className="page-empty" role="status">
-          <Spinner />
-          <p className="text-muted">Loading usage…</p>
-        </div>
+        <LoadingState label="Loading usage…" />
       ) : (
         <>
           <Card>

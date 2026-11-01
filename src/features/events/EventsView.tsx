@@ -10,10 +10,10 @@ import {
   EventsIcon,
   HelpIcon,
   IconButton,
-  POLLING_DESCRIPTION,
+  LoadingState,
   PageHeader,
+  POLLING_DESCRIPTION,
   RefreshIcon,
-  Spinner,
 } from '@/ui'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
@@ -71,10 +71,7 @@ function EventsFeed({
   if (events.length === 0) {
     if (isLoading) {
       return (
-        <div className="page-empty" aria-busy="true">
-          <Spinner />
-          <p className="text-muted">Loading events…</p>
-        </div>
+        <LoadingState label="Loading events…" />
       )
     }
     return (

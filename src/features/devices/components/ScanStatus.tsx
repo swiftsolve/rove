@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { cva, cx } from 'class-variance-authority'
-import { usePresence } from '@/ui'
+import { cva } from 'class-variance-authority'
+import { StatusDot, usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 /** `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be
@@ -84,7 +84,7 @@ export function ScanStatus({
       role={isLiveRegion ? 'status' : undefined}
       aria-hidden={isActive ? undefined : true}
     >
-      <span className={cx(STATUS_DOT, 'animate-[status-pulse_1.6s_ease-in-out_infinite]')} aria-hidden />
+      <StatusDot pulse="busy" className={STATUS_DOT} />
       {/* The stage words are stacked so they cross-fade in place; a hidden sizer
           (the longest label) holds the box to a stable width so nothing reflows. */}
       <span className="relative inline-block">

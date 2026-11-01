@@ -7,9 +7,9 @@ import {
   ErrorBanner,
   HelpIcon,
   IconButton,
+  LoadingState,
   PageHeader,
   RefreshIcon,
-  Spinner,
 } from '@/ui'
 import { IS_MAC } from '@/lib/platform'
 import { useDevices } from '@/features/devices/hooks/useDevices'
@@ -82,10 +82,7 @@ function DevicesBody({
 }): JSX.Element {
   if (isScanning && devices.length === 0) {
     return (
-      <div className="page-empty">
-        <Spinner />
-        <p className="text-muted">Scanning your network…</p>
-      </div>
+      <LoadingState label="Scanning your network…" />
     )
   }
   if (devices.length === 0) {

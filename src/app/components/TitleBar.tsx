@@ -1,5 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
-import { BrandIcon, CloseIcon, MinimizeIcon } from '@/ui'
+import { BrandIcon, CloseIcon, MinimizeIcon, StatusDot } from '@/ui'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 
 // Nudged down a hair so the label optically aligns with the wordmark's centre
@@ -19,16 +19,6 @@ const linkVariants = cva(
     },
   },
 )
-
-const dotVariants = cva('size-[5px] rounded-full bg-current', {
-  variants: {
-    tone: {
-      positive: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
-      negative: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
-      neutral: null,
-    },
-  },
-})
 
 const windowButtonVariants = cva(
   [
@@ -101,7 +91,7 @@ export function TitleBar(): JSX.Element {
         </div>
         {/* Polite live region: the link state changes on its own. */}
         <span className={linkVariants({ tone })} role="status">
-          <span className={dotVariants({ tone })} aria-hidden />
+          <StatusDot pulse={tone === 'neutral' ? undefined : 'calm'} />
           {label}
         </span>
       </div>

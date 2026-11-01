@@ -16,11 +16,11 @@ import {
   GlobeIcon,
   HelpIcon,
   IconButton,
+  LoadingState,
   MetricValue,
   PageHeader,
   RefreshIcon,
   RouterIcon,
-  Spinner,
   type MetricStatus,
 } from '@/ui'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
@@ -255,10 +255,7 @@ export function DiagnosticsView(): JSX.Element {
         />}
 
       {isFirstCheck ? (
-        <div className="page-empty" aria-busy="true">
-          <Spinner />
-          <p className="text-muted">Checking your connection…</p>
-        </div>
+        <LoadingState label="Checking your connection…" />
       ) : (
         <>
           <RouterCard diagnostics={diagnostics} />

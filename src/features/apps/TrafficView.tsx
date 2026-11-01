@@ -17,16 +17,16 @@ import {
   HelpIcon,
   IconButton,
   LayersIcon,
+  LoadingState,
   MailIcon,
   MessageIcon,
   MetricValue,
   NasIcon,
-  POLLING_DESCRIPTION,
   PageHeader,
   PlayIcon,
+  POLLING_DESCRIPTION,
   PulseIcon,
   ShareIcon,
-  Spinner,
   TerminalIcon,
 } from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
@@ -163,10 +163,7 @@ function TrafficBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="page-empty" role="status">
-        <Spinner />
-        <p className="text-muted">Measuring traffic types…</p>
-      </div>
+      <LoadingState label="Measuring traffic types…" />
     )
   }
   if (types.length === 0) {

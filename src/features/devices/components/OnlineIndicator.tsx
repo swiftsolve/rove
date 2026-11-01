@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import { usePresence } from '@/ui'
+import { StatusDot, usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
@@ -29,7 +29,7 @@ export function OnlineIndicator({
       title="Responding to the last scan"
       aria-hidden={isActive ? undefined : true}
     >
-      <span className={STATUS_DOT} aria-hidden />
+      <StatusDot className={STATUS_DOT} />
       <span className="num text-secondary">{count}</span> online
     </span>
   )

@@ -15,10 +15,10 @@ import {
   HelpIcon,
   IconButton,
   LayersIcon,
+  LoadingState,
   MetricValue,
   PageHeader,
   POLLING_DESCRIPTION,
-  Spinner,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
@@ -192,10 +192,7 @@ function AppUsageBody({
   }
   if (isFirstLoad) {
     return (
-      <div className="page-empty" role="status">
-        <Spinner />
-        <p className="text-muted">Measuring per-app usage…</p>
-      </div>
+      <LoadingState label="Measuring per-app usage…" />
     )
   }
   if (apps.length === 0) {

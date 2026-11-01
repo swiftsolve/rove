@@ -11,6 +11,7 @@ import {
   PrinterIcon,
   RouterIcon,
   SpeakerIcon,
+  StatusDot,
   TabletIcon,
   TvIcon,
   UnknownDeviceIcon,
@@ -185,7 +186,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
             className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
           >
-            <span className="size-[5px] rounded-full bg-current" aria-hidden />
+            <StatusDot />
             {device.isReachable ? 'Online' : 'Offline'}
           </span>
         </div>

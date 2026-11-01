@@ -9,10 +9,11 @@ import {
   IconButton,
   InlineMeta,
   LayersIcon,
-  POLLING_DESCRIPTION,
+  LoadingState,
   PageHeader,
+  POLLING_DESCRIPTION,
   RefreshIcon,
-  Spinner,
+  StatusDot,
   WifiIcon,
 } from '@/ui'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
@@ -86,7 +87,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           {iface.isVirtual && <span className={tagVariants()}>Virtual</span>}
         </div>
         <span className={stateVariants({ state: iface.operState })}>
-          <span className="size-[5px] rounded-full bg-current" aria-hidden />
+          <StatusDot />
           {formatOperState(iface.operState)}
         </span>
       </div>
@@ -141,10 +142,7 @@ function InterfacesBody({
 }): JSX.Element {
   if (isLoading && interfaces.length === 0) {
     return (
-      <div className="page-empty" role="status">
-        <Spinner />
-        <p className="text-muted">Loading network interfaces…</p>
-      </div>
+      <LoadingState label="Loading network interfaces…" />
     )
   }
   if (interfaces.length === 0) {
