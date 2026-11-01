@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { NetworkInfo, SpeedTestProgress } from '@/types'
+import type { NetworkInfo } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import { useNetwork } from '@/app/hooks/useNetwork'
@@ -109,7 +109,11 @@ function SpeedCell({
   )
 }
 
-function TestProgress({ progress, runId }: { progress: SpeedTestProgress; runId: number }): JSX.Element {
+/** The running test's phase and percentage. Reads the progress itself, so a
+ *  tick re-renders this strip rather than the whole card. */
+function TestProgress(): JSX.Element {
+  const progress = useSpeedTest((test) => test.progress)
+  const runId = useSpeedTest((test) => test.runId)
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
@@ -127,6 +131,16 @@ function TestProgress({ progress, runId }: { progress: SpeedTestProgress; runId:
         <WavyProgress progress={progress.progress} runId={runId} />
       </div>
     </div>
+  )
+}
+
+/** Each phase and the result, for screen readers. Reads the test itself, like `TestProgress`. */
+function TestStatus(): JSX.Element {
+  const text = useSpeedTest((test) => testStatusText(test.isTesting, test.progress, test.internetSpeed))
+  return (
+    <p className="sr-only" role="status">
+      {text}
+    </p>
   )
 }
 
@@ -194,18 +208,32 @@ function ResultFooter({
 
 export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
   const { info } = useNetwork()
-  const {
-    internetSpeed,
-    isTesting,
-    progress,
-    runId,
-    error,
-    linkCapacityMbps: testLinkCapacityMbps,
-    runConnection,
-    // Live (running-peak) throughput to show in the cells while a test runs.
-    livePeakDownloadMbps: liveDownloadMbps,
-    livePeakUploadMbps: liveUploadMbps,
-  } = useSpeedTest((test) => test)
+  // Each pick is its own subscription, so the card re-renders only when one of
+  // them changes: not on a progress tick, which only the progress strip shows.
+  const internetSpeed = useSpeedTest((test) => test.internetSpeed)
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const error = useSpeedTest((test) => test.error)
+  const testLinkCapacityMbps = useSpeedTest((test) => test.linkCapacityMbps)
+  const runConnection = useSpeedTest((test) => test.runConnection)
+  // The hero cells: the live (running-peak) throughput while a test runs.
+  const downloadMbps = useSpeedTest((test) =>
+    heroCellMbps(
+      test.isTesting,
+      test.progress.progress,
+      DOWNLOAD_PHASE_START_PCT,
+      test.livePeakDownloadMbps,
+      test.internetSpeed?.downloadMbps,
+    ),
+  )
+  const uploadMbps = useSpeedTest((test) =>
+    heroCellMbps(
+      test.isTesting,
+      test.progress.progress,
+      UPLOAD_PHASE_START_PCT,
+      test.livePeakUploadMbps,
+      test.internetSpeed?.uploadMbps,
+    ),
+  )
   const canTest = useCanRunSpeedTest()
 
   const hasResults = internetSpeed != null
@@ -222,21 +250,6 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
   // share the same structure.
   const isEmpty = !hasResults && !isTesting
   const hasFooterInfo = connection != null || linkCapacityMbps != null
-
-  const downloadMbps = heroCellMbps(
-    isTesting,
-    progress.progress,
-    DOWNLOAD_PHASE_START_PCT,
-    liveDownloadMbps,
-    internetSpeed?.downloadMbps,
-  )
-  const uploadMbps = heroCellMbps(
-    isTesting,
-    progress.progress,
-    UPLOAD_PHASE_START_PCT,
-    liveUploadMbps,
-    internetSpeed?.uploadMbps,
-  )
 
   const measuredPing =
     internetSpeed && isMeasuredLatency(internetSpeed.latencyMs)
@@ -271,16 +284,14 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
           </dl>
         )}
 
-        {isTesting && <TestProgress progress={progress} runId={runId} />}
+        {isTesting && <TestProgress />}
         {!isTesting && hasResults && hasFooterInfo && (
           <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
         )}
 
         {/* Always mounted so screen readers hear each phase and the result as they
             land; the visible readouts count up every frame, so they can't be live. */}
-        <p className="sr-only" role="status">
-          {testStatusText(isTesting, progress, internetSpeed)}
-        </p>
+        <TestStatus />
       </CardBody>
     </Card>
   )
