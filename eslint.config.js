@@ -19,7 +19,8 @@ const APP_CODE = {
 
 export default tseslint.config(
   // The Rust backend and build outputs are not ours to lint.
-  { ignores: ['dist', 'src-tauri', 'crates', 'target'] },
+  // .claude holds agent worktrees: other checkouts, not this one's code.
+  { ignores: ['dist', 'src-tauri', 'crates', 'target', '.claude'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
