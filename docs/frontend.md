@@ -149,7 +149,6 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Icon button | `IconButton` | Icon-only button with a tooltip (`label`, or `tooltip` for a hint); `variant` is `secondary` or `plain`. `iconSize={14}` for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
-| Card | `Section`, `SectionCard` | Header, a content slot and an optional footer (`footerClassName` adjusts it). Padding None (`bodyClassName`) lets the content run edge to edge. `SectionCard` is the surface alone, for a card that lays out its own content (`as="li"` in a list). |
 | Section header | `Section` | 44px card header with an optional badge (`SectionBadge`) or button. |
 | Data row | `DataRow`, `DataList` | Label and value; the value right-aligns. An optional accessory (signal bars, an icon) and detail sit before it, 6px apart. `DataList` makes the rows a `<dl>` and sets their `density` (`default`, `snug`, `compact`); `align="center"` suits a value with no text baseline. |
 | Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
@@ -161,9 +160,9 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Signal bars | `ConnectionCard` | Wi‑Fi strength. Unlit bars use `--opacity-tint-lg`. |
 | Capability cell | `CapabilityMeter` | Icon tile over a 4-step meter. Unsupported also covers not yet tested and testing. |
 | Connection card | `ConnectionCard` | Current connection: Wi‑Fi, Ethernet or Disconnected. Expands to show details. |
-| Traffic card | `LiveThroughputPanel` | A Card (Padding None) holding the live readouts and the last 60 seconds charted. |
-| Capabilities card | `CapabilityStrip` | A Card (Padding None) holding what the connection can handle: a placeholder before a test, Testing while one runs, results after. |
-| Stat card | `StatCard` | A tappable summary: label, icon and content (`children`), with `isLoading`. |
+| Traffic card | `LiveThroughputPanel` | Live download and upload with the last 60 seconds charted. |
+| Capabilities card | `CapabilityStrip` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
+| Stat card | `StatCard` | Home summary card: Usage or Devices. Devices is Empty when there's nothing to list. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
 | Dialog | `Dialog` | Modal: title, optional description, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
