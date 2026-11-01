@@ -213,6 +213,13 @@ both, and a raw `<button>` outside the library is a lint error.
   check on every story; `npm run build:storybook` writes a static copy to
   `storybook-static/`. Stories import the library by relative path, like the
   library itself. A new component gets its stories in the same change.
+- `components.json` is the library's API in one file, for agents and people:
+  each component's group, doc comment, props (type, variant values, default),
+  Figma component and story ids. `npm run catalogue` writes it from the code
+  and `figma.json`, which names each component's Figma component and node
+  (`null` when Figma has none). `npm run lint` fails when it's stale, or when a
+  component has no doc comment, no `figma.json` entry or no row in the
+  [Components](#components) table.
 
 Every component follows the same rules:
 
@@ -246,8 +253,8 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Toggle | `Toggle` | On/off switch for a setting. |
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
-| Collapsible | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible; the panel animates its height. |
-| Section header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
+| — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible; the panel animates its height. |
+| Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
 | List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
 | — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
@@ -262,6 +269,6 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it, then Dismiss and Retry. |
-| Empty state | `EmptyState` | Blank page: faded placeholder rows (a lock badge when `isLocked`), title, `description` and `actions`. |
+| Empty state | `EmptyState`, `EmptyStateDescription` | Blank page: faded placeholder rows (a lock badge when `isLocked`), title, `description` and `actions`. `EmptyStateDescription` is a further line an action adds (`role="status"` to announce it). |
 | Loading state | `LoadingState` | A page's first load: the spinner over a line, announced. |
 | Spinner | `Spinner`, `ButtonSpinner` | Loading indicators. Buttons show the ring for `isLoading`; use it directly only outside a button. |

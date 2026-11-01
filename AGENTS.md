@@ -16,6 +16,19 @@ everything:
 The Rove Design System in Figma is the source of truth for tokens and
 components; they arrive through `@swiftsolve/rove-design`.
 
+`src/ui/components.json` lists every library component with its group, props,
+variant values, Figma component and stories, generated from the code. Read it
+before `src/ui`'s files when you need the library's API.
+
+## Keep Figma and code in sync
+
+A design change (a token, text style, component variant or prop, copy,
+spacing) lands on both sides in the same task: the Figma file, the
+`rove-design` export and build, this code, and `docs/frontend.md`. A token
+change also updates every Figma page that shows it: labels, swatches and
+hard-coded fills. Say in the summary that both sides changed and how you
+checked.
+
 ## Before committing
 
 ```bash

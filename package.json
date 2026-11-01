@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "lint": "eslint . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs && node scripts/check-raw-values.mjs && node scripts/check-file-names.mjs",
+    "lint": "eslint . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs && node scripts/check-raw-values.mjs && node scripts/check-file-names.mjs && node scripts/build-ui-catalogue.mjs --check",
+    "catalogue": "node scripts/build-ui-catalogue.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm test",
     "screenshots": "node scripts/screenshots.mjs",
