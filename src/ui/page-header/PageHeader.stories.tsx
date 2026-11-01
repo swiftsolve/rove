@@ -55,9 +55,15 @@ export const TopLevel: Story = { args: { actions } }
 /** While something runs, the status takes the description's place. */
 export const Status: Story = { args: { title: 'Devices', icon: <SearchIcon size={18} />, status: 'Scanning…' } }
 
-/** A page layered over a tab: a back button in the chip's place. */
+/** A page layered over a tab: a back button in the chip's place, and its hint. */
 export const Subpage: Story = {
-  args: { title: 'Hosts', icon: undefined, onBack: fn(), description: 'Remote hosts by application, busiest first' },
+  args: {
+    title: 'Hosts',
+    icon: undefined,
+    onBack: fn(),
+    description: 'Remote hosts by application, busiest first',
+    actions: <IconButton label="About per-app hosts" icon={HelpIcon} />,
+  },
 }
 
 /** No line under the title. */
@@ -80,8 +86,12 @@ export const AllStates: Story = {
     <div className="flex flex-col gap-20">
       <PageHeader title="Services" icon={<GlobeIcon size={18} />} description="12 services, all up" actions={actions} />
       <PageHeader title="Devices" icon={<SearchIcon size={18} />} status="Scanning…" />
-      <PageHeader title="Hosts" onBack={fn()} description="Remote hosts by application, busiest first" />
-      <PageHeader title="Services" icon={<GlobeIcon size={18} />} description={null} />
+      <PageHeader
+        title="Hosts"
+        onBack={fn()}
+        description="Remote hosts by application, busiest first"
+        actions={<IconButton label="About per-app hosts" icon={HelpIcon} />}
+      />
       <PageHeader title="Services" icon={<GlobeIcon size={18} />} />
     </div>
   ),
