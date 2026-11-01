@@ -19,6 +19,22 @@ const preview: Preview = {
     },
   },
   initialGlobals: { theme: 'dark' },
+  // Storybook gives any type it can't map (`ReactNode`, event handlers) a JSON
+  // control, and setting one passes `{}`, which React can't render. A
+  // ReactNode prop gets a text control, or none when the story passes it JSX;
+  // the rest get none.
+  argTypesEnhancers: [
+    ({ argTypes, initialArgs }) =>
+      Object.fromEntries(
+        Object.entries(argTypes).map(([name, argType]) => {
+          if (argType.type?.name !== 'other' || argType.control !== undefined) return [name, argType]
+          const arg = initialArgs[name]
+          const isText = argType.type.value === 'ReactNode' && (arg == null || typeof arg !== 'object')
+          // In the normalized form: enhancers run after Storybook expands `'text'` and `false`.
+          return [name, { ...argType, control: isText ? { type: 'text' } : { disable: true } }]
+        }),
+      ),
+  ],
   decorators: [
     (Story, { globals }) => {
       // The app switches theme with this class on <html> (theme-transition.ts).
