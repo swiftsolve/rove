@@ -4,7 +4,7 @@ import type { VariantOf } from '../foundations/variants'
 import { StatusDot } from '../status-dot/StatusDot'
 
 const badgeVariants = cva(
-  'shrink-0 rounded-full px-6 py-px text-2xs font-semibold uppercase tracking-[0.04em]',
+  'inline-flex shrink-0 items-center rounded-full px-8 py-4 text-2xs leading-none font-semibold uppercase tracking-[0.04em]',
   {
     variants: {
       tone: {
