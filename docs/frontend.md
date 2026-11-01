@@ -139,9 +139,9 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 
 | Figma | Code | Use |
 | --- | --- | --- |
-| Title bar | `StatusBar` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). |
-| Status link | `StatusBar` | Connection status in the title bar. `tone` (`positive`, `negative`, `neutral`) sets the colour, the label the words. |
-| Window button | `StatusBar` | Minimise or close (`action`). Close hovers to `--status-negative-fill`. |
+| Title bar | `TitleBar` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). |
+| Status link | `TitleBar` | Connection status in the title bar. `tone` (`positive`, `negative`, `neutral`) sets the colour, the label the words. |
+| Window button | `TitleBar` | Minimise or close (`action`). Close hovers to `--status-negative-fill`. |
 | Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
 | Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs; the description fades in when it clears. |

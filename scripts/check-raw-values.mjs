@@ -45,7 +45,7 @@ const ALLOWED = [
   // A mask reads only alpha, so its colour is no design choice.
   { file: 'src/components/EmptyState.tsx', value: '#000' },
   // A breathing pulse wants a symmetric curve, and no easing token is one.
-  { file: 'src/app/components/StatusBar.tsx', value: 'ease-in-out' },
+  { file: 'src/app/components/TitleBar.tsx', value: 'ease-in-out' },
   { file: 'src/features/devices/components/ScanStatus.tsx', value: 'ease-in-out' },
   { file: 'src/features/live-throughput/TrafficCard.tsx', value: 'ease-in-out' },
 ]

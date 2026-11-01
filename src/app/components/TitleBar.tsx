@@ -77,7 +77,7 @@ function WindowControls(): JSX.Element {
 }
 
 /** The full-width title bar: brand, connection status and window controls. */
-export function StatusBar(): JSX.Element {
+export function TitleBar(): JSX.Element {
   const { tone, label } = useConnectionStatus()
   return (
     // The left inset aligns the brand mark with the nav rail below; the right
