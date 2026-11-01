@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  ArrowUpRight,
   BarChart3,
   Bell,
   CalendarRange,
@@ -256,6 +257,7 @@ export const ZapIcon = make(Zap, 22)
 export const ArrowDownIcon = make(ArrowDown, 16)
 export const ArrowUpIcon = make(ArrowUp, 16)
 export const ArrowRightIcon = make(ArrowRight, 16)
+export const ArrowUpRightIcon = make(ArrowUpRight, 16)
 export const ChevronDownIcon = make(ChevronDown, 16)
 export const ChevronRightIcon = make(ChevronRight, 16)
 export const ArrowLeftIcon = make(ArrowLeft, 16)

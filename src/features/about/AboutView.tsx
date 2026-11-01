@@ -45,7 +45,7 @@ export function AboutView(): JSX.Element {
             <DataRow label="Version" value={version ?? '—'} />
             <DataRow label="Platform" value={platformLabel()} />
             <DataRow label="Source">
-              <Link href={REPO_URL} isExternal>
+              <Link href={REPO_URL}>
                 github.com/swiftsolve/rove
               </Link>
             </DataRow>

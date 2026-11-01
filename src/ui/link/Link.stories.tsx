@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { fn } from 'storybook/test'
+import { GlobeIcon, HistoryIcon, PlayIcon } from '../icons/Icons'
 import { Link } from './Link'
 
 const meta = {
   title: 'Actions/Link',
   component: Link,
-  args: { href: 'https://github.com/swiftsolve/rove', children: 'github.com/swiftsolve/rove' },
-  // A link sits in running text.
+  args: { children: 'All hosts', icon: GlobeIcon, onClick: fn() },
+  argTypes: { icon: { control: false } },
+  // At the size of the text it sits in.
   render: (args) => (
-    <span className="text-sm text-secondary">
-      Source on <Link {...args} />
+    <span className="text-caption">
+      <Link {...args} />
     </span>
   ),
 } satisfies Meta<typeof Link>
@@ -16,8 +19,48 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Opens in a new window, and says so to a screen reader. */
-export const External: Story = { args: { isExternal: true } }
+/** Opens another view, and ends in a caret. */
+export const WithIcon: Story = {}
 
-/** Opens in the same window. */
-export const SameWindow: Story = { args: { isExternal: false } }
+export const WithoutIcon: Story = { args: { icon: undefined, children: 'View timeline' } }
+
+/** Opens a real address in a new window, ends in an arrow, and says so to a screen reader. */
+export const External: Story = {
+  args: { icon: undefined, href: 'https://github.com/swiftsolve/rove', children: 'github.com/swiftsolve/rove' },
+}
+
+/** Still focusable, so a tooltip can say why. */
+export const Disabled: Story = { args: { isDisabled: true } }
+
+/** It takes the size of the text around it. */
+export const SmallText: Story = {
+  args: { icon: HistoryIcon, children: 'History' },
+  render: (args) => (
+    <span className="text-xs">
+      <Link {...args} />
+    </span>
+  ),
+}
+
+/** Every state, at two text sizes. */
+export const AllStates: Story = {
+  render: () => (
+    <div className="flex flex-col gap-12">
+      <span className="inline-flex items-center gap-12 text-caption">
+        <Link icon={GlobeIcon}>All hosts</Link>
+        <Link>View timeline</Link>
+        <Link href="https://github.com/swiftsolve/rove">External</Link>
+        <Link icon={GlobeIcon} isDisabled>
+          Disabled
+        </Link>
+      </span>
+      <span className="inline-flex items-center gap-12 text-xs">
+        <Link icon={PlayIcon}>Small text</Link>
+        <Link href="https://github.com/swiftsolve/rove">External</Link>
+        <Link icon={PlayIcon} isDisabled>
+          Disabled
+        </Link>
+      </span>
+    </div>
+  ),
+}

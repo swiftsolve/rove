@@ -22,7 +22,7 @@ export const StretchedLink = forwardRef<HTMLButtonElement, StretchedLinkProps>(f
 ) {
   return (
     // A button, as the app has no URLs to link to: views change through
-    // history state (see ViewLink).
+    // history state (see Link).
     <button
       ref={ref}
       type={type}

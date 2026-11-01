@@ -17,7 +17,7 @@ import {
   SpeedIcon,
   StopIcon,
   Tooltip,
-  ViewLink,
+  Link,
 } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
@@ -29,9 +29,9 @@ const SPEED_HINT =
 function HistoryLink(): JSX.Element {
   const { navigate } = useNavigation()
   return (
-    <ViewLink icon={HistoryIcon} onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}>
+    <Link icon={HistoryIcon} onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}>
       All Results
-    </ViewLink>
+    </Link>
   )
 }
 

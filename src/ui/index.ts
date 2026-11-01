@@ -5,7 +5,6 @@
 export { Button, type ButtonAppearance, type ButtonProps } from './button/Button'
 export { IconButton } from './button/IconButton'
 export { Link } from './link/Link'
-export { ViewLink } from './link/ViewLink'
 export { StretchedLink } from './link/StretchedLink'
 export { Menu, MenuContent, MenuItem, MenuTrigger } from './menu/Menu'
 

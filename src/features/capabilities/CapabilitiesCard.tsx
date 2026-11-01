@@ -20,7 +20,7 @@ import {
   PlayIcon,
   RefreshIcon,
   Tooltip,
-  ViewLink,
+  Link,
   ZapIcon,
   type IconComponent,
 } from '@/ui'
@@ -109,11 +109,11 @@ function SpeedLink({
 
   return (
     // The pill's padding hangs over the footer's own, so the footer keeps its height.
-    <ViewLink className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
+    <Link className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
       {children}
       {/* The visible text leads the name; this says where the link goes. */}
       <span className="sr-only">, open Speed</span>
-    </ViewLink>
+    </Link>
   )
 }
 

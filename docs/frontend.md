@@ -122,7 +122,7 @@ for what. Read it before writing or changing UI. For where files live, see
   (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
   variant. The one exception is a `:has()` selector in a `.module.css` (below);
   InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
-- Buttons are `Button`, `IconButton` and `ViewLink`, never a hand-written
+- Buttons are `Button`, `IconButton` and `Link`, never a hand-written
   `<button>`.
   - Button takes three axes:
     - `variant`: `solid` or `soft`
@@ -221,8 +221,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip. |
-| View link | `ViewLink` | A muted link to another view, at its text's size; always ends in a caret. |
-| Link | `Link` | An accent `<a>` in running text; `isExternal` opens a new window and says so. |
+| Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
 | Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, lined up with its `start` or `end` edge. Screen readers get it as the trigger's description. |

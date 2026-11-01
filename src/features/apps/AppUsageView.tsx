@@ -11,7 +11,7 @@ import {
   LayersIcon,
   PageHeader,
   POLLING_DESCRIPTION,
-  ViewLink,
+  Link,
 } from '@/ui'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { AppIcon } from '@/features/apps/components/AppIcon'
@@ -37,13 +37,13 @@ function AppSubtitleLinks(): JSX.Element {
   const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
   return (
     <span className="inline-flex items-center gap-6">
-      <ViewLink icon={GlobeIcon} onClick={onViewHosts}>
+      <Link icon={GlobeIcon} onClick={onViewHosts}>
         All hosts
-      </ViewLink>
+      </Link>
       <DotSeparator />
-      <ViewLink icon={LayersIcon} onClick={onViewTraffic}>
+      <Link icon={LayersIcon} onClick={onViewTraffic}>
         All traffic types
-      </ViewLink>
+      </Link>
     </span>
   )
 }

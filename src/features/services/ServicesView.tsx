@@ -20,7 +20,7 @@ import {
   PlusIcon,
   Tooltip,
   TrashIcon,
-  ViewLink,
+  Link,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { serviceTally } from '@/features/services/components/ServiceTally'
@@ -312,9 +312,9 @@ export function ServicesView(): JSX.Element {
                 <DotSeparator />
               </>
             )}
-            <ViewLink icon={EventsIcon} onClick={openTimeline}>
+            <Link icon={EventsIcon} onClick={openTimeline}>
               View timeline
-            </ViewLink>
+            </Link>
           </span>
         }
         // Beside a full button the help chip takes the 10px step, as on Speed.
