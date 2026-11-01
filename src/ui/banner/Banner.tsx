@@ -9,7 +9,7 @@ export const POLLING_DESCRIPTION = 'Rove keeps trying in the background.'
 const bannerVariants = cva('banner', {
   variants: {
     variant: {
-      /** A failure: a red wash and outline, with red buttons to match. */
+      /** A failure: a red wash and outline. Dismiss is red to match; Retry is neutral, the way out. */
       error: 'bg-status-negative/(--opacity-tint-sm) ring-1 ring-inset ring-status-negative/(--opacity-tint-md)',
     },
   },
@@ -62,7 +62,7 @@ export function Banner({ variant, title, description, onRetry }: BannerProps): J
           </Button>
           {onRetry && (
             <Button
-              tone="negative"
+              tone="neutral"
               icon={RefreshIcon}
               isLoading={isRetrying}
               loadingLabel="Retrying…"
