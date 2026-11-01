@@ -38,10 +38,9 @@ const WARN_LATENCY_MAX_MS = 120
 /** Any packet loss is worth flagging; past this it reads as bad, not just amber. */
 const WARN_LOSS_MAX_PCT = 2
 
-// The packet-loss warning band reads as a continuation of the readout rather
-// than a divided-off footnote: no top line, and a roomier vertical padding so
-// the band has enough breathing room.
-const ROUTER_FOOTER = 'border-t-0 pt-12 pb-16'
+// The packet-loss warning band gets a roomier vertical padding so it has
+// enough breathing room.
+const ROUTER_FOOTER = 'pt-12 pb-16'
 
 // The Router readout comes in three groups (quality, connection, device) split
 // by a hairline that runs the card's full width, like the connection card's

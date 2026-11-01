@@ -94,7 +94,7 @@ export function CardBody({ className, children }: CardPartProps): JSX.Element {
 /** A sunken band below the body, flush to the card's edges: a footnote or status. */
 export function CardFooter({ className, children }: CardPartProps): JSX.Element {
   return (
-    <div className={cn('border-t border-t-line bg-inset px-(--card-body-padding) py-8', className)}>
+    <div className={cn('bg-inset px-(--card-body-padding) py-8', className)}>
       {children}
     </div>
   )

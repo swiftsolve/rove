@@ -46,12 +46,11 @@ const statusVariants = cva('flex items-center text-xs', {
 // capability list, so the column has no gap and the body no top padding.
 const LIST = 'flex flex-col pt-0'
 
-// The update-status footer reads as a continuation of the row list rather than
-// a separate sunken band: no top divider, and symmetric padding so the status
-// text sits centred in the inset band. With the band present, the body drops its
+// The update-status footer has symmetric padding so the status text sits
+// centred in the inset band. With the band present, the body drops its
 // bottom padding so only the last row's own padding sits above it; when idle
 // (no band) the body keeps it so the card doesn't look cramped.
-const UPDATES_FOOTER = 'mt-12 border-t-0 py-12'
+const UPDATES_FOOTER = 'mt-12 py-12'
 const UPDATES_LIST_ABOVE_FOOTER = cx(LIST, 'pb-0')
 
 
