@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { HelpIcon, MoreVerticalIcon, PlayIcon, RefreshIcon } from '../icons/Icons'
+import { CloseIcon, HelpIcon, MoreVerticalIcon, PlayIcon, RefreshIcon } from '../icons/Icons'
 import { IconButton } from './IconButton'
 
 const meta = {
@@ -8,6 +8,7 @@ const meta = {
   component: IconButton,
   args: { label: 'Refresh', icon: RefreshIcon, onClick: fn() },
   argTypes: {
+    variant: { control: 'inline-radio', options: ['soft', 'ghost'] },
     iconSize: { control: 'inline-radio', options: [16, 14] },
     tooltipSide: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
     icon: { control: false },
@@ -17,8 +18,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A neutral inset chip: refresh, help, share, a dialog's close. */
+/** A neutral inset chip: refresh, help, share. */
 export const Default: Story = {}
+
+/** No fill until hovered: a dialog's close. */
+export const Ghost: Story = { args: { label: 'Close', icon: CloseIcon, variant: 'ghost' } }
 
 /** A glyph that reads large at 16 drops to 14. */
 export const SmallGlyph: Story = { args: { label: 'Run', icon: PlayIcon, iconSize: 14 } }
@@ -42,6 +46,7 @@ export const AllStates: Story = {
       <IconButton label="Refresh" icon={RefreshIcon} isLoading />
       <IconButton label="Refresh" icon={RefreshIcon} isDisabled />
       <IconButton label="Options" icon={MoreVerticalIcon} />
+      <IconButton label="Close" icon={CloseIcon} variant="ghost" />
     </div>
   ),
 }

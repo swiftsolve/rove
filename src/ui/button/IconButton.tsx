@@ -1,24 +1,38 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { Tooltip } from '../tooltip/Tooltip'
 import type { IconComponent } from '../icons/Icons'
 import { PRESS, STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
-/** A neutral inset chip, like a soft Button. */
-const ICON_BUTTON_CLASSES = [
-  'inline-flex items-center justify-center size-[28px] rounded-sm',
-  'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
-  'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
-  STATE_CLASSES,
-  PRESS,
-]
+const iconButtonVariants = cva(
+  [
+    'inline-flex items-center justify-center size-[28px] rounded-sm',
+    'text-secondary usable:hover:bg-hover usable:hover:text-primary',
+    'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
+    STATE_CLASSES,
+    PRESS,
+  ],
+  {
+    variants: {
+      variant: {
+        /** A neutral inset chip, like a soft Button. */
+        soft: 'bg-inset',
+        /** No fill until hovered: it takes the colour of what it sits on. */
+        ghost: null,
+      },
+    },
+    defaultVariants: { variant: 'soft' },
+  },
+)
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-label' | 'children'> &
   {
     /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
     label: string
     icon: IconComponent
+    variant?: 'soft' | 'ghost'
     /** 16, or 14 for a glyph that reads large (Play). The spinner matches it. */
     iconSize?: 16 | 14
     /** The tooltip, when it should say more than the label (a help button's hint). */
@@ -38,6 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   {
     label,
     icon: Icon,
+    variant,
     iconSize = 16,
     tooltip,
     tooltipSide,
@@ -55,7 +70,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       <button
         ref={ref}
         type={type}
-        className={cn(ICON_BUTTON_CLASSES, className)}
+        className={cn(iconButtonVariants({ variant }), className)}
         aria-label={label}
         {...pressableProps({ isDisabled, isLoading, onClick })}
         {...buttonProps}

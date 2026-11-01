@@ -132,6 +132,7 @@ export function Dialog({
               </div>
               <IconButton
                 className={CLOSE}
+                variant="ghost"
                 label="Close"
                 icon={CloseIcon}
                 onClick={onClose}

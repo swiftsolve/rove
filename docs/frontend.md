@@ -245,7 +245,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Page header | `PageHeader` (`icon`) | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. |
 | Subpage header | `PageHeader` (`onBack`) | A back button in the icon's place. |
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else). |
-| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip. |
+| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no fill until hovered (a dialog's close). |
 | Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
