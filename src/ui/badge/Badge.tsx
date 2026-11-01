@@ -8,10 +8,10 @@ const badgeVariants = cva(
   {
     variants: {
       tone: {
-        positive: 'bg-status-positive/15 text-positive',
+        positive: 'bg-status-positive/(--opacity-tint-md) text-positive',
         /** "Heads up" without the alarm of an error colour: the ISP card's VPN flag. */
-        warning: 'bg-status-warning/15 text-warning',
-        negative: 'bg-status-negative/15 text-negative',
+        warning: 'bg-status-warning/(--opacity-tint-md) text-warning',
+        negative: 'bg-status-negative/(--opacity-tint-md) text-negative',
       },
     },
   },

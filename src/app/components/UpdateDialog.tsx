@@ -43,7 +43,7 @@ export function UpdateDialog({
           <span className="text-tertiary">{update.currentVersion}</span>
           <ArrowRightIcon className="text-tertiary" />
           <span className="sr-only">{' to '}</span>
-          <span className="font-semibold text-accent">{update.version}</span>
+          <span className="font-semibold text-accent-text">{update.version}</span>
         </p>
       }
       onClose={onDismiss}

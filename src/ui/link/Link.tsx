@@ -2,7 +2,7 @@ import { forwardRef, type AnchorHTMLAttributes } from 'react'
 import { cn } from '../foundations/cn'
 
 // Focus shows the way hover does (an underline), not with a ring.
-const LINK = 'text-accent no-underline hover:underline focus-visible:underline focus-visible:outline-none'
+const LINK = 'text-accent-text no-underline hover:underline focus-visible:underline focus-visible:outline-none'
 
 type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string

@@ -12,7 +12,7 @@ const VIEW_LINK = cx(
   'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 ml-[-9.5px] mr-[-9px]',
   'text-[length:inherit] font-medium whitespace-nowrap text-secondary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
-  'hover:text-accent focus-visible:text-accent focus-visible:outline-none',
+  'hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
   STATE_CLASSES,
 )
 
