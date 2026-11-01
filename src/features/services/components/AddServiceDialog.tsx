@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ServiceDefinition } from '@/types'
+import { getNetworkApi } from '@/bridge/network-api'
 import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { parseServiceInput } from '@/features/services/utils/service-input'
@@ -195,7 +196,8 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     const isCurrent = (): boolean => isOpenRef.current && testId === testIdRef.current
     void (async () => {
       try {
-        const latencyMs = (await window.networkAPI?.testService(parsed.host)) ?? null
+        // No bridge throws, and reads as a failed test rather than a host that's down.
+        const latencyMs = await getNetworkApi().testService(parsed.host)
         if (!isCurrent()) return
         const tested = { ...parsed, latencyMs }
         setOutcome(tested)
