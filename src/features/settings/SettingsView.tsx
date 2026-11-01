@@ -194,7 +194,7 @@ function renderCheckResult(check: CheckState): ReactNode {
       <div className={statusVariants({ kind: 'available' })}>
         <span>Version {check.update.version} is available.</span>
         <Button
-          variant="primary"
+          variant="text"
           onClick={() => void check.update.install()}
         >
           Install &amp; restart
@@ -261,7 +261,7 @@ export function SettingsView(): JSX.Element {
           control={(descriptionId) => (
             <Button
               aria-describedby={descriptionId}
-              variant="primary"
+              variant="text"
               className={CHECK_NOW}
               isBusy={isChecking}
               onClick={() => void runCheck()}

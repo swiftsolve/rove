@@ -15,23 +15,30 @@ const DIMMED = cx(
   'aria-disabled:opacity-(--opacity-disabled) aria-disabled:cursor-not-allowed',
 )
 
-// The accent buttons' shared shape: the filled one is the primary's layout a
-// step bigger, on a solid accent fill.
-const ACCENT_BASE = cx(
+// The text and filled buttons' shared shape.
+const BOLD_BASE = cx(
   'inline-flex items-center justify-center gap-6 rounded-sm',
   'font-semibold',
   'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
   PRESS,
 )
 
+// The filled buttons: the text button's layout a step bigger, on a solid fill.
+const FILLED_BASE = cx(BOLD_BASE, 'px-(--section-padding) py-10 text-sm tracking-button-large text-on-fill')
+
 const buttonVariants = cva(undefined, {
   variants: {
     variant: {
       /** Quiet accent text: secondary actions and links in a header. No fill at
        *  rest: the global button reset leaves it transparent. */
-      primary: [ACCENT_BASE, 'px-10 py-8 text-xs tracking-button-default text-accent', ACCENT_HOVER],
+      text: [BOLD_BASE, 'px-10 py-8 text-xs tracking-button-default text-accent', ACCENT_HOVER],
       /** Solid accent fill: a page's main action (Run test, Add service). */
-      filled: [ACCENT_BASE, 'px-(--section-padding) py-10 text-sm tracking-button-large text-on-fill'],
+      filled: [FILLED_BASE, 'bg-accent-fill not-disabled:not-aria-disabled:hover:bg-accent-fill-hover'],
+      /** Solid red fill: stops the main action (Stop while a test runs). */
+      danger: [
+        FILLED_BASE,
+        'bg-status-negative-fill not-disabled:not-aria-disabled:hover:bg-status-negative-fill-hover',
+      ],
       /** Neutral inset: retries and other in-place actions. */
       secondary: [
         'inline-flex items-center justify-center gap-6 px-12 py-6 rounded-sm',
@@ -41,27 +48,13 @@ const buttonVariants = cva(undefined, {
         PRESS,
       ],
     },
-    /** The filled button while a test runs: red, for Stop. */
-    isStop: { true: null, false: null },
     /**
      * In flight: full opacity (the spinner shows the wait, so no dimming even
      * while `disabled`) and no input.
      */
     isBusy: { true: 'pointer-events-none cursor-default', false: DIMMED },
   },
-  compoundVariants: [
-    {
-      variant: 'filled',
-      isStop: false,
-      class: 'bg-accent-fill not-disabled:not-aria-disabled:hover:bg-accent-fill-hover',
-    },
-    {
-      variant: 'filled',
-      isStop: true,
-      class: 'bg-status-negative-fill not-disabled:not-aria-disabled:hover:bg-status-negative-fill-hover',
-    },
-  ],
-  defaultVariants: { variant: 'secondary', isStop: false, isBusy: false },
+  defaultVariants: { variant: 'secondary', isBusy: false },
 })
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
@@ -77,7 +70,6 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
 /** A text button. Extra props (aria-*, handlers from a Tooltip) pass straight to the `<button>`. */
 export function Button({
   variant,
-  isStop,
   isBusy,
   className,
   type = 'button',
@@ -88,7 +80,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={cn(buttonVariants({ variant, isStop, isBusy }), className)}
+      className={cn(buttonVariants({ variant, isBusy }), className)}
       aria-disabled={isDisabled || undefined}
       onClick={isDisabled ? undefined : onClick}
       {...buttonProps}

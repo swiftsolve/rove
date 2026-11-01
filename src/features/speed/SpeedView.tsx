@@ -114,8 +114,7 @@ function TestButton(): JSX.Element {
   if (isTesting) {
     return (
       <Button
-        variant="filled"
-        isStop
+        variant="danger"
         onClick={cancelTest}
         aria-label="Stop test"
       >

@@ -94,8 +94,8 @@ keep logic worth testing out of components and hooks.
 - Shared components keep a plain marker class on their parts (`data-row`,
   `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
   outside: `[&_.ui-section-footer]:pt-12`.
-- Buttons are `Button` (`variant`: `primary`, `filled`, `secondary`) and
-  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `stop`; `aria-label`
+- Buttons are `Button` (`variant`: `filled`, `danger`, `secondary`, `text`) and
+  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `danger`; `aria-label`
   is required), never hand-written `<button>` classes.
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes. A `.module.css` file is only for what utilities can't say:
@@ -127,8 +127,8 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
 | Page header | `ViewHeader` | Top of every page except Home: icon chip, title, subtitle and actions, over a full-width divider. |
-| Button | `Button` | Filled (`variant="filled"`) for the main action, Stop (`filled` with `isStop`) to cancel it, Secondary (`secondary`) for quiet actions, Text (`primary`) for low-key prompts like Install & restart. |
-| Icon button | `IconButton` | Icon-only button; `tone` is `plain`, `primary`, `secondary` or `stop`. Use a 14px icon for Play. |
+| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for quiet actions, Text (`text`) for low-key prompts like Install & restart. |
+| Icon button | `IconButton` | Icon-only button; `tone` is `plain`, `primary`, `secondary` or `danger`. Use a 14px icon for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
 | Section header | `Section` | 44px card header with an optional badge (`SectionBadge`) or button. |

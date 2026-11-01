@@ -25,8 +25,8 @@ const iconButtonVariants = cva(
           'bg-inset text-secondary',
           'not-disabled:not-aria-disabled:hover:bg-hover not-disabled:not-aria-disabled:hover:text-primary',
         ),
-        /** Red, for stopping something in progress. */
-        stop: cx(
+        /** Red tint, for stopping something in progress. */
+        danger: cx(
           'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)] text-status-negative',
           'hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-lg),transparent)]',
           '[&_svg]:fill-current',
