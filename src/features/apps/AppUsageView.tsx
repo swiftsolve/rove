@@ -1,5 +1,4 @@
 import type { AppUsage, AppUsageSummary } from '@/types'
-import { formatBytes } from '@/lib/format'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
@@ -8,7 +7,6 @@ import {
   AppsIcon,
   Button,
   ChevronRightIcon,
-  DirectionIcon,
   DotSeparator,
   EmptyState,
   ErrorBanner,
@@ -17,7 +15,6 @@ import {
   IconButton,
   LayersIcon,
   LoadingState,
-  MetricValue,
   PageHeader,
   POLLING_DESCRIPTION,
 } from '@/ui'
@@ -26,6 +23,7 @@ import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminA
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-app scale) change, so the bars glide in step
@@ -54,11 +52,6 @@ const ROW_LINK = cx(
   'absolute inset-0 w-full focus-visible:outline-offset-(--focus-inset)',
   'group-first/row:rounded-t-lg group-last/row:rounded-b-lg',
 )
-
-// Download/upload figures, right-aligned in a fixed-width box so the down and up
-// columns line up across rows (matches the Hosts view).
-const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
-const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const APP_USAGE_INFO_HINT =
   'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
@@ -132,16 +125,7 @@ function AppRow({
       {/* The bar's label above already reads these figures out. Pulled left by
           the arrow glyph's side bearing (~2px at 11px) so the drawn arrow lines
           up with the app icon's and bar's left edge. */}
-      <div className="pointer-events-none -ml-2 flex items-center gap-12" aria-hidden>
-        <span className={FIGURE}>
-          <DirectionIcon series="down" size={11} />
-          <MetricValue value={app.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-        <span className={FIGURE}>
-          <DirectionIcon series="up" size={11} />
-          <MetricValue value={app.txBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-      </div>
+      <TransferFigures transfer={app} isDecorative className="pointer-events-none -ml-2" />
     </li>
   )
 }

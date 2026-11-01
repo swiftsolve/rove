@@ -1,6 +1,5 @@
 import { memo, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
-import { formatBytes } from '@/lib/format'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
@@ -12,7 +11,6 @@ import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import {
   ChevronDownIcon,
-  DirectionIcon,
   Disclosure,
   DisclosurePanel,
   DisclosureTrigger,
@@ -23,7 +21,6 @@ import {
   IconButton,
   IpIcon,
   LoadingState,
-  MetricValue,
   PageHeader,
   POLLING_DESCRIPTION,
   Tooltip as UiTooltip,
@@ -33,6 +30,7 @@ import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminA
 import { cva, cx } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
  *  caret when closed. */
@@ -75,8 +73,6 @@ const FLAG_SLOT = cx(
   "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)]",
 )
 
-// Download/upload figures, right-aligned in a fixed-width box so the down and up
-// columns line up across the rows in a group.
 const HOST_COUNT = cx(
   'min-w-[18px] shrink-0 rounded-full bg-inset px-6 py-px',
   'text-center text-xs text-tertiary tabular-nums',
@@ -90,9 +86,6 @@ const HOSTS = cx(
   'flex flex-col gap-8',
   'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]',
 )
-
-const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
-const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
@@ -174,18 +167,7 @@ const HostRow = memo(function HostRow({ host }: { host: HostConn }): JSX.Element
         <HostGlyph host={host} />
         <HostName host={host} />
       </span>
-      <span className="inline-flex shrink-0 items-center gap-12">
-        <span className={FIGURE}>
-          <DirectionIcon series="down" size={11} />
-          <span className="sr-only">Down</span>
-          <MetricValue value={host.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-        <span className={FIGURE}>
-          <DirectionIcon series="up" size={11} />
-          <span className="sr-only">Up</span>
-          <MetricValue value={host.txBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-      </span>
+      <TransferFigures transfer={host} className="shrink-0" />
     </li>
   )
 })

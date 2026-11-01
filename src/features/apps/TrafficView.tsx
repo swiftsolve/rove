@@ -1,7 +1,6 @@
 import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { formatBytes } from '@/lib/format'
 import { busiestTotal, percentOf, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 import {
   BellIcon,
@@ -9,7 +8,6 @@ import {
   ComputerIcon,
   ConnectionIcon,
   DatabaseIcon,
-  DirectionIcon,
   DnsIcon,
   EmptyState,
   ErrorBanner,
@@ -21,7 +19,6 @@ import {
   LoadingState,
   MailIcon,
   MessageIcon,
-  MetricValue,
   NasIcon,
   PageHeader,
   PlayIcon,
@@ -34,6 +31,7 @@ import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminA
 import { cva } from 'class-variance-authority'
 import { UsageList } from '@/features/apps/components/UsageList'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
+import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-type scale) change, so the bars glide in step
@@ -43,11 +41,6 @@ const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
     series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
 })
-
-// Download/upload figures, right-aligned in a fixed-width box so the down and up
-// columns line up across rows (matches the Apps and Hosts views).
-const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
-const FIGURE_VALUE = 'num min-w-[46px] text-right'
 
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
@@ -124,16 +117,7 @@ function TrafficRow({
       </div>
       {/* The bar's label above already reads these figures out. The down arrow
           sits centred under the type glyph, echoing the Apps and Hosts views. */}
-      <div className="flex items-center gap-12" aria-hidden>
-        <span className={FIGURE}>
-          <DirectionIcon series="down" size={11} />
-          <MetricValue value={type.rxBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-        <span className={FIGURE}>
-          <DirectionIcon series="up" size={11} />
-          <MetricValue value={type.txBytes} className={FIGURE_VALUE} format={formatBytes} />
-        </span>
-      </div>
+      <TransferFigures transfer={type} isDecorative />
     </li>
   )
 }
