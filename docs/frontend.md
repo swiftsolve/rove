@@ -210,7 +210,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | Disclosure | `Disclosure`, `DisclosureTrigger`, `DisclosurePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole disclosure; `isAnimated` animates the panel's height. |
 | Section header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
-| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. `DataList` makes rows a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
+| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
 | List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
 | — | `StretchedButton` | A transparent button over a whole card or row, so a click anywhere opens it. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
