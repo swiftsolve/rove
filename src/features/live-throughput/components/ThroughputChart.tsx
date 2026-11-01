@@ -1,10 +1,7 @@
 import { useId, useMemo } from 'react'
 import { cx } from 'class-variance-authority'
 import { Area, AreaChart, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
-import { getLinkCapacityMbps, sanitizeRate } from '@/types'
-import { useNetwork } from '@/app/hooks/useNetwork'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
+import { sanitizeRate } from '@/types'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
 
@@ -19,6 +16,8 @@ const SCALE = cx(
 interface ThroughputChartProps {
   download: number[]
   upload: number[]
+  /** The scale's ceiling (Mbps); it eases down and jumps up (useSmoothScale). */
+  maxValue: number
 }
 
 interface ChartDatum {
@@ -61,22 +60,13 @@ function buildChartRows(download: number[], upload: number[]): ChartDatum[] {
   return rows
 }
 
-export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX.Element {
-  // A running speed test saturates the link, and the link's capacity bounds the
-  // scale, so both feed the y-axis.
-  const { info } = useNetwork()
-  const isSpeedTestRunning = useSpeedTest((test) => test.isTesting)
-  const linkCapacityMbps = info ? getLinkCapacityMbps(info) : null
+export function ThroughputChart({ download, upload, maxValue }: ThroughputChartProps): JSX.Element {
   const gradientId = useId().replace(/:/g, '')
   const downFill = `${gradientId}-down`
   const upFill = `${gradientId}-up`
 
-  // Scale + row data recompute together, only when the inputs change —
-  // not on every 1 Hz render.
-  const { data, maxValue } = useMemo(() => ({
-    data: buildChartRows(download, upload),
-    maxValue: resolveChartScale(download, upload, { linkCapacityMbps, isSpeedTestRunning }),
-  }), [download, upload, linkCapacityMbps, isSpeedTestRunning])
+  // Recomputed only when the samples change, not on every 1 Hz render.
+  const data = useMemo(() => buildChartRows(download, upload), [download, upload])
 
   // Glide the axis toward a smaller scale so the trace doesn't jump taller all
   // at once; spikes still expand the scale instantly (see useSmoothScale).
