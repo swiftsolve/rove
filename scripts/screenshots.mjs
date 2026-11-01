@@ -6,6 +6,7 @@
  *   npm run screenshots -- --out /tmp/shots
  *   npm run screenshots -- --url http://localhost:5173   # reuse a running dev server
  *   CHROME_PATH=/usr/bin/chromium npm run screenshots    # no Google Chrome installed
+ *   npm run screenshots -- --stable        # identical pixels run to run, to diff a refactor
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
  * (src/dev/mock-network-api.ts) — so the shots show the mock's network, not
@@ -64,6 +65,11 @@ function flag(name, fallback) {
 const out = resolve(ROOT, flag('out', 'docs/screenshots'))
 const theme = flag('theme', 'dark')
 const existingUrl = flag('url', null)
+// A fake clock, seeded randomness and paused CSS animations, so two runs of the
+// same code give the same pixels: live charts, relative times and pulses all
+// hold still. The shots then show a fixed moment, not a live app.
+const isStable = process.argv.includes('--stable')
+const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
 /** An unused port, so we never fight a `tauri:dev` already holding vite's
  *  default — the config pins that port with `strictPort`, so a collision is
@@ -113,16 +119,35 @@ try {
   const page = await browser.newPage({
     viewport: { width, height },
     deviceScaleFactor: 2,
+    ...(isStable && { timezoneId: 'UTC', locale: 'en-US' }),
   })
   await page.addInitScript((mode) => {
     localStorage.setItem('rove.setting.themeMode', mode)
   }, theme)
+  if (isStable) {
+    // Paused, so time moves only through `settle`, never with the wall clock
+    // while the page loads.
+    await page.clock.install({ time: STABLE_TIME })
+    await page.clock.pauseAt(STABLE_TIME.getTime() + 1000)
+    await page.addInitScript(() => {
+      // mulberry32: a small seeded generator in place of Math.random.
+      let seed = 0x5eed
+      Math.random = () => {
+        seed = (seed + 0x6d2b79f5) | 0
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      }
+    })
+  }
+  /** Lets the app run for `ms`: on the fake clock when stable, else in real time. */
+  const settle = (ms) => (isStable ? page.clock.runFor(ms) : page.waitForTimeout(ms))
 
   await page.goto(server.url, { waitUntil: 'networkidle' })
   await page.waitForSelector('[data-app-shell]')
   // The mock answers on a delay and the views fetch on mount; give the first
   // screen room to settle before we start shooting.
-  await page.waitForTimeout(3000)
+  await settle(3000)
 
   for (const [name, location] of SCREENS) {
     await page.evaluate((to) => {
@@ -130,8 +155,10 @@ try {
       window.history.pushState(state, '')
       window.dispatchEvent(new PopStateEvent('popstate', { state }))
     }, location)
-    await page.waitForTimeout(2500)
-    await page.screenshot({ path: `${out}/${name}.png` })
+    await settle(2500)
+    // Favicons and app icons load over the network, in real time.
+    if (isStable) await page.waitForFunction(() => [...document.images].every((image) => image.complete))
+    await page.screenshot({ path: `${out}/${name}.png`, ...(isStable && { animations: 'disabled' }) })
     console.log(`  ${name}.png`)
   }
 } finally {
