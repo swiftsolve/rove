@@ -19,12 +19,15 @@ const meta = {
       </div>
     ),
   ],
+  // Tooltip has no prop to render it open, so each story hovers its trigger.
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.hover(canvas.getByRole('button'))
+  },
 } satisfies Meta<typeof Tooltip>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Hover or focus the button to show it. */
 export const Bottom: Story = {}
 
 export const Top: Story = { args: { side: 'top' } }
@@ -47,23 +50,3 @@ export const Wrapping: Story = {
 
 /** Never opens: content that would be stale while a new test runs. */
 export const Disabled: Story = { args: { isDisabled: true } }
-
-/** Shown: hovered once the story loads. Tooltip has no prop to render it open. */
-export const Shown: Story = {
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.hover(canvas.getByRole('button'))
-  },
-}
-
-/** Each side, hover each button. */
-export const AllSides: Story = {
-  render: () => (
-    <div className="flex items-center gap-12">
-      {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
-        <Tooltip key={side} content={`Opens on the ${side}.`} side={side}>
-          <Button>{side}</Button>
-        </Tooltip>
-      ))}
-    </div>
-  ),
-}

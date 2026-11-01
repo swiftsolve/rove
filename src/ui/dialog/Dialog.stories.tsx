@@ -71,7 +71,7 @@ type DialogProps = ComponentProps<typeof Dialog>
 // A box of its own, the way the app opens a dialog over its content column.
 const FRAME = 'relative h-[300px] overflow-hidden rounded-lg'
 
-/** The dialog open in the frame, as in the gallery. */
+/** The dialog open in its frame. */
 function DialogFrame(args: DialogProps): JSX.Element {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   return (

@@ -5,7 +5,7 @@
 **Done:** phases 0–6, 8 and 11, most of 7, and part of 9.
 - `src/ui` is the library, behind lint boundaries. Its primitives/components
   split was later flattened to one folder per component, grouped by purpose
-  in `index.ts`, the gallery and `docs/frontend.md` instead.
+  in `index.ts`, the stories and `docs/frontend.md` instead.
 - Button has variant × tone × size on one pressable base. It was later cut
   to solid, soft and ghost, with a tone on solid only; the link variant became
   ViewLink, which always ends in a caret.

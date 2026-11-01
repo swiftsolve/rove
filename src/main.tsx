@@ -17,33 +17,13 @@ if (isTauri()) {
   installMockNetworkApiIfNeeded()
 }
 
-const root = createRoot(document.getElementById('root')!)
-const search = new URLSearchParams(window.location.search)
+// Move any speed-test history left in localStorage into the database, once.
+void migrateLegacySpeedHistory()
 
-if (import.meta.env.DEV && search.has('gallery')) {
-  // The UI library's gallery (`/?gallery`, `&theme=light` for Light), in place
-  // of the app. Dev only, so the import never reaches a production build.
-  if (search.get('theme') === 'light') document.documentElement.classList.add('theme-light')
-  // The app is one window-sized screen; the gallery is a page that scrolls.
-  for (const element of [document.documentElement, document.getElementById('root')!]) {
-    element.style.height = 'auto'
-    element.style.overflow = 'visible'
-  }
-  const { Gallery } = await import('@/ui/gallery/Gallery')
-  root.render(
-    <React.StrictMode>
-      <Gallery />
-    </React.StrictMode>,
-  )
-} else {
-  // Move any speed-test history left in localStorage into the database, once.
-  void migrateLegacySpeedHistory()
-
-  root.render(
-    <React.StrictMode>
-      <AppErrorBoundary>
-        <App />
-      </AppErrorBoundary>
-    </React.StrictMode>,
-  )
-}
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
+  </React.StrictMode>,
+)

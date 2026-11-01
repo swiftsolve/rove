@@ -3,9 +3,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import tseslint from 'typescript-eslint'
 
 const UI_INTERNALS = {
-  // The gallery is the one exception: main.tsx loads it in dev, and it's not
-  // part of the library's API.
-  group: ['@/ui/**', '**/ui/*/**', '!@/ui/gallery/Gallery'],
+  group: ['@/ui/**', '**/ui/*/**'],
   message: "Import the UI library from '@/ui', its public entry.",
 }
 const CONTEXT_OBJECTS = {
@@ -33,6 +31,7 @@ export default tseslint.config(
       globals: {
         console: 'readonly',
         process: 'readonly',
+        fetch: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         localStorage: 'readonly',

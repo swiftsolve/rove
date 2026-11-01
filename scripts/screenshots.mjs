@@ -7,6 +7,7 @@
  *   npm run screenshots -- --url http://localhost:5173   # reuse a running dev server
  *   CHROME_PATH=/usr/bin/chromium npm run screenshots    # no Google Chrome installed
  *   npm run screenshots -- --stable        # identical pixels run to run, to diff a refactor
+ *   npm run screenshots -- --stable --storybook-url http://127.0.0.1:6006   # reuse a running Storybook
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
  * (src/dev/mock-network-api.ts) — so the shots show the mock's network, not
@@ -59,7 +60,7 @@ const SCREENS = [
 
 /**
  * With --stable, states a still screen never shows: open menus and dialogs,
- * tooltips, a focus ring, then the UI library's gallery. Each is
+ * tooltips, a focus ring. Each is
  * [name, location, what to do once it has settled].
  */
 const SCENES = [
@@ -90,6 +91,7 @@ function flag(name, fallback) {
 const out = resolve(ROOT, flag('out', 'docs/screenshots'))
 const theme = flag('theme', 'dark')
 const existingUrl = flag('url', null)
+const existingStorybookUrl = flag('storybook-url', null)
 // A fake clock, seeded randomness and paused CSS animations, so two runs of the
 // same code give the same pixels: live charts, relative times and pulses all
 // hold still. The shots then show a fixed moment, not a live app.
@@ -138,7 +140,43 @@ async function startDevServer() {
   })
 }
 
+/** Start Storybook and resolve once its story index answers. */
+async function startStorybook() {
+  const port = await freePort()
+  const storybook = spawn(
+    process.execPath,
+    ['node_modules/storybook/dist/bin/dispatcher.js', 'dev', '--ci', '--no-open', '--port', String(port)],
+    { cwd: ROOT, stdio: 'ignore' },
+  )
+  const url = `http://127.0.0.1:${port}`
+  const deadline = Date.now() + 120_000
+  while (Date.now() < deadline) {
+    if (storybook.exitCode != null) throw new Error(`storybook exited (${storybook.exitCode})`)
+    try {
+      if ((await fetch(`${url}/index.json`)).ok) return { url, stop: () => storybook.kill() }
+    } catch {
+      // Not listening yet.
+    }
+    await new Promise((ok) => setTimeout(ok, 500))
+  }
+  storybook.kill()
+  throw new Error('storybook never answered')
+}
+
+/**
+ * The UI library's stories to shoot: each component's All States, or every
+ * story of a component that has none. Single states would repeat what the
+ * overview shows.
+ */
+async function libraryStories(storybookUrl) {
+  const index = await (await fetch(`${storybookUrl}/index.json`)).json()
+  const stories = Object.values(index.entries).filter((entry) => entry.type === 'story')
+  const withOverview = new Set(stories.filter((story) => story.name === 'All States').map((story) => story.title))
+  return stories.filter((story) => !withOverview.has(story.title) || story.name === 'All States')
+}
+
 const server = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
+let libraryCount = 0
 console.log(`${existingUrl ? 'using' : 'started'} ${server.url}`)
 
 await mkdir(out, { recursive: true })
@@ -215,14 +253,33 @@ try {
       await page.waitForTimeout(400)
     }
 
-    await page.goto(`${server.url}/?gallery&theme=${theme}`, { waitUntil: 'networkidle' })
-    await settle(1000)
-    await page.screenshot({ path: `${out}/25-gallery.png`, fullPage: true, animations: 'disabled' })
-    console.log('  25-gallery.png')
+    // The UI library, from Storybook: the states no screen shows. Its own page,
+    // without the fake clock, which would stall Storybook's startup; paused
+    // animations hold it still.
+    const storybook = existingStorybookUrl
+      ? { url: existingStorybookUrl, stop: () => {} }
+      : await startStorybook()
+    try {
+      const stories = await libraryStories(storybook.url)
+      await mkdir(`${out}/25-library`, { recursive: true })
+      const libraryPage = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2 })
+      for (const story of stories) {
+        await libraryPage.goto(`${storybook.url}/iframe.html?id=${story.id}&viewMode=story&globals=theme:${theme}`)
+        await libraryPage.waitForSelector('body.sb-show-main')
+        // Fonts, and a play function (a Tooltip story hovers its trigger).
+        await libraryPage.evaluate(() => document.fonts.ready)
+        await libraryPage.waitForTimeout(600)
+        await libraryPage.screenshot({ path: `${out}/25-library/${story.id}.png`, fullPage: true, animations: 'disabled' })
+      }
+      libraryCount = stories.length
+      console.log(`  25-library/ (${stories.length} stories)`)
+    } finally {
+      storybook.stop()
+    }
   }
 } finally {
   await browser.close()
   server.stop()
 }
 
-console.log(`\n${SCREENS.length + (isStable ? SCENES.length + 1 : 0)} screens at ${width}x${height} (@2x) -> ${out}`)
+console.log(`\n${SCREENS.length + (isStable ? SCENES.length + libraryCount : 0)} screens at ${width}x${height} (@2x) -> ${out}`)

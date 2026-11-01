@@ -67,7 +67,8 @@ for what. Read it before writing or changing UI. For where files live, see
   fake clock, seeded randomness and paused animations, so two runs of the same
   code match exactly. Diff a run against one from before a change to prove a
   refactor changed nothing on screen. With `--stable` it also shoots the open
-  menus, dialogs, tooltips, a focus ring and the gallery.
+  menus, dialogs, tooltips, a focus ring, and every component's All States
+  story from Storybook (`25-library/`).
 
 ## Styles: Tailwind utilities from the design tokens
 
@@ -175,7 +176,7 @@ both, and a raw `<button>` outside the library is a lint error.
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button, IconButton and StretchedButton). There are
   no tiers: a component that starts using another stays where it is.
-- `index.ts` and the gallery group them by purpose:
+- `index.ts` and the stories group them by purpose:
   - Actions: button, link and menu
   - Inputs: text-field, toggle and segmented-control
   - Overlays: dialog and tooltip
@@ -188,8 +189,6 @@ both, and a raw `<button>` outside the library is a lint error.
 - `foundations/` (`cn`, and `pressable`, the behaviour everything pressable
   shares), `hooks/` (generic UI hooks), `context/` (where dialogs portal), and
   `icons/`.
-- `gallery/` renders every component in every state at `/?gallery`
-  (`&theme=light` for Light). Dev only.
 - Each component has stories beside it (`Button.stories.tsx`), titled by the
   same groups (`Actions/Button`). `npm run storybook` serves them at
   `localhost:6006`, with a Theme switch in the toolbar and an accessibility

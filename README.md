@@ -189,8 +189,8 @@ rove/
 │   │                           (capabilities, connection and live-throughput
 │   │                           have no view, so their parts sit at the top)
 │   ├── ui/                     the component library, imported from @/ui:
-│   │                           a folder per component (with its stories),
-│   │                           icons, a dev gallery
+│   │                           a folder per component (with its stories)
+│   │                           and icons
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
 │   ├── lib/                    shared helpers (format, platform, highlight)
