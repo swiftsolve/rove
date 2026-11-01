@@ -202,21 +202,21 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else), ghost (a quiet second choice), link (a quiet text link with glyphs). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint); `variant` soft or ghost. |
 | Link | `Link` | An accent `<a>` in running text; `isExternal` opens a new window and says so. |
-| Menu | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
+| Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
 | Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, lined up with its `start` or `end` edge. Screen readers get it as the trigger's description. |
 | Toggle | `Toggle` | On/off switch for a setting. |
-| Segmented control | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
+| Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | Disclosure | `Disclosure`, `DisclosureTrigger`, `DisclosurePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole disclosure; `isAnimated` animates the panel's height. |
 | Section header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div" \| "ul"` is a bare surface; `isDivided` puts a hairline between its children; `shouldClip={false}` lets content spill out. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. `DataList` makes rows a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
 | List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
 | — | `StretchedButton` | A transparent button over a whole card or row, so a click anywhere opens it. |
-| Badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
+| Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
 | Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `tint`); the button form opens something. |
-| Signal bars, Capability cell | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
+| Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
 | Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |
 | Readout/Large, Readout/Compact | `Readout`, `ReadoutValue` | A labelled large figure (live speed, data used), or the bare figure at large or compact size. |

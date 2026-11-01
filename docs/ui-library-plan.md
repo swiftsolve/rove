@@ -28,6 +28,11 @@
 - **Phase 6:**
   - Hand-built full-bleed footers and padded `li` cards should become
     CardFooter and Card variants.
+- **Design questions:**
+  - Badge's tint is 15%, which no token has (the scale steps 14% to 22%).
+    Move it to `tint-md`, or add a step?
+  - The Devices card's "Discover" button has tighter sides than soft sm.
+    Make it a size, or match soft sm?
 - **Phase 10:**
   - Move component styles out of `utilities.css`.
   - Split colour out of the type utilities.
