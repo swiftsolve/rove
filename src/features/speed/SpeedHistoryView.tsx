@@ -182,8 +182,10 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
 
   return (
     <ul role="list" className="flex flex-col gap-10">
-      {entries.map((entry, index) => (
-        <HistoryCard key={`${entry.timestamp}-${index}`} entry={entry} />
+      {/* Keyed by when the result was saved, one per test: a new result on top
+          leaves the rows below with the keys they had. */}
+      {entries.map((entry) => (
+        <HistoryCard key={entry.timestamp} entry={entry} />
       ))}
     </ul>
   )
