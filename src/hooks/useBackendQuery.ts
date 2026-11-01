@@ -14,6 +14,9 @@ interface BackendQueryOptions<T> {
   shouldRefetchOnOpen?: boolean
   /** Poll in the background at this interval while open and the window is visible. */
   pollIntervalMs?: number
+  /** Drop the data once no screen shows it, rather than keep it for the app's
+   *  lifetime (default false). For data that shouldn't linger, like a password. */
+  shouldForgetWhenClosed?: boolean
 }
 
 export interface BackendQuery<T> {
@@ -79,6 +82,7 @@ export function useBackendQuery<T>({
   errorMessage,
   shouldRefetchOnOpen = true,
   pollIntervalMs,
+  shouldForgetWhenClosed = false,
 }: BackendQueryOptions<T>): BackendQuery<T> {
   const canFetch = queryFn !== undefined
   // Whether this screen's opening fetch has landed, as of its last commit.
@@ -90,6 +94,7 @@ export function useBackendQuery<T>({
     // The open-time refetch is ours (below), so it skips a screen swap.
     refetchOnMount: false,
     refetchInterval: pollIntervalMs ?? false,
+    ...(shouldForgetWhenClosed && { gcTime: 0 }),
     refetchOnWindowFocus: pollIntervalMs ? 'always' : false,
     // `isFetching` only matters until the opening fetch lands (it drives
     // `isBusy`). After that, a poll re-renders the screen only when its data or

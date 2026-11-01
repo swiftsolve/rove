@@ -1,7 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import type { WifiShare } from '@/types'
-import { getNetworkApi } from '@/bridge/network-api'
+import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
 import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon } from '@/ui'
 
 const STATE = 'flex flex-col items-center gap-12 py-16 text-center'
@@ -73,37 +73,7 @@ function shareNotice(share: WifiShare | null, error: string | null): Notice | nu
  * take a moment (or come back without a password if the user declines).
  */
 export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
-  const [share, setShare] = useState<WifiShare | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  // Bumped by Try again, to fetch once more.
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    let isCancelled = false
-    getNetworkApi()
-      .getWifiShare()
-      .then((result) => {
-        if (!isCancelled) setShare(result)
-      })
-      .catch((cause: unknown) => {
-        if (!isCancelled) setError(cause instanceof Error ? cause.message : String(cause))
-      })
-      .finally(() => {
-        if (!isCancelled) setIsLoading(false)
-      })
-    return () => {
-      isCancelled = true
-    }
-  }, [attempt])
-
-  const retry = (): void => {
-    setShare(null)
-    setError(null)
-    setIsLoading(true)
-    setAttempt((count) => count + 1)
-  }
-
+  const { share, error, isLoading, retry } = useWifiShare()
   const notice = isLoading ? null : shareNotice(share, error)
 
   return (
