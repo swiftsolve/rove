@@ -66,6 +66,8 @@ interface DialogProps {
   /** The body, in a recessed well. Omit for a dialog that's only a header and actions. */
   children?: ReactNode
   bodyClassName?: string
+  /** A line under the body, on the panel: a caption or status. */
+  footnote?: ReactNode
   /** The footer's buttons, main action last. */
   actions?: ReactNode
   /** Label for a button before the actions that closes the dialog. */
@@ -79,8 +81,9 @@ interface DialogProps {
 
 /**
  * A modal dialog: title, optional description and close button, a recessed
- * body, and a footer of actions. Focus moves in and stays inside while it's
- * open, the page behind is inert, and focus returns to the opener on close.
+ * body, an optional footnote, and a footer of actions. Focus moves in and
+ * stays inside while it's open, the page behind is inert, and focus returns to
+ * the opener on close.
  * Escape, the close button, Cancel and a click on the backdrop all call
  * `onClose`.
  *
@@ -91,6 +94,7 @@ export function Dialog({
   description,
   children,
   bodyClassName,
+  footnote,
   actions,
   cancelLabel,
   onClose,
@@ -141,6 +145,8 @@ export function Dialog({
             </div>
 
             {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
+
+            {footnote != null && <div className="px-16 py-12">{footnote}</div>}
 
             {hasFooter && (
               // With no body, the header's bottom inset already spaces the

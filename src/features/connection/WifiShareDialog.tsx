@@ -75,6 +75,7 @@ function shareNotice(share: WifiShare | null, error: string | null): Notice | nu
 export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
   const { share, error, isLoading, retry } = useWifiShare()
   const notice = isLoading ? null : shareNotice(share, error)
+  const qr = isLoading || notice ? null : share
 
   return (
     <Dialog
@@ -83,6 +84,9 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
       description={notice ? undefined : 'Scan with a phone camera to join'}
       onClose={onClose}
       bodyClassName="flex flex-col items-center text-center"
+      footnote={
+        qr ? <p className="text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p> : undefined
+      }
     >
       {/* Live, so the QR code or a notice is announced when it replaces the
           loading state. */}
@@ -95,20 +99,17 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           </div>
         ) : notice ? (
           <ShareNotice notice={notice} onRetry={retry} />
-        ) : share ? (
-          <>
-            {/* A white plate, so the QR keeps its quiet zone and contrast in dark mode. */}
-            <div className="mb-12 flex justify-center rounded-lg border border-line-strong bg-[#ffffff] p-16">
-              <img
-                className="block size-[240px]"
-                src={`data:image/svg+xml,${encodeURIComponent(share.qrSvg)}`}
-                alt={`QR code to join the Wi‑Fi network ${share.ssid}`}
-                width={240}
-                height={240}
-              />
-            </div>
-            <p className="text-lg font-semibold text-primary wrap-anywhere">{share.ssid}</p>
-          </>
+        ) : qr ? (
+          // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
+          <div className="flex justify-center rounded-lg border border-line-strong bg-[#ffffff] p-16">
+            <img
+              className="block size-[240px]"
+              src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}
+              alt={`QR code to join the Wi‑Fi network ${qr.ssid}`}
+              width={240}
+              height={240}
+            />
+          </div>
         ) : null}
       </div>
     </Dialog>

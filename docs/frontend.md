@@ -248,7 +248,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no fill until hovered (a dialog's close). |
 | Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
-| Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
+| Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, an optional `footnote` under it, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
 | Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, lined up with its `start` or `end` edge. Screen readers get it as the trigger's description. |
 | Toggle | `Toggle` | On/off switch for a setting. |
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
