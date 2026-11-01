@@ -27,9 +27,9 @@ import {
   DataList,
   DataListStack,
   DataRow,
-  Disclosure,
-  DisclosurePanel,
-  DisclosureTrigger,
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
   EthernetIcon,
   IconTile,
   InlineMeta,
@@ -304,7 +304,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
     <Card aria-labelledby={titleId}>
       {/* The strip's toggle expands the whole card, so focus rings the card
           (strip and, when open, the details) just inside its rounded edge. */}
-      <Disclosure isOpen={isExpanded} onOpenChange={toggleExpanded} hasFocusFrame className="rounded-[inherit]">
+      <Collapsible isOpen={isExpanded} onOpenChange={toggleExpanded} hasFocusFrame className="rounded-[inherit]">
         <div
           className={cx(
             'relative flex items-start gap-12 w-full text-left',
@@ -316,7 +316,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               without wrapping the QR button inside another button (invalid HTML).
               The content above it stays click-through so the overlay still toggles;
               the QR button opts back in and handles its own click. */}
-          <DisclosureTrigger
+          <CollapsibleTrigger
             className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
             aria-label="Connection details"
           />
@@ -353,7 +353,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           />
         </div>
 
-        <DisclosurePanel isAnimated>
+        <CollapsiblePanel isAnimated>
           {/* Grouped by topic: the link itself, then the addresses from the
               device outward, then the hardware it runs over. */}
           <DataListStack className={DETAILS}>
@@ -389,8 +389,8 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               <DataRow label="MAC" value={formatMac(info.macAddress)} />
             </DataList>
           </DataListStack>
-        </DisclosurePanel>
-      </Disclosure>
+        </CollapsiblePanel>
+      </Collapsible>
     </Card>
   )
 },

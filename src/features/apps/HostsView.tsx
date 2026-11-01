@@ -10,9 +10,9 @@ import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import {
   ChevronDownIcon,
-  Disclosure,
-  DisclosurePanel,
-  DisclosureTrigger,
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
   ErrorBanner,
   GlobeIcon,
   HelpIcon,
@@ -30,7 +30,7 @@ import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
-/** An app group's disclosure chevron: points down when open, rotates to a right
+/** An app group's collapsible chevron: points down when open, rotates to a right
  *  caret when closed. */
 const chevronVariants = cva(
   'shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out',
@@ -187,7 +187,7 @@ const AppGroup = memo(function AppGroup({
   const total = totalBytes(app)
   const hostCount = app.hosts.length
   return (
-    <Disclosure
+    <Collapsible
       as="li"
       hasFocusFrame
       className={GROUP}
@@ -200,7 +200,7 @@ const AppGroup = memo(function AppGroup({
           the row's own font, so the button inside (font: inherit) renders as
           before. */}
       <h2 className="[font:inherit]">
-        <DisclosureTrigger
+        <CollapsibleTrigger
           className={GROUP_HEADER}
           aria-label={appGroupLabel(app.name, hostCount, total)}
         >
@@ -221,16 +221,16 @@ const AppGroup = memo(function AppGroup({
             <span className={HOST_COUNT}>{hostCount}</span>
           </RowName>
           <ByteTotal bytes={total} />
-        </DisclosureTrigger>
+        </CollapsibleTrigger>
       </h2>
-      <DisclosurePanel>
+      <CollapsiblePanel>
         <ul role="list" aria-label={`Hosts for ${app.name}`} className={HOSTS}>
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
           ))}
         </ul>
-      </DisclosurePanel>
-    </Disclosure>
+      </CollapsiblePanel>
+    </Collapsible>
   )
 })
 

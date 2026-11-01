@@ -37,7 +37,7 @@ export { IconTile, IconTileButton } from './icon-tile/IconTile'
 
 // Containers
 export { Card, CardBody, CardFooter, CardHeader } from './card/Card'
-export { Disclosure, DisclosurePanel, DisclosureTrigger } from './disclosure/Disclosure'
+export { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './collapsible/Collapsible'
 export { DotSeparator, InlineMeta } from './separator/DotSeparator'
 
 // App frame

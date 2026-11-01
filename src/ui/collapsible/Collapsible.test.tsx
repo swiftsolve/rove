@@ -2,21 +2,21 @@ import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { Disclosure, DisclosurePanel, DisclosureTrigger } from './Disclosure'
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './Collapsible'
 
 function Harness(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
   return (
-    <Disclosure isOpen={isOpen} onOpenChange={setIsOpen}>
-      <DisclosureTrigger>Connection details</DisclosureTrigger>
-      <DisclosurePanel>
+    <Collapsible isOpen={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger>Connection details</CollapsibleTrigger>
+      <CollapsiblePanel>
         <p>Gateway 192.168.1.1</p>
-      </DisclosurePanel>
-    </Disclosure>
+      </CollapsiblePanel>
+    </Collapsible>
   )
 }
 
-describe('Disclosure', () => {
+describe('Collapsible', () => {
   it('shows and hides its panel, saying so on the trigger', async () => {
     render(<Harness />)
     const trigger = screen.getByRole('button', { name: 'Connection details' })
@@ -34,12 +34,12 @@ describe('Disclosure', () => {
 
   it('can frame itself, not just the trigger, when the trigger has focus', () => {
     render(
-      <Disclosure isOpen={false} onOpenChange={() => {}} hasFocusFrame>
-        <DisclosureTrigger>Details</DisclosureTrigger>
-      </Disclosure>,
+      <Collapsible isOpen={false} onOpenChange={() => {}} hasFocusFrame>
+        <CollapsibleTrigger>Details</CollapsibleTrigger>
+      </Collapsible>,
     )
     const trigger = screen.getByRole('button', { name: 'Details' })
-    expect(trigger).toHaveAttribute('data-disclosure-trigger')
-    expect(trigger.parentElement?.className).toContain('has-[[data-disclosure-trigger]:focus-visible]')
+    expect(trigger).toHaveAttribute('data-collapsible-trigger')
+    expect(trigger.parentElement?.className).toContain('has-[[data-collapsible-trigger]:focus-visible]')
   })
 })
