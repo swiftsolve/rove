@@ -1,6 +1,5 @@
 import type { InternetStatus, ServiceReachability } from '@/types'
-import { DotSeparator } from '@/components/DotSeparator'
-import { ArrowDownIcon, ArrowUpIcon } from '@/components/icons/Icons'
+import { ArrowDownIcon, ArrowUpIcon, DotSeparator } from '@/ui'
 import { reachabilityStatus } from '@/features/services/utils/service-status'
 import { cva } from 'class-variance-authority'
 

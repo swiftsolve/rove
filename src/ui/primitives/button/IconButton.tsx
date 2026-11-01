@@ -1,10 +1,10 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
-import { Tooltip } from '@/components/Tooltip'
-import type { IconComponent } from '@/components/icons/Icons'
-import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from '@/components/utils/button-state'
+import { ButtonSpinner } from '../spinner/ButtonSpinner'
+import { Tooltip } from '../tooltip/Tooltip'
+import type { IconComponent } from '../../icons/Icons'
+import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from './button-state'
 
 const iconButtonVariants = cva(
   [

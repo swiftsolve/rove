@@ -7,21 +7,21 @@ import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
 import { CapabilityList } from '@/features/capabilities/CapabilityList'
 import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetailsView'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
-import { Tooltip } from '@/components/Tooltip'
-import { DotSeparator } from '@/components/DotSeparator'
-import { PageHeader } from '@/components/PageHeader'
 import {
+  Button,
   ChevronRightIcon,
+  DotSeparator,
   HelpIcon,
   HistoryIcon,
+  IconButton,
+  PageHeader,
   PlayIcon,
   SpeedIcon,
   StopIcon,
-} from '@/components/icons/Icons'
+  Tooltip,
+} from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
-import { Button } from '@/components/Button'
-import { IconButton } from '@/components/IconButton'
 
 const SPEED_HINT =
   'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'

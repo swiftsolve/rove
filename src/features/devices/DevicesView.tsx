@@ -1,18 +1,22 @@
 import type { ReactNode } from 'react'
 import type { LanDevice } from '@/types'
-import { EmptyState } from '@/components/EmptyState'
-import { Spinner } from '@/components/Spinner'
-import { PageHeader } from '@/components/PageHeader'
-import { DevicesIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
+import {
+  Button,
+  DevicesIcon,
+  EmptyState,
+  ErrorBanner,
+  HelpIcon,
+  IconButton,
+  PageHeader,
+  RefreshIcon,
+  Spinner,
+} from '@/ui'
 import { IS_MAC } from '@/lib/platform'
 import { useDevices } from '@/features/devices/hooks/useDevices'
-import { Button } from '@/components/Button'
-import { IconButton } from '@/components/IconButton'
 import { DeviceRow } from '@/features/devices/components/DeviceRow'
 import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { sortDevices } from '@/features/devices/utils/device-display'
-import { ErrorBanner } from '@/components/ErrorBanner'
 
 const SCAN_HINT =
   'Rove probes your subnet and listens for device announcements. Sleeping devices, guest networks and subnets over /24 can hide some.'

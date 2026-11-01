@@ -2,35 +2,36 @@ import type { TrafficType, TrafficUsageSummary } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { formatBytes } from '@/lib/format'
-import { PageHeader } from '@/components/PageHeader'
-import { MetricValue } from '@/components/MetricValue'
 import {
   BellIcon,
   ClockIcon,
   ComputerIcon,
   ConnectionIcon,
   DatabaseIcon,
+  DirectionIcon,
   DnsIcon,
+  EmptyState,
+  ErrorBanner,
   FileTransferIcon,
   GlobeIcon,
   HelpIcon,
+  IconButton,
   LayersIcon,
   MailIcon,
   MessageIcon,
+  MetricValue,
   NasIcon,
+  POLLING_DESCRIPTION,
+  PageHeader,
   PlayIcon,
   PulseIcon,
   ShareIcon,
+  Spinner,
   TerminalIcon,
-} from '@/components/icons/Icons'
-import { DirectionIcon } from '@/components/icons/DirectionIcon'
-import { EmptyState } from '@/components/EmptyState'
+} from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { Spinner } from '@/components/Spinner'
 import { cva } from 'class-variance-authority'
-import { IconButton } from '@/components/IconButton'
 import { UsageList } from '@/features/apps/components/UsageList'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-type scale) change, so the bars glide in step

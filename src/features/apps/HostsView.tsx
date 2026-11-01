@@ -8,19 +8,25 @@ import { isPrivateIp } from '@/features/apps/utils/ip'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
-import { Tooltip as UiTooltip } from '@/components/Tooltip'
-import { PageHeader } from '@/components/PageHeader'
-import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { MetricValue } from '@/components/MetricValue'
-import { ChevronDownIcon, GlobeIcon, HelpIcon, IpIcon } from '@/components/icons/Icons'
-import { DirectionIcon } from '@/components/icons/DirectionIcon'
-import { EmptyState } from '@/components/EmptyState'
+import {
+  ChevronDownIcon,
+  DirectionIcon,
+  EmptyState,
+  ErrorBanner,
+  GlobeIcon,
+  HelpIcon,
+  IconButton,
+  IpIcon,
+  MetricValue,
+  POLLING_DESCRIPTION,
+  PageHeader,
+  Spinner,
+  Tooltip as UiTooltip,
+} from '@/ui'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
-import { IconButton } from '@/components/IconButton'
 import { UsageList } from '@/features/apps/components/UsageList'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** An app group's disclosure chevron: points down when open, rotates to a right
  *  caret when closed. */

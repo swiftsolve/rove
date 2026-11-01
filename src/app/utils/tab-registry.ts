@@ -12,7 +12,7 @@ import {
   SettingsIcon,
   SpeedIcon,
   UsageIcon,
-} from '@/components/icons/Icons'
+} from '@/ui'
 import { HomeView } from '@/features/home/HomeView'
 import { SpeedView } from '@/features/speed/SpeedView'
 import { InterfacesView } from '@/features/interfaces/InterfacesView'

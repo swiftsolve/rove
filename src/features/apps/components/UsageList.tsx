@@ -1,5 +1,5 @@
 import { forwardRef, type ReactNode } from 'react'
-import { Card } from '@/components/Card'
+import { Card } from '@/ui'
 
 interface UsageListProps {
   /** Accessible name for the list, e.g. "Apps by usage". */

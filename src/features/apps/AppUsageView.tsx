@@ -3,19 +3,26 @@ import { formatBytes } from '@/lib/format'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { appDomain } from '@/features/apps/utils/app-domain'
-import { PageHeader } from '@/components/PageHeader'
-import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { MetricValue } from '@/components/MetricValue'
-import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, LayersIcon } from '@/components/icons/Icons'
-import { DirectionIcon } from '@/components/icons/DirectionIcon'
-import { EmptyState } from '@/components/EmptyState'
+import {
+  AppsIcon,
+  ChevronRightIcon,
+  DirectionIcon,
+  DotSeparator,
+  EmptyState,
+  ErrorBanner,
+  GlobeIcon,
+  HelpIcon,
+  IconButton,
+  LayersIcon,
+  MetricValue,
+  POLLING_DESCRIPTION,
+  PageHeader,
+  Spinner,
+} from '@/ui'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
-import { DotSeparator } from '@/components/DotSeparator'
-import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
-import { IconButton } from '@/components/IconButton'
 import { UsageList } from '@/features/apps/components/UsageList'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
  *  as the totals (and the busiest-app scale) change, so the bars glide in step

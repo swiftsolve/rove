@@ -8,13 +8,21 @@ import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { Card, CardHeader, CardBody } from '@/components/Card'
-import { InlineMeta } from '@/components/DotSeparator'
-import { Tooltip } from '@/components/Tooltip'
-import { ChevronRightIcon, HistoryIcon, PlayIcon, RefreshIcon, ZapIcon } from '@/components/icons/Icons'
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  ChevronRightIcon,
+  HistoryIcon,
+  IconButton,
+  InlineMeta,
+  PlayIcon,
+  RefreshIcon,
+  Tooltip,
+  ZapIcon,
+} from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
-import { IconButton } from '@/components/IconButton'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { CAPABILITY_LEVEL_FILL_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 

@@ -20,17 +20,18 @@ import {
   formatWifiStandard,
   isSecuredWifi,
 } from '@/lib/format'
-import { Card } from '@/components/Card'
-import { DataList, DataRow } from '@/components/DataRow'
-import { InlineMeta } from '@/components/DotSeparator'
 import {
+  Card,
   ChevronDownIcon,
+  DataList,
+  DataRow,
   EthernetIcon,
+  InlineMeta,
   LockIcon,
   OfflineIcon,
   UnlockIcon,
   WifiIcon,
-} from '@/components/icons/Icons'
+} from '@/ui'
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
 

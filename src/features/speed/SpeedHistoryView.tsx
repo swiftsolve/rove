@@ -9,14 +9,21 @@ import {
   getSpeedHistory,
   type SpeedHistoryEntry,
 } from '@/features/speed/utils/speed-history'
-import { PageHeader } from '@/components/PageHeader'
-import { Card } from '@/components/Card'
-import { DotSeparator, InlineMeta } from '@/components/DotSeparator'
-import { DirectionIcon } from '@/components/icons/DirectionIcon'
+import {
+  Card,
+  DirectionIcon,
+  DotSeparator,
+  EmptyState,
+  EthernetIcon,
+  GlobeIcon,
+  InlineMeta,
+  MoreVerticalIcon,
+  PageHeader,
+  TrashIcon,
+  WifiIcon,
+  type SpeedSeries,
+} from '@/ui'
 import { FAILED_PING } from '@/types'
-import { EthernetIcon, GlobeIcon, MoreVerticalIcon, TrashIcon, WifiIcon } from '@/components/icons/Icons'
-import { EmptyState } from '@/components/EmptyState'
-import type { SpeedSeries } from '@/components/icons/DirectionIcon'
 import { useMenu } from '@/hooks/useMenu'
 
 /** Connection badge, tinted by medium. */

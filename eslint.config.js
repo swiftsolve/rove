@@ -2,6 +2,19 @@ import js from '@eslint/js'
 import reactHooks from 'eslint-plugin-react-hooks'
 import tseslint from 'typescript-eslint'
 
+const UI_INTERNALS = {
+  group: ['@/ui/*', '**/ui/primitives/**', '**/ui/components/**', '**/ui/icons/**'],
+  message: "Import the UI library from '@/ui', its public entry.",
+}
+const CONTEXT_OBJECTS = {
+  group: ['**/context/*-context'],
+  message: 'Read a context through its hook (useTheme(), useNetwork()…), not useContext.',
+}
+const APP_CODE = {
+  group: ['@/app/*', '@/features/*', '@/bridge/*', '@/types/*', '@/dev/*'],
+  message: 'The UI library takes props; it never imports app code. Pass the value in.',
+}
+
 export default tseslint.config(
   // The Rust backend and build outputs are not ours to lint.
   { ignores: ['dist', 'src-tauri', 'crates', 'target'] },
@@ -40,24 +53,26 @@ export default tseslint.config(
       // `useLatestRef`, and text that ages reads the clock through `useNow`.
     },
   },
+  // Import boundaries. ESLint doesn't merge one rule's options across blocks
+  // (the last block that matches a file wins), so each block lists every
+  // pattern that applies to its files.
+  {
+    // Outside the library, the UI comes through its one public entry.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/ui/**'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [UI_INTERNALS] }] },
+  },
   {
     // A context object is read only through its hook (useTheme, useNetwork…),
     // which also fails loudly outside the provider. Its provider and hook are
     // the only code that imports it.
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/context/**', 'src/**/hooks/**'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/context/*-context'],
-              message: 'Read a context through its hook (useTheme(), useNetwork()…), not useContext.',
-            },
-          ],
-        },
-      ],
-    },
+    ignores: ['src/ui/**', 'src/**/context/**', 'src/**/hooks/**'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [UI_INTERNALS, CONTEXT_OBJECTS] }] },
+  },
+  {
+    // The library knows nothing about the app: no screens, no data, no bridge.
+    files: ['src/ui/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [APP_CODE] }] },
   },
 )

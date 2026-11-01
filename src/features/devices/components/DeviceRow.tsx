@@ -1,11 +1,12 @@
 import type { LanDevice, LanDeviceKind } from '@/types'
-import { InlineMeta } from '@/components/DotSeparator'
 import {
   CameraIcon,
+  Card,
   ChipIcon,
   ComputerIcon,
   ConsoleIcon,
   DeviceIcon,
+  InlineMeta,
   NasIcon,
   PrinterIcon,
   RouterIcon,
@@ -14,11 +15,10 @@ import {
   TvIcon,
   UnknownDeviceIcon,
   WatchIcon,
-} from '@/components/icons/Icons'
+} from '@/ui'
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
-import { Card } from '@/components/Card'
 import {
   deviceMetaParts,
   deviceName,

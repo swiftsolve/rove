@@ -9,7 +9,7 @@ import {
   LiveStreamIcon,
   UltraHdStreamIcon,
   VideoCallIcon,
-} from '@/components/icons/Icons'
+} from '@/ui'
 
 interface CapabilityIconProps {
   id: CapabilityId

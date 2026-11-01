@@ -1,16 +1,23 @@
 import type { NetworkInterfaceSummary } from '@/types'
-import { EthernetIcon, LayersIcon, RefreshIcon, WifiIcon } from '@/components/icons/Icons'
-import { DataList, DataRow } from '@/components/DataRow'
-import { InlineMeta } from '@/components/DotSeparator'
-import { IconButton } from '@/components/IconButton'
-import { Spinner } from '@/components/Spinner'
-import { PageHeader } from '@/components/PageHeader'
+import {
+  Button,
+  Card,
+  DataList,
+  DataRow,
+  ErrorBanner,
+  EthernetIcon,
+  IconButton,
+  InlineMeta,
+  LayersIcon,
+  POLLING_DESCRIPTION,
+  PageHeader,
+  RefreshIcon,
+  Spinner,
+  WifiIcon,
+} from '@/ui'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
-import { Button } from '@/components/Button'
-import { Card } from '@/components/Card'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
 const ICON_TINT = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-sm),transparent)]'

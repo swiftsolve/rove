@@ -1,5 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
-import { BrandIcon, CloseIcon, MinimizeIcon } from '@/components/icons/Icons'
+import { BrandIcon, CloseIcon, MinimizeIcon } from '@/ui'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 
 // Nudged down a hair so the label optically aligns with the wordmark's centre

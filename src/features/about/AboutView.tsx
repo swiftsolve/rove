@@ -1,7 +1,5 @@
 import { cx } from 'class-variance-authority'
-import { Card, CardHeader, CardBody } from '@/components/Card'
-import { DataList, DataRow } from '@/components/DataRow'
-import { BrandIcon } from '@/components/icons/Icons'
+import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow } from '@/ui'
 import { IS_MAC } from '@/lib/platform'
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
 

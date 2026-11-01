@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { AlertIcon, OfflineIcon, RefreshIcon } from '@/components/icons/Icons'
-import { Spinner } from '@/components/Spinner'
+import { AlertIcon, Button, ErrorBanner, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { Button } from '@/components/Button'
-import { ErrorBanner } from '@/components/ErrorBanner'
 import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 

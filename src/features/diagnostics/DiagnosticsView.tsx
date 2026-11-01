@@ -2,18 +2,31 @@ import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
-import { DataList, DataRow } from '@/components/DataRow'
-import { Card, CardHeader, CardBody, CardFooter, CardBadge } from '@/components/Card'
-import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RefreshIcon, RouterIcon } from '@/components/icons/Icons'
-import { IconButton } from '@/components/IconButton'
-import { MetricValue, type MetricStatus } from '@/components/MetricValue'
+import {
+  Card,
+  CardBadge,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  ConnectionIcon,
+  DataList,
+  DataRow,
+  DnsIcon,
+  ErrorBanner,
+  GlobeIcon,
+  HelpIcon,
+  IconButton,
+  MetricValue,
+  PageHeader,
+  RefreshIcon,
+  RouterIcon,
+  Spinner,
+  type MetricStatus,
+} from '@/ui'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
-import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { Spinner } from '@/components/Spinner'
-import { PageHeader } from '@/components/PageHeader'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
-import { ErrorBanner } from '@/components/ErrorBanner'
 
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'

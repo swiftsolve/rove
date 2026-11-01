@@ -2,10 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/network-api'
-import { AlertIcon, LockIcon, RefreshIcon, WifiOffIcon } from '@/components/icons/Icons'
-import { Spinner } from '@/components/Spinner'
-import { Button } from '@/components/Button'
-import { Dialog } from '@/components/Dialog'
+import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon } from '@/ui'
 
 const STATE = 'flex flex-col items-center gap-12 py-16 text-center'
 

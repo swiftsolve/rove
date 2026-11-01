@@ -2,15 +2,13 @@ import type { MouseEvent } from 'react'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { IS_MAC } from '@/lib/platform'
-import { DevicesIcon, SearchIcon } from '@/components/icons/Icons'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
+import { Button, ButtonSpinner, DevicesIcon, SearchIcon } from '@/ui'
 import {
   EmptyStatMetric,
   focusStatCardOpenButton,
   StatCard,
   StatReadout,
 } from '@/features/home/components/StatCard'
-import { Button } from '@/components/Button'
 
 function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'

@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { IS_WINDOWS } from '@/lib/platform'
 import { isTauri } from '@/bridge/tauri-network-api'
-import { EmptyStateDescription } from '@/components/EmptyState'
-import { Button } from '@/components/Button'
+import { Button, EmptyStateDescription } from '@/ui'
 
 /**
  * The "needs administrator" control for the per-app usage views (Apps, Hosts,

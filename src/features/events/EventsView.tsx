@@ -3,16 +3,21 @@ import type { NetworkEvent } from '@/types'
 import { useNow } from '@/hooks/useNow'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
-import { EmptyState } from '@/components/EmptyState'
-import { Spinner } from '@/components/Spinner'
-import { PageHeader } from '@/components/PageHeader'
-import { EventsIcon, HelpIcon, RefreshIcon } from '@/components/icons/Icons'
-import { Button } from '@/components/Button'
-import { IconButton } from '@/components/IconButton'
+import {
+  Button,
+  EmptyState,
+  ErrorBanner,
+  EventsIcon,
+  HelpIcon,
+  IconButton,
+  POLLING_DESCRIPTION,
+  PageHeader,
+  RefreshIcon,
+  Spinner,
+} from '@/ui'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
 import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 const FEED_HINT =
   'Devices and access points joining or leaving between scans. Kept for 7 days.'

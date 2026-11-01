@@ -1,22 +1,25 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
-import { PageHeader } from '@/components/PageHeader'
-import { Card } from '@/components/Card'
-import { MetricValue } from '@/components/MetricValue'
-import { ServiceIcon } from '@/components/icons/ServiceIcon'
 import {
+  Button,
+  Card,
   ChevronRightIcon,
   CloudIcon,
+  DialogRoot,
+  DotSeparator,
   EditIcon,
+  EmptyState,
   EventsIcon,
   HelpIcon,
+  IconButton,
+  MetricValue,
   MoreVerticalIcon,
+  PageHeader,
   PlusIcon,
+  Tooltip,
   TrashIcon,
-} from '@/components/icons/Icons'
-import { EmptyState } from '@/components/EmptyState'
-import { Tooltip } from '@/components/Tooltip'
-import { DotSeparator } from '@/components/DotSeparator'
+} from '@/ui'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { serviceTally } from '@/features/services/components/ServiceTally'
 import { MAX_SAMPLES, type LatencySample } from '@/features/services/utils/service-latency'
 import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
@@ -27,12 +30,9 @@ import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
-import { DialogRoot } from '@/components/Dialog'
 import { formatLatencyMs } from '@/lib/format'
-import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
 import { useMenu } from '@/hooks/useMenu'
-import { IconButton } from '@/components/IconButton'
 
 const SERVICES_HINT =
   'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'

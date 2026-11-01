@@ -5,19 +5,19 @@ import type {
   ServicesRunningEvent,
   ServiceTransitionEvent,
 } from '@/types'
-import { PageHeader } from '@/components/PageHeader'
-import { ServiceIcon } from '@/components/icons/ServiceIcon'
-import { serviceTally } from '@/features/services/components/ServiceTally'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
   CheckIcon,
+  EmptyState,
   GlobeIcon,
   MoreVerticalIcon,
   OfflineIcon,
+  PageHeader,
   TrashIcon,
-} from '@/components/icons/Icons'
-import { EmptyState } from '@/components/EmptyState'
+} from '@/ui'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
+import { serviceTally } from '@/features/services/components/ServiceTally'
 import { formatDuration } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { useIncrementalCount } from '@/hooks/useIncrementalCount'

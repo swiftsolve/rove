@@ -1,9 +1,9 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
-import { ButtonSpinner } from '@/components/ButtonSpinner'
-import type { IconComponent } from '@/components/icons/Icons'
-import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from '@/components/utils/button-state'
+import { ButtonSpinner } from '../spinner/ButtonSpinner'
+import type { IconComponent } from '../../icons/Icons'
+import { BUTTON_PRESS, BUTTON_STATE_VARIANTS, buttonStateProps } from './button-state'
 
 // The filled buttons: a solid fill under a white label.
 const FILLED_BASE = cx(

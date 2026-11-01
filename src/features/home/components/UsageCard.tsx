@@ -1,7 +1,7 @@
 import { splitBytes } from '@/lib/format'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { TodayIcon } from '@/components/icons/Icons'
+import { TodayIcon } from '@/ui'
 import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
 /** Today's download and upload totals; opens the Usage tab. */

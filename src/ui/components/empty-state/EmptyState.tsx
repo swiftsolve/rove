@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { LockIcon } from '@/components/icons/Icons'
+import { LockIcon } from '../../icons/Icons'
 
 interface EmptyStateProps {
   /**

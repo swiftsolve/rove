@@ -3,13 +3,21 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recha
 import type { DailyUsage } from '@/types'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
-import { Card, CardHeader, CardBody } from '@/components/Card'
-import { PageHeader } from '@/components/PageHeader'
-import { HelpIcon, TodayIcon, UsageIcon, WeekIcon } from '@/components/icons/Icons'
-import { DirectionIcon } from '@/components/icons/DirectionIcon'
-import { Spinner } from '@/components/Spinner'
-import { IconButton } from '@/components/IconButton'
-import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  DirectionIcon,
+  ErrorBanner,
+  HelpIcon,
+  IconButton,
+  POLLING_DESCRIPTION,
+  PageHeader,
+  Spinner,
+  TodayIcon,
+  UsageIcon,
+  WeekIcon,
+} from '@/ui'
 
 interface UsageDatum {
   key: string

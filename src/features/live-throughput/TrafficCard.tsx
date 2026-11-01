@@ -1,10 +1,9 @@
 import { memo } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import { useLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
-import { Card, CardHeader, CardBody } from '@/components/Card'
+import { ActivityIcon, Card, CardBody, CardHeader } from '@/ui'
 import { SpeedReadout } from '@/features/live-throughput/SpeedReadout'
 import { ThroughputChart } from '@/features/live-throughput/ThroughputChart'
-import { ActivityIcon } from '@/components/icons/Icons'
 
 // A rounded dark pill wrapping the dot + label, so the badge reads as a discrete
 // status chip against the panel. Its size, weight and resting colour come from

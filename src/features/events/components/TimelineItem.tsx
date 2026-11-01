@@ -1,20 +1,20 @@
 import type { JSX, ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { formatDuration, formatMac } from '@/lib/format'
-import { InlineMeta } from '@/components/DotSeparator'
 import {
   ActivityIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   EthernetIcon,
   GlobeIcon,
+  InlineMeta,
   OfflineIcon,
   RefreshIcon,
   RouterIcon,
   SearchIcon,
   ShieldAlertIcon,
   WifiIcon,
-} from '@/components/icons/Icons'
+} from '@/ui'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
 import {
   EVENT_TITLES,

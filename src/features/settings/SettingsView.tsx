@@ -5,19 +5,22 @@ import { useSetting } from '@/hooks/useSetting'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
 import { useTheme } from '@/app/hooks/useTheme'
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { Card, CardHeader, CardBody, CardFooter } from '@/components/Card'
-import { PageHeader } from '@/components/PageHeader'
-import { Toggle } from '@/components/Toggle'
 import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
   CheckIcon,
   ChevronRightIcon,
   ComputerIcon,
   MoonIcon,
+  PageHeader,
   RefreshIcon,
   SettingsIcon,
   SunIcon,
-} from '@/components/icons/Icons'
-import { Button } from '@/components/Button'
+  Toggle,
+} from '@/ui'
 
 type CheckState =
   | { kind: 'idle' }

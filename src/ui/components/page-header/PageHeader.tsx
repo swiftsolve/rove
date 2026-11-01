@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { ArrowLeftIcon } from '@/components/icons/Icons'
+import { ArrowLeftIcon } from '../../icons/Icons'
 
 // The back button in the icon chip's slot: the same box (a rail item's, 10px
 // radius), so a subpage's header reads like a top-level page's.

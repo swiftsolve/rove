@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { cx } from 'class-variance-authority'
-import { AlertIcon, RefreshIcon } from '@/components/icons/Icons'
-import { Button } from '@/components/Button'
+import { AlertIcon, RefreshIcon } from '../../icons/Icons'
+import { Button } from '../../primitives/button/Button'
 
 // Retry is a negative tonal chip, a step stronger than the banner's own tint;
 // Dismiss has no fill until hovered.
