@@ -5,7 +5,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
 
 const MAIN_TABS = APP_TABS.filter((id) => TABS[id].rail === 'main')
-const FOOT_TABS = APP_TABS.filter((id) => TABS[id].rail === 'foot')
+const FOOTER_TABS = APP_TABS.filter((id) => TABS[id].rail === 'footer')
 
 /** A tab's rail item, lit while its screen (or one of its subpages) is showing. */
 function TabItem({ id }: { id: AppTab }): JSX.Element {
@@ -27,7 +27,7 @@ function ThemeToggle(): JSX.Element {
   )
 }
 
-/** The nav rail: one item per tab, with the theme toggle and Settings at the foot. */
+/** The nav rail: one item per tab, with the theme toggle and Settings in its footer. */
 export function TabBar(): JSX.Element {
   return (
     <NavRail
@@ -36,7 +36,7 @@ export function TabBar(): JSX.Element {
         <TabItem key={id} id={id} />
       ))}
       // The theme toggle sits above the gear; About lives inside the Settings page.
-      foot={[<ThemeToggle key="theme" />, ...FOOT_TABS.map((id) => <TabItem key={id} id={id} />)]}
+      footer={[<ThemeToggle key="theme" />, ...FOOTER_TABS.map((id) => <TabItem key={id} id={id} />)]}
     />
   )
 }

@@ -37,8 +37,8 @@ export interface TabDefinition {
   Screen: Screen
   /** A subpage of the tab for this location, or null for its main page. */
   subScreen?: (location: AppLocation) => Screen | null
-  /** Where its rail button sits: the main group, the foot, or none. */
-  rail: 'main' | 'foot' | null
+  /** Where its rail button sits: the main group, the footer, or none. */
+  rail: 'main' | 'footer' | null
   /** The rail button lit while it shows, when it has none of its own. */
   railTab?: AppTab
   /** It can't render until network info has arrived. */
@@ -72,8 +72,8 @@ export const TABS: Record<AppTab, TabDefinition> = {
   interfaces: { label: 'Interfaces', Icon: LayersIcon, Screen: InterfacesView, rail: 'main' },
   diagnostics: { label: 'Connection', Icon: ConnectionIcon, Screen: DiagnosticsView, rail: 'main' },
   usage: { label: 'Usage', Icon: UsageIcon, Screen: UsageView, rail: 'main' },
-  // The gear sits on its own at the foot of the rail.
-  settings: { label: 'Settings', Icon: SettingsIcon, Screen: SettingsView, rail: 'foot' },
+  // The gear sits on its own in the rail's footer.
+  settings: { label: 'Settings', Icon: SettingsIcon, Screen: SettingsView, rail: 'footer' },
   // Reached from inside Settings rather than the rail, so Settings stays lit.
   about: { label: 'About', Icon: SettingsIcon, Screen: AboutView, rail: null, railTab: 'settings' },
 }

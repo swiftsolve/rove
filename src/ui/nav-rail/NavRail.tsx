@@ -70,14 +70,14 @@ interface NavRailProps {
   /** The pages, from the top. */
   main: ReactNode
   /** Utilities at the bottom edge, below a hairline: settings, the theme switch. */
-  foot: ReactNode
+  footer: ReactNode
 }
 
 /**
  * The narrow icon-only rail down the window's left side. It stays above the
  * content column, like the title bar.
  */
-export function NavRail({ label, main, foot }: NavRailProps): JSX.Element {
+export function NavRail({ label, main, footer }: NavRailProps): JSX.Element {
   return (
     // Horizontal padding is symmetric so the active pill and the accent bar read
     // as evenly inset; the top padding matches the content area's so the first
@@ -99,7 +99,7 @@ export function NavRail({ label, main, foot }: NavRailProps): JSX.Element {
           "before:h-px before:bg-line before:content-['']",
         )}
       >
-        {foot}
+        {footer}
       </NavGroup>
     </nav>
   )

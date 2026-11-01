@@ -58,7 +58,7 @@ function ClickableRail({ label, initialPage }: { label: string; initialPage: str
     <NavRail
       label={label}
       main={MAIN_PAGES.map(item)}
-      foot={[<NavItem key="theme" label="Switch to light mode" icon={SunIcon} onClick={onToggleTheme} />, item(SETTINGS)]}
+      footer={[<NavItem key="theme" label="Switch to light mode" icon={SunIcon} onClick={onToggleTheme} />, item(SETTINGS)]}
     />
   )
 }
@@ -67,11 +67,11 @@ const meta = {
   title: 'App frame/NavRail',
   component: NavRail,
   subcomponents: { NavItem },
-  // The story fills main and foot with the app's pages.
-  args: { label: 'Main navigation', main: null, foot: null },
+  // The story fills main and footer with the app's pages.
+  args: { label: 'Main navigation', main: null, footer: null },
   argTypes: {
     main: { control: false },
-    foot: { control: false },
+    footer: { control: false },
   },
   parameters: { layout: 'fullscreen' },
   // The app window's height below the title bar.
@@ -92,7 +92,7 @@ export const Default: Story = {
   render: (args) => <ClickableRail label={args.label} initialPage="Home" />,
 }
 
-/** A foot item can be the current page too. */
+/** A footer item can be the current page too. */
 export const SettingsActive: Story = {
   render: (args) => <ClickableRail label={args.label} initialPage="Settings" />,
 }
