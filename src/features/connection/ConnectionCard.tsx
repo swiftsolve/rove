@@ -25,6 +25,9 @@ import {
   ChevronDownIcon,
   DataList,
   DataRow,
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTrigger,
   EthernetIcon,
   InlineMeta,
   LockIcon,
@@ -121,15 +124,6 @@ const chevronVariants = cva(
   {
     variants: {
       isOpen: { true: 'transform-[rotate(180deg)]', false: null },
-    },
-  },
-)
-
-const detailsWrapVariants = cva(
-  'grid transition-[grid-template-rows] duration-(--duration-normal) ease-out',
-  {
-    variants: {
-      isOpen: { true: 'grid-rows-[1fr]', false: 'grid-rows-[0fr]' },
     },
   },
 )
@@ -354,7 +348,6 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
   const linkSpeed = formatLinkSpeed(info)
   const subItems = stripMetaItems(info, linkSpeed)
   const titleId = useId()
-  const detailsId = useId()
 
   return (
     // The card's focus frame: the strip's toggle expands the whole card, so focus
@@ -362,69 +355,57 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
     // Named by its own heading, as it has no CardHeader.
     <Card
       className={cx(
-        'has-[>div>button:focus-visible]:[outline:var(--focus-outline)]',
-        'has-[>div>button:focus-visible]:outline-offset-(--focus-inset)',
+        'has-[button[aria-controls]:focus-visible]:[outline:var(--focus-outline)]',
+        'has-[button[aria-controls]:focus-visible]:outline-offset-(--focus-inset)',
       )}
       aria-labelledby={titleId}
     >
-      <div
-        className={cx(
-          'relative flex items-start gap-12 w-full text-left',
-          'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
-          'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
-        )}
-      >
-        {/* A transparent full-strip button keeps the whole row one expand target
-            without wrapping the QR button inside another button (invalid HTML).
-            The content above it stays click-through so the overlay still toggles;
-            the QR button opts back in and handles its own click. */}
-        <button
-          type="button"
-          className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
-          onClick={toggleExpanded}
-          aria-expanded={isExpanded}
-          aria-controls={detailsId}
-          aria-label="Connection details"
-        />
-        <div className={stripIconVariants({ variant: display.variant })}>
-          <ConnectionIcon variant={display.variant} />
-        </div>
-        <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
-          <h2 id={titleId} className="text-heading-large truncate">
-            {display.title}
-          </h2>
-          {subItems.length > 0 ? (
-            <InlineMeta className={STRIP_SUB} items={subItems} shouldTruncate />
-          ) : (
-            <div className={STRIP_SUB}>{display.subtitle}</div>
+      <Disclosure isOpen={isExpanded} onOpenChange={toggleExpanded}>
+        <div
+          className={cx(
+            'relative flex items-start gap-12 w-full text-left',
+            'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
+            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
           )}
+        >
+          {/* A transparent full-strip button keeps the whole row one expand target
+              without wrapping the QR button inside another button (invalid HTML).
+              The content above it stays click-through so the overlay still toggles;
+              the QR button opts back in and handles its own click. */}
+          <DisclosureTrigger
+            className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
+            aria-label="Connection details"
+          />
+          <div className={stripIconVariants({ variant: display.variant })}>
+            <ConnectionIcon variant={display.variant} />
+          </div>
+          <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
+            <h2 id={titleId} className="text-heading-large truncate">
+              {display.title}
+            </h2>
+            {subItems.length > 0 ? (
+              <InlineMeta className={STRIP_SUB} items={subItems} shouldTruncate />
+            ) : (
+              <div className={STRIP_SUB}>{display.subtitle}</div>
+            )}
+          </div>
+          {isWifiNetwork(info) && (
+            // Raised above the toggle, so it takes its own click.
+            <span className="relative z-1 inline-flex self-center shrink-0">
+              <ShareWifiButton />
+            </span>
+          )}
+          {isWifiNetwork(info) && info.signalStrength != null && (
+            <SignalMeter strength={info.signalStrength} placement="strip" />
+          )}
+          <ChevronDownIcon
+            size={14}
+            className={chevronVariants({ isOpen: isExpanded })}
+            aria-hidden
+          />
         </div>
-        {isWifiNetwork(info) && (
-          // Raised above the toggle, so it takes its own click.
-          <span className="relative z-1 inline-flex self-center shrink-0">
-            <ShareWifiButton />
-          </span>
-        )}
-        {isWifiNetwork(info) && info.signalStrength != null && (
-          <SignalMeter strength={info.signalStrength} placement="strip" />
-        )}
-        <ChevronDownIcon
-          size={14}
-          className={chevronVariants({ isOpen: isExpanded })}
-          aria-hidden
-        />
-      </div>
 
-      {/* Collapsed, the rows are clipped to nothing but still in the DOM (for the
-          height animation), so hide them from assistive tech too. */}
-      <div
-        id={detailsId}
-        className={detailsWrapVariants({ isOpen: isExpanded })}
-        aria-hidden={!isExpanded}
-      >
-        {/* The grid row's only child, shrinking to nothing when collapsed;
-            `min-h-0` lets it go below the panel's padding. */}
-        <div className="min-h-0 overflow-hidden">
+        <DisclosurePanel isAnimated>
           {/* Grouped by topic: the link itself, then the addresses from the
               device outward, then the hardware it runs over. */}
           <div className={DETAILS}>
@@ -460,8 +441,8 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               <DataRow label="MAC" value={formatMac(info.macAddress)} />
             </DataList>
           </div>
-        </div>
-      </div>
+        </DisclosurePanel>
+      </Disclosure>
     </Card>
   )
 },

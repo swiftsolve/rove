@@ -1,4 +1,4 @@
-import { memo, useId, type RefObject } from 'react'
+import { memo, type RefObject } from 'react'
 import type { AppHosts, HostConn, HostUsageSummary } from '@/types'
 import { formatBytes } from '@/lib/format'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
@@ -11,6 +11,9 @@ import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedA
 import {
   ChevronDownIcon,
   DirectionIcon,
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTrigger,
   EmptyState,
   ErrorBanner,
   GlobeIcon,
@@ -18,8 +21,8 @@ import {
   IconButton,
   IpIcon,
   MetricValue,
-  POLLING_DESCRIPTION,
   PageHeader,
+  POLLING_DESCRIPTION,
   Spinner,
   Tooltip as UiTooltip,
 } from '@/ui'
@@ -207,22 +210,23 @@ const AppGroup = memo(function AppGroup({
   isExpanded: boolean
   onToggle: (name: string) => void
 }): JSX.Element {
-  const hostsId = useId()
   const total = app.rxBytes + app.txBytes
   const hostCount = app.hosts.length
   return (
-    <li className={GROUP} data-app={app.name}>
+    <Disclosure
+      as="li"
+      className={GROUP}
+      data-app={app.name}
+      isOpen={isExpanded}
+      onOpenChange={() => onToggle(app.name)}
+    >
       {/* An accordion header: the heading names the group, the button inside it
           toggles the hosts beneath. The heading carries meaning only: it takes
           the row's own font, so the button inside (font: inherit) renders as
           before. */}
       <h2 className="[font:inherit]">
-        <button
-          type="button"
+        <DisclosureTrigger
           className={GROUP_HEADER}
-          onClick={() => onToggle(app.name)}
-          aria-expanded={isExpanded}
-          aria-controls={isExpanded ? hostsId : undefined}
           aria-label={`${app.name}, ${hostCount} ${hostCount === 1 ? 'host' : 'hosts'}, ${formatBytes(total)}`}
         >
           <span className="inline-flex min-w-0 items-center gap-8">
@@ -243,16 +247,16 @@ const AppGroup = memo(function AppGroup({
             className="num shrink-0 text-sm text-secondary"
             format={formatBytes}
           />
-        </button>
+        </DisclosureTrigger>
       </h2>
-      {isExpanded && (
-        <ul role="list" id={hostsId} aria-label={`Hosts for ${app.name}`} className={HOSTS}>
+      <DisclosurePanel>
+        <ul role="list" aria-label={`Hosts for ${app.name}`} className={HOSTS}>
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
           ))}
         </ul>
-      )}
-    </li>
+      </DisclosurePanel>
+    </Disclosure>
   )
 })
 
