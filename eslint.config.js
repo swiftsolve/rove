@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 const UI_INTERNALS = {
   // The gallery is the one exception: main.tsx loads it in dev, and it's not
   // part of the library's API.
-  group: ['@/ui/**', '**/ui/primitives/**', '**/ui/components/**', '**/ui/icons/**', '!@/ui/gallery/Gallery'],
+  group: ['@/ui/**', '**/ui/*/**', '!@/ui/gallery/Gallery'],
   message: "Import the UI library from '@/ui', its public entry.",
 }
 const CONTEXT_OBJECTS = {

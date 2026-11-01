@@ -43,7 +43,7 @@ const ALLOWED = [
   // The theme swap's circular reveal, tuned on its own.
   { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
-  { file: 'src/ui/components/empty-state/EmptyState.tsx', value: '#000' },
+  { file: 'src/ui/empty-state/EmptyState.tsx', value: '#000' },
   // StatusDot's breathing pulses want a symmetric curve, and no easing token is one.
   { file: 'src/styles/tailwind.css', value: 'ease-in-out' },
 ]

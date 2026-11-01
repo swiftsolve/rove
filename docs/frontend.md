@@ -128,7 +128,7 @@ for what. Read it before writing or changing UI. For where files live, see
   - An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
     bubble's text when it should say more.
   - Everything pressable shares that behaviour through
-    `ui/primitives/button/pressable.ts`, and styles a hover or press that only
+    `ui/foundations/pressable.ts`, and styles a hover or press that only
     applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
 - Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
   styled with our tokens: focus traps, positioning, roving focus, dismissal,
@@ -161,17 +161,22 @@ import it from `@/ui` and nothing else under `src/ui`. The library imports only
 itself (by relative path) and packages, never app code. `npm run lint` enforces
 both, and a raw `<button>` outside the library is a lint error.
 
-- `primitives/`: the building blocks, each in its own folder with its tests:
-  - button, link, tooltip, dialog and menu
-  - disclosure, toggle, segmented-control and text-field
-  - badge, status-dot, icon-tile and bar-meter
-  - spinner and separator
-- `components/`: compositions of primitives:
-  - card, data-list, list-row, page-header and readout
-  - empty-state, loading-state and error-banner
-  - nav-rail and title-bar
-- `foundations/` (`cn`), `hooks/` (generic UI hooks), `context/` (where
-  dialogs portal), and `icons/`.
+- Each component has its own kebab-case folder at the top of `src/ui`, with
+  its tests (`button/` holds Button, IconButton and StretchedButton). There are
+  no tiers: a component that starts using another stays where it is.
+- `index.ts` and the gallery group them by purpose:
+  - Actions: button, link and menu
+  - Inputs: text-field, toggle and segmented-control
+  - Overlays: dialog and tooltip
+  - Status and feedback: badge, status-dot, spinner, loading-state,
+    error-banner and empty-state
+  - Data display: data-list, readout, metric-value, bar-meter, list-row and
+    icon-tile
+  - Containers: card, disclosure and separator
+  - App frame: title-bar, nav-rail and page-header
+- `foundations/` (`cn`, and `pressable`, the behaviour everything pressable
+  shares), `hooks/` (generic UI hooks), `context/` (where dialogs portal), and
+  `icons/`.
 - `gallery/` renders every component in every state at `/?gallery`
   (`&theme=light` for Light). Dev only.
 

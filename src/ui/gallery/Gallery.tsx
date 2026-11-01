@@ -1,23 +1,23 @@
 import { useState, type ReactNode } from 'react'
-import { Button, type ButtonAppearance } from '../primitives/button/Button'
-import { IconButton } from '../primitives/button/IconButton'
-import { ButtonSpinner } from '../primitives/spinner/ButtonSpinner'
-import { Spinner } from '../primitives/spinner/Spinner'
-import { Toggle } from '../primitives/toggle/Toggle'
-import { TextField, TextFieldAction } from '../primitives/text-field/TextField'
-import { SegmentedControl } from '../primitives/segmented-control/SegmentedControl'
-import { Dialog, DialogRoot } from '../primitives/dialog/Dialog'
+import { Button, type ButtonAppearance } from '../button/Button'
+import { IconButton } from '../button/IconButton'
+import { ButtonSpinner } from '../spinner/ButtonSpinner'
+import { Spinner } from '../spinner/Spinner'
+import { Toggle } from '../toggle/Toggle'
+import { TextField, TextFieldAction } from '../text-field/TextField'
+import { SegmentedControl } from '../segmented-control/SegmentedControl'
+import { Dialog, DialogRoot } from '../dialog/Dialog'
 import { PortalProvider } from '../context/PortalProvider'
-import { DotSeparator, InlineMeta } from '../primitives/separator/DotSeparator'
-import { Card, CardBody, CardFooter, CardHeader } from '../components/card/Card'
-import { Badge } from '../primitives/badge/Badge'
-import { DataList, DataRow } from '../components/data-list/DataList'
-import { EmptyState } from '../components/empty-state/EmptyState'
-import { ErrorBanner } from '../components/error-banner/ErrorBanner'
-import { MetricValue } from '../components/metric-value/MetricValue'
-import { PageHeader } from '../components/page-header/PageHeader'
-import { Link } from '../primitives/link/Link'
-import { ViewLink } from '../primitives/link/ViewLink'
+import { DotSeparator, InlineMeta } from '../separator/DotSeparator'
+import { Card, CardBody, CardFooter, CardHeader } from '../card/Card'
+import { Badge } from '../badge/Badge'
+import { DataList, DataRow } from '../data-list/DataList'
+import { EmptyState } from '../empty-state/EmptyState'
+import { ErrorBanner } from '../error-banner/ErrorBanner'
+import { MetricValue } from '../metric-value/MetricValue'
+import { PageHeader } from '../page-header/PageHeader'
+import { Link } from '../link/Link'
+import { ViewLink } from '../link/ViewLink'
 import {
   GlobeIcon,
   HelpIcon,
@@ -67,6 +67,18 @@ export function Gallery(): JSX.Element {
         ))}
       </Section>
 
+      <Section title="IconButton">
+        {(['soft', 'ghost'] as const).map((variant) => (
+          <Row key={variant} label={variant}>
+            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} />
+            <IconButton variant={variant} label="Run" icon={PlayIcon} iconSize={14} />
+            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isLoading />
+            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isDisabled />
+            <IconButton variant={variant} label="Options" icon={MoreVerticalIcon} />
+          </Row>
+        ))}
+      </Section>
+
       <Section title="Link">
         <Row label="view link">
           <span className="inline-flex items-center gap-12 text-caption">
@@ -89,16 +101,11 @@ export function Gallery(): JSX.Element {
         </Row>
       </Section>
 
-      <Section title="IconButton">
-        {(['soft', 'ghost'] as const).map((variant) => (
-          <Row key={variant} label={variant}>
-            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} />
-            <IconButton variant={variant} label="Run" icon={PlayIcon} iconSize={14} />
-            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isLoading />
-            <IconButton variant={variant} label="Refresh" icon={RefreshIcon} isDisabled />
-            <IconButton variant={variant} label="Options" icon={MoreVerticalIcon} />
-          </Row>
-        ))}
+      <Section title="TextField">
+        <div className="grid grid-cols-2 gap-12">
+          <TextFieldDemo />
+          <TextField label="Invalid" value="not an address" onChange={() => {}} isInvalid feedback="Not an address." />
+        </div>
       </Section>
 
       <Section title="Toggle">
@@ -116,11 +123,8 @@ export function Gallery(): JSX.Element {
         </Row>
       </Section>
 
-      <Section title="TextField">
-        <div className="grid grid-cols-2 gap-12">
-          <TextFieldDemo />
-          <TextField label="Invalid" value="not an address" onChange={() => {}} isInvalid feedback="Not an address." />
-        </div>
+      <Section title="Dialog">
+        <DialogDemo />
       </Section>
 
       <Section title="Spinner">
@@ -134,17 +138,60 @@ export function Gallery(): JSX.Element {
         </Row>
       </Section>
 
-      <Section title="Separator">
-        <Row label="inline">
-          <span className="text-sm text-secondary">
-            Wi‑Fi <DotSeparator /> 5 GHz
-          </span>
-          <span className="text-sm text-secondary">
-            <InlineMeta items={['192.168.1.20', 'Apple', null, '2 min ago']} />
-          </span>
-          <span className="w-[160px] text-sm text-secondary">
-            <InlineMeta shouldTruncate items={['a-very-long-hostname.local', 'Raspberry Pi Foundation', 'now']} />
-          </span>
+      <Section title="ErrorBanner">
+        <ErrorBanner title="Couldn't load devices" description="Rove keeps trying in the background." />
+        <ErrorBanner
+          title="Speed test failed"
+          description="The server didn't answer."
+          onRetry={() => Promise.resolve()}
+        />
+      </Section>
+
+      <Section title="EmptyState">
+        <div className="grid grid-cols-2 gap-12">
+          <div className="flex h-[280px]">
+            <EmptyState
+              title="No services yet"
+              description="Add one to see whether it's up."
+              actions={
+                <Button variant="solid" icon={PlusIcon}>
+                  Add service
+                </Button>
+              }
+            />
+          </div>
+          <div className="flex h-[280px]">
+            <EmptyState isLocked title="Needs administrator access" description="Restart Rove as admin to see this." />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="DataList">
+        <div className="grid grid-cols-3 gap-12">
+          {(['default', 'snug', 'compact'] as const).map((density) => (
+            <Card key={density}>
+              <CardHeader title={density} />
+              <CardBody>
+                <DataList density={density}>
+                  <DataRow label="Download" value="512 Mbps" />
+                  <DataRow label="Upload" value="48 Mbps" />
+                  <DataRow label="Signal" align="center">
+                    <span className="inline-block size-12 rounded-full bg-status-positive" />
+                  </DataRow>
+                  <DataRow label="Hidden" value={null} />
+                </DataList>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="MetricValue">
+        <Row label="status">
+          <MetricValue value={42} format={(n) => `${Math.round(n)} ms`} />
+          <MetricValue value={42} status="positive" format={(n) => `${Math.round(n)} ms`} />
+          <MetricValue value={180} status="warning" format={(n) => `${Math.round(n)} ms`} />
+          <MetricValue value={900} status="negative" format={(n) => `${Math.round(n)} ms`} />
         </Row>
       </Section>
 
@@ -178,32 +225,17 @@ export function Gallery(): JSX.Element {
         </div>
       </Section>
 
-      <Section title="DataList">
-        <div className="grid grid-cols-3 gap-12">
-          {(['default', 'snug', 'compact'] as const).map((density) => (
-            <Card key={density}>
-              <CardHeader title={density} />
-              <CardBody>
-                <DataList density={density}>
-                  <DataRow label="Download" value="512 Mbps" />
-                  <DataRow label="Upload" value="48 Mbps" />
-                  <DataRow label="Signal" align="center">
-                    <span className="inline-block size-12 rounded-full bg-status-positive" />
-                  </DataRow>
-                  <DataRow label="Hidden" value={null} />
-                </DataList>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="MetricValue">
-        <Row label="status">
-          <MetricValue value={42} format={(n) => `${Math.round(n)} ms`} />
-          <MetricValue value={42} status="positive" format={(n) => `${Math.round(n)} ms`} />
-          <MetricValue value={180} status="warning" format={(n) => `${Math.round(n)} ms`} />
-          <MetricValue value={900} status="negative" format={(n) => `${Math.round(n)} ms`} />
+      <Section title="Separator">
+        <Row label="inline">
+          <span className="text-sm text-secondary">
+            Wi‑Fi <DotSeparator /> 5 GHz
+          </span>
+          <span className="text-sm text-secondary">
+            <InlineMeta items={['192.168.1.20', 'Apple', null, '2 min ago']} />
+          </span>
+          <span className="w-[160px] text-sm text-secondary">
+            <InlineMeta shouldTruncate items={['a-very-long-hostname.local', 'Raspberry Pi Foundation', 'now']} />
+          </span>
         </Row>
       </Section>
 
@@ -225,38 +257,6 @@ export function Gallery(): JSX.Element {
           <PageHeader title="Checking" icon={<SearchIcon size={18} />} status="Checking…" />
           <PageHeader title="Results" onBack={() => {}} description="A subpage over a tab" />
         </div>
-      </Section>
-
-      <Section title="ErrorBanner">
-        <ErrorBanner title="Couldn't load devices" description="Rove keeps trying in the background." />
-        <ErrorBanner
-          title="Speed test failed"
-          description="The server didn't answer."
-          onRetry={() => Promise.resolve()}
-        />
-      </Section>
-
-      <Section title="EmptyState">
-        <div className="grid grid-cols-2 gap-12">
-          <div className="flex h-[280px]">
-            <EmptyState
-              title="No services yet"
-              description="Add one to see whether it's up."
-              actions={
-                <Button variant="solid" icon={PlusIcon}>
-                  Add service
-                </Button>
-              }
-            />
-          </div>
-          <div className="flex h-[280px]">
-            <EmptyState isLocked title="Needs administrator access" description="Restart Rove as admin to see this." />
-          </div>
-        </div>
-      </Section>
-
-      <Section title="Dialog">
-        <DialogDemo />
       </Section>
     </main>
   )

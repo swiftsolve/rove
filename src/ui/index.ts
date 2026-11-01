@@ -1,36 +1,49 @@
 // The library's public API: features import from `@/ui`, never a path inside it.
+// Grouped by what a component is for; the folders under `src/ui` are flat.
 
-export { Button, type ButtonAppearance, type ButtonProps } from './primitives/button/Button'
-export { IconButton } from './primitives/button/IconButton'
-export { StretchedButton } from './primitives/button/StretchedButton'
-export { Link } from './primitives/link/Link'
-export { ViewLink } from './primitives/link/ViewLink'
-export { Menu, MenuContent, MenuItem, MenuTrigger } from './primitives/menu/Menu'
-export { ButtonSpinner } from './primitives/spinner/ButtonSpinner'
-export { Badge, LiveBadge } from './primitives/badge/Badge'
-export { IconTile, IconTileButton } from './primitives/icon-tile/IconTile'
-export { BarMeter } from './primitives/bar-meter/BarMeter'
-export { Spinner } from './primitives/spinner/Spinner'
-export { StatusDot } from './primitives/status-dot/StatusDot'
-export { Tooltip } from './primitives/tooltip/Tooltip'
-export { Dialog, DialogRoot } from './primitives/dialog/Dialog'
-export { Toggle } from './primitives/toggle/Toggle'
-export { TextField, TextFieldAction } from './primitives/text-field/TextField'
-export { Disclosure, DisclosurePanel, DisclosureTrigger } from './primitives/disclosure/Disclosure'
-export { SegmentedControl, type SegmentedOption } from './primitives/segmented-control/SegmentedControl'
-export { DotSeparator, InlineMeta } from './primitives/separator/DotSeparator'
+// Actions
+export { Button, type ButtonAppearance, type ButtonProps } from './button/Button'
+export { IconButton } from './button/IconButton'
+export { StretchedButton } from './button/StretchedButton'
+export { Link } from './link/Link'
+export { ViewLink } from './link/ViewLink'
+export { Menu, MenuContent, MenuItem, MenuTrigger } from './menu/Menu'
 
-export { Card, CardBody, CardFooter, CardHeader } from './components/card/Card'
-export { DataList, DataListStack, DataRow } from './components/data-list/DataList'
-export { EmptyState, EmptyStateDescription } from './components/empty-state/EmptyState'
-export { ErrorBanner, POLLING_DESCRIPTION } from './components/error-banner/ErrorBanner'
-export { MetricValue, type MetricStatus } from './components/metric-value/MetricValue'
-export { ListRow } from './components/list-row/ListRow'
-export { LoadingState } from './components/loading-state/LoadingState'
-export { NavItem, NavRail } from './components/nav-rail/NavRail'
-export { PageHeader } from './components/page-header/PageHeader'
-export { Readout, ReadoutValue } from './components/readout/Readout'
-export { TitleBar, TitleBarStatus, WindowButton } from './components/title-bar/TitleBar'
+// Inputs
+export { TextField, TextFieldAction } from './text-field/TextField'
+export { Toggle } from './toggle/Toggle'
+export { SegmentedControl, type SegmentedOption } from './segmented-control/SegmentedControl'
+
+// Overlays
+export { Dialog, DialogRoot } from './dialog/Dialog'
+export { Tooltip } from './tooltip/Tooltip'
+
+// Status and feedback
+export { Badge, LiveBadge } from './badge/Badge'
+export { StatusDot } from './status-dot/StatusDot'
+export { Spinner } from './spinner/Spinner'
+export { ButtonSpinner } from './spinner/ButtonSpinner'
+export { LoadingState } from './loading-state/LoadingState'
+export { ErrorBanner, POLLING_DESCRIPTION } from './error-banner/ErrorBanner'
+export { EmptyState, EmptyStateDescription } from './empty-state/EmptyState'
+
+// Data display
+export { DataList, DataListStack, DataRow } from './data-list/DataList'
+export { Readout, ReadoutValue } from './readout/Readout'
+export { MetricValue, type MetricStatus } from './metric-value/MetricValue'
+export { BarMeter } from './bar-meter/BarMeter'
+export { ListRow } from './list-row/ListRow'
+export { IconTile, IconTileButton } from './icon-tile/IconTile'
+
+// Containers
+export { Card, CardBody, CardFooter, CardHeader } from './card/Card'
+export { Disclosure, DisclosurePanel, DisclosureTrigger } from './disclosure/Disclosure'
+export { DotSeparator, InlineMeta } from './separator/DotSeparator'
+
+// App frame
+export { TitleBar, TitleBarStatus, WindowButton } from './title-bar/TitleBar'
+export { NavItem, NavRail } from './nav-rail/NavRail'
+export { PageHeader } from './page-header/PageHeader'
 
 export * from './icons/Icons'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
