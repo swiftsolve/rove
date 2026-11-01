@@ -37,7 +37,7 @@ const rowVariants = cva(
     variants: {
       // A running test (stale results) and the empty-state preview drop the
       // interactive affordances.
-      isInteractive: { true: 'hover:bg-fill-row-hover', false: 'cursor-default' },
+      isInteractive: { true: 'hover:bg-fill-faint', false: 'cursor-default' },
     },
   },
 )
@@ -83,7 +83,7 @@ function CapabilityRow({
           </span>
           <span className={ROW_TEXT}>
             <span className="text-body truncate">{capability.label}</span>
-            <span className="text-small truncate">{capability.description}</span>
+            <span className="text-body-small truncate">{capability.description}</span>
           </span>
         </span>
         {/* Meter + chevron are one right-aligned unit, so every row's rating
@@ -118,7 +118,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
         </span>
         <div className={ROW_TEXT}>
           <span className="text-body truncate">{definition.label}</span>
-          <span className="text-small truncate">{definition.description}</span>
+          <span className="text-body-small truncate">{definition.description}</span>
         </div>
       </div>
       {/* Where the rating meter will land. */}
@@ -143,7 +143,7 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
       </span>
     )
   }
-  if (!hasRunTest) return <span className="text-meta">Available after speed test</span>
+  if (!hasRunTest) return <span className="text-caption">Available after speed test</span>
   return undefined
 }
 

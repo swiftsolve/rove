@@ -107,11 +107,11 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
           >
             <defs>
               <linearGradient id={downFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--series-down)" className="[stop-opacity:var(--opacity-area-down)]" />
+                <stop offset="0%" stopColor="var(--series-down)" className="[stop-opacity:var(--opacity-tint-xl)]" />
                 <stop offset="100%" stopColor="var(--series-down)" stopOpacity={0} />
               </linearGradient>
               <linearGradient id={upFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--series-up)" className="[stop-opacity:var(--opacity-area-up)]" />
+                <stop offset="0%" stopColor="var(--series-up)" className="[stop-opacity:var(--opacity-tint-xs)]" />
                 <stop offset="100%" stopColor="var(--series-up)" stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -131,7 +131,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
               stroke="var(--series-up)"
               strokeWidth={1.5}
               strokeDasharray="4 3"
-              className="[stroke-opacity:var(--opacity-series-up-line)]"
+              className="[stroke-opacity:var(--opacity-high)]"
               strokeLinecap="round"
               fill={`url(#${upFill})`}
               fillOpacity={1}
@@ -164,7 +164,7 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
           </AreaChart>
         </ResponsiveContainer>
 
-        <div className={cx(SCALE, 'text-chart-label', 'num')} aria-hidden>
+        <div className={cx(SCALE, 'text-number-small', 'num')} aria-hidden>
           <span className="translate-y-[-50%]">{formatAxis(scaleMax)}</span>
           <span>{formatAxis(scaleMax / 2)}</span>
           {/* Centred on the bottom edge (the y=0 baseline), mirroring the top
@@ -173,8 +173,8 @@ export function ThroughputChart({ download, upload }: ThroughputChartProps): JSX
         </div>
       </div>
 
-      {/* Same .text-chart-label type as the scale, so the x and y labels read as one set. */}
-      <div className={cx('mt-6 flex justify-between pr-[26px]', 'text-chart-label', 'num')} aria-hidden>
+      {/* Same .text-number-small type as the scale, so the x and y labels read as one set. */}
+      <div className={cx('mt-6 flex justify-between pr-[26px]', 'text-number-small', 'num')} aria-hidden>
         <span>{formatChartWindowLabel()}</span>
         <span>Now</span>
       </div>

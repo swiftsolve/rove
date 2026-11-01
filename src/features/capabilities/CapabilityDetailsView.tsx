@@ -62,7 +62,7 @@ const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-n
 const VERDICT = cx(
   'flex items-center justify-between gap-12',
   '-mx-(--section-header-padding-x) px-[calc(var(--section-header-padding-x)-1px)] py-12',
-  'rounded-b-lg border border-t-0 border-inset bg-chrome',
+  'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
 /** The verdict glyph, left of the summary in the level colour. Its box is
@@ -131,8 +131,8 @@ function CapabilityDetailCard({
           <CapabilityIcon id={capability.id} size={16} />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <h2 className="text-lg leading-section-title font-semibold tracking-section-title">{capability.label}</h2>
-          <span className="text-xs leading-meta text-tertiary">{capability.description}</span>
+          <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
+          <span className="text-xs leading-caption text-tertiary">{capability.description}</span>
         </div>
         {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
             optically centred against the two-line title block. */}
@@ -146,7 +146,7 @@ function CapabilityDetailCard({
       <dl className={METRICS}>
         {checks.map((check) => (
           <div key={check.label} className="flex min-w-0 flex-col gap-6">
-            <dt className="field-label leading-[1.15]">{check.label}</dt>
+            <dt className="text-overline leading-[1.15]">{check.label}</dt>
             <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
             <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
               <span className="sr-only">Needs </span>
@@ -157,7 +157,7 @@ function CapabilityDetailCard({
       </dl>
 
       <div className={VERDICT}>
-        <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-small text-secondary">
+        <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-body-small text-secondary">
           <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
             <VerdictIcon level={capability.level} />
           </span>

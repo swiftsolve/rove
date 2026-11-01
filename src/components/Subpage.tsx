@@ -7,7 +7,7 @@ import { ArrowLeftIcon } from '@/components/icons/Icons'
 // a subpage header reads like a top-level view's.
 const BACK = cx(
   'subpage-back inline-flex size-(--rail-item-size) shrink-0 items-center justify-center rounded-md',
-  'bg-fill-chip text-secondary hover:bg-hover hover:text-primary',
+  'bg-fill-subtle text-secondary hover:bg-hover hover:text-primary',
   'transition-[color,background] duration-(--duration-fast) ease-in-out',
 )
 
@@ -42,7 +42,7 @@ export function Subpage({
         </button>
         <div className="subpage-text flex min-w-0 flex-1 flex-col gap-4">
           <h1 className="page-header-title">{title}</h1>
-          {description != null && <p className="subpage-desc text-xs leading-meta text-tertiary">{description}</p>}
+          {description != null && <p className="subpage-desc text-xs leading-caption text-tertiary">{description}</p>}
         </div>
         {action != null && <div className="subpage-action flex shrink-0 items-center">{action}</div>}
       </header>

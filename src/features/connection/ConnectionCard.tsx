@@ -52,7 +52,7 @@ const stripIconVariants = cva(
 
 const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
-    level: { good: 'text-status-positive', fair: 'text-status-warning', weak: 'text-status-negative' },
+    level: { good: 'text-status-positive', fair: 'text-status-warning', poor: 'text-status-negative' },
     /** Beside the strip's title, or inside the expanded Signal row. */
     placement: { strip: 'relative z-1 pointer-events-none self-center shrink-0', details: null },
   },
@@ -77,7 +77,7 @@ const signalBarVariants = cva('', {
     placement: { strip: 'w-[3px] rounded-[1.5px]', details: 'w-2 rounded-[1px]' },
     isOn: {
       true: 'bg-current',
-      false: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-unlit),transparent)]',
+      false: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-lg),transparent)]',
     },
   },
 })
@@ -94,7 +94,7 @@ const SIGNAL_BAR_HEIGHTS = {
 // baseline, which drops it a couple of pixels low. In the expanded rows (the
 // details' <dl>) it right-aligns in the value cell.
 const securityBadgeVariants = cva(
-  [styles.securityBadge, 'flex items-center gap-4 min-w-0 in-[dl]:justify-end'],
+  [styles.securityBadge, 'flex items-center gap-6 min-w-0 in-[dl]:justify-end'],
   {
     variants: {
       isSecured: { true: null, false: 'text-negative' },
@@ -139,22 +139,16 @@ const detailsWrapVariants = cva(
 // does the clipping. Its groups (link, addresses, hardware) are split by a
 // hairline that runs the card's full width, with a row gap either side.
 const DETAILS = cx(
-  styles.details,
   'row-list bg-inset py-(--section-header-padding-y)',
   'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
 )
 
-// A group carries the side inset (so the hairlines between groups don't) and
-// the interface cards' tighter rhythm; `row-list` keeps its first row's top and
-// last row's bottom at 0.
-const DETAILS_GROUP = cx(
-  'row-list px-(--section-body-padding)',
-  '[&>.data-row:not(:first-child)]:pt-4 [&>.data-row:not(:last-child)]:pb-4',
-)
+// A group carries the side inset, so the hairlines between groups don't.
+const DETAILS_GROUP = 'px-(--section-body-padding)'
 
-// Keep the subtitle on one line inside the narrow strip: a flex row when it's
-// an InlineMeta, so its items can shrink (see ConnectionCard.module.css).
-const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate [&.inline-meta]:flex')
+// Keep the subtitle on one line inside the narrow strip (InlineMeta's
+// `shouldTruncate`; the security badge's item in ConnectionCard.module.css).
+const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate')
 
 interface ConnectionCardProps {
   info: NetworkInfo
@@ -172,12 +166,12 @@ function signalBarCount(strength: number): number {
   return 1
 }
 
-type SignalLevel = 'good' | 'fair' | 'weak'
+type SignalLevel = 'good' | 'fair' | 'poor'
 
 function signalLevel(strength: number): SignalLevel {
   if (strength >= 55) return 'good'
   if (strength >= 35) return 'fair'
-  return 'weak'
+  return 'poor'
 }
 
 /**
@@ -293,12 +287,12 @@ function WifiLinkRows({
       {/* The strip's title falls back to "WiFi Network" when the OS withholds
           the name (e.g. without location permission); here the row just drops. */}
       <DataRow label="Network name" value={info.ssid || null} />
-      <DataRow label="Signal">
+      <DataRow label="Signal" align="center">
         {/* Block flex (not inline-flex) avoids extra line-box strut height inside
-            .text-value, which would misalign the bars with the label text. The
+            .text-number, which would misalign the bars with the label text. The
             bars have no text, so baseline alignment sits their bottom on the
             text's baseline, and at 10px they reach its capitals. */}
-        <div className={cx(styles.signalDetail, 'flex items-baseline justify-end gap-8')}>
+        <div className="flex items-baseline justify-end gap-6">
           {info.signalStrength != null && (
             <SignalMeter strength={info.signalStrength} placement="details" />
           )}
@@ -310,7 +304,7 @@ function WifiLinkRows({
       <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
       <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
       {isSecuredWifi(info.security) != null ? (
-        <DataRow label="Security">
+        <DataRow label="Security" align="center">
           <SecurityBadge security={info.security} />
         </DataRow>
       ) : (
@@ -365,7 +359,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
     // rings the card (strip and, when open, the details) just inside its edge.
     <section
       className={cx(
-        'bg-panel rounded-lg shadow-panel overflow-hidden',
+        'bg-surface rounded-lg shadow-panel overflow-hidden',
         'has-[>div>button:focus-visible]:[outline:var(--focus-outline)]',
         'has-[>div>button:focus-visible]:outline-offset-(--focus-inset)',
       )}
@@ -375,7 +369,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         className={cx(
           'relative flex items-start gap-12 w-full text-left',
           'min-h-(--section-header-min-height) py-(--section-header-padding-y) px-(--section-header-padding-x)',
-          'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+          'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
         )}
       >
         {/* A transparent full-strip button keeps the whole row one expand target
@@ -394,11 +388,11 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           <ConnectionIcon variant={display.variant} />
         </div>
         <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
-          <h2 id={titleId} className="text-title truncate">
+          <h2 id={titleId} className="text-heading-large truncate">
             {display.title}
           </h2>
           {subItems.length > 0 ? (
-            <InlineMeta className={STRIP_SUB} items={subItems} />
+            <InlineMeta className={STRIP_SUB} items={subItems} shouldTruncate />
           ) : (
             <div className={STRIP_SUB}>{display.subtitle}</div>
           )}
@@ -433,16 +427,16 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               device outward, then the hardware it runs over. */}
           <div className={DETAILS}>
             {isWifiNetwork(info) && (
-              <DataList className={DETAILS_GROUP}>
+              <DataList className={DETAILS_GROUP} density="compact">
                 <WifiLinkRows info={info} linkSpeed={linkSpeed} />
               </DataList>
             )}
             {isEthernetNetwork(info) && (
-              <DataList className={DETAILS_GROUP}>
+              <DataList className={DETAILS_GROUP} density="compact">
                 <EthernetLinkRows info={info} linkSpeed={linkSpeed} />
               </DataList>
             )}
-            <DataList className={DETAILS_GROUP}>
+            <DataList className={DETAILS_GROUP} density="compact">
               <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
               <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
               {info.dns.length > 0 && (
@@ -453,7 +447,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
                 value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
               />
             </DataList>
-            <DataList className={DETAILS_GROUP}>
+            <DataList className={DETAILS_GROUP} density="compact">
               {isEthernetNetwork(info) && (
                 <>
                   <DataRow label="Adapter" value={formatDisplayValue(info.product)} />

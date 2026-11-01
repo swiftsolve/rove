@@ -9,7 +9,7 @@ import { formatLatencyMs } from '@/lib/format'
 import { Button } from '@/components/Button'
 import { cva, cx } from 'class-variance-authority'
 
-const FIELD_LABEL = 'field-label mb-6 block'
+const FIELD_LABEL = 'text-overline mb-6 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height control centred beside it lands on a symmetric gap.
@@ -50,7 +50,7 @@ const inputGroupVariants = cva(
 const testVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
-    'bg-accent-muted text-xs font-semibold tracking-button-default text-accent-text',
+    'bg-accent-muted text-xs font-semibold tracking-label-default text-accent-text',
     'transition-[background,color] duration-(--duration-fast) ease-in-out',
     'disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)',
   ],
@@ -67,7 +67,7 @@ const testVariants = cva(
 // Feedback tucked directly under the address field: the idle hint, an error, or
 // the tested result. The hint is a snug one-line caption; the result is a taller
 // inset row, so it swaps in the moment a test lands.
-const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-small', {
+const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-body-small', {
   variants: {
     isError: { true: 'text-negative', false: 'text-tertiary' },
   },
@@ -80,8 +80,8 @@ const RESULT = 'mt-8 flex min-h-[40px] items-center gap-8 rounded-sm border bord
 
 const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
   variants: {
-    /** The measured latency's health band, or bad when the host was down. */
-    level: { good: 'val-good', warn: 'val-warn', bad: 'val-bad' },
+    /** The measured latency's health band, or negative when the host was down. */
+    status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
   },
 })
 
@@ -138,9 +138,9 @@ function AddressFeedback({
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
         <span className="min-w-0 flex-auto truncate text-sm text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
-          <span className={resultStatusVariants({ level: 'bad' })}>Down</span>
+          <span className={resultStatusVariants({ status: 'negative' })}>Down</span>
         ) : (
-          <span className={resultStatusVariants({ level: latencyBand(outcome.latencyMs) })}>
+          <span className={resultStatusVariants({ status: latencyBand(outcome.latencyMs) })}>
             {formatLatencyMs(outcome.latencyMs)}
           </span>
         )}
@@ -300,9 +300,8 @@ export function AddServiceDialog({ isOpen, onAdd, onClose, editing }: AddService
           // A minimum width keeps it from shrinking to the spinner while it adds.
           className="min-w-[76px]"
           onClick={submit}
-          disabled={!address.trim() || isTesting || isUnchanged}
-          isBusy={isBusy}
-          aria-busy={isBusy}
+          isDisabled={!address.trim() || isTesting || isUnchanged}
+          isLoading={isBusy}
           aria-label={busyConfirmName(isBusy, isEditing)}
         >
           {confirmLabel(isBusy, isEditing, isDown)}

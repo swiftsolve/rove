@@ -24,7 +24,7 @@ interface StatCardProps {
   /** Navigate into the tab when the card (or its caret) is tapped. */
   onOpen: () => void
   /** The readout is loading (e.g. a device scan in flight). */
-  isBusy?: boolean
+  isLoading?: boolean
   /**
    * The card body: a colour-keyed readout (or a split of readouts). It may hold
    * its own control (the Devices card's Discover button), which sits beside the
@@ -39,18 +39,18 @@ interface StatCardProps {
  * whole card opens the tab, so a control in the body is its sibling, never
  * nested inside it.
  */
-export function StatCard({ icon, label, ariaLabel, onOpen, isBusy, children }: StatCardProps): JSX.Element {
+export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
   const titleId = useId()
   return (
     <section
       className={cx(CARD, 'surface')}
       data-stat-card
       aria-labelledby={titleId}
-      aria-busy={isBusy || undefined}
+      aria-busy={isLoading || undefined}
     >
       <div className="flex items-center gap-8">
         <span className="inline-flex items-center justify-center shrink-0 text-tertiary">{icon}</span>
-        <h2 id={titleId} className="section-title">
+        <h2 id={titleId} className="text-heading-small">
           {label}
         </h2>
         {/* Pushed to the far edge; always visible, brightening while the card is

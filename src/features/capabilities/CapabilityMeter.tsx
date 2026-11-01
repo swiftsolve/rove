@@ -48,11 +48,11 @@ const segVariants = cva('', {
       lit: 'bg-current',
       // A faded tint of the level colour, so the meter reads as one monochrome
       // unit rather than colour-on-grey.
-      unlit: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-unlit),transparent)]',
+      unlit: 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-lg),transparent)]',
       // Dimmed: dark, dim greys set directly rather than tinted from currentColor,
       // to keep full control of them.
-      dimmed: 'bg-fill-track',
-      dimmedLit: 'bg-fill-track-lit',
+      dimmed: 'bg-fill-default',
+      dimmedLit: 'bg-fill-strong',
     },
   },
 })

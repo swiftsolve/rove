@@ -40,7 +40,7 @@ export function DevicesCard(): JSX.Element {
       label="Devices"
       ariaLabel={ariaLabelFor(deviceCount, onlineDeviceCount, isScanning)}
       onOpen={() => navigate({ tab: 'devices' })}
-      isBusy={isScanning}
+      isLoading={isScanning}
     >
       <DevicesCardBody
         deviceCount={deviceCount}

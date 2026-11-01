@@ -1,21 +1,30 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import { cx } from 'class-variance-authority'
+import { cva, type VariantProps } from 'class-variance-authority'
 
-// True inside a DataList, where each row's label and value are a <dt>/<dd> pair.
-const DataListContext = createContext(false)
+// Label left, value right. The first row sits flush to the top of its
+// container and the last to the bottom, so `py` only sets the gap between rows.
+const rowVariants = cva('flex justify-between gap-16 first:pt-0 last:pb-0', {
+  variants: {
+    /** The air between rows: 8px, or 6px and 4px for a short or repeated list. */
+    density: { default: 'py-(--row-padding-y)', snug: 'py-6', compact: 'py-4' },
+    /** `center` for a value with no text baseline of its own (signal bars, a badge). */
+    align: { baseline: 'items-baseline', center: 'items-center' },
+  },
+  defaultVariants: { density: 'default', align: 'baseline' },
+})
 
-// Label left, value right, on a shared baseline. The first row sits flush to
-// the top of its container and the last to the bottom. `data-row` is a marker
-// views target to change the rhythm (`[&_.data-row:not(:first-child)]:pt-4`).
-const ROW = cx(
-  'data-row flex items-baseline justify-between gap-16',
-  'py-(--row-padding-y) first:pt-0 last:pb-0',
-)
-const LABEL = 'field-label shrink-0'
-const VALUE = 'text-value num text-right'
+type DataListDensity = NonNullable<VariantProps<typeof rowVariants>['density']>
+
+// Inside a DataList: its density, and each row's label and value become a
+// <dt>/<dd> pair. Null outside one.
+const DataListContext = createContext<DataListDensity | null>(null)
+
+const LABEL = 'text-overline shrink-0'
+const VALUE = 'text-number num text-right'
 
 interface DataListProps {
   className?: string
+  density?: DataListDensity
   /** DataRows, as direct children (fragments are fine). */
   children: ReactNode
 }
@@ -25,10 +34,10 @@ interface DataListProps {
  * `<dd>` value, so the pairs read as a description list. Looks the same as a
  * plain container of rows.
  */
-export function DataList({ className, children }: DataListProps): JSX.Element {
+export function DataList({ className, density = 'default', children }: DataListProps): JSX.Element {
   return (
     <dl className={className}>
-      <DataListContext.Provider value={true}>{children}</DataListContext.Provider>
+      <DataListContext.Provider value={density}>{children}</DataListContext.Provider>
     </dl>
   )
 }
@@ -37,15 +46,17 @@ interface DataRowProps {
   label: ReactNode
   value?: string | null
   children?: ReactNode
+  align?: VariantProps<typeof rowVariants>['align']
 }
 
-export function DataRow({ label, value, children }: DataRowProps): JSX.Element | null {
-  const isInDataList = useContext(DataListContext)
+export function DataRow({ label, value, children, align }: DataRowProps): JSX.Element | null {
+  const listDensity = useContext(DataListContext)
   if (value == null && !children) return null
+  const rowClassName = rowVariants({ density: listDensity ?? 'default', align })
 
-  if (isInDataList) {
+  if (listDensity != null) {
     return (
-      <div className={ROW}>
+      <div className={rowClassName}>
         <dt className={LABEL}>{label}</dt>
         <dd className={VALUE}>{children ?? value}</dd>
       </div>
@@ -53,7 +64,7 @@ export function DataRow({ label, value, children }: DataRowProps): JSX.Element |
   }
 
   return (
-    <div className={ROW}>
+    <div className={rowClassName}>
       <span className={LABEL}>{label}</span>
       <span className={VALUE}>{children ?? value}</span>
     </div>

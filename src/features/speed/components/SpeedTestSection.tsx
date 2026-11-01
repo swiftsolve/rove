@@ -118,7 +118,7 @@ function TestProgress({ progress, runId }: { progress: SpeedTestProgress; runId:
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
-        <span className="text-sm leading-small text-secondary">{progress.message || 'Starting…'}</span>
+        <span className="text-sm leading-body-small text-secondary">{progress.message || 'Starting…'}</span>
         <span className="num text-md font-regular text-accent">{Math.round(progress.progress)}%</span>
       </div>
       <div
@@ -150,7 +150,7 @@ function HeroCell({
     <div className="flex flex-col gap-8">
       <dt className="flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="field-label">{label}</span>
+        <span className="text-overline">{label}</span>
       </dt>
       <SpeedCell mbps={mbps} isPlaceholder={isPlaceholder} />
     </div>
@@ -168,7 +168,7 @@ function Substat({
 }): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
-      <dt className="field-label">{label}</dt>
+      <dt className="text-overline">{label}</dt>
       <dd className={substatValueVariants({ isEmpty })}>{text}</dd>
     </div>
   )
@@ -183,9 +183,9 @@ function ResultFooter({
 }): JSX.Element {
   return (
     // The strip under the results: connection left, link speed right. The text
-    // size comes from .text-meta.
+    // size comes from .text-caption.
     <div className={cx(INSET_PANEL, 'flex items-center')}>
-      <p className="text-meta flex w-full min-w-0 items-center justify-between gap-12">
+      <p className="text-caption flex w-full min-w-0 items-center justify-between gap-12">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
           <span className="ml-auto shrink-0">
@@ -257,7 +257,7 @@ export const SpeedTestSection = memo(function SpeedTestSection(): JSX.Element {
     <Section
       title="Speed test"
       icon={<SpeedIcon size={15} />}
-      action={isEmpty && canTest ? <span className="text-meta">No tests yet</span> : undefined}
+      action={isEmpty && canTest ? <span className="text-caption">No tests yet</span> : undefined}
     >
       {error && <p className="inline-error" role="alert">{error}</p>}
 

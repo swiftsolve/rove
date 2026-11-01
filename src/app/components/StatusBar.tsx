@@ -5,16 +5,16 @@ import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 // Nudged down a hair so the label optically aligns with the wordmark's centre
 // rather than sitting slightly high next to it.
 const linkVariants = cva(
-  ['text-meta-strong', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'],
+  ['text-label-small', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'],
   {
     variants: {
       tone: {
-        on: 'text-positive',
+        positive: 'text-positive',
         /** Link up, but the public internet is unreachable: red, to set it apart
          *  from both the green "connected" and the neutral offline states. */
-        bad: 'text-negative',
+        negative: 'text-negative',
         /** Connecting or offline: the base look. */
-        off: null,
+        neutral: null,
       },
     },
   },
@@ -23,9 +23,9 @@ const linkVariants = cva(
 const dotVariants = cva('size-[5px] rounded-full bg-current', {
   variants: {
     tone: {
-      on: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
-      bad: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
-      off: null,
+      positive: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
+      negative: 'animate-[status-pulse_2.4s_ease-in-out_infinite]',
+      neutral: null,
     },
   },
 })
@@ -39,7 +39,7 @@ const windowButtonVariants = cva(
     variants: {
       action: {
         minimize: 'hover:bg-hover hover:text-primary',
-        close: 'hover:bg-window-close-hover hover:text-on-fill',
+        close: 'hover:bg-status-negative-fill hover:text-on-fill',
       },
     },
   },
@@ -87,7 +87,7 @@ export function StatusBar(): JSX.Element {
     <header
       className={cx(
         'relative z-100 flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
-        'pl-16 pr-(--section-header-padding-x) bg-chrome border-b border-line [-webkit-app-region:drag]',
+        'pl-16 pr-(--section-header-padding-x) bg-base border-b border-line [-webkit-app-region:drag]',
       )}
       data-tauri-drag-region
     >
@@ -97,7 +97,7 @@ export function StatusBar(): JSX.Element {
           <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
-          <span className="text-2xl font-semibold tracking-title text-primary">Rove</span>
+          <span className="text-2xl font-semibold tracking-heading-large text-primary">Rove</span>
         </div>
         {/* Polite live region: the link state changes on its own. */}
         <span className={linkVariants({ tone })} role="status">

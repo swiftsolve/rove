@@ -55,7 +55,7 @@ const KEBAB = cx(
 
 const DROPDOWN = cx(
   'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
-  'rounded-sm border border-line-strong bg-raised shadow-raised',
+  'rounded-sm border border-line-strong bg-surface shadow-raised',
 )
 
 const menuItemVariants = cva(
@@ -171,7 +171,7 @@ function RowMenu({ service, isOpen, onOpenChange, onEdit, onRemove }: RowMenuPro
 /** A glyph standing in for a latency ("…", "—"), read aloud as a word instead. */
 function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }): JSX.Element {
   return (
-    <span className="text-small">
+    <span className="text-body-small">
       <span aria-hidden="true">{glyph}</span>
       <span className="sr-only">{spoken}</span>
     </span>
@@ -198,11 +198,11 @@ function LatencyReadout({
     return isInternetUnreachable ? (
       <PlaceholderReadout glyph="—" spoken="Unknown" />
     ) : (
-      <span className="val-bad">Down</span>
+      <span className="text-negative">Down</span>
     )
   }
-  if (isErroring) return <span className="val-bad">Down</span>
-  return <MetricValue value={latencyMs} level={latencyBand(latencyMs)} format={formatLatencyMs} />
+  if (isErroring) return <span className="text-negative">Down</span>
+  return <MetricValue value={latencyMs} status={latencyBand(latencyMs)} format={formatLatencyMs} />
 }
 
 interface ServiceRowProps {

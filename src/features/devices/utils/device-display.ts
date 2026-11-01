@@ -45,23 +45,24 @@ function describeUnnamed(device: LanDevice): string {
   return 'Generic device'
 }
 
-export function deviceName(device: LanDevice): string {
-  if (device.isGateway) return 'Router'
-  if (device.isSelf) return 'This device'
+/** The name's parts, shown with a dot separator between them (Apple, Phone). */
+export function deviceName(device: LanDevice): string[] {
+  if (device.isGateway) return ['Router']
+  if (device.isSelf) return ['This device']
   // A real hostname is the name the user gave the device — it always wins.
-  if (device.hostname) return device.hostname
+  if (device.hostname) return [device.hostname]
   // Keep the kind beside a known maker rather than letting the vendor replace
   // it, so the kind never drops out of the name. A vendor is a brand, so it
-  // reads as maker · type ("Apple · Phone"), matching the dot-separated meta
+  // reads as maker, then type (Apple, Phone), matching the dot-separated meta
   // line; when the maker is unknown, fall back to the OS/kind synthesis.
-  if (!device.vendor) return describeUnnamed(device)
+  if (!device.vendor) return [describeUnnamed(device)]
   // A smart-home device's noun ("smart home device") is verbose and already
   // spelled out in the kind chip below the name ("Smart home"), so pairing it
-  // with the maker reads as "Espressif · Smart home device". Show the maker
+  // with the maker reads as Espressif, Smart home device. Show the maker
   // alone there — the chip carries the category.
-  if (device.kind === 'iot') return device.vendor
+  if (device.kind === 'iot') return [device.vendor]
   const noun = kindNoun(device)
-  return noun ? `${device.vendor} · ${capitalize(noun)}` : device.vendor
+  return noun ? [device.vendor, capitalize(noun)] : [device.vendor]
 }
 
 // A coarse "3m ago" / "2h ago" / "4d ago". We only ever show this for offline
@@ -87,13 +88,13 @@ export function lastSeenAge(device: LanDevice, now: number): string | null {
   return relativeAge(ms)
 }
 
-// Kind · vendor · OS · model, dropping unknown parts. Vendor comes from the
+// Kind, vendor, OS and model, dropping unknown parts. Vendor comes from the
 // MAC OUI (or an inferred maker like Apple); OS from the passive DHCP
 // fingerprint. Case-insensitively drop any part that just repeats the name
 // (e.g. a nameless host shown as its vendor) or an earlier part (an Apple
 // handheld whose vendor and OS are both "Apple").
-export function deviceMetaParts(device: LanDevice, name: string): string[] {
-  const seen = new Set<string>([name.toLowerCase()])
+export function deviceMetaParts(device: LanDevice, name: string[]): string[] {
+  const seen = new Set<string>([name.join(' ').toLowerCase()])
   return [
     device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
     device.vendor ?? undefined,

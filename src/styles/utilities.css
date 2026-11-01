@@ -1,7 +1,7 @@
 /*
  * The app's shared styles, as Tailwind utilities: type styles, numeric and
  * metric faces, page layout and a few shared pieces. Being utilities, they take
- * variants (`hover:text-meta`) and sort with the rest, so an element's other
+ * variants (`hover:text-caption`) and sort with the rest, so an element's other
  * utilities override them the same way they override each other.
  */
 
@@ -9,129 +9,107 @@
    Each type utility is one Figma text style, read from its --type-* tokens. */
 
 /** Panel headings: Live usage, Speed test. */
-@utility section-title {
-  font-size: var(--type-section-title-size);
-  font-weight: var(--type-section-title-weight);
+@utility text-heading-small {
+  font-size: var(--type-heading-small-size);
+  font-weight: var(--type-heading-small-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-section-title-letter-spacing);
-  line-height: var(--type-section-title-line-height);
+  letter-spacing: var(--type-heading-small-letter-spacing);
+  line-height: var(--type-heading-small-line-height);
 }
 
 /** Dialog headings: Add a service, Update available. */
-@utility text-dialog-title {
-  font-size: var(--type-dialog-title-size);
-  font-weight: var(--type-dialog-title-weight);
+@utility text-heading-medium {
+  font-size: var(--type-heading-medium-size);
+  font-weight: var(--type-heading-medium-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-dialog-title-letter-spacing);
-  line-height: var(--type-dialog-title-line-height);
+  letter-spacing: var(--type-heading-medium-letter-spacing);
+  line-height: var(--type-heading-medium-line-height);
 }
 
 /** Labels above values: Download, IP address. */
-@utility field-label {
-  font-size: var(--type-field-label-size);
-  font-weight: var(--type-field-label-weight);
+@utility text-overline {
+  font-size: var(--type-overline-size);
+  font-weight: var(--type-overline-weight);
   color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: var(--type-field-label-letter-spacing);
-  line-height: var(--type-field-label-line-height);
+  letter-spacing: var(--type-overline-letter-spacing);
+  line-height: var(--type-overline-line-height);
 }
 
-@utility text-title {
-  font-size: var(--type-title-size);
-  font-weight: var(--type-title-weight);
+@utility text-heading-large {
+  font-size: var(--type-heading-large-size);
+  font-weight: var(--type-heading-large-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-title-letter-spacing);
-  line-height: var(--type-title-line-height);
+  letter-spacing: var(--type-heading-large-letter-spacing);
+  line-height: var(--type-heading-large-line-height);
 }
 
 @utility text-body {
-  font-size: var(--type-body-size);
-  font-weight: var(--type-body-weight);
+  font-size: var(--type-body-default-size);
+  font-weight: var(--type-body-default-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-body-letter-spacing);
-  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-default-letter-spacing);
+  line-height: var(--type-body-default-line-height);
 }
 
 /** Body-size text in the secondary colour. */
 @utility text-body-secondary {
-  font-size: var(--type-body-size);
-  font-weight: var(--type-body-weight);
+  font-size: var(--type-body-default-size);
+  font-weight: var(--type-body-default-weight);
   color: var(--text-secondary);
-  letter-spacing: var(--type-body-letter-spacing);
-  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-default-letter-spacing);
+  line-height: var(--type-body-default-line-height);
 }
 
 @utility text-muted {
-  font-size: var(--type-body-size);
-  font-weight: var(--type-body-weight);
+  font-size: var(--type-body-default-size);
+  font-weight: var(--type-body-default-weight);
   color: var(--text-tertiary);
-  letter-spacing: var(--type-body-letter-spacing);
-  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-default-letter-spacing);
+  line-height: var(--type-body-default-line-height);
 }
 
 /** Helper text and hints: "No DNS servers found." */
-@utility text-small {
-  font-size: var(--type-small-size);
-  font-weight: var(--type-small-weight);
+@utility text-body-small {
+  font-size: var(--type-body-small-size);
+  font-weight: var(--type-body-small-weight);
   color: var(--text-tertiary);
-  letter-spacing: var(--type-small-letter-spacing);
-  line-height: var(--type-small-line-height);
+  letter-spacing: var(--type-body-small-letter-spacing);
+  line-height: var(--type-body-small-line-height);
 }
 
-/** Card footer hints: "Available after speed test". */
-@utility text-hint {
-  font-size: var(--type-hint-size);
-  font-weight: var(--type-hint-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-hint-letter-spacing);
-  line-height: var(--type-hint-line-height);
-}
-
-@utility text-value {
-  font-size: var(--type-value-size);
-  font-weight: var(--type-value-weight);
+@utility text-number {
+  font-size: var(--type-number-default-size);
+  font-weight: var(--type-number-default-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-value-letter-spacing);
-  line-height: var(--type-value-line-height);
+  letter-spacing: var(--type-number-default-letter-spacing);
+  line-height: var(--type-number-default-line-height);
 }
 
-@utility text-meta {
-  font-size: var(--type-meta-size);
-  font-weight: var(--type-meta-weight);
+@utility text-caption {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
   color: var(--text-tertiary);
-  letter-spacing: var(--type-meta-letter-spacing);
-  line-height: var(--type-meta-line-height);
+  letter-spacing: var(--type-caption-letter-spacing);
+  line-height: var(--type-caption-line-height);
 }
 
-/** Medium-weight meta: the title bar's connection status. */
-@utility text-meta-strong {
-  font-size: var(--type-meta-strong-size);
-  font-weight: var(--type-meta-strong-weight);
+/** Medium-weight small labels: the title bar's connection status. */
+@utility text-label-small {
+  font-size: var(--type-label-small-size);
+  font-weight: var(--type-label-small-weight);
   color: var(--text-tertiary);
-  letter-spacing: var(--type-meta-strong-letter-spacing);
-  line-height: var(--type-meta-strong-line-height);
+  letter-spacing: var(--type-label-small-letter-spacing);
+  line-height: var(--type-label-small-line-height);
 }
 
 /** Chart axes and scale; pair with `num` for the numeric face. */
-@utility text-chart-label {
-  font-size: var(--type-chart-label-size);
-  font-weight: var(--type-chart-label-weight);
+@utility text-number-small {
+  font-size: var(--type-number-small-size);
+  font-weight: var(--type-number-small-weight);
   color: var(--text-tertiary);
-  letter-spacing: var(--type-chart-label-letter-spacing);
-  line-height: var(--type-chart-label-line-height);
-}
-
-/* Value states: health in colour, only where it's earned. */
-@utility val-good {
-  color: var(--text-positive);
-}
-
-@utility val-warn {
-  color: var(--text-warning);
-}
-
-@utility val-bad {
-  color: var(--text-negative);
+  letter-spacing: var(--type-number-small-letter-spacing);
+  line-height: var(--type-number-small-line-height);
 }
 
 /* ---- Numbers ---- */
@@ -151,20 +129,20 @@
 @utility metric-value {
   font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
-  font-size: var(--type-metric-display-size);
+  font-size: var(--type-number-display-size);
   /* Semibold, where the Figma style is Regular: Questrial has one weight, so
      the browser emboldens it. Figma draws the same with an outside stroke. */
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--type-metric-display-letter-spacing);
-  line-height: var(--type-metric-display-line-height);
+  letter-spacing: var(--type-number-display-letter-spacing);
+  line-height: var(--type-number-display-line-height);
   color: var(--text-primary);
 }
 
 @utility metric-unit {
   font-family: var(--font-family-sans);
-  font-size: var(--type-metric-unit-size);
-  font-weight: var(--type-metric-unit-weight);
-  letter-spacing: var(--type-metric-unit-letter-spacing);
+  font-size: var(--type-body-small-size);
+  font-weight: var(--type-body-small-weight);
+  letter-spacing: var(--type-body-small-letter-spacing);
   /* Line height inherits: the unit sits on its value's line, and the stat
      cards set their own (StatCard). */
   color: var(--text-secondary);
@@ -175,9 +153,9 @@
    keep both on one line on narrow windows. */
 @utility metric-compact {
   & .metric-value {
-    font-size: var(--type-metric-compact-size);
-    letter-spacing: var(--type-metric-compact-letter-spacing);
-    line-height: var(--type-metric-compact-line-height);
+    font-size: var(--type-number-large-size);
+    letter-spacing: var(--type-number-large-letter-spacing);
+    line-height: var(--type-number-large-line-height);
   }
 }
 
@@ -220,18 +198,18 @@
    rail, overflow-x: hidden or not. The top margin cancels the scroll area's top
    padding. */
 @utility page-header {
-  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--spacing-6)) 0 calc(-1 * var(--spacing-11));
-  padding: var(--spacing-12) var(--spacing-6) var(--spacing-12) var(--spacing-11);
+  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--spacing-6)) 0 calc(-1 * var(--spacing-12));
+  padding: var(--spacing-12) var(--spacing-6) var(--spacing-12) var(--spacing-12);
   border-bottom: 1px solid var(--border-default);
 }
 
 /** View titles: the connection card strip title's scale. */
 @utility page-header-title {
-  font-size: var(--type-title-size);
-  font-weight: var(--type-title-weight);
+  font-size: var(--type-heading-large-size);
+  font-weight: var(--type-heading-large-weight);
   color: var(--text-primary);
-  letter-spacing: var(--type-title-letter-spacing);
-  line-height: var(--type-title-line-height);
+  letter-spacing: var(--type-heading-large-letter-spacing);
+  line-height: var(--type-heading-large-line-height);
 }
 
 /* The nav-matched glyph left of a page title, in the selected nav item's chip
@@ -244,7 +222,7 @@
   width: var(--rail-item-size);
   height: var(--rail-item-size);
   border-radius: var(--radius-md);
-  background: var(--fill-chip);
+  background: var(--fill-subtle);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -287,7 +265,7 @@
 }
 
 @utility surface {
-  background: var(--bg-panel);
+  background: var(--bg-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel);
 }
@@ -312,7 +290,7 @@
   padding: var(--spacing-8) var(--spacing-12);
   min-width: 150px;
   border-radius: var(--radius-sm);
-  background: var(--bg-raised);
+  background: var(--bg-surface);
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-raised);
   pointer-events: none;
@@ -351,8 +329,8 @@
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
   color: var(--text-negative);
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line-height);
+  font-size: var(--type-body-default-size);
+  line-height: var(--type-body-default-line-height);
   margin-bottom: var(--spacing-12);
 }
 
@@ -364,8 +342,8 @@
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-sm), transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-negative) var(--opacity-tint-md), transparent);
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line-height);
+  font-size: var(--type-body-default-size);
+  line-height: var(--type-body-default-line-height);
   animation: fade-in var(--duration-fast) var(--ease-out);
 }
 

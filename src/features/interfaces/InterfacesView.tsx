@@ -6,11 +6,10 @@ import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { Spinner } from '@/components/Spinner'
 import { ViewHeader } from '@/components/ViewHeader'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
-import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
+import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { Button } from '@/components/Button'
-import { SECTION_BODY, SECTION_CARD, SECTION_HEADER } from '@/components/Section'
+import { SectionCard } from '@/components/Section'
 import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 // Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
@@ -27,14 +26,14 @@ const iconVariants = cva('flex size-[32px] shrink-0 items-center justify-center 
 })
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
-const tagVariants = cva('text-meta', {
+const tagVariants = cva('text-caption', {
   variants: {
     isPositive: { true: 'text-positive' },
   },
 })
 
 /** The link state: green while up. */
-const stateVariants = cva('text-meta inline-flex shrink-0 items-center gap-6 capitalize', {
+const stateVariants = cva('text-caption inline-flex shrink-0 items-center gap-6 capitalize', {
   variants: {
     state: { up: 'text-positive', down: null, unknown: null },
   },
@@ -44,21 +43,15 @@ const stateVariants = cva('text-meta inline-flex shrink-0 items-center gap-6 cap
 // card, so they need more room around the tile than a plain section title. The
 // bottom pad is trimmed: with no divider, the header pad and body pad stacked
 // into too big a gap below the name. No divider either: the card reads as one unit.
-const PANEL_HEADER = cn(
-  SECTION_HEADER,
-  'h-auto border-b-0',
+const PANEL_HEADER = cx(
+  'flex items-center justify-between gap-12',
   'px-(--section-header-padding-x) pt-(--section-header-padding-y) pb-8',
 )
 
 // With no divider the header sets most of the gap above the fields; a small top
 // pad adds a little room between the name and the first label. The rows carry
-// only a few fields, so they tighten from the default 8px to 4px. The first
-// row's top and the last row's bottom stay at 0 (row-list, DataRow).
-const PANEL_BODY = cn(
-  SECTION_BODY,
-  'row-list pt-6',
-  '*:not-first:pt-4 *:not-last:pb-4',
-)
+// only a few fields, so they're compact.
+const PANEL_BODY = 'px-(--section-body-padding) pt-6 pb-(--section-body-padding)'
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
@@ -68,14 +61,14 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Eleme
 
 function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   return (
-    <li className={SECTION_CARD}>
+    <SectionCard as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <span className={iconVariants({ connection: iface.connectionType })}>
             <InterfaceIcon iface={iface} />
           </span>
-          {/* text-lg: the widget-title size (e.g. "Traffic"), not text-title's larger one. */}
-          <h2 className="text-title min-w-0 truncate text-lg">{iface.name}</h2>
+          {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}
+          <h2 className="text-heading-large min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
             <span className={tagVariants({ isPositive: true })} title="Used for internet traffic">
               Active
@@ -91,7 +84,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
         </span>
       </div>
 
-      <DataList className={PANEL_BODY}>
+      <DataList className={PANEL_BODY} density="compact">
         <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
         <DataRow
           label="Link speed"
@@ -100,13 +93,9 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
         <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
         <DataRow label="MAC" value={formatMac(iface.macAddress)} />
       </DataList>
-    </li>
+    </SectionCard>
   )
 }
-
-// Keep the header subtitle's metadata on one line. Only once it's an
-// .inline-meta row (2+ items); a single item stays a plain span.
-const HEADER_SUB = '[&.inline-meta]:flex [&.inline-meta]:overflow-hidden [&.inline-meta]:whitespace-nowrap'
 
 /** Per-category counts, e.g. ["1 Wi‑Fi", "1 Ethernet", "2 Virtual"]. */
 function interfaceTypeSummaryParts(interfaces: NetworkInterfaceSummary[]): string[] {
@@ -181,10 +170,11 @@ export function InterfacesView(): JSX.Element {
         title={headerTitle(interfaces.length)}
         subtitle={
           interfaces.length > 0 ? (
-            <InlineMeta className={HEADER_SUB} items={interfaceTypeSummaryParts(interfaces)} />
+            // One line, so a long summary ellipsizes rather than wrapping.
+            <InlineMeta shouldTruncate items={interfaceTypeSummaryParts(interfaces)} />
           ) : undefined
         }
-        actions={<RefreshIconButton label="Refresh" isBusy={isLoading} onClick={onRefresh} />}
+        actions={<RefreshIconButton label="Refresh" isLoading={isLoading} onClick={onRefresh} />}
       />
 
       {error && <ErrorBanner title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}

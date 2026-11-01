@@ -121,7 +121,7 @@ export function EventsView(): JSX.Element {
         title="Timeline"
         subtitle={
           hasEvents ? (
-            <span className="text-meta">What’s changed in the past week</span>
+            <span className="text-caption">What’s changed in the past week</span>
           ) : undefined
         }
         isSubtitleShown={hasEvents}
@@ -136,9 +136,8 @@ export function EventsView(): JSX.Element {
             </Tooltip>
             <RefreshIconButton
               label="Scan for changes"
-              isBusy={isScanning}
+              isLoading={isScanning}
               onClick={rescan}
-              busyBehavior="ignore"
             />
           </>
         }

@@ -58,7 +58,7 @@ export function UpdateDialog({
       cancelLabel="Later"
       actions={
         <>
-          <Button variant="filled" onClick={handleInstall} disabled={isInstalling} isBusy={isInstalling}>
+          <Button variant="filled" onClick={handleInstall} isLoading={isInstalling}>
             {isInstalling ? <ButtonSpinner size={14} /> : <DownloadIcon size={15} />}
             {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
           </Button>
@@ -78,12 +78,12 @@ export function UpdateDialog({
           )}
           {update.notes && (
             <>
-              <h3 className="field-label mb-8">What&rsquo;s new</h3>
+              <h3 className="text-overline mb-8">What&rsquo;s new</h3>
               <ul
                 className={cx(
                   'max-h-[168px] list-disc overflow-y-auto py-10 pr-12 pl-[26px]',
                   'rounded-sm border border-line bg-inset',
-                  'text-md leading-body text-secondary marker:text-tertiary',
+                  'text-md leading-body-default text-secondary marker:text-tertiary',
                 )}
               >
                 {releaseNoteItems(update.notes).map((item, i) => (

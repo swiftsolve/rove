@@ -8,8 +8,8 @@ import { ActivityIcon } from '@/components/icons/Icons'
 
 // A rounded dark pill wrapping the dot + label, so the badge reads as a discrete
 // status chip against the panel. Its size, weight and resting colour come from
-// .text-meta.
-const badgeVariants = cva(['text-meta', 'inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4'], {
+// .text-caption.
+const badgeVariants = cva(['text-caption', 'inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4'], {
   variants: {
     isLive: {
       true: cx(

@@ -20,7 +20,7 @@ export function UsageCard(): JSX.Element {
       label="Usage"
       ariaLabel={`Usage: ${summary}. Open Usage.`}
       onOpen={() => navigate({ tab: 'usage' })}
-      isBusy={!isResolved}
+      isLoading={!isResolved}
     >
       {isResolved ? (
         // Download and upload side by side. The top margin matches the Traffic

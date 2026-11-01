@@ -136,9 +136,9 @@ function RunTestButton({
   return (
     <Tooltip placement="left" content={runButtonTooltip(isTesting, hasResults)}>
       <IconButton
-        isBusy={isTesting}
+        isLoading={isTesting}
         onClick={handleRunTest}
-        isDisabled={!canRunTest || isTesting}
+        isDisabled={!canRunTest}
         aria-label={hasResults ? 'Run speed test again' : 'Run speed test'}
       >
         <RunButtonIcon isTesting={isTesting} hasResults={hasResults} />

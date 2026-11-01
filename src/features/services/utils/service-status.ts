@@ -6,12 +6,12 @@ const GOOD_LATENCY_MAX_MS = 120
 const WARN_LATENCY_MAX_MS = 300
 
 /** The health band of a service latency, shared by every place that colours one. */
-export type LatencyBand = 'good' | 'warn' | 'bad'
+export type LatencyBand = 'positive' | 'warning' | 'negative'
 
 export function latencyBand(ms: number): LatencyBand {
-  if (ms <= GOOD_LATENCY_MAX_MS) return 'good'
-  if (ms <= WARN_LATENCY_MAX_MS) return 'warn'
-  return 'bad'
+  if (ms <= GOOD_LATENCY_MAX_MS) return 'positive'
+  if (ms <= WARN_LATENCY_MAX_MS) return 'warning'
+  return 'negative'
 }
 
 /**

@@ -6,37 +6,18 @@ import { IconButton } from '@/components/IconButton'
 interface RefreshIconButtonProps {
   /** Tooltip text and accessible name, e.g. "Scan again". */
   label: string
-  /** Swaps the refresh glyph for a spinner and gates clicks while true. */
-  isBusy: boolean
+  /** Swaps the refresh glyph for a spinner and drops clicks while true. */
+  isLoading: boolean
   onClick: () => void
-  /**
-   * How clicks are gated while busy: `disable` (default) greys the button out;
-   * `ignore` keeps it interactive — the tooltip still shows on hover — and
-   * simply drops the click, announcing the busy state via `aria-busy` instead.
-   */
-  busyBehavior?: 'disable' | 'ignore'
 }
 
 /** The view headers' secondary refresh control: tooltip-wrapped icon button
  *  whose glyph becomes a spinner while the underlying reload runs. */
-export function RefreshIconButton({
-  label,
-  isBusy,
-  onClick,
-  busyBehavior = 'disable',
-}: RefreshIconButtonProps): JSX.Element {
-  const ignoresWhileBusy = busyBehavior === 'ignore'
-
+export function RefreshIconButton({ label, isLoading, onClick }: RefreshIconButtonProps): JSX.Element {
   return (
     <Tooltip content={label}>
-      <IconButton
-        isBusy={isBusy}
-        onClick={ignoresWhileBusy && isBusy ? undefined : onClick}
-        disabled={!ignoresWhileBusy && isBusy}
-        aria-busy={ignoresWhileBusy ? isBusy : undefined}
-        aria-label={label}
-      >
-        {isBusy ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
+      <IconButton isLoading={isLoading} onClick={onClick} aria-label={label}>
+        {isLoading ? <ButtonSpinner size={14} /> : <RefreshIcon size={16} />}
       </IconButton>
     </Tooltip>
   )

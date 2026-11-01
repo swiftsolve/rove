@@ -19,7 +19,7 @@ import { cx } from 'class-variance-authority'
 const SCROLL = cx(
   'flex flex-1 flex-col min-w-0 min-h-0',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
-  'pl-11 pr-6 pt-12 pb-20',
+  'pl-12 pr-6 pt-12 pb-20',
   '[&>.error-banner]:mb-12',
 )
 
@@ -39,7 +39,7 @@ export function AppShell(): JSX.Element {
     // required so WebKitGTK renders reliably on Linux/NVIDIA — see run() in
     // lib.rs), so a corner radius would just expose the window's background
     // rather than the desktop. A hairline edge keeps the frameless window crisp.
-    <div className="flex flex-col h-full bg-shell border border-line overflow-hidden" data-app-shell>
+    <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
       <UpdatePrompt />
       <StatusBar />
 

@@ -9,7 +9,7 @@ import { useTheme } from '@/app/hooks/useTheme'
 
 // The active item's vertical accent bar, hugging the rail's left edge.
 const ACTIVE_BAR = cx(
-  "before:absolute before:-left-11 before:top-1/2 before:-translate-y-1/2 before:content-['']",
+  "before:absolute before:-left-12 before:top-1/2 before:-translate-y-1/2 before:content-['']",
   'before:w-[3px] before:h-20 before:rounded-[0_3px_3px_0] before:bg-accent',
 )
 
@@ -22,7 +22,7 @@ const itemVariants = cva(
     variants: {
       isActive: {
         true: ['bg-accent-muted text-accent', ACTIVE_BAR],
-        false: 'text-tertiary hover:text-secondary hover:bg-fill-nav-hover',
+        false: 'text-tertiary hover:text-secondary hover:bg-fill-subtle',
       },
     },
     defaultVariants: { isActive: false },
@@ -78,7 +78,7 @@ export function TabBar(): JSX.Element {
     <nav
       className={cx(
         'relative z-100 flex flex-col items-center justify-between gap-12 shrink-0',
-        'px-11 py-12 bg-chrome border-r border-line',
+        'px-12 py-12 bg-base border-r border-line',
       )}
       aria-label="Main navigation"
     >
@@ -98,7 +98,7 @@ export function TabBar(): JSX.Element {
         className={cx(
           GROUP,
           'relative pt-12',
-          "before:absolute before:top-0 before:-left-11 before:-right-11 before:h-px before:bg-line before:content-['']",
+          "before:absolute before:top-0 before:-left-12 before:-right-12 before:h-px before:bg-line before:content-['']",
         )}
       >
         {/* Theme toggle sits above the gear; About lives inside the Settings page. */}

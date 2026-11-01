@@ -45,7 +45,7 @@ function renderSubtitle(
   if (hasDevices && subnet) {
     return (
       <>
-        <span className="field-label">Subnet</span>
+        <span className="text-overline">Subnet</span>
         <span className="num">{subnet}</span>
         {/* One slot shared by the online tally and the scan status. The
             entering one holds the slot's width while the leaving one is
@@ -110,7 +110,7 @@ function DevicesBody({
       {/* The Local Network hint trailing a scan that did find devices; the
           blank-state copy is laid out by <EmptyState>. */}
       {shouldShowLocalNetworkHint && (
-        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-small">{LOCAL_NETWORK_HINT}</p>
+        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-body-small">{LOCAL_NETWORK_HINT}</p>
       )}
     </div>
   )
@@ -150,9 +150,8 @@ export function DevicesView(): JSX.Element {
                 tooltip still answers "why is this spinning". */}
             <RefreshIconButton
               label="Scan again"
-              isBusy={isScanning}
+              isLoading={isScanning}
               onClick={onRescan}
-              busyBehavior="ignore"
             />
           </>
         }

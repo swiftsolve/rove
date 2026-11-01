@@ -7,7 +7,7 @@ import { Section, SectionBadge } from '@/components/Section'
 import { ConnectionIcon, DnsIcon, GlobeIcon, HelpIcon, RouterIcon } from '@/components/icons/Icons'
 import { IconButton } from '@/components/IconButton'
 import { Tooltip } from '@/components/Tooltip'
-import { MetricValue, type MetricLevel } from '@/components/MetricValue'
+import { MetricValue, type MetricStatus } from '@/components/MetricValue'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import { RefreshIconButton } from '@/components/RefreshIconButton'
 import { ServiceIcon } from '@/components/icons/ServiceIcon'
@@ -30,19 +30,8 @@ const WARN_LOSS_MAX_PCT = 2
 // The packet-loss warning band reads as a continuation of the readout rather
 // than a divided-off footnote: no top line, and a roomier vertical padding so
 // the band has enough breathing room.
-const ROUTER_FOOTER = cx(
-  '[&_.ui-section-footer]:pt-12 [&_.ui-section-footer]:pb-16',
-  '[&_.ui-section-footer]:border-t-0',
-)
+const ROUTER_FOOTER = 'border-t-0 pt-12 pb-16'
 
-// Tighter row rhythm for the Router (and ISP) and DNS readouts: less vertical
-// air between each label/value pair than the default 8px. First/last stay flush
-// to the body (DataRow zeroes them). DNS sits a touch looser
-// than Router since its repeated identical rows read denser at the same padding.
-const TIGHT_ROWS = cx(
-  '[&_.data-row:not(:first-child)]:pt-4',
-  '[&_.data-row:not(:last-child)]:pb-4',
-)
 // The Router readout comes in three groups (quality, connection, device) split
 // by a hairline that runs the card's full width, like the connection card's
 // details: the body drops its side inset and each group carries it instead.
@@ -50,11 +39,7 @@ const ROUTER_BODY = cx(
   'row-list px-0',
   'divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
 )
-const ROUTER_GROUP = cx('row-list px-(--section-body-padding)', TIGHT_ROWS)
-const DNS_ROWS = cx(
-  '[&_.data-row:not(:first-child)]:pt-6',
-  '[&_.data-row:not(:last-child)]:pb-6',
-)
+const ROUTER_GROUP = 'row-list px-(--section-body-padding)'
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
   return a != null && b != null && a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -64,17 +49,17 @@ function formatPercent(pct: number): string {
   return `${Math.round(pct * 10) / 10}%`
 }
 
-function latencyLevel(ms: number): MetricLevel {
-  if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'bad'
-  if (ms <= GOOD_LATENCY_MAX_MS) return 'good'
-  if (ms <= WARN_LATENCY_MAX_MS) return 'warn'
-  return 'bad'
+function latencyStatus(ms: number): MetricStatus {
+  if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'negative'
+  if (ms <= GOOD_LATENCY_MAX_MS) return 'positive'
+  if (ms <= WARN_LATENCY_MAX_MS) return 'warning'
+  return 'negative'
 }
 
-function lossLevel(pct: number): MetricLevel {
-  if (pct <= 0) return 'good'
-  if (pct <= WARN_LOSS_MAX_PCT) return 'warn'
-  return 'bad'
+function lossStatus(pct: number): MetricStatus {
+  if (pct <= 0) return 'positive'
+  if (pct <= WARN_LOSS_MAX_PCT) return 'warning'
+  return 'negative'
 }
 
 function formatLocation(isp: IspInfo): string | null {
@@ -96,8 +81,8 @@ function runStatusText(isRunning: boolean, hasDiagnostics: boolean): string {
 
 function latencyValue(ping: PingStats | null | undefined): ReactNode {
   if (ping == null) return '—'
-  if (ping.avgMs >= FAILED_PING.avgMs) return <span className="val-bad">Down</span>
-  return <MetricValue value={ping.avgMs} level={latencyLevel(ping.avgMs)} format={formatLatencyMs} />
+  if (ping.avgMs >= FAILED_PING.avgMs) return <span className="text-negative">Down</span>
+  return <MetricValue value={ping.avgMs} status={latencyStatus(ping.avgMs)} format={formatLatencyMs} />
 }
 
 function jitterValue(ping: PingStats | null | undefined): ReactNode {
@@ -121,29 +106,29 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
   return (
     <Section
       title="Router"
-      className={ROUTER_FOOTER}
       icon={<RouterIcon size={15} />}
       bodyClassName={ROUTER_BODY}
+      footerClassName={ROUTER_FOOTER}
       footer={
         ping && ping.packetLoss > 0 ? (
-          <p className="text-small">
+          <p className="text-body-small">
             Packet loss can cause slow or unstable connections.
           </p>
         ) : undefined
       }
     >
-      <DataList className={ROUTER_GROUP}>
+      <DataList className={ROUTER_GROUP} density="compact">
         <DataRow label="Latency">{latencyValue(ping)}</DataRow>
         <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
         <DataRow label="Packet loss">
           {ping ? (
-            <MetricValue value={ping.packetLoss} level={lossLevel(ping.packetLoss)} format={formatPercent} />
+            <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
           ) : (
             '—'
           )}
         </DataRow>
       </DataList>
-      <DataList className={ROUTER_GROUP}>
+      <DataList className={ROUTER_GROUP} density="compact">
         <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
         <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
         {linkSpeedMbps != null && (
@@ -153,7 +138,7 @@ function RouterSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null
         )}
       </DataList>
       {hasDeviceRows && (
-        <DataList className={ROUTER_GROUP}>
+        <DataList className={ROUTER_GROUP} density="compact">
           <DataRow label="Name" value={diagnostics?.gatewayName || null} />
           <DataRow label="Model" value={model} />
           <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
@@ -168,14 +153,18 @@ function DnsSection({ servers }: { servers: string[] }): JSX.Element {
     <Section
       title="DNS"
       icon={<DnsIcon size={15} />}
-      bodyClassName={cx('row-list', DNS_ROWS)}
-      // Label/value pairs when there are servers; otherwise a single note.
-      bodyAs={servers.length > 0 ? 'dl' : 'div'}
+      bodyClassName="row-list"
     >
       {servers.length > 0 ? (
-        servers.map((server) => <DataRow key={server} label="Server" value={server} />)
+        // A touch looser than the Router's rows: repeated identical rows read
+        // denser at the same spacing.
+        <DataList density="snug">
+          {servers.map((server) => (
+            <DataRow key={server} label="Server" value={server} />
+          ))}
+        </DataList>
       ) : (
-        <p className="text-small">No DNS servers found.</p>
+        <p className="text-body-small">No DNS servers found.</p>
       )}
     </Section>
   )
@@ -202,12 +191,11 @@ function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
     <Section
       title={isp?.isVpn ? 'VPN' : 'ISP'}
       icon={<GlobeIcon size={15} />}
-      bodyClassName={cx('row-list', TIGHT_ROWS)}
-      bodyAs={isp ? 'dl' : 'div'}
+      bodyClassName="row-list"
       action={ispBadge(isp)}
     >
       {isp ? (
-        <>
+        <DataList density="compact">
           {/* "Provider", not "ISP": the card's title already says ISP, and
               under a VPN the value is the exit node's hosting company, which
               "Provider" describes either way. */}
@@ -219,13 +207,13 @@ function IspSection({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
           <DataRow label="ASN" value={isp.asn} />
           <DataRow label="Public IP" value={isp.publicIp} />
           <DataRow label="Location" value={formatLocation(isp)} />
-        </>
+        </DataList>
       ) : (
         // The card resolves ISP/ASN/country on-device, so it only lands here
         // when we couldn't even learn our own public IP — i.e. offline. Guard
         // the copy on the known internet state anyway, so a transient
         // echo-service blip while online doesn't claim we're offline.
-        <p className="text-small">
+        <p className="text-body-small">
           {diagnostics?.internet === 'online'
             ? 'Provider details are momentarily unavailable.'
             : 'Provider details are unavailable offline.'}
@@ -259,7 +247,7 @@ export function DiagnosticsView(): JSX.Element {
                 <HelpIcon size={16} />
               </IconButton>
             </Tooltip>
-            <RefreshIconButton label="Run again" isBusy={isRunning} onClick={runDiagnostics} />
+            <RefreshIconButton label="Run again" isLoading={isRunning} onClick={runDiagnostics} />
           </>
         }
       />

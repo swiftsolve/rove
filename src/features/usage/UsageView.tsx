@@ -32,7 +32,7 @@ const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
 // its bottom corners. Its padding matches the speed-test footer's rhythm. The
 // "Since boot" label sits left, the down/up totals grouped at the right.
 const TOTALS_FOOTER = cx(
-  'text-meta flex items-center justify-between gap-12',
+  'text-caption flex items-center justify-between gap-12',
   'mt-12 -mx-(--section-body-padding) -mb-(--section-body-padding) p-(--section-body-padding)',
   'bg-inset',
 )
@@ -62,7 +62,7 @@ function BytesMetric({
       {/* mb-8 matches the speed-test hero's label→value rhythm. */}
       <dt className="mb-8 flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="field-label">{label}</span>
+        <span className="text-overline">{label}</span>
       </dt>
       <dd className="metric num">
         <span className="metric-value">{value}</span>

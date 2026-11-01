@@ -64,14 +64,14 @@ keep logic worth testing out of components and hooks.
 
 - Components are styled with Tailwind v4 utilities in the TSX. The theme in
   `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
-  `--spacing-12`, `text-md` is `--font-size-md` and `bg-panel` is `--bg-panel`;
+  `--spacing-12`, `text-md` is `--font-size-md` and `bg-surface` is `--bg-surface`;
   there are no Tailwind defaults to reach for. There's no preflight:
   `styles/base.css` is the reset.
 - Colours and easings are always tokens, and so is any length, weight or
   duration a token has: `p-12`, not `p-[12px]`. `npm run lint` runs
   `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
   to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
-- Shared type styles and layout (`text-meta`, `field-label`, `num`, `surface`,
+- Shared type styles and layout (`text-caption`, `text-overline`, `num`, `surface`,
   `page`, `page-header`, `error-banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
   utilities.
@@ -95,12 +95,22 @@ keep logic worth testing out of components and hooks.
   joins fixed classes. `cn` lists every theme name so tailwind-merge can group
   them; when you add one to `tailwind.css`, add it there too.
   `npm run lint` runs `scripts/check-cn-theme.mjs`, which fails until you do.
-- Shared components keep a plain marker class on their parts (`data-row`,
-  `ui-section-footer`, `inline-meta-item`) so a view can adjust them from
-  outside: `[&_.ui-section-footer]:pt-12`.
-- Buttons are `Button` (`variant`: `filled`, `danger`, `secondary`, `text`) and
-  `IconButton` (`tone`: `plain`, `primary`, `secondary`, `danger`; `aria-label`
-  is required), never hand-written `<button>` classes.
+- A view adjusts a shared component through its props: a variant
+  (`density`, `align`, `shouldTruncate`) or a class for one part
+  (`bodyClassName`, `footerClassName`), never a selector into its DOM
+  (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
+  variant. The one exception is a `:has()` selector in a `.module.css` (below);
+  InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
+- Buttons are `Button` (`variant`: `filled`, `danger`, `secondary`) and
+  `IconButton` (`variant`: `secondary`, `plain`; `aria-label` is required),
+  never hand-written `<button>` classes. Both take `isDisabled` and
+  `isLoading`: each drops clicks and stays focusable (so a tooltip can say
+  why), and only disabled dims. They share that behaviour through
+  `components/utils/button-state.ts`.
+- Props share names across components and with Figma: `variant`, `isLoading`,
+  `isDisabled`, `isChecked`; a colour by role is `status` or `tone`
+  (`positive`, `warning`, `negative`, `neutral`); a quality rating is `level`
+  (`excellent`, `good`, `fair`, `poor`).
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes. A `.module.css` file is only for what utilities can't say:
   selectors into another component's DOM keyed on `:has()`. `npm run lint`
@@ -126,30 +136,33 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Figma | Code | Use |
 | --- | --- | --- |
 | Title bar | `StatusBar` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). |
-| Status link | `StatusBar` | Connection status in the title bar: On, Bad (no internet) or Off. |
-| Window button | `StatusBar` | Minimise and close. Close hovers to `--window-close-hover`. |
+| Status link | `StatusBar` | Connection status in the title bar. `tone` (`positive`, `negative`, `neutral`) sets the colour, the label the words. |
+| Window button | `StatusBar` | Minimise or close (`action`). Close hovers to `--status-negative-fill`. |
 | Nav rail | `TabBar` | One item per page; the current page's is active. Sun icon in Dark, moon in Light. |
 | Nav item | `TabBar` | A 38px rail button (`--rail-item-size`). Active adds an `--accent-muted` tint and a bar on the edge. |
 | Page header | `ViewHeader` | Top of every page except Home: icon chip, title, subtitle and actions, over a full-width divider. |
-| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for quiet actions, Text (`text`) for low-key prompts like Install & restart. |
-| Icon button | `IconButton` | Icon-only button; `tone` is `plain`, `primary`, `secondary` or `danger`. Use a 14px icon for Play. |
+| Subpage header | `Subpage` | Top of a page layered over a tab: back, title, an optional description and one action. |
+| Button | `Button` | Filled (`variant="filled"`) for the main action, Danger (`danger`) to stop it, Secondary (`secondary`) for everything else. |
+| Icon button | `IconButton` | Icon-only button; `variant` is `secondary` or `plain`. Use a 14px icon for Play. |
 | Toggle | `Toggle` | On/off switch for settings. |
 | Live badge | `LiveThroughputPanel` | Shows that traffic is updating live. |
+| Card | `Section`, `SectionCard` | Header, a content slot and an optional footer (`footerClassName` adjusts it). Padding None (`bodyClassName`) lets the content run edge to edge. `SectionCard` is the surface alone, for a card that lays out its own content (`as="li"` in a list). |
 | Section header | `Section` | 44px card header with an optional badge (`SectionBadge`) or button. |
-| Data row | `DataRow` | Label and value; the value right-aligns. |
-| Metric | `MetricValue` | A number with its unit. |
-| Speed readout | `SpeedReadout` | Live download or upload speed. |
-| Usage readout | `StatReadout` | Total data downloaded or uploaded. |
+| Data row | `DataRow`, `DataList` | Label and value; the value right-aligns. An optional accessory (signal bars, an icon) and detail sit before it, 6px apart. `DataList` makes the rows a `<dl>` and sets their `density` (`default`, `snug`, `compact`); `align="center"` suits a value with no text baseline. |
+| Separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
+| Metric | `MetricValue` | A number with its unit, coloured by `status` when it's earned. |
+| Readout/Large | `SpeedReadout` | Live download or upload speed. |
+| Readout/Compact | `StatReadout` | Total data downloaded or uploaded. |
 | Throughput chart | `ThroughputChart` | Last 60 seconds of download (solid) and upload (dashed). |
-| Sparkline | `Sparkline` | Recent latency for a service row, coloured by health. Down is a flat `--status-negative` baseline. |
-| Signal bars | `ConnectionCard` | Wi‑Fi strength. Unlit bars use `--opacity-unlit`. |
-| Capability cell | `CapabilityMeter` | Icon tile over a 4-step meter. Use None when unsupported, not yet tested, or testing. |
+| Sparkline | `Sparkline` | Recent latency for a service row, coloured by `status`. Down is a flat `--status-negative` baseline. |
+| Signal bars | `ConnectionCard` | Wi‑Fi strength. Unlit bars use `--opacity-tint-lg`. |
+| Capability cell | `CapabilityMeter` | Icon tile over a 4-step meter. Unsupported also covers not yet tested and testing. |
 | Connection card | `ConnectionCard` | Current connection: Wi‑Fi, Ethernet or Disconnected. Expands to show details. |
-| Traffic card | `LiveThroughputPanel` | Live download and upload with the last 60 seconds charted. |
-| Capabilities card | `CapabilityStrip` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
-| Stat card | `StatCard` | Home summary card: Usage or Devices. |
+| Traffic card | `LiveThroughputPanel` | A Card (Padding None) holding the live readouts and the last 60 seconds charted. |
+| Capabilities card | `CapabilityStrip` | A Card (Padding None) holding what the connection can handle: a placeholder before a test, Testing while one runs, results after. |
+| Stat card | `StatCard` | A tappable summary: label, icon and content (`children`), with `isLoading`. |
 | Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
-| Dialog | `Dialog` | Modal: title, optional description and close, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
+| Dialog | `Dialog` | Modal: title, optional description, a recessed body, Cancel and the main action. Keep it mounted with `usePresence(isOpen, DIALOG_EXIT_MS)` so it animates out. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, hint and an optional action. |
 | Spinner | `Spinner` | Loading indicator, in `--accent-default`. |

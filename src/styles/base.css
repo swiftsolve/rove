@@ -127,7 +127,7 @@
   @supports not selector(::-webkit-scrollbar) {
     * {
       scrollbar-width: thin;
-      scrollbar-color: var(--fill-scrollbar) transparent;
+      scrollbar-color: var(--fill-strong) transparent;
     }
   }
 
@@ -136,7 +136,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: var(--fill-scrollbar);
+    background: var(--fill-strong);
     border-radius: var(--radius-full);
   }
 

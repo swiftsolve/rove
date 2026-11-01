@@ -31,28 +31,28 @@ const MINUTE = 60_000
 
 describe('deviceName', () => {
   it('names the gateway and this machine by their role', () => {
-    expect(deviceName(device({ isGateway: true, hostname: 'router.lan' }))).toBe('Router')
-    expect(deviceName(device({ isSelf: true, hostname: 'laptop' }))).toBe('This device')
+    expect(deviceName(device({ isGateway: true, hostname: 'router.lan' }))).toEqual(['Router'])
+    expect(deviceName(device({ isSelf: true, hostname: 'laptop' }))).toEqual(['This device'])
   })
 
   it('prefers a hostname over everything else it knows', () => {
-    expect(deviceName(device({ hostname: 'pixel-8', vendor: 'Google', kind: 'phone' }))).toBe('pixel-8')
+    expect(deviceName(device({ hostname: 'pixel-8', vendor: 'Google', kind: 'phone' }))).toEqual(['pixel-8'])
   })
 
   it('pairs a known maker with the kind', () => {
-    expect(deviceName(device({ vendor: 'Apple', kind: 'phone' }))).toBe('Apple · Phone')
-    expect(deviceName(device({ vendor: 'Synology' }))).toBe('Synology')
+    expect(deviceName(device({ vendor: 'Apple', kind: 'phone' }))).toEqual(['Apple', 'Phone'])
+    expect(deviceName(device({ vendor: 'Synology' }))).toEqual(['Synology'])
   })
 
   it('names a smart-home device by its maker alone', () => {
-    expect(deviceName(device({ vendor: 'Espressif', kind: 'iot' }))).toBe('Espressif')
+    expect(deviceName(device({ vendor: 'Espressif', kind: 'iot' }))).toEqual(['Espressif'])
   })
 
   it('builds a name from the OS and kind when there is no maker', () => {
-    expect(deviceName(device({ os: 'Android', kind: 'phone' }))).toBe('Android phone')
-    expect(deviceName(device({ os: 'Android' }))).toBe('Android device')
-    expect(deviceName(device({ kind: 'tv' }))).toBe('TV')
-    expect(deviceName(device())).toBe('Generic device')
+    expect(deviceName(device({ os: 'Android', kind: 'phone' }))).toEqual(['Android phone'])
+    expect(deviceName(device({ os: 'Android' }))).toEqual(['Android device'])
+    expect(deviceName(device({ kind: 'tv' }))).toEqual(['TV'])
+    expect(deviceName(device())).toEqual(['Generic device'])
   })
 })
 
@@ -76,8 +76,8 @@ describe('lastSeenAge', () => {
 describe('deviceMetaParts', () => {
   it('drops unknown parts and any that repeat the name or an earlier part', () => {
     const apple = device({ kind: 'phone', vendor: 'Apple', os: 'Apple', model: 'iPhone15,2' })
-    expect(deviceMetaParts(apple, 'Apple · Phone')).toEqual(['Phone', 'Apple', 'iPhone15,2'])
-    expect(deviceMetaParts(device({ vendor: 'Synology' }), 'Synology')).toEqual([])
+    expect(deviceMetaParts(apple, ['Apple', 'Phone'])).toEqual(['Phone', 'Apple', 'iPhone15,2'])
+    expect(deviceMetaParts(device({ vendor: 'Synology' }), ['Synology'])).toEqual([])
   })
 })
 

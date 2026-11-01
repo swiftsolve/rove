@@ -29,7 +29,7 @@ const ICON = 'ml-[-3px] shrink-0 translate-y-[-1px]'
 const halfVariants = cva('inline-flex items-center gap-[3px] whitespace-nowrap', {
   variants: {
     /** The half's text (and arrow) colour: green for up, red for any down. */
-    tone: { good: 'val-good', bad: 'val-bad' },
+    status: { positive: 'text-positive', negative: 'text-negative' },
   },
 })
 
@@ -51,7 +51,7 @@ export function serviceTally(
   if (internet === 'noInternet' || internet === 'offline') {
     return (
       <span className={ROOT} role="status">
-        <span className="val-bad">No internet</span>
+        <span className="text-negative">No internet</span>
       </span>
     )
   }
@@ -63,12 +63,12 @@ export function serviceTally(
 
   return (
     <span className={ROOT} role="status">
-      <span className={halfVariants({ tone: 'good' })}>
+      <span className={halfVariants({ status: 'positive' })}>
         <ArrowUpIcon size={13} className={ICON} />
         {upCount} Up
       </span>
       <DotSeparator />
-      <span className={halfVariants({ tone: downCount > 0 ? 'bad' : undefined })}>
+      <span className={halfVariants({ status: downCount > 0 ? 'negative' : undefined })}>
         <ArrowDownIcon size={13} className={ICON} />
         {downCount} Down
       </span>

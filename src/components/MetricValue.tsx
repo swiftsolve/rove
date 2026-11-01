@@ -4,13 +4,13 @@ import { cn } from '@/lib/cn'
 
 const metricVariants = cva(undefined, {
   variants: {
-    /** How healthy the value is, as the shared `val-*` text colours. */
-    level: { good: 'val-good', warn: 'val-warn', bad: 'val-bad' },
+    /** How healthy the value is, in the status text colours. */
+    status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
   },
 })
 
-/** A health level for a readout: green, amber or red. */
-export type MetricLevel = NonNullable<VariantProps<typeof metricVariants>['level']>
+/** A readout's health: green, amber or red. */
+export type MetricStatus = NonNullable<VariantProps<typeof metricVariants>['status']>
 
 /**
  * A numeric readout that eases toward its latest value each poll (up or down),
@@ -19,15 +19,15 @@ export type MetricLevel = NonNullable<VariantProps<typeof metricVariants>['level
  */
 export function MetricValue({
   value,
-  level,
+  status,
   format,
   className,
 }: {
   value: number
-  level?: MetricLevel
+  status?: MetricStatus
   format: (n: number) => string
   className?: string
 }): JSX.Element {
   const animated = useCountUp(value)
-  return <span className={cn(metricVariants({ level }), className) || undefined}>{format(animated)}</span>
+  return <span className={cn(metricVariants({ status }), className) || undefined}>{format(animated)}</span>
 }

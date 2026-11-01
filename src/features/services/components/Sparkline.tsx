@@ -11,17 +11,17 @@ const ROOT = 'relative inline-block shrink-0'
 const chartVariants = cva('cursor-crosshair overflow-visible', {
   variants: {
     /** The health band, which colours the line via currentColor. */
-    level: {
+    status: {
       none: 'text-tertiary',
-      good: 'text-status-positive',
-      warn: 'text-status-warning',
-      bad: 'text-status-negative',
+      positive: 'text-status-positive',
+      warning: 'text-status-warning',
+      negative: 'text-status-negative',
     },
     /** Nothing recorded yet: an empty box that holds the row's space, so rows
      *  don't reflow once history starts to land. */
     isEmpty: { true: 'inline-block', false: 'block' },
   },
-  defaultVariants: { level: 'none', isEmpty: false },
+  defaultVariants: { status: 'none', isEmpty: false },
 })
 
 const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [stroke-linejoin:round]', {
@@ -38,7 +38,7 @@ const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [str
 // above the chart; translate keeps it from clipping at the chart's edges.
 const TIP = cx(
   'pointer-events-none absolute bottom-[calc(100%+3px)] z-3 -translate-x-1/2 whitespace-nowrap',
-  'rounded-xs border border-line bg-raised px-6 py-2 shadow-panel',
+  'rounded-xs border border-line bg-surface px-6 py-2 shadow-panel',
   'font-numeric text-2xs leading-[1.2] text-primary tabular-nums',
 )
 
@@ -77,8 +77,8 @@ const DOT_RADIUS = 1.5
 const CURSOR_DOT_RADIUS = 2.5
 
 /** Health band for a latency, matching the numeric readout's colour thresholds. */
-function chartLevel(ms: number | null): LatencyBand {
-  if (ms === null) return 'bad'
+function chartStatus(ms: number | null): LatencyBand {
+  if (ms === null) return 'negative'
   return latencyBand(ms)
 }
 
@@ -209,7 +209,7 @@ export function Sparkline({
     return (
       <span className={ROOT} style={{ width, height }}>
         <svg
-          className={chartVariants({ level: 'bad' })}
+          className={chartVariants({ status: 'negative' })}
           width={width}
           height={height}
           viewBox={`0 0 ${width} ${height}`}
@@ -248,7 +248,7 @@ export function Sparkline({
     <span className={ROOT} style={{ width, height }}>
       <svg
         ref={svgRef}
-        className={chartVariants({ level: chartLevel(latestMs) })}
+        className={chartVariants({ status: chartStatus(latestMs) })}
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
@@ -299,7 +299,7 @@ export function Sparkline({
               x2={hovered.x}
               y2={baseline}
             />
-            <circle className="fill-current stroke-panel stroke-[1.5]" cx={hovered.x} cy={hovered.y} r={CURSOR_DOT_RADIUS} />
+            <circle className="fill-current stroke-surface stroke-[1.5]" cx={hovered.x} cy={hovered.y} r={CURSOR_DOT_RADIUS} />
           </>
         )}
       </svg>

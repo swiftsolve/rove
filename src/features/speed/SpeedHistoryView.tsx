@@ -39,7 +39,7 @@ const KEBAB = cx(
 
 const DROPDOWN = cx(
   'animate-menu-in absolute top-[calc(100%+4px)] right-0 z-20 flex min-w-[112px] flex-col gap-2 p-4',
-  'rounded-sm border border-line-strong bg-raised shadow-raised',
+  'rounded-sm border border-line-strong bg-surface shadow-raised',
 )
 
 const menuItemVariants = cva(
@@ -113,7 +113,7 @@ function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
     <div className="flex min-w-0 flex-col gap-4">
       <dt className="flex items-center gap-6">
         {series && <DirectionIcon series={series} size={13} />}
-        <span className="field-label">{label}</span>
+        <span className="text-overline">{label}</span>
       </dt>
       <dd className="num text-2xl font-semibold text-primary">
         {value}
@@ -129,7 +129,7 @@ function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
 // content stays aligned with the metrics grid above.
 const CARD_FOOTER = cx(
   '-mx-(--section-body-padding) mt-8 px-[calc(var(--section-body-padding)-1px)] py-12',
-  'rounded-b-lg border border-t-0 border-inset bg-chrome',
+  'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
 function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {

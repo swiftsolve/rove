@@ -5,27 +5,26 @@ import { extendTailwindMerge } from 'tailwind-merge'
 // can't tell a font size from a colour: `text-md` and `text-secondary` would
 // look like two text colours, and it would drop one. `npm run lint` checks
 // these lists against the theme (scripts/check-cn-theme.mjs).
-const SPACING = ['0', 'px', '2', '4', '6', '8', '10', '11', '12', '14', '16', '20']
+const SPACING = ['0', 'px', '2', '4', '6', '8', '10', '12', '14', '16', '20']
 // The Figma text styles, as `leading-*` and `tracking-*` names.
 const TYPE_STYLES = [
-  'title', 'section-title', 'dialog-title', 'field-label', 'body', 'meta', 'meta-strong',
-  'hint', 'small', 'value', 'chart-label', 'metric-display', 'metric-compact', 'metric-unit',
-  'button-large', 'button-default', 'button-secondary',
+  'heading-large', 'heading-medium', 'heading-small', 'body-default', 'body-small', 'caption',
+  'label-large', 'label-default', 'label-small', 'overline',
+  'number-display', 'number-large', 'number-default', 'number-small',
 ]
 const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']
 const COLORS = [
   // Tailwind's built-ins, which exist alongside the theme's colours.
   'transparent', 'current', 'inherit',
-  'app', 'chrome', 'shell', 'panel', 'raised', 'inset', 'hover', 'scrim',
+  'base', 'surface', 'inset', 'hover', 'scrim',
   'primary', 'secondary', 'tertiary', 'accent-text', 'on-fill',
   'positive', 'good', 'warning', 'poor', 'negative',
-  'line', 'line-strong', 'hairline-top',
+  'line', 'line-strong', 'highlight',
   'accent', 'accent-hover', 'accent-press', 'accent-muted', 'accent-fill', 'accent-fill-hover',
   'status-positive', 'status-good', 'status-warning', 'status-poor', 'status-negative',
   'status-negative-fill', 'status-negative-fill-hover',
   'series-down', 'series-up',
-  'fill-chip', 'fill-nav-hover', 'fill-row-hover', 'fill-track', 'fill-track-lit',
-  'fill-scrollbar', 'fill-selection', 'window-close-hover',
+  'fill-faint', 'fill-subtle', 'fill-default', 'fill-strong', 'fill-selection',
 ]
 
 const mergeClasses = extendTailwindMerge({

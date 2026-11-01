@@ -71,22 +71,13 @@ const LIST = 'flex flex-col pt-0'
 // text sits centred in the inset band. With the band present, the body drops its
 // bottom padding so only the last row's own padding sits above it; when idle
 // (no band) the body keeps it so the card doesn't look cramped.
-const UPDATES_SECTION = cx(
-  '[&_.ui-section-footer]:mt-12 [&_.ui-section-footer]:pt-12 [&_.ui-section-footer]:pb-12',
-  '[&_.ui-section-footer]:[border-top:none]',
-)
-const UPDATES_LIST = cx(LIST, 'has-[+.ui-section-footer]:pb-0')
+const UPDATES_FOOTER = 'mt-12 border-t-0 py-12'
+const UPDATES_LIST_ABOVE_FOOTER = cx(LIST, 'pb-0')
 
-// "Check now" borrows the Run test button's shape but stays in a neutral
-// palette: it's a routine action, not the screen's main call to action.
-const CHECK_NOW = cx(
-  'text-secondary bg-inset',
-  'not-disabled:not-aria-disabled:hover:text-primary not-disabled:not-aria-disabled:hover:bg-hover',
-)
 
 const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
 const ROW_TITLE = 'text-md font-medium text-primary'
-const ROW_DESC = 'text-xs leading-meta text-tertiary'
+const ROW_DESC = 'text-xs leading-caption text-tertiary'
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; icon: JSX.Element }[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
@@ -194,7 +185,7 @@ function renderCheckResult(check: CheckState): ReactNode {
       <div className={statusVariants({ kind: 'available' })}>
         <span>Version {check.update.version} is available.</span>
         <Button
-          variant="text"
+          variant="secondary"
           onClick={() => void check.update.install()}
         >
           Install &amp; restart
@@ -219,6 +210,7 @@ export function SettingsView(): JSX.Element {
   const [areThemeSoundsEnabled, setAreThemeSoundsEnabled] = useSetting('themeSounds', true)
   const [check, setCheck] = useState<CheckState>({ kind: 'idle' })
   const isChecking = check.kind === 'checking'
+  const checkResult = renderCheckResult(check)
   const themeLabelId = useId()
   const themeDescriptionId = useId()
 
@@ -239,9 +231,9 @@ export function SettingsView(): JSX.Element {
 
       <Section
         title="Updates"
-        className={UPDATES_SECTION}
-        bodyClassName={UPDATES_LIST}
-        footer={renderCheckResult(check)}
+        bodyClassName={checkResult != null ? UPDATES_LIST_ABOVE_FOOTER : LIST}
+        footer={checkResult}
+        footerClassName={UPDATES_FOOTER}
       >
         <SettingRow
           title="Check for updates automatically"
@@ -261,11 +253,9 @@ export function SettingsView(): JSX.Element {
           control={(descriptionId) => (
             <Button
               aria-describedby={descriptionId}
-              variant="text"
-              className={CHECK_NOW}
-              isBusy={isChecking}
+              variant="secondary"
+              isLoading={isChecking}
               onClick={() => void runCheck()}
-              disabled={isChecking}
             >
               {isChecking ? <ButtonSpinner size={14} /> : <RefreshIcon size={14} />}
               Check now
@@ -310,7 +300,7 @@ export function SettingsView(): JSX.Element {
           className={cx(
             'group flex items-center justify-between gap-16 w-[calc(100%+16px)] -mx-8',
             'px-8 py-(--row-padding-y) rounded-sm text-left cursor-pointer',
-            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
             'focus-visible:outline-offset-(--focus-inset)',
           )}
           onClick={() => navigate({ tab: 'about' })}

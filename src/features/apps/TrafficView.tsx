@@ -26,12 +26,11 @@ import {
 } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
-import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
+import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { Spinner } from '@/components/Spinner'
 import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
-import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+import { UsageList } from '@/features/apps/components/UsageList'
 import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
@@ -176,19 +175,11 @@ function TrafficBody({
 
   const busiestTotal = types.reduce((max, type) => Math.max(max, type.rxBytes + type.txBytes), 0)
   return (
-    <div className={SECTION_CARD}>
-      {/* The rows own the inset (p-0 here), so the hairlines between them run
-          edge to edge, clipped to the card's rounded corners. */}
-      <ul
-        role="list"
-        aria-label="Traffic types by usage"
-        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
-      >
-        {types.map((type) => (
-          <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
-        ))}
-      </ul>
-    </div>
+    <UsageList label="Traffic types by usage">
+      {types.map((type) => (
+        <TrafficRow key={type.id} type={type} busiestTotal={busiestTotal} />
+      ))}
+    </UsageList>
   )
 }
 

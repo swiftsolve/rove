@@ -4,8 +4,8 @@
  * The tokens come from @swiftsolve/rove-design (Figma is the source of truth)
  * as CSS variables. The theme below maps them onto Tailwind utilities and
  * clears Tailwind's own defaults, so only design-system values exist:
- * `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-panel` is
- * `--bg-panel`, and there is no `p-7` or `text-blue-500` to reach for.
+ * `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is
+ * `--bg-surface`, and there is no `p-7` or `text-blue-500` to reach for.
  *
  * `inline` makes each utility use the token itself (`padding: var(--spacing-12)`),
  * so a theme switch or a token update flows straight through. `reference`
@@ -43,7 +43,6 @@
   --spacing-6: var(--spacing-6);
   --spacing-8: var(--spacing-8);
   --spacing-10: var(--spacing-10);
-  --spacing-11: var(--spacing-11);
   --spacing-12: var(--spacing-12);
   --spacing-14: var(--spacing-14);
   --spacing-16: var(--spacing-16);
@@ -63,50 +62,41 @@
   --font-weight-regular: var(--weight-regular);
   --font-weight-medium: var(--weight-medium);
   --font-weight-semibold: var(--weight-semibold);
-  /* Line height and letter spacing by Figma text style (`leading-body`,
-     `tracking-title`), for text that matches a style but takes its own colour
-     or size. The type utilities in utilities.css set all of a style at once. */
-  --leading-title: var(--type-title-line-height);
-  --leading-section-title: var(--type-section-title-line-height);
-  --leading-dialog-title: var(--type-dialog-title-line-height);
-  --leading-field-label: var(--type-field-label-line-height);
-  --leading-body: var(--type-body-line-height);
-  --leading-meta: var(--type-meta-line-height);
-  --leading-meta-strong: var(--type-meta-strong-line-height);
-  --leading-hint: var(--type-hint-line-height);
-  --leading-small: var(--type-small-line-height);
-  --leading-value: var(--type-value-line-height);
-  --leading-chart-label: var(--type-chart-label-line-height);
-  --leading-metric-display: var(--type-metric-display-line-height);
-  --leading-metric-compact: var(--type-metric-compact-line-height);
-  --leading-metric-unit: var(--type-metric-unit-line-height);
-  --leading-button-large: var(--type-button-large-line-height);
-  --leading-button-default: var(--type-button-default-line-height);
-  --leading-button-secondary: var(--type-button-secondary-line-height);
-  --tracking-title: var(--type-title-letter-spacing);
-  --tracking-section-title: var(--type-section-title-letter-spacing);
-  --tracking-dialog-title: var(--type-dialog-title-letter-spacing);
-  --tracking-field-label: var(--type-field-label-letter-spacing);
-  --tracking-body: var(--type-body-letter-spacing);
-  --tracking-meta: var(--type-meta-letter-spacing);
-  --tracking-meta-strong: var(--type-meta-strong-letter-spacing);
-  --tracking-hint: var(--type-hint-letter-spacing);
-  --tracking-small: var(--type-small-letter-spacing);
-  --tracking-value: var(--type-value-letter-spacing);
-  --tracking-chart-label: var(--type-chart-label-letter-spacing);
-  --tracking-metric-display: var(--type-metric-display-letter-spacing);
-  --tracking-metric-compact: var(--type-metric-compact-letter-spacing);
-  --tracking-metric-unit: var(--type-metric-unit-letter-spacing);
-  --tracking-button-large: var(--type-button-large-letter-spacing);
-  --tracking-button-default: var(--type-button-default-letter-spacing);
-  --tracking-button-secondary: var(--type-button-secondary-letter-spacing);
+  /* Line height and letter spacing by Figma text style (`leading-body-default`,
+     `tracking-heading-large`), for text that matches a style but takes its own
+     colour or size. The type utilities in utilities.css set all of a style at once. */
+  --leading-heading-large: var(--type-heading-large-line-height);
+  --leading-heading-medium: var(--type-heading-medium-line-height);
+  --leading-heading-small: var(--type-heading-small-line-height);
+  --leading-body-default: var(--type-body-default-line-height);
+  --leading-body-small: var(--type-body-small-line-height);
+  --leading-caption: var(--type-caption-line-height);
+  --leading-label-large: var(--type-label-large-line-height);
+  --leading-label-default: var(--type-label-default-line-height);
+  --leading-label-small: var(--type-label-small-line-height);
+  --leading-overline: var(--type-overline-line-height);
+  --leading-number-display: var(--type-number-display-line-height);
+  --leading-number-large: var(--type-number-large-line-height);
+  --leading-number-default: var(--type-number-default-line-height);
+  --leading-number-small: var(--type-number-small-line-height);
+  --tracking-heading-large: var(--type-heading-large-letter-spacing);
+  --tracking-heading-medium: var(--type-heading-medium-letter-spacing);
+  --tracking-heading-small: var(--type-heading-small-letter-spacing);
+  --tracking-body-default: var(--type-body-default-letter-spacing);
+  --tracking-body-small: var(--type-body-small-letter-spacing);
+  --tracking-caption: var(--type-caption-letter-spacing);
+  --tracking-label-large: var(--type-label-large-letter-spacing);
+  --tracking-label-default: var(--type-label-default-letter-spacing);
+  --tracking-label-small: var(--type-label-small-letter-spacing);
+  --tracking-overline: var(--type-overline-letter-spacing);
+  --tracking-number-display: var(--type-number-display-letter-spacing);
+  --tracking-number-large: var(--type-number-large-letter-spacing);
+  --tracking-number-default: var(--type-number-default-letter-spacing);
+  --tracking-number-small: var(--type-number-small-letter-spacing);
 
   /* Surfaces (bg-*) */
-  --color-app: var(--bg-app);
-  --color-chrome: var(--bg-chrome);
-  --color-shell: var(--bg-shell);
-  --color-panel: var(--bg-panel);
-  --color-raised: var(--bg-raised);
+  --color-base: var(--bg-base);
+  --color-surface: var(--bg-surface);
   --color-inset: var(--bg-inset);
   --color-hover: var(--bg-hover);
   --color-scrim: var(--bg-scrim);
@@ -126,7 +116,7 @@
   /* Lines (border-*) */
   --color-line: var(--border-default);
   --color-line-strong: var(--border-strong);
-  --color-hairline-top: var(--border-hairline-top);
+  --color-highlight: var(--border-highlight);
 
   /* Accent */
   --color-accent: var(--accent-default);
@@ -149,15 +139,12 @@
   --color-series-down: var(--series-down);
   --color-series-up: var(--series-up);
 
-  /* Quiet fills */
-  --color-fill-chip: var(--fill-chip);
-  --color-fill-nav-hover: var(--fill-nav-hover);
-  --color-fill-row-hover: var(--fill-row-hover);
-  --color-fill-track: var(--fill-track);
-  --color-fill-track-lit: var(--fill-track-lit);
-  --color-fill-scrollbar: var(--fill-scrollbar);
+  /* Overlays, by strength */
+  --color-fill-faint: var(--fill-faint);
+  --color-fill-subtle: var(--fill-subtle);
+  --color-fill-default: var(--fill-default);
+  --color-fill-strong: var(--fill-strong);
   --color-fill-selection: var(--fill-selection);
-  --color-window-close-hover: var(--window-close-hover);
 
   /* Shape and motion */
   --radius-xs: var(--radius-xs);

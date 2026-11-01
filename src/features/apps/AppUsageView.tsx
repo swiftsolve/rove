@@ -10,13 +10,12 @@ import { MetricValue } from '@/components/MetricValue'
 import { AppsIcon, ChevronRightIcon, GlobeIcon, HelpIcon, LayersIcon } from '@/components/icons/Icons'
 import { DirectionIcon } from '@/components/icons/DirectionIcon'
 import { EmptyState } from '@/components/EmptyState'
-import { RestartAsAdminAction } from '@/components/RestartAsAdminAction'
+import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import { DotSeparator } from '@/components/DotSeparator'
 import { Spinner } from '@/components/Spinner'
 import { cva, cx } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
 import { IconButton } from '@/components/IconButton'
-import { SECTION_BODY, SECTION_CARD } from '@/components/Section'
+import { UsageList } from '@/features/apps/components/UsageList'
 import { ErrorBanner, POLLING_DESCRIPTION } from '@/components/ErrorBanner'
 
 /** One segment of a row's down/up bar, coloured by its series. Its width eases
@@ -34,7 +33,7 @@ const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
 // Hover gets the Speed page's capability-row wash.
 const ROW = cx(
   'group/row relative flex flex-col gap-8 px-(--section-body-padding) py-12',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-row-hover',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
 )
 
 // The whole row links into that app's hosts: a transparent overlay button
@@ -228,24 +227,16 @@ function AppUsageBody({
 
   const busiestTotal = apps.reduce((max, app) => Math.max(max, app.rxBytes + app.txBytes), 0)
   return (
-    <div className={SECTION_CARD}>
-      {/* The rows own the inset (p-0 here), so the hairlines between them run
-          edge to edge, clipped to the card's rounded corners. */}
-      <ul
-        role="list"
-        aria-label="Apps by usage"
-        className={cn(SECTION_BODY, 'flex flex-col p-0 [&>li+li]:border-t [&>li+li]:border-t-line')}
-      >
-        {apps.map((app) => (
-          <AppRow
-            key={app.name}
-            app={app}
-            busiestTotal={busiestTotal}
-            onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
-          />
-        ))}
-      </ul>
-    </div>
+    <UsageList label="Apps by usage">
+      {apps.map((app) => (
+        <AppRow
+          key={app.name}
+          app={app}
+          busiestTotal={busiestTotal}
+          onOpen={() => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } })}
+        />
+      ))}
+    </UsageList>
   )
 }
 

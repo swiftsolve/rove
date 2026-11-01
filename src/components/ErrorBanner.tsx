@@ -8,12 +8,12 @@ import { ButtonSpinner } from '@/components/ButtonSpinner'
 // Dismiss has no fill until hovered.
 const RETRY = cx(
   'text-negative bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
-  'not-disabled:not-aria-disabled:hover:text-negative',
-  'not-disabled:not-aria-disabled:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-lg),transparent)]',
+  'not-aria-disabled:not-aria-busy:hover:text-negative',
+  'not-aria-disabled:not-aria-busy:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-lg),transparent)]',
 )
 const DISMISS = cx(
   'bg-[transparent]',
-  'not-disabled:not-aria-disabled:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
+  'not-aria-disabled:not-aria-busy:hover:bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-md),transparent)]',
 )
 
 /** The second line for a page whose data polls: a failure there heals itself. */
@@ -64,7 +64,7 @@ export function ErrorBanner({ title, description, onRetry }: ErrorBannerProps): 
             Dismiss
           </Button>
           {onRetry && (
-            <Button className={RETRY} isBusy={isRetrying} onClick={() => void retry()}>
+            <Button className={RETRY} isLoading={isRetrying} onClick={() => void retry()}>
               {isRetrying ? <ButtonSpinner size={13} /> : <RefreshIcon size={13} />}
               {isRetrying ? 'Retrying…' : 'Retry'}
             </Button>

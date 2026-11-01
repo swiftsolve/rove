@@ -99,7 +99,7 @@ const KEBAB = cx(
 
 const DROPDOWN = cx(
   'absolute top-[calc(100%+4px)] right-0 z-20 min-w-[148px] p-4',
-  'rounded-sm border border-line-strong bg-raised shadow-raised',
+  'rounded-sm border border-line-strong bg-surface shadow-raised',
 )
 
 const menuItemVariants = cva(

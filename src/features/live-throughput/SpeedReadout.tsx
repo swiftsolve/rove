@@ -28,7 +28,7 @@ export const SpeedReadout = memo(function SpeedReadout({
     <div className="min-w-0 flex-1">
       <dt className="mb-8 flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="field-label">{label}</span>
+        <span className="text-overline">{label}</span>
       </dt>
 
       {/* The visible digits count up between polls; screen readers get the

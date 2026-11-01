@@ -26,7 +26,7 @@ const overlayVariants = cva('absolute inset-0 z-90 flex items-center justify-cen
 // the shell clips the body's square corners to its radius. No lines between
 // the sections; the body's darker well sets them apart.
 const panelVariants = cva(
-  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line-strong bg-panel shadow-raised',
+  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line-strong bg-surface shadow-raised',
   {
     variants: {
       isLeaving: { true: 'animate-dialog-out', false: 'animate-dialog-in' },
@@ -34,22 +34,17 @@ const panelVariants = cva(
   },
 )
 
-const headerVariants = cva('flex justify-between gap-8 p-16', {
-  variants: {
-    /** A leading tile centres beside the title block; text alone hangs from the top. */
-    hasIcon: { true: 'items-center', false: 'items-start' },
-  },
-})
+const HEADER = 'flex items-start justify-between gap-8 p-16'
 
 // Pulled toward the panel's corner without cramping the title, with no fill of
 // its own until hovered.
 const CLOSE = cn(
   'shrink-0 self-start -mt-4 -mr-4 text-secondary',
-  'not-disabled:not-aria-disabled:hover:bg-hover not-disabled:not-aria-disabled:hover:text-primary',
+  'not-aria-disabled:not-aria-busy:hover:bg-hover not-aria-disabled:not-aria-busy:hover:text-primary',
 )
 
 // The secondary button at the filled one's size, so the two sit level.
-const CANCEL = 'px-(--section-padding) py-10 text-sm font-semibold tracking-button-large'
+const CANCEL = 'px-(--section-padding) py-10 text-sm font-semibold tracking-label-large'
 
 interface DialogProps {
   /** False while the dialog plays its leave animation, before it unmounts. */
@@ -57,8 +52,6 @@ interface DialogProps {
   title: ReactNode
   /** The line under the title, read as the dialog's description. */
   description?: ReactNode
-  /** A tile before the title. */
-  icon?: ReactNode
   /** The body, in a recessed well. Omit for a dialog that's only a header and actions. */
   children?: ReactNode
   bodyClassName?: string
@@ -85,7 +78,6 @@ export function Dialog({
   isOpen,
   title,
   description,
-  icon,
   children,
   bodyClassName,
   actions,
@@ -116,31 +108,28 @@ export function Dialog({
         aria-describedby={description != null ? descriptionId : undefined}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className={headerVariants({ hasIcon: icon != null })}>
-          <div className="flex min-w-0 items-center gap-12">
-            {icon}
-            <div className="min-w-0">
-              <h2 id={titleId} className="text-dialog-title">
-                {title}
-              </h2>
-              {description != null && (
-                <div id={descriptionId} className="mt-4 text-sm text-secondary">
-                  {description}
-                </div>
-              )}
-            </div>
+        <div className={HEADER}>
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-heading-medium">
+              {title}
+            </h2>
+            {description != null && (
+              <div id={descriptionId} className="mt-4 text-sm text-secondary">
+                {description}
+              </div>
+            )}
           </div>
-          <IconButton tone="plain" className={CLOSE} onClick={onClose} disabled={!isClosable} aria-label="Close">
+          <IconButton variant="plain" className={CLOSE} onClick={onClose} isDisabled={!isClosable} aria-label="Close">
             <CloseIcon size={15} />
           </IconButton>
         </div>
 
-        {children != null && <div className={cn('bg-chrome p-16', bodyClassName)}>{children}</div>}
+        {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
 
         {hasFooter && (
           <div className="flex justify-end gap-8 p-16">
             {cancelLabel != null && (
-              <Button variant="secondary" className={CANCEL} onClick={onClose} disabled={!isClosable}>
+              <Button variant="secondary" className={CANCEL} onClick={onClose} isDisabled={!isClosable}>
                 {cancelLabel}
               </Button>
             )}

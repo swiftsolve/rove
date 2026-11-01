@@ -18,8 +18,7 @@ import {
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
 import { cva, cx, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
-import { SECTION_CARD } from '@/components/Section'
+import { SectionCard } from '@/components/Section'
 import {
   deviceMetaParts,
   deviceName,
@@ -28,8 +27,7 @@ import {
 } from '@/features/devices/utils/device-display'
 
 // The device card: icon pinned to the top-left, the body column fills the rest.
-const DEVICE_ROW = cn(
-  SECTION_CARD,
+const DEVICE_ROW = cx(
   'flex items-start gap-12',
   'px-(--section-header-padding-x) py-(--section-header-padding-y)',
 )
@@ -78,9 +76,9 @@ const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
 
 // A long name uses up to two lines rather than truncating; the card grows to
 // fit. It takes the row width the status doesn't. text-lg: the widget-title size
-// (e.g. "Capabilities"), not text-title's larger one.
+// (e.g. "Capabilities"), not text-heading-large's larger one.
 const DEVICE_NAME = cx(
-  'text-title min-w-0 flex-1 text-lg',
+  'text-heading-large min-w-0 flex-1 text-lg',
   'line-clamp-2 [line-clamp:2] wrap-anywhere',
 )
 
@@ -89,10 +87,7 @@ const DEVICE_NAME = cx(
 // remains a clean right-hand column instead of wrapping beneath it.
 const DEVICE_META = 'flex min-w-0 items-baseline gap-8'
 
-const DEVICE_KIND = cx(
-  'text-meta min-w-0 flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap',
-  '[&_.inline-meta-item]:overflow-hidden [&_.inline-meta-item]:text-ellipsis',
-)
+const DEVICE_KIND = 'text-caption min-w-0 flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap'
 
 // The privacy-randomized note, set off from the MAC by a small dot.
 const RANDOMIZED_TAG = cx(
@@ -136,7 +131,7 @@ function DeviceMetaLine({
   lastSeenLabel,
 }: {
   device: LanDevice
-  name: string
+  name: string[]
   lastSeenLabel: string | null
 }): JSX.Element | null {
   if (device.isGateway) {
@@ -151,6 +146,7 @@ function DeviceMetaLine({
             ...(product ? [product] : []),
           ]}
           className={DEVICE_KIND}
+          shouldTruncate
         />
       </div>
     )
@@ -160,9 +156,9 @@ function DeviceMetaLine({
   if (metaParts.length === 0 && !lastSeenLabel) return null
   return (
     <div className={DEVICE_META}>
-      {metaParts.length > 0 && <InlineMeta items={metaParts} className={DEVICE_KIND} />}
+      {metaParts.length > 0 && <InlineMeta items={metaParts} className={DEVICE_KIND} shouldTruncate />}
       {/* ml-auto keeps the age flush right even when the type label is absent. */}
-      {lastSeenLabel && <span className="text-meta ml-auto shrink-0">{lastSeenLabel}</span>}
+      {lastSeenLabel && <span className="text-caption ml-auto shrink-0">{lastSeenLabel}</span>}
     </div>
   )
 }
@@ -174,7 +170,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <li className={DEVICE_ROW}>
+    <SectionCard as="li" className={DEVICE_ROW}>
       <span className={iconVariants({ tone: device.isGateway ? 'positive' : KIND_TONES[device.kind] })}>
         <KindIcon kind={device.kind} />
       </span>
@@ -182,7 +178,9 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
         {/* Name on the left, status on the right. mb-2 adds a touch more air
             below the (larger) name, on top of the column's 4px gap. */}
         <div className="mb-2 flex items-start justify-between gap-8">
-          <h2 className={DEVICE_NAME}>{name}</h2>
+          <h2 className={DEVICE_NAME}>
+            <InlineMeta items={name} />
+          </h2>
           <span
             className={stateVariants({ isReachable: device.isReachable })}
             title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
@@ -196,7 +194,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
         {/* MAC on the left, IP pinned to the bottom-right. */}
         <div className="flex items-baseline justify-between gap-8">
-          <span className="text-meta inline-flex min-w-0 items-baseline gap-8 tabular-nums">
+          <span className="text-caption inline-flex min-w-0 items-baseline gap-8 tabular-nums">
             <span>
               <span className="sr-only">MAC address </span>
               {formatMac(device.mac)}
@@ -214,6 +212,6 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
           </span>
         </div>
       </div>
-    </li>
+    </SectionCard>
   )
 }
