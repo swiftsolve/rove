@@ -121,7 +121,7 @@ function RunTestButton({
       icon={hasResults ? RefreshIcon : PlayIcon}
       iconSize={14}
       tooltip={isTesting ? 'Speed test running' : undefined}
-      tooltipPlacement="left"
+      tooltipSide="left"
       isLoading={isTesting}
       isDisabled={!canRunTest}
       onClick={handleRunTest}
@@ -166,7 +166,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
       <ul role="list" className={LIST} aria-hidden>
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
-            <Tooltip content={capability.label} align="left" placement="top">
+            <Tooltip content={capability.label} side="top" align="start">
               <span className={tileVariants({ tone: 'muted', state: 'placeholder' })}>
                 <CapabilityIcon id={capability.id} size={16} />
               </span>
@@ -198,9 +198,9 @@ function ResultCell({
     <li className={CELL}>
       <Tooltip
         content={<InlineMeta items={[capability.label, levelLabel]} />}
-        align="left"
-        placement="top"
-        offset={4}
+        side="top"
+        align="start"
+        sideOffset={2}
         isDisabled={isTesting}
         // The button's label already says the same.
         shouldDescribe={false}
@@ -269,8 +269,8 @@ export function CapabilitiesCard(): JSX.Element {
   }
 
   return (
+    // Top-placement tooltips must not be clipped by the card.
     <Card className="overflow-visible">
-      // Top-placement tooltips must not be clipped by the card.
       <CardHeader
         title="Capabilities"
         icon={<ZapIcon size={15} />}

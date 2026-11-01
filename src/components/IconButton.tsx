@@ -38,7 +38,7 @@ type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' 
     iconSize?: 16 | 14
     /** The tooltip, when it should say more than the label (a help button's hint). */
     tooltip?: ReactNode
-    tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right'
+    tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
   }
 
 /**
@@ -54,7 +54,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
     icon: Icon,
     iconSize = 16,
     tooltip,
-    tooltipPlacement,
+    tooltipSide,
     isDisabled,
     isLoading,
     className,
@@ -65,7 +65,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   ref,
 ) {
   return (
-    <Tooltip content={tooltip ?? label} placement={tooltipPlacement}>
+    <Tooltip content={tooltip ?? label} side={tooltipSide}>
       <button
         ref={ref}
         type={type}

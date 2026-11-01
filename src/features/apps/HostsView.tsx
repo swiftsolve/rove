@@ -128,7 +128,7 @@ function HostGlyph({ host }: { host: HostConn }): JSX.Element {
   )
   if (!label) return glyph
   return (
-    <UiTooltip content={label} placement="top" align="left">
+    <UiTooltip content={label} side="top" align="start">
       {glyph}
     </UiTooltip>
   )
@@ -153,8 +153,8 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
           <span className="text-tertiary tabular-nums">{host.ip}</span>
         </span>
       }
-      placement="top"
-      align="left"
+      side="top"
+      align="start"
       // The wrapper must itself shrink and clip so the name still truncates
       // inside the row; the portalled bubble is unaffected by the clip.
       className="min-w-0 overflow-hidden"

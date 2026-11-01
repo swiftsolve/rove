@@ -39,7 +39,7 @@ function NavItem({ id }: { id: AppTab }): JSX.Element {
   const tab = TABS[id]
   const isActive = (TABS[location.tab].railTab ?? location.tab) === id
   return (
-    <Tooltip content={tab.label} placement="right">
+    <Tooltip content={tab.label} side="right">
       <button
         type="button"
         className={itemVariants({ isActive })}
@@ -59,7 +59,7 @@ function ThemeToggle(): JSX.Element {
   const label = isLight ? 'Switch to dark mode' : 'Switch to light mode'
   const Icon = isLight ? MoonIcon : SunIcon
   return (
-    <Tooltip content={label} placement="right">
+    <Tooltip content={label} side="right">
       <button type="button" className={itemVariants()} onClick={toggle} aria-label={label}>
         <Icon size={18} className="shrink-0" />
       </button>

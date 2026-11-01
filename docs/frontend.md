@@ -164,7 +164,7 @@ writing new markup. Icons come from `src/components/icons/Icons.tsx`
 | Traffic card | `TrafficCard` | Live download and upload with the last 60 seconds charted. |
 | Capabilities card | `CapabilitiesCard` | What the connection can handle: a placeholder before a test, Testing while one runs, results after. |
 | Stat card | `StatCard` | Home summary card: Usage or Devices. Devices is Empty when there's nothing to list. |
-| Tooltip | `Tooltip` | Short hint on hover. One line where possible. |
+| Tooltip | `Tooltip` | Short hint on hover. One line where possible. Opens on the trigger's `side` (`bottom` by default; `left` and `right` sit beside it), lined up with its `start` or `end` edge (`align`), `sideOffset` px away. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
 | Error banner | `ErrorBanner` | A failure above a page: title, a line under it (required), then Dismiss and Retry on the right. Retry shows Retrying… until it settles. |
 | Empty state | `EmptyState` | Blank page: two faded placeholder rows (with a lock badge when `isLocked`), title, `description` and optional `actions`. |
