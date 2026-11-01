@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
-import { GlobeIcon, HelpIcon, PlusIcon, RefreshIcon, SearchIcon } from '../icons/Icons'
+import { GlobeIcon, HelpIcon, PlusIcon, SearchIcon } from '../icons/Icons'
 import { PageHeader } from './PageHeader'
 
 // PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj
@@ -60,19 +60,8 @@ export const Subpage: Story = {
   args: { title: 'Hosts', icon: undefined, onBack: fn(), description: 'Remote hosts by application, busiest first' },
 }
 
-/** `null` keeps the line's height while there's nothing to show yet. */
-export const EmptyLine: Story = { args: { description: null } }
-
 /** No line under the title. */
 export const TitleOnly: Story = { args: { description: undefined } }
-
-/** A long description wraps; the actions hold their size. */
-export const LongDescription: Story = {
-  args: {
-    description: '12 services, all up. Latency is checked every 30 seconds from this Mac to each host.',
-    actions: <IconButton label="Refresh" icon={RefreshIcon} />,
-  },
-}
 
 /** Every form together. */
 export const AllStates: Story = {
