@@ -204,6 +204,9 @@ try {
       await page.keyboard.press('Escape')
       await page.mouse.move(0, 0)
       await settle(600)
+      // Leave animations are CSS, on the wall clock: let them end (and a closed
+      // dialog hand focus back) before the next scene moves focus.
+      await page.waitForTimeout(400)
     }
 
     await page.goto(`${server.url}/?gallery&theme=${theme}`, { waitUntil: 'networkidle' })

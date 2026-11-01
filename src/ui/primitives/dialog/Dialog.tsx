@@ -1,19 +1,20 @@
-import { createContext, useContext, useId, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import { cva } from 'class-variance-authority'
+import { createContext, useContext, useState, type ReactNode } from 'react'
+import { Dialog as BaseDialog } from '@base-ui/react/dialog'
+import { cx } from 'class-variance-authority'
 import { CloseIcon } from '../../icons/Icons'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
-import { useModalFocus } from './useModalFocus'
 import { usePortalContainer } from '../../hooks/usePortalContainer'
-import { usePresence } from '../../hooks/usePresence'
 import { cn } from '../../foundations/cn'
 
-// How long a closing dialog takes to leave (`--duration-fast`).
-const EXIT_MS = 140
+interface DialogState {
+  /** False while the Dialog plays its leave animation. */
+  isOpen: boolean
+  /** The leave animation finished: unmount. */
+  onExitComplete: () => void
+}
 
-// False while the Dialog inside a DialogRoot plays its leave animation.
-const DialogOpenContext = createContext(true)
+const DialogStateContext = createContext<DialogState>({ isOpen: true, onExitComplete: () => {} })
 
 interface DialogRootProps {
   isOpen: boolean
@@ -23,34 +24,34 @@ interface DialogRootProps {
 
 /**
  * Opens and closes a Dialog. Its children mount when `isOpen` turns true and
- * stay mounted through the Dialog's leave animation after it turns false, so
- * the component that renders the Dialog (and its state) lives only that long.
+ * stay mounted until the Dialog's leave animation ends after it turns false,
+ * so the component that renders the Dialog (and its state) lives only that long.
  */
 export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element | null {
-  const isMounted = usePresence(isOpen, EXIT_MS)
+  const [isMounted, setIsMounted] = useState(isOpen)
+  if (isOpen && !isMounted) setIsMounted(true)
   if (!isMounted) return null
-  return <DialogOpenContext.Provider value={isOpen}>{children}</DialogOpenContext.Provider>
+  return (
+    <DialogStateContext.Provider value={{ isOpen, onExitComplete: () => setIsMounted(false) }}>
+      {children}
+    </DialogStateContext.Provider>
+  )
 }
 
-// Absolute (not fixed) and portaled into the PortalProvider's container, so it
-// covers and centres over that area (the app's content column) rather than the
-// whole window.
-const overlayVariants = cva('absolute inset-0 z-90 flex items-center justify-center bg-scrim p-20', {
-  variants: {
-    isLeaving: { true: 'pointer-events-none animate-overlay-out', false: 'animate-overlay-in' },
-  },
-})
+// Absolute (not fixed) in the PortalProvider's container, so the scrim covers
+// and the dialog centres over that area (the app's content column), not the
+// whole window. The two fade together, as one layer.
+const LAYER = cx(
+  'absolute inset-0 z-90',
+  'data-open:animate-overlay-in data-closed:pointer-events-none data-closed:animate-overlay-out',
+)
 
 // No padding on the shell: the header, body and footer own their insets, and
 // the shell clips the body's square corners to its radius. No lines between
 // the sections; the body's darker well sets them apart.
-const panelVariants = cva(
+const PANEL = cx(
   'w-full max-w-[340px] overflow-hidden rounded-lg border border-line-strong bg-surface shadow-raised',
-  {
-    variants: {
-      isLeaving: { true: 'animate-dialog-out', false: 'animate-dialog-in' },
-    },
-  },
+  'data-open:animate-dialog-in data-closed:animate-dialog-out',
 )
 
 const HEADER = 'flex items-start justify-between gap-8 p-16'
@@ -78,8 +79,10 @@ interface DialogProps {
 
 /**
  * A modal dialog: title, optional description and close button, a recessed
- * body, and a footer of actions. Focus stays inside while it's open; Escape,
- * the close button, Cancel and a click on the backdrop all call `onClose`.
+ * body, and a footer of actions. Focus moves in and stays inside while it's
+ * open, the page behind is inert, and focus returns to the opener on close.
+ * Escape, the close button, Cancel and a click on the backdrop all call
+ * `onClose`.
  *
  * Render it inside a DialogRoot, which opens it and plays its leave animation.
  */
@@ -94,67 +97,65 @@ export function Dialog({
   canClose = true,
   isDirty = false,
 }: DialogProps): JSX.Element {
-  const isOpen = useContext(DialogOpenContext)
+  const { isOpen, onExitComplete } = useContext(DialogStateContext)
   const portalContainer = usePortalContainer()
+  // Whatever had focus as the dialog mounted: the control that opened it, which
+  // gets focus back on close. Base UI only knows its own Trigger part.
+  const [opener] = useState(() => (document.activeElement instanceof HTMLElement ? document.activeElement : null))
   const isClosable = isOpen && canClose
-  const dialogRef = useModalFocus(onClose, isClosable)
-  const titleId = useId()
-  const descriptionId = useId()
   const hasFooter = actions != null || cancelLabel != null
 
-  const overlay = (
-    <div
-      className={overlayVariants({ isLeaving: !isOpen })}
-      role="presentation"
-      onClick={isClosable && !isDirty ? onClose : undefined}
+  return (
+    <BaseDialog.Root
+      open={isOpen}
+      onOpenChange={(isNowOpen) => {
+        if (!isNowOpen && isClosable) onClose()
+      }}
+      onOpenChangeComplete={(isNowOpen) => {
+        if (!isNowOpen) onExitComplete()
+      }}
+      disablePointerDismissal={isDirty || !isClosable}
     >
-      <div
-        className={panelVariants({ isLeaving: !isOpen })}
-        ref={dialogRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={description != null ? descriptionId : undefined}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={HEADER}>
-          <div className="min-w-0">
-            <h2 id={titleId} className="text-heading-medium">
-              {title}
-            </h2>
-            {description != null && (
-              <div id={descriptionId} className="mt-4 text-sm text-secondary">
-                {description}
+      {/* Base UI waits for a null container; with no provider, the body. */}
+      <BaseDialog.Portal container={portalContainer ?? undefined}>
+        <BaseDialog.Backdrop className={cn(LAYER, 'bg-scrim')} />
+        <BaseDialog.Viewport className={cn(LAYER, 'flex items-center justify-center p-20')}>
+          <BaseDialog.Popup className={PANEL} finalFocus={() => (opener?.isConnected ? opener : true)}>
+            <div className={HEADER}>
+              <div className="min-w-0">
+                <BaseDialog.Title className="text-heading-medium">{title}</BaseDialog.Title>
+                {description != null && (
+                  <BaseDialog.Description render={<div />} className="mt-4 text-sm text-secondary">
+                    {description}
+                  </BaseDialog.Description>
+                )}
+              </div>
+              <IconButton
+                variant="ghost"
+                className={CLOSE}
+                label="Close"
+                icon={CloseIcon}
+                onClick={onClose}
+                isDisabled={!isClosable}
+              />
+            </div>
+
+            {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
+
+            {hasFooter && (
+              <div className="flex justify-end gap-8 p-16">
+                {/* At the main action's size, so the two sit level. */}
+                {cancelLabel != null && (
+                  <Button size="md" onClick={onClose} isDisabled={!isClosable}>
+                    {cancelLabel}
+                  </Button>
+                )}
+                {actions}
               </div>
             )}
-          </div>
-          <IconButton
-            variant="ghost"
-            className={CLOSE}
-            label="Close"
-            icon={CloseIcon}
-            onClick={onClose}
-            isDisabled={!isClosable}
-          />
-        </div>
-
-        {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
-
-        {hasFooter && (
-          <div className="flex justify-end gap-8 p-16">
-            {/* At the main action's size, so the two sit level. */}
-            {cancelLabel != null && (
-              <Button size="md" onClick={onClose} isDisabled={!isClosable}>
-                {cancelLabel}
-              </Button>
-            )}
-            {actions}
-          </div>
-        )}
-      </div>
-    </div>
+          </BaseDialog.Popup>
+        </BaseDialog.Viewport>
+      </BaseDialog.Portal>
+    </BaseDialog.Root>
   )
-
-  return portalContainer ? createPortal(overlay, portalContainer) : overlay
 }

@@ -5,6 +5,7 @@ import { ButtonSpinner } from '../primitives/spinner/ButtonSpinner'
 import { Spinner } from '../primitives/spinner/Spinner'
 import { Toggle } from '../primitives/toggle/Toggle'
 import { Dialog, DialogRoot } from '../primitives/dialog/Dialog'
+import { PortalProvider } from '../context/PortalProvider'
 import { DotSeparator, InlineMeta } from '../primitives/separator/DotSeparator'
 import { Card, CardBadge, CardBody, CardFooter, CardHeader } from '../components/card/Card'
 import { DataList, DataRow } from '../components/data-list/DataList'
@@ -243,19 +244,7 @@ export function Gallery(): JSX.Element {
       </Section>
 
       <Section title="Dialog">
-        <div className="relative h-[300px] overflow-hidden rounded-lg">
-          <DialogRoot isOpen>
-            <Dialog
-              title="Add a service"
-              description="Track a service by URL or IP address."
-              cancelLabel="Cancel"
-              onClose={() => {}}
-              actions={<Button variant="solid">Add</Button>}
-            >
-              <p className="text-sm text-secondary">The body sits in a recessed well.</p>
-            </Dialog>
-          </DialogRoot>
-        </div>
+        <DialogDemo />
       </Section>
     </main>
   )
@@ -275,6 +264,30 @@ function Row({ label, children }: { label: string; children: ReactNode }): JSX.E
     <div className="flex items-center gap-12">
       <span className="w-[72px] shrink-0 text-xs text-tertiary">{label}</span>
       <div className="flex flex-wrap items-center gap-12">{children}</div>
+    </div>
+  )
+}
+
+/** A dialog open in a box of its own, the way the app opens one over its content column. */
+function DialogDemo(): JSX.Element {
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
+  return (
+    <div ref={setContainer} className="relative h-[300px] overflow-hidden rounded-lg">
+      <PortalProvider container={container}>
+        {container && (
+          <DialogRoot isOpen>
+            <Dialog
+              title="Add a service"
+              description="Track a service by URL or IP address."
+              cancelLabel="Cancel"
+              onClose={() => {}}
+              actions={<Button variant="solid">Add</Button>}
+            >
+              <p className="text-sm text-secondary">The body sits in a recessed well.</p>
+            </Dialog>
+          </DialogRoot>
+        )}
+      </PortalProvider>
     </div>
   )
 }
