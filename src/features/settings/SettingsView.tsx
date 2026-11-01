@@ -12,8 +12,8 @@ import {
   CardFooter,
   CardHeader,
   CheckIcon,
-  ChevronRightIcon,
   ComputerIcon,
+  ListRow,
   MoonIcon,
   PageHeader,
   RefreshIcon,
@@ -223,34 +223,13 @@ export function SettingsView(): JSX.Element {
       <Card>
         <CardHeader title="About" />
         <CardBody className={LIST}>
-          {/* A whole-row link that reads like a Speed-page capability row: the hover
-              highlight bleeds 8px into the card padding, so the focus ring (the
-              ring alone, no wash) is drawn inside it. The chevron is always faint
-              and brightens on hover and focus. */}
-          <button
-            type="button"
-            className={cx(
-              'group flex items-center justify-between gap-16 w-[calc(100%+16px)] -mx-8',
-              'px-8 py-(--row-padding-y) rounded-sm text-left cursor-pointer',
-              'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
-              'focus-visible:outline-offset-(--focus-inset)',
-            )}
-            onClick={() => navigate({ tab: 'about' })}
-          >
-            {/* A span, as a button holds only phrasing content; ROW_TEXT makes it flex. */}
+          {/* Reads like a Speed-page capability row. */}
+          <ListRow onClick={() => navigate({ tab: 'about' })}>
             <span className={ROW_TEXT}>
               <span className={ROW_TITLE}>About Rove</span>
               <span className={ROW_DESC}>Version, platform, and source.</span>
             </span>
-            <ChevronRightIcon
-              size={16}
-              className={cx(
-                'shrink-0 text-tertiary opacity-30',
-                'transition-[opacity] duration-(--duration-fast) ease-in-out',
-                'group-hover:opacity-70 group-focus-visible:opacity-70',
-              )}
-            />
-          </button>
+          </ListRow>
         </CardBody>
       </Card>
 

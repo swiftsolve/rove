@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { AppUsageSupport } from '@/types'
@@ -17,15 +18,18 @@ interface BodyState {
 }
 
 function renderBody(props: BodyState): void {
+  // The unsupported state's Restart action reads its detail through a query.
   render(
-    <UsageBody
-      support={props.support ?? 'supported'}
-      isFirstLoad={props.isFirstLoad ?? false}
-      isEmpty={props.isEmpty ?? false}
-      copy={COPY}
-    >
-      <ul aria-label="Rows" />
-    </UsageBody>,
+    <QueryClientProvider client={new QueryClient()}>
+      <UsageBody
+        support={props.support ?? 'supported'}
+        isFirstLoad={props.isFirstLoad ?? false}
+        isEmpty={props.isEmpty ?? false}
+        copy={COPY}
+      >
+        <ul aria-label="Rows" />
+      </UsageBody>
+    </QueryClientProvider>,
   )
 }
 
