@@ -64,7 +64,7 @@ type IconTileButtonProps = TileLookProps & {
   isDisabled?: boolean
 }
 
-/** An IconTile that opens something: hover deepens the tint and lifts it, a touch larger. */
+/** An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger. */
 export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
   { size = 'md', color, className, label, onClick, isDisabled = false, icon },
   ref,
@@ -78,7 +78,9 @@ export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>
       className={cn(
         look.className,
         'transition-[background,transform] duration-(--duration-fast) ease-out data-disabled:cursor-default',
+        // Keyboard focus lifts it like hover, beside its focus ring.
         'usable:hover:bg-current/(--opacity-tint-lg) usable:hover:transform-[translateY(-2px)_scale(1.06)]',
+        'usable:focus-visible:bg-current/(--opacity-tint-lg) usable:focus-visible:transform-[translateY(-2px)_scale(1.06)]',
         className,
       )}
       aria-label={label}
