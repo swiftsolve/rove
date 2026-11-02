@@ -125,7 +125,12 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
             <Tooltip content={capability.label} side="top">
-              <IconTile color="neutral" icon={<CapabilityIcon id={capability.id} size={16} />} />
+              {/* Faded like a disabled control: nothing to open until a test runs. */}
+              <IconTile
+                color="neutral"
+                className="opacity-(--opacity-disabled)"
+                icon={<CapabilityIcon id={capability.id} size={16} />}
+              />
             </Tooltip>
             <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
           </li>
