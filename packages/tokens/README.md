@@ -42,7 +42,7 @@ Figma is the source of truth; this package turns its variables and text styles i
 %%{init: {"themeCSS": ".cluster-label { translate: 236px 0; }", "theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
 flowchart TD
   figma("<b>Figma file</b><br/>variables, styles"):::source
-  exports("<b>src/figma/*.json</b><br/>export plugin"):::file
+  exports("<b>src/figma/*.json</b><br/>Figma plugin"):::file
   code("<b>src/code‑tokens.json</b><br/>shadows, easings"):::file
   slides("<b>Slideshow</b><br/>npm run present"):::ship
 
@@ -66,7 +66,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
@@ -164,7 +164,7 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 | --- | --- |
 | `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
-| `figma-plugin/` | The Figma plugin that writes the two exports. |
+| `figma-plugin/` | Rove Tokens Export, the Figma plugin that writes the two exports: every local variable by collection and mode, aliases kept, in the variables panel's order, and every local text style with the variables bound to it. It previews both files, then downloads them; it has no network access. |
 | `src/code-tokens.json` | What Figma variables can't hold: font stacks for the font-family variables, shadows, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 
 **Build**
