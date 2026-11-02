@@ -4,5 +4,5 @@ node_modules/
 /tokens/
 # Figma token for npm run present, and its output
 .env.local
-presentation/
+/presentation/
 /storybook-static/
