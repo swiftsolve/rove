@@ -203,6 +203,10 @@ import it from `@/ui` and nothing else under `src/ui`. The library imports only
 itself (by relative path) and packages, never app code. `npm run lint` enforces
 both, and a raw `<button>` outside the library is a lint error.
 
+The library keeps its own version, apart from the design system's:
+`UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows ("Rove
+Components v1"). Raise it when the library's API changes.
+
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are
   no tiers: a component that starts using another stays where it is.
