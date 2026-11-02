@@ -44,8 +44,6 @@ const ALLOWED = [
   { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
   { file: 'src/ui/empty-state/EmptyState.tsx', value: '#000' },
-  // StatusDot's breathing pulses want a symmetric curve, and no easing token is one.
-  { file: 'src/styles/tailwind.css', value: 'ease-in-out' },
 ]
 
 async function listFiles(dir) {
@@ -134,12 +132,12 @@ for (const file of files) {
 
   for (const match of code.matchAll(HEX)) report(match.index, match[0], `${match[0]} is a raw colour; use a colour token`)
   for (const match of code.matchAll(COLOUR_FUNCTION)) report(match.index, match[0], `${match[0]}…) is a raw colour; use a colour token`)
-  for (const match of code.matchAll(/cubic-bezier\(/g)) report(match.index, match[0], `${match[0]}…) is a raw easing; use --ease-out or --ease-in-out`)
+  for (const match of code.matchAll(/cubic-bezier\(/g)) report(match.index, match[0], `${match[0]}…) is a raw easing; use --ease-out, --ease-in-out or --ease-pulse`)
 
   // Arbitrary values (`[...]`) and stylesheet declarations get the stricter rules.
   const checkValue = (index, value, describe, suggest = (token) => `var(${token})`) => {
     for (const match of value.matchAll(NAMED_COLOUR)) report(index, match[0], `${describe(match[0])} is a raw colour; use a colour token`)
-    for (const match of value.matchAll(EASING_KEYWORD)) report(index, match[0], `${describe(match[0])} is a keyword easing; use var(--ease-out) or var(--ease-in-out)`)
+    for (const match of value.matchAll(EASING_KEYWORD)) report(index, match[0], `${describe(match[0])} is a keyword easing; use var(--ease-out), var(--ease-in-out) or var(--ease-pulse)`)
     for (const [time, amount, unit] of value.matchAll(TIME)) {
       const token = durationToken(amount, unit)
       if (token) report(index, time, `${describe(time)} is ${token}; use ${suggest(token)}`)

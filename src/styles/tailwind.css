@@ -181,9 +181,9 @@
   /* A dropdown menu drops into place. */
   --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
   /* StatusDot's pulses (keyframes in base.css): calm, live data, work under way. */
-  --animate-pulse-calm: status-pulse 2.4s ease-in-out infinite;
-  --animate-pulse-live: status-pulse 2s ease-in-out infinite;
-  --animate-pulse-busy: status-pulse 1.6s ease-in-out infinite;
+  --animate-pulse-calm: status-pulse 2.4s var(--ease-pulse) infinite;
+  --animate-pulse-live: status-pulse 2s var(--ease-pulse) infinite;
+  --animate-pulse-busy: status-pulse 1.6s var(--ease-pulse) infinite;
   /* The Devices header's scan status and online tally trade places. */
   --animate-scan-slide-in: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
   --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
