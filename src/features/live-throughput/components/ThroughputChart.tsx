@@ -1,145 +1,107 @@
 import { useId, useMemo } from 'react'
 import { cx } from 'class-variance-authority'
 import { Area, AreaChart, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
-import { sanitizeRate } from '@/types'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
+import { buildChartRows, formatAxisLabel, type ChartRow } from '@/features/live-throughput/utils/throughput-chart'
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
 
-// Scale labels are HTML rather than recharts ticks: recharts' own tick labels
-// ghost/duplicate when the domain changes. The 4px inset matches the AreaChart
-// margin ({ top: 4, bottom: 4 }) so the ticks line up with the plot.
-const SCALE = cx(
-  'pointer-events-none absolute top-4 right-0 bottom-4 w-[26px]',
-  'flex flex-col items-end justify-between',
-)
-
-type ThroughputChartProps = {
-  download: number[]
-  upload: number[]
-  /** The scale's ceiling (Mbps); it eases down and jumps up (useSmoothScale). */
-  maxValue: number
-}
-
-interface ChartDatum {
-  index: number
-  down: number
-  up: number
-}
-
 const CHART_HEIGHT = 80
-// Hoisted so each render hands recharts the same object.
+// The right margin leaves room for the y-axis labels. Hoisted so each render
+// hands recharts the same object.
 const CHART_MARGIN = { top: 4, right: 28, bottom: 4, left: 2 }
 
-/** Trim to a clean, consistent tick: no trailing ".0", 1 decimal only below 10. */
-function trimNumber(value: number): string {
-  return String(Number(value.toFixed(value >= 10 ? 0 : 1)))
+// The axis labels share one style, so the x and y labels read as one set.
+const AXIS_LABEL_TEXT = 'type-number-small text-tertiary num'
+
+// The y-axis labels are HTML rather than recharts ticks: recharts' own tick
+// labels ghost/duplicate when the domain changes. The 4px inset matches the
+// chart's top and bottom margin so the labels line up with the plot.
+const Y_AXIS_LABELS = cx(
+  'pointer-events-none absolute top-4 right-0 bottom-4 w-[26px]',
+  'flex flex-col items-end justify-between',
+  AXIS_LABEL_TEXT,
+)
+
+// Props both series' areas share: a smooth line with no animation or dots.
+const AREA_DEFAULTS = {
+  type: 'monotone',
+  strokeLinecap: 'round',
+  fillOpacity: 1,
+  isAnimationActive: false,
+  dot: false,
+  activeDot: false,
+} as const
+
+type ThroughputChartProps = {
+  /** Download samples (Mbps), oldest first. */
+  download: number[]
+  /** Upload samples (Mbps), oldest first. */
+  upload: number[]
+  /** The scale's ceiling (Mbps). The chart eases down to it and jumps up. */
+  maxMbps: number
 }
 
-function formatAxis(mbps: number): string {
-  const safe = sanitizeRate(mbps)
-  if (safe === 0) return '0'
-  if (safe >= 1000) return `${trimNumber(safe / 1000)}G`
-  return `${trimNumber(safe)}M`
-}
-
-/** One chart row per sample index; a missing sample reads as zero. */
-function buildChartRows(download: number[], upload: number[]): ChartDatum[] {
-  const total = Math.max(download.length, upload.length)
-  const rows: ChartDatum[] = Array.from({ length: total }, (_, index) => ({
-    index,
-    down: sanitizeRate(download[index] ?? 0),
-    up: sanitizeRate(upload[index] ?? 0),
-  }))
-  // A lone sample renders as a dot centered in the plot (the x-domain collapses
-  // to a single value). Seed a leading zero so the first sample draws as a short
-  // line anchored to the right ("Now") instead, matching the steady-state trace.
-  const first = rows[0]
-  if (rows.length === 1 && first) {
-    rows.unshift({ index: first.index - 1, down: 0, up: 0 })
-  }
-  return rows
-}
-
-export function ThroughputChart({ download, upload, maxValue }: ThroughputChartProps): JSX.Element {
+/** The last minute of download (solid) and upload (dashed) as areas, with a
+ *  dot on each latest sample. */
+export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartProps): JSX.Element {
   const gradientId = useId().replace(/:/g, '')
-  const downFill = `${gradientId}-down`
-  const upFill = `${gradientId}-up`
+  const downFillId = `${gradientId}-down`
+  const upFillId = `${gradientId}-up`
 
   // Recomputed only when the samples change, not on every 1 Hz render.
-  const data = useMemo(() => buildChartRows(download, upload), [download, upload])
+  const rows = useMemo(() => buildChartRows(download, upload), [download, upload])
+  const latest = rows.at(-1)
 
   // Glide the axis toward a smaller scale so the trace doesn't jump taller all
   // at once; spikes still expand the scale instantly (see useSmoothScale).
-  const scaleMax = useSmoothScale(maxValue)
-
-  const latest = data.at(-1)
-  const currentDown = sanitizeRate(download.at(-1) ?? 0)
-  const currentUp = sanitizeRate(upload.at(-1) ?? 0)
+  const scaleMax = useSmoothScale(maxMbps)
 
   return (
     <div className="relative [contain:layout]">
-      <div
-        className="relative h-[80px]"
-        role="img"
-        aria-label={`Throughput over time. Currently ${currentDown.toFixed(1)} megabits per second down, ${currentUp.toFixed(1)} up`}
-      >
-        <ResponsiveContainer
-          width="100%"
-          height={CHART_HEIGHT}
-          initialDimension={{ width: 600, height: CHART_HEIGHT }}
-        >
+      <div className="relative h-[80px]" role="img" aria-label={describeChart(latest)}>
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT} initialDimension={{ width: 600, height: CHART_HEIGHT }}>
           <AreaChart
-            data={data}
+            data={rows}
             margin={CHART_MARGIN}
             // The wrapper's role="img" label already describes the chart, and there's
             // no tooltip to drive — so don't let the SVG take a dead Tab stop.
             accessibilityLayer={false}
           >
             <defs>
-              <linearGradient id={downFill} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={downFillId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--series-down)" className="[stop-opacity:var(--opacity-tint-xl)]" />
                 <stop offset="100%" stopColor="var(--series-down)" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id={upFill} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={upFillId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--series-up)" className="[stop-opacity:var(--opacity-tint-xs)]" />
                 <stop offset="100%" stopColor="var(--series-up)" stopOpacity={0} />
               </linearGradient>
             </defs>
 
             <XAxis dataKey="index" type="number" domain={['dataMin', 'dataMax']} hide />
-            {/* Hidden: defines the [0, maxValue] scale for the areas and reference
-                lines. The visible scale labels are a stable HTML overlay below —
-                recharts' own tick labels ghost/duplicate when the domain changes. */}
+            {/* Hidden: it only sets the [0, scaleMax] scale. The visible labels
+                are the HTML overlay below. */}
             <YAxis domain={[0, scaleMax]} hide />
 
             <ReferenceLine y={scaleMax / 2} stroke="var(--border-default)" strokeOpacity={0.15} />
             <ReferenceLine y={0} stroke="var(--border-default)" strokeOpacity={0.2} />
 
+            {/* Upload first, so download draws on top of it. */}
             <Area
-              type="monotone"
+              {...AREA_DEFAULTS}
               dataKey="up"
               stroke="var(--series-up)"
               strokeWidth={1.5}
               strokeDasharray="4 3"
               className="[stroke-opacity:var(--opacity-high)]"
-              strokeLinecap="round"
-              fill={`url(#${upFill})`}
-              fillOpacity={1}
-              isAnimationActive={false}
-              dot={false}
-              activeDot={false}
+              fill={`url(#${upFillId})`}
             />
             <Area
-              type="monotone"
+              {...AREA_DEFAULTS}
               dataKey="down"
               stroke="var(--series-down)"
               strokeWidth={1.75}
-              strokeLinecap="round"
-              fill={`url(#${downFill})`}
-              fillOpacity={1}
-              isAnimationActive={false}
-              dot={false}
-              activeDot={false}
+              fill={`url(#${downFillId})`}
             />
 
             {/* One endpoint marker per series on the latest sample. A reference
@@ -154,20 +116,26 @@ export function ThroughputChart({ download, upload, maxValue }: ThroughputChartP
           </AreaChart>
         </ResponsiveContainer>
 
-        <div className={cx(SCALE, 'type-number-small text-tertiary', 'num')} aria-hidden>
-          <span className="translate-y-[-50%]">{formatAxis(scaleMax)}</span>
-          <span>{formatAxis(scaleMax / 2)}</span>
+        <div className={Y_AXIS_LABELS} aria-hidden>
+          <span className="translate-y-[-50%]">{formatAxisLabel(scaleMax)}</span>
+          <span>{formatAxisLabel(scaleMax / 2)}</span>
           {/* Centred on the bottom edge (the y=0 baseline), mirroring the top
               label, so it lines up with the reference line. */}
           <span className="translate-y-[50%]">0</span>
         </div>
       </div>
 
-      {/* Same .type-number-small type as the scale, so the x and y labels read as one set. */}
-      <div className={cx('mt-6 flex justify-between pr-[26px]', 'type-number-small text-tertiary', 'num')} aria-hidden>
+      {/* The time axis; its right padding matches the y-axis labels' width. */}
+      <div className={cx('mt-6 flex justify-between pr-[26px]', AXIS_LABEL_TEXT)} aria-hidden>
         <span>{formatChartWindowLabel()}</span>
         <span>Now</span>
       </div>
     </div>
   )
+}
+
+function describeChart(latest: ChartRow | undefined): string {
+  const down = (latest?.down ?? 0).toFixed(1)
+  const up = (latest?.up ?? 0).toFixed(1)
+  return `Throughput over time. Currently ${down} megabits per second down, ${up} up`
 }

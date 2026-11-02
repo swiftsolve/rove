@@ -7,55 +7,17 @@ import {
   type ThroughputHistory,
 } from '@/features/live-throughput/utils/throughput-history'
 
-/** Hysteresis keeps the idle badge from flickering on background noise. */
-const IDLE_ENTER_MBPS = 0.08
-const IDLE_EXIT_MBPS = 0.15
-const IDLE_ENTER_MS = 3_000
-
-interface IdleTracker {
-  isIdle: boolean
-  lowSince: number | null
-}
-
-function nextIdleState(
-  downloadMbps: number,
-  uploadMbps: number,
-  tracker: IdleTracker,
-  now: number,
-): IdleTracker {
-  const peak = Math.max(downloadMbps, uploadMbps)
-
-  if (tracker.isIdle) {
-    if (peak >= IDLE_EXIT_MBPS) {
-      return { isIdle: false, lowSince: null }
-    }
-    return tracker
-  }
-
-  if (downloadMbps < IDLE_ENTER_MBPS && uploadMbps < IDLE_ENTER_MBPS) {
-    const lowSince = tracker.lowSince ?? now
-    if (now - lowSince >= IDLE_ENTER_MS) {
-      return { isIdle: true, lowSince }
-    }
-    return { isIdle: false, lowSince }
-  }
-
-  return { isIdle: false, lowSince: null }
-}
-
 export interface LiveThroughputState {
+  /** The latest sample. */
   throughput: LiveThroughput
+  /** The last minute of samples, oldest first. */
   history: ThroughputHistory
-  isIdle: boolean
 }
 
 const INITIAL_STATE: LiveThroughputState = {
   throughput: EMPTY_LIVE_THROUGHPUT,
   history: EMPTY_THROUGHPUT_HISTORY,
-  isIdle: true,
 }
-
-const INITIAL_IDLE_TRACKER: IdleTracker = { isIdle: true, lowSince: null }
 
 /**
  * The live feed is a single module-level store, not per-component state. One
@@ -69,7 +31,6 @@ const INITIAL_IDLE_TRACKER: IdleTracker = { isIdle: true, lowSince: null }
  * and could leave the feed stuck.
  */
 let storeState: LiveThroughputState = INITIAL_STATE
-let idleTracker: IdleTracker = INITIAL_IDLE_TRACKER
 const listeners = new Set<() => void>()
 
 function setStoreState(next: LiveThroughputState): void {
@@ -83,18 +44,8 @@ function ingestSample(update: LiveThroughput): void {
     uploadMbps: sanitizeRate(update.uploadMbps),
     timestamp: update.timestamp || Date.now(),
   }
-  const history = appendThroughputHistory(
-    storeState.history,
-    throughput.downloadMbps,
-    throughput.uploadMbps,
-  )
-  idleTracker = nextIdleState(
-    throughput.downloadMbps,
-    throughput.uploadMbps,
-    idleTracker,
-    throughput.timestamp,
-  )
-  setStoreState({ throughput, history, isIdle: idleTracker.isIdle })
+  const history = appendThroughputHistory(storeState.history, throughput.downloadMbps, throughput.uploadMbps)
+  setStoreState({ throughput, history })
 }
 
 // The window went out of view long enough to actually pause the feed. Drop the
@@ -102,7 +53,6 @@ function ingestSample(update: LiveThroughput): void {
 // "now" instead of resuming a snapshot from minutes ago. (This never fires on a
 // tab switch — the window stays visible then, so the feed keeps running.)
 function resetHistory(): void {
-  idleTracker = INITIAL_IDLE_TRACKER
   setStoreState(INITIAL_STATE)
 }
 
