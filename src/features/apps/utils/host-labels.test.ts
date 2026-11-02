@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { appGroupLabel, hostGlyphLabel } from '@/features/apps/utils/host-labels'
+import { appGroupLabel, hostIconLabel } from '@/features/apps/utils/host-labels'
 
-describe('hostGlyphLabel', () => {
+describe('hostIconLabel', () => {
   it('names the country when the host is geolocated', () => {
-    expect(hostGlyphLabel('🇺🇸', 'United States', false)).toBe('United States')
+    expect(hostIconLabel('🇺🇸', 'United States', false)).toBe('United States')
   })
 
   it('says a LAN peer is on your network', () => {
-    expect(hostGlyphLabel(null, null, true)).toBe('On your network')
+    expect(hostIconLabel(null, null, true)).toBe('On your network')
   })
 
   it('is null for a public host with no country, whose globe is decorative', () => {
-    expect(hostGlyphLabel(null, null, false)).toBeNull()
+    expect(hostIconLabel(null, null, false)).toBeNull()
   })
 })
 

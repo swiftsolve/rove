@@ -1,6 +1,6 @@
 /**
- * App icons — thin aliases over lucide-react (plus a few hand-drawn glyphs) so
- * every glyph shares the same optical size and stroke. Import these semantic
+ * App icons — thin aliases over lucide-react (plus a few hand-drawn icons) so
+ * every icon shares the same optical size and stroke. Import these semantic
  * names; swap the underlying icon here in one place if the design changes.
  */
 import { useId } from 'react'
@@ -89,7 +89,7 @@ export interface IconProps {
   className?: string
 }
 
-/** An app icon: renders its glyph at `size`. What Button and IconButton take as `icon`. */
+/** An app icon, drawn at `size`. What Button and IconButton take as `icon`. */
 export type IconComponent = (props: IconProps) => JSX.Element
 
 function make(Base: LucideIcon, defaultSize: number): IconComponent {
@@ -98,10 +98,10 @@ function make(Base: LucideIcon, defaultSize: number): IconComponent {
   }
 }
 
-// Hand-drawn glyphs (no fitting Lucide icon)
+// Hand-drawn icons (no fitting Lucide icon)
 
-/** The 24-grid stroke frame the hand-drawn glyphs share with the Lucide aliases. */
-function Glyph({ size, className, children }: IconProps & { children: ReactNode }): JSX.Element {
+/** The 24-grid stroke frame the hand-drawn icons share with the Lucide aliases. */
+function DrawnIcon({ size, className, children }: IconProps & { children: ReactNode }): JSX.Element {
   return (
     <svg
       width={size}
@@ -126,19 +126,19 @@ function Glyph({ size, className, children }: IconProps & { children: ReactNode 
 
 export function HdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
   return (
-    <Glyph size={size} className={className}>
+    <DrawnIcon size={size} className={className}>
       <path d="M3.375 6.5v11M9.975 6.5v11M3.375 12h6.6" />
       <path d="M13.475 6.5h2.2c2.7335 0 4.95 2.4618 4.95 5.5s-2.2165 5.5-4.95 5.5h-2.2Z" />
-    </Glyph>
+    </DrawnIcon>
   )
 }
 
 export function UltraHdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
   return (
-    <Glyph size={size} className={className}>
+    <DrawnIcon size={size} className={className}>
       <path d="M10.25 14.2H3.65L8.6 6.5v11" />
       <path d="M13.75 6.5v11M20.35 6.5l-6.6 7.15M16.17 11.01l4.18 6.49" />
-    </Glyph>
+    </DrawnIcon>
   )
 }
 
@@ -153,7 +153,7 @@ const SMALL_CLOUD = 'M16.3 6.6h3.4a2.8 2.8 0 1 0-2.684-3.6H16.3a1.8 1.8 0 1 0 0 
 export function CloudGamingIcon({ size = 22, className }: IconProps): JSX.Element {
   const maskId = useId()
   return (
-    <Glyph size={size} className={className}>
+    <DrawnIcon size={size} className={className}>
       <defs>
         <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
           <rect width="24" height="24" fill="white" stroke="none" />
@@ -165,14 +165,14 @@ export function CloudGamingIcon({ size = 22, className }: IconProps): JSX.Elemen
         <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" />
       </g>
       <path d={SMALL_CLOUD} />
-    </Glyph>
+    </DrawnIcon>
   )
 }
 
 /**
  * The Rove Mark — a filled centre dot inside an open ring. By default it's drawn
  * in `currentColor` (fill + stroke) so it inherits the accent color from its
- * container, matching the tray glyph. Pass `hasGradient` for the app-icon treatment
+ * container, matching the tray icon. Pass `hasGradient` for the app-icon treatment
  * — the same top-to-bottom blue the 1024px dock icon uses.
  */
 export function BrandIcon({
@@ -212,7 +212,7 @@ export function BrandIcon({
 }
 
 /**
- * A hub-and-spoke network glyph — a centre node linked to four surrounding
+ * A hub-and-spoke network icon — a centre node linked to four surrounding
  * nodes. Custom (no exact Lucide match) but drawn to the same 24-grid, stroke
  * width and `currentColor` conventions as the aliased icons.
  */

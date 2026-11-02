@@ -217,8 +217,8 @@ Every DOM-rendering component follows the same rules:
   variant="solid" | "soft" | "ghost" | "link"   // emphasis; default "soft"
   tone="accent" | "neutral" | "negative"        // default per variant
   size="sm" | "md"                              // sm = today's secondary, md = today's filled
-  icon={PlayIcon}                               // leading glyph; sized by `size`
-  iconEnd={ChevronRightIcon}                    // trailing glyph (link carets)
+  icon={PlayIcon}                               // leading icon; sized by `size`
+  iconEnd={ChevronRightIcon}                    // trailing icon (link carets)
   isLoading                                     // spinner replaces the icon, width holds
   loadingLabel="Retrying…"                      // optional: text while loading, announced
   isDisabled                                    // focusable, blocks every activation incl. submit

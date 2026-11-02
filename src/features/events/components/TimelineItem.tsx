@@ -44,7 +44,7 @@ const ITEM = cx(
 )
 
 // Every tone but a departure uses the same faint currentColor wash for its
-// fill; only the glyph colour changes.
+// fill; only the icon colour changes.
 const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
 
 // The node sits above the connector (z-index) so the line reads as passing
@@ -85,7 +85,7 @@ const SUBJECT = 'flex-wrap text-md text-secondary'
 
 type IconComponent = (props: { size?: number }) => JSX.Element
 
-// The node's colour category. The glyph says *what* happened; this tint says how
+// The node's colour category. The icon says *what* happened; this tint says how
 // to read it at a glance — arrivals/connections read positive (green), the
 // baseline calm (blue), a departure quiet (grey), a new access point or gateway
 // change cautionary (amber), a lost connection alarming (red). Warning/critical

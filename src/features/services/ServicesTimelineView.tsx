@@ -55,7 +55,7 @@ const markerVariants = cva(
   {
     variants: {
       /** A service dropping off reads as an alarm (red); a recovery, or a healthy
-       *  summary ("N services running", glyphed with a check), reads positive
+       *  summary ("N services running", with a check icon), reads positive
        *  (green): the same colour language as the reachability numbers. */
       status: {
         down: 'text-status-negative',

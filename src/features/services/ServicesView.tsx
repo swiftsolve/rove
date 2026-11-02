@@ -57,10 +57,10 @@ const LINE = 'flex min-w-0 items-center gap-12'
 
 // Timeline link sitting in the header subtitle: the same quiet pill link as
 // Speed's "All Results" (see SpeedView's history link), down to the geometry and
-// weight; only the glyph differs. The button reset carries the font family
+// weight; only the icon differs. The button reset carries the font family
 // across but not the size, so font-size: inherit is what keeps it at the
 // subtitle's caption size. The negative left margin cancels the pill's padding
-// and the glyph's empty edge, so the dot keeps the same 8px to the glyph as to
+// and the icon's empty edge, so the dot keeps the same 8px to the icon as to
 // the text before it.
 // The dot is a plain subtitle child, so a window narrow enough to wrap the link
 // can strand it at the start of a line, where it reads as a bullet; only the web

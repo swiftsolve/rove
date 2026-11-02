@@ -149,10 +149,10 @@
   transform: translateY(-1px);
 }
 
-/* A glyph before a figure. One cap of the figure's font tall and sitting on
-   its baseline, so the glyph centres on the digits rather than on the line
+/* An icon before a figure. One cap of the figure's font tall and sitting on
+   its baseline, so the icon centres on the digits rather than on the line
    box, which runs below them. */
-@utility metric-glyph {
+@utility metric-icon {
   display: inline-flex;
   align-items: center;
   height: 1cap;
@@ -160,7 +160,7 @@
   font-size: var(--type-number-display-size);
 
   /* An empty first item, full height, so the span's baseline is its bottom
-     edge rather than the bottom of a glyph shorter than the cap. */
+     edge rather than the bottom of an icon shorter than the cap. */
   &::before {
     content: '';
     align-self: stretch;
@@ -175,7 +175,7 @@
     letter-spacing: var(--type-number-large-letter-spacing);
     line-height: var(--type-number-large-line-height);
   }
-  & .metric-glyph {
+  & .metric-icon {
     font-size: var(--type-number-large-size);
   }
 }
@@ -233,7 +233,7 @@
   line-height: var(--type-heading-large-line-height);
 }
 
-/* The nav-matched glyph left of a page title, in the selected nav item's chip
+/* The nav-matched icon left of a page title, in the selected nav item's chip
    (a rail item's box, 10px radius), centred on the title block. */
 @utility page-header-icon {
   display: inline-flex;

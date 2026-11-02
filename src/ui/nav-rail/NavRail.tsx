@@ -26,7 +26,7 @@ const itemVariants = cva(
 )
 
 interface NavItemProps {
-  /** Names the item, which shows only its glyph; also its tooltip. */
+  /** Names the item, which shows only its icon; also its tooltip. */
   label: string
   icon: IconComponent
   /** The current page's item: tinted, with the accent bar. */

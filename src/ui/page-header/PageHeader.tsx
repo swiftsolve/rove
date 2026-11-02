@@ -30,7 +30,7 @@ type PageHeaderProps = {
   // Exactly one of `icon` or `onBack`: each branch types the other as `never`,
   // so passing both is an error.
   | {
-      /** The page's nav glyph, in a chip: a top-level page. */
+      /** The page's nav icon, in a chip: a top-level page. */
       icon: ReactNode
       onBack?: never
     }

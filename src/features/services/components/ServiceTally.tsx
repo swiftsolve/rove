@@ -12,7 +12,7 @@ const ROOT = 'inline-flex flex-wrap items-center gap-x-6 gap-y-2'
 
 // Flex centring aligns the arrow to the text's *line box*, which reserves room
 // for descenders the all-caps labels never use, so a geometrically centred
-// glyph reads a hair low and its tail dips under the baseline. Measured against
+// icon reads a hair low and its tail dips under the baseline. Measured against
 // Inter at 11px, the cap band is 98.3–106.3 and the arrow's ink 99.5–107.0, so
 // 1px up puts the two midpoints together. The mirror of the lowercase case in
 // SettingsView, which nudges the other way for the same reason.

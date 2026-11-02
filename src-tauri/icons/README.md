@@ -10,7 +10,7 @@ scripts that render the mark analytically to transparent RGBA PNGs.
   Rove Mark in accent blue). Feed this to `tauri icon`.
 - `icon-source.py` — generates `icon-source.png`. Tweak tile margin, corner
   radius, colors, or glow here.
-- `tray-source.py` — generates `tray.png`, the monochrome menu-bar/tray glyph
+- `tray-source.py` — generates `tray.png`, the monochrome menu-bar/tray icon
   (black on transparent; the Rust side renders it as a macOS template image).
 
 ## Regenerate
@@ -20,11 +20,11 @@ scripts that render the mark analytically to transparent RGBA PNGs.
 python3 icons/icon-source.py icons/icon-source.png
 npm run tauri -- icon icons/icon-source.png     # run from the src-tauri/ dir
 
-# tray glyph (embedded via include_bytes! in src/lib.rs)
+# tray icon (embedded via include_bytes! in src/lib.rs)
 python3 icons/tray-source.py icons/tray.png
 ```
 
 `tauri icon` overwrites `icon.png`, `icon.icns`, `icon.ico`, the `Square*Logo`
-tiles, `StoreLogo.png`, and the `android/` + `ios/` sets. The tray glyph is not
+tiles, `StoreLogo.png`, and the `android/` + `ios/` sets. The tray icon is not
 managed by `tauri icon` — regenerate it with `tray-source.py` when the mark
 changes.

@@ -32,18 +32,18 @@ const mainLineVariants = cva('flex items-center justify-between gap-12', {
 })
 
 // The bar and the figures start at the icon's drawn left edge. A tile fills its
-// box, so the bar starts flush and the figures pull left by the arrow glyph's
-// side bearing (~2px at 11px). A line glyph is inset by its own bearing, so the
+// box, so the bar starts flush and the figures pull left by the arrow icon's
+// side bearing (~2px at 11px). A line icon is inset by its own bearing, so the
 // bar sits just inside it and the down arrow lands centred under it.
 const barVariants = cva(null, {
   variants: {
-    iconKind: { tile: null, glyph: 'ml-[3px]' },
+    iconKind: { tile: null, line: 'ml-[3px]' },
     isLink: { true: 'pointer-events-none' },
   },
 })
 const figuresVariants = cva(null, {
   variants: {
-    iconKind: { tile: '-ml-2', glyph: null },
+    iconKind: { tile: '-ml-2', line: null },
     isLink: { true: 'pointer-events-none' },
   },
 })
@@ -61,8 +61,8 @@ const CARET = cx(
 
 interface UsageRowProps {
   icon: ReactNode
-  /** How the icon is drawn: a `tile` (an app icon) fills its box, a `glyph` (a
-   *  line icon) is inset. Lines the bar and figures up with it. */
+  /** How the icon is drawn: a `tile` (an app icon) fills its box, a `line` icon is
+   *  inset. Lines the bar and figures up with it. */
   iconKind: VariantOf<typeof barVariants, 'iconKind'>
   name: string
   transfer: Transfer

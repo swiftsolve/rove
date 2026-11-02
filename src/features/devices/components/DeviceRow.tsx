@@ -35,7 +35,7 @@ const DEVICE_ROW = cx(
   'px-(--card-header-padding-x) py-(--card-header-padding-y)',
 )
 
-/** A device's kind glyph, in a tile coloured by category so categories scan at a
+/** A device's kind icon, in a tile coloured by category so categories scan at a
  *  glance. The gateway is green whatever its kind; watches and unknown devices
  *  stay neutral. */
 const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {

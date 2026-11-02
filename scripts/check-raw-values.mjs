@@ -33,7 +33,7 @@ const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-desi
 const ALLOWED = [
   // A scanner needs dark modules on white in both themes.
   { file: 'src/features/connection/WifiShareDialog.tsx', value: '#ffffff' },
-  // The brand glyph's gradient, the same as the app icon's.
+  // The brand icon's gradient, the same as the app icon's.
   { file: 'src/ui/icons/Icons.tsx', value: '#7aa4ff' },
   { file: 'src/ui/icons/Icons.tsx', value: '#5484f5' },
   // The About tile redraws the dock icon, which looks the same in both themes.

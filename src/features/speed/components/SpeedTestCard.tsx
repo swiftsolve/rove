@@ -15,7 +15,7 @@ import {
 } from '@/features/speed/utils/progress-fill'
 import { testStatusText } from '@/features/speed/utils/test-status'
 
-/** The connection the footer names, its glyph tinted by medium. */
+/** The connection the footer names, its icon tinted by medium. */
 const connVariants = cva('inline-flex items-center gap-6 font-medium text-secondary', {
   variants: {
     type: { wifi: '[&_svg]:text-series-down', ethernet: '[&_svg]:text-status-positive' },

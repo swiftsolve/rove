@@ -54,8 +54,8 @@ const VERDICT = cx(
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
-/** The verdict glyph, left of the summary in the level colour. Its box is
- *  exactly one line of summary text tall and centres the glyph, so the tick sits
+/** The verdict icon, left of the summary in the level colour. Its box is
+ *  exactly one line of summary text tall and centres the icon, so the tick sits
  *  against the middle of the first line (the summary stays top-aligned when it
  *  wraps). */
 const verdictIconVariants = cva(
@@ -96,7 +96,7 @@ function scrollCardToTop(card: HTMLElement): void {
   flashHighlight(card)
 }
 
-/** The verdict glyph: a tick when the connection clears the bar, a warning when
+/** The verdict icon: a tick when the connection clears the bar, a warning when
  *  it only just scrapes by, a cross when it falls short. */
 function VerdictIcon({ level }: { level: CapabilityLevel }): JSX.Element {
   if (level === 'excellent' || level === 'good') return <CheckIcon size={14} />
@@ -116,7 +116,7 @@ function CapabilityDetailCard({
   return (
     <Card as="li" className={CARD} data-capability-id={capability.id}>
       <div className="flex items-center gap-8 pb-12">
-        {/* The glyph in the level colour on a faint tint of it, as in the capability rows. */}
+        {/* The icon in the level colour on a faint tint of it, as in the capability rows. */}
         <IconTile size="sm" color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}>
           <CapabilityIcon id={capability.id} size={16} />
         </IconTile>

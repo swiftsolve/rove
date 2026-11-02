@@ -57,16 +57,16 @@ type Size = NonNullable<ButtonAppearance['size']>
 
 const DEFAULT_SIZES: Record<Variant, Size> = { solid: 'md', soft: 'sm' }
 
-/** Every glyph a button draws, and the spinner that takes the leading one's place. */
+/** Every icon a button draws, and the spinner that takes the leading one's place. */
 const ICON_SIZE = 13
 
 export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
   ButtonAppearance & {
-    /** A glyph before the label. */
+    /** An icon before the label. */
     icon?: IconComponent
     /** Drops input and dims the button. It stays focusable, so a tooltip can say why. */
     isDisabled?: boolean
-    /** Drops input and swaps the leading glyph (or, with none, adds one) for a spinner. */
+    /** Drops input and swaps the leading icon (or, with none, adds one) for a spinner. */
     isLoading?: boolean
     /** The label while loading ("Retrying…"), when it should say so. */
     loadingLabel?: ReactNode

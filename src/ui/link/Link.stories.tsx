@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { GlobeIcon, HistoryIcon, PlayIcon } from '../icons/Icons'
+import { GlobeIcon, PlayIcon } from '../icons/Icons'
+import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { Link } from './Link'
 
 const meta = {
   title: 'Actions/Link',
   component: Link,
-  args: { children: 'All hosts', icon: GlobeIcon, onClick: fn() },
-  argTypes: { icon: { control: false } },
+  args: { children: 'All hosts', icon: iconArg('GlobeIcon'), onClick: fn() },
+  argTypes: { icon: iconComponentControl },
   // At the size of the text it sits in.
   render: (args) => (
     <span className="text-caption">
@@ -34,7 +35,7 @@ export const Disabled: Story = { args: { isDisabled: true } }
 
 /** It takes the size of the text around it. */
 export const SmallText: Story = {
-  args: { icon: HistoryIcon, children: 'History' },
+  args: { icon: iconArg('HistoryIcon'), children: 'History' },
   render: (args) => (
     <span className="text-xs">
       <Link {...args} />

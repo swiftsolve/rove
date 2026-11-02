@@ -22,17 +22,12 @@ interface TooltipProps {
   /** The trigger: one element that takes a ref and props (a button, an icon's span). */
   children: ReactElement<{ 'aria-label'?: string; 'aria-describedby'?: string }>
   /**
-   * The trigger's side the bubble opens on: `bottom` (the default) or `top`
-   * stack it, `left` or `right` set it beside the trigger, vertically centred
-   * (the nav rail). It flips to the other side when it would leave the window.
+   * The trigger's side the bubble opens on, centred on the trigger: `bottom`
+   * (the default) or `top` stack it, `left` or `right` set it beside it (the
+   * nav rail). It flips to the other side when it would leave the window, and
+   * slides along to stay inside it.
    */
   side?: 'top' | 'bottom' | 'left' | 'right'
-  /**
-   * For `top` and `bottom`, the trigger edge the bubble lines up with: `end`
-   * (the default) grows it leftward from the trigger's right edge, so a trigger
-   * near the window's right edge never spills it; `start` grows it rightward.
-   */
-  align?: 'start' | 'end'
   /** The gap (px) between the trigger and the bubble. */
   sideOffset?: number
   /** Never opens: for content that would be stale (a rating while a new test runs). */
@@ -56,7 +51,6 @@ export function Tooltip({
   content,
   children,
   side = 'bottom',
-  align = 'end',
   sideOffset = 6,
   isDisabled = false,
   shouldDescribe = true,
@@ -72,7 +66,6 @@ export function Tooltip({
     isDescribing && ownDescription
       ? cloneElement(children, { 'aria-describedby': `${ownDescription} ${descriptionId}` })
       : children
-  const isBeside = side === 'left' || side === 'right'
 
   return (
     <BaseTooltip.Root disabled={isDisabled} disableHoverablePopup>
@@ -95,7 +88,7 @@ export function Tooltip({
           className="z-9999"
           positionMethod="fixed"
           side={side}
-          align={isBeside ? 'center' : align}
+          align="center"
           sideOffset={sideOffset}
           collisionPadding={VIEWPORT_PAD}
         >

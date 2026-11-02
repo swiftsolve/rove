@@ -1,12 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { DirectionIcon } from '../icons/DirectionIcon'
+import { iconElementControl } from '../icons/icon-options'
 import { Readout } from './Readout'
+
+// The direction arrows lead the list: they're what a speed readout carries.
+const ICON_CONTROL = iconElementControl(14, {
+  'Direction down': <DirectionIcon series="down" />,
+  'Direction up': <DirectionIcon series="up" />,
+})
 
 const meta = {
   title: 'Data display/Readout',
   component: Readout,
-  args: { label: 'Download', icon: <DirectionIcon series="down" />, value: '182', unit: 'Mbps' },
-  argTypes: { icon: { control: false } },
+  args: { label: 'Download', icon: 'Direction down', value: '182', unit: 'Mbps' },
+  argTypes: { icon: ICON_CONTROL },
   // A term and its description, so it goes in a <dl>.
   render: (args) => (
     <dl>
@@ -21,14 +28,14 @@ type Story = StoryObj<typeof meta>
 /** Live speed, its direction arrow before the label. */
 export const Download: Story = {}
 
-export const Upload: Story = { args: { label: 'Upload', icon: <DirectionIcon series="up" />, value: '24.6' } }
+export const Upload: Story = { args: { label: 'Upload', icon: 'Direction up', value: '24.6' } }
 
 export const WithoutIcon: Story = { args: { label: 'Data used', icon: undefined, value: '4.6', unit: 'GB' } }
 
 /** Mid count-up: the digits show 96, a screen reader hears the settled 182 Mbps. */
 export const SpokenApart: Story = { args: { value: '96', spokenValue: '182 Mbps' } }
 
-/** No label: the glyph sits inline with the figure. */
+/** No label: the icon sits inline with the figure. */
 export const Unlabelled: Story = { args: { label: undefined }, render: (args) => <Readout {...args} /> }
 
 /** A summary card's figure. */

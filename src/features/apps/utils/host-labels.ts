@@ -2,9 +2,9 @@ import { formatBytes } from '@/lib/format'
 
 const LOCAL_PEER_LABEL = 'On your network'
 
-/** Accessible name and tooltip for a host's glyph: the country name when
+/** Accessible name and tooltip for a host's icon: the country name when
  *  geolocated, a "local network" hint for a LAN peer, else nothing. */
-export function hostGlyphLabel(
+export function hostIconLabel(
   flag: string | null,
   country: string | null,
   isLocal: boolean,

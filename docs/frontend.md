@@ -148,7 +148,7 @@ for what. Read it before writing or changing UI. For where files live, see
     - `size`: `sm` or `md`
   - Solid defaults to md, soft to sm.
   - Button takes an `icon` component and draws it at 13px.
-    IconButton draws its icon at 16px (`iconSize={14}` for a glyph that reads
+    IconButton draws its icon at 16px (`iconSize={14}` for an icon that reads
     large).
   - `isLoading` swaps the icon for a spinner (`loadingLabel` can swap the
     words). `isDisabled` dims.
@@ -252,7 +252,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, an optional `footnote` under it, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
-| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, lined up with its `start` or `end` edge. Screen readers get it as the trigger's description. |
+| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, centred on it. Screen readers get it as the trigger's description. |
 | Toggle | `Toggle` | On/off switch for a setting. |
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
@@ -264,11 +264,11 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
-| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `color`): a status, a series or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
+| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`size`, `color`): a status, a series or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
 | Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric value | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |
-| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon` (any glyph). Labelled, it goes in a `<dl>`; without a label, the glyph sits inline with the figure. |
+| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above, on the Patterns page. |

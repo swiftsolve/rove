@@ -124,7 +124,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
       <ul role="list" className={LIST} aria-hidden>
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
-            <Tooltip content={capability.label} side="top" align="start">
+            <Tooltip content={capability.label} side="top">
               <IconTile color="neutral">
                 <CapabilityIcon id={capability.id} size={16} />
               </IconTile>
@@ -157,7 +157,6 @@ function ResultCell({
       <Tooltip
         content={<InlineMeta items={[capability.label, levelLabel]} />}
         side="top"
-        align="start"
         sideOffset={2}
         isDisabled={isTesting}
         // The button's label already says the same.

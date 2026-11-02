@@ -33,14 +33,14 @@ type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' 
     label: string
     icon: IconComponent
     variant?: 'soft' | 'ghost'
-    /** 16, or 14 for a glyph that reads large (Play). The spinner matches it. */
+    /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
     iconSize?: 16 | 14
     /** The tooltip, when it should say more than the label (a help button's hint). */
     tooltip?: ReactNode
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
     /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
     isDisabled?: boolean
-    /** Drops input and swaps the glyph for a spinner. */
+    /** Drops input and swaps the icon for a spinner. */
     isLoading?: boolean
   }
 

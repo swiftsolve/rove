@@ -9,7 +9,7 @@ export function AppTitleBar(): JSX.Element {
     <TitleBar
       brand={
         <>
-          {/* The brand mark: just the glyph, in the accent colour, no tile. */}
+          {/* The brand mark: just the icon, in the accent colour, no tile. */}
           <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>

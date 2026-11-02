@@ -1,7 +1,8 @@
 import { Fragment } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { PlayIcon, StopIcon } from '../icons/Icons'
+import { PlayIcon } from '../icons/Icons'
+import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { Button } from './Button'
 
 const meta = {
@@ -12,7 +13,7 @@ const meta = {
     variant: { control: 'inline-radio', options: ['solid', 'soft'] },
     tone: { control: 'inline-radio', options: ['neutral', 'accent', 'negative'] },
     size: { control: 'inline-radio', options: ['sm', 'md'] },
-    icon: { control: false },
+    icon: iconComponentControl,
   },
 } satisfies Meta<typeof Button>
 
@@ -20,10 +21,10 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /** A page's main action. */
-export const Solid: Story = { args: { variant: 'solid', icon: PlayIcon } }
+export const Solid: Story = { args: { variant: 'solid', icon: iconArg('PlayIcon') } }
 
 /** Stopping what the main action started. */
-export const SolidNegative: Story = { args: { variant: 'solid', tone: 'negative', icon: StopIcon, children: 'Stop' } }
+export const SolidNegative: Story = { args: { variant: 'solid', tone: 'negative', icon: iconArg('StopIcon'), children: 'Stop' } }
 
 /** Everything else. */
 export const Soft: Story = { args: { variant: 'soft' } }
@@ -31,10 +32,10 @@ export const Soft: Story = { args: { variant: 'soft' } }
 /** On a red surface, like an error Banner's Dismiss and Retry. */
 export const SoftNegative: Story = { args: { variant: 'soft', tone: 'negative', children: 'Dismiss' } }
 
-export const Loading: Story = { args: { variant: 'solid', icon: PlayIcon, isLoading: true, loadingLabel: 'Testing…' } }
+export const Loading: Story = { args: { variant: 'solid', icon: iconArg('PlayIcon'), isLoading: true, loadingLabel: 'Testing…' } }
 
 /** Still focusable, so a tooltip can say why. */
-export const Disabled: Story = { args: { variant: 'solid', icon: PlayIcon, isDisabled: true } }
+export const Disabled: Story = { args: { variant: 'solid', icon: iconArg('PlayIcon'), isDisabled: true } }
 
 /** Every variant in every state. */
 export const AllStates: Story = {

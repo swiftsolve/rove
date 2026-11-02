@@ -16,7 +16,7 @@ interface DirectionIconProps {
 }
 
 /**
- * The colour-keyed direction glyph that marks a download/upload readout: a blue
+ * The colour-keyed direction icon that marks a download/upload readout: a blue
  * down-arrow for download, a purple up-arrow for upload. Replaces the plain
  * colour dots so the icon itself carries the meaning. Colour comes from the
  * `--series-*` variables via the `text-series-*` utility; the icon inherits it through

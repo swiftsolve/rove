@@ -13,7 +13,7 @@
       "props": {
         "icon": {
           "type": "IconComponent",
-          "description": "A glyph before the label."
+          "description": "An icon before the label."
         },
         "isDisabled": {
           "type": "boolean",
@@ -21,7 +21,7 @@
         },
         "isLoading": {
           "type": "boolean",
-          "description": "Drops input and swaps the leading glyph (or, with none, adds one) for a spinner."
+          "description": "Drops input and swaps the leading icon (or, with none, adds one) for a spinner."
         },
         "loadingLabel": {
           "type": "ReactNode",
@@ -78,7 +78,7 @@
             14
           ],
           "default": "16",
-          "description": "16, or 14 for a glyph that reads large (Play). The spinner matches it."
+          "description": "16, or 14 for an icon that reads large (Play). The spinner matches it."
         },
         "isDisabled": {
           "type": "boolean",
@@ -86,7 +86,7 @@
         },
         "isLoading": {
           "type": "boolean",
-          "description": "Drops input and swaps the glyph for a spinner."
+          "description": "Drops input and swaps the icon for a spinner."
         },
         "label": {
           "type": "string",
@@ -116,7 +116,7 @@
       "stories": [
         "actions-iconbutton--default",
         "actions-iconbutton--ghost",
-        "actions-iconbutton--small-glyph",
+        "actions-iconbutton--small-icon",
         "actions-iconbutton--with-hint",
         "actions-iconbutton--loading",
         "actions-iconbutton--disabled",
@@ -138,7 +138,7 @@
         },
         "icon": {
           "type": "IconComponent",
-          "description": "A glyph before the label."
+          "description": "An icon before the label."
         },
         "isDisabled": {
           "type": "boolean",
@@ -522,14 +522,6 @@
         "node": "43:7"
       },
       "props": {
-        "align": {
-          "values": [
-            "start",
-            "end"
-          ],
-          "default": "end",
-          "description": "For `top` and `bottom`, the trigger edge the bubble lines up with: `end`\n(the default) grows it leftward from the trigger's right edge, so a trigger\nnear the window's right edge never spills it; `start` grows it rightward."
-        },
         "children": {
           "type": "ReactElement<{ 'aria-label'?: string | undefined; 'aria-describedby'?: string | undefined; }, string | JSXElementConstructor<any>>",
           "isRequired": true,
@@ -563,7 +555,7 @@
             "right"
           ],
           "default": "bottom",
-          "description": "The trigger's side the bubble opens on: `bottom` (the default) or `top`\nstack it, `left` or `right` set it beside the trigger, vertically centred\n(the nav rail). It flips to the other side when it would leave the window."
+          "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\n(the default) or `top` stack it, `left` or `right` set it beside it (the\nnav rail). It flips to the other side when it would leave the window, and\nslides along to stay inside it."
         },
         "sideOffset": {
           "type": "number",
@@ -576,7 +568,6 @@
         "overlays-tooltip--top",
         "overlays-tooltip--right",
         "overlays-tooltip--left",
-        "overlays-tooltip--align-start",
         "overlays-tooltip--wrapping",
         "overlays-tooltip--disabled"
       ]
@@ -902,7 +893,7 @@
     "Readout": {
       "group": "Data display",
       "source": "src/ui/readout/Readout.tsx",
-      "description": "A number and its unit (live speed, data used), with an optional label and\nglyph. A labelled readout is a term and its description, so it goes inside a\n`<dl>`; without a label, the glyph sits inline with the figure.",
+      "description": "A number and its unit (live speed, data used), with an optional label and\nicon. A labelled readout is a term and its description, so it goes inside a\n`<dl>`; without a label, the icon sits inline with the figure.",
       "figma": {
         "name": "Readout",
         "node": "4:106"
@@ -913,7 +904,7 @@
         },
         "icon": {
           "type": "ReactNode",
-          "description": "A glyph: before the label, or before the figure when there's no label."
+          "description": "An icon: before the label, or before the figure when there's no label."
         },
         "label": {
           "type": "string",
@@ -1067,7 +1058,7 @@
     "IconTile": {
       "group": "Data display",
       "source": "src/ui/icon-tile/IconTile.tsx",
-      "description": "A rounded square holding an item's glyph, tinted by what the item is. It\ntakes a ref and extra props, so it can be a Tooltip's trigger.",
+      "description": "A rounded square holding an item's icon, tinted by what the item is. It\ntakes a ref and extra props, so it can be a Tooltip's trigger.",
       "figma": {
         "name": "Icon tile",
         "node": "495:585"
@@ -1076,7 +1067,7 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "The glyph."
+          "description": "The icon."
         },
         "className": {
           "type": "string",
@@ -1094,7 +1085,7 @@
             "upload"
           ],
           "isRequired": true,
-          "description": "The glyph's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary glyph, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary icon, for something uncategorised or not yet rated."
         },
         "size": {
           "values": [
@@ -1127,7 +1118,7 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "The glyph."
+          "description": "The icon."
         },
         "className": {
           "type": "string",
@@ -1145,7 +1136,7 @@
             "upload"
           ],
           "isRequired": true,
-          "description": "The glyph's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary glyph, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary icon, for something uncategorised or not yet rated."
         },
         "isDisabled": {
           "type": "boolean",
@@ -1154,7 +1145,7 @@
         "label": {
           "type": "string",
           "isRequired": true,
-          "description": "Names it: the glyph alone says nothing to a screen reader."
+          "description": "Names it: the icon alone says nothing to a screen reader."
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
@@ -1528,7 +1519,7 @@
         "label": {
           "type": "string",
           "isRequired": true,
-          "description": "Names the item, which shows only its glyph; also its tooltip."
+          "description": "Names the item, which shows only its icon; also its tooltip."
         },
         "onClick": {
           "type": "() => void",
@@ -1589,7 +1580,7 @@
         },
         "icon": {
           "type": "ReactNode",
-          "description": "The page's nav glyph, in a chip: a top-level page."
+          "description": "The page's nav icon, in a chip: a top-level page."
         },
         "onBack": {
           "type": "(() => void)",

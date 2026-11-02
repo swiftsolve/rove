@@ -9,7 +9,6 @@ const meta = {
   argTypes: {
     children: { control: false },
     side: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
-    align: { control: 'inline-radio', options: ['start', 'end'] },
   },
   // Room on every side for the bubble.
   decorators: [
@@ -36,9 +35,6 @@ export const Top: Story = { args: { side: 'top' } }
 export const Right: Story = { args: { side: 'right' } }
 
 export const Left: Story = { args: { side: 'left' } }
-
-/** Grows rightward from the trigger's left edge. */
-export const AlignStart: Story = { args: { align: 'start' } }
 
 /** Content past the max width wraps. */
 export const Wrapping: Story = {

@@ -43,7 +43,7 @@ import {
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
 
-// The connection glyph's tile, coloured by the kind of connection.
+// The connection icon's tile, coloured by the kind of connection.
 const STRIP_ICON_COLORS = {
   wifi: 'download',
   ethernet: 'positive',

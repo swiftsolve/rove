@@ -44,8 +44,8 @@ interface IconProps {
   className?: string
 }
 
-/** Glyph per traffic-type slug. Anything unmapped (including "other") falls back
- *  to the layers glyph, so a new backend bucket never renders blank. */
+/** Icon per traffic-type slug. Anything unmapped (including "other") falls back
+ *  to the layers icon, so a new backend bucket never renders blank. */
 const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   https: GlobeIcon,
   http: GlobeIcon,
@@ -102,7 +102,7 @@ export function TrafficView(): JSX.Element {
             <UsageRow
               key={type.id}
               icon={<TrafficIcon type={type} />}
-              iconKind="glyph"
+              iconKind="line"
               name={type.label}
               transfer={type}
               busiest={busiest}

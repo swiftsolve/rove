@@ -4,6 +4,7 @@ import { fn } from 'storybook/test'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
 import { GlobeIcon, HelpIcon, PlusIcon, SearchIcon } from '../icons/Icons'
+import { iconElementControl } from '../icons/icon-options'
 import { PageHeader } from './PageHeader'
 
 // PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj
@@ -27,9 +28,9 @@ const meta = {
   title: 'App frame/PageHeader',
   // For the docs' props table; the render below does the passing.
   component: PageHeader as ComponentType<PageHeaderArgs>,
-  args: { title: 'Services', icon: <GlobeIcon size={18} />, description: '12 services, all up' },
+  args: { title: 'Services', icon: 'GlobeIcon', description: '12 services, all up' },
   argTypes: {
-    icon: { control: false },
+    icon: iconElementControl(18),
     actions: { control: false },
     onBack: { control: false },
   },
@@ -49,11 +50,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A top-level page: its nav glyph in the chip, and its actions. */
+/** A top-level page: its nav icon in the chip, and its actions. */
 export const TopLevel: Story = { args: { actions } }
 
 /** While something runs, the status takes the description's place. */
-export const Status: Story = { args: { title: 'Devices', icon: <SearchIcon size={18} />, status: 'Scanning…' } }
+export const Status: Story = { args: { title: 'Devices', icon: 'SearchIcon', status: 'Scanning…' } }
 
 /** A page layered over a tab: a back button in the chip's place, and its hint. */
 export const Subpage: Story = {

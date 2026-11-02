@@ -17,7 +17,7 @@ function TabItem({ id }: { id: AppTab }): JSX.Element {
 
 function ThemeToggle(): JSX.Element {
   const { isLight, toggle } = useTheme()
-  // Show the glyph for the mode you'll switch *to*, matching the tooltip.
+  // Show the icon for the mode you'll switch *to*, matching the tooltip.
   return (
     <NavItem
       label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}

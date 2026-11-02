@@ -4,7 +4,7 @@ import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
 
-// Every colour but neutral washes the tile in the glyph's own colour.
+// Every colour but neutral washes the tile in the icon's own colour.
 const WASH = 'bg-current/(--opacity-tint-md)'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
@@ -30,20 +30,20 @@ export type IconTileColor = VariantOf<typeof tileVariants, 'color'>
 interface TileLookProps {
   size?: VariantOf<typeof tileVariants, 'size'>
   /**
-   * The glyph's colour, washed across the tile. `neutral` is the sunken fill
-   * with a secondary glyph, for something uncategorised or not yet rated.
+   * The icon's colour, washed across the tile. `neutral` is the sunken fill
+   * with a secondary icon, for something uncategorised or not yet rated.
    */
   color: IconTileColor
   /** The tile's place in its row. */
   className?: string
-  /** The glyph. */
+  /** The icon. */
   children: ReactNode
 }
 
 type IconTileProps = TileLookProps & Omit<HTMLAttributes<HTMLSpanElement>, keyof TileLookProps>
 
 /**
- * A rounded square holding an item's glyph, tinted by what the item is. It
+ * A rounded square holding an item's icon, tinted by what the item is. It
  * takes a ref and extra props, so it can be a Tooltip's trigger.
  */
 export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function IconTile(
@@ -58,7 +58,7 @@ export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function Icon
 })
 
 type IconTileButtonProps = TileLookProps & {
-  /** Names it: the glyph alone says nothing to a screen reader. */
+  /** Names it: the icon alone says nothing to a screen reader. */
   label: string
   onClick: MouseEventHandler<HTMLButtonElement>
   /** Inert while what it opens is being replaced: no hover, no action, same look. */

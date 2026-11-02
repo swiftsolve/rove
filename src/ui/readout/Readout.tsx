@@ -30,7 +30,7 @@ function ValueAndUnit({ value, unit, spokenValue }: ValueParts): JSX.Element {
 interface ReadoutProps extends ValueParts {
   /** Names the figure ("Download", "Data used"). With one, render the readout inside a `<dl>`. */
   label?: string
-  /** A glyph: before the label, or before the figure when there's no label. */
+  /** An icon: before the label, or before the figure when there's no label. */
   icon?: ReactNode
   /** `compact` for a summary card's figure. */
   size?: 'large' | 'compact'
@@ -39,15 +39,15 @@ interface ReadoutProps extends ValueParts {
 
 /**
  * A number and its unit (live speed, data used), with an optional label and
- * glyph. A labelled readout is a term and its description, so it goes inside a
- * `<dl>`; without a label, the glyph sits inline with the figure.
+ * icon. A labelled readout is a term and its description, so it goes inside a
+ * `<dl>`; without a label, the icon sits inline with the figure.
  */
 export function Readout({ label, icon, size = 'large', className, ...valueParts }: ReadoutProps): JSX.Element {
   const figureClass = cn('metric num', size === 'compact' && 'metric-compact')
   if (label == null) {
     return (
       <div className={cn(figureClass, 'min-w-0', className)}>
-        {icon != null && <span className="metric-glyph">{icon}</span>}
+        {icon != null && <span className="metric-icon">{icon}</span>}
         <ValueAndUnit {...valueParts} />
       </div>
     )

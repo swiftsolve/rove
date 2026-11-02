@@ -20,7 +20,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A wash of the glyph's own colour: a router in the device list. */
+/** A wash of the icon's own colour: a router in the device list. */
 export const Default: Story = {}
 
 /** An absent connection: the same wash, in the negative colour. */

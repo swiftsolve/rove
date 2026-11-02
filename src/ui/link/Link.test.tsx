@@ -20,7 +20,7 @@ describe('Link', () => {
     expect(container.querySelectorAll('svg')).toHaveLength(1)
   })
 
-  it('underlines only its label, never its glyphs', () => {
+  it('underlines only its label, never its icons', () => {
     render(<Link icon={GlobeIcon}>All hosts</Link>)
     const label = screen.getByText('All hosts')
     expect(label.tagName).toBe('SPAN')

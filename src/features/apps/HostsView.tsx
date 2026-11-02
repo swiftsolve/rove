@@ -4,7 +4,7 @@ import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { isPrivateIp } from '@/features/apps/utils/ip'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
-import { appGroupLabel, hostGlyphLabel } from '@/features/apps/utils/host-labels'
+import { appGroupLabel, hostIconLabel } from '@/features/apps/utils/host-labels'
 import { totalBytes } from '@/features/apps/utils/transfer'
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
@@ -64,7 +64,7 @@ const GROUP_HEADER = cx(
 )
 
 // Fixed-width flag slot so hostnames stay aligned whether or not a flag (or a
-// fallback glyph) is present. Twemoji flag glyphs come first so the country flags
+// fallback icon) is present. Twemoji flag glyphs come first so the country flags
 // render on Windows, which has no flag emoji; the SVG fallbacks aren't text and
 // are unaffected. See the @font-face note in styles/base.css.
 const FLAG_SLOT = cx(
@@ -96,21 +96,21 @@ const BODY_COPY: UsageBodyCopy = {
   empty: 'Hosts appear here as your apps connect.',
 }
 
-/** The glyph left of a host's name: the country flag when geolocated, else a
+/** The icon left of a host's name: the country flag when geolocated, else a
  *  LAN or globe (public but unresolved) fallback. */
-function HostGlyph({ host }: { host: HostConn }): JSX.Element {
+function HostIcon({ host }: { host: HostConn }): JSX.Element {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
   // A peer on the user's own network (private/LAN address — no country flag).
-  // These get a node-graph glyph rather than the globe: the globe reads as "out
+  // These get a node-graph icon rather than the globe: the globe reads as "out
   // on the internet", the opposite of a local address, and it explains an
   // otherwise odd router-supplied hostname like "mynetwork".
   const isLocal = !flag && isPrivateIp(host.ip)
   const isDecorative = !flag && !isLocal
-  const label = hostGlyphLabel(flag, country, isLocal)
+  const label = hostIconLabel(flag, country, isLocal)
   const FallbackIcon = isLocal ? IpIcon : GlobeIcon
 
-  const glyph = (
+  const icon = (
     <span
       className={FLAG_SLOT}
       role={label ? 'img' : undefined}
@@ -120,10 +120,10 @@ function HostGlyph({ host }: { host: HostConn }): JSX.Element {
       {flag ?? <FallbackIcon size={12} className="text-tertiary opacity-60" />}
     </span>
   )
-  if (!label) return glyph
+  if (!label) return icon
   return (
-    <UiTooltip content={label} side="top" align="start">
-      {glyph}
+    <UiTooltip content={label} side="top">
+      {icon}
     </UiTooltip>
   )
 }
@@ -148,7 +148,6 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
         </span>
       }
       side="top"
-      align="start"
       maxWidth={360}
       isDisabled={!host.host}
     >
@@ -165,7 +164,7 @@ const HostRow = memo(function HostRow({ host }: { host: HostConn }): JSX.Element
   return (
     <li className="flex items-center justify-between gap-12">
       <span className="inline-flex min-w-0 items-center gap-[7px]">
-        <HostGlyph host={host} />
+        <HostIcon host={host} />
         <HostName host={host} />
       </span>
       <TransferFigures transfer={host} className="shrink-0" />

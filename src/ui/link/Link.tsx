@@ -6,7 +6,7 @@ import { STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
 // Muted at rest and the accent on hover, unless disabled. Focus shows the way hover does
 // (accent and underline), not with a ring. The pill's padding hangs outside
-// the text (with the glyphs' empty edges), so the words line up with the text
+// the text (with the icons' empty edges), so the words line up with the text
 // around them.
 const LINK = cx(
   'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 ml-[-9.5px] mr-[-9px]',
@@ -16,14 +16,14 @@ const LINK = cx(
   STATE_CLASSES,
 )
 
-// The glyphs take the link's own (animating) colour, a touch dimmer at rest
+// The icons take the link's own (animating) colour, a touch dimmer at rest
 // through opacity, so there's one colour animation rather than two that drift.
-const GLYPH = cx(
+const ICON = cx(
   'opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
   'group-usable/link:group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
 )
 
-// Only the label underlines, not the glyphs.
+// Only the label underlines, not the icons.
 const LABEL = cx(
   'group-usable/link:group-hover/link:underline group-usable/link:group-hover/link:underline-offset-2',
   'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
@@ -33,7 +33,7 @@ const ICON_SIZE = 13
 
 type SharedProps = {
   children: ReactNode
-  /** A glyph before the label. */
+  /** An icon before the label. */
   icon?: IconComponent
 }
 
@@ -69,10 +69,10 @@ export const Link = forwardRef<HTMLButtonElement | HTMLAnchorElement, LinkProps>
         rel="noreferrer"
         {...anchorProps}
       >
-        {Icon && <Icon size={ICON_SIZE} className={GLYPH} />}
+        {Icon && <Icon size={ICON_SIZE} className={ICON} />}
         <span className={LABEL}>{children}</span>
         <span className="sr-only"> (opens in a new window)</span>
-        <ArrowUpRightIcon size={ICON_SIZE} className={cx(GLYPH, '-mx-[3px]')} />
+        <ArrowUpRightIcon size={ICON_SIZE} className={cx(ICON, '-mx-[3px]')} />
       </a>
     )
   }
@@ -85,9 +85,9 @@ export const Link = forwardRef<HTMLButtonElement | HTMLAnchorElement, LinkProps>
       {...pressableProps({ isDisabled, onClick })}
       {...buttonProps}
     >
-      {Icon && <Icon size={ICON_SIZE} className={GLYPH} />}
+      {Icon && <Icon size={ICON_SIZE} className={ICON} />}
       <span className={LABEL}>{children}</span>
-      <ChevronRightIcon size={ICON_SIZE} className={cx(GLYPH, '-mx-4')} />
+      <ChevronRightIcon size={ICON_SIZE} className={cx(ICON, '-mx-4')} />
     </button>
   )
 })

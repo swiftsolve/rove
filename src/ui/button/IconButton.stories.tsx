@@ -1,18 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { CloseIcon, HelpIcon, MoreVerticalIcon, PlayIcon, RefreshIcon } from '../icons/Icons'
+import { CloseIcon, MoreVerticalIcon, PlayIcon, RefreshIcon } from '../icons/Icons'
+import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { IconButton } from './IconButton'
 
 const meta = {
   title: 'Actions/IconButton',
   component: IconButton,
-  args: { label: 'Refresh', icon: RefreshIcon, onClick: fn() },
+  args: { label: 'Refresh', icon: iconArg('RefreshIcon'), onClick: fn() },
   argTypes: {
     variant: { control: 'inline-radio', options: ['soft', 'ghost'] },
     iconSize: { control: 'inline-radio', options: [16, 14] },
     tooltipSide: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
-    icon: { control: false },
+    icon: iconComponentControl,
   },
+  // Centred, so a tooltip has room on both sides.
+  parameters: { layout: 'centered' },
 } satisfies Meta<typeof IconButton>
 
 export default meta
@@ -22,14 +25,14 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {}
 
 /** No fill until hovered: a dialog's close. */
-export const Ghost: Story = { args: { label: 'Close', icon: CloseIcon, variant: 'ghost' } }
+export const Ghost: Story = { args: { label: 'Close', icon: iconArg('CloseIcon'), variant: 'ghost' } }
 
-/** A glyph that reads large at 16 drops to 14. */
-export const SmallGlyph: Story = { args: { label: 'Run', icon: PlayIcon, iconSize: 14 } }
+/** An icon that reads large at 16 drops to 14. */
+export const SmallIcon: Story = { args: { label: 'Run', icon: iconArg('PlayIcon'), iconSize: 14 } }
 
 /** The tooltip says more than the label. */
 export const WithHint: Story = {
-  args: { label: 'Help', icon: HelpIcon, tooltip: 'Latency is the round trip to each service, every minute.' },
+  args: { label: 'Help', icon: iconArg('HelpIcon'), tooltip: 'Latency is the round trip to each service, every minute.' },
 }
 
 export const Loading: Story = { args: { isLoading: true } }

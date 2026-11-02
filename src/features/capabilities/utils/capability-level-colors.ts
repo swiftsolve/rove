@@ -1,7 +1,7 @@
 import type { CapabilityLevel } from '@/types'
 import type { IconTileColor } from '@/ui'
 
-/** Each level's fill colour, for glyphs, chips and meter bars (3:1 is enough). */
+/** Each level's fill colour, for icons, chips and meter bars (3:1 is enough). */
 export const CAPABILITY_LEVEL_FILL_COLORS: Record<CapabilityLevel, string> = {
   excellent: 'text-status-positive',
   good: 'text-status-good',
