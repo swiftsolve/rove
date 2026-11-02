@@ -23,6 +23,9 @@ const meta = {
   },
   render: (args) => <DialogFrame {...args} />,
   parameters: {
+    // The frame stands in for the content column: it takes the canvas's width,
+    // and its contents are all absolute, so centred it would collapse to nothing.
+    layout: 'padded',
     // An open dialog makes the page behind it inert, so on the docs page each
     // story gets a frame of its own.
     docs: { story: { inline: false, iframeHeight: 340 } },
