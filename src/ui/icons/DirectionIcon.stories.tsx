@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { DirectionIcon } from './DirectionIcon'
 
+const READOUTS = [
+  ['down', 'Download', '412 Mbps'],
+  ['up', 'Upload', '38 Mbps'],
+] as const
+
 const meta = {
   title: 'Foundations/DirectionIcon',
   component: DirectionIcon,
@@ -24,10 +29,7 @@ export const Upload: Story = { args: { series: 'up' } }
 export const AllStates: Story = {
   render: () => (
     <dl className="flex gap-20">
-      {([
-        ['down', 'Download', '412 Mbps'],
-        ['up', 'Upload', '38 Mbps'],
-      ] as const).map(([series, label, value]) => (
+      {READOUTS.map(([series, label, value]) => (
         <div key={series} className="flex flex-col gap-8">
           <dt className="flex items-center gap-6">
             <DirectionIcon series={series} />
