@@ -46,7 +46,7 @@ for what. Read it before writing or changing UI. For where files live, see
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
 - The rare stylesheet a component needs sits next to it with the same name:
-  `ConnectionCard.tsx` and `ConnectionCard.module.css`.
+  `ConnectionStrip.tsx` and `ConnectionStrip.module.css`.
 - File names say what a file is. A component is PascalCase (`ThemeProvider.tsx`),
   a hook is camelCase starting with `use` (`useTheme.ts`), and everything else
   is kebab-case: contexts, utils and types (`theme-context.ts`), global

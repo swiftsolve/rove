@@ -32,7 +32,7 @@ const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-toke
 /** Raw values that stay, by file and the exact text flagged. */
 const ALLOWED = [
   // A scanner needs dark modules on white in both themes.
-  { file: 'src/features/connection/WifiShareDialog.tsx', value: '#ffffff' },
+  { file: 'src/features/connection/components/WifiShareDialog.tsx', value: '#ffffff' },
   // The brand icon's gradient, the same as the app icon's.
   { file: 'src/ui/icons/BrandIcon.tsx', value: '#7aa4ff' },
   { file: 'src/ui/icons/BrandIcon.tsx', value: '#5484f5' },

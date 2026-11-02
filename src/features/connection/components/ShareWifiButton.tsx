@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DialogRoot, IconButton, QrCodeIcon } from '@/ui'
-import { WifiShareDialog } from '@/features/connection/WifiShareDialog'
+import { WifiShareDialog } from '@/features/connection/components/WifiShareDialog'
 
 /**
  * A QR button that opens the Wi-Fi share dialog, shown beside the signal meter

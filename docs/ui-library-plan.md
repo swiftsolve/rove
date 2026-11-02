@@ -31,8 +31,8 @@
   - Make one Timeline marker for Events and the services timeline.
   - Promote TransferFigures and SplitBar from apps to the library.
 - **Phase 9:**
-  - Split the fat views (ServicesView, ServicesTimelineView, ConnectionCard,
-    SpeedHistoryView, UsageView, DiagnosticsView, HostsView's rows).
+  - Split the fat views (ServicesView, ServicesTimelineView, SpeedHistoryView,
+    UsageView, DiagnosticsView, HostsView's rows).
   - Move their untested logic into tested `utils/`.
   - Memoise the timeline's per-second grouping.
 - **Phase 6:**

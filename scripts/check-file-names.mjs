@@ -2,7 +2,7 @@
  * Check every file and folder name in src/ against the naming rule:
  *
  *   - components are PascalCase `.tsx` (`ThemeProvider.tsx`), and a component's
- *     CSS Module takes its name (`ConnectionCard.module.css`);
+ *     CSS Module takes its name (`ConnectionStrip.module.css`);
  *   - hooks are camelCase starting with `use` (`useTheme.ts`, `.tsx` if it renders);
  *   - everything else is kebab-case: modules (`theme-context.ts`), global
  *     stylesheets (`base.css`), data (`components.json`) and folders
