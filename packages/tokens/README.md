@@ -39,7 +39,7 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
+%%{init: {"themeCSS": ".cluster-label { translate: 260px 0; }", "theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
 flowchart TD
   figma("<b>Figma file</b><br/>variables, styles"):::source
   exports("<b>src/figma/*.json</b><br/>export plugin"):::file
@@ -48,7 +48,7 @@ flowchart TD
 
   subgraph build ["npm run build"]
     dtcg("<b>tokens/</b><br/>figma-to-dtcg"):::file
-    css("<b>tokens.css</b><br/>dtcg-to-css"):::file
+    css("<b>tokens.css</b><br/>Style Dictionary"):::file
     textCss("<b>text-styles.css</b><br/>dtcg-to-text-styles"):::file
     design("<b>DESIGN.md</b><br/>token-reference"):::file
   end
@@ -66,7 +66,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: a script in `scripts/tokens/`, or the Figma plugin. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
