@@ -118,7 +118,6 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 | `scripts/tokens/text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
 | `scripts/tokens/design.mjs` | Figma export and `tokens.css` → the token reference in `DESIGN.md`: every token by name and Figma description, with values for the scales (spacing, radius, type, opacity) but not the colours, so nobody copies a hex. |
 | `scripts/presentation/export.mjs` | `npm run present`: exports the Figma file's pages to `presentation/index.html`, a slideshow styled with the tokens. Needs `FIGMA_TOKEN` (a Figma personal access token, `file_content:read`) in `.env.local`. |
-| `scripts/presentation/open.mjs` | `npm run present:open`: opens the exported presentation in your browser. |
 | `.storybook/` | The Rove Tokens Storybook's config, and the Inter and Questrial files it serves. |
 | `stories/` | Its pages, one file per sidebar group. `tokens.js` reads the DTCG files. |
 | `scripts/presentation/publish.mjs` | `npm run present:publish`: pushes the exported presentation to the `gh-pages` branch, which GitHub Pages serves at <https://swiftsolve.github.io/rove-tokens/>. Each publish replaces the last. |

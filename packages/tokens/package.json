@@ -24,7 +24,6 @@
   "scripts": {
     "build": "node scripts/tokens/build.mjs",
     "present": "npm run build && node scripts/presentation/export.mjs",
-    "present:open": "node scripts/presentation/open.mjs",
     "present:publish": "node scripts/presentation/publish.mjs",
     "prepare": "npm run build",
     "storybook": "storybook dev -p 6007",
