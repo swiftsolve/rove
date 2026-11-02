@@ -79,6 +79,35 @@ npm run storybook
 
 It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `tokens/` and are styled with `tokens.css`, so a new build shows up without editing them. `npm run build:storybook` writes a static copy to `storybook-static/`.
 
+## ⚙️ How it works
+
+Figma holds the tokens. The build turns its export into DTCG, then the DTCG into CSS, and npm ships the result to Rove.
+
+```mermaid
+flowchart LR
+  figma["Figma file<br/>variables, text styles"] -- "export plugin" --> exports["src/figma/<br/>variables.json, text-styles.json"]
+  codeTokens["src/code-tokens.json<br/>shadows, easings"]
+
+  subgraph build ["npm run build"]
+    toDtcg["figma-to-dtcg.mjs"]
+    toCss["dtcg-to-css.mjs"]
+    toText["dtcg-to-text-styles.mjs"]
+    toRef["token-reference.mjs"]
+  end
+
+  exports --> toDtcg
+  codeTokens --> toDtcg
+  toDtcg --> dtcg["tokens/<br/>DTCG files"]
+  dtcg --> toCss --> css["tokens.css"]
+  dtcg --> toText --> textCss["text-styles.css"]
+  exports --> toRef
+  css --> toRef --> design["DESIGN.md<br/>token reference"]
+
+  css & textCss & dtcg & design --> pkg["npm package<br/>@swiftsolve/rove-tokens"] --> rove["Rove app"]
+  dtcg --> storybook["Storybook"]
+  figma -- "npm run present" --> slides["Slideshow<br/>GitHub Pages"]
+```
+
 ## 🔄 Update the tokens
 
 1. Change the variables or text styles in Figma.
