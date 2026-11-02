@@ -31,7 +31,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 ---
 
-Figma is the source of truth; this package turns its variables and text styles into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/).
+Figma is the source of truth. A [Figma plugin](figma-plugin/) exports its variables and text styles, and this package turns them into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/).
 
 > [!TIP]
 > **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, with every value. It ships in the package, so coding agents in Rove can read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`.
