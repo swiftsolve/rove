@@ -8,7 +8,7 @@ const meta = {
   // It fills the page's content area, so it gets a box to centre in.
   decorators: [
     (Story) => (
-      <div className="flex h-[280px]">
+      <div className="flex h-[280px] w-[360px]">
         <Story />
       </div>
     ),

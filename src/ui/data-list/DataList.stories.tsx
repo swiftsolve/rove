@@ -25,7 +25,7 @@ const meta = {
   },
   // It lives in a card's body.
   render: (args) => (
-    <Card className="max-w-[320px]">
+    <Card className="w-[320px]">
       <CardHeader title="Connection" />
       <CardBody>
         <DataList {...args} />
@@ -59,7 +59,7 @@ export const MissingValue: Story = {
 /** Lists grouped by topic, a hairline between them. */
 export const Stack: Story = {
   render: () => (
-    <Card className="max-w-[320px]">
+    <Card className="w-[320px]">
       <CardHeader title="Connection details" />
       <CardBody layout="flush">
         <DataListStack>
@@ -82,9 +82,9 @@ export const Stack: Story = {
 /** Every density side by side. */
 export const AllStates: Story = {
   render: () => (
-    <div className="grid grid-cols-3 gap-12">
+    <div className="grid grid-cols-2 gap-12">
       {(['default', 'compact'] as const).map((density) => (
-        <Card key={density}>
+        <Card key={density} className="w-[320px]">
           <CardHeader title={density} />
           <CardBody>
             <DataList density={density}>{ROWS}</DataList>

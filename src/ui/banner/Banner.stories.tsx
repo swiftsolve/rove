@@ -7,6 +7,14 @@ const meta = {
   component: Banner,
   args: { variant: 'error', title: "Couldn't load devices", description: POLLING_DESCRIPTION },
   argTypes: { variant: { control: 'inline-radio', options: ['error'] }, onRetry: { control: false } },
+  // It runs the width of the page's content area.
+  decorators: [
+    (Story) => (
+      <div className="w-[480px]">
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof Banner>
 
 export default meta

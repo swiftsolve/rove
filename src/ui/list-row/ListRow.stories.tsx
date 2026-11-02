@@ -40,7 +40,7 @@ const meta = {
   argTypes: { children: { control: false } },
   // It sits in a card's list, its hover wash bleeding into the padding.
   render: (args) => (
-    <Card className="max-w-[400px]">
+    <Card className="w-[400px]">
       <CardHeader title="Capabilities" />
       <CardBody>
         <ul role="list" className="flex flex-col">
@@ -88,7 +88,7 @@ const CAPABILITIES = [
 /** A list of rows at each rating, then one disabled. */
 export const AllStates: Story = {
   render: () => (
-    <Card className="max-w-[400px]">
+    <Card className="w-[400px]">
       <CardHeader title="Capabilities" />
       <CardBody>
         <ul role="list" className="flex flex-col">

@@ -12,7 +12,7 @@ const meta = {
   argTypes: { actions: { control: false } },
   // It fills the page's content area, so it gets a box to centre in.
   render: (args) => (
-    <div className="flex h-[280px]">
+    <div className="flex h-[280px] w-[360px]">
       <EmptyState {...args} />
     </div>
   ),
@@ -68,7 +68,7 @@ function RetryWithNote(): JSX.Element {
 /** Each kind side by side. */
 export const AllStates: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-12">
+    <div className="grid w-[740px] grid-cols-2 gap-12">
       <div className="flex h-[280px]">
         <EmptyState
           title="No services yet"

@@ -47,7 +47,7 @@ export const Compact: Story = {
 /** Labelled readouts in a list, then unlabelled ones at both sizes. */
 export const AllStates: Story = {
   render: () => (
-    <div className="flex flex-col gap-20">
+    <div className="flex w-[480px] flex-col gap-20">
       <dl className="flex gap-20">
         <Readout className="min-w-0 flex-1" label="Download" icon={<DirectionIcon series="down" />} value="182" unit="Mbps" />
         <Readout className="min-w-0 flex-1" label="Upload" icon={<DirectionIcon series="up" />} value="24.6" unit="Mbps" />

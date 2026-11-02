@@ -20,7 +20,7 @@ type Story = StoryObj<typeof meta>
  */
 export const OverRow: Story = {
   render: (args) => (
-    <div className="surface group relative flex max-w-[280px] items-center gap-8 px-14 py-10 hover:bg-fill-faint">
+    <div className="surface group relative flex w-[280px] items-center gap-8 px-14 py-10 hover:bg-fill-faint">
       <SpeedIcon size={16} className="text-tertiary" />
       <span className="text-md font-medium text-primary">Speed</span>
       <span className="text-sm text-tertiary">412 Mbps</span>

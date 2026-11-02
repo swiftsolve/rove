@@ -43,7 +43,8 @@ const preview: Preview = {
     },
   ],
   parameters: {
-    layout: 'padded',
+    // Each story sits in the middle of its canvas, on a Docs page too.
+    layout: 'centered',
     // The groups in src/ui/index.ts's order.
     options: {
       storySort: {
