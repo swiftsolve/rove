@@ -284,7 +284,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Figma | Code | Use |
 | --- | --- | --- |
 | Title bar, Title bar status, Window button | `TitleBar`, `TitleBarStatus`, `WindowButton` | Brand, connection status and window controls, on `--bg-chrome`. 56px tall (`--titlebar-height`). `AppTitleBar` fills it from the app. |
-| Nav rail | `NavRail`, `NavItem` | One item per page, on `--bg-chrome`; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
+| Nav rail | `NavRail`, `NavItem` | One item per page, on `--bg-chrome`; the current page's is active, with an `--accent-muted` tint and an edge bar. On a page change the bar slides to the new item while the tints cross-fade. `TabBar` fills it from the tab registry. |
 | Page header | `PageHeader` | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. `onBack` (Back in Figma) puts a back button in the icon's place. |
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else; `tone="negative"` on a red surface, like an error Banner's Dismiss). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no fill until hovered (a dialog's close). |
