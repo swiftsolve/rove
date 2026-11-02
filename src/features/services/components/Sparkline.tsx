@@ -1,12 +1,12 @@
-import { useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { latencyBand, type LatencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
 
-// A row-sized latency chart. The wrapper is the positioning context for the
-// floating hover label, which is anchored to the hovered point's x.
-const ROOT = 'relative inline-block shrink-0'
+// A row-sized latency chart.
+const ROOT = 'inline-block shrink-0'
 
 const chartVariants = cva('cursor-crosshair overflow-visible', {
   variants: {
@@ -34,13 +34,20 @@ const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [str
   defaultVariants: { isFlat: false },
 })
 
-// The value bubble that follows the hovered point. Centred over its x and lifted
-// above the chart; translate keeps it from clipping at the chart's edges.
+// The value bubble that follows the hovered point: centred over its x and lifted
+// 3px above the chart.
 const TIP = cx(
-  'pointer-events-none absolute bottom-[calc(100%+3px)] z-3 -translate-x-1/2 whitespace-nowrap',
+  'pointer-events-none fixed z-9999 -translate-x-1/2 -translate-y-full whitespace-nowrap',
   'rounded-xs border border-line bg-surface px-6 py-2 shadow-panel',
   'font-numeric text-2xs leading-[1.2] text-primary tabular-nums',
 )
+
+// The hovered point, and the chart's top-left corner in the window when it was hovered.
+interface Hover {
+  index: number
+  left: number
+  top: number
+}
 
 interface Point {
   x: number
@@ -175,6 +182,22 @@ function nearestPointIndex(points: Point[], x: number): number {
   return nearest
 }
 
+/** Where the pointer is over the chart: its x within it, and the chart's corner in the window. */
+function pointerOver(e: React.MouseEvent<SVGSVGElement>): { x: number; left: number; top: number } {
+  const rect = e.currentTarget.getBoundingClientRect()
+  return { x: e.clientX - rect.left, left: rect.left, top: rect.top }
+}
+
+/** The value bubble, portalled so the card the row sits in never clips it. */
+function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: ReactNode }): JSX.Element {
+  return createPortal(
+    <span className={TIP} style={{ left: hover.left + x, top: hover.top - 3 }} aria-hidden="true">
+      {children}
+    </span>,
+    document.body,
+  )
+}
+
 /**
  * A tiny latency chart for a service row: the recent handshake times drawn as a
  * line, coloured by the latest reading's health band. Failed probes (null ms)
@@ -190,8 +213,8 @@ export function Sparkline({
   slots,
   isDown = false,
 }: SparklineProps): JSX.Element {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [hover, setHover] = useState<Hover | null>(null)
+  const isHovered = hover !== null
   // Unique per instance so multiple sparklines on a page don't share a gradient.
   const fillId = useId().replace(/:/g, '')
   const baseline = height - VERTICAL_PAD
@@ -200,6 +223,15 @@ export function Sparkline({
     const placed = placePoints(samples, width, height, slots)
     return { points: placed, runs: splitIntoRuns(placed) }
   }, [samples, width, height, slots])
+
+  // The bubble is fixed in the window, so a scroll under a still pointer would
+  // leave it behind: it hides until the pointer moves again.
+  useEffect(() => {
+    if (!isHovered) return
+    const hide = (): void => setHover(null)
+    window.addEventListener('scroll', hide, { capture: true, passive: true })
+    return () => window.removeEventListener('scroll', hide, { capture: true })
+  }, [isHovered])
 
   // A down service reads as a single flat red line — its latency trend is
   // meaningless once it's unreachable, and a green-looking chart on a down row is
@@ -215,15 +247,15 @@ export function Sparkline({
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label={label ? `${label} is down` : 'Down'}
-          onMouseMove={() => setHoveredIndex(0)}
-          onMouseLeave={() => setHoveredIndex(null)}
+          onMouseMove={(e) => setHover({ index: 0, ...pointerOver(e) })}
+          onMouseLeave={() => setHover(null)}
         >
           <line className={lineVariants({ isFlat: true })} x1={0} y1={baseline} x2={width} y2={baseline} />
         </svg>
-        {hoveredIndex !== null && (
-          <span className={TIP} style={{ left: '50%' }} aria-hidden="true">
+        {hover && (
+          <HoverTip hover={hover} x={width / 2}>
             Down
-          </span>
+          </HoverTip>
         )}
       </span>
     )
@@ -234,20 +266,19 @@ export function Sparkline({
   }
 
   const latestMs = samples[samples.length - 1]!.ms
-  const hovered = hoveredIndex !== null ? points[hoveredIndex] : null
+  const hovered = hover !== null ? points[hover.index] : null
   // Only multi-point runs get an area — a lone point has none.
   const areaRuns = runs.filter((run) => run.length > 1)
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>): void => {
-    const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect || points.length === 0) return
-    setHoveredIndex(nearestPointIndex(points, e.clientX - rect.left))
+    if (points.length === 0) return
+    const { x, left, top } = pointerOver(e)
+    setHover({ index: nearestPointIndex(points, x), left, top })
   }
 
   return (
     <span className={ROOT} style={{ width, height }}>
       <svg
-        ref={svgRef}
         className={chartVariants({ status: chartStatus(latestMs) })}
         width={width}
         height={height}
@@ -255,7 +286,7 @@ export function Sparkline({
         role="img"
         aria-label={chartDescription(samples, label)}
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHoveredIndex(null)}
+        onMouseLeave={() => setHover(null)}
       >
         {/* Area fill under the trend — a vertical fade from the band colour to
             transparent, echoing the Traffic chart. currentColor ties it to
@@ -303,14 +334,10 @@ export function Sparkline({
           </>
         )}
       </svg>
-      {hovered && (
-        <span
-          className={TIP}
-          style={{ left: `${(hovered.x / width) * 100}%` }}
-          aria-hidden="true"
-        >
+      {hover && hovered && (
+        <HoverTip hover={hover} x={hovered.x}>
           {hovered.sample.ms === null ? 'Down' : formatLatencyMs(hovered.sample.ms)}
-        </span>
+        </HoverTip>
       )}
     </span>
   )

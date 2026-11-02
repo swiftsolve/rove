@@ -10,7 +10,7 @@ const meta = {
   title: 'Containers/Card',
   component: Card,
   subcomponents: { CardHeader, CardBody, CardFooter, CardList },
-  args: { as: 'section', shouldClip: true },
+  args: { as: 'section' },
   argTypes: {
     as: { control: 'inline-radio', options: ['section', 'div', 'li'] },
     children: { control: false },

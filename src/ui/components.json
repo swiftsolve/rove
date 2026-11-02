@@ -1180,11 +1180,6 @@
           ],
           "default": "section",
           "description": "`section` (the default) is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
-        },
-        "shouldClip": {
-          "type": "boolean",
-          "default": "true",
-          "description": "False for a card whose content pops out of it, such as a row's menu."
         }
       },
       "hasElementProps": true,
@@ -1280,11 +1275,6 @@
           "type": "string",
           "isRequired": true,
           "description": "Names the list."
-        },
-        "shouldClip": {
-          "type": "boolean",
-          "default": "true",
-          "description": "False for rows whose content pops out of the card, such as a row's menu."
         }
       },
       "hasElementProps": true,

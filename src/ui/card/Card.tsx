@@ -11,8 +11,6 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
    * `div` or `li` for a card with no header, such as a card in a list.
    */
   as?: 'section' | 'div' | 'li'
-  /** False for a card whose content pops out of it, such as a row's menu. */
-  shouldClip?: boolean
 }
 
 /**
@@ -21,7 +19,7 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
  * content in it.
  */
 export const Card = forwardRef<HTMLElement, CardProps>(function Card(
-  { as: Element = 'section', shouldClip = true, className, ...props },
+  { as: Element = 'section', className, ...props },
   ref,
 ) {
   const titleId = useId()
@@ -30,11 +28,7 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
       <Element
         // One ref type for the three elements it can be.
         ref={ref as never}
-        className={cn(
-          'surface',
-          shouldClip && 'overflow-hidden contain-content',
-          className,
-        )}
+        className={cn('surface overflow-hidden contain-content', className)}
         aria-labelledby={Element === 'section' ? titleId : undefined}
         {...props}
       />
@@ -45,15 +39,13 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
 interface CardListProps extends Omit<HTMLAttributes<HTMLUListElement>, 'aria-label'> {
   /** Names the list. */
   label: string
-  /** False for rows whose content pops out of the card, such as a row's menu. */
-  shouldClip?: boolean
   /** The rows, as `<li>`s. They own their padding, so the hairlines run edge to edge. */
   children?: ReactNode
 }
 
 /** A list that is one card, with a hairline between its rows. */
 export const CardList = forwardRef<HTMLUListElement, CardListProps>(function CardList(
-  { label, shouldClip = true, className, ...props },
+  { label, className, ...props },
   ref,
 ) {
   return (
@@ -62,11 +54,7 @@ export const CardList = forwardRef<HTMLUListElement, CardListProps>(function Car
       // Safari drops a list's role when its markers are styled away.
       role="list"
       aria-label={label}
-      className={cn(
-        'surface divide-y divide-line',
-        shouldClip && 'overflow-hidden contain-content',
-        className,
-      )}
+      className={cn('surface divide-y divide-line overflow-hidden contain-content', className)}
       {...props}
     />
   )

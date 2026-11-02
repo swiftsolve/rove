@@ -344,8 +344,7 @@ export function ServicesView(): JSX.Element {
       {listedServices.length > 0 ? (
         // Rows are separated by the same hairline the data cards use, running edge
         // to edge: the rows, not the list, carry the horizontal padding.
-        // Unclipped, so a row's menu and its sparkline's tooltip can spill out.
-        <CardList label="Tracked services" shouldClip={false}>
+        <CardList label="Tracked services">
           {listedServices.map((svc) => (
             <ServiceRow
               key={svc.host}
