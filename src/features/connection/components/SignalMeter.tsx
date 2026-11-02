@@ -1,19 +1,20 @@
 import { cva, cx } from 'class-variance-authority'
 import { formatSignalStrength } from '@/lib/format'
 import { signalBarCount, signalLevel } from '@/features/connection/utils/wifi-signal'
-import { BarMeter } from '@/ui'
+import { BarMeter, type VariantOf } from '@/ui'
 
 const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
     level: { good: 'text-status-positive', fair: 'text-status-warning', poor: 'text-status-negative' },
+    /** Beside the strip's title, or inside the expanded Signal row. */
+    placement: { strip: 'self-center shrink-0', details: null },
   },
 })
 
 type SignalMeterProps = {
   /** 0–100. */
   strength: number
-  /** Beside the strip's title, or inside the expanded Signal row. */
-  placement: 'strip' | 'details'
+  placement: VariantOf<typeof signalMeterVariants, 'placement'>
   className?: string
 }
 
@@ -21,7 +22,7 @@ type SignalMeterProps = {
 export function SignalMeter({ strength, placement, className }: SignalMeterProps): JSX.Element {
   return (
     <div
-      className={cx(signalMeterVariants({ level: signalLevel(strength) }), className)}
+      className={cx(signalMeterVariants({ level: signalLevel(strength), placement }), className)}
       role="meter"
       aria-label={`Wi‑Fi signal: ${formatSignalStrength(strength)}`}
       aria-valuenow={strength}

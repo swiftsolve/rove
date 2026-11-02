@@ -97,11 +97,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
             <ShareWifiButton />
           </span>
           {info.signalStrength != null && (
-            <SignalMeter
-              strength={info.signalStrength}
-              placement="strip"
-              className={cx(ABOVE_TOGGLE, 'self-center shrink-0')}
-            />
+            <SignalMeter strength={info.signalStrength} placement="strip" className={ABOVE_TOGGLE} />
           )}
         </>
       )}
