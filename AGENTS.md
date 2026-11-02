@@ -7,14 +7,14 @@ everything:
 | Task | Read |
 | --- | --- |
 | Any | `README.md`: How it works, Layout, Development |
-| UI | `docs/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-design/DESIGN.md` (which token for what) |
+| UI | `docs/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what) |
 | The UI↔backend boundary, commands, events | `docs/architecture.md` |
 | A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking-data-capture.md` |
 | Device discovery | `docs/device-discovery.md`, `docs/networking-protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
 
 The Rove Design System in Figma is the source of truth for tokens and
-components; they arrive through `@swiftsolve/rove-design`.
+components; they arrive through `@swiftsolve/rove-tokens`.
 
 `src/ui/components.json` lists every library component with its group, props,
 variant values, Figma component and stories, generated from the code. Read it
@@ -24,7 +24,7 @@ before `src/ui`'s files when you need the library's API.
 
 A design change (a token, text style, component variant or prop, copy,
 spacing) lands on both sides in the same task: the Figma file, the
-`rove-design` export and build, this code, and `docs/frontend.md`. A token
+`rove-tokens` export and build, this code, and `docs/frontend.md`. A token
 change also updates every Figma page that shows it: labels, swatches and
 hard-coded fills. Say in the summary that both sides changed and how you
 checked.
@@ -40,7 +40,7 @@ cargo check -p rove-core     # when Rust changed
 
 Two sites embed a static build of this UI, and they don't update on their own.
 After any change a user would see (anything under `src/` that renders, or a
-`@swiftsolve/rove-design` bump), commit here, then resync both, in this order:
+`@swiftsolve/rove-tokens` bump), commit here, then resync both, in this order:
 
 1. `../rove.swiftsolve.net`: `npm run sync-demo`, then commit `public/app/`
    as `chore(demo): resync the embedded app for <change>`.
@@ -48,10 +48,10 @@ After any change a user would see (anything under `src/` that renders, or a
    rove.swiftsolve.net, so step 1 comes first), then commit as
    `Resync /rove for <change>`.
 
-Once a change under `src/ui` (or a `@swiftsolve/rove-design` release) is on
+Once a change under `src/ui` (or a `@swiftsolve/rove-tokens` release) is on
 master, also run `npm run sync-storybook` in `../rove.swiftsolve.net` and commit
 `public/storybook/` as `chore(storybook): resync for <change>`. It builds the
-hosted Storybooks from `origin/master` and rove-design's `origin/main`, not from
+hosted Storybooks from `origin/master` and rove-tokens' `origin/main`, not from
 this checkout.
 
 Backend-only, test or tooling changes don't need a resync.

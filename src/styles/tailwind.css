@@ -1,7 +1,7 @@
 /*
  * Tailwind v4, built only from Rove's design tokens.
  *
- * The tokens come from @swiftsolve/rove-design (Figma is the source of truth)
+ * The tokens come from @swiftsolve/rove-tokens (Figma is the source of truth)
  * as CSS variables. The theme below maps them onto Tailwind utilities and
  * clears Tailwind's own defaults, so only design-system values exist:
  * `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is
@@ -14,15 +14,15 @@
  * var(--radius-sm)` would be a self-reference that invalidates the token.
  *
  * No preflight: base.css is the app's base reset, with the one piece of
- * preflight that border utilities rely on. The text styles are rove-design's
+ * preflight that border utilities rely on. The text styles are rove-tokens'
  * `.type-*` classes; the app's shared styles (numeric faces, page layout) are
  * `@utility` definitions in utilities.css.
  */
 @layer theme, base, components, utilities;
 /* The design tokens, unlayered. */
-@import '@swiftsolve/rove-design/tokens.css';
+@import '@swiftsolve/rove-tokens/tokens.css';
 /* A `.type-<style>` class per Figma text style, in the components layer. */
-@import '@swiftsolve/rove-design/text-styles.css';
+@import '@swiftsolve/rove-tokens/text-styles.css';
 /* Fonts, resets and app-wide behaviour (the base layer). */
 @import './base.css';
 /* Scan only the app's source for class names, not docs or scripts. */

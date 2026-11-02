@@ -12,7 +12,7 @@
  *
  * Values off the token scales (`size-[28px]`, `leading-[1.2]`, a 2.4s pulse)
  * aren't flagged: the system has no token for them. The token values are read
- * from @swiftsolve/rove-design, so a token update moves the rules with it.
+ * from @swiftsolve/rove-tokens, so a token update moves the rules with it.
  *
  * A raw value that has to stay goes in ALLOWED with its reason. Dev mocks
  * (src/dev), tests and assets aren't checked.
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets'), join(SRC, 'dev')]
-const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-design/tokens.css')
+const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
 
 /** Raw values that stay, by file and the exact text flagged. */
 const ALLOWED = [

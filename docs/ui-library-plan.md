@@ -21,7 +21,7 @@
   link and caret) and StatusDot `tone`; a padded `li` card lays out its
   content in its own element.
 - Gates: DOM tests, `screenshots --stable` diffs and the a11y audit.
-- Text takes rove-design's `type-*` classes, which set no colour, so the
+- Text takes rove-tokens' `type-*` classes, which set no colour, so the
   app's own colour-baked type utilities are gone.
 
 **Left as follow-ups:**
@@ -45,7 +45,7 @@
   - Move component styles out of `utilities.css`.
   - Split colour out of the type utilities.
   - Add a page-inset layout token for PageHeader's bleed. It needs Figma and
-    rove-design first.
+    rove-tokens first.
 
 Phase 1 of the component-library refactor. Nothing in `src/` has changed yet.
 Work happens on `refactor/ui-library`.

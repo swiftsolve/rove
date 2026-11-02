@@ -223,7 +223,7 @@ them all, with the component table.
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma is the source of truth for tokens and components. To browse it without
-Figma, see the [slideshow](https://swiftsolve.github.io/rove-design/).
+Figma, see the [slideshow](https://swiftsolve.github.io/rove-tokens/).
 
 ## Development
 

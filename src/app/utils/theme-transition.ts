@@ -62,7 +62,7 @@ interface RunningFade {
 
 let fade: RunningFade | null = null
 
-/** The tokens the light theme overrides, read from the stylesheet so the list follows rove-design. */
+/** The tokens the light theme overrides, read from the stylesheet so the list follows rove-tokens. */
 function lightThemeTokenNames(rules: CSSRuleList): string[] {
   for (const rule of Array.from(rules)) {
     if (rule instanceof CSSStyleRule && rule.selectorText === ':root.theme-light') {

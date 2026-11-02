@@ -40,19 +40,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      # The design tokens install from the private swiftsolve/rove-design repo.
-      # ROVE_DESIGN_TOKEN is a fine-grained token with read access to it.
-      - name: Allow access to the design tokens repo
-        shell: bash
-        env:
-          TOKEN: ${{ secrets.ROVE_DESIGN_TOKEN }}
-        run: |
-          git -C "$RUNNER_TEMP" ls-remote --exit-code "https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design.git" HEAD > /dev/null \
-            || { echo "::error::ROVE_DESIGN_TOKEN can't read swiftsolve/rove-design"; exit 1; }
-          for from in ssh://git@github.com/swiftsolve/rove-design https://github.com/swiftsolve/rove-design; do
-            git config --global --add url."https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design".insteadOf "$from"
-          done
-
       - run: npm ci
 
       - name: Typecheck UI

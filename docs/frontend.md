@@ -105,7 +105,7 @@ for what. Read it before writing or changing UI. For where files live, see
   duration a token has: `p-12`, not `p-[12px]`. `npm run lint` runs
   `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
   to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
-- Text takes a Figma text style's class from rove-design's `text-styles.css`
+- Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
   under every utility, so `text-sm` or `leading-[1.15]` beside one wins.
@@ -200,11 +200,11 @@ for what. Read it before writing or changing UI. For where files live, see
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma is the source of truth for tokens and components. The UI consumes its
-tokens through the `@swiftsolve/rove-design` package. To browse it without
-Figma, see the published slideshow: <https://swiftsolve.github.io/rove-design/>.
+tokens through the `@swiftsolve/rove-tokens` package. To browse it without
+Figma, see the published slideshow: <https://swiftsolve.github.io/rove-tokens/>.
 
 Which token to use for what, with every value, is in the package's
-`DESIGN.md` (`node_modules/@swiftsolve/rove-design/DESIGN.md`).
+`DESIGN.md` (`node_modules/@swiftsolve/rove-tokens/DESIGN.md`).
 
 ## The UI library
 

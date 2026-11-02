@@ -10,7 +10,7 @@ most of them. These are the ones it can't check:
 - An interactive component gets a story that drives it with a `play`
   function, named for the interaction and tagged `!autodocs`.
 - Raise `UI_LIBRARY_VERSION` in `version.ts` when the library's API changes.
-- A design change lands in Figma, the `rove-design` build, this code and
+- A design change lands in Figma, the `rove-tokens` build, this code and
   `docs/frontend.md` in the same task.
 - A change a user would see is resynced to both sites after committing.
 

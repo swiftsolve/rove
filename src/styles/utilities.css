@@ -1,6 +1,6 @@
 /*
  * The app's shared styles, as Tailwind utilities: numeric and metric faces,
- * page layout and a few shared pieces. Text styles are rove-design's
+ * page layout and a few shared pieces. Text styles are rove-tokens'
  * `.type-*` classes (text-styles.css), which set no colour: pair one with a
  * colour utility (`type-caption text-tertiary`). Being utilities, they take
  * variants (`hover:surface`) and sort with the rest, so an element's other
