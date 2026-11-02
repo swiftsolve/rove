@@ -24,7 +24,7 @@ const COLORS = [
   'status-positive', 'status-good', 'status-warning', 'status-poor', 'status-negative',
   'status-negative-fill', 'status-negative-fill-hover',
   'series-down', 'series-up',
-  'fill-faint', 'fill-subtle', 'fill-default', 'fill-strong', 'fill-selection',
+  'fill-faint', 'fill-subtle', 'fill-default', 'fill-hover', 'fill-strong', 'fill-selection',
 ]
 
 const mergeClasses = extendTailwindMerge({

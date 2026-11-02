@@ -150,6 +150,7 @@
   /* Overlays, by strength */
   --color-fill-faint: var(--fill-faint);
   --color-fill-subtle: var(--fill-subtle);
+  --color-fill-hover: var(--fill-hover);
   --color-fill-default: var(--fill-default);
   --color-fill-strong: var(--fill-strong);
   --color-fill-selection: var(--fill-selection);

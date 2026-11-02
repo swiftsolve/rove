@@ -310,8 +310,8 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           className={cx(
             'relative flex items-start gap-12 w-full text-left',
             'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
-            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-subtle',
-            'has-[[data-collapsible-trigger]:focus-visible]:bg-fill-subtle',
+            'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-hover',
+            'has-[[data-collapsible-trigger]:focus-visible]:bg-fill-hover',
           )}
         >
           {/* A transparent full-strip button keeps the whole row one expand target
