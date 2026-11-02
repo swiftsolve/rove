@@ -9,7 +9,8 @@ type StretchedLinkProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-la
 }
 
 /**
- * A transparent link stretched over its positioned container (a card, a row),
+ * A transparent link stretched over its positioned container (a row; a Card
+ * draws its own with `onOpen`),
  * so a click anywhere opens the view the container summarises. It's a link
  * to a screen reader: it moves to another view rather than acting. A control
  * in the container raises itself above it and stays a sibling, never nested.

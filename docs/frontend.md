@@ -224,11 +224,18 @@ both, and a raw `<button>` outside the library is a lint error.
   shares), `hooks/` (generic UI hooks), `context/` (where dialogs portal), and
   `icons/`.
 - Each component has stories beside it (`Button.stories.tsx`), titled by the
-  same groups (`Actions/Button`). `npm run storybook` serves them at
+  same groups (`Actions/Button`). A family sits in a folder named for its
+  parent (`Containers/Card/CardHeader`), and the parent's page shows its
+  parts' props as tabs (`subcomponents`). `npm run storybook` serves them at
   `localhost:6006`, with a Theme switch in the toolbar and an accessibility
   check on every story; `npm run build:storybook` writes a static copy to
   `storybook-static/`. Stories import the library by relative path, like the
   library itself. A new component gets its stories in the same change.
+  A part with props of its own (`CardBody`, `NavItem`) gets its own stories
+  file beside its module (`card/CardBody.stories.tsx`), so its props have
+  controls; Storybook's subcomponent tabs can't. The component and its parts
+  share a folder (`Containers/Card/CardBody`), ordered in
+  `.storybook/preview.tsx`.
 - `components.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
@@ -269,11 +276,11 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible; the panel animates its height. |
-| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `isInteractive` lifts on hover and presses in, for a card with a `StretchedLink`. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
+| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `onOpen` (with `openLabel`) makes the whole card a link: it draws the link, its header ends in a caret, and it lifts on hover and presses in. A control inside raises itself above the link (`relative z-2`); header actions already do. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
 | Card list | `CardList` | A list that is one card: its `<li>` rows, with a hairline between them running edge to edge. `label` names it. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between that runs end to end: place it flush to the card's sides (`CardBody layout="flush"`), and it insets each group. |
 | List row | `ListRow` | A whole-row button that opens something, with a chevron on the right. Right-aligned content (a meter) is its last child. |
-| — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
+| — | `StretchedLink` | A transparent link over a whole row, so a click anywhere opens its view. A Card draws its own with `onOpen`. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words, in their colour or `tone="positive"`; `pulse` calm, live or busy. |
 | Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`icon`, `size`, `color`): any colour, usually a token (`var(--series-down)`), or `neutral`, the sunken fill for something uncategorised. The button form opens something. |

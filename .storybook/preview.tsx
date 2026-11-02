@@ -54,7 +54,10 @@ const preview: Preview = {
           'Status and feedback',
           'Data display',
           'Containers',
+          // A component with parts is a folder: the component first, then its parts.
+          ['Card', ['Card', 'CardHeader', 'CardBody', 'CardFooter', 'CardList'], 'DotSeparator', ['DotSeparator', 'InlineMeta'], '*'],
           'App frame',
+          ['NavRail', ['NavRail', 'NavItem'], 'TitleBar', ['TitleBar', 'TitleBarStatus', 'WindowButton'], '*'],
           'Foundations',
         ],
       },

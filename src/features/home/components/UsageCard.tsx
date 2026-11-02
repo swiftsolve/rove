@@ -23,9 +23,8 @@ export function UsageCard(): JSX.Element {
       isLoading={!isResolved}
     >
       {isResolved ? (
-        // Download and upload side by side. The top margin matches the Traffic
-        // panel's breathing room between title and readouts.
-        <div className="grid grid-cols-2 gap-8 w-full mt-12" aria-hidden>
+        // Download and upload side by side.
+        <div className="grid grid-cols-2 gap-8 w-full" aria-hidden>
           <StatReadout marker="down" value={down.value} unit={down.unit} />
           <StatReadout marker="up" value={up.value} unit={up.unit} />
         </div>

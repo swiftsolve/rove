@@ -20,6 +20,7 @@
  * has no entry in figma.json (`null` says it has no Figma counterpart) or no
  * row in docs/frontend.md's Components table.
  */
+import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -102,9 +103,11 @@ function describeProp(prop) {
   return entry
 }
 
-// Story ids, per stories file beside a module (Badge.tsx ↔ Badge.stories.tsx).
-async function readStories(source) {
-  const file = source.replace(/\.tsx$/, '.stories.tsx')
+// Story ids, from a component's own stories file beside its module
+// (card/CardBody.stories.tsx), or else the module's (Badge.tsx ↔ Badge.stories.tsx).
+async function readStories(source, name) {
+  const own = join(dirname(source), `${name}.stories.tsx`)
+  const file = existsSync(own) ? own : source.replace(/\.tsx$/, '.stories.tsx')
   const text = await readFile(file, 'utf8').catch(() => null)
   if (text === null) return []
   const title = text.match(/title: '(.+?)'/)?.[1]
@@ -142,10 +145,8 @@ const components = await readIndex()
 const { docs, elementProps } = readProps(components)
 const figma = JSON.parse(await readFile(FIGMA, 'utf8'))
 const documented = await readDocumentedNames()
-const storiesBySource = new Map()
-for (const source of new Set(components.map(({ source }) => source))) {
-  storiesBySource.set(source, await readStories(source))
-}
+const storiesByName = new Map()
+for (const { name, source } of components) storiesByName.set(name, await readStories(source, name))
 
 const entries = {}
 for (const { name, group, source } of components) {
@@ -178,7 +179,7 @@ for (const { name, group, source } of components) {
         .map((prop) => [prop.name, describeProp(prop)]),
     ),
     ...(elementProps.has(name) && { hasElementProps: true }),
-    stories: storiesBySource.get(source),
+    stories: storiesByName.get(name),
   }
 }
 for (const name of Object.keys(figma.components)) {

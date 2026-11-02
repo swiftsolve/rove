@@ -17,9 +17,9 @@
 - The audit's bugs are fixed, and fetching moved from effects into query hooks.
 - A raw `<button>` outside the library is a lint error.
 - `className` on a library component is placement only, and a lint check
-  fails on a restyle. CardBody gained `layout`, Card `isInteractive` and
-  StatusDot `tone`; a padded `li` card lays out its content in its own
-  element.
+  fails on a restyle. CardBody gained `layout`, Card `onOpen` (its own
+  link and caret) and StatusDot `tone`; a padded `li` card lays out its
+  content in its own element.
 - Gates: DOM tests, `screenshots --stable` diffs and the a11y audit.
 
 **Left as follow-ups:**

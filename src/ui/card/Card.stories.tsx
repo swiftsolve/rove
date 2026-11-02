@@ -3,19 +3,18 @@ import { fn } from 'storybook/test'
 import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
 import { DataList, DataListStack, DataRow } from '../data-list/DataList'
-import { ChevronRightIcon, RefreshIcon, RouterIcon, WifiIcon } from '../icons/Icons'
-import { StretchedLink } from '../link/StretchedLink'
+import { ArrowDownIcon, RefreshIcon, RouterIcon, TodayIcon, WifiIcon } from '../icons/Icons'
 import { Toggle } from '../toggle/Toggle'
 import { Card, CardBody, CardFooter, CardHeader, CardList } from './Card'
 
 const meta = {
-  title: 'Containers/Card',
+  title: 'Containers/Card/Card',
   component: Card,
-  subcomponents: { CardHeader, CardBody, CardFooter, CardList },
-  args: { as: 'section', isInteractive: false },
+  subcomponents: { CardHeader, CardBody, CardFooter },
+  args: { as: 'section' },
   argTypes: {
     as: { control: 'inline-radio', options: ['section', 'div', 'li'] },
-    isInteractive: { control: 'boolean' },
+    onOpen: { control: false },
     children: { control: false },
   },
   decorators: [
@@ -81,23 +80,9 @@ export const FlushBody: Story = {
   render: (args) => <RouterCard {...args} />,
 }
 
-/** The whole card opens something: it lifts on hover and presses in. */
-export const Interactive: Story = {
-  args: { as: 'div', isInteractive: true },
-  render: (args) => <InteractiveCard {...args} />,
-}
-
-/** CardList: a list that is one card, with a hairline between its rows. */
-export const List: Story = {
-  render: () => (
-    <CardList label="Devices">
-      {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-        <li key={name} className="px-12 py-10 text-sm text-primary">
-          {name}
-        </li>
-      ))}
-    </CardList>
-  ),
+/** With `onOpen` the whole card is a link: its header ends in a caret, and it lifts on hover and presses in. */
+export const Openable: Story = {
+  render: () => <OpenableCard />,
 }
 
 function SettingRow({ title }: { title: string }): JSX.Element {
@@ -129,14 +114,16 @@ function RouterCard(props: { as?: 'section' | 'div' | 'li' }): JSX.Element {
   )
 }
 
-function InteractiveCard(props: { as?: 'section' | 'div' | 'li' }): JSX.Element {
+function OpenableCard(): JSX.Element {
   return (
-    <Card {...props} isInteractive aria-label="Devices">
-      <div className="flex items-center gap-8 p-(--card-body-padding)">
-        <h2 className="text-heading-small">Devices</h2>
-        <ChevronRightIcon size={16} className="ml-auto text-tertiary group-hover/card:text-secondary" />
-      </div>
-      <StretchedLink label="Open devices" onClick={fn()} />
+    <Card onOpen={fn()} openLabel="Usage: 4.9 GB down today. Open Usage.">
+      <CardHeader title="Usage" icon={<TodayIcon size={16} />} />
+      <CardBody>
+        <span className="inline-flex items-center gap-6 text-md text-primary" aria-hidden>
+          <ArrowDownIcon size={12} />
+          4.9 GB
+        </span>
+      </CardBody>
     </Card>
   )
 }
@@ -189,7 +176,7 @@ export const AllStates: Story = {
         </CardFooter>
       </Card>
       <RouterCard />
-      <InteractiveCard as="div" />
+      <OpenableCard />
     </div>
   ),
 }

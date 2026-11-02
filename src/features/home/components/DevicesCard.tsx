@@ -2,13 +2,8 @@ import type { MouseEvent } from 'react'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { IS_MAC } from '@/lib/platform'
-import { Button, ButtonSpinner, DevicesIcon, SearchIcon } from '@/ui'
-import {
-  EmptyStatMetric,
-  focusStatCardLink,
-  StatCard,
-  StatReadout,
-} from '@/features/home/components/StatCard'
+import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
+import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
 function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'
@@ -79,9 +74,9 @@ function DevicesCardBody({
 
   if (deviceCount != null) {
     return (
-      // The count shares the Usage card's top offset. The key dot is small, so it
-      // gets a touch more room before the count than the usage arrows get.
-      <div className="mt-12" aria-hidden>
+      // The key dot is small, so it gets a touch more room before the count
+      // than the usage arrows get.
+      <div aria-hidden>
         <StatReadout
           marker="online"
           value={String(onlineDeviceCount ?? deviceCount)}
@@ -97,7 +92,7 @@ function DevicesCardBody({
     // click runs its own action only. The spinner replaces it once the scan
     // starts, so focus moves to the card's link rather than being lost.
     const handleScan = (event: MouseEvent<HTMLButtonElement>): void => {
-      focusStatCardLink(event.currentTarget)
+      focusCardLink(event.currentTarget)
       onScan()
     }
     return (

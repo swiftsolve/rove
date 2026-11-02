@@ -64,9 +64,8 @@ function ClickableRail({ label }: { label: string }): JSX.Element {
 }
 
 const meta = {
-  title: 'App frame/NavRail',
+  title: 'App frame/NavRail/NavRail',
   component: NavRail,
-  subcomponents: { NavItem },
   // The story fills main and footer with the app's pages.
   args: { label: 'Main navigation', main: null, footer: null },
   argTypes: {

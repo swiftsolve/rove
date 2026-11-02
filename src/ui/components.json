@@ -193,7 +193,7 @@
     "StretchedLink": {
       "group": "Actions",
       "source": "src/ui/link/StretchedLink.tsx",
-      "description": "A transparent link stretched over its positioned container (a card, a row),\nso a click anywhere opens the view the container summarises. It's a link\nto a screen reader: it moves to another view rather than acting. A control\nin the container raises itself above it and stays a sibling, never nested.\nIts focus ring follows the container's corners, just inside the edge.\n`data-stretched-link` lets the container style itself while it has focus;\n`className` can round the ring where the container's own corners don't (a\nlist's first and last rows).",
+      "description": "A transparent link stretched over its positioned container (a row; a Card\ndraws its own with `onOpen`),\nso a click anywhere opens the view the container summarises. It's a link\nto a screen reader: it moves to another view rather than acting. A control\nin the container raises itself above it and stays a sibling, never nested.\nIts focus ring follows the container's corners, just inside the edge.\n`data-stretched-link` lets the container style itself while it has focus;\n`className` can round the ring where the container's own corners don't (a\nlist's first and last rows).",
       "figma": null,
       "props": {
         "label": {
@@ -208,7 +208,7 @@
       },
       "hasElementProps": true,
       "stories": [
-        "actions-stretchedlink--over-card",
+        "actions-stretchedlink--over-row",
         "actions-stretchedlink--focused",
         "actions-stretchedlink--with-control"
       ]
@@ -1332,7 +1332,7 @@
     "Card": {
       "group": "Containers",
       "source": "src/ui/card/Card.tsx",
-      "description": "The panel surface, clipped to its rounded corners. Build it from a\nCardHeader, a CardBody and an optional CardFooter, or lay out your own\ncontent in an element of your own inside it.",
+      "description": "The panel surface, clipped to its rounded corners. Build it from a\nCardHeader, a CardBody and an optional CardFooter, or lay out your own\ncontent in an element of your own inside it. With `onOpen` the whole card\nis a link; a control inside it raises itself above the link (`relative z-2`).",
       "figma": {
         "name": "Card",
         "node": "543:62"
@@ -1355,21 +1355,23 @@
           "type": "string",
           "description": "Its place in a layout."
         },
-        "isInteractive": {
-          "type": "boolean",
-          "default": "false",
-          "description": "The whole card opens something: it lifts on hover and presses in. Give it a\nStretchedLink for the action. Its contents can react with `group-hover/card:`."
+        "onOpen": {
+          "type": "(() => void)",
+          "description": "Opens the view the card summarises: the whole card is its link, and its header ends in a caret."
+        },
+        "openLabel": {
+          "type": "string",
+          "description": "Names the link, and is required with `onOpen`: what the card shows in words, then where it goes."
         }
       },
       "hasElementProps": true,
       "stories": [
-        "containers-card--with-everything",
-        "containers-card--header-actions",
-        "containers-card--rows-body",
-        "containers-card--flush-body",
-        "containers-card--interactive",
-        "containers-card--list",
-        "containers-card--all-states"
+        "containers-card-card--with-everything",
+        "containers-card-card--header-actions",
+        "containers-card-card--rows-body",
+        "containers-card-card--flush-body",
+        "containers-card-card--openable",
+        "containers-card-card--all-states"
       ]
     },
     "CardBody": {
@@ -1397,13 +1399,9 @@
         }
       },
       "stories": [
-        "containers-card--with-everything",
-        "containers-card--header-actions",
-        "containers-card--rows-body",
-        "containers-card--flush-body",
-        "containers-card--interactive",
-        "containers-card--list",
-        "containers-card--all-states"
+        "containers-card-cardbody--default",
+        "containers-card-cardbody--rows",
+        "containers-card-cardbody--flush"
       ]
     },
     "CardFooter": {
@@ -1422,19 +1420,13 @@
         }
       },
       "stories": [
-        "containers-card--with-everything",
-        "containers-card--header-actions",
-        "containers-card--rows-body",
-        "containers-card--flush-body",
-        "containers-card--interactive",
-        "containers-card--list",
-        "containers-card--all-states"
+        "containers-card-cardfooter--default"
       ]
     },
     "CardHeader": {
       "group": "Containers",
       "source": "src/ui/card/Card.tsx",
-      "description": "The card's 44px title row: an icon, the title and its actions.",
+      "description": "The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something.",
       "figma": {
         "name": "Card header",
         "node": "4:65"
@@ -1455,13 +1447,9 @@
         }
       },
       "stories": [
-        "containers-card--with-everything",
-        "containers-card--header-actions",
-        "containers-card--rows-body",
-        "containers-card--flush-body",
-        "containers-card--interactive",
-        "containers-card--list",
-        "containers-card--all-states"
+        "containers-card-cardheader--default",
+        "containers-card-cardheader--with-badge",
+        "containers-card-cardheader--with-button"
       ]
     },
     "CardList": {
@@ -1485,13 +1473,7 @@
       },
       "hasElementProps": true,
       "stories": [
-        "containers-card--with-everything",
-        "containers-card--header-actions",
-        "containers-card--rows-body",
-        "containers-card--flush-body",
-        "containers-card--interactive",
-        "containers-card--list",
-        "containers-card--all-states"
+        "containers-card-cardlist--default"
       ]
     },
     "Collapsible": {
@@ -1584,10 +1566,8 @@
       },
       "props": {},
       "stories": [
-        "containers-dotseparator--dot",
-        "containers-dotseparator--inline-meta-items",
-        "containers-dotseparator--truncated",
-        "containers-dotseparator--all-states"
+        "containers-dotseparator-dotseparator--dot",
+        "containers-dotseparator-dotseparator--all-states"
       ]
     },
     "InlineMeta": {
@@ -1615,10 +1595,8 @@
         }
       },
       "stories": [
-        "containers-dotseparator--dot",
-        "containers-dotseparator--inline-meta-items",
-        "containers-dotseparator--truncated",
-        "containers-dotseparator--all-states"
+        "containers-dotseparator-inlinemeta--default",
+        "containers-dotseparator-inlinemeta--truncated"
       ]
     },
     "TitleBar": {
@@ -1645,12 +1623,12 @@
         }
       },
       "stories": [
-        "app-frame-titlebar--connected",
-        "app-frame-titlebar--no-internet",
-        "app-frame-titlebar--connecting",
-        "app-frame-titlebar--offline",
-        "app-frame-titlebar--without-controls",
-        "app-frame-titlebar--all-states"
+        "app-frame-titlebar-titlebar--connected",
+        "app-frame-titlebar-titlebar--no-internet",
+        "app-frame-titlebar-titlebar--connecting",
+        "app-frame-titlebar-titlebar--offline",
+        "app-frame-titlebar-titlebar--without-controls",
+        "app-frame-titlebar-titlebar--all-states"
       ]
     },
     "TitleBarStatus": {
@@ -1678,12 +1656,9 @@
         }
       },
       "stories": [
-        "app-frame-titlebar--connected",
-        "app-frame-titlebar--no-internet",
-        "app-frame-titlebar--connecting",
-        "app-frame-titlebar--offline",
-        "app-frame-titlebar--without-controls",
-        "app-frame-titlebar--all-states"
+        "app-frame-titlebar-titlebarstatus--positive",
+        "app-frame-titlebar-titlebarstatus--negative",
+        "app-frame-titlebar-titlebarstatus--neutral"
       ]
     },
     "WindowButton": {
@@ -1697,8 +1672,8 @@
       "props": {
         "action": {
           "values": [
-            "minimize",
-            "close"
+            "close",
+            "minimize"
           ],
           "isRequired": true,
           "description": "Which button: its icon, its name, and (for `close`) a red hover."
@@ -1710,12 +1685,8 @@
         }
       },
       "stories": [
-        "app-frame-titlebar--connected",
-        "app-frame-titlebar--no-internet",
-        "app-frame-titlebar--connecting",
-        "app-frame-titlebar--offline",
-        "app-frame-titlebar--without-controls",
-        "app-frame-titlebar--all-states"
+        "app-frame-titlebar-windowbutton--minimize",
+        "app-frame-titlebar-windowbutton--close"
       ]
     },
     "NavItem": {
@@ -1749,7 +1720,8 @@
         }
       },
       "stories": [
-        "app-frame-navrail--default"
+        "app-frame-navrail-navitem--default",
+        "app-frame-navrail-navitem--active"
       ]
     },
     "NavRail": {
@@ -1778,7 +1750,7 @@
         }
       },
       "stories": [
-        "app-frame-navrail--default"
+        "app-frame-navrail-navrail--default"
       ]
     },
     "PageHeader": {
@@ -1918,6 +1890,7 @@
     "POLLING_DESCRIPTION": "The second line for a page whose data polls: a failure there heals itself.",
     "PortalProvider": "Sets where the library's dialogs inside it portal to.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
+    "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. Used for the speed-test cells\nand the live-traffic readouts.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks, timers and frame\nloops that must read fresh props without re-subscribing.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePortalContainer": "The element a PortalProvider above names for overlays, or null for in place.",

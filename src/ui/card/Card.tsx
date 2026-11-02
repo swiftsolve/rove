@@ -2,9 +2,17 @@ import { createContext, forwardRef, useContext, useId, type HTMLAttributes, type
 import { cva, cx } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
+import { ChevronRightIcon } from '../icons/Icons'
+import { StretchedLink } from '../link/StretchedLink'
 
-// The id a CardHeader gives its title, so a `section` card is named by it.
-const CardTitleContext = createContext<string | undefined>(undefined)
+interface CardContextValue {
+  /** The id a CardHeader gives its title, so a `section` card is named by it. */
+  titleId?: string
+  /** The card opens something, so its CardHeader ends in a caret. */
+  isOpenable: boolean
+}
+
+const CardContext = createContext<CardContextValue>({ isOpenable: false })
 
 interface CardProps extends HTMLAttributes<HTMLElement> {
   /**
@@ -12,25 +20,25 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
    * `div` or `li` for a card with no header, such as a card in a list.
    */
   as?: 'section' | 'div' | 'li'
-  /**
-   * The whole card opens something: it lifts on hover and presses in. Give it a
-   * StretchedLink for the action. Its contents can react with `group-hover/card:`.
-   */
-  isInteractive?: boolean
+  /** Opens the view the card summarises: the whole card is its link, and its header ends in a caret. */
+  onOpen?: () => void
+  /** Names the link, and is required with `onOpen`: what the card shows in words, then where it goes. */
+  openLabel?: string
   /** Its place in a layout. */
   className?: string
   /** A CardHeader, a CardBody and an optional CardFooter, or your own content. */
   children?: ReactNode
 }
 
-// Hover sets box-shadow directly rather than through `shadow-raised`: that
-// composes a five-layer shadow list, which would cross-fade from the card's
-// shadow instead of morphing into it.
+// An openable card lifts on hover and presses in, and its body fills its
+// height. Hover sets box-shadow directly rather than through `shadow-raised`:
+// that composes a five-layer shadow list, which would cross-fade from the
+// card's shadow instead of morphing into it.
 const cardVariants = cva('surface overflow-hidden contain-content', {
   variants: {
-    isInteractive: {
+    isOpenable: {
       true: [
-        'group/card relative cursor-pointer',
+        'group/card relative flex flex-col cursor-pointer',
         'transition-[box-shadow,transform] duration-(--duration-fast) ease-in-out',
         'hover:[box-shadow:var(--shadow-raised)] active:transform-[translateY(1px)]',
       ],
@@ -41,25 +49,41 @@ const cardVariants = cva('surface overflow-hidden contain-content', {
 /**
  * The panel surface, clipped to its rounded corners. Build it from a
  * CardHeader, a CardBody and an optional CardFooter, or lay out your own
- * content in an element of your own inside it.
+ * content in an element of your own inside it. With `onOpen` the whole card
+ * is a link; a control inside it raises itself above the link (`relative z-2`).
  */
 export const Card = forwardRef<HTMLElement, CardProps>(function Card(
-  { as: Element = 'section', isInteractive = false, className, ...props },
+  { as: Element = 'section', onOpen, openLabel, className, children, ...props },
   ref,
 ) {
   const titleId = useId()
+  const isOpenable = onOpen != null
   return (
-    <CardTitleContext.Provider value={titleId}>
+    <CardContext.Provider value={{ titleId, isOpenable }}>
       <Element
         // One ref type for the three elements it can be.
         ref={ref as never}
-        className={cn(cardVariants({ isInteractive }), className)}
+        className={cn(cardVariants({ isOpenable }), className)}
         aria-labelledby={Element === 'section' ? titleId : undefined}
+        data-openable={isOpenable ? '' : undefined}
         {...props}
-      />
-    </CardTitleContext.Provider>
+      >
+        {/* First, so it comes before the card's own controls in tab order. */}
+        {isOpenable && <StretchedLink label={openLabel ?? ''} onClick={onOpen} />}
+        {children}
+      </Element>
+    </CardContext.Provider>
   )
 })
+
+/**
+ * Moves focus to the link of the openable card holding `element`: for a
+ * control in it that's about to unmount, so focus stays in the card instead
+ * of falling back to the page.
+ */
+export function focusCardLink(element: HTMLElement): void {
+  element.closest('[data-openable]')?.querySelector<HTMLElement>(':scope > [data-stretched-link]')?.focus()
+}
 
 interface CardListProps extends Omit<HTMLAttributes<HTMLUListElement>, 'aria-label'> {
   /** Names the list. */
@@ -91,6 +115,13 @@ const HEADER = cx(
   'h-(--card-header-height) px-(--card-header-padding-x)',
 )
 
+// The openable card's caret: always shown, brightening while the card is
+// hovered or its link has keyboard focus.
+const CARET = cx(
+  'shrink-0 text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
+  'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',
+)
+
 interface CardHeaderProps {
   /** Names the card: a `section` card is labelled by it. */
   title: string
@@ -100,9 +131,9 @@ interface CardHeaderProps {
   actions?: ReactNode
 }
 
-/** The card's 44px title row: an icon, the title and its actions. */
+/** The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something. */
 export function CardHeader({ title, icon, actions }: CardHeaderProps): JSX.Element {
-  const titleId = useContext(CardTitleContext)
+  const { titleId, isOpenable } = useContext(CardContext)
   return (
     <div className={HEADER}>
       <div className="flex min-w-0 items-center gap-8">
@@ -115,14 +146,21 @@ export function CardHeader({ title, icon, actions }: CardHeaderProps): JSX.Eleme
           {title}
         </h2>
       </div>
-      {actions != null && <div className="flex shrink-0 items-center">{actions}</div>}
+      {(actions != null || isOpenable) && (
+        <div className="flex shrink-0 items-center gap-8">
+          {/* Raised above an openable card's link, so they take their own clicks. */}
+          {actions != null && <div className={cx('flex items-center', isOpenable && 'relative z-2')}>{actions}</div>}
+          {isOpenable && <ChevronRightIcon size={16} className={CARET} />}
+        </div>
+      )}
     </div>
   )
 }
 
 // The body's padding, by what it holds. Rows that carry their own vertical
 // padding stack with none above them, and just enough below to clear a footer.
-const bodyVariants = cva(null, {
+// It grows to fill an openable card, so content can sit at its foot.
+const bodyVariants = cva('grow', {
   variants: {
     layout: {
       default: 'px-(--card-body-padding) pt-4 pb-(--card-body-padding)',

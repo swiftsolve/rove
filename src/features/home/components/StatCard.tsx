@@ -1,13 +1,12 @@
-import { useId, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, ChevronRightIcon, DirectionIcon, Readout, StretchedLink } from '@/ui'
+import { Card, CardBody, CardHeader, DirectionIcon, Readout } from '@/ui'
 
-// The card used to be the <button> itself. Its content keeps the text settings
-// it inherited from it (a button resets these), so the title and readouts
-// render as before. It fills the card's height, so a control in the body can
-// sit at the foot.
+// The card used to be a <button>. Its body keeps the text settings it
+// inherited from it (a button resets these), so the readouts render as
+// before. It fills the body's height, so a control can sit at the foot.
 const CONTENT = cx(
-  'flex h-full flex-col gap-6 p-(--card-body-padding) text-left',
+  'flex h-full flex-col',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
 )
 
@@ -16,7 +15,7 @@ interface StatCardProps {
   label: string
   /** Name of the card's link: the readout in words, then where it goes. */
   ariaLabel: string
-  /** Navigate into the tab when the card (or its caret) is tapped. */
+  /** Navigate into the tab when the card is tapped. */
   onOpen: () => void
   /** The readout is loading (e.g. a device scan in flight). */
   isLoading?: boolean
@@ -28,48 +27,16 @@ interface StatCardProps {
   children: ReactNode
 }
 
-/**
- * One of the small summary cards on Home: an icon + title row over a readout.
- * The title is a real heading, and a transparent link stretched over the
- * whole card opens the tab, so a control in the body is its sibling, never
- * nested inside it.
- */
+/** One of the small summary cards on Home: a title over a readout, opening its tab. */
 export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
-  const titleId = useId()
   return (
-    // Named by its own heading, as it has no CardHeader.
-    <Card isInteractive aria-labelledby={titleId} aria-busy={isLoading || undefined}>
-      <div className={CONTENT} data-stat-card>
-        <div className="flex items-center gap-8">
-          <span className="inline-flex items-center justify-center shrink-0 text-tertiary">{icon}</span>
-          <h2 id={titleId} className="text-heading-small">
-            {label}
-          </h2>
-          {/* Pushed to the far edge; always visible, brightening while the card is
-              hovered or its link has keyboard focus. */}
-          <ChevronRightIcon
-            size={16}
-            className={cx(
-              'ml-auto text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
-              'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',
-            )}
-          />
-        </div>
-        {/* Over the title and readout, so a click anywhere lands on it. */}
-        <StretchedLink label={ariaLabel} onClick={onOpen} />
-        {children}
-      </div>
+    <Card onOpen={onOpen} openLabel={ariaLabel} aria-busy={isLoading || undefined}>
+      <CardHeader title={label} icon={icon} />
+      <CardBody>
+        <div className={CONTENT}>{children}</div>
+      </CardBody>
     </Card>
   )
-}
-
-/**
- * Move focus to the link of the card holding `element`. For a control
- * in the body that's about to unmount (Discover, replaced by the scan spinner),
- * so keyboard focus stays in the card instead of falling back to the page.
- */
-export function focusStatCardLink(element: HTMLElement): void {
-  element.closest('[data-stat-card]')?.querySelector<HTMLElement>(':scope > [data-stretched-link]')?.focus()
 }
 
 interface StatReadoutProps {
