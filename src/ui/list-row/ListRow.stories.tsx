@@ -64,7 +64,7 @@ export const TextOnly: Story = {
   args: { children: <RowText title="About Rove" description="Version, platform, and source." /> },
 }
 
-/** Inert while a test replaces its rating: muted tile, dimmed bars, no hover. */
+/** Inert while a test replaces its rating: the whole row faded, a muted tile and dimmed bars, no hover. */
 export const Disabled: Story = {
   args: {
     isDisabled: true,

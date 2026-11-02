@@ -58,7 +58,7 @@ export const MenuTrigger = forwardRef<HTMLButtonElement, MenuTriggerProps>(funct
 
 const CONTENT = cx(
   'flex min-w-[112px] flex-col gap-2 p-4',
-  'rounded-sm border border-line-strong bg-surface shadow-raised',
+  'rounded-sm border border-line bg-surface shadow-raised',
   'data-open:animate-menu-in',
   // Base UI parks focus on the popup when the menu opens without a keyboard;
   // the ring belongs on the items, which a keyboard open focuses instead.

@@ -19,7 +19,7 @@ const COLORS = [
   'base', 'surface', 'inset', 'hover', 'scrim',
   'primary', 'secondary', 'tertiary', 'accent-text', 'on-fill',
   'positive', 'good', 'warning', 'poor', 'negative',
-  'line', 'line-strong', 'highlight',
+  'line', 'highlight',
   'accent', 'accent-hover', 'accent-press', 'accent-muted', 'accent-fill', 'accent-fill-hover',
   'status-positive', 'status-good', 'status-warning', 'status-poor', 'status-negative',
   'status-negative-fill', 'status-negative-fill-hover',

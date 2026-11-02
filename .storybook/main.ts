@@ -4,7 +4,13 @@ import type { StorybookConfig } from '@storybook/react-vite'
 // and CSS Modules come from there.
 const config: StorybookConfig = {
   stories: ['../src/ui/**/*.stories.tsx'],
-  addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
+  addons: [
+    '@storybook/addon-docs',
+    '@storybook/addon-a11y',
+    '@storybook/addon-vitest',
+    // Visual Tests: compares stories' pixels in Chromatic's cloud, once signed in.
+    '@chromatic-com/storybook',
+  ],
   framework: '@storybook/react-vite',
   core: { disableTelemetry: true },
   // Resolves prop types through the compiler, so a VariantOf prop lists its

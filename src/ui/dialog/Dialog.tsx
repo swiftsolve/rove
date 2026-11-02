@@ -51,7 +51,7 @@ const LAYER = cx(
 // the shell clips the body's square corners to its radius. No lines between
 // the sections; the body's darker well sets them apart.
 const PANEL = cx(
-  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line-strong bg-surface shadow-raised',
+  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised',
   'data-open:animate-dialog-in data-closed:animate-dialog-out',
 )
 

@@ -101,7 +101,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           <ShareNotice notice={notice} onRetry={retry} />
         ) : qr ? (
           // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
-          <div className="flex justify-center rounded-lg border border-line-strong bg-[#ffffff] p-16">
+          <div className="flex justify-center rounded-lg border border-line bg-[#ffffff] p-16">
             <img
               className="block size-[240px]"
               src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}

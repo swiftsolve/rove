@@ -82,7 +82,7 @@ export const Stack: Story = {
 /** Every density side by side. */
 export const AllStates: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-12">
+    <div className="grid grid-cols-2 items-start gap-12">
       {(['default', 'compact'] as const).map((density) => (
         <Card key={density} className="w-[320px]">
           <CardHeader title={density} />

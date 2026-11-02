@@ -16,6 +16,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    watch: {
+      // The Rust build output and other sessions' worktrees aren't this
+      // checkout's source; watching them exhausts inotify and kills the run.
+      ignored: ['**/target/**', '**/src-tauri/target/**', '**/.claude/**'],
+    },
+  },
   test: {
     projects: [
       { extends: true, test: { name: 'unit', include: ['src/**/*.test.ts'], environment: 'node' } },

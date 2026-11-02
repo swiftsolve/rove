@@ -15,13 +15,13 @@ import { PortalProvider } from '@/ui'
 // region instead of overflowing a fixed 100vh. The scrollbar is always laid
 // out (overflow-y: scroll; it has no thumb until there is something to scroll)
 // rather than reserved with scrollbar-gutter, which WebKitGTK ignores until the
-// content overflows. Both insets match the nav rail's 11px: the right one is
-// 6px of padding plus the 5px scrollbar (base.css). The error banner above
+// content overflows. Both insets match the nav rail's 12px: the right one is
+// 7px of padding plus the 5px scrollbar (base.css). The error banner above
 // <main> has no flex gap to lean on.
 const SCROLL = cx(
   'flex flex-1 flex-col min-w-0 min-h-0',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
-  'pl-12 pr-6 pt-12 pb-20',
+  'pl-12 pr-(--content-inset-right) pt-12 pb-20',
   '[&>.banner]:mb-12',
 )
 
