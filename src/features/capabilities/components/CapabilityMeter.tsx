@@ -7,7 +7,8 @@ import {
   CAPABILITY_LEVEL_TEXT_COLORS,
 } from '@/features/capabilities/utils/capability-level-colors'
 
-const LEVEL_RANK: Record<CapabilityLevel, number> = {
+// How many of the four bars each level fills.
+const LEVEL_BAR_COUNT: Record<CapabilityLevel, number> = {
   excellent: 4,
   good: 3,
   fair: 2,
@@ -45,6 +46,8 @@ type CapabilityMeterProps = {
   barsClassName?: string
 }
 
+/** A capability's rating as four bars in its level's colour, with the level's
+ *  name beside them unless `shouldShowLabel` is false. */
 export function CapabilityMeter({
   level,
   shouldShowLabel = true,
@@ -58,7 +61,7 @@ export function CapabilityMeter({
     <span className={rootVariants({ tone: isMuted ? 'muted' : level })}>
       {/* Muted shows every bar unlit; dimmed still shows the stale rating, in grey. */}
       <BarMeter
-        value={isMuted && !isDimmed ? 0 : LEVEL_RANK[level]}
+        value={isMuted && !isDimmed ? 0 : LEVEL_BAR_COUNT[level]}
         size={isCompact ? 'xs' : 'lg'}
         isDimmed={isDimmed}
         className={barsClassName}

@@ -3,7 +3,7 @@ import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
-import { CapabilityList } from '@/features/capabilities/CapabilityList'
+import { CapabilityList } from '@/features/capabilities/components/CapabilityList'
 import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetailsView'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
 import {

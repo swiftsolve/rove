@@ -8,6 +8,7 @@ import {
   LiveStreamIcon,
   UltraHdStreamIcon,
   VideoCallIcon,
+  type IconComponent,
 } from '@/ui'
 
 type CapabilityIconProps = {
@@ -16,7 +17,7 @@ type CapabilityIconProps = {
   className?: string
 }
 
-const ICONS: Record<CapabilityId, typeof BrowsingIcon> = {
+const ICONS: Record<CapabilityId, IconComponent> = {
   browsing: BrowsingIcon,
   'streaming-hd': HdStreamIcon,
   'streaming-4k': UltraHdStreamIcon,
@@ -27,11 +28,8 @@ const ICONS: Record<CapabilityId, typeof BrowsingIcon> = {
   'live-streaming': LiveStreamIcon,
 }
 
-export function CapabilityIcon({
-  id,
-  size = 22,
-  className,
-}: CapabilityIconProps): JSX.Element {
+/** The icon that stands for a capability: a gamepad for gaming, and so on. */
+export function CapabilityIcon({ id, size = 22, className }: CapabilityIconProps): JSX.Element {
   const Icon = ICONS[id]
   return <Icon size={size} className={className} />
 }

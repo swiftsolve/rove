@@ -1,13 +1,17 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { CapabilityId, CapabilityRating } from '@/types'
+import type { CapabilityDefinition, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { useNow } from '@/hooks/useNow'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { testStatusText } from '@/features/speed/utils/test-status'
-import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
-import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
+import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
+import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 import {
   Card,
   CardBody,
@@ -17,30 +21,22 @@ import {
   IconTile,
   IconTileButton,
   InlineMeta,
+  Link,
   PlayIcon,
   RefreshIcon,
   Tooltip,
-  Link,
   ZapIcon,
   type IconComponent,
 } from '@/ui'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
-import { useNow } from '@/hooks/useNow'
-import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
-import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 
-// Bleeds past the card body's padding so the icons span the full card width,
-// the same pattern as the live throughput chart.
-const LIST = cx(
-  'flex items-center justify-between',
-  '-mx-(--card-body-padding) px-(--card-body-padding)',
-)
+// The row of capabilities bleeds past the card body's padding so it spans the
+// full card width, the same pattern as the live throughput chart.
+const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body-padding) px-(--card-body-padding)')
 
-// Each column: the icon tile with its signal meter centred beneath it. The
-// meter's compact size is CapabilityMeter's `isCompact`.
-const CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
+// Each capability's column: its icon tile with the rating meter centred beneath.
+const CAPABILITY_CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
 
-// Third row: a dark inset strip flush to the card's bottom edge, full-bleed like
+// A dark inset strip flush to the card's bottom edge, full-bleed like
 // ConnectionCard's details and the speed test footer. The strip itself isn't
 // clickable; only the link inside it is.
 const footerVariants = cva(
@@ -59,7 +55,7 @@ const footerVariants = cva(
     variants: {
       // The results footer (icon + "Updated …") is taller than the plain hint, so
       // its centred text sits lower and reads as extra space under the bars: its
-      // top gap is trimmed a touch. The hint (the empty state) pulls in closer
+      // top gap is trimmed a touch. The hint (before any test) pulls in closer
       // still; it doesn't need the breathing room the populated row gets.
       isHint: { true: 'mt-12', false: 'mt-16' },
     },
@@ -67,21 +63,38 @@ const footerVariants = cva(
   },
 )
 
+/** Home's summary of what the connection can handle: a tile per capability,
+ *  coloured by the last speed test's rating, each opening its details. */
+export function CapabilitiesCard(): JSX.Element {
+  const capabilities = useSpeedTest((test) => test.capabilities)
+  const hasResults = capabilities.length > 0
+
+  return (
+    <Card>
+      <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={<RunTestButton />} />
+      <CardBody>
+        {/* Before the first test, every capability shows as a faded placeholder. */}
+        <ul role="list" className={CAPABILITY_ROW} aria-hidden={!hasResults || undefined}>
+          {hasResults
+            ? capabilities.map((capability) => <RatedCapability key={capability.id} capability={capability} />)
+            : CAPABILITY_DEFINITIONS.map((capability) => (
+                <UnratedCapability key={capability.id} capability={capability} />
+              ))}
+        </ul>
+        <CapabilitiesFooter hasResults={hasResults} />
+        <TestStatusAnnouncement />
+      </CardBody>
+    </Card>
+  )
+}
+
 /** Starts a test in place; the Speed tab shows the same run (one shared store),
  *  and the footer links there. */
-function RunTestButton({
-  isTesting,
-  hasResults,
-}: {
-  isTesting: boolean
-  hasResults: boolean
-}): JSX.Element {
+function RunTestButton(): JSX.Element {
   const runTest = useSpeedTest((test) => test.runTest)
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const hasResults = useSpeedTest((test) => test.capabilities.length > 0)
   const canRunTest = useCanRunSpeedTest()
-
-  const handleRunTest = (): void => {
-    void runTest()
-  }
 
   return (
     <IconButton
@@ -92,71 +105,24 @@ function RunTestButton({
       tooltipSide="left"
       isLoading={isTesting}
       isDisabled={!canRunTest}
-      onClick={handleRunTest}
+      onClick={() => void runTest()}
     />
   )
 }
 
-/** The footer's message as a link to the Speed page. */
-function SpeedLink({
-  icon,
-  children,
-}: {
-  icon?: IconComponent
-  children: ReactNode
-}): JSX.Element {
+/** A tested capability: its tile, coloured by the rating, opens its details. */
+function RatedCapability({ capability }: { capability: CapabilityRating }): JSX.Element {
   const { navigate } = useNavigation()
-
-  return (
-    // The pill's padding hangs over the footer's own, so the footer keeps its height.
-    <Link className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
-      {children}
-      {/* The visible text leads the name; this says where the link goes. */}
-      <span className="sr-only">, open Speed</span>
-    </Link>
-  )
-}
-
-/** Every capability as a greyed-out tile, before any test has run. */
-function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
-  return (
-    <>
-      <ul role="list" className={LIST} aria-hidden>
-        {CAPABILITY_DEFINITIONS.map((capability) => (
-          <li className={CELL} key={capability.id}>
-            <Tooltip content={capability.label} side="top">
-              {/* Faded like a disabled control: nothing to open until a test runs. */}
-              <IconTile
-                color="neutral"
-                className="opacity-(--opacity-disabled)"
-                icon={<CapabilityIcon id={capability.id} size={16} />}
-              />
-            </Tooltip>
-            <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
-          </li>
-        ))}
-      </ul>
-
-      <div className={footerVariants({ isHint: true })}>
-        <SpeedLink>{isTesting ? 'Testing…' : 'Available after speed test'}</SpeedLink>
-      </div>
-    </>
-  )
-}
-
-function ResultCell({
-  capability,
-  isTesting,
-  onOpenDetails,
-}: {
-  capability: CapabilityRating
-  isTesting: boolean
-  onOpenDetails: (capabilityId: CapabilityId) => void
-}): JSX.Element {
+  // A test can be started here or from the Speed tab; either way it greys the row.
+  const isTesting = useSpeedTest((test) => test.isTesting)
   const levelLabel = CAPABILITY_LEVEL_LABELS[capability.level]
 
+  const openDetails = (): void => {
+    navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })
+  }
+
   return (
-    <li className={CELL}>
+    <li className={CAPABILITY_CELL}>
       <Tooltip
         content={<InlineMeta items={[capability.label, levelLabel]} />}
         side="top"
@@ -169,96 +135,97 @@ function ResultCell({
         <IconTileButton
           color={isTesting ? 'neutral' : CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
           label={`${capability.label}: ${levelLabel}`}
-          onClick={() => onOpenDetails(capability.id)}
+          onClick={openDetails}
           isDisabled={isTesting}
           icon={<CapabilityIcon id={capability.id} size={16} />}
         />
       </Tooltip>
-      <CapabilityMeter
-        level={capability.level}
-        shouldShowLabel={false}
-        isCompact
-        isMuted={isTesting}
-      />
+      <CapabilityMeter level={capability.level} shouldShowLabel={false} isCompact isMuted={isTesting} />
     </li>
   )
 }
 
-/** "Testing…" while a test runs, otherwise when the last result landed; both
- *  link to the Speed page. Nothing before the first result. */
-function ResultFooter({ isTesting }: { isTesting: boolean }): JSX.Element | null {
-  const now = useNow(TIME_AGO_RESOLUTION_MS)
+/** A capability before any test: a greyed-out tile with an empty meter. */
+function UnratedCapability({ capability }: { capability: CapabilityDefinition }): JSX.Element {
+  return (
+    <li className={CAPABILITY_CELL}>
+      <Tooltip content={capability.label} side="top">
+        {/* Faded like a disabled control: nothing to open until a test runs. */}
+        <IconTile
+          color="neutral"
+          className="opacity-(--opacity-disabled)"
+          icon={<CapabilityIcon id={capability.id} size={16} />}
+        />
+      </Tooltip>
+      <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
+    </li>
+  )
+}
+
+/**
+ * The footer's link to the Speed page: "Testing…" while a test runs, otherwise
+ * when the last result landed. Before the first result, a hint instead.
+ */
+function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Element | null {
+  const isTesting = useSpeedTest((test) => test.isTesting)
   const completedAt = useSpeedTest((test) => test.completedAt)
 
-  if (isTesting) {
+  if (!hasResults) {
     return (
-      <div className={footerVariants()}>
-        <SpeedLink>Testing…</SpeedLink>
+      <div className={footerVariants({ isHint: true })}>
+        <OpenSpeedLink>{isTesting ? 'Testing…' : 'Available after speed test'}</OpenSpeedLink>
       </div>
     )
   }
-
+  if (isTesting) {
+    return (
+      <div className={footerVariants()}>
+        <OpenSpeedLink>Testing…</OpenSpeedLink>
+      </div>
+    )
+  }
   if (completedAt == null) return null
-
   return (
     <div className={footerVariants()}>
-      <SpeedLink icon={HistoryIcon}>
-        Updated{' '}
-        <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
-      </SpeedLink>
+      <LastUpdatedLink completedAt={completedAt} />
     </div>
   )
 }
 
-export function CapabilitiesCard(): JSX.Element {
+/** "Updated 5 min ago", kept current as time passes. */
+function LastUpdatedLink({ completedAt }: { completedAt: number }): JSX.Element {
+  const now = useNow(TIME_AGO_RESOLUTION_MS)
+  return (
+    <OpenSpeedLink icon={HistoryIcon}>
+      Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+    </OpenSpeedLink>
+  )
+}
+
+function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: ReactNode }): JSX.Element {
   const { navigate } = useNavigation()
-  // A test can be started here or from the Speed tab; either way it greys the strip.
-  const capabilities = useSpeedTest((test) => test.capabilities)
+
+  return (
+    // The pill's padding hangs over the footer's own, so the footer keeps its height.
+    <Link className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
+      {children}
+      {/* The visible text leads the name; this says where the link goes. */}
+      <span className="sr-only">, open Speed</span>
+    </Link>
+  )
+}
+
+/** The Speed page's announcements, for a test run from here. Home shows no
+ *  failure, so the error is read out too. */
+function TestStatusAnnouncement(): JSX.Element {
   const isTesting = useSpeedTest((test) => test.isTesting)
   const progress = useSpeedTest((test) => test.progress)
   const internetSpeed = useSpeedTest((test) => test.internetSpeed)
   const error = useSpeedTest((test) => test.error)
-  const hasResults = capabilities.length > 0
-
-  const openDetails = (capabilityId: CapabilityId): void => {
-    navigate({ tab: 'speed', speedSub: { view: 'details', target: capabilityId } })
-  }
 
   return (
-    <Card>
-      <CardHeader
-        title="Capabilities"
-        icon={<ZapIcon size={15} />}
-        actions={
-        <RunTestButton isTesting={isTesting} hasResults={hasResults} />
-      }
-      />
-      <CardBody>
-        {!hasResults ? (
-          <PlaceholderStrip isTesting={isTesting} />
-        ) : (
-          <>
-            <ul role="list" className={LIST}>
-              {capabilities.map((capability) => (
-                <ResultCell
-                  key={capability.id}
-                  capability={capability}
-                  isTesting={isTesting}
-                  onOpenDetails={openDetails}
-                />
-              ))}
-            </ul>
-
-            <ResultFooter isTesting={isTesting} />
-          </>
-        )}
-
-        {/* The Speed page's announcements, for a test run from here. Home shows no
-            failure, so the error is read out too. */}
-        <p className="sr-only" role="status">
-          {error ?? testStatusText(isTesting, progress, internetSpeed)}
-        </p>
-      </CardBody>
-    </Card>
+    <p className="sr-only" role="status">
+      {error ?? testStatusText(isTesting, progress, internetSpeed)}
+    </p>
   )
 }
