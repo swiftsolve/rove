@@ -346,6 +346,32 @@ impl Store {
         self.services()
     }
 
+    /// Edit the service listed under `old_host`, keeping its place in the list.
+    /// If the new `host` is already listed elsewhere, the edit folds into that
+    /// row (as re-adding it would); if `old_host` isn't listed, the service is
+    /// appended. Returns the updated list.
+    pub fn update_service(
+        &self,
+        old_host: &str,
+        name: &str,
+        host: &str,
+    ) -> rusqlite::Result<Vec<ServiceDef>> {
+        let updated = {
+            let conn = self.lock();
+            // OR IGNORE: a new host that's already listed skips the row rather
+            // than failing on the primary key, and falls through to the merge.
+            conn.execute(
+                "UPDATE OR IGNORE services SET host = ?2, name = ?3 WHERE host = ?1",
+                params![old_host, host, name],
+            )?
+        };
+        if updated > 0 {
+            return self.services();
+        }
+        self.delete_service(old_host)?;
+        self.add_service(name, host)
+    }
+
     /// Remove the service with `host` (a no-op if it isn't listed, including a
     /// removed default). Returns the updated list.
     pub fn delete_service(&self, host: &str) -> rusqlite::Result<Vec<ServiceDef>> {
@@ -382,6 +408,23 @@ mod tests {
         let example: Vec<_> = renamed.iter().filter(|s| s.host == "example.com").collect();
         assert_eq!(example.len(), 1);
         assert_eq!(example[0].name, "Ex");
+
+        // Editing a service's host keeps its place in the list.
+        let before = store.services().unwrap();
+        let edited = store.update_service(&before[1].host, "Moved", "moved.example").unwrap();
+        assert_eq!(edited.len(), before.len());
+        assert_eq!(edited[1].host, "moved.example");
+        assert_eq!(edited[1].name, "Moved");
+
+        // Editing onto a host that's already listed folds into that row.
+        let merged = store.update_service("moved.example", "Ex again", "example.com").unwrap();
+        assert_eq!(merged.len(), before.len() - 1);
+        assert!(merged.iter().all(|s| s.host != "moved.example"));
+        assert_eq!(merged.last().unwrap().name, "Ex again");
+
+        // Editing a host that's no longer listed appends it.
+        let appended = store.update_service("gone.example", "Back", "back.example").unwrap();
+        assert_eq!(appended.last().unwrap().host, "back.example");
 
         // Deleting a built-in default sticks (and isn't re-seeded on re-migrate).
         store.delete_service("google.com").unwrap();

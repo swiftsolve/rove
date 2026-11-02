@@ -61,6 +61,8 @@ const tauriNetworkApi: NetworkAPI = {
   listServices: () => invoke<ServiceDefinition[]>('list_services'),
   addService: (name: string, host: string) =>
     invoke<ServiceDefinition[]>('add_service', { name, host }),
+  updateService: (oldHost: string, name: string, host: string) =>
+    invoke<ServiceDefinition[]>('update_service', { oldHost, name, host }),
   deleteService: (host: string) =>
     invoke<ServiceDefinition[]>('delete_service', { host }),
   getServiceHistory: () => invoke<ServiceEvent[]>('get_service_history'),

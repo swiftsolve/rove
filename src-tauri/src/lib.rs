@@ -169,6 +169,7 @@ pub fn run() {
             commands::test_service,
             commands::list_services,
             commands::add_service,
+            commands::update_service,
             commands::delete_service,
             commands::get_public_ip,
             commands::run_speed_test,

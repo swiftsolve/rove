@@ -67,6 +67,10 @@ export interface NetworkAPI {
   /** Add a service to the list; returns the updated list. Re-adding an existing
    *  host updates its label rather than duplicating it. */
   addService(name: string, host: string): Promise<ServiceDefinition[]>
+  /** Edit the service listed under `oldHost`, keeping its place in the list;
+   *  returns the updated list. A new host that's already listed merges into
+   *  that row, as re-adding it would. */
+  updateService(oldHost: string, name: string, host: string): Promise<ServiceDefinition[]>
   /** Remove the service with this host (built-in or custom); returns the
    *  updated list. */
   deleteService(host: string): Promise<ServiceDefinition[]>
