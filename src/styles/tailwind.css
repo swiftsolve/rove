@@ -120,7 +120,6 @@
 
   /* Lines (border-*) */
   --color-line: var(--border-default);
-  --color-line-strong: var(--border-strong);
   --color-highlight: var(--border-highlight);
 
   /* Accent */

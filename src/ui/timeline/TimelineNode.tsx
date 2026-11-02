@@ -11,7 +11,7 @@ const NODE = cx(
   'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
   'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
-  'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
+  'not-last:before:rounded-[1px] not-last:before:bg-line',
 )
 
 // Above the line, so it reads as passing behind the marker.
@@ -20,7 +20,7 @@ const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-c
     // Any colour but neutral washes the marker in the icon's own colour; neutral
     // is a hollow ring, for something that left.
     isNeutral: {
-      true: 'bg-inset text-tertiary shadow-[inset_0_0_0_1.5px_var(--border-strong)]',
+      true: 'bg-inset text-tertiary shadow-[inset_0_0_0_1.5px_var(--border-default)]',
       false: 'bg-current/(--opacity-tint-md)',
     },
   },

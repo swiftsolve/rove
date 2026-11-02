@@ -6,7 +6,7 @@ import { cx } from 'class-variance-authority'
 // Fades in from 3px above its place. Not hoverable: the pointer passes through.
 const BUBBLE = cx(
   'w-max px-10 py-8 rounded-sm',
-  'bg-surface border border-line-strong shadow-raised',
+  'bg-surface border border-line shadow-raised',
   'text-xs leading-hint text-secondary text-left whitespace-normal pointer-events-none',
   'transition-[opacity,transform] duration-(--duration-fast) ease-in-out',
   'data-starting-style:opacity-0 data-starting-style:transform-[translateY(-3px)]',

@@ -112,8 +112,8 @@ export function ThroughputChart({ download, upload, maxValue }: ThroughputChartP
                 recharts' own tick labels ghost/duplicate when the domain changes. */}
             <YAxis domain={[0, scaleMax]} hide />
 
-            <ReferenceLine y={scaleMax / 2} stroke="var(--border-strong)" strokeOpacity={0.15} />
-            <ReferenceLine y={0} stroke="var(--border-strong)" strokeOpacity={0.2} />
+            <ReferenceLine y={scaleMax / 2} stroke="var(--border-default)" strokeOpacity={0.15} />
+            <ReferenceLine y={0} stroke="var(--border-default)" strokeOpacity={0.2} />
 
             <Area
               type="monotone"

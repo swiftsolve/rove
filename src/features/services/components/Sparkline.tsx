@@ -324,7 +324,7 @@ export function Sparkline({
         {hovered && (
           <>
             <line
-              className="stroke-line-strong stroke-1"
+              className="stroke-line stroke-1"
               x1={hovered.x}
               y1={VERTICAL_PAD}
               x2={hovered.x}

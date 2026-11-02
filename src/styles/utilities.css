@@ -292,7 +292,7 @@
   min-width: 150px;
   border-radius: var(--radius-sm);
   background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-default);
   box-shadow: var(--shadow-raised);
   pointer-events: none;
 }
