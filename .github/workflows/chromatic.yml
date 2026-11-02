@@ -1,0 +1,54 @@
+name: chromatic
+
+# Publishes the Storybook to Chromatic and runs its visual tests. TurboSnap
+# (`onlyChanged` in chromatic.config.json) snapshots only the stories a change
+# reaches, once Chromatic has 10 builds to compare against. It needs push
+# triggers, not pull_request, and the full git history.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  chromatic:
+    runs-on: ubuntu-24.04
+    env:
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # A persisted GITHUB_TOKEN header would override the design-tokens
+          # token below for every github.com request git makes in the repo.
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      # The design tokens install from the private swiftsolve/rove-design repo,
+      # as in build.yml.
+      - name: Allow access to the design tokens repo
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.ROVE_DESIGN_TOKEN }}
+        run: |
+          git -C "$RUNNER_TEMP" ls-remote --exit-code "https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design.git" HEAD > /dev/null \
+            || { echo "::error::ROVE_DESIGN_TOKEN can't read swiftsolve/rove-design"; exit 1; }
+          for from in ssh://git@github.com/swiftsolve/rove-design https://github.com/swiftsolve/rove-design; do
+            git config --global --add url."https://x-access-token:${TOKEN}@github.com/swiftsolve/rove-design".insteadOf "$from"
+          done
+
+      - run: npm ci
+
+      # Skipped until the CHROMATIC_PROJECT_TOKEN secret exists.
+      - name: Publish to Chromatic
+        if: env.CHROMATIC_PROJECT_TOKEN != ''
+        uses: chromaui/action@v18
+        with:
+          projectToken: ${{ env.CHROMATIC_PROJECT_TOKEN }}
+          # Reads chromatic.config.json, so the build script and TurboSnap
+          # come from there.
+          configFile: chromatic.config.json
+          # Changes on a branch are reviewed in Chromatic, not failed here.
+          exitZeroOnChanges: true
