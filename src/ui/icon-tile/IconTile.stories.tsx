@@ -56,7 +56,7 @@ export const Large: Story = {
   args: { size: 'lg', color: 'var(--series-down)', icon: <WifiIcon size={18} /> },
 }
 
-/** Opens what it stands for: hover deepens the tint and lifts it. */
+/** Opens what it stands for: hover deepens the tint and springs it up, a touch larger. */
 export const Button: Story = {
   render: () => (
     <IconTileButton
