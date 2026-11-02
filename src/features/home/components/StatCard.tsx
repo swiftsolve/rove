@@ -30,7 +30,7 @@ interface StatCardProps {
 /** One of the small summary cards on Home: a title over a readout, opening its tab. */
 export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
   return (
-    <Card onOpen={onOpen} openLabel={ariaLabel} aria-busy={isLoading || undefined}>
+    <Card onOpen={onOpen} linkLabel={ariaLabel} aria-busy={isLoading || undefined}>
       <CardHeader title={label} icon={icon} />
       <CardBody>
         <div className={CONTENT}>{children}</div>
