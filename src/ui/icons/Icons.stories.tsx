@@ -2,13 +2,23 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BrandIcon } from './BrandIcon'
 import { CloudGamingIcon } from './CloudGamingIcon'
 import { ConnectionIcon } from './ConnectionIcon'
+import { DirectionIcon } from './DirectionIcon'
 import { HdStreamIcon } from './HdStreamIcon'
 import * as Icons from './Icons'
 import type { IconProps } from './Icons'
 import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
 // Every Lucide alias (the types are gone at runtime) and custom icon, by name.
-const CUSTOM = { BrandIcon, CloudGamingIcon, ConnectionIcon, HdStreamIcon, UltraHdStreamIcon }
+const CUSTOM = {
+  BrandIcon,
+  CloudGamingIcon,
+  ConnectionIcon,
+  // DirectionIcon takes a series, so the catalogue shows both.
+  'DirectionIcon down': (props: IconProps) => <DirectionIcon series="down" {...props} />,
+  'DirectionIcon up': (props: IconProps) => <DirectionIcon series="up" {...props} />,
+  HdStreamIcon,
+  UltraHdStreamIcon,
+}
 const ICONS = Object.entries({ ...Icons, ...CUSTOM })
   .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
   .sort(([a], [b]) => a.localeCompare(b))

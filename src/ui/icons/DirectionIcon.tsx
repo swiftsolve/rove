@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority'
-import { ArrowDownIcon, ArrowUpIcon } from './Icons'
+import { cn } from '../foundations/cn'
+import { ArrowDownIcon, ArrowUpIcon, type IconProps } from './Icons'
 
 const rootVariants = cva('inline-flex items-center shrink-0', {
   variants: {
@@ -10,11 +11,9 @@ const rootVariants = cva('inline-flex items-center shrink-0', {
 /** Which half of a download/upload pair a value or icon belongs to. */
 export type SpeedSeries = 'down' | 'up'
 
-interface DirectionIconProps {
+interface DirectionIconProps extends IconProps {
   /** `down`, a blue down-arrow for download; `up`, a purple up-arrow for upload. */
   series: SpeedSeries
-  /** Its width and height in px. */
-  size?: number
 }
 
 /**
@@ -24,10 +23,10 @@ interface DirectionIconProps {
  * `--series-*` variables via the `text-series-*` utility; the icon inherits it through
  * `currentColor`.
  */
-export function DirectionIcon({ series, size = 14 }: DirectionIconProps): JSX.Element {
+export function DirectionIcon({ series, size = 14, className }: DirectionIconProps): JSX.Element {
   const Icon = series === 'down' ? ArrowDownIcon : ArrowUpIcon
   return (
-    <span className={rootVariants({ series })} aria-hidden>
+    <span className={cn(rootVariants({ series }), className)} aria-hidden>
       <Icon size={size} />
     </span>
   )
