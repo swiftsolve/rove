@@ -189,9 +189,11 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 
 **Workflows and docs**
 
+A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git push --follow-tags` pushes (see [Release](#-release)).
+
 | Path | What |
 | --- | --- |
-| `.github/workflows/build.yml` | Builds on every `v*` tag and checks `DESIGN.md` was rebuilt and committed. Run it by hand to check `main`. |
-| `.github/workflows/publish.yml` | Publishes each `v*` tag to npm with trusted publishing, so the repo holds no npm token. |
-| `.github/workflows/presentation.yml` | Runs the slideshow export and publish on every `v*` tag, or by hand. Needs the `FIGMA_TOKEN` repository secret. |
+| `.github/workflows/build.yml` | On each release tag, builds the tokens and checks `DESIGN.md` was rebuilt and committed. Run it by hand from Actions to check `main`. |
+| `.github/workflows/publish.yml` | On each release tag, publishes that version to npm with trusted publishing, so the repo holds no npm token. |
+| `.github/workflows/presentation.yml` | On each release tag, or by hand from Actions, exports the slideshow from Figma and publishes it. Needs the `FIGMA_TOKEN` repository secret. |
 | `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |
