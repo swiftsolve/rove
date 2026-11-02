@@ -16,6 +16,15 @@
   src: url('./fonts/Questrial-Regular.woff2') format('woff2');
 }
 
+/* The mono specimens and labels, as in the Figma file. */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/GeistMono-Regular.woff2') format('woff2');
+}
+
 html,
 body {
   background: var(--bg-surface);
