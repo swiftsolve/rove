@@ -10,7 +10,7 @@ import { Card, CardBody, CardFooter, CardHeader, CardList } from './Card'
 const meta = {
   title: 'Containers/Card/Card',
   component: Card,
-  subcomponents: { CardHeader, CardBody, CardFooter },
+  subcomponents: { CardHeader, CardBody, CardFooter, CardList },
   args: { as: 'section' },
   argTypes: {
     as: { control: 'inline-radio', options: ['section', 'div', 'li'] },

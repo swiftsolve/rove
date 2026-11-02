@@ -22,6 +22,7 @@ const controls = (
 const meta = {
   title: 'App frame/TitleBar/TitleBar',
   component: TitleBar,
+  subcomponents: { TitleBarStatus, WindowButton },
   args: { brand, status: <TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>, controls },
   argTypes: {
     brand: { control: false },

@@ -233,9 +233,10 @@ both, and a raw `<button>` outside the library is a lint error.
   library itself. A new component gets its stories in the same change.
   A part with props of its own (`CardBody`, `NavItem`) gets its own stories
   file beside its module (`card/CardBody.stories.tsx`), so its props have
-  controls; Storybook's subcomponent tabs can't. The component and its parts
-  share a folder (`Containers/Card/CardBody`), ordered in
-  `.storybook/preview.tsx`.
+  controls; Storybook's subcomponent tabs can't. The parent's page still
+  lists every part as a tab, for the family's props at a glance. The
+  component and its parts share a folder (`Containers/Card/CardBody`),
+  ordered in `.storybook/preview.tsx`.
 - `components.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
