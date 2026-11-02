@@ -1,10 +1,10 @@
 /**
  * Build the tokens in these steps:
  *
- *   1. Figma export -> DTCG files in tokens/ (scripts/tokens/dtcg.mjs)
- *   2. DTCG files -> tokens.css, with Style Dictionary (scripts/tokens/css.mjs)
- *   3. DTCG text styles -> text-styles.css, a class per style (scripts/tokens/text-styles.mjs)
- *   4. The token reference at the end of DESIGN.md (scripts/tokens/design.mjs)
+ *   1. Figma export -> DTCG files in tokens/ (scripts/tokens/figma-to-dtcg.mjs)
+ *   2. DTCG files -> tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
+ *   3. DTCG text styles -> text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
+ *   4. The token reference at the end of DESIGN.md (scripts/tokens/token-reference.mjs)
  *
  * so the CSS is generated from the same files other tools read.
  *
@@ -18,10 +18,10 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { buildCss } from './css.mjs'
-import { writeDesign } from './design.mjs'
-import { writeDtcg } from './dtcg.mjs'
-import { buildTextStylesCss } from './text-styles.mjs'
+import { buildCss } from './dtcg-to-css.mjs'
+import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
+import { writeDtcg } from './figma-to-dtcg.mjs'
+import { writeDesign } from './token-reference.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const read = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))

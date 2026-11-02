@@ -16,7 +16,7 @@
  */
 import { basename } from 'node:path'
 import StyleDictionary from 'style-dictionary'
-import { EXTENSION } from './dtcg.mjs'
+import { EXTENSION } from './figma-to-dtcg.mjs'
 
 /** Source files in output order, with the section comment each opens. */
 const FILES = [
