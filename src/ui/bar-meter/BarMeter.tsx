@@ -32,6 +32,7 @@ const barVariants = cva('rounded-full', {
 interface BarMeterProps {
   /** Lit bars, 0 to 4. */
   value: number
+  /** `xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` (the default) a list row. */
   size?: keyof typeof SIZES
   /** Grey bars that read as inactive: a stale rating waiting on a new test. */
   isDimmed?: boolean

@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
@@ -49,19 +49,43 @@ const buttonVariants = cva(
  * Banner). A solid defaults to `md`, a soft one to `sm`.
  */
 export type ButtonAppearance =
-  | { variant: 'solid'; tone?: 'accent' | 'negative'; size?: 'sm' | 'md' }
-  | { variant?: 'soft'; tone?: 'neutral' | 'negative'; size?: 'sm' | 'md' }
+  | {
+    /** `solid` for a page's main action, or stopping it; `soft` (the default) for everything else. */
+    variant: 'solid'
+    /** Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface. */
+    tone?: 'accent' | 'negative'
+    /** `md` by default for a solid button, `sm` for a soft one. */
+    size?: 'sm' | 'md'
+    }
+  | {
+    /** `solid` for a page's main action, or stopping it; `soft` (the default) for everything else. */
+    variant?: 'soft'
+    /** Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface. */
+    tone?: 'neutral' | 'negative'
+    /** `md` by default for a solid button, `sm` for a soft one. */
+    size?: 'sm' | 'md'
+    }
 
 type Variant = NonNullable<ButtonAppearance['variant']>
+type Tone = NonNullable<ButtonAppearance['tone']>
 type Size = NonNullable<ButtonAppearance['size']>
 
+/**
+ * The tones each variant has, its default first. Any other tone (Storybook's
+ * controls can pick one the types forbid) falls back to the default.
+ */
+const TONES: Record<Variant, Tone[]> = { solid: ['accent', 'negative'], soft: ['neutral', 'negative'] }
 const DEFAULT_SIZES: Record<Variant, Size> = { solid: 'md', soft: 'sm' }
 
 /** Every icon a button draws, and the spinner that takes the leading one's place. */
 const ICON_SIZE = 13
 
-export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> &
+export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'children' | 'onClick'> &
   ButtonAppearance & {
+    /** The label. */
+    children?: ReactNode
+    /** Runs the action. Not called while disabled or loading. */
+    onClick?: MouseEventHandler<HTMLButtonElement>
     /** An icon before the label. */
     icon?: IconComponent
     /** Drops input and dims the button. It stays focusable, so a tooltip can say why. */
@@ -101,7 +125,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cn(
         buttonVariants({
           variant,
-          tone: tone ?? (variant === 'solid' ? 'accent' : 'neutral'),
+          tone: tone && TONES[variant].includes(tone) ? tone : TONES[variant][0],
           size: size ?? DEFAULT_SIZES[variant],
         }),
         className,

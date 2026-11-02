@@ -1,4 +1,11 @@
-import { forwardRef, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode, type Ref } from 'react'
+import {
+  forwardRef,
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type MouseEventHandler,
+  type ReactNode,
+  type Ref,
+} from 'react'
 import { cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons/Icons'
@@ -32,16 +39,19 @@ const LABEL = cx(
 const ICON_SIZE = 13
 
 type SharedProps = {
+  /** The label. */
   children: ReactNode
   /** An icon before the label. */
   icon?: IconComponent
 }
 
 type ViewProps = SharedProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'type'> & {
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'type' | 'onClick'> & {
     href?: never
     /** Drops input and dims the link. It stays focusable, so a tooltip can say why. */
     isDisabled?: boolean
+    /** Opens the view. Not called while disabled. */
+    onClick?: MouseEventHandler<HTMLButtonElement>
   }
 
 type AddressProps = SharedProps &

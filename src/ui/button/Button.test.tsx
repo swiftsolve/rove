@@ -84,6 +84,15 @@ describe('Button', () => {
     void (<Button size="lg" />)
   })
 
+  it('draws a tone its variant lacks as the default, so it never loses its fill', () => {
+    const solidAsProps = { variant: 'solid', tone: 'neutral' } as unknown as { variant: 'solid' }
+    render(<Button {...solidAsProps}>Stray</Button>)
+    render(<Button variant="solid">Accent</Button>)
+    expect(screen.getByRole('button', { name: 'Stray' })).toHaveClass(
+      ...screen.getByRole('button', { name: 'Accent' }).classList,
+    )
+  })
+
   it('passes extra props and a ref to the <button>', () => {
     const ref = { current: null as HTMLButtonElement | null }
     render(

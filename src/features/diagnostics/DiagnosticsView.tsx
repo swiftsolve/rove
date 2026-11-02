@@ -38,16 +38,6 @@ const WARN_LATENCY_MAX_MS = 120
 /** Any packet loss is worth flagging; past this it reads as bad, not just amber. */
 const WARN_LOSS_MAX_PCT = 2
 
-// The packet-loss warning band gets a roomier vertical padding so it has
-// enough breathing room.
-const ROUTER_FOOTER = 'pt-12 pb-16'
-
-// The Router readout comes in three groups (quality, connection, device) split
-// by a hairline that runs the card's full width, like the connection card's
-// details: the body drops its side inset and each group carries it instead.
-const ROUTER_BODY = 'row-list px-0'
-const ROUTER_GROUP = 'row-list px-(--card-body-padding)'
-
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
   return a != null && b != null && a.trim().toLowerCase() === b.trim().toLowerCase()
 }
@@ -107,9 +97,11 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
   return (
     <Card>
       <CardHeader title="Router" icon={<RouterIcon size={15} />} />
-      <CardBody className={ROUTER_BODY}>
+      {/* Three groups (quality, connection, device) split by a hairline that
+          runs the card's full width, like the connection card's details. */}
+      <CardBody layout="flush">
         <DataListStack>
-          <DataList className={ROUTER_GROUP} density="compact">
+          <DataList density="compact">
             <DataRow label="Latency">{latencyValue(ping)}</DataRow>
             <DataRow label="Jitter">{jitterValue(ping)}</DataRow>
             <DataRow label="Packet loss">
@@ -120,7 +112,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
               )}
             </DataRow>
           </DataList>
-          <DataList className={ROUTER_GROUP} density="compact">
+          <DataList density="compact">
             <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
             <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
             {linkSpeedMbps != null && (
@@ -130,7 +122,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
             )}
           </DataList>
           {hasDeviceRows && (
-            <DataList className={ROUTER_GROUP} density="compact">
+            <DataList density="compact">
               <DataRow label="Name" value={diagnostics?.gatewayName || null} />
               <DataRow label="Model" value={model} />
               <DataRow label="Vendor" value={diagnostics?.gatewayVendor || null} />
@@ -139,7 +131,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
         </DataListStack>
       </CardBody>
       {ping && ping.packetLoss > 0 && (
-        <CardFooter className={ROUTER_FOOTER}>
+        <CardFooter>
           <p className="text-body-small">Packet loss can cause slow or unstable connections.</p>
         </CardFooter>
       )}
@@ -151,11 +143,9 @@ function DnsCard({ servers }: { servers: string[] }): JSX.Element {
   return (
     <Card>
       <CardHeader title="DNS" icon={<DnsIcon size={15} />} />
-      <CardBody className="row-list">
+      <CardBody>
         {servers.length > 0 ? (
-          // A touch looser than the Router's rows: repeated identical rows read
-          // denser at the same spacing.
-          <DataList density="snug">
+          <DataList density="compact">
             {servers.map((server) => (
               <DataRow key={server} label="Server" value={server} />
             ))}
@@ -175,7 +165,7 @@ function DnsCard({ servers }: { servers: string[] }): JSX.Element {
 // a glitch rather than a brand, so this slot stays empty rather than falling
 // back to a monogram. A VPN exit has no brand domain, so the two never contend.
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
-  if (isp?.isVpn) return <Badge tone="warning">VPN</Badge>
+  if (isp?.isVpn) return <Badge tone="positive">VPN</Badge>
   if (isp?.domain) {
     return <ServiceIcon host={isp.domain} name={isp.name ?? 'ISP'} size={18} fallback="none" />
   }
@@ -188,7 +178,7 @@ function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): J
   return (
     <Card>
       <CardHeader title={isp?.isVpn ? 'VPN' : 'ISP'} icon={<GlobeIcon size={15} />} actions={ispBadge(isp)} />
-      <CardBody className="row-list">
+      <CardBody>
         {isp ? (
           <DataList density="compact">
             {/* "Provider", not "ISP": the card's title already says ISP, and

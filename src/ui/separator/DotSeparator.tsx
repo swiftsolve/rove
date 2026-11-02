@@ -13,7 +13,7 @@ export function DotSeparator(): JSX.Element {
 
 const metaVariants = cva('inline-meta min-w-0 max-w-full items-center gap-6', {
   variants: {
-    shouldTruncate: { true: 'flex overflow-hidden whitespace-nowrap', false: 'inline-flex' },
+    shouldTruncate: { true: 'flex overflow-hidden whitespace-nowrap', false: 'inline-flex flex-wrap' },
   },
   defaultVariants: { shouldTruncate: false },
 })
@@ -25,13 +25,15 @@ const itemVariants = cva('inline-meta-item min-w-0', {
 })
 
 interface InlineMetaProps {
+  /** The chunks, in order. Empty ones (null, false) are dropped, with their dots. */
   items: (ReactNode | null | undefined | false)[]
+  /** Its place in a line. It takes its type from the line it sits in. */
   className?: string
-  /** Keep the items on one line, each ellipsizing as space runs out. */
+  /** Keep the items on one line, each ellipsizing as space runs out. Otherwise they wrap. */
   shouldTruncate?: boolean
 }
 
-/** Inline metadata chunks separated by a tertiary dot. */
+/** Inline metadata chunks separated by a tertiary dot, in the type of the line it sits in. */
 export function InlineMeta({ items, className, shouldTruncate = false }: InlineMetaProps): JSX.Element {
   const visibleItems = items.filter((item): item is ReactNode => Boolean(item))
   if (visibleItems.length === 0) return <></>

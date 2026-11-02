@@ -11,6 +11,10 @@
         "node": "42:189"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "The label."
+        },
         "icon": {
           "type": "IconComponent",
           "description": "An icon before the label."
@@ -27,25 +31,32 @@
           "type": "ReactNode",
           "description": "The label while loading (\"Retrying…\"), when it should say so."
         },
+        "onClick": {
+          "type": "MouseEventHandler<HTMLButtonElement>",
+          "description": "Runs the action. Not called while disabled or loading."
+        },
         "size": {
           "values": [
             "sm",
             "md"
-          ]
+          ],
+          "description": "`md` by default for a solid button, `sm` for a soft one."
         },
         "tone": {
           "values": [
             "accent",
             "negative",
             "neutral"
-          ]
+          ],
+          "description": "Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface."
         },
         "variant": {
           "values": [
             "solid",
             "soft"
           ],
-          "default": "soft"
+          "default": "soft",
+          "description": "`solid` for a page's main action, or stopping it; `soft` (the default) for everything else."
         }
       },
       "hasElementProps": true,
@@ -70,7 +81,8 @@
       "props": {
         "icon": {
           "type": "IconComponent",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The icon."
         },
         "iconSize": {
           "values": [
@@ -93,6 +105,10 @@
           "isRequired": true,
           "description": "Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more."
         },
+        "onClick": {
+          "type": "MouseEventHandler<HTMLButtonElement>",
+          "description": "Runs the action. Not called while disabled or loading."
+        },
         "tooltip": {
           "type": "ReactNode",
           "description": "The tooltip, when it should say more than the label (a help button's hint)."
@@ -103,13 +119,15 @@
             "bottom",
             "left",
             "right"
-          ]
+          ],
+          "description": "The side its tooltip opens on: `bottom` by default."
         },
         "variant": {
           "values": [
             "soft",
             "ghost"
-          ]
+          ],
+          "description": "`soft` (the default), an inset chip; `ghost`, no fill until hovered."
         }
       },
       "hasElementProps": true,
@@ -132,6 +150,10 @@
         "node": "505:845"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "The label."
+        },
         "href": {
           "type": "string",
           "description": "A real address, opened in a new window."
@@ -143,6 +165,10 @@
         "isDisabled": {
           "type": "boolean",
           "description": "Drops input and dims the link. It stays focusable, so a tooltip can say why."
+        },
+        "onClick": {
+          "type": "MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLAnchorElement>",
+          "description": "Opens the view. Not called while disabled."
         }
       },
       "hasElementProps": true,
@@ -165,6 +191,10 @@
           "type": "string",
           "isRequired": true,
           "description": "Names it: it has no text of its own, since the container's content shows through."
+        },
+        "onClick": {
+          "type": "MouseEventHandler<HTMLButtonElement>",
+          "description": "Opens the view the container summarises."
         }
       },
       "hasElementProps": true,
@@ -193,7 +223,8 @@
           "description": "Controlled open state; leave both out to let the menu keep its own."
         },
         "onOpenChange": {
-          "type": "((isOpen: boolean) => void)"
+          "type": "((isOpen: boolean) => void)",
+          "description": "Called with the new state when the menu opens or closes."
         }
       },
       "stories": [
@@ -210,7 +241,13 @@
         "name": "Menu",
         "node": "498:719"
       },
-      "props": {},
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "MenuItems, in order."
+        }
+      },
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
@@ -226,8 +263,14 @@
         "node": "498:718"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The label."
+        },
         "icon": {
-          "type": "IconComponent"
+          "type": "IconComponent",
+          "description": "An icon before the label."
         },
         "onClick": {
           "type": "() => void",
@@ -238,7 +281,8 @@
           "values": [
             "negative",
             "neutral"
-          ]
+          ],
+          "description": "`negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight."
         }
       },
       "stories": [
@@ -297,15 +341,22 @@
         },
         "label": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Names the field, above it."
         },
         "onChange": {
           "type": "(value: string) => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Called with the new text on every edit."
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Sample input, shown while it's empty: \"example.com or 192.168.1.1\"."
         },
         "value": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "What's typed in it."
         }
       },
       "hasElementProps": true,
@@ -328,12 +379,19 @@
         "node": "500:810"
       },
       "props": {
+        "children": {
+          "type": "string",
+          "isRequired": true,
+          "description": "The label: a word, \"Test\"."
+        },
         "isDisabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Drops input and dims the button."
         },
         "isLoading": {
           "type": "boolean",
-          "default": "false"
+          "default": "false",
+          "description": "Drops input and shows a spinner in the label's place."
         },
         "loadingLabel": {
           "type": "string",
@@ -341,7 +399,8 @@
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Runs the action on the field's value."
         }
       },
       "stories": [
@@ -369,10 +428,12 @@
         },
         "isChecked": {
           "type": "boolean",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Whether it's on."
         },
         "isDisabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Drops input and dims the switch."
         },
         "label": {
           "type": "string",
@@ -381,7 +442,8 @@
         },
         "onChange": {
           "type": "(isChecked: boolean) => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Called with the new state when the switch is flipped."
         }
       },
       "stories": [
@@ -408,22 +470,26 @@
         },
         "aria-label": {
           "type": "string",
-          "description": "Names the group, or the id of the text that does."
+          "description": "Names the group."
         },
         "aria-labelledby": {
-          "type": "string"
+          "type": "string",
+          "description": "Id of the text that names the group, in place of `aria-label`."
         },
         "onChange": {
           "type": "(value: Value) => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Called with the option the user picks."
         },
         "options": {
           "type": "SegmentedOption<Value>[]",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The segments, in order: each a value, its label and an optional icon."
         },
         "value": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The chosen option's value."
         }
       },
       "stories": [
@@ -446,7 +512,8 @@
           "description": "The footer's buttons, main action last."
         },
         "bodyClassName": {
-          "type": "string"
+          "type": "string",
+          "description": "The body well's layout and insets."
         },
         "cancelLabel": {
           "type": "string",
@@ -476,11 +543,13 @@
         },
         "onClose": {
           "type": "() => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Escape, the close button, Cancel and a backdrop click: close it here."
         },
         "title": {
           "type": "ReactNode",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Names the dialog."
         }
       },
       "stories": [
@@ -503,7 +572,8 @@
         },
         "isOpen": {
           "type": "boolean",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Opens the Dialog; false plays its leave animation, then unmounts it."
         }
       },
       "stories": [
@@ -581,13 +651,19 @@
         "node": "497:650"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "A word or two; it's set in capitals."
+        },
         "tone": {
           "values": [
             "negative",
             "positive",
             "warning"
           ],
-          "isRequired": true
+          "isRequired": true,
+          "description": "Green, amber or red. Green is good news, such as the ISP card's VPN flag; amber a caveat, not a fault."
         }
       },
       "stories": [
@@ -606,7 +682,13 @@
         "name": "Live badge",
         "node": "4:41"
       },
-      "props": {},
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "default": "Live",
+          "description": "Its words: \"Live\" by default."
+        }
+      },
       "stories": [
         "status-and-feedback-badge--positive",
         "status-and-feedback-badge--warning",
@@ -626,14 +708,22 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its colour (`text-positive`) and place in a line. It's the text colour by default."
+          "description": "Its place in a line."
         },
         "pulse": {
           "values": [
             "calm",
             "live",
             "busy"
-          ]
+          ],
+          "description": "A breathing pulse, at the pace of what it marks: `calm` for a steady\nstate (connected), `live` for data streaming in, `busy` for work under way\n(a scan). None by default."
+        },
+        "tone": {
+          "values": [
+            "positive",
+            "current"
+          ],
+          "description": "Its colour: the text colour (`current`, the default), or `positive` when its words stay quiet."
         }
       },
       "stories": [
@@ -641,7 +731,7 @@
         "status-and-feedback-statusdot--calm",
         "status-and-feedback-statusdot--live",
         "status-and-feedback-statusdot--busy",
-        "status-and-feedback-statusdot--warning",
+        "status-and-feedback-statusdot--current",
         "status-and-feedback-statusdot--all-states"
       ]
     },
@@ -656,7 +746,8 @@
       "props": {
         "size": {
           "type": "number",
-          "default": "24"
+          "default": "24",
+          "description": "Its width in px."
         }
       },
       "stories": [
@@ -675,11 +766,13 @@
       "props": {
         "color": {
           "type": "string",
-          "default": "currentColor"
+          "default": "currentColor",
+          "description": "Any CSS colour. The text colour by default."
         },
         "size": {
           "type": "number",
-          "default": "14"
+          "default": "14",
+          "description": "In px: match the icon it replaces. 14 by default."
         }
       },
       "stories": [
@@ -728,11 +821,13 @@
         },
         "title": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "What happened. Dismiss hides the banner until this changes."
         },
         "variant": {
           "type": "\"error\"",
-          "isRequired": true
+          "isRequired": true,
+          "description": "`error`, a failure: a red wash, and a red Dismiss."
         }
       },
       "stories": [
@@ -765,7 +860,8 @@
         },
         "title": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "What's empty: \"No devices yet\"."
         }
       },
       "stories": [
@@ -786,6 +882,11 @@
         "node": "356:175"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The note."
+        },
         "role": {
           "values": [
             "status"
@@ -817,19 +918,19 @@
           "description": "DataRows, as direct children (fragments are fine)."
         },
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its place in a layout."
         },
         "density": {
           "values": [
             "default",
-            "snug",
             "compact"
-          ]
+          ],
+          "description": "The air between rows: 8px by default, `compact` 4px for a short or repeated list."
         }
       },
       "stories": [
         "data-display-datalist--default",
-        "data-display-datalist--snug",
         "data-display-datalist--compact",
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
@@ -839,19 +940,24 @@
     "DataListStack": {
       "group": "Data display",
       "source": "src/ui/data-list/DataList.tsx",
-      "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it.",
+      "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
       "figma": {
         "name": "Data row",
         "node": "15:642"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The DataLists, one per topic."
+        },
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its place in a layout."
         }
       },
       "stories": [
         "data-display-datalist--default",
-        "data-display-datalist--snug",
         "data-display-datalist--compact",
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
@@ -871,19 +977,25 @@
           "values": [
             "baseline",
             "center"
-          ]
+          ],
+          "description": "`center` for a value with no text baseline of its own (signal bars, a badge)."
+        },
+        "children": {
+          "type": "ReactNode",
+          "description": "A value that isn't plain text (a badge, signal bars), in `value`'s place."
         },
         "label": {
           "type": "ReactNode",
-          "isRequired": true
+          "isRequired": true,
+          "description": "What the value is: \"Gateway\"."
         },
         "value": {
-          "type": "string | null"
+          "type": "string | null",
+          "description": "The value as text. With no value and no children, the row isn't drawn."
         }
       },
       "stories": [
         "data-display-datalist--default",
-        "data-display-datalist--snug",
         "data-display-datalist--compact",
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
@@ -900,7 +1012,8 @@
       },
       "props": {
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its place in a layout."
         },
         "icon": {
           "type": "ReactNode",
@@ -924,7 +1037,8 @@
         },
         "unit": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "After the number, smaller: \"Mbps\", \"GB\"."
         },
         "value": {
           "type": "string",
@@ -952,22 +1066,26 @@
       },
       "props": {
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its place in a layout. It takes its size and colour from the text around it."
         },
         "format": {
           "type": "(n: number) => string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`."
         },
         "status": {
           "values": [
             "negative",
             "positive",
             "warning"
-          ]
+          ],
+          "description": "How healthy the value is, in the status text colours."
         },
         "value": {
           "type": "number",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The latest value; the figure eases toward it."
         }
       },
       "stories": [
@@ -1004,7 +1122,8 @@
             "xs",
             "lg"
           ],
-          "default": "lg"
+          "default": "lg",
+          "description": "`xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` (the default) a list row."
         },
         "value": {
           "type": "number",
@@ -1020,6 +1139,46 @@
         "data-display-barmeter--all-states"
       ]
     },
+    "SplitBar": {
+      "group": "Data display",
+      "source": "src/ui/split-bar/SplitBar.tsx",
+      "description": "A 3px track holding a download and an upload segment side by side, each\nscaled against `max`, for comparing rows' traffic at a glance; an empty\nsegment collapses to zero width.",
+      "figma": {
+        "name": "Split bar",
+        "node": "556:619"
+      },
+      "props": {
+        "className": {
+          "type": "string",
+          "description": "Its place in a row, such as an inset to line up with an icon."
+        },
+        "down": {
+          "type": "number",
+          "isRequired": true,
+          "description": "The download segment's value, in the same unit as `max`."
+        },
+        "label": {
+          "type": "string",
+          "isRequired": true,
+          "description": "Reads the bar out, since it's an image to screen readers."
+        },
+        "max": {
+          "type": "number",
+          "isRequired": true,
+          "description": "The value a full track stands for. Rows in one list share it, so their\nbars read comparably at a glance."
+        },
+        "up": {
+          "type": "number",
+          "isRequired": true,
+          "description": "The upload segment's value, after the download one."
+        }
+      },
+      "stories": [
+        "data-display-splitbar--default",
+        "data-display-splitbar--empty",
+        "data-display-splitbar--all-states"
+      ]
+    },
     "ListRow": {
       "group": "Data display",
       "source": "src/ui/list-row/ListRow.tsx",
@@ -1032,7 +1191,7 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "The row's content: an icon tile, a title and its description."
+          "description": "The row's content: an icon tile, a title and its description. Anything\nright-aligned (a meter) goes last, after a text column that takes `flex-1`."
         },
         "isDisabled": {
           "type": "boolean",
@@ -1042,10 +1201,6 @@
           "type": "MouseEventHandler<HTMLButtonElement>",
           "isRequired": true,
           "description": "What the row opens."
-        },
-        "trailing": {
-          "type": "ReactNode",
-          "description": "Before the chevron, right-aligned: a meter, a value."
         }
       },
       "stories": [
@@ -1064,35 +1219,27 @@
         "node": "495:585"
       },
       "props": {
-        "children": {
-          "type": "ReactNode",
-          "isRequired": true,
-          "description": "The icon."
-        },
         "className": {
           "type": "string",
           "description": "The tile's place in its row."
         },
         "color": {
-          "values": [
-            "negative",
-            "neutral",
-            "download",
-            "positive",
-            "warning",
-            "good",
-            "poor",
-            "upload"
-          ],
+          "type": "IconTileColor",
           "isRequired": true,
-          "description": "The icon's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary icon, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
+        },
+        "icon": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The icon, sized by the caller: `<VideoCallIcon size={17} />`."
         },
         "size": {
           "values": [
             "sm",
             "md",
             "lg"
-          ]
+          ],
+          "description": "30, 32 (the default) or 36px square."
         }
       },
       "hasElementProps": true,
@@ -1115,28 +1262,19 @@
         "node": "495:585"
       },
       "props": {
-        "children": {
-          "type": "ReactNode",
-          "isRequired": true,
-          "description": "The icon."
-        },
         "className": {
           "type": "string",
           "description": "The tile's place in its row."
         },
         "color": {
-          "values": [
-            "negative",
-            "neutral",
-            "download",
-            "positive",
-            "warning",
-            "good",
-            "poor",
-            "upload"
-          ],
+          "type": "IconTileColor",
           "isRequired": true,
-          "description": "The icon's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary icon, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
+        },
+        "icon": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The icon, sized by the caller: `<VideoCallIcon size={17} />`."
         },
         "isDisabled": {
           "type": "boolean",
@@ -1149,14 +1287,16 @@
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Opens what the tile stands for."
         },
         "size": {
           "values": [
             "sm",
             "md",
             "lg"
-          ]
+          ],
+          "description": "30, 32 (the default) or 36px square."
         }
       },
       "hasElementProps": true,
@@ -1173,7 +1313,7 @@
     "Card": {
       "group": "Containers",
       "source": "src/ui/card/Card.tsx",
-      "description": "The panel surface, clipped to its rounded corners. Build it from a\nCardHeader, a CardBody and an optional CardFooter, or lay out your own\ncontent in it.",
+      "description": "The panel surface, clipped to its rounded corners. Build it from a\nCardHeader, a CardBody and an optional CardFooter, or lay out your own\ncontent in an element of your own inside it.",
       "figma": {
         "name": "Card",
         "node": "543:62"
@@ -1187,12 +1327,28 @@
           ],
           "default": "section",
           "description": "`section` (the default) is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
+        },
+        "children": {
+          "type": "ReactNode",
+          "description": "A CardHeader, a CardBody and an optional CardFooter, or your own content."
+        },
+        "className": {
+          "type": "string",
+          "description": "Its place in a layout."
+        },
+        "isInteractive": {
+          "type": "boolean",
+          "default": "false",
+          "description": "The whole card opens something: it lifts on hover and presses in. Give it a\nStretchedLink for the action. Its contents can react with `group-hover/card:`."
         }
       },
       "hasElementProps": true,
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
+        "containers-card--rows-body",
+        "containers-card--flush-body",
+        "containers-card--interactive",
         "containers-card--list",
         "containers-card--all-states"
       ]
@@ -1206,13 +1362,26 @@
         "node": "543:62"
       },
       "props": {
-        "className": {
-          "type": "string"
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The content."
+        },
+        "layout": {
+          "values": [
+            "default",
+            "rows",
+            "flush"
+          ],
+          "description": "`default` pads all round. `rows` for rows that carry their own vertical\npadding (settings, list rows): no top padding. `flush` for a\nDataListStack, whose hairlines run to the card's sides."
         }
       },
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
+        "containers-card--rows-body",
+        "containers-card--flush-body",
+        "containers-card--interactive",
         "containers-card--list",
         "containers-card--all-states"
       ]
@@ -1226,13 +1395,18 @@
         "node": "543:62"
       },
       "props": {
-        "className": {
-          "type": "string"
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The footnote or status."
         }
       },
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
+        "containers-card--rows-body",
+        "containers-card--flush-body",
+        "containers-card--interactive",
         "containers-card--list",
         "containers-card--all-states"
       ]
@@ -1251,16 +1425,21 @@
           "description": "Controls or a badge at the end of the row."
         },
         "icon": {
-          "type": "ReactNode"
+          "type": "ReactNode",
+          "description": "A 16px icon before the title."
         },
         "title": {
           "type": "string",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Names the card: a `section` card is labelled by it."
         }
       },
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
+        "containers-card--rows-body",
+        "containers-card--flush-body",
+        "containers-card--interactive",
         "containers-card--list",
         "containers-card--all-states"
       ]
@@ -1288,6 +1467,9 @@
       "stories": [
         "containers-card--with-everything",
         "containers-card--header-actions",
+        "containers-card--rows-body",
+        "containers-card--flush-body",
+        "containers-card--interactive",
         "containers-card--list",
         "containers-card--all-states"
       ]
@@ -1318,11 +1500,13 @@
         },
         "isOpen": {
           "type": "boolean",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Whether the panel shows."
         },
         "onOpenChange": {
           "type": "(isOpen: boolean) => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Called with the new state when the trigger is pressed."
         }
       },
       "hasElementProps": true,
@@ -1339,8 +1523,14 @@
       "description": "What the trigger shows and hides, growing and shrinking to its height; out\nof the page, and the accessibility tree, while closed.",
       "figma": null,
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "What the trigger shows and hides."
+        },
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its layout and insets."
         }
       },
       "stories": [
@@ -1383,23 +1573,25 @@
     "InlineMeta": {
       "group": "Containers",
       "source": "src/ui/separator/DotSeparator.tsx",
-      "description": "Inline metadata chunks separated by a tertiary dot.",
+      "description": "Inline metadata chunks separated by a tertiary dot, in the type of the line it sits in.",
       "figma": {
         "name": "Dot separator",
         "node": "452:9524"
       },
       "props": {
         "className": {
-          "type": "string"
+          "type": "string",
+          "description": "Its place in a line. It takes its type from the line it sits in."
         },
         "items": {
           "type": "ReactNode[]",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The chunks, in order. Empty ones (null, false) are dropped, with their dots."
         },
         "shouldTruncate": {
           "type": "boolean",
           "default": "false",
-          "description": "Keep the items on one line, each ellipsizing as space runs out."
+          "description": "Keep the items on one line, each ellipsizing as space runs out. Otherwise they wrap."
         }
       },
       "stories": [
@@ -1450,13 +1642,19 @@
         "node": "4:40"
       },
       "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The status in words: \"Connected\"."
+        },
         "tone": {
           "values": [
             "negative",
             "neutral",
             "positive"
           ],
-          "isRequired": true
+          "isRequired": true,
+          "description": "`positive` when connected; `negative`, connected but something's wrong\nbeyond the link; `neutral`, connecting or offline, with a still dot."
         }
       },
       "stories": [
@@ -1482,11 +1680,13 @@
             "minimize",
             "close"
           ],
-          "isRequired": true
+          "isRequired": true,
+          "description": "Which button: its icon, its name, and (for `close`) a red hover."
         },
         "onClick": {
           "type": "() => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Minimises or closes the window."
         }
       },
       "stories": [
@@ -1509,7 +1709,8 @@
       "props": {
         "icon": {
           "type": "IconComponent",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The icon."
         },
         "isActive": {
           "type": "boolean",
@@ -1523,12 +1724,12 @@
         },
         "onClick": {
           "type": "() => void",
-          "isRequired": true
+          "isRequired": true,
+          "description": "Goes to the page, or runs the action."
         }
       },
       "stories": [
-        "app-frame-navrail--default",
-        "app-frame-navrail--settings-active"
+        "app-frame-navrail--default"
       ]
     },
     "NavRail": {
@@ -1557,8 +1758,7 @@
         }
       },
       "stories": [
-        "app-frame-navrail--default",
-        "app-frame-navrail--settings-active"
+        "app-frame-navrail--default"
       ]
     },
     "PageHeader": {
@@ -1592,7 +1792,8 @@
         },
         "title": {
           "type": "ReactNode",
-          "isRequired": true
+          "isRequired": true,
+          "description": "The page's name."
         }
       },
       "stories": [

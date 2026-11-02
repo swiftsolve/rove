@@ -14,9 +14,10 @@
  *   node scripts/build-ui-catalogue.mjs           # rewrite components.json
  *   node scripts/build-ui-catalogue.mjs --check   # fail if it's stale or incomplete
  *
- * `--check`, part of `npm run lint`, also fails when a component has no doc
- * comment, no entry in figma.json (`null` says it has no Figma counterpart),
- * or no row in docs/frontend.md's Components table.
+ * `--check`, part of `npm run lint`, also fails when a component or one of its
+ * own props has no doc comment, or a component has no entry in figma.json
+ * (`null` says it has no Figma counterpart) or no row in docs/frontend.md's
+ * Components table.
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -62,6 +63,8 @@ function readProps(components) {
     shouldExtractLiteralValuesFromEnum: true,
     shouldRemoveUndefinedFromOptional: true,
     savePropValueAsString: true,
+    // Storybook's table lists an undocumented `children`, so the check must see it.
+    skipChildrenPropWithoutDoc: false,
     // A prop from a package is the DOM element's own attribute, passed through.
     propFilter: (prop, component) => {
       const isOwn = !prop.parent || !prop.parent.fileName.includes('node_modules')
@@ -140,6 +143,9 @@ for (const { name, group, source } of components) {
     continue
   }
   if (!doc.description) problems.push(`${rel(source)}: ${name} needs a doc comment saying what it's for`)
+  for (const prop of Object.values(doc.props)) {
+    if (!prop.description) problems.push(`${rel(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
+  }
   if (!(name in figma.components)) {
     problems.push(`${rel(FIGMA)}: add ${name}, with its Figma component, or null if it has none`)
   }

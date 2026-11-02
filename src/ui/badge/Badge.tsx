@@ -9,7 +9,6 @@ const badgeVariants = cva(
     variants: {
       tone: {
         positive: 'bg-status-positive/(--opacity-tint-md) text-positive',
-        /** "Heads up" without the alarm of an error colour: the ISP card's VPN flag. */
         warning: 'bg-status-warning/(--opacity-tint-md) text-warning',
         negative: 'bg-status-negative/(--opacity-tint-md) text-negative',
       },
@@ -18,7 +17,9 @@ const badgeVariants = cva(
 )
 
 interface BadgeProps {
+  /** Green, amber or red. Green is good news, such as the ISP card's VPN flag; amber a caveat, not a fault. */
   tone: VariantOf<typeof badgeVariants, 'tone'>
+  /** A word or two; it's set in capitals. */
   children: ReactNode
 }
 
@@ -28,7 +29,12 @@ export function Badge({ tone, children }: BadgeProps): JSX.Element {
 }
 
 /** A dark status pill with a pulsing dot: data on the card is updating live. */
-export function LiveBadge({ children = 'Live' }: { children?: ReactNode }): JSX.Element {
+export function LiveBadge({
+  children = 'Live',
+}: {
+  /** Its words: "Live" by default. */
+  children?: ReactNode
+}): JSX.Element {
   return (
     <span className="text-caption inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4 text-positive">
       <StatusDot pulse="live" />

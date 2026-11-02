@@ -2,16 +2,13 @@ import { useId, type ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { Card, ChevronRightIcon, DirectionIcon, Readout, StretchedLink } from '@/ui'
 
-// The card used to be the <button> itself. It keeps the text settings its
-// contents inherited from it (a button resets these), so the title and readouts
-// render as before. Hover sets box-shadow directly rather than through
-// `shadow-raised`: that composes a five-layer shadow list, which would cross-fade
-// from the card's shadow instead of morphing into it.
-const CARD = cx(
-  'group relative flex flex-col gap-6 p-(--card-body-padding) text-left cursor-pointer',
+// The card used to be the <button> itself. Its content keeps the text settings
+// it inherited from it (a button resets these), so the title and readouts
+// render as before. It fills the card's height, so a control in the body can
+// sit at the foot.
+const CONTENT = cx(
+  'flex h-full flex-col gap-6 p-(--card-body-padding) text-left',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
-  'transition-[box-shadow,transform] duration-(--duration-fast) ease-in-out',
-  'hover:[box-shadow:var(--shadow-raised)] active:transform-[translateY(1px)]',
 )
 
 interface StatCardProps {
@@ -41,25 +38,27 @@ export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }
   const titleId = useId()
   return (
     // Named by its own heading, as it has no CardHeader.
-    <Card className={CARD} data-stat-card aria-labelledby={titleId} aria-busy={isLoading || undefined}>
-      <div className="flex items-center gap-8">
-        <span className="inline-flex items-center justify-center shrink-0 text-tertiary">{icon}</span>
-        <h2 id={titleId} className="text-heading-small">
-          {label}
-        </h2>
-        {/* Pushed to the far edge; always visible, brightening while the card is
-            hovered or its link has keyboard focus. */}
-        <ChevronRightIcon
-          size={16}
-          className={cx(
-            'ml-auto text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
-            'group-hover:text-secondary group-has-[[data-stretched-link]:focus-visible]:text-secondary',
-          )}
-        />
+    <Card isInteractive aria-labelledby={titleId} aria-busy={isLoading || undefined}>
+      <div className={CONTENT} data-stat-card>
+        <div className="flex items-center gap-8">
+          <span className="inline-flex items-center justify-center shrink-0 text-tertiary">{icon}</span>
+          <h2 id={titleId} className="text-heading-small">
+            {label}
+          </h2>
+          {/* Pushed to the far edge; always visible, brightening while the card is
+              hovered or its link has keyboard focus. */}
+          <ChevronRightIcon
+            size={16}
+            className={cx(
+              'ml-auto text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
+              'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',
+            )}
+          />
+        </div>
+        {/* Over the title and readout, so a click anywhere lands on it. */}
+        <StretchedLink label={ariaLabel} onClick={onOpen} />
+        {children}
       </div>
-      {/* Over the title and readout, so a click anywhere lands on it. */}
-      <StretchedLink label={ariaLabel} onClick={onOpen} />
-      {children}
     </Card>
   )
 }

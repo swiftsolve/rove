@@ -48,9 +48,7 @@ const statusVariants = cva(
     variants: {
       tone: {
         positive: 'text-positive',
-        /** Connected, but something's wrong beyond the link: red. */
         negative: 'text-negative',
-        /** Connecting or offline: the base look. */
         neutral: null,
       },
     },
@@ -58,7 +56,12 @@ const statusVariants = cva(
 )
 
 interface TitleBarStatusProps {
+  /**
+   * `positive` when connected; `negative`, connected but something's wrong
+   * beyond the link; `neutral`, connecting or offline, with a still dot.
+   */
   tone: VariantOf<typeof statusVariants, 'tone'>
+  /** The status in words: "Connected". */
   children: ReactNode
 }
 
@@ -93,7 +96,9 @@ const WINDOW_ACTIONS = {
 }
 
 interface WindowButtonProps {
+  /** Which button: its icon, its name, and (for `close`) a red hover. */
   action: VariantOf<typeof windowButtonVariants, 'action'>
+  /** Minimises or closes the window. */
   onClick: () => void
 }
 

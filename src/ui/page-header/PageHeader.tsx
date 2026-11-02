@@ -15,6 +15,7 @@ const BACK = cx(
 const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] text-xs text-tertiary'
 
 type PageHeaderProps = {
+  /** The page's name. */
   title: ReactNode
   /**
    * The line under the title. It fades in when it first shows, and again each

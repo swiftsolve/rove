@@ -85,7 +85,7 @@ export function ScanStatus({
       role={isLiveRegion ? 'status' : undefined}
       aria-hidden={isActive ? undefined : true}
     >
-      <StatusDot pulse="busy" className={STATUS_DOT} />
+      <StatusDot tone="positive" pulse="busy" className={STATUS_DOT} />
       {/* The stage words are stacked so they cross-fade in place; a hidden sizer
           (the longest label) holds the box to a stable width so nothing reflows. */}
       <span className="relative inline-block">

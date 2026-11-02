@@ -8,7 +8,7 @@ import { ListRow } from './ListRow'
 
 function RowText({ title, description }: { title: string; description: string }): JSX.Element {
   return (
-    <span className="flex min-w-0 flex-col">
+    <span className="flex min-w-0 flex-1 flex-col">
       <span className="text-body truncate">{title}</span>
       <span className="text-body-small truncate">{description}</span>
     </span>
@@ -31,15 +31,13 @@ const meta = {
     onClick: fn(),
     children: (
       <>
-        <IconTile color="positive">
-          <VideoCallIcon size={17} />
-        </IconTile>
+        <IconTile color="var(--status-positive)" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
+        <Rating value={4} color="text-status-positive" label="Excellent" />
       </>
     ),
-    trailing: <Rating value={4} color="text-status-positive" label="Excellent" />,
   },
-  argTypes: { children: { control: false }, trailing: { control: false } },
+  argTypes: { children: { control: false } },
   // It sits in a card's list, its hover wash bleeding into the padding.
   render: (args) => (
     <Card className="max-w-[400px]">
@@ -58,12 +56,12 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A capability and its rating. */
+/** A capability and its rating, last so it sits on the right. */
 export const Default: Story = {}
 
 /** Just the words and the chevron: the About row in Settings. */
 export const TextOnly: Story = {
-  args: { children: <RowText title="About Rove" description="Version, platform, and source." />, trailing: undefined },
+  args: { children: <RowText title="About Rove" description="Version, platform, and source." /> },
 }
 
 /** Inert while a test replaces its rating: muted tile, dimmed bars, no hover. */
@@ -72,21 +70,19 @@ export const Disabled: Story = {
     isDisabled: true,
     children: (
       <>
-        <IconTile color="neutral">
-          <VideoCallIcon size={17} />
-        </IconTile>
+        <IconTile color="neutral" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
+        <Rating value={4} color="text-status-positive" label="Excellent" isDimmed />
       </>
     ),
-    trailing: <Rating value={4} color="text-status-positive" label="Excellent" isDimmed />,
   },
 }
 
 const CAPABILITIES = [
-  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, tile: 'positive', color: 'text-status-positive', label: 'Excellent' },
-  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, tile: 'good', color: 'text-status-good', label: 'Good' },
-  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, tile: 'warning', color: 'text-status-warning', label: 'Fair' },
-  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, tile: 'poor', color: 'text-status-poor', label: 'Poor' },
+  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, tile: 'var(--status-positive)', color: 'text-status-positive', label: 'Excellent' },
+  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, tile: 'var(--status-good)', color: 'text-status-good', label: 'Good' },
+  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, tile: 'var(--status-warning)', color: 'text-status-warning', label: 'Fair' },
+  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, tile: 'var(--status-poor)', color: 'text-status-poor', label: 'Poor' },
 ] as const
 
 /** A list of rows at each rating, then one disabled. */
@@ -98,20 +94,18 @@ export const AllStates: Story = {
         <ul role="list" className="flex flex-col">
           {CAPABILITIES.map(({ title, description, Icon, value, tile, color, label }) => (
             <li key={title}>
-              <ListRow onClick={fn()} trailing={<Rating value={value} color={color} label={label} />}>
-                <IconTile color={tile}>
-                  <Icon size={17} />
-                </IconTile>
+              <ListRow onClick={fn()}>
+                <IconTile color={tile} icon={<Icon size={17} />} />
                 <RowText title={title} description={description} />
+                <Rating value={value} color={color} label={label} />
               </ListRow>
             </li>
           ))}
           <li>
-            <ListRow onClick={fn()} isDisabled trailing={<Rating value={3} color="text-status-good" label="Good" isDimmed />}>
-              <IconTile color="neutral">
-                <HdStreamIcon size={17} />
-              </IconTile>
+            <ListRow onClick={fn()} isDisabled>
+              <IconTile color="neutral" icon={<HdStreamIcon size={17} />} />
               <RowText title="HD streaming" description="Testing…" />
+              <Rating value={3} color="text-status-good" label="Good" isDimmed />
             </ListRow>
           </li>
         </ul>

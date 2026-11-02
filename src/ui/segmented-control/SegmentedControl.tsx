@@ -41,11 +41,15 @@ export interface SegmentedOption<Value extends string> {
 }
 
 interface SegmentedControlProps<Value extends string> {
+  /** The segments, in order: each a value, its label and an optional icon. */
   options: SegmentedOption<Value>[]
+  /** The chosen option's value. */
   value: Value
+  /** Called with the option the user picks. */
   onChange: (value: Value) => void
-  /** Names the group, or the id of the text that does. */
+  /** Names the group. */
   'aria-label'?: string
+  /** Id of the text that names the group, in place of `aria-label`. */
   'aria-labelledby'?: string
   /** Id of the text that explains it. */
   'aria-describedby'?: string

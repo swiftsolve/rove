@@ -4,6 +4,7 @@ import { cn } from '../foundations/cn'
 interface ValueParts {
   /** The number, formatted: "182", "4.6". */
   value: string
+  /** After the number, smaller: "Mbps", "GB". */
   unit: string
   /**
    * What a screen reader hears instead, when the visible number is animating
@@ -34,6 +35,7 @@ interface ReadoutProps extends ValueParts {
   icon?: ReactNode
   /** `compact` for a summary card's figure. */
   size?: 'large' | 'compact'
+  /** Its place in a layout. */
   className?: string
 }
 

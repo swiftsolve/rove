@@ -81,7 +81,10 @@ const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 const HEAD = 'flex items-baseline gap-10'
 const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
-const SUBJECT = 'flex-wrap text-md text-secondary'
+const SUBJECT = 'text-md text-secondary'
+
+// The address line, one step quieter than everything above it.
+const META = 'text-sm text-tertiary tabular-nums'
 
 type IconComponent = (props: { size?: number }) => JSX.Element
 
@@ -177,17 +180,18 @@ export function TimelineItem({
           <EventTime ts={event.ts} />
         </span>
         {subject && (
-          <InlineMeta
-            className={SUBJECT}
-            // The device category after the name ("Apple · Phone"), a step quieter
-            // so the name still leads.
-            items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
-          />
+          <div className={SUBJECT}>
+            <InlineMeta
+              // The device category after the name ("Apple · Phone"), a step quieter
+              // so the name still leads.
+              items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
+            />
+          </div>
         )}
         {isInternet && INTERNET_SUBTITLES[event.type] && (
           // Status at the left, offline duration flush right (pushed by its
           // margin-left:auto), on one line spanning the full content width.
-          <span className={cx(SUBJECT, 'flex w-full')}>
+          <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
             <span>{INTERNET_SUBTITLES[event.type]}</span>
             {offlineMs != null && (
               <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">Offline for {formatDuration(offlineMs)}</span>
@@ -195,12 +199,10 @@ export function TimelineItem({
           </span>
         )}
 
-        {/* The address line, one step quieter than everything above it. */}
         {metaItems.length > 0 && (
-          <InlineMeta
-            className="flex-wrap items-center text-sm text-tertiary tabular-nums"
-            items={metaItems}
-          />
+          <div className={META}>
+            <InlineMeta items={metaItems} />
+          </div>
         )}
       </div>
     </li>

@@ -46,9 +46,12 @@ const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
   defaultVariants: { isInvalid: false },
 })
 
-type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className'> & {
+type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className' | 'placeholder'> & {
+  /** Names the field, above it. */
   label: string
+  /** What's typed in it. */
   value: string
+  /** Called with the new text on every edit. */
   onChange: (value: string) => void
   /** The value failed to parse or check: a red border, and `aria-invalid`. */
   isInvalid?: boolean
@@ -59,6 +62,8 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onC
   feedback?: ReactNode
   /** A button inside the field's border, after the text: a TextFieldAction. */
   action?: ReactNode
+  /** Sample input, shown while it's empty: "example.com or 192.168.1.1". */
+  placeholder?: string
   /** On the field as a whole: its place in the form. */
   className?: string
 }
@@ -116,9 +121,13 @@ const actionVariants = cva(
 )
 
 interface TextFieldActionProps {
+  /** The label: a word, "Test". */
   children: string
+  /** Runs the action on the field's value. */
   onClick: MouseEventHandler<HTMLButtonElement>
+  /** Drops input and dims the button. */
   isDisabled?: boolean
+  /** Drops input and shows a spinner in the label's place. */
   isLoading?: boolean
   /** Names the button while loading, when only a spinner shows ("Testing"). */
   loadingLabel?: string

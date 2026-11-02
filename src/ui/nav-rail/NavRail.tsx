@@ -28,9 +28,11 @@ const itemVariants = cva(
 interface NavItemProps {
   /** Names the item, which shows only its icon; also its tooltip. */
   label: string
+  /** The icon. */
   icon: IconComponent
   /** The current page's item: tinted, with the accent bar. */
   isActive?: boolean
+  /** Goes to the page, or runs the action. */
   onClick: () => void
 }
 

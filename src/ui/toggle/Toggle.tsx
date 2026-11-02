@@ -15,12 +15,15 @@ const KNOB = cx(
 )
 
 interface ToggleProps {
+  /** Whether it's on. */
   isChecked: boolean
+  /** Called with the new state when the switch is flipped. */
   onChange: (isChecked: boolean) => void
   /** Names the switch, which shows no text of its own. */
   label: string
   /** Id of the text that explains the setting, read after the label. */
   'aria-describedby'?: string
+  /** Drops input and dims the switch. */
   isDisabled?: boolean
 }
 

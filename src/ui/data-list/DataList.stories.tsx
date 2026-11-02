@@ -20,7 +20,7 @@ const meta = {
   component: DataList,
   args: { children: ROWS },
   argTypes: {
-    density: { control: 'inline-radio', options: ['default', 'snug', 'compact'] },
+    density: { control: 'inline-radio', options: ['default', 'compact'] },
     children: { control: false },
   },
   // It lives in a card's body.
@@ -39,9 +39,6 @@ type Story = StoryObj<typeof meta>
 
 /** Signal's meter has no text baseline, so its row centres it (`align="center"`). */
 export const Default: Story = {}
-
-/** A short list. */
-export const Snug: Story = { args: { density: 'snug' } }
 
 /** A list repeated down a page. */
 export const Compact: Story = { args: { density: 'compact' } }
@@ -64,7 +61,7 @@ export const Stack: Story = {
   render: () => (
     <Card className="max-w-[320px]">
       <CardHeader title="Connection details" />
-      <CardBody>
+      <CardBody layout="flush">
         <DataListStack>
           <DataList>
             <DataRow label="Network" value="Home 5G" />
@@ -86,7 +83,7 @@ export const Stack: Story = {
 export const AllStates: Story = {
   render: () => (
     <div className="grid grid-cols-3 gap-12">
-      {(['default', 'snug', 'compact'] as const).map((density) => (
+      {(['default', 'compact'] as const).map((density) => (
         <Card key={density}>
           <CardHeader title={density} />
           <CardBody>

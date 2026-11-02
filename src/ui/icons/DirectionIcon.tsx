@@ -11,7 +11,9 @@ const rootVariants = cva('inline-flex items-center shrink-0', {
 export type SpeedSeries = 'down' | 'up'
 
 interface DirectionIconProps {
+  /** `down`, a blue down-arrow for download; `up`, a purple up-arrow for upload. */
   series: SpeedSeries
+  /** Its width and height in px: 14 by default. */
   size?: number
 }
 

@@ -17,6 +17,7 @@ interface DialogState {
 const DialogStateContext = createContext<DialogState>({ isOpen: true, onExitComplete: () => {} })
 
 interface DialogRootProps {
+  /** Opens the Dialog; false plays its leave animation, then unmounts it. */
   isOpen: boolean
   /** The component that renders the Dialog: mounted while open and while it leaves. */
   children: ReactNode
@@ -60,11 +61,13 @@ const HEADER = 'flex items-start justify-between gap-8 p-16'
 const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
 
 interface DialogProps {
+  /** Names the dialog. */
   title: ReactNode
   /** The line under the title, read as the dialog's description. */
   description?: ReactNode
   /** The body, in a recessed well. Omit for a dialog that's only a header and actions. */
   children?: ReactNode
+  /** The body well's layout and insets. */
   bodyClassName?: string
   /** A line under the body, on the panel: a caption or status. */
   footnote?: ReactNode
@@ -72,6 +75,7 @@ interface DialogProps {
   actions?: ReactNode
   /** Label for a button before the actions that closes the dialog. */
   cancelLabel?: string
+  /** Escape, the close button, Cancel and a backdrop click: close it here. */
   onClose: () => void
   /** False while something runs that closing would abandon: every way out is off. */
   canClose?: boolean

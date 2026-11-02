@@ -5,6 +5,8 @@ import { MetricValue } from '@/ui'
  *  other usage figure, and never shrinks, so a long name truncates instead. */
 export function ByteTotal({ bytes }: { bytes: number }): JSX.Element {
   return (
-    <MetricValue value={bytes} className="num shrink-0 text-sm text-secondary" format={formatBytes} />
+    <span className="shrink-0 text-sm text-secondary">
+      <MetricValue value={bytes} format={formatBytes} />
+    </span>
   )
 }

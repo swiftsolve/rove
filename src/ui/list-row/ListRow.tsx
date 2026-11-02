@@ -29,22 +29,19 @@ interface ListRowProps {
    * keeps its look and its place in the Tab order.
    */
   isDisabled?: boolean
-  /** Before the chevron, right-aligned: a meter, a value. */
-  trailing?: ReactNode
-  /** The row's content: an icon tile, a title and its description. */
+  /**
+   * The row's content: an icon tile, a title and its description. Anything
+   * right-aligned (a meter) goes last, after a text column that takes `flex-1`.
+   */
   children: ReactNode
 }
 
 /** A whole-row button in a card's list that opens something, with a trailing chevron. */
-export function ListRow({ onClick, isDisabled, trailing, children }: ListRowProps): JSX.Element {
+export function ListRow({ onClick, isDisabled, children }: ListRowProps): JSX.Element {
   return (
     <button type="button" className={ROW} {...pressableProps({ isDisabled, onClick })}>
       <span className="flex min-w-0 flex-1 items-center gap-12">{children}</span>
-      {/* One right-aligned unit, so every row's trailing column lines up. */}
-      <span className="flex shrink-0 items-center gap-10">
-        {trailing}
-        <ChevronRightIcon size={16} className={CHEVRON} />
-      </span>
+      <ChevronRightIcon size={16} className={CHEVRON} />
     </button>
   )
 }

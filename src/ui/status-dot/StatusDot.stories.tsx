@@ -7,8 +7,9 @@ const WORDS = { none: 'Online', calm: 'Connected', live: 'Live', busy: 'Scanning
 const meta = {
   title: 'Status and feedback/StatusDot',
   component: StatusDot,
-  args: { className: 'text-status-positive' },
+  args: { tone: 'positive' },
   argTypes: {
+    tone: { control: 'inline-radio', options: ['current', 'positive'] },
     pulse: { control: 'inline-radio', options: [undefined, 'calm', 'live', 'busy'] },
   },
   render: (args) => (
@@ -34,18 +35,33 @@ export const Live: Story = { args: { pulse: 'live' } }
 /** Work under way. */
 export const Busy: Story = { args: { pulse: 'busy' } }
 
-/** In a status colour other than the text's. */
-export const Warning: Story = { args: { pulse: 'calm', className: 'text-status-warning' } }
+/** In its words' colour: here, amber words. */
+export const Current: Story = {
+  args: { tone: 'current', pulse: 'calm' },
+  render: (args) => (
+    <span className="inline-flex items-center gap-6 text-caption text-warning">
+      <StatusDot {...args} />
+      Degraded
+    </span>
+  ),
+}
 
-/** Every pulse, in each status colour. */
+/** Every pulse: green beside quiet words, then in the words' own colour. */
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
-      {['text-status-positive', 'text-status-warning', 'text-status-negative'].map((color) => (
-        <div key={color} className="flex flex-wrap items-center gap-20">
+      {(
+        [
+          ['positive', 'text-secondary'],
+          ['current', 'text-positive'],
+          ['current', 'text-warning'],
+          ['current', 'text-negative'],
+        ] as const
+      ).map(([tone, words]) => (
+        <div key={words} className={`flex flex-wrap items-center gap-20 text-caption ${words}`}>
           {([undefined, 'calm', 'live', 'busy'] as const).map((pulse) => (
-            <span key={pulse ?? 'none'} className="inline-flex items-center gap-6 text-caption text-secondary">
-              <StatusDot pulse={pulse} className={color} />
+            <span key={pulse ?? 'none'} className="inline-flex items-center gap-6">
+              <StatusDot tone={tone} pulse={pulse} />
               {WORDS[pulse ?? 'none']}
             </span>
           ))}

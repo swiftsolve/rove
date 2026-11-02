@@ -40,8 +40,8 @@ const onNavigate = fn()
 const onToggleTheme = fn()
 
 /** Holds the current page, so clicking an item moves the active state. */
-function ClickableRail({ label, initialPage }: { label: string; initialPage: string }): JSX.Element {
-  const [page, setPage] = useState(initialPage)
+function ClickableRail({ label }: { label: string }): JSX.Element {
+  const [page, setPage] = useState('Home')
   const item = ({ label: itemLabel, icon }: Page): JSX.Element => (
     <NavItem
       key={itemLabel}
@@ -89,10 +89,5 @@ type Story = StoryObj<typeof meta>
 
 /** Home is the current page. Click an item to move the active state. */
 export const Default: Story = {
-  render: (args) => <ClickableRail label={args.label} initialPage="Home" />,
-}
-
-/** A footer item can be the current page too. */
-export const SettingsActive: Story = {
-  render: (args) => <ClickableRail label={args.label} initialPage="Settings" />,
+  render: (args) => <ClickableRail label={args.label} />,
 }

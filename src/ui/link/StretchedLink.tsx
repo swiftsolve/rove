@@ -1,9 +1,11 @@
-import { forwardRef, type ButtonHTMLAttributes } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler } from 'react'
 import { cn } from '../foundations/cn'
 
-type StretchedLinkProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children' | 'role'> & {
+type StretchedLinkProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children' | 'role' | 'onClick'> & {
   /** Names it: it has no text of its own, since the container's content shows through. */
   label: string
+  /** Opens the view the container summarises. */
+  onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
 /**

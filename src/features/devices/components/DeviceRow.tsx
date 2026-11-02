@@ -39,18 +39,18 @@ const DEVICE_ROW = cx(
  *  glance. The gateway is green whatever its kind; watches and unknown devices
  *  stay neutral. */
 const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
-  router: 'positive',
-  nas: 'download',
-  computer: 'download',
-  tablet: 'download',
-  phone: 'download',
+  router: 'var(--status-positive)',
+  nas: 'var(--series-down)',
+  computer: 'var(--series-down)',
+  tablet: 'var(--series-down)',
+  phone: 'var(--series-down)',
   watch: 'neutral',
-  console: 'upload',
-  tv: 'upload',
-  printer: 'upload',
-  camera: 'warning',
-  speaker: 'warning',
-  iot: 'warning',
+  console: 'var(--series-up)',
+  tv: 'var(--series-up)',
+  printer: 'var(--series-up)',
+  camera: 'var(--status-warning)',
+  speaker: 'var(--status-warning)',
+  iot: 'var(--status-warning)',
   unknown: 'neutral',
 }
 
@@ -73,9 +73,9 @@ const DEVICE_NAME = cx(
 // Device kind, vendor, OS and model as a subtitle line under the name. It stays
 // on one line and ellipsizes when space is tight, so an offline device's age
 // remains a clean right-hand column instead of wrapping beneath it.
-const DEVICE_META = 'flex min-w-0 items-baseline gap-8'
+const DEVICE_META = 'text-caption flex min-w-0 items-baseline gap-8'
 
-const DEVICE_KIND = 'text-caption min-w-0 flex-[0_1_auto] flex-nowrap overflow-hidden whitespace-nowrap'
+const DEVICE_KIND = 'min-w-0 flex-[0_1_auto]'
 
 // The privacy-randomized note, set off from the MAC by a small dot.
 const RANDOMIZED_TAG = cx(
@@ -146,7 +146,7 @@ function DeviceMetaLine({
     <div className={DEVICE_META}>
       {metaParts.length > 0 && <InlineMeta items={metaParts} className={DEVICE_KIND} shouldTruncate />}
       {/* ml-auto keeps the age flush right even when the type label is absent. */}
-      {lastSeenLabel && <span className="text-caption ml-auto shrink-0">{lastSeenLabel}</span>}
+      {lastSeenLabel && <span className="ml-auto shrink-0">{lastSeenLabel}</span>}
     </div>
   )
 }
@@ -158,46 +158,49 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
   return (
-    <Card as="li" className={DEVICE_ROW}>
-      <IconTile color={device.isGateway ? 'positive' : KIND_COLORS[device.kind]}>
-        <KindIcon kind={device.kind} />
-      </IconTile>
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        {/* Name on the left, status on the right. mb-2 adds a touch more air
-            below the (larger) name, on top of the column's 4px gap. */}
-        <div className="mb-2 flex items-start justify-between gap-8">
-          <h2 className={DEVICE_NAME}>
-            <InlineMeta items={name} />
-          </h2>
-          <span
-            className={stateVariants({ isReachable: device.isReachable })}
-            title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
-          >
-            <StatusDot />
-            {device.isReachable ? 'Online' : 'Offline'}
-          </span>
-        </div>
-
-        <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
-
-        {/* MAC on the left, IP pinned to the bottom-right. */}
-        <div className="flex items-baseline justify-between gap-8">
-          <span className="text-caption inline-flex min-w-0 items-baseline gap-8 tabular-nums">
-            <span>
-              <span className="sr-only">MAC address </span>
-              {formatMac(device.mac)}
+    <Card as="li">
+      <div className={DEVICE_ROW}>
+        <IconTile
+          color={device.isGateway ? 'var(--status-positive)' : KIND_COLORS[device.kind]}
+          icon={<KindIcon kind={device.kind} />}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          {/* Name on the left, status on the right. mb-2 adds a touch more air
+              below the (larger) name, on top of the column's 4px gap. */}
+          <div className="mb-2 flex items-start justify-between gap-8">
+            <h2 className={DEVICE_NAME}>
+              <InlineMeta items={name} />
+            </h2>
+            <span
+              className={stateVariants({ isReachable: device.isReachable })}
+              title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
+            >
+              <StatusDot />
+              {device.isReachable ? 'Online' : 'Offline'}
             </span>
-            {shouldShowRandomizedTag && (
-              <span className={RANDOMIZED_TAG} title="Privacy-randomized MAC address">
-                <span aria-hidden>Randomized</span>
-                <span className="sr-only">, privacy-randomized</span>
+          </div>
+
+          <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
+
+          {/* MAC on the left, IP pinned to the bottom-right. */}
+          <div className="flex items-baseline justify-between gap-8">
+            <span className="text-caption inline-flex min-w-0 items-baseline gap-8 tabular-nums">
+              <span>
+                <span className="sr-only">MAC address </span>
+                {formatMac(device.mac)}
               </span>
-            )}
-          </span>
-          <span className="num shrink-0 text-secondary">
-            <span className="sr-only">IP address </span>
-            {device.ip}
-          </span>
+              {shouldShowRandomizedTag && (
+                <span className={RANDOMIZED_TAG} title="Privacy-randomized MAC address">
+                  <span aria-hidden>Randomized</span>
+                  <span className="sr-only">, privacy-randomized</span>
+                </span>
+              )}
+            </span>
+            <span className="num shrink-0 text-secondary">
+              <span className="sr-only">IP address </span>
+              {device.ip}
+            </span>
+          </div>
         </div>
       </div>
     </Card>

@@ -12,10 +12,10 @@ export const CAPABILITY_LEVEL_FILL_COLORS: Record<CapabilityLevel, string> = {
 
 /** Each level's IconTile colour. */
 export const CAPABILITY_LEVEL_TILE_COLORS: Record<CapabilityLevel, IconTileColor> = {
-  excellent: 'positive',
-  good: 'good',
-  fair: 'warning',
-  poor: 'poor',
+  excellent: 'var(--status-positive)',
+  good: 'var(--status-good)',
+  fair: 'var(--status-warning)',
+  poor: 'var(--status-poor)',
   unsupported: 'neutral',
 }
 

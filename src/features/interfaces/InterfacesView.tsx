@@ -2,6 +2,7 @@ import type { NetworkInterfaceSummary } from '@/types'
 import {
   Button,
   Card,
+  CardBody,
   DataList,
   DataRow,
   Banner,
@@ -23,7 +24,7 @@ import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 
 // Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
-const TILE_COLORS = { wifi: 'download', ethernet: 'positive', unknown: 'neutral' } as const satisfies Record<
+const TILE_COLORS = { wifi: 'var(--series-down)', ethernet: 'var(--status-positive)', unknown: 'neutral' } as const satisfies Record<
   string,
   IconTileColor
 >
@@ -54,7 +55,6 @@ const PANEL_HEADER = cx(
 // With no divider the header sets most of the gap above the fields; a small top
 // pad adds a little room between the name and the first label. The rows carry
 // only a few fields, so they're compact.
-const PANEL_BODY = 'px-(--card-body-padding) pt-6 pb-(--card-body-padding)'
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
@@ -67,9 +67,10 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
     <Card as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
-          <IconTile color={TILE_COLORS[iface.connectionType]}>
-            <InterfaceIcon iface={iface} />
-          </IconTile>
+          <IconTile
+            color={TILE_COLORS[iface.connectionType]}
+            icon={<InterfaceIcon iface={iface} />}
+          />
           {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}
           <h2 className="text-heading-large min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
@@ -87,15 +88,17 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
         </span>
       </div>
 
-      <DataList className={PANEL_BODY} density="compact">
-        <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
-        <DataRow
-          label="Link speed"
-          value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
-        />
-        <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
-        <DataRow label="MAC" value={formatMac(iface.macAddress)} />
-      </DataList>
+      <CardBody>
+        <DataList density="compact">
+          <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
+          <DataRow
+            label="Link speed"
+            value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
+          />
+          <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
+          <DataRow label="MAC" value={formatMac(iface.macAddress)} />
+        </DataList>
+      </CardBody>
     </Card>
   )
 }

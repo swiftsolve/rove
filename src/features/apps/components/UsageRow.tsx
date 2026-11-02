@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { ChevronRightIcon, StretchedLink, type VariantOf } from '@/ui'
+import { ChevronRightIcon, SplitBar, StretchedLink, type VariantOf } from '@/ui'
 import { totalBytes, transferLabel, type Transfer } from '@/features/apps/utils/transfer'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { RowName } from '@/features/apps/components/RowName'
-import { SplitBar } from '@/features/apps/components/SplitBar'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 // A row runs edge to edge in the card and owns the horizontal inset, so the

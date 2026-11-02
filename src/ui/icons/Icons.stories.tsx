@@ -11,7 +11,7 @@ const meta = {
   title: 'Foundations/Icons',
   argTypes: {
     size: { control: { type: 'range', min: 12, max: 32, step: 1 }, description: 'Unset: each icon at its own default size.' },
-    className: { control: false },
+    className: { control: false, description: "Its colour (`text-positive`) and place in a line. It's the text colour by default." },
   },
 } satisfies Meta<IconProps>
 

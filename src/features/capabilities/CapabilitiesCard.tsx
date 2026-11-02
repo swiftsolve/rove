@@ -125,9 +125,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
             <Tooltip content={capability.label} side="top">
-              <IconTile color="neutral">
-                <CapabilityIcon id={capability.id} size={16} />
-              </IconTile>
+              <IconTile color="neutral" icon={<CapabilityIcon id={capability.id} size={16} />} />
             </Tooltip>
             <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
           </li>
@@ -168,9 +166,8 @@ function ResultCell({
           label={`${capability.label}: ${levelLabel}`}
           onClick={() => onOpenDetails(capability.id)}
           isDisabled={isTesting}
-        >
-          <CapabilityIcon id={capability.id} size={16} />
-        </IconTileButton>
+          icon={<CapabilityIcon id={capability.id} size={16} />}
+        />
       </Tooltip>
       <CapabilityMeter
         level={capability.level}
@@ -223,8 +220,7 @@ export function CapabilitiesCard(): JSX.Element {
   }
 
   return (
-    // Top-placement tooltips must not be clipped by the card.
-    <Card className="overflow-visible">
+    <Card>
       <CardHeader
         title="Capabilities"
         icon={<ZapIcon size={15} />}

@@ -13,10 +13,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Positive: Story = { args: { tone: 'positive', children: 'Up' } }
+/** Good news: the ISP card's VPN flag. */
+export const Positive: Story = { args: { tone: 'positive', children: 'VPN' } }
 
-/** A heads-up, not an error: the ISP card's VPN flag. */
-export const Warning: Story = { args: { tone: 'warning', children: 'VPN' } }
+/** A heads-up, not an error. */
+export const Warning: Story = { args: { tone: 'warning', children: 'Slow' } }
 
 export const Negative: Story = { args: { tone: 'negative', children: 'Down' } }
 
@@ -27,8 +28,8 @@ export const Live: Story = { render: () => <LiveBadge /> }
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-12">
-      <Badge tone="positive">Up</Badge>
-      <Badge tone="warning">VPN</Badge>
+      <Badge tone="positive">VPN</Badge>
+      <Badge tone="warning">Slow</Badge>
       <Badge tone="negative">Down</Badge>
       <LiveBadge />
       <LiveBadge>Streaming</LiveBadge>

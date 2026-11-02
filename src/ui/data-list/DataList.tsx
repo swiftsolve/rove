@@ -4,13 +4,12 @@ import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 
 // The air between rows, set on the list as a variable its rows read, so it
-// reaches rows rendered by another component: 8px, or 6px and 4px for a short
-// or repeated list.
+// reaches rows rendered by another component: 8px, or 4px for a short or
+// repeated list.
 const listVariants = cva(null, {
   variants: {
     density: {
       default: '[--data-row-py:var(--row-padding-y)]',
-      snug: '[--data-row-py:var(--spacing-6)]',
       compact: '[--data-row-py:var(--spacing-4)]',
     },
   },
@@ -21,7 +20,6 @@ const listVariants = cva(null, {
 // container and the last to the bottom, so `py` only sets the gap between rows.
 const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt-0 last:pb-0', {
   variants: {
-    /** `center` for a value with no text baseline of its own (signal bars, a badge). */
     align: { baseline: 'items-baseline', center: 'items-center' },
   },
   defaultVariants: { align: 'baseline' },
@@ -31,7 +29,9 @@ const LABEL = 'text-overline shrink-0'
 const VALUE = 'text-number num text-right'
 
 interface DataListProps {
+  /** The air between rows: 8px by default, `compact` 4px for a short or repeated list. */
   density?: VariantOf<typeof listVariants, 'density'>
+  /** Its place in a layout. */
   className?: string
   /** DataRows, as direct children (fragments are fine). */
   children: ReactNode
@@ -46,9 +46,13 @@ export function DataList({ className, density, children }: DataListProps): JSX.E
 }
 
 interface DataRowProps {
+  /** `center` for a value with no text baseline of its own (signal bars, a badge). */
   align?: VariantOf<typeof rowVariants, 'align'>
+  /** What the value is: "Gateway". */
   label: ReactNode
+  /** The value as text. With no value and no children, the row isn't drawn. */
   value?: string | null
+  /** A value that isn't plain text (a badge, signal bars), in `value`'s place. */
   children?: ReactNode
 }
 
@@ -65,11 +69,27 @@ export function DataRow({ label, value, children, align }: DataRowProps): JSX.El
 
 /**
  * DataLists grouped by topic, one after another: a hairline between groups,
- * with 12px of air either side of it.
+ * with 12px of air either side of it. The hairline runs end to end, so place
+ * the stack flush to the card's sides (`CardBody layout="flush"`); each
+ * group carries the side inset itself.
  */
-export function DataListStack({ className, children }: { className?: string; children: ReactNode }): JSX.Element {
+export function DataListStack({
+  className,
+  children,
+}: {
+  /** Its place in a layout. */
+  className?: string
+  /** The DataLists, one per topic. */
+  children: ReactNode
+}): JSX.Element {
   return (
-    <div className={cn('divide-y divide-line [&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12', className)}>
+    <div
+      className={cn(
+        'divide-y divide-line [&>dl]:px-(--card-body-padding)',
+        '[&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
+        className,
+      )}
+    >
       {children}
     </div>
   )

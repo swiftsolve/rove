@@ -30,7 +30,7 @@ export function OnlineIndicator({
       title="Responding to the last scan"
       aria-hidden={isActive ? undefined : true}
     >
-      <StatusDot className={STATUS_DOT} />
+      <StatusDot tone="positive" className={STATUS_DOT} />
       <span className="num text-secondary">{count}</span> online
     </span>
   )

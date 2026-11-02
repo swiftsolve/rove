@@ -134,11 +134,19 @@ for what. Read it before writing or changing UI. For where files live, see
   joins fixed classes. `cn` lists every theme name so tailwind-merge can group
   them; when you add one to `tailwind.css`, add it there too.
   `npm run lint` runs `scripts/check-cn-theme.mjs`, which fails until you do.
-- A view adjusts a shared component through its props: a variant
-  (`density`, `align`, `shouldTruncate`) or the `className` of one of its
-  parts (`CardBody`, `CardFooter`), never a selector into its DOM
-  (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
-  variant. The one exception is a `:has()` selector in a `.module.css` (below);
+- A view adjusts a shared component through its variants (`density`,
+  `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
+  its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
+  variant.
+- `className` on a library component is only for its place in a layout:
+  margin, position, z-index, size, flex or grid item, its own text alignment,
+  rounding to fit its container, showing or hiding it. Padding, inner layout,
+  type, colour or surface is a missing variant, or a style for an element the
+  view owns: a card that lays out its own content does it in a `<div>`
+  inside the Card; InlineMeta and MetricValue take their type from the line
+  they sit in. `npm run lint` runs `scripts/check-ui-classname.mjs`, which
+  fails on a restyle. Icons (coloured by `className`) and the unstyled
+  `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in a `.module.css` (below);
   InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
 - Buttons are `Button`, `IconButton` and `Link`, never a hand-written
   `<button>`.
@@ -201,8 +209,8 @@ both, and a raw `<button>` outside the library is a lint error.
   - Overlays: dialog and tooltip
   - Status and feedback: badge, status-dot, spinner, loading-state,
     banner and empty-state
-  - Data display: data-list, readout, metric-value, bar-meter, list-row and
-    icon-tile
+  - Data display: data-list, readout, metric-value, bar-meter, split-bar,
+    list-row and icon-tile
   - Containers: card, collapsible and separator
   - App frame: title-bar, nav-rail and page-header
 
@@ -257,17 +265,18 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible; the panel animates its height. |
-| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
+| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `isInteractive` lifts on hover and presses in, for a card with a `StretchedLink`. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
 | Card list | `CardList` | A list that is one card: its `<li>` rows, with a hairline between them running edge to edge. `label` names it. |
-| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between. |
-| List row | `ListRow` | A whole-row button that opens something, with a trailing chevron and optional `trailing` content. |
+| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between that runs end to end: place it flush to the card's sides (`CardBody layout="flush"`), and it insets each group. |
+| List row | `ListRow` | A whole-row button that opens something, with a chevron on the right. Right-aligned content (a meter) is its last child. |
 | — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
-| Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
-| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`size`, `color`): a status, a series or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
+| Status dot | `StatusDot` | A 5px dot beside status words, in their colour or `tone="positive"`; `pulse` calm, live or busy. |
+| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`icon`, `size`, `color`): any colour, usually a token (`var(--series-down)`), or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
 | Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
-| Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
-| Metric value | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |
+| Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
+| Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
+| Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. |
 | Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |

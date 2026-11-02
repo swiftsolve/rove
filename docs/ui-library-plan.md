@@ -16,6 +16,10 @@
 - The Apps, Hosts and Traffic views are deduplicated.
 - The audit's bugs are fixed, and fetching moved from effects into query hooks.
 - A raw `<button>` outside the library is a lint error.
+- `className` on a library component is placement only, and a lint check
+  fails on a restyle. CardBody gained `layout`, Card `isInteractive` and
+  StatusDot `tone`; a padded `li` card lays out its content in its own
+  element.
 - Gates: DOM tests, `screenshots --stable` diffs and the a11y audit.
 
 **Left as follow-ups:**
@@ -30,13 +34,11 @@
   - Move their untested logic into tested `utils/`.
   - Memoise the timeline's per-second grouping.
 - **Phase 6:**
-  - Hand-built full-bleed footers and padded `li` cards should become
-    CardFooter and Card variants.
+  - Hand-built full-bleed footers (Speed history's banner, the capability
+    verdict) should become CardFooter.
 - **Design questions:**
   - Badge's tint is 15%, which no token has (the scale steps 14% to 22%).
     Move it to `tint-md`, or add a step?
-  - The Devices card's "Discover" button has tighter sides than soft sm.
-    Make it a size, or match soft sm?
 - **Phase 10:**
   - Move component styles out of `utilities.css`.
   - Split colour out of the type utilities.

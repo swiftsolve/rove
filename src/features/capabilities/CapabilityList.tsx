@@ -20,7 +20,8 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
 // identically. The card body's own padding supplies the outer breathing room.
 const LIST = 'flex flex-col'
 
-const ROW_TEXT = 'flex min-w-0 flex-col'
+// It takes the free width, so the meter after it sits on the right.
+const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
 
 function CapabilityRow({
   capability,
@@ -33,25 +34,19 @@ function CapabilityRow({
 }): JSX.Element {
   return (
     <li>
-      <ListRow
-        onClick={onOpen}
-        isDisabled={isTesting}
-        trailing={
-          <>
-            <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
-            {/* The bars carry the rating visually; name it for screen readers. */}
-            <span className="sr-only">{CAPABILITY_LEVEL_LABELS[capability.level]}</span>
-          </>
-        }
-      >
+      <ListRow onClick={onOpen} isDisabled={isTesting}>
         {/* Muted while a test runs: the rating is about to change. */}
-        <IconTile color={isTesting ? 'neutral' : CAPABILITY_LEVEL_TILE_COLORS[capability.level]}>
-          <CapabilityIcon id={capability.id} size={17} />
-        </IconTile>
+        <IconTile
+          color={isTesting ? 'neutral' : CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
+          icon={<CapabilityIcon id={capability.id} size={17} />}
+        />
         <span className={ROW_TEXT}>
           <span className="text-body truncate">{capability.label}</span>
           <span className="text-body-small truncate">{capability.description}</span>
         </span>
+        <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
+        {/* The bars carry the rating visually; name it for screen readers. */}
+        <span className="sr-only">{CAPABILITY_LEVEL_LABELS[capability.level]}</span>
       </ListRow>
     </li>
   )
@@ -65,9 +60,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
   return (
     <li className={PREVIEW_ROW}>
       <div className="flex min-w-0 flex-1 items-center gap-12">
-        <IconTile color="neutral">
-          <CapabilityIcon id={definition.id} size={17} />
-        </IconTile>
+        <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
           <span className="text-body truncate">{definition.label}</span>
           <span className="text-body-small truncate">{definition.description}</span>

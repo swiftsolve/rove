@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 import { useSetting } from '@/hooks/useSetting'
 import { useManualUpdateCheck, type UpdateCheckState } from '@/features/settings/hooks/useManualUpdateCheck'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
@@ -41,18 +41,6 @@ const statusVariants = cva('flex items-center text-xs', {
     },
   },
 })
-
-// Rows carry their own symmetric vertical padding, like the Speed page's
-// capability list, so the column has no gap and the body no top padding.
-const LIST = 'flex flex-col pt-0'
-
-// The update-status footer has symmetric padding so the status text sits
-// centred in the inset band. With the band present, the body drops its
-// bottom padding so only the last row's own padding sits above it; when idle
-// (no band) the body keeps it so the card doesn't look cramped.
-const UPDATES_FOOTER = 'mt-12 py-12'
-const UPDATES_LIST_ABOVE_FOOTER = cx(LIST, 'pb-0')
-
 
 const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
 const ROW_TITLE = 'text-md font-medium text-primary'
@@ -159,7 +147,8 @@ export function SettingsView(): JSX.Element {
 
       <Card>
         <CardHeader title="Updates" />
-        <CardBody className={checkResult != null ? UPDATES_LIST_ABOVE_FOOTER : LIST}>
+        {/* Rows carry their own vertical padding, like the Speed page's capability list. */}
+        <CardBody layout="rows">
           <SettingRow
             title="Check for updates automatically"
             description="Look for a newer signed release each time Rove launches."
@@ -187,12 +176,12 @@ export function SettingsView(): JSX.Element {
             )}
           />
         </CardBody>
-        {checkResult != null && <CardFooter className={UPDATES_FOOTER}>{checkResult}</CardFooter>}
+        {checkResult != null && <CardFooter>{checkResult}</CardFooter>}
       </Card>
 
       <Card>
         <CardHeader title="Appearance" />
-        <CardBody className={LIST}>
+        <CardBody layout="rows">
           <div className={rowVariants({ isStacked: true })}>
             <div className={ROW_TEXT}>
               <span id={themeLabelId} className={ROW_TITLE}>
@@ -221,7 +210,7 @@ export function SettingsView(): JSX.Element {
 
       <Card>
         <CardHeader title="About" />
-        <CardBody className={LIST}>
+        <CardBody layout="rows">
           {/* Reads like a Speed-page capability row. */}
           <ListRow onClick={() => navigate({ tab: 'about' })}>
             <span className={ROW_TEXT}>

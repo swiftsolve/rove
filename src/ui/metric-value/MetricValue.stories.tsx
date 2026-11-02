@@ -7,11 +7,19 @@ const formatMs = (n: number): string => `${Math.round(n)} ms`
 const meta = {
   title: 'Data display/MetricValue',
   component: MetricValue,
-  args: { value: 42, format: formatMs, className: 'text-number num' },
+  args: { value: 42, format: formatMs },
   argTypes: {
     status: { control: 'inline-radio', options: [undefined, 'positive', 'warning', 'negative'] },
     format: { control: false },
   },
+  // It takes its size and colour from the text it sits in.
+  decorators: [
+    (Story) => (
+      <span className="text-number">
+        <Story />
+      </span>
+    ),
+  ],
 } satisfies Meta<typeof MetricValue>
 
 export default meta
@@ -42,7 +50,11 @@ function PollingMetric(): JSX.Element {
     return () => clearInterval(id)
   }, [])
   const value = POLLS[poll] ?? 0
-  return <MetricValue value={value} status={statusOf(value)} format={formatMs} className="metric-value" />
+  return (
+    <span className="metric-value">
+      <MetricValue value={value} status={statusOf(value)} format={formatMs} />
+    </span>
+  )
 }
 
 /** A new poll every two seconds: it eases to each value, up or down. */
@@ -51,7 +63,7 @@ export const Easing: Story = { render: () => <PollingMetric /> }
 /** Every status. */
 export const AllStates: Story = {
   render: () => (
-    <div className="flex flex-wrap items-baseline gap-20 text-number num">
+    <div className="flex flex-wrap items-baseline gap-20">
       <MetricValue value={42} format={formatMs} />
       <MetricValue value={42} status="positive" format={formatMs} />
       <MetricValue value={180} status="warning" format={formatMs} />

@@ -45,9 +45,9 @@ import styles from './ConnectionCard.module.css'
 
 // The connection icon's tile, coloured by the kind of connection.
 const STRIP_ICON_COLORS = {
-  wifi: 'download',
-  ethernet: 'positive',
-  disconnected: 'negative',
+  wifi: 'var(--series-down)',
+  ethernet: 'var(--status-positive)',
+  disconnected: 'var(--status-negative)',
 } as const satisfies Record<string, IconTileColor>
 
 const signalMeterVariants = cva('flex items-center gap-8', {
@@ -99,10 +99,7 @@ const chevronVariants = cva(
 // rows hold their inset for the whole height animation; the wrapper around it
 // does the clipping. Its groups (link, addresses, hardware) are split by a
 // hairline that runs the card's full width, with a row gap either side.
-const DETAILS = 'row-list bg-inset py-(--card-header-padding-y)'
-
-// A group carries the side inset, so the hairlines between groups don't.
-const DETAILS_GROUP = 'px-(--card-body-padding)'
+const DETAILS = 'bg-inset py-(--card-header-padding-y)'
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
 // `shouldTruncate`; the security badge's item in ConnectionCard.module.css).
@@ -325,18 +322,15 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
             size="lg"
             color={STRIP_ICON_COLORS[display.variant]}
             className="relative z-1 pointer-events-none self-center"
-          >
-            <ConnectionIcon variant={display.variant} />
-          </IconTile>
+            icon={<ConnectionIcon variant={display.variant} />}
+          />
           <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
             <h2 id={titleId} className="text-heading-large truncate">
               {display.title}
             </h2>
-            {subItems.length > 0 ? (
-              <InlineMeta className={STRIP_SUB} items={subItems} shouldTruncate />
-            ) : (
-              <div className={STRIP_SUB}>{display.subtitle}</div>
-            )}
+            <div className={STRIP_SUB}>
+              {subItems.length > 0 ? <InlineMeta items={subItems} shouldTruncate /> : display.subtitle}
+            </div>
           </div>
           {isWifiNetwork(info) && (
             // Raised above the toggle, so it takes its own click.
@@ -357,39 +351,41 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
         <CollapsiblePanel>
           {/* Grouped by topic: the link itself, then the addresses from the
               device outward, then the hardware it runs over. */}
-          <DataListStack className={DETAILS}>
-            {isWifiNetwork(info) && (
-              <DataList className={DETAILS_GROUP} density="compact">
-                <WifiLinkRows info={info} linkSpeed={linkSpeed} />
-              </DataList>
-            )}
-            {isEthernetNetwork(info) && (
-              <DataList className={DETAILS_GROUP} density="compact">
-                <EthernetLinkRows info={info} linkSpeed={linkSpeed} />
-              </DataList>
-            )}
-            <DataList className={DETAILS_GROUP} density="compact">
-              <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
-              <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
-              {info.dns.length > 0 && (
-                <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
+          <div className={DETAILS}>
+            <DataListStack>
+              {isWifiNetwork(info) && (
+                <DataList density="compact">
+                  <WifiLinkRows info={info} linkSpeed={linkSpeed} />
+                </DataList>
               )}
-              <DataRow
-                label="Public IP"
-                value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
-              />
-            </DataList>
-            <DataList className={DETAILS_GROUP} density="compact">
               {isEthernetNetwork(info) && (
-                <>
-                  <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
-                  <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
-                </>
+                <DataList density="compact">
+                  <EthernetLinkRows info={info} linkSpeed={linkSpeed} />
+                </DataList>
               )}
-              <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-              <DataRow label="MAC" value={formatMac(info.macAddress)} />
-            </DataList>
-          </DataListStack>
+              <DataList density="compact">
+                <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
+                <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
+                {info.dns.length > 0 && (
+                  <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />
+                )}
+                <DataRow
+                  label="Public IP"
+                  value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)}
+                />
+              </DataList>
+              <DataList density="compact">
+                {isEthernetNetwork(info) && (
+                  <>
+                    <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
+                    <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
+                  </>
+                )}
+                <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
+                <DataRow label="MAC" value={formatMac(info.macAddress)} />
+              </DataList>
+            </DataListStack>
+          </div>
         </CollapsiblePanel>
       </Collapsible>
     </Card>

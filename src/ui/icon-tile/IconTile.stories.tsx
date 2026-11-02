@@ -1,19 +1,39 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { DeviceIcon, RouterIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, WifiOffIcon } from '../icons/Icons'
+import * as Icons from '../icons/Icons'
+import { DeviceIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, WifiOffIcon } from '../icons/Icons'
 import { IconTile, IconTileButton } from './IconTile'
 
 const SIZES = ['sm', 'md', 'lg'] as const
-const COLORS = ['positive', 'good', 'warning', 'poor', 'negative', 'download', 'upload', 'neutral'] as const
+// The colours the app's tiles use. The tile takes any CSS colour.
+const COLORS = [
+  'var(--status-positive)',
+  'var(--status-good)',
+  'var(--status-warning)',
+  'var(--status-poor)',
+  'var(--status-negative)',
+  'var(--series-down)',
+  'var(--series-up)',
+  'neutral',
+]
+
+// Every icon the library exports (the types are gone at runtime), by name, for
+// the icon control, as Figma's Icon swap offers.
+const ICONS = Object.fromEntries(
+  Object.entries(Icons)
+    .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, Icon]) => [name, <Icon key={name} size={16} />]),
+)
 
 const meta = {
   title: 'Data display/IconTile',
   component: IconTile,
-  args: { color: 'positive', children: <RouterIcon size={16} /> },
+  args: { color: 'var(--status-positive)', icon: 'RouterIcon' },
   argTypes: {
     size: { control: 'inline-radio', options: SIZES },
-    color: { control: 'select', options: COLORS },
-    children: { control: false },
+    color: { control: 'text' },
+    icon: { control: 'select', options: Object.keys(ICONS), mapping: ICONS },
   },
 } satisfies Meta<typeof IconTile>
 
@@ -25,36 +45,43 @@ export const Default: Story = {}
 
 /** An absent connection: the same wash, in the negative colour. */
 export const Disconnected: Story = {
-  args: { size: 'lg', color: 'negative', children: <WifiOffIcon size={18} /> },
+  args: { size: 'lg', color: 'var(--status-negative)', icon: <WifiOffIcon size={18} /> },
 }
 
 /** The sunken fill, for something uncategorised or not yet rated. */
-export const Neutral: Story = { args: { color: 'neutral', children: <UnknownDeviceIcon size={16} /> } }
+export const Neutral: Story = { args: { color: 'neutral', icon: <UnknownDeviceIcon size={16} /> } }
 
 /** The connection strip's tile. */
 export const Large: Story = {
-  args: { size: 'lg', color: 'download', children: <WifiIcon size={18} /> },
+  args: { size: 'lg', color: 'var(--series-down)', icon: <WifiIcon size={18} /> },
 }
 
 /** Opens what it stands for: hover deepens the tint and lifts it. */
 export const Button: Story = {
   render: () => (
-    <IconTileButton color="good" label="Video calls: Good" onClick={fn()}>
-      <VideoCallIcon size={16} />
-    </IconTileButton>
+    <IconTileButton
+      color="var(--status-good)"
+      label="Video calls: Good"
+      onClick={fn()}
+      icon={<VideoCallIcon size={16} />}
+    />
   ),
 }
 
 /** Inert while a test replaces what it opens. */
 export const ButtonDisabled: Story = {
   render: () => (
-    <IconTileButton color="neutral" label="Video calls: Testing" onClick={fn()} isDisabled>
-      <VideoCallIcon size={16} />
-    </IconTileButton>
+    <IconTileButton
+      color="neutral"
+      label="Video calls: Testing"
+      onClick={fn()}
+      isDisabled
+      icon={<VideoCallIcon size={16} />}
+    />
   ),
 }
 
-/** Every size in every colour, then the button form. */
+/** Every size in each colour the app uses, then the button form. */
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
@@ -62,19 +89,24 @@ export const AllStates: Story = {
       <div className="grid grid-cols-[repeat(8,max-content)] items-center gap-12">
         {SIZES.map((size) =>
           COLORS.map((color) => (
-            <IconTile key={`${size}-${color}`} size={size} color={color}>
-              <DeviceIcon size={16} />
-            </IconTile>
+            <IconTile key={`${size}-${color}`} size={size} color={color} icon={<DeviceIcon size={16} />} />
           )),
         )}
       </div>
       <div className="flex items-center gap-12">
-        <IconTileButton color="positive" label="Video calls: Excellent" onClick={fn()}>
-          <VideoCallIcon size={16} />
-        </IconTileButton>
-        <IconTileButton color="neutral" label="Video calls: Testing" onClick={fn()} isDisabled>
-          <VideoCallIcon size={16} />
-        </IconTileButton>
+        <IconTileButton
+          color="var(--status-positive)"
+          label="Video calls: Excellent"
+          onClick={fn()}
+          icon={<VideoCallIcon size={16} />}
+        />
+        <IconTileButton
+          color="neutral"
+          label="Video calls: Testing"
+          onClick={fn()}
+          isDisabled
+          icon={<VideoCallIcon size={16} />}
+        />
       </div>
     </div>
   ),

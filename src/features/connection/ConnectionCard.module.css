@@ -7,12 +7,12 @@
      the lock up with the IP and band. When space runs out the protocol text
      ellipsizes and the IP holds its full width (even a sub-pixel squeeze would
      otherwise ellipsize it). */
-  .strip-sub:global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
+  .strip-sub :global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
     display: flex;
     overflow: hidden;
   }
 
-  .strip-sub:global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
+  .strip-sub :global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
     flex-shrink: 0;
   }
 }

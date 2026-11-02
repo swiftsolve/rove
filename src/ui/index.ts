@@ -31,6 +31,7 @@ export { DataList, DataListStack, DataRow } from './data-list/DataList'
 export { Readout } from './readout/Readout'
 export { MetricValue, type MetricStatus } from './metric-value/MetricValue'
 export { BarMeter } from './bar-meter/BarMeter'
+export { SplitBar } from './split-bar/SplitBar'
 export { ListRow } from './list-row/ListRow'
 export { IconTile, IconTileButton, type IconTileColor } from './icon-tile/IconTile'
 

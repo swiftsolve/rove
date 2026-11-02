@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   busiestTotal,
-  percentOf,
   totalBytes,
   transferLabel,
 } from '@/features/apps/utils/transfer'
@@ -24,17 +23,6 @@ describe('busiestTotal', () => {
 
   it('is zero for an empty list', () => {
     expect(busiestTotal([])).toBe(0)
-  })
-})
-
-describe('percentOf', () => {
-  it('scales a value against the max', () => {
-    expect(percentOf(25, 200)).toBe(12.5)
-    expect(percentOf(200, 200)).toBe(100)
-  })
-
-  it('is zero when the max is zero, rather than NaN', () => {
-    expect(percentOf(0, 0)).toBe(0)
   })
 })
 

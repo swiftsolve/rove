@@ -40,7 +40,7 @@ export function AboutView(): JSX.Element {
 
       <Card>
         <CardHeader title="Details" />
-        <CardBody className="row-list">
+        <CardBody>
           <DataList>
             <DataRow label="Version" value={version ?? '—'} />
             <DataRow label="Platform" value={platformLabel()} />

@@ -6,6 +6,11 @@ import 'ldrs/react/Waveform.css'
  * state across the app shares one look. Callers keep their own layout wrapper
  * (e.g. `.page-empty`, `.loading-screen`) for centring and spacing.
  */
-export function Spinner({ size = 24 }: { size?: number }): JSX.Element {
+export function Spinner({
+  size = 24,
+}: {
+  /** Its width in px. */
+  size?: number
+}): JSX.Element {
   return <Waveform size={size} stroke={3} speed={1} color="var(--accent-default)" />
 }

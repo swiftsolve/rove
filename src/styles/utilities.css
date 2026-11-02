@@ -274,17 +274,6 @@
   flex: 1;
 }
 
-/* Rows flush to their container: no top padding on the first, no bottom on
-   the last. */
-@utility row-list {
-  & > :first-child {
-    padding-top: 0;
-  }
-  & > :last-child {
-    padding-bottom: 0;
-  }
-}
-
 @utility surface {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);

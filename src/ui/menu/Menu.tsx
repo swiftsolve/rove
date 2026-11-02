@@ -8,6 +8,7 @@ import { MoreVerticalIcon, type IconComponent } from '../icons/Icons'
 interface MenuProps {
   /** Controlled open state; leave both out to let the menu keep its own. */
   isOpen?: boolean
+  /** Called with the new state when the menu opens or closes. */
   onOpenChange?: (isOpen: boolean) => void
   /** A MenuTrigger and a MenuContent. */
   children: ReactNode
@@ -65,7 +66,12 @@ const CONTENT = cx(
 )
 
 /** The dropdown, under the kebab and lined up with its right edge. */
-export function MenuContent({ children }: { children: ReactNode }): JSX.Element {
+export function MenuContent({
+  children,
+}: {
+  /** MenuItems, in order. */
+  children: ReactNode
+}): JSX.Element {
   return (
     <BaseMenu.Portal>
       <BaseMenu.Positioner className="z-20" side="bottom" align="end" sideOffset={4}>
@@ -88,7 +94,6 @@ const itemVariants = cva(
     variants: {
       tone: {
         neutral: 'text-secondary data-highlighted:bg-hover data-highlighted:text-primary',
-        /** Destructive (Remove, Clear history): red text on a red-tinted highlight. */
         negative: 'text-negative data-highlighted:bg-status-negative/(--opacity-tint-md)',
       },
     },
@@ -97,10 +102,13 @@ const itemVariants = cva(
 )
 
 interface MenuItemProps {
+  /** An icon before the label. */
   icon?: IconComponent
+  /** `negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight. */
   tone?: VariantOf<typeof itemVariants, 'tone'>
   /** Runs the action; the menu closes. */
   onClick: () => void
+  /** The label. */
   children: ReactNode
 }
 

@@ -7,6 +7,7 @@ interface EmptyStateProps {
    * the user acts (admin access needed) rather than one waiting for data.
    */
   isLocked?: boolean
+  /** What's empty: "No devices yet". */
   title: string
   /** A line or two naming what will fill the page, or why it can't. */
   description?: ReactNode
@@ -73,6 +74,7 @@ export function EmptyStateDescription({
   children,
   role,
 }: {
+  /** The note. */
   children: ReactNode
   /** `status` for a note that appears in answer to an action, so it's announced. */
   role?: 'status'

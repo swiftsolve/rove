@@ -3,9 +3,9 @@ import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
 import { cn } from '../foundations/cn'
 
-const metricVariants = cva(null, {
+// The numeric face, with tabular figures so the width holds while it eases.
+const metricVariants = cva('num', {
   variants: {
-    /** How healthy the value is, in the status text colours. */
     status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
   },
 })
@@ -24,11 +24,15 @@ export function MetricValue({
   format,
   className,
 }: {
+  /** The latest value; the figure eases toward it. */
   value: number
+  /** How healthy the value is, in the status text colours. */
   status?: MetricStatus
+  /** Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. */
   format: (n: number) => string
+  /** Its place in a layout. It takes its size and colour from the text around it. */
   className?: string
 }): JSX.Element {
   const animated = useCountUp(value)
-  return <span className={cn(metricVariants({ status }), className) || undefined}>{format(animated)}</span>
+  return <span className={cn(metricVariants({ status }), className)}>{format(animated)}</span>
 }

@@ -5,7 +5,7 @@ import type { Transfer } from '@/features/apps/utils/transfer'
 // Each value is right-aligned in a fixed-width box, so the down and up columns
 // line up across rows.
 const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
-const FIGURE_VALUE = 'num min-w-[46px] text-right'
+const FIGURE_VALUE = 'min-w-[46px] text-right'
 
 const SERIES_LABEL: Record<SpeedSeries, string> = { down: 'Down', up: 'Up' }
 

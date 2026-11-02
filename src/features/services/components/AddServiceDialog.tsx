@@ -8,19 +8,9 @@ import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import { cva } from 'class-variance-authority'
 
-// Feedback tucked directly under the address field: the idle hint, an error, or
-// the tested result. The hint is a snug one-line caption; the result is a taller
-// inset row, so it swaps in the moment a test lands.
-const noteVariants = cva('mt-8 flex min-h-[18px] items-center text-sm leading-body-small', {
-  variants: {
-    isError: { true: 'text-negative', false: 'text-tertiary' },
-  },
-  defaultVariants: { isError: false },
-})
-
-// Matches the address field's outer height (line-height 18 + 20 padding + 2
+// The tested result swaps in for the field's hint as a taller inset row. Matches the address field's outer height (line-height 18 + 20 padding + 2
 // border), so the result reads as the same-sized box swapping in.
-const RESULT = 'mt-8 flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
+const RESULT = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
 const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
   variants: {
@@ -66,13 +56,7 @@ function AddressFeedback({
   name: string
   isEditing: boolean
 }): JSX.Element {
-  if (error) {
-    return (
-      <p className={noteVariants({ isError: true })} role="alert">
-        {error}
-      </p>
-    )
-  }
+  if (error) return <span role="alert">{error}</span>
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
     return (
@@ -89,8 +73,8 @@ function AddressFeedback({
       </div>
     )
   }
-  if (phase === 'testing') return <p className={noteVariants()}>Testing…</p>
-  return <p className={noteVariants()}>{isEditing ? 'Tested when you save it.' : 'Tested when you add it.'}</p>
+  if (phase === 'testing') return <>Testing…</>
+  return <>{isEditing ? 'Tested when you save it.' : 'Tested when you add it.'}</>
 }
 
 function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): string {

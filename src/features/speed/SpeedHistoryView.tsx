@@ -114,38 +114,40 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   return (
     // No bottom padding: the footer banner bleeds to the card's bottom edge, and
     // overflow clips it to the rounded corners.
-    <Card as="li" className="px-(--card-body-padding) pt-(--card-body-padding)">
-      <div className="mb-12 flex items-center justify-between gap-12">
-        <ConnectionBadge entry={entry} />
-        <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
-          {formatHistoryTimestamp(entry.timestamp)}
-        </time>
-      </div>
+    <Card as="li">
+      <div className="px-(--card-body-padding) pt-(--card-body-padding)">
+        <div className="mb-12 flex items-center justify-between gap-12">
+          <ConnectionBadge entry={entry} />
+          <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
+            {formatHistoryTimestamp(entry.timestamp)}
+          </time>
+        </div>
 
-      <dl className="grid grid-cols-3 gap-12">
-        <Metric label="Download" value={download.value} unit={download.unit} series="down" />
-        <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
-        <Metric
-          label="Ping"
-          value={hasValidPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
-          unit={hasValidPing ? 'ms' : undefined}
-        />
-      </dl>
-
-      <div className={CARD_FOOTER}>
-        <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
-          <InlineMeta
-            items={[
-              <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
-              <>{entry.packetLoss}% loss</>,
-            ]}
+        <dl className="grid grid-cols-3 gap-12">
+          <Metric label="Download" value={download.value} unit={download.unit} series="down" />
+          <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
+          <Metric
+            label="Ping"
+            value={hasValidPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
+            unit={hasValidPing ? 'ms' : undefined}
           />
-          {entry.linkSpeedMbps != null && (
-            <span className="ml-auto shrink-0">
-              Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps)}</span>
-            </span>
-          )}
-        </p>
+        </dl>
+
+        <div className={CARD_FOOTER}>
+          <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
+            <InlineMeta
+              items={[
+                <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
+                <>{entry.packetLoss}% loss</>,
+              ]}
+            />
+            {entry.linkSpeedMbps != null && (
+              <span className="ml-auto shrink-0">
+                Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps)}</span>
+              </span>
+            )}
+          </p>
+        </div>
       </div>
     </Card>
   )

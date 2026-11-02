@@ -14,8 +14,6 @@ const meta = {
     tooltipSide: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
     icon: iconComponentControl,
   },
-  // Centred, so a tooltip has room on both sides.
-  parameters: { layout: 'centered' },
 } satisfies Meta<typeof IconButton>
 
 export default meta

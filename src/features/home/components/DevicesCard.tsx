@@ -103,9 +103,9 @@ function DevicesCardBody({
     return (
       // Centred at the foot of the card's remaining height, like the loading wave.
       // The button rises above the card's stretched link to take its own
-      // clicks, with tighter sides than a secondary Button's and a nudge lower.
+      // clicks, with a nudge lower.
       <div className="flex flex-1 items-end justify-center">
-        <Button className="relative z-2 gap-4 px-8 -mb-4" icon={SearchIcon} onClick={handleScan}>
+        <Button className="relative z-2 -mb-4" icon={SearchIcon} onClick={handleScan}>
           Discover
         </Button>
       </div>

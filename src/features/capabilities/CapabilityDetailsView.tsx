@@ -22,10 +22,7 @@ import {
 // at the very bottom, set apart from the metrics in both themes. When opened by
 // clicking a capability, that card is scrolled to the top of the viewport; the
 // scroll margin leaves a little air above it.
-const CARD = cx(
-  'flex flex-col scroll-mt-12',
-  'px-(--card-header-padding-x) pt-(--card-header-padding-y)',
-)
+const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
 
 // All four requirements in a compact metric grid. Your value turns red only when
 // it misses the threshold, which stays a small muted line.
@@ -114,50 +111,54 @@ function CapabilityDetailCard({
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
-    <Card as="li" className={CARD} data-capability-id={capability.id}>
-      <div className="flex items-center gap-8 pb-12">
-        {/* The icon in the level colour on a faint tint of it, as in the capability rows. */}
-        <IconTile size="sm" color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}>
-          <CapabilityIcon id={capability.id} size={16} />
-        </IconTile>
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
-          <span className="text-xs leading-caption text-tertiary">{capability.description}</span>
-        </div>
-        {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
-            optically centred against the two-line title block. */}
-        <CapabilityMeter
-          level={capability.level}
-          shouldShowLabel={false}
-          barsClassName="[transform:translateY(-1px)]"
-        />
-      </div>
-
-      <dl className={METRICS}>
-        {checks.map((check) => (
-          <div key={check.label} className="flex min-w-0 flex-col gap-6">
-            <dt className="text-overline leading-[1.15]">{check.label}</dt>
-            <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
-            <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
-              <span className="sr-only">Needs </span>
-              {check.need}
-            </dd>
+    <Card as="li" className="scroll-mt-12" data-capability-id={capability.id}>
+      <div className={CARD_CONTENT}>
+        <div className="flex items-center gap-8 pb-12">
+          {/* The icon in the level colour on a faint tint of it, as in the capability rows. */}
+          <IconTile
+            size="sm"
+            color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
+            icon={<CapabilityIcon id={capability.id} size={16} />}
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
+            <span className="text-xs leading-caption text-tertiary">{capability.description}</span>
           </div>
-        ))}
-      </dl>
+          {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
+              optically centred against the two-line title block. */}
+          <CapabilityMeter
+            level={capability.level}
+            shouldShowLabel={false}
+            barsClassName="[transform:translateY(-1px)]"
+          />
+        </div>
 
-      <div className={VERDICT}>
-        <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-body-small text-secondary">
-          <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
-            <VerdictIcon level={capability.level} />
+        <dl className={METRICS}>
+          {checks.map((check) => (
+            <div key={check.label} className="flex min-w-0 flex-col gap-6">
+              <dt className="text-overline leading-[1.15]">{check.label}</dt>
+              <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
+              <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
+                <span className="sr-only">Needs </span>
+                {check.need}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className={VERDICT}>
+          <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-body-small text-secondary">
+            <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
+              <VerdictIcon level={capability.level} />
+            </span>
+            <span>{summary}</span>
+          </p>
+          <span className={verdictStatusVariants({ level: capability.level })}>
+            {/* The status dot takes the level colour from the label. */}
+            <span className="size-6 shrink-0 rounded-full bg-current" aria-hidden />
+            {CAPABILITY_LEVEL_LABELS[capability.level]}
           </span>
-          <span>{summary}</span>
-        </p>
-        <span className={verdictStatusVariants({ level: capability.level })}>
-          {/* The status dot takes the level colour from the label. */}
-          <span className="size-6 shrink-0 rounded-full bg-current" aria-hidden />
-          {CAPABILITY_LEVEL_LABELS[capability.level]}
-        </span>
+        </div>
       </div>
     </Card>
   )

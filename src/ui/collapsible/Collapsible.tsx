@@ -4,7 +4,9 @@ import { cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 
 type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
+  /** Whether the panel shows. */
   isOpen: boolean
+  /** Called with the new state when the trigger is pressed. */
   onOpenChange: (isOpen: boolean) => void
   /** `li` for a group in a list. */
   as?: 'div' | 'li'
@@ -64,7 +66,9 @@ const PANEL = cx(
 )
 
 interface CollapsiblePanelProps {
+  /** Its layout and insets. */
   className?: string
+  /** What the trigger shows and hides. */
   children: ReactNode
 }
 

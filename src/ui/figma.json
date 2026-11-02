@@ -31,6 +31,7 @@
     "Readout": { "name": "Readout", "node": "4:106" },
     "MetricValue": { "name": "Metric value", "node": "38:360" },
     "BarMeter": { "name": "Bar meter", "node": "495:1044" },
+    "SplitBar": { "name": "Split bar", "node": "556:619" },
     "ListRow": { "name": "List row", "node": "496:745" },
     "IconTile": { "name": "Icon tile", "node": "495:585" },
     "IconTileButton": { "name": "Icon tile", "node": "495:585" },
