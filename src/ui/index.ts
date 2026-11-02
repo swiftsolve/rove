@@ -47,6 +47,7 @@ export { NavItem, NavRail } from './nav-rail/NavRail'
 export { PageHeader } from './page-header/PageHeader'
 
 export * from './icons/Icons'
+export * from './icons/CustomIcons'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
 
 export { cn } from './foundations/cn'

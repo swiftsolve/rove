@@ -34,8 +34,8 @@ const ALLOWED = [
   // A scanner needs dark modules on white in both themes.
   { file: 'src/features/connection/WifiShareDialog.tsx', value: '#ffffff' },
   // The brand icon's gradient, the same as the app icon's.
-  { file: 'src/ui/icons/Icons.tsx', value: '#7aa4ff' },
-  { file: 'src/ui/icons/Icons.tsx', value: '#5484f5' },
+  { file: 'src/ui/icons/CustomIcons.tsx', value: '#7aa4ff' },
+  { file: 'src/ui/icons/CustomIcons.tsx', value: '#5484f5' },
   // The About tile redraws the dock icon, which looks the same in both themes.
   { file: 'src/features/about/AboutView.tsx', value: 'rgba(' },
   { file: 'src/features/about/AboutView.tsx', value: '#1f2125' },

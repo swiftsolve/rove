@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as CustomIcons from './CustomIcons'
 import * as Icons from './Icons'
 import type { IconProps } from './Icons'
 
-// Every component the module exports (the types are gone at runtime), by name.
-const ICONS = Object.entries(Icons)
+// Every component the two modules export (the types are gone at runtime), by name.
+const ICONS = Object.entries({ ...Icons, ...CustomIcons })
   .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
   .sort(([a], [b]) => a.localeCompare(b))
 
@@ -39,8 +40,8 @@ export const Catalogue: Story = {
 export const Brand: Story = {
   render: ({ size = 48 }) => (
     <div className="flex items-center gap-20 text-accent">
-      <Icons.BrandIcon size={size} />
-      <Icons.BrandIcon size={size} hasGradient />
+      <CustomIcons.BrandIcon size={size} />
+      <CustomIcons.BrandIcon size={size} hasGradient />
     </div>
   ),
 }

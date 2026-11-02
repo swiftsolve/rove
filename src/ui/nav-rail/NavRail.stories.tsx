@@ -4,7 +4,6 @@ import { fn } from 'storybook/test'
 import {
   AppsIcon,
   CloudIcon,
-  ConnectionIcon,
   DevicesIcon,
   EventsIcon,
   HomeIcon,
@@ -15,6 +14,7 @@ import {
   UsageIcon,
   type IconComponent,
 } from '../icons/Icons'
+import { ConnectionIcon } from '../icons/CustomIcons'
 import { NavItem, NavRail } from './NavRail'
 
 interface Page {
