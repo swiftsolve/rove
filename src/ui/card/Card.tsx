@@ -14,7 +14,7 @@ interface CardContextValue {
 
 const CardContext = createContext<CardContextValue>({ isOpenable: false })
 
-interface CardProps extends HTMLAttributes<HTMLElement> {
+type CardProps = Omit<HTMLAttributes<HTMLElement>, 'className' | 'children'> & {
   /**
    * `section` is named by its CardHeader's title, so give it one.
    * `div` or `li` for a card with no header, such as a card in a list.
@@ -96,7 +96,7 @@ export function focusCardLink(element: HTMLElement): void {
   element.closest('[data-openable]')?.querySelector<HTMLElement>(':scope > [data-stretched-link]')?.focus()
 }
 
-interface CardListProps extends Omit<HTMLAttributes<HTMLUListElement>, 'aria-label'> {
+type CardListProps = Omit<HTMLAttributes<HTMLUListElement>, 'aria-label' | 'children'> & {
   /** Names the list. */
   label: string
   /** The rows, as `<li>`s. They own their padding, so the hairlines run edge to edge. */
@@ -133,7 +133,7 @@ const CARET = cx(
   'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',
 )
 
-interface CardHeaderProps {
+type CardHeaderProps = {
   /** Names the card: a `section` card is labelled by it. */
   title: string
   /** A 16px icon before the title. */
@@ -182,7 +182,7 @@ const bodyVariants = cva('grow', {
   defaultVariants: { layout: 'default' },
 })
 
-interface CardBodyProps {
+type CardBodyProps = {
   /**
    * `default` pads all round. `rows` for rows that carry their own vertical
    * padding (settings, list rows): no top padding. `flush` for a
@@ -198,7 +198,7 @@ export function CardBody({ layout = 'default', children }: CardBodyProps): JSX.E
   return <div className={bodyVariants({ layout })}>{children}</div>
 }
 
-interface CardFooterProps {
+type CardFooterProps = {
   /** The footnote or status. */
   children: ReactNode
 }

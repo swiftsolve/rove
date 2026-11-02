@@ -74,7 +74,7 @@ function isInternetDown(status: InternetStatus | undefined): boolean {
   return status === 'noInternet' || status === 'offline'
 }
 
-interface RowMenuProps {
+type RowMenuProps = {
   service: ServiceDefinition
   onEdit: () => void
   onRemove: () => void
@@ -134,7 +134,7 @@ function LatencyReadout({
   return <MetricValue value={latencyMs} status={latencyBand(latencyMs)} format={formatLatencyMs} />
 }
 
-interface ServiceRowProps {
+type ServiceRowProps = {
   service: ServiceDefinition
   /** This host's entry in the latest probe batch, if it has one yet. */
   probe: ServiceReachability | undefined

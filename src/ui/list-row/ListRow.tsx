@@ -22,7 +22,7 @@ const CHEVRON = cx(
   'group-usable/row:group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
 )
 
-interface ListRowProps {
+type ListRowProps = {
   /** What the row opens. */
   onClick: MouseEventHandler<HTMLButtonElement>
   /**

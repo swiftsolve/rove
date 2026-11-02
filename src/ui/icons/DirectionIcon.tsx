@@ -11,7 +11,7 @@ const rootVariants = cva('inline-flex items-center shrink-0', {
 /** Which half of a download/upload pair a value or icon belongs to. */
 export type SpeedSeries = 'down' | 'up'
 
-interface DirectionIconProps extends IconProps {
+type DirectionIconProps = IconProps & {
   /** `down`, a blue down-arrow for download; `up`, a purple up-arrow for upload. */
   series: SpeedSeries
 }

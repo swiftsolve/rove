@@ -5,7 +5,7 @@ import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { MoreVerticalIcon, type IconComponent } from '../icons/Icons'
 
-interface MenuProps {
+type MenuProps = {
   /** Controlled open state; leave both out to let the menu keep its own. */
   isOpen?: boolean
   /** Called with the new state when the menu opens or closes. */
@@ -101,7 +101,7 @@ const itemVariants = cva(
   },
 )
 
-interface MenuItemProps {
+type MenuItemProps = {
   /** An icon before the label. */
   icon?: IconComponent
   /** `negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight. */

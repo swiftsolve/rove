@@ -16,7 +16,7 @@ const BUBBLE = cx(
 /** Kept from the window's edges. */
 const VIEWPORT_PAD = 8
 
-interface TooltipProps {
+type TooltipProps = {
   /** Shown on hover and keyboard focus. */
   content: ReactNode
   /** The trigger: one element that takes a ref and props (a button, an icon's span). */

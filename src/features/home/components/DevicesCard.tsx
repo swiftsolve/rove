@@ -3,109 +3,98 @@ import { useDevices } from '@/features/devices/hooks/useDevices'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
-import { EmptyStatMetric, StatCard, StatReadout } from '@/features/home/components/StatCard'
+import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
-function ariaLabelFor(deviceCount: number | null, onlineDeviceCount: number | null, isScanning: boolean): string {
-  if (isScanning) return 'Scanning for devices. Open Devices.'
-  if (deviceCount == null) return 'Open Devices.'
-  const onlinePrefix = onlineDeviceCount != null ? `${onlineDeviceCount} of ` : ''
-  return `${onlinePrefix}${deviceCount} devices online. Open Devices.`
+interface DeviceCounts {
+  online: number
+  total: number
 }
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard(): JSX.Element {
-  const devices = useDevices()
+  const { scan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
-  const { scan, isScanning } = devices
-  // Devices found by the last scan, or null before the first scan lands.
-  const deviceCount = scan?.devices.length ?? null
-  const onlineDeviceCount = scan ? scan.devices.filter((device) => device.isReachable).length : null
-  // macOS only: scan from the card instead of auto-scanning on Home load.
-  const onScan = IS_MAC ? (): void => void devices.rescan() : undefined
-
-  // macOS before its first scan: no count yet, nothing loading, and a scan
-  // handler wired up. Offer a Discover button in place of the auto-scanned count.
-  const shouldShowScanButton = deviceCount == null && !isScanning && onScan != null
+  // Null before the first scan lands.
+  const counts: DeviceCounts | null = scan
+    ? { online: scan.devices.filter((device) => device.isReachable).length, total: scan.devices.length }
+    : null
+  // macOS doesn't scan on Home load, so until its first scan the card offers one.
+  const canDiscover = IS_MAC && !scan && !isScanning
 
   return (
     <StatCard
       icon={<DevicesIcon size={15} />}
-      label="Devices"
-      ariaLabel={ariaLabelFor(deviceCount, onlineDeviceCount, isScanning)}
+      title="Devices"
+      linkLabel={devicesLinkLabel(counts, isScanning)}
       onOpen={() => navigate({ tab: 'devices' })}
       isLoading={isScanning}
     >
       <DevicesCardBody
-        deviceCount={deviceCount}
-        onlineDeviceCount={onlineDeviceCount}
+        counts={counts}
         isScanning={isScanning}
-        onScan={shouldShowScanButton ? onScan : undefined}
+        onDiscover={canDiscover ? () => void rescan() : undefined}
       />
     </StatCard>
   )
 }
 
-function DevicesCardBody({
-  deviceCount,
-  onlineDeviceCount,
-  isScanning,
-  onScan,
-}: {
-  deviceCount: number | null
-  onlineDeviceCount: number | null
+function devicesLinkLabel(counts: DeviceCounts | null, isScanning: boolean): string {
+  if (isScanning) return 'Scanning for devices. Open Devices.'
+  if (!counts) return 'Open Devices.'
+  return `${counts.online} of ${counts.total} devices online. Open Devices.`
+}
+
+type DevicesCardBodyProps = {
+  counts: DeviceCounts | null
+  /** A scan is in flight, started here or on the Devices page: the scan is shared. */
   isScanning: boolean
   /** Set only when the Discover button should show. */
-  onScan?: () => void
-}): JSX.Element {
-  // Show the spinner whenever a scan is in flight — from the Home Discover
-  // button, or a rescan started on the Devices page (shared state). A
-  // background poll is silent (never toggles the busy flag), so this only
-  // replaces the count during a real scan, not every refresh.
-  if (isScanning) {
-    return (
-      // Centres the wave in the card's remaining height (the card is
-      // grid-stretched to the taller Usage card), nudged down a little toward the
-      // body's centre. No min-height: a floor would push the grid row taller.
-      <div className="flex flex-1 items-center justify-center pt-6" aria-hidden>
-        <ButtonSpinner size={14} color="var(--text-secondary)" />
-      </div>
-    )
-  }
+  onDiscover?: () => void
+}
 
-  if (deviceCount != null) {
+function DevicesCardBody({ counts, isScanning, onDiscover }: DevicesCardBodyProps): JSX.Element {
+  if (isScanning) return <ScanSpinner />
+  if (counts) {
     return (
-      // The key dot is small, so it gets a touch more room before the count
-      // than the usage arrows get.
+      // The key dot is small, so it gets more room before the count than the usage arrows do.
       <div aria-hidden>
-        <StatReadout
-          marker="online"
-          value={String(onlineDeviceCount ?? deviceCount)}
-          unit="online"
-          className="gap-8"
-        />
+        <StatReadout marker="online" value={String(counts.online)} unit="online" className="gap-8" />
       </div>
     )
   }
+  if (onDiscover) return <DiscoverButton onDiscover={onDiscover} />
+  return <EmptyStatReadout />
+}
 
-  if (onScan) {
-    // Discover is a sibling of the card's link (not inside it), so its
-    // click runs its own action only. The spinner replaces it once the scan
-    // starts, so focus moves to the card's link rather than being lost.
-    const handleScan = (event: MouseEvent<HTMLButtonElement>): void => {
-      focusCardLink(event.currentTarget)
-      onScan()
-    }
-    return (
-      // Centred at the foot of the card's remaining height, like the loading wave.
-      // The button rises above the card's stretched link to take its own
-      // clicks, with a nudge lower.
-      <div className="flex flex-1 items-end justify-center">
-        <Button className="relative z-2 -mb-4" icon={SearchIcon} onClick={handleScan}>
-          Discover
-        </Button>
-      </div>
-    )
+/**
+ * Centred in the card's remaining height (the grid stretches the card to the
+ * Usage card's), nudged down toward the body's centre. No min-height: it would
+ * make the grid row taller.
+ */
+function ScanSpinner(): JSX.Element {
+  return (
+    <div className="flex flex-1 items-center justify-center pt-6" aria-hidden>
+      <ButtonSpinner size={14} color="var(--text-secondary)" />
+    </div>
+  )
+}
+
+/**
+ * Sits beside the card's link, not inside it, so its click only scans. The
+ * spinner replaces it once the scan starts, so focus moves to the card's link
+ * rather than being lost.
+ */
+function DiscoverButton({ onDiscover }: { onDiscover: () => void }): JSX.Element {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
+    focusCardLink(event.currentTarget)
+    onDiscover()
   }
-
-  return <EmptyStatMetric />
+  return (
+    // At the foot of the card, raised above its stretched link to take its own clicks, and nudged lower.
+    <div className="flex flex-1 items-end justify-center">
+      <Button className="relative z-2 -mb-4" icon={SearchIcon} onClick={handleClick}>
+        Discover
+      </Button>
+    </div>
+  )
 }

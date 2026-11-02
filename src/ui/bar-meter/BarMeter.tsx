@@ -29,7 +29,7 @@ const barVariants = cva('rounded-full', {
   },
 })
 
-interface BarMeterProps {
+type BarMeterProps = {
   /** Lit bars, 0 to 4. */
   value: number
   /** `xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` a list row. */

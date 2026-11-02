@@ -14,7 +14,7 @@ const KNOB = cx(
   'data-checked:translate-x-16',
 )
 
-interface ToggleProps {
+type ToggleProps = {
   /** Whether it's on. */
   isChecked: boolean
   /** Called with the new state when the switch is flipped. */

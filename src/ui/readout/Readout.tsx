@@ -30,7 +30,7 @@ function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<Read
   )
 }
 
-interface ReadoutProps extends ValueParts {
+type ReadoutProps = ValueParts & {
   /** Names the figure ("Download", "Data used"). With one, render the readout inside a `<dl>`. */
   label?: string
   /** An icon: before the label, or before the figure when there's no label. */

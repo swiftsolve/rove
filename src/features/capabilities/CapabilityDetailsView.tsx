@@ -69,7 +69,7 @@ const verdictStatusVariants = cva(
   },
 )
 
-interface CapabilityDetailsViewProps {
+type CapabilityDetailsViewProps = {
   /** Capability to scroll into view when the page opens (the one just clicked). */
   targetId?: CapabilityId | null
 }

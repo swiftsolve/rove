@@ -16,7 +16,7 @@ const badgeVariants = cva(
   },
 )
 
-interface BadgeProps {
+type BadgeProps = {
   /** Green, amber or red. Green is good news, such as the ISP card's VPN flag; amber a caveat, not a fault. */
   tone: VariantOf<typeof badgeVariants, 'tone'>
   /** A word or two; it's set in capitals. */

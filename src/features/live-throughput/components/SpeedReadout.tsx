@@ -7,7 +7,7 @@ import { DirectionIcon, Readout, useCountUp, type SpeedSeries } from '@/ui'
  *  the readout reads 0.1 when nothing is really downloading or uploading. */
 const LIVE_FLOOR_MBPS = 0.1
 
-interface SpeedReadoutProps {
+type SpeedReadoutProps = {
   label: string
   mbps: number
   series: SpeedSeries

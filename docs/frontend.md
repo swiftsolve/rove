@@ -63,13 +63,17 @@ for what. Read it before writing or changing UI. For where files live, see
   `isActive` where you read it.
 - No `readonly`, `Readonly<>`, `ReadonlyArray`, `ReadonlyMap` or
   `ReadonlySet`; use the plain type.
+- A component's props are a `type`, never an `interface`, so a props shape
+  that grows into a union or an intersection keeps its keyword. A prop it
+  redeclares from a base is omitted from the base
+  (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
 
-`npm run lint` enforces all but the last.
+`npm run lint` enforces all but the props and hints rules.
 
 ## Tests
 

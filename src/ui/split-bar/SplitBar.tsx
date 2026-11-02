@@ -16,7 +16,7 @@ const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
   },
 })
 
-interface SplitBarProps {
+type SplitBarProps = {
   /** The download segment's value, in the same unit as `max`. */
   down: number
   /** The upload segment's value, after the download one. */

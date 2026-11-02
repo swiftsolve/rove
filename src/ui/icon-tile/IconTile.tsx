@@ -16,7 +16,7 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
 /** An IconTile colour: any CSS colour, usually a token (`var(--series-down)`), or `neutral`. */
 export type IconTileColor = 'neutral' | (string & {})
 
-interface TileLookProps {
+type TileLookProps = {
   /** 30, 32 or 36px square. */
   size?: VariantOf<typeof tileVariants, 'size'>
   /**

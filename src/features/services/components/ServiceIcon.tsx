@@ -39,7 +39,7 @@ function faviconUrl(host: string): string {
 // (list polls, page switches) don't re-request an icon we know isn't there.
 const failedFavicons = new Set<string>()
 
-interface ServiceIconProps {
+type ServiceIconProps = {
   /** Hostname whose favicon to show, e.g. "netflix.com". */
   host: string
   /** Service label, used for the monogram fallback and alt text. */

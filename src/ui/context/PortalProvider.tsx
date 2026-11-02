@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { PortalContext } from './portal-context'
 
-interface PortalProviderProps {
+type PortalProviderProps = {
   /**
    * Where dialogs render, and what they cover and centre in: a positioned
    * element (the app's content column, so the nav rail stays uncovered).

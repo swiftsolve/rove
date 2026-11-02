@@ -12,7 +12,7 @@ export interface UsageBodyCopy {
   empty: string
 }
 
-interface UsageBodyProps {
+type UsageBodyProps = {
   support: AppUsageSupport
   isFirstLoad: boolean
   isEmpty: boolean

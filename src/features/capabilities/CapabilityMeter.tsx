@@ -32,7 +32,7 @@ const labelVariants = cva('whitespace-nowrap', {
   },
 })
 
-interface CapabilityMeterProps {
+type CapabilityMeterProps = {
   level: CapabilityLevel
   shouldShowLabel?: boolean
   /** Smaller bars on whole pixels, for the Home strip's glanceable row. */

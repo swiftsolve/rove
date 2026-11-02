@@ -4,7 +4,7 @@ import type { VariantOf } from '../foundations/variants'
 import { StatusDot } from '../status-dot/StatusDot'
 import { CloseIcon, MinimizeIcon } from '../icons/Icons'
 
-interface TitleBarProps {
+type TitleBarProps = {
   /** The product mark and name, at the start. */
   brand: ReactNode
   /** Beside the brand: a TitleBarStatus. */
@@ -55,7 +55,7 @@ const statusVariants = cva(
   },
 )
 
-interface TitleBarStatusProps {
+type TitleBarStatusProps = {
   /**
    * `positive` when connected; `negative`, connected but something's wrong
    * beyond the link; `neutral`, connecting or offline, with a still dot.
@@ -95,7 +95,7 @@ const WINDOW_ACTIONS = {
   close: { label: 'Close', icon: CloseIcon },
 }
 
-interface WindowButtonProps {
+type WindowButtonProps = {
   /** Which button: its icon, its name, and (for `close`) a red hover. */
   action: VariantOf<typeof windowButtonVariants, 'action'>
   /** Minimises or closes the window. */
