@@ -14,6 +14,7 @@ import {
   SpeakerIcon,
   StatusDot,
   TabletIcon,
+  Tooltip,
   TvIcon,
   UnknownDeviceIcon,
   WatchIcon,
@@ -76,13 +77,6 @@ const DEVICE_NAME = cx(
 const DEVICE_META = 'text-caption flex min-w-0 items-baseline gap-8'
 
 const DEVICE_KIND = 'min-w-0 flex-[0_1_auto]'
-
-// The privacy-randomized note, set off from the MAC by a small dot.
-const RANDOMIZED_TAG = cx(
-  'relative whitespace-nowrap pl-12 tracking-[0] text-tertiary',
-  "before:absolute before:top-1/2 before:left-0 before:size-[3px] before:content-['']",
-  'before:rounded-full before:bg-current before:opacity-55 before:-translate-y-1/2',
-)
 
 const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
   router: RouterIcon,
@@ -171,30 +165,36 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
             <h2 className={DEVICE_NAME}>
               <InlineMeta items={name} />
             </h2>
-            <span
-              className={stateVariants({ isReachable: device.isReachable })}
-              title={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}
-            >
-              <StatusDot />
-              {device.isReachable ? 'Online' : 'Offline'}
-            </span>
+            <Tooltip content={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}>
+              <span className={stateVariants({ isReachable: device.isReachable })}>
+                <StatusDot />
+                {device.isReachable ? 'Online' : 'Offline'}
+              </span>
+            </Tooltip>
           </div>
 
           <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
 
           {/* MAC on the left, IP pinned to the bottom-right. */}
           <div className="flex items-baseline justify-between gap-8">
-            <span className="text-caption inline-flex min-w-0 items-baseline gap-8 tabular-nums">
-              <span>
-                <span className="sr-only">MAC address </span>
-                {formatMac(device.mac)}
-              </span>
-              {shouldShowRandomizedTag && (
-                <span className={RANDOMIZED_TAG} title="Privacy-randomized MAC address">
-                  <span aria-hidden>Randomized</span>
-                  <span className="sr-only">, privacy-randomized</span>
-                </span>
-              )}
+            <span className="text-caption min-w-0 tabular-nums">
+              <InlineMeta
+                items={[
+                  <>
+                    <span className="sr-only">MAC address </span>
+                    {formatMac(device.mac)}
+                  </>,
+                  shouldShowRandomizedTag && (
+                    // The hint isn't announced here; the sr-only words say it.
+                    <Tooltip content="Privacy-randomized MAC address" shouldDescribe={false}>
+                      <span className="whitespace-nowrap text-tertiary">
+                        <span aria-hidden>Randomized</span>
+                        <span className="sr-only">, privacy-randomized</span>
+                      </span>
+                    </Tooltip>
+                  ),
+                ]}
+              />
             </span>
             <span className="num shrink-0 text-secondary">
               <span className="sr-only">IP address </span>

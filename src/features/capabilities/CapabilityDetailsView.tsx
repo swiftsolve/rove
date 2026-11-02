@@ -6,7 +6,7 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
-import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader } from '@/ui'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader, StatusDot } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { flashHighlight } from '@/lib/highlight'
@@ -155,7 +155,7 @@ function CapabilityDetailCard({
           </p>
           <span className={verdictStatusVariants({ level: capability.level })}>
             {/* The status dot takes the level colour from the label. */}
-            <span className="size-6 shrink-0 rounded-full bg-current" aria-hidden />
+            <StatusDot />
             {CAPABILITY_LEVEL_LABELS[capability.level]}
           </span>
         </div>

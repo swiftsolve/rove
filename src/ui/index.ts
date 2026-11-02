@@ -34,6 +34,7 @@ export { BarMeter } from './bar-meter/BarMeter'
 export { SplitBar } from './split-bar/SplitBar'
 export { ListRow } from './list-row/ListRow'
 export { IconTile, IconTileButton, type IconTileColor } from './icon-tile/IconTile'
+export { TimelineNode, type TimelineNodeColor } from './timeline/TimelineNode'
 
 // Containers
 export { Card, CardBody, CardFooter, CardHeader, CardList, focusCardLink } from './card/Card'

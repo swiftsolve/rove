@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { Card, CardBody, CardHeader, DirectionIcon, Readout } from '@/ui'
+import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@/ui'
 
 // The card used to be a <button>. Its body keeps the text settings it
 // inherited from it (a button resets these), so the readouts render as
@@ -51,7 +51,7 @@ interface StatReadoutProps {
 export function StatReadout({ marker, value, unit, className }: StatReadoutProps): JSX.Element {
   const icon =
     marker === 'online' ? (
-      <span className="size-6 rounded-full shrink-0 bg-status-positive" aria-hidden />
+      <StatusDot tone="positive" />
     ) : (
       <DirectionIcon series={marker} size={12} />
     )

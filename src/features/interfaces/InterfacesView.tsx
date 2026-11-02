@@ -16,6 +16,7 @@ import {
   POLLING_DESCRIPTION,
   RefreshIcon,
   StatusDot,
+  Tooltip,
   WifiIcon,
   type IconTileColor,
 } from '@/ui'
@@ -74,11 +75,13 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
           {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}
           <h2 className="text-heading-large min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
-            <span className={tagVariants({ isPositive: true })} title="Used for internet traffic">
-              Active
-              {/* The hover title isn't announced; say it for screen readers too. */}
-              <span className="sr-only">, used for internet traffic</span>
-            </span>
+            <Tooltip content="Used for internet traffic" shouldDescribe={false}>
+              <span className={tagVariants({ isPositive: true })}>
+                Active
+                {/* The hint isn't announced here; say it for screen readers too. */}
+                <span className="sr-only">, used for internet traffic</span>
+              </span>
+            </Tooltip>
           )}
           {iface.isVirtual && <span className={tagVariants()}>Virtual</span>}
         </div>

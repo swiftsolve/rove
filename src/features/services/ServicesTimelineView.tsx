@@ -17,6 +17,7 @@ import {
   MenuTrigger,
   OfflineIcon,
   PageHeader,
+  TimelineNode,
   TrashIcon,
 } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
@@ -35,36 +36,11 @@ import { cva, cx } from 'class-variance-authority'
 const INITIAL_ROWS = 20
 const ROWS_PER_STEP = 40
 
-// The timeline itself: a marker column and content beside it, connected by a
-// line, mirroring the network events feed.
-
-// One node on the line. The connecting line runs from just below a node to the
-// next within the same day; it's dropped on a day's last node so it ends at the
-// final marker.
-const ITEM = cx(
-  'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
-  "not-last:before:absolute not-last:before:content-['']",
-  'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
-  'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
-)
-
-const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
-
-const markerVariants = cva(
-  ['z-1 flex size-[28px] shrink-0 items-center justify-center rounded-full', MARKER_WASH],
-  {
-    variants: {
-      /** A service dropping off reads as an alarm (red); a recovery, or a healthy
-       *  summary ("N services running", with a check icon), reads positive
-       *  (green): the same colour language as the reachability numbers. */
-      status: {
-        down: 'text-status-negative',
-        up: 'text-status-positive',
-        running: 'text-status-positive',
-      },
-    },
-  },
-)
+// A service dropping off reads as an alarm (red); a recovery, or a healthy
+// summary ("N services running", with a check icon), reads positive (green):
+// the same colour language as the reachability numbers.
+const DOWN_COLOR = 'var(--status-negative)'
+const UP_COLOR = 'var(--status-positive)'
 
 // The subject line: the service's favicon and name, sitting under the title
 // (the events-feed shape: what happened on top, which service beneath).
@@ -79,10 +55,6 @@ const subjectVariants = cva('min-w-0 items-center gap-4 text-md', {
   },
   defaultVariants: { isMuted: false, isFullWidth: false },
 })
-
-// Nudged down so the first line lines up with the marker. Every line gets the
-// same line box, so the visual gap between lines matches the flex gap.
-const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 
 // Title on the left, time pinned to the right edge on the same line.
 const HEAD = 'flex items-baseline gap-10'
@@ -243,27 +215,22 @@ const TransitionRow = memo(function TransitionRow({
   const shouldShowDuration = durationMs != null
 
   return (
-    <li className={ITEM}>
-      <span className={markerVariants({ status: isDown ? 'down' : 'up' })} aria-hidden>
-        {isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
+    <TimelineNode icon={isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />} color={isDown ? DOWN_COLOR : UP_COLOR}>
+      <span className={HEAD}>
+        <span className={TITLE}>{isDown ? 'Service went down' : 'Service came back up'}</span>
+        <EventTime ts={event.ts} />
       </span>
-      <div className={CONTENT}>
-        <span className={HEAD}>
-          <span className={TITLE}>{isDown ? 'Service went down' : 'Service came back up'}</span>
-          <EventTime ts={event.ts} />
-        </span>
-        <span className={subjectVariants()}>
-          <ServiceIcon host={event.host} name={event.name} />
-          <span className="truncate">{event.name}</span>
-        </span>
-        <span className="flex items-baseline gap-10 text-sm text-tertiary">
-          <span className="min-w-0 truncate">{event.host}</span>
-          {shouldShowDuration && (
-            <span className={DURATION}>Down for {formatDuration(durationMs)}</span>
-          )}
-        </span>
-      </div>
-    </li>
+      <span className={subjectVariants()}>
+        <ServiceIcon host={event.host} name={event.name} />
+        <span className="truncate">{event.name}</span>
+      </span>
+      <span className="flex items-baseline gap-10 text-sm text-tertiary">
+        <span className="min-w-0 truncate">{event.host}</span>
+        {shouldShowDuration && (
+          <span className={DURATION}>Down for {formatDuration(durationMs)}</span>
+        )}
+      </span>
+    </TimelineNode>
   )
 })
 
@@ -274,24 +241,19 @@ const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningE
   const areAllHealthy = event.count >= event.total
 
   return (
-    <li className={ITEM}>
-      <span className={markerVariants({ status: 'running' })} aria-hidden>
-        <CheckIcon size={15} />
+    <TimelineNode icon={<CheckIcon size={15} />} color={UP_COLOR}>
+      <span className={HEAD}>
+        <span className={TITLE}>
+          {event.count} {event.count === 1 ? 'service' : 'services'} running
+        </span>
+        <EventTime ts={event.ts} />
       </span>
-      <div className={CONTENT}>
-        <span className={HEAD}>
-          <span className={TITLE}>
-            {event.count} {event.count === 1 ? 'service' : 'services'} running
-          </span>
-          <EventTime ts={event.ts} />
-        </span>
-        <span className={subjectVariants({ isMuted: true })}>
-          {areAllHealthy
-            ? 'All services healthy'
-            : `${event.count} of ${event.total} services healthy`}
-        </span>
-      </div>
-    </li>
+      <span className={subjectVariants({ isMuted: true })}>
+        {areAllHealthy
+          ? 'All services healthy'
+          : `${event.count} of ${event.total} services healthy`}
+      </span>
+    </TimelineNode>
   )
 })
 
@@ -308,24 +270,19 @@ const ConnectionRow = memo(function ConnectionRow({
   const shouldShowDuration = !isLost && durationMs != null
 
   return (
-    <li className={ITEM}>
-      <span className={markerVariants({ status: isLost ? 'down' : 'up' })} aria-hidden>
-        {isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
+    <TimelineNode icon={isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />} color={isLost ? DOWN_COLOR : UP_COLOR}>
+      <span className={HEAD}>
+        <span className={TITLE}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
+        <EventTime ts={event.ts} />
       </span>
-      <div className={CONTENT}>
-        <span className={HEAD}>
-          <span className={TITLE}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
-          <EventTime ts={event.ts} />
-        </span>
-        {/* Status on the left, offline duration flush right — both on one line. */}
-        <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
-          <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
-          {shouldShowDuration && (
-            <span className={cx(DURATION, 'text-sm')}>Offline for {formatDuration(durationMs)}</span>
-          )}
-        </span>
-      </div>
-    </li>
+      {/* Status on the left, offline duration flush right — both on one line. */}
+      <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
+        <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
+        {shouldShowDuration && (
+          <span className={cx(DURATION, 'text-sm')}>Offline for {formatDuration(durationMs)}</span>
+        )}
+      </span>
+    </TimelineNode>
   )
 })
 

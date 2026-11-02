@@ -35,6 +35,7 @@
     "ListRow": { "name": "List row", "node": "496:745" },
     "IconTile": { "name": "Icon tile", "node": "495:585" },
     "IconTileButton": { "name": "Icon tile", "node": "495:585" },
+    "TimelineNode": { "name": "Timeline node", "node": "580:539" },
     "Card": { "name": "Card", "node": "543:62" },
     "CardBody": { "name": "Card", "node": "543:62" },
     "CardFooter": { "name": "Card", "node": "543:62" },

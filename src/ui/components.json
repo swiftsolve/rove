@@ -1333,6 +1333,33 @@
         "data-display-icontile--all-states"
       ]
     },
+    "TimelineNode": {
+      "group": "Data display",
+      "source": "src/ui/timeline/TimelineNode.tsx",
+      "description": "One event on a timeline: a round marker tinted by what happened, its lines\nbeside it, and a line down to the next node. An `<li>`: put nodes in a list.",
+      "figma": {
+        "name": "Timeline node",
+        "node": "580:539"
+      },
+      "props": {
+        "color": {
+          "type": "TimelineNodeColor",
+          "isRequired": true,
+          "description": "The icon's colour, washed across the marker: any CSS colour, usually a\nstatus token (`var(--status-positive)`). `neutral` is a hollow ring with a\ntertiary icon, for something quiet that left."
+        },
+        "icon": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "The marker's icon, sized by the caller: `<ArrowRightIcon size={15} />`."
+        }
+      },
+      "hasElementProps": true,
+      "stories": [
+        "data-display-timelinenode--default",
+        "data-display-timelinenode--neutral",
+        "data-display-timelinenode--timeline"
+      ]
+    },
     "Card": {
       "group": "Containers",
       "source": "src/ui/card/Card.tsx",

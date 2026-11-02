@@ -13,10 +13,12 @@ import {
   RouterIcon,
   SearchIcon,
   ShieldAlertIcon,
+  TimelineNode,
+  Tooltip,
   WifiIcon,
-  type VariantOf,
+  type TimelineNodeColor,
 } from '@/ui'
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import {
   EVENT_TITLES,
   INTERNET_SUBTITLES,
@@ -26,54 +28,23 @@ import {
   subjectKind,
 } from '@/features/events/utils/event-copy'
 
-// One node on the line: a marker column and the content beside it. The marker
-// column is nudged in 5px from the left so the icons aren't flush against the
-// edge (the day heading stays flush). No trailing gap after a day's final node:
-// the per-node padding only spaces one node from the next.
-//
-// The connecting line runs from just below this node down to the next one
-// within the same day. It's dropped on a day's last node so the line ends at the
-// final marker of each day rather than running on beside the next date heading.
-// left: padding-left (5) + centre of the 28px marker column, minus half the 2px
-// line. top: marker height (28) + a 2px gap so it starts below the node.
-const ITEM = cx(
-  'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
-  "not-last:before:absolute not-last:before:content-['']",
-  'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
-  'not-last:before:rounded-[1px] not-last:before:bg-line-strong',
-)
+// The node's colour category. The icon says *what* happened; this tint says how
+// to read it at a glance.
+const TONE_COLORS = {
+  /** Arrivals & connections: a device joined, came back, or linked up. */
+  join: 'var(--status-positive)',
+  /** A departure: quiet, not alarming; a known device just dropped off. The
+   *  hollow ring reads as "gone", set apart from the filled markers. */
+  leave: 'neutral',
+  /** The baseline snapshot: calm and neutral. */
+  baseline: 'var(--accent-default)',
+  /** Cautionary: a new access point appeared (warning severity). */
+  alert: 'var(--status-warning)',
+  /** Alarming: the gateway changed (critical severity). */
+  danger: 'var(--status-negative)',
+} as const satisfies Record<string, TimelineNodeColor>
 
-// Every tone but a departure uses the same faint currentColor wash for its
-// fill; only the icon colour changes.
-const MARKER_WASH = 'bg-[color-mix(in_srgb,currentColor_var(--opacity-tint-md),transparent)]'
-
-// The node sits above the connector (z-index) so the line reads as passing
-// behind it, and is tinted by tone so the timeline is scannable at a glance.
-const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-center rounded-full', {
-  variants: {
-    tone: {
-      /** Arrivals & connections: a device joined, came back, or linked up. */
-      join: ['text-status-positive', MARKER_WASH],
-      /** A departure: quiet, not alarming; a known device just dropped off. A
-       *  ring outline (rather than a filled wash) reads as "hollow/gone",
-       *  setting it apart from the filled arrival/change markers. */
-      leave: 'bg-inset text-tertiary shadow-[inset_0_0_0_1.5px_var(--border-strong)]',
-      /** The baseline snapshot: calm and neutral. */
-      baseline: ['text-accent', MARKER_WASH],
-      /** Cautionary: a new access point appeared (warning severity). */
-      alert: ['text-status-warning', MARKER_WASH],
-      /** Alarming: the gateway changed (critical severity). */
-      danger: ['text-status-negative', MARKER_WASH],
-    },
-  },
-  defaultVariants: { tone: 'baseline' },
-})
-
-// One gap value governs the spacing between every line (time, title, device,
-// change, address), with no per-line margins, and every line gets the same line
-// box, so the visual gap matches the flex gap and doesn't drift with each line's
-// font size. Nudged down so the timestamp's cap-height lines up with the marker.
-const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
+type EventTone = keyof typeof TONE_COLORS
 
 // Title on the left, time pinned to the right edge on the same line. The time
 // takes only the width it needs and never wraps, so a long title flows beneath
@@ -87,13 +58,6 @@ const SUBJECT = 'text-md text-secondary'
 const META = 'text-sm text-tertiary tabular-nums'
 
 type IconComponent = (props: { size?: number }) => JSX.Element
-
-// The node's colour category. The icon says *what* happened; this tint says how
-// to read it at a glance — arrivals/connections read positive (green), the
-// baseline calm (blue), a departure quiet (grey), a new access point or gateway
-// change cautionary (amber), a lost connection alarming (red). Warning/critical
-// events keep the loud colours severity used before.
-type EventTone = VariantOf<typeof markerVariants, 'tone'>
 
 interface EventStyle {
   icon: IconComponent
@@ -122,7 +86,11 @@ function addressItems(event: NetworkEvent): ReactNode[] {
   if (event.mac) {
     items.push(<span className="num">{formatMac(event.mac)}</span>)
     if (event.isRandomized) {
-      items.push(<span title="Privacy-randomized MAC address">Randomized</span>)
+      items.push(
+        <Tooltip content="Privacy-randomized MAC address">
+          <span>Randomized</span>
+        </Tooltip>,
+      )
     }
   }
   if (event.ip) items.push(<span className="num">{event.ip}</span>)
@@ -170,41 +138,39 @@ export function TimelineItem({
   const metaItems = addressItems(event)
 
   return (
-    <li className={ITEM}>
-      <span className={markerVariants({ tone: EVENT_STYLES[event.type]?.tone })} aria-hidden>
-        <EventIcon type={event.type} />
+    <TimelineNode
+      icon={<EventIcon type={event.type} />}
+      color={TONE_COLORS[EVENT_STYLES[event.type]?.tone ?? 'baseline']}
+    >
+      <span className={HEAD}>
+        <span className={TITLE}>{title}</span>
+        <EventTime ts={event.ts} />
       </span>
-      <div className={CONTENT}>
-        <span className={HEAD}>
-          <span className={TITLE}>{title}</span>
-          <EventTime ts={event.ts} />
+      {subject && (
+        <div className={SUBJECT}>
+          <InlineMeta
+            // The device category after the name ("Apple · Phone"), a step quieter
+            // so the name still leads.
+            items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
+          />
+        </div>
+      )}
+      {isInternet && INTERNET_SUBTITLES[event.type] && (
+        // Status at the left, offline duration flush right (pushed by its
+        // margin-left:auto), on one line spanning the full content width.
+        <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
+          <span>{INTERNET_SUBTITLES[event.type]}</span>
+          {offlineMs != null && (
+            <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">Offline for {formatDuration(offlineMs)}</span>
+          )}
         </span>
-        {subject && (
-          <div className={SUBJECT}>
-            <InlineMeta
-              // The device category after the name ("Apple · Phone"), a step quieter
-              // so the name still leads.
-              items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
-            />
-          </div>
-        )}
-        {isInternet && INTERNET_SUBTITLES[event.type] && (
-          // Status at the left, offline duration flush right (pushed by its
-          // margin-left:auto), on one line spanning the full content width.
-          <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
-            <span>{INTERNET_SUBTITLES[event.type]}</span>
-            {offlineMs != null && (
-              <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">Offline for {formatDuration(offlineMs)}</span>
-            )}
-          </span>
-        )}
+      )}
 
-        {metaItems.length > 0 && (
-          <div className={META}>
-            <InlineMeta items={metaItems} />
-          </div>
-        )}
-      </div>
-    </li>
+      {metaItems.length > 0 && (
+        <div className={META}>
+          <InlineMeta items={metaItems} />
+        </div>
+      )}
+    </TimelineNode>
   )
 }

@@ -35,6 +35,7 @@ import {
   InlineMeta,
   LockIcon,
   OfflineIcon,
+  Tooltip,
   UnlockIcon,
   WifiIcon,
   type VariantOf,
@@ -204,18 +205,20 @@ function SecurityBadge({
   if (isSecured) label = isShort ? shortSecurityLabel(full) : full
   const description = isSecured ? `Secured (${full})` : 'Open network — traffic is not encrypted'
   return (
-    <span className={securityBadgeVariants({ isSecured })} title={description}>
-      {isSecured ? (
-        <LockIcon size={12} className={securityIconVariants({ isSecured })} />
-      ) : (
-        <UnlockIcon size={12} className={securityIconVariants({ isSecured })} />
-      )}
-      <span className="min-w-0 overflow-hidden text-ellipsis" aria-hidden>
-        {label}
+    <Tooltip content={description} shouldDescribe={false}>
+      <span className={securityBadgeVariants({ isSecured })}>
+        {isSecured ? (
+          <LockIcon size={12} className={securityIconVariants({ isSecured })} />
+        ) : (
+          <UnlockIcon size={12} className={securityIconVariants({ isSecured })} />
+        )}
+        <span className="min-w-0 overflow-hidden text-ellipsis" aria-hidden>
+          {label}
+        </span>
+        {/* The hint isn't announced here; the full description is. */}
+        <span className="sr-only">{description}</span>
       </span>
-      {/* The hover title isn't announced; the full description is. */}
-      <span className="sr-only">{description}</span>
-    </span>
+    </Tooltip>
   )
 }
 
