@@ -53,9 +53,11 @@ function CapabilityRow({
 }
 
 // A ListRow's layout, bleed included, with nothing to press.
-const PREVIEW_ROW = 'flex items-center gap-12 -mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)'
+const PREVIEW_ROW =
+  'flex items-center gap-12 -mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y) opacity-(--opacity-disabled)'
 
-/** A greyed-out preview of a capability, shown before any test has run. */
+/** A greyed-out preview of a capability, shown before any test has run. Faded
+ *  like a disabled control, the same as the Home strip's placeholder tiles. */
 function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.Element {
   return (
     <li className={PREVIEW_ROW}>
