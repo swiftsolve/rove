@@ -5,7 +5,7 @@ import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@
 // The text settings of the <button> this card once was (a button resets
 // them), kept so the readouts render as before. The content fills the body's
 // height, so a control can sit at its foot.
-const CONTENT = cx(
+const READOUT_AREA = cx(
   'flex h-full flex-col',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
 )
@@ -29,7 +29,7 @@ export function StatCard({ icon, title, linkLabel, onOpen, isLoading, children }
     <Card onOpen={onOpen} linkLabel={linkLabel} aria-busy={isLoading || undefined}>
       <CardHeader title={title} icon={icon} />
       <CardBody>
-        <div className={CONTENT}>{children}</div>
+        <div className={READOUT_AREA}>{children}</div>
       </CardBody>
     </Card>
   )
