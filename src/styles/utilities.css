@@ -217,9 +217,11 @@
    scrollbar, where the scroll root clips anyway. It must not bleed further: any
    horizontal overflow lets a focus scroll the column sideways under the nav
    rail, overflow-x: hidden or not. The top margin cancels the scroll area's top
-   padding. */
+   padding. The bottom margin tops the page's 10px card gap up to 12px, so the
+   first card sits as far below the divider as the content inset. */
 @utility page-header {
-  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--content-inset-right)) 0 calc(-1 * var(--spacing-12));
+  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--content-inset-right))
+    calc(var(--spacing-12) - var(--spacing-10)) calc(-1 * var(--spacing-12));
   padding: var(--spacing-12) var(--content-inset-right) var(--spacing-12) var(--spacing-12);
   border-bottom: 1px solid var(--border-default);
 }
@@ -291,9 +293,9 @@
   padding: var(--spacing-8) var(--spacing-12);
   min-width: 150px;
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
+  background: var(--bg-popover);
   border: 1px solid var(--border-default);
-  box-shadow: var(--shadow-raised);
+  box-shadow: var(--shadow-popover);
   pointer-events: none;
 }
 
