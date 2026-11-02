@@ -21,10 +21,11 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 [🎨 Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
 [🖼️ Slideshow](https://swiftsolve.github.io/rove-tokens/) &nbsp;·&nbsp;
-[📖 Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
-[🧱 Components Storybook](https://rove.swiftsolve.net/storybook/) &nbsp;·&nbsp;
 [📐 DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
 [💡 Rationale](docs/rationale.md)
+
+[📖 Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
+[🧱 Components Storybook](https://rove.swiftsolve.net/storybook/)
 
 </div>
 
@@ -40,9 +41,9 @@ Figma is the source of truth; this package turns its variables and text styles i
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}}}%%
 flowchart TD
-  figma("<b>Figma file</b><br/>variables, text styles"):::source
+  figma("<b>Figma file</b><br/>variables, styles"):::source
   exports("<b>src/figma/*.json</b><br/>export plugin"):::file
-  code("<b>src/code-tokens.json</b><br/>shadows, easings"):::file
+  code("<b>src/code‑tokens.json</b><br/>shadows, easings"):::file
   slides("<b>Slideshow</b><br/>npm run present"):::ship
 
   subgraph build ["npm run build"]
@@ -65,7 +66,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what makes it: a script in `scripts/tokens/`, or the Figma plugin. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, or the Figma plugin. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
