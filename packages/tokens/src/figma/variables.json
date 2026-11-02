@@ -2072,6 +2072,16 @@
       "values": {
         "Value": 220
       }
+    },
+    {
+      "name": "duration/spring",
+      "collection": "Motion",
+      "type": "FLOAT",
+      "code": "var(--duration-spring)",
+      "description": "A spring’s full run",
+      "values": {
+        "Value": 450
+      }
     }
   ]
 }

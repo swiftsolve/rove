@@ -64,7 +64,7 @@ Disabled controls use `--opacity-disabled`.
 ### Focus and motion
 
 - Keyboard focus is `outline: var(--focus-outline)` with `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it inside instead, with `--focus-inset`.
-- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike.
+- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after. A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike.
 
 ### Icons
 
@@ -106,7 +106,7 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 - **Layout:** `--rail-item-size` 38px (rail items), `--titlebar-height` 56px (title bar)
 - **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)`, `--card-header-padding-x` `var(--card-padding)`, `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)`, `--row-padding-y` 8px (data row, above and below)
 - **Font weights:** `--weight-regular` 400, `--weight-medium` 500, `--weight-semibold` 600
-- **Motion:** `--duration-fast` 140ms (hovers, small changes), `--duration-normal` 220ms (panels, page changes)
+- **Motion:** `--duration-fast` 140ms (hovers, small changes), `--duration-normal` 220ms (panels, page changes), `--duration-spring` 450ms (a spring’s full run)
 
 ### Text styles
 
@@ -135,4 +135,4 @@ What Figma variables can't hold, from `src/code-tokens.json`.
 
 - **Shadows:** `--shadow-panel`, `--shadow-raised`, `--shadow-popover`
 - **Focus:** `--focus-outline`, `--focus-inset`
-- **Motion:** `--ease-out`, `--ease-in-out`, `--ease-pulse`
+- **Motion:** `--ease-out`, `--ease-in-out`, `--ease-pulse`, `--ease-spring`
