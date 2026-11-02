@@ -47,10 +47,10 @@ flowchart TD
   slides("<b>Slideshow</b><br/>npm run present"):::ship
 
   subgraph build ["npm run build"]
-    dtcg("<b>tokens/</b><br/>figma-to-dtcg.mjs"):::file
+    dtcg("<b>tokens/</b><br/>figma‑to‑dtcg.mjs"):::file
     css("<b>tokens.css</b><br/>Style Dictionary"):::file
-    textCss("<b>text-styles.css</b><br/>dtcg-to-text-styles.mjs"):::file
-    design("<b>DESIGN.md</b><br/>token-reference.mjs"):::file
+    textCss("<b>text-styles.css</b><br/>dtcg‑to‑text‑styles.mjs"):::file
+    design("<b>DESIGN.md</b><br/>token‑reference.mjs"):::file
   end
 
   pkg("<b>npm package</b><br/>for Rove"):::ship
