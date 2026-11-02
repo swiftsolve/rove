@@ -5,19 +5,12 @@ import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
-interface DeviceCounts {
-  online: number
-  total: number
-}
-
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard(): JSX.Element {
   const { scan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
   // Null before the first scan lands.
-  const counts: DeviceCounts | null = scan
-    ? { online: scan.devices.filter((device) => device.isReachable).length, total: scan.devices.length }
-    : null
+  const onlineCount = scan ? scan.devices.filter((device) => device.isReachable).length : null
   // macOS doesn't scan on Home load, so until its first scan the card offers one.
   const canDiscover = IS_MAC && !scan && !isScanning
 
@@ -25,12 +18,12 @@ export function DevicesCard(): JSX.Element {
     <StatCard
       icon={<DevicesIcon size={15} />}
       title="Devices"
-      linkLabel={devicesLinkLabel(counts, isScanning)}
+      linkLabel={devicesLinkLabel(onlineCount, isScanning)}
       onOpen={() => navigate({ tab: 'devices' })}
       isLoading={isScanning}
     >
       <DevicesCardBody
-        counts={counts}
+        onlineCount={onlineCount}
         isScanning={isScanning}
         onDiscover={canDiscover ? () => void rescan() : undefined}
       />
@@ -38,27 +31,27 @@ export function DevicesCard(): JSX.Element {
   )
 }
 
-function devicesLinkLabel(counts: DeviceCounts | null, isScanning: boolean): string {
+function devicesLinkLabel(onlineCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'
-  if (!counts) return 'Open Devices.'
-  return `${counts.online} of ${counts.total} devices online. Open Devices.`
+  if (onlineCount === null) return 'Open Devices.'
+  return `${onlineCount} ${onlineCount === 1 ? 'device' : 'devices'} online. Open Devices.`
 }
 
 type DevicesCardBodyProps = {
-  counts: DeviceCounts | null
+  onlineCount: number | null
   /** A scan is in flight, started here or on the Devices page: the scan is shared. */
   isScanning: boolean
   /** Set only when the Discover button should show. */
   onDiscover?: () => void
 }
 
-function DevicesCardBody({ counts, isScanning, onDiscover }: DevicesCardBodyProps): JSX.Element {
+function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBodyProps): JSX.Element {
   if (isScanning) return <ScanSpinner />
-  if (counts) {
+  if (onlineCount !== null) {
     return (
       // The key dot is small, so it gets more room before the count than the usage arrows do.
       <div aria-hidden>
-        <StatReadout marker="online" value={String(counts.online)} unit="online" className="gap-8" />
+        <StatReadout marker="online" value={String(onlineCount)} unit="online" className="gap-8" />
       </div>
     )
   }
