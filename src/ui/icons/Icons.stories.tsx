@@ -1,10 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import * as CustomIcons from './CustomIcons'
+import { BrandIcon } from './BrandIcon'
+import { CloudGamingIcon } from './CloudGamingIcon'
+import { ConnectionIcon } from './ConnectionIcon'
+import { HdStreamIcon } from './HdStreamIcon'
 import * as Icons from './Icons'
 import type { IconProps } from './Icons'
+import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
-// Every component the two modules export (the types are gone at runtime), by name.
-const ICONS = Object.entries({ ...Icons, ...CustomIcons })
+// Every Lucide alias (the types are gone at runtime) and custom icon, by name.
+const CUSTOM = { BrandIcon, CloudGamingIcon, ConnectionIcon, HdStreamIcon, UltraHdStreamIcon }
+const ICONS = Object.entries({ ...Icons, ...CUSTOM })
   .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
   .sort(([a], [b]) => a.localeCompare(b))
 
@@ -40,8 +45,8 @@ export const Catalogue: Story = {
 export const Brand: Story = {
   render: ({ size = 48 }) => (
     <div className="flex items-center gap-20 text-accent">
-      <CustomIcons.BrandIcon size={size} />
-      <CustomIcons.BrandIcon size={size} hasGradient />
+      <BrandIcon size={size} />
+      <BrandIcon size={size} hasGradient />
     </div>
   ),
 }
