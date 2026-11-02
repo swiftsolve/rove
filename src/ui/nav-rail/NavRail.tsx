@@ -87,7 +87,7 @@ export function NavRail({ label, main, footer }: NavRailProps): JSX.Element {
     <nav
       className={cx(
         'relative z-100 flex flex-col items-center justify-between gap-12 shrink-0',
-        'px-12 py-12 bg-base border-r border-line',
+        'px-12 py-12 bg-chrome border-r border-line',
       )}
       aria-label={label}
     >

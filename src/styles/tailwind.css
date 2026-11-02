@@ -101,6 +101,7 @@
 
   /* Surfaces (bg-*) */
   --color-base: var(--bg-base);
+  --color-chrome: var(--bg-chrome);
   --color-surface: var(--bg-surface);
   --color-inset: var(--bg-inset);
   --color-hover: var(--bg-hover);
