@@ -21,6 +21,8 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 [🎨 Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
 [🖼️ Slideshow](https://swiftsolve.github.io/rove-tokens/) &nbsp;·&nbsp;
+[📖 Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
+[🧱 Components Storybook](https://rove.swiftsolve.net/storybook/) &nbsp;·&nbsp;
 [📐 DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
 [💡 Rationale](docs/rationale.md)
 
@@ -36,29 +38,26 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}}}%%
 flowchart TD
   figma("<b>Figma file</b><br/>variables, text styles"):::source
-  slides("<b>Slideshow</b><br/>GitHub Pages"):::ship
-  exports("<b>src/figma/*.json</b><br/>the raw export"):::file
+  exports("<b>src/figma/*.json</b><br/>export plugin"):::file
   code("<b>src/code-tokens.json</b><br/>shadows, easings"):::file
+  slides("<b>Slideshow</b><br/>npm run present"):::ship
 
   subgraph build ["npm run build"]
-    dtcg("<b>tokens/</b><br/>DTCG files"):::file
-    css("<b>tokens.css</b>"):::file
-    textCss("<b>text-styles.css</b>"):::file
-    design("<b>DESIGN.md</b><br/>token reference"):::file
+    dtcg("<b>tokens/</b><br/>figma-to-dtcg"):::file
+    css("<b>tokens.css</b><br/>dtcg-to-css"):::file
+    textCss("<b>text-styles.css</b><br/>dtcg-to-text-styles"):::file
+    design("<b>DESIGN.md</b><br/>token-reference"):::file
   end
 
-  pkg("<b>@swiftsolve/rove-tokens</b><br/>on npm, for Rove"):::ship
-  storybook("<b>Storybook</b><br/>every token, both themes"):::ship
+  pkg("<b>npm package</b><br/>for Rove"):::ship
+  storybook("<b>Storybook</b><br/>both themes"):::ship
 
-  figma -- "export plugin" --> exports
-  figma -- "npm run present" --> slides
-  exports & code -- "figma-to-dtcg" --> dtcg
-  dtcg -- "dtcg-to-css" --> css
-  dtcg -- "dtcg-to-text-styles" --> textCss
-  css -- "token-reference" --> design
+  figma --> exports & slides
+  exports & code --> dtcg
+  dtcg --> css & textCss & design
   build --> pkg & storybook
 
   classDef source fill:#3a69d5,stroke:#5b8cff,color:#ffffff
@@ -66,7 +65,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Each arrow's label is the script in `scripts/tokens/` that does that step; [What's where](#️-whats-where) has the details.
+Under each file is what makes it: a script in `scripts/tokens/`, or the Figma plugin. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
@@ -109,7 +108,12 @@ The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both them
 
 ## 📖 Storybook
 
-**Rove Tokens** is a Storybook of every token in both themes: colour, palette, type, spacing, radius, effects, motion and layout.
+Two Storybooks are hosted on rove.swiftsolve.net:
+
+- [**Rove Tokens**](https://rove.swiftsolve.net/storybook/tokens/): every token in both themes (colour, palette, type, spacing, radius, effects, motion and layout), built from this repo's `main`.
+- [**Rove Components**](https://rove.swiftsolve.net/storybook/): the Rove app's UI library, built from the tokens.
+
+To run Rove Tokens locally:
 
 ```bash
 npm run storybook
