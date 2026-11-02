@@ -36,7 +36,7 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "13px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "padding": 12, "nodeSpacing": 24, "rankSpacing": 40}}}%%
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "wrappingWidth": 260, "nodeSpacing": 28, "rankSpacing": 36}}}%%
 flowchart TD
   figma("`**Figma file**
 variables, text styles`"):::source
@@ -56,10 +56,10 @@ DTCG files`"):::file
 token reference`"):::file
   end
 
-  storybook("`**Storybook**
-every token, both themes`"):::ship
   pkg("`**@swiftsolve/rove-tokens**
 on npm, for Rove`"):::ship
+  storybook("`**Storybook**
+every token, both themes`"):::ship
 
   figma -- "export plugin" --> exports
   figma -- "npm run present" --> slides
@@ -67,8 +67,7 @@ on npm, for Rove`"):::ship
   dtcg -- "dtcg-to-css" --> css
   dtcg -- "dtcg-to-text-styles" --> textCss
   css -- "token-reference" --> design
-  dtcg --> storybook
-  build --> pkg
+  build --> pkg & storybook
 
   classDef source fill:#3a69d5,stroke:#5b8cff,color:#ffffff
   classDef file fill:#151618,stroke:#2b2c2f,color:#eeeeef
