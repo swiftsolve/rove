@@ -16,7 +16,7 @@ interface DialogState {
 
 const DialogStateContext = createContext<DialogState>({ isOpen: true, onExitComplete: () => {} })
 
-interface DialogRootProps {
+type DialogRootProps = {
   /** Opens the Dialog; false plays its leave animation, then unmounts it. */
   isOpen: boolean
   /** The component that renders the Dialog: mounted while open and while it leaves. */
@@ -60,7 +60,7 @@ const HEADER = 'flex items-start justify-between gap-8 p-16'
 // Pulled toward the panel's corner without cramping the title.
 const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
 
-interface DialogProps {
+type DialogProps = {
   /** Names the dialog. */
   title: ReactNode
   /** The line under the title, read as the dialog's description. */

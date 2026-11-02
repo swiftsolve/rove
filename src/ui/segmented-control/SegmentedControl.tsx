@@ -40,7 +40,7 @@ export interface SegmentedOption<Value extends string> {
   icon?: ReactNode
 }
 
-interface SegmentedControlProps<Value extends string> {
+type SegmentedControlProps<Value extends string> = {
   /** The segments, in order: each a value, its label and an optional icon. */
   options: SegmentedOption<Value>[]
   /** The chosen option's value. */

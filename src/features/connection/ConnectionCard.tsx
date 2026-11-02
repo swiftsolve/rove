@@ -106,7 +106,7 @@ const DETAILS = 'bg-inset py-(--card-header-padding-y)'
 // `shouldTruncate`; the security badge's item in ConnectionCard.module.css).
 const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate')
 
-interface ConnectionCardProps {
+type ConnectionCardProps = {
   info: NetworkInfo
 }
 

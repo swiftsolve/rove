@@ -58,7 +58,7 @@ const CARET = cx(
   'group-hover/row:opacity-75',
 )
 
-interface UsageRowProps {
+type UsageRowProps = {
   icon: ReactNode
   /** How the icon is drawn: a `tile` (an app icon) fills its box, a `line` icon is
    *  inset. Lines the bar and figures up with it. */

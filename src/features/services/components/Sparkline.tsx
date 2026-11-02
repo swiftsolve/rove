@@ -55,7 +55,7 @@ interface Point {
   sample: LatencySample
 }
 
-interface SparklineProps {
+type SparklineProps = {
   /** Recent latency readings, oldest first. */
   samples: LatencySample[]
   width?: number

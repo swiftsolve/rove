@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from 'react'
 
-interface AppErrorBoundaryProps {
+type AppErrorBoundaryProps = {
   children: ReactNode
 }
 

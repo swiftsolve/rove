@@ -27,7 +27,7 @@ function TransferFigure({
   )
 }
 
-interface TransferFiguresProps {
+type TransferFiguresProps = {
   transfer: Transfer
   /** Hidden from screen readers, for a row that already reads the figures out
    *  elsewhere (its bar's label). Otherwise each figure is named Down or Up. */

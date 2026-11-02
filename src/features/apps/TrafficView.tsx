@@ -39,7 +39,7 @@ const BODY_COPY: UsageBodyCopy = {
   empty: 'Traffic appears here as your apps use the network.',
 }
 
-interface IconProps {
+type IconProps = {
   size?: number
   className?: string
 }

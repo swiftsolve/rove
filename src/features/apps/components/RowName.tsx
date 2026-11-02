@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-interface RowNameProps {
+type RowNameProps = {
   /** What leads the name: an icon, or a disclosure chevron and an icon. */
   icon: ReactNode
   name: string

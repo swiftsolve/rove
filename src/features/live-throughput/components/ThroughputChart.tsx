@@ -13,7 +13,7 @@ const SCALE = cx(
   'flex flex-col items-end justify-between',
 )
 
-interface ThroughputChartProps {
+type ThroughputChartProps = {
   download: number[]
   upload: number[]
   /** The scale's ceiling (Mbps); it eases down and jumps up (useSmoothScale). */

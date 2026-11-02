@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { LockIcon } from '../icons/Icons'
 
-interface EmptyStateProps {
+type EmptyStateProps = {
   /**
    * A lock badge over the placeholder rows, for a list that can't fill until
    * the user acts (admin access needed) rather than one waiting for data.

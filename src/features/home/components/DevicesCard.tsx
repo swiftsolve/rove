@@ -44,7 +44,7 @@ function devicesLinkLabel(counts: DeviceCounts | null, isScanning: boolean): str
   return `${counts.online} of ${counts.total} devices online. Open Devices.`
 }
 
-interface DevicesCardBodyProps {
+type DevicesCardBodyProps = {
   counts: DeviceCounts | null
   /** A scan is in flight, started here or on the Devices page: the scan is shared. */
   isScanning: boolean

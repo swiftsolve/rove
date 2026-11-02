@@ -34,7 +34,7 @@ const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-me
   },
 })
 
-interface MetricProps {
+type MetricProps = {
   label: string
   value: string
   unit?: string

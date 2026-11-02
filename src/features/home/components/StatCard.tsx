@@ -10,7 +10,7 @@ const CONTENT = cx(
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
 )
 
-interface StatCardProps {
+type StatCardProps = {
   icon: ReactNode
   title: string
   /** Name of the card's link: the readout in words, then where it goes. */
@@ -35,7 +35,7 @@ export function StatCard({ icon, title, linkLabel, onOpen, isLoading, children }
   )
 }
 
-interface StatReadoutProps {
+type StatReadoutProps = {
   /** What marks the value: a download/upload arrow, or the green "online" dot. */
   marker: 'down' | 'up' | 'online'
   value: string

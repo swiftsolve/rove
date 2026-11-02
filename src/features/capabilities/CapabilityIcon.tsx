@@ -10,7 +10,7 @@ import {
   VideoCallIcon,
 } from '@/ui'
 
-interface CapabilityIconProps {
+type CapabilityIconProps = {
   id: CapabilityId
   size?: number
   className?: string

@@ -120,7 +120,7 @@ const actionVariants = cva(
   },
 )
 
-interface TextFieldActionProps {
+type TextFieldActionProps = {
   /** The label: a word, "Test". */
   children: string
   /** Runs the action on the field's value. */

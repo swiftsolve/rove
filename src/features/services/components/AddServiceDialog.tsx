@@ -26,7 +26,7 @@ interface TestOutcome extends ServiceDefinition {
   latencyMs: number | null
 }
 
-interface AddServiceDialogProps {
+type AddServiceDialogProps = {
   /** Persist the confirmed service, passing the latency just measured by the
    *  test so the new row can show it at once instead of waiting for the next
    *  services poll; undefined when an edit only renamed it and nothing was

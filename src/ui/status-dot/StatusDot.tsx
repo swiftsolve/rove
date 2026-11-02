@@ -17,7 +17,7 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
   defaultVariants: { tone: 'current' },
 })
 
-interface StatusDotProps {
+type StatusDotProps = {
   /** Its colour: the text colour (`current`), or `positive` when its words stay quiet. */
   tone?: VariantOf<typeof dotVariants, 'tone'>
   /**

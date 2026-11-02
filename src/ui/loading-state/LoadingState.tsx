@@ -1,6 +1,6 @@
 import { Spinner } from '../spinner/Spinner'
 
-interface LoadingStateProps {
+type LoadingStateProps = {
   /** What's loading, as a sentence that ends in an ellipsis: "Loading usage…". */
   label: string
 }

@@ -15,7 +15,7 @@ const bannerVariants = cva('banner', {
   },
 })
 
-interface BannerProps {
+type BannerProps = {
   /** `error`, a failure: a red wash, and a red Dismiss. */
   variant: 'error'
   /** What happened. Dismiss hides the banner until this changes. */

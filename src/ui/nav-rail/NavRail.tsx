@@ -31,7 +31,7 @@ const itemVariants = cva(
   },
 )
 
-interface NavItemProps {
+type NavItemProps = {
   /** Names the item, which shows only its icon; also its tooltip. */
   label: string
   /** The icon. */
@@ -111,7 +111,7 @@ function useActiveBar(railRef: RefObject<HTMLElement>): BarPlacement {
   return bar
 }
 
-interface NavRailProps {
+type NavRailProps = {
   /** Accessible name for the navigation landmark. */
   label: string
   /** The pages, from the top. */

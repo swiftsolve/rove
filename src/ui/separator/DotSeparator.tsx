@@ -24,7 +24,7 @@ const itemVariants = cva('inline-meta-item min-w-0', {
   },
 })
 
-interface InlineMetaProps {
+type InlineMetaProps = {
   /** The chunks, in order. Empty ones (null, false) are dropped, with their dots. */
   items: (ReactNode | null | undefined | false)[]
   /** Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other items. It takes its type from the line it sits in. */

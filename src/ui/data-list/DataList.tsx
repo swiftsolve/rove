@@ -28,7 +28,7 @@ const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt
 const LABEL = 'text-overline shrink-0'
 const VALUE = 'text-number num text-right'
 
-interface DataListProps {
+type DataListProps = {
   /** The air between rows: `default` 8px, `compact` 4px for a short or repeated list. */
   density?: VariantOf<typeof listVariants, 'density'>
   /** Its place in a layout: space above it (`mt-12`). */
@@ -45,7 +45,7 @@ export function DataList({ className, density = 'default', children }: DataListP
   return <dl className={cn(listVariants({ density }), className)}>{children}</dl>
 }
 
-interface DataRowProps {
+type DataRowProps = {
   /** `center` for a value with no text baseline of its own (signal bars, a badge). */
   align?: VariantOf<typeof rowVariants, 'align'>
   /** What the value is: "Gateway". */

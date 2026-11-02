@@ -16,7 +16,7 @@ interface PressableState {
   onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
-interface PressableProps {
+type PressableProps = {
   'aria-disabled': true | undefined
   'aria-busy': true | undefined
   'data-disabled': '' | undefined
