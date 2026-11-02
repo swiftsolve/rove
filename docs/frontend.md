@@ -210,7 +210,7 @@ both, and a raw `<button>` outside the library is a lint error.
 
 The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows ("Rove
-Components v1"). Raise it when the library's API changes.
+Components v1.0.0"). Raise it when the library's API changes.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are
