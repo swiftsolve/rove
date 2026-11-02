@@ -16,13 +16,17 @@ import {
   RefreshIcon,
   StatusDot,
   WifiIcon,
+  type IconTileColor,
 } from '@/ui'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 
-// Wi-Fi and Ethernet tint the icon tile; anything else stays neutral.
-const TILE_COLORS = { wifi: 'text-series-down', ethernet: 'text-status-positive', unknown: undefined } as const
+// Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
+const TILE_COLORS = { wifi: 'download', ethernet: 'positive', unknown: 'neutral' } as const satisfies Record<
+  string,
+  IconTileColor
+>
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
 const tagVariants = cva('text-caption', {
@@ -63,10 +67,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
     <Card as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
-          <IconTile
-            tint={iface.connectionType === 'unknown' ? 'inset' : 'wash'}
-            className={TILE_COLORS[iface.connectionType]}
-          >
+          <IconTile color={TILE_COLORS[iface.connectionType]}>
             <InterfaceIcon iface={iface} />
           </IconTile>
           {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}

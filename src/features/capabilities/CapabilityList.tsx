@@ -6,7 +6,7 @@ import { CapabilityIcon } from '@/features/capabilities/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/CapabilityMeter'
 import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, ZapIcon } from '@/ui'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
-import { CAPABILITY_LEVEL_FILL_COLORS } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 
 // A few headline use-cases previewed in the empty state before any test runs —
 // the full breakdown appears once results come in.
@@ -45,7 +45,7 @@ function CapabilityRow({
         }
       >
         {/* Muted while a test runs: the rating is about to change. */}
-        <IconTile className={isTesting ? 'text-tertiary' : CAPABILITY_LEVEL_FILL_COLORS[capability.level]}>
+        <IconTile color={isTesting ? 'neutral' : CAPABILITY_LEVEL_TILE_COLORS[capability.level]}>
           <CapabilityIcon id={capability.id} size={17} />
         </IconTile>
         <span className={ROW_TEXT}>
@@ -65,7 +65,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
   return (
     <li className={PREVIEW_ROW}>
       <div className="flex min-w-0 flex-1 items-center gap-12">
-        <IconTile className="text-tertiary">
+        <IconTile color="neutral">
           <CapabilityIcon id={definition.id} size={17} />
         </IconTile>
         <div className={ROW_TEXT}>

@@ -1,4 +1,5 @@
 import type { CapabilityLevel } from '@/types'
+import type { IconTileColor } from '@/ui'
 
 /** Each level's fill colour, for glyphs, chips and meter bars (3:1 is enough). */
 export const CAPABILITY_LEVEL_FILL_COLORS: Record<CapabilityLevel, string> = {
@@ -7,6 +8,15 @@ export const CAPABILITY_LEVEL_FILL_COLORS: Record<CapabilityLevel, string> = {
   fair: 'text-status-warning',
   poor: 'text-status-poor',
   unsupported: 'text-tertiary',
+}
+
+/** Each level's IconTile colour. */
+export const CAPABILITY_LEVEL_TILE_COLORS: Record<CapabilityLevel, IconTileColor> = {
+  excellent: 'positive',
+  good: 'good',
+  fair: 'warning',
+  poor: 'poor',
+  unsupported: 'neutral',
 }
 
 /** Each level's text shade, for words beside a level: darker than the fill so

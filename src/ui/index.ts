@@ -32,7 +32,7 @@ export { Readout } from './readout/Readout'
 export { MetricValue, type MetricStatus } from './metric-value/MetricValue'
 export { BarMeter } from './bar-meter/BarMeter'
 export { ListRow } from './list-row/ListRow'
-export { IconTile, IconTileButton } from './icon-tile/IconTile'
+export { IconTile, IconTileButton, type IconTileColor } from './icon-tile/IconTile'
 
 // Containers
 export { Card, CardBody, CardFooter, CardHeader, CardList } from './card/Card'

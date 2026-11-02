@@ -14,6 +14,7 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import {
   CAPABILITY_LEVEL_FILL_COLORS,
   CAPABILITY_LEVEL_TEXT_COLORS,
+  CAPABILITY_LEVEL_TILE_COLORS,
 } from '@/features/capabilities/utils/capability-level-colors'
 
 // Three-tier card: an intro row (icon + name/description + bars) on the panel
@@ -116,7 +117,7 @@ function CapabilityDetailCard({
     <Card as="li" className={CARD} data-capability-id={capability.id}>
       <div className="flex items-center gap-8 pb-12">
         {/* The glyph in the level colour on a faint tint of it, as in the capability rows. */}
-        <IconTile size="sm" className={CAPABILITY_LEVEL_FILL_COLORS[capability.level]}>
+        <IconTile size="sm" color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}>
           <CapabilityIcon id={capability.id} size={16} />
         </IconTile>
         <div className="flex min-w-0 flex-1 flex-col gap-2">

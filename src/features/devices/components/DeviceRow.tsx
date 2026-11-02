@@ -17,6 +17,7 @@ import {
   TvIcon,
   UnknownDeviceIcon,
   WatchIcon,
+  type IconTileColor,
 } from '@/ui'
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
@@ -34,37 +35,19 @@ const DEVICE_ROW = cx(
   'px-(--card-header-padding-x) py-(--card-header-padding-y)',
 )
 
-/** A device's kind glyph, in a tile tinted by category so categories scan at a
+/** A device's kind glyph, in a tile coloured by category so categories scan at a
  *  glance. The gateway is green whatever its kind; watches and unknown devices
  *  stay neutral. */
-const TONE_COLORS = {
-  neutral: undefined,
-  down: 'text-series-down',
-  up: 'text-series-up',
-  warning: 'text-status-warning',
-  positive: 'text-status-positive',
-} as const
-
-type IconTone = keyof typeof TONE_COLORS
-
-function DeviceTile({ tone, children }: { tone: IconTone; children: JSX.Element }): JSX.Element {
-  return (
-    <IconTile tint={tone === 'neutral' ? 'inset' : 'wash'} className={TONE_COLORS[tone]}>
-      {children}
-    </IconTile>
-  )
-}
-
-const KIND_TONES: Record<LanDeviceKind, IconTone> = {
+const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
   router: 'positive',
-  nas: 'down',
-  computer: 'down',
-  tablet: 'down',
-  phone: 'down',
+  nas: 'download',
+  computer: 'download',
+  tablet: 'download',
+  phone: 'download',
   watch: 'neutral',
-  console: 'up',
-  tv: 'up',
-  printer: 'up',
+  console: 'upload',
+  tv: 'upload',
+  printer: 'upload',
   camera: 'warning',
   speaker: 'warning',
   iot: 'warning',
@@ -176,9 +159,9 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
   return (
     <Card as="li" className={DEVICE_ROW}>
-      <DeviceTile tone={device.isGateway ? 'positive' : KIND_TONES[device.kind]}>
+      <IconTile color={device.isGateway ? 'positive' : KIND_COLORS[device.kind]}>
         <KindIcon kind={device.kind} />
-      </DeviceTile>
+      </IconTile>
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         {/* Name on the left, status on the right. mb-2 adds a touch more air
             below the (larger) name, on top of the column's 4px gap. */}

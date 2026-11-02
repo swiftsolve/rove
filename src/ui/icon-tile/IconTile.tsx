@@ -1,29 +1,40 @@
 import { forwardRef, type HTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
 
+// Every colour but neutral washes the tile in the glyph's own colour.
+const WASH = 'bg-current/(--opacity-tint-md)'
+
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
   variants: {
     size: { sm: 'size-[30px]', md: 'size-[32px]', lg: 'size-[36px]' },
-    /**
-     * `wash`, a wash of the glyph's own colour (`className` sets it:
-     * `text-series-down`); or `inset`, the neutral sunken fill with a secondary
-     * glyph, for something uncategorised.
-     */
-    tint: {
-      wash: 'bg-current/(--opacity-tint-md)',
-      inset: 'bg-inset text-secondary',
+    color: {
+      positive: cx(WASH, 'text-status-positive'),
+      good: cx(WASH, 'text-status-good'),
+      warning: cx(WASH, 'text-status-warning'),
+      poor: cx(WASH, 'text-status-poor'),
+      negative: cx(WASH, 'text-status-negative'),
+      download: cx(WASH, 'text-series-down'),
+      upload: cx(WASH, 'text-series-up'),
+      neutral: 'bg-inset text-secondary',
     },
   },
-  defaultVariants: { size: 'md', tint: 'wash' },
+  defaultVariants: { size: 'md' },
 })
+
+/** What the item is, as an IconTile colour. */
+export type IconTileColor = VariantOf<typeof tileVariants, 'color'>
 
 interface TileLookProps {
   size?: VariantOf<typeof tileVariants, 'size'>
-  tint?: VariantOf<typeof tileVariants, 'tint'>
-  /** The glyph's colour, which the tint follows, and the tile's place in its row. */
+  /**
+   * The glyph's colour, washed across the tile. `neutral` is the sunken fill
+   * with a secondary glyph, for something uncategorised or not yet rated.
+   */
+  color: IconTileColor
+  /** The tile's place in its row. */
   className?: string
   /** The glyph. */
   children: ReactNode
@@ -36,11 +47,11 @@ type IconTileProps = TileLookProps & Omit<HTMLAttributes<HTMLSpanElement>, keyof
  * takes a ref and extra props, so it can be a Tooltip's trigger.
  */
 export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function IconTile(
-  { size, tint, className, children, ...props },
+  { size, color, className, children, ...props },
   ref,
 ) {
   return (
-    <span ref={ref} className={cn(tileVariants({ size, tint }), className)} {...props}>
+    <span ref={ref} className={cn(tileVariants({ size, color }), className)} {...props}>
       {children}
     </span>
   )
@@ -56,7 +67,7 @@ type IconTileButtonProps = TileLookProps & {
 
 /** An IconTile that opens something: hover deepens the tint and lifts it a pixel. */
 export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
-  { size, tint, className, label, onClick, isDisabled, children },
+  { size, color, className, label, onClick, isDisabled, children },
   ref,
 ) {
   return (
@@ -64,7 +75,7 @@ export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>
       ref={ref}
       type="button"
       className={cn(
-        tileVariants({ size, tint }),
+        tileVariants({ size, color }),
         'transition-[background,transform] duration-(--duration-fast) ease-in-out data-disabled:cursor-default',
         'usable:hover:bg-current/(--opacity-tint-lg) usable:hover:transform-[translateY(-1px)]',
         className,

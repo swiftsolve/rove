@@ -38,16 +38,17 @@ import {
   UnlockIcon,
   WifiIcon,
   type VariantOf,
+  type IconTileColor,
 } from '@/ui'
 import { ShareWifiButton } from '@/features/connection/ShareWifiButton'
 import styles from './ConnectionCard.module.css'
 
-// The connection glyph's chip, tinted by the kind of connection.
+// The connection glyph's tile, coloured by the kind of connection.
 const STRIP_ICON_COLORS = {
-  wifi: 'text-series-down',
-  ethernet: 'text-status-positive',
-  disconnected: 'text-status-negative',
-} as const
+  wifi: 'download',
+  ethernet: 'positive',
+  disconnected: 'negative',
+} as const satisfies Record<string, IconTileColor>
 
 const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
@@ -322,7 +323,8 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
           />
           <IconTile
             size="lg"
-            className={cx('relative z-1 pointer-events-none self-center', STRIP_ICON_COLORS[display.variant])}
+            color={STRIP_ICON_COLORS[display.variant]}
+            className="relative z-1 pointer-events-none self-center"
           >
             <ConnectionIcon variant={display.variant} />
           </IconTile>

@@ -27,7 +27,7 @@ import {
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
-import { CAPABILITY_LEVEL_FILL_COLORS } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 
 // Bleeds past the card body's padding so the icons span the full card width,
 // the same pattern as the live throughput chart.
@@ -125,7 +125,7 @@ function PlaceholderStrip({ isTesting }: { isTesting: boolean }): JSX.Element {
         {CAPABILITY_DEFINITIONS.map((capability) => (
           <li className={CELL} key={capability.id}>
             <Tooltip content={capability.label} side="top" align="start">
-              <IconTile className="text-tertiary">
+              <IconTile color="neutral">
                 <CapabilityIcon id={capability.id} size={16} />
               </IconTile>
             </Tooltip>
@@ -165,7 +165,7 @@ function ResultCell({
       >
         {/* Muted and inert while a test runs: the rating is about to change. */}
         <IconTileButton
-          className={isTesting ? 'text-tertiary' : CAPABILITY_LEVEL_FILL_COLORS[capability.level]}
+          color={isTesting ? 'neutral' : CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
           label={`${capability.label}: ${levelLabel}`}
           onClick={() => onOpenDetails(capability.id)}
           isDisabled={isTesting}

@@ -1080,7 +1080,21 @@
         },
         "className": {
           "type": "string",
-          "description": "The glyph's colour, which the tint follows, and the tile's place in its row."
+          "description": "The tile's place in its row."
+        },
+        "color": {
+          "values": [
+            "negative",
+            "neutral",
+            "download",
+            "positive",
+            "warning",
+            "good",
+            "poor",
+            "upload"
+          ],
+          "isRequired": true,
+          "description": "The glyph's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary glyph, for something uncategorised or not yet rated."
         },
         "size": {
           "values": [
@@ -1088,19 +1102,13 @@
             "md",
             "lg"
           ]
-        },
-        "tint": {
-          "values": [
-            "wash",
-            "inset"
-          ]
         }
       },
       "hasElementProps": true,
       "stories": [
         "data-display-icontile--default",
         "data-display-icontile--disconnected",
-        "data-display-icontile--inset",
+        "data-display-icontile--neutral",
         "data-display-icontile--large",
         "data-display-icontile--button",
         "data-display-icontile--button-disabled",
@@ -1123,7 +1131,21 @@
         },
         "className": {
           "type": "string",
-          "description": "The glyph's colour, which the tint follows, and the tile's place in its row."
+          "description": "The tile's place in its row."
+        },
+        "color": {
+          "values": [
+            "negative",
+            "neutral",
+            "download",
+            "positive",
+            "warning",
+            "good",
+            "poor",
+            "upload"
+          ],
+          "isRequired": true,
+          "description": "The glyph's colour, washed across the tile. `neutral` is the sunken fill\nwith a secondary glyph, for something uncategorised or not yet rated."
         },
         "isDisabled": {
           "type": "boolean",
@@ -1144,19 +1166,13 @@
             "md",
             "lg"
           ]
-        },
-        "tint": {
-          "values": [
-            "wash",
-            "inset"
-          ]
         }
       },
       "hasElementProps": true,
       "stories": [
         "data-display-icontile--default",
         "data-display-icontile--disconnected",
-        "data-display-icontile--inset",
+        "data-display-icontile--neutral",
         "data-display-icontile--large",
         "data-display-icontile--button",
         "data-display-icontile--button-disabled",

@@ -264,7 +264,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | — | `StretchedLink` | A transparent link over a whole card or row, so a click anywhere opens its view. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words; `pulse` calm, live or busy. |
-| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `tint`); the button form opens something. |
+| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's glyph (`size`, `color`): a status, a series or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
 | Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. `shouldTruncate` keeps them on one line, each ellipsizing. |
 | Metric value | `MetricValue` | A number that eases to each new value, coloured by `status` when it's earned. |

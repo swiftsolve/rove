@@ -31,7 +31,7 @@ const meta = {
     onClick: fn(),
     children: (
       <>
-        <IconTile className="text-status-positive">
+        <IconTile color="positive">
           <VideoCallIcon size={17} />
         </IconTile>
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
@@ -72,7 +72,7 @@ export const Disabled: Story = {
     isDisabled: true,
     children: (
       <>
-        <IconTile className="text-tertiary">
+        <IconTile color="neutral">
           <VideoCallIcon size={17} />
         </IconTile>
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
@@ -83,11 +83,11 @@ export const Disabled: Story = {
 }
 
 const CAPABILITIES = [
-  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, color: 'text-status-positive', label: 'Excellent' },
-  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, color: 'text-status-good', label: 'Good' },
-  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, color: 'text-status-warning', label: 'Fair' },
-  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, color: 'text-status-poor', label: 'Poor' },
-]
+  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, tile: 'positive', color: 'text-status-positive', label: 'Excellent' },
+  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, tile: 'good', color: 'text-status-good', label: 'Good' },
+  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, tile: 'warning', color: 'text-status-warning', label: 'Fair' },
+  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, tile: 'poor', color: 'text-status-poor', label: 'Poor' },
+] as const
 
 /** A list of rows at each rating, then one disabled. */
 export const AllStates: Story = {
@@ -96,10 +96,10 @@ export const AllStates: Story = {
       <CardHeader title="Capabilities" />
       <CardBody>
         <ul role="list" className="flex flex-col">
-          {CAPABILITIES.map(({ title, description, Icon, value, color, label }) => (
+          {CAPABILITIES.map(({ title, description, Icon, value, tile, color, label }) => (
             <li key={title}>
               <ListRow onClick={fn()} trailing={<Rating value={value} color={color} label={label} />}>
-                <IconTile className={color}>
+                <IconTile color={tile}>
                   <Icon size={17} />
                 </IconTile>
                 <RowText title={title} description={description} />
@@ -108,7 +108,7 @@ export const AllStates: Story = {
           ))}
           <li>
             <ListRow onClick={fn()} isDisabled trailing={<Rating value={3} color="text-status-good" label="Good" isDimmed />}>
-              <IconTile className="text-tertiary">
+              <IconTile color="neutral">
                 <HdStreamIcon size={17} />
               </IconTile>
               <RowText title="HD streaming" description="Testing…" />
