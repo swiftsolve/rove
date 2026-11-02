@@ -162,33 +162,42 @@ function ColourTable({ names }) {
 // A hue's shades: the solid ramp, then the see-through shades on a line of
 // their own. A see-through shade sits on the backdrop of the theme that uses
 // it: dark for Dark only, unless it's black, which only shows on white.
-function Family({ name, rows }) {
+function Family({ name, rows, captions }) {
   return (
     <div className="family">
       <p className="family-name">{name}</p>
-      {rows.map((shades) => (
-        <div key={shades[0].label} className="swatches">
-          {shades.map(({ label, token }) => {
-            const color = paletteColor(token.$value)
-            const isAlpha = (token.$value.alpha ?? 1) < 1
-            const isDarkOnly = isUsedIn('dark', token.path) && !isUsedIn('light', token.path)
-            const isOnDark = isDarkOnly && token.$value.hex !== '#000000'
-            const backdrop = isOnDark ? colorIn('dark', 'bg.base') : '#ffffff'
-            return (
-              <div key={label} className="swatch">
-                <span
-                  className="swatch-color"
-                  style={{ background: isAlpha ? `linear-gradient(${color}, ${color}), ${backdrop}` : color }}
-                />
-                <span className="swatch-name">{label}</span>
-                <span className="swatch-hex">{hexText(token.$value)}</span>
-              </div>
-            )
-          })}
+      {rows.map((shades, index) => (
+        <div key={shades[0].label} className="swatch-row">
+          {captions && <p className="swatch-row-caption">{captions[index]}</p>}
+          <div className="swatches">
+            {shades.map(({ label, token }) => {
+              const color = paletteColor(token.$value)
+              const isAlpha = (token.$value.alpha ?? 1) < 1
+              const isDarkOnly = isUsedIn('dark', token.path) && !isUsedIn('light', token.path)
+              const isOnDark = isDarkOnly && token.$value.hex !== '#000000'
+              const backdrop = isOnDark ? colorIn('dark', 'bg.base') : '#ffffff'
+              return (
+                <div key={label} className="swatch">
+                  <span
+                    className="swatch-color"
+                    style={{ background: isAlpha ? `linear-gradient(${color}, ${color}), ${backdrop}` : color }}
+                  />
+                  <span className="swatch-name">{label}</span>
+                  <span className="swatch-hex">{hexText(token.$value)}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       ))}
     </div>
   )
+}
+
+// What each row is for, in the families that have both, as the Figma page captions them.
+const ROW_CAPTIONS = {
+  neutral: ['Solid: backgrounds, text', 'See-through: fills, borders, shadows, scrim'],
+  blue: ['Solid: accent, chart series', 'See-through: muted accent, selection'],
 }
 
 // A family per hue, as on the Figma page. See-through shades (`neutral/850-a10`)
@@ -203,7 +212,8 @@ function PaletteGrid() {
     const own = shades.filter((shade) => shade.hue === hue)
     const solid = own.filter(({ alpha }) => !alpha)
     const seeThrough = own.filter(({ alpha }) => alpha).sort((a, b) => a.base - b.base || a.alpha - b.alpha)
-    return <Family key={hue} name={hue} rows={[solid, seeThrough].filter((row) => row.length)} />
+    const rows = [solid, seeThrough].filter((row) => row.length)
+    return <Family key={hue} name={hue} rows={rows} captions={rows.length > 1 ? ROW_CAPTIONS[hue] : undefined} />
   })
 }
 

@@ -69,7 +69,8 @@
 .code,
 .spec,
 .mode-value,
-.swatch-hex {
+.swatch-hex,
+.swatch-row-caption {
   font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: var(--font-size-xs);
 }
@@ -269,8 +270,14 @@
   font-weight: var(--weight-medium);
 }
 
-.swatches + .swatches {
-  margin-top: 16px;
+.swatch-row + .swatch-row {
+  margin-top: 24px;
+}
+
+.swatch-row-caption {
+  margin: 0 0 8px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-2xs);
 }
 
 .swatches {
