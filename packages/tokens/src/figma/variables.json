@@ -1,0 +1,1907 @@
+{
+  "file": {
+    "name": "Rove Design System",
+    "key": "NoICIoyhWNOya9tOnNfEhH"
+  },
+  "collections": [
+    {
+      "name": "Color",
+      "modes": [
+        "Dark",
+        "Light"
+      ]
+    },
+    {
+      "name": "Spacing",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Typography",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Icon tone",
+      "modes": [
+        "Tertiary",
+        "Secondary",
+        "Accent",
+        "Positive",
+        "Primary",
+        "On fill",
+        "Negative"
+      ]
+    },
+    {
+      "name": "Opacity",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Capability level",
+      "modes": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor",
+        "Unsupported"
+      ]
+    },
+    {
+      "name": "Palette",
+      "modes": [
+        "Value"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "bg/base",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-base)",
+      "description": "Backdrop",
+      "values": {
+        "Dark": {
+          "alias": "neutral/850"
+        },
+        "Light": {
+          "alias": "neutral/50"
+        }
+      }
+    },
+    {
+      "name": "bg/surface",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-surface)",
+      "description": "Content on the backdrop",
+      "values": {
+        "Dark": {
+          "alias": "neutral/800"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "bg/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-hover)",
+      "description": "Hovered rows and buttons",
+      "values": {
+        "Dark": {
+          "alias": "neutral/750"
+        },
+        "Light": {
+          "alias": "neutral/100"
+        }
+      }
+    },
+    {
+      "name": "border/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--border-default)",
+      "description": "Hairlines",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a7"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "fill/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-default)",
+      "description": "Overlay",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a7"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "fill/subtle",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-subtle)",
+      "description": "Light overlay",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a5"
+        },
+        "Light": {
+          "alias": "neutral/850-a5"
+        }
+      }
+    },
+    {
+      "name": "text/primary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-primary)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/50"
+        },
+        "Light": {
+          "alias": "neutral/800"
+        }
+      }
+    },
+    {
+      "name": "text/secondary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-secondary)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/250"
+        },
+        "Light": {
+          "alias": "neutral/550"
+        }
+      }
+    },
+    {
+      "name": "text/tertiary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-tertiary)",
+      "description": "Default icon colour",
+      "values": {
+        "Dark": {
+          "alias": "neutral/350"
+        },
+        "Light": {
+          "alias": "neutral/500"
+        }
+      }
+    },
+    {
+      "name": "accent/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-default)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "blue/340"
+        },
+        "Light": {
+          "alias": "blue/450"
+        }
+      }
+    },
+    {
+      "name": "accent/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-hover)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "blue/300"
+        },
+        "Light": {
+          "alias": "blue/480"
+        }
+      }
+    },
+    {
+      "name": "accent/press",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-press)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "blue/380"
+        },
+        "Light": {
+          "alias": "blue/520"
+        }
+      }
+    },
+    {
+      "name": "accent/muted",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-muted)",
+      "description": "Tinted accent background",
+      "values": {
+        "Dark": {
+          "alias": "blue/340-a14"
+        },
+        "Light": {
+          "alias": "blue/450-a12"
+        }
+      }
+    },
+    {
+      "name": "text/accent",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-accent)",
+      "description": "Accent words, also on accent/muted",
+      "values": {
+        "Dark": {
+          "alias": "accent/default"
+        },
+        "Light": {
+          "alias": "accent/press"
+        }
+      }
+    },
+    {
+      "name": "accent/fill",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-fill)",
+      "description": "Fill under white labels",
+      "values": {
+        "Dark": {
+          "alias": "blue/450"
+        },
+        "Light": {
+          "alias": "accent/default"
+        }
+      }
+    },
+    {
+      "name": "accent/fill-hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-fill-hover)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "blue/480"
+        },
+        "Light": {
+          "alias": "blue/500"
+        }
+      }
+    },
+    {
+      "name": "status/positive",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-positive)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "green/210"
+        },
+        "Light": {
+          "alias": "green/420"
+        }
+      }
+    },
+    {
+      "name": "status/good",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-good)",
+      "description": "Between positive and warning",
+      "values": {
+        "Dark": {
+          "alias": "lime/190"
+        },
+        "Light": {
+          "alias": "lime/420"
+        }
+      }
+    },
+    {
+      "name": "status/warning",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-warning)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "amber/160"
+        },
+        "Light": {
+          "alias": "amber/400"
+        }
+      }
+    },
+    {
+      "name": "status/poor",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-poor)",
+      "description": "Between warning and negative",
+      "values": {
+        "Dark": {
+          "alias": "orange/220"
+        },
+        "Light": {
+          "alias": "orange/390"
+        }
+      }
+    },
+    {
+      "name": "status/negative",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "red/310"
+        },
+        "Light": {
+          "alias": "red/420"
+        }
+      }
+    },
+    {
+      "name": "status/negative-fill",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative-fill)",
+      "description": "Solid negative under white labels",
+      "values": {
+        "Dark": {
+          "alias": "red/470"
+        },
+        "Light": {
+          "alias": "red/470"
+        }
+      }
+    },
+    {
+      "name": "text/positive",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-positive)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "status/positive"
+        },
+        "Light": {
+          "alias": "green/530"
+        }
+      }
+    },
+    {
+      "name": "text/good",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-good)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "status/good"
+        },
+        "Light": {
+          "alias": "status/good"
+        }
+      }
+    },
+    {
+      "name": "text/warning",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-warning)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "status/warning"
+        },
+        "Light": {
+          "alias": "amber/510"
+        }
+      }
+    },
+    {
+      "name": "text/poor",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-poor)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "status/poor"
+        },
+        "Light": {
+          "alias": "status/poor"
+        }
+      }
+    },
+    {
+      "name": "text/negative",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-negative)",
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "status/negative"
+        },
+        "Light": {
+          "alias": "red/500"
+        }
+      }
+    },
+    {
+      "name": "series/down",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--series-down)",
+      "description": "Download",
+      "values": {
+        "Dark": {
+          "alias": "blue/300"
+        },
+        "Light": {
+          "alias": "blue/450"
+        }
+      }
+    },
+    {
+      "name": "series/up",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--series-up)",
+      "description": "Upload",
+      "values": {
+        "Dark": {
+          "alias": "violet/250"
+        },
+        "Light": {
+          "alias": "violet/440"
+        }
+      }
+    },
+    {
+      "name": "spacing/2",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-2)",
+      "description": "",
+      "values": {
+        "Value": 2
+      }
+    },
+    {
+      "name": "spacing/4",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-4)",
+      "description": "",
+      "values": {
+        "Value": 4
+      }
+    },
+    {
+      "name": "spacing/6",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-6)",
+      "description": "",
+      "values": {
+        "Value": 6
+      }
+    },
+    {
+      "name": "spacing/8",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-8)",
+      "description": "",
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "spacing/10",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-10)",
+      "description": "",
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "spacing/12",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-12)",
+      "description": "",
+      "values": {
+        "Value": 12
+      }
+    },
+    {
+      "name": "spacing/14",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-14)",
+      "description": "",
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "spacing/16",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-16)",
+      "description": "",
+      "values": {
+        "Value": 16
+      }
+    },
+    {
+      "name": "spacing/20",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-20)",
+      "description": "",
+      "values": {
+        "Value": 20
+      }
+    },
+    {
+      "name": "radius/xs",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-xs)",
+      "description": "",
+      "values": {
+        "Value": 5
+      }
+    },
+    {
+      "name": "radius/sm",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-sm)",
+      "description": "",
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "radius/md",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-md)",
+      "description": "",
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "radius/lg",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-lg)",
+      "description": "",
+      "values": {
+        "Value": 13
+      }
+    },
+    {
+      "name": "radius/full",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-full)",
+      "description": "",
+      "values": {
+        "Value": 999
+      }
+    },
+    {
+      "name": "font-size/2xs",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-2xs)",
+      "description": "",
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "font-size/xs",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-xs)",
+      "description": "",
+      "values": {
+        "Value": 11
+      }
+    },
+    {
+      "name": "font-size/sm",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-sm)",
+      "description": "",
+      "values": {
+        "Value": 12
+      }
+    },
+    {
+      "name": "font-size/md",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-md)",
+      "description": "",
+      "values": {
+        "Value": 13
+      }
+    },
+    {
+      "name": "font-size/lg",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-lg)",
+      "description": "",
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "font-size/xl",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-xl)",
+      "description": "Dialog titles",
+      "values": {
+        "Value": 15
+      }
+    },
+    {
+      "name": "font-size/2xl",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-2xl)",
+      "description": "",
+      "values": {
+        "Value": 17
+      }
+    },
+    {
+      "name": "font-size/3xl",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-3xl)",
+      "description": "",
+      "values": {
+        "Value": 28
+      }
+    },
+    {
+      "name": "font-family/sans",
+      "collection": "Typography",
+      "type": "STRING",
+      "code": "var(--font-family-sans)",
+      "description": "",
+      "values": {
+        "Value": "Inter"
+      }
+    },
+    {
+      "name": "shadow-color/panel-1",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/panel-2",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a10"
+        },
+        "Light": {
+          "alias": "neutral/850-a5"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/raised",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "icon/color",
+      "collection": "Icon tone",
+      "type": "COLOR",
+      "code": null,
+      "description": "Every icon stroke. Set by Icon tone mode.",
+      "values": {
+        "Tertiary": {
+          "alias": "text/tertiary"
+        },
+        "Secondary": {
+          "alias": "text/secondary"
+        },
+        "Accent": {
+          "alias": "accent/default"
+        },
+        "Positive": {
+          "alias": "status/positive"
+        },
+        "Primary": {
+          "alias": "text/primary"
+        },
+        "On fill": {
+          "alias": "text/on-fill"
+        },
+        "Negative": {
+          "alias": "status/negative"
+        }
+      }
+    },
+    {
+      "name": "text/on-fill",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-on-fill)",
+      "description": "Labels and icons on solid fills",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "status/negative-fill-hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative-fill-hover)",
+      "description": "Negative fill hover",
+      "values": {
+        "Dark": {
+          "alias": "red/540"
+        },
+        "Light": {
+          "alias": "red/540"
+        }
+      }
+    },
+    {
+      "name": "focus/ring",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--focus-ring)",
+      "description": "Keyboard focus ring",
+      "values": {
+        "Dark": {
+          "alias": "accent/default"
+        },
+        "Light": {
+          "alias": "accent/default"
+        }
+      }
+    },
+    {
+      "name": "focus/offset",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--focus-offset)",
+      "description": "Focus ring offset",
+      "values": {
+        "Value": 2
+      }
+    },
+    {
+      "name": "opacity/tint-xs",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-xs)",
+      "description": "Faintest tint",
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "opacity/tint-sm",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-sm)",
+      "description": "Light tint",
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "opacity/tint-md",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-md)",
+      "description": "Tint",
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "opacity/tint-lg",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-lg)",
+      "description": "Strong tint",
+      "values": {
+        "Value": 22
+      }
+    },
+    {
+      "name": "opacity/tint-xl",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-xl)",
+      "description": "Strongest tint",
+      "values": {
+        "Value": 28
+      }
+    },
+    {
+      "name": "opacity/high",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-high)",
+      "description": "Nearly opaque",
+      "values": {
+        "Value": 80
+      }
+    },
+    {
+      "name": "level/color",
+      "collection": "Capability level",
+      "type": "COLOR",
+      "code": null,
+      "description": "Capability level colour. Capability glyphs bind to it.",
+      "values": {
+        "Excellent": {
+          "alias": "status/positive"
+        },
+        "Good": {
+          "alias": "status/good"
+        },
+        "Fair": {
+          "alias": "status/warning"
+        },
+        "Poor": {
+          "alias": "status/poor"
+        },
+        "Unsupported": {
+          "alias": "text/tertiary"
+        }
+      }
+    },
+    {
+      "name": "opacity/disabled",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-disabled)",
+      "description": "Disabled controls",
+      "values": {
+        "Value": 40
+      }
+    },
+    {
+      "name": "fill/faint",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-faint)",
+      "description": "Faintest overlay",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a3"
+        },
+        "Light": {
+          "alias": "neutral/850-a3"
+        }
+      }
+    },
+    {
+      "name": "fill/strong",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-strong)",
+      "description": "Strong overlay",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a16"
+        },
+        "Light": {
+          "alias": "neutral/850-a16"
+        }
+      }
+    },
+    {
+      "name": "fill/selection",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-selection)",
+      "description": "Text selection",
+      "values": {
+        "Dark": {
+          "alias": "blue/340-a35"
+        },
+        "Light": {
+          "alias": "blue/340-a35"
+        }
+      }
+    },
+    {
+      "name": "bg/scrim",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-scrim)",
+      "description": "Behind dialogs",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a50"
+        },
+        "Light": {
+          "alias": "neutral/1000-a50"
+        }
+      }
+    },
+    {
+      "name": "font-family/numeric",
+      "collection": "Typography",
+      "type": "STRING",
+      "code": "var(--font-family-numeric)",
+      "description": "",
+      "values": {
+        "Value": "Questrial"
+      }
+    },
+    {
+      "name": "neutral/0",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/50",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.93333,
+          "g": 0.93333,
+          "b": 0.93725,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/100",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.86667,
+          "g": 0.87059,
+          "b": 0.87843,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.67843,
+          "g": 0.68235,
+          "b": 0.69412,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/350",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.55686,
+          "g": 0.56078,
+          "b": 0.57647,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.38431,
+          "g": 0.38824,
+          "b": 0.40392,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/550",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.32941,
+          "g": 0.33333,
+          "b": 0.34902,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/750",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.12941,
+          "g": 0.13333,
+          "b": 0.14118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/800",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.08235,
+          "g": 0.08627,
+          "b": 0.09412,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/850",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/310",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.96471,
+          "g": 0.40392,
+          "b": 0.35294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.81176,
+          "g": 0.2549,
+          "b": 0.20392,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.67451,
+          "g": 0.19608,
+          "b": 0.15294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/470",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.69804,
+          "g": 0.25882,
+          "b": 0.21961,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/540",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.56863,
+          "g": 0.22353,
+          "b": 0.18824,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/220",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.94118,
+          "g": 0.63922,
+          "b": 0.36863,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/390",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.79608,
+          "g": 0.36471,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/160",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.96078,
+          "g": 0.76863,
+          "b": 0.31765,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/400",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.66275,
+          "g": 0.45098,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/510",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.50196,
+          "g": 0.34118,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "lime/190",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.49804,
+          "g": 0.84706,
+          "b": 0.54118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "lime/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.28627,
+          "g": 0.55686,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/210",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.26275,
+          "g": 0.83922,
+          "b": 0.62745,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.56471,
+          "b": 0.27843,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/530",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.42745,
+          "b": 0.21176,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/300",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.43529,
+          "g": 0.60784,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/340",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/380",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.30196,
+          "g": 0.49412,
+          "b": 0.94118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/450",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.22745,
+          "g": 0.41176,
+          "b": 0.83529,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/480",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.2,
+          "g": 0.37647,
+          "b": 0.78824,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.18431,
+          "g": 0.35686,
+          "b": 0.75294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/520",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.17255,
+          "g": 0.33333,
+          "b": 0.72157,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "violet/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.70196,
+          "g": 0.61569,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "violet/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.44314,
+          "g": 0.32941,
+          "b": 0.9098,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a3",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.03
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a5",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.05
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a7",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.07
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a16",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.16
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a22",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.22
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a50",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.5
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a3",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.03
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a5",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.05
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a7",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.07
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a10",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.1
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a16",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.16
+        }
+      }
+    },
+    {
+      "name": "blue/340-a14",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 0.14
+        }
+      }
+    },
+    {
+      "name": "blue/340-a35",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 0.35
+        }
+      }
+    },
+    {
+      "name": "blue/450-a12",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.22745,
+          "g": 0.41176,
+          "b": 0.83529,
+          "a": 0.12
+        }
+      }
+    },
+    {
+      "name": "neutral/25",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.96471,
+          "g": 0.96863,
+          "b": 0.96863,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/825",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.06275,
+          "g": 0.06275,
+          "b": 0.07059,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "bg/inset",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-inset)",
+      "description": "Sunken areas inside a surface",
+      "values": {
+        "Dark": {
+          "alias": "neutral/825"
+        },
+        "Light": {
+          "alias": "neutral/25"
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a10",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.1
+        }
+      }
+    },
+    {
+      "name": "neutral/775",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.11373,
+          "g": 0.11765,
+          "b": 0.12549,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a2",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.02
+        }
+      }
+    },
+    {
+      "name": "bg/popover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-popover)",
+      "description": "Tooltips and menus",
+      "values": {
+        "Dark": {
+          "alias": "neutral/775"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/popover-1",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/popover-2",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "bg/chrome",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-chrome)",
+      "description": "Title bar and rail",
+      "values": {
+        "Dark": {
+          "alias": "neutral/825"
+        },
+        "Light": {
+          "alias": "neutral/25"
+        }
+      }
+    },
+    {
+      "name": "fill/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--fill-hover)",
+      "description": "Hovered rows and headers",
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a3"
+        },
+        "Light": {
+          "alias": "neutral/850-a2"
+        }
+      }
+    }
+  ]
+}

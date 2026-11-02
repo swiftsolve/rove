@@ -1,0 +1,37 @@
+name: Publish
+
+# Publish each release tag to npm (https://www.npmjs.com/package/@swiftsolve/rove-tokens).
+# It signs in with npm trusted publishing, so the repo holds no npm token: on
+# npmjs.com the package's Settings name this repository and publish.yml as a
+# trusted publisher. npm attaches a provenance statement to each version.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later; Node 22 ships npm 10.
+      - run: npm install -g npm@11
+
+      - name: Check the tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+
+      # npm ci builds the tokens through `prepare`, and npm publish builds them
+      # again before packing, so the package ships tokens.css and tokens/.
+      - run: npm ci
+
+      - run: npm publish

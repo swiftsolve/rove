@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rove-site",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd ../rove.swiftsolve.net && . \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" >/dev/null 2>&1 && nvm use >/dev/null 2>&1; exec npm run dev -- --port 3100"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "nabilr-site",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd ../nabilr.com && . \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" >/dev/null 2>&1 && nvm use >/dev/null 2>&1; exec npm run dev -- --port 3200"
+      ],
+      "port": 3200
+    }
+  ]
+}

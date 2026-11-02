@@ -1,0 +1,8 @@
+node_modules/
+/tokens.css
+/text-styles.css
+/tokens/
+# Figma token for npm run present, and its output
+.env.local
+presentation/
+/storybook-static/

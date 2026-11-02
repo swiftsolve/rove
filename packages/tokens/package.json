@@ -1,0 +1,50 @@
+{
+  "name": "@swiftsolve/rove-tokens",
+  "version": "1.0.0",
+  "description": "Rove's design tokens, exported from the Rove Design System in Figma, as CSS and DTCG.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swiftsolve/rove-tokens.git"
+  },
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./text-styles.css": "./text-styles.css",
+    "./tokens/*": "./tokens/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "tokens.css",
+    "text-styles.css",
+    "tokens",
+    "src",
+    "DESIGN.md"
+  ],
+  "scripts": {
+    "build": "node scripts/tokens/build.mjs",
+    "present": "npm run build && node scripts/presentation/export.mjs",
+    "present:open": "node scripts/presentation/open.mjs",
+    "present:publish": "node scripts/presentation/publish.mjs",
+    "prepare": "npm run build",
+    "storybook": "storybook dev -p 6007",
+    "build:storybook": "storybook build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@storybook/addon-docs": "^10.6.5",
+    "@storybook/react-vite": "^10.6.5",
+    "@vitejs/plugin-react": "^5.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "storybook": "^10.6.5",
+    "style-dictionary": "^5.7.1",
+    "vite": "^7.3.7"
+  }
+}

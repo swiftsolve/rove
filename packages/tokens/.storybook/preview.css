@@ -1,0 +1,28 @@
+/* The fonts Rove bundles, served from .storybook/fonts. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Questrial';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Questrial-Regular.woff2') format('woff2');
+}
+
+html,
+body {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--fill-selection);
+}
