@@ -256,6 +256,9 @@ ${tokens}
   .crumb[aria-current] { color: var(--text-primary); font-weight: 600; }
   .sep { display: flex; color: var(--text-tertiary); }
   img { display: block; width: 100%; height: auto; border-radius: 8px; }
+  /* On a touch screen one finger scrolls; two zoom the slide (the page script), never the whole page. Set on the root, at
+     every width, so a pinch that starts on the top bar or with the phone on its side can't zoom the page either. */
+  html { touch-action: pan-x pan-y; }
   @media (max-width: 760px) {
     body { --page-gap: 24px; --page-pad: 16px; grid-template-columns: 1fr; }
     /* The sidebar becomes a drawer over the slide, opened from the top bar. */
@@ -265,8 +268,7 @@ ${tokens}
     .bar { gap: 4px; min-height: 52px; padding: 0 8px; }
     .bar > button { display: flex; }
     .trails { flex: 1; }
-    /* One finger scrolls the slide; two zoom it (the page script), not the whole page. Pinching replaces the zoom toolbar. */
-    main { touch-action: pan-x pan-y; }
+    /* Pinching replaces the zoom toolbar. */
     .zoom { display: none; }
   }
   @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
@@ -352,16 +354,22 @@ ${tokens}
   // a transform eases it there from the old one, so the big image is redrawn
   // once instead of on every frame of a width animation.
   function zoomAround(next, x, y, isAnimated = true) {
+    const before = slides[current].getBoundingClientRect()
+    zoomKeeping(next, (x - before.left) / before.width, (y - before.top) / before.height, x, y, before, isAnimated)
+  }
+
+  // Resize the slide to the next zoom, scrolling so the point a fraction (fx,
+  // fy) of the way across it lands on (x, y), then ease it there from the box it
+  // was drawn in before. When the slide ends up smaller than the canvas it centres,
+  // so the point can't always stay put; the easing makes that a glide.
+  function zoomKeeping(next, fx, fy, x, y, before, isAnimated = true) {
     const slide = slides[current]
-    const before = slide.getBoundingClientRect()
-    const fx = (x - before.left) / before.width
-    const fy = (y - before.top) / before.height
     slide.getAnimations().forEach((animation) => animation.finish())
     setZoom(next)
     let after = slide.getBoundingClientRect()
     main.scrollBy(after.left + fx * after.width - x, after.top + fy * after.height - y)
     after = slide.getBoundingClientRect()
-    if (!isAnimated || isReducedMotion || Math.abs(after.width - before.width) < 1) return
+    if (!isAnimated || isReducedMotion || Math.abs(after.width - before.width) < 1 && Math.abs(after.left - before.left) < 1 && Math.abs(after.top - before.top) < 1) return
     const k = before.width / after.width
     slide.animate([
       { transformOrigin: '0 0', transform: 'translate(' + (before.left - after.left) + 'px, ' + (before.top - after.top) + 'px) scale(' + k + ')' },
@@ -460,24 +468,54 @@ ${tokens}
   }, { passive: false })
 
   // Pinch on a touch screen does the same, around the fingers, and moving
-  // both fingers pans. One finger is left to the browser's own scrolling.
+  // both fingers pans; one finger is left to the browser's own scrolling.
+  // Resizing the full-size slide on every move is too slow for a phone, so
+  // while the fingers are down the slide only follows them with a transform,
+  // and it's resized once, where they let go. Listening on the whole document
+  // catches pinches that start on the top bar too.
   let pinch = null
   const midpoint = (touches) => [(touches[0].clientX + touches[1].clientX) / 2, (touches[0].clientY + touches[1].clientY) / 2]
   const spread = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
-  main.addEventListener('touchstart', (event) => {
-    if (event.touches.length === 2) pinch = { spread: spread(event.touches), scale, at: midpoint(event.touches) }
+  document.addEventListener('touchstart', (event) => {
+    if (event.touches.length !== 2 || document.body.classList.contains('is-nav-open')) return
+    const slide = slides[current]
+    slide.getAnimations().forEach((animation) => animation.finish())
+    const box = slide.getBoundingClientRect()
+    const at = midpoint(event.touches)
+    pinch = { slide, box, scale, spread: spread(event.touches), start: at, at, k: 1 }
+    slide.style.transformOrigin = '0 0'
+    slide.style.willChange = 'transform'
   }, { passive: true })
-  main.addEventListener('touchmove', (event) => {
+  document.addEventListener('touchmove', (event) => {
     if (!pinch || event.touches.length !== 2) return
     event.preventDefault()
-    const [x, y] = midpoint(event.touches)
-    main.scrollBy(pinch.at[0] - x, pinch.at[1] - y)
-    pinch.at = [x, y]
-    zoomAround((pinch.scale * spread(event.touches)) / pinch.spread, x, y, false)
+    const { slide, box, start } = pinch
+    const [x, y] = (pinch.at = midpoint(event.touches))
+    // Within the toolbar's range, 10% to 400%.
+    pinch.k = Math.min(Math.max(spread(event.touches) / pinch.spread, STEPS[0] / pinch.scale), STEPS.at(-1) / pinch.scale)
+    // The point that was under the fingers at the start stays under them.
+    const dx = x - start[0] + (start[0] - box.left) * (1 - pinch.k)
+    const dy = y - start[1] + (start[1] - box.top) * (1 - pinch.k)
+    slide.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + pinch.k + ')'
   }, { passive: false })
-  const endPinch = (event) => { if (event.touches.length < 2) pinch = null }
-  main.addEventListener('touchend', endPinch)
-  main.addEventListener('touchcancel', endPinch)
+  const endPinch = (event) => {
+    if (!pinch || event.touches.length >= 2) return
+    const { slide, box, start, at, k } = pinch
+    const next = pinch.scale * k
+    pinch = null
+    const before = slide.getBoundingClientRect()
+    slide.style.transform = slide.style.transformOrigin = slide.style.willChange = ''
+    zoomKeeping(next, (start[0] - box.left) / box.width, (start[1] - box.top) / box.height, at[0], at[1], before)
+  }
+  document.addEventListener('touchend', endPinch)
+  document.addEventListener('touchcancel', endPinch)
+
+  // iOS Safari also zooms the page on its own gesture events; the slide's
+  // pinch above stands in for it. (A Mac has no touch points, so its trackpad
+  // pinch still reaches the wheel handler.)
+  if (navigator.maxTouchPoints > 0) {
+    for (const type of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(type, (event) => event.preventDefault(), { passive: false })
+  }
 </script>
 </body>
 </html>
