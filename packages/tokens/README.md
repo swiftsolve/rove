@@ -33,13 +33,57 @@ Figma is the source of truth; this package turns its variables and text styles i
 > [!TIP]
 > **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, with every value. It ships in the package, so coding agents in Rove can read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`.
 
+## ⚙️ How it works
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "13px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "padding": 12, "nodeSpacing": 24, "rankSpacing": 40}}}%%
+flowchart TD
+  figma("`**Figma file**
+variables, text styles`"):::source
+  slides("`**Slideshow**
+GitHub Pages`"):::ship
+  exports("`**src/figma/*.json**
+the raw export`"):::file
+  code("`**src/code-tokens.json**
+shadows, easings`"):::file
+
+  subgraph build ["npm run build"]
+    dtcg("`**tokens/**
+DTCG files`"):::file
+    css("`**tokens.css**`"):::file
+    textCss("`**text-styles.css**`"):::file
+    design("`**DESIGN.md**
+token reference`"):::file
+  end
+
+  storybook("`**Storybook**
+every token, both themes`"):::ship
+  pkg("`**@swiftsolve/rove-tokens**
+on npm, for Rove`"):::ship
+
+  figma -- "export plugin" --> exports
+  figma -- "npm run present" --> slides
+  exports & code -- "figma-to-dtcg" --> dtcg
+  dtcg -- "dtcg-to-css" --> css
+  dtcg -- "dtcg-to-text-styles" --> textCss
+  css -- "token-reference" --> design
+  dtcg --> storybook
+  build --> pkg
+
+  classDef source fill:#3a69d5,stroke:#5b8cff,color:#ffffff
+  classDef file fill:#151618,stroke:#2b2c2f,color:#eeeeef
+  classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
+```
+
+Each arrow's label is the script in `scripts/tokens/` that does that step; [What's where](#️-whats-where) has the details.
+
 ## 📦 Use
 
 ```bash
 npm install @swiftsolve/rove-tokens
 ```
 
-The package ships `tokens.css`, `text-styles.css` and `tokens/` built. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v1.0.0`); then npm builds them on install, which needs Node 22 (see `.nvmrc`).
+The package ships `tokens.css`, `text-styles.css` and `tokens/` built. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v1.1.0`); then npm builds them on install, which needs Node 22 (see `.nvmrc`).
 
 ```css
 @import '@swiftsolve/rove-tokens/tokens.css';
@@ -47,6 +91,8 @@ The package ships `tokens.css`, `text-styles.css` and `tokens/` built. You can a
 ```
 
 Dark values sit on `:root`, Light values on `:root.theme-light`. CSS names follow the Figma names: `bg/base` is `--bg-base`, `spacing/12` is `--spacing-12`.
+
+Every colour lives once in the Palette collection (`neutral/850`, `blue/450`; higher numbers are darker; a see-through shade adds `-a` and its opacity, `neutral/850-a10`), and the Color tokens point at it. The Palette isn't in `tokens.css`: a token that points at a shade gets the shade's value there. Figma-only collections (Icon tone, Capability level) and variables without a code syntax aren't in `tokens.css` either.
 
 Each Figma text style becomes four tokens: `--type-<style>-size`, `-weight`, `-line-height` (a unitless ratio) and `-letter-spacing` (in `em`). `Number/Display` gives `--type-number-display-size` and so on. A size bound to a variable comes through as that variable (`var(--font-size-3xl)`).
 
@@ -78,40 +124,23 @@ The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both them
 npm run storybook
 ```
 
-It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `tokens/` and are styled with `tokens.css`, so a new build shows up without editing them. `npm run build:storybook` writes a static copy to `storybook-static/`.
+It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `tokens/` and are styled with `tokens.css`, so a new build shows up without editing them.
 
-## ⚙️ How it works
+## 🛠️ Scripts
 
-Figma holds the tokens. The build turns its export into DTCG, then the DTCG into CSS, and npm ships the result to Rove.
-
-```mermaid
-flowchart TD
-  figma["Figma file<br/>variables, text styles"]
-  figma -- "export plugin" --> exports["src/figma/*.json"]
-  figma -- "npm run present" --> slides["Slideshow on GitHub Pages"]
-  codeTokens["src/code-tokens.json<br/>shadows, easings"]
-
-  subgraph build ["npm run build"]
-    dtcg["tokens/*.tokens.json<br/>DTCG"]
-    css["tokens.css"]
-    textCss["text-styles.css"]
-    design["DESIGN.md<br/>token reference"]
-  end
-
-  exports & codeTokens -- "figma-to-dtcg.mjs" --> dtcg
-  dtcg -- "dtcg-to-css.mjs" --> css
-  dtcg -- "dtcg-to-text-styles.mjs" --> textCss
-  css -- "token-reference.mjs" --> design
-
-  build --> pkg["npm package<br/>@swiftsolve/rove-tokens"] --> rove["Rove app"]
-  dtcg --> storybook["Storybook"]
-```
+| Script | What it does |
+| --- | --- |
+| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css` and the `DESIGN.md` reference. `npm install` and `npm publish` run it too. |
+| `npm run storybook` | The Rove Tokens Storybook on port 6007 |
+| `npm run build:storybook` | A static copy of it in `storybook-static/` |
+| `npm run present` | Builds, then exports the Figma file's pages to the slideshow in `presentation/`. Needs `FIGMA_TOKEN` in `.env.local`. |
+| `npm run present:publish` | Pushes that slideshow to GitHub Pages |
 
 ## 🔄 Update the tokens
 
 1. Change the variables or text styles in Figma.
 2. Export them to `src/figma/variables.json` and `src/figma/text-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or by asking Claude to export them through the Figma connection.
-3. Run `npm run build` (Node 22) and check `tokens.css`. It writes the DTCG files, then generates `tokens.css` from them with Style Dictionary and `text-styles.css` from the text styles, then rewrites the token reference at the end of `DESIGN.md`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
+3. Run `npm run build` (Node 22) and check `tokens.css`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
 4. Commit the change.
 
 ## 🚀 Release
@@ -133,23 +162,40 @@ flowchart TD
 
 ## 🗂️ What's where
 
+**From Figma**
+
 | Path | What |
 | --- | --- |
 | `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
 | `figma-plugin/` | The Figma plugin that writes the two exports. |
 | `src/code-tokens.json` | What Figma variables can't hold: font stacks for the font-family variables, shadows, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
-| `DESIGN.md` | How to build Rove UI with the tokens. The rules at the top are written by hand; the token reference below the marker line is generated by the build. |
+
+**Build**
+
+| Path | What |
+| --- | --- |
 | `scripts/tokens/build.mjs` | `npm run build`: runs the steps below and writes `tokens.css` and `text-styles.css` at the package root, where the import paths point. |
 | `scripts/tokens/figma-to-dtcg.mjs` | Figma export → the DTCG files in `tokens/`, checking that every reference resolves in both themes. |
 | `scripts/tokens/dtcg-to-css.mjs` | DTCG files → `tokens.css`, with Style Dictionary and a `rove/css` format: Dark on `:root`, what differs in Light on `:root.theme-light`, each text style as four `--type-*` variables (letter spacing included). |
 | `scripts/tokens/dtcg-to-text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
 | `scripts/tokens/token-reference.mjs` | Figma export and `tokens.css` → the token reference in `DESIGN.md`: every token by name and Figma description, with values for the scales (spacing, radius, type, opacity) but not the colours, so nobody copies a hex. |
-| `scripts/presentation/export.mjs` | `npm run present`: exports the Figma file's pages to `presentation/index.html`, a slideshow styled with the tokens. Needs `FIGMA_TOKEN` (a Figma personal access token, `file_content:read`) in `.env.local`. |
+| `DESIGN.md` | How to build Rove UI with the tokens. The rules at the top are written by hand; the token reference below the marker line is generated by the build. |
+
+**Storybook and slideshow**
+
+| Path | What |
+| --- | --- |
 | `.storybook/` | The Rove Tokens Storybook's config, and the Inter and Questrial files it serves. |
 | `stories/` | Its pages, one file per sidebar group. `tokens.js` reads the DTCG files. |
+| `scripts/presentation/export.mjs` | `npm run present`: exports the Figma file's pages to `presentation/index.html`, a slideshow styled with the tokens. Needs `FIGMA_TOKEN` (a Figma personal access token, `file_content:read`) in `.env.local`. |
 | `scripts/presentation/publish.mjs` | `npm run present:publish`: pushes the exported presentation to the `gh-pages` branch, which GitHub Pages serves at <https://swiftsolve.github.io/rove-tokens/>. Each publish replaces the last. |
-| `.github/workflows/presentation.yml` | Runs the export and publish on every `v*` tag, or by hand. Needs the `FIGMA_TOKEN` repository secret. |
-| `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |
 
-Every colour lives once in the Palette collection (`neutral/850`, `blue/450`; higher numbers are darker; a see-through shade adds `-a` and its opacity, `neutral/850-a10`), and the Color tokens point at it. The Palette isn't in `tokens.css`: a token that points at a shade gets the shade's value there. Figma-only collections (Icon tone, Capability level) and variables without a code syntax aren't in `tokens.css` either.
+**Workflows and docs**
+
+| Path | What |
+| --- | --- |
+| `.github/workflows/build.yml` | Builds on every `v*` tag and checks `DESIGN.md` was rebuilt and committed. Run it by hand to check `main`. |
+| `.github/workflows/publish.yml` | Publishes each `v*` tag to npm with trusted publishing, so the repo holds no npm token. |
+| `.github/workflows/presentation.yml` | Runs the slideshow export and publish on every `v*` tag, or by hand. Needs the `FIGMA_TOKEN` repository secret. |
+| `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |
