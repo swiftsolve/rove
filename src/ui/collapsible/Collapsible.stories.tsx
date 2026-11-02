@@ -12,7 +12,7 @@ type CollapsibleArgs = ComponentProps<typeof Collapsible>
 const TRIGGER = [
   'group flex w-full items-center justify-between gap-12 text-left',
   'h-(--card-header-height) px-(--card-header-padding-x) text-heading-small',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint focus-visible:bg-fill-faint',
 ].join(' ')
 
 const CHEVRON = [

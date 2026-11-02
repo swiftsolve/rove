@@ -1498,7 +1498,7 @@
         "hasFocusFrame": {
           "type": "boolean",
           "default": "false",
-          "description": "Rings the whole collapsible (trigger and open panel) when the trigger has\nkeyboard focus, instead of the trigger alone: for a trigger that spans a\ncard's or group's header."
+          "description": "Rings the whole collapsible (trigger and open panel) when the trigger has\nkeyboard focus, instead of the trigger: for a trigger that spans a card's\nor group's header. Give the header its hover look on focus too."
         },
         "isOpen": {
           "type": "boolean",

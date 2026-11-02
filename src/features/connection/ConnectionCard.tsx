@@ -308,6 +308,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
             'relative flex items-start gap-12 w-full text-left',
             'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
             'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint',
+            'has-[[data-collapsible-trigger]:focus-visible]:bg-fill-faint',
           )}
         >
           {/* A transparent full-strip button keeps the whole row one expand target
@@ -315,7 +316,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
               The content above it stays click-through so the overlay still toggles;
               the QR button opts back in and handles its own click. */}
           <CollapsibleTrigger
-            className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none"
+            className="absolute inset-0 z-0 cursor-pointer"
             aria-label="Connection details"
           />
           <IconTile

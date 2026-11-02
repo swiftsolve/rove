@@ -12,8 +12,8 @@ type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
   as?: 'div' | 'li'
   /**
    * Rings the whole collapsible (trigger and open panel) when the trigger has
-   * keyboard focus, instead of the trigger alone: for a trigger that spans a
-   * card's or group's header.
+   * keyboard focus, instead of the trigger: for a trigger that spans a card's
+   * or group's header. Give the header its hover look on focus too.
    */
   hasFocusFrame?: boolean
   /** A CollapsibleTrigger and a CollapsiblePanel, wherever the layout puts them. */
@@ -23,6 +23,8 @@ type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
 const FOCUS_FRAME = cx(
   'has-[[data-collapsible-trigger]:focus-visible]:[outline:var(--focus-outline)]',
   'has-[[data-collapsible-trigger]:focus-visible]:outline-offset-(--focus-inset)',
+  // The trigger's own ring would draw a line between it and the panel.
+  '[&_[data-collapsible-trigger]:focus-visible]:outline-none',
 )
 
 /** Shows and hides a panel from a trigger: a card's details, a group's rows. */
