@@ -1,7 +1,6 @@
-import { memo, useId } from 'react'
+import { useId } from 'react'
 import type { NetworkInfo } from '@/types'
 import { isConnectedNetwork } from '@/types'
-import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { usePublicIp } from '@/features/connection/hooks/usePublicIp'
 import { useDetailsExpanded } from '@/features/connection/hooks/useDetailsExpanded'
 import { Card, Collapsible, CollapsiblePanel } from '@/ui'
@@ -14,7 +13,7 @@ type ConnectionCardProps = {
 
 /** Home's connection card: a strip naming the network, which expands into its
  *  link, address and hardware details. */
-export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
+export function ConnectionCard({ info }: ConnectionCardProps): JSX.Element {
   const [isExpanded, toggleExpanded] = useDetailsExpanded()
   // Fetched here rather than in the details, which unmount while closed, so
   // the row is ready when they open.
@@ -34,5 +33,4 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
       </Collapsible>
     </Card>
   )
-},
-(previous, next) => isNetworkInfoEqual(previous.info, next.info))
+}
