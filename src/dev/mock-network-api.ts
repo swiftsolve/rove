@@ -845,8 +845,8 @@ function createMockNetworkApi(): NetworkAPI {
     updateService: async (oldHost: string, name: string, host: string) => {
       await delay(160)
       const at = mockServices.findIndex((s) => s.host === oldHost)
-      const taken = host !== oldHost && mockServices.some((s) => s.host === host)
-      if (at >= 0 && !taken) {
+      const isHostTaken = host !== oldHost && mockServices.some((s) => s.host === host)
+      if (at >= 0 && !isHostTaken) {
         mockServices[at] = { name, host }
       } else {
         // Like the store: fold into the row that already has the host, or append.
