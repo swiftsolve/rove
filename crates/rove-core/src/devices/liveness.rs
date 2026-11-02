@@ -64,7 +64,7 @@ pub fn reachable(mac: &str, live_now: bool) -> bool {
 /// [`reachable`] with the clock injected, so tests can advance time without
 /// sleeping. `now` is monotonic; a live scan re-anchors `last_live` to it.
 fn reachable_at(mac: &str, live_now: bool, now: Instant) -> bool {
-    let mut streaks = crate::net_util::lock(&STREAKS);
+    let mut streaks = crate::util::net::lock(&STREAKS);
     if live_now {
         streaks.remove(mac);
         return true;

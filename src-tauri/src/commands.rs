@@ -2,9 +2,18 @@
 use crate::scanner::DeviceScanner;
 use crate::AppState;
 use rove_core::{
-    net_util::lock,
+    connection::{interfaces::InterfaceSummary, NetworkInfo},
+    devices::LanDeviceScan,
+    diagnostics::{InternetStatus, LiveDiagnostics, NetworkDiagnostics},
+    services::{ServiceEvent, ServicesReport},
+    speed::SpeedTestResult,
     store::{NetworkEvent, SpeedHistoryRecord, Store},
-    types::*,
+    usage::{
+        app::AppUsageSummary,
+        data::DataUsageSummary,
+        host::{HostUsageSummary, TrafficUsageSummary},
+    },
+    util::net::lock,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -22,7 +31,7 @@ pub async fn get_network_info(
 ) -> Result<NetworkInfo, String> {
     tracing::info!("network info requested");
     let started = std::time::Instant::now();
-    let info = rove_core::network_info::network_info().await;
+    let info = rove_core::connection::network_info().await;
     tracing::info!(
         elapsed_ms = started.elapsed().as_millis() as u64,
         interface = ?info.interface_name,
@@ -37,22 +46,22 @@ pub async fn get_network_info(
         info.interface_name.as_deref(),
         info.ip_address.as_deref(),
         info.mac_address.as_deref(),
-        rove_core::net_util::now_ms() as i64,
+        rove_core::util::net::now_ms() as i64,
     );
     Ok(info)
 }
 
 #[tauri::command]
-pub async fn get_wifi_share() -> Result<rove_core::wifi_share::WifiShare, String> {
+pub async fn get_wifi_share() -> Result<rove_core::connection::wifi_share::WifiShare, String> {
     tracing::info!("wifi share requested");
-    rove_core::wifi_share::current_wifi_share().await
+    rove_core::connection::wifi_share::current_wifi_share().await
 }
 
 #[tauri::command]
 pub async fn get_interfaces() -> Vec<InterfaceSummary> {
     tracing::info!("interfaces requested");
     let started = std::time::Instant::now();
-    let list = rove_core::interfaces::list().await;
+    let list = rove_core::connection::interfaces::list().await;
     tracing::info!(
         count = list.len(),
         elapsed_ms = started.elapsed().as_millis() as u64,
@@ -76,7 +85,7 @@ pub async fn get_devices(
         elapsed_ms = started.elapsed().as_millis() as u64,
         "device scan finished"
     );
-    let now = rove_core::net_util::now_ms() as i64;
+    let now = rove_core::util::net::now_ms() as i64;
     let _ = store.record_devices(&scan.devices, now);
     // Merge in recently-seen devices that didn't answer this scan, so an offline
     // device stays listed (marked Offline, with a "last seen" time) instead of
@@ -96,18 +105,18 @@ pub async fn run_diagnostics(
     let diag = rove_core::diagnostics::run().await;
     // Log an internet up/down transition if WAN reachability changed since the last
     // poll. Best-effort: a DB hiccup must not fail the diagnostics read.
-    let _ = store.record_internet(diag.internet, rove_core::net_util::now_ms() as i64);
+    let _ = store.record_internet(diag.internet, rove_core::util::net::now_ms() as i64);
     Ok(diag)
 }
 
 #[tauri::command]
 pub async fn run_diagnostics_live(
     store: tauri::State<'_, Arc<Store>>,
-) -> Result<rove_core::types::LiveDiagnostics, String> {
+) -> Result<LiveDiagnostics, String> {
     let live = rove_core::diagnostics::run_live().await;
     // The 15s poll is where a WAN outage or recovery is normally caught; record the
     // transition so it surfaces on the Timeline. Best-effort, idempotent per poll.
-    let _ = store.record_internet(live.internet, rove_core::net_util::now_ms() as i64);
+    let _ = store.record_internet(live.internet, rove_core::util::net::now_ms() as i64);
     Ok(live)
 }
 
@@ -118,12 +127,12 @@ pub async fn run_diagnostics_live(
 #[tauri::command]
 pub async fn run_services(
     store: tauri::State<'_, Arc<Store>>,
-) -> Result<rove_core::types::ServicesReport, String> {
+) -> Result<ServicesReport, String> {
     // Fall back to the built-in defaults on a store read error so the list never
     // blanks over a transient DB hiccup.
-    let services = store.services().unwrap_or_else(|_| rove_core::store::default_service_list());
-    let report = rove_core::diagnostics::run_services(&services).await;
-    let now = rove_core::net_util::now_ms() as i64;
+    let services = store.services().unwrap_or_else(|_| rove_core::services::default_service_list());
+    let report = rove_core::services::run_services(&services).await;
+    let now = rove_core::util::net::now_ms() as i64;
     // The service poll also catches WAN transitions while the Services tab is open;
     // record it so the Timeline stays current here too. Best-effort, idempotent.
     let _ = store.record_internet(report.internet, now);
@@ -143,7 +152,7 @@ pub async fn run_services(
 #[tauri::command]
 pub fn get_service_history(
     store: tauri::State<'_, Arc<Store>>,
-) -> Result<Vec<rove_core::types::ServiceEvent>, String> {
+) -> Result<Vec<ServiceEvent>, String> {
     store.service_events().map_err(|e| e.to_string())
 }
 
@@ -161,19 +170,19 @@ pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), 
 #[tauri::command]
 pub fn get_internet_status(
     state: tauri::State<'_, AppState>,
-) -> Option<rove_core::types::InternetStatus> {
-    *rove_core::net_util::lock(&state.internet)
+) -> Option<InternetStatus> {
+    *rove_core::util::net::lock(&state.internet)
 }
 
 #[tauri::command]
 pub async fn test_service(host: String) -> Option<f64> {
-    rove_core::diagnostics::probe_service(&host).await
+    rove_core::services::probe_service(&host).await
 }
 
 #[tauri::command]
 pub async fn list_services(
     store: tauri::State<'_, Arc<Store>>,
-) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+) -> Result<Vec<rove_core::services::ServiceDef>, String> {
     store.services().map_err(err_str)
 }
 
@@ -182,7 +191,7 @@ pub async fn add_service(
     store: tauri::State<'_, Arc<Store>>,
     name: String,
     host: String,
-) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+) -> Result<Vec<rove_core::services::ServiceDef>, String> {
     store.add_service(&name, &host).map_err(err_str)
 }
 
@@ -190,13 +199,13 @@ pub async fn add_service(
 pub async fn delete_service(
     store: tauri::State<'_, Arc<Store>>,
     host: String,
-) -> Result<Vec<rove_core::store::ServiceDef>, String> {
+) -> Result<Vec<rove_core::services::ServiceDef>, String> {
     store.delete_service(&host).map_err(err_str)
 }
 
 #[tauri::command]
 pub async fn get_public_ip() -> Option<String> {
-    rove_core::network_info::public_ip().await
+    rove_core::connection::public_ip().await
 }
 
 #[tauri::command]
@@ -220,7 +229,7 @@ pub async fn run_speed_test(
     // only used to annotate the result, so it overlaps the ~18s test for free.
     let emitter = app.clone();
     let (info, result) = tokio::join!(
-        rove_core::network_info::network_info(),
+        rove_core::connection::network_info(),
         rove_core::speed::run(cancel.clone(), move |progress| {
             let _ = emitter.emit("speed-test-progress", &progress);
         }),
@@ -291,7 +300,7 @@ pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSumma
 /// suggesting elevation when elevation isn't the problem.
 #[tauri::command]
 pub fn usage_support_detail() -> Option<String> {
-    rove_core::app_usage::support_detail()
+    rove_core::usage::app::support_detail()
 }
 
 /// Relaunch Rove elevated so the ETW session behind the Apps/Hosts/Traffic

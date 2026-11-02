@@ -1,6 +1,6 @@
 //! Opening the durable store and importing what older formats left behind.
 use crate::AppState;
-use rove_core::{data_usage::UsageTracker, net_util::lock, store::Store};
+use rove_core::{store::Store, usage::data::UsageTracker, util::net::lock};
 use std::sync::Arc;
 use tauri::Manager;
 

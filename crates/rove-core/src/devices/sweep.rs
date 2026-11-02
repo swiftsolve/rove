@@ -19,7 +19,7 @@ pub async fn sweep(subnet: &str) -> HashSet<String> {
     futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
         .map(|ip| async move {
             let cmd = crate::platform::ping_command(&ip, 1, 700);
-            let replied = crate::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+            let replied = crate::util::shell::try_run_timeout(&cmd, Duration::from_secs(3))
                 .await
                 .is_some();
             replied.then_some(ip)

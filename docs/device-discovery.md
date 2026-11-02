@@ -4,7 +4,7 @@ The Devices screen answers a deceptively hard question: **"what's on my network,
 and what is each thing?"** — without admin rights, without installing a driver,
 and in a couple of seconds. This page walks the whole pipeline, from an empty
 subnet to a labelled list of "Living-Room-AppleTV / tv" entries, using the real
-code in `crates/rove-core/src/devices/` and its helpers (`mdns.rs`, `oui.rs`).
+code in `crates/rove-core/src/devices/` and its `mdns.rs` and `oui.rs`.
 
 > Rove fuses **seven** unprivileged signal sources — an ICMP sweep, a TCP
 > `connect()` probe, mDNS, SSDP/UPnP, reverse DNS, an HTTP banner grab, and a
@@ -166,7 +166,7 @@ often with a friendly name ("Living room clock") and a hardware model
 `mdns.rs:11`) via the pure-Rust `mdns-sd` crate.
 
 > **Rust note:** `mdns-sd` is blocking, so it runs inside
-> `tokio::task::spawn_blocking` (`mdns.rs:87`) — the right tool for wrapping
+> `tokio::task::spawn_blocking` (`mdns.rs:177`) — the right tool for wrapping
 > synchronous work so it doesn't stall the async runtime's worker threads.
 
 ### 2d. SSDP / UPnP discovery — `devices/ssdp.rs`
@@ -234,10 +234,10 @@ static OUI_GZ: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/oui.tsv.gz"));
 ```
 
 IEEE hands out blocks at three sizes — MA-L (24-bit), MA-M (28-bit), MA-S
-(36-bit) — so `lookup_vendor` (`oui.rs:64`) checks **most-specific first**: try
+(36-bit) — so `lookup_vendor` (`oui.rs:214`, `resolve`) checks **most-specific first**: try
 the 36-bit key, then 28, then 24. That matters because a single 24-bit block can
 be subdivided and resold; the 28-bit match is a different company than the 24-bit
-fallback (there's a test for exactly this at `oui.rs:112`). The table is built
+fallback (there's a test for exactly this at `oui.rs:329`). The table is built
 once, lazily, and cached in a `OnceLock`.
 
 > **Rust note:** `include_bytes!` bakes the gzip'd file into the executable — no
@@ -250,7 +250,7 @@ once, lazily, and cached in a `OnceLock`.
 
 Modern phones rotate a *random* MAC per network for privacy. Rove detects this
 from a single bit — the "locally administered" bit of the first octet
-(`oui.rs:94`):
+(`oui.rs:243`):
 
 ```rust
 pub fn is_randomized_mac(mac: &str) -> bool {
@@ -403,7 +403,7 @@ The result is a `LanDeviceScan` that serializes across the IPC bridge (see the
 ## Security & privacy touches
 
 Because device names and models come *off the network* from untrusted neighbors,
-every such string passes through `sanitize_display` (`net_util.rs:65`) before it's
+every such string passes through `sanitize_display` (`util/net.rs:243`) before it's
 stored or rendered — stripping control characters and Unicode bidi overrides so a
 hostile device can't inject terminal escapes or right-to-left text into your
 device list. And every IP interpolated into a `ping`/`getent` shell command is

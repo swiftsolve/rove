@@ -1,11 +1,41 @@
-use crate::capabilities::assess;
+//! The speed test: adaptive download/upload against Cloudflare, plus what the
+//! result is good enough for.
+pub mod capabilities;
+
 use crate::diagnostics::ping;
-use crate::types::{SpeedResult, SpeedTestProgress, SpeedTestResult};
 use bytes::Bytes;
+use capabilities::{assess, CapabilityRating};
 use futures_util::{stream, StreamExt};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use serde::Serialize;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeedResult {
+    pub download_mbps: f64,
+    pub upload_mbps: f64,
+    pub latency_ms: f64,
+    pub jitter_ms: f64,
+    pub packet_loss: f64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeedTestResult {
+    pub internet: SpeedResult,
+    pub capabilities: Vec<CapabilityRating>,
+    pub link_capacity_mbps: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeedTestProgress {
+    pub phase: String,
+    pub message: String,
+    pub progress: u8,
+}
 
 pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
 

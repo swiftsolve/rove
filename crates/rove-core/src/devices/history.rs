@@ -18,7 +18,7 @@
 use super::banner::BannerHit;
 use super::snmp::SnmpHit;
 use super::ssdp::SsdpHit;
-use crate::mdns::MdnsHit;
+use crate::devices::mdns::MdnsHit;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
@@ -117,7 +117,7 @@ static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> =
 /// signal ever seen for the device, so its kind stays stable across scans that
 /// happen to miss a signal.
 pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
-    let mut cache = crate::net_util::lock(&CACHE);
+    let mut cache = crate::util::net::lock(&CACHE);
     let entry = cache.entry(mac.to_string()).or_default();
     entry.absorb(&fresh);
     entry.clone()
@@ -133,7 +133,7 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
 /// is returned instead. With no candidate this scan, fall back to the last name
 /// ever seen — keeping a device from reverting to a bare-vendor label.
 pub fn stable_name(mac: &str, candidate: Option<(String, NameRank)>) -> Option<String> {
-    let mut names = crate::net_util::lock(&NAMES);
+    let mut names = crate::util::net::lock(&NAMES);
     match candidate {
         Some((name, rank)) => {
             // Keep the remembered name when this scan's candidate is strictly

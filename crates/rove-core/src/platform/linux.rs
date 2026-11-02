@@ -1,9 +1,10 @@
 //! Linux host/network probes: `ip`, `iw`, `ethtool`, `nmcli`, `/sys`.
 use super::RawNeighbor;
-use crate::net_util::is_virtual_interface;
-use crate::network_info::infer_connection_type;
-use crate::shell::{first_int, first_match, try_run};
-use crate::types::{ConnectionDetails, InterfaceSummary};
+use crate::util::net::is_virtual_interface;
+use crate::connection::infer_connection_type;
+use crate::util::shell::{first_int, first_match, try_run};
+use crate::connection::ConnectionDetails;
+use crate::connection::interfaces::InterfaceSummary;
 use regex_lite::Regex;
 use std::net::Ipv4Addr;
 use std::sync::LazyLock;
@@ -65,7 +66,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
         return super::generic_interface_list();
     };
 
-    let default = crate::network_info::default_interface().await;
+    let default = crate::connection::default_interface().await;
     let mut result = Vec::new();
 
     for entry in parsed {
@@ -179,7 +180,7 @@ pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
     let profile = active_connection_name(iface)
         .await
         .unwrap_or_else(|| ssid.to_string());
-    let quoted = crate::net_util::shell_single_quote(&profile);
+    let quoted = crate::util::net::shell_single_quote(&profile);
     let out = try_run(&format!(
         "nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null"
     ))
@@ -196,7 +197,7 @@ pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
 /// the secret for the network we're actually joined to rather than guessing
 /// from the SSID.
 async fn active_connection_name(iface: &str) -> Option<String> {
-    if !crate::net_util::is_shell_safe_iface(iface) {
+    if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
     }
     let out = try_run(&format!(
@@ -242,7 +243,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
 /// when `ip` is missing or the interface has no IPv4; the caller turns this into
 /// a CIDR. `ip -j` is authoritative on Linux.
 pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
-    if !crate::net_util::is_shell_safe_iface(interface) {
+    if !crate::util::net::is_shell_safe_iface(interface) {
         return None;
     }
     let out = try_run(&format!("ip -j addr show {interface} 2>/dev/null")).await?;

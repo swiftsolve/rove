@@ -1,41 +1,109 @@
-use crate::network_info::{default_gateway, default_interface, dns_servers};
-use crate::shell::{try_run_timeout};
-use crate::types::{
-    InternetStatus, IspInfo, LiveDiagnostics, NetworkDiagnostics, PingStats, ServiceReachability,
-    ServicesReport,
-};
+use crate::connection::{default_gateway, default_interface, dns_servers};
+use crate::util::shell::{try_run_timeout};
+use crate::util::tls::handshake_latency;
 use regex_lite::Regex;
+use serde::Serialize;
 use std::sync::LazyLock;
+use std::time::Duration;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PingStats {
+    pub avg_ms: f64,
+    pub jitter_ms: f64,
+    pub packet_loss: f64,
+}
+
+/// Whether this machine can actually reach the public internet — the context a
+/// service verdict needs to mean anything. A service that doesn't answer reads as
+/// "Down" only when we know the internet is up; otherwise the failure is ours,
+/// not the service's, and the UI must say "can't check" instead of blaming it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum InternetStatus {
+    /// An internet anchor was reachable — service verdicts are trustworthy.
+    Online,
+    /// A default gateway exists (we're on a LAN) but no anchor answered — the WAN
+    /// is down. LAN-local services may still be reachable; public ones can't be.
+    NoInternet,
+    /// No default gateway at all — not on a usable network. Nothing is reachable.
+    Offline,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkDiagnostics {
+    pub gateway: Option<String>,
+    pub default_interface: Option<String>,
+    pub dns_servers: Vec<String>,
+    pub gateway_ping: Option<PingStats>,
+    /// Public-internet reachability, so the Services list can tell a genuine
+    /// outage apart from this machine simply being offline.
+    pub internet: InternetStatus,
+    /// Router make from the gateway's MAC OUI, or None when unknown/randomized.
+    pub gateway_vendor: Option<String>,
+    /// Router model from the gateway's SNMP `sysDescr` (or UPnP `modelName`), or
+    /// None when it answers neither or reports no usable model.
+    pub gateway_model: Option<String>,
+    /// Router product name from the gateway's UPnP `friendlyName` (e.g. "Giga Hub
+    /// 2.0"), or None when it doesn't announce over SSDP.
+    pub gateway_name: Option<String>,
+    /// WAN-side identity (ISP, ASN, location, public IP), or None when the
+    /// lookup service is unreachable — e.g. no internet or the request timed out.
+    pub isp: Option<IspInfo>,
+}
+
+/// WAN-side identity resolved from an IP-geolocation lookup. Every field is
+/// optional because the provider may omit any of them for a given address.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IspInfo {
+    /// The ISP or organization name (e.g. "Comcast Cable").
+    pub name: Option<String>,
+    /// Autonomous-system number, formatted "AS15169".
+    pub asn: Option<String>,
+    /// The ISP's registered domain (e.g. "bell.ca") — the card resolves it to a
+    /// brand icon. Only the live ipwho.is enrichment carries this; it's absent
+    /// (and the icon falls away) when that lookup is rate-limited or down.
+    pub domain: Option<String>,
+    /// City and region are likewise enrichment-only. Country is also resolved
+    /// on-device, so the Location row keeps at least a country when ipwho.is is
+    /// unavailable.
+    pub city: Option<String>,
+    pub region: Option<String>,
+    pub country: Option<String>,
+    /// Public (WAN) IP, from the quota-free echo service that anchors the
+    /// on-device lookups — so the card needn't trust the enrichment lookup for
+    /// its most basic field.
+    pub public_ip: Option<String>,
+    /// True when our public IP's ASN is a datacenter/hosting network rather than
+    /// a consumer ISP — i.e. we're behind a VPN or proxy, so the fields above
+    /// describe the exit node, not the real provider. The card badges itself
+    /// accordingly. Resolved on-device ([`crate::util::geoip::is_hosting_asn`]), so it
+    /// holds even when the live enrichment lookup is rate-limited.
+    pub is_vpn: bool,
+}
+
+/// The fast-changing subset of diagnostics, refreshed on a tight poll so the
+/// Connection view's live numbers stay current without re-running the heavier
+/// ISP geolocation and SNMP router-identity lookups (which never change between
+/// polls). Merged over the last full [`NetworkDiagnostics`] on the frontend.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveDiagnostics {
+    pub gateway_ping: Option<PingStats>,
+    /// Public-internet reachability, refreshed each poll. See [`InternetStatus`].
+    pub internet: InternetStatus,
+}
 
 static PING_TIME: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap());
-use std::sync::Arc;
-use std::time::{Duration, Instant};
-use tokio_rustls::rustls::pki_types::ServerName;
-use tokio_rustls::rustls::{ClientConfig, RootCertStore};
-use tokio_rustls::TlsConnector;
-
-/// Shared client TLS config for the service probe. Trust anchors come from
-/// webpki-roots (bundled) and the crypto provider is aws-lc-rs — the same one
-/// reqwest already compiles in — selected explicitly so the probe never depends
-/// on a process-wide default provider being installed.
-static TLS_CONFIG: LazyLock<Arc<ClientConfig>> = LazyLock::new(|| {
-    let mut roots = RootCertStore::empty();
-    roots.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
-    let provider = Arc::new(tokio_rustls::rustls::crypto::aws_lc_rs::default_provider());
-    let config = ClientConfig::builder_with_provider(provider)
-        .with_safe_default_protocol_versions()
-        .expect("aws-lc-rs supports the default TLS protocol versions")
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-    Arc::new(config)
-});
 
 /// Ping a host and derive avg / jitter / loss, like the Electron measurer.
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     // `host` is interpolated into a shell command; callers pass gateway/DNS
     // addresses from the kernel, but validate defensively all the same.
-    if !crate::net_util::is_shell_safe_ip(host) {
+    if !crate::util::net::is_shell_safe_ip(host) {
         return None;
     }
     let cmd = crate::platform::ping_command(host, count, 1000);
@@ -74,7 +142,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 /// IP. Assembled from two sources so the card stays populated whenever we're
 /// online:
 ///
-///   * **On-device** ([`crate::geoip`]) — ASN (number + operator name) and
+///   * **On-device** ([`crate::util::geoip`]) — ASN (number + operator name) and
 ///     country, resolved from our public IP against the bundled DB-IP tables.
 ///     No network, no quota, so this base is always available.
 ///   * **Live enrichment** ([`ipwho_enrich`]) — Website (the card's brand icon)
@@ -90,17 +158,17 @@ pub async fn isp_info() -> Option<IspInfo> {
     // network, so they run concurrently. The IP comes from the plain echo service
     // (no quota); it anchors the on-device lookups and stands in for ipwho.is
     // when that's throttled.
-    let (public_ip, enrich) = tokio::join!(crate::network_info::public_ip(), ipwho_enrich());
+    let (public_ip, enrich) = tokio::join!(crate::connection::public_ip(), ipwho_enrich());
 
     // Whichever source named our address, ipify preferred as the quota-free
     // anchor. Nothing at all means offline: give up and let the card go quiet.
     let public_ip = public_ip.or_else(|| enrich.as_ref().and_then(|e| e.public_ip.clone()))?;
 
     // On-device base: ASN identity and country, from the bundled tables.
-    let asn = crate::geoip::asn_info(&public_ip);
+    let asn = crate::util::geoip::asn_info(&public_ip);
     let local_name = asn.as_ref().and_then(|a| a.org.clone());
     let local_asn = asn.as_ref().and_then(|a| a.number).map(|n| format!("AS{n}"));
-    let local_country = crate::geoip::country_name(&public_ip);
+    let local_country = crate::util::geoip::country_name(&public_ip);
 
     // A hosting/datacenter ASN for our own egress means a VPN or proxy, not a
     // consumer ISP — decided from the locally-resolved AS number so it holds even
@@ -108,7 +176,7 @@ pub async fn isp_info() -> Option<IspInfo> {
     let is_vpn = asn
         .as_ref()
         .and_then(|a| a.number)
-        .is_some_and(crate::geoip::is_hosting_asn);
+        .is_some_and(crate::util::geoip::is_hosting_asn);
 
     // Merge, preferring ipwho.is's strings where it answered — its ISP name is
     // often friendlier than the raw AS org, and it owns the whole identity so
@@ -205,107 +273,6 @@ async fn ipwho_enrich() -> Option<IspInfo> {
     })
 }
 
-/// Time to establish a *secure* connection to `host:443`, in ms, or None on
-/// failure. Covers DNS + TCP + the full TLS handshake (certificate validation
-/// included), so — unlike a bare TCP connect — it confirms HTTPS actually works
-/// and isn't being intercepted or blocked mid-path. Runs ~1 RTT slower than a
-/// plain connect as a result.
-async fn service_latency(host: &str) -> Option<f64> {
-    // A bare IP literal has no certificate name to validate against, so the TLS
-    // probe below would spuriously read "unreachable". Fall back to a plain TCP
-    // connect to :443, which still measures reachability — it just can't assert
-    // that HTTPS specifically completes the way the hostname path does.
-    if host.parse::<std::net::IpAddr>().is_ok() {
-        return tcp_connect_latency(host).await;
-    }
-
-    let server_name = ServerName::try_from(host).ok()?.to_owned();
-    let connector = TlsConnector::from(TLS_CONFIG.clone());
-    let start = Instant::now();
-    let handshake = async {
-        let tcp = tokio::net::TcpStream::connect((host, 443)).await.ok()?;
-        connector.connect(server_name, tcp).await.ok()
-    };
-    let tls = tokio::time::timeout(Duration::from_secs(5), handshake).await.ok()??;
-    let ms = start.elapsed().as_secs_f64() * 1000.0;
-    drop(tls);
-    Some((ms * 10.0).round() / 10.0)
-}
-
-/// Time to open a plain TCP connection to `host:443`, in ms, or None on failure.
-/// Used for IP-literal services, where there's no hostname for a TLS cert check.
-async fn tcp_connect_latency(host: &str) -> Option<f64> {
-    let start = Instant::now();
-    let connect = tokio::net::TcpStream::connect((host, 443));
-    let stream = tokio::time::timeout(Duration::from_secs(5), connect).await.ok()?.ok()?;
-    let ms = start.elapsed().as_secs_f64() * 1000.0;
-    drop(stream);
-    Some((ms * 10.0).round() / 10.0)
-}
-
-/// The HTTP status a lightweight HEAD to `https://host/` returns, or None when
-/// there's no usable HTTP answer (IP-literal host, or the request failed/timed
-/// out). This is the application-layer counterpart to [`service_latency`]: the
-/// two can disagree, and that's the point — a 5xx here on a service that
-/// `service_latency` reaches in a few ms means the network path is fine but the
-/// service itself is failing. A Cloudflare tunnel error (Error 1033) is exactly
-/// this shape: TLS to the edge completes, but the edge returns HTTP 530.
-async fn service_health(host: &str) -> Option<u16> {
-    // An IP literal has no certificate name and no virtual host to route on, so
-    // an HTTP probe would be meaningless (or hit an unrelated default vhost).
-    // The reachability latency alone stands in for it, as it does for the TLS
-    // path above.
-    if host.parse::<std::net::IpAddr>().is_ok() {
-        return None;
-    }
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(5))
-        // Don't chase redirects: a 3xx already proves the server is answering,
-        // and following it would add round-trips and blur which host we rated.
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .ok()?;
-    let resp = client.head(format!("https://{host}/")).send().await.ok()?;
-    Some(resp.status().as_u16())
-}
-
-/// Reachability of a single host, measured on both axes — the TLS handshake (or
-/// an IP's TCP connect) *and* the HTTP health — so its verdict matches what the
-/// Services list shows. Returns the latency in ms when the service is up, or None
-/// when it's Down: either the network path failed, or the host answered but with
-/// a server error (a Cloudflare tunnel that's down returns HTTP 530, for
-/// instance). Used by the "test before add" step so a service can be checked
-/// without being stored — the dialog must agree with the list it will land in.
-pub async fn probe_service(host: &str) -> Option<f64> {
-    let (latency, health) = tokio::join!(service_latency(host), service_health(host));
-    // The path has to be reachable at all (TLS/TCP), and — for hostnames, where
-    // an HTTP probe is meaningful — the service must not be answering a 5xx. An
-    // IP literal has no HTTP check (`service_health` is None), so latency stands.
-    let latency = latency?;
-    if health.is_some_and(|status| status >= 500) {
-        return None;
-    }
-    Some(latency)
-}
-
-/// Probe each service in `services` concurrently, preserving their order. Each
-/// service is measured on both axes — network latency (TLS handshake) and HTTP
-/// health (HEAD) — at once, so a service that's reachable but erroring reads as
-/// such rather than as a clean green latency.
-pub async fn service_reachability(services: &[crate::store::ServiceDef]) -> Vec<ServiceReachability> {
-    let probes = services.iter().map(|svc| async move {
-        let (latency_ms, http_status) =
-            tokio::join!(service_latency(&svc.host), service_health(&svc.host));
-        ServiceReachability {
-            name: svc.name.clone(),
-            host: svc.host.clone(),
-            latency_ms,
-            http_status,
-        }
-    });
-    futures_util::future::join_all(probes).await
-}
-
 /// Ten pings to the gateway, or None when there's no default gateway.
 async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
     match gateway {
@@ -317,9 +284,9 @@ async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
 /// Hosts probed solely to answer "does this machine have working internet?".
 /// Independent operators with near-100% uptime, so it takes a real outage of the
 /// whole path — not one flaky service — for every one to fail. Probed by
-/// *hostname* through the same full-TLS path as services, so a captive portal
-/// (whose certificate won't validate) reads as no-internet rather than a false
-/// "online".
+/// *hostname* through the same full-TLS path as services ([`crate::util::tls`]),
+/// so a captive portal (whose certificate won't validate) reads as no-internet
+/// rather than a false "online".
 const INTERNET_ANCHORS: [&str; 2] = ["cloudflare.com", "www.google.com"];
 
 /// Whether this machine can currently reach the public internet — true as soon as
@@ -327,8 +294,8 @@ const INTERNET_ANCHORS: [&str; 2] = ["cloudflare.com", "www.google.com"];
 /// service probe needs: without it, "unreachable from here" is indistinguishable
 /// from "the service is down". Anchors run concurrently, so this costs one 5s
 /// timeout at worst (only when the machine really is offline).
-async fn internet_reachable() -> bool {
-    let probes = INTERNET_ANCHORS.iter().map(|host| service_latency(host));
+pub(crate) async fn internet_reachable() -> bool {
+    let probes = INTERNET_ANCHORS.iter().map(|host| handshake_latency(host));
     futures_util::future::join_all(probes)
         .await
         .into_iter()
@@ -339,7 +306,7 @@ async fn internet_reachable() -> bool {
 /// the offline/no-internet split on whether a gateway exists — a route to a LAN —
 /// rather than on gateway ping loss, because plenty of routers drop ICMP echo yet
 /// route fine; treating that as "offline" would be wrong.
-fn classify_internet(reachable: bool, gateway: Option<&str>) -> InternetStatus {
+pub(crate) fn classify_internet(reachable: bool, gateway: Option<&str>) -> InternetStatus {
     if reachable {
         InternetStatus::Online
     } else if gateway.is_some() {
@@ -364,22 +331,6 @@ pub async fn run_live() -> LiveDiagnostics {
     }
 }
 
-/// Service reachability, on its own — the Services view's probe, independent of
-/// the Connection diagnostics above. Bundles the machine's own internet verdict,
-/// probed in the same batch, so the view can pair each set of service results
-/// with whether *we* had internet when they were taken (see [`ServicesReport`]).
-/// The gateway lookup is only what `classify_internet` needs to tell "WAN down"
-/// (on a LAN) apart from "no network at all".
-pub async fn run_services(service_list: &[crate::store::ServiceDef]) -> ServicesReport {
-    let gateway = default_gateway().await;
-    let (internet, services) =
-        tokio::join!(internet_reachable(), service_reachability(service_list));
-    ServicesReport {
-        internet: classify_internet(internet, gateway.as_deref()),
-        services,
-    }
-}
-
 /// Public-internet reachability, and nothing else. The always-on background
 /// heartbeat calls this: it deliberately skips the gateway ping, the service
 /// list, and the ISP/SNMP identity that `run`/`run_live` gather — just the
@@ -399,7 +350,7 @@ pub async fn run() -> NetworkDiagnostics {
     // Resolve the router's make (MAC OUI) and model (SNMP) so the Router panel
     // can name it — the diagnostics view never runs a full device scan itself.
     let local_ipv4 = match &iface {
-        Some(name) => crate::interfaces::address_of(name)
+        Some(name) => crate::connection::interfaces::address_of(name)
             .await
             .0
             .and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok()),

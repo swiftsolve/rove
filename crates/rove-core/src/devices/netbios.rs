@@ -85,7 +85,7 @@ fn parse_node_status(pkt: &[u8]) -> Option<String> {
         let text = String::from_utf8_lossy(name);
         let trimmed = text.trim_end_matches([' ', '\0']).trim();
         if !trimmed.is_empty() {
-            let name = crate::net_util::sanitize_display(trimmed);
+            let name = crate::util::net::sanitize_display(trimmed);
             if !name.is_empty() {
                 return Some(name);
             }

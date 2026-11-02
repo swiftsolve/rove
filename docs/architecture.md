@@ -52,7 +52,7 @@ Two consequences worth knowing:
   `undefined` at runtime. `ts-rs` or `specta` would close this by generating one
   side from the other.
 - **The mock re-implements one rule.** `rateCapability` in the mock mirrors
-  `rate` in `crates/rove-core/src/capabilities.rs` so demo ratings match
+  `rate` in `crates/rove-core/src/speed/capabilities.rs` so demo ratings match
   production. Two copies of one rule, also synced by hand.
 
 **Not everything goes through the bridge.** Three files call Tauri directly —

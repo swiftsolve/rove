@@ -55,7 +55,7 @@ const BOOTP_MIN_LEN: usize = 240;
 /// The `99, 130, 83, 99` magic cookie that precedes the DHCP options.
 const MAGIC_COOKIE: [u8; 4] = [99, 130, 83, 99];
 
-/// What a device's DHCP solicitation reveals. Mirrors [`crate::mdns::MdnsHit`]
+/// What a device's DHCP solicitation reveals. Mirrors [`crate::devices::mdns::MdnsHit`]
 /// and [`crate::devices::ssdp::SsdpHit`] so the classifier treats it as one more
 /// weighted signal.
 #[derive(Debug, Clone, Default)]
@@ -150,7 +150,7 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
             let _ = listen_forever().await;
         });
     });
-    let mut map = crate::net_util::lock(&CACHE).clone();
+    let mut map = crate::util::net::lock(&CACHE).clone();
     // Merge whatever a privileged helper captured. This is a fallback for
     // platforms/configs where the in-process bind above is denied (e.g. older
     // macOS that still reserves low ports for root, or :67 already held by
@@ -195,7 +195,7 @@ async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Resul
 /// In-process listener: capture into the shared cache (Linux/Windows path).
 async fn listen_forever() -> std::io::Result<()> {
     capture_loop(|mac, hit| {
-        crate::net_util::lock(&CACHE).insert(mac, hit);
+        crate::util::net::lock(&CACHE).insert(mac, hit);
     })
     .await
 }
@@ -324,7 +324,7 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
 /// Bytes → a sanitized, non-empty display string (or `None`).
 fn clean_str(bytes: &[u8]) -> Option<String> {
     let raw = String::from_utf8_lossy(bytes);
-    let value = crate::net_util::sanitize_display(raw.trim());
+    let value = crate::util::net::sanitize_display(raw.trim());
     (!value.is_empty()).then_some(value)
 }
 

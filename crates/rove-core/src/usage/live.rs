@@ -1,6 +1,14 @@
-use crate::types::LiveThroughput;
+use serde::Serialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 use sysinfo::Networks;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveThroughput {
+    pub download_mbps: f64,
+    pub upload_mbps: f64,
+    pub timestamp: u64,
+}
 
 const SMOOTH_ALPHA: f64 = 0.35;
 
@@ -60,7 +68,7 @@ impl ThroughputSampler {
         let mut rx = 0u64;
         let mut tx = 0u64;
         for (name, data) in self.networks.iter() {
-            if crate::net_util::is_virtual_interface(name) {
+            if crate::util::net::is_virtual_interface(name) {
                 continue;
             }
             rx += data.received();

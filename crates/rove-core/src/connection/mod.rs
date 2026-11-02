@@ -1,6 +1,41 @@
+//! This machine's own connection: the default route, DNS, the active link's
+//! Wi-Fi or Ethernet details, its interfaces, and the "join this Wi-Fi" share.
+pub mod interfaces;
+pub mod wifi_share;
+
 use crate::platform;
-use crate::shell::try_run;
-use crate::types::{ConnectionDetails, NetworkInfo};
+use crate::util::shell::try_run;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ConnectionDetails {
+    pub ssid: Option<String>,
+    pub signal_strength: Option<i64>,
+    pub signal_dbm: Option<i64>,
+    pub frequency: Option<i64>,
+    pub channel: Option<i64>,
+    pub security: Option<String>,
+    pub wifi_standard: Option<String>,
+    pub link_speed_mbps: Option<i64>,
+    pub duplex: Option<String>,
+    pub vendor: Option<String>,
+    pub product: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkInfo {
+    pub connection_type: String, // "wifi" | "ethernet" | "disconnected"
+    pub is_connected: bool,
+    pub interface_name: Option<String>,
+    pub ip_address: Option<String>,
+    pub gateway: Option<String>,
+    pub mac_address: Option<String>,
+    pub dns: Vec<String>,
+    #[serde(flatten)]
+    pub details: ConnectionDetails,
+}
 
 pub async fn default_gateway() -> Option<String> {
     if cfg!(target_os = "windows") {
@@ -85,7 +120,7 @@ pub async fn dns_servers() -> Vec<String> {
 pub async fn connection_details(iface: &str, connection_type: &str) -> ConnectionDetails {
     // Every platform probe below interpolates `iface` into a shell command;
     // refuse anything that isn't a well-formed interface name.
-    if !crate::net_util::is_shell_safe_iface(iface) {
+    if !crate::util::net::is_shell_safe_iface(iface) {
         return ConnectionDetails::default();
     }
     match (std::env::consts::OS, connection_type) {
@@ -150,7 +185,7 @@ pub async fn network_info() -> NetworkInfo {
         };
     };
 
-    let (ip, mac) = crate::interfaces::address_of(&iface).await;
+    let (ip, mac) = crate::connection::interfaces::address_of(&iface).await;
     // macOS names Wi-Fi `enN`, so the name heuristic always misreads it as
     // Ethernet — resolve the medium through the hardware-port map instead.
     let connection_type = if cfg!(target_os = "macos") {
@@ -176,7 +211,7 @@ pub async fn network_info() -> NetworkInfo {
     // didn't supply one (Windows Ethernet, macOS Wi-Fi).
     if details.vendor.is_none() {
         if let Some(mac) = &mac {
-            details.vendor = crate::oui::lookup_vendor(mac);
+            details.vendor = crate::devices::oui::lookup_vendor(mac);
         }
     }
 

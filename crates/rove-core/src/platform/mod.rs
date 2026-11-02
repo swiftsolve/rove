@@ -11,8 +11,9 @@
 //!   * [`macos`]   — `ifconfig`, `system_profiler`, CoreWLAN (via [`mac_native`])
 //!
 //! The cross-platform *contract* — which probe to call, and the fallback chain
-//! when a tool is missing — stays in the feature modules (`interfaces`,
-//! `network_info`, `devices::subnet`, `data_usage`); they dispatch into here.
+//! when a tool is missing — stays in the feature modules (`connection`,
+//! `connection::interfaces`, `devices::subnet`, `usage::data`); they dispatch
+//! into here.
 //! Shared, OS-agnostic glue (the sysinfo fallback, Wi-Fi post-processing, the
 //! windowless-spawn helper, interface sorting) lives in this file.
 
@@ -22,17 +23,18 @@ pub mod mac_native;
 pub mod macos;
 pub mod windows;
 
-use crate::net_util::is_virtual_interface;
-use crate::network_info::infer_connection_type;
-use crate::shell::try_run;
-use crate::types::{ConnectionDetails, InterfaceSummary};
+use crate::util::net::is_virtual_interface;
+use crate::connection::infer_connection_type;
+use crate::util::shell::try_run;
+use crate::connection::ConnectionDetails;
+use crate::connection::interfaces::InterfaceSummary;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
 /// Spawn console child processes without briefly flashing a terminal window on
 /// Windows. No-op elsewhere, where these commands never open a window. Applied
 /// to the synchronous [`std::process::Command`] call sites (timezone probe,
-/// `hostname`); the async [`crate::shell`] runner has its own equivalent.
+/// `hostname`); the async [`crate::util::shell`] runner has its own equivalent.
 #[cfg(windows)]
 pub fn hide_console(cmd: &mut std::process::Command) {
     use std::os::windows::process::CommandExt;
@@ -152,7 +154,7 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
     out.lines()
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
-            let mac = crate::net_util::normalize_mac_colons(&c[2]);
+            let mac = crate::util::net::normalize_mac_colons(&c[2]);
             // Drop broadcast and multicast pseudo-neighbors; they aren't devices.
             if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33")
             {

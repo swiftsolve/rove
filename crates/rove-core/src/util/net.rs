@@ -23,7 +23,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 ///
 /// Private/LAN peers *are* routable here: a NAS on the same subnet is a real
 /// host that real bytes crossed a real link to reach. It just has no country —
-/// that's a separate question, see `host_usage::ip_is_public`.
+/// that's a separate question, see `usage::host::ip_is_public`.
 pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {

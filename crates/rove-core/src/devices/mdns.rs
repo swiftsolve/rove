@@ -212,13 +212,13 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     .get_property_val_str("fn")
                     .map(String::from)
                     .or_else(|| instance_name(info.get_fullname()))
-                    .map(|n| crate::net_util::sanitize_display(&n))
+                    .map(|n| crate::util::net::sanitize_display(&n))
                     .filter(|n| is_human_name(n) && !is_generic_service_name(n));
                 let model = info
                     .get_property_val_str("am")
                     .or_else(|| info.get_property_val_str("model"))
                     .or_else(|| info.get_property_val_str("md"))
-                    .map(crate::net_util::sanitize_display)
+                    .map(crate::util::net::sanitize_display)
                     .filter(|m| !m.is_empty());
 
                 // A Cast device's service alone means only "castable"; its `ca`

@@ -97,7 +97,7 @@ Tauri hides the plumbing behind two directions of message flow:
 Because the data is *copied across a process boundary as text*, both sides only
 ever exchange things that can be turned into JSON and back. This is exactly why:
 
-- Every type a command returns derives `Serialize` (see `crates/rove-core/src/types.rs`).
+- Every type a command returns derives `Serialize` (see `NetworkInfo` in `crates/rove-core/src/connection/mod.rs`).
 - Command errors are converted to `String` (`.map_err(|e| e.to_string())`) — a
   rich Rust error type can't cross the wire, but a string can.
 - The Rust structs use `#[serde(rename_all = "camelCase")]` so the JSON keys
@@ -205,7 +205,7 @@ boilerplate.
 
 ## 5. Ownership — the concept that makes Rust *Rust*
 
-This is the big one, and `crates/rove-core/src/data_usage.rs` shows it
+This is the big one, and `crates/rove-core/src/usage/data.rs` shows it
 beautifully. Rust has **no garbage collector** and yet is memory-safe. How?
 Three rules enforced at compile time:
 
@@ -216,7 +216,7 @@ Three rules enforced at compile time:
    so a reference can never outlive the thing it points to (no dangling
    pointers, ever).
 
-Watch the `&` in `summary` (`data_usage.rs:172`):
+Watch the `&` in `summary` (`usage/data.rs:189`):
 
 ```rust
 pub fn summary(&self, networks: &sysinfo::Networks) -> DataUsageSummary {

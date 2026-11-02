@@ -11,7 +11,7 @@
 //! QR. Scanners use that to pre-fill the network name and prompt for the
 //! password by hand.
 
-use crate::network_info::network_info;
+use crate::connection::network_info;
 use crate::platform;
 use serde::Serialize;
 
@@ -65,7 +65,7 @@ pub async fn current_wifi_share() -> Result<WifiShare, String> {
 }
 
 /// Dispatch the passphrase read to the running OS's probe. Mirrors the runtime
-/// dispatch in [`crate::network_info::connection_details`] — every platform
+/// dispatch in [`crate::connection::connection_details`] — every platform
 /// module compiles everywhere, so we pick by `std::env::consts::OS`.
 async fn read_password(iface: &str, ssid: &str) -> Option<String> {
     match std::env::consts::OS {

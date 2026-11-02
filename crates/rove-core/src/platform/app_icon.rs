@@ -1,6 +1,6 @@
 //! Real per-application icons on macOS, Windows and Linux.
 //!
-//! The per-app usage list ([`crate::app_usage`]) only knows a process *name* and
+//! The per-app usage list ([`crate::usage::app`]) only knows a process *name* and
 //! its pid. To show the same icon the Dock/Finder/Explorer would, we resolve that
 //! process to its native icon and rasterise it to a small PNG the frontend renders
 //! directly (a `data:` URI). Two lookups on each platform, best-effort and in the

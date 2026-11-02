@@ -1,6 +1,19 @@
-use crate::network_info::default_interface;
+use crate::connection::default_interface;
 use crate::platform;
-use crate::types::InterfaceSummary;
+use serde::Serialize;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InterfaceSummary {
+    pub name: String,
+    pub connection_type: String,
+    pub oper_state: String,
+    pub ip_address: Option<String>,
+    pub mac_address: Option<String>,
+    pub speed_mbps: Option<i64>,
+    pub is_default: bool,
+    pub is_virtual: bool,
+}
 
 /// (ip4, mac) for one interface.
 pub async fn address_of(name: &str) -> (Option<String>, Option<String>) {

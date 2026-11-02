@@ -29,7 +29,7 @@ shelling out — more on that in §7.
 
 ### The command runner
 
-Every shell-out goes through `crates/rove-core/src/shell.rs`:
+Every shell-out goes through `crates/rove-core/src/util/shell.rs`:
 
 ```rust
 pub async fn try_run(command: &str) -> Option<String> {
@@ -44,15 +44,15 @@ Three things to notice, each a deliberate design choice:
   *"callers treat missing tools as 'no data'."* This is what makes the fallback
   chains in §3 possible — a failed probe just returns `None` and the caller tries
   the next option.
-- **It's `async` with a timeout** (`tokio::time::timeout`, `shell.rs:54`). A hung
+- **It's `async` with a timeout** (`tokio::time::timeout`, `util/shell.rs:54`). A hung
   `nmcli` can't freeze the app; after 15s it's abandoned.
-- **It picks the right shell per OS** (`shell.rs:25`): `cmd /C` on Windows, `sh -c`
+- **It picks the right shell per OS** (`util/shell.rs:25`): `cmd /C` on Windows, `sh -c`
   everywhere else. On Windows there's a separate `try_run_powershell` because most
   Windows probes are PowerShell, not `cmd`.
 
 There's also a Windows-only detail: `hide_window` sets the `CREATE_NO_WINDOW`
 flag (`0x0800_0000`) so spawning `powershell`/`netsh` doesn't flash a black
-console window on screen (`shell.rs:6-16`). No-op on Unix.
+console window on screen (`util/shell.rs:6-16`). No-op on Unix.
 
 ---
 
@@ -60,18 +60,18 @@ console window on screen (`shell.rs:6-16`). No-op on Unix.
 
 Because Rove builds shell command strings that sometimes contain values from
 the network (interface names, neighbor IPs), it has to guard against injection.
-Two gatekeepers in `crates/rove-core/src/net_util.rs`:
+Two gatekeepers in `crates/rove-core/src/util/net.rs`:
 
-- **`is_shell_safe_ip`** (`net_util.rs:44`) — an address is safe to interpolate
+- **`is_shell_safe_ip`** (`util/net.rs:213`) — an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
   contain `[0-9a-fA-F:.]` — never a `;`, `|`, `$`, or backtick. Guards the
   `ping`/`getent` call sites that take an IP straight from the ARP table.
-- **`is_shell_safe_iface`** (`net_util.rs:51`) — interface names are bounded to
+- **`is_shell_safe_iface`** (`util/net.rs:220`) — interface names are bounded to
   ≤40 chars of a safe alphabet. It deliberately *allows spaces* (Windows really
   has interfaces named `"Ethernet 2"` and `"Local Area Connection"`) but rejects
   every genuine metacharacter.
 
-And **`sanitize_display`** (`net_util.rs:65`) strips control characters and
+And **`sanitize_display`** (`util/net.rs:243`) strips control characters and
 Unicode bidi overrides from names that come off the network (mDNS TXT records,
 reverse DNS) before they're stored or rendered — so a malicious neighbour can't
 inject terminal escape sequences or right-to-left overrides into your device
@@ -82,7 +82,7 @@ list.
 ## 3. Dispatch and fallback chains
 
 The cross-platform *contract* (which probe to call, in what order) lives in the
-feature modules; the OS-specific probes live in `platform/`. `network_info.rs`
+feature modules; the OS-specific probes live in `platform/`. `connection/mod.rs`
 shows the dispatch pattern. Two flavours:
 
 **Runtime dispatch with `cfg!`** — a boolean checked at runtime, so all branches
@@ -107,7 +107,7 @@ Notice the **fallback chain**: try `ip route` (Linux), and if that returns `None
 (the BSD/macOS tool). One function, two platforms, graceful degradation.
 
 **Compile-time dispatch with `match` on `std::env::consts::OS`** —
-`connection_details` (`network_info.rs:56`) routes to a different probe per
+`connection_details` (`connection/mod.rs:120`) routes to a different probe per
 (OS, connection-type) pair:
 
 ```rust
@@ -260,13 +260,13 @@ classifier — is covered in the [device-discovery page](./device-discovery.md).
 These two are the exception to "shell out" — they read kernel byte counters via
 the `sysinfo` crate, which is cross-platform, so there's very little per-OS code.
 
-- **Live throughput** (`crates/rove-core/src/live_throughput.rs`): a stateful
+- **Live throughput** (`crates/rove-core/src/usage/live.rs`): a stateful
   1 Hz sampler. `sysinfo`'s `received()`/`transmitted()` return the *delta* since
   the last refresh, so throughput is `bytes * 8 / 1e6 / elapsed_secs` = Mbps,
   then exponentially smoothed (`SMOOTH_ALPHA = 0.35`) so the chart isn't jagged.
   It sums only physical interfaces (skipping `veth`/`docker`/`tun`/… via
   `is_virtual_interface`).
-- **Data usage** (`crates/rove-core/src/data_usage.rs`): accumulates those
+- **Data usage** (`crates/rove-core/src/usage/data.rs`): accumulates those
   deltas into daily buckets. It uses `saturating_sub` on the counters so a counter
   *reset* (reboot, driver reload) credits zero rather than dumping a phantom
   multi-GB spike.
@@ -280,7 +280,7 @@ Windows/macOS it falls back to summing `sysinfo`'s totals.
 
 ## 7. Diagnostics & ping
 
-`crates/rove-core/src/diagnostics.rs` measures gateway health by pinging it 10
+`crates/rove-core/src/diagnostics/mod.rs` measures gateway health by pinging it 10
 times and parsing the RTT out of each reply line with a regex
 (`time=12.3 ms`). From those samples it computes average latency, **jitter**
 (mean absolute difference between consecutive RTTs), and **packet loss**
@@ -293,12 +293,12 @@ times and parsing the RTT out of each reply line with a regex
 ## 8. The design in one picture
 
 <div align="center">
-  <img src="assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into shared types.rs structs that serialize across IPC to the UI" />
+  <img src="assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into each module's Serialize structs that serialize across IPC to the UI" />
 </div>
 
 **The whole philosophy:** define the facts once as OS-agnostic functions, dispatch
 to per-OS probes that shell out to each platform's native tools, treat every probe
-as fallible (`Option`), chain fallbacks, and normalize everything into the shared
-`types.rs` structs that serialize across the IPC bridge to the UI. Adding support
+as fallible (`Option`), chain fallbacks, and normalize everything into each module's
+`Serialize` structs that serialize across the IPC bridge to the UI. Adding support
 for a new OS means adding one file under `platform/` and a `match` arm — the
 feature modules and the UI don't change.

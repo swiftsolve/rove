@@ -7,10 +7,10 @@ mod scanner;
 mod store_init;
 mod tray;
 
-use rove_core::app_usage::AppUsageTracker;
-use rove_core::data_usage::UsageTracker;
-use rove_core::host_usage::HostUsageTracker;
-use rove_core::types::InternetStatus;
+use rove_core::usage::app::AppUsageTracker;
+use rove_core::usage::data::UsageTracker;
+use rove_core::usage::host::HostUsageTracker;
+use rove_core::diagnostics::InternetStatus;
 use scanner::DeviceScanner;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};

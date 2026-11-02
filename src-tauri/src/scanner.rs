@@ -1,6 +1,6 @@
 //! Scan coalescing: one in-flight LAN scan, shared by every concurrent caller.
 use futures_util::future::FutureExt;
-use rove_core::types::LanDeviceScan;
+use rove_core::devices::LanDeviceScan;
 use std::sync::atomic::Ordering;
 
 type SharedScan =
@@ -49,7 +49,7 @@ impl DeviceScanner {
                             devices: Vec::new(),
                             subnet: None,
                             interface_name: None,
-                            scanned_at: rove_core::net_util::now_ms(),
+                            scanned_at: rove_core::util::net::now_ms(),
                             dhcp_status: "unavailable",
                         }
                     }

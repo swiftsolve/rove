@@ -1,5 +1,5 @@
 //! Reverse hostname resolution and hostname hygiene.
-use crate::shell::{try_run_powershell, try_run_timeout};
+use crate::util::shell::{try_run_powershell, try_run_timeout};
 use regex_lite::Regex;
 use std::collections::HashMap;
 use std::sync::LazyLock;
@@ -76,7 +76,7 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
     let safe: Vec<&str> = ips
         .iter()
         .map(String::as_str)
-        .filter(|ip| crate::net_util::is_shell_safe_ip(ip))
+        .filter(|ip| crate::util::net::is_shell_safe_ip(ip))
         .collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();
@@ -139,7 +139,7 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     let safe: Vec<&str> = ips
         .iter()
         .map(String::as_str)
-        .filter(|ip| crate::net_util::is_shell_safe_ip(ip))
+        .filter(|ip| crate::util::net::is_shell_safe_ip(ip))
         .collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();

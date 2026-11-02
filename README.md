@@ -39,8 +39,8 @@ Rove is two programs talking over a thin, typed bridge:
   poll). That last one carries no payload at all — it just makes the pull that
   already exists happen now.
 - **The contract** — TypeScript types in `src/types/` define every payload; the
-  Rust structs in `crates/rove-core/src/types.rs` mirror them field-for-field
-  (serde renames everything to camelCase on the wire). The UI never knows it's
+  Rust structs in `crates/rove-core` mirror them field-for-field, each in the
+  module that produces it (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauri-network-api.ts` implements the same
   `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
   which is why `npm run dev` works in a plain browser for UI work.
@@ -127,13 +127,13 @@ and the backend is memory-safe Rust.
 The Hosts view knows which remote hosts each app talks to — a list that is
 browsing history in all but name. *That list* never leaves your machine: country
 flags are resolved against an IP-to-country table bundled in the binary
-(`geoip.rs`), not by asking a geolocation API about each peer.
+(`util/geoip.rs`), not by asking a geolocation API about each peer.
 
 Two things do leave, neither of them a peer address:
 
 - **Your own WAN identity**, when the Connection tab asks: your public IP
   (api.ipify.org). Your ISP, ASN, and country are then resolved from that IP
-  against bundled tables (`geoip.rs`) — no request. A best-effort call to
+  against bundled tables (`util/geoip.rs`) — no request. A best-effort call to
   ipwho.is only *enriches* the card with your city and ISP website when it isn't
   rate-limited; the card stays populated without it. Every request here is about
   your own address.
@@ -202,9 +202,11 @@ rove/
 │   ├── bridge/                 Tauri implementation of the contract
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
-│                               deps — compiles and tests anywhere): network_info,
-│                               interfaces, devices/, diagnostics, speed, mdns,
-│                               live_throughput, data_usage, oui, geoip, shell
+│                               deps — compiles and tests anywhere), a module per
+│                               domain: connection/, devices/, diagnostics/,
+│                               services, speed/, usage/; plus platform/ (per-OS
+│                               probes), store/ (SQLite, a file per domain) and
+│                               util/ (net, shell, geoip, tls)
 │   └── data/                   bundled lookup tables (OUI, IP-to-country)
 └── src-tauri/                  thin Tauri shell: one #[tauri::command] per
     │                           service, events, capabilities, window config

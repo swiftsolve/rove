@@ -1,8 +1,25 @@
 use crate::store::Store;
-use crate::types::{DailyUsage, DataUsageSummary};
+use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DailyUsage {
+    pub date: String,
+    pub rx_bytes: u64,
+    pub tx_bytes: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DataUsageSummary {
+    pub days: Vec<DailyUsage>,
+    pub boot_rx_bytes: u64,
+    pub boot_tx_bytes: u64,
+    pub tracking_since: Option<u64>,
+}
 
 const RETAIN_DAYS: usize = 30;
 const SUMMARY_DAYS: i64 = 7;
@@ -22,7 +39,7 @@ fn local_offset_secs() -> i64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let mut cached = crate::net_util::lock(&LOCAL_OFFSET);
+    let mut cached = crate::util::net::lock(&LOCAL_OFFSET);
     if let Some((offset, computed_at)) = *cached {
         if now.saturating_sub(computed_at) < OFFSET_TTL_SECS {
             return offset;
@@ -111,7 +128,7 @@ impl UsageTracker {
         let mut tx_delta = 0u64;
 
         for (name, data) in networks.iter() {
-            if crate::net_util::is_virtual_interface(name) {
+            if crate::util::net::is_virtual_interface(name) {
                 continue;
             }
             let rx = data.total_received();
@@ -128,10 +145,10 @@ impl UsageTracker {
         // Drop counters for interfaces that disappeared (Docker/VPN churn) so
         // `last_bytes` doesn't grow without bound across a long session.
         self.last_bytes
-            .retain(|name, _| networks.contains_key(name) && !crate::net_util::is_virtual_interface(name));
+            .retain(|name, _| networks.contains_key(name) && !crate::util::net::is_virtual_interface(name));
 
         if !self.first_sample_recorded {
-            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::net_util::now_ms()) {
+            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::util::net::now_ms()) {
                 tracing::warn!("failed to record first-sample timestamp: {e}");
             }
             self.first_sample_recorded = true;
@@ -160,7 +177,7 @@ impl UsageTracker {
         let mut rx = 0u64;
         let mut tx = 0u64;
         for (name, data) in networks.iter() {
-            if crate::net_util::is_virtual_interface(name) {
+            if crate::util::net::is_virtual_interface(name) {
                 continue;
             }
             rx += data.total_received();

@@ -9,23 +9,63 @@ mod banner;
 mod classify;
 mod history;
 mod liveness;
+pub mod mdns;
 /// Public so diagnostics/examples (and the planned alerts feature) can drive the
 /// passive listener and read captures directly.
 pub mod dhcp;
 pub mod hostname;
 mod netbios;
+pub mod oui;
 mod probe;
 mod snmp;
 mod ssdp;
 mod subnet;
 mod sweep;
 
-use crate::mdns;
-use crate::network_info::{default_gateway, default_interface};
-use crate::oui::{is_kind_ambiguous_vendor, is_randomized_mac, lookup_vendor};
+use crate::connection::{default_gateway, default_interface};
+use crate::devices::oui::{is_kind_ambiguous_vendor, is_randomized_mac, lookup_vendor};
 use crate::platform::{neighbor_table, RawNeighbor};
-use crate::types::{LanDevice, LanDeviceScan};
+use serde::Serialize;
 use std::time::Duration;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LanDevice {
+    pub ip: String,
+    pub mac: String,
+    pub vendor: Option<String>,
+    pub hostname: Option<String>,
+    /// Hardware model from mDNS TXT or a UPnP description, e.g. "MacBookPro18,3"
+    /// or "BRAVIA KD-55X". None when no source reported one.
+    pub model: Option<String>,
+    /// OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
+    /// "Apple"). None when unknown.
+    pub os: Option<String>,
+    pub kind: String,
+    /// "high" when the classifier's verdict was decisive, "low" when it's a
+    /// thin-margin best guess the UI hedges (e.g. "Phone?").
+    pub kind_confidence: &'static str,
+    pub is_randomized_mac: bool,
+    pub is_gateway: bool,
+    pub is_self: bool,
+    pub is_reachable: bool,
+    /// Epoch-ms this device last answered, carried so the UI can show "last seen
+    /// 3m ago" for an offline device. `None` on a freshly-scanned device that
+    /// hasn't been merged against the roster yet; the store's merge stamps it.
+    pub last_seen: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LanDeviceScan {
+    pub devices: Vec<LanDevice>,
+    pub subnet: Option<String>,
+    pub interface_name: Option<String>,
+    pub scanned_at: u64,
+    /// Passive DHCP fingerprinting state: "starting", "active", or
+    /// "unavailable" (no privilege to bind :67).
+    pub dhcp_status: &'static str,
+}
 
 /// How long the sweep + mDNS window lasts. Both run concurrently, so this is
 /// also (roughly) the total added latency of a scan.
@@ -54,7 +94,7 @@ pub async fn scan() -> LanDeviceScan {
     // address (right adapter on multi-homed/Windows hosts) and so `self` is
     // known when devices are built below.
     let (self_ip, self_mac) = match &interface {
-        Some(name) => crate::interfaces::address_of(name).await,
+        Some(name) => crate::connection::interfaces::address_of(name).await,
         None => (None, None),
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
@@ -142,7 +182,7 @@ pub async fn scan() -> LanDeviceScan {
         devices,
         subnet,
         interface_name: interface,
-        scanned_at: crate::net_util::now_ms(),
+        scanned_at: crate::util::net::now_ms(),
         dhcp_status: dhcp::status(),
     }
 }
@@ -170,7 +210,7 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
     };
 
     let (self_ip, self_mac) = match &interface {
-        Some(name) => crate::interfaces::address_of(name).await,
+        Some(name) => crate::connection::interfaces::address_of(name).await,
         None => (None, None),
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
@@ -246,7 +286,7 @@ fn build_passive_device(
     }
 
     let vendor = lookup_vendor(&neighbor.mac);
-    let dhcp_hit = dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
+    let dhcp_hit = dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
 
     // Best passive name, most human first — the full scan's order minus the
     // active-only NetBIOS/reverse-DNS sources.
@@ -370,7 +410,7 @@ fn build_device(
     let vendor = lookup_vendor(&neighbor.mac);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
-    let dhcp = enrichment.dhcp.get(&crate::net_util::normalize_mac_bare(&neighbor.mac));
+    let dhcp = enrichment.dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
 
     // mDNS/SSDP/banner/port signals are captured opportunistically in one lossy
     // discovery window, so a device that advertised a decisive signal on an
@@ -744,7 +784,7 @@ mod tests {
         let (mdns, ssdp) = (HashMap::new(), HashMap::new());
         let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
         dhcp.insert(
-            crate::net_util::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
+            crate::util::net::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
             dhcp::DhcpHit { kind: Some("router"), ..Default::default() },
         );
         let ap = RawNeighbor {

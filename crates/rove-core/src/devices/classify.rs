@@ -23,7 +23,7 @@
 use crate::devices::banner::BannerHit;
 use crate::devices::dhcp::DhcpHit;
 use crate::devices::ssdp::SsdpHit;
-use crate::mdns::MdnsHit;
+use crate::devices::mdns::MdnsHit;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
@@ -526,7 +526,7 @@ pub fn classify(s: &Signals) -> Verdict {
 mod tests {
     use super::*;
     use crate::devices::dhcp::DhcpHit;
-    use crate::mdns::MdnsHit;
+    use crate::devices::mdns::MdnsHit;
 
     fn strong(kind: &'static str) -> MdnsHit {
         MdnsHit { kind: Some(kind), ..Default::default() }

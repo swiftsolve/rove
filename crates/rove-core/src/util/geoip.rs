@@ -26,13 +26,13 @@ use std::sync::OnceLock;
 
 /// The databases as downloaded from DB-IP, each decoded once, on first lookup,
 /// by the readers below.
-static DBIP_COUNTRY_GZ: &[u8] = include_bytes!("../data/dbip-country-lite.mmdb.gz");
-static DBIP_ASN_GZ: &[u8] = include_bytes!("../data/dbip-asn-lite.mmdb.gz");
+static DBIP_COUNTRY_GZ: &[u8] = include_bytes!("../../data/dbip-country-lite.mmdb.gz");
+static DBIP_ASN_GZ: &[u8] = include_bytes!("../../data/dbip-asn-lite.mmdb.gz");
 
 /// Datacenter / hosting / VPN ASNs, one per line, sorted (see [`is_hosting_asn`]
 /// and `examples/gen_hosting_asns.rs`). Small enough to embed as text and parse
 /// once rather than ship another binary table.
-static HOSTING_ASNS_TXT: &str = include_str!("../data/hosting-asns.txt");
+static HOSTING_ASNS_TXT: &str = include_str!("../../data/hosting-asns.txt");
 
 /// Autonomous-system identity for an address: the network operator's number and
 /// registered name. Either field may be absent even on a hit — the table names

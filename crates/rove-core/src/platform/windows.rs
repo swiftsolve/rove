@@ -1,9 +1,10 @@
 //! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Find-NetRoute`,
 //! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and `netsh wlan`.
-use crate::net_util::is_virtual_interface;
-use crate::network_info::infer_connection_type;
-use crate::shell::{try_run, try_run_powershell};
-use crate::types::{ConnectionDetails, InterfaceSummary};
+use crate::util::net::is_virtual_interface;
+use crate::connection::infer_connection_type;
+use crate::util::shell::{try_run, try_run_powershell};
+use crate::connection::ConnectionDetails;
+use crate::connection::interfaces::InterfaceSummary;
 use std::net::Ipv4Addr;
 
 // ---- routing / DNS -------------------------------------------------------
@@ -93,7 +94,7 @@ $ip = (Get-NetIPAddress -InterfaceIndex $_.ifIndex -AddressFamily IPv4 -ErrorAct
 pub async fn interface_list() -> Vec<InterfaceSummary> {
     let (out, default) = tokio::join!(
         try_run_powershell(WINDOWS_ADAPTERS),
-        crate::network_info::default_interface()
+        crate::connection::default_interface()
     );
     let Some(out) = out else {
         return Vec::new();
@@ -114,7 +115,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             .next()
             .map(str::trim)
             .filter(|s| !s.is_empty())
-            .map(crate::net_util::normalize_mac_colons);
+            .map(crate::util::net::normalize_mac_colons);
         let is_virtual_flag = parts.next().map(str::trim) == Some("1");
         let ip = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(String::from);
 
@@ -256,7 +257,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
 /// Fills Wi-Fi's link speed, which `netsh` doesn't report as one figure — keeping
 /// the connection card and speed-test footer consistent with the interface list.
 pub async fn link_speed(iface: &str) -> Option<i64> {
-    if !crate::net_util::is_shell_safe_iface(iface) {
+    if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
     }
     let out = try_run_powershell(&format!(
@@ -299,7 +300,7 @@ pub(crate) fn parse_link_speed(text: &str) -> Option<i64> {
 /// (169.254/16) is skipped so a half-configured adapter doesn't scope the scan
 /// to its link-local range instead of the real LAN.
 pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
-    if !crate::net_util::is_shell_safe_iface(interface) {
+    if !crate::util::net::is_shell_safe_iface(interface) {
         return None;
     }
     let out = try_run_powershell(&format!(

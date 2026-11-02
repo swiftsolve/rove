@@ -19,7 +19,7 @@
 //! Pure Rust: one `tokio` UDP round-trip and a hand-rolled BER encode/decode
 //! (the request and response are tiny and flat, so a full ASN.1 crate is
 //! overkill — mirrors the dependency-light XML/DHCP parsing elsewhere).
-use crate::net_util::sanitize_display;
+use crate::util::net::sanitize_display;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::time::Duration;

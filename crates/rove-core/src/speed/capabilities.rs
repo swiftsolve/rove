@@ -1,4 +1,15 @@
-use crate::types::{CapabilityRating, SpeedResult};
+use crate::speed::SpeedResult;
+use serde::Serialize;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CapabilityRating {
+    pub id: String,
+    pub label: String,
+    pub description: String,
+    pub icon: String,
+    pub level: String,
+}
 
 struct Def {
     id: &'static str,

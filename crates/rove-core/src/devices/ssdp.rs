@@ -26,7 +26,7 @@ const CONCURRENT_FETCHES: usize = 32;
 /// bounds the wait on a device that advertised a stale/unreachable LOCATION.
 const FETCH_TIMEOUT: Duration = Duration::from_millis(1500);
 
-/// What a device's UPnP description says about it. Mirrors [`crate::mdns::MdnsHit`]
+/// What a device's UPnP description says about it. Mirrors [`crate::devices::mdns::MdnsHit`]
 /// so the classifier and name-preference chain treat it as one more signal.
 #[derive(Debug, Clone, Default)]
 pub struct SsdpHit {
@@ -183,7 +183,7 @@ fn tag_text(xml: &str, tag: &str) -> Option<String> {
     let start = xml.find(&open)? + open.len();
     let end = xml[start..].find(&close)? + start;
     let raw = xml[start..end].trim();
-    let value = crate::net_util::sanitize_display(raw);
+    let value = crate::util::net::sanitize_display(raw);
     (!value.is_empty()).then_some(value)
 }
 

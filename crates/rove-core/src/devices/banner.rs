@@ -87,7 +87,7 @@ async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
         .headers()
         .get(reqwest::header::SERVER)
         .and_then(|v| v.to_str().ok())
-        .map(crate::net_util::sanitize_display)
+        .map(crate::util::net::sanitize_display)
         .filter(|s| !s.is_empty());
 
     // Read at most MAX_BODY_BYTES so a streaming endpoint can't balloon memory.
@@ -112,7 +112,7 @@ fn extract_title(html: &str) -> Option<String> {
     let gt = lower[open..].find('>')? + open + 1;
     let close = lower[gt..].find("</title>")? + gt;
     let raw = html[gt..close].trim();
-    let title = crate::net_util::sanitize_display(raw);
+    let title = crate::util::net::sanitize_display(raw);
     (!title.is_empty()).then_some(title)
 }
 

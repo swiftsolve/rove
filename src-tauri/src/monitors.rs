@@ -2,7 +2,7 @@
 //! passive device-roster refresh, and the OS network-change monitor that nudges
 //! the UI off its polling interval.
 use crate::AppState;
-use rove_core::{live_throughput::ThroughputSampler, net_util::lock, store::Store};
+use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
@@ -60,7 +60,7 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
             // A failed sample is skipped, not ingested as an empty one: the
             // tracker would read that as every unit having vanished, drop its
             // baselines, and re-credit the world on the next good tick.
-            if let Some(units) = rove_core::app_usage::sample_units().await {
+            if let Some(units) = rove_core::usage::app::sample_units().await {
                 let state = handle.state::<AppState>();
                 lock(&state.app_usage).ingest(units);
             }
@@ -85,7 +85,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     use std::collections::HashMap;
     tauri::async_runtime::spawn(async move {
         loop {
-            let sampled = rove_core::host_usage::sample().await;
+            let sampled = rove_core::usage::host::sample().await;
 
             // Ingest and capture what still needs resolving, dropping the lock
             // before any await (a std Mutex must never be held across .await).
@@ -123,7 +123,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                     need_countries
                         .into_iter()
                         .map(|ip| {
-                            let code = rove_core::geoip::country_code(&ip);
+                            let code = rove_core::util::geoip::country_code(&ip);
                             (ip, code)
                         })
                         .collect::<HashMap<String, Option<String>>>()
@@ -184,7 +184,7 @@ pub fn spawn_device_refresh(handle: tauri::AppHandle) {
         tokio::time::sleep(PASSIVE_REFRESH_WARMUP).await;
         loop {
             let present = rove_core::devices::passive_refresh().await;
-            let now = rove_core::net_util::now_ms() as i64;
+            let now = rove_core::util::net::now_ms() as i64;
             let store = handle.state::<Arc<Store>>();
             if let Err(e) = store.touch_devices(&present, now) {
                 tracing::warn!("passive device refresh failed to persist: {e}");
@@ -212,10 +212,10 @@ const INTERNET_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(20);
 /// visibility, so an ISP outage while Rove sits in the tray is still recorded.
 pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
-        let mut last: Option<rove_core::types::InternetStatus> = None;
+        let mut last: Option<rove_core::diagnostics::InternetStatus> = None;
         loop {
             let status = rove_core::diagnostics::check_internet().await;
-            let now = rove_core::net_util::now_ms() as i64;
+            let now = rove_core::util::net::now_ms() as i64;
             {
                 let state = handle.state::<AppState>();
                 *lock(&state.internet) = Some(status);
@@ -260,11 +260,11 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
         loop {
             let services = {
                 let store = handle.state::<Arc<Store>>();
-                store.services().unwrap_or_else(|_| rove_core::store::default_service_list())
+                store.services().unwrap_or_else(|_| rove_core::services::default_service_list())
             };
             if !services.is_empty() {
-                let report = rove_core::diagnostics::run_services(&services).await;
-                let now = rove_core::net_util::now_ms() as i64;
+                let report = rove_core::services::run_services(&services).await;
+                let now = rove_core::util::net::now_ms() as i64;
                 let store = handle.state::<Arc<Store>>();
                 match store.record_services(&report, now) {
                     // Nudge the timeline so an outage recorded while it's on
