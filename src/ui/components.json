@@ -1290,7 +1290,7 @@
     "IconTileButton": {
       "group": "Data display",
       "source": "src/ui/icon-tile/IconTile.tsx",
-      "description": "An IconTile that opens something: hover deepens the tint and springs it up, a touch larger.",
+      "description": "An IconTile that opens something: hover deepens the tint and lifts it, a touch larger.",
       "figma": {
         "name": "Icon tile",
         "node": "495:585"

@@ -2,7 +2,6 @@ import { forwardRef, type CSSProperties, type HTMLAttributes, type MouseEventHan
 import { cva } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
-import { SPRING_FAST } from '../foundations/motion'
 import { pressableProps } from '../foundations/pressable'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
@@ -56,9 +55,6 @@ export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function Icon
   )
 })
 
-// The tint eases; the lift springs, settling with a slight overshoot.
-const BUTTON_TRANSITION = `background var(--duration-fast) var(--ease-in-out), transform ${SPRING_FAST}`
-
 type IconTileButtonProps = TileLookProps & {
   /** Names it: the icon alone says nothing to a screen reader. */
   label: string
@@ -68,7 +64,7 @@ type IconTileButtonProps = TileLookProps & {
   isDisabled?: boolean
 }
 
-/** An IconTile that opens something: hover deepens the tint and springs it up, a touch larger. */
+/** An IconTile that opens something: hover deepens the tint and lifts it, a touch larger. */
 export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
   { size = 'md', color, className, label, onClick, isDisabled = false, icon },
   ref,
@@ -78,10 +74,10 @@ export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>
     <button
       ref={ref}
       type="button"
-      style={{ ...look.style, transition: BUTTON_TRANSITION }}
+      style={look.style}
       className={cn(
         look.className,
-        'data-disabled:cursor-default',
+        'transition-[background,transform] duration-(--duration-fast) ease-out data-disabled:cursor-default',
         'usable:hover:bg-current/(--opacity-tint-lg) usable:hover:transform-[translateY(-2px)_scale(1.06)]',
         className,
       )}
