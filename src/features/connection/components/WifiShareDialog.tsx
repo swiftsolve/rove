@@ -4,7 +4,8 @@ import type { WifiShare } from '@/types'
 import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
 import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon } from '@/ui'
 
-const STATE = 'flex flex-col items-center gap-12 py-16 text-center'
+// Each state fades in as it replaces the last, while the dialog eases to its height.
+const STATE = 'flex animate-fade-in flex-col items-center gap-12 py-16 text-center'
 
 /** The red icon chip over a notice. */
 const CHIP = cx(
@@ -85,7 +86,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
       onClose={onClose}
       bodyClassName="flex flex-col items-center text-center"
       footnote={
-        qr ? <p className="text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p> : undefined
+        qr ? <p className="animate-fade-in text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p> : undefined
       }
     >
       {/* Live, so the QR code or a notice is announced when it replaces the
@@ -101,7 +102,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           <ShareNotice notice={notice} onRetry={retry} />
         ) : qr ? (
           // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
-          <div className="flex justify-center rounded-lg border border-line bg-[#ffffff] p-16">
+          <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
             <img
               className="block size-[240px]"
               src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}

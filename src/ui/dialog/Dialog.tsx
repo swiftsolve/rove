@@ -4,8 +4,10 @@ import { cx } from 'class-variance-authority'
 import { CloseIcon } from '../icons/Icons'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
+import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
 import { cn } from '../foundations/cn'
+import { SPRING } from '../foundations/motion'
 
 interface DialogState {
   /** False while the Dialog plays its leave animation. */
@@ -54,6 +56,11 @@ const PANEL = cx(
   'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised',
   'data-open:animate-dialog-in data-closed:animate-dialog-out',
 )
+
+// Clips the panel's contents while it springs to their height, so a body that
+// swaps state (a spinner for a QR code) or a description that comes and goes
+// resizes the panel instead of snapping.
+const SIZER_TRANSITION = `height ${SPRING}`
 
 const HEADER = 'flex items-start justify-between gap-8 p-16'
 
@@ -110,6 +117,8 @@ export function Dialog({
   // Whatever had focus as the dialog mounted: the control that opened it, which
   // gets focus back on close. Base UI only knows its own Trigger part.
   const [opener] = useState(() => (document.activeElement instanceof HTMLElement ? document.activeElement : null))
+  const [content, setContent] = useState<HTMLDivElement | null>(null)
+  const contentHeight = useContentHeight(content)
   const isClosable = isOpen && canClose
   const hasFooter = actions != null || cancelLabel != null
 
@@ -129,42 +138,46 @@ export function Dialog({
         <BaseDialog.Backdrop className={cn(LAYER, 'bg-scrim')} />
         <BaseDialog.Viewport className={cn(LAYER, 'flex items-center justify-center p-20')}>
           <BaseDialog.Popup className={PANEL} finalFocus={() => (opener?.isConnected ? opener : true)}>
-            <div className={HEADER}>
-              <div className="min-w-0">
-                <BaseDialog.Title className="type-heading-medium text-primary">{title}</BaseDialog.Title>
-                {description != null && (
-                  <BaseDialog.Description render={<div />} className="mt-4 text-sm text-secondary">
-                    {description}
-                  </BaseDialog.Description>
+            <div className="overflow-hidden" style={{ height: contentHeight ?? undefined, transition: SIZER_TRANSITION }}>
+              <div ref={setContent}>
+                <div className={HEADER}>
+                  <div className="min-w-0">
+                    <BaseDialog.Title className="type-heading-medium text-primary">{title}</BaseDialog.Title>
+                    {description != null && (
+                      <BaseDialog.Description render={<div />} className="mt-4 animate-fade-in text-sm text-secondary">
+                        {description}
+                      </BaseDialog.Description>
+                    )}
+                  </div>
+                  <IconButton
+                    className={CLOSE}
+                    variant="ghost"
+                    label="Close"
+                    icon={CloseIcon}
+                    onClick={onClose}
+                    isDisabled={!isClosable}
+                  />
+                </div>
+
+                {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
+
+                {footnote != null && <div className="px-16 py-12">{footnote}</div>}
+
+                {hasFooter && (
+                  // With no body, the header's bottom inset already spaces the
+                  // actions; a full top inset too leaves a gap under the description.
+                  <div className={cn('flex justify-end gap-8 p-16', children == null && 'pt-4')}>
+                    {/* At the main action's size, so the two sit level. */}
+                    {cancelLabel != null && (
+                      <Button size="md" onClick={onClose} isDisabled={!isClosable}>
+                        {cancelLabel}
+                      </Button>
+                    )}
+                    {actions}
+                  </div>
                 )}
               </div>
-              <IconButton
-                className={CLOSE}
-                variant="ghost"
-                label="Close"
-                icon={CloseIcon}
-                onClick={onClose}
-                isDisabled={!isClosable}
-              />
             </div>
-
-            {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
-
-            {footnote != null && <div className="px-16 py-12">{footnote}</div>}
-
-            {hasFooter && (
-              // With no body, the header's bottom inset already spaces the
-              // actions; a full top inset too leaves a gap under the description.
-              <div className={cn('flex justify-end gap-8 p-16', children == null && 'pt-4')}>
-                {/* At the main action's size, so the two sit level. */}
-                {cancelLabel != null && (
-                  <Button size="md" onClick={onClose} isDisabled={!isClosable}>
-                    {cancelLabel}
-                  </Button>
-                )}
-                {actions}
-              </div>
-            )}
           </BaseDialog.Popup>
         </BaseDialog.Viewport>
       </BaseDialog.Portal>
