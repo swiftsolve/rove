@@ -1,7 +1,7 @@
 import type { MouseEventHandler, ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { ChevronRightIcon } from '../icons/Icons'
-import { pressableProps } from '../foundations/pressable'
+import { STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
 // The hover wash bleeds 8px into the card's padding while the content stays on
 // the 16px edge, so the focus ring (the ring alone, no wash) goes inside it.
@@ -10,7 +10,8 @@ const ROW = cx(
   '-mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)',
   'transition-[background] duration-(--duration-fast) ease-in-out',
   'focus-visible:outline-offset-(--focus-inset)',
-  'usable:hover:bg-fill-faint data-disabled:cursor-default',
+  'usable:hover:bg-fill-faint',
+  STATE_CLASSES,
 )
 
 // Always faintly there, so the right edge is consistent and rows read as
@@ -25,8 +26,8 @@ interface ListRowProps {
   /** What the row opens. */
   onClick: MouseEventHandler<HTMLButtonElement>
   /**
-   * Inert for now (results that are being replaced): no hover, no action. It
-   * keeps its look and its place in the Tab order.
+   * Inert for now (results that are being replaced): faded like any disabled
+   * control, no hover, no action. It keeps its place in the Tab order.
    */
   isDisabled?: boolean
   /**

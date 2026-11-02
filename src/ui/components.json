@@ -1215,7 +1215,7 @@
         "isDisabled": {
           "type": "boolean",
           "default": "false",
-          "description": "Inert for now (results that are being replaced): no hover, no action. It\nkeeps its look and its place in the Tab order."
+          "description": "Inert for now (results that are being replaced): faded like any disabled\ncontrol, no hover, no action. It keeps its place in the Tab order."
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
