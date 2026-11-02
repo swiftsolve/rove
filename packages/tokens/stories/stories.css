@@ -55,8 +55,8 @@
   margin-top: 24px;
 }
 
-/* A measured diagram, centred above its table as in Figma. */
-.window-diagram {
+/* A Figma diagram, exported at 2x, centred above its table as on the page. */
+.diagram {
   display: block;
   max-width: 100%;
   height: auto;
@@ -443,4 +443,60 @@
 .curve {
   display: block;
   color: var(--accent-default);
+}
+
+/* Icon tone and Capability level: a panel per theme, each mode's glyph over
+   its name, as the Figma page's preview frames lay them out. */
+
+.mode-panels {
+  display: grid;
+  gap: 16px;
+}
+
+.mode-panel {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  border-radius: 16px;
+}
+
+.mode-panel-label {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mode-panel-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+}
+
+.mode-example {
+  display: grid;
+  justify-items: start;
+  gap: 24px;
+}
+
+.mode-example.is-label-close {
+  gap: 12px;
+}
+
+.mode-example:has(.mode-tile) {
+  gap: 12px;
+}
+
+.mode-tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+.mode-example-name {
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--font-size-xs);
 }

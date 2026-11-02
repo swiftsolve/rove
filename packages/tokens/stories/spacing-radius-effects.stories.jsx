@@ -221,7 +221,7 @@ function OpacityTable() {
 function WindowDiagram() {
   return (
     <img
-      className="window-diagram"
+      className="diagram"
       src={windowLayout}
       width={649}
       height={694}

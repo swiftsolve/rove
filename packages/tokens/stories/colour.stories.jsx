@@ -1,5 +1,7 @@
 import { Code, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
+import figmaVariables from '../src/figma/variables.json'
+import backgrounds from './backgrounds.png'
 
 export default { title: 'Colour' }
 
@@ -7,8 +9,18 @@ export default { title: 'Colour' }
 const SECTIONS = [
   {
     title: 'Backgrounds',
-    intro: 'Base, surface and inset, plus chrome, popover, hover and the dialog scrim. Cards use bg/surface.',
+    intro:
+      'Base, surface and inset, plus chrome, popover, hover and the dialog scrim. Cards use bg/surface. Diagram at actual size.',
     names: ['bg.base', 'bg.chrome', 'bg.surface', 'bg.popover', 'bg.inset', 'bg.hover', 'bg.scrim'],
+    diagram: (
+      <img
+        className="diagram"
+        src={backgrounds}
+        width={1280}
+        height={1470}
+        alt="A window wireframe in Dark and Light, alone and under the dialog scrim, each background labelled"
+      />
+    ),
   },
   {
     title: 'Borders & fills',
@@ -195,17 +207,102 @@ function PaletteGrid() {
   })
 }
 
+// Figma's Icon tone and Capability level collections: one variable each, a mode
+// per colour. They have no CSS of their own, so they're read from the export.
+const ICON_TONES = ['Primary', 'Secondary', 'Tertiary', 'Accent', 'Positive', 'Negative', 'On fill']
+const LEVELS = ['Excellent', 'Good', 'Fair', 'Poor', 'Unsupported']
+
+const modeAliases = (name) => figmaVariables.variables.find((variable) => variable.name === name).values
+
+// The pages' sample icons, Icon/activity and Icon/hd, on a 24px grid.
+function Glyph({ children, color }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  )
+}
+
+const ActivityIcon = ({ color }) => (
+  <Glyph color={color}>
+    <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+  </Glyph>
+)
+
+const HdIcon = ({ color }) => (
+  <Glyph color={color}>
+    <path d="M3.375 6.5v11M9.975 6.5v11M3.375 12h6.6" />
+    <path d="M13.475 6.5h2.2c2.733 0 4.95 2.462 4.95 5.5s-2.217 5.5-4.95 5.5h-2.2z" />
+  </Glyph>
+)
+
+// A mode collection in both themes, as Figma's preview frames show it: each
+// mode's glyph over its name, on the theme's base. On fill sits on a tile.
+function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
+  const aliases = modeAliases(variable)
+  return (
+    <div className="mode-panels">
+      {['dark', 'light'].map((theme) => (
+        <div key={theme} className="mode-panel" style={{ background: colorIn(theme, 'bg.base') }}>
+          <p className="mode-panel-label" style={{ color: colorIn(theme, 'text.tertiary') }}>
+            {theme}
+          </p>
+          <div className="mode-panel-examples">
+            {modes.map((mode) => {
+              const color = colorIn(theme, aliases[mode].alias.replace('/', '.'))
+              return (
+                <div key={mode} className={`mode-example${isLabelClose ? ' is-label-close' : ''}`}>
+                  {mode === 'On fill' ? (
+                    <span className="mode-tile" style={{ background: colorIn(theme, 'accent.fill') }}>
+                      <Glyph color={color} />
+                    </span>
+                  ) : (
+                    <Glyph color={color} />
+                  )}
+                  <span className="mode-example-name" style={{ color: colorIn(theme, 'text.tertiary') }}>
+                    {mode}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export const Colour = {
   render: () => (
     <Page title="Colour" intro="Palette shades, and the semantic tokens that point at them, in Dark and Light.">
       <Section title="Palette" intro="Every colour the tokens point at. Higher numbers are darker; -a is opacity.">
         <PaletteGrid />
       </Section>
-      {SECTIONS.map(({ title, intro, names }) => (
+      {SECTIONS.map(({ title, intro, names, diagram }) => (
         <Section key={title} title={title} intro={intro}>
+          {diagram}
           <ColourTable names={names} />
         </Section>
       ))}
+      <Section title="Icon tone" intro="Set the mode on the icon’s parent frame, so swapped icons keep the colour.">
+        <ModePanels variable="icon/color" modes={ICON_TONES} Glyph={ActivityIcon} />
+      </Section>
+      <Section
+        title="Capability level"
+        intro="Colours capability glyphs through level/color. Set it on any frame above the glyph."
+      >
+        <ModePanels variable="level/color" modes={LEVELS} Glyph={HdIcon} isLabelClose />
+      </Section>
     </Page>
   ),
 }
