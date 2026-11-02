@@ -1,9 +1,10 @@
 import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn, waitFor } from 'storybook/test'
 import { Button } from '../button/Button'
 import { PortalProvider } from '../context/PortalProvider'
 import { PlusIcon } from '../icons/Icons'
+import { TextField } from '../text-field/TextField'
 import { Dialog, DialogRoot } from './Dialog'
 
 const meta = {
@@ -67,6 +68,24 @@ export const Busy: Story = {
 /** A button opens it; Escape, Close, Cancel, Add or the backdrop closes it, and focus goes back to the button. */
 export const WithTrigger: Story = {
   render: (args) => <DialogWithTrigger {...args} />,
+}
+
+/** Opening puts focus on the field; Escape closes it and gives focus back to the button. */
+export const EscapeCloses: Story = {
+  tags: ['!autodocs'],
+  // As in the app's add dialog, the field takes focus. On the close button,
+  // the first Escape would close its tooltip instead.
+  args: { children: <TextField label="Address" value="" onChange={() => {}} autoFocus /> },
+  render: (args) => <DialogWithTrigger {...args} />,
+  play: async ({ args, canvas, userEvent }) => {
+    const trigger = canvas.getByRole('button', { name: 'Add service' })
+    await userEvent.click(trigger)
+    await waitFor(() => expect(canvas.getByRole('textbox', { name: 'Address' })).toHaveFocus())
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
+    await expect(args.onClose).toHaveBeenCalledOnce()
+    await expect(trigger).toHaveFocus()
+  },
 }
 
 type DialogProps = ComponentProps<typeof Dialog>

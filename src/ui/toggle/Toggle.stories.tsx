@@ -1,6 +1,6 @@
 import { useId, useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { Toggle } from './Toggle'
 
 const meta = {
@@ -20,7 +20,30 @@ export const Off: Story = { args: { isChecked: false } }
 
 export const DisabledOn: Story = { args: { isDisabled: true } }
 
-export const DisabledOff: Story = { args: { isChecked: false, isDisabled: true } }
+export const DisabledOff: Story = {
+  args: { isChecked: false, isDisabled: true },
+  play: async ({ args, canvas, userEvent }) => {
+    const toggle = canvas.getByRole('switch', { name: 'Start at login' })
+    await userEvent.click(toggle)
+    await expect(toggle).not.toBeChecked()
+    await expect(args.onChange).not.toHaveBeenCalled()
+  },
+}
+
+/** A click flips it, and so does Space once it has focus. */
+export const Flipping: Story = {
+  args: { isChecked: false },
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const toggle = canvas.getByRole('switch', { name: 'Start at login' })
+    await userEvent.click(toggle)
+    await expect(toggle).toBeChecked()
+    await expect(args.onChange).toHaveBeenLastCalledWith(true)
+    await userEvent.keyboard(' ')
+    await expect(toggle).not.toBeChecked()
+    await expect(args.onChange).toHaveBeenLastCalledWith(false)
+  },
+}
 
 /** In a setting row: the text beside it explains the setting. */
 export const InSettingRow: Story = {

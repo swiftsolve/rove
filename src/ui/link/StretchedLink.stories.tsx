@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { ChevronRightIcon, MoreVerticalIcon, SpeedIcon } from '../icons/Icons'
-import { IconButton } from '../button/IconButton'
+import { ChevronRightIcon, SpeedIcon } from '../icons/Icons'
 import { StretchedLink } from './StretchedLink'
 
 const meta = {
@@ -33,20 +32,7 @@ export const OverRow: Story = {
 /** Focused from the keyboard: the ring shows the area the link covers. */
 export const Focused: Story = {
   ...OverRow,
-  play: async ({ userEvent }) => {
-    await userEvent.tab()
-  },
-}
-
-/** A control in the container raises itself above the link and stays a sibling. */
-export const WithControl: Story = {
-  args: { label: 'Open Google' },
-  render: (args) => (
-    <div className="surface relative flex max-w-[280px] items-center gap-8 py-8 pr-8 pl-14 hover:bg-fill-faint">
-      <span className="text-md font-medium text-primary">Google</span>
-      <span className="text-sm text-tertiary">18 ms</span>
-      <StretchedLink {...args} />
-      <IconButton label="Options for Google" icon={MoreVerticalIcon} className="relative z-2 ml-auto" />
-    </div>
-  ),
+  // The ring keyboard focus draws, shown here for good: on a Docs page only
+  // one story could hold real focus.
+  args: { className: '[outline:var(--focus-outline)] outline-offset-(--focus-inset)' },
 }

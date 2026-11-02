@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { Card } from '../card/Card'
 import { DataList, DataRow } from '../data-list/DataList'
 import { ChevronDownIcon } from '../icons/Icons'
@@ -81,6 +81,24 @@ export const Open: Story = { args: { isOpen: true } }
 
 /** Keyboard focus rings the whole collapsible, for a trigger that spans a card's header. Tab to it. */
 export const FocusFrame: Story = { args: { hasFocusFrame: true, isOpen: true, className: 'rounded-[inherit]' } }
+
+/** Enter and Space toggle it from the keyboard, as a click does. */
+export const Toggling: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const trigger = canvas.getByRole('button', { name: 'Connection details' })
+    await userEvent.keyboard('{Tab}')
+    await expect(trigger).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByText('192.168.1.20')).toBeVisible()
+    await userEvent.keyboard(' ')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(trigger)
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await expect(args.onOpenChange).toHaveBeenCalledTimes(3)
+  },
+}
 
 /** Closed, open and framed together. */
 export const AllStates: Story = {

@@ -1,7 +1,27 @@
 // First, so the cascade layers are declared before any CSS uses them.
 import '../src/styles/tailwind.css'
 import './preview.css'
+import { useEffect, useState, type PropsWithChildren } from 'react'
+import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks'
 import type { Preview } from '@storybook/react-vite'
+import { GLOBALS_UPDATED } from 'storybook/internal/core-events'
+import type { Globals } from 'storybook/internal/types'
+import { themes } from 'storybook/theming'
+
+/** A Docs page in the Theme toolbar's theme, not Storybook's own light one. */
+function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContainerProps>): JSX.Element {
+  const [theme, setTheme] = useState(() => context.getStoryContext(context.storyById()).globals.theme)
+  useEffect(() => {
+    const onGlobalsUpdated = ({ globals }: { globals: Globals }): void => setTheme(globals.theme)
+    context.channel.on(GLOBALS_UPDATED, onGlobalsUpdated)
+    return () => context.channel.off(GLOBALS_UPDATED, onGlobalsUpdated)
+  }, [context.channel])
+  return (
+    <DocsContainer context={context} theme={theme === 'light' ? themes.light : themes.dark}>
+      {children}
+    </DocsContainer>
+  )
+}
 
 const preview: Preview = {
   globalTypes: {
@@ -64,6 +84,7 @@ const preview: Preview = {
       },
     },
     controls: { expanded: true },
+    docs: { container: ThemedDocsContainer },
     a11y: {
       test: 'error',
       // Base UI's focus guards are hidden yet focusable by design; the app's

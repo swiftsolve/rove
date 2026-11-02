@@ -17,9 +17,10 @@ const meta = {
     onOpen: { control: false },
     children: { control: false },
   },
+  // A card's width in the app; All States, two columns of cards, is wider.
   decorators: [
-    (Story) => (
-      <div className="w-[360px]">
+    (Story, { parameters }) => (
+      <div className={parameters.isTwoColumns ? 'w-[740px]' : 'w-[360px]'}>
         <Story />
       </div>
     ),
@@ -144,13 +145,7 @@ function OpenableCard(): JSX.Element {
 
 /** Every form together. */
 export const AllStates: Story = {
-  decorators: [
-    (Story) => (
-      <div className="w-[740px]">
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: { isTwoColumns: true },
   render: () => (
     // Each card at its own height, not stretched to its row's tallest.
     <div className="grid grid-cols-2 items-start gap-12">

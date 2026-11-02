@@ -85,7 +85,8 @@ for what. Read it before writing or changing UI. For where files live, see
   (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
   sidebar; `npx vitest --project=storybook` runs them alone. A new machine
   needs `npx playwright install chromium` once.
-- All three kinds run with `npm test`, part of `npm run check`.
+- All three kinds run with `npm test`, part of `npm run check`, which CI
+  runs on every push and pull request (`.github/workflows/test.yml`).
 - Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
   fake clock, seeded randomness and paused animations, so two runs of the same
   code match exactly. Diff a run against one from before a change to prove a
@@ -236,8 +237,11 @@ Components v1.0.0"). Raise it when the library's API changes.
   same groups (`Actions/Button`). A family sits in a folder named for its
   parent (`Containers/Card/CardHeader`), and the parent's page shows its
   parts' props as tabs (`subcomponents`). `npm run storybook` serves them at
-  `localhost:6006`, with a Theme switch in the toolbar and an accessibility
-  check on every story; `npm run build:storybook` writes a static copy to
+  `localhost:6006`, with a Theme switch in the toolbar (Docs pages follow it)
+  and an accessibility check on every story. Its Figma tab embeds the
+  story's component from the design file: a story title's last part is its
+  key in `figma.json`, so a new component's stories find it with nothing
+  set. `npm run build:storybook` writes a static copy to
   `storybook-static/`. Stories import the library by relative path, like the
   library itself. A new component gets its stories in the same change.
   A part with props of its own (`CardBody`, `NavItem`) gets its own stories
@@ -246,6 +250,12 @@ Components v1.0.0"). Raise it when the library's API changes.
   lists every part as a tab, for the family's props at a glance. The
   component and its parts share a folder (`Containers/Card/CardBody`),
   ordered in `.storybook/preview.tsx`.
+- An interactive component (Menu, Dialog, Toggle, SegmentedControl,
+  TextField, Collapsible) has a story that drives it with a `play` function
+  and asserts what happens: keyboard, focus, the callbacks. Name it for the
+  interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
+  moving focus would scroll its Docs page. A play that leaves the story as it
+  found it (`DisabledOff`) can stay on the Docs page.
 - `components.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
@@ -299,7 +309,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
 | Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. |
-| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
+| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact (a summary card's figure, with no label), with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above, on the Patterns page. |

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn, screen, waitFor, within } from 'storybook/test'
 import { EditIcon, TrashIcon } from '../icons/Icons'
 import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
 
@@ -65,6 +65,35 @@ export const SingleAction: Story = {
         </MenuContent>
       </>
     ),
+  },
+}
+
+/** From the keyboard: Enter opens it on its first item, and the arrows move between items. */
+export const Keyboard: Story = {
+  // Moves focus, which would scroll the docs page to it.
+  tags: ['!autodocs'],
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.keyboard('{Tab}')
+    await expect(canvas.getByRole('button', { name: 'Options for Google' })).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    const menu = await screen.findByRole('menu')
+    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: 'Edit' })).toHaveFocus())
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(within(menu).getByRole('menuitem', { name: 'Remove' })).toHaveFocus()
+  },
+}
+
+/** Choosing an item runs it, closes the menu and puts focus back on the kebab. */
+export const ChoosingAnItem: Story = {
+  tags: ['!autodocs'],
+  play: async ({ canvas, userEvent }) => {
+    const trigger = canvas.getByRole('button', { name: 'Options for Google' })
+    await userEvent.click(trigger)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }))
+    await expect(onEdit).toHaveBeenCalledOnce()
+    await expect(onRemove).not.toHaveBeenCalled()
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument())
+    await expect(trigger).toHaveFocus()
   },
 }
 
