@@ -21,7 +21,7 @@ export function Section({ title, intro, children }) {
     <section className="section">
       <h2 className="section-title">{title}</h2>
       {intro && <p className="section-intro">{intro}</p>}
-      <div className="section-body">{children}</div>
+      {children && <div className="section-body">{children}</div>}
     </section>
   )
 }

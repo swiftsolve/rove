@@ -303,6 +303,7 @@ export const Colour = {
       >
         <ModePanels variable="level/color" modes={LEVELS} Glyph={HdIcon} isLabelClose />
       </Section>
+      <Section title="Contrast" intro="WCAG 2.2 AA in both themes: text 4.5:1, icons and bars 3:1." />
     </Page>
   ),
 }
