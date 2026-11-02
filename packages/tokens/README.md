@@ -36,30 +36,22 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "wrappingWidth": 260, "nodeSpacing": 28, "rankSpacing": 36}}}%%
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "nodeSpacing": 28, "rankSpacing": 36}}}%%
 flowchart TD
-  figma("`**Figma file**
-variables, text styles`"):::source
-  slides("`**Slideshow**
-GitHub Pages`"):::ship
-  exports("`**src/figma/*.json**
-the raw export`"):::file
-  code("`**src/code-tokens.json**
-shadows, easings`"):::file
+  figma("<b>Figma file</b><br/>variables, text styles"):::source
+  slides("<b>Slideshow</b><br/>GitHub Pages"):::ship
+  exports("<b>src/figma/*.json</b><br/>the raw export"):::file
+  code("<b>src/code-tokens.json</b><br/>shadows, easings"):::file
 
   subgraph build ["npm run build"]
-    dtcg("`**tokens/**
-DTCG files`"):::file
-    css("`**tokens.css**`"):::file
-    textCss("`**text-styles.css**`"):::file
-    design("`**DESIGN.md**
-token reference`"):::file
+    dtcg("<b>tokens/</b><br/>DTCG files"):::file
+    css("<b>tokens.css</b>"):::file
+    textCss("<b>text-styles.css</b>"):::file
+    design("<b>DESIGN.md</b><br/>token reference"):::file
   end
 
-  pkg("`**@swiftsolve/rove-tokens**
-on npm, for Rove`"):::ship
-  storybook("`**Storybook**
-every token, both themes`"):::ship
+  pkg("<b>@swiftsolve/rove-tokens</b><br/>on npm, for Rove"):::ship
+  storybook("<b>Storybook</b><br/>every token, both themes"):::ship
 
   figma -- "export plugin" --> exports
   figma -- "npm run present" --> slides
