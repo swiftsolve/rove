@@ -84,28 +84,26 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 Figma holds the tokens. The build turns its export into DTCG, then the DTCG into CSS, and npm ships the result to Rove.
 
 ```mermaid
-flowchart LR
-  figma["Figma file<br/>variables, text styles"] -- "export plugin" --> exports["src/figma/<br/>variables.json, text-styles.json"]
+flowchart TD
+  figma["Figma file<br/>variables, text styles"]
+  figma -- "export plugin" --> exports["src/figma/*.json"]
+  figma -- "npm run present" --> slides["Slideshow on GitHub Pages"]
   codeTokens["src/code-tokens.json<br/>shadows, easings"]
 
   subgraph build ["npm run build"]
-    toDtcg["figma-to-dtcg.mjs"]
-    toCss["dtcg-to-css.mjs"]
-    toText["dtcg-to-text-styles.mjs"]
-    toRef["token-reference.mjs"]
+    dtcg["tokens/*.tokens.json<br/>DTCG"]
+    css["tokens.css"]
+    textCss["text-styles.css"]
+    design["DESIGN.md<br/>token reference"]
   end
 
-  exports --> toDtcg
-  codeTokens --> toDtcg
-  toDtcg --> dtcg["tokens/<br/>DTCG files"]
-  dtcg --> toCss --> css["tokens.css"]
-  dtcg --> toText --> textCss["text-styles.css"]
-  exports --> toRef
-  css --> toRef --> design["DESIGN.md<br/>token reference"]
+  exports & codeTokens -- "figma-to-dtcg.mjs" --> dtcg
+  dtcg -- "dtcg-to-css.mjs" --> css
+  dtcg -- "dtcg-to-text-styles.mjs" --> textCss
+  css -- "token-reference.mjs" --> design
 
-  css & textCss & dtcg & design --> pkg["npm package<br/>@swiftsolve/rove-tokens"] --> rove["Rove app"]
+  build --> pkg["npm package<br/>@swiftsolve/rove-tokens"] --> rove["Rove app"]
   dtcg --> storybook["Storybook"]
-  figma -- "npm run present" --> slides["Slideshow<br/>GitHub Pages"]
 ```
 
 ## 🔄 Update the tokens
