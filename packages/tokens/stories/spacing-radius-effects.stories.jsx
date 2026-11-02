@@ -1,5 +1,6 @@
 import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { code, colorIn, cssName, group, opacity, shadowIn, spacing } from './tokens'
+import windowLayout from './window-layout.png'
 
 export default { title: 'Spacing, radius & effects' }
 
@@ -70,6 +71,7 @@ const WINDOW_LAYOUT = [
     notes: 'Matches the rail inset',
     codes: ['--spacing-12', '--spacing-20'],
   },
+  { element: 'Page header', size: '12px below the divider', notes: 'Every page but Home', codes: ['--spacing-12'] },
   {
     element: 'Cards',
     size: <Joined parts={['10px apart', '14px padding']} />,
@@ -82,7 +84,7 @@ const WINDOW_LAYOUT = [
     notes: 'Titles line up across cards',
     codes: ['--card-header-height'],
   },
-  { element: 'Data row', size: '25.55px tall', notes: 'No outer padding in a list', codes: ['--row-padding-y'] },
+  { element: 'Data row', size: '8px above and below', notes: 'No outer padding in a list', codes: ['--row-padding-y'] },
 ]
 
 function SpacingTable() {
@@ -214,6 +216,20 @@ function OpacityTable() {
   )
 }
 
+// The Figma section's diagram: the Home screen at 1:1 with its measurements,
+// exported at 2x.
+function WindowDiagram() {
+  return (
+    <img
+      className="window-diagram"
+      src={windowLayout}
+      width={649}
+      height={694}
+      alt="The Home screen with its title bar, rail, content insets and card gaps measured"
+    />
+  )
+}
+
 function WindowLayout() {
   return (
     <Table columns={[['Element', '1fr'], ['Size', '1.4fr'], ['Notes', '1.4fr'], ['Code', '1.6fr']]}>
@@ -252,6 +268,7 @@ export const SpacingRadiusEffects = {
         <OpacityTable />
       </Section>
       <Section title="Window layout" intro="Sizes of the title bar, rail and content area.">
+        <WindowDiagram />
         <WindowLayout />
       </Section>
     </Page>

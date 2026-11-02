@@ -55,6 +55,14 @@
   margin-top: 24px;
 }
 
+/* A measured diagram, centred above its table as in Figma. */
+.window-diagram {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 24px;
+}
+
 /* Text */
 
 .mono,
