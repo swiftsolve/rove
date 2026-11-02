@@ -9,8 +9,8 @@ import { ListRow } from './ListRow'
 function RowText({ title, description }: { title: string; description: string }): JSX.Element {
   return (
     <span className="flex min-w-0 flex-1 flex-col">
-      <span className="text-body truncate">{title}</span>
-      <span className="text-body-small truncate">{description}</span>
+      <span className="type-body-default text-primary truncate">{title}</span>
+      <span className="type-body-small text-tertiary truncate">{description}</span>
     </span>
   )
 }

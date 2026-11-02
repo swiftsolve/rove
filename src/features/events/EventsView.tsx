@@ -119,7 +119,7 @@ export function EventsView(): JSX.Element {
       <PageHeader
         icon={<EventsIcon size={18} />}
         title="Timeline"
-        description={hasEvents ? <span className="text-caption">What’s changed in the past week</span> : undefined}
+        description={hasEvents ? <span className="type-caption text-tertiary">What’s changed in the past week</span> : undefined}
         actions={
           <>
             <IconButton label="About network events" icon={HelpIcon} tooltip={FEED_HINT} />

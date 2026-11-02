@@ -153,7 +153,7 @@ export function CardHeader({ title, icon, actions }: CardHeaderProps): JSX.Eleme
             {icon}
           </span>
         )}
-        <h2 id={titleId} className="text-heading-small">
+        <h2 id={titleId} className="type-heading-small text-primary">
           {title}
         </h2>
       </div>

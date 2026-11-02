@@ -11,7 +11,7 @@ const meta = {
   argTypes: { icon: iconComponentControl },
   // At the size of the text it sits in.
   render: (args) => (
-    <span className="text-caption">
+    <span className="type-caption text-tertiary">
       <Link {...args} />
     </span>
   ),
@@ -47,7 +47,7 @@ export const SmallText: Story = {
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
-      <span className="inline-flex items-center gap-12 text-caption">
+      <span className="inline-flex items-center gap-12 type-caption text-tertiary">
         <Link icon={GlobeIcon}>All hosts</Link>
         <Link>View timeline</Link>
         <Link href="https://github.com/swiftsolve/rove">External</Link>

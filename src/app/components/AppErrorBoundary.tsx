@@ -26,7 +26,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
 
     return (
       <div className="page-empty" style={{ height: '100vh' }} role="alert">
-        <p className="text-muted">Something went wrong. Please restart Rove.</p>
+        <p className="type-body-default text-tertiary">Something went wrong. Please restart Rove.</p>
         {import.meta.env.DEV && (
           <pre
             style={{

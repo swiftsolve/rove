@@ -131,7 +131,7 @@ export function Dialog({
           <BaseDialog.Popup className={PANEL} finalFocus={() => (opener?.isConnected ? opener : true)}>
             <div className={HEADER}>
               <div className="min-w-0">
-                <BaseDialog.Title className="text-heading-medium">{title}</BaseDialog.Title>
+                <BaseDialog.Title className="type-heading-medium text-primary">{title}</BaseDialog.Title>
                 {description != null && (
                   <BaseDialog.Description render={<div />} className="mt-4 text-sm text-secondary">
                     {description}

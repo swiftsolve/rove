@@ -1,116 +1,11 @@
 /*
- * The app's shared styles, as Tailwind utilities: type styles, numeric and
- * metric faces, page layout and a few shared pieces. Being utilities, they take
- * variants (`hover:text-caption`) and sort with the rest, so an element's other
+ * The app's shared styles, as Tailwind utilities: numeric and metric faces,
+ * page layout and a few shared pieces. Text styles are rove-design's
+ * `.type-*` classes (text-styles.css), which set no colour: pair one with a
+ * colour utility (`type-caption text-tertiary`). Being utilities, they take
+ * variants (`hover:surface`) and sort with the rest, so an element's other
  * utilities override them the same way they override each other.
  */
-
-/* ---- Type ----
-   Each type utility is one Figma text style, read from its --type-* tokens. */
-
-/** Panel headings: Live usage, Speed test. */
-@utility text-heading-small {
-  font-size: var(--type-heading-small-size);
-  font-weight: var(--type-heading-small-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-heading-small-letter-spacing);
-  line-height: var(--type-heading-small-line-height);
-}
-
-/** Dialog headings: Add a service, Update available. */
-@utility text-heading-medium {
-  font-size: var(--type-heading-medium-size);
-  font-weight: var(--type-heading-medium-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-heading-medium-letter-spacing);
-  line-height: var(--type-heading-medium-line-height);
-}
-
-/** Labels above values: Download, IP address. */
-@utility text-overline {
-  font-size: var(--type-overline-size);
-  font-weight: var(--type-overline-weight);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: var(--type-overline-letter-spacing);
-  line-height: var(--type-overline-line-height);
-}
-
-@utility text-heading-large {
-  font-size: var(--type-heading-large-size);
-  font-weight: var(--type-heading-large-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-heading-large-letter-spacing);
-  line-height: var(--type-heading-large-line-height);
-}
-
-@utility text-body {
-  font-size: var(--type-body-default-size);
-  font-weight: var(--type-body-default-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-body-default-letter-spacing);
-  line-height: var(--type-body-default-line-height);
-}
-
-/** Body-size text in the secondary colour. */
-@utility text-body-secondary {
-  font-size: var(--type-body-default-size);
-  font-weight: var(--type-body-default-weight);
-  color: var(--text-secondary);
-  letter-spacing: var(--type-body-default-letter-spacing);
-  line-height: var(--type-body-default-line-height);
-}
-
-@utility text-muted {
-  font-size: var(--type-body-default-size);
-  font-weight: var(--type-body-default-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-body-default-letter-spacing);
-  line-height: var(--type-body-default-line-height);
-}
-
-/** Helper text and hints: "No DNS servers found." */
-@utility text-body-small {
-  font-size: var(--type-body-small-size);
-  font-weight: var(--type-body-small-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-body-small-letter-spacing);
-  line-height: var(--type-body-small-line-height);
-}
-
-@utility text-number {
-  font-size: var(--type-number-default-size);
-  font-weight: var(--type-number-default-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-number-default-letter-spacing);
-  line-height: var(--type-number-default-line-height);
-}
-
-@utility text-caption {
-  font-size: var(--type-caption-size);
-  font-weight: var(--type-caption-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-caption-letter-spacing);
-  line-height: var(--type-caption-line-height);
-}
-
-/** Medium-weight small labels: the title bar's connection status. */
-@utility text-label-small {
-  font-size: var(--type-label-small-size);
-  font-weight: var(--type-label-small-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-label-small-letter-spacing);
-  line-height: var(--type-label-small-line-height);
-}
-
-/** Chart axes and scale; pair with `num` for the numeric face. */
-@utility text-number-small {
-  font-size: var(--type-number-small-size);
-  font-weight: var(--type-number-small-weight);
-  color: var(--text-tertiary);
-  letter-spacing: var(--type-number-small-letter-spacing);
-  line-height: var(--type-number-small-line-height);
-}
 
 /* ---- Numbers ---- */
 
@@ -126,25 +21,20 @@
   gap: var(--spacing-4);
 }
 
+/* A figure's digits, on a Number style (`type-number-display metric-value`). */
 @utility metric-value {
-  font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
-  font-size: var(--type-number-display-size);
   /* Semibold, where the Figma style is Regular: Questrial has one weight, so
      the browser emboldens it. Figma draws the same with an outside stroke. */
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--type-number-display-letter-spacing);
-  line-height: var(--type-number-display-line-height);
   color: var(--text-primary);
 }
 
+/* A figure's unit, on Body/Small (`type-body-small metric-unit`). */
 @utility metric-unit {
-  font-family: var(--font-family-sans);
-  font-size: var(--type-body-small-size);
-  font-weight: var(--type-body-small-weight);
-  letter-spacing: var(--type-body-small-letter-spacing);
-  /* Line height inherits: the unit sits on its value's line, and the stat
-     cards set their own (StatCard). */
+  /* The unit sits on its value's line, and the stat cards set their own
+     (StatCard). */
+  line-height: inherit;
   color: var(--text-secondary);
   transform: translateY(-1px);
 }
@@ -168,13 +58,8 @@
 }
 
 /* Stat totals: two numbers share a half-width card, so the value steps down to
-   keep both on one line on narrow windows. */
+   Number/Large (Readout) to keep both on one line on narrow windows. */
 @utility metric-compact {
-  & .metric-value {
-    font-size: var(--type-number-large-size);
-    letter-spacing: var(--type-number-large-letter-spacing);
-    line-height: var(--type-number-large-line-height);
-  }
   & .metric-icon {
     font-size: var(--type-number-large-size);
   }
@@ -224,15 +109,6 @@
     calc(var(--spacing-12) - var(--spacing-10)) calc(-1 * var(--spacing-12));
   padding: var(--spacing-12) var(--content-inset-right) var(--spacing-12) var(--spacing-12);
   border-bottom: 1px solid var(--border-default);
-}
-
-/** View titles: the connection card strip title's scale. */
-@utility page-header-title {
-  font-size: var(--type-heading-large-size);
-  font-weight: var(--type-heading-large-weight);
-  color: var(--text-primary);
-  letter-spacing: var(--type-heading-large-letter-spacing);
-  line-height: var(--type-heading-large-line-height);
 }
 
 /* The nav-matched icon left of a page title, in the selected nav item's chip
@@ -324,16 +200,15 @@
   color: var(--text-primary);
 }
 
-/* Feedback: `inline-error` for a line inside a card, `banner` for the box
-   above a page (Banner lays out its parts and colours it by variant, its
-   outline a ring, which costs no layout). */
+/* Feedback, on Body/Default (`type-body-default inline-error`): `inline-error`
+   for a line inside a card, `banner` for the box above a page (Banner lays out
+   its parts and colours it by variant, its outline a ring, which costs no
+   layout). */
 @utility inline-error {
   padding: var(--spacing-8) var(--spacing-12);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--status-negative) var(--opacity-tint-xs), transparent);
   color: var(--text-negative);
-  font-size: var(--type-body-default-size);
-  line-height: var(--type-body-default-line-height);
   margin-bottom: var(--spacing-12);
 }
 
@@ -343,8 +218,6 @@
   gap: var(--spacing-12);
   padding: var(--spacing-12);
   border-radius: var(--radius-sm);
-  font-size: var(--type-body-default-size);
-  line-height: var(--type-body-default-line-height);
   animation: fade-in var(--duration-fast) var(--ease-out);
 }
 

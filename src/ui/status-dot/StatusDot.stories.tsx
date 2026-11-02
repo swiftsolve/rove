@@ -13,7 +13,7 @@ const meta = {
     pulse: { control: 'inline-radio', options: [undefined, 'calm', 'live', 'busy'] },
   },
   render: (args) => (
-    <span className="inline-flex items-center gap-6 text-caption text-secondary">
+    <span className="inline-flex items-center gap-6 type-caption text-secondary">
       <StatusDot {...args} />
       {WORDS[args.pulse ?? 'none']}
     </span>
@@ -39,7 +39,7 @@ export const Busy: Story = { args: { pulse: 'busy' } }
 export const Current: Story = {
   args: { tone: 'current', pulse: 'calm' },
   render: (args) => (
-    <span className="inline-flex items-center gap-6 text-caption text-warning">
+    <span className="inline-flex items-center gap-6 type-caption text-warning">
       <StatusDot {...args} />
       Degraded
     </span>
@@ -58,7 +58,7 @@ export const AllStates: Story = {
           ['current', 'text-negative'],
         ] as const
       ).map(([tone, words]) => (
-        <div key={words} className={`flex flex-wrap items-center gap-20 text-caption ${words}`}>
+        <div key={words} className={`flex flex-wrap items-center gap-20 type-caption ${words}`}>
           {([undefined, 'calm', 'live', 'busy'] as const).map((pulse) => (
             <span key={pulse ?? 'none'} className="inline-flex items-center gap-6">
               <StatusDot tone={tone} pulse={pulse} />

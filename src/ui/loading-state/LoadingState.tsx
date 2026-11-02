@@ -13,7 +13,7 @@ export function LoadingState({ label }: LoadingStateProps): JSX.Element {
   return (
     <div className="page-empty" role="status">
       <Spinner />
-      <p className="text-muted">{label}</p>
+      <p className="type-body-default text-tertiary">{label}</p>
     </div>
   )
 }

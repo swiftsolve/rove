@@ -87,7 +87,7 @@ function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
     <div className="flex min-w-0 flex-col gap-4">
       <dt className="flex items-center gap-6">
         {series && <DirectionIcon series={series} size={13} />}
-        <span className="text-overline">{label}</span>
+        <span className="type-overline text-tertiary">{label}</span>
       </dt>
       <dd className="num text-2xl font-semibold text-primary">
         {value}

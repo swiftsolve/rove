@@ -41,8 +41,8 @@ function CapabilityRow({
           icon={<CapabilityIcon id={capability.id} size={17} />}
         />
         <span className={ROW_TEXT}>
-          <span className="text-body truncate">{capability.label}</span>
-          <span className="text-body-small truncate">{capability.description}</span>
+          <span className="type-body-default text-primary truncate">{capability.label}</span>
+          <span className="type-body-small text-tertiary truncate">{capability.description}</span>
         </span>
         <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
         {/* The bars carry the rating visually; name it for screen readers. */}
@@ -64,8 +64,8 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
       <div className="flex min-w-0 flex-1 items-center gap-12">
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
-          <span className="text-body truncate">{definition.label}</span>
-          <span className="text-body-small truncate">{definition.description}</span>
+          <span className="type-body-default text-primary truncate">{definition.label}</span>
+          <span className="type-body-small text-tertiary truncate">{definition.description}</span>
         </div>
       </div>
       {/* Where the rating meter will land. */}
@@ -90,7 +90,7 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
       </span>
     )
   }
-  if (!hasRunTest) return <span className="text-caption">Available after speed test</span>
+  if (!hasRunTest) return <span className="type-caption text-tertiary">Available after speed test</span>
   return undefined
 }
 

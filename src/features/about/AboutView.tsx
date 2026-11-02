@@ -53,7 +53,7 @@ export function AboutView(): JSX.Element {
         </CardBody>
       </Card>
 
-      <p className="text-caption pt-8 pb-12 text-center">© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
+      <p className="type-caption text-tertiary pt-8 pb-12 text-center">© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
     </div>
   )
 }

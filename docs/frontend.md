@@ -105,8 +105,12 @@ for what. Read it before writing or changing UI. For where files live, see
   duration a token has: `p-12`, not `p-[12px]`. `npm run lint` runs
   `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
   to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
-- Shared type styles and layout (`text-caption`, `text-overline`, `num`, `surface`,
-  `page`, `page-header`, `banner`, …) are `@utility` definitions in
+- Text takes a Figma text style's class from rove-design's `text-styles.css`
+  (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
+  utility: `type-caption text-tertiary`. The classes set no colour and sit
+  under every utility, so `text-sm` or `leading-[1.15]` beside one wins.
+- Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
+  `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
   utilities.
 - Variants go through CVA (class-variance-authority), with utility strings. An

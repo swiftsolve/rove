@@ -21,6 +21,8 @@
   link and caret) and StatusDot `tone`; a padded `li` card lays out its
   content in its own element.
 - Gates: DOM tests, `screenshots --stable` diffs and the a11y audit.
+- Text takes rove-design's `type-*` classes, which set no colour, so the
+  app's own colour-baked type utilities are gone.
 
 **Left as follow-ups:**
 - **Phase 7:**

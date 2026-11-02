@@ -15,7 +15,7 @@ const meta = {
   // It takes its size and colour from the text it sits in.
   decorators: [
     (Story) => (
-      <span className="text-number">
+      <span className="type-number-default text-primary">
         <Story />
       </span>
     ),
@@ -51,7 +51,7 @@ function PollingMetric(): JSX.Element {
   }, [])
   const value = POLLS[poll] ?? 0
   return (
-    <span className="metric-value">
+    <span className="type-number-display metric-value">
       <MetricValue value={value} status={statusOf(value)} format={formatMs} />
     </span>
   )

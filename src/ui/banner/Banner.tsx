@@ -6,7 +6,7 @@ import { Button } from '../button/Button'
 /** The second line for a page whose data polls: a failure there heals itself. */
 export const POLLING_DESCRIPTION = 'Rove keeps trying in the background.'
 
-const bannerVariants = cva('banner', {
+const bannerVariants = cva('type-body-default banner', {
   variants: {
     variant: {
       /** A failure: a red wash and outline. Dismiss is red to match; Retry is neutral, the way out. */

@@ -11,7 +11,7 @@ type CollapsibleArgs = ComponentProps<typeof Collapsible>
 // The trigger is a card header: its height, padding and title type.
 const TRIGGER = [
   'group flex w-full items-center justify-between gap-12 text-left',
-  'h-(--card-header-height) px-(--card-header-padding-x) text-heading-small',
+  'h-(--card-header-height) px-(--card-header-padding-x) type-heading-small text-primary',
   'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-subtle focus-visible:bg-fill-subtle',
 ].join(' ')
 

@@ -95,7 +95,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
           <div className={STATE}>
             <Spinner />
             {/* At the full-page loading label's size, not a step larger. */}
-            <p className="text-muted text-sm">Generating QR code…</p>
+            <p className="type-body-default text-tertiary text-sm">Generating QR code…</p>
           </div>
         ) : notice ? (
           <ShareNotice notice={notice} onRetry={retry} />

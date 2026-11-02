@@ -14,18 +14,21 @@
  * var(--radius-sm)` would be a self-reference that invalidates the token.
  *
  * No preflight: base.css is the app's base reset, with the one piece of
- * preflight that border utilities rely on. The app's shared styles (type
- * styles, page layout) are `@utility` definitions in utilities.css.
+ * preflight that border utilities rely on. The text styles are rove-design's
+ * `.type-*` classes; the app's shared styles (numeric faces, page layout) are
+ * `@utility` definitions in utilities.css.
  */
 @layer theme, base, components, utilities;
 /* The design tokens, unlayered. */
 @import '@swiftsolve/rove-design/tokens.css';
+/* A `.type-<style>` class per Figma text style, in the components layer. */
+@import '@swiftsolve/rove-design/text-styles.css';
 /* Fonts, resets and app-wide behaviour (the base layer). */
 @import './base.css';
 /* Scan only the app's source for class names, not docs or scripts. */
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @source '../';
-/* The app's shared type styles and layout pieces, as utilities. */
+/* The app's shared layout pieces, as utilities. */
 @import './utilities.css';
 
 /* Plain :hover, as the app's CSS always used. Tailwind's default wraps hover
@@ -69,7 +72,7 @@
   --font-weight-semibold: var(--weight-semibold);
   /* Line height and letter spacing by Figma text style (`leading-body-default`,
      `tracking-heading-large`), for text that matches a style but takes its own
-     colour or size. The type utilities in utilities.css set all of a style at once. */
+     colour or size. A style's `.type-*` class sets all of it at once. */
   --leading-heading-large: var(--type-heading-large-line-height);
   --leading-heading-medium: var(--type-heading-medium-line-height);
   --leading-heading-small: var(--type-heading-small-line-height);

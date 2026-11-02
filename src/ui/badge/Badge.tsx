@@ -36,7 +36,7 @@ export function LiveBadge({
   children?: ReactNode
 }): JSX.Element {
   return (
-    <span className="text-caption inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4 text-positive">
+    <span className="type-caption inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4 text-positive">
       <StatusDot pulse="live" />
       {children}
     </span>

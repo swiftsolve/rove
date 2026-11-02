@@ -100,7 +100,7 @@ function RowMenu({ service, onEdit, onRemove }: RowMenuProps): JSX.Element {
 /** A glyph standing in for a latency ("…", "—"), read aloud as a word instead. */
 function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }): JSX.Element {
   return (
-    <span className="text-body-small">
+    <span className="type-body-small text-tertiary">
       <span aria-hidden="true">{glyph}</span>
       <span className="sr-only">{spoken}</span>
     </span>

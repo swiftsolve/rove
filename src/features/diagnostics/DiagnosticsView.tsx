@@ -132,7 +132,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
       </CardBody>
       {ping && ping.packetLoss > 0 && (
         <CardFooter>
-          <p className="text-body-small">Packet loss can cause slow or unstable connections.</p>
+          <p className="type-body-small text-tertiary">Packet loss can cause slow or unstable connections.</p>
         </CardFooter>
       )}
     </Card>
@@ -151,7 +151,7 @@ function DnsCard({ servers }: { servers: string[] }): JSX.Element {
             ))}
           </DataList>
         ) : (
-          <p className="text-body-small">No DNS servers found.</p>
+          <p className="type-body-small text-tertiary">No DNS servers found.</p>
         )}
       </CardBody>
     </Card>
@@ -198,7 +198,7 @@ function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): J
           // when we couldn't even learn our own public IP — i.e. offline. Guard
           // the copy on the known internet state anyway, so a transient
           // echo-service blip while online doesn't claim we're offline.
-          <p className="text-body-small">
+          <p className="type-body-small text-tertiary">
             {diagnostics?.internet === 'online'
               ? 'Provider details are momentarily unavailable.'
               : 'Provider details are unavailable offline.'}

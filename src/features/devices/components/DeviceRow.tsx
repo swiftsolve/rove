@@ -65,16 +65,16 @@ const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
 
 // A long name uses up to two lines rather than truncating; the card grows to
 // fit. It takes the row width the status doesn't. text-lg: the widget-title size
-// (e.g. "Capabilities"), not text-heading-large's larger one.
+// (e.g. "Capabilities"), not type-heading-large's larger one.
 const DEVICE_NAME = cx(
-  'text-heading-large min-w-0 flex-1 text-lg',
+  'type-heading-large text-primary min-w-0 flex-1 text-lg',
   'line-clamp-2 [line-clamp:2] wrap-anywhere',
 )
 
 // Device kind, vendor, OS and model as a subtitle line under the name. It stays
 // on one line and ellipsizes when space is tight, so an offline device's age
 // remains a clean right-hand column instead of wrapping beneath it.
-const DEVICE_META = 'text-caption flex min-w-0 items-baseline gap-8'
+const DEVICE_META = 'type-caption text-tertiary flex min-w-0 items-baseline gap-8'
 
 const DEVICE_KIND = 'min-w-0 flex-[0_1_auto]'
 
@@ -177,7 +177,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
 
           {/* MAC on the left, IP pinned to the bottom-right. */}
           <div className="flex items-baseline justify-between gap-8">
-            <span className="text-caption min-w-0 tabular-nums">
+            <span className="type-caption text-tertiary min-w-0 tabular-nums">
               <InlineMeta
                 items={[
                   <>

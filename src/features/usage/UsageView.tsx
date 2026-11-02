@@ -40,7 +40,7 @@ const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
 // its bottom corners. Its padding matches the speed-test footer's rhythm. The
 // "Since boot" label sits left, the down/up totals grouped at the right.
 const TOTALS_FOOTER = cx(
-  'text-caption flex items-center justify-between gap-12',
+  'type-caption text-tertiary flex items-center justify-between gap-12',
   'mt-12 -mx-(--card-body-padding) -mb-(--card-body-padding) p-(--card-body-padding)',
   'bg-inset',
 )

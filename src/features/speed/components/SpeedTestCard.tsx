@@ -24,7 +24,7 @@ const connVariants = cva('inline-flex items-center gap-6 font-medium text-second
 
 /** A hero speed's digits; muted "…" before any test has run, so the labels lead
  *  and the "…" reads as pending, not zeroed. */
-const speedValueVariants = cva('metric-value', {
+const speedValueVariants = cva('type-number-display metric-value', {
   variants: {
     isPlaceholder: { true: 'text-tertiary' },
   },
@@ -105,7 +105,7 @@ function SpeedCell({
   return (
     <dd className="metric num">
       <span className={speedValueVariants({ isPlaceholder })}>{isPlaceholder ? '…' : value}</span>
-      {!isPlaceholder && <span className="metric-unit">{unit}</span>}
+      {!isPlaceholder && <span className="type-body-small metric-unit">{unit}</span>}
     </dd>
   )
 }
@@ -160,7 +160,7 @@ function HeroCell({
     <div className="flex flex-col gap-8">
       <dt className="flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="text-overline">{label}</span>
+        <span className="type-overline text-tertiary">{label}</span>
       </dt>
       <SpeedCell mbps={mbps} isPlaceholder={isPlaceholder} />
     </div>
@@ -178,7 +178,7 @@ function Substat({
 }): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
-      <dt className="text-overline">{label}</dt>
+      <dt className="type-overline text-tertiary">{label}</dt>
       <dd className={substatValueVariants({ isEmpty })}>{text}</dd>
     </div>
   )
@@ -193,9 +193,9 @@ function ResultFooter({
 }): JSX.Element {
   return (
     // The strip under the results: connection left, link speed right. The text
-    // size comes from .text-caption.
+    // size comes from .type-caption.
     <div className={cx(INSET_PANEL, 'flex items-center')}>
-      <p className="text-caption flex w-full min-w-0 items-center justify-between gap-12">
+      <p className="type-caption text-tertiary flex w-full min-w-0 items-center justify-between gap-12">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
           <span className="ml-auto shrink-0">
@@ -267,10 +267,10 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
       <CardHeader
         title="Speed test"
         icon={<SpeedIcon size={15} />}
-        actions={isEmpty && canTest ? <span className="text-caption">No tests yet</span> : undefined}
+        actions={isEmpty && canTest ? <span className="type-caption text-tertiary">No tests yet</span> : undefined}
       />
       <CardBody>
-        {error && <p className="inline-error" role="alert">{error}</p>}
+        {error && <p className="type-body-default inline-error" role="alert">{error}</p>}
 
         <dl className="grid grid-cols-2 gap-16">
           <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />

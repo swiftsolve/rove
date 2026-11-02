@@ -62,7 +62,7 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
 export function EmptyStatMetric(): JSX.Element {
   return (
     <div className="metric mt-2" aria-hidden>
-      <span className="metric-value">—</span>
+      <span className="type-number-display metric-value">—</span>
     </div>
   )
 }

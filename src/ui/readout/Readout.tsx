@@ -13,14 +13,16 @@ interface ValueParts {
   spokenValue?: string
 }
 
-function ValueAndUnit({ value, unit, spokenValue }: ValueParts): JSX.Element {
+function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<ReadoutProps, 'size'>): JSX.Element {
   const isSpokenApart = spokenValue != null
   return (
     <>
-      <span className="metric-value" aria-hidden={isSpokenApart || undefined}>
+      <span
+        className={cn(size === 'compact' ? 'type-number-large' : 'type-number-display', 'metric-value')}
+        aria-hidden={isSpokenApart || undefined}>
         {value}
       </span>
-      <span className="metric-unit" aria-hidden={isSpokenApart || undefined}>
+      <span className="type-body-small metric-unit" aria-hidden={isSpokenApart || undefined}>
         {unit}
       </span>
       {isSpokenApart && <span className="sr-only">{spokenValue}</span>}
@@ -50,7 +52,7 @@ export function Readout({ label, icon, size = 'large', className, ...valueParts 
     return (
       <div className={cn(figureClass, 'min-w-0', className)}>
         {icon != null && <span className="metric-icon">{icon}</span>}
-        <ValueAndUnit {...valueParts} />
+        <ValueAndUnit size={size} {...valueParts} />
       </div>
     )
   }
@@ -58,10 +60,10 @@ export function Readout({ label, icon, size = 'large', className, ...valueParts 
     <div className={className}>
       <dt className="mb-8 flex items-center gap-6">
         {icon}
-        <span className="text-overline">{label}</span>
+        <span className="type-overline text-tertiary">{label}</span>
       </dt>
       <dd className={figureClass}>
-        <ValueAndUnit {...valueParts} />
+        <ValueAndUnit size={size} {...valueParts} />
       </dd>
     </div>
   )

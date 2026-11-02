@@ -104,7 +104,7 @@ const DETAILS = 'bg-inset py-(--card-header-padding-y)'
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
 // `shouldTruncate`; the security badge's item in ConnectionCard.module.css).
-const STRIP_SUB = cx('text-body-secondary', styles.stripSub, 'truncate')
+const STRIP_SUB = cx('type-body-default text-secondary', styles.stripSub, 'truncate')
 
 interface ConnectionCardProps {
   info: NetworkInfo
@@ -236,7 +236,7 @@ function WifiLinkRows({
       <DataRow label="Network name" value={info.ssid || null} />
       <DataRow label="Signal" align="center">
         {/* Block flex (not inline-flex) avoids extra line-box strut height inside
-            .text-number, which would misalign the bars with the label text. The
+            .type-number-default, which would misalign the bars with the label text. The
             bars have no text, so baseline alignment sits their bottom on the
             text's baseline, and at 10px they reach its capitals. */}
         <div className="flex items-baseline justify-end gap-6">
@@ -329,7 +329,7 @@ export const ConnectionCard = memo(function ConnectionCard({ info }: ConnectionC
             icon={<ConnectionIcon variant={display.variant} />}
           />
           <div className="relative z-1 pointer-events-none flex flex-1 flex-col gap-2 min-w-0 py-2">
-            <h2 id={titleId} className="text-heading-large truncate">
+            <h2 id={titleId} className="type-heading-large text-primary truncate">
               {display.title}
             </h2>
             <div className={STRIP_SUB}>

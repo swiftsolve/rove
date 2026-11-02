@@ -47,7 +47,7 @@ function renderDescription(
     return (
       // "Subnet" label and value on one line, aligned on their baselines.
       <span className="inline-flex items-baseline gap-6">
-        <span className="text-overline">Subnet</span>
+        <span className="type-overline text-tertiary">Subnet</span>
         <span className="num">{subnet}</span>
         {/* One slot shared by the online tally and the scan status. The
             entering one holds the slot's width while the leaving one is
@@ -108,7 +108,7 @@ function DevicesBody({
       {/* The Local Network hint trailing a scan that did find devices; the
           blank-state copy is laid out by <EmptyState>. */}
       {shouldShowLocalNetworkHint && (
-        <p className="text-muted mt-10 max-w-[40ch] px-4 text-sm leading-body-small">{LOCAL_NETWORK_HINT}</p>
+        <p className="type-body-default text-tertiary mt-10 max-w-[40ch] px-4 text-sm leading-body-small">{LOCAL_NETWORK_HINT}</p>
       )}
     </div>
   )

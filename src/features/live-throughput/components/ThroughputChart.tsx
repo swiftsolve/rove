@@ -154,7 +154,7 @@ export function ThroughputChart({ download, upload, maxValue }: ThroughputChartP
           </AreaChart>
         </ResponsiveContainer>
 
-        <div className={cx(SCALE, 'text-number-small', 'num')} aria-hidden>
+        <div className={cx(SCALE, 'type-number-small text-tertiary', 'num')} aria-hidden>
           <span className="translate-y-[-50%]">{formatAxis(scaleMax)}</span>
           <span>{formatAxis(scaleMax / 2)}</span>
           {/* Centred on the bottom edge (the y=0 baseline), mirroring the top
@@ -163,8 +163,8 @@ export function ThroughputChart({ download, upload, maxValue }: ThroughputChartP
         </div>
       </div>
 
-      {/* Same .text-number-small type as the scale, so the x and y labels read as one set. */}
-      <div className={cx('mt-6 flex justify-between pr-[26px]', 'text-number-small', 'num')} aria-hidden>
+      {/* Same .type-number-small type as the scale, so the x and y labels read as one set. */}
+      <div className={cx('mt-6 flex justify-between pr-[26px]', 'type-number-small text-tertiary', 'num')} aria-hidden>
         <span>{formatChartWindowLabel()}</span>
         <span>Now</span>
       </div>

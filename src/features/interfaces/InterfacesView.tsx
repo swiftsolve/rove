@@ -31,16 +31,17 @@ const TILE_COLORS = { wifi: 'var(--series-down)', ethernet: 'var(--status-positi
 >
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
-const tagVariants = cva('text-caption', {
+const tagVariants = cva('type-caption', {
   variants: {
-    isPositive: { true: 'text-positive' },
+    isPositive: { true: 'text-positive', false: 'text-tertiary' },
   },
+  defaultVariants: { isPositive: false },
 })
 
 /** The link state: green while up. */
-const stateVariants = cva('text-caption inline-flex shrink-0 items-center gap-6 capitalize', {
+const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6 capitalize', {
   variants: {
-    state: { up: 'text-positive', down: null, unknown: null },
+    state: { up: 'text-positive', down: 'text-tertiary', unknown: 'text-tertiary' },
   },
 })
 
@@ -72,8 +73,8 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
             color={TILE_COLORS[iface.connectionType]}
             icon={<InterfaceIcon iface={iface} />}
           />
-          {/* text-lg: the widget-title size (e.g. "Traffic"), not text-heading-large's larger one. */}
-          <h2 className="text-heading-large min-w-0 truncate text-lg">{iface.name}</h2>
+          {/* text-lg: the widget-title size (e.g. "Traffic"), not type-heading-large's larger one. */}
+          <h2 className="type-heading-large text-primary min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
             <Tooltip content="Used for internet traffic" shouldDescribe={false}>
               <span className={tagVariants({ isPositive: true })}>
@@ -149,7 +150,7 @@ function InterfacesBody({
   if (interfaces.length === 0) {
     return (
       <div className="page-empty">
-        <p className="text-muted">No network interfaces found.</p>
+        <p className="type-body-default text-tertiary">No network interfaces found.</p>
         <Button onClick={onRefresh}>
           Refresh
         </Button>

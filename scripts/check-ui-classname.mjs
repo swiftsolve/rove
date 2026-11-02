@@ -42,7 +42,7 @@ const RULES = [
   ['its own layout', /^flex-(row|col|wrap|nowrap)/],
   ['its own layout', /^(grid-cols|grid-rows|grid-flow|gap|gap-x|gap-y|space-x|space-y|items|justify-items|place-items|place-content|divide)(-|$)/],
   ['its own layout', /^justify-(?!self)/],
-  ['type', /^(text-|font-|leading-|tracking-|whitespace-|line-clamp-|wrap-|break-)/],
+  ['type', /^(type-|text-|font-|leading-|tracking-|whitespace-|line-clamp-|wrap-|break-)/],
   ['type', /^(truncate|num|tabular-nums|uppercase|lowercase|capitalize|italic|underline)$/],
   ['surface', /^(bg-|border|shadow|ring|outline|fill-|stroke-)/],
 ]

@@ -6,7 +6,7 @@ import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { pressableProps } from '../foundations/pressable'
 
 // The same 8px above the field as the feedback line below it.
-const LABEL = 'text-overline mb-8 block'
+const LABEL = 'type-overline text-tertiary mb-8 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height action centred beside the text lands on a symmetric gap.
