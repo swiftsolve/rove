@@ -79,8 +79,13 @@ for what. Read it before writing or changing UI. For where files live, see
   hooks.
 - Components have DOM tests beside them (`Button.test.tsx`), rendered into
   happy-dom with Testing Library. They test behaviour and accessibility: roles,
-  names, keyboard, focus, disabled. Both kinds run with `npm test`, part of
-  `npm run check`.
+  names, keyboard, focus, disabled.
+- Every story is a test too. It renders in headless Chromium with the real
+  styles, runs its `play` function and fails on any accessibility violation
+  (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
+  sidebar; `npx vitest --project=storybook` runs them alone. A new machine
+  needs `npx playwright install chromium` once.
+- All three kinds run with `npm test`, part of `npm run check`.
 - Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
   fake clock, seeded randomness and paused animations, so two runs of the same
   code match exactly. Diff a run against one from before a change to prove a
