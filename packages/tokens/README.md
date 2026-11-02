@@ -39,7 +39,7 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
 flowchart TD
   figma("<b>Figma file</b><br/>variables, styles"):::source
   exports("<b>src/figma/*.json</b><br/>export plugin"):::file
