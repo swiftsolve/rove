@@ -1122,7 +1122,12 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "The bars' colour (`text-status-positive`), and their place in a row."
+          "description": "The meter's place in its row."
+        },
+        "color": {
+          "type": "string",
+          "default": "currentColor",
+          "description": "The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`)."
         },
         "isDimmed": {
           "type": "boolean",

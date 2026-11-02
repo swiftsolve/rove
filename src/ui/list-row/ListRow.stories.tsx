@@ -18,7 +18,7 @@ function RowText({ title, description }: { title: string; description: string })
 function Rating({ value, color, label, isDimmed }: { value: number; color: string; label: string; isDimmed?: boolean }): JSX.Element {
   return (
     <>
-      <BarMeter value={value} className={color} isDimmed={isDimmed} />
+      <BarMeter value={value} color={color} isDimmed={isDimmed} />
       <span className="sr-only">{label}</span>
     </>
   )
@@ -33,7 +33,7 @@ const meta = {
       <>
         <IconTile color="var(--status-positive)" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
-        <Rating value={4} color="text-status-positive" label="Excellent" />
+        <Rating value={4} color="var(--status-positive)" label="Excellent" />
       </>
     ),
   },
@@ -72,17 +72,17 @@ export const Disabled: Story = {
       <>
         <IconTile color="neutral" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
-        <Rating value={4} color="text-status-positive" label="Excellent" isDimmed />
+        <Rating value={4} color="var(--status-positive)" label="Excellent" isDimmed />
       </>
     ),
   },
 }
 
 const CAPABILITIES = [
-  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, tile: 'var(--status-positive)', color: 'text-status-positive', label: 'Excellent' },
-  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, tile: 'var(--status-good)', color: 'text-status-good', label: 'Good' },
-  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, tile: 'var(--status-warning)', color: 'text-status-warning', label: 'Fair' },
-  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, tile: 'var(--status-poor)', color: 'text-status-poor', label: 'Poor' },
+  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, color: 'var(--status-positive)', label: 'Excellent' },
+  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, color: 'var(--status-good)', label: 'Good' },
+  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, color: 'var(--status-warning)', label: 'Fair' },
+  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, color: 'var(--status-poor)', label: 'Poor' },
 ] as const
 
 /** A list of rows at each rating, then one disabled. */
@@ -92,10 +92,10 @@ export const AllStates: Story = {
       <CardHeader title="Capabilities" />
       <CardBody>
         <ul role="list" className="flex flex-col">
-          {CAPABILITIES.map(({ title, description, Icon, value, tile, color, label }) => (
+          {CAPABILITIES.map(({ title, description, Icon, value, color, label }) => (
             <li key={title}>
               <ListRow onClick={fn()}>
-                <IconTile color={tile} icon={<Icon size={17} />} />
+                <IconTile color={color} icon={<Icon size={17} />} />
                 <RowText title={title} description={description} />
                 <Rating value={value} color={color} label={label} />
               </ListRow>
@@ -105,7 +105,7 @@ export const AllStates: Story = {
             <ListRow onClick={fn()} isDisabled>
               <IconTile color="neutral" icon={<HdStreamIcon size={17} />} />
               <RowText title="HD streaming" description="Testing…" />
-              <Rating value={3} color="text-status-good" label="Good" isDimmed />
+              <Rating value={3} color="var(--status-good)" label="Good" isDimmed />
             </ListRow>
           </li>
         </ul>

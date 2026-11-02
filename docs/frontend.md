@@ -285,7 +285,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words, in their colour or `tone="positive"`; `pulse` calm, live or busy. |
 | Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`icon`, `size`, `color`): any colour, usually a token (`var(--series-down)`), or `neutral`, the sunken fill for something uncategorised. The button form opens something. |
-| Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes. `CapabilityMeter` and the connection card's signal use it. |
+| Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes (`value`, `size`, `color`): any colour, usually a status token (`var(--status-good)`), or the text colour around it. `CapabilityMeter` and the connection card's signal use it. |
 | Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
 | Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. |

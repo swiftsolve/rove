@@ -9,7 +9,7 @@ const ROWS = (
     <DataRow label="Upload" value="48 Mbps" />
     <DataRow label="Latency" value="14 ms" />
     <DataRow label="Signal" align="center">
-      <BarMeter value={3} size="sm" className="text-status-good" />
+      <BarMeter value={3} size="sm" color="var(--status-good)" />
       <span className="sr-only">Good</span>
     </DataRow>
   </>

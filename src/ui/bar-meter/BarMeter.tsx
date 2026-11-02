@@ -34,9 +34,11 @@ interface BarMeterProps {
   value: number
   /** `xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` a list row. */
   size?: keyof typeof SIZES
+  /** The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`). */
+  color?: string
   /** Grey bars that read as inactive: a stale rating waiting on a new test. */
   isDimmed?: boolean
-  /** The bars' colour (`text-status-positive`), and their place in a row. */
+  /** The meter's place in its row. */
   className?: string
 }
 
@@ -44,10 +46,10 @@ interface BarMeterProps {
  * Four rising bars, some lit: signal strength or a rating at a glance. Visual
  * only; whatever it sits in says the value in words or with role="meter".
  */
-export function BarMeter({ value, size = 'lg', isDimmed = false, className }: BarMeterProps): JSX.Element {
+export function BarMeter({ value, size = 'lg', color = 'currentColor', isDimmed = false, className }: BarMeterProps): JSX.Element {
   const { width, heights } = SIZES[size]
   return (
-    <span className={cn('inline-flex items-end gap-2', heights[3], className)} aria-hidden>
+    <span className={cn('inline-flex items-end gap-2', heights[3], className)} style={{ color }} aria-hidden>
       {heights.map((height, i) => {
         const isLit = i < value
         const fill = isDimmed ? (isLit ? 'dimmedLit' : 'dimmed') : isLit ? 'lit' : 'unlit'
