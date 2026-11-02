@@ -1,13 +1,19 @@
 import { useEffect, useRef, type RefObject } from 'react'
+import { restoreReturnPoint, type ReturnPoint } from '@/app/utils/return-point'
 
 /**
  * What happens on every screen change (tab or subpage): the scroll area returns
- * to the top, and focus moves to the new page's h1.
+ * to the top, and focus moves to the new page's h1. Going back to a screen
+ * instead lands on the control that opened the next one (`returnPoint`),
+ * scrolled to where it was.
  *
  * `screenKey` identifies the current screen; attach the returned refs to the
  * scrolling container and the <main> region.
  */
-export function useScreenFocus(screenKey: string): {
+export function useScreenFocus(
+  screenKey: string,
+  returnPoint: ReturnPoint | null,
+): {
   scrollRef: RefObject<HTMLDivElement>
   mainRef: RefObject<HTMLElement>
 } {
@@ -33,10 +39,13 @@ export function useScreenFocus(screenKey: string): {
     focusedKeyRef.current = screenKey
     const main = mainRef.current
     if (!main) return
+    // Runs after the scroll reset above, so it can scroll back down.
+    const scroller = scrollRef.current
+    if (returnPoint && scroller && restoreReturnPoint(main, scroller, returnPoint)) return
     const target = main.querySelector<HTMLElement>('h1') ?? main
     target.tabIndex = -1
     target.focus({ preventScroll: true })
-  }, [screenKey])
+  }, [screenKey, returnPoint])
 
   return { scrollRef, mainRef }
 }

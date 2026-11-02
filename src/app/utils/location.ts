@@ -1,5 +1,6 @@
 import type { CapabilityId } from '@/types'
 import type { AppTab } from '@/app/utils/tabs'
+import type { ReturnPoint } from '@/app/utils/return-point'
 
 /** A subpage layered over the Speed tab. `null` means the tab's main page. */
 export type SpeedSub =
@@ -30,6 +31,9 @@ export interface AppLocation {
 
 export interface Navigation {
   location: AppLocation
+  /** The control to focus on arriving, when the screen was left by opening
+   *  another from it and is now returned to through history. */
+  returnPoint: ReturnPoint | null
   /** Push a new screen onto the history stack. */
   navigate: (to: AppLocation) => void
   /** Return to the previous screen (same as the browser/OS back button). */

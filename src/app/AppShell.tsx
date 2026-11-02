@@ -30,8 +30,8 @@ const SCROLL = cx(
  * The screen inside it is picked by `CurrentScreen` from the current location.
  */
 export function AppShell(): JSX.Element {
-  const { location } = useNavigation()
-  const { scrollRef, mainRef } = useScreenFocus(locationKey(location))
+  const { location, returnPoint } = useNavigation()
+  const { scrollRef, mainRef } = useScreenFocus(locationKey(location), returnPoint)
   // State, not a ref: the provider has to re-render with the column once it mounts.
   const [contentColumn, setContentColumn] = useState<HTMLDivElement | null>(null)
 

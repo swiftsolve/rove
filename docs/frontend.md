@@ -12,6 +12,11 @@ for what. Read it before writing or changing UI. For where files live, see
   and `useConnectionStatus()` (the title bar's verdict). Each has its own small
   context, so a reader re-renders only when its value changes. That's why every
   view renders with no props.
+- A screen change moves focus to the new page's h1. Going back (the Back
+  button or history) lands on the control that opened the next screen instead,
+  scrolled to where it was, ringed only if it was reached by keyboard:
+  `navigate` saves it on the history entry it leaves. So a row, card or link
+  that opens a screen just calls `navigate`, with no focus code of its own.
 - Backend data comes from TanStack Query. Each feature owns its data hook in
   `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
   `useBackendQuery`, and the components that show the data call it directly.

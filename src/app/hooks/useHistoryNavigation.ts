@@ -6,20 +6,35 @@ import {
   type AppLocation,
   type Navigation,
 } from '@/app/utils/location'
+import { captureReturnPoint, trackClicks, type ReturnPoint } from '@/app/utils/return-point'
 
 // We stash the location on `history.state` under a namespaced key rather than
 // owning the whole state object, so we don't clobber anything the webview host
 // might keep there.
 const STATE_KEY = '__roveNav'
+// The screen's return point, saved on its entry as we leave it for another.
+const RETURN_KEY = '__roveReturn'
 
 function readLocation(state: unknown): AppLocation | null {
   if (state == null || typeof state !== 'object' || !(STATE_KEY in state)) return null
   return (state as Record<string, AppLocation>)[STATE_KEY] ?? null
 }
 
+function readReturnPoint(state: unknown): ReturnPoint | null {
+  if (state == null || typeof state !== 'object' || !(RETURN_KEY in state)) return null
+  return (state as Record<string, ReturnPoint>)[RETURN_KEY] ?? null
+}
+
+// A new entry starts with no return point: the current entry's is its own.
 function historyStateFor(location: AppLocation): Record<string, unknown> {
-  const current = window.history.state as Record<string, unknown> | null
+  const { [RETURN_KEY]: _returnPoint, ...current } = (window.history.state as Record<string, unknown> | null) ?? {}
   return { ...current, [STATE_KEY]: location }
+}
+
+/** Saves the screen being left's return point on its own entry. */
+function saveReturnPoint(): void {
+  const current = (window.history.state as Record<string, unknown> | null) ?? {}
+  window.history.replaceState({ ...current, [RETURN_KEY]: captureReturnPoint() }, '')
 }
 
 /**
@@ -40,6 +55,8 @@ export function useHistoryNavigation(): Navigation {
   // pushState side effect inside a setState updater (StrictMode invokes those
   // twice in dev, which would push two entries and make Back need two presses).
   const locationRef = useRef<AppLocation>(location)
+  // Set only when going back (or forward) onto an entry that saved one.
+  const [returnPoint, setReturnPoint] = useState<ReturnPoint | null>(null)
   // How many of *our* entries sit behind the active one — i.e. how many times we
   // can call `history.back()` and stay inside the app. `navigate` pushes one on
   // (increment); popping one off via back/forward (popstate) takes one back. It
@@ -49,9 +66,10 @@ export function useHistoryNavigation(): Navigation {
   // previous page (or do nothing at the very first entry).
   const appDepthRef = useRef(0)
 
-  const applyLocation = useCallback((next: AppLocation): void => {
+  const applyLocation = useCallback((next: AppLocation, nextReturnPoint: ReturnPoint | null = null): void => {
     locationRef.current = next
     setLocation(next)
+    setReturnPoint(nextReturnPoint)
   }, [])
 
   // Seed the first history entry with our location (via replaceState, so we
@@ -62,6 +80,9 @@ export function useHistoryNavigation(): Navigation {
     }
   }, [])
 
+  // The opener of the next screen is read from the click that opens it.
+  useEffect(() => trackClicks(), [])
+
   // Mirror back/forward — the app's back buttons, the mouse thumb button, and
   // Alt+←/→ all arrive here.
   useEffect(() => {
@@ -71,7 +92,7 @@ export function useHistoryNavigation(): Navigation {
       // fall back to the in-app parent — whereas over-counting could escape, so
       // never drop below zero.
       appDepthRef.current = Math.max(0, appDepthRef.current - 1)
-      applyLocation(readLocation(event.state) ?? HOME_LOCATION)
+      applyLocation(readLocation(event.state) ?? HOME_LOCATION, readReturnPoint(event.state))
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
@@ -81,6 +102,7 @@ export function useHistoryNavigation(): Navigation {
     // Ignore navigations that don't change the screen, so the back stack never
     // fills with duplicate entries (e.g. tapping the already-active tab).
     if (isSameLocation(locationRef.current, to)) return
+    saveReturnPoint()
     window.history.pushState(historyStateFor(to), '')
     appDepthRef.current += 1
     applyLocation(to)
@@ -103,5 +125,5 @@ export function useHistoryNavigation(): Navigation {
     applyLocation(parent)
   }, [applyLocation])
 
-  return { location, navigate, back }
+  return { location, returnPoint, navigate, back }
 }
