@@ -4,10 +4,12 @@ import colorLight from '../tokens/color.light.tokens.json'
 import spacing from '../tokens/spacing.tokens.json'
 import typography from '../tokens/typography.tokens.json'
 import opacity from '../tokens/opacity.tokens.json'
+import layout from '../tokens/layout.tokens.json'
+import motion from '../tokens/motion.tokens.json'
 import textStyles from '../tokens/text-styles.tokens.json'
 import code from '../tokens/code.tokens.json'
 
-export { palette, colorDark, colorLight, spacing, typography, opacity, textStyles, code }
+export { palette, colorDark, colorLight, spacing, typography, opacity, layout, motion, textStyles, code }
 
 // Every token in a DTCG tree, in file order, with its path (`['bg', 'base']`).
 export function flatten(tree, path = []) {

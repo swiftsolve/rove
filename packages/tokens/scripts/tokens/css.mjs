@@ -25,6 +25,8 @@ const FILES = [
   ['spacing', 'Spacing'],
   ['typography', 'Typography'],
   ['opacity', 'Opacity'],
+  ['layout', 'Layout'],
+  ['motion', 'Motion'],
   ['code', 'Code-only'],
   ['text-styles', 'Type styles'],
 ]

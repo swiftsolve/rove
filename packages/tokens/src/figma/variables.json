@@ -56,6 +56,18 @@
       "modes": [
         "Value"
       ]
+    },
+    {
+      "name": "Layout",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Motion",
+      "modes": [
+        "Value"
+      ]
     }
   ],
   "variables": [
@@ -1901,6 +1913,164 @@
         "Light": {
           "alias": "neutral/850-a2"
         }
+      }
+    },
+    {
+      "name": "titlebar/height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--titlebar-height)",
+      "description": "Title bar",
+      "values": {
+        "Value": 56
+      }
+    },
+    {
+      "name": "rail/item-size",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--rail-item-size)",
+      "description": "Rail items",
+      "values": {
+        "Value": 38
+      }
+    },
+    {
+      "name": "card/padding",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-padding)",
+      "description": "Card inset",
+      "values": {
+        "Value": {
+          "alias": "spacing/14"
+        }
+      }
+    },
+    {
+      "name": "card/header-padding-y",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-padding-y)",
+      "description": "",
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "card/header-padding-x",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-padding-x)",
+      "description": "",
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "card/header-min-height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-min-height)",
+      "description": "Compact card header",
+      "values": {
+        "Value": 42
+      }
+    },
+    {
+      "name": "card/header-height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-height)",
+      "description": "Card header",
+      "values": {
+        "Value": 44
+      }
+    },
+    {
+      "name": "card/body-padding",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-body-padding)",
+      "description": "",
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "row/padding-y",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--row-padding-y)",
+      "description": "Data row, above and below",
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "focus/ring-width",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--focus-ring-width)",
+      "description": "Focus ring stroke",
+      "values": {
+        "Value": 1
+      }
+    },
+    {
+      "name": "weight/regular",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-regular)",
+      "description": "",
+      "values": {
+        "Value": 400
+      }
+    },
+    {
+      "name": "weight/medium",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-medium)",
+      "description": "",
+      "values": {
+        "Value": 500
+      }
+    },
+    {
+      "name": "weight/semibold",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-semibold)",
+      "description": "",
+      "values": {
+        "Value": 600
+      }
+    },
+    {
+      "name": "duration/fast",
+      "collection": "Motion",
+      "type": "FLOAT",
+      "code": "var(--duration-fast)",
+      "description": "Hovers, small changes",
+      "values": {
+        "Value": 140
+      }
+    },
+    {
+      "name": "duration/normal",
+      "collection": "Motion",
+      "type": "FLOAT",
+      "code": "var(--duration-normal)",
+      "description": "Panels, page changes",
+      "values": {
+        "Value": 220
       }
     }
   ]

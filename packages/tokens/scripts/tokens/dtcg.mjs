@@ -18,7 +18,7 @@ import { resolve } from 'node:path'
 
 export const EXTENSION = 'net.swiftsolve.rove-tokens'
 
-const COLLECTIONS = { Palette: 'palette', Color: 'color', Spacing: 'spacing', Typography: 'typography', Opacity: 'opacity' }
+const COLLECTIONS = { Palette: 'palette', Color: 'color', Spacing: 'spacing', Typography: 'typography', Opacity: 'opacity', Layout: 'layout', Motion: 'motion' }
 const MODES = { Dark: 'dark', Light: 'light' }
 
 const path = (figmaName) => figmaName.split('/')
@@ -60,9 +60,18 @@ function figmaToken(v, mode, figmaOverride) {
     if (!v.name.startsWith('font-family/')) throw new Error(`DTCG: no type for the string variable ${v.name}`)
     return { $type: 'fontFamily', $value: override ? fontStack(override) : value, ...description }
   }
-  const type = v.type === 'COLOR' ? 'color' : v.collection === 'Opacity' ? 'number' : 'dimension'
+  // Figma numbers carry no unit: Motion is in ms, weight/* is a font weight, the rest are px.
+  const type = v.type === 'COLOR' ? 'color'
+    : v.collection === 'Opacity' ? 'number'
+    : v.collection === 'Motion' ? 'duration'
+    : v.name.startsWith('weight/') ? 'fontWeight'
+    : 'dimension'
   if (value.alias) return { $type: type, $value: ref(value.alias), ...description }
-  const converted = type === 'color' ? color(value) : type === 'number' ? value / 100 : px(value)
+  const converted = type === 'color' ? color(value)
+    : type === 'number' ? value / 100
+    : type === 'duration' ? { value, unit: 'ms' }
+    : type === 'fontWeight' ? value
+    : px(value)
   return { $type: type, $value: converted, ...description }
 }
 

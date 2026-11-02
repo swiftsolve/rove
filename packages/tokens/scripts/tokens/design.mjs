@@ -81,17 +81,19 @@ export async function writeDesign({ path, variables, textStyles, code: codeToken
   }
 
   out.push('', '### Scales', '')
-  for (const [prefix, vars] of groupBy(others, (v) => v.name.split('/')[0])) {
+  // Prefixes that share a heading (titlebar/ and rail/ are Layout) share a line.
+  for (const [title, vars] of groupBy(others, (v) => heading(v.name.split('/')[0]))) {
+    const prefix = vars[0].name.split('/')[0]
     const value = (v) => dark.get(cssName(v.name))
     const px = (v) => value(v)?.match(/^([\d.]+)px$/)?.[1]
     // Pixel scales read smallest to largest; Figma lists late additions last.
     if (vars.every(px)) vars.sort((a, b) => px(a) - px(b))
     // spacing/12 is 12px, so the name already says the value.
-    const numbered = vars.every((v) => px(v) === v.name.split('/')[1])
+    const numbered = vars.every((v) => v.name.startsWith(`${prefix}/`) && px(v) === v.name.split('/')[1])
     const list = numbered
       ? `${code(`--${prefix}-<n>`)}, n in px: ${vars.map((v) => `${px(v)}${note(v)}`).join(', ')}`
       : vars.map((v) => `${code(cssName(v.name))} ${show(short(value(v)))}${note(v)}`).join(', ')
-    out.push(`- **${heading(prefix)}:** ${list}`)
+    out.push(`- **${title}:** ${list}`)
   }
 
   out.push(

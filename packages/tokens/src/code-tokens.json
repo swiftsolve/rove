@@ -9,29 +9,11 @@
     "--shadow-raised": "0 12px 32px {shadow-color/raised}",
     "--shadow-popover": "0 2px 6px {shadow-color/popover-1}, 0 6px 16px {shadow-color/popover-2}",
 
-    "--focus-ring-width": "1px",
     "--focus-outline": "var(--focus-ring-width) solid var(--focus-ring)",
     "--focus-inset": "calc(-1 * var(--focus-ring-width))",
 
-    "--titlebar-height": "56px",
-    "--rail-item-size": "38px",
-
-    "--card-padding": "var(--spacing-14)",
-    "--card-header-padding-y": "var(--card-padding)",
-    "--card-header-padding-x": "var(--card-padding)",
-    "--card-header-min-height": "42px",
-    "--card-header-height": "44px",
-    "--card-body-padding": "var(--card-padding)",
-    "--row-padding-y": "8px",
-
     "--ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
     "--ease-in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
-    "--ease-pulse": "cubic-bezier(0.42, 0, 0.58, 1)",
-    "--duration-fast": "140ms",
-    "--duration-normal": "220ms",
-
-    "--weight-regular": "400",
-    "--weight-medium": "500",
-    "--weight-semibold": "600"
+    "--ease-pulse": "cubic-bezier(0.42, 0, 0.58, 1)"
   }
 }

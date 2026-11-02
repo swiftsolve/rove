@@ -1,5 +1,5 @@
 import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, colorIn, cssName, group, opacity, shadowIn, spacing } from './tokens'
+import { code, colorIn, cssName, group, layout, opacity, shadowIn, spacing } from './tokens'
 import windowLayout from './window-layout.png'
 
 export default { title: 'Spacing, radius & effects' }
@@ -50,19 +50,20 @@ const LEVELS = [
   },
 ]
 
-const px = (name) => `${code[name].$value.value}px`
+// A Layout token's size: px('titlebar', 'height') is 56px.
+const px = (...path) => `${path.reduce((node, key) => node[key], layout).$value.value}px`
 
 const WINDOW_LAYOUT = [
   {
     element: 'Title bar',
-    size: `${px('titlebar-height')} tall`,
+    size: `${px('titlebar', 'height')} tall`,
     notes: 'Brand left, controls right',
     codes: ['--titlebar-height'],
   },
   {
     element: 'Navigation rail',
     size: '62px wide + 1px border',
-    notes: `${px('rail-item-size')} items, 12px apart`,
+    notes: `${px('rail', 'item-size')} items, 12px apart`,
     codes: ['--rail-item-size', '--spacing-12'],
   },
   {
@@ -80,7 +81,7 @@ const WINDOW_LAYOUT = [
   },
   {
     element: 'Card header',
-    size: `${px('card-header-height')} tall`,
+    size: `${px('card', 'header-height')} tall`,
     notes: 'Titles line up across cards',
     codes: ['--card-header-height'],
   },

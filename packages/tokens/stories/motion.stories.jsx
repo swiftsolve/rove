@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, cssName, flatten } from './tokens'
+import { code, cssName, flatten, motion } from './tokens'
 
 export default { title: 'Motion' }
 
@@ -22,7 +22,7 @@ const track = (transition) => (
 
 function MotionPage() {
   const [isPlaying, setIsPlaying] = useState(false)
-  const tokens = flatten(code)
+  const tokens = [...flatten(code), ...flatten(motion)]
   const easings = tokens.filter((token) => token.$type === 'cubicBezier')
   const durations = tokens.filter((token) => token.$type === 'duration')
   return (
