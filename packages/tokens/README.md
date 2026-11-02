@@ -12,6 +12,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 [![Slideshow](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/presentation.yml?label=slideshow&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/presentation.yml)
 [![Version](https://img.shields.io/github/package-json/v/swiftsolve/rove-tokens?label=version&labelColor=17181b&color=5b8cff)](https://github.com/swiftsolve/rove-tokens/tags)
 [![Figma](https://img.shields.io/badge/Figma-source_of_truth-5b8cff?logo=figma&logoColor=white&labelColor=17181b)](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
+
 [![DTCG](https://img.shields.io/badge/DTCG-2025.10-5b8cff?labelColor=17181b)](https://www.designtokens.org/tr/2025.10/format/)
 [![Style Dictionary](https://img.shields.io/badge/Style_Dictionary-5-5b8cff?labelColor=17181b)](https://styledictionary.com/)
 [![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](#-contrast)
