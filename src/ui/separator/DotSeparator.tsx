@@ -27,7 +27,7 @@ const itemVariants = cva('inline-meta-item min-w-0', {
 interface InlineMetaProps {
   /** The chunks, in order. Empty ones (null, false) are dropped, with their dots. */
   items: (ReactNode | null | undefined | false)[]
-  /** Its place in a line. It takes its type from the line it sits in. */
+  /** Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other items. It takes its type from the line it sits in. */
   className?: string
   /** Keep the items on one line, each ellipsizing as space runs out. Otherwise they wrap. */
   shouldTruncate?: boolean

@@ -35,7 +35,7 @@ interface ReadoutProps extends ValueParts {
   icon?: ReactNode
   /** `compact` for a summary card's figure. */
   size?: 'large' | 'compact'
-  /** Its place in a layout. */
+  /** Its place in a layout: `min-w-0 flex-1` to share a row with other readouts. */
   className?: string
 }
 

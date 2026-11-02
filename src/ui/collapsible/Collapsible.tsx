@@ -66,7 +66,7 @@ const PANEL = cx(
 )
 
 interface CollapsiblePanelProps {
-  /** Its layout and insets. */
+  /** Its place in a layout: space above it (`mt-8`). Inset its content on an element inside it. */
   className?: string
   /** What the trigger shows and hides. */
   children: ReactNode

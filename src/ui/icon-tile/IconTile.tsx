@@ -25,7 +25,7 @@ interface TileLookProps {
    * icon, for something uncategorised or not yet rated.
    */
   color: IconTileColor
-  /** The tile's place in its row. */
+  /** The tile's place in its row: `shrink-0` so a long name can't squeeze it. */
   className?: string
   /** The icon, sized by the caller: `<VideoCallIcon size={17} />`. */
   icon: ReactNode

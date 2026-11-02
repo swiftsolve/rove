@@ -31,7 +31,7 @@ const VALUE = 'text-number num text-right'
 interface DataListProps {
   /** The air between rows: `default` 8px, `compact` 4px for a short or repeated list. */
   density?: VariantOf<typeof listVariants, 'density'>
-  /** Its place in a layout. */
+  /** Its place in a layout: space above it (`mt-12`). */
   className?: string
   /** DataRows, as direct children (fragments are fine). */
   children: ReactNode
@@ -77,7 +77,7 @@ export function DataListStack({
   className,
   children,
 }: {
-  /** Its place in a layout. */
+  /** Its place in a layout: space above it (`mt-12`). */
   className?: string
   /** The DataLists, one per topic. */
   children: ReactNode

@@ -24,7 +24,7 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
   onOpen?: () => void
   /** Names the link, and is required with `onOpen`: what the card shows in words, then where it goes. */
   openLabel?: string
-  /** Its place in a layout. */
+  /** Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`). */
   className?: string
   /** A CardHeader, a CardBody and an optional CardFooter, or your own content. */
   children?: ReactNode

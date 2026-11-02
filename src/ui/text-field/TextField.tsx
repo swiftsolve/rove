@@ -64,7 +64,7 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onC
   action?: ReactNode
   /** Sample input, shown while it's empty: "example.com or 192.168.1.1". */
   placeholder?: string
-  /** On the field as a whole: its place in the form. */
+  /** On the field as a whole: its place in the form, such as space above it (`mt-16`). */
   className?: string
 }
 

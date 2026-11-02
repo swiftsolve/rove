@@ -30,7 +30,7 @@ export function MetricValue({
   status?: MetricStatus
   /** Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. */
   format: (n: number) => string
-  /** Its place in a layout. It takes its size and colour from the text around it. */
+  /** Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it. */
   className?: string
 }): JSX.Element {
   const animated = useCountUp(value)

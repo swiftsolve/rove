@@ -338,7 +338,7 @@
         },
         "className": {
           "type": "string",
-          "description": "On the field as a whole: its place in the form."
+          "description": "On the field as a whole: its place in the form, such as space above it (`mt-16`)."
         },
         "feedback": {
           "type": "ReactNode",
@@ -720,7 +720,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a line."
+          "description": "Its place in a line: a gap and alignment beside text (`mr-8 align-middle`)."
         },
         "pulse": {
           "values": [
@@ -932,7 +932,7 @@
         },
         "className": {
           "type": "string",
-          "description": "Its place in a layout."
+          "description": "Its place in a layout: space above it (`mt-12`)."
         },
         "density": {
           "values": [
@@ -967,7 +967,7 @@
         },
         "className": {
           "type": "string",
-          "description": "Its place in a layout."
+          "description": "Its place in a layout: space above it (`mt-12`)."
         }
       },
       "stories": [
@@ -1028,7 +1028,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a layout."
+          "description": "Its place in a layout: space above it (`mt-12`)."
         },
         "icon": {
           "type": "ReactNode",
@@ -1082,7 +1082,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a layout. It takes its size and colour from the text around it."
+          "description": "Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it."
         },
         "format": {
           "type": "(n: number) => string",
@@ -1165,7 +1165,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a row, such as an inset to line up with an icon."
+          "description": "Its place in a row: a width (`w-[320px]`) or an inset to line up with an icon (`ml-[3px]`)."
         },
         "down": {
           "type": "number",
@@ -1237,7 +1237,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "The tile's place in its row."
+          "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
           "type": "IconTileColor",
@@ -1281,7 +1281,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "The tile's place in its row."
+          "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
           "type": "IconTileColor",
@@ -1353,7 +1353,7 @@
         },
         "className": {
           "type": "string",
-          "description": "Its place in a layout."
+          "description": "Its place in a layout: space above it (`mt-12`)."
         },
         "onOpen": {
           "type": "(() => void)",
@@ -1532,7 +1532,7 @@
         },
         "className": {
           "type": "string",
-          "description": "Its layout and insets."
+          "description": "Its place in a layout: space above it (`mt-8`). Inset its content on an element inside it."
         }
       },
       "stories": [
@@ -1581,7 +1581,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a line. It takes its type from the line it sits in."
+          "description": "Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other items. It takes its type from the line it sits in."
         },
         "items": {
           "type": "ReactNode[]",

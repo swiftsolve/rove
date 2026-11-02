@@ -87,7 +87,7 @@ import {
 export interface IconProps {
   /** Its width and height in px. Each icon has its own default. */
   size?: number
-  /** Its colour (`text-positive`) and place in a line. It's the text colour by default. */
+  /** Its colour (`text-positive`) and place in a line (`shrink-0`). It's the text colour by default. */
   className?: string
 }
 

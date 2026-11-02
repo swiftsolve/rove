@@ -26,7 +26,7 @@ interface SplitBarProps {
   max: number
   /** Reads the bar out, since it's an image to screen readers. */
   label: string
-  /** Its place in a row, such as an inset to line up with an icon. */
+  /** Its place in a row: a width (`w-[320px]`) or an inset to line up with an icon (`ml-[3px]`). */
   className?: string
 }
 

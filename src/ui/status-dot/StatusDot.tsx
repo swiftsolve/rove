@@ -26,7 +26,7 @@ interface StatusDotProps {
    * (a scan).
    */
   pulse?: VariantOf<typeof dotVariants, 'pulse'>
-  /** Its place in a line. */
+  /** Its place in a line: a gap and alignment beside text (`mr-8 align-middle`). */
   className?: string
 }
 
