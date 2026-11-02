@@ -36,7 +36,7 @@ Figma is the source of truth; this package turns its variables and text styles i
 ## ⚙️ How it works
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}, "flowchart": {"curve": "basis", "nodeSpacing": 28, "rankSpacing": 36}}}%%
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "textColor": "#8e8f93", "edgeLabelBackground": "#101012", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff"}}}%%
 flowchart TD
   figma("<b>Figma file</b><br/>variables, text styles"):::source
   slides("<b>Slideshow</b><br/>GitHub Pages"):::ship
