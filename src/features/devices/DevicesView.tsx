@@ -115,15 +115,15 @@ function DevicesBody({
 }
 
 export function DevicesView(): JSX.Element {
-  const { scan, isScanning, error, rescan } = useDevices()
+  const { lastScan, isScanning, error, rescan } = useDevices()
   const onRescan = (): void => void rescan()
-  const devices = sortDevices(scan?.devices ?? [])
+  const devices = sortDevices(lastScan?.devices ?? [])
   const hasDevices = devices.length > 0
   const onlineCount = devices.filter((device) => device.isReachable).length
-  const subnet = scan?.subnet ?? null
+  const subnet = lastScan?.subnet ?? null
   // Scan resolved but turned up only this machine (or nothing) — on macOS the
   // usual culprit is a withheld Local Network grant.
-  const isOnlySelf = !isScanning && scan != null && devices.every((device) => device.isSelf)
+  const isOnlySelf = !isScanning && lastScan != null && devices.every((device) => device.isSelf)
   const shouldShowLocalNetworkHint = IS_MAC && isOnlySelf
 
   return (
@@ -152,7 +152,7 @@ export function DevicesView(): JSX.Element {
       {error && <Banner
           variant="error"
           title={error}
-          description={scan ? 'Showing the last scan.' : 'Try again in a moment.'}
+          description={lastScan ? 'Showing the last scan.' : 'Try again in a moment.'}
           onRetry={rescan}
         />}
 

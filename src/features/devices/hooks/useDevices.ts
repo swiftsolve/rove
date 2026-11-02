@@ -7,7 +7,7 @@ import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 
 interface UseDevicesResult {
-  scan: LanDeviceScan | null
+  lastScan: LanDeviceScan | null
   isScanning: boolean
   error: string | null
   rescan: () => Promise<void>
@@ -62,5 +62,5 @@ export function useDevices(): UseDevicesResult {
     errorMessage: 'Couldn’t scan for devices',
   })
 
-  return { scan: data ?? null, isScanning: isBusy, error, rescan: reload }
+  return { lastScan: data ?? null, isScanning: isBusy, error, rescan: reload }
 }

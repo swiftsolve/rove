@@ -7,12 +7,12 @@ import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/compone
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard(): JSX.Element {
-  const { scan, isScanning, rescan } = useDevices()
+  const { lastScan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
   // Null before the first scan lands.
-  const onlineCount = scan ? scan.devices.filter((device) => device.isReachable).length : null
+  const onlineCount = lastScan ? lastScan.devices.filter((device) => device.isReachable).length : null
   // macOS doesn't scan on Home load, so until its first scan the card offers one.
-  const canDiscover = IS_MAC && !scan && !isScanning
+  const canDiscover = IS_MAC && !lastScan && !isScanning
 
   return (
     <StatCard
