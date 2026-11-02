@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@/ui'
 
-// The card used to be a <button>. Its body keeps the text settings it
-// inherited from it (a button resets these), so the readouts render as
-// before. It fills the body's height, so a control can sit at the foot.
+// The text settings of the <button> this card once was (a button resets
+// them), kept so the readouts render as before. The content fills the body's
+// height, so a control can sit at its foot.
 const CONTENT = cx(
   'flex h-full flex-col',
   'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
@@ -12,26 +12,22 @@ const CONTENT = cx(
 
 interface StatCardProps {
   icon: ReactNode
-  label: string
+  title: string
   /** Name of the card's link: the readout in words, then where it goes. */
-  ariaLabel: string
+  linkLabel: string
   /** Navigate into the tab when the card is tapped. */
   onOpen: () => void
   /** The readout is loading (e.g. a device scan in flight). */
   isLoading?: boolean
-  /**
-   * The card body: a colour-keyed readout (or a split of readouts). It may hold
-   * its own control (the Devices card's Discover button), which sits beside the
-   * link rather than inside it.
-   */
+  /** The readout. It may hold its own control, which sits beside the card's link rather than inside it. */
   children: ReactNode
 }
 
 /** One of the small summary cards on Home: a title over a readout, opening its tab. */
-export function StatCard({ icon, label, ariaLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
+export function StatCard({ icon, title, linkLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
   return (
-    <Card onOpen={onOpen} linkLabel={ariaLabel} aria-busy={isLoading || undefined}>
-      <CardHeader title={label} icon={icon} />
+    <Card onOpen={onOpen} linkLabel={linkLabel} aria-busy={isLoading || undefined}>
+      <CardHeader title={title} icon={icon} />
       <CardBody>
         <div className={CONTENT}>{children}</div>
       </CardBody>
@@ -47,19 +43,14 @@ interface StatReadoutProps {
   className?: string
 }
 
-/** A direction arrow (or key dot) inline with a compact value. */
+/** A compact value behind its marker. */
 export function StatReadout({ marker, value, unit, className }: StatReadoutProps): JSX.Element {
-  const icon =
-    marker === 'online' ? (
-      <StatusDot tone="positive" />
-    ) : (
-      <DirectionIcon series={marker} size={12} />
-    )
+  const icon = marker === 'online' ? <StatusDot tone="positive" /> : <DirectionIcon series={marker} size={12} />
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
 /** The "no reading" body: a dash where the value would be. */
-export function EmptyStatMetric(): JSX.Element {
+export function EmptyStatReadout(): JSX.Element {
   return (
     <div className="metric mt-2" aria-hidden>
       <span className="metric-value">—</span>
