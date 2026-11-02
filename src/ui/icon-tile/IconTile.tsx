@@ -2,7 +2,7 @@ import { forwardRef, type CSSProperties, type HTMLAttributes, type MouseEventHan
 import { cva } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
-import { SPRING } from '../foundations/motion'
+import { SPRING_FAST } from '../foundations/motion'
 import { pressableProps } from '../foundations/pressable'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
@@ -57,7 +57,7 @@ export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function Icon
 })
 
 // The tint eases; the lift springs, settling with a slight overshoot.
-const BUTTON_TRANSITION = `background var(--duration-fast) var(--ease-in-out), transform ${SPRING}`
+const BUTTON_TRANSITION = `background var(--duration-fast) var(--ease-in-out), transform ${SPRING_FAST}`
 
 type IconTileButtonProps = TileLookProps & {
   /** Names it: the icon alone says nothing to a screen reader. */
