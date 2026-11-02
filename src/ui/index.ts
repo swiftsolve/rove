@@ -47,6 +47,11 @@ export { NavItem, NavRail } from './nav-rail/NavRail'
 export { PageHeader } from './page-header/PageHeader'
 
 export * from './icons/Icons'
+export { BrandIcon } from './icons/BrandIcon'
+export { CloudGamingIcon } from './icons/CloudGamingIcon'
+export { ConnectionIcon } from './icons/ConnectionIcon'
+export { HdStreamIcon } from './icons/HdStreamIcon'
+export { UltraHdStreamIcon } from './icons/UltraHdStreamIcon'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
 
 export { cn } from './foundations/cn'

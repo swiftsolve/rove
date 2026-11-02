@@ -3,7 +3,9 @@ import { fn } from 'storybook/test'
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
 import { IconTile } from '../icon-tile/IconTile'
-import { CloudGamingIcon, GamepadIcon, HdStreamIcon, VideoCallIcon } from '../icons/Icons'
+import { CloudGamingIcon } from '../icons/CloudGamingIcon'
+import { HdStreamIcon } from '../icons/HdStreamIcon'
+import { GamepadIcon, VideoCallIcon } from '../icons/Icons'
 import { ListRow } from './ListRow'
 
 function RowText({ title, description }: { title: string; description: string }): JSX.Element {

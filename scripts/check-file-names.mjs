@@ -11,8 +11,9 @@
  *     `Button.test.tsx`, `usePresence.test.tsx`);
  *   - a component's stories take its name plus `.stories` (`Button.stories.tsx`).
  *
- * `main.tsx` is Vite's entry point and keeps its name. Assets keep the names
- * they came with (`InterVariable.woff2`), so `src/assets` isn't checked.
+ * `main.tsx` is Vite's entry point and keeps its name, as does `AGENTS.md`, the
+ * name agents look for in a folder. Assets keep the names they came with
+ * (`InterVariable.woff2`), so `src/assets` isn't checked.
  *
  *   node scripts/check-file-names.mjs
  */
@@ -24,6 +25,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets')]
 const ENTRY_POINTS = ['main.tsx']
+const AGENT_NOTES = 'AGENTS.md'
 
 const KEBAB = '[a-z0-9]+(?:-[a-z0-9]+)*'
 const PASCAL = '[A-Z][A-Za-z0-9]*'
@@ -50,7 +52,7 @@ async function check(dir) {
     if (entry.isDirectory()) {
       if (!FOLDER.test(entry.name)) problems.push(`${relative(ROOT, path)}/: folders are kebab-case`)
       await check(path)
-    } else if (ENTRY_POINTS.includes(entry.name)) {
+    } else if (ENTRY_POINTS.includes(entry.name) || entry.name === AGENT_NOTES) {
       continue
     } else if (entry.name.endsWith('.css')) {
       if (!STYLESHEET.test(entry.name)) problems.push(`${relative(ROOT, path)}: ${STYLESHEET_RULE}`)

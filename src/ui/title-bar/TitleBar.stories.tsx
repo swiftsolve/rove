@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { BrandIcon } from '../icons/Icons'
+import { BrandIcon } from '../icons/BrandIcon'
 import { TitleBar, TitleBarStatus, WindowButton } from './TitleBar'
 
 const brand = (
