@@ -2,8 +2,11 @@ import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler } from 'r
 import { cn } from '../foundations/cn'
 
 type StretchedLinkProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children' | 'role' | 'onClick'> & {
-  /** Names it: it has no text of its own, since the container's content shows through. */
-  label: string
+  /**
+   * Names it: it has no text of its own, since the container's content shows
+   * through. Leave it out only to name it by a heading (`aria-labelledby`).
+   */
+  label?: string
   /** Opens the view the container summarises. */
   onClick?: MouseEventHandler<HTMLButtonElement>
 }

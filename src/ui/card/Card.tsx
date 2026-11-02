@@ -22,7 +22,10 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
   as?: 'section' | 'div' | 'li'
   /** Opens the view the card summarises: the whole card is its link, and its header ends in a caret. */
   onOpen?: () => void
-  /** Names the link, and is required with `onOpen`: what the card shows in words, then where it goes. */
+  /**
+   * Names the link when its CardHeader's title isn't enough: what the card
+   * shows in words, then where it goes. A card with no CardHeader needs it.
+   */
   openLabel?: string
   /** Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`). */
   className?: string
@@ -69,7 +72,14 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
         {...props}
       >
         {/* First, so it comes before the card's own controls in tab order. */}
-        {isOpenable && <StretchedLink label={openLabel ?? ''} onClick={onOpen} />}
+        {/* Named by the CardHeader's title, unless openLabel says more. */}
+        {isOpenable && (
+          <StretchedLink
+            label={openLabel}
+            aria-labelledby={openLabel == null ? titleId : undefined}
+            onClick={onOpen}
+          />
+        )}
         {children}
       </Element>
     </CardContext.Provider>

@@ -198,8 +198,7 @@
       "props": {
         "label": {
           "type": "string",
-          "isRequired": true,
-          "description": "Names it: it has no text of its own, since the container's content shows through."
+          "description": "Names it: it has no text of its own, since the container's content shows\nthrough. Leave it out only to name it by a heading (`aria-labelledby`)."
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
@@ -1028,7 +1027,7 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a layout: space above it (`mt-12`)."
+          "description": "Its place in a layout: `min-w-0 flex-1` to share a row with other readouts."
         },
         "icon": {
           "type": "ReactNode",
@@ -1353,7 +1352,7 @@
         },
         "className": {
           "type": "string",
-          "description": "Its place in a layout: space above it (`mt-12`)."
+          "description": "Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`)."
         },
         "onOpen": {
           "type": "(() => void)",
@@ -1361,7 +1360,7 @@
         },
         "openLabel": {
           "type": "string",
-          "description": "Names the link, and is required with `onOpen`: what the card shows in words, then where it goes."
+          "description": "Names the link when its CardHeader's title isn't enough: what the card\nshows in words, then where it goes. A card with no CardHeader needs it."
         }
       },
       "hasElementProps": true,
@@ -1371,6 +1370,7 @@
         "containers-card-card--rows-body",
         "containers-card-card--flush-body",
         "containers-card-card--openable",
+        "containers-card-card--list",
         "containers-card-card--all-states"
       ]
     },

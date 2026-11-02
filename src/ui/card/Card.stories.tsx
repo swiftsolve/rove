@@ -85,6 +85,19 @@ export const Openable: Story = {
   render: () => <OpenableCard />,
 }
 
+/** CardList: a list that is one card, with a hairline between its rows. */
+export const List: Story = {
+  render: () => (
+    <CardList label="Devices">
+      {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
+        <li key={name} className="px-12 py-10 text-sm text-primary">
+          {name}
+        </li>
+      ))}
+    </CardList>
+  ),
+}
+
 function SettingRow({ title }: { title: string }): JSX.Element {
   return (
     <div className="flex items-center justify-between gap-12 py-(--row-padding-y) text-sm text-primary">
@@ -116,7 +129,8 @@ function RouterCard(props: { as?: 'section' | 'div' | 'li' }): JSX.Element {
 
 function OpenableCard(): JSX.Element {
   return (
-    <Card onOpen={fn()} openLabel="Usage: 4.9 GB down today. Open Usage.">
+    // The link takes the header's title as its name.
+    <Card onOpen={fn()}>
       <CardHeader title="Usage" icon={<TodayIcon size={16} />} />
       <CardBody>
         <span className="inline-flex items-center gap-6 text-md text-primary" aria-hidden>
