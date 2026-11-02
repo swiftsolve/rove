@@ -7,7 +7,6 @@ const config = {
   stories: ['../stories/*.stories.jsx'],
   addons: ['@storybook/addon-docs'],
   framework: '@storybook/react-vite',
-  staticDirs: [{ from: './fonts', to: '/fonts' }],
   core: { disableTelemetry: true, disableWhatsNewNotifications: true },
   // Pages of tokens, not components: no onboarding, "new" badges, or canvas tools that do nothing here.
   features: {

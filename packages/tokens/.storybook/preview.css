@@ -1,10 +1,11 @@
-/* The fonts Rove bundles, served from .storybook/fonts. */
+/* The fonts Rove bundles, from .storybook/fonts. Relative, so Vite bundles them
+   and the build works under a subpath (rove.swiftsolve.net/storybook/tokens/). */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/InterVariable.woff2') format('woff2');
+  src: url('./fonts/InterVariable.woff2') format('woff2');
 }
 
 @font-face {
@@ -12,7 +13,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/Questrial-Regular.woff2') format('woff2');
+  src: url('./fonts/Questrial-Regular.woff2') format('woff2');
 }
 
 html,

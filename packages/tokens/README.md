@@ -182,7 +182,7 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 
 | Path | What |
 | --- | --- |
-| `.storybook/` | The Rove Tokens Storybook's config, and the Inter and Questrial files it serves. |
+| `.storybook/` | The Rove Tokens Storybook's config, and the Inter and Questrial files it bundles. |
 | `stories/` | Its pages, one file per sidebar group. `tokens.js` reads the DTCG files. |
 | `scripts/presentation/export.mjs` | `npm run present`: exports the Figma file's pages to `presentation/index.html`, a slideshow styled with the tokens. Needs `FIGMA_TOKEN` (a Figma personal access token, `file_content:read`) in `.env.local`. |
 | `scripts/presentation/publish.mjs` | `npm run present:publish`: pushes the exported presentation to the `gh-pages` branch, which GitHub Pages serves at <https://swiftsolve.github.io/rove-tokens/>. Each publish replaces the last. |
