@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { ComputerIcon, MoonIcon, SunIcon } from '../icons/Icons'
 import { SegmentedControl, type SegmentedOption } from './SegmentedControl'
 
@@ -44,6 +44,22 @@ export const TwoOptions: Story = {
     ],
     value: 'down',
     'aria-label': 'Direction',
+  },
+}
+
+/** A click picks a segment; the arrow keys move to the next one and pick it. */
+export const Choosing: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const light = canvas.getByRole('radio', { name: 'Light' })
+    await userEvent.click(light)
+    await expect(light).toBeChecked()
+    await expect(args.onChange).toHaveBeenLastCalledWith('light')
+    await userEvent.keyboard('{ArrowRight}')
+    const system = canvas.getByRole('radio', { name: 'System' })
+    await expect(system).toHaveFocus()
+    await expect(system).toBeChecked()
+    await expect(args.onChange).toHaveBeenLastCalledWith('system')
   },
 }
 

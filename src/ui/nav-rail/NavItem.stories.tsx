@@ -11,7 +11,7 @@ const meta = {
   // On the rail's surface.
   decorators: [
     (Story) => (
-      <div className="inline-flex bg-base p-12">
+      <div className="inline-flex bg-chrome p-12">
         <Story />
       </div>
     ),

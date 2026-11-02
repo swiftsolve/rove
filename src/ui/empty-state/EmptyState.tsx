@@ -61,7 +61,7 @@ function PlaceholderRows({ isLocked }: { isLocked: boolean }): JSX.Element {
       </div>
       {/* Outside the fade, so the badge stays crisp over the rows. */}
       {isLocked && (
-        <div className="absolute top-1/2 left-1/2 flex size-[36px] -translate-1/2 items-center justify-center rounded-full bg-surface text-tertiary shadow-raised">
+        <div className="absolute top-1/2 left-1/2 flex size-[36px] -translate-1/2 items-center justify-center rounded-full border border-line bg-popover text-tertiary shadow-popover">
           <LockIcon size={20} />
         </div>
       )}

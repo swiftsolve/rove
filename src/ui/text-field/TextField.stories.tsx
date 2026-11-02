@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { TextField, TextFieldAction } from './TextField'
 
 const onTest = fn()
@@ -17,7 +17,7 @@ const meta = {
   render: (args) => <ControlledTextField {...args} />,
   decorators: [
     (Story) => (
-      <div className="max-w-[320px]">
+      <div className="w-[320px]">
         <Story />
       </div>
     ),
@@ -41,6 +41,22 @@ export const Invalid: Story = { args: { value: 'not an address', isInvalid: true
 export const WithAction: Story = {
   args: { feedback: 'Tested when you add it.' },
   render: (args) => <AddressField {...args} />,
+}
+
+/** Test does nothing until there's an address; typing one turns it on. */
+export const TypingTurnsOnTest: Story = {
+  tags: ['!autodocs'],
+  render: (args) => <AddressField {...args} />,
+  play: async ({ args, canvas, userEvent }) => {
+    const test = canvas.getByRole('button', { name: 'Test' })
+    await userEvent.click(test)
+    await expect(onTest).not.toHaveBeenCalled()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Address' }), 'example.com')
+    await expect(args.onChange).toHaveBeenLastCalledWith('example.com')
+    await expect(test).not.toHaveAttribute('aria-disabled')
+    await userEvent.click(test)
+    await expect(onTest).toHaveBeenCalledOnce()
+  },
 }
 
 /** The action while it runs: only a spinner, named for screen readers. */

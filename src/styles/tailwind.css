@@ -101,7 +101,9 @@
 
   /* Surfaces (bg-*) */
   --color-base: var(--bg-base);
+  --color-chrome: var(--bg-chrome);
   --color-surface: var(--bg-surface);
+  --color-popover: var(--bg-popover);
   --color-inset: var(--bg-inset);
   --color-hover: var(--bg-hover);
   --color-scrim: var(--bg-scrim);
@@ -120,7 +122,6 @@
 
   /* Lines (border-*) */
   --color-line: var(--border-default);
-  --color-highlight: var(--border-highlight);
 
   /* Accent */
   --color-accent: var(--accent-default);
@@ -158,6 +159,7 @@
   --radius-full: var(--radius-full);
   --shadow-panel: var(--shadow-panel);
   --shadow-raised: var(--shadow-raised);
+  --shadow-popover: var(--shadow-popover);
   --ease-out: var(--ease-out);
   --ease-in-out: var(--ease-in-out);
 }

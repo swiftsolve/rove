@@ -85,7 +85,8 @@ for what. Read it before writing or changing UI. For where files live, see
   (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
   sidebar; `npx vitest --project=storybook` runs them alone. A new machine
   needs `npx playwright install chromium` once.
-- All three kinds run with `npm test`, part of `npm run check`.
+- All three kinds run with `npm test`, part of `npm run check`, which CI
+  runs on every push and pull request (`.github/workflows/test.yml`).
 - Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
   fake clock, seeded randomness and paused animations, so two runs of the same
   code match exactly. Diff a run against one from before a change to prove a
@@ -236,8 +237,11 @@ Components v1.0.0"). Raise it when the library's API changes.
   same groups (`Actions/Button`). A family sits in a folder named for its
   parent (`Containers/Card/CardHeader`), and the parent's page shows its
   parts' props as tabs (`subcomponents`). `npm run storybook` serves them at
-  `localhost:6006`, with a Theme switch in the toolbar and an accessibility
-  check on every story; `npm run build:storybook` writes a static copy to
+  `localhost:6006`, with a Theme switch in the toolbar (Docs pages follow it)
+  and an accessibility check on every story. Its Figma tab embeds the
+  story's component from the design file: a story title's last part is its
+  key in `figma.json`, so a new component's stories find it with nothing
+  set. `npm run build:storybook` writes a static copy to
   `storybook-static/`. Stories import the library by relative path, like the
   library itself. A new component gets its stories in the same change.
   A part with props of its own (`CardBody`, `NavItem`) gets its own stories
@@ -246,6 +250,12 @@ Components v1.0.0"). Raise it when the library's API changes.
   lists every part as a tab, for the family's props at a glance. The
   component and its parts share a folder (`Containers/Card/CardBody`),
   ordered in `.storybook/preview.tsx`.
+- An interactive component (Menu, Dialog, Toggle, SegmentedControl,
+  TextField, Collapsible) has a story that drives it with a `play` function
+  and asserts what happens: keyboard, focus, the callbacks. Name it for the
+  interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
+  moving focus would scroll its Docs page. A play that leaves the story as it
+  found it (`DisabledOff`) can stay on the Docs page.
 - `components.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
@@ -273,20 +283,20 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 
 | Figma | Code | Use |
 | --- | --- | --- |
-| Title bar, Title bar status, Window button | `TitleBar`, `TitleBarStatus`, `WindowButton` | Brand, connection status and window controls. 56px tall (`--titlebar-height`). `AppTitleBar` fills it from the app. |
-| Nav rail | `NavRail`, `NavItem` | One item per page; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
+| Title bar, Title bar status, Window button | `TitleBar`, `TitleBarStatus`, `WindowButton` | Brand, connection status and window controls, on `--bg-chrome`. 56px tall (`--titlebar-height`). `AppTitleBar` fills it from the app. |
+| Nav rail | `NavRail`, `NavItem` | One item per page, on `--bg-chrome`; the current page's is active, with an `--accent-muted` tint and an edge bar. `TabBar` fills it from the tab registry. |
 | Page header | `PageHeader` | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. `onBack` (Back in Figma) puts a back button in the icon's place. |
 | Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else; `tone="negative"` on a red surface, like an error Banner's Dismiss). |
 | Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no fill until hovered (a dialog's close). |
 | Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
-| Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab; `MenuItem tone="negative"` for a destructive action. |
+| Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab, on `bg-popover` with `shadow-popover`; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, an optional `footnote` under it, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. |
-| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, centred on it. Screen readers get it as the trigger's description. |
+| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, centred on it, on `bg-popover` with `shadow-popover`. Screen readers get it as the trigger's description. |
 | Toggle | `Toggle` | On/off switch for a setting. |
 | Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible, not the trigger, whose header takes its hover look on focus; the panel animates its height. |
-| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `onOpen` makes the whole card a link, named by its header's title (`openLabel` when it should say more): it draws the link, its header ends in a caret, and it lifts on hover and presses in. A control inside raises itself above the link (`relative z-2`); header actions already do. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
+| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `onOpen` makes the whole card a link, named by its header's title (`linkLabel` when it should say more): it draws the link, its header ends in a caret, and it lifts on hover and presses in. A control inside raises itself above the link (`relative z-2`); header actions already do. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
 | Card list | `CardList` | A list that is one card: its `<li>` rows, with a hairline between them running edge to edge. `label` names it. |
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between that runs end to end: place it flush to the card's sides (`CardBody layout="flush"`), and it insets each group. |
 | List row | `ListRow` | A whole-row button that opens something, with a chevron on the right. Right-aligned content (a meter) is its last child. Disabled, the whole row fades. |
@@ -299,7 +309,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
 | Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. |
-| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact, with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
+| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact (a summary card's figure, with no label), with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
 | Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above, on the Patterns page. |

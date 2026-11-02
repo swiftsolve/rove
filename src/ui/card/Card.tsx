@@ -23,10 +23,11 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
   /** Opens the view the card summarises: the whole card is its link, and its header ends in a caret. */
   onOpen?: () => void
   /**
-   * Names the link when its CardHeader's title isn't enough: what the card
-   * shows in words, then where it goes. A card with no CardHeader needs it.
+   * What a screen reader says for the card's link, which has no visible text,
+   * when its CardHeader's title isn't enough: what the card shows, then where
+   * it goes ("Usage: 3.2 GB today. Open Usage."). A card with no CardHeader needs it.
    */
-  openLabel?: string
+  linkLabel?: string
   /** Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`). */
   className?: string
   /** A CardHeader, a CardBody and an optional CardFooter, or your own content. */
@@ -56,7 +57,7 @@ const cardVariants = cva('surface overflow-hidden contain-content', {
  * is a link; a control inside it raises itself above the link (`relative z-2`).
  */
 export const Card = forwardRef<HTMLElement, CardProps>(function Card(
-  { as: Element = 'section', onOpen, openLabel, className, children, ...props },
+  { as: Element = 'section', onOpen, linkLabel, className, children, ...props },
   ref,
 ) {
   const titleId = useId()
@@ -72,11 +73,11 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
         {...props}
       >
         {/* First, so it comes before the card's own controls in tab order. */}
-        {/* Named by the CardHeader's title, unless openLabel says more. */}
+        {/* Named by the CardHeader's title, unless linkLabel says more. */}
         {isOpenable && (
           <StretchedLink
-            label={openLabel}
-            aria-labelledby={openLabel == null ? titleId : undefined}
+            label={linkLabel}
+            aria-labelledby={linkLabel == null ? titleId : undefined}
             onClick={onOpen}
           />
         )}

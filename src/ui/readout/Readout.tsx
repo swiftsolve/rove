@@ -33,7 +33,7 @@ interface ReadoutProps extends ValueParts {
   label?: string
   /** An icon: before the label, or before the figure when there's no label. */
   icon?: ReactNode
-  /** `compact` for a summary card's figure. */
+  /** `compact` for a summary card's figure, which has no label. */
   size?: 'large' | 'compact'
   /** Its place in a layout: `min-w-0 flex-1` to share a row with other readouts. */
   className?: string

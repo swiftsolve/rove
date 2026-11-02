@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { Card } from '../card/Card'
 import { DataList, DataRow } from '../data-list/DataList'
 import { ChevronDownIcon } from '../icons/Icons'
@@ -12,7 +12,7 @@ type CollapsibleArgs = ComponentProps<typeof Collapsible>
 const TRIGGER = [
   'group flex w-full items-center justify-between gap-12 text-left',
   'h-(--card-header-height) px-(--card-header-padding-x) text-heading-small',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-faint focus-visible:bg-fill-faint',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-subtle focus-visible:bg-fill-subtle',
 ].join(' ')
 
 const CHEVRON = [
@@ -81,6 +81,24 @@ export const Open: Story = { args: { isOpen: true } }
 
 /** Keyboard focus rings the whole collapsible, for a trigger that spans a card's header. Tab to it. */
 export const FocusFrame: Story = { args: { hasFocusFrame: true, isOpen: true, className: 'rounded-[inherit]' } }
+
+/** Enter and Space toggle it from the keyboard, as a click does. */
+export const Toggling: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const trigger = canvas.getByRole('button', { name: 'Connection details' })
+    await userEvent.keyboard('{Tab}')
+    await expect(trigger).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByText('192.168.1.20')).toBeVisible()
+    await userEvent.keyboard(' ')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(trigger)
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await expect(args.onOpenChange).toHaveBeenCalledTimes(3)
+  },
+}
 
 /** Closed, open and framed together. */
 export const AllStates: Story = {

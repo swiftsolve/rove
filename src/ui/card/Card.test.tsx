@@ -15,9 +15,9 @@ describe('Card', () => {
     expect(onOpen).toHaveBeenCalledOnce()
   })
 
-  it('names the link by openLabel when it says more', () => {
+  it('names the link by linkLabel when it says more', () => {
     render(
-      <Card onOpen={vi.fn()} openLabel="Usage: 4.9 GB down. Open Usage.">
+      <Card onOpen={vi.fn()} linkLabel="Usage: 4.9 GB down. Open Usage.">
         <CardHeader title="Usage" />
       </Card>,
     )

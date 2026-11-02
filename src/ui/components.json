@@ -208,8 +208,7 @@
       "hasElementProps": true,
       "stories": [
         "actions-stretchedlink--over-row",
-        "actions-stretchedlink--focused",
-        "actions-stretchedlink--with-control"
+        "actions-stretchedlink--focused"
       ]
     },
     "Menu": {
@@ -238,7 +237,9 @@
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
-        "actions-menu--single-action"
+        "actions-menu--single-action",
+        "actions-menu--keyboard",
+        "actions-menu--choosing-an-item"
       ]
     },
     "MenuContent": {
@@ -259,7 +260,9 @@
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
-        "actions-menu--single-action"
+        "actions-menu--single-action",
+        "actions-menu--keyboard",
+        "actions-menu--choosing-an-item"
       ]
     },
     "MenuItem": {
@@ -297,7 +300,9 @@
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
-        "actions-menu--single-action"
+        "actions-menu--single-action",
+        "actions-menu--keyboard",
+        "actions-menu--choosing-an-item"
       ]
     },
     "MenuTrigger": {
@@ -319,7 +324,9 @@
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
-        "actions-menu--single-action"
+        "actions-menu--single-action",
+        "actions-menu--keyboard",
+        "actions-menu--choosing-an-item"
       ]
     },
     "TextField": {
@@ -375,6 +382,7 @@
         "inputs-textfield--with-feedback",
         "inputs-textfield--invalid",
         "inputs-textfield--with-action",
+        "inputs-textfield--typing-turns-on-test",
         "inputs-textfield--action-loading",
         "inputs-textfield--all-states"
       ]
@@ -419,6 +427,7 @@
         "inputs-textfield--with-feedback",
         "inputs-textfield--invalid",
         "inputs-textfield--with-action",
+        "inputs-textfield--typing-turns-on-test",
         "inputs-textfield--action-loading",
         "inputs-textfield--all-states"
       ]
@@ -462,6 +471,7 @@
         "inputs-toggle--off",
         "inputs-toggle--disabled-on",
         "inputs-toggle--disabled-off",
+        "inputs-toggle--flipping",
         "inputs-toggle--in-setting-row",
         "inputs-toggle--all-states"
       ]
@@ -506,7 +516,8 @@
       "stories": [
         "inputs-segmentedcontrol--with-icons",
         "inputs-segmentedcontrol--text-only",
-        "inputs-segmentedcontrol--two-options"
+        "inputs-segmentedcontrol--two-options",
+        "inputs-segmentedcontrol--choosing"
       ]
     },
     "Dialog": {
@@ -567,7 +578,8 @@
         "overlays-dialog--open",
         "overlays-dialog--confirmation",
         "overlays-dialog--busy",
-        "overlays-dialog--with-trigger"
+        "overlays-dialog--with-trigger",
+        "overlays-dialog--escape-closes"
       ]
     },
     "DialogRoot": {
@@ -591,7 +603,8 @@
         "overlays-dialog--open",
         "overlays-dialog--confirmation",
         "overlays-dialog--busy",
-        "overlays-dialog--with-trigger"
+        "overlays-dialog--with-trigger",
+        "overlays-dialog--escape-closes"
       ]
     },
     "Tooltip": {
@@ -1043,7 +1056,7 @@
             "large"
           ],
           "default": "large",
-          "description": "`compact` for a summary card's figure."
+          "description": "`compact` for a summary card's figure, which has no label."
         },
         "spokenValue": {
           "type": "string",
@@ -1386,13 +1399,13 @@
           "type": "string",
           "description": "Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`)."
         },
+        "linkLabel": {
+          "type": "string",
+          "description": "What a screen reader says for the card's link, which has no visible text,\nwhen its CardHeader's title isn't enough: what the card shows, then where\nit goes (\"Usage: 3.2 GB today. Open Usage.\"). A card with no CardHeader needs it."
+        },
         "onOpen": {
           "type": "(() => void)",
           "description": "Opens the view the card summarises: the whole card is its link, and its header ends in a caret."
-        },
-        "openLabel": {
-          "type": "string",
-          "description": "Names the link when its CardHeader's title isn't enough: what the card\nshows in words, then where it goes. A card with no CardHeader needs it."
         }
       },
       "hasElementProps": true,
@@ -1548,6 +1561,7 @@
         "containers-collapsible--closed",
         "containers-collapsible--open",
         "containers-collapsible--focus-frame",
+        "containers-collapsible--toggling",
         "containers-collapsible--all-states"
       ]
     },
@@ -1571,6 +1585,7 @@
         "containers-collapsible--closed",
         "containers-collapsible--open",
         "containers-collapsible--focus-frame",
+        "containers-collapsible--toggling",
         "containers-collapsible--all-states"
       ]
     },
@@ -1585,6 +1600,7 @@
         "containers-collapsible--closed",
         "containers-collapsible--open",
         "containers-collapsible--focus-frame",
+        "containers-collapsible--toggling",
         "containers-collapsible--all-states"
       ]
     },

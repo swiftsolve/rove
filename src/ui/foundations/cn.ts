@@ -16,10 +16,10 @@ const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']
 const COLORS = [
   // Tailwind's built-ins, which exist alongside the theme's colours.
   'transparent', 'current', 'inherit',
-  'base', 'surface', 'inset', 'hover', 'scrim',
+  'base', 'chrome', 'surface', 'popover', 'inset', 'hover', 'scrim',
   'primary', 'secondary', 'tertiary', 'accent-text', 'on-fill',
   'positive', 'good', 'warning', 'poor', 'negative',
-  'line', 'highlight',
+  'line',
   'accent', 'accent-hover', 'accent-press', 'accent-muted', 'accent-fill', 'accent-fill-hover',
   'status-positive', 'status-good', 'status-warning', 'status-poor', 'status-negative',
   'status-negative-fill', 'status-negative-fill-hover',
@@ -38,7 +38,7 @@ const mergeClasses = extendTailwindMerge({
       leading: TYPE_STYLES,
       tracking: TYPE_STYLES,
       radius: ['xs', 'sm', 'md', 'lg', 'full'],
-      shadow: ['panel', 'raised'],
+      shadow: ['panel', 'raised', 'popover'],
       ease: ['out', 'in-out'],
       animate: [
         'overlay-in', 'dialog-in', 'overlay-out', 'dialog-out', 'fade-in', 'menu-in',

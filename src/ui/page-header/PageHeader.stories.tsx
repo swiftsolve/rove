@@ -40,7 +40,7 @@ const meta = {
   // divider bleeds into.
   decorators: [
     (Story) => (
-      <div className="w-[482px] pt-12 pr-6 pl-12">
+      <div className="w-[482px] pt-12 pr-(--content-inset-right) pl-12">
         <Story />
       </div>
     ),
