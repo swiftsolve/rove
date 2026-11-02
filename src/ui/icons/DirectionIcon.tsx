@@ -13,7 +13,7 @@ export type SpeedSeries = 'down' | 'up'
 interface DirectionIconProps {
   /** `down`, a blue down-arrow for download; `up`, a purple up-arrow for upload. */
   series: SpeedSeries
-  /** Its width and height in px: 14 by default. */
+  /** Its width and height in px. */
   size?: number
 }
 

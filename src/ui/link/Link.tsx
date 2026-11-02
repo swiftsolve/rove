@@ -48,7 +48,10 @@ type SharedProps = {
 type ViewProps = SharedProps &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'type' | 'onClick'> & {
     href?: never
-    /** Drops input and dims the link. It stays focusable, so a tooltip can say why. */
+    /**
+     * Drops input and dims the link. It stays focusable, so a tooltip can say why.
+     * @default false
+     */
     isDisabled?: boolean
     /** Opens the view. Not called while disabled. */
     onClick?: MouseEventHandler<HTMLButtonElement>

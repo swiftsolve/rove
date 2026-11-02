@@ -17,7 +17,7 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
 export type IconTileColor = 'neutral' | (string & {})
 
 interface TileLookProps {
-  /** 30, 32 (the default) or 36px square. */
+  /** 30, 32 or 36px square. */
   size?: VariantOf<typeof tileVariants, 'size'>
   /**
    * The icon's colour, washed across the tile: any CSS colour, usually a token
@@ -44,7 +44,7 @@ type IconTileProps = TileLookProps &Omit<HTMLAttributes<HTMLSpanElement>, keyof 
  * takes a ref and extra props, so it can be a Tooltip's trigger.
  */
 export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function IconTile(
-  { size, color, className, icon, style, ...props },
+  { size = 'md', color, className, icon, style, ...props },
   ref,
 ) {
   const look = tileLook(size, color)
@@ -66,7 +66,7 @@ type IconTileButtonProps = TileLookProps & {
 
 /** An IconTile that opens something: hover deepens the tint and lifts it a pixel. */
 export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
-  { size, color, className, label, onClick, isDisabled, icon },
+  { size = 'md', color, className, label, onClick, isDisabled = false, icon },
   ref,
 ) {
   const look = tileLook(size, color)

@@ -113,7 +113,7 @@ interface MenuItemProps {
 }
 
 /** One action in a MenuContent. */
-export function MenuItem({ icon: Icon, tone, onClick, children }: MenuItemProps): JSX.Element {
+export function MenuItem({ icon: Icon, tone = 'neutral', onClick, children }: MenuItemProps): JSX.Element {
   return (
     <BaseMenu.Item
       className={itemVariants({ tone })}

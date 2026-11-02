@@ -11,9 +11,9 @@ export function ButtonSpinner({
   size = 14,
   color = 'currentColor',
 }: {
-  /** In px: match the icon it replaces. 14 by default. */
+  /** In px: match the icon it replaces. */
   size?: number
-  /** Any CSS colour. The text colour by default. */
+  /** Any CSS colour. */
   color?: string
 }): JSX.Element {
   return <Ring size={size} stroke={2} bgOpacity={0.2} speed={2} color={color} />

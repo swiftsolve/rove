@@ -123,7 +123,11 @@ for what. Read it before writing or changing UI. For where files live, see
     domain type (`CapabilityLevel`, `SpeedSeries`) keeps that type.
   - A recipe sets its resting look in `defaultVariants`. cva applies no branch
     for `undefined`, so a `false` branch without a default is skipped when the
-    prop is left out.
+    prop is left out. The component also writes the default into its
+    destructured props (`tone = 'current'`, `isDisabled = false`): that's what
+    the docs' Default column reads, and `npm run lint` fails without it. A
+    default that depends on another prop takes an `@default` tag instead
+    (Button's `size`). A prop's doc comment doesn't repeat its default.
   - Something that adds no classes is `null`: a recipe with no base is
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
     boolean axis leaves out a branch that adds nothing.

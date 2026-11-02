@@ -137,7 +137,7 @@ interface TextFieldActionProps {
 export function TextFieldAction({
   children,
   onClick,
-  isDisabled,
+  isDisabled = false,
   isLoading = false,
   loadingLabel,
 }: TextFieldActionProps): JSX.Element {

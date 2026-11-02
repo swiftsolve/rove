@@ -32,7 +32,7 @@ export function Badge({ tone, children }: BadgeProps): JSX.Element {
 export function LiveBadge({
   children = 'Live',
 }: {
-  /** Its words: "Live" by default. */
+  /** Its words. */
   children?: ReactNode
 }): JSX.Element {
   return (

@@ -33,13 +33,13 @@ type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' 
     label: string
     /** The icon. */
     icon: IconComponent
-    /** `soft` (the default), an inset chip; `ghost`, no fill until hovered. */
+    /** `soft`, an inset chip; `ghost`, no fill until hovered. */
     variant?: 'soft' | 'ghost'
     /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
     iconSize?: 16 | 14
     /** The tooltip, when it should say more than the label (a help button's hint). */
     tooltip?: ReactNode
-    /** The side its tooltip opens on: `bottom` by default. */
+    /** The side its tooltip opens on. */
     tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
     /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
     isDisabled?: boolean
@@ -57,12 +57,12 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   {
     label,
     icon: Icon,
-    variant,
+    variant = 'soft',
     iconSize = 16,
     tooltip,
-    tooltipSide,
-    isDisabled,
-    isLoading,
+    tooltipSide = 'bottom',
+    isDisabled = false,
+    isLoading = false,
     className,
     type = 'button',
     onClick,

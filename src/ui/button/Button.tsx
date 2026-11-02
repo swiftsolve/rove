@@ -50,19 +50,25 @@ const buttonVariants = cva(
  */
 export type ButtonAppearance =
   | {
-    /** `solid` for a page's main action, or stopping it; `soft` (the default) for everything else. */
+    /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
     variant: 'solid'
-    /** Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface. */
+    /**
+     * Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface.
+     * @default accent (solid), neutral (soft)
+     */
     tone?: 'accent' | 'negative'
-    /** `md` by default for a solid button, `sm` for a soft one. */
+    /**
+     * `md`, or the more compact `sm`.
+     * @default md (solid), sm (soft)
+     */
     size?: 'sm' | 'md'
     }
   | {
-    /** `solid` for a page's main action, or stopping it; `soft` (the default) for everything else. */
+    /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
     variant?: 'soft'
-    /** Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface. */
+    /** Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface. */
     tone?: 'neutral' | 'negative'
-    /** `md` by default for a solid button, `sm` for a soft one. */
+    /** `md`, or the more compact `sm`. */
     size?: 'sm' | 'md'
     }
 
@@ -106,8 +112,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     tone,
     size,
     icon: Icon,
-    isDisabled,
-    isLoading,
+    isDisabled = false,
+    isLoading = false,
     loadingLabel,
     className,
     type = 'button',

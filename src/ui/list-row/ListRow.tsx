@@ -37,7 +37,7 @@ interface ListRowProps {
 }
 
 /** A whole-row button in a card's list that opens something, with a trailing chevron. */
-export function ListRow({ onClick, isDisabled, children }: ListRowProps): JSX.Element {
+export function ListRow({ onClick, isDisabled = false, children }: ListRowProps): JSX.Element {
   return (
     <button type="button" className={ROW} {...pressableProps({ isDisabled, onClick })}>
       <span className="flex min-w-0 flex-1 items-center gap-12">{children}</span>

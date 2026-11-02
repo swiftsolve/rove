@@ -8,7 +8,7 @@ const CardTitleContext = createContext<string | undefined>(undefined)
 
 interface CardProps extends HTMLAttributes<HTMLElement> {
   /**
-   * `section` (the default) is named by its CardHeader's title, so give it one.
+   * `section` is named by its CardHeader's title, so give it one.
    * `div` or `li` for a card with no header, such as a card in a list.
    */
   as?: 'section' | 'div' | 'li'
@@ -145,7 +145,7 @@ interface CardBodyProps {
 }
 
 /** The padded body. A little top padding gives the content more room below the title than above it. */
-export function CardBody({ layout, children }: CardBodyProps): JSX.Element {
+export function CardBody({ layout = 'default', children }: CardBodyProps): JSX.Element {
   return <div className={bodyVariants({ layout })}>{children}</div>
 }
 

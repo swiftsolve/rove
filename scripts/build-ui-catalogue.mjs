@@ -15,9 +15,10 @@
  *   node scripts/build-ui-catalogue.mjs --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
- * own props has no doc comment, or a component has no entry in figma.json
- * (`null` says it has no Figma counterpart) or no row in docs/frontend.md's
- * Components table.
+ * own props has no doc comment, a prop has a default the Default column misses
+ * (one in a recipe's `defaultVariants`, or only in its words), or a component
+ * has no entry in figma.json (`null` says it has no Figma counterpart) or no
+ * row in docs/frontend.md's Components table.
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -33,6 +34,17 @@ const CATALOGUE = join(UI, 'components.json')
 const FIGMA = join(UI, 'figma.json')
 const FRONTEND_DOC = join(ROOT, 'docs/frontend.md')
 const isCheck = process.argv.includes('--check')
+
+// The Default column shows only a default written into the destructured props
+// (or an @default tag). These find one it would miss: a prop doc that states
+// its default, or a recipe's `defaultVariants` axis named like the prop.
+const NAMES_A_DEFAULT = /\(the default\)|\bby default\b|\bdefaults to\b/i
+
+async function readRecipeDefaults(source) {
+  const text = await readFile(source, 'utf8')
+  const blocks = [...text.matchAll(/defaultVariants: \{([^}]*)\}/g)].map(([, axes]) => axes)
+  return new Set(blocks.flatMap((axes) => [...axes.matchAll(/(\w+):/g)].map(([, axis]) => axis)))
+}
 
 const problems = []
 const rel = (path) => relative(ROOT, path)
@@ -142,9 +154,14 @@ for (const { name, group, source } of components) {
     problems.push(`${rel(source)}: react-docgen-typescript found no component named ${name}`)
     continue
   }
+  const recipeDefaults = await readRecipeDefaults(source)
   if (!doc.description) problems.push(`${rel(source)}: ${name} needs a doc comment saying what it's for`)
   for (const prop of Object.values(doc.props)) {
     if (!prop.description) problems.push(`${rel(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
+    const hasDefault = prop.defaultValue?.value !== undefined
+    if (!prop.required && !hasDefault && (recipeDefaults.has(prop.name) || NAMES_A_DEFAULT.test(prop.description))) {
+      problems.push(`${rel(source)}: ${name}'s ${prop.name} prop has a default the docs' Default column misses: write it into the destructured props`)
+    }
   }
   if (!(name in figma.components)) {
     problems.push(`${rel(FIGMA)}: add ${name}, with its Figma component, or null if it has none`)

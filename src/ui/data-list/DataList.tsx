@@ -29,7 +29,7 @@ const LABEL = 'text-overline shrink-0'
 const VALUE = 'text-number num text-right'
 
 interface DataListProps {
-  /** The air between rows: 8px by default, `compact` 4px for a short or repeated list. */
+  /** The air between rows: `default` 8px, `compact` 4px for a short or repeated list. */
   density?: VariantOf<typeof listVariants, 'density'>
   /** Its place in a layout. */
   className?: string
@@ -41,7 +41,7 @@ interface DataListProps {
  * A `<dl>` of DataRows: each row is a `<div>` holding a `<dt>` label and a
  * `<dd>` value, so the pairs read as a description list.
  */
-export function DataList({ className, density, children }: DataListProps): JSX.Element {
+export function DataList({ className, density = 'default', children }: DataListProps): JSX.Element {
   return <dl className={cn(listVariants({ density }), className)}>{children}</dl>
 }
 
@@ -57,7 +57,7 @@ interface DataRowProps {
 }
 
 /** One label and value. Render it in a DataList, which sets its spacing. */
-export function DataRow({ label, value, children, align }: DataRowProps): JSX.Element | null {
+export function DataRow({ label, value, children, align = 'baseline' }: DataRowProps): JSX.Element | null {
   if (value == null && !children) return null
   return (
     <div className={rowVariants({ align })}>

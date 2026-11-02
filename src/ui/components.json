@@ -21,10 +21,12 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button. It stays focusable, so a tooltip can say why."
         },
         "isLoading": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and swaps the leading icon (or, with none, adds one) for a spinner."
         },
         "loadingLabel": {
@@ -40,7 +42,8 @@
             "sm",
             "md"
           ],
-          "description": "`md` by default for a solid button, `sm` for a soft one."
+          "default": "md (solid), sm (soft)",
+          "description": "`md`, or the more compact `sm`."
         },
         "tone": {
           "values": [
@@ -48,7 +51,8 @@
             "negative",
             "neutral"
           ],
-          "description": "Solid: `accent` (the default) or `negative`. Soft: `neutral` (the default), or `negative` on a red surface."
+          "default": "accent (solid), neutral (soft)",
+          "description": "Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface."
         },
         "variant": {
           "values": [
@@ -56,7 +60,7 @@
             "soft"
           ],
           "default": "soft",
-          "description": "`solid` for a page's main action, or stopping it; `soft` (the default) for everything else."
+          "description": "`solid` for a page's main action, or stopping it; `soft` for everything else."
         }
       },
       "hasElementProps": true,
@@ -94,10 +98,12 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button. It stays focusable, so its tooltip can say why."
         },
         "isLoading": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and swaps the icon for a spinner."
         },
         "label": {
@@ -120,14 +126,16 @@
             "left",
             "right"
           ],
-          "description": "The side its tooltip opens on: `bottom` by default."
+          "default": "bottom",
+          "description": "The side its tooltip opens on."
         },
         "variant": {
           "values": [
             "soft",
             "ghost"
           ],
-          "description": "`soft` (the default), an inset chip; `ghost`, no fill until hovered."
+          "default": "soft",
+          "description": "`soft`, an inset chip; `ghost`, no fill until hovered."
         }
       },
       "hasElementProps": true,
@@ -164,6 +172,7 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the link. It stays focusable, so a tooltip can say why."
         },
         "onClick": {
@@ -282,6 +291,7 @@
             "negative",
             "neutral"
           ],
+          "default": "neutral",
           "description": "`negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight."
         }
       },
@@ -386,6 +396,7 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button."
         },
         "isLoading": {
@@ -433,6 +444,7 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the switch."
         },
         "label": {
@@ -625,7 +637,7 @@
             "right"
           ],
           "default": "bottom",
-          "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\n(the default) or `top` stack it, `left` or `right` set it beside it (the\nnav rail). It flips to the other side when it would leave the window, and\nslides along to stay inside it."
+          "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\nor `top` stack it, `left` or `right` set it beside it (the\nnav rail). It flips to the other side when it would leave the window, and\nslides along to stay inside it."
         },
         "sideOffset": {
           "type": "number",
@@ -686,7 +698,7 @@
         "children": {
           "type": "ReactNode",
           "default": "Live",
-          "description": "Its words: \"Live\" by default."
+          "description": "Its words."
         }
       },
       "stories": [
@@ -716,14 +728,15 @@
             "live",
             "busy"
           ],
-          "description": "A breathing pulse, at the pace of what it marks: `calm` for a steady\nstate (connected), `live` for data streaming in, `busy` for work under way\n(a scan). None by default."
+          "description": "A breathing pulse, at the pace of what it marks: `calm` for a steady\nstate (connected), `live` for data streaming in, `busy` for work under way\n(a scan)."
         },
         "tone": {
           "values": [
             "positive",
             "current"
           ],
-          "description": "Its colour: the text colour (`current`, the default), or `positive` when its words stay quiet."
+          "default": "current",
+          "description": "Its colour: the text colour (`current`), or `positive` when its words stay quiet."
         }
       },
       "stories": [
@@ -767,12 +780,12 @@
         "color": {
           "type": "string",
           "default": "currentColor",
-          "description": "Any CSS colour. The text colour by default."
+          "description": "Any CSS colour."
         },
         "size": {
           "type": "number",
           "default": "14",
-          "description": "In px: match the icon it replaces. 14 by default."
+          "description": "In px: match the icon it replaces."
         }
       },
       "stories": [
@@ -926,7 +939,8 @@
             "default",
             "compact"
           ],
-          "description": "The air between rows: 8px by default, `compact` 4px for a short or repeated list."
+          "default": "default",
+          "description": "The air between rows: `default` 8px, `compact` 4px for a short or repeated list."
         }
       },
       "stories": [
@@ -978,6 +992,7 @@
             "baseline",
             "center"
           ],
+          "default": "baseline",
           "description": "`center` for a value with no text baseline of its own (signal bars, a badge)."
         },
         "children": {
@@ -1123,7 +1138,7 @@
             "lg"
           ],
           "default": "lg",
-          "description": "`xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` (the default) a list row."
+          "description": "`xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` a list row."
         },
         "value": {
           "type": "number",
@@ -1195,6 +1210,7 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Inert for now (results that are being replaced): no hover, no action. It\nkeeps its look and its place in the Tab order."
         },
         "onClick": {
@@ -1239,7 +1255,8 @@
             "md",
             "lg"
           ],
-          "description": "30, 32 (the default) or 36px square."
+          "default": "md",
+          "description": "30, 32 or 36px square."
         }
       },
       "hasElementProps": true,
@@ -1278,6 +1295,7 @@
         },
         "isDisabled": {
           "type": "boolean",
+          "default": "false",
           "description": "Inert while what it opens is being replaced: no hover, no action, same look."
         },
         "label": {
@@ -1296,7 +1314,8 @@
             "md",
             "lg"
           ],
-          "description": "30, 32 (the default) or 36px square."
+          "default": "md",
+          "description": "30, 32 or 36px square."
         }
       },
       "hasElementProps": true,
@@ -1326,7 +1345,7 @@
             "li"
           ],
           "default": "section",
-          "description": "`section` (the default) is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
+          "description": "`section` is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
         },
         "children": {
           "type": "ReactNode",
@@ -1373,6 +1392,7 @@
             "rows",
             "flush"
           ],
+          "default": "default",
           "description": "`default` pads all round. `rows` for rows that carry their own vertical\npadding (settings, list rows): no top padding. `flush` for a\nDataListStack, whose hairlines run to the card's sides."
         }
       },

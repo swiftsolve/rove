@@ -28,7 +28,7 @@ interface ToggleProps {
 }
 
 /** An on/off switch for a setting. */
-export function Toggle({ isChecked, onChange, label, isDisabled, ...ariaProps }: ToggleProps): JSX.Element {
+export function Toggle({ isChecked, onChange, label, isDisabled = false, ...ariaProps }: ToggleProps): JSX.Element {
   return (
     <Switch.Root
       checked={isChecked}

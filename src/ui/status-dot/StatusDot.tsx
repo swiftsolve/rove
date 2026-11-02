@@ -18,12 +18,12 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
 })
 
 interface StatusDotProps {
-  /** Its colour: the text colour (`current`, the default), or `positive` when its words stay quiet. */
+  /** Its colour: the text colour (`current`), or `positive` when its words stay quiet. */
   tone?: VariantOf<typeof dotVariants, 'tone'>
   /**
    * A breathing pulse, at the pace of what it marks: `calm` for a steady
    * state (connected), `live` for data streaming in, `busy` for work under way
-   * (a scan). None by default.
+   * (a scan).
    */
   pulse?: VariantOf<typeof dotVariants, 'pulse'>
   /** Its place in a line. */
@@ -31,6 +31,6 @@ interface StatusDotProps {
 }
 
 /** A small dot that marks a status beside its words; decorative, so the words carry it. */
-export function StatusDot({ tone, pulse, className }: StatusDotProps): JSX.Element {
+export function StatusDot({ tone = 'current', pulse, className }: StatusDotProps): JSX.Element {
   return <span className={cn(dotVariants({ tone, pulse }), className)} aria-hidden />
 }
