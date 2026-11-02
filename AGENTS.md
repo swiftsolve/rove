@@ -48,4 +48,10 @@ After any change a user would see (anything under `src/` that renders, or a
    rove.swiftsolve.net, so step 1 comes first), then commit as
    `Resync /rove for <change>`.
 
+Once a change under `src/ui` (or a `@swiftsolve/rove-design` release) is on
+master, also run `npm run sync-storybook` in `../rove.swiftsolve.net` and commit
+`public/storybook/` as `chore(storybook): resync for <change>`. It builds the
+hosted Storybooks from `origin/master` and rove-design's `origin/main`, not from
+this checkout.
+
 Backend-only, test or tooling changes don't need a resync.

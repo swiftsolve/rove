@@ -246,7 +246,9 @@ Components v1.0.0"). Raise it when the library's API changes.
   story's component from the design file: a story title's last part is its
   key in `figma.json`, so a new component's stories find it with nothing
   set. `npm run build:storybook` writes a static copy to
-  `storybook-static/`. Stories import the library by relative path, like the
+  `storybook-static/`. Master's is hosted at
+  <https://rove.swiftsolve.net/storybook/> (synced by hand; see `AGENTS.md`),
+  and every push publishes to Chromatic for visual tests. Stories import the library by relative path, like the
   library itself. A new component gets its stories in the same change.
   A part with props of its own (`CardBody`, `NavItem`) gets its own stories
   file beside its module (`card/CardBody.stories.tsx`), so its props have
