@@ -77,11 +77,12 @@ function toNetworkError(error: Error): NetworkError {
  * Called once, by `NetworkProvider`; components read it with `useNetwork()`.
  */
 export function useNetworkInfoSource(): NetworkState {
-  const hasBridge = window.networkAPI !== undefined
+  // Missing in a plain web build, or a test that installs no fake.
+  const hasBackend = window.networkAPI !== undefined
   const query = useQuery({
     queryKey: NETWORK_INFO_KEY,
     queryFn: readNetworkInfo,
-    enabled: hasBridge,
+    enabled: hasBackend,
     refetchInterval: REFRESH_INTERVAL_MS,
     // A failed read over a good reading retries a poll later, so the error
     // shows only after FAILURES_BEFORE_ERROR failures in a row. The first read
@@ -104,7 +105,7 @@ export function useNetworkInfoSource(): NetworkState {
   // show the spinner; a poll or nudge never does.
   const [reloadCount, setReloadCount] = useState(0)
   const reload = useCallback(async (): Promise<void> => {
-    if (!hasBridge) return
+    if (!hasBackend) return
     setReloadCount((count) => count + 1)
     try {
       // Drops a read in flight rather than join it: after the window resumes
@@ -114,7 +115,7 @@ export function useNetworkInfoSource(): NetworkState {
     } finally {
       setReloadCount((count) => count - 1)
     }
-  }, [hasBridge, refetch])
+  }, [hasBackend, refetch])
 
   const isVisible = usePageVisible()
   const wasVisibleRef = useRef(isVisible)
@@ -126,15 +127,15 @@ export function useNetworkInfoSource(): NetworkState {
     if (isVisible && !wasVisible) void reload()
   }, [isVisible, reload])
 
-  useOnNetworkChanged(() => void refetch({ cancelRefetch: false }), hasBridge)
+  useOnNetworkChanged(() => void refetch({ cancelRefetch: false }), hasBackend)
 
   const info = data ?? null
   const error = useMemo<NetworkError | null>(() => {
-    if (!hasBridge) return { kind: 'backend', message: NO_BRIDGE_MESSAGE }
+    if (!hasBackend) return { kind: 'backend', message: NO_BRIDGE_MESSAGE }
     return queryError ? toNetworkError(queryError) : null
-  }, [hasBridge, queryError])
+  }, [hasBackend, queryError])
   const lastReadAt = error && dataUpdatedAt > 0 ? dataUpdatedAt : null
-  const isLoading = hasBridge && info === null && (status === 'pending' || reloadCount > 0)
+  const isLoading = hasBackend && info === null && (status === 'pending' || reloadCount > 0)
 
   return useMemo(
     () => ({ info, error, lastReadAt, isLoading, refresh: reload }),

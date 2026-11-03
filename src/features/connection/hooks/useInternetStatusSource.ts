@@ -31,11 +31,12 @@ async function readInternetStatus(): Promise<InternetStatus | null> {
  * local link. Called once, by `NetworkProvider`; read it with `useInternetStatus()`.
  */
 export function useInternetStatusSource(): InternetStatus | null {
-  const hasBridge = window.networkAPI !== undefined
+  // Missing in a plain web build, or a test that installs no fake.
+  const hasBackend = window.networkAPI !== undefined
   const { data } = useQuery({
     queryKey: INTERNET_STATUS_KEY,
     queryFn: readInternetStatus,
-    enabled: hasBridge,
+    enabled: hasBackend,
     // Read once; from then on the heartbeat keeps it current.
     staleTime: Infinity,
   })
