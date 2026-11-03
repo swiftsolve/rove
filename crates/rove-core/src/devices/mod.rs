@@ -1,17 +1,19 @@
-//! LAN device discovery.
+//! LAN device discovery. No OS API lists LAN devices, so `scan()` provokes
+//! every host into the kernel neighbor table and reads that as ground truth:
+//!   1. scope the active interface's subnet
+//!   2. ping sweep and TCP probe every host while mDNS and SSDP listen
+//!   3. read the neighbor table
+//!   4. enrich each host: vendor (OUI), name (mDNS, SSDP, NetBIOS, DHCP,
+//!      reverse DNS), model, kind, liveness
+//!   5. add this machine, sort gateway, self, then by address, dedupe by MAC
 //!
-//! `scan()` is a pipeline:
-//!   1. wake idle hosts with an active sweep while mDNS listens (concurrent)
-//!   2. read the kernel neighbor table (the ground truth for who exists)
-//!   3. enrich each host — vendor (OUI), hostname (reverse DNS/mDNS), kind
-//!   4. add this machine, sort gateway → self → by address
+//! `docs/networking/device-discovery.md` walks through it.
 mod banner;
 mod classify;
 mod history;
 mod liveness;
 pub mod mdns;
-/// Public so diagnostics/examples (and the planned alerts feature) can drive the
-/// passive listener and read captures directly.
+/// Public for the `rove-dhcp-helper` binary and the examples.
 pub mod dhcp;
 pub mod hostname;
 mod netbios;
@@ -35,11 +37,11 @@ pub struct LanDevice {
     pub mac: String,
     pub vendor: Option<String>,
     pub hostname: Option<String>,
-    /// Hardware model from mDNS TXT or a UPnP description, e.g. "MacBookPro18,3"
-    /// or "BRAVIA KD-55X". None when no source reported one.
+    /// Hardware model from mDNS TXT, a UPnP description or SNMP, with Apple
+    /// identifiers humanized ("MacBook Pro", "BRAVIA KD-55X").
     pub model: Option<String>,
-    /// OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
-    /// "Apple"). None when unknown.
+    /// OS family from the passive DHCP fingerprint ("Android", "Windows",
+    /// "Apple").
     pub os: Option<String>,
     pub kind: String,
     /// "high" when the classifier's verdict was decisive, "low" when it's a
@@ -49,9 +51,8 @@ pub struct LanDevice {
     pub is_gateway: bool,
     pub is_self: bool,
     pub is_reachable: bool,
-    /// Epoch-ms this device last answered, carried so the UI can show "last seen
-    /// 3m ago" for an offline device. `None` on a freshly-scanned device that
-    /// hasn't been merged against the roster yet; the store's merge stamps it.
+    /// Epoch ms this device last answered, so the UI can show "last seen 3m ago"
+    /// for an offline device. `None` until the store's roster merge stamps it.
     pub last_seen: Option<i64>,
 }
 
@@ -67,19 +68,17 @@ pub struct LanDeviceScan {
     pub dhcp_status: &'static str,
 }
 
-/// How long the sweep + mDNS window lasts. Both run concurrently, so this is
-/// also (roughly) the total added latency of a scan.
+/// The probe and listen window. Sweep, TCP probe, mDNS and SSDP run
+/// concurrently, so this is roughly the scan's added latency.
 const DISCOVERY_WINDOW: Duration = Duration::from_millis(3200);
 
-/// The listen window for the passive refresh. mDNS/SSDP browse is multicast
-/// (not per-host probing), so this is nearly free; it's the only liveness source
-/// the refresh has on the stateless macOS/Windows ARP table, so it's given a full
-/// window rather than a scan's share of one.
+/// The passive refresh's listen window. mDNS and SSDP are multicast, so it's
+/// nearly free, and on the stateless macOS/Windows ARP table it's the refresh's
+/// only liveness source, so it gets a full window.
 const PASSIVE_WINDOW: Duration = Duration::from_millis(2500);
 
-/// SSDP window for the gateway-only identity probe (`gateway_identity`). Short —
-/// we want just the router's own announcement, and the Connection panel that
-/// waits on it should stay snappy.
+/// SSDP window for [`gateway_identity`]. Short: only the router's own reply
+/// matters, and the panel waiting on it should stay snappy.
 const GATEWAY_SSDP_WINDOW: Duration = Duration::from_millis(2000);
 
 pub async fn scan() -> LanDeviceScan {
@@ -90,18 +89,16 @@ pub async fn scan() -> LanDeviceScan {
         None => None,
     };
 
-    // Resolved up front so the SSDP search can bind to the active interface's
-    // address (right adapter on multi-homed/Windows hosts) and so `self` is
-    // known when devices are built below.
+    // Up front so SSDP and SNMP can bind to the active interface's address
+    // (the right adapter on multi-homed and Windows hosts).
     let (self_ip, self_mac) = match &interface {
         Some(name) => crate::connection::interfaces::address_of(name).await,
         None => (None, None),
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
 
-    // The sweep and TCP probe both wake idle hosts into the neighbor table; the
-    // probe additionally reaches ICMP-filtering hosts and reports open ports.
-    // mDNS and SSDP listen concurrently for devices that announce themselves.
+    // The sweep and probe wake idle hosts into the neighbor table; the probe
+    // also reaches hosts that drop ICMP. mDNS and SSDP catch self-announcers.
     let (mdns_hits, ssdp_hits, ping_live, open_ports, tcp_live) = match &subnet {
         Some(subnet) => {
             let (mdns_hits, ssdp_hits, ping_live, probed) = tokio::join!(
@@ -133,12 +130,9 @@ pub async fn scan() -> LanDeviceScan {
         .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true))
         .collect();
 
-    // Results stay aligned index-for-index with `in_scope` for the `zip` below.
-    // Reverse-DNS, HTTP-banner and NetBIOS enrichment are independent — run them
-    // together so their combined latency is one round, not three.
-    // The gateway is a single known host we can probe purposefully: SNMP
-    // `sysDescr` is the standard model source for network gear that never shows
-    // up on mDNS/SSDP. Read-only `public` community, one host — see `snmp`.
+    // Independent lookups run together so they cost one round, not four.
+    // `hostnames` stays index-aligned with `in_scope` for the `zip` below. SNMP
+    // asks only the gateway (see `snmp`).
     let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
     let (hostnames, banner_hits, netbios_hits, snmp_hits) = tokio::join!(
         hostname::resolve_many(&ips),
@@ -147,10 +141,9 @@ pub async fn scan() -> LanDeviceScan {
         snmp::discover(gateway.as_deref(), local_ipv4),
     );
 
-    // Passive DHCP fingerprints accumulated by the background listener since
-    // startup (keyed by MAC — a joining client has no IP yet). Empty on the
-    // first scan, and empty entirely if the listener lacks the privilege to
-    // bind :67.
+    // Keyed by MAC, as a joining client has no IP yet. Empty on the first scan,
+    // and always empty without the privilege to bind :67 (unless the helper
+    // runs).
     let dhcp_hits = dhcp::snapshot();
 
     let enrichment = Enrichment {
@@ -187,20 +180,12 @@ pub async fn scan() -> LanDeviceScan {
     }
 }
 
-/// A no-probe presence refresh for the background monitor. Reads the kernel
-/// neighbor table and listens for mDNS/SSDP announcements — no ICMP sweep and no
-/// TCP probe, so it adds essentially no per-host traffic (or battery cost) versus
-/// a full [`scan`]. It returns only the devices it can *positively confirm are
-/// present right now* and never asserts a departure: passive discovery can't
-/// prove a device is gone (a silent host looks identical to a departed one,
-/// especially on macOS/Windows whose ARP table carries no liveness state). The
-/// caller ([`crate::store::Store::touch_devices`]) bumps `last_seen` for these and
-/// leaves the rest of the roster untouched.
-///
-/// Cross-OS liveness: on Linux `ip neigh` reports a real REACHABLE state, which
-/// counts on its own; on macOS/Windows the neighbor table is stateless, so a host
-/// is confirmed only when it announced via mDNS or SSDP this window. Self and the
-/// gateway are always present.
+/// A no-probe presence refresh for the background monitor: the neighbor table
+/// plus mDNS and SSDP, with no sweep or TCP probe, so next to no per-host
+/// traffic or battery cost. It returns only devices it can confirm are present
+/// now and never asserts a departure, since passively a silent host looks just
+/// like a departed one. [`crate::store::Store::touch_devices`] bumps
+/// `last_seen` for these and leaves the rest of the roster alone.
 pub async fn passive_refresh() -> Vec<LanDevice> {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
 
@@ -215,9 +200,8 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
 
-    // Passive announcements only — a handful of multicast browse/M-SEARCH
-    // datagrams, no host probing. This is the whole difference from `scan`,
-    // which also runs the ping sweep and the per-host TCP probe.
+    // A handful of multicast datagrams, no per-host probing: the whole
+    // difference from `scan`.
     let (mdns_hits, ssdp_hits) =
         tokio::join!(mdns::discover(PASSIVE_WINDOW), ssdp::discover(PASSIVE_WINDOW, local_ipv4));
 
@@ -226,8 +210,7 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
         .into_iter()
         .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true));
 
-    // Starts the background DHCP listener on first call (same as `scan`), so the
-    // passive path keeps it alive even if the user never opens the Devices tab.
+    // Starts the DHCP listener even if the user never opens the Devices tab.
     let dhcp_hits = dhcp::snapshot();
 
     let mut devices: Vec<LanDevice> = in_scope
@@ -249,21 +232,16 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
     devices
 }
 
-/// Build a device for the passive refresh, or `None` when it can't be confirmed
-/// present right now. Confirmation is OS-aware: a Linux `ip neigh` REACHABLE
-/// state (`stateful` + `reachable`) stands on its own; on the stateless
-/// macOS/Windows ARP table a host counts only when it announced via mDNS or SSDP
-/// this window. Self and the gateway are always present.
+/// A device for the passive refresh, or `None` when it can't be confirmed
+/// present now. A Linux `ip neigh` REACHABLE state (`stateful` and `reachable`)
+/// stands on its own; on the stateless macOS/Windows ARP table a host needs an
+/// mDNS or SSDP announcement this window. Self and the gateway always count.
 ///
-/// Runs the same stateless classifier as a full scan over the passive evidence
-/// it *does* have — OUI vendor, mDNS/SSDP names and types, and the DHCP
-/// fingerprint — with no banner/port probing. Typing a genuinely new arrival
-/// (rather than leaving it `unknown`) is what lets the event feed keep a new
-/// router/AP at its higher-severity `ap_appeared` warning instead of a plain
-/// join. `classify` is a pure function, so this touches none of the cross-scan
-/// accumulators (`history`, `liveness`) an active scan owns. For a device the
-/// store already knows this typing is ignored — `touch_devices` preserves the
-/// richer active-scan identity — so it only ever fills in a fresh arrival.
+/// Classifies from the passive evidence it has (OUI, mDNS, SSDP, DHCP). Typing a
+/// new arrival, rather than leaving it `unknown`, keeps a new router or AP at
+/// its higher-severity `ap_appeared` warning instead of a plain join. It leaves
+/// the cross-scan accumulators (`history`, `liveness`) to the active scan, and
+/// `touch_devices` ignores this typing for devices the store already knows.
 fn build_passive_device(
     neighbor: RawNeighbor,
     mdns: &std::collections::HashMap<String, mdns::MdnsHit>,
@@ -288,15 +266,13 @@ fn build_passive_device(
     let vendor = lookup_vendor(&neighbor.mac);
     let dhcp_hit = dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
 
-    // Best passive name, most human first — the full scan's order minus the
-    // active-only NetBIOS/reverse-DNS sources.
+    // The full scan's name order, minus the active-only NetBIOS and reverse DNS.
     let hostname = mdns_hit
         .and_then(|h| h.name.clone())
         .or_else(|| ssdp_hit.and_then(|h| h.name.clone()))
         .or_else(|| dhcp_hit.and_then(|h| h.hostname.clone()));
 
-    // Withhold a kind-ambiguous OUI's vote (an ODM block that could be any of its
-    // customers' gear), exactly as the full scan does.
+    // Withhold a kind-ambiguous OUI's vote, as the full scan does.
     let classify_vendor =
         if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
     let verdict = classify::classify(&classify::Signals {
@@ -327,26 +303,21 @@ fn build_passive_device(
     })
 }
 
-/// Best-effort identity of the default gateway, resolved cheaply for the
-/// diagnostics Router panel (which shows the router but doesn't run a full
-/// device scan). Every field is best-effort and may be `None`.
+/// The default gateway's identity for the diagnostics Router panel, which
+/// doesn't run a full scan. Every field is best effort.
 pub struct GatewayIdentity {
-    /// The gateway's MAC, from the neighbor table.
     pub mac: Option<String>,
     /// Make from the MAC OUI.
     pub vendor: Option<String>,
-    /// Model from SNMP `sysDescr`, or the UPnP `modelName` when the router answers
-    /// SSDP but not SNMP.
+    /// Model from SNMP `sysDescr`, else the UPnP `modelName`.
     pub model: Option<String>,
-    /// Human product name from the router's UPnP `friendlyName` (e.g. "Giga Hub
-    /// 2.0 Internet Gateway Device"), or None when it doesn't announce over SSDP.
+    /// The UPnP `friendlyName` (e.g. "Giga Hub 2.0 Internet Gateway Device").
     pub name: Option<String>,
 }
 
-/// Resolve the gateway's make (MAC OUI), model and product name without a full
-/// scan. Callers should ping the gateway first so its neighbor-table entry is
-/// fresh; `local_ip`, when known, is the active interface address the SNMP/SSDP
-/// probes bind to. Returns all-`None` when there is no gateway.
+/// The gateway's make, model and product name without a full scan. Ping the
+/// gateway first so its neighbor-table entry is fresh. `local_ip`, when known,
+/// is the active interface address SNMP and SSDP bind to.
 pub async fn gateway_identity(
     gateway: Option<&str>,
     local_ip: Option<std::net::Ipv4Addr>,
@@ -362,10 +333,8 @@ pub async fn gateway_identity(
         .filter(|m| !m.is_empty());
     let vendor = mac.as_deref().and_then(lookup_vendor);
 
-    // SNMP names the model on gear that answers it; SSDP adds the UPnP
-    // friendlyName/modelName that most consumer routers announce instead. Run
-    // both concurrently — neither blocks the other, and the panel takes whatever
-    // either yields.
+    // SNMP names the model on gear that speaks it; most consumer routers
+    // announce a UPnP friendlyName and modelName over SSDP instead.
     let (snmp_hits, ssdp_hits) =
         tokio::join!(snmp::discover(gateway, local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
     let ssdp_hit = ssdp_hits.get(gw);
@@ -377,9 +346,9 @@ pub async fn gateway_identity(
     GatewayIdentity { mac, vendor, model, name }
 }
 
-/// The per-scan lookup tables `build_device` draws on, all keyed by device IP.
-/// Bundled so a device is enriched from one value rather than a long argument
-/// list that grows with every new discovery source.
+/// The per-scan lookup tables `build_device` draws on, keyed by IP except
+/// `dhcp`, which is keyed by bare MAC. Bundled so a new discovery source doesn't
+/// grow the argument list.
 struct Enrichment<'a> {
     mdns: &'a std::collections::HashMap<String, mdns::MdnsHit>,
     ssdp: &'a std::collections::HashMap<String, ssdp::SsdpHit>,
@@ -388,15 +357,13 @@ struct Enrichment<'a> {
     netbios: &'a std::collections::HashMap<String, String>,
     dhcp: &'a std::collections::HashMap<String, dhcp::DhcpHit>,
     open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
-    /// IPs that replied to this scan's ICMP sweep — a positive liveness signal.
+    /// IPs that replied to this scan's ICMP sweep.
     ping_live: &'a std::collections::HashSet<String>,
-    /// IPs that answered this scan's TCP probe — by accepting *or* refusing a
-    /// connection. Either proves the host is alive even when it drops ICMP and
-    /// announces nothing (a phone asleep in Wi-Fi power-save still RSTs a SYN).
+    /// IPs that accepted or refused this scan's TCP probe, which proves life even
+    /// for a power-saving phone that drops ICMP and announces nothing.
     tcp_live: &'a std::collections::HashSet<String>,
-    /// Whether this scan actually ran the active probes (sweep/TCP). False only
-    /// when the subnet is unknown, in which case there's nothing to derive
-    /// liveness from and the scan falls back to the neighbor table's own state.
+    /// False when the subnet is unknown and no sweep or probe ran, so liveness
+    /// falls back to the neighbor table's own state.
     active_probe: bool,
 }
 
@@ -412,14 +379,10 @@ fn build_device(
     let is_self = self_ip == Some(neighbor.ip.as_str());
     let dhcp = enrichment.dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
 
-    // mDNS/SSDP/banner/port signals are captured opportunistically in one lossy
-    // discovery window, so a device that advertised a decisive signal on an
-    // earlier scan may go quiet on this one — which used to flip its kind (a
-    // cast + HomeKit TV flapping between "TV / Media" and "Smart home"). Fold
-    // this scan's catch into the per-MAC accumulator and classify from the
-    // union of everything ever seen, so a signal observed once isn't forgotten.
-    // (DHCP already accumulates in its own background listener.) A device with
-    // no MAC can't be keyed, so it classifies from this scan alone.
+    // One lossy window can miss a signal an earlier scan caught, which flipped
+    // the kind, so classify from the per-MAC union of everything seen (see
+    // `history`). DHCP accumulates in its own listener. A MAC-less device can't
+    // be keyed, so it uses this scan alone.
     let fresh = history::DeviceEvidence {
         mdns: enrichment.mdns.get(&neighbor.ip).cloned().unwrap_or_default(),
         ssdp: enrichment.ssdp.get(&neighbor.ip).cloned().unwrap_or_default(),
@@ -433,23 +396,16 @@ fn build_device(
         history::merge_and_snapshot(&neighbor.mac, fresh)
     };
 
-    // An Amazon-OUI host advertising Spotify Connect is an Echo: Fire TVs and
-    // other Amazon gear don't announce a `_spotify-connect._tcp` receiver, so the
-    // pairing is a reliable fingerprint. It lets us name and type the device even
-    // though its only self-reported mDNS label is the generic "SpotifyConnect"
-    // service brand (dropped upstream in `mdns`).
+    // An Amazon OUI advertising Spotify Connect is an Echo: Fire TVs and other
+    // Amazon gear don't announce `_spotify-connect._tcp`. It names and types the
+    // device even though its only mDNS label is the generic "SpotifyConnect",
+    // dropped in `mdns`.
     let is_amazon = vendor.as_deref().is_some_and(|v| v.to_ascii_lowercase().contains("amazon"));
     let is_echo = is_amazon && evidence.mdns.spotify_connect && !is_gateway && !is_self;
 
-    // Name preference, most human first: a friendly mDNS name, then SSDP's UPnP
-    // friendlyName, then the NetBIOS computer name (real name for Windows/SMB
-    // hosts), then the DHCP-reported hostname (covers non-Windows hosts NetBIOS
-    // misses), the reverse-DNS hostname, and finally a synthesized "Amazon Echo"
-    // when nothing named the device but the Echo fingerprint matched.
-    // Each source is tagged with its strength rank so the per-MAC name cache below
-    // can honour this same order across scans — a weaker signal resolved later
-    // (a flap-prone reverse-DNS PTR) must not overwrite a stronger one remembered
-    // from an earlier scan.
+    // Most human name first. Each carries its rank so the per-MAC name cache
+    // keeps this order across scans: a flap-prone reverse-DNS PTR resolved later
+    // mustn't overwrite a stronger name remembered from earlier.
     use history::NameRank;
     let hostname = evidence
         .mdns
@@ -462,21 +418,17 @@ fn build_device(
         .or_else(|| resolved_hostname.map(|n| (n, NameRank::ReverseDns)))
         .or_else(|| is_echo.then(|| ("Amazon Echo".to_string(), NameRank::Synthetic)));
 
-    // Reverse-DNS / NetBIOS names (often the only label a plug or printer exposes)
-    // flap across scans, and a nameless scan would drop the hostname classify vote
-    // and revert the device to its bare vendor kind (an "Office-LaserJet" printer
-    // falling back to its HP OUI → computer). Remember the resolved name per-MAC so
-    // it — and the kind derived from it below — stays put. A MAC-less host can't be
-    // keyed.
+    // Reverse-DNS and NetBIOS names flap, and a nameless scan would drop the
+    // hostname vote (an "Office-LaserJet" falling back to its HP OUI, so
+    // computer). Remembering the name per MAC keeps it and the kind stable.
     let hostname = if neighbor.mac.is_empty() {
         hostname.map(|(name, _)| name)
     } else {
         history::stable_name(&neighbor.mac, hostname)
     };
 
-    // A hardware model from mDNS TXT is the most precise; SSDP's modelName next;
-    // then the gateway's SNMP `sysDescr` (the only model source for most routers,
-    // which announce on neither mDNS nor SSDP).
+    // mDNS TXT is the most precise; SNMP is the only source for routers that
+    // announce on neither mDNS nor SSDP.
     let model = evidence
         .mdns
         .model
@@ -484,15 +436,13 @@ fn build_device(
         .or_else(|| evidence.ssdp.model.clone())
         .or_else(|| evidence.snmp.model());
 
-    // An Echo is fundamentally a speaker; keep that label even when it also acts
-    // as a Matter/Thread hub (a strong `iot` vote that would otherwise win).
+    // An Echo is a speaker even when it also acts as a Matter or Thread hub,
+    // whose strong `iot` vote would otherwise win.
     let verdict = if is_echo {
         classify::Verdict { kind: "speaker", confidence: classify::Confidence::High }
     } else {
-        // Read the vendor for display, but withhold its kind vote when the OUI's
-        // registrant is too kind-ambiguous to type (see `is_kind_ambiguous_vendor`):
-        // a lone "Motorola (Wuhan)" ODM block is a Lenovo smart-home device, not a
-        // Motorola phone, so it must fall back to a real signal rather than guess.
+        // A kind-ambiguous OUI (see `is_kind_ambiguous_vendor`) is shown but
+        // doesn't vote.
         let classify_vendor =
             if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
         classify::classify(&classify::Signals {
@@ -508,32 +458,21 @@ fn build_device(
         })
     };
 
-    // A privacy-randomized MAC has no OUI vendor, but an Apple handheld still
-    // gives away its maker — an mDNS/UPnP model like "iPhone15,2" or a default
-    // Apple hostname ("iPhone", "Jane's-iPad"). Surface that so a randomized
-    // iPhone reads "Phone · Apple" instead of dropping the make. Kept out of the
-    // classifier above, which stays on the authoritative OUI vendor.
+    // A randomized MAC has no OUI vendor, but an Apple handheld still gives its
+    // maker away by model or default hostname. Display only; the classifier
+    // above sticks to the OUI.
     let vendor = vendor.or_else(|| infer_vendor(hostname.as_deref(), model.as_deref()));
 
-    // Turn a raw hardware identifier into a name a person recognizes:
-    // "MacBookPro18,1" reads as "MacBook Pro", not a part number. Done after
-    // vendor inference above, which needs the raw "<family><gen>,<rev>" shape.
+    // After vendor inference, which needs the raw "<family><gen>,<rev>" shape.
     let model = model.map(|m| humanize_model(&m));
 
-    // Liveness. On macOS/Windows the neighbor table carries no state, so a
-    // departed device lingers in the ARP cache and would otherwise read "Online"
-    // for ~20 min. Decide from this scan's active probes instead: an ICMP reply,
-    // a TCP answer (an open port *or* a RST from a closed one), or any
-    // announcement (mDNS/SSDP/NetBIOS/SNMP/banner) means the device answered
-    // *now*. The TCP answer is what keeps a power-saving phone — which ignores
-    // ICMP and announces nothing but still RSTs a SYN — from reading "Offline".
-    // On Linux a genuine REACHABLE state counts too. Self and the gateway are
-    // always present. The result is debounced by MAC (see `liveness`) so one
-    // dropped probe doesn't flip a device to "Cached".
+    // The macOS/Windows neighbor table has no state, so a departed device would
+    // read Online for ~20 min. Any answer this scan (ICMP, TCP accept or RST,
+    // an announcement) or a Linux REACHABLE counts as live, debounced per MAC
+    // (see `liveness`) so one dropped probe doesn't flip it to Offline.
     let reachable = if is_self || is_gateway {
         true
     } else if !enrichment.active_probe {
-        // No active probe ran (unknown subnet) — nothing better than the table.
         neighbor.reachable
     } else {
         let ip = neighbor.ip.as_str();
@@ -565,18 +504,15 @@ fn build_device(
         is_reachable: reachable,
         ip: neighbor.ip,
         mac: neighbor.mac,
-        // Stamped by the store's roster merge (see `devices_with_offline`); a
-        // bare scan has no timestamp of its own.
+        // Stamped by the store's roster merge (see `devices_with_offline`).
         last_seen: None,
     }
 }
 
-/// Infer the maker when the OUI lookup came up empty (a privacy-randomized MAC).
-/// Currently Apple-only: Apple handhelds randomize their MAC yet still give
-/// themselves away by an mDNS/UPnP model identifier ("iPhone15,2", "iPad13,4")
-/// or a default Apple hostname ("iPhone", "Jane's-iPad"), so the make is still
-/// recoverable. Best-effort — other brands rarely both randomize *and*
-/// self-label, so they stay `None` rather than risk a wrong guess.
+/// The maker when the OUI came up empty. Apple only: its handhelds randomize
+/// their MAC yet still self-label by model ("iPhone15,2") or default hostname
+/// ("Jane's-iPad"). Other brands rarely do both, so they stay `None` rather
+/// than risk a wrong guess.
 fn infer_vendor(hostname: Option<&str>, model: Option<&str>) -> Option<String> {
     if model.is_some_and(is_apple_model) || hostname.is_some_and(is_apple_hostname) {
         return Some("Apple".to_string());
@@ -584,9 +520,8 @@ fn infer_vendor(hostname: Option<&str>, model: Option<&str>) -> Option<String> {
     None
 }
 
-/// An Apple hardware model identifier: a product family followed by a
-/// "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3". The
-/// comma-number shape is what separates the model from a bare "iPad" hostname.
+/// An Apple model identifier such as "iPhone15,2". The `<gen>,<rev>` suffix is
+/// what tells it from a bare "iPad" hostname.
 fn is_apple_model(model: &str) -> bool {
     const FAMILIES: [&str; 9] =
         ["iphone", "ipad", "ipod", "watch", "macbook", "imac", "macmini", "macpro", "audioaccessory"];
@@ -596,38 +531,29 @@ fn is_apple_model(model: &str) -> bool {
         && FAMILIES.iter().any(|family| lower.starts_with(family))
 }
 
-/// Turn a hardware model string into a human-friendly product name. Apple's
-/// mDNS/UPnP identifiers ("MacBookPro18,1", "iPhone15,2", "AudioAccessory5,1")
-/// are the main offenders: they pack a product family together with a
-/// "<generation>,<revision>" suffix that means nothing to a person. Strip the
-/// suffix and expand the CamelCase family into spaced words, mapping the few
-/// families whose marketing name differs from the identifier. Anything that
-/// isn't a recognized Apple identifier (a router's SNMP `sysDescr`, an SSDP
-/// `modelName`) is already human-readable and passes through untouched.
+/// Apple identifiers ("MacBookPro18,1", "AudioAccessory5,1") as product names
+/// ("MacBook Pro", "HomePod"). Anything else is already readable and passes
+/// through.
 fn humanize_model(model: &str) -> String {
     if !is_apple_model(model) {
         return model.to_string();
     }
-    // Everything before the "<gen>,<rev>" suffix is the product family.
     let family: String = model.trim().chars().take_while(|c| !c.is_ascii_digit()).collect();
     match family.to_ascii_lowercase().as_str() {
         "audioaccessory" => "HomePod".to_string(),
         "watch" => "Apple Watch".to_string(),
         "macmini" => "Mac mini".to_string(),
         "macpro" => "Mac Pro".to_string(),
-        // "MacBook" is one brand word, so only the trailing tier is split off.
         "macbook" => "MacBook".to_string(),
         "macbookpro" => "MacBook Pro".to_string(),
         "macbookair" => "MacBook Air".to_string(),
-        // Lowercase-run families ("iphone", "ipad", "imac", "ipod") are a single
-        // word; keep the identifier's own casing rather than lowercasing it.
+        // "iPhone", "iPad", "iMac", "iPod": already the product name.
         _ => family,
     }
 }
 
-/// A hostname that names an Apple product — the platform default ("iPhone") or a
-/// personalized form ("Janes-iPad", "Apple-Watch"). Matched as substrings so the
-/// possessive/prefixed variants are covered.
+/// A hostname naming an Apple product, matched as a substring so personalized
+/// forms ("Janes-iPad") count.
 fn is_apple_hostname(hostname: &str) -> bool {
     const MARKERS: [&str; 10] = [
         "iphone", "ipad", "ipod", "macbook", "imac", "macmini", "mac-mini", "airpods",
@@ -637,7 +563,7 @@ fn is_apple_hostname(hostname: &str) -> bool {
     MARKERS.iter().any(|marker| lower.contains(marker))
 }
 
-/// The neighbor table never lists the local machine — add it for a complete count.
+/// The neighbor table never lists the local machine.
 fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
     let (Some(ip), Some(mac)) = (self_ip, self_mac) else {
         return;
@@ -667,8 +593,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    /// Build a device from a bare neighbor plus an mDNS hit, with every other
-    /// enrichment source empty — enough to exercise the Amazon-Echo path.
+    /// A device from a bare neighbor and an mDNS hit, every other source empty.
     fn device_with_mdns(mac: &str, ip: &str, mdns: mdns::MdnsHit) -> LanDevice {
         let mut mdns_map = HashMap::new();
         mdns_map.insert(ip.to_string(), mdns);
@@ -711,8 +636,7 @@ mod tests {
             stateful: true,
         };
         assert!(build_passive_device(reachable, &mdns, &ssdp, &dhcp, None, None).is_some());
-        // A STALE entry (stateful but not reachable) that announces nothing is not
-        // confirmable passively — leave it to an active scan.
+        // A STALE entry that announces nothing is left to an active scan.
         let stale = RawNeighbor {
             ip: "192.168.1.6".into(),
             mac: "aa:bb:cc:dd:ee:02".into(),
@@ -724,9 +648,8 @@ mod tests {
 
     #[test]
     fn passive_does_not_trust_a_stateless_arp_entry_without_an_announcement() {
-        // macOS/Windows `arp -a` reports reachable=true but stateful=false — a
-        // placeholder, not liveness. A device that has left lingers here for ~20
-        // min, so without an mDNS/SSDP announcement it must not read as present.
+        // macOS/Windows `arp -a` reports reachable=true, stateful=false: a
+        // placeholder, not liveness. A departed device lingers ~20 min.
         let (mut mdns, ssdp, dhcp) =
             (HashMap::new(), HashMap::<String, ssdp::SsdpHit>::new(), HashMap::new());
         let bare = RawNeighbor {
@@ -740,8 +663,7 @@ mod tests {
             "a stale ARP-cache entry must not be confirmed present"
         );
 
-        // The same kind of host, now announcing over mDNS → confirmed, and its
-        // announced name is carried through for a fresh arrival.
+        // The same kind of host announcing over mDNS is confirmed, with its name.
         mdns.insert(
             "192.168.1.8".into(),
             mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() },
@@ -760,8 +682,7 @@ mod tests {
 
     #[test]
     fn passive_always_confirms_self_and_gateway() {
-        // Self and the gateway are present by definition — even a gateway whose
-        // ARP entry looks stale and that announced nothing must be confirmed.
+        // Even a stale, silent gateway entry is confirmed.
         let (mdns, ssdp, dhcp) = (HashMap::new(), HashMap::new(), HashMap::new());
         let gw = RawNeighbor {
             ip: "192.168.1.1".into(),
@@ -776,11 +697,9 @@ mod tests {
 
     #[test]
     fn passive_types_a_new_router_so_it_keeps_its_ap_warning() {
-        // The event feed logs a new non-gateway router/AP as a higher-severity
-        // `ap_appeared` warning — but only if the arrival is actually typed a
-        // router. The lightweight classify pass must carry a DHCP router
-        // fingerprint through so a rogue AP joining while backgrounded isn't
-        // downgraded to a plain join.
+        // A new non-gateway router is an `ap_appeared` warning only if typed a
+        // router, so a rogue AP joining while backgrounded must keep its DHCP
+        // router fingerprint.
         let (mdns, ssdp) = (HashMap::new(), HashMap::new());
         let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
         dhcp.insert(
@@ -800,12 +719,9 @@ mod tests {
 
     #[test]
     fn a_tcp_answer_alone_reads_a_stateless_device_as_reachable() {
-        // The reported case: a randomized-MAC phone asleep in Wi-Fi power-save
-        // drops ICMP and announces nothing, so ping_live and every announcement
-        // map is empty. But it RSTs a SYN to a closed port, which probe::probe
-        // records in `responsive` → tcp_live. With a stateless neighbor entry
-        // (macOS arp -a: reachable but not `stateful`), that TCP answer is the
-        // only live signal — and it must be enough to read "Online".
+        // A randomized-MAC phone in power-save drops ICMP and announces nothing,
+        // but RSTs a SYN to a closed port. On a stateless (macOS `arp -a`)
+        // entry that TCP answer is the only live signal, and must be enough.
         let (mdns, ssdp, banner, snmp, netbios, dhcp, ports) = (
             HashMap::new(),
             HashMap::new(),
@@ -842,8 +758,7 @@ mod tests {
 
     #[test]
     fn amazon_plus_spotify_connect_is_a_named_echo_speaker() {
-        // 08:12:A5 is an Amazon OUI; the Spotify Connect flag completes the Echo
-        // fingerprint, so it names and types the device even with no other signal.
+        // 08:12:A5 is an Amazon OUI; with Spotify Connect that's an Echo.
         let hit = mdns::MdnsHit { spotify_connect: true, ..Default::default() };
         let echo = device_with_mdns("08:12:a5:00:00:11", "192.168.2.20", hit);
         assert_eq!(echo.kind, "speaker");
@@ -852,8 +767,7 @@ mod tests {
 
     #[test]
     fn amazon_without_spotify_connect_is_not_forced_to_echo() {
-        // A Fire TV (Amazon OUI, no Spotify Connect receiver) must keep classifying
-        // normally rather than being mislabeled a speaker.
+        // A Fire TV: Amazon OUI, no Spotify Connect.
         let echo = device_with_mdns("08:12:a5:00:00:12", "192.168.2.21", mdns::MdnsHit::default());
         assert_ne!(echo.hostname.as_deref(), Some("Amazon Echo"));
         assert_ne!(echo.kind, "speaker");
@@ -861,17 +775,15 @@ mod tests {
 
     #[test]
     fn a_motorola_wuhan_odm_oui_is_not_confidently_typed_a_phone() {
-        // The reported case: a Lenovo speaker on 08:38:E6 ("Motorola (Wuhan)
-        // Mobility" ODM) resolves to a bare "Motorola" vendor and used to be typed
-        // a phone. With no other signal it must fall back to a generic device, not
-        // a confident (and wrong) "phone" — the vendor still shows for display.
+        // A Lenovo speaker on the 08:38:E6 Motorola (Wuhan) ODM block shows
+        // "Motorola" but, with no other signal, must not be typed a phone.
         let device = device_with_mdns("08:38:e6:d8:df:23", "192.168.2.19", mdns::MdnsHit::default());
         assert_eq!(device.vendor.as_deref(), Some("Motorola"));
         assert_ne!(device.kind, "phone");
         assert_eq!(device.kind, "unknown");
 
-        // A Motorola-brand phone block (00:62:01, "Motorola Mobility LLC, a Lenovo
-        // Company") tidies to the same "Motorola" but stays a phone.
+        // The 00:62:01 Motorola Mobility phone block tidies the same but stays a
+        // phone.
         let phone = device_with_mdns("00:62:01:00:00:22", "192.168.2.29", mdns::MdnsHit::default());
         assert_eq!(phone.vendor.as_deref(), Some("Motorola"));
         assert_eq!(phone.kind, "phone");
@@ -879,8 +791,6 @@ mod tests {
 
     #[test]
     fn apple_model_and_hostname_infer_an_apple_vendor() {
-        // The reported case: a randomized-MAC iPhone has no OUI vendor, but its
-        // model or default hostname still identifies the maker.
         assert_eq!(infer_vendor(None, Some("iPhone15,2")).as_deref(), Some("Apple"));
         assert_eq!(infer_vendor(Some("iPhone"), None).as_deref(), Some("Apple"));
         assert_eq!(infer_vendor(Some("Janes-iPad"), None).as_deref(), Some("Apple"));
@@ -889,7 +799,6 @@ mod tests {
 
     #[test]
     fn non_apple_signals_infer_no_vendor() {
-        // A bare "iPad"-less hostname or a non-Apple model must not be guessed.
         assert!(infer_vendor(Some("Galaxy-S21"), None).is_none());
         assert!(infer_vendor(Some("living-room"), Some("BRAVIA KD-55X")).is_none());
         assert!(infer_vendor(None, None).is_none());
@@ -897,8 +806,7 @@ mod tests {
 
     #[test]
     fn a_bare_ipad_model_string_is_not_mistaken_for_a_model_id() {
-        // "iPad" alone (no ",<rev>") is a hostname, not a hardware model id, so
-        // is_apple_model must reject it — hostname matching covers that case.
+        // "iPad" alone is a hostname; hostname matching covers it.
         assert!(!is_apple_model("iPad"));
         assert!(is_apple_model("iPad13,4"));
     }
@@ -918,7 +826,6 @@ mod tests {
 
     #[test]
     fn humanize_model_leaves_readable_names_untouched() {
-        // A router's SNMP sysDescr or an SSDP modelName is already human-readable.
         assert_eq!(humanize_model("HP LaserJet Pro"), "HP LaserJet Pro");
         assert_eq!(humanize_model("BRAVIA KD-55X"), "BRAVIA KD-55X");
     }

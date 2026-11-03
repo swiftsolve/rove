@@ -1,5 +1,5 @@
-//! Rove's platform services — everything the UI needs to observe a network.
-//! Pure Rust (no Tauri/GTK dependency) so it compiles and tests anywhere.
+//! Rove's platform services: everything the UI needs to observe a network.
+//! Pure Rust with no Tauri or GTK dependency, so it compiles and tests anywhere.
 //!
 //! One module per domain the UI shows, plus the pieces they share: `platform`
 //! (per-OS readers), `store` (the SQLite file) and `util` (small helpers).

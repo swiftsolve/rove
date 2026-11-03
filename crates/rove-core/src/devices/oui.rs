@@ -1,11 +1,10 @@
-//! MAC OUI → vendor lookup, backed by the IEEE registry.
+//! MAC OUI to vendor lookup, backed by the IEEE registry.
 //!
-//! The table is compiled from the IEEE Registration Authority's public
-//! MA-L/MA-M/MA-S assignment registry, trimmed to `<bits>\t<hexprefix>\t<vendor>`
-//! rows and embedded at compile time. `bits` is the assignment size (24, 28, or
-//! 36) and `hexprefix` is the significant leading nibbles (`bits / 4` of them),
-//! uppercase. IEEE hands out blocks at three granularities, so a lookup tries
-//! the most specific first.
+//! The table is the IEEE Registration Authority's public MA-L/MA-M/MA-S
+//! registry, trimmed to `<bits>\t<hexprefix>\t<vendor>` rows and embedded at
+//! compile time. `bits` is the assignment size (24, 28 or 36) and `hexprefix`
+//! its `bits / 4` leading nibbles, uppercase. A 28- or 36-bit block sits inside
+//! a 24-bit one, so a lookup tries the most specific size first.
 //!
 //! Regenerate with `cargo run -p rove-core --example gen_oui` (see that file for
 //! the IEEE sources). Sourcing from IEEE rather than Wireshark's GPL-2.0 `manuf`
@@ -14,9 +13,8 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::sync::OnceLock;
 
-/// The table is embedded gzip'd (~555 KB vs ~1.8 MB raw); `build.rs` compresses
-/// `data/oui.tsv` into `OUT_DIR` at build time. Decompressed once, on first
-/// lookup, in [`table`].
+/// Embedded gzipped (~555 KB vs ~1.8 MB raw) by `build.rs` from `data/oui.tsv`;
+/// decompressed once, on first lookup, in [`table`].
 static OUI_GZ: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/oui.tsv.gz"));
 
 struct OuiTable {
@@ -31,8 +29,8 @@ struct OuiTable {
 fn table() -> &'static OuiTable {
     static TABLE: OnceLock<OuiTable> = OnceLock::new();
     TABLE.get_or_init(|| {
-        // Decompress the embedded table and leak it so the map values can borrow
-        // `&'static str` slices — the table lives for the whole process anyway.
+        // Leaked so the maps can hold `&'static str` slices; the table lives for
+        // the whole process anyway.
         let mut raw = String::new();
         flate2::read::GzDecoder::new(OUI_GZ)
             .read_to_string(&mut raw)
@@ -74,31 +72,25 @@ fn table() -> &'static OuiTable {
     })
 }
 
-/// Resolve a MAC to its registered vendor, preferring the most specific IEEE
-/// assignment (36-bit, then 28-bit, then the 24-bit OUI). Returns `None` for
-/// unregistered or unparseable prefixes — a randomized MAC will almost never
+/// A MAC's registered vendor, most specific IEEE assignment first, shortened
+/// by `clean_vendor` to a label a user would recognise ("Motorola", not
+/// "Motorola (Wuhan) Mobility Technologies Communication Co., Ltd."). `None`
+/// for unregistered or unparseable prefixes. A randomized MAC will almost never
 /// match, but callers should still gate on [`is_randomized_mac`].
-///
-/// The registered name is passed through [`clean_vendor`] so the verbose IEEE
-/// legal name ("Motorola (Wuhan) Mobility Technologies Communication Co., Ltd.")
-/// becomes a short label a user would recognize ("Motorola").
 pub fn lookup_vendor(mac: &str) -> Option<String> {
     resolve(table(), mac).map(clean_vendor)
 }
 
-/// True when a MAC's registrant spans so many device kinds that its OUI alone
-/// can't name a type — the classifier should read the vendor for *display* but
-/// cast no *kind* vote, letting a real mDNS/hostname/port signal decide (the same
-/// stance [`crate::devices`] takes on TP-Link's catalog-wide block, dropped there
-/// by omission from the vendor table).
+/// True when a MAC's registrant spans too many device kinds for its OUI to name
+/// a type: the vendor is shown but casts no kind vote. TP-Link gets the same
+/// treatment by being left out of the classifier's vendor table.
 ///
-/// This exists for the ambiguous registrants that *can't* be dropped by omission
-/// because they tidy to a brand shared with unambiguous gear. "Motorola (Wuhan)
-/// Mobility Technologies Communication Co., Ltd." is the ODM behind Lenovo's
-/// Google-Assistant smart-home line — Smart Clock, Smart Display, Smart Tab,
-/// speakers — not Motorola-brand phones, yet it tidies to the same "Motorola" as
-/// the phone blocks ("Motorola Mobility LLC, a Lenovo Company"). Left to vote it
-/// would confidently label every Lenovo Smart Clock a phone.
+/// This covers registrants that can't be left out because they tidy to a brand
+/// shared with unambiguous gear. "Motorola (Wuhan) Mobility Technologies
+/// Communication Co., Ltd." is the ODM behind Lenovo's Google Assistant
+/// smart-home line (Smart Clock, Smart Display, speakers), yet it tidies to the
+/// same "Motorola" as the phone blocks. Left to vote, every Lenovo Smart Clock
+/// would read as a phone.
 pub fn is_kind_ambiguous_vendor(mac: &str) -> bool {
     resolve(table(), mac)
         .map(|v| {
@@ -108,26 +100,23 @@ pub fn is_kind_ambiguous_vendor(mac: &str) -> bool {
         .unwrap_or(false)
 }
 
-/// Consumer-brand aliases for OEM/parent legal names as registered with the IEEE.
-/// Two jobs: surface a recognizable brand when the registry name is unrelated
-/// (Govee registers as "Shenzhen Intellirocks Tech. Co. Ltd."), and fix the
-/// casing that generic tidying can't (the registry shouts "TP-LINK", the brand
-/// is "TP-Link"). Each entry maps a distinctive, already-lowercased substring of
-/// the IEEE name to the brand. Curated and license-clean, like the table itself;
-/// keep needles specific enough not to collide with unrelated registrations.
+/// Consumer brands for OEM or parent legal names in the IEEE registry. They
+/// surface a recognisable brand when the registered name is unrelated (Govee
+/// registers as "Shenzhen Intellirocks Tech. Co. Ltd.") and fix casing tidying
+/// can't (the registry shouts "TP-LINK"). Needles are lowercase substrings of the
+/// IEEE name; keep them specific enough not to hit unrelated registrations.
 const VENDOR_ALIASES: &[(&str, &str)] = &[
-    // Govee (D41368/5CE753/D4ADFC/E02A25 all register as the parent company).
+    // Govee's D41368, 5CE753, D4ADFC and E02A25 all register as the parent.
     ("intellirocks", "Govee"),
-    // All-caps / OEM legal names whose brand casing tidying alone can't recover.
+    // Brand casing tidying alone can't recover.
     ("tp-link", "TP-Link"),
     ("asustek", "ASUS"),
     ("hon hai", "Foxconn"),
 ];
 
-/// Corporate/descriptor words that follow the brand in an IEEE legal name. The
-/// brand is the run of words *before* the first of these, so cutting here turns
-/// "Samsung Electronics Co.,Ltd" into "Samsung" and "TP-LINK TECHNOLOGIES
-/// CO.,LTD." into "TP-LINK". Compared case-insensitively against each word
+/// Corporate and descriptor words that follow the brand in an IEEE legal name.
+/// The brand is the words before the first of these, so "Samsung Electronics
+/// Co.,Ltd" becomes "Samsung". Matched case-insensitively against each word
 /// stripped of surrounding punctuation.
 const VENDOR_NOISE: &[&str] = &[
     "technologies", "technology", "mobility", "communication", "communications",
@@ -142,9 +131,7 @@ const VENDOR_NOISE: &[&str] = &[
     "bv", "ag", "sa", "oy", "ab", "pty", "pte", "kk", "sarl", "spa",
 ];
 
-/// Map a raw IEEE vendor string to a short, recognizable label: a curated alias
-/// when one matches, else the generically tidied name (suffixes and location
-/// asides dropped). Never returns empty.
+/// A curated alias when one matches, else the tidied name. Never empty.
 fn clean_vendor(vendor: &str) -> String {
     if let Some(brand) = alias_vendor(vendor) {
         return brand.to_string();
@@ -152,8 +139,7 @@ fn clean_vendor(vendor: &str) -> String {
     tidy_vendor(vendor)
 }
 
-/// Curated-alias lookup: case-insensitive substring match on a distinctive stem
-/// ("intellirocks", "tp-link"), which is stable across registry punctuation.
+/// Substring match, which survives the registry's varying punctuation.
 fn alias_vendor(vendor: &str) -> Option<&'static str> {
     let lower = vendor.to_ascii_lowercase();
     VENDOR_ALIASES
@@ -162,13 +148,11 @@ fn alias_vendor(vendor: &str) -> Option<&'static str> {
         .map(|(_, brand)| *brand)
 }
 
-/// Trim an IEEE legal name down to the brand: drop parenthetical asides like
-/// "(Wuhan)", then keep the words before the first corporate/descriptor word
-/// (see [`VENDOR_NOISE`]). Casing is preserved — brand names are irregular
-/// (ASUS, iRobot), so title-casing would do more harm than good. Falls back to
-/// the trimmed original if the heuristic would leave nothing.
+/// Trim an IEEE legal name to the brand: drop asides like "(Wuhan)", then keep
+/// the words before the first [`VENDOR_NOISE`] word. Casing is kept, as brands
+/// are irregular (ASUS, iRobot). Falls back to the trimmed original if nothing
+/// would be left.
 fn tidy_vendor(vendor: &str) -> String {
-    // Drop bracketed asides (locations, notes) that split a brand from its type.
     let mut without_brackets = String::with_capacity(vendor.len());
     let mut depth: u32 = 0;
     for c in vendor.chars() {
@@ -185,8 +169,8 @@ fn tidy_vendor(vendor: &str) -> String {
         .filter(|w| !w.is_empty())
         .collect();
 
-    // Cut at the first noise word — but never at position 0, since a few brands
-    // legitimately begin with a descriptor ("Digital Devices", "General Electric").
+    // Never cut at position 0: a few brands begin with a descriptor ("Digital
+    // Devices", "General Electric").
     let mut end = words.len();
     for (i, word) in words.iter().enumerate().skip(1) {
         let key = word.trim_matches(|c: char| !c.is_ascii_alphanumeric()).to_ascii_lowercase();
@@ -208,9 +192,8 @@ fn tidy_vendor(vendor: &str) -> String {
     }
 }
 
-/// The precedence logic, split out from the global table so it can be unit
-/// tested against a synthetic table regardless of which assignments the
-/// embedded snapshot happens to contain.
+/// The precedence logic, apart from the global table so tests can use a
+/// synthetic one whatever the embedded snapshot contains.
 fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
     let hex: String = mac
         .chars()
@@ -239,7 +222,7 @@ fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
     t.b24.get(&key).copied()
 }
 
-/// Locally-administered bit set → privacy-randomized MAC.
+/// The locally administered bit marks a privacy-randomized MAC.
 pub fn is_randomized_mac(mac: &str) -> bool {
     let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(2).collect();
     u8::from_str_radix(&hex, 16).map(|b| b & 0x02 != 0).unwrap_or(false)
@@ -260,10 +243,9 @@ mod tests {
 
     #[test]
     fn motorola_wuhan_odm_is_flagged_kind_ambiguous_but_motorola_phones_are_not() {
-        // 08:38:E6 is the "Motorola (Wuhan) Mobility Technologies Communication"
-        // ODM block — Lenovo smart-home gear (Smart Clock/Display/Tab, speakers),
-        // not a phone. Both it and the phone blocks tidy to a bare "Motorola", so
-        // the flag is what keeps a lone Wuhan OUI from voting "phone".
+        // 08:38:E6 is the Motorola (Wuhan) ODM block: Lenovo smart-home gear,
+        // not a phone. It and the phone blocks both tidy to "Motorola", so the
+        // flag is what keeps a lone Wuhan OUI from voting "phone".
         assert_eq!(lookup_vendor("08:38:E6:D8:DF:23").as_deref(), Some("Motorola"));
         assert!(is_kind_ambiguous_vendor("08:38:E6:D8:DF:23"));
         assert!(is_kind_ambiguous_vendor("04:34:F6:00:00:01"));
@@ -327,9 +309,8 @@ mod tests {
 
     #[test]
     fn prefers_more_specific_assignments() {
-        // 00:55:DA is a shared MA-L carved into /28 MA-M blocks; a 28-bit match
-        // must win over the 24-bit fallback. Built as a synthetic table so the
-        // guarantee holds regardless of which blocks the shipped snapshot has.
+        // 00:55:DA is an MA-L carved into MA-M blocks; a 28-bit match must win
+        // over the 24-bit fallback.
         let mut t = OuiTable {
             b24: HashMap::new(),
             b28: HashMap::new(),
@@ -337,9 +318,9 @@ mod tests {
         };
         t.b24.insert(0x0055DA, "Shared MA-L holder");
         t.b28.insert(0x0055DA1, "KoolPOS Inc.");
-        // 0055DA1.. has an MA-M entry → the finer block wins.
+        // 0055DA1 has an MA-M entry, so the finer block wins.
         assert_eq!(resolve(&t, "00:55:da:1f:00:01"), Some("KoolPOS Inc."));
-        // 0055DA0.. has no MA-M entry → falls back to the 24-bit holder.
+        // 0055DA0 has none, so the 24-bit holder answers.
         assert_eq!(resolve(&t, "00:55:da:0f:00:01"), Some("Shared MA-L holder"));
     }
 
@@ -356,8 +337,8 @@ mod tests {
 
     #[test]
     fn aliases_oem_legal_name_to_consumer_brand() {
-        // 5C:E7:53 is one of Govee's blocks, registered to the parent
-        // "Shenzhen Intellirocks Tech. Co. Ltd." — the alias must surface "Govee".
+        // 5C:E7:53 is a Govee block registered to the parent, Shenzhen
+        // Intellirocks; the alias must surface "Govee".
         assert_eq!(lookup_vendor("5c:e7:53:3d:59:80").as_deref(), Some("Govee"));
     }
 
@@ -372,7 +353,7 @@ mod tests {
 
     #[test]
     fn detects_randomized_mac() {
-        assert!(is_randomized_mac("a2:00:00:00:00:00")); // 0xA2 & 0x02 == set
+        assert!(is_randomized_mac("a2:00:00:00:00:00")); // 0xA2 has bit 0x02 set
         assert!(!is_randomized_mac("b8:27:eb:00:00:00"));
     }
 }

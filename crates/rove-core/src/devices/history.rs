@@ -1,20 +1,14 @@
 //! Cross-scan accumulation of the flap-prone identity signals.
 //!
-//! mDNS, SSDP, HTTP-banner and open-port captures are gathered opportunistically
-//! inside one short discovery window (see `DISCOVERY_WINDOW`) and travel over
-//! lossy multicast / one-shot probes, so any single scan can miss a signal a
-//! neighbouring scan saw. Classifying each scan from only that window's catch
-//! makes a device's kind *flap*: a cast + HomeKit smart TV that answers
-//! `_googlecast` (→ tv) on one scan and `_hap` (→ iot) on the next toggles
-//! between "TV / Media" and "Smart home", since the strong mDNS service is the
-//! single heaviest classifier vote and whichever one lands that window decides.
+//! mDNS, SSDP, banner, SNMP and open-port signals come from one short discovery
+//! window over lossy multicast and one-shot probes, so any scan can miss what
+//! the last one saw. Classifying from one window makes a kind flap: a Cast and
+//! HomeKit TV answering `_googlecast` (tv) one scan and `_hap` (iot) the next
+//! toggles, since the strong mDNS service is the heaviest vote.
 //!
-//! This cache remembers, per MAC (IPs churn across scans), the strongest
-//! identity signals ever observed for a device and merges each fresh scan into
-//! it, so classification and the name/model derivation draw on the union of
-//! everything seen — not one lossy window. It mirrors the passive DHCP
-//! listener's MAC→hit accumulator: like that cache it lives for the process
-//! lifetime (a restart re-learns within a few scans) and starts empty.
+//! So this keeps, per MAC (IPs churn), the union of every signal seen, and
+//! classification and naming draw on that. Like the DHCP cache it lives for the
+//! process and starts empty; a restart re-learns within a few scans.
 use super::banner::BannerHit;
 use super::snmp::SnmpHit;
 use super::ssdp::SsdpHit;
@@ -22,9 +16,8 @@ use crate::devices::mdns::MdnsHit;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
-/// The union of the flap-prone discovery signals for one device. Owned (not
-/// borrowed from a single scan's maps) so it can outlive the scan that produced
-/// it and be merged with later scans.
+/// The union of the flap-prone signals for one device, owned so it outlives
+/// the scan that produced it.
 #[derive(Clone, Default)]
 pub struct DeviceEvidence {
     pub mdns: MdnsHit,
@@ -35,12 +28,9 @@ pub struct DeviceEvidence {
 }
 
 impl DeviceEvidence {
-    /// Fold a fresh scan's signals into the accumulated evidence. mDNS uses its
-    /// own strongest-kind rule ([`MdnsHit::absorb`]); the other string fields
-    /// fill a gap they haven't already got, and open ports union — so a signal
-    /// observed in any scan survives windows that miss it. Identity signals are
-    /// effectively immutable for a given device, so "keep what we have, fill the
-    /// rest" needs no freshness tie-break.
+    /// mDNS uses its strongest-kind rule ([`MdnsHit::absorb`]), strings only
+    /// fill gaps and ports union. A device's identity barely changes, so "keep
+    /// what we have" needs no freshness tie-break.
     fn absorb(&mut self, fresh: &DeviceEvidence) {
         self.mdns.absorb(&fresh.mdns);
 
@@ -63,8 +53,7 @@ impl DeviceEvidence {
     }
 }
 
-/// Copy `src` into `dst` only when `dst` is still empty — keeps the
-/// first-observed value and never erases a known signal with a later absence.
+/// Keeps the first-seen value; a later absence never erases it.
 fn fill(dst: &mut Option<String>, src: &Option<String>) {
     if dst.is_none() {
         if let Some(value) = src {
@@ -73,49 +62,37 @@ fn fill(dst: &mut Option<String>, src: &Option<String>) {
     }
 }
 
-/// Lifetime accumulator keyed by MAC. Starts empty; grows as devices are seen,
-/// like the DHCP cache it parallels.
 static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
-/// How authoritative a display name is, by the source that produced it. The
-/// name chain in `build_device` already prefers these in this order for a single
-/// scan; carrying the rank into the cross-scan cache lets persistence honour the
-/// same order — a flap-prone reverse-DNS PTR resolved on a later scan must not
-/// overwrite a stronger mDNS/SSDP/NetBIOS name remembered from an earlier one.
-/// Declared weakest-first so the derived `Ord` ranks `Mdns` highest.
+/// How authoritative a display name is, by source. `build_device`'s name chain
+/// follows this order within a scan; the rank carries it across scans, so a
+/// flap-prone reverse-DNS PTR can't overwrite a stronger remembered name.
+/// Weakest first, so the derived `Ord` ranks `Mdns` highest.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum NameRank {
-    /// Synthesized last-resort label (e.g. "Amazon Echo" from a fingerprint).
+    /// A last-resort label, e.g. "Amazon Echo" from a fingerprint.
     Synthetic,
-    /// Reverse-DNS PTR — weakest real signal; often a generic or model-ish name.
+    /// The weakest real source; often a generic or model-ish name.
     ReverseDns,
-    /// DHCP-reported client hostname.
     Dhcp,
-    /// NetBIOS computer name.
     NetBios,
-    /// SSDP/UPnP friendlyName.
+    /// UPnP friendlyName.
     Ssdp,
-    /// mDNS instance name — the most human, most authoritative.
+    /// The most human and authoritative.
     Mdns,
 }
 
-/// Best display name ever resolved per MAC, tagged with the [`NameRank`] of the
-/// source it came from. Reverse-DNS and NetBIOS names flap exactly like the
-/// mDNS/SSDP signals above — a lookup that times out or misses its cache one scan
-/// yields nothing — but, unlike them, they aren't part of `DeviceEvidence`
-/// (they're derived downstream, after this cache is consulted). Remembering the
-/// winning name here keeps both the label *and* the kind stable: a hostname-driven
-/// classification (e.g. an "Office-LaserJet" printer → printer) stops falling back
-/// to the bare vendor OUI (HP → computer) on a nameless scan. The stored rank
-/// stops a weaker later signal from downgrading a stronger remembered name.
+/// Best display name per MAC, with its [`NameRank`]. Reverse-DNS and NetBIOS
+/// names flap like mDNS but aren't in `DeviceEvidence`, being resolved outside
+/// it. Remembering the name keeps the label and the kind stable: an
+/// "Office-LaserJet" stays a printer instead of falling back to its HP OUI
+/// (computer) on a nameless scan.
 static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
-/// Merge this scan's `fresh` signals for `mac` into the accumulated evidence and
-/// return the merged snapshot to classify from. The returned value carries every
-/// signal ever seen for the device, so its kind stays stable across scans that
-/// happen to miss a signal.
+/// Merge this scan's `fresh` signals for `mac` and return the union to
+/// classify from.
 pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
     let mut cache = crate::util::net::lock(&CACHE);
     let entry = cache.entry(mac.to_string()).or_default();
@@ -123,21 +100,14 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
     entry.clone()
 }
 
-/// Remember the best display name resolved for `mac` and return the stable name
-/// to show. This scan's `candidate` carries the [`NameRank`] of the source that
-/// produced it, and it replaces the remembered name only when it is *equal or
-/// stronger* — equal so a genuine rename at the same tier is still picked up,
-/// stronger so an upgrade (a reverse-DNS-only device that finally answers mDNS)
-/// wins. A strictly weaker candidate (a flap-prone reverse-DNS PTR arriving after
-/// a NetBIOS/mDNS name was learned) is ignored and the stronger remembered name
-/// is returned instead. With no candidate this scan, fall back to the last name
-/// ever seen — keeping a device from reverting to a bare-vendor label.
+/// Remember the best name for `mac` and return the one to show. `candidate`
+/// replaces the remembered name when its rank is equal (a real rename) or
+/// stronger (an upgrade); a weaker one is ignored. With no candidate, the last
+/// name stands, so the device doesn't revert to a bare vendor label.
 pub fn stable_name(mac: &str, candidate: Option<(String, NameRank)>) -> Option<String> {
     let mut names = crate::util::net::lock(&NAMES);
     match candidate {
         Some((name, rank)) => {
-            // Keep the remembered name when this scan's candidate is strictly
-            // weaker, so a later low-tier signal can't downgrade a stronger label.
             if let Some((stored, stored_rank)) = names.get(mac) {
                 if rank < *stored_rank {
                     return Some(stored.clone());
@@ -160,9 +130,8 @@ mod tests {
 
     #[test]
     fn a_strong_kind_survives_a_later_scan_that_saw_nothing() {
-        // The flap fix: a TV whose `_googlecast` service (tv) lands one scan but
-        // is missed the next must not fall back to whatever weaker signals the
-        // empty window leaves.
+        // A TV whose `_googlecast` lands one scan and is missed the next keeps
+        // its kind.
         let mut acc = DeviceEvidence::default();
         acc.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
         acc.absorb(&DeviceEvidence::default()); // a lossy window with no mDNS
@@ -171,9 +140,8 @@ mod tests {
 
     #[test]
     fn dual_announced_kinds_resolve_stably_by_rank() {
-        // A cast + HomeKit TV announces both tv and iot strong services. However
-        // the two land across scans, the merged kind settles on the same winner
-        // (iot outranks tv), so it stops toggling.
+        // A Cast and HomeKit TV announces both tv and iot. Whatever order they
+        // land in, the merge settles on iot, which outranks tv.
         let mut tv_first = DeviceEvidence::default();
         tv_first.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
         tv_first.absorb(&DeviceEvidence { mdns: mdns_kind("iot"), ..Default::default() });
@@ -219,9 +187,8 @@ mod tests {
 
     #[test]
     fn a_resolved_name_survives_a_later_nameless_scan() {
-        // The Kasa-plug flap: reverse-DNS resolves "HS103" one scan and comes back
-        // empty the next; the remembered name must carry through so the device
-        // doesn't revert to its bare vendor label.
+        // A Kasa plug's reverse DNS resolves "HS103" one scan and nothing the
+        // next.
         let mac = "aa:bb:cc:00:00:02";
         assert_eq!(
             stable_name(mac, Some(("HS103".into(), NameRank::ReverseDns))).as_deref(),
@@ -232,8 +199,6 @@ mod tests {
 
     #[test]
     fn a_freshly_resolved_name_replaces_the_remembered_one_at_the_same_tier() {
-        // A genuine rename is picked up: a later same-tier candidate wins over the
-        // cached value rather than being masked by it.
         let mac = "aa:bb:cc:00:00:03";
         stable_name(mac, Some(("old-name".into(), NameRank::Mdns)));
         assert_eq!(
@@ -245,8 +210,6 @@ mod tests {
 
     #[test]
     fn a_stronger_signal_upgrades_the_remembered_name() {
-        // A device known only by its reverse-DNS PTR finally answers mDNS: the
-        // more authoritative name replaces the weaker remembered one.
         let mac = "aa:bb:cc:00:00:04";
         stable_name(mac, Some(("living-room".into(), NameRank::ReverseDns)));
         assert_eq!(
@@ -257,16 +220,14 @@ mod tests {
 
     #[test]
     fn a_weaker_later_signal_does_not_downgrade_the_remembered_name() {
-        // The reported flap: a good NetBIOS name lands one scan, then NetBIOS
-        // misses and a flap-prone reverse-DNS PTR resolves an uglier model-ish
-        // string. The weaker PTR must not overwrite the stronger remembered name.
+        // NetBIOS names it one scan, then misses, and reverse DNS resolves an
+        // uglier model-ish string.
         let mac = "aa:bb:cc:00:00:05";
         stable_name(mac, Some(("Living-Room-Clock".into(), NameRank::NetBios)));
         assert_eq!(
             stable_name(mac, Some(("LenovoCD-24502F".into(), NameRank::ReverseDns))).as_deref(),
             Some("Living-Room-Clock")
         );
-        // And it stays put on subsequent scans.
         assert_eq!(stable_name(mac, None).as_deref(), Some("Living-Room-Clock"));
     }
 }

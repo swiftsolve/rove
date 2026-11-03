@@ -1,16 +1,15 @@
-//! Active discovery: probe every host in the subnet so idle devices enter
-//! the neighbor table. The ARP exchange triggered by a probe registers a
-//! device even when it drops ICMP.
+//! ICMP sweep: ping every host in the subnet so idle devices enter the neighbor
+//! table. The ARP exchange each ping triggers registers a device even when it
+//! drops ICMP.
 use futures_util::StreamExt;
 use std::collections::HashSet;
 use std::time::Duration;
 
 const CONCURRENT_PROBES: usize = 64;
 
-/// Ping every host in the subnet and return the IPs that actually replied.
-/// `try_run_timeout` yields `None` when `ping` exits non-zero (no reply), so a
-/// `Some` result is a positive liveness signal — the scan uses it to tell a
-/// device that's answering now from one merely lingering in the ARP cache.
+/// Ping every host in the subnet and return the IPs that replied. `ping` exits
+/// non-zero without a reply, so `Some` is a positive liveness signal: the scan
+/// uses it to tell a device answering now from one lingering in the ARP cache.
 pub async fn sweep(subnet: &str) -> HashSet<String> {
     let Some(hosts) = super::subnet::hosts(subnet) else {
         return HashSet::new();

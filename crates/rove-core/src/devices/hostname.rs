@@ -5,11 +5,10 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 use std::time::Duration;
 
-/// Cap on concurrent per-host reverse-DNS lookups inside the single Unix batch
-/// process. Each host still needs its own `getent`/`dscacheutil` subprocess, so
-/// this bounds the `xargs -P` fan-out — without it a full `/24` would pile
-/// hundreds of processes on top of the sweep and probe. Windows needs no such
-/// cap: [`resolve_many`] resolves the whole batch in one PowerShell process.
+/// `xargs -P` fan-out for the Unix batch. Each host still needs its own
+/// `getent`/`dscacheutil` subprocess, and a full /24 would otherwise pile
+/// hundreds on top of the sweep and probe. Windows resolves the whole batch in
+/// one PowerShell process, so needs no cap.
 const UNIX_HOSTNAME_CONCURRENCY: usize = 16;
 
 static HOST_SUFFIX: LazyLock<Regex> =
@@ -20,12 +19,10 @@ pub fn trim_suffix(host: &str) -> String {
     HOST_SUFFIX.replace(host, "").into_owned()
 }
 
-/// Rejects strings that aren't syntactically valid hostnames. Reverse-DNS
-/// tooling prints diagnostics to *stdout* — macOS `dig` emits lines like
-/// ";; connection timed out; no servers could be reached" that `2>/dev/null`
-/// can't catch — so error text can reach this filter as a candidate hostname.
-/// A real hostname carries no whitespace or punctuation beyond `-`, `.`, `_`,
-/// and holds at least one alphanumeric, so anything else is rejected outright.
+/// Rejects strings that aren't syntactically hostnames. Reverse-DNS tools print
+/// diagnostics to stdout (macOS `dig`: ";; connection timed out; no servers
+/// could be reached"), past `2>/dev/null`, so error text can arrive here as a
+/// candidate name.
 fn is_valid_hostname(host: &str) -> bool {
     !host.is_empty()
         && host.len() <= 253
@@ -39,21 +36,19 @@ fn is_meaningful(host: &str) -> bool {
     if host == "_gateway" || host == "gateway" {
         return false;
     }
-    // Strip the separators a MAC might be written with (`-`, `_`, `:`) so both
-    // the bare "ecb5fa189779" and colon forms collapse to 12 hex digits.
+    // Drop MAC separators so every written form collapses to 12 hex digits.
     let hex_only: String =
         host.chars().filter(|c| *c != '-' && *c != '_' && *c != ':').collect();
     !(hex_only.len() == 12 && hex_only.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
-/// Resolve a batch of addresses to hostnames, aligned index-for-index with
-/// `ips` (unresolved / meaningless names become `None`).
+/// Reverse-resolve a batch of addresses, index-aligned with `ips`; unresolved
+/// or meaningless names are `None`.
 ///
-/// Every platform resolves the entire batch in a *single* process rather than
-/// one process per host — each host process could block for seconds before
-/// failing, which dominated scan latency. Windows fires the whole batch
-/// concurrently in-process (`GetHostEntryAsync`); Unix fans out bounded
-/// concurrent `getent`/`dscacheutil` lookups under one `xargs -P` process.
+/// Each platform resolves the batch from one process, not one per host: a
+/// per-host process could block for seconds before failing, which dominated
+/// scan time. Windows runs every `GetHostEntryAsync` concurrently in-process;
+/// Unix fans out bounded `getent`/`dscacheutil` lookups under one `xargs -P`.
 pub async fn resolve_many(ips: &[String]) -> Vec<Option<String>> {
     if ips.is_empty() {
         return Vec::new();
@@ -65,14 +60,12 @@ pub async fn resolve_many(ips: &[String]) -> Vec<Option<String>> {
     }
 }
 
-/// Total wall-clock budget for a Unix batch. The per-host `getent`/`dscacheutil`
-/// lookups fan out through `xargs -P`, so — unlike the Windows path — there is
-/// no in-process async wait to bound; a tokio timeout caps the whole batch.
+/// Wall-clock budget for a Unix batch. Unlike Windows there's no in-process
+/// wait to bound, so a tokio timeout caps the whole `xargs` run.
 const UNIX_BATCH_BUDGET_MS: u64 = 4000;
 
 async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
-    // Only validated IPs are interpolated into the script; anything else is
-    // dropped (and stays `None` below).
+    // Only validated IPs reach the script; the rest stay `None`.
     let safe: Vec<&str> = ips
         .iter()
         .map(String::as_str)
@@ -82,29 +75,21 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {
         let list = safe.join(" ");
-        // One lookup per IP, fanned out `UNIX_HOSTNAME_CONCURRENCY`-wide inside a
-        // single `sh` process. The per-IP snippet is single-quoted, so it uses
-        // only double quotes internally; the `\$2` reaches the inner `sh`, which
-        // unescapes it to `$2` for awk. Each invocation ends with a plain `if`
-        // (never a bare failing test), so an unresolved host exits 0 — otherwise
-        // `xargs` would report 123 and `capture()` would discard the whole batch.
+        // The per-IP snippet is single-quoted, so it uses only double quotes
+        // inside; `\$2` reaches the inner `sh` as `$2` for awk. It ends in a plain
+        // `if`, never a bare failing test, so an unresolved host exits 0:
+        // otherwise `xargs` exits 123 and `capture()` discards the whole batch.
         // Emits `ip<TAB>hostname` per resolved IP.
         let per_ip = if std::env::consts::OS == "macos" {
-            // macOS has no getent; dscacheutil queries the same resolver stack.
-            // But its reverse lookups are cache-backed: on a cold cache it returns
-            // nothing, so a randomized-MAC phone whose only identity is its PTR
-            // ("iPhone") shows as an Unknown device until some later query warms
-            // the cache. Fall back to a bounded unicast `dig +short -x`, which
-            // asks the router's resolver directly (it knows the name from the
-            // DHCP lease) and doesn't depend on the cache — stripping dig's
-            // trailing dot. Absent `dig`, the fallback yields empty and we degrade
-            // to the dscacheutil-only behavior.
+            // macOS has no getent. dscacheutil's reverse lookups are
+            // cache-backed and return nothing on a cold cache, so a
+            // randomized-MAC phone known only by its PTR ("iPhone") shows as
+            // Unknown. Fall back to a bounded `dig +short -x`, which asks the
+            // router's resolver directly (it knows the name from the DHCP lease),
+            // stripping the trailing dot. Without `dig` this yields empty.
             //
-            // `dig` writes its comment/diagnostic lines (e.g. ";; connection timed
-            // out; no servers could be reached") to *stdout*, not stderr, so
-            // `2>/dev/null` doesn't catch them. Pick the first line that actually
-            // looks like a name (starts alphanumeric) rather than `head -n1`, so a
-            // failed lookup yields empty instead of leaking the error as a hostname.
+            // `dig` writes diagnostics (";; connection timed out; ...") to stdout,
+            // so take the first line that starts alphanumeric, not `head -n1`.
             r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -z "$n" ]; then n=$(dig +short +time=1 +tries=1 -x "$1" 2>/dev/null | awk "/^[A-Za-z0-9]/{print; exit}" | sed "s/\.$//"); fi; if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         } else {
             r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
@@ -134,8 +119,7 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
 const WINDOWS_BATCH_BUDGET_MS: u32 = 2000;
 
 async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
-    // Only validated IPs are interpolated into the script; anything else is
-    // dropped (and stays `None` below).
+    // Only validated IPs reach the script; the rest stay `None`.
     let safe: Vec<&str> = ips
         .iter()
         .map(String::as_str)
@@ -145,9 +129,9 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {
         let list = safe.iter().map(|ip| format!("'{ip}'")).collect::<Vec<_>>().join(",");
-        // Kick off every lookup as a Task, wait once for the whole set (faulted
-        // lookups make WaitAll throw, hence the try/catch), then read only the
-        // ones that completed. Emits `ip<TAB>hostname` per line.
+        // Start every lookup as a Task and wait once for the set; a faulted
+        // lookup makes WaitAll throw, hence the try/catch. Only completed ones
+        // are read. Emits `ip<TAB>hostname` per line.
         let script = format!(
             "$ips=@({list});\
              $t=$ips|%{{[pscustomobject]@{{I=$_;T=[System.Net.Dns]::GetHostEntryAsync($_)}}}};\
@@ -179,7 +163,8 @@ pub fn local_machine_name() -> Option<String> {
         .or_else(|| std::env::var("COMPUTERNAME").ok())
         .or_else(|| std::env::var("HOSTNAME").ok())
         .or_else(|| {
-            // macOS and most Unixes: the plain `hostname` binary.
+            // macOS has no /etc/hostname, and HOSTNAME is a shell variable that
+            // a GUI app rarely inherits.
             let mut cmd = std::process::Command::new("hostname");
             crate::platform::hide_console(&mut cmd);
             cmd.output()
@@ -202,7 +187,7 @@ mod tests {
         assert!(!is_meaningful("98:17:3c:6d:03:1a"));
         assert!(!is_meaningful("ec-b5-fa-18-97-79"));
         assert!(!is_meaningful("_gateway"));
-        // Real names — including a hex-looking one that isn't 12 digits — survive.
+        // Real names survive, including a hex-looking one that isn't 12 digits.
         assert!(is_meaningful("iPhone"));
         assert!(is_meaningful("pixel-7"));
         assert!(is_meaningful("deadbeef")); // 8 digits, not a MAC

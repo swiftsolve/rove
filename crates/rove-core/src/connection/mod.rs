@@ -26,7 +26,8 @@ pub struct ConnectionDetails {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkInfo {
-    pub connection_type: String, // "wifi" | "ethernet" | "disconnected"
+    /// `"wifi"`, `"ethernet"` or `"disconnected"`.
+    pub connection_type: String,
     pub is_connected: bool,
     pub interface_name: Option<String>,
     pub ip_address: Option<String>,
@@ -41,18 +42,16 @@ pub async fn default_gateway() -> Option<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::default_gateway().await;
     }
-    // On macOS a VPN tunnel can top the routing table with no gateway; prefer the
-    // gateway of the physical default route. Fall through to the legacy probe if
-    // that route has none.
+    // On macOS a VPN tunnel can top the routing table with no gateway, so prefer
+    // the physical default route's gateway, falling through when it has none.
     if cfg!(target_os = "macos") {
         if let Some((_, Some(gw))) = platform::macos::best_default_route().await {
             return Some(gw);
         }
     }
-    // `!/linkdown/` keeps a stale gateway from a just-unplugged NIC out of the
-    // result, so the diagnostics split reads Offline (no gateway) rather than a
-    // misleading NoInternet — matching how `default_interface` filters the same
-    // dead route.
+    // `!/linkdown/` drops the stale gateway of a just-unplugged NIC, so
+    // diagnostics read Offline rather than a misleading NoInternet. Same filter
+    // as `default_interface`.
     if let Some(out) =
         try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await
     {
@@ -66,13 +65,13 @@ pub async fn default_gateway() -> Option<String> {
     if ip.is_empty() { None } else { Some(ip) }
 }
 
-/// Interface the kernel routes default traffic through — routing table first,
-/// matching the Electron implementation.
+/// The interface the kernel routes default traffic through, read from the
+/// routing table.
 pub async fn default_interface() -> Option<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::default_interface().await;
     }
-    // Skip VPN/virtual tunnels that can outrank the physical link (see
+    // Skip VPN and virtual tunnels that can outrank the physical link (see
     // `best_default_route`); otherwise the whole app binds to an interface with
     // no IP, gateway or LAN subnet.
     if cfg!(target_os = "macos") {
@@ -82,17 +81,16 @@ pub async fn default_interface() -> Option<String> {
     }
     // `!/linkdown/` skips a default route the kernel has flagged dead (an
     // unplugged NIC whose route the network manager hasn't torn down yet), so a
-    // live higher-metric default route is chosen over a stale one when both exist.
+    // live higher-metric route wins over the stale one.
     if let Some(out) = try_run(
         "ip route show default 2>/dev/null | awk '!/linkdown/ {for (i = 1; i < NF; i++) if ($i == \"dev\") { print $(i + 1); exit }}'",
     )
     .await
     {
         let name = out.trim().to_string();
-        // Backstop the route-text check with the hardware carrier signal: a stale
-        // default route isn't always `linkdown`-flagged (it depends on the network
-        // manager), so confirm the chosen interface actually has link before
-        // reporting it as connected. Non-Linux hosts never reach this `ip` path.
+        // A stale route isn't always flagged `linkdown` (that depends on the
+        // network manager), so also confirm the hardware carrier. `carrier_up`
+        // reads sysfs, hence Linux only.
         if !name.is_empty() && (!cfg!(target_os = "linux") || platform::linux::carrier_up(&name)) {
             return Some(name);
         }
@@ -134,6 +132,8 @@ pub async fn connection_details(iface: &str, connection_type: &str) -> Connectio
     }
 }
 
+/// `"wifi"` or `"ethernet"` from the interface name, with sysfs deciding on
+/// Linux. Wrong on macOS, where Wi-Fi is `enN` too.
 pub fn infer_connection_type(name: &str) -> &'static str {
     let lower = name.to_lowercase();
     if cfg!(target_os = "linux")
@@ -148,17 +148,17 @@ pub fn infer_connection_type(name: &str) -> &'static str {
     }
 }
 
-/// The public (WAN) IP as seen by an external echo service. Uses the shared
-/// reqwest stack rather than shelling out to `curl` (which isn't present on a
-/// stock Windows or minimal Linux install and would bypass our TLS config).
+/// The public (WAN) IP as seen by an external echo service. Uses reqwest, not
+/// `curl`, which a stock Windows or minimal Linux install lacks and which would
+/// bypass our TLS config.
 pub async fn public_ip() -> Option<String> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(5))
         .build()
         .ok()?;
     let response = client.get("https://api.ipify.org").send().await.ok()?;
-    // The parse below already rejects an error page, but only by failing to read
-    // as an address — which looks the same as being offline. Say which it was.
+    // The parse below would reject an error page too, but that looks the same as
+    // being offline. Log which it was.
     let status = response.status();
     if !status.is_success() {
         tracing::warn!("api.ipify.org public-IP lookup returned HTTP {status}");
@@ -186,8 +186,8 @@ pub async fn network_info() -> NetworkInfo {
     };
 
     let (ip, mac) = crate::connection::interfaces::address_of(&iface).await;
-    // macOS names Wi-Fi `enN`, so the name heuristic always misreads it as
-    // Ethernet — resolve the medium through the hardware-port map instead.
+    // macOS names Wi-Fi `enN`, which the name heuristic reads as Ethernet, so
+    // ask the hardware-port map instead.
     let connection_type = if cfg!(target_os = "macos") {
         platform::macos::connection_type_for(&iface).await
     } else {

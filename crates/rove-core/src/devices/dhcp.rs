@@ -1,45 +1,35 @@
-//! Passive DHCP fingerprinting — identity from the packets a device broadcasts
+//! Passive DHCP fingerprinting: identity from the packets a device broadcasts
 //! when it joins the network.
 //!
-//! When a host joins (or renews after a reboot / lease rebind) it broadcasts a
-//! DHCP `DISCOVER`/`REQUEST` to `255.255.255.250:67`. Two fields inside are a
-//! near-signature of the device's OS/stack:
+//! On joining, or rebinding after a reboot, a host broadcasts a DHCP
+//! `DISCOVER`/`REQUEST` to `255.255.255.255:67`. Two options in it nearly
+//! identify its OS and stack:
 //!
-//!   * **Option 55 (Parameter Request List)** — the *order* of options a client
-//!     asks for is highly specific to its DHCP implementation, so iOS, Android,
-//!     Windows and embedded stacks each look distinct. This is the classic
-//!     "DHCP fingerprint".
-//!   * **Option 60 (Vendor Class Identifier)** — often names the stack outright
-//!     (`android-dhcp-14`, `MSFT 5.0`, `dhcpcd-9.4.1`), and is stabler than the
-//!     PRL across OS versions, so we lean on it first.
+//!   * **Option 55 (Parameter Request List)**: the order of options a client
+//!     asks for is specific to its DHCP implementation, so iOS, Android, Windows
+//!     and embedded stacks each look distinct. The classic "DHCP fingerprint".
+//!   * **Option 60 (Vendor Class Identifier)**: often names the stack outright
+//!     (`android-dhcp-14`, `MSFT 5.0`, `dhcpcd-9.4.1`) and is stabler than the
+//!     PRL across OS versions, so it's tried first.
 //!
-//! Why this matters: it is **passive** (no probing) and it **survives MAC
-//! randomization** — the OUI-vendor signal is decreasingly reliable on modern
-//! phones, but the fingerprint still reveals the OS family.
+//! It's passive, and it survives MAC randomization, which makes the OUI vendor
+//! less and less useful on modern phones.
 //!
-//! Two design notes:
-//!   * Hits are keyed by **MAC**, not IP: during `DISCOVER` the client has no
-//!     address yet (source `0.0.0.0`), so IP is meaningless here. The scan joins
-//!     these hits to the neighbor table by MAC.
-//!   * DHCP traffic is sporadic (leases renew on the order of hours), so a
-//!     single 3 s scan window would almost never catch a packet. Instead a
-//!     background listener runs for the app's lifetime and accumulates a
-//!     MAC→hit cache; each scan snapshots whatever has been seen so far. The
-//!     listener also captures exactly the "a new device just joined" moment,
-//!     which the planned alerts feature will reuse.
+//!   * Hits are keyed by MAC: during `DISCOVER` the client has no address yet
+//!     (source `0.0.0.0`). The scan joins them to the neighbor table by MAC.
+//!   * Leases renew every few hours, so a 3 s scan window would almost never
+//!     catch a packet. A background listener runs for the app's lifetime and
+//!     fills a MAC-keyed cache that each scan snapshots.
 //!
-//! Binding UDP :67 needs privilege on some platforms but not all. Linux requires
-//! root or `cap_net_bind_service` (the `.deb` post-install grants it);
-//! Windows has no low-port restriction; and modern macOS (verified on 26.x, with
-//! default `net.inet.ip.portrange` sysctls) lets an unprivileged process bind
-//! :67, so the in-process listener runs directly there too — no helper needed.
-//! Where the bind *is* denied, it fails and the whole thing degrades silently to
-//! empty — consistent with the scanner's "missing value renders as —" rule — and
-//! a privileged helper can backfill the capture (see [`run_capture_to_file`]).
+//! Binding UDP :67 needs root or `cap_net_bind_service` on Linux (the `.deb`
+//! post-install grants it). Windows has no low-port restriction, and modern
+//! macOS (verified on 26.x with the default `net.inet.ip.portrange` sysctls)
+//! lets an unprivileged process bind it too. Where the bind is denied the cache
+//! stays empty, and a privileged helper can backfill it (see
+//! [`run_capture_to_file`]).
 //!
-//! Classification is table-driven from `data/dhcp_fingerprints.tsv` (a curated,
-//! license-clean, offline table, same pattern as the OUI vendor list) — no key,
-//! no network, no per-user cost.
+//! Classification comes from `data/dhcp_fingerprints.tsv`, a curated,
+//! license-clean table embedded like the OUI list: no key, no network.
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU8, Ordering};
@@ -49,15 +39,15 @@ use serde::{Deserialize, Serialize};
 use tokio::net::UdpSocket;
 
 const DHCP_SERVER_PORT: u16 = 67;
-/// 236-byte fixed BOOTP header + 4-byte magic cookie: the shortest packet that
-/// can carry any options.
+/// The 236-byte BOOTP header plus the 4-byte magic cookie: the shortest packet
+/// that can carry options.
 const BOOTP_MIN_LEN: usize = 240;
-/// The `99, 130, 83, 99` magic cookie that precedes the DHCP options.
+/// Precedes the DHCP options (RFC 2131).
 const MAGIC_COOKIE: [u8; 4] = [99, 130, 83, 99];
 
-/// What a device's DHCP solicitation reveals. Mirrors [`crate::devices::mdns::MdnsHit`]
-/// and [`crate::devices::ssdp::SsdpHit`] so the classifier treats it as one more
-/// weighted signal.
+/// What a device's DHCP solicitation reveals. Mirrors
+/// [`crate::devices::mdns::MdnsHit`] and `ssdp::SsdpHit` so the
+/// classifier treats it as one more weighted signal.
 #[derive(Debug, Clone, Default)]
 pub struct DhcpHit {
     /// Option 55 parameter-request list, comma-joined (e.g. "1,3,6,15,119,252").
@@ -65,8 +55,8 @@ pub struct DhcpHit {
     pub fingerprint: Option<String>,
     /// Option 60 vendor class identifier, e.g. "android-dhcp-14", "MSFT 5.0".
     pub vendor_class: Option<String>,
-    /// Option 12 hostname — the client's self-reported name, often better than
-    /// reverse DNS and available for non-Windows hosts NetBIOS misses.
+    /// Option 12 hostname: the client's own name, often better than reverse DNS
+    /// and present on non-Windows hosts NetBIOS misses.
     pub hostname: Option<String>,
     /// Best-effort device kind from the local fingerprint table.
     pub kind: Option<&'static str>,
@@ -74,11 +64,10 @@ pub struct DhcpHit {
     pub os: Option<&'static str>,
 }
 
-/// The serializable, observed-only fields of a capture — what the privileged
-/// macOS helper writes to disk for the app to read. The derived `kind`/`os`
-/// borrow `'static` table data and can't be deserialized, so they're recomputed
-/// from the current fingerprint table on load (which also lets a table update
-/// re-classify old captures for free).
+/// The observed fields of a capture, as the privileged helper writes them for
+/// the app. `kind` and `os` borrow `'static` table data and can't be
+/// deserialized, so they're recomputed on load, which also lets a table update
+/// reclassify old captures.
 #[derive(Serialize, Deserialize)]
 struct RawCapture {
     mac: String,
@@ -121,12 +110,11 @@ static CACHE: LazyLock<Mutex<HashMap<String, DhcpHit>>> =
 /// Ensures the listener is spawned at most once, on the first scan.
 static START: Once = Once::new();
 
-/// Listener state, so the UI can distinguish "no fingerprints yet" from "this
-/// build can't fingerprint at all". 0 = starting, 1 = active, 2 = unavailable.
+/// Lets the UI tell "no fingerprints yet" from "can't fingerprint at all".
+/// 0 = starting, 1 = active, 2 = unavailable.
 static STATUS: AtomicU8 = AtomicU8::new(0);
 
-/// The listener's state as a stable string for the wire: "starting" until the
-/// bind resolves, then "active" (listening) or "unavailable" (no privilege).
+/// "starting" until the bind resolves, then "active" or "unavailable".
 pub fn status() -> &'static str {
     match STATUS.load(Ordering::Relaxed) {
         1 => "active",
@@ -135,43 +123,33 @@ pub fn status() -> &'static str {
     }
 }
 
-/// Snapshot the DHCP hits captured so far, keyed by normalized MAC. Starts the
-/// background listener on first call. Cheap: a map clone plus a one-time spawn.
-///
-/// The first scan of a session sees an empty map (nothing captured yet); every
-/// scan afterward includes any device that has joined or renewed since startup.
+/// The DHCP hits captured so far, keyed by normalized MAC. The first call
+/// starts the listener, so the first scan of a session sees only what the
+/// helper file holds.
 pub fn snapshot() -> HashMap<String, DhcpHit> {
     START.call_once(|| {
-        // `snapshot` is only ever called from within the async scan, so a Tokio
-        // runtime is present. If the bind fails (no privilege) the task simply
-        // ends and the cache stays empty — no retry, privilege won't appear
-        // mid-run.
+        // Only called from the async scan, so a Tokio runtime is present. A
+        // failed bind isn't retried: privilege won't appear mid-run.
         tokio::spawn(async {
             let _ = listen_forever().await;
         });
     });
     let mut map = crate::util::net::lock(&CACHE).clone();
-    // Merge whatever a privileged helper captured. This is a fallback for
-    // platforms/configs where the in-process bind above is denied (e.g. older
-    // macOS that still reserves low ports for root, or :67 already held by
-    // another daemon): a root helper (`rove-dhcp-helper`) does the capture and
-    // writes it here. On modern macOS the in-process listener binds :67
-    // unprivileged, so this file is usually absent. In-process wins on conflict.
+    // A root `rove-dhcp-helper` covers setups where the in-process bind is
+    // denied (older macOS reserving low ports, or :67 held by another daemon).
+    // The file is usually absent. In-process wins on conflict.
     for (mac, hit) in load_from_file(helper_cache_path()) {
         map.entry(mac).or_insert(hit);
     }
     map
 }
 
-/// Bind `:67` and deliver each parsed client fingerprint to `on_hit`. Shared by
-/// the in-process listener and the privileged helper, so both capture and parse
-/// identically.
+/// Bind `:67` and hand each parsed fingerprint to `on_hit`. Shared by the
+/// in-process listener and the helper so both parse identically.
 ///
-/// Binds INADDR_ANY so broadcast DISCOVER/REQUEST datagrams (destined to
-/// 255.255.255.255:67) are delivered. Renewals a client unicasts straight to the
-/// router are not seen — the join/rebind broadcasts carry the fingerprint.
-/// Binding :67 is privileged; a failure (no root / no cap_net_bind_service) is
-/// the expected unprivileged case, recorded as "unavailable".
+/// Binds INADDR_ANY so broadcasts to 255.255.255.255:67 arrive. Renewals a
+/// client unicasts to the router aren't seen; the join and rebind broadcasts
+/// carry the fingerprint. A failed bind is the expected unprivileged case.
 async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Result<()> {
     let socket = match UdpSocket::bind(("0.0.0.0", DHCP_SERVER_PORT)).await {
         Ok(socket) => {
@@ -192,7 +170,7 @@ async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Resul
     }
 }
 
-/// In-process listener: capture into the shared cache (Linux/Windows path).
+/// The in-process listener, capturing into the shared cache.
 async fn listen_forever() -> std::io::Result<()> {
     capture_loop(|mac, hit| {
         crate::util::net::lock(&CACHE).insert(mac, hit);
@@ -200,12 +178,9 @@ async fn listen_forever() -> std::io::Result<()> {
     .await
 }
 
-/// Run the capture loop as a privileged helper, persisting the running set of
-/// captures to `path` after each new device (atomic write). The unprivileged app
-/// reads this file via [`snapshot`]. This is the fallback entry point (the
-/// `rove-dhcp-helper` binary) for platforms/configs where the app's own :67 bind
-/// is denied — Linux without the file capability, or older macOS that still
-/// reserves low ports for root. On modern macOS the in-process listener suffices.
+/// The `rove-dhcp-helper` entry point, for setups where the app can't bind :67
+/// (Linux without the file capability, older macOS reserving low ports). Writes
+/// every capture so far to `path` after each packet; [`snapshot`] reads it.
 pub async fn run_capture_to_file(path: impl AsRef<Path>) -> std::io::Result<()> {
     let path = path.as_ref().to_path_buf();
     let mut seen: HashMap<String, DhcpHit> = HashMap::new();
@@ -218,8 +193,8 @@ pub async fn run_capture_to_file(path: impl AsRef<Path>) -> std::io::Result<()> 
     .await
 }
 
-/// The shared path the privileged helper writes and the app reads — a
-/// world-readable location the root daemon owns.
+/// The path the helper writes and the app reads: world-readable, owned by the
+/// root daemon.
 pub fn helper_cache_path() -> PathBuf {
     if cfg!(target_os = "macos") {
         PathBuf::from("/Library/Application Support/Rove/dhcp-cache.json")
@@ -230,8 +205,7 @@ pub fn helper_cache_path() -> PathBuf {
     }
 }
 
-/// Atomically write the capture set as JSON (temp file + rename), creating the
-/// parent directory if needed.
+/// Temp file then rename, so the app never reads a half-written file.
 fn write_cache_file(path: &Path, cache: &HashMap<String, DhcpHit>) -> std::io::Result<()> {
     let raw: Vec<RawCapture> = cache.iter().map(|(mac, hit)| RawCapture::from_hit(mac, hit)).collect();
     let json = serde_json::to_vec(&raw).map_err(std::io::Error::other)?;
@@ -243,8 +217,8 @@ fn write_cache_file(path: &Path, cache: &HashMap<String, DhcpHit>) -> std::io::R
     std::fs::rename(&tmp, path)
 }
 
-/// Read captures a privileged helper wrote to `path`, re-deriving kind/os from
-/// the current fingerprint table. Empty if the file is absent or malformed.
+/// Captures the helper wrote to `path`, reclassified with the current table.
+/// Empty if the file is absent or malformed.
 pub fn load_from_file(path: impl AsRef<Path>) -> HashMap<String, DhcpHit> {
     let Ok(bytes) = std::fs::read(path) else {
         return HashMap::new();
@@ -255,20 +229,20 @@ pub fn load_from_file(path: impl AsRef<Path>) -> HashMap<String, DhcpHit> {
     }
 }
 
-/// Parse a BOOTP/DHCP client packet into `(normalized MAC, hit)`. Returns `None`
-/// for anything that isn't a client solicitation we can fingerprint.
+/// A client packet as `(normalized MAC, hit)`; `None` for anything that isn't a
+/// solicitation we can fingerprint.
 fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
     if buf.len() < BOOTP_MIN_LEN {
         return None;
     }
-    // op == 1 is BOOTREQUEST (client → server); server replies are op == 2.
+    // op 1 is BOOTREQUEST; server replies are op 2.
     if buf[0] != 1 {
         return None;
     }
     if buf[236..240] != MAGIC_COOKIE {
         return None;
     }
-    // chaddr holds the client hardware address; hlen == 6 for Ethernet.
+    // hlen 6 means chaddr holds an Ethernet MAC.
     if buf[2] as usize != 6 {
         return None;
     }
@@ -279,8 +253,7 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
     let mut hostname: Option<String> = None;
     let mut msg_type: Option<u8> = None;
 
-    // Options are a TLV stream: code byte, length byte, value — except Pad (0,
-    // one byte, no length) and End (255, terminates).
+    // Options are code, length, value, except Pad (0, one byte) and End (255).
     let mut i = BOOTP_MIN_LEN;
     while i < buf.len() {
         let code = buf[i];
@@ -311,8 +284,8 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
         i = end;
     }
 
-    // Only fingerprint genuine client solicitations: DISCOVER (1), REQUEST (3),
-    // INFORM (8). Skip RELEASE/DECLINE/etc., which carry no useful PRL.
+    // DISCOVER (1), REQUEST (3) and INFORM (8) only; RELEASE, DECLINE and the
+    // rest carry no useful PRL.
     if !matches!(msg_type, Some(1) | Some(3) | Some(8)) {
         return None;
     }
@@ -321,21 +294,18 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
     Some((mac, DhcpHit { fingerprint: prl, vendor_class, hostname, kind, os }))
 }
 
-/// Bytes → a sanitized, non-empty display string (or `None`).
 fn clean_str(bytes: &[u8]) -> Option<String> {
     let raw = String::from_utf8_lossy(bytes);
     let value = crate::util::net::sanitize_display(raw.trim());
     (!value.is_empty()).then_some(value)
 }
 
-/// The curated fingerprint table, embedded at compile time (same pattern as the
-/// OUI vendor table). License-clean and offline — no key, no network, no
-/// per-user cost.
 static FINGERPRINT_DATA: &str = include_str!("../../data/dhcp_fingerprints.tsv");
 
 /// How a table row is matched against a captured fingerprint.
 enum Matcher {
-    /// Case-insensitive substring on the Option 60 vendor class (pattern lowercase).
+    /// Case-insensitive substring of the Option 60 vendor class; the pattern is
+    /// lowercase.
     Vendor,
     /// Exact match on the Option 55 parameter-request list.
     Prl,
@@ -343,7 +313,7 @@ enum Matcher {
     PrlPrefix,
 }
 
-/// One row: how to match, and the `(os, kind)` it implies (either may be absent).
+/// How to match, and the `os` and `kind` it implies (either may be absent).
 struct FingerprintRow {
     matcher: Matcher,
     pattern: &'static str,
@@ -351,8 +321,8 @@ struct FingerprintRow {
     kind: Option<&'static str>,
 }
 
-/// Parse the embedded TSV once. All fields borrow the `'static` embedded string,
-/// so the returned kinds/OS names need no allocation and outlive every caller.
+/// Parsed once. Fields borrow the `'static` embedded string, so kinds and OS
+/// names need no allocation.
 fn fingerprint_table() -> &'static [FingerprintRow] {
     static TABLE: OnceLock<Vec<FingerprintRow>> = OnceLock::new();
     TABLE.get_or_init(|| {
@@ -375,7 +345,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
                     "prl_prefix" => Matcher::PrlPrefix,
                     _ => return None,
                 };
-                // A literal "-" means "this signal says nothing about that field".
+                // "-" means the row says nothing about that field.
                 let field = |s: &'static str| (s != "-").then_some(s);
                 Some(FingerprintRow { matcher, pattern, os: field(os), kind: field(device) })
             })
@@ -383,9 +353,8 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
     })
 }
 
-/// Best-effort `(kind, os)` for a fingerprint, looked up in the curated table.
-/// First matching row wins (vendor-class rows are ordered ahead of the
-/// version-sensitive PRL rows).
+/// Best-effort `(kind, os)` for a fingerprint. The first matching row wins, and
+/// vendor-class rows come before the version-sensitive PRL rows.
 fn classify_fingerprint(
     vendor_class: Option<&str>,
     prl: Option<&str>,
@@ -488,8 +457,8 @@ mod tests {
             classify_fingerprint(None, Some("1,121,3,6,15,119,252")),
             (None, Some("Apple")),
         );
-        // Real modern-iOS capture (randomized-MAC iPhone) — the tail drifted from
-        // the classic PRL, so the match must key on the "1,121,3,6,15" prefix.
+        // A real modern-iOS capture whose tail drifted from the classic PRL, so
+        // the match must key on the "1,121,3,6,15" prefix.
         assert_eq!(
             classify_fingerprint(None, Some("1,121,3,6,15,108,114,119,162,252")),
             (None, Some("Apple")),
@@ -537,9 +506,8 @@ mod tests {
 
     #[test]
     fn helper_file_ipc_round_trips_and_reclassifies() {
-        // Simulate the privileged helper writing a capture, then the app reading
-        // it back. Note the input hit carries no os/kind — the load path must
-        // recompute them from the fingerprint (that's the whole point).
+        // The helper writes a capture and the app reads it back. The written hit
+        // has no os or kind; the load path must recompute them.
         let mut cache = HashMap::new();
         cache.insert(
             "ae4a06feb537".to_string(),

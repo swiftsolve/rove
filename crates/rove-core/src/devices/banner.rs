@@ -1,27 +1,23 @@
-//! HTTP banner grab — cheap identity for hosts that run a web UI but stay quiet
-//! on mDNS/SSDP (routers, IP cameras, NAS boxes, printers).
+//! HTTP banner grab: cheap identity for hosts that run a web UI but stay quiet
+//! on mDNS and SSDP (routers, IP cameras, NAS boxes, printers).
 //!
-//! For each host the probe already found listening on HTTP, one `GET /` yields
-//! two identity hints at near-zero extra cost: the `Server` response header
-//! (httpd / product string) and the page `<title>`. Pure Rust (`reqwest`), so
-//! it runs the same on every OS.
+//! For each host the probe found listening on HTTP, one `GET /` yields the
+//! `Server` header and the page `<title>`. Pure Rust (`reqwest`), so the same on
+//! every OS.
 //!
-//! Scope note: only plaintext HTTP (port 80) is grabbed. LAN HTTPS is almost
-//! always a self-signed cert that a correct TLS stack rejects, and reading it
-//! for a banner would mean disabling verification — deliberately left out to
-//! keep Rove's no-danger-knobs posture. Certificate CN/SAN parsing is a
-//! possible future addition behind an explicit opt-in.
+//! Plaintext HTTP (port 80) only. LAN HTTPS is almost always a self-signed cert
+//! a correct TLS stack rejects, and reading it would mean disabling
+//! verification, which Rove deliberately doesn't offer.
 use futures_util::StreamExt;
 use std::collections::HashMap;
 use std::time::Duration;
 
-/// HTTP ports worth a banner grab. Kept to plaintext HTTP (see module note).
+/// Plaintext HTTP only (see the module note).
 const HTTP_PORTS: &[u16] = &[80];
-/// Concurrent grabs; each is one short LAN HTTP round-trip.
 const CONCURRENT_GRABS: usize = 64;
 const GRAB_TIMEOUT: Duration = Duration::from_millis(1200);
-/// Only read the first slice of the body — the `<title>` is in the `<head>`,
-/// and this bounds memory against a host that streams megabytes.
+/// The `<title>` sits in the `<head>`, so the first slice of the body is
+/// enough, and it bounds memory against a host that streams megabytes.
 const MAX_BODY_BYTES: usize = 16 * 1024;
 
 /// Identity hints scraped from a host's HTTP response.
@@ -46,8 +42,8 @@ impl BannerHit {
     }
 }
 
-/// Grab HTTP banners for every host in `open_ports` that has an HTTP port open,
-/// keyed by IP. Hosts with no banner (or no HTTP port) are simply absent.
+/// HTTP banners keyed by IP for every host in `open_ports` with an HTTP port
+/// open. Hosts with no banner are absent.
 pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, BannerHit> {
     let targets: Vec<String> = open_ports
         .iter()
@@ -58,7 +54,7 @@ pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, Ban
         return HashMap::new();
     }
 
-    // `.no_proxy()` so LAN requests never traverse an ambient HTTP proxy.
+    // LAN requests must never go through an ambient HTTP proxy.
     let Ok(client) = reqwest::Client::builder()
         .no_proxy()
         .timeout(GRAB_TIMEOUT)
@@ -90,7 +86,6 @@ async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
         .map(crate::util::net::sanitize_display)
         .filter(|s| !s.is_empty());
 
-    // Read at most MAX_BODY_BYTES so a streaming endpoint can't balloon memory.
     let mut body = String::new();
     let mut stream = resp.bytes_stream();
     while let Some(Ok(chunk)) = stream.next().await {
@@ -105,7 +100,7 @@ async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
     hit.identity().is_some().then_some(hit)
 }
 
-/// Pull the `<title>` inner text (case-insensitive tag), sanitized and bounded.
+/// The `<title>` text, matching the tag case-insensitively, sanitized.
 fn extract_title(html: &str) -> Option<String> {
     let lower = html.to_ascii_lowercase();
     let open = lower.find("<title")?;

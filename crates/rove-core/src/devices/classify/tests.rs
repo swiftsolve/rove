@@ -6,8 +6,7 @@ fn strong(kind: &'static str) -> MdnsHit {
     MdnsHit { kind: Some(kind), ..Default::default() }
 }
 
-/// Classify from a partial set of signals — unspecified sources default to
-/// absent, keeping each test focused on the signals under test.
+/// Classify from a partial set of signals; the rest default to absent.
 fn kind(sig: Signals) -> String {
     classify(&sig).kind.to_string()
 }
@@ -94,7 +93,7 @@ fn android_tv_hostname_is_a_tv_not_a_phone() {
 #[test]
 fn generic_android_hostname_is_a_phone() {
     // A randomized-MAC Android with no vendor/mDNS still exposes a generic
-    // "android-<hex>" hostname — that alone should type it as a phone.
+    // "android-<hex>" hostname, which alone should type it as a phone.
     assert_eq!(
         kind(Signals { hostname: Some("android-1a2b3c4d"), ..Default::default() }),
         "phone"
@@ -115,8 +114,8 @@ fn a_bare_watch_hostname_is_a_watch() {
 
 #[test]
 fn wearable_brands_type_as_watch_not_phone() {
-    // "galaxy watch" shares the "galaxy" token with phones — the watch row
-    // must win.
+    // "galaxy watch" shares the "galaxy" token with phones; the watch row must
+    // win.
     assert_eq!(
         kind(Signals { hostname: Some("Galaxy-Watch5"), ..Default::default() }),
         "watch"
@@ -133,10 +132,9 @@ fn wearable_brands_type_as_watch_not_phone() {
 
 #[test]
 fn lockdownd_does_not_flip_a_named_watch_to_a_phone() {
-    // The reported bug: an Apple Watch (randomized MAC → reverse-DNS "Watch"
-    // only) exposes lockdownd (62078), shared with iPhone/iPad. That port must
-    // not override the "Watch" hostname, or the device flaps to "phone" the
-    // moment a scan catches the port open.
+    // An Apple Watch known only by reverse-DNS "Watch" exposes lockdownd
+    // (62078), shared with iPhone and iPad. That port must not override the
+    // hostname, or the device flaps to "phone" whenever a scan catches it open.
     assert_eq!(
         kind(Signals { hostname: Some("Watch"), open_ports: &[62078], ..Default::default() }),
         "watch"
@@ -290,9 +288,9 @@ fn a_tp_link_router_still_types_as_router_via_stronger_signals() {
 #[test]
 fn a_cast_speaker_is_not_overridden_by_its_cast_family_signals() {
     // A Lenovo Smart Clock (Google Assistant speaker): mDNS `ca` types it a
-    // speaker, but it also exposes the whole Cast family — port 8009 and an
-    // SSDP DIAL device type — which used to sum to a heavier "tv" vote and
-    // flip it. The definitive mDNS speaker verdict must now win.
+    // speaker, but it also exposes Cast's port 8009 and an SSDP DIAL device
+    // type, which used to sum to a heavier "tv" vote. The definitive mDNS
+    // speaker verdict must win.
     let ssdp = SsdpHit {
         device_type: Some("urn:dial-multiscreen-org:device:dial:1".into()),
         name: Some("Living room clock".into()),
@@ -357,7 +355,7 @@ fn a_definitive_mdns_service_still_outvotes_an_ambiguous_ssdp_type() {
 
 #[test]
 fn http_banner_title_types_a_silent_router_web_ui() {
-    // A device that only exposes an HTTP admin page — no mDNS/SSDP/hostname.
+    // A device that only exposes an HTTP admin page: no mDNS, SSDP or hostname.
     let banner = BannerHit { server: Some("lighttpd".into()), title: Some("NETGEAR Router".into()) };
     assert_eq!(
         kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
@@ -367,15 +365,15 @@ fn http_banner_title_types_a_silent_router_web_ui() {
 
 #[test]
 fn registry_name_collisions_resolve_to_the_specific_brand() {
-    // PlayStations register as "Sony Interactive Entertainment" — console,
+    // PlayStations register as "Sony Interactive Entertainment": a console,
     // not swept up by the TV row's broad \bsony\b (Bravia OUIs).
     assert_eq!(
         kind(Signals { vendor: Some("Sony Interactive Entertainment Inc."), ..Default::default() }),
         "console"
     );
     assert_eq!(kind(Signals { vendor: Some("Sony Corporation"), ..Default::default() }), "tv");
-    // Transsion phones register as "Shenzhen Transsion …" — the IoT row's
-    // generic shenzhen catch-all must not swallow them.
+    // Transsion phones register as "Shenzhen Transsion …"; the IoT row's
+    // shenzhen catch-all must not swallow them.
     assert_eq!(
         kind(Signals {
             vendor: Some("Shenzhen Transsion Technologies Co.Ltd"),
@@ -408,7 +406,7 @@ fn broader_vendor_coverage_types_common_home_brands() {
     assert_eq!(kind(Signals { vendor: Some("Tenda Technology Co.,Ltd"), ..Default::default() }), "router");
     assert_eq!(kind(Signals { vendor: Some("Polar Electro Oy"), ..Default::default() }), "watch");
     assert_eq!(kind(Signals { vendor: Some("VMware, Inc."), ..Default::default() }), "computer");
-    // Honor split from Huawei and now registers its own OUIs — a phone maker.
+    // Honor split from Huawei and now registers its own OUIs as a phone maker.
     assert_eq!(kind(Signals { vendor: Some("Honor Device Co., Ltd."), ..Default::default() }), "phone");
 }
 
@@ -461,7 +459,7 @@ fn wemo_ssdp_device_type_is_iot() {
 
 #[test]
 fn samsung_watch_model_is_a_watch_not_a_phone() {
-    // Galaxy Watch models are "SM-R…" — must land on the watch row, not the
+    // Galaxy Watch models are "SM-R…" and must land on the watch row, not the
     // phone row's broader "sm-[a-z]".
     let mdns = MdnsHit { model: Some("SM-R930".into()), ..Default::default() };
     assert_eq!(
@@ -472,10 +470,9 @@ fn samsung_watch_model_is_a_watch_not_a_phone() {
 
 #[test]
 fn the_same_name_relayed_by_several_protocols_votes_once() {
-    // build_device copies one discovered name across protocol slots (the
-    // display hostname may *be* the SSDP friendlyName or the DHCP-reported
-    // hostname). Echoed three times it must still count as one observation,
-    // so the stronger independent signal — the mDNS hardware model — wins.
+    // build_device copies one name across protocol slots (the display hostname
+    // may be the SSDP friendlyName or the DHCP hostname). Echoed three times it
+    // still counts once, so the stronger mDNS hardware model wins.
     let mdns = MdnsHit { model: Some("iPad13,4".into()), ..Default::default() };
     let ssdp = SsdpHit { name: Some("Johns-iPhone".into()), ..Default::default() };
     let dhcp = DhcpHit { hostname: Some("Johns-iPhone".into()), ..Default::default() };
@@ -558,10 +555,8 @@ fn samsung_galaxy_phones_type_across_every_signal() {
 
 #[test]
 fn a_signalless_device_stays_unknown() {
-    // A device that leaked nothing the classifier can read — including a
-    // silent privacy-randomized handset — must stay "unknown" (the UI renders
-    // it as a generic device), never a guessed kind. We only name what we can
-    // actually identify.
+    // A device that leaked nothing readable, such as a silent randomized
+    // handset, stays "unknown" rather than getting a guessed kind.
     assert_eq!(kind(Signals::default()), "unknown");
     assert_eq!(confidence(Signals::default()), Confidence::Low);
 }

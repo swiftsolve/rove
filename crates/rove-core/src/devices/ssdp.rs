@@ -1,14 +1,12 @@
-//! SSDP / UPnP discovery — a credential-free, cross-platform identity source.
+//! SSDP/UPnP discovery: a credential-free identity source.
 //!
-//! Many consumer devices (smart TVs, media renderers, printers, game consoles,
-//! IoT hubs) answer an SSDP `M-SEARCH` even when they drop ICMP and refuse the
-//! TCP ports the sweep knocks on, so this both *finds* a few otherwise-silent
-//! hosts and, more often, *names* them: each responder points at a description
-//! XML carrying a friendly name, model and device type.
+//! Many consumer devices (smart TVs, media renderers, printers, consoles, IoT
+//! hubs) answer an SSDP `M-SEARCH` even when they drop ICMP and refuse every
+//! probed TCP port. So this finds a few otherwise silent hosts and, more often,
+//! names them: each responder points at a description XML with a friendly name,
+//! model and device type.
 //!
-//! Pure Rust — a `tokio` UDP socket for the search and `reqwest` for the
-//! description fetch — so it runs identically on Linux, macOS and Windows with
-//! no platform branch (unlike the neighbor-table / Wi-Fi probes).
+//! Pure Rust (a `tokio` UDP socket and `reqwest`), so no platform branch.
 use futures_util::StreamExt;
 use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddr};
@@ -17,17 +15,17 @@ use tokio::net::UdpSocket;
 
 const SSDP_MULTICAST: (Ipv4Addr, u16) = (Ipv4Addr::new(239, 255, 255, 250), 1900);
 
-/// Cap on responders whose description we fetch, so a hostile or broken LAN
-/// can't fan this out unboundedly. Comfortably above any real home network.
+/// Cap on description fetches, so a hostile or broken LAN can't fan this out
+/// without bound. Well above any real home network.
 const MAX_RESPONDERS: usize = 128;
-/// Concurrent description fetches. Each is a short HTTP round-trip on the LAN.
 const CONCURRENT_FETCHES: usize = 32;
-/// Per-description HTTP timeout — LAN hosts answer in single-digit ms; this only
-/// bounds the wait on a device that advertised a stale/unreachable LOCATION.
+/// LAN hosts answer in single-digit ms; this bounds the wait on a device that
+/// advertised a stale or unreachable LOCATION.
 const FETCH_TIMEOUT: Duration = Duration::from_millis(1500);
 
-/// What a device's UPnP description says about it. Mirrors [`crate::devices::mdns::MdnsHit`]
-/// so the classifier and name-preference chain treat it as one more signal.
+/// What a device's UPnP description says about it. Mirrors
+/// [`crate::devices::mdns::MdnsHit`], so the classifier and the name chain treat
+/// it as one more signal.
 #[derive(Debug, Clone, Default)]
 pub struct SsdpHit {
     /// UPnP `friendlyName`, e.g. "Living Room TV".
@@ -45,8 +43,8 @@ pub struct SsdpHit {
 /// the `M-SEARCH` leave the right adapter on multi-homed and Windows hosts.
 pub async fn discover(window: Duration, local_ip: Option<Ipv4Addr>) -> HashMap<String, SsdpHit> {
     let deadline = Instant::now() + window;
-    // Spend most of the window collecting responses, leaving a slice for the
-    // description fetches so the whole probe stays within (roughly) the window.
+    // Most of the window collects responses; the rest is left for the
+    // description fetches, so the whole probe roughly fits the window.
     let search_window = window.mul_f32(0.6);
 
     let locations = match search(search_window, local_ip).await {
@@ -68,7 +66,7 @@ async fn search(
     let bind_ip = local_ip.unwrap_or(Ipv4Addr::UNSPECIFIED);
     let socket = UdpSocket::bind((bind_ip, 0)).await?;
 
-    // MX=2: ask devices to spread replies over ~2 s so bursts don't get dropped.
+    // MX: 2 asks devices to spread replies over ~2 s so bursts aren't dropped.
     let msearch = b"M-SEARCH * HTTP/1.1\r\n\
 HOST: 239.255.255.250:1900\r\n\
 MAN: \"ssdp:discover\"\r\n\
@@ -89,7 +87,7 @@ ST: ssdp:all\r\n\r\n";
         }
         let recv = tokio::time::timeout(deadline - now, socket.recv_from(&mut buf)).await;
         let Ok(Ok((n, SocketAddr::V4(src)))) = recv else {
-            // Timeout (window elapsed) or a non-IPv4 source — stop / skip.
+            // Stop on timeout; skip a non-IPv4 source or a recv error.
             if recv.is_err() {
                 break;
             }
@@ -97,7 +95,7 @@ ST: ssdp:all\r\n\r\n";
         };
         let ip = src.ip().to_string();
         if locations.contains_key(&ip) {
-            continue; // one description per device; devices reply once per service.
+            continue; // devices reply once per service; one description is enough
         }
         if let Some(location) = header_value(&buf[..n], "location") {
             locations.insert(ip, location);
@@ -107,14 +105,11 @@ ST: ssdp:all\r\n\r\n";
     Ok(locations)
 }
 
-/// Fetch and parse each device-description XML concurrently.
 async fn fetch_descriptions(
     locations: HashMap<String, String>,
     deadline: Instant,
 ) -> HashMap<String, SsdpHit> {
-    // `.no_proxy()` is essential: LAN description URLs must never be routed
-    // through an ambient HTTP(S) proxy. Short connect/overall timeouts keep a
-    // dead LOCATION from stalling the scan.
+    // LAN description URLs must never go through an ambient HTTP(S) proxy.
     let Ok(client) = reqwest::Client::builder()
         .no_proxy()
         .timeout(FETCH_TIMEOUT)
@@ -143,8 +138,8 @@ async fn fetch_descriptions(
     results.into_iter().collect()
 }
 
-/// Pull an HTTP header value (case-insensitive name) out of an SSDP reply. SSDP
-/// replies are HTTP-shaped: a status line then `Name: value` lines.
+/// A header value from an SSDP reply, which is HTTP-shaped; names match
+/// case-insensitively.
 fn header_value(bytes: &[u8], name: &str) -> Option<String> {
     let text = std::str::from_utf8(bytes).ok()?;
     for line in text.lines() {
@@ -160,9 +155,8 @@ fn header_value(bytes: &[u8], name: &str) -> Option<String> {
     None
 }
 
-/// Extract the identity fields from a UPnP device-description XML. The root
-/// `<device>` element (first occurrence) is the one we want; nested embedded
-/// devices come later and are ignored.
+/// The identity fields of a UPnP description. The root `<device>` comes first,
+/// so first-match lookups skip the embedded devices nested after it.
 fn parse_description(xml: &str) -> Option<SsdpHit> {
     let name = tag_text(xml, "friendlyName");
     let model = tag_text(xml, "modelName");
@@ -175,8 +169,8 @@ fn parse_description(xml: &str) -> Option<SsdpHit> {
     Some(SsdpHit { name, model, manufacturer, device_type })
 }
 
-/// First `<tag>…</tag>` inner text, sanitized and bounded. Dependency-free — the
-/// descriptions we read are small and flat, so a full XML parser is overkill.
+/// First `<tag>…</tag>` text, sanitized. The descriptions are small and flat,
+/// so a full XML parser would be overkill.
 fn tag_text(xml: &str, tag: &str) -> Option<String> {
     let open = format!("<{tag}>");
     let close = format!("</{tag}>");

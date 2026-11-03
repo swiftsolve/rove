@@ -1,13 +1,12 @@
-//! mDNS service discovery — devices advertise what they are, which beats
-//! any vendor-table guessing. Pure Rust (mdns-sd), cross-platform.
+//! mDNS service discovery: devices advertise what they are, which beats any
+//! vendor-table guess. Pure Rust (`mdns-sd`), so no platform branch.
 use mdns_sd::{ServiceDaemon, ServiceEvent};
 use std::collections::HashMap;
 use std::time::Duration;
 
-/// What a service type says about the device kind, strongest signal first.
-/// (service, kind, strong). Strong types state the kind outright; weak ones
-/// (AirPlay/AirTunes/Spotify) run on TVs *and* computers, so they only apply
-/// when nothing better is known — the TXT model record usually settles it.
+/// `(service, kind, strong)`. Strong types state the kind outright; weak ones
+/// (AirPlay, AirTunes, Spotify) run on TVs and computers alike, so they apply
+/// only when nothing better is known. The TXT model usually settles it.
 const SERVICE_KINDS: &[(&str, &str, bool)] = &[
     ("_ipp._tcp.local.", "printer", true),
     ("_ipps._tcp.local.", "printer", true),
@@ -52,23 +51,21 @@ pub struct MdnsHit {
     pub name: Option<String>,
     /// Definite kind from a strong service type.
     pub kind: Option<&'static str>,
-    /// Fallback kind from a weak service type (AirPlay et al).
+    /// Fallback kind from a weak service type (AirPlay and the like).
     pub kind_hint: Option<&'static str>,
     /// Hardware model from TXT (`am`/`model`/`md`), e.g. "MacBookPro18,3".
     pub model: Option<String>,
-    /// Host advertises `_spotify-connect._tcp`. On its own this is a weak TV/
-    /// speaker hint (many devices are Spotify endpoints), but combined with an
-    /// Amazon OUI it fingerprints an Echo — see the caller in `devices::mod`.
+    /// Host advertises `_spotify-connect._tcp`. Alone a weak hint, as many
+    /// devices are Spotify endpoints, but with an Amazon OUI it fingerprints an
+    /// Echo (see `devices::mod`).
     pub spotify_connect: bool,
 }
 
 impl MdnsHit {
-    /// Fold another observation of the same device into this one, using the same
-    /// rule as the within-window merge in [`discover`]: the strongest (lowest
-    /// `kind_rank`) strong kind wins, and every other field fills a gap it
-    /// doesn't already hold. Lets the scanner accumulate a device's mDNS
-    /// identity across scans so a service seen once isn't lost when a later,
-    /// lossy discovery window misses it.
+    /// Fold another sighting of the same device into this one, by the same rule
+    /// as the merge in [`discover`]: the lowest-`kind_rank` strong kind wins and
+    /// every other field only fills a gap. Accumulating across scans means a
+    /// service seen once survives a later lossy window that misses it.
     pub(crate) fn absorb(&mut self, other: &MdnsHit) {
         if let Some(kind) = other.kind {
             let better = self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
@@ -89,10 +86,10 @@ impl MdnsHit {
     }
 }
 
-/// Instance names that are the *service* brand rather than the device — an
-/// Amazon Echo advertises `_spotify-connect._tcp` as the literal "SpotifyConnect".
-/// Reject these so the device falls back to a real name (vendor/hostname) instead
-/// of a service label; a user-renamed endpoint ("Kitchen") won't match.
+/// Instance names that are the service's brand, not the device's: an Amazon
+/// Echo advertises `_spotify-connect._tcp` as the literal "SpotifyConnect".
+/// Rejecting them lets the device fall back to a real name; a user-renamed
+/// endpoint ("Kitchen") won't match.
 fn is_generic_service_name(name: &str) -> bool {
     let compact: String =
         name.chars().filter(|c| !c.is_whitespace()).collect::<String>().to_ascii_lowercase();
@@ -108,17 +105,15 @@ fn is_human_name(name: &str) -> bool {
     !(compact.len() >= 16 && compact.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
-/// Google Cast's `_googlecast._tcp` service is shared by video devices
-/// (Chromecast, Nest Hub, Android TV) and audio-only ones (Nest Mini/Audio and
-/// smart-clock speakers), so the bare service type can't tell a TV from a
-/// speaker — every Cast device would otherwise read as "tv".
+/// `_googlecast._tcp` covers video devices (Chromecast, Nest Hub, Android TV)
+/// and audio-only ones (Nest Mini and Audio, smart-clock speakers), so the
+/// service alone can't tell a TV from a speaker.
 ///
-/// The TXT `ca` capabilities bitmask settles it: bit 0 is video-out, bit 2 is
-/// audio-out. A device that outputs audio but not video is a speaker; anything
-/// with video output — or an unreadable `ca` — keeps the historical "tv"
-/// default so nothing regresses. `md` is an opaque codename on many units (a
-/// Lenovo Smart Clock reports `LenovoCD-24502F`, not a marketing name), so it's
-/// only a keyword fallback for the rare device that omits `ca`.
+/// The TXT `ca` capabilities bitmask settles it: bit 0 is video out, bit 2
+/// audio out. Audio without video is a speaker; video, or no readable `ca`,
+/// stays "tv". `md` is an opaque codename on many units (a Lenovo Smart Clock
+/// reports `LenovoCD-24502F`), so it's only a keyword fallback when `ca` is
+/// missing.
 fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> &'static str {
     const VIDEO_OUT: u32 = 0x01;
     const AUDIO_OUT: u32 = 0x04;
@@ -130,8 +125,8 @@ fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> &'static str {
             return "speaker";
         }
     }
-    // No usable `ca`: match only unambiguous audio-device names, so a codename or
-    // a video model can't be mistyped as a speaker. Everything else stays "tv".
+    // Only unambiguous audio-device names, so a codename or a video model can't
+    // be mistyped as a speaker.
     if let Some(model) = model {
         let m = model.to_ascii_lowercase();
         const SPEAKER_HINTS: &[&str] = &[
@@ -165,14 +160,15 @@ fn kind_rank(kind: &str) -> u8 {
 
 fn instance_name(fullname: &str) -> Option<String> {
     let mut name = fullname.split("._").next()?.replace("\\032", " ").replace("%20", " ");
-    // AirTunes instances are "MACADDRESS@Room Name" — keep the human half.
+    // AirTunes instances are "MACADDRESS@Room Name"; keep the human half.
     if let Some((_, suffix)) = name.split_once('@') {
         name = suffix.to_string();
     }
     (!name.is_empty() && name.len() > 1).then_some(name)
 }
 
-/// Browse the known service types for `window` and map results by IPv4.
+/// Browse the known service types for `window`, keyed by IPv4. `mdns-sd`
+/// blocks, so it runs off the async workers.
 pub async fn discover(window: Duration) -> HashMap<String, MdnsHit> {
     tokio::task::spawn_blocking(move || discover_blocking(window))
         .await
@@ -221,8 +217,6 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     .map(crate::util::net::sanitize_display)
                     .filter(|m| !m.is_empty());
 
-                // A Cast device's service alone means only "castable"; its `ca`
-                // capabilities decide TV vs. speaker (see `refine_cast_kind`).
                 let effective_kind: &'static str = if *service == "_googlecast._tcp.local." {
                     let ca = info
                         .get_property_val_str("ca")
@@ -274,8 +268,8 @@ mod tests {
 
     #[test]
     fn generic_service_brand_is_not_a_device_name() {
-        // The Echo's `_spotify-connect` instance name — a service label, not the
-        // device — must be rejected however it's spaced/cased.
+        // The Echo's `_spotify-connect` instance name, however it's spaced or
+        // cased, is a service label, not the device.
         assert!(is_generic_service_name("SpotifyConnect"));
         assert!(is_generic_service_name("Spotify Connect"));
         assert!(is_generic_service_name("spotifyconnect"));
@@ -286,11 +280,10 @@ mod tests {
 
     #[test]
     fn cast_capabilities_split_speakers_from_tvs() {
-        // The real capture from a Lenovo Smart Clock: ca=231940 has the audio-out
-        // bit (0x04) set and video-out (0x01) clear — a speaker, not a TV, even
-        // though its `md` codename ("LenovoCD-24502F") names nothing.
+        // A real Lenovo Smart Clock capture: ca=231940 has audio out (0x04) set
+        // and video out (0x01) clear, though its `md` codename names nothing.
         assert_eq!(refine_cast_kind(Some(231940), Some("LenovoCD-24502F")), "speaker");
-        // A Chromecast (ca=4101) sets the video-out bit — stays a TV.
+        // A Chromecast (ca=4101) sets the video-out bit.
         assert_eq!(refine_cast_kind(Some(4101), Some("Chromecast")), "tv");
         // A Google Home speaker (ca=2052): audio-out, no video-out.
         assert_eq!(refine_cast_kind(Some(2052), None), "speaker");
@@ -300,16 +293,15 @@ mod tests {
     fn cast_without_ca_falls_back_to_model_keywords_then_tv() {
         // No `ca`: only unambiguous audio names become speakers.
         assert_eq!(refine_cast_kind(None, Some("Nest Audio")), "speaker");
-        // An opaque codename with no `ca` can't be trusted as audio — stays "tv"
-        // (the historical default) rather than being guessed wrong.
+        // An opaque codename with no `ca` can't be trusted as audio.
         assert_eq!(refine_cast_kind(None, Some("LenovoCD-24502F")), "tv");
         assert_eq!(refine_cast_kind(None, None), "tv");
     }
 
     #[test]
     fn spotify_connect_flag_survives_a_later_gap() {
-        // The Echo fingerprint must accumulate like the other identity signals so
-        // a window that misses the service doesn't erase it.
+        // The Echo fingerprint accumulates like the other signals, so a window
+        // that misses the service doesn't erase it.
         let mut acc = MdnsHit { spotify_connect: true, ..Default::default() };
         acc.absorb(&MdnsHit::default());
         assert!(acc.spotify_connect);

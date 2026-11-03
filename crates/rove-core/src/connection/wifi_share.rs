@@ -1,15 +1,12 @@
-//! Build a "join this Wi-Fi" payload for the current connection: the SSID, the
-//! encryption type and — where the OS lets us read it — the saved passphrase,
-//! plus a ready-to-scan QR code. The QR encodes the standard `WIFI:` URI that
-//! iOS and Android cameras recognise to offer one-tap joining.
+//! The "join this Wi-Fi" payload for the current connection: SSID, encryption,
+//! the saved passphrase where the OS allows it, and a QR code of the standard
+//! `WIFI:` URI that iOS and Android cameras offer to join.
 //!
-//! Reading the passphrase is the privileged part and is deliberately best
-//! effort: every OS guards saved Wi-Fi secrets behind an auth prompt — a polkit
-//! dialog on Linux, a Keychain prompt on macOS, Administrator elevation on
-//! Windows. When the user declines, or we aren't running with the rights to
-//! read it, the passphrase comes back `None` and we still return an SSID-only
-//! QR. Scanners use that to pre-fill the network name and prompt for the
-//! password by hand.
+//! The passphrase is best effort. Every OS guards saved Wi-Fi secrets behind a
+//! prompt (polkit on Linux, Keychain on macOS, Administrator elevation on
+//! Windows). If the user declines or we lack the rights, it comes back `None`
+//! and the QR carries the SSID only, so scanners pre-fill the name and ask for
+//! the password.
 
 use crate::connection::network_info;
 use crate::platform;
@@ -29,9 +26,8 @@ pub struct WifiShare {
     pub qr_svg: String,
 }
 
-/// Assemble the share payload for whatever Wi-Fi network is currently active.
-/// Errors (as a display string for the frontend) when there's no Wi-Fi link or
-/// its SSID is unavailable — the two states where there's nothing to share.
+/// The share payload for the active Wi-Fi network. Errs with a display string
+/// when there's no Wi-Fi link or no SSID, as there's nothing to share.
 pub async fn current_wifi_share() -> Result<WifiShare, String> {
     let info = network_info().await;
     if info.connection_type != "wifi" {
@@ -43,15 +39,14 @@ pub async fn current_wifi_share() -> Result<WifiShare, String> {
         .ssid
         .clone()
         .filter(|s| !s.is_empty())
-        // macOS withholds the SSID without Location Services; the message points
-        // at the likely cause without asserting it.
+        // Usually macOS withholding the SSID without Location Services, but that
+        // isn't certain, so the message doesn't say so.
         .ok_or("Wi-Fi network name is unavailable.")?;
 
     let iface = info.interface_name.clone().unwrap_or_default();
     let encryption = encryption_token(info.details.security.as_deref());
 
-    // Open networks have no secret to read, so skip the (prompt-triggering)
-    // lookup entirely.
+    // Open networks have no secret; skip the lookup and the prompt it triggers.
     let password = if encryption == "nopass" {
         None
     } else {
@@ -64,9 +59,8 @@ pub async fn current_wifi_share() -> Result<WifiShare, String> {
     Ok(WifiShare { ssid, encryption, password, qr_svg })
 }
 
-/// Dispatch the passphrase read to the running OS's probe. Mirrors the runtime
-/// dispatch in [`crate::connection::connection_details`] — every platform
-/// module compiles everywhere, so we pick by `std::env::consts::OS`.
+/// Every platform module compiles everywhere, so pick by
+/// `std::env::consts::OS`, as [`crate::connection::connection_details`] does.
 async fn read_password(iface: &str, ssid: &str) -> Option<String> {
     match std::env::consts::OS {
         "linux" => platform::linux::wifi_password(iface, ssid).await,
@@ -76,10 +70,10 @@ async fn read_password(iface: &str, ssid: &str) -> Option<String> {
     }
 }
 
-/// Map an OS-reported security string onto the QR spec's encryption token. The
-/// spec knows only `WPA`, `WEP` and `nopass`; WPA2/WPA3/RSN/802.1X all share the
-/// `WPA` token, which is what phones expect. An unrecognised-but-present value
-/// is treated as `WPA`, the near-universal default, rather than as open.
+/// Map an OS security string onto the QR spec's token. The spec knows only
+/// `WPA`, `WEP` and `nopass`; WPA2, WPA3, RSN and 802.1X all share `WPA`, which
+/// phones expect. An unrecognised but present value is `WPA`, the
+/// near-universal default, rather than open.
 fn encryption_token(security: Option<&str>) -> String {
     let Some(raw) = security else {
         return "nopass".into();
@@ -91,14 +85,12 @@ fn encryption_token(security: Option<&str>) -> String {
     } else if s.contains("WEP") {
         "WEP".into()
     } else {
-        // WPA / WPA2 / WPA3 / RSN / PSK / 802.1X and anything else non-empty.
         "WPA".into()
     }
 }
 
-/// Escape a value for a `WIFI:` URI field. Per the de-facto MECARD-style spec,
-/// backslash, semicolon, comma, colon and double-quote are special and each is
-/// prefixed with a backslash.
+/// Escape a `WIFI:` URI field. The de facto MECARD-style spec backslash-escapes
+/// backslash, semicolon, comma, colon and double quote.
 fn escape_wifi(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -110,9 +102,9 @@ fn escape_wifi(s: &str) -> String {
     out
 }
 
-/// The `WIFI:` join URI. Open networks omit the password field entirely; secured
-/// networks always include it (empty when we couldn't read the secret, which
-/// scanners treat as "prompt me").
+/// The `WIFI:` join URI. Open networks omit the password field; secured ones
+/// always carry it, empty when the secret is unknown, which scanners read as
+/// "ask the user".
 fn build_wifi_uri(ssid: &str, encryption: &str, password: Option<&str>) -> String {
     let s = escape_wifi(ssid);
     if encryption == "nopass" {
@@ -123,14 +115,14 @@ fn build_wifi_uri(ssid: &str, encryption: &str, password: Option<&str>) -> Strin
     }
 }
 
-/// Render `data` as an SVG QR code (one 1×1 rect per dark module, on a white
-/// field with the spec's 4-module quiet zone). Self-contained markup so the
-/// frontend can inline it as a data URI without any client-side QR library.
+/// `data` as a self-contained SVG QR code (a 1x1 rect per dark module, white
+/// field, the spec's 4-module quiet zone), so the frontend inlines it as a data
+/// URI with no QR library.
 fn qr_svg(data: &str) -> Result<String, String> {
     use qrcode::{Color, EcLevel, QrCode};
 
-    // Medium error correction: comfortably scannable while keeping the symbol
-    // small enough to stay crisp in the dialog.
+    // Medium error correction: reliably scannable, and small enough to stay
+    // crisp in the dialog.
     let code = QrCode::with_error_correction_level(data.as_bytes(), EcLevel::M)
         .map_err(|e| format!("Could not encode the Wi-Fi QR code: {e}"))?;
     let width = code.width();
@@ -192,7 +184,7 @@ mod tests {
             build_wifi_uri("Net", "WPA", Some("p@ss")),
             "WIFI:T:WPA;S:Net;P:p@ss;;"
         );
-        // Secured but secret unknown → empty password field, not a dropped one.
+        // Secured but secret unknown: an empty password field, not a dropped one.
         assert_eq!(build_wifi_uri("Net", "WPA", None), "WIFI:T:WPA;S:Net;P:;;");
     }
 
