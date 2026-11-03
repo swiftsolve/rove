@@ -1,7 +1,9 @@
 import type { ServiceEvent, ServiceTransitionEvent } from '@/types'
 
-/** The precomputed durations the timeline rows read. The live one, an ongoing
- *  outage's, is the clock less its start, read by that row alone. */
+/**
+ * The precomputed durations the timeline rows read. The live one, an ongoing
+ * outage's, is the clock less its start, read by that row alone.
+ */
 export type EventDurations = {
   /** Closed outages, keyed by `outageKey` of the recovery. */
   outageByKey: Map<string, number>
@@ -15,9 +17,10 @@ function outageKey(host: string, ts: number): string {
   return `${host}:${ts}`
 }
 
-// Pair each recovery with the outage it ended, keyed by `outageKey`, so a
-// "came back up" row can show how long the service was down. Walks the log
-// oldest-first, tracking the last `down` per host.
+/**
+ * Pair each recovery with the outage it ended, keyed by `outageKey`, so a
+ * "came back up" row can show how long the service was down.
+ */
 export function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
   const durations = new Map<string, number>()
   const downAt = new Map<string, number>()
@@ -36,8 +39,10 @@ export function outageDurations(newestFirst: ServiceEvent[]): Map<string, number
   return durations
 }
 
-// When each still-down host dropped, for the live "Down for …" on its latest
-// drop. Events are newest-first, so the first transition per host is its latest.
+/**
+ * When each still-down host dropped, for the live "Down for …" on its latest
+ * drop. The log is newest-first, so a host's first transition is its latest.
+ */
 export function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
   const starts = new Map<string, number>()
   const seen = new Set<string>()
@@ -49,8 +54,10 @@ export function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, numb
   return starts
 }
 
-// Pair each "connection restored" with the "lost" it ended, keyed by the
-// restored event's ts, so the recovery row can show how long we were offline.
+/**
+ * Pair each "connection restored" with the "lost" it ended, keyed by the
+ * restored event's ts, so the recovery row can show how long we were offline.
+ */
 export function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostAt: number | null = null
@@ -72,16 +79,19 @@ export function eventKey(event: ServiceEvent): string {
   return `${event.host}:${event.ts}:${event.status}`
 }
 
-// "Down for …" on a recovery is the outage it closed; on the latest drop of a
-// still-down service it's the live elapsed time since then (see `isOngoingDrop`).
-// Older drops get none.
+/**
+ * The "Down for …" a recovery shows: the outage it closed. Drops get none; the
+ * live one on an ongoing outage is its own row's (see `isOngoingDrop`).
+ */
 export function closedOutageMs(event: ServiceTransitionEvent, durations: EventDurations): number | undefined {
   if (event.status === 'up') return durations.outageByKey.get(outageKey(event.host, event.ts))
   return undefined
 }
 
-/** Whether this is the latest drop of a service that's still down, whose row
- *  counts the outage up live. */
+/**
+ * Whether this is the latest drop of a service that's still down, whose row
+ * counts the outage up live.
+ */
 export function isOngoingDrop(event: ServiceTransitionEvent, durations: EventDurations): boolean {
   return event.status === 'down' && durations.ongoingDownStartByHost.get(event.host) === event.ts
 }

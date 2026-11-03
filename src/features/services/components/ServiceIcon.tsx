@@ -37,9 +37,11 @@ type ServiceIconProps = {
   fallback?: 'monogram' | 'none'
 }
 
-/** An icon for a service or app: an explicit `src`, then the host's favicon from
- *  Google's icon service, then a monogram (see `fallback`). Each tier falls
- *  through to the next on a missing source or a load error. */
+/**
+ * An icon for a service or app: an explicit `src`, then the host's favicon from
+ * Google's icon service, then a monogram (see `fallback`). Each tier falls
+ * through to the next on a missing source or a load error.
+ */
 export function ServiceIcon({
   host,
   name,

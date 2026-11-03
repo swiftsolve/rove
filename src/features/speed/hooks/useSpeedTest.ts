@@ -18,7 +18,7 @@ type SpeedTestState = {
   /** The run in flight, or the last one; tells a new run's progress from an old one's. */
   runId: number
   error: string | null
-  /** Epoch ms the current result finished — null until a test completes. */
+  /** Epoch ms the current result finished, or null until a test completes. */
   completedAt: number | null
   /** Link capacity captured when the last test finished. */
   linkCapacityMbps: number | null

@@ -35,8 +35,10 @@ function HistoryLink() {
   )
 }
 
-/** "Testing…" in the description's place while a test runs, still linking to
- *  the history once there is a result. */
+/**
+ * "Testing…" in the description's place while a test runs, still linking to
+ * the history once there is a result.
+ */
 function HeaderStatus() {
   const completedAt = useSpeedTest((test) => test.completedAt)
   return (

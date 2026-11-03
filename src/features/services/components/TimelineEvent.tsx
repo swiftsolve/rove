@@ -26,7 +26,6 @@ const subjectVariants = cva('min-w-0 items-center gap-4 text-md', {
   defaultVariants: { isMuted: false, isFullWidth: false },
 })
 
-// Pushed flush right of its row.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 
 // The rows are memoised, so a list a few hundred long renders each row once.
@@ -60,9 +59,11 @@ const TransitionRow = memo(function TransitionRow({
   )
 })
 
-/** The latest drop of a service still down: the one row that reads the clock,
- *  so only it re-renders as its "Down for …" ticks each second, the finest
- *  unit `formatDuration` renders. */
+/**
+ * The latest drop of a service still down: the one row that reads the clock,
+ * so only it re-renders as its "Down for …" ticks each second, the finest
+ * unit `formatDuration` renders.
+ */
 function OngoingDropRow({ event }: { event: ServiceTransitionEvent }) {
   const now = useNow()
   return <TransitionRow event={event} durationMs={now - event.ts} />
@@ -83,8 +84,10 @@ const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningE
   )
 })
 
-/** This machine's own network dropping or returning. Stands in for the wall of
- *  per-service "down"s the probes would otherwise produce while we're offline. */
+/**
+ * This machine's own network dropping or returning. Stands in for the wall of
+ * per-service "down"s the probes would otherwise produce while we're offline.
+ */
 const ConnectionRow = memo(function ConnectionRow({
   event,
   durationMs,

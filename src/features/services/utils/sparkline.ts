@@ -58,7 +58,7 @@ export function placePoints(
 /** Consecutive reachable points: never empty. */
 export type Run = [Point, ...Point[]]
 
-// A failed sample leaves a gap instead of a line diving to the baseline and back.
+/** Split at failed samples, which leave a gap rather than a dive to the baseline and back. */
 export function splitIntoRuns(points: Point[]): Run[] {
   const runs: Run[] = []
   let run: Run | null = null
@@ -82,8 +82,11 @@ export function areaPoints(run: Run, baseline: number): string {
   return `${toSvgPoints(run)} ${lastX},${baseline} ${firstX},${baseline}`
 }
 
-/** The chart's spoken summary: how many checks it spans, their latency range and
- *  how many failed, e.g. "GitHub latency over the last 24 checks: 18.2 ms to 42.0 ms, 1 failed". */
+/**
+ * The chart's spoken summary: how many checks it spans, their latency range and
+ * how many failed, e.g. "GitHub latency over the last 24 checks: 18.2 ms to
+ * 42.0 ms, 1 failed".
+ */
 export function chartDescription(samples: LatencySample[], label: string | undefined): string {
   const subject = label ? `${label} latency` : 'Latency'
   const checks = formatCount(samples.length, 'check')

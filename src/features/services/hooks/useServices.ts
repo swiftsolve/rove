@@ -10,7 +10,10 @@ type UseServicesResult = {
   /** The user's ordered service list, or null before the first load resolves. */
   services: ServiceDefinition[] | null
   error: string | null
-  /** Add a service and adopt the returned list. Rejects on failure, so the dialog that asked can say so. */
+  /**
+   * Add a service and adopt the returned list. Rejects on failure, so the
+   * dialog that asked can say so.
+   */
   add: (name: string, host: string) => Promise<void>
   /** Edit the service listed under `oldHost` in place and adopt the returned list. Rejects like `add`. */
   update: (oldHost: string, name: string, host: string) => Promise<void>

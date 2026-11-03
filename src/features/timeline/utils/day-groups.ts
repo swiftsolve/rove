@@ -21,7 +21,7 @@ const DAY_IN_YEAR = new Intl.DateTimeFormat(undefined, {
   year: 'numeric',
 })
 
-// "Today", "Yesterday", else the weekday and date (plus the year if not this one).
+/** "Today", "Yesterday", else the weekday and date (plus the year if not this one). */
 export function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
   const now = new Date(nowMs)
@@ -32,7 +32,7 @@ export function formatDayHeading(ts: number, nowMs: number): string {
   return (date.getFullYear() === now.getFullYear() ? DAY : DAY_IN_YEAR).format(date)
 }
 
-// Consecutive same-day runs of the already-ordered feed, order kept.
+/** Consecutive same-day runs of the already-ordered feed, order kept. */
 export function groupByDay<T extends { ts: number }>(events: T[], now: number): DayGroup<T>[] {
   const groups: DayGroup<T>[] = []
   for (const event of events) {

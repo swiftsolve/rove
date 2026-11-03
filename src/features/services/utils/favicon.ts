@@ -7,8 +7,10 @@ const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', 
 // Well above the rendered size, so it stays crisp on high-DPI screens.
 const FAVICON_REQUEST_PX = 64
 
-/** Whether a public favicon could exist for `host`. LAN names and IP literals
- *  only ever get a 404 from the icon service, so they aren't asked for. */
+/**
+ * Whether a public favicon could exist for `host`. LAN names and IP literals
+ * only ever get a 404 from the icon service, so they aren't asked for.
+ */
 export function mayHaveFavicon(host: string): boolean {
   const normalized = host.trim().toLowerCase().replace(/\.$/, '')
   if (!normalized) return false

@@ -1,6 +1,9 @@
 import { type ReactNode, useId } from 'react'
 
-/** The day-grouped feed: TimelineDays, newest first. No left pad, so the markers line up with the header icon. */
+/**
+ * The day-grouped feed: TimelineDays, newest first. No left pad, so the
+ * markers line up with the header icon.
+ */
 export function TimelineDayList({ children }: { children: ReactNode }) {
   return (
     <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">

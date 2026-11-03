@@ -28,8 +28,10 @@ import {
 
 const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
   variants: {
-    /** Text above the control instead of beside it: for a control too wide to
-     *  sit inline (the three-segment theme picker). */
+    /**
+     * Text above the control instead of beside it: for a control too wide to
+     * sit inline (the three-segment theme picker).
+     */
     isStacked: { true: 'flex-col items-start gap-12', false: 'items-center gap-16' },
   },
   defaultVariants: { isStacked: false },
@@ -69,7 +71,10 @@ function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descripti
   )
 }
 
-/** A labelled row with a description and a control (toggle, button, …) on the right, or below when `isStacked`. */
+/**
+ * A labelled row with a description and a control (toggle, button, …) on the
+ * right, or below when `isStacked`.
+ */
 function SettingRow({
   title,
   description,
@@ -100,8 +105,10 @@ function SettingRow({
   )
 }
 
-/** The Updates card's footer: the outcome of a manual check, or nothing
- *  while idle or checking (undefined drops the footer slot entirely). */
+/**
+ * The Updates card's footer: the outcome of a manual check, or nothing
+ * while idle or checking (undefined drops the footer slot entirely).
+ */
 function renderCheckResult(check: UpdateCheckState): ReactNode {
   if (check.kind === 'up-to-date') {
     return (

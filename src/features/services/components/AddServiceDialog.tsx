@@ -10,8 +10,9 @@ import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition } from '@/types'
 import { Button, Dialog, NoValue, TextField, TextFieldAction, useLatestRef } from '@/ui'
 
-// The tested result swaps in for the field's hint as a taller inset row. Matches the address field's outer height (line-height 18 + 20 padding + 2
-// border), so the result reads as the same-sized box swapping in.
+// The tested result swaps in for the field's hint as a taller inset row, at the
+// address field's outer height (line-height 18 + 20 padding + 2 border), so it
+// reads as a same-sized box.
 const RESULT = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
 const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
@@ -31,20 +32,24 @@ type TestOutcome = {
 type SaveTarget = { name: string; host: string; latencyMs: number | null | undefined }
 
 type AddServiceDialogProps = {
-  /** Persist the confirmed service, passing the latency just measured by the
-   *  test so the new row can show it at once instead of waiting for the next
-   *  services poll; undefined when an edit only renamed it and nothing was
-   *  measured. Resolves once the list is updated. */
+  /**
+   * Persist the confirmed service, passing the latency just measured by the
+   * test so the new row can show it at once instead of waiting for the next
+   * services poll; undefined when an edit only renamed it and nothing was
+   * measured. Resolves once the list is updated.
+   */
   onAdd: (name: string, host: string, latencyMs: number | null | undefined) => Promise<void>
   onClose: () => void
-  /** When editing an existing service, its current name/host to pre-fill; the
-   *  dialog re-tests and re-saves it. Omit for the add flow. */
+  /**
+   * When editing an existing service, its current name and host to pre-fill.
+   * A changed address is re-tested before it saves. Omit for the add flow.
+   */
   editing?: { name: string; host: string }
 }
 
 /**
  * Feedback for the address sits right under it: the "tested on add" hint while
- * idle, the error when one occurs, or the measured result once a test lands —
+ * idle, the error when one occurs, or the measured result once a test lands,
  * so the hint is gone the moment the test is done.
  */
 function AddressFeedback({
@@ -99,9 +104,9 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
  * stays editable: once the user types their own name, we stop overwriting it.
  * Clearing the field back to empty resumes auto-detection.
  *
- * Passing `editing` pre-fills the fields and switches the copy to "Edit service";
- * the flow is otherwise identical (test, then save), and the caller decides how to
- * persist (re-adding the same host updates its label; a changed host is a move).
+ * Passing `editing` pre-fills the fields and switches the copy to "Edit
+ * service". The flow is the same (test, then save), except a rename alone saves
+ * without a test; the caller decides how to persist it.
  */
 export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps) {
   const [address, setAddress] = useState(editing?.host ?? '')

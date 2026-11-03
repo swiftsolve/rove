@@ -29,8 +29,10 @@ import {
 const SERVICES_HINT =
   'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'
 
-/** What the add/edit dialog shows. `openCount` tells one opening from the next,
- *  so reopening while the last one leaves starts it fresh. */
+/**
+ * What the add/edit dialog shows. `openCount` tells one opening from the next,
+ * so reopening while the last one leaves starts it fresh.
+ */
 type DialogState = ({ mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }) & { openCount: number }
 
 /** There's nothing to probe against while offline, so adding is disabled until we're back. */

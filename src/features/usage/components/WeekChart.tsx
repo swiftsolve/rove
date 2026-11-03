@@ -38,7 +38,7 @@ function UsageTooltip({
 }): JSX.Element | null {
   const point = isActive ? payload?.[0]?.payload : undefined
   if (!point) return null
-  // Nothing transferred that day — skip the tooltip rather than showing "0 B / 0 B".
+  // Nothing transferred that day: no tooltip rather than "0 B / 0 B".
   if (point.down === 0 && point.up === 0) return null
 
   return (
@@ -77,8 +77,10 @@ function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?
   )
 }
 
-/** Hovered-bar highlight: the bar capped with a dot, like the line charts'
- *  endpoint dots. Paired with `cursor={false}` so there's no grey band. */
+/**
+ * Hovered-bar highlight: the bar capped with a dot, like the line charts'
+ * endpoint dots. Paired with `cursor={false}` so there's no grey band.
+ */
 const renderActiveBar =
   (color: string) =>
   ({ x = 0, y = 0, width = 0, height = 0 }: { x?: number; y?: number; width?: number; height?: number }) => (
@@ -96,8 +98,10 @@ const renderActiveBar =
     </g>
   )
 
-/** A bar as Recharts draws it, or with the hover marker when its day has
- *  keyboard focus: Recharts marks only hovered bars as active. */
+/**
+ * A bar as Recharts draws it, or with the hover marker when its day has
+ * keyboard focus: Recharts marks only hovered bars as active.
+ */
 const renderBar =
   (color: string, focusedIndex: number | null) =>
   ({ index, ...props }: RectangleProps & { index?: number }) =>

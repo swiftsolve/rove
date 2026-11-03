@@ -33,8 +33,10 @@ const connVariants = cva('inline-flex items-center gap-6 font-medium text-second
   },
 })
 
-/** A hero speed's digits; a muted NoValue bar before any test has run, so the
- *  labels lead and the cell reads as empty, not zeroed. */
+/**
+ * A hero speed's digits; a muted NoValue bar before any test has run, so the
+ * labels lead and the cell reads as empty, not zeroed.
+ */
 const speedValueVariants = cva('type-number-display metric-value', {
   variants: {
     isPlaceholder: { true: 'text-tertiary' },
@@ -79,8 +81,10 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
   )
 }
 
-/** The running test's phase and percentage. Reads the progress itself, so a
- *  tick re-renders this strip rather than the whole card. */
+/**
+ * The running test's phase and percentage. Reads the progress itself, so a
+ * tick re-renders this strip rather than the whole card.
+ */
 function TestProgress() {
   const progress = useSpeedTest((test) => test.progress)
   const runId = useSpeedTest((test) => test.runId)

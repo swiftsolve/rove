@@ -1,11 +1,9 @@
 import { type InternetStatus, isInternetDown, type ServiceReachability } from '@/types'
 
-/**
- * A frontend-owned rolling buffer of per-host latency for the Services row
- * sparklines, built from the probes the view already polls and kept in
- * localStorage, so it needs no IPC. The outage timeline is the backend's; this
- * is only the recent trend, so it doesn't warrant a backend store.
- */
+// A frontend-owned rolling buffer of per-host latency for the Services row
+// sparklines, built from the probes the view already polls and kept in
+// localStorage, so it needs no IPC. The outage timeline is the backend's; this
+// is only the recent trend, so it doesn't warrant a backend store.
 
 /** One latency reading for a service at a point in time. */
 export type LatencySample = {

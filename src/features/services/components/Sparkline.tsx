@@ -27,8 +27,10 @@ const chartVariants = cva('cursor-crosshair overflow-visible', {
       warning: 'text-status-warning',
       negative: 'text-status-negative',
     },
-    /** Nothing recorded yet: an empty box that holds the row's space, so rows
-     *  don't reflow once history starts to land. */
+    /**
+     * Nothing recorded yet: an empty box that holds the row's space, so rows
+     * don't reflow once history starts to land.
+     */
     isEmpty: { true: 'inline-block', false: 'block' },
   },
   defaultVariants: { status: 'none', isEmpty: false },
@@ -63,9 +65,11 @@ type SparklineProps = {
   height?: number
   /** What the chart is about, e.g. the service name; leads its spoken summary. */
   label?: string
-  /** How many samples the x-axis spans. Set to the history window, a partial
-   *  history fills in from the left with the newest sample at the right edge,
-   *  instead of stretching. Defaults to the sample count. */
+  /**
+   * How many samples the x-axis spans. Set to the history window, a partial
+   * history fills in from the left with the newest sample at the right edge,
+   * instead of stretching. Defaults to the sample count.
+   */
   slots?: number
   /** Draw a flat red baseline instead of the trend, so an outage never reads as healthy. */
   isDown?: boolean

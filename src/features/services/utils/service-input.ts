@@ -4,8 +4,10 @@ import type { ServiceDefinition } from '@/types'
 /** A plausible DNS hostname: dot-separated labels of letters/digits/hyphens. */
 const HOSTNAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
 
-/** A display label from a host, e.g. api.github.com → "Github". An IP stays as-is.
- *  Best-effort: good enough for a label, not a public-suffix parser. */
+/**
+ * A display label from a host, e.g. api.github.com → "Github". An IP stays as-is.
+ * Best-effort: good enough for a label, not a public-suffix parser.
+ */
 function deriveName(host: string): string {
   if (isIpv4(host)) return host
   const labels = host.split('.')

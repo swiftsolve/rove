@@ -12,7 +12,10 @@ type UseServiceHistoryResult = {
   events: ServiceEvent[]
   /** The first read has landed, so an empty `events` really means none. */
   isLoaded: boolean
-  /** Wipe the stored timeline, and the cached copy with it. Never rejects: a failure shows in `clearError`. */
+  /**
+   * Wipe the stored timeline, and the cached copy with it. Never rejects: a
+   * failure shows in `clearError`.
+   */
   clear: () => Promise<void>
   /** Why the last clear failed, until the next one. */
   clearError: string | null
