@@ -6,13 +6,13 @@
 
 **A fast, minimal desktop network monitor.**
 
-Live traffic · speed tests · LAN device discovery · connection diagnostics · data-usage tracking
+Live traffic, speed tests, LAN device discovery, connection diagnostics and data-usage tracking
 
 <p>
   <img alt="Tauri v2" src="https://img.shields.io/badge/Tauri-v2-24C8DB?style=flat-square&logo=tauri&logoColor=white" />
   <img alt="Rust" src="https://img.shields.io/badge/Rust-backend-000000?style=flat-square&logo=rust&logoColor=white" />
   <img alt="React" src="https://img.shields.io/badge/React-UI-149ECA?style=flat-square&logo=react&logoColor=white" />
-  <img alt="Platforms" src="https://img.shields.io/badge/Linux%20·%20macOS%20·%20Windows-3d6fe0?style=flat-square" />
+  <img alt="Platforms" src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-3d6fe0?style=flat-square" />
 </p>
 
 </div>
@@ -29,16 +29,16 @@ Rove is two programs talking over a thin, typed bridge:
 
 - **Request/response.** Each UI data need is one Tauri *command* (`get_network_info`,
   `get_devices`, `run_speed_test`, …), a thin wrapper in `src-tauri/src/commands.rs`
-  — registered in `lib.rs` — around a pure-Rust service in `crates/rove-core`.
-- **Push** — five *events* flow the other way, each because it's continuous,
+  (registered in `lib.rs`) around a pure-Rust service in `crates/rove-core`.
+- **Push.** Five *events* flow the other way, each because it's continuous,
   arrives mid-operation, or is triggered from outside the app: `live-throughput`
   (1 Hz while subscribed), `speed-test-progress`, `internet-status` and
   `services-timeline` (from the always-on background heartbeats), and
   `network-changed` (the backend watches `ip monitor route` and nudges the UI
   within ~1 s of a cable pull or Wi-Fi join, so state never waits on the 15 s
-  poll). That last one carries no payload at all — it just makes the pull that
+  poll). That last one carries no payload at all: it just makes the pull that
   already exists happen now.
-- **The contract** — TypeScript types in `src/types/` define every payload; the
+- **The contract.** TypeScript types in `src/types/` define every payload; the
   Rust structs in `crates/rove-core` mirror them field-for-field, each in the
   module that produces it (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauri-network-api.ts` implements the same
@@ -48,9 +48,9 @@ Rove is two programs talking over a thin, typed bridge:
 > **Deeper dives**
 > - [Rove frontend](docs/develop/frontend.md): how the UI is organised and styled, and
 >   which component to use for what.
-> - [How Rove Is Put Together](docs/develop/architecture.md) — the swap seam, pull vs
+> - [How Rove Is Put Together](docs/develop/architecture.md): the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
-> - [Learning Rust & Tauri through Rove](docs/develop/learning-rust-and-tauri.md) — the
+> - [Learning Rust & Tauri through Rove](docs/develop/learning-rust-and-tauri.md): the
 >   same boundary from the language side.
 > - [How Rove Captures Network Data (per OS)](docs/networking/data-capture.md)
 > - [How Rove Discovers & Identifies LAN Devices](docs/networking/device-discovery.md)
@@ -126,7 +126,7 @@ Tauri v2 is deny-by-default: the webview can only call what
 and the frameless-window controls). There is no Node runtime in the UI process
 and the backend is memory-safe Rust.
 
-The Hosts view knows which remote hosts each app talks to — a list that is
+The Hosts view knows which remote hosts each app talks to, a list that is
 browsing history in all but name. *That list* never leaves your machine: country
 flags are resolved against an IP-to-country table bundled in the binary
 (`util/geoip.rs`), not by asking a geolocation API about each peer.
@@ -135,7 +135,7 @@ Two things do leave, neither of them a peer address:
 
 - **Your own WAN identity**, when the Connection tab asks: your public IP
   (api.ipify.org). Your ISP, ASN, and country are then resolved from that IP
-  against bundled tables (`util/geoip.rs`) — no request. A best-effort call to
+  against bundled tables (`util/geoip.rs`), no request. A best-effort call to
   ipwho.is only *enriches* the card with your city and ISP website when it isn't
   rate-limited; the card stays populated without it. Every request here is about
   your own address.
@@ -145,7 +145,7 @@ Two things do leave, neither of them a peer address:
   reverse-resolved. Apps it doesn't recognise fall back to a letter monogram and
   ask nothing.
 
-All of it is keyless — Rove ships no API credentials.
+All of it is keyless: Rove ships no API credentials.
 
 ### Bundled data
 
@@ -159,7 +159,7 @@ All of it is keyless — Rove ships no API credentials.
 The OUI and IP sources are chosen to be freely redistributable in a shipped binary: IEEE over
 Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA
 requires destroying superseded copies within 30 days of each twice-weekly
-release — a term a binary already on users' machines cannot honour.
+release, a term a binary already on users' machines cannot honour.
 
 The Hosts view's country flags are drawn with the **Twemoji Country Flags**
 font (`src/assets/fonts/TwemojiCountryFlags.woff2`), because Windows ships no
@@ -204,7 +204,7 @@ rove/
 │   ├── bridge/                 Tauri implementation of the contract
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
-│   │                           deps — compiles and tests anywhere), a module per
+│   │                           deps, so it compiles and tests anywhere), a module per
 │   │                           domain: connection/, devices/, diagnostics/,
 │   │                           services, speed/, usage/; plus platform/ (per-OS
 │   │                           probes), store/ (SQLite, a file per domain) and
@@ -250,7 +250,7 @@ npx playwright install chromium   # once, for the story tests
 npm run tauri:dev            # run the desktop app (hot-reloads the UI)
 npm run dev                  # UI only, in a browser, against the mock bridge
 npm run storybook            # the UI library's components, at localhost:6006
-npm run screenshots          # refresh docs/screenshots — every screen, at window size
+npm run screenshots          # refresh docs/screenshots: every screen, at window size
 npm run format               # lay out the code with Prettier
 npm run catalogue            # regenerate src/ui/components.json after a library change
 cargo run -p rove-core --example scan   # print a live LAN scan
@@ -301,7 +301,7 @@ instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
 Windows fall back to the 15 s poll.
 
 On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
-deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN — including the
+deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN, including the
 link-speed / transmit rate, which the shell tools no longer expose. The SSID
 sits behind Location Services, so Rove asks for that permission once at startup;
 without it the network name shows as missing while everything else still

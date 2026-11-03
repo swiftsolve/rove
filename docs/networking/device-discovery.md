@@ -1,12 +1,12 @@
 # How Rove Discovers & Identifies LAN Devices
 
 The Devices screen answers a deceptively hard question: **"what's on my network,
-and what is each thing?"** — without admin rights, without installing a driver,
+and what is each thing?"**, without admin rights, without installing a driver,
 and in a couple of seconds. This page walks the whole pipeline, from an empty
 subnet to a labelled list of "Living-Room-AppleTV / tv" entries, using the real
 code in `crates/rove-core/src/devices/` and its `mdns.rs` and `oui.rs`.
 
-> Rove fuses **nine** signal sources — an ICMP sweep, a TCP `connect()` probe,
+> Rove fuses **nine** signal sources: an ICMP sweep, a TCP `connect()` probe,
 > mDNS, SSDP/UPnP, reverse DNS, an HTTP banner grab, a NetBIOS name query, an
 > SNMP read of the gateway, and passive DHCP fingerprinting. All but DHCP (which
 > binds UDP :67) need no privileges. No single one is complete; each fills gaps the others
@@ -14,7 +14,7 @@ code in `crates/rove-core/src/devices/` and its `mdns.rs` and `oui.rs`.
 
 It doubles as a Rust lesson: this subsystem shows off async concurrency, the
 `HashMap` entry API, weighted scoring over fixed arrays, `spawn_blocking`, and
-compile-time-embedded data — all in service of one feature.
+compile-time-embedded data, all in service of one feature.
 
 ---
 
@@ -23,7 +23,7 @@ compile-time-embedded data — all in service of one feature.
 There is no OS API that just *returns* your LAN devices. What exists is the
 kernel's **neighbor table** (a.k.a. the ARP cache on IPv4): a map of `IP → MAC`
 for hosts the machine has *recently communicated with*. That's the closest thing
-to ground truth — if an IP↔MAC pair is in there, that device provably exists and
+to ground truth: if an IP↔MAC pair is in there, that device provably exists and
 responded at the link layer.
 
 Two problems with using it directly:
@@ -46,20 +46,20 @@ From `scan()` in `crates/rove-core/src/devices/mod.rs`:
   <img src="../assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
 </div>
 
-1. **Scope** — find my subnet (e.g. `192.168.1.0/24`).
-2. **Provoke** — wake every host so it enters the neighbor table, while passive
+1. **Scope**: find my subnet (e.g. `192.168.1.0/24`).
+2. **Provoke**: wake every host so it enters the neighbor table, while passive
    listeners collect self-announced identities (ICMP sweep ‖ TCP probe ‖ mDNS
-   listen ‖ SSDP listen — all concurrent, ~3.2 s).
-3. **Read** — the neighbor table = ground-truth list of who exists.
-4. **Enrich** — per host: vendor (OUI), name (mDNS, SSDP, NetBIOS, DHCP,
+   listen ‖ SSDP listen, all concurrent, ~3.2 s).
+3. **Read**: the neighbor table = ground-truth list of who exists.
+4. **Enrich**: per host: vendor (OUI), name (mDNS, SSDP, NetBIOS, DHCP,
    reverse DNS), model (mDNS, SSDP, SNMP), OS (DHCP), kind (classify), and
    liveness.
-5. **Assemble** — add this machine, sort gateway→self→by-IP, dedupe by MAC.
+5. **Assemble**: add this machine, sort gateway→self→by-IP, dedupe by MAC.
 
 The stage-2 probes/listeners all run concurrently, bounded by a single
 `DISCOVERY_WINDOW` of 3.2 seconds (in `devices/mod.rs`), not the sum of
-their parts. The stage-4 lookups that hit the network — reverse DNS,
-the HTTP banner grab, the NetBIOS query, and the gateway's SNMP read — are
+their parts. The stage-4 lookups that hit the network (reverse DNS,
+the HTTP banner grab, the NetBIOS query, and the gateway's SNMP read) are
 likewise fired together in one `tokio::join!` in `scan()`, so their combined
 latency is one round, not four. DHCP costs nothing at scan time: a background
 listener fills a cache the scan snapshots (`dhcp::snapshot`). That concurrency
@@ -67,7 +67,7 @@ is the reason the whole scan feels instant.
 
 ---
 
-## Stage 1 — Scoping the subnet
+## Stage 1: Scoping the subnet
 
 You can't sweep "the network" until you know its address range. `subnet_of`
 (in `devices/subnet.rs`) gets the interface's IPv4 + prefix length from the
@@ -94,22 +94,22 @@ which is how the scan later filters the neighbor table to *just this subnet*
 (so a stale entry from a previous network doesn't leak in).
 
 > **Rust note:** `u32::from(ipv4)` and `Ipv4Addr::from(u32)` are free,
-> lossless conversions — an IPv4 address *is* a `u32`. Rove leans on this for
+> lossless conversions: an IPv4 address *is* a `u32`. Rove leans on this for
 > all subnet math and for `ip_sort_key` (sorting devices numerically by address).
 
 ---
 
-## Stage 2 — Provoking hosts (the ARP-table trick)
+## Stage 2: Provoking hosts (the ARP-table trick)
 
 This is the clever core. To get a silent host into the neighbor table, you have
-to make your kernel send it a packet — *any* packet — because to send one, the
+to make your kernel send it a packet, *any* packet, because to send one, the
 kernel must first ARP-resolve the target's MAC, which creates the neighbor
 entry. **You don't care if the host answers.** The ARP resolution already
 happened; the entry is already cached. Rove does this two complementary active
 ways, plus two passive listeners (mDNS and SSDP), all at once (the stage-2
 `tokio::join!` in `scan()`).
 
-### 2a. ICMP sweep — `devices/sweep.rs`
+### 2a. ICMP sweep (`devices/sweep.rs`)
 
 Ping every address in the subnet, 64 at a time:
 
@@ -131,12 +131,12 @@ futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
 **Discovery doesn't need the reply.** The ping is bait: the ARP exchange has
 already happened. The IPs that did reply are kept only as a liveness signal
 (4j). It only runs on `/24`–`/30` subnets (`hosts` in `subnet.rs`, shared with
-the TCP probe) — sweeping a `/16` would be 65k pings, which is antisocial, and
+the TCP probe). Sweeping a `/16` would be 65k pings, which is antisocial, and
 anything smaller than `/30` is pointless.
 
-### 2b. TCP `connect()` probe — `devices/probe.rs`
+### 2b. TCP `connect()` probe (`devices/probe.rs`)
 
-An ICMP sweep misses hosts that *drop ping* — increasingly the default on phones
+An ICMP sweep misses hosts that *drop ping*, increasingly the default on phones
 and hardened IoT. So Rove also tries to open a TCP connection to a short list
 of tell-tale ports on every host:
 
@@ -147,9 +147,9 @@ const PROBE_PORTS: &[u16] = &[
 ```
 
 Same trick, stronger: to send the TCP SYN, the kernel must ARP-resolve the
-target — so the host lands in the neighbor table **whether it accepts (SYN-ACK)
+target, so the host lands in the neighbor table **whether it accepts (SYN-ACK)
 or refuses (RST)**. Either proves it's alive. And this needs *no raw sockets and
-no privileges*, unlike a real ARP or SYN scan — it's just `TcpStream::connect`
+no privileges*, unlike a real ARP or SYN scan. It's just `TcpStream::connect`
 (the `//!` header of `probe.rs`).
 
 There's a bonus: a port that actually *accepts* is a strong hint about the device
@@ -170,25 +170,25 @@ match timeout(CONNECT_TIMEOUT, TcpStream::connect(addr)).await {
 400 connections in flight at once (`CONCURRENT_PROBES`, sized to stay under the
 1024 open-file limit), 400 ms timeout each.
 
-### 2c. mDNS listening — `mdns.rs`
+### 2c. mDNS listening (`mdns.rs`)
 
 While the two active probes hammer the network, a **passive** mDNS listener runs
 in parallel. Many devices *announce themselves* over multicast DNS (`_ipp._tcp`
 for printers, `_googlecast._tcp` for Chromecasts, `_sonos._tcp` for Sonos…).
-This is the single best identity signal — the device *tells* you what it is,
+This is the single best identity signal: the device *tells* you what it is,
 often with a friendly name ("Living room clock") and a hardware model
 ("MacBookPro18,3"). Rove browses ~35 service types (`SERVICE_KINDS` in
 `mdns.rs`) via the pure-Rust `mdns-sd` crate.
 
 > **Rust note:** `mdns-sd` is blocking, so it runs inside
-> `tokio::task::spawn_blocking` (in `mdns::discover`) — the right tool for wrapping
+> `tokio::task::spawn_blocking` (in `mdns::discover`), the right tool for wrapping
 > synchronous work so it doesn't stall the async runtime's worker threads.
 
-### 2d. SSDP / UPnP discovery — `devices/ssdp.rs`
+### 2d. SSDP / UPnP discovery (`devices/ssdp.rs`)
 
 A second passive-ish source runs alongside mDNS: an SSDP `M-SEARCH`. Many
-consumer devices — smart TVs, media renderers, printers, game consoles, IoT hubs
-— answer SSDP even when they *drop ICMP and refuse every port the TCP probe
+consumer devices (smart TVs, media renderers, printers, game consoles, IoT hubs)
+answer SSDP even when they *drop ICMP and refuse every port the TCP probe
 knocks on*, so it both **finds** a few otherwise-invisible hosts and, more often,
 **names** them. Each responder's reply points at a description XML that Rove
 fetches over HTTP (`reqwest`) to read the UPnP `friendlyName`, `modelName`,
@@ -196,8 +196,8 @@ fetches over HTTP (`reqwest`) to read the UPnP `friendlyName`, `modelName`,
 
 ```rust
 pub struct SsdpHit {
-    pub name: Option<String>,         // friendlyName — "Living Room TV"
-    pub model: Option<String>,        // modelName    — "BRAVIA KD-55X"
+    pub name: Option<String>,         // friendlyName: "Living Room TV"
+    pub model: Option<String>,        // modelName: "BRAVIA KD-55X"
     pub manufacturer: Option<String>, // "Sony"
     pub device_type: Option<String>,  // "urn:schemas-upnp-org:device:MediaRenderer:1"
 }
@@ -209,25 +209,25 @@ Two engineering details worth noting:
   passed down from `scan()`) so the multicast `M-SEARCH` leaves
   the *right* adapter on multi-homed and Windows hosts.
 - **It's bounded against abuse:** at most `MAX_RESPONDERS = 128` descriptions are
-  fetched, `CONCURRENT_FETCHES = 32` at a time with a 1.5 s per-fetch timeout —
+  fetched, `CONCURRENT_FETCHES = 32` at a time with a 1.5 s per-fetch timeout,
   so a hostile or broken LAN can't fan the HTTP stage out unboundedly.
 
-Like mDNS, it's **pure Rust with no platform branch** — a `tokio` UDP socket plus
+Like mDNS, it's **pure Rust with no platform branch**: a `tokio` UDP socket plus
 `reqwest`, identical on Linux, macOS, and Windows.
 
 ---
 
-## Stage 3 — Reading the ground truth
+## Stage 3: Reading the ground truth
 
 After the provocation window, `neighbor_table()` (in `platform/mod.rs`) reads
 the now-populated table: `ip neigh show` on Linux (which carries a
 `REACHABLE`/`STALE`/… state) or `arp -a` elsewhere, with no state. Entries are
-filtered to the scan's subnet (the `in_scope` filter in `scan()`). **This list —
-not the ping/probe results — is the authoritative "who exists."** The probes were only there to fill it.
+filtered to the scan's subnet (the `in_scope` filter in `scan()`). **This list,
+not the ping/probe results, is the authoritative "who exists."** The probes were only there to fill it.
 
 ---
 
-## Stage 4 — Enriching each bare entry
+## Stage 4: Enriching each bare entry
 
 Each neighbor is now `{ip, mac, reachable}`. A cluster of enrichments turns that
 into an identified device (`build_device` in `devices/mod.rs`). All the per-scan
@@ -235,7 +235,7 @@ lookup tables are bundled into one `Enrichment` struct, keyed by device IP (DHCP
 by MAC), so `build_device` draws from a single value rather than an argument list that
 grows with every new discovery source.
 
-### 4a. Vendor from the MAC — `oui.rs`
+### 4a. Vendor from the MAC (`oui.rs`)
 
 The first 24+ bits of a MAC are an IEEE-assigned vendor prefix (OUI). Rove
 embeds the **IEEE registry** (regenerated straight from IEEE's public MA-L/MA-M/
@@ -248,15 +248,15 @@ obligation) into the binary at compile time:
 static OUI_GZ: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/oui.tsv.gz"));
 ```
 
-IEEE hands out blocks at three sizes — MA-L (24-bit), MA-M (28-bit), MA-S
-(36-bit) — so `lookup_vendor` (in `oui.rs`, via `resolve`) checks **most-specific first**: try
+IEEE hands out blocks at three sizes (MA-L 24-bit, MA-M 28-bit, MA-S
+36-bit), so `lookup_vendor` (in `oui.rs`, via `resolve`) checks **most-specific first**: try
 the 36-bit key, then 28, then 24. That matters because a single 24-bit block can
 be subdivided and resold; the 28-bit match is a different company than the 24-bit
 fallback (there's a test for exactly this, `prefers_more_specific_assignments`
 in `oui.rs`). The table is built
 once, lazily, and cached in a `OnceLock`.
 
-> **Rust note:** `include_bytes!` bakes the gzip'd file into the executable — no
+> **Rust note:** `include_bytes!` bakes the gzip'd file into the executable: no
 > runtime file I/O, no "where did my data file go" deployment problem. On first
 > lookup it's inflated once and leaked to a `&'static str`, then parsed into a
 > `OnceLock` (initialize-once, then shared immutably forever), the idiomatic
@@ -265,7 +265,7 @@ once, lazily, and cached in a `OnceLock`.
 ### 4b. Randomized-MAC detection
 
 Modern phones rotate a *random* MAC per network for privacy. Rove detects this
-from a single bit — the "locally administered" bit of the first octet
+from a single bit: the "locally administered" bit of the first octet
 (`is_randomized_mac` in `oui.rs`):
 
 ```rust
@@ -278,50 +278,50 @@ pub fn is_randomized_mac(mac: &str) -> bool {
 A randomized MAC won't match the OUI table (it's not a real vendor prefix), and
 the UI flags it so you understand why that device has no vendor.
 
-### 4c. Hostname from reverse DNS / mDNS — `hostname.rs`
+### 4c. Hostname from reverse DNS / mDNS (`hostname.rs`)
 
 `resolve_many` (in `hostname.rs`) does a batch reverse-DNS lookup for every IP.
 The key engineering lesson here is about **latency**: a naive "one lookup process
 per host" would spawn hundreds of processes, each potentially blocking for
-seconds before failing — that dominated scan time. So every platform resolves the
+seconds before failing. That dominated scan time. So every platform resolves the
 *whole batch in a single process*:
 
 - **Windows** fires all lookups concurrently in-process via
   `[System.Net.Dns]::GetHostEntryAsync` and `Task.WaitAll` with a 2 s budget
   (`resolve_many_windows`).
 - **Unix** fans out bounded-concurrent `getent hosts` (Linux) or `dscacheutil`
-  (macOS — it has no `getent`; `dig` backs it up) under one `xargs -P 16`
+  (macOS: it has no `getent`; `dig` backs it up) under one `xargs -P 16`
   process with a 4 s budget (`resolve_many_unix`).
 
 Results are then cleaned: `trim_suffix` strips `.local`/`.lan`/`.home`/
 `.localdomain`/`.internal`, and `is_meaningful` (in `hostname.rs`) rejects junk
 like systemd's synthetic `_gateway` and routers that just echo their MAC back as a hostname.
 
-### 4d. HTTP banner grab — `banner.rs`
+### 4d. HTTP banner grab (`banner.rs`)
 
-Reverse DNS often fails for the exact devices you most want named — routers, IP
-cameras, NAS boxes, printers — but those same devices usually run a **web UI**.
+Reverse DNS often fails for the exact devices you most want named (routers, IP
+cameras, NAS boxes, printers), but those same devices usually run a **web UI**.
 So for every host the TCP probe already found listening on **port 80**, Rove
 issues one `GET /` and scrapes two identity hints at near-zero extra cost
 (`devices/banner.rs`):
 
 ```rust
 pub struct BannerHit {
-    pub server: Option<String>, // Server header — "lighttpd/1.4", "RomPager"
-    pub title: Option<String>,  // page <title>  — "NETGEAR Router", "Synology DiskStation"
+    pub server: Option<String>, // Server header: "lighttpd/1.4", "RomPager"
+    pub title: Option<String>,  // page <title>: "NETGEAR Router", "Synology DiskStation"
 }
 ```
 
 Only the first 16 KB of the body is read (the `<title>` lives in the `<head>`),
 bounding memory against a host that streams megabytes. **Scope note:** only
-plaintext HTTP is grabbed — LAN HTTPS is almost always a self-signed cert that a
+plaintext HTTP is grabbed: LAN HTTPS is almost always a self-signed cert that a
 correct TLS stack rejects, and reading it would mean disabling verification,
 which is deliberately left out to keep Rove's "no danger knobs" posture.
 
-### 4e. NetBIOS name query — `netbios.rs`
+### 4e. NetBIOS name query (`netbios.rs`)
 
 Windows and SMB devices frequently have *no* mDNS record and only a
-router-assigned reverse-DNS name — but they answer a **NetBIOS node-status
+router-assigned reverse-DNS name, but they answer a **NetBIOS node-status
 request** (NBSTAT) on UDP/137 with their own name table, whose first unique entry
 is the real computer name ("DESKTOP-3F9K2"). Rove sends the wildcard NBSTAT query
 to every in-scope IP over a `tokio` UDP socket (again pure Rust, no platform
@@ -346,7 +346,7 @@ family, a hostname and a kind vote, and it survives MAC randomization. Binding
 UDP :67 needs root or `cap_net_bind_service` on Linux; without it (and without
 the privileged helper) the cache stays empty.
 
-### 4h. Choosing the name — the preference chain
+### 4h. Choosing the name: the preference chain
 
 With up to five name sources in hand, `build_device` (in `devices/mod.rs`) picks
 the most human-friendly one available, in order:
@@ -362,11 +362,11 @@ can't replace a stronger name from an earlier scan. The **model** string follows
 a parallel chain: mDNS TXT model first (most precise), then SSDP `modelName`,
 then SNMP `sysDescr`.
 
-### 4i. Classification — the weighted-vote classifier (`classify.rs`)
+### 4i. Classification: the weighted-vote classifier (`classify.rs`)
 
-This is the crown jewel. Given every fuzzy signal in hand — mDNS service/model,
+This is the crown jewel. Given every fuzzy signal in hand (mDNS service/model,
 open ports, hostname keywords, vendor, SSDP type/model/name/manufacturer, DHCP
-fingerprint, and HTTP banner — decide the device *kind* (phone, tv, printer, nas,
+fingerprint, and HTTP banner), decide the device *kind* (phone, tv, printer, nas,
 camera, …). Rather than trust the single strongest signal blindly, **every signal
 casts a weighted vote and the highest total wins** (`classify` in `classify.rs`).
 The flap-prone signals come from the per-MAC union of every scan so far
@@ -400,9 +400,9 @@ The weights encode *trust*: a definitive mDNS service (a device literally
 advertising `_googlecast._tcp`) scores 100 and decides the kind outright; a UPnP
 `deviceType` is a solid-but-imperfect 50 (reliable for printers/routers, vague
 for the media-renderer family); an HTTP banner is a weak 22; a vendor name is
-25 (Apple makes phones, tablets, computers, TVs and speakers — it barely narrows
+25 (Apple makes phones, tablets, computers, TVs and speakers; it barely narrows
 anything). The scoring only changes the outcome when several weak signals
-corroborate against a lone noisy one — e.g. an SSDP `modelName`, `friendlyName`
+corroborate against a lone noisy one, e.g. an SSDP `modelName`, `friendlyName`
 and `deviceType` agreeing on a printer. Ties break first toward the kind with the
 strongest single signal, then toward the *more specific* kind (nas over computer,
 camera over iot), via ordering in `KIND_NAMES` (in `classify.rs`). A win by less
@@ -416,13 +416,13 @@ The pattern tables themselves (`HOSTNAME_KINDS`, `VENDOR_KINDS`, `MODEL_KINDS`)
 are big ordered lists of regexes, most-specific-first, so `android-tv` types as a
 TV not a phone, and a Kasa smart plug types as IoT even though TP-Link mostly
 makes routers. There's a whole test suite (`devices/classify/tests.rs`) pinning
-down the tricky cases — an iPad (tablet) vs iPhone (phone)
+down the tricky cases: an iPad (tablet) vs iPhone (phone)
 (`tablet_is_split_out_from_phone`), "Camerons-MacBook-Pro" not tripping the
 "cam"→camera rule (`a_persons_name_does_not_trip_iot_substrings`), a Plex port
 reading as NAS-class (`nas_is_distinguished_from_a_plain_computer`).
 
 > **Rust note:** the `Tally` uses two fixed-size arrays indexed by kind
-> (`total[KIND_COUNT]`, `best_single[KIND_COUNT]`) — no allocation, no HashMap,
+> (`total[KIND_COUNT]`, `best_single[KIND_COUNT]`): no allocation, no HashMap,
 > just integer indexing. Comparing `(total, best_single)` tuples gives
 > lexicographic tie-breaking for free, because Rust derives `Ord` on tuples
 > field-by-field.
@@ -439,7 +439,7 @@ after missing `MISS_LIMIT` (3) scans in a row *and* staying silent for
 
 ---
 
-## Stage 5 — Assembly
+## Stage 5: Assembly
 
 Finally (the end of `scan()`):
 
@@ -448,7 +448,7 @@ Finally (the end of `scan()`):
   `local_machine_name` (in `hostname.rs`; it tries `/etc/hostname`, then
   `COMPUTERNAME`/`HOSTNAME` env vars, then the `hostname` binary).
 - **Sort** gateway first, then self, then numerically by IP
-  (`sort_by_key((!is_gateway, !is_self, ip_sort_key))` — `false < true`, so the
+  (`sort_by_key((!is_gateway, !is_self, ip_sort_key))`: `false < true`, so the
   negation floats the special ones to the top).
 - **Dedupe by MAC** so a host with two IPs shows once.
 
@@ -461,7 +461,7 @@ The result is a `LanDeviceScan` that serializes across the IPC bridge (see the
 
 Because device names and models come *off the network* from untrusted neighbors,
 every such string passes through `sanitize_display` (in `util/net.rs`) before it's
-stored or rendered — stripping control characters and Unicode bidi overrides so a
+stored or rendered, stripping control characters and Unicode bidi overrides so a
 hostile device can't inject terminal escapes or right-to-left text into your
 device list. And every IP interpolated into a `ping`/`getent` shell command is
 first validated by `is_shell_safe_ip` (it must parse as a real `IpAddr`), closing
@@ -477,8 +477,8 @@ the shell-injection path.
 
 **The philosophy:** you can't ask the network "who are you," so you *provoke*
 everyone into the kernel's neighbor table using unprivileged bait traffic, treat
-that table as ground truth, then fuse every weak identity signal you can scrape —
-vendor prefix, reverse DNS, mDNS/SSDP self-announcements, HTTP banners, NetBIOS
-names, the gateway's SNMP banner, DHCP fingerprints, and open ports — with a
+that table as ground truth, then fuse every weak identity signal you can scrape
+(vendor prefix, reverse DNS, mDNS/SSDP self-announcements, HTTP banners, NetBIOS
+names, the gateway's SNMP banner, DHCP fingerprints, and open ports) with a
 trust-weighted vote to guess what each device actually is. Each new source is one more struct field and one more vote, never a
 rewrite.

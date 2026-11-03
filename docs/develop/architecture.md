@@ -5,11 +5,11 @@ and the backend starts, which direction data moves, and what a call across that
 gap actually is.
 
 > **Companion pages:**
-> - [Learning Rust & Tauri through Rove](learning-rust-and-tauri.md) — the same
+> - [Learning Rust & Tauri through Rove](learning-rust-and-tauri.md): the same
 >   boundary from the language side, with the Rust concepts spelled out.
-> - [How Rove Captures Network Data (per OS)](../networking/data-capture.md) — the
+> - [How Rove Captures Network Data (per OS)](../networking/data-capture.md): the
 >   per-OS probes behind every command below.
-> - [How Rove Discovers & Identifies LAN Devices](../networking/device-discovery.md) — the
+> - [How Rove Discovers & Identifies LAN Devices](../networking/device-discovery.md): the
 >   device-scan pipeline in full.
 
 ---
@@ -36,7 +36,7 @@ if (isTauri()) {
 }
 ```
 
-The mock isn't a fixture file — it fakes *time* as well as data: calls resolve
+The mock isn't a fixture file: it fakes *time* as well as data: calls resolve
 after a plausible delay, live throughput ticks once a second with a periodic
 burst, and a speed test runs a scripted ten-second ramp that can be cancelled
 mid-flight. Which is why `npm run dev` gives a fully populated UI in a plain
@@ -70,7 +70,7 @@ desktop doesn't.*
   <img src="../assets/pull-push.svg" width="820" alt="React on the left and Rust on the right: React sends about thirty invoke commands rightward and receives JSON back, while Rust pushes five named events leftward without being asked" />
 </div>
 
-**Pull when React knows it needs something** — a tab opened, a button was
+**Pull when React knows it needs something**: a tab opened, a button was
 pressed, a poll fired. That covers roughly thirty commands, registered in
 `src-tauri/src/lib.rs` and implemented in `src-tauri/src/commands.rs`.
 
@@ -86,7 +86,7 @@ the app:
 | `internet-status` | a background heartbeat notices, not the UI |
 | `services-timeline` | runs even with the window closed |
 
-Push costs more than pull — subscribe, unsubscribe, tear down on unmount, and
+Push costs more than pull: subscribe, unsubscribe, tear down on unmount, and
 handle events that land *after* teardown (`useOnNetworkChanged` keeps an
 `active` flag for exactly that race). So it stays rare.
 
@@ -96,7 +96,7 @@ Two places the directions mix:
   are ordinary commands that flip an atomic flag; the 1 Hz loop in
   `src-tauri/src/monitors.rs` skips its work entirely while it's false, so an
   unwatched window costs nothing.
-- **Push that triggers a pull** — the next section.
+- **Push that triggers a pull**: the next section.
 
 ---
 
@@ -134,7 +134,7 @@ Windows fall back to the poll.
   <img src="../assets/ipc-anatomy.svg" width="820" alt="A POST to ipc://localhost/get_network_info carrying a Tauri-Invoke-Key header and a JSON body; the reply is application/json with a Tauri-Response header reading ok" />
 </div>
 
-Tauri registers custom URI schemes with the webview — the same mechanism that
+Tauri registers custom URI schemes with the webview, the same mechanism that
 serves the bundled UI out of the binary. Two are in play: `tauri://localhost`
 for assets (`http://tauri.localhost` on Windows), and `ipc` for commands.
 
@@ -142,7 +142,7 @@ A command call is shaped like HTTP but never reaches the network. The command
 name is read from the URL path, the arguments are the JSON body, and a
 `Tauri-Response` header of `ok` or `error` is what decides whether the promise
 resolves or rejects. `Tauri-Invoke-Key` is checked so page content can't fire
-commands on its own — defence in depth alongside
+commands on its own, defence in depth alongside
 `src-tauri/capabilities/default.json`, which already limits the webview to our
 commands, event listening and the frameless-window controls.
 
@@ -164,13 +164,13 @@ nothing in the type system would warn you.
 
 | Written for Rove | Came with the tools |
 |---|---|
-| The bridge — one object on `window`, two implementations | The window — native, frameless, from JSON config |
-| The contract — TypeScript types mirrored by Rust structs | The IPC transport plus the `#[tauri::command]` glue |
-| The mock — data *and* time, ~960 lines | Asset embedding — the UI compiled into the binary |
-| `useBackendQuery` — loading, polling, pause-when-hidden, race handling | Permissions — the deny-by-default capability manifest |
-| The live store — one owner, 60 s history, idle hysteresis | Installers — deb, AppImage, dmg, nsis, msi, and signing |
-| Every measurement in `crates/rove-core` | Rendering — React renders; it has no opinion on fetching |
+| The bridge: one object on `window`, two implementations | The window: native, frameless, from JSON config |
+| The contract: TypeScript types mirrored by Rust structs | The IPC transport plus the `#[tauri::command]` glue |
+| The mock: data *and* time, ~960 lines | Asset embedding: the UI compiled into the binary |
+| `useBackendQuery`: loading, polling, pause-when-hidden, race handling | Permissions: the deny-by-default capability manifest |
+| The live store: one owner, 60 s history, idle hysteresis | Installers: deb, AppImage, dmg, nsis, msi, and signing |
+| Every measurement in `crates/rove-core` | Rendering: React renders; it has no opinion on fetching |
 
 Tauri owns the container and the pipe; serde owns the translation; the bridge
 owns the naming. Keeping a seam of our own *above* the framework's seam is what
-makes the mock — and therefore the browser demo — possible at all.
+makes the mock (and therefore the browser demo) possible at all.
