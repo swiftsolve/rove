@@ -3,5 +3,7 @@ dist/
 target/
 *.log
 .claude/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 storybook-static/
