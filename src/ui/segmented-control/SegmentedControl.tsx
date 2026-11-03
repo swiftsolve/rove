@@ -13,7 +13,8 @@ const TRACK = 'relative inline-grid grid-flow-col auto-cols-[1fr] w-max gap-2 p-
 // The accent-muted thumb behind the chosen segment. Its width and position
 // come from `--count` and `--index` on the track: each column is the track's
 // inner width, less the gaps, over the count, and each step is a column plus
-// a gap.
+// a gap. `data-keeps-transition` lets it slide while a theme switch has
+// transitions off (styles/base.css), since picking a theme moves it.
 const THUMB = cx(
   'absolute inset-y-2 left-2 rounded-xs bg-accent-muted pointer-events-none',
   'w-[calc((100%-(var(--count)+1)*var(--spacing-2))/var(--count))]',
@@ -75,7 +76,7 @@ export function SegmentedControl<Value extends string>({
       onValueChange={(next) => onChange(next as Value)}
       {...ariaProps}
     >
-      {index >= 0 && <span className={THUMB} aria-hidden />}
+      {index >= 0 && <span className={THUMB} aria-hidden data-keeps-transition />}
       {options.map((option) => (
         <Radio.Root
           key={option.value}

@@ -64,8 +64,10 @@
   :root.theme-to-dark::view-transition-old(root) { z-index: 1; }
   :root.theme-to-dark::view-transition-new(root) { z-index: 0; }
   /* While the theme class flips, every control takes its new colours at once
-     rather than playing its hover transition (see applyThemeClass). */
-  :root.theme-switching *,
+     rather than playing its hover transition (see applyThemeClass). Motion the
+     theme doesn't touch opts out with `data-keeps-transition`: the theme
+     SegmentedControl's thumb slides in the same moment the theme flips. */
+  :root.theme-switching *:not([data-keeps-transition]),
   :root.theme-switching *::before,
   :root.theme-switching *::after {
     transition: none !important;
