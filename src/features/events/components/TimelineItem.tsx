@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import type { JSX, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import {
   EVENT_TITLES,
@@ -17,6 +17,7 @@ import {
   ArrowRightIcon,
   EthernetIcon,
   GlobeIcon,
+  type IconComponent,
   InlineMeta,
   NoValue,
   OfflineIcon,
@@ -51,8 +52,6 @@ const SUBJECT = 'text-md text-secondary'
 
 const META = 'text-sm text-tertiary tabular-nums'
 
-type IconComponent = (props: { size?: number }) => JSX.Element
-
 type EventStyle = {
   icon: IconComponent
   tone: EventTone
@@ -64,7 +63,7 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   ap_appeared: { icon: RouterIcon, tone: 'alert' },
   device_offline: { icon: ArrowLeftIcon, tone: 'leave' },
   device_online: { icon: RefreshIcon, tone: 'join' },
-  gateway_changed: { icon: ShieldAlertIcon, tone: 'alert' },
+  gateway_changed: { icon: ShieldAlertIcon, tone: 'danger' },
   wifi_connected: { icon: WifiIcon, tone: 'join' },
   ethernet_connected: { icon: EthernetIcon, tone: 'join' },
   connection_lost: { icon: OfflineIcon, tone: 'danger' },

@@ -17,7 +17,7 @@ describe('formatDayHeading', () => {
 
   it('adds the year only for another year', () => {
     expect(formatDayHeading(new Date(2026, 9, 20).getTime(), now)).not.toMatch(/2026/)
-    expect(formatDayHeading(new Date(2025, 11, 31).getTime(), now)).toMatch(/2025$/)
+    expect(formatDayHeading(new Date(2025, 11, 31).getTime(), now)).toMatch(/2025/)
   })
 })
 

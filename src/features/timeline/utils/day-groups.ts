@@ -1,4 +1,4 @@
-/** A run of same-day entries under its heading ("Today", "Monday, 12 January"). */
+/** A run of same-day entries under its heading ("Today", "Monday, January 12"). */
 export type DayGroup<T> = {
   key: string
   heading: string
@@ -11,7 +11,17 @@ function dayKey(ts: number): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
-// "Today", "Yesterday", else e.g. "Monday, 12 January" (plus the year if not this one).
+// The user's locale orders the parts: "Monday, January 12" in the US,
+// "Monday 12 January" in the UK.
+const DAY = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+const DAY_IN_YEAR = new Intl.DateTimeFormat(undefined, {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+// "Today", "Yesterday", else the weekday and date (plus the year if not this one).
 export function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
   const now = new Date(nowMs)
@@ -19,10 +29,7 @@ export function formatDayHeading(ts: number, nowMs: number): string {
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
   if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
 
-  const weekday = date.toLocaleDateString(undefined, { weekday: 'long' })
-  const month = date.toLocaleDateString(undefined, { month: 'long' })
-  const base = `${weekday}, ${date.getDate()} ${month}`
-  return date.getFullYear() === now.getFullYear() ? base : `${base} ${date.getFullYear()}`
+  return (date.getFullYear() === now.getFullYear() ? DAY : DAY_IN_YEAR).format(date)
 }
 
 // Consecutive same-day runs of the already-ordered feed, order kept.
