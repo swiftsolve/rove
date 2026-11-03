@@ -11,6 +11,7 @@ import {
   ComputerIcon,
   ConsoleIcon,
   DeviceIcon,
+  type IconComponent,
   IconTile,
   type IconTileColor,
   InlineMeta,
@@ -69,7 +70,7 @@ const DEVICE_META = 'type-caption text-tertiary flex min-w-0 items-baseline gap-
 
 const DEVICE_KIND = 'min-w-0 flex-[0_1_auto]'
 
-const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Element> = {
+const KIND_ICONS: Record<LanDeviceKind, IconComponent> = {
   router: RouterIcon,
   nas: NasIcon,
   computer: ComputerIcon,
@@ -102,11 +103,11 @@ function KindIcon({ kind }: { kind: LanDeviceKind }) {
  */
 function DeviceMetaLine({
   device,
-  name,
+  nameParts,
   lastSeenLabel,
 }: {
   device: LanDevice
-  name: string[]
+  nameParts: string[]
   lastSeenLabel: string | null
 }): JSX.Element | null {
   if (device.isGateway) {
@@ -127,7 +128,7 @@ function DeviceMetaLine({
     )
   }
 
-  const metaParts = deviceMetaParts(device, name)
+  const metaParts = deviceMetaParts(device, nameParts)
   if (metaParts.length === 0 && !lastSeenLabel) return null
   return (
     <div className={DEVICE_META}>
@@ -140,7 +141,7 @@ function DeviceMetaLine({
 
 export function DeviceRow({ device }: { device: LanDevice }) {
   const now = useNow(ROW_CLOCK_INTERVAL_MS)
-  const name = deviceName(device)
+  const nameParts = deviceName(device)
   const lastSeenLabel = lastSeenAge(device, now)
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 
@@ -156,7 +157,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
               column's 4px gap. */}
           <div className="mb-2 flex items-start justify-between gap-8">
             <h2 className={DEVICE_NAME}>
-              <InlineMeta items={name} />
+              <InlineMeta items={nameParts} />
             </h2>
             {/* A span can't take focus, so the hint is spoken from the text, not the tooltip. */}
             <Tooltip content={device.isReachable ? 'Reachable' : 'No response to recent scans'} shouldDescribe={false}>
@@ -168,7 +169,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
             </Tooltip>
           </div>
 
-          <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
+          <DeviceMetaLine device={device} nameParts={nameParts} lastSeenLabel={lastSeenLabel} />
 
           <div className="flex items-baseline justify-between gap-8">
             <span className="type-caption text-tertiary min-w-0 tabular-nums">

@@ -33,7 +33,7 @@ function activityPhrase(label: string): string {
     .join(' ')
 }
 
-function metricPhrase(words: string[]): string {
+function capitalizedListPhrase(words: string[]): string {
   const phrase = listPhrase(words)
   return phrase.charAt(0).toUpperCase() + phrase.slice(1)
 }
@@ -46,7 +46,7 @@ function shortfallPhrase(failing: RequirementCheck[], words: { speed: string; de
       return labels.length > 0 ? `${listPhrase(labels)} ${words[kind]}` : null
     })
     .filter((phrase) => phrase != null)
-  return metricPhrase(phrases)
+  return capitalizedListPhrase(phrases)
 }
 
 function summarize(level: CapabilityLevel, label: string, failing: RequirementCheck[]): string {

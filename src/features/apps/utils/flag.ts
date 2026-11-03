@@ -19,11 +19,11 @@ function normalizeCountryCode(code: string | null | undefined): string | null {
  * two ASCII letters (unresolved or private-network peers).
  */
 export function countryCodeToFlag(code: string | null | undefined): string | null {
-  const cc = normalizeCountryCode(code)
-  if (!cc) return null
+  const countryCode = normalizeCountryCode(code)
+  if (!countryCode) return null
   return String.fromCodePoint(
-    REGIONAL_INDICATOR_A + (cc.charCodeAt(0) - CHAR_CODE_A),
-    REGIONAL_INDICATOR_A + (cc.charCodeAt(1) - CHAR_CODE_A),
+    REGIONAL_INDICATOR_A + (countryCode.charCodeAt(0) - CHAR_CODE_A),
+    REGIONAL_INDICATOR_A + (countryCode.charCodeAt(1) - CHAR_CODE_A),
   )
 }
 
@@ -32,12 +32,12 @@ export function countryCodeToFlag(code: string | null | undefined): string | nul
  * or null when it isn't two ASCII letters or the runtime can't resolve it.
  */
 export function countryCodeToName(code: string | null | undefined): string | null {
-  const cc = normalizeCountryCode(code)
-  if (!cc) return null
+  const countryCode = normalizeCountryCode(code)
+  if (!countryCode) return null
   try {
-    const name = regionNames?.of(cc)
+    const name = regionNames?.of(countryCode)
     // DisplayNames echoes the input back when it has no entry for the region.
-    return name && name !== cc ? name : null
+    return name && name !== countryCode ? name : null
   } catch {
     return null
   }

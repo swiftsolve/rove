@@ -19,6 +19,12 @@ type UseDiagnosticsResult = {
   run: () => Promise<void>
 }
 
+/** A failed live poll's message, falling back to the generic one when it threw something that isn't an Error. */
+function errorText(error: unknown): string | null {
+  if (error == null) return null
+  return error instanceof Error ? error.message : ERROR_MESSAGE
+}
+
 /**
  * The Connection view's diagnostics: a full snapshot fetched on open and on
  * network change, with the cheap live metrics polled on top of it. Both are
@@ -58,8 +64,7 @@ export function useDiagnostics(): UseDiagnosticsResult {
   // Hidden while the first snapshot loads, like the snapshot's own error. A
   // rerun keeps it until it lands, so the banner can show its Retry running.
   const isFirstLoad = full.isBusy && full.data === undefined
-  const liveError =
-    isFirstLoad || live.error == null ? null : live.error instanceof Error ? live.error.message : ERROR_MESSAGE
+  const liveError = isFirstLoad ? null : errorText(live.error)
 
   return {
     diagnostics: overlayLiveMetrics(

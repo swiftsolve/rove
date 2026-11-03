@@ -19,12 +19,12 @@ export function RestartAsAdminAction(): JSX.Element | null {
   const isBusy = relaunch.isPending
   const wasDeclined = relaunch.isError
 
-  const isEnabled = IS_WINDOWS && isTauri()
+  const canElevate = IS_WINDOWS && isTauri()
   // So a failure that isn't about elevation (a policy block, a provider error)
   // isn't blamed on it.
-  const detail = useUsageSupportDetail(isEnabled)
+  const detail = useUsageSupportDetail(canElevate)
 
-  if (!isEnabled) return null
+  if (!canElevate) return null
 
   return (
     <>

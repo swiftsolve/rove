@@ -20,7 +20,7 @@ const FAILURES_BEFORE_ERROR = 3
 
 /**
  * Why the network can't be read. `timeout`: the OS query is slow, which is
- * usually temporary. `backend`: there's no bridge to the app. `offline`: the
+ * usually temporary. `backend`: there's no backend (a plain web build). `offline`: the
  * read failed, with the backend's reason as `message`.
  */
 export type NetworkError = {

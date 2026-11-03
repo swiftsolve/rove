@@ -102,6 +102,8 @@ export function DevicesView() {
   const hasDevices = devices.length > 0
   const onlineCount = devices.filter((device) => device.isReachable).length
   const subnet = lastScan?.subnet ?? null
+  // Once the subnet line shows, the scan status moves into it from the header's status slot.
+  const isSubnetShown = hasDevices && Boolean(subnet)
   // Only this machine (or nothing): on macOS, usually a withheld Local Network grant.
   const isOnlySelf = !isScanning && lastScan != null && devices.every((device) => device.isSelf)
   const shouldShowLocalNetworkHint = IS_MAC && isOnlySelf
@@ -112,7 +114,7 @@ export function DevicesView() {
         icon={<DevicesIcon size={18} />}
         title={countTitle(devices.length, 'device', 'Devices')}
         description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
-        status={isScanning && !(hasDevices && subnet) ? <ScanStatus isActive isLiveRegion /> : undefined}
+        status={isScanning && !isSubnetShown ? <ScanStatus isActive isLiveRegion /> : undefined}
         actions={
           <>
             <IconButton label="About device scanning" icon={HelpIcon} tooltip={SCAN_HINT} />

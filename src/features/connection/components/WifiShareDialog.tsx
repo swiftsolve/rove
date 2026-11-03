@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { ErrorNotice } from '@/app/components/ErrorNotice'
 import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
 import { type ShareNotice, shareNotice } from '@/features/connection/utils/wifi-share-notice'
+import type { WifiShare } from '@/types'
 import { AlertIcon, Dialog, LockIcon, Spinner, WifiOffIcon } from '@/ui'
 
 // Each state fades in as it replaces the last, while the dialog eases to its height.
@@ -38,35 +39,57 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
     >
       {/* Announces the QR code or notice when it replaces the loading state. */}
       <div className="flex w-full flex-col items-center text-center" aria-live="polite" aria-busy={isLoading}>
-        {isLoading ? (
-          <div className={STATE}>
-            <Spinner />
-            {/* At the full-page loading label's size, not a step larger. */}
-            <p className="type-body-default text-tertiary text-sm">Generating QR code…</p>
-          </div>
-        ) : notice ? (
-          <div className={STATE} role="alert">
-            <ErrorNotice
-              icon={NOTICE_ICONS[notice.icon]}
-              title={notice.title}
-              description={notice.description}
-              size="dialog"
-              onRetry={retry}
-            />
-          </div>
-        ) : qr ? (
-          // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
-          <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
-            <img
-              className="block size-[240px]"
-              src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}
-              alt={`QR code to join the Wi‑Fi network ${qr.ssid}`}
-              width={240}
-              height={240}
-            />
-          </div>
-        ) : null}
+        <ShareState isLoading={isLoading} notice={notice} qr={qr} onRetry={retry} />
       </div>
     </Dialog>
+  )
+}
+
+/** The dialog's one current state: generating, a notice, or the QR code. */
+function ShareState({
+  isLoading,
+  notice,
+  qr,
+  onRetry,
+}: {
+  isLoading: boolean
+  notice: ShareNotice | null
+  qr: WifiShare | null
+  onRetry: () => void
+}) {
+  if (isLoading) {
+    return (
+      <div className={STATE}>
+        <Spinner />
+        {/* At the full-page loading label's size, not a step larger. */}
+        <p className="type-body-default text-tertiary text-sm">Generating QR code…</p>
+      </div>
+    )
+  }
+  if (notice) {
+    return (
+      <div className={STATE} role="alert">
+        <ErrorNotice
+          icon={NOTICE_ICONS[notice.icon]}
+          title={notice.title}
+          description={notice.description}
+          size="dialog"
+          onRetry={onRetry}
+        />
+      </div>
+    )
+  }
+  if (!qr) return null
+  return (
+    // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
+    <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
+      <img
+        className="block size-[240px]"
+        src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}
+        alt={`QR code to join the Wi‑Fi network ${qr.ssid}`}
+        width={240}
+        height={240}
+      />
+    </div>
   )
 }

@@ -100,13 +100,7 @@ export function CapabilityList() {
     <Card>
       <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={headerAction(isTesting, hasRunTest)} />
       <CardBody>
-        {!hasRunTest ? (
-          <ul role="list" className={LIST}>
-            {PREVIEW_CAPABILITIES.map((definition) => (
-              <PreviewRow key={definition.id} definition={definition} />
-            ))}
-          </ul>
-        ) : (
+        {hasRunTest ? (
           <ul role="list" className={LIST}>
             {capabilities.map((capability) => (
               <CapabilityRow
@@ -115,6 +109,12 @@ export function CapabilityList() {
                 isTesting={isTesting}
                 onOpen={() => navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })}
               />
+            ))}
+          </ul>
+        ) : (
+          <ul role="list" className={LIST}>
+            {PREVIEW_CAPABILITIES.map((definition) => (
+              <PreviewRow key={definition.id} definition={definition} />
             ))}
           </ul>
         )}

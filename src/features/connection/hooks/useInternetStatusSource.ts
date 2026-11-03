@@ -27,7 +27,7 @@ async function readInternetStatus(): Promise<InternetStatus | null> {
  * Public-internet reachability, kept live off the backend's heartbeat. Separate
  * from the local link: the internet can be down while Wi-Fi or Ethernet is up.
  *
- * Null until the first verdict (or without a bridge); callers then defer to the
+ * Null until the first verdict (or without a backend); callers then defer to the
  * local link. Called once, by `NetworkProvider`; read it with `useInternetStatus()`.
  */
 export function useInternetStatusSource(): InternetStatus | null {

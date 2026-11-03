@@ -69,8 +69,8 @@ export function lastSeenAge(device: LanDevice, now: number): string | null {
  * Kind, vendor, OS and model, dropping any part that repeats the name or an
  * earlier part (an Apple handheld whose vendor and OS are both "Apple").
  */
-export function deviceMetaParts(device: LanDevice, name: string[]): string[] {
-  const seen = new Set<string>([name.join(' ').toLowerCase()])
+export function deviceMetaParts(device: LanDevice, nameParts: string[]): string[] {
+  const seen = new Set<string>([nameParts.join(' ').toLowerCase()])
   return [
     device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
     device.vendor ?? undefined,
