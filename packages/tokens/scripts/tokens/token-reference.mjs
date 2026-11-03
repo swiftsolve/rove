@@ -47,7 +47,9 @@ function declarations(css, selector) {
   const start = css.indexOf(`${selector} {`)
   if (start === -1) return new Map()
   const body = css.slice(start, css.indexOf('\n}', start))
-  return new Map([...body.matchAll(/^\s*(--[\w-]+):\s*(.+?);(?:\s*\/\*.*\*\/)?$/gm)].map(([, name, value]) => [name, value]))
+  return new Map(
+    [...body.matchAll(/^\s*(--[\w-]+):\s*(.+?);(?:\s*\/\*.*\*\/)?$/gm)].map(([, name, value]) => [name, value]),
+  )
 }
 
 function groupBy(items, key) {
@@ -75,7 +77,14 @@ export async function writeDesign({ path, variables, textStyles, code: codeToken
   const show = (value) => (value.includes('(') ? code(value) : value)
   const note = (v) => (v.description ? ` (${lowerFirst(v.description)})` : '')
 
-  out.push('## Token reference', '', 'Names and uses, from Figma. The values are in `tokens.css`; Dark and Light differ only in colour and shadow.', '', '### Colour', '')
+  out.push(
+    '## Token reference',
+    '',
+    'Names and uses, from Figma. The values are in `tokens.css`; Dark and Light differ only in colour and shadow.',
+    '',
+    '### Colour',
+    '',
+  )
   for (const [prefix, vars] of groupBy(colours, (v) => v.name.split('/')[0])) {
     out.push(`- **${heading(prefix)}:** ${vars.map((v) => `${code(cssName(v.name))}${note(v)}`).join(', ')}`)
   }
@@ -105,13 +114,18 @@ export async function writeDesign({ path, variables, textStyles, code: codeToken
   )
   out.push('| Style | Class | Size, weight | Use |', '| --- | --- | --- | --- |')
   for (const s of textStyles) {
-    const slug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const slug = s.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
     const numeric = s.boundVariables?.fontFamily === 'font-family/numeric' ? ', Questrial' : ''
-    out.push(`| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${s.description.replace(/\|/g, '\\|')} |`)
+    out.push(
+      `| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${s.description.replace(/\|/g, '\\|')} |`,
+    )
   }
 
   const codeNames = Object.keys(codeTokens.tokens)
-  out.push('', '### Code-only tokens', '', 'What Figma variables can\'t hold, from `src/code-tokens.json`.', '')
+  out.push('', '### Code-only tokens', '', "What Figma variables can't hold, from `src/code-tokens.json`.", '')
   for (const [group, names] of groupBy(codeNames, (n) => heading(n.slice(2).split('-')[0]))) {
     // Long or per-theme values (shadows, calc()) are named only; tokens.css has them.
     const shown = (n) => dark.get(n).length <= 24 && (light.get(n) ?? dark.get(n)) === dark.get(n)

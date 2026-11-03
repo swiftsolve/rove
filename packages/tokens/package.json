@@ -23,9 +23,12 @@
   ],
   "scripts": {
     "build": "node scripts/tokens/build.mjs",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "check": "npm run build && npm run lint && node scripts/checks/design-md.mjs",
     "present": "npm run build && node scripts/presentation/export.mjs",
     "present:publish": "node scripts/presentation/publish.mjs",
-    "prepare": "npm run build",
+    "prepare": "git config core.hooksPath scripts/hooks/git || true; npm run build",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build"
   },
@@ -37,9 +40,15 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@storybook/addon-docs": "^10.6.5",
     "@storybook/react-vite": "^10.6.5",
     "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "storybook": "^10.6.5",

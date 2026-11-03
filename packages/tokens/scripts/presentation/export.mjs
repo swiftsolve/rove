@@ -31,8 +31,8 @@
  */
 import { Buffer } from 'node:buffer'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const API = 'https://api.figma.com/v1'
@@ -53,7 +53,9 @@ const fileKey = flag('file', 'NoICIoyhWNOya9tOnNfEhH')
 const out = resolve(ROOT, flag('out', 'presentation'))
 const format = flag('format', 'svg')
 const scale = Number(flag('scale', '2'))
-const sections = flag('sections', 'COVER,FOUNDATIONS,COMPONENTS,SCREENS').split(',').map((name) => name.trim().toUpperCase())
+const sections = flag('sections', 'COVER,FOUNDATIONS,COMPONENTS,SCREENS')
+  .split(',')
+  .map((name) => name.trim().toUpperCase())
 const token = await readToken()
 
 if (!['svg', 'png', 'jpg'].includes(format)) {
@@ -61,7 +63,9 @@ if (!['svg', 'png', 'jpg'].includes(format)) {
   process.exit(1)
 }
 if (!token) {
-  console.error('Add FIGMA_TOKEN=<token> to .env.local: a Figma personal access token with the file_content:read scope.')
+  console.error(
+    'Add FIGMA_TOKEN=<token> to .env.local: a Figma personal access token with the file_content:read scope.',
+  )
   process.exit(1)
 }
 
@@ -81,7 +85,11 @@ async function figma(path, attempt = 1) {
 const isSubpage = (page) => page.name.startsWith('↳')
 const pageTitle = (page) => page.name.replace(/^↳\s*/, '')
 const isSameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
-const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 
 /** Group pages under their divider, keeping only the sections asked for. */
 function groupPages(pages) {
@@ -115,7 +123,9 @@ async function renderFrames(ids, as = format) {
   const urls = {}
   for (let i = 0; i < ids.length; i += 8) {
     const batch = ids.slice(i, i + 8)
-    const { err, images } = await figma(`/images/${fileKey}?ids=${batch.join(',')}&format=${as}${as === 'svg' ? '' : `&scale=${scale}`}`)
+    const { err, images } = await figma(
+      `/images/${fileKey}?ids=${batch.join(',')}&format=${as}${as === 'svg' ? '' : `&scale=${scale}`}`,
+    )
     if (err) throw new Error(`Figma couldn't render frames: ${err}`)
     Object.assign(urls, images)
   }
@@ -126,20 +136,26 @@ const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (char) => `&#${cha
 
 /** Lucide icons (lucide.dev, ISC licence), inlined so the package keeps no dependencies. */
 const LUCIDE = {
-  BookOpen: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  BookOpen:
+    '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
   Check: '<path d="M20 6 9 17l-5-5"/>',
   ChevronDown: '<path d="m6 9 6 6 6-6"/>',
   ChevronLeft: '<path d="m15 18-6-6 6-6"/>',
   ChevronRight: '<path d="m9 18 6-6-6-6"/>',
-  Component: '<path d="M15.536 11.293a1 1 0 0 0 0 1.414l2.376 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/><path d="M2.297 11.293a1 1 0 0 0 0 1.414l2.377 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414L6.088 8.916a1 1 0 0 0-1.414 0z"/><path d="M8.916 17.912a1 1 0 0 0 0 1.415l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.415l-2.377-2.376a1 1 0 0 0-1.414 0z"/><path d="M8.916 4.674a1 1 0 0 0 0 1.414l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/>',
-  Folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  Component:
+    '<path d="M15.536 11.293a1 1 0 0 0 0 1.414l2.376 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/><path d="M2.297 11.293a1 1 0 0 0 0 1.414l2.377 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414L6.088 8.916a1 1 0 0 0-1.414 0z"/><path d="M8.916 17.912a1 1 0 0 0 0 1.415l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.415l-2.377-2.376a1 1 0 0 0-1.414 0z"/><path d="M8.916 4.674a1 1 0 0 0 0 1.414l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/>',
+  Folder:
+    '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   Menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
   Minus: '<path d="M5 12h14"/>',
-  Monitor: '<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>',
-  Palette: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
+  Monitor:
+    '<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>',
+  Palette:
+    '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
   Plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
 }
-const icon = (name, size = 16) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LUCIDE[name]}</svg>`
+const icon = (name, size = 16) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LUCIDE[name]}</svg>`
 
 const SECTION_ICONS = { COVER: 'BookOpen', FOUNDATIONS: 'Palette', COMPONENTS: 'Component', SCREENS: 'Monitor' }
 const sectionName = (group) => group.name.trim().charAt(0) + group.name.trim().slice(1).toLowerCase()
@@ -150,46 +166,71 @@ const ROVE_MARK = `<svg width="28" height="28" viewBox="0 0 48 48" fill="none" a
         <path d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02" stroke="url(#rove-mark)" stroke-width="5" stroke-linecap="round"/>
       </svg>`
 
-const sectionLabel = (group) => `${icon(SECTION_ICONS[group.name.trim().toUpperCase()] ?? 'Folder')}<span>${escapeHtml(sectionName(group))}</span>`
+const sectionLabel = (group) =>
+  `${icon(SECTION_ICONS[group.name.trim().toUpperCase()] ?? 'Folder')}<span>${escapeHtml(sectionName(group))}</span>`
 
 function renderHtml(file, groups, tokens, version) {
-  const slides = groups.flatMap((group) => group.pages.flatMap((page) => page.frames.map((frame) => ({ group, page, frame }))))
+  const slides = groups.flatMap((group) =>
+    group.pages.flatMap((page) => page.frames.map((frame) => ({ group, page, frame }))),
+  )
   const indexOf = (frame) => slides.findIndex((slide) => slide.frame === frame)
-  const link = (frame, html, className) => `<a class="${className}" href="#${indexOf(frame) + 1}" data-index="${indexOf(frame)}">${html}</a>`
-  const date = (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  const link = (frame, html, className) =>
+    `<a class="${className}" href="#${indexOf(frame) + 1}" data-index="${indexOf(frame)}">${html}</a>`
+  const date = (value) =>
+    new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   const tree = (items) => (items.length > 0 ? `<div class="tree">${items.join('')}</div>` : '')
 
   // A divider's cover is reached from the section name rather than a "Cover"
   // link of its own. Pages hang off the section on a guide line; a page with
   // several slides gets a nested line of its own.
-  const nav = groups.map((group) => {
-    const [cover, ...extras] = group.pages.find((page) => page.isDivider)?.frames ?? []
-    const heading = cover ? link(cover, sectionLabel(group), 'group') : `<p class="group">${sectionLabel(group)}</p>`
-    const pages = group.pages.filter((page) => !page.isDivider).map((page) => (page.frames.length === 1
-      ? link(page.frames[0], escapeHtml(page.title), 'page')
-      : `<p class="page">${escapeHtml(page.title)}</p>${tree(page.frames.map((frame) => link(frame, escapeHtml(frame.name), 'page')))}`))
-    return `
+  const nav = groups
+    .map((group) => {
+      const [cover, ...extras] = group.pages.find((page) => page.isDivider)?.frames ?? []
+      const heading = cover ? link(cover, sectionLabel(group), 'group') : `<p class="group">${sectionLabel(group)}</p>`
+      const pages = group.pages
+        .filter((page) => !page.isDivider)
+        .map((page) =>
+          page.frames.length === 1
+            ? link(page.frames[0], escapeHtml(page.title), 'page')
+            : `<p class="page">${escapeHtml(page.title)}</p>${tree(page.frames.map((frame) => link(frame, escapeHtml(frame.name), 'page')))}`,
+        )
+      return `
       <section>${heading}${tree([...extras.map((frame) => link(frame, escapeHtml(frame.name), 'page')), ...pages])}</section>`
-  }).join('')
+    })
+    .join('')
 
   // Section › page › slide. Every step but the last links back up the tree.
   const crumbs = (group, page, frame) => {
-    const steps = [{ html: escapeHtml(sectionName(group)), to: group.pages.find((other) => other.isDivider)?.frames[0] }]
+    const steps = [
+      { html: escapeHtml(sectionName(group)), to: group.pages.find((other) => other.isDivider)?.frames[0] },
+    ]
     if (!page.isDivider) steps.push({ html: escapeHtml(page.title), to: page.frames[0] })
-    if (page.frames.length > 1 && !isSameName(frame.name, page.title)) steps.push({ html: escapeHtml(frame.name), to: frame })
-    return steps.map((step, i) => (i < steps.length - 1 && step.to
-      ? link(step.to, step.html, 'crumb')
-      : `<span class="crumb"${i === steps.length - 1 ? ' aria-current="page"' : ''}>${step.html}</span>`))
+    if (page.frames.length > 1 && !isSameName(frame.name, page.title))
+      steps.push({ html: escapeHtml(frame.name), to: frame })
+    return steps
+      .map((step, i) =>
+        i < steps.length - 1 && step.to
+          ? link(step.to, step.html, 'crumb')
+          : `<span class="crumb"${i === steps.length - 1 ? ' aria-current="page"' : ''}>${step.html}</span>`,
+      )
       .join(`<span class="sep">${icon('ChevronRight', 14)}</span>`)
   }
 
-  const trails = slides.map(({ group, page, frame }, index) => `
-      <p class="crumbs" data-index="${index}" hidden>${crumbs(group, page, frame)}</p>`).join('')
+  const trails = slides
+    .map(
+      ({ group, page, frame }, index) => `
+      <p class="crumbs" data-index="${index}" hidden>${crumbs(group, page, frame)}</p>`,
+    )
+    .join('')
 
-  const figures = slides.map(({ frame }, index) => `
+  const figures = slides
+    .map(
+      ({ frame }, index) => `
     <figure class="slide" data-index="${index}" data-width="${Math.round(frame.absoluteBoundingBox.width)}" data-ratio="${(frame.absoluteBoundingBox.width / frame.absoluteBoundingBox.height).toFixed(4)}" hidden>
       <img src="frames/${frame.file}" alt="${escapeHtml(frame.name)}" width="${Math.round(frame.absoluteBoundingBox.width)}" height="${Math.round(frame.absoluteBoundingBox.height)}" loading="lazy">
-    </figure>`).join('')
+    </figure>`,
+    )
+    .join('')
 
   return `<!doctype html>
 <html lang="en">
@@ -567,19 +608,28 @@ async function download(url, frame) {
 // HTML in a <foreignObject>, which browsers don't draw when the SVG is shown
 // as an image — the covers' arcs vanish. Those frames come down as PNG instead.
 const bitmaps = []
-await Promise.all(frames.filter((frame) => frame.file).map(async (frame) => {
-  const image = await download(urls[frame.id], frame)
-  if (format === 'svg' && image.includes('<foreignObject')) bitmaps.push(frame)
-  else await writeFile(join(framesDir, frame.file), image)
-}))
+await Promise.all(
+  frames
+    .filter((frame) => frame.file)
+    .map(async (frame) => {
+      const image = await download(urls[frame.id], frame)
+      if (format === 'svg' && image.includes('<foreignObject')) bitmaps.push(frame)
+      else await writeFile(join(framesDir, frame.file), image)
+    }),
+)
 
 if (bitmaps.length > 0) {
   console.log(`Using PNG for ${bitmaps.length} frames SVG can't draw faithfully…`)
-  const pngUrls = await renderFrames(bitmaps.map((frame) => frame.id), 'png')
-  await Promise.all(bitmaps.map(async (frame) => {
-    frame.file = frame.file.replace(/\.svg$/, '.png')
-    await writeFile(join(framesDir, frame.file), await download(pngUrls[frame.id], frame))
-  }))
+  const pngUrls = await renderFrames(
+    bitmaps.map((frame) => frame.id),
+    'png',
+  )
+  await Promise.all(
+    bitmaps.map(async (frame) => {
+      frame.file = frame.file.replace(/\.svg$/, '.png')
+      await writeFile(join(framesDir, frame.file), await download(pngUrls[frame.id], frame))
+    }),
+  )
 }
 
 // This package's own tokens, so the presentation chrome matches the app, and

@@ -4,7 +4,7 @@ name: Build
 # stops if a Figma variable's code syntax doesn't match its name or a reference
 # doesn't resolve, which would otherwise first show up when Rove installs the
 # package. Then check the token reference in DESIGN.md was rebuilt and
-# committed. Run it by hand to check main between releases.
+# committed, and lint the code. Run it by hand to check main between releases.
 on:
   push:
     tags: ['v*']
@@ -27,6 +27,8 @@ jobs:
       # npm ci runs the build through `prepare`.
       - run: npm ci
 
+      - run: npm run lint
+
       - name: Check DESIGN.md is up to date
         run: |
-          git diff --exit-code DESIGN.md || { echo "::error::DESIGN.md is out of date: run npm run build and commit it"; exit 1; }
+          node scripts/checks/design-md.mjs || { echo "::error::DESIGN.md is out of date: run npm run build and commit it"; exit 1; }

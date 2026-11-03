@@ -18,6 +18,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
 import { buildCss } from './dtcg-to-css.mjs'
 import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
 import { writeDtcg } from './figma-to-dtcg.mjs'
@@ -39,7 +40,9 @@ for (const v of figma.variables) {
 const byName = new Map(figma.variables.map((v) => [v.name, v]))
 
 function hex(n) {
-  return Math.round(n * 255).toString(16).padStart(2, '0')
+  return Math.round(n * 255)
+    .toString(16)
+    .padStart(2, '0')
 }
 
 /** A Figma variable's raw value in a mode, following aliases, as CSS. */
@@ -51,7 +54,9 @@ function rawValue(v, mode) {
   }
   if (v.type !== 'COLOR') return value
   const { r, g, b, a } = value
-  return a >= 1 ? `#${hex(r)}${hex(g)}${hex(b)}` : `rgba(${[r, g, b].map((n) => Math.round(n * 255)).join(', ')}, ${+a.toFixed(3)})`
+  return a >= 1
+    ? `#${hex(r)}${hex(g)}${hex(b)}`
+    : `rgba(${[r, g, b].map((n) => Math.round(n * 255)).join(', ')}, ${+a.toFixed(3)})`
 }
 
 /** A code-tokens.json template with `{figma/name}` filled in for a mode. */
@@ -84,5 +89,13 @@ const textStylesCss = await buildTextStylesCss({ dir, header })
 await writeFile(resolve(ROOT, 'text-styles.css'), textStylesCss.css)
 console.log(`text-styles.css: ${textStylesCss.count} classes`)
 
-const design = await writeDesign({ path: resolve(ROOT, 'DESIGN.md'), variables: figma.variables, textStyles: textStyles.styles, code, css })
-console.log(`DESIGN.md: ${design.colours} colours, ${design.others} other tokens, ${design.styles} text styles, ${design.code} code-only tokens`)
+const design = await writeDesign({
+  path: resolve(ROOT, 'DESIGN.md'),
+  variables: figma.variables,
+  textStyles: textStyles.styles,
+  code,
+  css,
+})
+console.log(
+  `DESIGN.md: ${design.colours} colours, ${design.others} other tokens, ${design.styles} text styles, ${design.code} code-only tokens`,
+)

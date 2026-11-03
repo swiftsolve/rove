@@ -1,5 +1,6 @@
 import { addons } from 'storybook/manager-api'
 import { themes } from 'storybook/theming'
+
 import designPackage from '../package.json'
 
 // Keeps Storybook's own light or dark, following the system, as it does without a theme.

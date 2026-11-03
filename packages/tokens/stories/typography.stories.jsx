@@ -69,7 +69,10 @@ function Families() {
           <div key={name} className="doc-card">
             <span
               className="family-specimen"
-              style={{ fontFamily: `var(${name})`, fontWeight: token.path[1] === 'sans' ? 'var(--weight-semibold)' : undefined }}
+              style={{
+                fontFamily: `var(${name})`,
+                fontWeight: token.path[1] === 'sans' ? 'var(--weight-semibold)' : undefined,
+              }}
             >
               Aa 0123456789
             </span>
@@ -87,7 +90,14 @@ function SizeScale() {
   const tokens = group(typography, 'font-size')
   const largest = tokens.at(-1)
   return (
-    <Table columns={[['Token', '1.2fr'], ['Size', '0.6fr'], ['Sample', '3fr'], ['Code', 'minmax(170px, 1fr)']]}>
+    <Table
+      columns={[
+        ['Token', '1.2fr'],
+        ['Size', '0.6fr'],
+        ['Sample', '3fr'],
+        ['Code', 'minmax(170px, 1fr)'],
+      ]}
+    >
       {tokens.map((token) => {
         const name = cssName(token.path)
         // The largest size is for metrics, so it shows a number, as on the Figma page.
@@ -117,7 +127,14 @@ function TextStyles() {
   const tokens = flatten(textStyles)
   const ordered = Object.keys(SPECIMENS).map((key) => tokens.find((token) => token.path[1] === key))
   return (
-    <Table columns={[['Specimen', '1.8fr'], ['Style', '1.8fr'], ['Spec', '1.2fr'], ['Code', 'minmax(190px, 1fr)']]}>
+    <Table
+      columns={[
+        ['Specimen', '1.8fr'],
+        ['Style', '1.8fr'],
+        ['Spec', '1.2fr'],
+        ['Code', 'minmax(190px, 1fr)'],
+      ]}
+    >
       {ordered.map((token) => {
         const key = token.path[1]
         const className = `type-${key}`
@@ -143,10 +160,7 @@ export const Typography = {
       <Section title="Size scale" intro="The font sizes every text style uses.">
         <SizeScale />
       </Section>
-      <Section
-        title="Text styles"
-        intro="Apply a style instead of setting fonts by hand. In code, it's one class."
-      >
+      <Section title="Text styles" intro="Apply a style instead of setting fonts by hand. In code, it's one class.">
         <TextStyles />
       </Section>
     </Page>

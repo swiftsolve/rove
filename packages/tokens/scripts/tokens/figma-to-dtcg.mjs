@@ -18,7 +18,15 @@ import { resolve } from 'node:path'
 
 export const EXTENSION = 'net.swiftsolve.rove-tokens'
 
-const COLLECTIONS = { Palette: 'palette', Color: 'color', Spacing: 'spacing', Typography: 'typography', Opacity: 'opacity', Layout: 'layout', Motion: 'motion' }
+const COLLECTIONS = {
+  Palette: 'palette',
+  Color: 'color',
+  Spacing: 'spacing',
+  Typography: 'typography',
+  Opacity: 'opacity',
+  Layout: 'layout',
+  Motion: 'motion',
+}
 const MODES = { Dark: 'dark', Light: 'light' }
 
 const path = (figmaName) => figmaName.split('/')
@@ -27,7 +35,13 @@ const px = (value) => ({ value, unit: 'px' })
 const round = (n) => +n.toFixed(4)
 
 function color({ r, g, b, a }) {
-  const hex = `#${[r, g, b].map((n) => Math.round(n * 255).toString(16).padStart(2, '0')).join('')}`
+  const hex = `#${[r, g, b]
+    .map((n) =>
+      Math.round(n * 255)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
   return { colorSpace: 'srgb', components: [r, g, b], ...(a < 1 ? { alpha: a } : {}), hex }
 }
 
@@ -43,7 +57,8 @@ function place(tree, segments, token) {
       node[key] = token
     } else {
       node[key] ??= {}
-      if ('$value' in node[key]) throw new Error(`DTCG: ${segments.slice(0, i + 1).join('.')} is both a token and a group`)
+      if ('$value' in node[key])
+        throw new Error(`DTCG: ${segments.slice(0, i + 1).join('.')} is both a token and a group`)
       node = node[key]
     }
   }
@@ -61,17 +76,27 @@ function figmaToken(v, mode, figmaOverride) {
     return { $type: 'fontFamily', $value: override ? fontStack(override) : value, ...description }
   }
   // Figma numbers carry no unit: Motion is in ms, weight/* is a font weight, the rest are px.
-  const type = v.type === 'COLOR' ? 'color'
-    : v.collection === 'Opacity' ? 'number'
-    : v.collection === 'Motion' ? 'duration'
-    : v.name.startsWith('weight/') ? 'fontWeight'
-    : 'dimension'
+  const type =
+    v.type === 'COLOR'
+      ? 'color'
+      : v.collection === 'Opacity'
+        ? 'number'
+        : v.collection === 'Motion'
+          ? 'duration'
+          : v.name.startsWith('weight/')
+            ? 'fontWeight'
+            : 'dimension'
   if (value.alias) return { $type: type, $value: ref(value.alias), ...description }
-  const converted = type === 'color' ? color(value)
-    : type === 'number' ? value / 100
-    : type === 'duration' ? { value, unit: 'ms' }
-    : type === 'fontWeight' ? value
-    : px(value)
+  const converted =
+    type === 'color'
+      ? color(value)
+      : type === 'number'
+        ? value / 100
+        : type === 'duration'
+          ? { value, unit: 'ms' }
+          : type === 'fontWeight'
+            ? value
+            : px(value)
   return { $type: type, $value: converted, ...description }
 }
 
@@ -149,7 +174,10 @@ export async function writeDtcg({ dir, variables, textStyles, code, figmaOverrid
 
   files['text-styles'] = {}
   for (const style of textStyles) {
-    const slug = style.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const slug = style.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
     place(files['text-styles'], ['type', slug], textStyleToken(style))
   }
 
@@ -170,7 +198,11 @@ export async function writeDtcg({ dir, variables, textStyles, code, figmaOverrid
   }
 
   const shared = Object.keys(files).filter((f) => !f.startsWith('color.'))
-  for (const mode of Object.values(MODES)) checkReferences([...shared, `color.${mode}`].map((f) => files[f]), mode)
+  for (const mode of Object.values(MODES))
+    checkReferences(
+      [...shared, `color.${mode}`].map((f) => files[f]),
+      mode,
+    )
 
   await rm(dir, { recursive: true, force: true })
   await mkdir(dir, { recursive: true })

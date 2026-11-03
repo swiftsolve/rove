@@ -15,7 +15,9 @@
  *   which has no room for letter spacing.
  */
 import { basename } from 'node:path'
+
 import StyleDictionary from 'style-dictionary'
+
 import { EXTENSION } from './figma-to-dtcg.mjs'
 
 /** Source files in output order, with the section comment each opens. */
@@ -30,11 +32,33 @@ const FILES = [
   ['code', 'Code-only'],
   ['text-styles', 'Type styles'],
 ]
-const GENERIC_FONTS = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong', '-apple-system', 'BlinkMacSystemFont'])
+const GENERIC_FONTS = new Set([
+  'serif',
+  'sans-serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+  'system-ui',
+  'ui-serif',
+  'ui-sans-serif',
+  'ui-monospace',
+  'ui-rounded',
+  'emoji',
+  'math',
+  'fangsong',
+  '-apple-system',
+  'BlinkMacSystemFont',
+])
 
 const isCss = (token) => token.$extensions?.[EXTENSION]?.css !== false
-const fileOf = (token) => basename(token.filePath).replace(/\.tokens\.json$/, '').replace(/\.(dark|light)$/, '')
-const hex = (n) => Math.round(n * 255).toString(16).padStart(2, '0')
+const fileOf = (token) =>
+  basename(token.filePath)
+    .replace(/\.tokens\.json$/, '')
+    .replace(/\.(dark|light)$/, '')
+const hex = (n) =>
+  Math.round(n * 255)
+    .toString(16)
+    .padStart(2, '0')
 const round = (n) => +n.toFixed(4)
 
 /** A DTCG dimension, or a value already written as CSS, as CSS. */
@@ -64,15 +88,25 @@ function cssValue(token, type) {
   const value = token.$value
   if (typeof value === 'string') return value
   switch (type) {
-    case 'color': return color(value)
+    case 'color':
+      return color(value)
     case 'dimension':
-    case 'duration': return dimension(value)
+    case 'duration':
+      return dimension(value)
     // Opacity, as a percentage for color-mix().
-    case 'number': return `${round(value * 100)}%`
-    case 'fontWeight': return String(value)
-    case 'cubicBezier': return `cubic-bezier(${value.join(', ')})`
-    case 'fontFamily': return [value].flat().map((f) => (GENERIC_FONTS.has(f) ? f : `'${f}'`)).join(', ')
-    default: throw new Error(`tokens.css: no CSS for ${token.path.join('.')} (${type})`)
+    case 'number':
+      return `${round(value * 100)}%`
+    case 'fontWeight':
+      return String(value)
+    case 'cubicBezier':
+      return `cubic-bezier(${value.join(', ')})`
+    case 'fontFamily':
+      return [value]
+        .flat()
+        .map((f) => (GENERIC_FONTS.has(f) ? f : `'${f}'`))
+        .join(', ')
+    default:
+      throw new Error(`tokens.css: no CSS for ${token.path.join('.')} (${type})`)
   }
 }
 
@@ -102,12 +136,23 @@ function declarations(token, byPath) {
     const originals = [original].flat()
     const css = layers.map((l, i) => {
       const spread = length(l.spread ?? '0')
-      return [length(l.offsetX), length(l.offsetY), length(l.blur), ...(spread === '0' ? [] : [spread]), refOr(originals[i].color, typeof l.color === 'string' ? l.color : color(l.color))].join(' ')
+      return [
+        length(l.offsetX),
+        length(l.offsetY),
+        length(l.blur),
+        ...(spread === '0' ? [] : [spread]),
+        refOr(originals[i].color, typeof l.color === 'string' ? l.color : color(l.color)),
+      ].join(' ')
     })
     return [[name, css.join(', ')]]
   }
   if (token.$type === 'border') {
-    return [[name, `${refOr(original.width, dimension(value.width))} ${value.style} ${refOr(original.color, typeof value.color === 'string' ? value.color : color(value.color))}`]]
+    return [
+      [
+        name,
+        `${refOr(original.width, dimension(value.width))} ${value.style} ${refOr(original.color, typeof value.color === 'string' ? value.color : color(value.color))}`,
+      ],
+    ]
   }
   return [[name, refOr(original, cssValue(token, typeOf(token, byPath))), token.$description]]
 }
@@ -139,7 +184,9 @@ function format({ dictionary, options }) {
     declarations(token, byPath).forEach(declare)
   }
   if (options.dark) options.cssOnly.forEach(declare)
-  return options.dark ? `${options.selector} {\n${lines.join('\n')}\n}\n` : `${options.selector} {${lines.join('\n')}\n}\n`
+  return options.dark
+    ? `${options.selector} {\n${lines.join('\n')}\n}\n`
+    : `${options.selector} {${lines.join('\n')}\n}\n`
 }
 
 async function block({ dir, mode, options }) {
@@ -153,7 +200,9 @@ async function block({ dir, mode, options }) {
       transforms: { 'rove/name': { type: 'name', transform: (token) => token.path.join('-') } },
       formats: { 'rove/css': format },
     },
-    platforms: { css: { transforms: ['rove/name'], files: [{ destination: 'tokens.css', format: 'rove/css', options }] } },
+    platforms: {
+      css: { transforms: ['rove/name'], files: [{ destination: 'tokens.css', format: 'rove/css', options }] },
+    },
   })
   const tokens = (await sd.getPlatformTokens('css')).allTokens
   if (tokens.length === 0) throw new Error(`tokens.css: Style Dictionary found no tokens in ${base} (${mode})`)
@@ -169,5 +218,9 @@ export async function buildCss({ dir, header, cssOnly }) {
   const record = new Map()
   const dark = await block({ dir, mode: 'dark', options: { selector: ':root', record, cssOnly } })
   const light = await block({ dir, mode: 'light', options: { selector: ':root.theme-light', dark: record, cssOnly } })
-  return { css: `${header}\n${dark}\n${light}`, count: record.size, overrides: light.split('\n').filter((l) => l.startsWith('  --')).length }
+  return {
+    css: `${header}\n${dark}\n${light}`,
+    count: record.size,
+    overrides: light.split('\n').filter((l) => l.startsWith('  --')).length,
+  }
 }

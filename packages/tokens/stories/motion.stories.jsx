@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'
 import { code, cssName, flatten, motion } from './tokens'
 
@@ -46,7 +47,14 @@ function MotionPage() {
       </button>
       <div className={isPlaying ? 'is-playing' : undefined}>
         <Section title="Easing" intro="Each over the normal duration; the spring over its own.">
-          <Table columns={[['Token', '1fr'], ['Curve', '0.5fr'], ['Preview', '2.4fr'], ['Code', 'minmax(150px, 1fr)']]}>
+          <Table
+            columns={[
+              ['Token', '1fr'],
+              ['Curve', '0.5fr'],
+              ['Preview', '2.4fr'],
+              ['Code', 'minmax(150px, 1fr)'],
+            ]}
+          >
             {easings.map((token) => {
               const name = cssName(token.path)
               return (
@@ -67,7 +75,14 @@ function MotionPage() {
           </Table>
         </Section>
         <Section title="Duration" intro="Each with ease out; the spring's with its own curve.">
-          <Table columns={[['Token', '1fr'], ['Value', '0.5fr'], ['Preview', '2.4fr'], ['Code', 'minmax(150px, 1fr)']]}>
+          <Table
+            columns={[
+              ['Token', '1fr'],
+              ['Value', '0.5fr'],
+              ['Preview', '2.4fr'],
+              ['Code', 'minmax(150px, 1fr)'],
+            ]}
+          >
             {durations.map((token) => {
               const name = cssName(token.path)
               const ease = name === '--duration-spring' ? '--ease-spring' : '--ease-out'

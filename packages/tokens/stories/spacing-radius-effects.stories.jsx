@@ -91,7 +91,13 @@ const WINDOW_LAYOUT = [
 function SpacingTable() {
   return (
     <Table
-      columns={[['Token', '1fr'], ['Value', '0.4fr'], ['Scale', '1.3fr'], ['Typical use', '1.9fr'], ['Code', 'minmax(140px, 1fr)']]}
+      columns={[
+        ['Token', '1fr'],
+        ['Value', '0.4fr'],
+        ['Scale', '1.3fr'],
+        ['Typical use', '1.9fr'],
+        ['Code', 'minmax(140px, 1fr)'],
+      ]}
     >
       {group(spacing, 'spacing').map((token) => {
         const name = cssName(token.path)
@@ -198,7 +204,13 @@ function OpacityTable() {
   const tokens = group(opacity, 'opacity')
   return (
     <Table
-      columns={[['Token', '1fr'], ['Value', '0.4fr'], ['Sample', '1.3fr'], ['Use', '1.9fr'], ['Code', 'minmax(170px, 1fr)']]}
+      columns={[
+        ['Token', '1fr'],
+        ['Value', '0.4fr'],
+        ['Sample', '1.3fr'],
+        ['Use', '1.9fr'],
+        ['Code', 'minmax(170px, 1fr)'],
+      ]}
     >
       {OPACITY_ORDER.map((key) => {
         const token = tokens.find((candidate) => candidate.path[1] === key)
@@ -233,7 +245,14 @@ function WindowDiagram() {
 
 function WindowLayout() {
   return (
-    <Table columns={[['Element', '1fr'], ['Size', '1.4fr'], ['Notes', '1.4fr'], ['Code', '1.6fr']]}>
+    <Table
+      columns={[
+        ['Element', '1fr'],
+        ['Size', '1.4fr'],
+        ['Notes', '1.4fr'],
+        ['Code', '1.6fr'],
+      ]}
+    >
       {WINDOW_LAYOUT.map(({ element, size, notes, codes }) => (
         <TableRow key={element}>
           <Name name={element} />

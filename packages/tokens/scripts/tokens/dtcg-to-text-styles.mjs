@@ -11,6 +11,7 @@
  */
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+
 import { EXTENSION } from './figma-to-dtcg.mjs'
 
 const CASES = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }

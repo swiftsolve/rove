@@ -1,7 +1,7 @@
-import { Code, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
 import figmaVariables from '../src/figma/variables.json'
 import backgrounds from './backgrounds.png'
+import { Code, Joined, Name, Page, Section, Table, TableRow } from './blocks'
+import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
 
 export default { title: 'Colour' }
 
@@ -25,14 +25,7 @@ const SECTIONS = [
   {
     title: 'Borders & fills',
     intro: 'Thin borders and see-through fills.',
-    names: [
-      'border.default',
-      'fill.default',
-      'fill.strong',
-      'fill.selection',
-      'fill.faint',
-      'fill.subtle',
-    ],
+    names: ['border.default', 'fill.default', 'fill.strong', 'fill.selection', 'fill.faint', 'fill.subtle'],
   },
   {
     title: 'Text',
@@ -83,7 +76,13 @@ const SECTIONS = [
   {
     title: 'Shadow colours',
     intro: 'The colours behind the shadow styles. Softer in Light mode.',
-    names: ['shadow-color.panel-1', 'shadow-color.panel-2', 'shadow-color.raised', 'shadow-color.popover-1', 'shadow-color.popover-2'],
+    names: [
+      'shadow-color.panel-1',
+      'shadow-color.panel-2',
+      'shadow-color.raised',
+      'shadow-color.popover-1',
+      'shadow-color.popover-2',
+    ],
   },
 ]
 
@@ -135,9 +134,7 @@ function ModeCell({ theme, path }) {
 
 // The shadow colours aren't CSS variables; they live inside the shadow tokens.
 const codeFor = (path) =>
-  path[0] === 'shadow-color'
-    ? `in var(--shadow-${path[1].replace(/-\d$/, '')})`
-    : `var(${cssName(path)})`
+  path[0] === 'shadow-color' ? `in var(--shadow-${path[1].replace(/-\d$/, '')})` : `var(${cssName(path)})`
 
 function ColourTable({ names }) {
   const tokens = flatten(colorDark)
