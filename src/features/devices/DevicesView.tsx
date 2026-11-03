@@ -94,9 +94,7 @@ function DevicesBody({
       </ul>
       {/* The empty state shows its own copy; this trails a non-empty list. */}
       {shouldShowLocalNetworkHint && (
-        <p className="type-body-default text-tertiary mt-10 max-w-[40ch] px-4 text-sm leading-body-small">
-          {LOCAL_NETWORK_HINT}
-        </p>
+        <p className="type-body-small text-tertiary mt-10 max-w-[40ch] px-4">{LOCAL_NETWORK_HINT}</p>
       )}
     </div>
   )

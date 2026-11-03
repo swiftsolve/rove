@@ -5,6 +5,7 @@ import { createContext, type JSX, type ReactNode, use, useState } from 'react'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
 import { cn } from '../foundations/cn'
+import { LAYER_DIALOG } from '../foundations/layers'
 import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
 import { CloseIcon } from '../icons/Icons'
@@ -43,7 +44,8 @@ export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element |
 // and the dialog centres over that area (the app's content column), not the
 // whole window. The two fade together, as one layer.
 const LAYER = cx(
-  'absolute inset-0 z-90',
+  'absolute inset-0',
+  LAYER_DIALOG,
   'data-open:animate-overlay-in data-closed:pointer-events-none data-closed:animate-overlay-out',
 )
 
@@ -142,7 +144,10 @@ export function Dialog({
                   <div className="min-w-0">
                     <BaseDialog.Title className="type-heading-medium text-primary">{title}</BaseDialog.Title>
                     {description != null && (
-                      <BaseDialog.Description render={<div />} className="mt-4 animate-fade-in text-sm text-secondary">
+                      <BaseDialog.Description
+                        render={<div />}
+                        className="mt-4 animate-fade-in type-body-small text-secondary"
+                      >
                         {description}
                       </BaseDialog.Description>
                     )}

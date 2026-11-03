@@ -12,7 +12,7 @@ const LABEL = 'type-overline text-tertiary mb-8 block'
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
 // fixed-height action centred beside the text lands on a symmetric gap.
 const INPUT = cx(
-  'w-full rounded-sm px-12 py-10 text-md leading-[18px] text-primary placeholder:text-tertiary',
+  'w-full rounded-sm px-12 py-10 type-body-default leading-[18px] text-primary placeholder:text-tertiary',
   'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
 )
 
@@ -39,7 +39,7 @@ const groupVariants = cva(
   },
 )
 
-const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
+const feedbackVariants = cva('mt-8 type-body-small', {
   variants: {
     isInvalid: { true: 'text-negative', false: 'text-tertiary' },
   },
@@ -113,7 +113,7 @@ export function TextField({
 const actionVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
-    'bg-accent-muted text-xs font-semibold tracking-label-default text-accent-text',
+    'bg-accent-muted type-label-default text-accent-text',
     'transition-[background,color] duration-(--duration-fast) ease-in-out',
     'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled)',
   ],

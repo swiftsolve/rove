@@ -29,7 +29,7 @@ const THUMB = cx(
 // unchosen one takes a faint fill on hover.
 const SEGMENT = cx(
   'relative inline-flex items-center justify-center gap-6 py-6 px-10 border-none rounded-xs cursor-pointer',
-  'text-xs font-medium leading-label-small tracking-label-small whitespace-nowrap',
+  'type-label-small whitespace-nowrap',
   'transition-[background,color] duration-(--duration-fast) ease-in-out',
   'focus-visible:outline-offset-(--focus-inset)',
   'bg-transparent text-tertiary hover:bg-fill-subtle hover:text-secondary',

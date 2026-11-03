@@ -1,6 +1,7 @@
 import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
+import { LAYER_RAISED } from '../foundations/layers'
 import { ArrowLeftIcon } from '../icons/Icons'
 
 // The back button in the icon chip's slot: the same box (a rail item's, 10px
@@ -13,7 +14,7 @@ const BACK = cx(
 
 // Reserves a line's height even while it's empty, so the title above never
 // shifts as the line fills in.
-const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] text-xs text-tertiary'
+const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] type-caption text-tertiary'
 
 type PageHeaderProps = {
   /** The page's name. */
@@ -47,14 +48,14 @@ type PageHeaderProps = {
 /**
  * The top of every page but Home: an icon chip (or a back button), the title
  * with a line under it, and actions at the end, over a full-width divider. It
- * sits above the page content (z-20), so its tooltips aren't painted over by
+ * sits above the page content (`LAYER_RAISED`), so its tooltips aren't painted over by
  * the content they drop into. The actions hold their size, so a long
  * description wraps instead of squeezing them.
  */
 export function PageHeader({ title, description, status, actions, icon, onBack }: PageHeaderProps) {
   const hasLine = description !== undefined || status !== undefined
   return (
-    <header className="page-header relative z-20 flex items-center gap-12">
+    <header className={cx('page-header relative flex items-center gap-12', LAYER_RAISED)}>
       {onBack ? (
         <button type="button" className={BACK} onClick={onBack} aria-label="Back">
           <ArrowLeftIcon size={18} />

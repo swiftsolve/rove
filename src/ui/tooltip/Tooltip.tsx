@@ -3,11 +3,13 @@ import { cx } from 'class-variance-authority'
 import { cloneElement, type ReactElement, type ReactNode, useId } from 'react'
 import { createPortal } from 'react-dom'
 
+import { LAYER_POPOVER } from '../foundations/layers'
+
 // Fades in from 3px above its place. Not hoverable: the pointer passes through.
 const BUBBLE = cx(
   'w-max px-10 py-8 rounded-sm',
   'bg-popover border border-line shadow-popover',
-  'text-xs leading-hint text-secondary text-left whitespace-normal pointer-events-none',
+  'type-caption leading-hint text-secondary text-left whitespace-normal pointer-events-none',
   'transition-[opacity,transform] duration-(--duration-fast) ease-in-out',
   'data-starting-style:opacity-0 data-starting-style:transform-[translateY(-3px)]',
   'data-ending-style:opacity-0 data-ending-style:transform-[translateY(-3px)]',
@@ -85,7 +87,7 @@ export function Tooltip({
         )}
       <BaseTooltip.Portal>
         <BaseTooltip.Positioner
-          className="z-9999"
+          className={LAYER_POPOVER}
           positionMethod="fixed"
           side={side}
           align="center"

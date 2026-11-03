@@ -112,7 +112,7 @@ function TestProgress() {
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
-        <span className="text-sm leading-body-small text-secondary">{progress.message || 'Starting…'}</span>
+        <span className="type-body-small text-secondary">{progress.message || 'Starting…'}</span>
         <span className="num text-md font-regular text-accent-text">{Math.round(progress.progress)}%</span>
       </div>
       <div

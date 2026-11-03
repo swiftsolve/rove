@@ -81,7 +81,7 @@ export function EmptyStateDescription({
   role?: 'status'
 }) {
   return (
-    <p className="max-w-[34ch] text-sm leading-body-small text-tertiary" role={role}>
+    <p className="max-w-[34ch] type-body-small text-tertiary" role={role}>
       {children}
     </p>
   )

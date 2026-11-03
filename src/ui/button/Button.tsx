@@ -23,8 +23,8 @@ const buttonVariants = cva(
       },
       tone: { neutral: null, accent: null, negative: null },
       size: {
-        sm: 'gap-6 px-10 py-6 text-xs font-medium',
-        md: 'gap-6 px-(--card-padding) py-10 text-sm font-semibold tracking-label-large',
+        sm: 'gap-6 px-10 py-6 type-label-small',
+        md: 'gap-6 px-(--card-padding) py-10 type-label-large',
       },
     },
     compoundVariants: [

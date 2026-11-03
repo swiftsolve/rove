@@ -116,7 +116,7 @@ function CapabilityDetailCard({ capability, speed }: { capability: CapabilityRat
         </dl>
 
         <div className={VERDICT}>
-          <p className="flex min-w-0 flex-1 items-start gap-4 text-sm leading-body-small text-secondary">
+          <p className="flex min-w-0 flex-1 items-start gap-4 type-body-small text-secondary">
             <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
               <VerdictIcon level={capability.level} />
             </span>
