@@ -11,7 +11,7 @@
 //! Windows recycles PIDs freely enough that one number can mean two programs in
 //! a session. Microsoft-Windows-Kernel-Process, on the same session, supplies a
 //! name at process start and a boundary at process stop. See [`Instance`].
-use super::{PeerUnit, UsageUnit};
+use super::app::UsageUnit;
 use crate::util::net::is_routable_peer;
 use ferrisetw::native::EvntraceNativeError;
 use ferrisetw::parser::Parser;
@@ -23,6 +23,18 @@ use std::collections::{HashMap, HashSet};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{LazyLock, Mutex, MutexGuard, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
+
+/// One per-connection reading from the Windows ETW session, for the Hosts view.
+/// Shaped like `usage::host::PeerReading`, which `usage::windows` maps it to.
+pub struct PeerUnit {
+    pub conn_key: String,
+    pub name: String,
+    pub pid: u32,
+    pub ip: String,
+    pub port: Option<u16>,
+    pub rx: u64,
+    pub tx: u64,
+}
 
 /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
 const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;

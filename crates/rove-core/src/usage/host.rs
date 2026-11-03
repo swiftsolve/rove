@@ -31,7 +31,6 @@
 
 use crate::usage::app::CounterSemantics;
 use crate::usage::{ByteCounts, Support};
-use crate::util::net::{peer_port, routable_peer_ip};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -110,23 +109,23 @@ pub struct TrafficUsageSummary {
     pub tracking_since: Option<u64>,
 }
 
-/// `Supported` on Linux and macOS, and on Windows while the ETW session is up
-/// (so a runtime check there); `Unsupported` otherwise.
+/// The same as [`crate::usage::app::platform_support`]: on Windows both views
+/// read the one ETW session, so they need administrator rights and light up
+/// together.
 pub fn platform_support() -> Support {
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
-    {
-        Support::Supported
-    }
-    // Same ETW session as per-app bytes, so both views need Rove run as
-    // administrator and light up together.
-    #[cfg(windows)]
-    {
-        crate::usage::app::platform_support()
-    }
-    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
-    {
-        Support::Unsupported
-    }
+    crate::usage::sys::support()
+}
+
+/// One snapshot of per-connection cumulative byte counters, tagged with the
+/// peer.
+///
+/// `None` means no sample was taken (tool missing, failed, timed out, or an
+/// unsupported platform); `Some(vec![])` means no connected sockets. Keep them
+/// apart, as in [`crate::usage::app::sample_units`]: ingesting a failure as
+/// empty would drop every baseline and re-credit each counter in full next
+/// tick.
+pub async fn sample() -> Option<Vec<PeerReading>> {
+    crate::usage::sys::sample_peers().await
 }
 
 /// One cumulative reading for a single connection. `conn_key` identifies the
@@ -145,152 +144,6 @@ pub struct PeerReading {
     /// Owning process id, when the source gives one. Only used to resolve the
     /// app icon; accounting stays keyed by `conn_key`.
     pub pid: Option<u32>,
-}
-
-/// One snapshot of per-connection cumulative byte counters, tagged with the
-/// peer.
-///
-/// `None` means no sample was taken (tool missing, failed, timed out, or an
-/// unsupported platform); `Some(vec![])` means no connected sockets. Keep them
-/// apart, as in [`crate::usage::app::sample_units`]: ingesting a failure as
-/// empty would drop every baseline and re-credit each counter in full next
-/// tick.
-pub async fn sample() -> Option<Vec<PeerReading>> {
-    #[cfg(target_os = "linux")]
-    {
-        return crate::util::shell::try_run("ss -tinHp").await.map(|out| parse_ss_peers(&out));
-    }
-    // No -P, so each process row is followed by its connections. No -m, so UDP
-    // is listed too and QUIC (HTTP/3 on :443) counts like TCP; unconnected UDP
-    // (mDNS, DNS listeners) has a `*` peer and `routable_peer_ip` drops it.
-    // -x raw bytes, -n no DNS (we resolve names ourselves).
-    #[cfg(target_os = "macos")]
-    {
-        return crate::util::shell::try_run("nettop -L 1 -x -n").await.map(|out| parse_nettop_peers(&out));
-    }
-    // An in-process read of the ETW accumulator: synchronous, and it can't fail.
-    #[cfg(windows)]
-    {
-        return Some(
-            crate::usage::app::windows_peer_units()
-                .into_iter()
-                .map(|u| PeerReading {
-                    conn_key: u.conn_key,
-                    app: u.name,
-                    ip: u.ip,
-                    port: u.port,
-                    rx: u.rx,
-                    tx: u.tx,
-                    pid: Some(u.pid),
-                })
-                .collect(),
-        );
-    }
-    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
-    {
-        None
-    }
-}
-
-// The same `ss` field readers as `usage::app`, so the two parsers can't drift.
-#[cfg(any(target_os = "linux", test))]
-use crate::usage::app::{field_u64, ss_proc_name, ss_proc_pid};
-
-/// Parse `ss -tinHp` into per-socket readings. Each socket is a header line
-/// (`STATE recvq sendq LOCAL PEER users:((...))`) then an indented info line
-/// with the byte counters. Sockets with no process, no byte line or no routable
-/// peer (listeners, loopback) are dropped.
-#[cfg(any(target_os = "linux", test))]
-fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
-    let mut readings = Vec::new();
-    // (app, conn_key, peer_ip, peer_port, pid) awaiting its following info line.
-    type Pending = (String, String, String, Option<u16>, Option<u32>);
-    let mut pending: Option<Pending> = None;
-
-    for line in output.lines() {
-        let trimmed = line.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-
-        if trimmed.contains("bytes_sent:") || trimmed.contains("bytes_received:") {
-            if let Some((app, conn_key, ip, port, pid)) = pending.take() {
-                let tx = field_u64(trimmed, "bytes_sent:").unwrap_or(0);
-                let rx = field_u64(trimmed, "bytes_received:").unwrap_or(0);
-                readings.push(PeerReading { conn_key, app, ip, port, rx, tx, pid });
-            }
-            continue;
-        }
-
-        pending = match ss_proc_name(trimmed) {
-            Some(app) => {
-                let mut cols = trimmed.split_whitespace();
-                let local = cols.nth(3);
-                let peer = cols.next();
-                match (local, peer, peer.and_then(routable_peer_ip)) {
-                    (Some(local), Some(peer), Some(ip)) => {
-                        Some((app, format!("{local}|{peer}"), ip, peer_port(peer), ss_proc_pid(trimmed)))
-                    }
-                    // No routable peer: reset the pairing so its info line
-                    // isn't credited to the previous socket.
-                    _ => None,
-                }
-            }
-            None => None,
-        };
-    }
-    readings
-}
-
-/// Parse `nettop -L 1 -x -n`. A process row (`name.pid,,,bytes_in,bytes_out,…`)
-/// owns the connection rows after it (`tcp4 local<->peer,iface,state,bytes_in,
-/// bytes_out,…`, or `udp4 …`) until the next process row. Connections with no
-/// routable peer (listeners, `*` wildcards, loopback) are skipped.
-#[cfg(any(target_os = "macos", test))]
-fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
-    let mut readings = Vec::new();
-    let mut current: Option<(String, Option<u32>)> = None;
-
-    for line in output.lines() {
-        // Keep empty trailing fields so byte columns stay at fixed indices.
-        let fields: Vec<&str> = line.split(',').collect();
-        let Some(&label) = fields.get(1) else { continue };
-        let label = label.trim();
-        if label.is_empty() {
-            continue;
-        }
-
-        if let Some((_, peer)) = label.split_once("<->") {
-            let Some((app, pid)) = &current else { continue };
-            let peer = peer.trim();
-            let Some(ip) = routable_peer_ip(peer) else { continue };
-            let rx = fields.get(4).and_then(|f| f.trim().parse::<u64>().ok());
-            let tx = fields.get(5).and_then(|f| f.trim().parse::<u64>().ok());
-            let (Some(rx), Some(tx)) = (rx, tx) else { continue };
-            readings.push(PeerReading {
-                conn_key: label.to_string(),
-                app: app.clone(),
-                ip,
-                port: peer_port(peer),
-                rx,
-                tx,
-                pid: *pid,
-            });
-            continue;
-        }
-
-        // Otherwise a process row, "name.pid" with a numeric pid.
-        if let Some((name, pid)) = label.rsplit_once('.') {
-            if !name.is_empty() && !pid.is_empty() && pid.bytes().all(|b| b.is_ascii_digit()) {
-                current = Some((name.to_string(), pid.parse::<u32>().ok()));
-                continue;
-            }
-        }
-        // Anything else (the header row) clears the owner so stray rows that
-        // follow aren't misattributed.
-        current = None;
-    }
-    readings
 }
 
 /// Whether a peer IP is public. Private, carrier-NAT, link-local and reserved
@@ -582,72 +435,7 @@ impl HostUsageTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn parses_ss_peer_rows() {
-        let out = "\
-ESTAB 0 0 192.168.1.42:52134 140.82.113.25:443 users:((\"firefox\",pid=1234,fd=90))
-\t cubic wscale:8,7 bytes_sent:5231 bytes_acked:5231 bytes_received:18422 segs_out:20
-ESTAB 0 0 192.168.1.42:40122 [2606:4700::6810:85e5]:443 users:((\"spotify\",pid=567,fd=44))
-\t cubic bytes_sent:1200 bytes_received:900 segs_out:8
-LISTEN 0 128 127.0.0.1:5432 0.0.0.0:* users:((\"postgres\",pid=99,fd=7))
-\t cubic bytes_sent:0 bytes_received:0";
-        let r = parse_ss_peers(out);
-        assert_eq!(r.len(), 2);
-        assert_eq!(r[0].app, "firefox");
-        assert_eq!(r[0].ip, "140.82.113.25");
-        assert_eq!(r[0].port, Some(443));
-        assert_eq!(r[0].rx, 18422);
-        assert_eq!(r[0].tx, 5231);
-        assert_eq!(r[0].pid, Some(1234));
-        // IPv6 peer in ss bracket form: IP kept without the port, port read off.
-        assert_eq!(r[1].app, "spotify");
-        assert_eq!(r[1].ip, "2606:4700::6810:85e5");
-        assert_eq!(r[1].port, Some(443));
-    }
-
-    #[test]
-    fn parses_nettop_connection_rows() {
-        // Header, then two processes each with a connection row, plus a
-        // loopback and a listener row that must be dropped.
-        let out = "\
-time,,interface,state,bytes_in,bytes_out,rx_dupe
-16:17:52.9,apsd.375,,,6461,53268,0
-16:17:52.8,tcp4 192.168.2.16:62740<->17.57.147.7:5223,en0,Established,6461,53268,0
-16:17:52.9,OneDrive.1604,,,14564,3563,174
-16:17:52.8,tcp4 192.168.2.16:63209<->4.145.79.81:443,en0,Established,14564,3563,174
-16:17:52.8,tcp4 127.0.0.1:50216<->127.0.0.1:35765,lo0,Established,999,999,0
-16:17:52.8,tcp6 ::1.8021<->*.*,lo0,Listen,,,";
-        let r = parse_nettop_peers(out);
-        assert_eq!(r.len(), 2);
-        assert_eq!(r[0].app, "apsd");
-        assert_eq!(r[0].ip, "17.57.147.7");
-        assert_eq!(r[0].port, Some(5223));
-        assert_eq!(r[0].rx, 6461);
-        assert_eq!(r[0].tx, 53268);
-        assert_eq!(r[0].pid, Some(375));
-        assert_eq!(r[1].app, "OneDrive");
-        assert_eq!(r[1].ip, "4.145.79.81");
-        assert_eq!(r[1].port, Some(443));
-    }
-
-    /// QUIC (HTTP/3) is UDP to a real peer on :443, so it's attributed like TCP.
-    /// Unconnected UDP (mDNS, `*` peer) and loopback UDP stay out.
-    #[test]
-    fn parses_connected_udp_and_drops_peerless_udp() {
-        let out = "\
-time,,interface,state,bytes_in,bytes_out
-16:00:00.0,firefox.900,,,50000,9000
-16:00:00.0,udp4 192.168.2.16:51094<->17.253.24.251:443,en0,,48000,8000,0
-16:00:00.0,udp4 *:5353<->*:*,en0,,1000,500,0
-16:00:00.0,udp4 127.0.0.1:56142<->127.0.0.1:56142,lo0,,900,900,0";
-        let r = parse_nettop_peers(out);
-        assert_eq!(r.len(), 1, "only the QUIC socket with a real peer is attributed");
-        assert_eq!(r[0].app, "firefox");
-        assert_eq!(r[0].ip, "17.253.24.251");
-        assert_eq!(r[0].port, Some(443));
-        assert_eq!(r[0].rx, 48000);
-    }
+    use crate::usage::macos::parse_nettop_peers;
 
     #[test]
     fn nettop_ipv6_peer_port_stripped() {
