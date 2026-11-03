@@ -46,11 +46,9 @@ use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
 /// One app's network usage since Rove started watching, summed over every
-/// process with that name. On Linux and macOS, sockets to a loopback or
-/// wildcard peer are excluded, the rule the Hosts view uses
-/// (`util::net::routable_peer_ip`); the Windows per-process total counts every
-/// send and receive, loopback included. The same traffic by remote host is
-/// [`AppHosts`](crate::usage::host::AppHosts).
+/// process with that name. Traffic to a loopback or wildcard peer is excluded,
+/// the rule the Hosts view uses (`util::net::routable_peer_ip`). The same
+/// traffic by remote host is [`AppHosts`](crate::usage::host::AppHosts).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppUsage {

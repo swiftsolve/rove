@@ -12,6 +12,7 @@
 //! a session. Microsoft-Windows-Kernel-Process, on the same session, supplies a
 //! name at process start and a boundary at process stop. See [`Instance`].
 use super::{PeerUnit, UsageUnit};
+use crate::util::net::is_routable_peer;
 use ferrisetw::native::EvntraceNativeError;
 use ferrisetw::parser::Parser;
 use ferrisetw::provider::Provider;
@@ -247,8 +248,20 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
     let inst = current_instance(pid);
     note_instance(inst);
 
-    // Apps view. Credited even for loopback, which the per-connection path
-    // below discards and the Linux and macOS sources don't count.
+    // Loopback never touches the network, and the Linux and macOS sources drop
+    // it, so it counts in neither view. An event without addresses can't be
+    // told apart, so it still counts toward the Apps total.
+    let addrs = match (parser.try_parse::<IpAddr>("saddr"), parser.try_parse::<IpAddr>("daddr")) {
+        (Ok(saddr), Ok(daddr)) => Some((saddr, daddr)),
+        _ => None,
+    };
+    if let Some((saddr, daddr)) = addrs {
+        if !is_routable_peer(saddr) || !is_routable_peer(daddr) {
+            return;
+        }
+    }
+
+    // Apps view.
     {
         let mut acc = ACC.lock().unwrap();
         let entry = acc.entry(inst).or_default();
@@ -264,9 +277,7 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
     // addresses, which avoids depending on whether the provider orders
     // `saddr`/`daddr` by packet direction or by connection role. A parse miss
     // skips only this part; the Apps total above is already counted.
-    let (Ok(saddr), Ok(daddr)) =
-        (parser.try_parse::<IpAddr>("saddr"), parser.try_parse::<IpAddr>("daddr"))
-    else {
+    let Some((saddr, daddr)) = addrs else {
         return;
     };
     let sport: u16 = parser.try_parse("sport").unwrap_or(0);

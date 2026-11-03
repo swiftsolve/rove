@@ -53,12 +53,12 @@ pub struct HostConn {
 }
 
 /// One application with the remote hosts it has talked to, busiest host first.
-/// `rx_bytes`/`tx_bytes` sum its hosts. On Linux and macOS they track the same
-/// app's [`AppUsage`](crate::usage::app::AppUsage) closely: both bank
-/// per-socket deltas from the same protocols and drop the same peers
+/// `rx_bytes`/`tx_bytes` sum its hosts. They track the same app's
+/// [`AppUsage`](crate::usage::app::AppUsage) closely: both bank per-socket
+/// deltas from the same protocols and drop the same peers
 /// (`util::net::routable_peer_ip`). They differ slightly while traffic flows,
 /// because the two samplers run on their own intervals, and converge when it's
-/// quiet. On Windows the Apps total also counts loopback, which this view drops.
+/// quiet.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppHosts {

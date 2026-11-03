@@ -83,7 +83,7 @@ pub(crate) fn peer_port(addr: &str) -> Option<u16> {
 
 /// Whether an address is a peer out on the network, rather than this machine
 /// talking to itself or to nothing.
-fn is_routable_peer(ip: IpAddr) -> bool {
+pub(crate) fn is_routable_peer(ip: IpAddr) -> bool {
     match ip {
         IpAddr::V4(v4) => !v4.is_loopback() && !v4.is_unspecified() && !v4.is_broadcast(),
         IpAddr::V6(v6) => !v6.is_loopback() && !v6.is_unspecified(),
