@@ -16,7 +16,7 @@ struct AppState {
     speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
     usage: Mutex<Option<UsageTracker>>,
     networks: Mutex<sysinfo::Networks>,
-    throughput_active: AtomicBool,
+    is_throughput_subscribed: AtomicBool,
     ...
 }
 ```
@@ -36,7 +36,7 @@ Three concurrency primitives, each teaching something:
   locking. The type system enforces the discipline.
 
 - **`AtomicBool`**: a single bool you can flip from any thread without a lock,
-  used for simple flags like `throughput_active`.
+  used for simple flags like `is_throughput_subscribed`.
 
 There's a lovely real-world detail at `lock()` (`src-tauri/src/lib.rs:34`):
 

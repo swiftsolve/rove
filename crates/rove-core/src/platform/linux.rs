@@ -264,9 +264,9 @@ pub async fn neighbors() -> Option<Vec<RawNeighbor>> {
                 Some(RawNeighbor {
                     ip: c[1].to_string(),
                     mac: c[2].to_lowercase(),
-                    reachable: matches!(&c[3], "REACHABLE" | "DELAY" | "PROBE"),
+                    is_reachable: matches!(&c[3], "REACHABLE" | "DELAY" | "PROBE"),
                     // A real kernel state the scan can use as a liveness signal.
-                    stateful: true,
+                    is_stateful: true,
                 })
             })
             .collect(),

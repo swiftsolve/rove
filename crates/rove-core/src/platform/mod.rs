@@ -34,8 +34,7 @@ use std::sync::LazyLock;
 #[cfg(windows)]
 pub fn hide_console(cmd: &mut std::process::Command) {
     use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.creation_flags(crate::util::shell::CREATE_NO_WINDOW);
 }
 #[cfg(not(windows))]
 pub fn hide_console(_cmd: &mut std::process::Command) {}
@@ -106,11 +105,11 @@ pub(crate) fn sort_interfaces(list: &mut [InterfaceSummary]) {
 pub struct RawNeighbor {
     pub ip: String,
     pub mac: String,
-    pub reachable: bool,
-    /// Whether `reachable` is a real kernel state (Linux `ip neigh`) rather than
+    pub is_reachable: bool,
+    /// Whether `is_reachable` is a real kernel state (Linux `ip neigh`) rather than
     /// the `arp -a` fallback's blanket `true`. The device scan only trusts
-    /// `reachable` when this is set, and relies on its own probes otherwise.
-    pub stateful: bool,
+    /// `is_reachable` when this is set, and relies on its own probes otherwise.
+    pub is_stateful: bool,
 }
 
 static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
@@ -124,7 +123,7 @@ static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
 
 /// The kernel neighbor table. Linux's `ip neigh` has a reachability state; the
 /// `arp -a` fallback (macOS, Windows, Linux without `iproute2`) doesn't, so
-/// its entries are marked reachable but not `stateful`.
+/// its entries are marked `is_reachable` but not `is_stateful`.
 pub async fn neighbor_table() -> Vec<RawNeighbor> {
     if cfg!(target_os = "linux") {
         if let Some(neighbors) = linux::neighbors().await {
@@ -150,9 +149,9 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
             {
                 return None;
             }
-            // No liveness column, so `reachable` is a placeholder the scan
-            // ignores (`stateful: false`).
-            Some(RawNeighbor { ip: c[1].to_string(), mac, reachable: true, stateful: false })
+            // No liveness column, so `is_reachable` is a placeholder the scan
+            // ignores (`is_stateful: false`).
+            Some(RawNeighbor { ip: c[1].to_string(), mac, is_reachable: true, is_stateful: false })
         })
         .collect()
 }

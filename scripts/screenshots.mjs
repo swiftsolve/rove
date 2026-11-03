@@ -27,11 +27,12 @@
  */
 import { spawn } from 'node:child_process'
 import { mkdir, readFile } from 'node:fs/promises'
-import { createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { chromium } from 'playwright-core'
+
+import { flag, freePort, startDevServer } from './lib/dev-server.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -98,11 +99,6 @@ function button(page, name) {
   return page.getByRole('button', { name, exact: typeof name === 'string' })
 }
 
-function flag(name, fallback) {
-  const at = process.argv.indexOf(`--${name}`)
-  return at === -1 ? fallback : process.argv[at + 1]
-}
-
 const out = resolve(ROOT, flag('out', 'docs/screenshots'))
 const theme = flag('theme', 'dark')
 const existingUrl = flag('url', null)
@@ -113,21 +109,6 @@ const existingStorybookUrl = flag('storybook-url', null)
 const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
-/**
- * An unused port, so we never fight a `tauri:dev` already holding vite's
- * default. The config pins that port with `strictPort`, so a collision is
- * fatal rather than a bump to the next one.
- */
-function freePort() {
-  return new Promise((ok) => {
-    const probe = createServer()
-    probe.listen(0, '127.0.0.1', () => {
-      const { port } = probe.address()
-      probe.close(() => ok(port))
-    })
-  })
-}
-
 /** Moves the app to `location` the way the tab bar does. */
 function navigateTo(page, location) {
   return page.evaluate((to) => {
@@ -135,26 +116,6 @@ function navigateTo(page, location) {
     window.history.pushState(state, '')
     window.dispatchEvent(new PopStateEvent('popstate', { state }))
   }, location)
-}
-
-/** Start `vite` and resolve once it prints the URL it settled on. */
-async function startDevServer() {
-  const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], {
-    cwd: ROOT,
-    stdio: ['ignore', 'pipe', 'inherit'],
-    // vite.config.ts reads PORT; see its `server.port`.
-    env: { ...process.env, PORT: String(await freePort()) },
-  })
-  return new Promise((ok, fail) => {
-    const timer = setTimeout(() => fail(new Error('dev server never printed a URL')), 30_000)
-    vite.stdout.on('data', (chunk) => {
-      const url = /(http:\/\/localhost:\d+)/.exec(String(chunk))?.[1]
-      if (!url) return
-      clearTimeout(timer)
-      ok({ url, stop: () => vite.kill() })
-    })
-    vite.on('exit', (code) => fail(new Error(`dev server exited (${code})`)))
-  })
 }
 
 /** Start Storybook and resolve once its story index answers. */

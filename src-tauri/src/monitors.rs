@@ -149,7 +149,7 @@ pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
         loop {
             tokio::time::sleep(THROUGHPUT_INTERVAL).await;
             let state = handle.state::<AppState>();
-            let active = state.throughput_active.load(Ordering::Relaxed);
+            let active = state.is_throughput_subscribed.load(Ordering::Relaxed);
             if !active {
                 was_active = false;
                 continue;
@@ -286,7 +286,7 @@ pub fn spawn_route_monitor(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(monitor_connectivity(handle, || {
         let mut cmd = tokio::process::Command::new("powershell");
         cmd.args(["-NoProfile", "-NonInteractive", "-Command", WINDOWS_NET_MONITOR]);
-        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW: no console flash
+        cmd.creation_flags(rove_core::util::shell::CREATE_NO_WINDOW);
         cmd
     }));
 

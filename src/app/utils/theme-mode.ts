@@ -23,7 +23,7 @@ export function themeModeFrom(stored: string, legacy: string): ThemeMode {
   return 'dark'
 }
 
-export function systemPrefersLight(): boolean {
+export function doesSystemPreferLight(): boolean {
   return typeof window !== 'undefined' && window.matchMedia(LIGHT_QUERY).matches
 }
 
@@ -35,5 +35,5 @@ export function isResolvedLight(mode: ThemeMode, isSystemLight: boolean): boolea
 /** Whether the stored preference resolves to light right now: read before the first render, so it paints in the right theme. */
 export function isStoredThemeLight(): boolean {
   const mode = themeModeFrom(getSetting(MODE_SETTING, ''), getSetting(LEGACY_SETTING, ''))
-  return isResolvedLight(mode, systemPrefersLight())
+  return isResolvedLight(mode, doesSystemPreferLight())
 }

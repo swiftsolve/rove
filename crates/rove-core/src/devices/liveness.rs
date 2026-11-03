@@ -46,12 +46,12 @@ static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> =
 
 /// Fold this scan's result for `mac` into its miss streak and return whether
 /// the device still reads as reachable.
-pub fn reachable(mac: &str, is_live_now: bool) -> bool {
-    reachable_at(mac, is_live_now, Instant::now())
+pub fn record_and_check(mac: &str, is_live_now: bool) -> bool {
+    record_and_check_at(mac, is_live_now, Instant::now())
 }
 
-/// [`reachable`] with the clock injected, so tests advance time without sleeping.
-fn reachable_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
+/// [`record_and_check`] with the clock injected, so tests advance time without sleeping.
+fn record_and_check_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
     let mut streaks = crate::util::net::lock(&STREAKS);
     if is_live_now {
         streaks.remove(mac);
@@ -74,13 +74,13 @@ mod tests {
     fn a_burst_of_misses_within_the_floor_stays_reachable() {
         let mac = "aa:bb:cc:00:00:10";
         let t0 = Instant::now();
-        assert!(reachable_at(mac, true, t0), "a live device is reachable");
+        assert!(record_and_check_at(mac, true, t0), "a live device is reachable");
         // Three misses in two seconds, the bursty-scan case: the count hits
         // MISS_LIMIT but no real time has passed.
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(1)));
-        assert!(reachable_at(mac, false, t0 + Duration::from_millis(1500)));
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(1)));
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_millis(1500)));
         assert!(
-            reachable_at(mac, false, t0 + Duration::from_secs(2)),
+            record_and_check_at(mac, false, t0 + Duration::from_secs(2)),
             "three rapid misses must not flip a still-present device to cached",
         );
     }
@@ -89,12 +89,12 @@ mod tests {
     fn flips_only_after_both_the_count_and_the_absence_floor() {
         let mac = "aa:bb:cc:00:00:11";
         let t0 = Instant::now();
-        assert!(reachable_at(mac, true, t0));
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(1)), "miss 1");
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(2)), "miss 2");
+        assert!(record_and_check_at(mac, true, t0));
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(1)), "miss 1");
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(2)), "miss 2");
         // Third miss, and past MIN_ABSENCE: really gone.
         assert!(
-            !reachable_at(mac, false, t0 + Duration::from_secs(120)),
+            !record_and_check_at(mac, false, t0 + Duration::from_secs(120)),
             "three misses plus a real absence flips to offline",
         );
     }
@@ -103,10 +103,10 @@ mod tests {
     fn the_absence_floor_alone_is_not_enough() {
         let mac = "aa:bb:cc:00:00:12";
         let t0 = Instant::now();
-        assert!(reachable_at(mac, true, t0));
+        assert!(record_and_check_at(mac, true, t0));
         // A lone miss long after the last sighting isn't a departure.
         assert!(
-            reachable_at(mac, false, t0 + Duration::from_secs(300)),
+            record_and_check_at(mac, false, t0 + Duration::from_secs(300)),
             "one miss stays reachable no matter how much time has elapsed",
         );
     }
@@ -115,15 +115,15 @@ mod tests {
     fn a_live_scan_resets_both_the_count_and_the_clock() {
         let mac = "aa:bb:cc:00:00:13";
         let t0 = Instant::now();
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(1))); // miss 1
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(2))); // miss 2
-        assert!(reachable_at(mac, true, t0 + Duration::from_secs(3)), "seen again → cleared");
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(1))); // miss 1
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(2))); // miss 2
+        assert!(record_and_check_at(mac, true, t0 + Duration::from_secs(3)), "seen again → cleared");
         // After the reset the clock restarts, so these misses sit inside a fresh
         // MIN_ABSENCE window.
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(4)));
-        assert!(reachable_at(mac, false, t0 + Duration::from_secs(5)));
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(4)));
+        assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(5)));
         assert!(
-            reachable_at(mac, false, t0 + Duration::from_secs(6)),
+            record_and_check_at(mac, false, t0 + Duration::from_secs(6)),
             "the absence floor runs from the first miss after a sighting, not the process start",
         );
     }

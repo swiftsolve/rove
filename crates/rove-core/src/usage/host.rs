@@ -41,7 +41,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 /// the peer is first seen, so both start as `None`.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HostConn {
+pub struct HostUsage {
     /// Remote peer IP, no port: the host's identity across samples.
     pub ip: String,
     /// Reverse-DNS hostname; `None` until resolved, or when there's no PTR.
@@ -69,7 +69,7 @@ pub struct AppHosts {
     pub icon: Option<String>,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
-    pub hosts: Vec<HostConn>,
+    pub hosts: Vec<HostUsage>,
 }
 
 /// Per-app remote hosts for the Hosts view. Same shape as
@@ -534,10 +534,10 @@ impl HostUsageTracker {
             .totals
             .iter()
             .filter_map(|(name, by_ip)| {
-                let mut hosts: Vec<HostConn> = by_ip
+                let mut hosts: Vec<HostUsage> = by_ip
                     .iter()
                     .filter(|(_, b)| b.rx > 0 || b.tx > 0)
-                    .map(|(ip, b)| HostConn {
+                    .map(|(ip, b)| HostUsage {
                         ip: ip.clone(),
                         host: self.hostnames.get(ip).cloned().flatten(),
                         country_code: self.countries.get(ip).cloned().flatten(),

@@ -12,13 +12,13 @@
  * moves between screens by writing history state. Exits non-zero when axe
  * reports any violation, so it can gate a commit or CI.
  */
-import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
-import { createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { chromium } from 'playwright-core'
+
+import { flag, startDevServer } from './lib/dev-server.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8'))
@@ -80,39 +80,6 @@ const SCENARIOS = [
   ['settings', { tab: 'settings' }],
   ['about', { tab: 'about' }],
 ]
-
-function flag(name, fallback) {
-  const at = process.argv.indexOf(`--${name}`)
-  return at === -1 ? fallback : process.argv[at + 1]
-}
-
-function freePort() {
-  return new Promise((ok) => {
-    const probe = createServer()
-    probe.listen(0, '127.0.0.1', () => {
-      const { port } = probe.address()
-      probe.close(() => ok(port))
-    })
-  })
-}
-
-async function startDevServer() {
-  const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], {
-    cwd: ROOT,
-    stdio: ['ignore', 'pipe', 'inherit'],
-    env: { ...process.env, PORT: String(await freePort()) },
-  })
-  return new Promise((ok, fail) => {
-    const timer = setTimeout(() => fail(new Error('dev server never printed a URL')), 30_000)
-    vite.stdout.on('data', (chunk) => {
-      const url = /(http:\/\/localhost:\d+)/.exec(String(chunk))?.[1]
-      if (!url) return
-      clearTimeout(timer)
-      ok({ url, stop: () => vite.kill() })
-    })
-    vite.on('exit', (code) => fail(new Error(`dev server exited (${code})`)))
-  })
-}
 
 const existingUrl = flag('url', null)
 // How many places to list per rule; `--limit all` lists every one.

@@ -316,9 +316,8 @@ pub fn usage_support_detail() -> Option<String> {
 pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
     #[cfg(windows)]
     {
+        use rove_core::util::shell::CREATE_NO_WINDOW;
         use std::os::windows::process::CommandExt;
-        // Don't flash a console window for the launcher.
-        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
         let exe = std::env::current_exe().map_err(err_str)?;
         // Single-quote the path for PowerShell, doubling any embedded quote.
@@ -387,10 +386,10 @@ pub fn clear_speed_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), St
 
 #[tauri::command]
 pub fn subscribe_live_throughput(state: tauri::State<'_, AppState>) {
-    state.throughput_active.store(true, Ordering::Relaxed);
+    state.is_throughput_subscribed.store(true, Ordering::Relaxed);
 }
 
 #[tauri::command]
 pub fn unsubscribe_live_throughput(state: tauri::State<'_, AppState>) {
-    state.throughput_active.store(false, Ordering::Relaxed);
+    state.is_throughput_subscribed.store(false, Ordering::Relaxed);
 }

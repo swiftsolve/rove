@@ -3,9 +3,9 @@ use std::time::Duration;
 use tokio::process::Command;
 
 /// Windows `CREATE_NO_WINDOW`: without it each console child flashes a
-/// terminal window on screen.
+/// terminal window on screen. The one definition every spawn site uses.
 #[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+pub const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 /// Keep a child from popping up a console window. A no-op off Windows, where
 /// these commands never open one.

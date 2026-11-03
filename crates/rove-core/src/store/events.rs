@@ -156,7 +156,7 @@ impl Store {
                 _ => None,
             };
             if let Some((event_type, severity, name)) = event {
-                Self::record_event_raw(
+                Self::insert_event(
                     &tx,
                     now_ms,
                     event_type,
@@ -200,7 +200,7 @@ impl Store {
             } else {
                 (EVENT_INTERNET_LOST, "warning")
             };
-            Self::record_event_raw(
+            Self::insert_event(
                 &tx, now_ms, event_type, severity, None, None, None, None, None, false,
             )?;
             Self::prune_events(&tx, now_ms)?;
@@ -350,7 +350,7 @@ impl Store {
         old_value: Option<&str>,
         new_value: Option<&str>,
     ) -> rusqlite::Result<()> {
-        Self::record_event_raw(
+        Self::insert_event(
             conn,
             ts,
             event_type,
@@ -365,7 +365,7 @@ impl Store {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub(super) fn record_event_raw(
+    pub(super) fn insert_event(
         conn: &Connection,
         ts: i64,
         event_type: &str,

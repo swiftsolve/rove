@@ -251,7 +251,7 @@ impl Store {
                 if is_marked_offline(&last_event, mac) {
                     continue;
                 }
-                Self::record_event_raw(
+                Self::insert_event(
                     &tx,
                     now_ms,
                     EVENT_DEVICE_OFFLINE,
@@ -273,7 +273,7 @@ impl Store {
         if is_seeding_feed {
             let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
             if count > 0 {
-                Self::record_event_raw(
+                Self::insert_event(
                     &tx,
                     now_ms,
                     EVENT_INITIAL_SCAN,

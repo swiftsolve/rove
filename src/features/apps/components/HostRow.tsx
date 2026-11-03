@@ -4,7 +4,7 @@ import { memo } from 'react'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
 import { hostIconLabel } from '@/features/apps/utils/host-labels'
-import type { HostConn } from '@/types'
+import type { HostUsage } from '@/types'
 import { GlobeIcon, IpIcon, Tooltip as UiTooltip } from '@/ui'
 import { isPrivateIp } from '@/utils/ip'
 
@@ -19,7 +19,7 @@ const FLAG_SLOT = cx(
  * The icon left of a host's name: the country flag when geolocated, else a
  * LAN or globe (public but unresolved) fallback.
  */
-function HostIcon({ host }: { host: HostConn }) {
+function HostIcon({ host }: { host: HostUsage }) {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
   // A LAN peer gets a node-graph icon, not the globe, which reads as "out on the
@@ -52,7 +52,7 @@ function HostIcon({ host }: { host: HostConn }) {
  * With no hostname yet there's nothing to reveal, so the tooltip is disabled
  * rather than unmounted, keeping the node across the poll that resolves it.
  */
-function HostName({ host }: { host: HostConn }) {
+function HostName({ host }: { host: HostUsage }) {
   return (
     <UiTooltip
       content={
@@ -73,7 +73,7 @@ function HostName({ host }: { host: HostConn }) {
 }
 
 /** Memoised: each poll keeps an unchanged host's object, so only hosts that moved re-render. */
-export const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
+export const HostRow = memo(function HostRow({ host }: { host: HostUsage }) {
   return (
     <li className="flex items-center justify-between gap-12">
       <span className="inline-flex min-w-0 items-center gap-[7px]">

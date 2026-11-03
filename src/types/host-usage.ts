@@ -1,7 +1,7 @@
 import type { AppUsageSupport } from './app-usage'
 
 /** One remote host an app has exchanged bytes with this session. */
-export type HostConn = {
+export type HostUsage = {
   /** Remote peer IP (no port): the stable grouping key for the host. */
   ip: string
   /**
@@ -26,7 +26,7 @@ export type AppHosts = {
   /** Sum across the app's hosts (TCP-connection traffic only). */
   rxBytes: number
   txBytes: number
-  hosts: HostConn[]
+  hosts: HostUsage[]
 }
 
 /** Per-app remote-host breakdown for the Hosts view. Mirrors `AppUsageSummary`. */

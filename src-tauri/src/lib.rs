@@ -42,11 +42,11 @@ struct AppState {
     /// True while any UI consumer wants 1 Hz live-throughput samples. The UI
     /// ref-counts; a bool here can't drift if subscribe and unsubscribe calls
     /// get out of step (Vite HMR, say).
-    throughput_active: AtomicBool,
+    is_throughput_subscribed: AtomicBool,
     /// True once the tray icon is live. Gates close-to-tray: without a tray (a
     /// Linux desktop with no StatusNotifier host, say), closing must quit, or
     /// the user is left with an invisible, unreachable process.
-    tray_active: AtomicBool,
+    has_tray: AtomicBool,
     /// The heartbeat's latest internet status, or None before its first probe,
     /// so `get_internet_status` answers without probing.
     internet: Mutex<Option<InternetStatus>>,
@@ -97,8 +97,8 @@ pub fn run() {
             app_usage: Mutex::new(AppUsageTracker::new()),
             host_usage: Mutex::new(HostUsageTracker::new()),
             networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
-            throughput_active: AtomicBool::new(false),
-            tray_active: AtomicBool::new(false),
+            is_throughput_subscribed: AtomicBool::new(false),
+            has_tray: AtomicBool::new(false),
             internet: Mutex::new(None),
         })
         .manage(Arc::new(DeviceScanner::default()))
@@ -120,7 +120,7 @@ pub fn run() {
             monitors::spawn_services_heartbeat(handle.clone());
 
             match tray::build_tray(&handle) {
-                Ok(()) => app.state::<AppState>().tray_active.store(true, Ordering::Relaxed),
+                Ok(()) => app.state::<AppState>().has_tray.store(true, Ordering::Relaxed),
                 Err(err) => tracing::warn!(
                     "system tray unavailable ({err}); the window close button will quit the app"
                 ),
@@ -139,7 +139,7 @@ pub fn run() {
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } if window.label() == "main" => {
                 let app = window.app_handle();
-                if app.state::<AppState>().tray_active.load(Ordering::Relaxed) {
+                if app.state::<AppState>().has_tray.load(Ordering::Relaxed) {
                     let _ = window.hide();
                     api.prevent_close();
                 }

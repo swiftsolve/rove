@@ -12,7 +12,7 @@ pub struct CapabilityRating {
     pub level: String,
 }
 
-struct Def {
+struct CapabilityDef {
     id: &'static str,
     label: &'static str,
     description: &'static str,
@@ -32,27 +32,27 @@ struct Def {
 // don't publish latency or jitter limits (bar GeForce NOW's latency), and few
 // publish upload, so those are Rove's own rules of thumb unless noted. Keep in
 // step with CAPABILITY_DEFINITIONS in src/types/capabilities.ts.
-const DEFS: [Def; 8] = [
+const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: FCC broadband speed guide, browsing, email and social media (1 Mbps).
-    Def { id: "browsing", label: "Web Browsing", description: "General web, email, social media", icon: "🌐", min_down: 1.0, min_up: 1.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
+    CapabilityDef { id: "browsing", label: "Web Browsing", description: "General web, email, social media", icon: "🌐", min_down: 1.0, min_up: 1.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
     // Down: Netflix and YouTube, 1080p (5 Mbps).
-    Def { id: "streaming-hd", label: "HD Streaming", description: "1080p video streaming", icon: "📺", min_down: 5.0, min_up: 1.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
+    CapabilityDef { id: "streaming-hd", label: "HD Streaming", description: "1080p video streaming", icon: "📺", min_down: 5.0, min_up: 1.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
     // Down: YouTube, 4K (20 Mbps); Netflix asks for 15.
-    Def { id: "streaming-4k", label: "4K Streaming", description: "Ultra HD video streaming", icon: "🎬", min_down: 20.0, min_up: 2.0, max_latency: Some(80.0), max_jitter: Some(20.0), can_be_unsupported: true },
+    CapabilityDef { id: "streaming-4k", label: "4K Streaming", description: "Ultra HD video streaming", icon: "🎬", min_down: 20.0, min_up: 2.0, max_latency: Some(80.0), max_jitter: Some(20.0), can_be_unsupported: true },
     // Down and up: Zoom, 1080p group call (3.0 down, 3.8 up).
-    Def { id: "video-calls", label: "Video Calls", description: "Zoom, Teams, Google Meet", icon: "📹", min_down: 3.0, min_up: 3.8, max_latency: Some(150.0), max_jitter: Some(30.0), can_be_unsupported: true },
+    CapabilityDef { id: "video-calls", label: "Video Calls", description: "Zoom, Teams, Google Meet", icon: "📹", min_down: 3.0, min_up: 3.8, max_latency: Some(150.0), max_jitter: Some(30.0), can_be_unsupported: true },
     // Up: Twitch's 1080p60 bitrate (6,000 kbps).
-    Def { id: "live-streaming", label: "Live Streaming", description: "Twitch, YouTube live broadcasting", icon: "📡", min_down: 5.0, min_up: 6.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
+    CapabilityDef { id: "live-streaming", label: "Live Streaming", description: "Twitch, YouTube live broadcasting", icon: "📡", min_down: 5.0, min_up: 6.0, max_latency: Some(100.0), max_jitter: Some(30.0), can_be_unsupported: true },
     // Down: FCC broadband speed guide, online multiplayer (4 Mbps).
-    Def { id: "gaming", label: "Online Gaming", description: "Low-latency multiplayer games", icon: "🎮", min_down: 4.0, min_up: 2.0, max_latency: Some(50.0), max_jitter: Some(15.0), can_be_unsupported: true },
+    CapabilityDef { id: "gaming", label: "Online Gaming", description: "Low-latency multiplayer games", icon: "🎮", min_down: 4.0, min_up: 2.0, max_latency: Some(50.0), max_jitter: Some(15.0), can_be_unsupported: true },
     // Down and latency: GeForce NOW, 1080p at 60 fps (25 Mbps), under 40 ms
     // recommended. It requires under 80 ms, where `rate` calls it unsupported.
-    Def { id: "cloud-gaming", label: "Cloud Gaming", description: "GeForce NOW, Xbox Cloud", icon: "☁️", min_down: 25.0, min_up: 3.0, max_latency: Some(40.0), max_jitter: Some(10.0), can_be_unsupported: true },
+    CapabilityDef { id: "cloud-gaming", label: "Cloud Gaming", description: "GeForce NOW, Xbox Cloud", icon: "☁️", min_down: 25.0, min_up: 3.0, max_latency: Some(40.0), max_jitter: Some(10.0), can_be_unsupported: true },
     // Down: the FCC's broadband benchmark (100 Mbps), a 100 GB game in about two
     // hours. Only download speed sets how long a download takes, so there's no
     // latency or jitter limit, and the upload just carries its acknowledgements
     // (1-2% of the download). A slow line still downloads, so never unsupported.
-    Def { id: "large-downloads", label: "Large Downloads", description: "Game updates, file transfers", icon: "⬇️", min_down: 100.0, min_up: 1.0, max_latency: None, max_jitter: None, can_be_unsupported: false },
+    CapabilityDef { id: "large-downloads", label: "Large Downloads", description: "Game updates, file transfers", icon: "⬇️", min_down: 100.0, min_up: 1.0, max_latency: None, max_jitter: None, can_be_unsupported: false },
 ];
 
 /// Whether `value` is within `limit` scaled by `factor`; no limit always is.
@@ -62,7 +62,7 @@ fn within(value: f64, limit: Option<f64>, factor: f64) -> bool {
 
 /// `rateCapability` in `src/dev/mock-network-api.ts` mirrors this by hand, so
 /// demo ratings match; change both together.
-fn rate(speed: &SpeedResult, def: &Def) -> &'static str {
+fn rate(speed: &SpeedResult, def: &CapabilityDef) -> &'static str {
     let is_unusable = speed.download_mbps < def.min_down * 0.5 || !within(speed.latency_ms, def.max_latency, 2.0);
     if def.can_be_unsupported && is_unusable {
         return "unsupported";
@@ -84,7 +84,7 @@ fn rate(speed: &SpeedResult, def: &Def) -> &'static str {
 }
 
 pub fn assess(speed: &SpeedResult) -> Vec<CapabilityRating> {
-    DEFS.iter()
+    CAPABILITY_DEFS.iter()
         .map(|def| CapabilityRating {
             id: def.id.into(),
             label: def.label.into(),

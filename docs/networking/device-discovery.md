@@ -229,7 +229,7 @@ not the ping/probe results, is the authoritative "who exists."** The probes were
 
 ## Stage 4: Enriching each bare entry
 
-Each neighbor is now `{ip, mac, reachable}`. A cluster of enrichments turns that
+Each neighbor is now `{ip, mac, is_reachable}`. A cluster of enrichments turns that
 into an identified device (`build_device` in `devices/mod.rs`). All the per-scan
 lookup tables are bundled into one `Enrichment` struct, keyed by device IP (DHCP
 by MAC), so `build_device` draws from a single value rather than an argument list that

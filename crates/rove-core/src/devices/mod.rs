@@ -251,7 +251,7 @@ fn build_passive_device(
     let ssdp_hit = ssdp.get(&neighbor.ip);
     let is_present = is_self
         || is_gateway
-        || (neighbor.stateful && neighbor.reachable)
+        || (neighbor.is_stateful && neighbor.is_reachable)
         || mdns_hit.is_some()
         || ssdp_hit.is_some();
     if !is_present {
@@ -468,10 +468,10 @@ fn build_device(
     let is_reachable = if is_self || is_gateway {
         true
     } else if !enrichment.was_probed {
-        neighbor.reachable
+        neighbor.is_reachable
     } else {
         let ip = neighbor.ip.as_str();
-        let is_live_now = (neighbor.stateful && neighbor.reachable)
+        let is_live_now = (neighbor.is_stateful && neighbor.is_reachable)
             || enrichment.ping_live.contains(ip)
             || enrichment.tcp_live.contains(ip)
             || enrichment.mdns.contains_key(ip)
@@ -482,7 +482,7 @@ fn build_device(
         if neighbor.mac.is_empty() {
             is_live_now // no stable key to debounce against
         } else {
-            liveness::reachable(&neighbor.mac, is_live_now)
+            liveness::record_and_check(&neighbor.mac, is_live_now)
         }
     };
 
@@ -624,7 +624,7 @@ mod tests {
             was_probed: true,
         };
         let neighbor =
-            RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true, stateful: true };
+            RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), is_reachable: true, is_stateful: true };
         build_device(neighbor, None, &enrichment, None, None)
     }
 
@@ -636,16 +636,16 @@ mod tests {
         let reachable = RawNeighbor {
             ip: "192.168.1.5".into(),
             mac: "aa:bb:cc:dd:ee:01".into(),
-            reachable: true,
-            stateful: true,
+            is_reachable: true,
+            is_stateful: true,
         };
         assert!(build_passive_device(reachable, &mdns, &ssdp, &dhcp, None, None).is_some());
         // A STALE entry that announces nothing is left to an active scan.
         let stale = RawNeighbor {
             ip: "192.168.1.6".into(),
             mac: "aa:bb:cc:dd:ee:02".into(),
-            reachable: false,
-            stateful: true,
+            is_reachable: false,
+            is_stateful: true,
         };
         assert!(build_passive_device(stale, &mdns, &ssdp, &dhcp, None, None).is_none());
     }
@@ -659,8 +659,8 @@ mod tests {
         let bare = RawNeighbor {
             ip: "192.168.1.7".into(),
             mac: "aa:bb:cc:dd:ee:03".into(),
-            reachable: true,
-            stateful: false,
+            is_reachable: true,
+            is_stateful: false,
         };
         assert!(
             build_passive_device(bare, &mdns, &ssdp, &dhcp, None, None).is_none(),
@@ -675,8 +675,8 @@ mod tests {
         let announcing = RawNeighbor {
             ip: "192.168.1.8".into(),
             mac: "aa:bb:cc:dd:ee:04".into(),
-            reachable: true,
-            stateful: false,
+            is_reachable: true,
+            is_stateful: false,
         };
         let dev = build_passive_device(announcing, &mdns, &ssdp, &dhcp, None, None)
             .expect("announced host");
@@ -691,8 +691,8 @@ mod tests {
         let gw = RawNeighbor {
             ip: "192.168.1.1".into(),
             mac: "aa:bb:cc:dd:ee:05".into(),
-            reachable: false,
-            stateful: false,
+            is_reachable: false,
+            is_stateful: false,
         };
         let dev = build_passive_device(gw, &mdns, &ssdp, &dhcp, Some("192.168.1.1"), None)
             .expect("the gateway is always present");
@@ -713,8 +713,8 @@ mod tests {
         let ap = RawNeighbor {
             ip: "192.168.1.9".into(),
             mac: "aa:bb:cc:dd:dd:06".into(),
-            reachable: true,
-            stateful: true,
+            is_reachable: true,
+            is_stateful: true,
         };
         let dev = build_passive_device(ap, &mdns, &ssdp, &dhcp, None, None).expect("present");
         assert_eq!(dev.kind, "router", "a router fingerprint types the arrival as router");
@@ -753,8 +753,8 @@ mod tests {
         let neighbor = RawNeighbor {
             ip: "192.168.2.35".to_string(),
             mac: "a6:80:ee:e0:f8:f7".to_string(),
-            reachable: true,
-            stateful: false,
+            is_reachable: true,
+            is_stateful: false,
         };
         let device = build_device(neighbor, None, &enrichment, None, None);
         assert!(device.is_reachable, "a TCP RST/accept is a live signal on its own");

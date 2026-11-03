@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { queryClient } from '@/app/utils/query-client'
-import { getNetworkApi, NO_BRIDGE_MESSAGE } from '@/bridge/network-api'
+import { getNetworkApi, NO_BACKEND_MESSAGE } from '@/bridge/network-api'
 import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
@@ -131,7 +131,7 @@ export function useNetworkInfoSource(): NetworkState {
 
   const info = data ?? null
   const error = useMemo<NetworkError | null>(() => {
-    if (!hasBackend) return { kind: 'backend', message: NO_BRIDGE_MESSAGE }
+    if (!hasBackend) return { kind: 'backend', message: NO_BACKEND_MESSAGE }
     return queryError ? toNetworkError(queryError) : null
   }, [hasBackend, queryError])
   const lastReadAt = error && dataUpdatedAt > 0 ? dataUpdatedAt : null
