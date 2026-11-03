@@ -19,7 +19,8 @@ type DirectionIconProps = IconProps & {
 
 /**
  * Marks a download or upload readout: a blue down-arrow or a purple up-arrow,
- * in the `--series-*` colours, so the shape carries the meaning as well as the colour.
+ * in the `--series-*` colours, so the shape carries the meaning as well as the
+ * colour.
  */
 export function DirectionIcon({ series, size = 14, className }: DirectionIconProps) {
   const Icon = series === 'down' ? ArrowDownIcon : ArrowUpIcon

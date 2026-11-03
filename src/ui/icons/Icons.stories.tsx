@@ -9,7 +9,6 @@ import type { IconProps } from './Icons'
 import * as Icons from './Icons'
 import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
-// Every Lucide alias (the types are gone at runtime) and custom icon, by name.
 const CUSTOM = {
   BrandIcon,
   CloudGamingIcon,
@@ -20,6 +19,8 @@ const CUSTOM = {
   HdStreamIcon,
   UltraHdStreamIcon,
 }
+// Every Lucide alias and custom icon, by name (the module's types are gone at
+// runtime, so only icons are left).
 const ICONS = Object.entries({ ...Icons, ...CUSTOM })
   .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
   .sort(([a], [b]) => a.localeCompare(b))

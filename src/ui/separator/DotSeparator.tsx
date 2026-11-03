@@ -4,9 +4,8 @@ import { Fragment, type ReactNode } from 'react'
 import { cn } from '../foundations/cn'
 
 /**
- * A dot gets 8px of air on each side: the rows it sits in space their items at
- * 6px, and its margin adds 2px for the dot alone, so the gaps between other
- * items in the same row stay at 6px.
+ * A small tertiary dot between inline items. Its 2px margin on the row's 6px
+ * gap gives it 8px of air a side, while other items keep their 6px.
  */
 export function DotSeparator() {
   return <span className="sep-dot mx-2 size-[3px] shrink-0 rounded-full bg-tertiary" aria-hidden="true" />
@@ -26,9 +25,12 @@ const itemVariants = cva('inline-meta-item min-w-0', {
 })
 
 type InlineMetaProps = {
-  /** The chunks, in order. Empty ones (null, false) are dropped, with their dots. */
+  /** The chunks, in order. Empty ones (null, false, '') are dropped, with their dots. */
   items: (ReactNode | null | undefined | false)[]
-  /** Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other items. It takes its type from the line it sits in. */
+  /**
+   * Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other
+   * items. It takes its type from the line it sits in.
+   */
   className?: string
   /** Keep the items on one line, each ellipsizing as space runs out. Otherwise they wrap. */
   shouldTruncate?: boolean

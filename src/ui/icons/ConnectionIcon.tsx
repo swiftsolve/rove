@@ -8,12 +8,10 @@ import type { IconProps } from './Icons'
 export function ConnectionIcon({ size = 18, className }: IconProps) {
   return (
     <CustomIcon size={size} className={className}>
-      {/* spokes: centre-node edge → outer-node edge */}
       <line x1="12" y1="6" x2="12" y2="10" />
       <line x1="12" y1="14" x2="12" y2="18" />
       <line x1="6" y1="12" x2="10" y2="12" />
       <line x1="14" y1="12" x2="18" y2="12" />
-      {/* centre + four nodes */}
       <circle cx="12" cy="12" r="2" />
       <circle cx="12" cy="4" r="2" />
       <circle cx="12" cy="20" r="2" />

@@ -5,11 +5,10 @@ import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
 
-// An inset track, like the Toggle's, so the two read as a set. A grid of equal
-// columns, so every segment is as wide as the widest and the thumb can slide
-// between them by its own width. Plain `1fr`, not `auto-cols-fr`'s
-// `minmax(0, 1fr)`, which collapses to nothing, and `w-max`, since a track
-// shrunk to its min-content in a narrow parent lets the columns differ.
+// An inset track, like the Toggle's, so the two read as a set. Equal grid
+// columns make every segment as wide as the widest, so the thumb slides by its
+// own width. Plain `1fr`, since `auto-cols-fr`'s `minmax(0, 1fr)` collapses to
+// nothing; `w-max`, since a track squeezed to min-content lets columns differ.
 const TRACK =
   'relative inline-grid grid-flow-col auto-cols-[1fr] w-max gap-2 p-2 bg-inset border border-line rounded-sm'
 

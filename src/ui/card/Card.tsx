@@ -63,7 +63,7 @@ export function Card({ as: Element = 'section', onOpen, linkLabel, className, ch
   return (
     <CardContext value={{ titleId, isOpenable }}>
       <Element
-        // One ref type for the three elements it can be.
+        // The ref is typed for a `section`; the cast lets it fit a `div` or `li`.
         ref={ref as never}
         className={cn(cardVariants({ isOpenable }), className)}
         aria-labelledby={Element === 'section' ? titleId : undefined}

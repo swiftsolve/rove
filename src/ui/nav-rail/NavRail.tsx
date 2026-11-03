@@ -6,7 +6,8 @@ import { LAYER_CHROME } from '../foundations/layers'
 import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
 
-// The accent bar's shape, hugging the rail's left edge.
+// The accent bar's shape, hugging the rail's left edge. BAR_HEIGHT is its
+// `h-20` in px, for centring it on an item: change the two together.
 const BAR_SHAPE = 'w-[3px] h-20 rounded-[0_3px_3px_0] bg-accent'
 const BAR_HEIGHT = 20
 
@@ -65,7 +66,10 @@ export function NavItem({ label, icon: Icon, isActive = false, onClick, classNam
 
 const GROUP = 'flex flex-col items-center gap-12'
 
-/** One group's items, each a flex item so it shrinks to its 38px control rather than growing a line box. */
+/**
+ * One group's items. Each `<li>` is a flex box, so it hugs its 38px button
+ * rather than growing a line box around it.
+ */
 function NavGroup({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <ul role="list" className={cx(GROUP, className)}>

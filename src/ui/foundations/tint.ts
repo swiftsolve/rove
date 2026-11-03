@@ -1,6 +1,9 @@
 import type { CSSProperties } from 'react'
 
-/** A tint: any CSS colour, usually a token (`var(--status-positive)`), or `neutral`, the quiet sunken look. */
+/**
+ * A tint: any CSS colour, usually a token (`var(--status-positive)`), or
+ * `neutral`, the quiet sunken look.
+ */
 export type TintColor = 'neutral' | (string & {})
 
 /**

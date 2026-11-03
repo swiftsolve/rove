@@ -25,7 +25,7 @@ type StretchedLinkProps = Omit<ComponentProps<'button'>, 'aria-label' | 'childre
 export function StretchedLink({ label, type = 'button', className, ...buttonProps }: StretchedLinkProps) {
   return (
     // A button, as the app has no URLs to link to: views change through
-    // history state (see Link).
+    // history state.
     <button
       type={type}
       role="link"

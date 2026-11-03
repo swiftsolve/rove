@@ -92,9 +92,8 @@ type DialogProps = {
  * A modal dialog: title, optional description and close button, a recessed
  * body, an optional footnote, and a footer of actions. Focus moves in and
  * stays inside while it's open, the page behind is inert, and focus returns to
- * the opener on close.
- * Escape, the close button, Cancel and a click on the backdrop all call
- * `onClose`.
+ * the opener on close. Escape, the close button, Cancel and a click on the
+ * backdrop all call `onClose`.
  *
  * Render it inside a DialogRoot, which opens it and plays its leave animation.
  */
@@ -130,7 +129,7 @@ export function Dialog({
       }}
       disablePointerDismissal={isDirty || !isClosable}
     >
-      {/* Base UI waits for a null container; with no provider, the body. */}
+      {/* Base UI waits while the container is null; undefined means the body. */}
       <BaseDialog.Portal container={portalContainer ?? undefined}>
         <BaseDialog.Backdrop className={cn(LAYER, 'bg-scrim')} />
         <BaseDialog.Viewport className={cn(LAYER, 'flex items-center justify-center p-20')}>

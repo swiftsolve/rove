@@ -452,7 +452,7 @@
         "isDisabled": {
           "type": "boolean",
           "default": "false",
-          "description": "Drops input and dims the switch. It stays focusable, like a disabled Button, so a tooltip can say why."
+          "description": "Drops input and dims the switch. It stays focusable, like a disabled\nButton, so a tooltip can say why."
         },
         "label": {
           "type": "string",
@@ -516,7 +516,7 @@
     "Dialog": {
       "group": "Overlays",
       "source": "src/ui/dialog/Dialog.tsx",
-      "description": "A modal dialog: title, optional description and close button, a recessed\nbody, an optional footnote, and a footer of actions. Focus moves in and\nstays inside while it's open, the page behind is inert, and focus returns to\nthe opener on close.\nEscape, the close button, Cancel and a click on the backdrop all call\n`onClose`.\n\nRender it inside a DialogRoot, which opens it and plays its leave animation.",
+      "description": "A modal dialog: title, optional description and close button, a recessed\nbody, an optional footnote, and a footer of actions. Focus moves in and\nstays inside while it's open, the page behind is inert, and focus returns to\nthe opener on close. Escape, the close button, Cancel and a click on the\nbackdrop all call `onClose`.\n\nRender it inside a DialogRoot, which opens it and plays its leave animation.",
       "figma": {
         "name": "Dialog",
         "node": "372:235"
@@ -638,7 +638,7 @@
             "right"
           ],
           "default": "bottom",
-          "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\nor `top` stack it, `left` or `right` set it beside it (the\nnav rail). It flips to the other side when it would leave the window, and\nslides along to stay inside it."
+          "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\nor `top` stack it, `left` or `right` set it beside it (the nav rail). It\nflips to the other side when it would leave the window, and slides along\nto stay inside it."
         },
         "sideOffset": {
           "type": "number",
@@ -1101,12 +1101,12 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it."
+          "description": "Its place in a layout: a column's width and alignment\n(`min-w-[46px] text-right`). It takes its size and colour from the text\naround it."
         },
         "format": {
           "type": "(n: number) => string | null",
           "isRequired": true,
-          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar."
+          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`.\nNull draws a NoValue bar."
         },
         "status": {
           "values": [
@@ -1204,7 +1204,7 @@
         "max": {
           "type": "number",
           "isRequired": true,
-          "description": "The value a full track stands for. Rows in one list share it, so their bars compare at a glance."
+          "description": "The value a full track stands for. Rows in one list share it, so their\nbars compare at a glance."
         },
         "up": {
           "type": "number",
@@ -1302,7 +1302,7 @@
     "IconTileButton": {
       "group": "Data display",
       "source": "src/ui/icon-tile/IconTile.tsx",
-      "description": "An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger.",
+      "description": "An IconTile that opens something: hover and keyboard focus deepen the tint\nand lift it, a touch larger.",
       "figma": {
         "name": "Icon tile",
         "node": "495:585"
@@ -1592,7 +1592,7 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "What the trigger shows and hides. Inset it on an element inside: the panel's `className` is for its place (`mt-8`)."
+          "description": "What the trigger shows and hides. Pad an element inside: the panel's\n`className` is for its place (`mt-8`), as padding would survive at height 0."
         }
       },
       "hasElementProps": true,
@@ -1622,7 +1622,7 @@
     "DotSeparator": {
       "group": "Containers",
       "source": "src/ui/separator/DotSeparator.tsx",
-      "description": "A dot gets 8px of air on each side: the rows it sits in space their items at\n6px, and its margin adds 2px for the dot alone, so the gaps between other\nitems in the same row stay at 6px.",
+      "description": "A small tertiary dot between inline items. Its 2px margin on the row's 6px\ngap gives it 8px of air a side, while other items keep their 6px.",
       "figma": {
         "name": "Dot separator",
         "node": "452:9524"
@@ -1644,12 +1644,12 @@
       "props": {
         "className": {
           "type": "string",
-          "description": "Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other items. It takes its type from the line it sits in."
+          "description": "Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other\nitems. It takes its type from the line it sits in."
         },
         "items": {
           "type": "ReactNode[]",
           "isRequired": true,
-          "description": "The chunks, in order. Empty ones (null, false) are dropped, with their dots."
+          "description": "The chunks, in order. Empty ones (null, false, '') are dropped, with their dots."
         },
         "shouldTruncate": {
           "type": "boolean",
@@ -1697,7 +1697,7 @@
     "TitleBarStatus": {
       "group": "App frame",
       "source": "src/ui/title-bar/TitleBar.tsx",
-      "description": "The connection status beside the brand: a dot (pulsing unless neutral) and its words, announced as they change.",
+      "description": "The connection status beside the brand: a dot (pulsing unless neutral) and\nits words, announced as they change.",
       "figma": {
         "name": "Title bar status",
         "node": "4:40"
@@ -1821,7 +1821,7 @@
     "PageHeader": {
       "group": "App frame",
       "source": "src/ui/page-header/PageHeader.tsx",
-      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, and actions at the end, over a full-width divider. It\nsits above the page content (`LAYER_RAISED`), so its tooltips aren't painted over by\nthe content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
+      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, and actions at the end, over a full-width divider. It\nsits above the page content (`LAYER_RAISED`), so its tooltips aren't painted\nover by the content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
       "figma": {
         "name": "Page header",
         "node": "542:10510"
@@ -1953,7 +1953,7 @@
   ],
   "helpers": {
     "PortalProvider": "Sets where the library's dialogs inside it portal to.",
-    "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's: Storybook's name shows it. Raise it when the library's API changes.",
+    "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's; Storybook's name\nshows it. Raise it when the library's API changes.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",

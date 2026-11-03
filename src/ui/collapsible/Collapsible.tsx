@@ -66,7 +66,10 @@ const PANEL = cx(
 )
 
 type CollapsiblePanelProps = Omit<ComponentProps<'div'>, 'children'> & {
-  /** What the trigger shows and hides. Inset it on an element inside: the panel's `className` is for its place (`mt-8`). */
+  /**
+   * What the trigger shows and hides. Pad an element inside: the panel's
+   * `className` is for its place (`mt-8`), as padding would survive at height 0.
+   */
   children: ReactNode
 }
 

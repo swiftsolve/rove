@@ -63,7 +63,10 @@ type IconTileButtonProps = TileLookProps &
     isDisabled?: boolean
   }
 
-/** An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger. */
+/**
+ * An IconTile that opens something: hover and keyboard focus deepen the tint
+ * and lift it, a touch larger.
+ */
 export function IconTileButton({
   size = 'md',
   color,

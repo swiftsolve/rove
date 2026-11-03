@@ -53,6 +53,7 @@ export const NoInternet: Story = { args: { status: <TitleBarStatus tone="negativ
 /** No network info yet. */
 export const Connecting: Story = { args: { status: <TitleBarStatus tone="neutral">Connecting…</TitleBarStatus> } }
 
+/** No network at all. */
 export const Offline: Story = { args: { status: <TitleBarStatus tone="neutral">Offline</TitleBarStatus> } }
 
 /** A window with native decorations has no WindowButtons. */
@@ -60,7 +61,8 @@ export const WithoutControls: Story = { args: { controls: undefined } }
 
 /** Every status together. */
 export const AllStates: Story = {
-  // Several headers on one page is this overview only; the app has one.
+  // Several title bars, each a banner landmark, is this overview only; the app
+  // has one.
   parameters: {
     a11y: {
       config: {

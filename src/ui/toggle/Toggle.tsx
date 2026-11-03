@@ -25,7 +25,10 @@ type ToggleProps = Omit<ComponentProps<'button'>, 'onChange' | 'children' | 'dis
   onChange: (isChecked: boolean) => void
   /** Names the switch, which shows no text of its own. */
   label: string
-  /** Drops input and dims the switch. It stays focusable, like a disabled Button, so a tooltip can say why. */
+  /**
+   * Drops input and dims the switch. It stays focusable, like a disabled
+   * Button, so a tooltip can say why.
+   */
   isDisabled?: boolean
 }
 

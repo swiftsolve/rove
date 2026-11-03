@@ -65,7 +65,10 @@ type TitleBarStatusProps = {
   children: ReactNode
 }
 
-/** The connection status beside the brand: a dot (pulsing unless neutral) and its words, announced as they change. */
+/**
+ * The connection status beside the brand: a dot (pulsing unless neutral) and
+ * its words, announced as they change.
+ */
 export function TitleBarStatus({ tone, children }: TitleBarStatusProps) {
   return (
     <span className={statusVariants({ tone })} role="status">

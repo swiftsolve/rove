@@ -29,9 +29,9 @@ type TooltipProps = {
   children: ReactElement<{ 'aria-label'?: string; 'aria-describedby'?: string }>
   /**
    * The trigger's side the bubble opens on, centred on the trigger: `bottom`
-   * or `top` stack it, `left` or `right` set it beside it (the
-   * nav rail). It flips to the other side when it would leave the window, and
-   * slides along to stay inside it.
+   * or `top` stack it, `left` or `right` set it beside it (the nav rail). It
+   * flips to the other side when it would leave the window, and slides along
+   * to stay inside it.
    */
   side?: 'top' | 'bottom' | 'left' | 'right'
   /** The gap (px) between the trigger and the bubble. */
