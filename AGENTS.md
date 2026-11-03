@@ -29,12 +29,25 @@ change also updates every Figma page that shows it: labels, swatches and
 hard-coded fills. Say in the summary that both sides changed and how you
 checked.
 
-## Before committing
+## Check your work
 
 ```bash
-npm run check                # typecheck + lint (incl. CSS module check)
-cargo check -p rove-core     # when Rust changed
+npm run check                # typecheck, lint, the repo's checks, and every Vitest test
+cargo test -p rove-core      # when Rust changed
 ```
+
+Lint enforces the house rules (no readonly, boolean prefixes, no em dash in
+copy, library imports, raw values); each check in `scripts/checks/` says what
+it guards. Hooks run some of it for you:
+
+- **Git** (`scripts/hooks/git/`, on after `npm install`): `pre-commit` lints
+  and format-checks the staged files, and runs the Rust tests when Rust is
+  staged. `commit-msg` refuses an agent attribution line. Don't skip them
+  with `--no-verify`; fix what they report.
+- **Claude Code** (`.claude/settings.json`): every edited file is formatted and
+  linted on the spot; `--no-verify`, a force push and `git reset --hard` are
+  refused; generated `src/ui/components.json` can't be hand-edited (run
+  `npm run catalogue`).
 
 ## Keep the sites in sync after a UI change
 

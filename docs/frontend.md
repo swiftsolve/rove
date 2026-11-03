@@ -4,6 +4,74 @@ How the React UI in `src/` is organised and styled, and which component to use
 for what. Read it before writing or changing UI. For where files live, see
 [Layout](../README.md#layout) in the README.
 
+- [Checklists](#checklists) for the common changes
+- Rules: [State](#state-context-not-prop-drilling),
+  [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
+  [Styles](#styles-tailwind-utilities-from-the-design-tokens),
+  [Tests](#tests), and [what lint enforces](#whats-enforced)
+- The library: [The UI library](#the-ui-library) and its
+  [Components](#components)
+
+## Checklists
+
+Each list ends in the checks for it; [AGENTS.md](../AGENTS.md) has the steps
+after a commit (syncing the sites and Storybook).
+
+### Add a library component
+
+1. A kebab-case folder at the top of `src/ui` holding `Name.tsx`. A component
+   that renders one element takes `ComponentProps<'div'>` (its element's).
+   Styles are a CVA recipe; its defaults go in `defaultVariants` and in the
+   destructured props.
+2. A doc comment on the component and on each prop of its own.
+3. An export from `src/ui/index.ts`, under its group's comment.
+4. Stories beside it (`Name.stories.tsx`), titled by its group
+   (`Data display/Name`), with an `AllStates` story when it has several states.
+   An interactive one gets a `play` story too.
+5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
+6. Its entry in `src/ui/figma.json` (`null` when Figma has none) and its row in
+   the [Components](#components) table.
+7. `npm run catalogue`. Raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
+   when the library's API changes, this included.
+8. The Figma side: the component on its group's page in the Figma file, with
+   the same props and variants.
+
+Check: `npm run check`, then `npm run storybook` to look at it in both themes.
+
+### Change a library component
+
+1. Change the code, its doc comments and stories, and the
+   [Components](#components) row if its use changed.
+2. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` for an API change.
+3. The same change in Figma.
+
+Check: `npm run check`. For a change meant to look the same, diff
+`npm run screenshots -- --stable` from before and after.
+
+### Add a screen or tab
+
+1. The view in its feature's folder, rendering with no props (it reads context
+   and its data hooks). Every page but Home starts with a `PageHeader`.
+2. A new tab is its id in `APP_TABS` (`app/utils/tabs.ts`) plus its entry in
+   `TABS` (`app/utils/tab-registry.ts`): label, icon, `Screen`. A subpage is the
+   tab's `subScreen`. Focus and scroll on navigating need no code.
+3. Copy follows [Names and copy](#names-and-copy); an empty, loading and failed
+   state each use the library's (`EmptyState`, `LoadingState`, `Banner`).
+
+Check: `npm run check`, `npm run dev` in both themes, and `npm run a11y`.
+
+### Show new backend data
+
+The six steps are in
+[Learning Rust and Tauri](learning-rust-and-tauri.md#12-build--run-it--add-a-command-end-to-end):
+the logic in `rove-core`, a command in `src-tauri`, the type in `src/types`,
+both bridges (Tauri and the dev mock), then a hook. The hook goes in the
+feature's `hooks/`, on `useBackendQuery`, keyed by the data plus
+`useNetworkKey()` when it belongs to one network.
+
+Check: `cargo test -p rove-core`, `npm run check`, and `npm run dev` against
+the mock.
+
 ## State: context, not prop drilling
 
 - No component takes a prop only to pass it down. App-wide state comes from
@@ -35,7 +103,7 @@ for what. Read it before writing or changing UI. For where files live, see
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
   Only a context's provider and hook import its object; everything else calls
-  the hook. `npm run lint` enforces it.
+  the hook.
 - Each tab's label, rail icon and placement, screen and subpages are one entry
   in `TABS` (`app/utils/tab-registry.ts`); `TabBar` and `CurrentScreen` read
   it. A new tab is its id in `app/utils/tabs.ts` plus that entry.
@@ -59,12 +127,10 @@ for what. Read it before writing or changing UI. For where files live, see
 - File names say what a file is. A component is PascalCase (`ThemeProvider.tsx`),
   a hook is camelCase starting with `use` (`useTheme.ts`), and everything else
   is kebab-case: contexts, utils and types (`theme-context.ts`), global
-  stylesheets (`base.css`) and folders (`live-throughput/`). `npm run lint`
-  runs `scripts/check-file-names.mjs`, which fails on a name that fits none.
+  stylesheets (`base.css`) and folders (`live-throughput/`).
 - Prettier lays out the code (`.prettierrc.json`: no semicolons, single
-  quotes, 120 columns); `npm run format` applies it, and `npm run lint` fails
-  on a file it would change. Markdown and generated files are left alone
-  (`.prettierignore`).
+  quotes, 120 columns); `npm run format` applies it. Markdown and generated
+  files are left alone (`.prettierignore`).
 - Imports come in three groups, each sorted: packages, then the app's own
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
@@ -80,44 +146,28 @@ for what. Read it before writing or changing UI. For where files live, see
   `isActive` where you read it.
 - No `readonly`, `Readonly<>`, `ReadonlyArray`, `ReadonlyMap` or
   `ReadonlySet`; use the plain type.
-- An object shape is a `type`, never an `interface` (lint enforces it), so a
-  shape that grows into a union or an intersection keeps its keyword. A prop it
-  redeclares from a base is omitted from the base
+- An object shape is a `type`, never an `interface`, so a shape that grows
+  into a union or an intersection keeps its keyword. A prop it redeclares from
+  a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
 - A missing value is `NoValue`, never a typed `—`. A formatter returns null
   for one, and the caller renders the bar.
+- Copy never punctuates with an em dash: write two short sentences or
+  rephrase.
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
 
-`npm run lint` enforces all but the props and hints rules.
-
-## Tests
-
-- Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
-  module plus `.test` (`chart-scale.test.ts`). They run in Node and never touch
-  the DOM or the bridge, so keep logic worth testing out of components and
-  hooks.
-- Components have DOM tests beside them (`Button.test.tsx`), rendered into
-  happy-dom with Testing Library. They test behaviour and accessibility: roles,
-  names, keyboard, focus, disabled.
-- Every story is a test too. It renders in headless Chromium with the real
-  styles, runs its `play` function and fails on any accessibility violation
-  (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
-  sidebar; `npx vitest --project=storybook` runs them alone. A new machine
-  needs `npx playwright install chromium` once.
-- All three kinds run with `npm test`, part of `npm run check`, which CI
-  runs on every push and pull request (`.github/workflows/test.yml`).
-- Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
-  fake clock, seeded randomness and paused animations, so two runs of the same
-  code match exactly. Diff a run against one from before a change to prove a
-  refactor changed nothing on screen. With `--stable` it also shoots the open
-  menus, dialogs, tooltips, a focus ring, and every component's All States
-  story from Storybook (`25-library/`).
-
 ## Styles: Tailwind utilities from the design tokens
+
+The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
+in Figma is the source of truth for tokens and components, which reach the UI
+through `@swiftsolve/rove-tokens`. Which token to use for what, with every
+value, is in its `DESIGN.md`
+(`node_modules/@swiftsolve/rove-tokens/DESIGN.md`); the published slideshow
+shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 
 - Components are styled with Tailwind v4 utilities in the TSX. The theme in
   `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
@@ -125,9 +175,9 @@ for what. Read it before writing or changing UI. For where files live, see
   there are no Tailwind defaults to reach for. There's no preflight:
   `styles/base.css` is the reset.
 - Colours and easings are always tokens, and so is any length, weight or
-  duration a token has: `p-12`, not `p-[12px]`. `npm run lint` runs
-  `scripts/check-raw-values.mjs`, which fails on a raw one. A value that has
-  to stay (the QR code's white plate) goes in its `ALLOWED` list, with why.
+  duration a token has: `p-12`, not `p-[12px]`. A value that has to stay (the
+  QR code's white plate) goes in `scripts/checks/raw-values.mjs`'s `ALLOWED`
+  list, with why.
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
@@ -158,19 +208,19 @@ for what. Read it before writing or changing UI. For where files live, see
     for `undefined`, so a `false` branch without a default is skipped when the
     prop is left out. The component also writes the default into its
     destructured props (`tone = 'current'`, `isDisabled = false`): that's what
-    the docs' Default column reads, and `npm run lint` fails without it. A
-    default that depends on another prop takes an `@default` tag instead
-    (Button's `size`). A prop's doc comment doesn't repeat its default.
+    the docs' Default column reads. A default that depends on another prop
+    takes an `@default` tag instead (Button's `size`). A prop's doc comment
+    doesn't repeat its default.
   - Something that adds no classes is `null`: a recipe with no base is
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
     boolean axis leaves out a branch that adds nothing.
 
-- `cn()` (from `@/ui`, in `ui/foundations/cn.ts`) joins classes and lets a later utility override an
-  earlier one that sets the same thing; use it wherever a component merges a
-  `className` from outside, which is how a view adjusts a child. `cx` only
-  joins fixed classes. `cn` lists every theme name so tailwind-merge can group
-  them; when you add one to `tailwind.css`, add it there too.
-  `npm run lint` runs `scripts/check-cn-theme.mjs`, which fails until you do.
+- `cn()` (from `@/ui`, in `ui/foundations/cn.ts`) joins classes and lets a
+  later utility override an earlier one that sets the same thing; use it
+  wherever a component merges a `className` from outside, which is how a view
+  adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
+  so tailwind-merge can group them; when you add one to `tailwind.css`, add it
+  there too.
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
@@ -181,60 +231,67 @@ for what. Read it before writing or changing UI. For where files live, see
   type, colour or surface is a missing variant, or a style for an element the
   view owns: a card that lays out its own content does it in a `<div>`
   inside the Card; InlineMeta and MetricValue take their type from the line
-  they sit in. `npm run lint` runs `scripts/check-ui-classname.mjs`, which
-  fails on a restyle. Icons (coloured by `className`) and the unstyled
-  `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in a `.module.css` (below);
-  InlineMeta keeps its `inline-meta` and `inline-meta-item` classes for it.
-- Buttons are `Button`, `IconButton` and `Link`, never a hand-written
-  `<button>`.
-  - Button takes three axes:
-    - `variant`: `solid` or `soft`
-    - `tone`, on a solid only: `accent`, or `negative` to stop something
-    - `size`: `sm` or `md`
-  - Solid defaults to md, soft to sm.
-  - Button takes an `icon` component and draws it at 13px.
-    IconButton draws its icon at 16px (`iconSize={14}` for an icon that reads
-    large).
-  - `isLoading` swaps the icon for a spinner (`loadingLabel` can swap the
-    words). `isDisabled` dims.
-  - Both states swallow every activation, a form submit included, and keep the
-    button focusable, so a tooltip can say why. They mark the element with
-    `data-disabled` and `data-loading`.
-  - An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
-    bubble's text when it should say more.
-  - Everything pressable shares that behaviour through
-    `ui/foundations/pressable.ts`, and styles a hover or press that only
-    applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
-- Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
-  styled with our tokens: focus traps, positioning, roving focus, dismissal,
-  ARIA wiring. The library wraps it, so features never import Base UI directly.
-- Props share names across components and with Figma: `variant`, `isLoading`,
-  `isDisabled`, `isChecked`; the text under a title is `description` and the
-  controls a component holds are `actions`; a colour by role is `status` or `tone`
-  (`positive`, `warning`, `negative`, `neutral`); a quality rating is `level`
-  (`excellent`, `good`, `fair`, `poor`).
+  they sit in. Icons (coloured by `className`) and the unstyled
+  `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in
+  a `.module.css` (below); InlineMeta keeps its `inline-meta` and
+  `inline-meta-item` classes for it.
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes. A `.module.css` file is only for what utilities can't say:
-  selectors into another component's DOM keyed on `:has()`. `npm run lint`
-  also runs `scripts/check-css-modules.mjs`, which fails on a `styles.x` with
-  no matching class and on a class nothing uses.
+  selectors into another component's DOM keyed on `:has()`.
 
-## Design and tokens
+## Tests
 
-The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma is the source of truth for tokens and components. The UI consumes its
-tokens through the `@swiftsolve/rove-tokens` package. To browse it without
-Figma, see the published slideshow: <https://swiftsolve.github.io/rove-tokens/>.
+- Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
+  module plus `.test` (`chart-scale.test.ts`). They run in Node and never touch
+  the DOM or the bridge, so keep logic worth testing out of components and
+  hooks.
+- Components have DOM tests beside them (`Button.test.tsx`), rendered into
+  happy-dom with Testing Library. They test behaviour and accessibility: roles,
+  names, keyboard, focus, disabled.
+- Every story is a test too. It renders in headless Chromium with the real
+  styles, runs its `play` function and fails on any accessibility violation
+  (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
+  sidebar; `npx vitest --project=storybook` runs them alone. A new machine
+  needs `npx playwright install chromium` once.
+- All three kinds run with `npm test`, part of `npm run check`, which CI
+  runs on every push and pull request (`.github/workflows/test.yml`).
+- Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
+  fake clock, seeded randomness and paused animations, so two runs of the same
+  code match exactly. Diff a run against one from before a change to prove a
+  refactor changed nothing on screen. With `--stable` it also shoots the open
+  menus, dialogs, tooltips, a focus ring, and every component's All States
+  story from Storybook (`25-library/`).
+- `npm run a11y` runs axe on every screen, subpage and dialog in both themes,
+  and fails on any violation.
 
-Which token to use for what, with every value, is in the package's
-`DESIGN.md` (`node_modules/@swiftsolve/rove-tokens/DESIGN.md`).
+## What's enforced
+
+`npm run check` fails on these, so a rule here needs no review. Each check in
+`scripts/checks/` says what it guards.
+
+| Rule | Enforced by |
+| --- | --- |
+| Library and context import boundaries, no raw `<button>` | ESLint, `no-restricted-imports` and `no-restricted-syntax` |
+| No `readonly`, typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
+| Boolean prefixes, `type` over `interface`, import order, jsx-a11y | ESLint |
+| Layout | Prettier |
+| File names | `checks/file-names.mjs` |
+| Tokens, not raw values | `checks/raw-values.mjs` |
+| Every theme name listed in `cn` | `checks/cn-theme.mjs` |
+| `className` only places a library component | `checks/ui-classname.mjs` |
+| CSS Module classes match their use | `checks/css-modules.mjs` |
+| `components.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
+| Behaviour, and accessibility per story | `npm test` |
+
+Review still has to catch: props passed only to pass down, hints over two
+sentences, focus or presence handled by hand, a view reaching into a
+component's DOM, and Figma left out of sync.
 
 ## The UI library
 
 `src/ui` is the component library: the Figma components in code. Features
 import it from `@/ui` and nothing else under `src/ui`. The library imports only
-itself (by relative path) and packages, never app code. `npm run lint` enforces
-both, and a raw `<button>` outside the library is a lint error.
+itself (by relative path) and packages, never app code.
 
 The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows ("Rove
@@ -271,8 +328,9 @@ Components v1.0.0"). Raise it when the library's API changes.
   set. `npm run build:storybook` writes a static copy to
   `storybook-static/`. Master's is hosted at
   <https://rove.swiftsolve.net/storybook/> (synced by hand; see `AGENTS.md`),
-  and every push publishes to Chromatic for visual tests. Stories import the library by relative path, like the
-  library itself. A new component gets its stories in the same change.
+  and every push publishes to Chromatic for visual tests. Stories import the
+  library by relative path, like the library itself. A new component gets its
+  stories in the same change.
   A part with props of its own (`CardBody`, `NavItem`) gets its own stories
   file beside its module (`card/CardBody.stories.tsx`), so its props have
   controls; Storybook's subcomponent tabs can't. The parent's page still
@@ -289,9 +347,7 @@ Components v1.0.0"). Raise it when the library's API changes.
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
   and `figma.json`, which names each component's Figma component and node
-  (`null` when Figma has none). `npm run lint` fails when it's stale, or when a
-  component has no doc comment, no `figma.json` entry or no row in the
-  [Components](#components) table.
+  (`null` when Figma has none).
 
 Every component follows the same rules:
 
@@ -300,10 +356,41 @@ Every component follows the same rules:
 - State is exposed as data attributes.
 - Composition happens through compound parts and slots, never `cloneElement`
   or reaching into a child's DOM.
+- Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
+  styled with our tokens: focus traps, positioning, roving focus, dismissal,
+  ARIA wiring. The library wraps it, so features never import Base UI directly.
+- Props share names across components and with Figma: `variant`, `isLoading`,
+  `isDisabled`, `isChecked`; the text under a title is `description` and the
+  controls a component holds are `actions`; a colour by role is `status` or
+  `tone` (`positive`, `warning`, `negative`, `neutral`); a quality rating is
+  `level` (`excellent`, `good`, `fair`, `poor`).
 
 A component that renders one element takes its props as `ComponentProps<'button'>`
 (or its element's), so `ref` and extra props pass through to it. No `forwardRef`:
 in React 19 `ref` is a prop.
+
+### Buttons
+
+Buttons are `Button`, `IconButton` and `Link`, never a hand-written
+`<button>`.
+
+- Button takes three axes:
+  - `variant`: `solid` or `soft`
+  - `tone`, on a solid only: `accent`, or `negative` to stop something
+  - `size`: `sm` or `md`
+- Solid defaults to md, soft to sm.
+- Button takes an `icon` component and draws it at 13px. IconButton draws its
+  icon at 16px (`iconSize={14}` for an icon that reads large).
+- `isLoading` swaps the icon for a spinner (`loadingLabel` can swap the
+  words). `isDisabled` dims.
+- Both states swallow every activation, a form submit included, and keep the
+  button focusable, so a tooltip can say why. They mark the element with
+  `data-disabled` and `data-loading`.
+- An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
+  bubble's text when it should say more.
+- Everything pressable shares that behaviour through
+  `ui/foundations/pressable.ts`, and styles a hover or press that only
+  applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
 
 ## Components
 
