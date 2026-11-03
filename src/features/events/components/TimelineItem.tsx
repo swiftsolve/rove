@@ -79,8 +79,12 @@ function addressItems(event: NetworkEvent): ReactNode[] {
     items.push(<span className="num">{formatMac(event.mac) ?? <NoValue />}</span>)
     if (event.isRandomized) {
       items.push(
-        <Tooltip content="Privacy-randomized MAC address">
-          <span>Randomized</span>
+        // A span can't take focus, so the hint is spoken from the text, not the tooltip.
+        <Tooltip content="Privacy-randomized MAC address" shouldDescribe={false}>
+          <span>
+            <span aria-hidden>Randomized</span>
+            <span className="sr-only">Privacy-randomized MAC address</span>
+          </span>
         </Tooltip>,
       )
     }
