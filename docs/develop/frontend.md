@@ -229,8 +229,9 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   later utility override an earlier one that sets the same thing; use it
   wherever a component merges a `className` from outside, which is how a view
   adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
-  so tailwind-merge can group them; when you add one to `tailwind.css`, add it
-  there too.
+  and `type-*` class so tailwind-merge can group them; when you add one to
+  `tailwind.css` or rove-tokens adds a text style, add it there too (lint
+  checks).
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a

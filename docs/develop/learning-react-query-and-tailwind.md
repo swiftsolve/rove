@@ -337,8 +337,10 @@ result would depend on CSS order.
 
 `cn` has one catch. tailwind-merge has to know Rove's custom names, or it
 mixes them up: it would read `text-md` (a size) and `text-secondary` (a colour)
-as two colours and drop one. So `cn.ts` lists every theme name, and
-`scripts/checks/cn-theme.mjs` fails if the list falls behind `tailwind.css`.
+as two colours and drop one. So `cn.ts` lists every theme name and every
+`type-*` class, and `scripts/checks/cn-theme.mjs` fails if the lists fall
+behind `tailwind.css` or rove-tokens. A later `type-*` class replaces an earlier
+one, and any size, weight or spacing before it; a utility after it tweaks it.
 
 ### Which one when
 

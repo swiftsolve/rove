@@ -5,7 +5,8 @@
  * tailwind-merge only knows a utility's group from these lists. A theme name
  * missing from them isn't recognised, so `cn('text-md', 'text-lg')` keeps both;
  * a whole namespace missing means its utilities never merge. Names in the lists
- * that the theme no longer has are dead.
+ * that the theme no longer has are dead. Its text style classes must match
+ * rove-tokens' text-styles.css the same way.
  *
  *   node scripts/checks/cn-theme.mjs
  */
@@ -16,6 +17,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const THEME_CSS = 'src/styles/tailwind.css'
 const CN_TS = 'src/ui/foundations/cn.ts'
+const TEXT_STYLES_CSS = 'node_modules/@swiftsolve/rove-tokens/text-styles.css'
 
 // Colours Tailwind has without a theme entry; cn.ts lists them so they still merge.
 const BUILT_IN_COLORS = ['transparent', 'current', 'inherit']
@@ -95,10 +97,28 @@ for (const [namespace, listed] of cn) {
   }
 }
 
+const textStyles = new Set(
+  [...(await readFile(join(ROOT, TEXT_STYLES_CSS), 'utf8')).matchAll(/^\s*\.(type-[a-z0-9-]+)\s*\{/gm)].map(
+    (match) => match[1],
+  ),
+)
+const listedTextStyles = stripComments(await readFile(join(ROOT, CN_TS), 'utf8')).match(
+  /const TEXT_STYLE_CLASSES = \[([\s\S]*?)\]/,
+)
+if (!listedTextStyles) throw new Error(`${CN_TS}: no TEXT_STYLE_CLASSES list found`)
+const listed = new Set([...listedTextStyles[1].matchAll(/'([^']*)'/g)].map((match) => match[1]))
+for (const name of textStyles) {
+  if (!listed.has(name)) problems.push(`${CN_TS}: TEXT_STYLE_CLASSES is missing '${name}' (${TEXT_STYLES_CSS})`)
+}
+for (const name of listed) {
+  if (!textStyles.has(name))
+    problems.push(`${CN_TS}: TEXT_STYLE_CLASSES lists '${name}', which ${TEXT_STYLES_CSS} doesn't define`)
+}
+
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} cn theme problem${problems.length === 1 ? '' : 's'}`)
   process.exit(1)
 }
 const count = [...theme.values()].reduce((sum, names) => sum + names.size, 0)
-console.log(`cn theme OK (${count} names in ${theme.size} namespaces)`)
+console.log(`cn theme OK (${count} names in ${theme.size} namespaces, ${textStyles.size} text styles)`)

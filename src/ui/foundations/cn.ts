@@ -23,6 +23,28 @@ const TYPE_STYLES = [
   'number-default',
   'number-small',
 ]
+// The text style classes from rove-tokens' text-styles.css. Each sets the font,
+// size, weight, line height and letter spacing, so a later one replaces an
+// earlier one, and anything they set before it.
+const TEXT_STYLE_CLASSES = [
+  'type-heading-large',
+  'type-heading-medium',
+  'type-heading-small',
+  'type-heading-xsmall',
+  'type-body-default',
+  'type-body-small',
+  'type-caption',
+  'type-overline',
+  'type-badge',
+  'type-label-large',
+  'type-label-default',
+  'type-label-small',
+  'type-label-menu',
+  'type-number-display',
+  'type-number-large',
+  'type-number-default',
+  'type-number-small',
+]
 const FONT_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']
 const COLORS = [
   // Tailwind's built-ins, which exist alongside the theme's colours.
@@ -70,7 +92,13 @@ const COLORS = [
   'fill-selection',
 ]
 
-const mergeClasses = extendTailwindMerge({
+const mergeClasses = extendTailwindMerge<'text-style'>({
+  extend: {
+    classGroups: { 'text-style': TEXT_STYLE_CLASSES },
+    // One way only: `cn('type-caption', 'font-semibold')` keeps both, and the
+    // weight wins, as the utilities layer beats text-styles.css's components.
+    conflictingClassGroups: { 'text-style': ['font-size', 'font-family', 'font-weight', 'leading', 'tracking'] },
+  },
   override: {
     theme: {
       spacing: SPACING,
