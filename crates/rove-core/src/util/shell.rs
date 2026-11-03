@@ -23,6 +23,16 @@ pub async fn try_run(command: &str) -> Option<String> {
 }
 
 pub async fn try_run_timeout(command: &str, timeout: Duration) -> Option<String> {
+    capture(shell(command), timeout, true).await
+}
+
+/// Like [`try_run_timeout`], but keeps stdout whatever the exit status, for
+/// tools that exit non-zero on a result worth reading (`ping` with no replies).
+pub async fn try_run_any_status(command: &str, timeout: Duration) -> Option<String> {
+    capture(shell(command), timeout, false).await
+}
+
+fn shell(command: &str) -> Command {
     let mut cmd = if cfg!(target_os = "windows") {
         let mut c = Command::new("cmd");
         c.args(["/C", command]);
@@ -33,7 +43,7 @@ pub async fn try_run_timeout(command: &str, timeout: Duration) -> Option<String>
         c
     };
     hide_window(&mut cmd);
-    capture(cmd, timeout).await
+    cmd
 }
 
 /// Run a PowerShell expression on Windows, capturing stdout.
@@ -46,12 +56,12 @@ pub async fn try_run_powershell(script: &str) -> Option<String> {
     let mut cmd = Command::new("powershell");
     cmd.args(["-NoProfile", "-NonInteractive", "-Command", script]);
     hide_window(&mut cmd);
-    capture(cmd, Duration::from_secs(15)).await
+    capture(cmd, Duration::from_secs(15), true).await
 }
 
-async fn capture(mut cmd: Command, timeout: Duration) -> Option<String> {
+async fn capture(mut cmd: Command, timeout: Duration, needs_success: bool) -> Option<String> {
     let output = tokio::time::timeout(timeout, cmd.output()).await.ok()?.ok()?;
-    if !output.status.success() {
+    if needs_success && !output.status.success() {
         return None;
     }
     let text = String::from_utf8_lossy(&output.stdout).into_owned();

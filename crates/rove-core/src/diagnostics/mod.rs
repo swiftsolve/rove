@@ -1,7 +1,7 @@
 //! The Diagnostics view's checks: gateway ping, DNS servers, router and ISP
 //! identity, and whether this machine has internet at all.
 use crate::connection::{default_gateway, default_interface, dns_servers};
-use crate::util::shell::{try_run_timeout};
+use crate::util::shell::try_run_any_status;
 use crate::util::tls::handshake_latency;
 use regex_lite::Regex;
 use serde::Serialize;
@@ -95,8 +95,9 @@ pub struct LiveDiagnostics {
 static PING_TIME: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap());
 
-/// Ping a host and derive average, jitter and loss. None when the command
-/// fails, which includes `ping` exiting non-zero because nothing replied.
+/// Ping a host and derive average, jitter and loss. None when `ping` can't run;
+/// no replies at all is 100% loss with the 9999 ms "Down" sentinel. `ping`
+/// exits non-zero then, so its output is read whatever the status.
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     // `host` goes into a shell command. Callers pass addresses from the kernel,
     // but validate all the same.
@@ -104,7 +105,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
         return None;
     }
     let cmd = crate::platform::ping_command(host, count, 1000);
-    let out = try_run_timeout(&cmd, Duration::from_secs(20)).await?;
+    let out = try_run_any_status(&cmd, Duration::from_secs(20)).await?;
 
     let times: Vec<f64> = out
         .lines()
