@@ -10,9 +10,9 @@ type UseServicesResult = {
   /** The user's ordered service list, or null before the first load resolves. */
   services: ServiceDefinition[] | null
   error: string | null
-  /** Add a service and adopt the returned list. Never rejects: a failure shows in `error`. */
+  /** Add a service and adopt the returned list. Rejects on failure, so the dialog that asked can say so. */
   add: (name: string, host: string) => Promise<void>
-  /** Edit the service listed under `oldHost` in place and adopt the returned list. Never rejects. */
+  /** Edit the service listed under `oldHost` in place and adopt the returned list. Rejects like `add`. */
   update: (oldHost: string, name: string, host: string) => Promise<void>
   /** Remove the service with this host and adopt the returned list. Never rejects. */
   remove: (host: string) => Promise<void>
@@ -60,12 +60,12 @@ export function useServices(): UseServicesResult {
   const add = async (name: string, host: string): Promise<void> => {
     updateMutation.reset()
     removeMutation.reset()
-    await addMutation.mutateAsync({ name, host }).catch(() => undefined)
+    await addMutation.mutateAsync({ name, host })
   }
   const update = async (oldHost: string, name: string, host: string): Promise<void> => {
     addMutation.reset()
     removeMutation.reset()
-    await updateMutation.mutateAsync({ oldHost, name, host }).catch(() => undefined)
+    await updateMutation.mutateAsync({ oldHost, name, host })
   }
   const remove = async (host: string): Promise<void> => {
     addMutation.reset()
@@ -73,10 +73,9 @@ export function useServices(): UseServicesResult {
     await removeMutation.mutateAsync(host).catch(() => undefined)
   }
 
-  const mutationError =
-    errorText(addMutation.error, 'Failed to add service') ??
-    errorText(updateMutation.error, 'Failed to update service') ??
-    errorText(removeMutation.error, 'Failed to remove service')
+  // An add or edit reports its failure in its dialog; only a remove has no
+  // dialog to do it, so its failure shows in `error`.
+  const mutationError = errorText(removeMutation.error, 'Failed to remove service')
 
   return { services: data ?? null, error: mutationError ?? error, add, update, remove }
 }

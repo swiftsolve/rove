@@ -10,6 +10,7 @@ import { useServiceReachability } from '@/features/services/hooks/useServiceReac
 import { useServices } from '@/features/services/hooks/useServices'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import {
+  Banner,
   Button,
   CardList,
   CloudIcon,
@@ -76,7 +77,7 @@ export function ServicesView() {
     void reprobe()
   }
   const openTimeline = (): void => navigate({ tab: 'services', servicesSub: { view: 'timeline' } })
-  const { services, add, update, remove } = useServices()
+  const { services, error, add, update, remove } = useServices()
   const latencyHistory = useServiceLatency()
 
   const isInternetUnreachable = isInternetDown(internet)
@@ -146,6 +147,8 @@ export function ServicesView() {
           </div>
         }
       />
+
+      {error && <Banner variant="error" title={error} description="Your services are as they were." />}
 
       <DialogRoot isOpen={isDialogOpen}>
         {dialog && (
