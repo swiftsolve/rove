@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getNetworkApi } from '@/bridge/network-api'
+import { getNetworkApi, NO_BRIDGE_MESSAGE } from '@/bridge/network-api'
 import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
@@ -15,10 +15,20 @@ const NETWORK_INFO_TIMEOUT_MS = 20_000
 // reading stays on screen.
 const FAILURES_BEFORE_ERROR = 3
 
+/**
+ * Why the network can't be read. `timeout`: the OS query is slow, which is
+ * usually temporary. `backend`: there's no bridge to the app. `offline`: the
+ * read failed, with the backend's reason as `message`.
+ */
+export type NetworkError = {
+  kind: 'timeout' | 'backend' | 'offline'
+  message: string
+}
+
 /** The local link (Wi-Fi / Ethernet): `info` is null until the first read lands. */
 export type NetworkState = {
   info: NetworkInfo | null
-  error: string | null
+  error: NetworkError | null
   /**
    * When the last good reading landed, as of the latest error: the age of the
    * `info` an error banner sits over. Set only when an error is raised, so a
@@ -29,9 +39,11 @@ export type NetworkState = {
   refresh: () => Promise<void>
 }
 
+class TimeoutError extends Error {}
+
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs)
+    const timeoutId = window.setTimeout(() => reject(new TimeoutError(message)), timeoutMs)
 
     promise
       .then((value) => {
@@ -45,14 +57,6 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
   })
 }
 
-function getNetworkApiError(): string | null {
-  if (typeof window === 'undefined') return 'Window is not available.'
-  if (!window.networkAPI) {
-    return 'Unable to connect to the app backend. Try restarting the application.'
-  }
-  return null
-}
-
 /**
  * Creates the app's network state: reads network info on mount, polls it while
  * the window is visible and refreshes on the backend's network-changed nudge.
@@ -60,7 +64,7 @@ function getNetworkApiError(): string | null {
  */
 export function useNetworkInfoSource(): NetworkState {
   const [info, setInfo] = useState<NetworkInfo | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<NetworkError | null>(null)
   const [lastReadAt, setLastReadAt] = useState<number | null>(null)
   const lastReadAtRef = useRef<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -76,9 +80,8 @@ export function useNetworkInfoSource(): NetworkState {
 
   const refresh = useCallback(
     async (isSilent = false): Promise<void> => {
-      const bridgeError = getNetworkApiError()
-      if (bridgeError) {
-        setError(bridgeError)
+      if (!window.networkAPI) {
+        setError({ kind: 'backend', message: NO_BRIDGE_MESSAGE })
         setIsLoading(false)
         return
       }
@@ -107,7 +110,7 @@ export function useNetworkInfoSource(): NetworkState {
         failuresRef.current += 1
         const message = unknownError instanceof Error ? unknownError.message : 'Failed to read network information'
         if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
-          setError(message)
+          setError({ kind: unknownError instanceof TimeoutError ? 'timeout' : 'offline', message })
           setLastReadAt(lastReadAtRef.current)
         }
       } finally {

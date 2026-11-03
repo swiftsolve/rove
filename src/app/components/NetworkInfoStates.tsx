@@ -2,6 +2,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { JSX, ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
+import type { NetworkError } from '@/features/connection/hooks/useNetworkInfoSource'
 import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { AlertIcon, Banner, Button, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
@@ -22,23 +23,23 @@ const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center',
 const LOADING_LINE = 'text-sm text-secondary'
 
 type NetworkErrorInfo = {
-  kind: 'timeout' | 'backend' | 'offline'
+  kind: NetworkError['kind']
   title: string
   description: string
 }
 
 // A timeout isn't "no network": the OS query may just be slow, so it gets a
 // calmer framing of its own.
-function describeNetworkError(message: string): NetworkErrorInfo {
-  if (/timed out/i.test(message)) {
+function describeNetworkError({ kind, message }: NetworkError): NetworkErrorInfo {
+  if (kind === 'timeout') {
     return {
       kind: 'timeout',
       title: 'Network detection is taking too long',
       description: 'This is usually temporary. Make sure you’re connected, then try again.',
     }
   }
-  if (/backend|restart/i.test(message)) {
-    return { kind: 'backend', title: 'Can’t reach the app', description: message }
+  if (kind === 'backend') {
+    return { kind, title: 'Can’t reach the app', description: message }
   }
   return { kind: 'offline', title: 'Can’t reach your network', description: message }
 }
@@ -113,7 +114,7 @@ function StaleNetworkBanner({
   lastReadAt,
   onRetry,
 }: {
-  error: string
+  error: NetworkError
   lastReadAt: number
   onRetry: () => Promise<void>
 }) {
