@@ -9,8 +9,8 @@ export type AppUsage = {
   txBytes: number
   /**
    * `data:image/png;base64,…` of the app's real OS icon (macOS), or null when it
-   * couldn't be resolved (helpers/daemons, or a non-macOS platform) — the row
-   * then falls back to a favicon/monogram.
+   * couldn't be resolved (helpers, daemons, other platforms). The row then
+   * falls back to a favicon or monogram.
    */
   icon: string | null
 }

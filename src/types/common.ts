@@ -1,7 +1,7 @@
-/** Standard teardown function returned by subscriptions. */
+/** Detaches a listener; every `on*` subscription returns one. */
 export type Unsubscribe = () => void
 
-/** True when value is a usable non-negative number. */
+/** True when `value` is a usable non-negative number. */
 export function isValidRate(value: number): boolean {
   return Number.isFinite(value) && value >= 0
 }

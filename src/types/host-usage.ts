@@ -2,16 +2,16 @@ import type { AppUsageSupport } from './app-usage'
 
 /** One remote host an app has exchanged bytes with this session. */
 export type HostConn = {
-  /** Remote peer IP (no port) — the stable grouping key for the host. */
+  /** Remote peer IP (no port): the stable grouping key for the host. */
   ip: string
   /**
    * Reverse-DNS hostname, or null until it resolves in the background (or when
-   * the peer has no PTR record) — the row then shows the bare IP.
+   * the peer has no PTR record). The row then shows the bare IP.
    */
   host: string | null
   /**
-   * ISO-3166 alpha-2 country code (e.g. "US"), or null until geolocation
-   * resolves, for a private/LAN peer, or when the lookup fails — no flag shown.
+   * ISO 3166 alpha-2 country code (e.g. "US"), or null (no flag) until
+   * geolocation resolves, for a LAN peer, or when the lookup fails.
    */
   countryCode: string | null
   rxBytes: number
@@ -21,7 +21,7 @@ export type HostConn = {
 /** One app with the remote hosts it has talked to, busiest host first. */
 export type AppHosts = {
   name: string
-  /** The app's real OS icon (`data:` URI) or null — see `AppUsage.icon`. */
+  /** The app's real OS icon (`data:` URI) or null; see `AppUsage.icon`. */
   icon: string | null
   /** Sum across the app's hosts (TCP-connection traffic only). */
   rxBytes: number

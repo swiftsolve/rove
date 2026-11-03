@@ -1,12 +1,12 @@
 import type { PingStats } from './speed'
 
 /**
- * Whether this machine can reach the public internet — the context a service
+ * Whether this machine can reach the public internet: the context a service
  * verdict needs to mean anything.
- * - `online`     an internet anchor answered; service verdicts are trustworthy.
- * - `noInternet` on a LAN (a gateway exists) but no anchor answered; the WAN is
- *                down, so public services can't be checked (LAN ones may still be).
- * - `offline`    no default gateway at all; not on a usable network.
+ * - `online`: an internet anchor answered; service verdicts are trustworthy.
+ * - `noInternet`: on a LAN (a gateway exists) but no anchor answered. The WAN
+ *   is down, so public services can't be checked (LAN ones still can).
+ * - `offline`: no default gateway at all; not on a usable network.
  */
 export type InternetStatus = 'online' | 'noInternet' | 'offline'
 
@@ -33,7 +33,7 @@ export type NetworkDiagnostics = {
    *  2.0"), or null when it doesn't announce over SSDP. */
   gatewayName: string | null
   /** WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
-   *  service is unreachable — e.g. no internet or the request timed out. */
+   *  service is unreachable (no internet, or the request timed out). */
   isp: IspInfo | null
 }
 
@@ -73,14 +73,14 @@ export type IspInfo = {
   country: string | null
   /** Public (WAN) IP reported by the same lookup. */
   publicIp: string | null
-  /** True when the public IP's ASN is a datacenter/hosting network, i.e. we're
-   *  behind a VPN or proxy and the fields above describe the exit node rather
-   *  than the real ISP. The card badges itself and adds a hint when set. */
+  /** The public IP's ASN is a datacentre or hosting network: we're behind a
+   *  VPN or proxy, so the fields above describe the exit node rather than the
+   *  real ISP. The ISP card then reads "VPN". */
   isVpn: boolean
 }
 
-/** A service in the user's reachability list — the durable definition, without
- *  a measurement. Ships with defaults but is editable per user (add/remove). */
+/** A service in the user's reachability list: the durable definition, without
+ *  a measurement. Ships with defaults the user can add to, edit and remove. */
 export type ServiceDefinition = {
   /** Human label, e.g. "Netflix". */
   name: string
@@ -90,13 +90,13 @@ export type ServiceDefinition = {
 
 /** Reachability of one internet service on two independent axes: network
  *  latency (TLS handshake to :443) and application health (an HTTP HEAD). They
- *  can disagree — a service can be reachable in a few ms yet answering 5xx. */
+ *  can disagree: a service can answer in a few ms yet return 5xx. */
 export type ServiceReachability = {
   /** Human label, e.g. "Netflix". */
   name: string
   /** Hostname probed, e.g. "netflix.com". */
   host: string
-  /** TLS-handshake latency in ms, or null when it failed/timed out. */
+  /** TLS-handshake latency in ms, or null when it failed or timed out. */
   latencyMs: number | null
   /** HTTP status from a HEAD to the host, or null for IP-literal hosts and when
    *  no HTTP response came back. A 5xx means the path is up but the service is
@@ -110,7 +110,7 @@ export type ServiceStatus = 'up' | 'down'
 /** One service crossing between up and down. */
 export type ServiceTransitionEvent = {
   type: 'transition'
-  /** Hostname probed — the stable key across renames. */
+  /** Hostname probed: the stable key across renames. */
   host: string
   /** The service's label as it read when the crossing was recorded. */
   name: string
@@ -140,8 +140,8 @@ export type ConnectionEvent = {
 }
 
 /**
- * One entry in the services timeline, as the backend records it (see
- * `service_events`). Only moments are stored — never a sample per probe — so the
- * log reads as a history of outages and recoveries.
+ * One entry in the services timeline, as the backend's `service_events` table
+ * records it. Only moments are stored, never a sample per probe, so the log
+ * reads as a history of outages and recoveries.
  */
 export type ServiceEvent = ServiceTransitionEvent | ServicesRunningEvent | ConnectionEvent

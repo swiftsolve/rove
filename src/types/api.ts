@@ -27,18 +27,17 @@ export type NetworkAPI = {
   getWifiShare(): Promise<WifiShare>
   getPublicIp(): Promise<string | null>
   getInterfaces(): Promise<NetworkInterfaceSummary[]>
-  /** Scan the LAN for connected devices. */
   getDevices(): Promise<LanDeviceScan>
-  /** The network-change feed (new devices, departures, identity changes),
-   *  newest first. Populated as a side effect of device scans. */
+  /** The network-change feed, newest first. Recorded as a side effect of
+   *  device scans, network-info reads and internet verdicts, never on its own. */
   getNetworkEvents(): Promise<NetworkEvent[]>
   getDataUsage(): Promise<DataUsageSummary>
   /** Per-app network usage since Rove started watching, busiest first. */
   getAppUsage(): Promise<AppUsageSummary>
   /** Per-app remote-host breakdown (hostname + country + bytes), busiest first. */
   getHostUsage(): Promise<HostUsageSummary>
-  /** Session traffic bucketed by kind (protocol), busiest first — the same
-   *  connections as `getHostUsage`, grouped by service port instead of peer. */
+  /** Session traffic by kind (protocol), busiest first: the same connections
+   *  as `getHostUsage`, grouped by service port instead of peer. */
   getTrafficUsage(): Promise<TrafficUsageSummary>
   /** Why per-app usage can't be read, for the "needs administrator" state: on
    *  Windows the ETW session's last start error, else (and once it's up) null. */
@@ -56,11 +55,11 @@ export type NetworkAPI = {
   /** The background heartbeat's last internet verdict, or null before its first
    *  probe. A cached read that never probes. */
   getInternetStatus(): Promise<InternetStatus | null>
-  /** Probe a single host's reachability without storing it — the "test before
-   *  add" step. Resolves to the latency in ms, or null when unreachable. */
+  /** Probe one host without storing it, for the "test before add" step.
+   *  Resolves to the latency in ms, or null when unreachable. */
   testService(host: string): Promise<number | null>
-  /** The user's reachability service list — the built-in defaults plus any the
-   *  user added, minus any they removed. Ordered as shown. */
+  /** The user's service list: the built-in defaults plus any they added, minus
+   *  any they removed. Ordered as shown. */
   listServices(): Promise<ServiceDefinition[]>
   /** Add a service to the list; returns the updated list. Re-adding an existing
    *  host updates its label rather than duplicating it. */
@@ -74,7 +73,7 @@ export type NetworkAPI = {
   deleteService(host: string): Promise<ServiceDefinition[]>
   /** The services outage timeline, newest first. Recorded by the always-on
    *  backend heartbeat, so it covers outages that happened while the Services
-   *  tab — or the whole window — was closed. */
+   *  tab, or the whole window, was closed. */
   getServiceHistory(): Promise<ServiceEvent[]>
   /** Wipe the timeline and the baseline behind it, so the next probe re-seeds. */
   clearServiceHistory(): Promise<void>

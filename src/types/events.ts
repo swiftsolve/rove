@@ -23,9 +23,10 @@ export type NetworkEventType = (typeof NETWORK_EVENT_TYPES)[number]
 export type NetworkEventSeverity = 'info' | 'warning' | 'critical'
 
 /**
- * One entry in the network-change feed, derived by the backend from diffing
- * successive device scans (see Store::record_devices). Append-only and pruned
- * to a 7-day window.
+ * One entry in the network-change feed. The backend diffs successive device
+ * scans (`Store::record_devices`), this machine's connection
+ * (`record_connection`) and internet verdicts (`record_internet`). Append-only,
+ * pruned to 7 days.
  */
 export type NetworkEvent = {
   id: number
@@ -37,14 +38,14 @@ export type NetworkEvent = {
   ip: string | null
   /** Best-effort device label captured when the event fired. */
   name: string | null
-  /** Device category (the same kind the Devices view shows), read live from the
-   *  current roster for device-subject events. Null when unknown or the event
-   *  isn't about a single device (an SSID, a count, a gateway change). */
+  /** Device category (the kind the Devices view shows), read live from the
+   *  current roster for device events. Null when unknown or the event isn't
+   *  about a single device (an SSID, a count, a gateway change). */
   kind: LanDeviceKind | null
   /** Change events only: the value before and after (e.g. old/new IP). */
   oldValue: string | null
   newValue: string | null
-  /** The device's MAC was privacy-randomized — presence events for it are
-   *  noisier (a phone re-randomizes ~daily), so the UI flags them. */
+  /** The device's MAC was privacy-randomized. Its presence events are noisier
+   *  (a phone re-randomizes about daily), so the UI flags them. */
   isRandomized: boolean
 }

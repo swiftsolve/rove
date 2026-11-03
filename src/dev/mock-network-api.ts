@@ -1,12 +1,11 @@
 /**
- * Browser mock of the `window.networkAPI`/`window.windowControls` bridge.
+ * Browser mock of the `window.networkAPI` and `window.windowControls` bridge.
  *
- * When the app runs in a plain browser (e.g. viewing the Vite dev server over a
- * forwarded port), `window.networkAPI` doesn't exist because there's no Tauri
- * backend to install the real bridge (see bridge/tauri-network-api.ts). This
- * installs a faithful, in-memory stand-in so the UI renders fully populated for
- * design/polish work. It is only wired up in dev builds and only when the real
- * bridge is absent — see `installMockNetworkApiIfNeeded`.
+ * A plain browser (the Vite dev server, a screenshot run, the site demo) has
+ * no Tauri backend to install the real bridge (bridge/tauri-network-api.ts),
+ * so this installs an in-memory stand-in that fakes time as well as data and
+ * the UI renders fully populated. main.tsx loads it only in dev builds, and
+ * `installMockNetworkApiIfNeeded` only when the real bridge is absent.
  */
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { MAX_SAMPLES, seedLatencyHistory } from '@/features/services/utils/service-latency'
@@ -46,7 +45,7 @@ function isWithin(value: number, limit: number | null, factor: number): boolean 
   return limit === null || value <= limit * factor
 }
 
-/** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
+/** Mirrors `rate` in crates/rove-core/src/speed/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
   const requirements: CapabilityRequirement = definition.requirements
   const { downloadMbps, uploadMbps, latencyMs, jitterMs } = speed
@@ -81,7 +80,7 @@ function assessCapabilities(speed: SpeedResult): CapabilityRating[] {
   }))
 }
 
-// A modern Wi-Fi 6 home connection — one subnet (192.168.1.0/24) shared across
+// A modern Wi-Fi 6 home connection. One subnet (192.168.1.0/24) is shared by
 // the connection card, diagnostics and the device scan so the demo is coherent.
 const MOCK_LINK_CAPACITY_MBPS = 1200
 const MOCK_SSID = 'Starlight_5G'
@@ -112,9 +111,8 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
 }
 
 /**
- * A decorative QR-like SVG for the browser mock. It isn't a valid, scannable
- * code — the real backend generates one with the `qrcode` crate — but it gives
- * the share dialog a faithful shape to lay out against during design work.
+ * A decorative QR-like SVG. It doesn't scan (the backend makes the real one
+ * with the `qrcode` crate), but gives the share dialog a faithful shape.
  */
 function mockQrSvg(): string {
   const size = 25
@@ -220,9 +218,8 @@ function isAppleModel(model: string): boolean {
   return lower.includes(',') && /\d/.test(lower) && APPLE_MODEL_FAMILIES.some((family) => lower.startsWith(family))
 }
 
-// Turn a hardware model string into a human-friendly product name, matching what
-// the real backend returns: it humanizes Apple mDNS/UPnP identifiers before they
-// ever reach the frontend. Mirrors humanize_model in
+// The backend humanizes Apple mDNS/UPnP identifiers before they reach the UI,
+// so the mock does too. Mirrors humanize_model in
 // crates/rove-core/src/devices/mod.rs so the demo reads like production.
 function humanizeModel(model: string | null): string | null {
   if (model === null || !isAppleModel(model)) return model
@@ -255,9 +252,9 @@ function humanizeModel(model: string | null): string | null {
 type MockLanDevice = Omit<LanDevice, 'kindConfidence' | 'lastSeen'> &
   Partial<Pick<LanDevice, 'kindConfidence' | 'lastSeen'>>
 
-// A lived-in home network: mostly named and classified, with one offline camera,
-// one privacy-randomized guest phone and one genuine unknown — the messiness a
-// real scan turns up. Self matches the connection card (same IP + MAC).
+// A lived-in home network: mostly named and classified, with one offline
+// camera, two privacy-randomized phones and one low-confidence guess, the
+// messiness a real scan turns up. Self matches the connection card (IP and MAC).
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
   subnet: '192.168.1.0/24',
   interfaceName: 'en0',
@@ -447,8 +444,8 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
         isSelf: false,
         isReachable: true,
       },
-      // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
-      // fingerprint still identifies it. This is the headline win of the feature.
+      // A privacy-randomized phone: no OUI vendor, no hostname, yet its DHCP
+      // fingerprint still identifies it. The headline win of fingerprinting.
       {
         ip: '192.168.1.44',
         hostname: null,
@@ -462,8 +459,8 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
         isSelf: false,
         isReachable: true,
       },
-      // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
-      // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
+      // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple"
+      // from its default hostname, so the row keeps the make.
       {
         ip: '192.168.1.46',
         hostname: 'iPhone',
@@ -478,8 +475,8 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
         isReachable: true,
       },
       // A TP-Link Kasa/Tapo smart plug: its OUI resolves to the generic "TP-Link"
-      // name (shared with Archer routers), so with no other signal the classifier
-      // leans "Smart home", not "Network" — a low-confidence call the UI hedges.
+      // (shared with Archer routers), so with no other signal the classifier
+      // leans "Smart home" over "Network", a low-confidence call the UI hedges.
       {
         ip: '192.168.1.48',
         hostname: null,
@@ -505,9 +502,9 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
   })),
 }
 
-// A few days of change history, newest first — one of each kind so the feed's
-// grouping, icons and severities all show. Timestamps are relative to now so
-// the day headers ("Today"/"Yesterday") stay meaningful in the demo.
+// A few days of change history, one of each kind so the feed's grouping, icons
+// and severities all show. Timestamps are relative to now so the day headers
+// ("Today", "Yesterday") stay meaningful in the demo.
 function seedNetworkEvents(): NetworkEvent[] {
   const min = 60_000
   const hour = 3_600_000
@@ -645,18 +642,17 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
   ]
-  // Serve newest-first, mirroring the backend's `ORDER BY ts DESC`. The rows
-  // above are authored out of strict time order, so sort by age before stamping
-  // ids/timestamps — otherwise the timeline's day grouping (which assumes a
-  // time-ordered feed) can emit two sections for the same day. Newer events get
-  // the higher id, matching the store's AUTOINCREMENT.
+  // Serve newest first, like the backend's `ORDER BY ts DESC`. The rows above
+  // are out of time order, and the timeline's day grouping assumes an ordered
+  // feed (else it emits two sections for one day), so sort by age before
+  // stamping. Newer events get the higher id, like the store's AUTOINCREMENT.
   const ordered = [...rows].sort((a, b) => a.ago - b.ago)
   return ordered.map(({ ago, ...rest }, i) => ({ ...rest, id: ordered.length - i, ts: Date.now() - ago }))
 }
 
 // A believable session: a browser dominating, a music stream, a couple of
-// background sync/update daemons. [name, downMB, upMB]. Busiest first, as the
-// real sampler returns them. Every name here needs an entry in getHostUsage —
+// background sync and update daemons. [name, downMB, upMB], busiest first as
+// the real sampler returns them. Every name needs an entry in getHostUsage:
 // each Apps row links into that app's host group.
 const MOCK_APP_ROWS: [string, number, number][] = [
   ['firefox', 842, 63],
@@ -668,9 +664,9 @@ const MOCK_APP_ROWS: [string, number, number][] = [
   ['ssh', 4, 27],
 ]
 
-// The user's editable service list, seeded with the built-in defaults. Add /
-// delete mutate this in place so listServices and the diagnostics probes below
-// all read the same source of truth — mirroring the SQLite-backed real store.
+// The user's editable service list, seeded with the built-in defaults. The
+// add, update and delete calls mutate it in place so listServices and the
+// probes below read one source of truth, as the SQLite store does.
 const mockServices: ServiceDefinition[] = [
   { name: 'Google', host: 'google.com' },
   { name: 'Cloudflare', host: 'cloudflare.com' },
@@ -681,16 +677,15 @@ const mockServices: ServiceDefinition[] = [
   { name: 'Home Server', host: 'homeserver.local' },
 ]
 
-// A seeded timeline, oldest event ~2 days back, so the Services timeline has
-// something to group by day and render durations for. The backend owns the real
-// one (recorded by the services heartbeat); this stands in for it in the browser.
+// A seeded timeline reaching about two days back, so the Services timeline has
+// days to group and durations to render. The backend's heartbeat records the
+// real one.
 const HOUR_MS = 60 * 60 * 1000
 const mockServiceHistory: ServiceEvent[] = (() => {
   const now = Date.now()
-  // Newest first, matching the order the real `get_service_history` returns.
-  // Home Server has no recovery: `homeserver.local` isn't in
-  // MOCK_REACHABLE_HOSTS, so it always probes Down — the timeline has to leave
-  // it down for the two to agree.
+  // Newest first, as `get_service_history` returns it. Home Server never
+  // recovers: it isn't in MOCK_REACHABLE_HOSTS, so it always probes Down and the
+  // timeline has to agree.
   return [
     { type: 'transition', host: 'homeserver.local', name: 'Home Server', status: 'down', ts: now - 5 * HOUR_MS },
     { type: 'connection', status: 'restored', ts: now - 26 * HOUR_MS },
@@ -701,11 +696,12 @@ const mockServiceHistory: ServiceEvent[] = (() => {
   ]
 })()
 
-// A latency character per built-in host: the probe's DNS + TCP + TLS time (about
-// three round trips, see `service_latency` in diagnostics.rs) from San Francisco
-// on the connection above, so it scales with each host's distance. Zoom's site
-// is the farthest and noisiest, and drifts into the warn band (over 120 ms) now
-// and then. `spread` is how far a poll can wander.
+// A latency character per built-in host: the probe's DNS + TCP + TLS time
+// (about three round trips, see crates/rove-core/src/services.rs) from San
+// Francisco on the connection above, so it scales with each host's distance.
+// Zoom's site is the farthest and noisiest, and now and then drifts past
+// GOOD_LATENCY_MAX_MS (120) into the warn band. `spread` is how far a poll can
+// wander.
 const MOCK_LATENCY_PROFILES: Record<string, { base: number; spread: number }> = {
   'cloudflare.com': { base: 38, spread: 8 }, // anycast edge in the Bay Area
   'google.com': { base: 52, spread: 10 },
@@ -726,9 +722,9 @@ const mockLatencyWalk = new Map<string, number>()
 
 /**
  * The next latency for a host: a mean-reverting step from its last value rather
- * than fresh noise around the baseline, so the sparkline reads as a signal with
- * momentum — it drifts, spikes and settles — instead of a jagged fuzz. The pull
- * back toward the baseline keeps a long run from wandering off into another band.
+ * than fresh noise around the baseline, so the sparkline drifts, spikes and
+ * settles like a real signal instead of a jagged fuzz. The pull back toward the
+ * baseline keeps a long run from wandering into another band.
  */
 function stepLatency(host: string, from?: number): number {
   const { base, spread } = latencyProfile(host)
@@ -744,20 +740,19 @@ function mockLatencyFor(host: string): number {
   return Math.round(stepLatency(host) * 10) / 10
 }
 
-// The mock has no real network to probe, so it can only vouch for the well-known
-// public services it ships with. Anything else — the seeded self-hosted box, or
-// any custom host the user adds (an internal `*.local`, or a hostname that isn't
-// actually serving) — reads as Down rather than pretending an arbitrary
-// name answered. This is the single reachability verdict both the diagnostics
-// list and the "test before add" dialog consult, so they always agree.
+// With no network to probe, the mock only vouches for the public services it
+// ships with. Anything else (the seeded self-hosted box, any host the user
+// adds) reads as Down rather than pretending an arbitrary name answered. The
+// services list and the "test before add" dialog both consult this, so they
+// always agree.
 const MOCK_REACHABLE_HOSTS = new Set(['google.com', 'cloudflare.com', 'youtube.com', 'netflix.com', 'zoom.us'])
 
 function isMockReachable(host: string): boolean {
   return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
 }
 
-// Matches the Services tab's poll cadence, so seeded samples are spaced the way
-// recorded ones will be as live polling continues the line.
+// SERVICE_POLL_INTERVAL_MS in useServiceReachability, so seeded samples are
+// spaced like the live ones that continue the line.
 const MOCK_POLL_INTERVAL_MS = 15_000
 
 // One brief outage in the seeded window, a few polls back, so the sparkline's gap
@@ -865,10 +860,10 @@ function wobble(base: number, spread: number): number {
 
 // How far back the usage views claim tracking started.
 const MOCK_TRACKING_SINCE_AGO_MS = 42 * 60_000
-// Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store.rs.
+// Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store/speed.rs.
 const MOCK_SPEED_HISTORY_LIMIT = 50
 
-/** Smoothstep easing (0..1) for organic-looking ramps. */
+/** Smoothstep easing over 0..1, for ramps that start and land softly. */
 function smoothstep(x: number): number {
   const t = Math.max(0, Math.min(1, x))
   return t * t * (3 - 2 * t)
@@ -878,13 +873,11 @@ function createMockNetworkApi(): NetworkAPI {
   const progressListeners = new Set<(p: SpeedTestProgress) => void>()
   let isCancelled = false
 
-  // ---- live throughput ----
-  // A single 1 Hz sampler feeds the Home "Traffic" widget. While a speed
-  // test runs it saturates the link, so the live reading IS the test's
-  // throughput: `testTraffic` holds that instantaneous rate and the sampler
-  // emits it, which is what makes the Speed view's Download/Upload numbers climb
-  // during a test (SpeedView tracks their running peak). When null, the sampler
-  // falls back to a gentle idle/burst pattern.
+  // One 1 Hz sampler feeds live throughput (the Traffic card). A speed test
+  // saturates the link, so during one the live reading is the test's rate:
+  // `testTraffic` holds it and the sampler emits it, which is what makes the
+  // Speed view's Download and Upload numbers climb (useSpeedTest keeps their
+  // running peak). When null, the sampler plays an idle pattern with bursts.
   const liveListeners = new Set<(t: LiveThroughput) => void>()
   let liveTimer: ReturnType<typeof setInterval> | null = null
   let idleTick = 0
@@ -939,9 +932,8 @@ function createMockNetworkApi(): NetworkAPI {
     for (const listener of progressListeners) listener(progress)
   }
 
-  // ---- speed history (in-memory; seeded, resets on reload) ----
+  // In memory: seeded, and reset on reload.
   let mockHistory: SpeedHistoryEntry[] = seedSpeedHistory()
-  // ---- network-change feed (in-memory; seeded, resets on reload) ----
   const mockEvents: NetworkEvent[] = seedNetworkEvents()
 
   return {
@@ -961,12 +953,11 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(300)
       return MOCK_INTERFACES
     },
-    // The scan indicator beside the subnet (pulsing dot + "Sweeping →
-    // Listening → Identifying") only shows while a scan with results is in
-    // flight, and each stage holds ~1.3s. So the first scan resolves fast for a
-    // snappy first paint, while a manual rescan (the refresh button) runs long
-    // enough to walk all three stages before the results land — which is what
-    // makes the indicator visible in the landing-page demo.
+    // ScanStatus beside the subnet only shows while a scan with results is in
+    // flight, and each of its three stages holds SCAN_PHASE_MS (1.3s). So the
+    // first scan resolves fast for a snappy first paint, while a rescan runs
+    // long enough to walk all three, which is what shows the indicator in the
+    // site demo.
     getDevices: (() => {
       let scans = 0
       return async () => {
@@ -986,8 +977,8 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(200)
       const day = 86_400_000
       const gb = 1_000_000_000
-      // A believable week — lighter midweek, heavier on the weekend, today still
-      // filling in. Index 0 is six days ago, index 6 is today. [downGB, upGB].
+      // A believable week: lighter midweek, heavier at the weekend, today still
+      // filling in. Index 0 is six days ago, index 6 today. [downGB, upGB].
       const byDay: [number, number][] = [
         [5.1, 0.7],
         [3.4, 0.5],
@@ -1028,10 +1019,10 @@ function createMockNetworkApi(): NetworkAPI {
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
       const mb = 1_000_000
-      // Every app in MOCK_APP_ROWS gets hosts, in the same order — each Apps row
-      // links here focused on its app, so an app missing from this list would
-      // land on a group that doesn't exist. [host|ip, cc, downMB, upMB]; a null
-      // cc (LAN peer) shows no flag, a null host shows the bare IP.
+      // Every app in MOCK_APP_ROWS gets hosts, in the same order: each Apps row
+      // links here focused on its app, so a missing app would land on a group
+      // that doesn't exist. [host, ip, cc, downMB, upMB]; a null cc (LAN peer)
+      // shows no flag, a null host shows the bare IP.
       //
       // Per-app sums stay at or under that app's getAppUsage totals: hosts count
       // TCP-connection traffic only, so they're a subset of the app's bytes.
@@ -1174,9 +1165,8 @@ function createMockNetworkApi(): NetworkAPI {
       }
     },
     testService: async (host: string) => {
-      // A ~probe delay, then the same reachability verdict the diagnostics list
-      // uses — so a host that shows Down in the list also fails the
-      // test-before-add check, instead of the two disagreeing.
+      // The same verdict as the services list, so a host that shows Down there
+      // also fails the test-before-add check.
       await delay(650)
       return isMockReachable(host) ? mockLatencyFor(host) : null
     },
@@ -1220,16 +1210,16 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(120)
       mockServiceHistory.length = 0
     },
-    // No backend heartbeat in the browser mock, so the timeline never nudges —
-    // it just renders whatever `getServiceHistory` returned on mount.
+    // No heartbeat in the mock, so the timeline never nudges; it renders what
+    // `getServiceHistory` returned on mount.
     onServicesTimeline: () => () => undefined,
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       isCancelled = false
       const { downloadMbps: DOWN, uploadMbps: UP } = MOCK_SPEED_RESULT
 
-      // A realistic ~10 s test, stepped every 200 ms. Progress bands line up with
-      // the UI's reveal thresholds (Download cell at 15 %, Upload at 55 %) and the
-      // wavy progress bar's steps [0, 15, 55, 85, 100].
+      // A realistic ~10 s test, stepped every 200 ms. Each phase's band starts on
+      // one of the backend's progress steps (PROGRESS_STEPS in progress-fill.ts),
+      // which the UI uses to reveal the Download and Upload cells.
       const TICK_MS = 200
       const phases = [
         { name: 'latency', message: 'Measuring latency…', durMs: 1400, from: 0, to: 14 },
@@ -1246,7 +1236,7 @@ function createMockNetworkApi(): NetworkAPI {
             testTraffic = null
             throw new Error('SPEED_TEST_CANCELLED')
           }
-          const pf = i / ticks // fraction through this phase, 0..1
+          const pf = i / ticks // 0..1 through this phase
 
           if (phase.name === 'download') {
             // Quick rise, then hold near the achieved rate with a little wobble.
@@ -1262,7 +1252,7 @@ function createMockNetworkApi(): NetworkAPI {
               uploadMbps: UP * ramp * (0.98 + Math.random() * 0.04),
             }
           } else {
-            // latency / finish — link mostly quiet
+            // Latency and finish: the link is mostly quiet.
             testTraffic = {
               downloadMbps: 0.05 + Math.random() * 0.12,
               uploadMbps: 0.03 + Math.random() * 0.06,
@@ -1329,9 +1319,8 @@ function createMockWindowControls(): WindowControls {
 }
 
 /**
- * Installs the mock bridge when running in a browser without the Tauri
- * backend. No-op inside Tauri (where `window.networkAPI` already exists).
- * Returns true if the mock was installed.
+ * Installs the mock bridge when there's no real one (a plain browser); a no-op
+ * once `window.networkAPI` exists. Returns whether it installed.
  */
 export function installMockNetworkApiIfNeeded(): boolean {
   if (typeof window === 'undefined') return false

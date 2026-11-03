@@ -2,14 +2,18 @@ import type { SpeedResult } from './speed'
 
 /** The connection a speed test ran on, captured at record time. */
 export type SpeedRunContext = {
-  connectionType: string // 'wifi' | 'ethernet' | 'unknown'
-  networkName: string | null // SSID for Wi-Fi, else null
+  /** A `ConnectionType`, kept as a plain string as the database stores it. */
+  connectionType: string
+  /** The SSID on Wi-Fi, else null. */
+  networkName: string | null
   linkSpeedMbps: number | null
-  frequency: number | null // Wi-Fi centre frequency (MHz), for band label
+  /** Wi-Fi centre frequency in MHz, for the band label. */
+  frequency: number | null
 }
 
 /** A past speed-test result as persisted in the local database. */
 export type SpeedHistoryEntry = {
-  timestamp: number // epoch ms
+  /** Epoch ms. */
+  timestamp: number
 } & SpeedResult &
   SpeedRunContext

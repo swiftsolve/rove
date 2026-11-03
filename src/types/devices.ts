@@ -17,12 +17,12 @@ export const LAN_DEVICE_KINDS = [
 /** Best-effort device category inferred from vendor OUI and role flags. */
 export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 
-/** How decisive the classifier's vote was — 'low' kinds render hedged. */
+/** How decisive the classifier's vote was; 'low' kinds render hedged. */
 export type LanDeviceKindConfidence = 'high' | 'low'
 
 /** A single host discovered on the local network segment. */
 export type LanDevice = {
-  /** Best-effort category — vendor OUIs only reveal so much. */
+  /** Best-effort category: vendor OUIs only reveal so much. */
   kind: LanDeviceKind
   /** 'low' when the kind is a thin-margin guess, rendered hedged ("Phone?"). */
   kindConfidence: LanDeviceKindConfidence
@@ -41,25 +41,25 @@ export type LanDevice = {
   os: string | null
   /** True when the MAC is locally administered (privacy-randomized). */
   isRandomizedMac: boolean
-  /** This device is the default gateway (router). */
   isGateway: boolean
   /** This device is the machine Rove is running on. */
   isSelf: boolean
-  /** Neighbor entry is currently reachable (vs. merely cached/stale). */
+  /** The neighbour entry is reachable now, not merely cached or stale. */
   isReachable: boolean
   /**
-   * Epoch-ms this device last answered. Present so an offline device can show
-   * "last seen 3m ago"; null on a device that hasn't been reconciled with the
-   * roster. Offline devices are dropped from the list 24h after this.
+   * Epoch ms this device last answered, so an offline device can show "last
+   * seen 3m ago"; null before it's reconciled with the roster. Offline devices
+   * drop off the list 24h after this (`OFFLINE_LIST_KEEP_MS` in the store).
    */
   lastSeen: number | null
 }
 
 /**
  * State of the passive DHCP-fingerprinting listener:
- * - `starting` — bind not yet resolved (first scan of the session)
- * - `active` — listening on :67, fingerprints will accrue as devices join
- * - `unavailable` — no privilege to bind :67 (see the install setcap step)
+ * - `starting`: bind not yet resolved (the session's first scan)
+ * - `active`: listening on :67; fingerprints accrue as devices join
+ * - `unavailable`: no privilege to bind :67 (Linux needs the `setcap` in
+ *   src-tauri/linux/postinst.sh)
  */
 export type DhcpStatus = 'starting' | 'active' | 'unavailable'
 
