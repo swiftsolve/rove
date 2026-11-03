@@ -1,8 +1,6 @@
 import type { SpeedResult } from './speed'
 
-export const CAPABILITY_LEVELS = ['excellent', 'good', 'fair', 'poor', 'unsupported'] as const
-
-export type CapabilityLevel = (typeof CAPABILITY_LEVELS)[number]
+export type CapabilityLevel = 'excellent' | 'good' | 'fair' | 'poor' | 'unsupported'
 
 export type CapabilityRequirement = {
   minDownloadMbps: number

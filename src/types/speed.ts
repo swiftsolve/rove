@@ -17,9 +17,7 @@ export type Throughput = {
   uploadMbps: number
 }
 
-export const SPEED_TEST_PHASES = ['idle', 'internet', 'complete', 'error'] as const
-
-export type SpeedTestPhase = (typeof SPEED_TEST_PHASES)[number]
+export type SpeedTestPhase = 'idle' | 'internet' | 'complete' | 'error'
 
 export type SpeedTestProgress = {
   phase: SpeedTestPhase

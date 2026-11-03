@@ -1,6 +1,4 @@
-export const CONNECTION_TYPES = ['wifi', 'ethernet', 'unknown'] as const
-
-export type ConnectionType = (typeof CONNECTION_TYPES)[number]
+export type ConnectionType = 'wifi' | 'ethernet' | 'unknown'
 
 /** Fields shared by every network snapshot. */
 export type NetworkInfoBase = {

@@ -1,8 +1,6 @@
 import type { ConnectionType } from './network'
 
-export const INTERFACE_OPER_STATES = ['up', 'down', 'unknown'] as const
-
-export type InterfaceOperState = (typeof INTERFACE_OPER_STATES)[number]
+export type InterfaceOperState = 'up' | 'down' | 'unknown'
 
 export type NetworkInterfaceSummary = {
   name: string
