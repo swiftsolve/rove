@@ -1,6 +1,7 @@
 import { queryClient } from '@/app/utils/query-client'
-import { clearSpeedHistory, getSpeedHistory, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
+import { clearSpeedHistory, getSpeedHistory } from '@/features/speed/utils/speed-history'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { SpeedHistoryEntry } from '@/types'
 
 /** The history's cache entry. A finished test invalidates it once its result is saved. */
 export const SPEED_HISTORY_KEY = ['speed', 'history']

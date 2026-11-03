@@ -1,17 +1,14 @@
 import { getNetworkApi } from '@/bridge/network-api'
 import type { SpeedHistoryEntry, SpeedResult, SpeedRunContext } from '@/types'
 
-// Re-exported so existing imports from this module keep resolving.
-export { formatDateTime as formatHistoryTimestamp } from '@/lib/format'
-export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
-
 /** An entry as older versions saved it: only the core result fields are guaranteed. */
-type LegacyEntry = SpeedResult & { timestamp: number }
+export type LegacyEntry = SpeedResult & { timestamp: number }
 
 /** localStorage key used before history moved into the local database. */
 const LEGACY_STORAGE_KEY = 'rove.speed-history.v1'
 
-function isLegacyEntry(value: unknown): value is LegacyEntry {
+/** Whether a stored value has the fields every saved version wrote. */
+export function isLegacyEntry(value: unknown): value is LegacyEntry {
   if (typeof value !== 'object' || value == null) return false
   const entry = value as Record<string, unknown>
   return (
@@ -22,7 +19,7 @@ function isLegacyEntry(value: unknown): value is LegacyEntry {
 }
 
 /** Fill in fields absent from entries saved by older versions. */
-function upgradeLegacyEntry(entry: LegacyEntry): SpeedHistoryEntry {
+export function upgradeLegacyEntry(entry: LegacyEntry): SpeedHistoryEntry {
   const raw = entry as unknown as Record<string, unknown>
   return {
     ...entry,

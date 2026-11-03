@@ -1,9 +1,8 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { formatHistoryTimestamp, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
-import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
-import { isMeasuredLatency } from '@/types'
+import { formatBand, formatDateTime, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
+import { isMeasuredLatency, type SpeedHistoryEntry } from '@/types'
 import {
   Card,
   DirectionIcon,
@@ -105,7 +104,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
         <div className="mb-12 flex items-center justify-between gap-12">
           <ConnectionBadge entry={entry} />
           <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
-            {formatHistoryTimestamp(entry.timestamp)}
+            {formatDateTime(entry.timestamp)}
           </time>
         </div>
 

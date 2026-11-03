@@ -1,7 +1,7 @@
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { HistoryCard } from '@/features/speed/components/HistoryCard'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
-import { type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
+import type { SpeedHistoryEntry } from '@/types'
 import { EmptyState, Menu, MenuContent, MenuItem, MenuTrigger, PageHeader, TrashIcon } from '@/ui'
 
 /** The header overflow menu: Delete, which clears all history. */
