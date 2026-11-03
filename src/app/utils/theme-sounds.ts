@@ -75,6 +75,6 @@ export function playThemeSwitchSound(target: 'light' | 'dark'): void {
       if (buffer) playBuffer(audioContext, buffer)
     })
   } catch {
-    // Some engines throw synchronously when audio is disallowed — ignore.
+    // Some engines throw synchronously when audio is disallowed.
   }
 }

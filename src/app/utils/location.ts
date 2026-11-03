@@ -8,13 +8,15 @@ export type SpeedSub = { view: 'details'; target: CapabilityId | null } | { view
 /** A subpage layered over the Services tab. `null` means the tab's main page. */
 export type ServicesSub = { view: 'timeline' }
 
-/** A subpage layered over the Apps tab. `null` means the tab's main page.
- *  `'hosts'` is the per-app remote-host breakdown, where `app` names the group to
- *  open expanded. `'traffic'` is the by-protocol breakdown. */
+/**
+ * A subpage layered over the Apps tab. `null` means the tab's main page.
+ * `hosts` is the per-app remote-host breakdown, where `app` names the group to
+ * open expanded; `traffic` is the by-protocol breakdown.
+ */
 export type AppsSub = { view: 'hosts'; app?: string | null } | { view: 'traffic' }
 
 /**
- * A single screen the app can show — a tab, optionally with a subpage. Each
+ * A single screen the app can show: a tab, optionally with a subpage. Each
  * subpage field only applies to its own tab; omit them all for a tab's main page.
  */
 export type AppLocation = {
@@ -26,8 +28,10 @@ export type AppLocation = {
 
 export type Navigation = {
   location: AppLocation
-  /** The control to focus on arriving, when the screen was left by opening
-   *  another from it and is now returned to through history. */
+  /**
+   * The control to focus on arriving, when the screen was left by opening
+   * another from it and is now returned to through history.
+   */
   returnPoint: ReturnPoint | null
   /** Push a new screen onto the history stack. */
   navigate: (to: AppLocation) => void
@@ -51,7 +55,7 @@ function appsSubApp(sub: AppsSub | null | undefined): string | null {
   return sub?.view === 'hosts' ? (sub.app ?? null) : null
 }
 
-/** A short, stable key for a location, for keying effects (e.g. scroll). */
+/** A short, stable key for a location, for keying effects and the screen's error boundary. */
 export function locationKey(location: AppLocation): string {
   return [
     location.tab,

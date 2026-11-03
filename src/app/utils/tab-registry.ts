@@ -79,9 +79,11 @@ export const TABS: Record<AppTab, TabDefinition> = {
   about: { label: 'About', Icon: SettingsIcon, Screen: AboutView, rail: null, railTab: 'settings' },
 }
 
-/** The screen for a location: its tab's subpage, or else its main page. Built
- *  here, from the module-level `TABS`, so each screen keeps one component
- *  identity across renders. */
+/**
+ * The screen for a location: its tab's subpage, or else its main page. Built
+ * from the module-level `TABS`, so each screen keeps one component identity
+ * across renders.
+ */
 export function renderScreen(location: AppLocation): ReactElement {
   const tab = TABS[location.tab]
   return createElement(tab.subScreen?.(location) ?? tab.Screen)

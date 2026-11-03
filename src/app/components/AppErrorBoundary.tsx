@@ -12,8 +12,10 @@ const fallbackVariants = cva('page-empty', {
 })
 
 type AppErrorBoundaryProps = {
-  /** Around the whole app, the last resort; otherwise around one screen, so the
-   *  title bar and nav rail survive it and another tab still opens. */
+  /**
+   * Around the whole app, the last resort; otherwise around one screen, so the
+   * title bar and nav rail survive it and another tab still opens.
+   */
   isApp?: boolean
   children: ReactNode
 }

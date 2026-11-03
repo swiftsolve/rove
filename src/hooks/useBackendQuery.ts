@@ -14,8 +14,10 @@ type BackendQueryOptions<T> = {
   shouldRefetchOnOpen?: boolean
   /** Poll in the background at this interval while open and the window is visible. */
   pollIntervalMs?: number
-  /** Drop the data once no screen shows it, rather than keep it for the app's
-   *  lifetime (default false). For data that shouldn't linger, like a password. */
+  /**
+   * Drop the data once no screen shows it, rather than keep it for the app's
+   * lifetime (default false). For data that shouldn't linger, like a password.
+   */
   shouldForgetWhenClosed?: boolean
 }
 

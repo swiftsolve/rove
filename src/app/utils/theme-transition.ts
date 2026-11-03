@@ -8,8 +8,10 @@ type ViewTransition = {
   finished: Promise<void>
 }
 
-/** Book-keeping for a swap that's currently animating, so a fresh press can fold
- *  into it (reverse the clip) instead of starting a second, jumpy transition. */
+/**
+ * A swap that's still animating, so a fresh press can fold into it (reverse
+ * the clip) instead of starting a second, jumpy transition.
+ */
 type RunningSwap = {
   transition: ViewTransition
   /** The theme the clip circle is currently heading toward. */

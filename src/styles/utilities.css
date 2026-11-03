@@ -7,8 +7,6 @@
  * utilities override them the same way they override each other.
  */
 
-/* ---- Numbers ---- */
-
 @utility num {
   font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
@@ -64,8 +62,6 @@
     font-size: var(--type-number-large-size);
   }
 }
-
-/* ---- Page layout ---- */
 
 /* A view's column of cards. They settle in with a light stagger on mount and
    tab change. Fill mode `backwards`, not `both`: `both` would leave an identity
@@ -157,8 +153,6 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel);
 }
-
-/* ---- Shared pieces ---- */
 
 /* Chart tooltip (throughput and usage): a dot and label on the left, the value
    right-aligned, so the values line up in a column. */

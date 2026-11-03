@@ -22,10 +22,12 @@ type UsageQueryOptions<T> = {
 
 export type UsageQuery<T> = {
   usage: T
-  /** A load is in flight, the first or a poll. */
+  /** The first load or a reload is running; never a background poll. */
   isLoading: boolean
-  /** Loading with nothing to show yet: the view shows a spinner rather than an
-   *  empty list. Later loads keep the rows up. */
+  /**
+   * Loading with nothing to show yet: the view shows a spinner rather than an
+   * empty list. Later loads keep the rows up.
+   */
   isFirstLoad: boolean
   error: string | null
   reload: () => Promise<void>

@@ -12,8 +12,7 @@ import { AlertIcon, Banner, OfflineIcon, Spinner } from '@/ui'
 
 const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center', 'animate-fade-in'], {
   variants: {
-    /** A failed detection: an icon chip, a short heading, the reason and a real
-     *  button, so it reads as recoverable rather than a stray grey line. */
+    /** A failed detection, spaced for `ErrorNotice`. */
     isError: { true: 'gap-16 p-20', false: 'gap-(--card-padding)' },
   },
   defaultVariants: { isError: false },
@@ -93,7 +92,7 @@ export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; chi
   return isNeeded && !info ? <NetworkLoadingScreen /> : <>{children}</>
 }
 
-// Shown when refreshes keep failing over info already on screen, saying how old it is.
+/** Shown when refreshes keep failing over info already on screen, saying how old it is. */
 export function NetworkErrorBanner(): JSX.Element | null {
   const { info, error, lastReadAt, refresh } = useNetwork()
   if (!error || !info || lastReadAt === null) return null

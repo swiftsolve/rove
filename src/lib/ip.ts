@@ -4,8 +4,10 @@ const DOTTED_QUAD = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
 const MAPPED_DOTTED = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i
 const MAPPED_HEX = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i
 
-/** The four octets of a dotted-quad IPv4 literal ("192.168.1.1"), or null when
- *  `text` isn't one or an octet is over 255. */
+/**
+ * The four octets of a dotted-quad IPv4 literal ("192.168.1.1"), or null when
+ * `text` isn't one or an octet is over 255.
+ */
 export function parseIpv4(text: string): number[] | null {
   const match = DOTTED_QUAD.exec(text)
   if (!match) return null
@@ -41,10 +43,12 @@ function isPrivateIpv4([a = -1, b = -1]: number[]): boolean {
   )
 }
 
-/** Whether a peer address is on the user's own network: RFC 1918, loopback,
- *  link-local, CGNAT and their IPv6 counterparts, IPv4-mapped IPv6 included.
- *  Anything unrecognised counts as public, the safer default for a "this is
- *  local" cue. */
+/**
+ * Whether a peer address is on the user's own network: RFC 1918, loopback,
+ * link-local, CGNAT and their IPv6 counterparts, IPv4-mapped IPv6 included.
+ * Anything unrecognised counts as public, the safer default for a "this is
+ * local" cue.
+ */
 export function isPrivateIp(ip: string): boolean {
   const v4 = parseIpv4(ip) ?? parseMappedIpv4(ip)
   if (v4) return isPrivateIpv4(v4)

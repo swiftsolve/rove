@@ -1,4 +1,4 @@
-// In nav-rail order: TabBar lists the tabs in this order.
+/** Every tab, in nav-rail order: TabBar lists them as here. */
 export const APP_TABS = [
   'home',
   'speed',

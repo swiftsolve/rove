@@ -11,7 +11,7 @@ export type PendingUpdate = {
   version: string
   currentVersion: string
   notes: string
-  /** Download + install the update, then relaunch into the new build. */
+  /** Download and install the update, then relaunch into the new build. */
   install(): Promise<void>
 }
 
@@ -19,8 +19,7 @@ export type PendingUpdate = {
  * Check GitHub Releases for a newer signed build, or null if there's nothing to
  * install. Packages are verified against the public key in tauri.conf.json.
  * A failed check rejects: the launch check ignores it, while one the user
- * asked for says it failed rather than "up to date". The caller prompts with a React dialog, not window.confirm: native JS dialogs
- * block the GTK main loop and freeze the webview on WebKitGTK.
+ * asked for says it failed rather than "up to date".
  */
 export async function checkForUpdates(): Promise<PendingUpdate | null> {
   // The browser builds (dev server, the site's demo) have nothing to update.

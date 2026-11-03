@@ -22,7 +22,7 @@
 /* Country-flag glyphs for the Hosts view. Windows ships no flag emoji (Segoe UI
    Emoji omits them), so the regional-indicator pairs `flag.ts` emits render as
    blank/boxed letters in WebView2. This Twemoji subset supplies only the flag
-   glyphs — applied ahead of the UI font on the flag slot, it draws the flags on
+   glyphs: ahead of the UI font on the flag slot, it draws the flags on
    Windows while every other character falls through to the normal font. macOS
    and Linux already have their own flags; the font just makes the artwork
    consistent. Twemoji art, CC BY 4.0 (see README). */
@@ -46,11 +46,9 @@
     border-style: solid;
   }
 
-  /* ---- Theme switch transition ----
-     The theme toggle (app/utils/theme-transition.ts) runs the swap inside a View Transition and drives
-     a clip-path circle that grows from the window's centre. Suppress the built-in
-     cross-fade so only the circular reveal plays, and keep the incoming theme's
-     snapshot stacked above the outgoing one so it's revealed on top. */
+  /* The theme swap (app/utils/theme-transition.ts) runs in a View Transition
+     and drives a clip-path circle from the window's centre. The built-in
+     cross-fade is off so only the circular reveal plays. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
@@ -63,7 +61,7 @@
   ::view-transition-new(root) {
     z-index: 1;
   }
-  /* Light → dark: mirror it — the outgoing light snapshot stays on top and
+  /* Light → dark mirrors it: the outgoing light snapshot stays on top and
      collapses to the centre, revealing the dark snapshot beneath. */
   :root.theme-to-dark::view-transition-old(root) {
     z-index: 1;
@@ -114,11 +112,9 @@
     overflow: hidden;
   }
 
-  /* The app-wide `user-select: none` on <body> gives the desktop-app feel, but it
-     inherits into form controls — and WebView2 (Windows) honours it there, which
-     makes <input>/<textarea> impossible to type in. WebKit (macOS/Linux webview)
-     exempts form controls, so the break only shows on Windows. Re-enable selection
-     on editable elements so they're typeable on every platform. */
+  /* <body>'s `user-select: none` inherits into form controls, and WebView2
+     (Windows) honours it there, so <input> and <textarea> can't be typed in.
+     WebKit exempts form controls, so only Windows breaks without this. */
   input,
   textarea,
   select,
@@ -141,8 +137,6 @@
     }
   }
 
-  /* The content column's right inset is 12px like the left, its always-on
-     scrollbar included: padding makes up what the bar doesn't. */
   /* Native controls, carets and autofill follow the theme, not index.html's dark. */
   :root {
     color-scheme: dark;
@@ -152,6 +146,8 @@
     color-scheme: light;
   }
 
+  /* The content column's right inset is 12px like the left, its always-on
+     scrollbar included: padding makes up what the bar doesn't. */
   :root {
     --scrollbar-size: 5px;
     --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));
@@ -275,8 +271,6 @@
       background-image: linear-gradient(transparent, transparent);
     }
   }
-
-  /* ---- Recharts ---- */
 
   /* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
      follows the arrow keys) still needs a visible ring; one that isn't never gets

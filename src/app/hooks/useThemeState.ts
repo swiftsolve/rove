@@ -13,11 +13,11 @@ import { applyThemeClass, swapResolvedTheme } from '@/app/utils/theme-transition
 import { useSetting } from '@/hooks/useSetting'
 
 export type Theme = {
-  /** The user's stored preference: 'dark' | 'light' | 'system'. */
+  /** The user's stored preference. */
   mode: ThemeMode
   /** The resolved theme currently on screen. */
   isLight: boolean
-  /** Set an explicit preference (or 'system') with an animated swap + sound. */
+  /** Set an explicit preference (or 'system') with an animated swap and sound. */
   setMode: (mode: ThemeMode) => void
   /** Nav-rail toggle: flip to the explicit opposite of what's showing. */
   toggle: () => void

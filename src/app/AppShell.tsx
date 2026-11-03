@@ -46,7 +46,6 @@ export function AppShell() {
         <UpdatePrompt />
         <AppTitleBar />
 
-        {/* Everything below the full-width title bar: the nav rail, then the content column. */}
         <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
           <TabBar />
 
