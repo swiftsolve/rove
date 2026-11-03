@@ -12,7 +12,7 @@ storybook-static
 .claude
 
 # Generated: rewritten by scripts/build-ui-catalogue.mjs, or by npm.
-src/ui/gen/
+*.gen.*
 package-lock.json
 
 # Prose. Its line breaks and table layout are written by hand.

@@ -4,7 +4,7 @@ The component library: the Figma components in code. The rules are in
 `docs/develop/frontend.md` (The UI library, Components), and `npm run lint` enforces
 most of them. These are the ones it can't check:
 
-- Read `gen/components.json` for the library's API before reading the source.
+- Read `components.gen.json` for the library's API before reading the source.
 - A new component gets its stories in the same change. A part with props of
   its own gets its own stories file beside its module.
 - An interactive component gets a story that drives it with a `play`

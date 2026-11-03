@@ -252,7 +252,7 @@ npm run dev                  # UI only, in a browser, against the mock bridge
 npm run storybook            # the UI library's components, at localhost:6006
 npm run screenshots          # refresh docs/screenshots: every screen, at window size
 npm run format               # lay out the code with Prettier
-npm run catalogue            # regenerate src/ui/gen/components.json after a library change
+npm run catalogue            # regenerate src/ui/components.gen.json after a library change
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 

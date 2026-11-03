@@ -16,7 +16,7 @@ everything:
 The Rove Design System in Figma is the source of truth for tokens and
 components; they arrive through `@swiftsolve/rove-tokens`.
 
-`src/ui/gen/components.json` lists every library component with its group,
+`src/ui/components.gen.json` lists every library component with its group,
 props, variant values, Figma component and stories, generated from the code.
 Read it before `src/ui`'s files when you need the library's API.
 
@@ -46,7 +46,7 @@ it guards. Hooks run some of it for you:
   with `--no-verify`; fix what they report.
 - **Claude Code** (`.claude/settings.json`): every edited file is formatted and
   linted on the spot; `--no-verify`, a force push and `git reset --hard` are
-  refused; the generated files in `src/ui/gen/` can't be hand-edited (run
+  refused; generated `*.gen.*` files can't be hand-edited (run
   `npm run catalogue`).
 
 ## Keep the sites in sync after a UI change
