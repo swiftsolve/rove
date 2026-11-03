@@ -40,7 +40,7 @@ export function useServices(): UseServicesResult {
     queryFn: api ? () => api.listServices() : undefined,
     isEnabled: true,
     errorMessage: 'Failed to load services',
-    shouldRefetchOnOpen: false,
+    freshForMs: Infinity,
   })
 
   const addMutation = useMutation({
