@@ -35,7 +35,12 @@ describe('offlineDurations', () => {
       event(4, 'internet_restored'),
       event(1, 'internet_lost'),
     ]
-    expect(offlineDurations(events)).toEqual(new Map([[4, 3_000], [9, 2_000]]))
+    expect(offlineDurations(events)).toEqual(
+      new Map([
+        [4, 3_000],
+        [9, 2_000],
+      ]),
+    )
   })
 
   it('skips a reconnect with no loss before it', () => {

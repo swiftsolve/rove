@@ -81,20 +81,14 @@ function DevicesBody({
   onRescan: () => void
 }): JSX.Element {
   if (isScanning && devices.length === 0) {
-    return (
-      <LoadingState label="Scanning your network…" />
-    )
+    return <LoadingState label="Scanning your network…" />
   }
   if (devices.length === 0) {
     return (
       <EmptyState
         title="No devices found"
         description={shouldShowLocalNetworkHint ? LOCAL_NETWORK_HINT : NO_DEVICES_HINT}
-        actions={
-          <Button onClick={onRescan}>
-            Scan again
-          </Button>
-        }
+        actions={<Button onClick={onRescan}>Scan again</Button>}
       />
     )
   }
@@ -108,7 +102,9 @@ function DevicesBody({
       {/* The Local Network hint trailing a scan that did find devices; the
           blank-state copy is laid out by <EmptyState>. */}
       {shouldShowLocalNetworkHint && (
-        <p className="type-body-default text-tertiary mt-10 max-w-[40ch] px-4 text-sm leading-body-small">{LOCAL_NETWORK_HINT}</p>
+        <p className="type-body-default text-tertiary mt-10 max-w-[40ch] px-4 text-sm leading-body-small">
+          {LOCAL_NETWORK_HINT}
+        </p>
       )}
     </div>
   )
@@ -139,22 +135,19 @@ export function DevicesView(): JSX.Element {
             <IconButton label="About device scanning" icon={HelpIcon} tooltip={SCAN_HINT} />
             {/* Kept clickable while scanning (busy clicks are ignored) so the
                 tooltip still answers "why is this spinning". */}
-            <IconButton
-              label="Scan again"
-              icon={RefreshIcon}
-              isLoading={isScanning}
-              onClick={onRescan}
-            />
+            <IconButton label="Scan again" icon={RefreshIcon} isLoading={isScanning} onClick={onRescan} />
           </>
         }
       />
 
-      {error && <Banner
+      {error && (
+        <Banner
           variant="error"
           title={error}
           description={lastScan ? 'Showing the last scan.' : 'Try again in a moment.'}
           onRetry={rescan}
-        />}
+        />
+      )}
 
       <DevicesBody
         devices={devices}

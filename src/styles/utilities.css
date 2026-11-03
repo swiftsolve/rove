@@ -105,8 +105,8 @@
    padding. The bottom margin tops the page's 10px card gap up to 12px, so the
    first card sits as far below the divider as the content inset. */
 @utility page-header {
-  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--content-inset-right))
-    calc(var(--spacing-12) - var(--spacing-10)) calc(-1 * var(--spacing-12));
+  margin: calc(-1 * var(--spacing-12)) calc(-1 * var(--content-inset-right)) calc(var(--spacing-12) - var(--spacing-10))
+    calc(-1 * var(--spacing-12));
   padding: var(--spacing-12) var(--content-inset-right) var(--spacing-12) var(--spacing-12);
   border-bottom: 1px solid var(--border-default);
 }

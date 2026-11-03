@@ -18,8 +18,7 @@ import { AppIcon } from '@/features/apps/components/AppIcon'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
 
-const APP_USAGE_INFO_HINT =
-  'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
+const APP_USAGE_INFO_HINT = 'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 
 const BODY_COPY: UsageBodyCopy = {
   unsupported: 'Run Rove as administrator to meter per-app usage on Windows.',
@@ -61,19 +60,12 @@ export function AppUsageView(): JSX.Element {
         title="Apps"
         description={<AppSubtitleLinks />}
         status={isFirstLoad ? 'Loading…' : undefined}
-        actions={
-          <IconButton label="About per-app usage" icon={HelpIcon} tooltip={APP_USAGE_INFO_HINT} />
-        }
+        actions={<IconButton label="About per-app usage" icon={HelpIcon} tooltip={APP_USAGE_INFO_HINT} />}
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
-      <UsageBody
-        support={usage.support}
-        isFirstLoad={isFirstLoad}
-        isEmpty={apps.length === 0}
-        copy={BODY_COPY}
-      >
+      <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={apps.length === 0} copy={BODY_COPY}>
         <CardList label="Apps by usage">
           {/* Each row links into that app's hosts. */}
           {apps.map((app) => (

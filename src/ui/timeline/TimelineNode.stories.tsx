@@ -53,7 +53,11 @@ export const Default: Story = {}
 
 /** A departure: a hollow ring, quiet rather than alarming. */
 export const Neutral: Story = {
-  args: { color: 'neutral', icon: <ArrowLeftIcon size={15} />, children: <Lines title="Device left" subject="iPhone" /> },
+  args: {
+    color: 'neutral',
+    icon: <ArrowLeftIcon size={15} />,
+    children: <Lines title="Device left" subject="iPhone" />,
+  },
 }
 
 /** A day of events: the line runs from each marker to the next and ends at the last. */

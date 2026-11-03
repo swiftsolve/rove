@@ -73,8 +73,16 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col">
       <TitleBar brand={brand} status={<TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>} controls={controls} />
-      <TitleBar brand={brand} status={<TitleBarStatus tone="negative">No internet</TitleBarStatus>} controls={controls} />
-      <TitleBar brand={brand} status={<TitleBarStatus tone="neutral">Connecting…</TitleBarStatus>} controls={controls} />
+      <TitleBar
+        brand={brand}
+        status={<TitleBarStatus tone="negative">No internet</TitleBarStatus>}
+        controls={controls}
+      />
+      <TitleBar
+        brand={brand}
+        status={<TitleBarStatus tone="neutral">Connecting…</TitleBarStatus>}
+        controls={controls}
+      />
       <TitleBar brand={brand} status={<TitleBarStatus tone="neutral">Offline</TitleBarStatus>} />
     </div>
   ),

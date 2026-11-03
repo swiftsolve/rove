@@ -19,7 +19,8 @@ function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<Read
     <>
       <span
         className={cn(size === 'compact' ? 'type-number-large' : 'type-number-display', 'metric-value')}
-        aria-hidden={isSpokenApart || undefined}>
+        aria-hidden={isSpokenApart || undefined}
+      >
         {value}
       </span>
       <span className="type-body-small metric-unit" aria-hidden={isSpokenApart || undefined}>

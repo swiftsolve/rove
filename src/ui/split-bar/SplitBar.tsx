@@ -35,11 +35,7 @@ type SplitBarProps = {
  *  segment collapses to zero width. */
 export function SplitBar({ down, up, max, label, className }: SplitBarProps): JSX.Element {
   return (
-    <div
-      className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)}
-      role="img"
-      aria-label={label}
-    >
+    <div className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)} role="img" aria-label={label}>
       <span className={segVariants({ series: 'down' })} style={{ width: `${percentOf(down, max)}%` }} />
       <span className={segVariants({ series: 'up' })} style={{ width: `${percentOf(up, max)}%` }} />
     </div>

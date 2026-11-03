@@ -117,7 +117,11 @@ async function readStories(source, name) {
 
 // Every other export of the index, with its doc comment, through the compiler.
 function readOtherExports(componentNames) {
-  const program = ts.createProgram([INDEX], { jsx: ts.JsxEmit.ReactJSX, allowImportingTsExtensions: true, noEmit: true })
+  const program = ts.createProgram([INDEX], {
+    jsx: ts.JsxEmit.ReactJSX,
+    allowImportingTsExtensions: true,
+    noEmit: true,
+  })
   const checker = program.getTypeChecker()
   const index = checker.getSymbolAtLocation(program.getSourceFile(INDEX))
   const icons = []
@@ -161,7 +165,9 @@ for (const { name, group, source } of components) {
     if (!prop.description) problems.push(`${rel(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
     const hasDefault = prop.defaultValue?.value !== undefined
     if (!prop.required && !hasDefault && (recipeDefaults.has(prop.name) || NAMES_A_DEFAULT.test(prop.description))) {
-      problems.push(`${rel(source)}: ${name}'s ${prop.name} prop has a default the docs' Default column misses: write it into the destructured props`)
+      problems.push(
+        `${rel(source)}: ${name}'s ${prop.name} prop has a default the docs' Default column misses: write it into the destructured props`,
+      )
     }
   }
   if (!(name in figma.components)) {

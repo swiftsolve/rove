@@ -6,9 +6,7 @@ const CHAR_CODE_A = 65
 // Resolve the human-readable country name once — Intl.DisplayNames is stateless
 // and reusable, so we avoid rebuilding it per host row.
 const regionNames =
-  typeof Intl !== 'undefined' && 'DisplayNames' in Intl
-    ? new Intl.DisplayNames(['en'], { type: 'region' })
-    : null
+  typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
 
 /** Upper-cased code when it's exactly two ASCII letters, else null. */
 function normalizeCountryCode(code: string | null | undefined): string | null {

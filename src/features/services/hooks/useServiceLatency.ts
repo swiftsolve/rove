@@ -1,9 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import {
-  getLatencySnapshot,
-  subscribeLatency,
-  type LatencyHistory,
-} from '@/features/services/utils/service-latency'
+import { getLatencySnapshot, subscribeLatency, type LatencyHistory } from '@/features/services/utils/service-latency'
 
 /**
  * The rolling per-host latency history that feeds each service row's sparkline.

@@ -71,10 +71,7 @@ export function ScanStatus({
   // Step the stage word while a scan runs.
   useEffect(() => {
     if (!isActive) return
-    const intervalId = window.setInterval(
-      () => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)),
-      SCAN_PHASE_MS,
-    )
+    const intervalId = window.setInterval(() => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)), SCAN_PHASE_MS)
     return () => window.clearInterval(intervalId)
   }, [isActive])
 

@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  HOME_LOCATION,
-  isSameLocation,
-  parentLocation,
-  type AppLocation,
-  type Navigation,
-} from '@/app/utils/location'
+import { HOME_LOCATION, isSameLocation, parentLocation, type AppLocation, type Navigation } from '@/app/utils/location'
 import { captureReturnPoint, trackClicks, type ReturnPoint } from '@/app/utils/return-point'
 
 // We stash the location on `history.state` under a namespaced key rather than
@@ -47,9 +41,7 @@ function saveReturnPoint(): void {
  */
 export function useHistoryNavigation(): Navigation {
   // Adopt the location a reload left in history, or start at home.
-  const [location, setLocation] = useState<AppLocation>(
-    () => readLocation(window.history.state) ?? HOME_LOCATION,
-  )
+  const [location, setLocation] = useState<AppLocation>(() => readLocation(window.history.state) ?? HOME_LOCATION)
   // Mirror `location` in a ref so `navigate` can compare against the current
   // screen without a stale closure — and, crucially, without doing the
   // pushState side effect inside a setState updater (StrictMode invokes those
@@ -98,15 +90,18 @@ export function useHistoryNavigation(): Navigation {
     return () => window.removeEventListener('popstate', onPop)
   }, [applyLocation])
 
-  const navigate = useCallback((to: AppLocation): void => {
-    // Ignore navigations that don't change the screen, so the back stack never
-    // fills with duplicate entries (e.g. tapping the already-active tab).
-    if (isSameLocation(locationRef.current, to)) return
-    saveReturnPoint()
-    window.history.pushState(historyStateFor(to), '')
-    appDepthRef.current += 1
-    applyLocation(to)
-  }, [applyLocation])
+  const navigate = useCallback(
+    (to: AppLocation): void => {
+      // Ignore navigations that don't change the screen, so the back stack never
+      // fills with duplicate entries (e.g. tapping the already-active tab).
+      if (isSameLocation(locationRef.current, to)) return
+      saveReturnPoint()
+      window.history.pushState(historyStateFor(to), '')
+      appDepthRef.current += 1
+      applyLocation(to)
+    },
+    [applyLocation],
+  )
 
   const back = useCallback((): void => {
     // If one of our own entries is behind us, pop it — this keeps the app's Back

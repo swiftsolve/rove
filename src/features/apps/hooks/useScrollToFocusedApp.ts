@@ -19,9 +19,7 @@ export function useScrollToFocusedApp(
   const hasScrolledRef = useRef(false)
   useEffect(() => {
     if (!focusApp || hasScrolledRef.current) return
-    const group = listRef.current?.querySelector<HTMLElement>(
-      `[data-app="${CSS.escape(focusApp)}"]`,
-    )
+    const group = listRef.current?.querySelector<HTMLElement>(`[data-app="${CSS.escape(focusApp)}"]`)
     if (!group) return // data not in yet; a later poll re-runs this
     const timeoutId = setTimeout(() => {
       const scroller = group.closest<HTMLElement>('[data-scroll-root]')

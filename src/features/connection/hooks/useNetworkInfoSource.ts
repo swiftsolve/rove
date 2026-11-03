@@ -83,56 +83,56 @@ export function useNetworkInfoSource(): NetworkState {
   const generationRef = useRef(0)
   const isVisible = usePageVisible()
 
-  const refresh = useCallback(async (isSilent = false): Promise<void> => {
-    const bridgeError = getNetworkApiError()
-    if (bridgeError) {
-      setError(bridgeError)
-      setIsLoading(false)
-      return
-    }
-
-    if (isInFlightRef.current) return
-    isInFlightRef.current = true
-    const generation = generationRef.current
-
-    const isInitial = infoRef.current === null
-    if (!isSilent && isInitial) setIsLoading(true)
-
-    try {
-      const nextInfo = await withTimeout(
-        getNetworkApi().getNetworkInfo(),
-        NETWORK_INFO_TIMEOUT_MS,
-        'Network detection timed out.',
-      )
-
-      if (generation !== generationRef.current) return
-      failuresRef.current = 0
-      lastReadAtRef.current = Date.now()
-      setInfo((previous) => (isNetworkInfoEqual(previous, nextInfo) ? previous : nextInfo))
-      setError(null)
-    } catch (unknownError) {
-      // A poll that spanned a background stretch is stale — its failure (often a
-      // spurious timeout the frozen timer fired on resume) must not count.
-      if (generation !== generationRef.current) return
-      failuresRef.current += 1
-      const message =
-        unknownError instanceof Error
-          ? unknownError.message
-          : 'Failed to read network information'
-      // Keep the last good reading on screen through a transient blip. Only
-      // raise the banner on the very first load (nothing to fall back to) or
-      // once enough polls have failed in a row to mean a real outage.
-      if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
-        setError(message)
-        setLastReadAt(lastReadAtRef.current)
+  const refresh = useCallback(
+    async (isSilent = false): Promise<void> => {
+      const bridgeError = getNetworkApiError()
+      if (bridgeError) {
+        setError(bridgeError)
+        setIsLoading(false)
+        return
       }
-    } finally {
-      // Only the current generation owns the in-flight slot; a superseded poll
-      // must not clear a flag a fresh post-resume poll may already hold.
-      if (generation === generationRef.current) isInFlightRef.current = false
-      if (!isSilent || isInitial) setIsLoading(false)
-    }
-  }, [infoRef])
+
+      if (isInFlightRef.current) return
+      isInFlightRef.current = true
+      const generation = generationRef.current
+
+      const isInitial = infoRef.current === null
+      if (!isSilent && isInitial) setIsLoading(true)
+
+      try {
+        const nextInfo = await withTimeout(
+          getNetworkApi().getNetworkInfo(),
+          NETWORK_INFO_TIMEOUT_MS,
+          'Network detection timed out.',
+        )
+
+        if (generation !== generationRef.current) return
+        failuresRef.current = 0
+        lastReadAtRef.current = Date.now()
+        setInfo((previous) => (isNetworkInfoEqual(previous, nextInfo) ? previous : nextInfo))
+        setError(null)
+      } catch (unknownError) {
+        // A poll that spanned a background stretch is stale — its failure (often a
+        // spurious timeout the frozen timer fired on resume) must not count.
+        if (generation !== generationRef.current) return
+        failuresRef.current += 1
+        const message = unknownError instanceof Error ? unknownError.message : 'Failed to read network information'
+        // Keep the last good reading on screen through a transient blip. Only
+        // raise the banner on the very first load (nothing to fall back to) or
+        // once enough polls have failed in a row to mean a real outage.
+        if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
+          setError(message)
+          setLastReadAt(lastReadAtRef.current)
+        }
+      } finally {
+        // Only the current generation owns the in-flight slot; a superseded poll
+        // must not clear a flag a fresh post-resume poll may already hold.
+        if (generation === generationRef.current) isInFlightRef.current = false
+        if (!isSilent || isInitial) setIsLoading(false)
+      }
+    },
+    [infoRef],
+  )
 
   useEffect(() => {
     // Poll only while the window is visible. On becoming visible again after a

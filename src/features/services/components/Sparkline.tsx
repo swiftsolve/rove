@@ -111,14 +111,11 @@ function placePoints(samples: LatencySample[], width: number, height: number, sl
 
   // Right-aligned: the last sample lands on the right edge and older ones step
   // back leftwards, leaving the unfilled part of the window blank.
-  const xAt = (i: number): number =>
-    span <= 1 ? width : ((span - sampleCount + i) / (span - 1)) * width
+  const xAt = (i: number): number => (span <= 1 ? width : ((span - sampleCount + i) / (span - 1)) * width)
   // Higher latency sits higher on the chart, so a spike reads as a spike. A run
   // of identical values has no range to scale over, so it sits on the midline.
   const yAt = (ms: number): number =>
-    isFlat
-      ? VERTICAL_PAD + innerHeight / 2
-      : VERTICAL_PAD + innerHeight - ((ms - min) / (max - min)) * innerHeight
+    isFlat ? VERTICAL_PAD + innerHeight / 2 : VERTICAL_PAD + innerHeight - ((ms - min) / (max - min)) * innerHeight
 
   return samples.map((sample, i) => ({
     x: xAt(i),
@@ -323,14 +320,13 @@ export function Sparkline({
         )}
         {hovered && (
           <>
-            <line
-              className="stroke-line stroke-1"
-              x1={hovered.x}
-              y1={VERTICAL_PAD}
-              x2={hovered.x}
-              y2={baseline}
+            <line className="stroke-line stroke-1" x1={hovered.x} y1={VERTICAL_PAD} x2={hovered.x} y2={baseline} />
+            <circle
+              className="fill-current stroke-surface stroke-[1.5]"
+              cx={hovered.x}
+              cy={hovered.y}
+              r={CURSOR_DOT_RADIUS}
             />
-            <circle className="fill-current stroke-surface stroke-[1.5]" cx={hovered.x} cy={hovered.y} r={CURSOR_DOT_RADIUS} />
           </>
         )}
       </svg>

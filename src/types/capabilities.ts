@@ -1,12 +1,6 @@
 import type { SpeedResult } from './speed'
 
-export const CAPABILITY_LEVELS = [
-  'excellent',
-  'good',
-  'fair',
-  'poor',
-  'unsupported',
-] as const
+export const CAPABILITY_LEVELS = ['excellent', 'good', 'fair', 'poor', 'unsupported'] as const
 
 export type CapabilityLevel = (typeof CAPABILITY_LEVELS)[number]
 
@@ -126,4 +120,3 @@ export interface SpeedTestResult {
   capabilities: CapabilityRating[]
   linkCapacityMbps: number | null
 }
-

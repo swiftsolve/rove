@@ -45,15 +45,15 @@ export function AboutView(): JSX.Element {
             <DataRow label="Version" value={version ?? '—'} />
             <DataRow label="Platform" value={platformLabel()} />
             <DataRow label="Source">
-              <Link href={REPO_URL}>
-                github.com/swiftsolve/rove
-              </Link>
+              <Link href={REPO_URL}>github.com/swiftsolve/rove</Link>
             </DataRow>
           </DataList>
         </CardBody>
       </Card>
 
-      <p className="type-caption text-tertiary pt-8 pb-12 text-center">© {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.</p>
+      <p className="type-caption text-tertiary pt-8 pb-12 text-center">
+        © {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.
+      </p>
     </div>
   )
 }

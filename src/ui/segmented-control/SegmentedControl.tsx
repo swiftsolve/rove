@@ -8,7 +8,8 @@ import { cx } from 'class-variance-authority'
 // between them by its own width. Plain `1fr`, not `auto-cols-fr`'s
 // `minmax(0, 1fr)`, which collapses to nothing, and `w-max`, since a track
 // shrunk to its min-content in a narrow parent lets the columns differ.
-const TRACK = 'relative inline-grid grid-flow-col auto-cols-[1fr] w-max gap-2 p-2 bg-inset border border-line rounded-sm'
+const TRACK =
+  'relative inline-grid grid-flow-col auto-cols-[1fr] w-max gap-2 p-2 bg-inset border border-line rounded-sm'
 
 // The accent-muted thumb behind the chosen segment. Its width and position
 // come from `--count` and `--index` on the track: each column is the track's

@@ -7,20 +7,14 @@ import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 
 // What the app shows while network info is missing or its refresh failed.
 
-const loadingVariants = cva(
-  [
-    'flex flex-1 flex-col items-center justify-center',
-    'animate-fade-in',
-  ],
-  {
-    variants: {
-      /** A failed detection: an icon chip, a short heading, the reason and a real
-       *  button, so it reads as recoverable rather than a stray grey line. */
-      isError: { true: 'gap-16 p-20', false: 'gap-(--card-padding)' },
-    },
-    defaultVariants: { isError: false },
+const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center', 'animate-fade-in'], {
+  variants: {
+    /** A failed detection: an icon chip, a short heading, the reason and a real
+     *  button, so it reads as recoverable rather than a stray grey line. */
+    isError: { true: 'gap-16 p-20', false: 'gap-(--card-padding)' },
   },
-)
+  defaultVariants: { isError: false },
+})
 
 // The lines under the spinner: the label and, when detection runs slow, a
 // second note in the same style.

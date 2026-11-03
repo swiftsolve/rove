@@ -3,9 +3,7 @@ import type { AppTab } from '@/app/utils/tabs'
 import type { ReturnPoint } from '@/app/utils/return-point'
 
 /** A subpage layered over the Speed tab. `null` means the tab's main page. */
-export type SpeedSub =
-  | { view: 'details'; target: CapabilityId | null }
-  | { view: 'history' }
+export type SpeedSub = { view: 'details'; target: CapabilityId | null } | { view: 'history' }
 
 /** A subpage layered over the Services tab. `null` means the tab's main page. */
 export type ServicesSub = { view: 'timeline' }
@@ -14,9 +12,7 @@ export type ServicesSub = { view: 'timeline' }
  *  `'hosts'` is the per-app remote-host breakdown — `app` names the group to
  *  open expanded (others collapsed), omitted for the plain "All hosts" entry
  *  point. `'traffic'` is the flat by-protocol breakdown ("All traffic types"). */
-export type AppsSub =
-  | { view: 'hosts'; app?: string | null }
-  | { view: 'traffic' }
+export type AppsSub = { view: 'hosts'; app?: string | null } | { view: 'traffic' }
 
 /**
  * A single screen the app can show — a tab, optionally with a subpage. Each
@@ -57,7 +53,7 @@ export function parentLocation(location: AppLocation): AppLocation {
 /** The focused app of an Apps subpage, or null — only the `hosts` view carries
  *  one, so this narrows the union before reaching for `app`. */
 function appsSubApp(sub: AppsSub | null | undefined): string | null {
-  return sub?.view === 'hosts' ? sub.app ?? null : null
+  return sub?.view === 'hosts' ? (sub.app ?? null) : null
 }
 
 /** A short, stable key for a location — handy for keying effects (e.g. scroll). */

@@ -75,11 +75,7 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
         {/* First, so it comes before the card's own controls in tab order. */}
         {/* Named by the CardHeader's title, unless linkLabel says more. */}
         {isOpenable && (
-          <StretchedLink
-            label={linkLabel}
-            aria-labelledby={linkLabel == null ? titleId : undefined}
-            onClick={onOpen}
-          />
+          <StretchedLink label={linkLabel} aria-labelledby={linkLabel == null ? titleId : undefined} onClick={onOpen} />
         )}
         {children}
       </Element>
@@ -121,10 +117,7 @@ export const CardList = forwardRef<HTMLUListElement, CardListProps>(function Car
 })
 
 // A fixed height, so a header with a button is no taller than one without.
-const HEADER = cx(
-  'flex items-center justify-between gap-12',
-  'h-(--card-header-height) px-(--card-header-padding-x)',
-)
+const HEADER = cx('flex items-center justify-between gap-12', 'h-(--card-header-height) px-(--card-header-padding-x)')
 
 // The openable card's caret: always shown, brightening while the card is
 // hovered or its link has keyboard focus.

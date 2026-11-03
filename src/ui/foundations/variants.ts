@@ -5,7 +5,6 @@ import type { VariantProps } from 'class-variance-authority'
  * so the recipe names each value once. It leaves out cva's `null`, which skips
  * the axis and its default.
  */
-export type VariantOf<
-  Recipe extends (...args: never) => string,
-  Axis extends keyof VariantProps<Recipe>,
-> = NonNullable<VariantProps<Recipe>[Axis]>
+export type VariantOf<Recipe extends (...args: never) => string, Axis extends keyof VariantProps<Recipe>> = NonNullable<
+  VariantProps<Recipe>[Axis]
+>

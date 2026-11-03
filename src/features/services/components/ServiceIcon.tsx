@@ -80,15 +80,7 @@ export function ServiceIcon({
   const dimensions = { width: size, height: size }
 
   if (src && !hasSrcFailed) {
-    return (
-      <img
-        className={ICON}
-        src={src}
-        alt=""
-        style={dimensions}
-        onError={() => setHasSrcFailed(true)}
-      />
-    )
+    return <img className={ICON} src={src} alt="" style={dimensions} onError={() => setHasSrcFailed(true)} />
   }
 
   if (mayHaveFavicon(host) && !failedFavicons.has(host)) {

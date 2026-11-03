@@ -6,9 +6,7 @@ import type {
   WifiNetworkInfo,
 } from './network'
 
-export function isDisconnectedNetwork(
-  info: NetworkInfo,
-): info is DisconnectedNetworkInfo {
+export function isDisconnectedNetwork(info: NetworkInfo): info is DisconnectedNetworkInfo {
   return info.connectionType === 'unknown'
 }
 

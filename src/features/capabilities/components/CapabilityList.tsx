@@ -11,9 +11,7 @@ import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capa
 // A few headline use-cases previewed in the empty state before any test runs —
 // the full breakdown appears once results come in.
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
-const PREVIEW_CAPABILITIES = PREVIEW_IDS.map(
-  (id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!,
-)
+const PREVIEW_CAPABILITIES = PREVIEW_IDS.map((id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!)
 
 // Every row keeps the same symmetric vertical padding, with no first/last special
 // casing, so both the spacing between rows and each row's hover highlight read
@@ -69,7 +67,9 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.E
         </div>
       </div>
       {/* Where the rating meter will land. */}
-      <span className="shrink-0 font-medium text-tertiary" aria-hidden>…</span>
+      <span className="shrink-0 font-medium text-tertiary" aria-hidden>
+        …
+      </span>
     </li>
   )
 }
@@ -81,11 +81,7 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
     return (
       // Secondary, to match the Devices/refresh button spinners (tertiary read
       // as washed-out); the spinner takes it through currentColor.
-      <span
-        className="inline-flex items-center text-secondary"
-        role="img"
-        aria-label="Speed test running"
-      >
+      <span className="inline-flex items-center text-secondary" role="img" aria-label="Speed test running">
         <ButtonSpinner size={14} />
       </span>
     )
@@ -103,11 +99,7 @@ export function CapabilityList(): JSX.Element {
 
   return (
     <Card>
-      <CardHeader
-        title="Capabilities"
-        icon={<ZapIcon size={15} />}
-        actions={headerAction(isTesting, hasRunTest)}
-      />
+      <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={headerAction(isTesting, hasRunTest)} />
       <CardBody>
         {!hasRunTest ? (
           <ul role="list" className={LIST}>
@@ -122,9 +114,7 @@ export function CapabilityList(): JSX.Element {
                 key={capability.id}
                 capability={capability}
                 isTesting={isTesting}
-                onOpen={() =>
-                  navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })
-                }
+                onOpen={() => navigate({ tab: 'speed', speedSub: { view: 'details', target: capability.id } })}
               />
             ))}
           </ul>

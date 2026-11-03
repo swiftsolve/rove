@@ -42,18 +42,15 @@ export function TitleBar({ brand, status, controls }: TitleBarProps): JSX.Elemen
 
 // Nudged down a hair so the label optically aligns with the wordmark's centre
 // rather than sitting slightly high next to it.
-const statusVariants = cva(
-  ['type-label-small', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'],
-  {
-    variants: {
-      tone: {
-        positive: 'text-positive',
-        negative: 'text-negative',
-        neutral: 'text-tertiary',
-      },
+const statusVariants = cva(['type-label-small', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'], {
+  variants: {
+    tone: {
+      positive: 'text-positive',
+      negative: 'text-negative',
+      neutral: 'text-tertiary',
     },
   },
-)
+})
 
 type TitleBarStatusProps = {
   /**

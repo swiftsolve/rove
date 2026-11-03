@@ -135,7 +135,7 @@ function mockQrSvg(): string {
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       // Finder patterns where they belong, otherwise a deterministic speckle.
-      const isDark = isFinder(x, y) ? true : ((x * 7 + y * 13 + x * y) % 3 === 0)
+      const isDark = isFinder(x, y) ? true : (x * 7 + y * 13 + x * y) % 3 === 0
       if (isDark) rects += `<rect x="${x + quiet}" y="${y + quiet}" width="1" height="1"/>`
     }
   }
@@ -205,15 +205,19 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
 // "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
 // Mirrors is_apple_model in crates/rove-core/src/devices/mod.rs.
 const APPLE_MODEL_FAMILIES = [
-  'iphone', 'ipad', 'ipod', 'watch', 'macbook', 'imac', 'macmini', 'macpro', 'audioaccessory',
+  'iphone',
+  'ipad',
+  'ipod',
+  'watch',
+  'macbook',
+  'imac',
+  'macmini',
+  'macpro',
+  'audioaccessory',
 ]
 function isAppleModel(model: string): boolean {
   const lower = model.trim().toLowerCase()
-  return (
-    lower.includes(',') &&
-    /\d/.test(lower) &&
-    APPLE_MODEL_FAMILIES.some((family) => lower.startsWith(family))
-  )
+  return lower.includes(',') && /\d/.test(lower) && APPLE_MODEL_FAMILIES.some((family) => lower.startsWith(family))
 }
 
 // Turn a hardware model string into a human-friendly product name, matching what
@@ -225,16 +229,24 @@ function humanizeModel(model: string | null): string | null {
   // Everything before the "<gen>,<rev>" suffix is the product family.
   const family = model.trim().replace(/\d.*$/, '')
   switch (family.toLowerCase()) {
-    case 'audioaccessory': return 'HomePod'
-    case 'watch': return 'Apple Watch'
-    case 'macmini': return 'Mac mini'
-    case 'macpro': return 'Mac Pro'
-    case 'macbook': return 'MacBook'
-    case 'macbookpro': return 'MacBook Pro'
-    case 'macbookair': return 'MacBook Air'
+    case 'audioaccessory':
+      return 'HomePod'
+    case 'watch':
+      return 'Apple Watch'
+    case 'macmini':
+      return 'Mac mini'
+    case 'macpro':
+      return 'Mac Pro'
+    case 'macbook':
+      return 'MacBook'
+    case 'macbookpro':
+      return 'MacBook Pro'
+    case 'macbookair':
+      return 'MacBook Air'
     // Lowercase-run families ("iphone", "ipad", "imac", "ipod") are a single
     // word; keep the identifier's own casing rather than lowercasing it.
-    default: return family
+    default:
+      return family
   }
 }
 
@@ -251,32 +263,239 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
   interfaceName: 'en0',
   scannedAt: Date.now(),
   dhcpStatus: 'active',
-  devices: ([
-    { ip: '192.168.1.1', hostname: 'router', model: 'UniFi Dream Router', os: null, kind: 'router', mac: '24:5a:4c:11:b2:03', vendor: 'Ubiquiti', isRandomizedMac: false, isGateway: true, isSelf: false, isReachable: true },
-    { ip: MOCK_SELF_IP, hostname: 'rove-macbook', model: 'MacBookPro18,3', os: 'macOS', kind: 'computer', mac: MOCK_SELF_MAC, vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: true, isReachable: true },
-    { ip: '192.168.1.10', hostname: 'Living-Room-TV', model: 'BRAVIA KD-65X90L', os: null, kind: 'tv', mac: '5c:e7:53:3d:59:80', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.12', hostname: 'Kitchen-Sonos', model: 'Sonos One', os: null, kind: 'speaker', mac: '68:57:2d:aa:0b:0c', vendor: 'Sonos', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.14', hostname: 'Office-Printer', model: 'OfficeJet Pro 9015', os: null, kind: 'printer', mac: '3c:52:82:1d:44:7e', vendor: 'HP', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.16', hostname: 'iPhone-15-Pro', model: 'iPhone16,1', os: 'iOS', kind: 'phone', mac: 'ec:b5:fa:18:97:79', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.18', hostname: 'Emmas-iPad', model: 'iPad13,4', os: 'iPadOS', kind: 'tablet', mac: 'a4:c3:f0:11:22:33', vendor: 'Apple', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.21', hostname: 'PlayStation-5', model: null, os: null, kind: 'console', mac: '7c:ed:8d:44:55:66', vendor: 'Sony', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.24', hostname: 'Nest-Hub', model: 'Google Nest Hub', os: null, kind: 'iot', mac: '1c:f2:9a:6d:03:1a', vendor: 'Google', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.27', hostname: 'DiskStation', model: 'DS923+', os: null, kind: 'nas', mac: '00:11:32:aa:bb:cc', vendor: 'Synology', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.30', hostname: 'Hue-Bridge', model: 'BSB002', os: null, kind: 'iot', mac: '00:17:88:2c:9f:d1', vendor: 'Signify (Philips Hue)', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.33', hostname: 'Front-Door-Cam', model: null, os: null, kind: 'camera', mac: 'ec:71:db:77:88:99', vendor: 'Reolink', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: false },
-    { ip: '192.168.1.36', hostname: 'shelly-plug-s', model: null, os: null, kind: 'iot', mac: '10:96:93:e4:bf:a8', vendor: 'Allterco (Shelly)', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    { ip: '192.168.1.40', hostname: 'ecobee-thermostat', model: null, os: null, kind: 'iot', mac: '44:61:32:0a:7d:e2', vendor: 'ecobee', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-    // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
-    // fingerprint still identifies it. This is the headline win of the feature.
-    { ip: '192.168.1.44', hostname: null, model: null, os: 'Android', kind: 'phone', mac: '96:bc:d3:21:af:00', vendor: null, isRandomizedMac: true, isGateway: false, isSelf: false, isReachable: true },
-    // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
-    // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
-    { ip: '192.168.1.46', hostname: 'iPhone', model: null, os: null, kind: 'phone', mac: 'ae:4a:06:fe:b5:37', vendor: 'Apple', isRandomizedMac: true, isGateway: false, isSelf: false, isReachable: true },
-    // A TP-Link Kasa/Tapo smart plug: its OUI resolves to the generic "TP-Link"
-    // name (shared with Archer routers), so with no other signal the classifier
-    // leans "Smart home", not "Network" — a low-confidence call the UI hedges.
-    { ip: '192.168.1.48', hostname: null, model: null, os: null, kind: 'iot', kindConfidence: 'low', mac: '1c:3b:f3:85:8f:43', vendor: 'TP-Link', isRandomizedMac: false, isGateway: false, isSelf: false, isReachable: true },
-  ] satisfies MockLanDevice[]).map((device) => ({
+  devices: (
+    [
+      {
+        ip: '192.168.1.1',
+        hostname: 'router',
+        model: 'UniFi Dream Router',
+        os: null,
+        kind: 'router',
+        mac: '24:5a:4c:11:b2:03',
+        vendor: 'Ubiquiti',
+        isRandomizedMac: false,
+        isGateway: true,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: MOCK_SELF_IP,
+        hostname: 'rove-macbook',
+        model: 'MacBookPro18,3',
+        os: 'macOS',
+        kind: 'computer',
+        mac: MOCK_SELF_MAC,
+        vendor: 'Apple',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: true,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.10',
+        hostname: 'Living-Room-TV',
+        model: 'BRAVIA KD-65X90L',
+        os: null,
+        kind: 'tv',
+        mac: '5c:e7:53:3d:59:80',
+        vendor: 'Sony',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.12',
+        hostname: 'Kitchen-Sonos',
+        model: 'Sonos One',
+        os: null,
+        kind: 'speaker',
+        mac: '68:57:2d:aa:0b:0c',
+        vendor: 'Sonos',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.14',
+        hostname: 'Office-Printer',
+        model: 'OfficeJet Pro 9015',
+        os: null,
+        kind: 'printer',
+        mac: '3c:52:82:1d:44:7e',
+        vendor: 'HP',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.16',
+        hostname: 'iPhone-15-Pro',
+        model: 'iPhone16,1',
+        os: 'iOS',
+        kind: 'phone',
+        mac: 'ec:b5:fa:18:97:79',
+        vendor: 'Apple',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.18',
+        hostname: 'Emmas-iPad',
+        model: 'iPad13,4',
+        os: 'iPadOS',
+        kind: 'tablet',
+        mac: 'a4:c3:f0:11:22:33',
+        vendor: 'Apple',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.21',
+        hostname: 'PlayStation-5',
+        model: null,
+        os: null,
+        kind: 'console',
+        mac: '7c:ed:8d:44:55:66',
+        vendor: 'Sony',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.24',
+        hostname: 'Nest-Hub',
+        model: 'Google Nest Hub',
+        os: null,
+        kind: 'iot',
+        mac: '1c:f2:9a:6d:03:1a',
+        vendor: 'Google',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.27',
+        hostname: 'DiskStation',
+        model: 'DS923+',
+        os: null,
+        kind: 'nas',
+        mac: '00:11:32:aa:bb:cc',
+        vendor: 'Synology',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.30',
+        hostname: 'Hue-Bridge',
+        model: 'BSB002',
+        os: null,
+        kind: 'iot',
+        mac: '00:17:88:2c:9f:d1',
+        vendor: 'Signify (Philips Hue)',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.33',
+        hostname: 'Front-Door-Cam',
+        model: null,
+        os: null,
+        kind: 'camera',
+        mac: 'ec:71:db:77:88:99',
+        vendor: 'Reolink',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: false,
+      },
+      {
+        ip: '192.168.1.36',
+        hostname: 'shelly-plug-s',
+        model: null,
+        os: null,
+        kind: 'iot',
+        mac: '10:96:93:e4:bf:a8',
+        vendor: 'Allterco (Shelly)',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      {
+        ip: '192.168.1.40',
+        hostname: 'ecobee-thermostat',
+        model: null,
+        os: null,
+        kind: 'iot',
+        mac: '44:61:32:0a:7d:e2',
+        vendor: 'ecobee',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      // A privacy-randomized phone: no OUI vendor, no hostname — yet its DHCP
+      // fingerprint still identifies it. This is the headline win of the feature.
+      {
+        ip: '192.168.1.44',
+        hostname: null,
+        model: null,
+        os: 'Android',
+        kind: 'phone',
+        mac: '96:bc:d3:21:af:00',
+        vendor: null,
+        isRandomizedMac: true,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      // A randomized-MAC iPhone: no OUI vendor, but the backend infers "Apple" from
+      // its default hostname, so it reads "Phone · Apple" rather than dropping the make.
+      {
+        ip: '192.168.1.46',
+        hostname: 'iPhone',
+        model: null,
+        os: null,
+        kind: 'phone',
+        mac: 'ae:4a:06:fe:b5:37',
+        vendor: 'Apple',
+        isRandomizedMac: true,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+      // A TP-Link Kasa/Tapo smart plug: its OUI resolves to the generic "TP-Link"
+      // name (shared with Archer routers), so with no other signal the classifier
+      // leans "Smart home", not "Network" — a low-confidence call the UI hedges.
+      {
+        ip: '192.168.1.48',
+        hostname: null,
+        model: null,
+        os: null,
+        kind: 'iot',
+        kindConfidence: 'low',
+        mac: '1c:3b:f3:85:8f:43',
+        vendor: 'TP-Link',
+        isRandomizedMac: false,
+        isGateway: false,
+        isSelf: false,
+        isReachable: true,
+      },
+    ] satisfies MockLanDevice[]
+  ).map((device) => ({
     ...device,
     model: humanizeModel(device.model),
     kindConfidence: device.kindConfidence ?? 'high',
@@ -293,17 +512,138 @@ function seedNetworkEvents(): NetworkEvent[] {
   const min = 60_000
   const hour = 3_600_000
   const rows: (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
-    { ago: 74 * min, type: 'wifi_connected', severity: 'info', mac: MOCK_SELF_MAC, ip: MOCK_SELF_IP, name: MOCK_SSID, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 8 * min, type: 'device_joined', severity: 'info', mac: '96:bc:d3:21:af:00', ip: '192.168.1.44', name: 'Android device', kind: 'phone', oldValue: null, newValue: null, isRandomized: true },
-    { ago: 2 * hour, type: 'ethernet_connected', severity: 'info', mac: MOCK_ETHERNET_MAC, ip: '192.168.1.51', name: MOCK_ETHERNET_ADAPTER, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 75 * min, type: 'connection_lost', severity: 'warning', mac: null, ip: null, name: MOCK_ETHERNET_ADAPTER, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 27 * hour, type: 'internet_lost', severity: 'warning', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 26 * hour, type: 'internet_restored', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: null, isRandomized: false },
-    { ago: 40 * min, type: 'ap_appeared', severity: 'warning', mac: '24:5a:4c:88:19:2f', ip: '192.168.1.3', name: 'Ubiquiti', kind: 'router', oldValue: null, newValue: null, isRandomized: false },
-    { ago: 5 * hour, type: 'device_offline', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, isRandomized: false },
-    { ago: 28 * hour, type: 'device_online', severity: 'info', mac: 'ec:71:db:77:88:99', ip: '192.168.1.33', name: 'Front-Door-Cam', kind: 'camera', oldValue: null, newValue: null, isRandomized: false },
-    { ago: 30 * hour, type: 'gateway_changed', severity: 'critical', mac: '24:5a:4c:11:b2:03', ip: '192.168.1.1', name: 'Router', kind: null, oldValue: '9c:a2:f4:00:1d:e2', newValue: '24:5a:4c:11:b2:03', isRandomized: false },
-    { ago: 34 * hour, type: 'initial_scan', severity: 'info', mac: null, ip: null, name: null, kind: null, oldValue: null, newValue: '17', isRandomized: false },
+    {
+      ago: 74 * min,
+      type: 'wifi_connected',
+      severity: 'info',
+      mac: MOCK_SELF_MAC,
+      ip: MOCK_SELF_IP,
+      name: MOCK_SSID,
+      kind: null,
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 8 * min,
+      type: 'device_joined',
+      severity: 'info',
+      mac: '96:bc:d3:21:af:00',
+      ip: '192.168.1.44',
+      name: 'Android device',
+      kind: 'phone',
+      oldValue: null,
+      newValue: null,
+      isRandomized: true,
+    },
+    {
+      ago: 2 * hour,
+      type: 'ethernet_connected',
+      severity: 'info',
+      mac: MOCK_ETHERNET_MAC,
+      ip: '192.168.1.51',
+      name: MOCK_ETHERNET_ADAPTER,
+      kind: null,
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 75 * min,
+      type: 'connection_lost',
+      severity: 'warning',
+      mac: null,
+      ip: null,
+      name: MOCK_ETHERNET_ADAPTER,
+      kind: null,
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 27 * hour,
+      type: 'internet_lost',
+      severity: 'warning',
+      mac: null,
+      ip: null,
+      name: null,
+      kind: null,
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 26 * hour,
+      type: 'internet_restored',
+      severity: 'info',
+      mac: null,
+      ip: null,
+      name: null,
+      kind: null,
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 40 * min,
+      type: 'ap_appeared',
+      severity: 'warning',
+      mac: '24:5a:4c:88:19:2f',
+      ip: '192.168.1.3',
+      name: 'Ubiquiti',
+      kind: 'router',
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 5 * hour,
+      type: 'device_offline',
+      severity: 'info',
+      mac: 'ec:71:db:77:88:99',
+      ip: '192.168.1.33',
+      name: 'Front-Door-Cam',
+      kind: 'camera',
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 28 * hour,
+      type: 'device_online',
+      severity: 'info',
+      mac: 'ec:71:db:77:88:99',
+      ip: '192.168.1.33',
+      name: 'Front-Door-Cam',
+      kind: 'camera',
+      oldValue: null,
+      newValue: null,
+      isRandomized: false,
+    },
+    {
+      ago: 30 * hour,
+      type: 'gateway_changed',
+      severity: 'critical',
+      mac: '24:5a:4c:11:b2:03',
+      ip: '192.168.1.1',
+      name: 'Router',
+      kind: null,
+      oldValue: '9c:a2:f4:00:1d:e2',
+      newValue: '24:5a:4c:11:b2:03',
+      isRandomized: false,
+    },
+    {
+      ago: 34 * hour,
+      type: 'initial_scan',
+      severity: 'info',
+      mac: null,
+      ip: null,
+      name: null,
+      kind: null,
+      oldValue: null,
+      newValue: '17',
+      isRandomized: false,
+    },
   ]
   // Serve newest-first, mirroring the backend's `ORDER BY ts DESC`. The rows
   // above are authored out of strict time order, so sort by age before stamping
@@ -410,13 +750,7 @@ function mockLatencyFor(host: string): number {
 // actually serving) — reads as Down rather than pretending an arbitrary
 // name answered. This is the single reachability verdict both the diagnostics
 // list and the "test before add" dialog consult, so they always agree.
-const MOCK_REACHABLE_HOSTS = new Set([
-  'google.com',
-  'cloudflare.com',
-  'youtube.com',
-  'netflix.com',
-  'zoom.us',
-])
+const MOCK_REACHABLE_HOSTS = new Set(['google.com', 'cloudflare.com', 'youtube.com', 'netflix.com', 'zoom.us'])
 
 function isMockReachable(host: string): boolean {
   return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
@@ -702,39 +1036,55 @@ function createMockNetworkApi(): NetworkAPI {
       // Per-app sums stay at or under that app's getAppUsage totals: hosts count
       // TCP-connection traffic only, so they're a subset of the app's bytes.
       const apps: [string, [string | null, string, string | null, number, number][]][] = [
-        ['firefox', [
-          ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 342, 27],
-          ['edge-star.facebook.com', '157.240.22.35', 'US', 268, 20],
-          ['gru.cdn.instagram.com', '31.13.85.52', 'IE', 178, 8],
-          ['duckduckgo.com', '52.142.124.215', 'US', 38, 5],
-          [null, '203.0.113.9', 'JP', 15, 2],
-        ]],
-        ['Spotify', [
-          ['audio-fa.scdn.co', '35.186.224.25', 'US', 190, 4],
-          ['gew1-accesspoint.ap.spotify.com', '104.199.65.9', 'DE', 24, 4],
-        ]],
-        ['com.apple.WebKit.Networking', [
-          ['p52-content.icloud.com', '17.248.184.72', 'US', 74, 4],
-          ['gateway.icloud.com', '17.248.130.11', 'US', 28, 5],
-          ['guzzoni.apple.com', '17.252.76.19', 'US', 10, 1],
-        ]],
-        ['Dropbox', [
-          ['edge-block-api.dropbox.com', '162.125.248.18', 'US', 41, 88],
-        ]],
-        ['slack', [
-          ['wss-primary.slack.com', '99.86.229.44', 'US', 27, 8],
-          [null, '192.168.1.14', null, 12, 4],
-        ]],
-        ['softwareupdated', [
-          ['swcdn.apple.com', '17.253.17.201', 'US', 27, 0.4],
-          ['swscan.apple.com', '17.253.17.207', 'US', 3, 0.5],
-        ]],
+        [
+          'firefox',
+          [
+            ['a23-212-6-37.deploy.static.akamaitechnologies.com', '23.212.6.37', 'US', 342, 27],
+            ['edge-star.facebook.com', '157.240.22.35', 'US', 268, 20],
+            ['gru.cdn.instagram.com', '31.13.85.52', 'IE', 178, 8],
+            ['duckduckgo.com', '52.142.124.215', 'US', 38, 5],
+            [null, '203.0.113.9', 'JP', 15, 2],
+          ],
+        ],
+        [
+          'Spotify',
+          [
+            ['audio-fa.scdn.co', '35.186.224.25', 'US', 190, 4],
+            ['gew1-accesspoint.ap.spotify.com', '104.199.65.9', 'DE', 24, 4],
+          ],
+        ],
+        [
+          'com.apple.WebKit.Networking',
+          [
+            ['p52-content.icloud.com', '17.248.184.72', 'US', 74, 4],
+            ['gateway.icloud.com', '17.248.130.11', 'US', 28, 5],
+            ['guzzoni.apple.com', '17.252.76.19', 'US', 10, 1],
+          ],
+        ],
+        ['Dropbox', [['edge-block-api.dropbox.com', '162.125.248.18', 'US', 41, 88]]],
+        [
+          'slack',
+          [
+            ['wss-primary.slack.com', '99.86.229.44', 'US', 27, 8],
+            [null, '192.168.1.14', null, 12, 4],
+          ],
+        ],
+        [
+          'softwareupdated',
+          [
+            ['swcdn.apple.com', '17.253.17.201', 'US', 27, 0.4],
+            ['swscan.apple.com', '17.253.17.207', 'US', 3, 0.5],
+          ],
+        ],
         // Upload-heavy, the shape an ssh session actually has: a LAN box and a
         // remote build host.
-        ['ssh', [
-          ['build-01.example.net', '198.51.100.24', 'DE', 2.5, 17],
-          [null, '192.168.1.20', null, 1.2, 9],
-        ]],
+        [
+          'ssh',
+          [
+            ['build-01.example.net', '198.51.100.24', 'DE', 2.5, 17],
+            [null, '192.168.1.20', null, 1.2, 9],
+          ],
+        ],
       ]
       return {
         apps: apps.map(([name, hosts]) => {
@@ -819,8 +1169,7 @@ function createMockNetworkApi(): NetworkAPI {
         internet: 'online',
         services: mockServiceReachability().map((service) => ({
           ...service,
-          latencyMs:
-            service.latencyMs == null ? null : Math.max(1, wobble(service.latencyMs, 12)),
+          latencyMs: service.latencyMs == null ? null : Math.max(1, wobble(service.latencyMs, 12)),
         })),
       }
     },
@@ -996,8 +1345,6 @@ export function installMockNetworkApiIfNeeded(): boolean {
   mutableWindow.windowControls = createMockWindowControls()
   seedLatencyHistory(mockSeededLatencyHistory())
 
-  console.info(
-    '[rove] Tauri bridge not found, using in-browser mock network data (dev only).',
-  )
+  console.info('[rove] Tauri bridge not found, using in-browser mock network data (dev only).')
   return true
 }

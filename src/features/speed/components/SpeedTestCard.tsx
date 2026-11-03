@@ -6,13 +6,21 @@ import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import { Card, CardBody, CardHeader, DirectionIcon, EthernetIcon, InlineMeta, SpeedIcon, WifiIcon, useCountUp, type SpeedSeries } from '@/ui'
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  DirectionIcon,
+  EthernetIcon,
+  InlineMeta,
+  SpeedIcon,
+  WifiIcon,
+  useCountUp,
+  type SpeedSeries,
+} from '@/ui'
 import type { SpeedTestConnection } from '@/features/speed/types'
 import { WavyProgress } from '@/features/speed/components/WavyProgress'
-import {
-  DOWNLOAD_PHASE_START_PCT,
-  UPLOAD_PHASE_START_PCT,
-} from '@/features/speed/utils/progress-fill'
+import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/speed/utils/progress-fill'
 import { testStatusText } from '@/features/speed/utils/test-status'
 
 /** The connection the footer names, its icon tinted by medium. */
@@ -39,10 +47,7 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
 
 // Full-bleed inset panel at the card bottom, the same treatment as the live
 // throughput chart.
-const INSET_PANEL = cx(
-  '-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)',
-  'bg-inset p-(--card-body-padding)',
-)
+const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
 
 /** A latency that came back: finite and below the backend's failed-ping sentinel. */
 function isMeasuredLatency(ms: number): boolean {
@@ -92,13 +97,7 @@ function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX
   )
 }
 
-function SpeedCell({
-  mbps,
-  isPlaceholder = false,
-}: {
-  mbps: number | null
-  isPlaceholder?: boolean
-}): JSX.Element {
+function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPlaceholder?: boolean }): JSX.Element {
   const animatedMbps = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
@@ -167,15 +166,7 @@ function HeroCell({
   )
 }
 
-function Substat({
-  label,
-  text,
-  isEmpty,
-}: {
-  label: string
-  text: string
-  isEmpty: boolean
-}): JSX.Element {
+function Substat({ label, text, isEmpty }: { label: string; text: string; isEmpty: boolean }): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <dt className="type-overline text-tertiary">{label}</dt>
@@ -240,12 +231,9 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
   const hasResults = internetSpeed != null
   // The footer describes the connection the last result was measured on, and
   // falls back to the live connection before any test has run.
-  const connection =
-    hasResults && runConnection != null ? runConnection : connectionFromNetworkInfo(info)
+  const connection = hasResults && runConnection != null ? runConnection : connectionFromNetworkInfo(info)
   const linkCapacityMbps =
-    hasResults && testLinkCapacityMbps != null
-      ? testLinkCapacityMbps
-      : info ? getLinkCapacityMbps(info) : null
+    hasResults && testLinkCapacityMbps != null ? testLinkCapacityMbps : info ? getLinkCapacityMbps(info) : null
   // Empty state: connected and idle, but no test has run yet. We still lay out
   // the full metric grid with placeholder values so the empty and filled states
   // share the same structure.
@@ -253,13 +241,9 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
   const hasFooterInfo = connection != null || linkCapacityMbps != null
 
   const measuredPing =
-    internetSpeed && isMeasuredLatency(internetSpeed.latencyMs)
-      ? formatLatencyMs(internetSpeed.latencyMs)
-      : null
+    internetSpeed && isMeasuredLatency(internetSpeed.latencyMs) ? formatLatencyMs(internetSpeed.latencyMs) : null
   const measuredJitter =
-    internetSpeed && isMeasuredLatency(internetSpeed.jitterMs)
-      ? formatLatencyMs(internetSpeed.jitterMs)
-      : null
+    internetSpeed && isMeasuredLatency(internetSpeed.jitterMs) ? formatLatencyMs(internetSpeed.jitterMs) : null
   const measuredLoss = internetSpeed ? `${internetSpeed.packetLoss}%` : null
 
   return (
@@ -270,7 +254,11 @@ export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
         actions={isEmpty && canTest ? <span className="type-caption text-tertiary">No tests yet</span> : undefined}
       />
       <CardBody>
-        {error && <p className="type-body-default inline-error" role="alert">{error}</p>}
+        {error && (
+          <p className="type-body-default inline-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <dl className="grid grid-cols-2 gap-16">
           <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />

@@ -1,7 +1,10 @@
 import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler } from 'react'
 import { cn } from '../foundations/cn'
 
-type StretchedLinkProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children' | 'role' | 'onClick'> & {
+type StretchedLinkProps = Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'aria-label' | 'children' | 'role' | 'onClick'
+> & {
   /**
    * Names it: it has no text of its own, since the container's content shows
    * through. Leave it out only to name it by a heading (`aria-labelledby`).

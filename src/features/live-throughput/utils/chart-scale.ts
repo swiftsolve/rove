@@ -21,11 +21,7 @@ function roundNiceScale(mbps: number): number {
   return step ?? Math.ceil(safe / 1000) * 1000
 }
 
-function peakInWindow(
-  download: number[],
-  upload: number[],
-  window: number,
-): number {
+function peakInWindow(download: number[], upload: number[], window: number): number {
   const count = download.length
   if (count === 0) return 0
 
@@ -43,10 +39,7 @@ function trafficPeak(download: number[], upload: number[]): number {
   if (recent === 0) return 0
 
   const tail = peakInWindow(download, upload, TAIL_PEAK_WINDOW)
-  const current = Math.max(
-    sanitizeRate(download.at(-1) ?? 0),
-    sanitizeRate(upload.at(-1) ?? 0),
-  )
+  const current = Math.max(sanitizeRate(download.at(-1) ?? 0), sanitizeRate(upload.at(-1) ?? 0))
 
   // After a speed test or counter spike the 20 s window still holds the burst
   // even though live traffic has returned to normal — scale to what's on the wire now.

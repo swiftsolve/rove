@@ -159,9 +159,7 @@ function ServiceRow({
   // Down the same way the status reads it: a failed path (only when the
   // internet is up, else it's our fault) or a reachable-but-erroring host. A
   // down row's sparkline is a flat red line, not its old trend.
-  const isDown = probe
-    ? isErroring || (probe.latencyMs === null && !isInternetUnreachable)
-    : false
+  const isDown = probe ? isErroring || (probe.latencyMs === null && !isInternetUnreachable) : false
 
   return (
     // Less right padding than left so the kebab sits closer to the card edge: its
@@ -278,8 +276,7 @@ export function ServicesView(): JSX.Element {
   }, [reachability])
 
   // Until the stored list loads, show the probed services so the page isn't blank.
-  const listedServices: ServiceDefinition[] =
-    services ?? (reachability ?? []).map(({ name, host }) => ({ name, host }))
+  const listedServices: ServiceDefinition[] = services ?? (reachability ?? []).map(({ name, host }) => ({ name, host }))
 
   // Persist a confirmed add or edit. Re-adding the same host updates its label;
   // an edit keeps the row's place in the list, even when it changed the host.
@@ -329,11 +326,7 @@ export function ServicesView(): JSX.Element {
         {dialog && (
           <AddServiceDialog
             key={dialog.openCount}
-            editing={
-              dialog.mode === 'edit'
-                ? { name: dialog.service.name, host: dialog.service.host }
-                : undefined
-            }
+            editing={dialog.mode === 'edit' ? { name: dialog.service.name, host: dialog.service.host } : undefined}
             onAdd={saveService}
             onClose={() => setIsDialogOpen(false)}
           />
@@ -363,10 +356,7 @@ export function ServicesView(): JSX.Element {
           ))}
         </CardList>
       ) : (
-        <EmptyState
-          title="No services yet"
-          description="Add a site or server to watch its uptime."
-        />
+        <EmptyState title="No services yet" description="Add a site or server to watch its uptime." />
       )}
     </div>
   )

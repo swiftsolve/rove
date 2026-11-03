@@ -22,11 +22,7 @@ type MenuProps = {
 export function Menu({ isOpen, onOpenChange, children }: MenuProps): JSX.Element {
   return (
     // Not modal: a click outside closes the menu and still lands where it was aimed.
-    <BaseMenu.Root
-      open={isOpen}
-      onOpenChange={onOpenChange && ((isNowOpen) => onOpenChange(isNowOpen))}
-      modal={false}
-    >
+    <BaseMenu.Root open={isOpen} onOpenChange={onOpenChange && ((isNowOpen) => onOpenChange(isNowOpen))} modal={false}>
       {children}
     </BaseMenu.Root>
   )
@@ -115,12 +111,7 @@ type MenuItemProps = {
 /** One action in a MenuContent. */
 export function MenuItem({ icon: Icon, tone = 'neutral', onClick, children }: MenuItemProps): JSX.Element {
   return (
-    <BaseMenu.Item
-      className={itemVariants({ tone })}
-      onClick={onClick}
-      nativeButton
-      render={<button type="button" />}
-    >
+    <BaseMenu.Item className={itemVariants({ tone })} onClick={onClick} nativeButton render={<button type="button" />}>
       {Icon && <Icon size={14} />}
       {children}
     </BaseMenu.Item>

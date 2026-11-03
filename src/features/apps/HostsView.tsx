@@ -32,15 +32,12 @@ import { TransferFigures } from '@/features/apps/components/TransferFigures'
 
 /** An app group's collapsible chevron: points down when open, rotates to a right
  *  caret when closed. */
-const chevronVariants = cva(
-  'shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out',
-  {
-    variants: {
-      isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
-    },
-    defaultVariants: { isOpen: false },
+const chevronVariants = cva('shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out', {
+  variants: {
+    isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
   },
-)
+  defaultVariants: { isOpen: false },
+})
 
 // An app group sits flush against the card edge with no radius of its own, so a
 // ring's corners (the nav-flash highlight's, or the focus ring's) would run
@@ -50,9 +47,7 @@ const chevronVariants = cva(
 // so focus frames the group (header and, when expanded, its hosts) rather than
 // the header row alone. Scroll margin gives breathing room when a focused group
 // is scrolled to the top of the list.
-const GROUP = cx(
-  'scroll-mt-12 first:rounded-t-lg last:rounded-b-lg',
-)
+const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 
 // The group header is a full-width toggle that carries the row's inset, so the
 // whole row is the click target, with a quiet hover to signal it. Expanded, the
@@ -81,10 +76,7 @@ const HOST_COUNT = cx(
 // icon above it (past the chevron gutter): chevron 14 + gap 8 + half of
 // (16 − 18) ≈ 21px. The flag column then reads as a continuation of the
 // app-icon column.
-const HOSTS = cx(
-  'flex flex-col gap-8',
-  'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]',
-)
+const HOSTS = cx('flex flex-col gap-8', 'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]')
 
 const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
@@ -199,18 +191,11 @@ const AppGroup = memo(function AppGroup({
           the row's own font, so the button inside (font: inherit) renders as
           before. */}
       <h2 className="[font:inherit]">
-        <CollapsibleTrigger
-          className={GROUP_HEADER}
-          aria-label={appGroupLabel(app.name, hostCount, total)}
-        >
+        <CollapsibleTrigger className={GROUP_HEADER} aria-label={appGroupLabel(app.name, hostCount, total)}>
           <RowName
             icon={
               <>
-                <ChevronDownIcon
-                  size={14}
-                  className={chevronVariants({ isOpen: isExpanded })}
-                  aria-hidden
-                />
+                <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />
                 <AppIcon app={app} />
               </>
             }
@@ -239,7 +224,7 @@ export function HostsView(): JSX.Element {
   const { apps } = usage
   // Arrived by clicking an app: open only that app's group and collapse the
   // rest. Otherwise every group starts collapsed.
-  const focusApp = location.appsSub?.view === 'hosts' ? location.appsSub.app ?? null : null
+  const focusApp = location.appsSub?.view === 'hosts' ? (location.appsSub.app ?? null) : null
   const { isExpanded, toggle } = useExpandedApps(focusApp)
   const listRef = useScrollToFocusedApp(focusApp, apps)
 
@@ -250,26 +235,14 @@ export function HostsView(): JSX.Element {
         description="Remote hosts by application, busiest first"
         status={isFirstLoad ? 'Loading…' : undefined}
         onBack={back}
-        actions={
-          <IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />
-        }
+        actions={<IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />}
       />
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
-      <UsageBody
-        support={usage.support}
-        isFirstLoad={isFirstLoad}
-        isEmpty={apps.length === 0}
-        copy={BODY_COPY}
-      >
+      <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={apps.length === 0} copy={BODY_COPY}>
         <CardList label="Apps" ref={listRef}>
           {apps.map((app) => (
-            <AppGroup
-              key={app.name}
-              app={app}
-              isExpanded={isExpanded(app.name)}
-              onToggle={toggle}
-            />
+            <AppGroup key={app.name} app={app} isExpanded={isExpanded(app.name)} onToggle={toggle} />
           ))}
         </CardList>
       </UsageBody>

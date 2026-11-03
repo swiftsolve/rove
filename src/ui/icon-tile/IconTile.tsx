@@ -37,7 +37,7 @@ function tileLook(size: TileLookProps['size'], color: IconTileColor): { classNam
   return { className: tileVariants({ size, isNeutral }), style: isNeutral ? undefined : { color } }
 }
 
-type IconTileProps = TileLookProps &Omit<HTMLAttributes<HTMLSpanElement>, keyof TileLookProps | 'children'>
+type IconTileProps = TileLookProps & Omit<HTMLAttributes<HTMLSpanElement>, keyof TileLookProps | 'children'>
 
 /**
  * A rounded square holding an item's icon, tinted by what the item is. It

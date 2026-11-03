@@ -42,10 +42,7 @@ export async function getSpeedHistory(): Promise<SpeedHistoryEntry[]> {
   }
 }
 
-export async function saveSpeedResult(
-  result: SpeedResult,
-  context: SpeedRunContext,
-): Promise<void> {
+export async function saveSpeedResult(result: SpeedResult, context: SpeedRunContext): Promise<void> {
   const entry: SpeedHistoryEntry = { ...result, ...context, timestamp: Date.now() }
   try {
     await getNetworkApi().saveSpeedResult(entry)

@@ -36,16 +36,9 @@ type TransferFiguresProps = {
 }
 
 /** A row's download and upload figures: an arrow and the bytes, for each. */
-export function TransferFigures({
-  transfer,
-  isDecorative = false,
-  className,
-}: TransferFiguresProps): JSX.Element {
+export function TransferFigures({ transfer, isDecorative = false, className }: TransferFiguresProps): JSX.Element {
   return (
-    <span
-      className={cn('inline-flex items-center gap-12', className)}
-      aria-hidden={isDecorative || undefined}
-    >
+    <span className={cn('inline-flex items-center gap-12', className)} aria-hidden={isDecorative || undefined}>
       <TransferFigure series="down" bytes={transfer.rxBytes} isDecorative={isDecorative} />
       <TransferFigure series="up" bytes={transfer.txBytes} isDecorative={isDecorative} />
     </span>

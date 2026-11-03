@@ -12,13 +12,7 @@ import { ArrowRightIcon, Button, Dialog, DownloadIcon } from '@/ui'
  * "What's new" well follows when the release ships notes. A failed install
  * stays open with the error, to try again or leave for later.
  */
-export function UpdateDialog({
-  update,
-  onDismiss,
-}: {
-  update: PendingUpdate
-  onDismiss: () => void
-}): JSX.Element {
+export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onDismiss: () => void }): JSX.Element {
   const [isInstalling, setIsInstalling] = useState(false)
   const [hasFailed, setHasFailed] = useState(false)
 

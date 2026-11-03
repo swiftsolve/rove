@@ -48,10 +48,7 @@ const STRIP = cx(
 const STRIP_SUB = cx('type-body-default text-secondary', styles.stripSub, 'truncate')
 
 const chevronVariants = cva(
-  [
-    ABOVE_TOGGLE,
-    'self-center shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out',
-  ],
+  [ABOVE_TOGGLE, 'self-center shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out'],
   {
     variants: {
       isOpen: { true: 'transform-[rotate(180deg)]' },
@@ -113,9 +110,7 @@ function stripMetaItems(info: NetworkInfo): ReactNode[] {
     ? [
         info.ipAddress,
         formatBand(info.frequency),
-        info.security != null && (
-          <SecurityBadge security={info.security} isShort className={styles.securityBadge} />
-        ),
+        info.security != null && <SecurityBadge security={info.security} isShort className={styles.securityBadge} />,
       ]
     : [info.ipAddress, formatLinkSpeed(info)]
   return items.filter(Boolean)

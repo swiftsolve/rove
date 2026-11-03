@@ -169,12 +169,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
 
 function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element {
   if (entries.length === 0) {
-    return (
-      <EmptyState
-        title="No speed tests yet"
-        description="Run a test to start your history."
-      />
-    )
+    return <EmptyState title="No speed tests yet" description="Run a test to start your history." />
   }
 
   return (

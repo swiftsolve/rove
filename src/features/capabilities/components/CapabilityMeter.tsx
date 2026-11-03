@@ -66,9 +66,7 @@ export function CapabilityMeter({
         isDimmed={isDimmed}
         className={barsClassName}
       />
-      {shouldShowLabel && (
-        <span className={labelVariants({ level })}>{CAPABILITY_LEVEL_LABELS[level]}</span>
-      )}
+      {shouldShowLabel && <span className={labelVariants({ level })}>{CAPABILITY_LEVEL_LABELS[level]}</span>}
     </span>
   )
 }

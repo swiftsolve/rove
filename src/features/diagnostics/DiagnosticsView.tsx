@@ -89,9 +89,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
   // or null when disconnected or the OS doesn't report it.
   const linkSpeedMbps = info ? getLinkCapacityMbps(info) : null
   // Many routers report their model as their name too; show it once.
-  const model = sameText(diagnostics?.gatewayModel, diagnostics?.gatewayName)
-    ? null
-    : (diagnostics?.gatewayModel || null)
+  const model = sameText(diagnostics?.gatewayModel, diagnostics?.gatewayName) ? null : diagnostics?.gatewayModel || null
   const hasDeviceRows = Boolean(diagnostics?.gatewayName || model || diagnostics?.gatewayVendor)
 
   return (
@@ -236,12 +234,14 @@ export function DiagnosticsView(): JSX.Element {
         {runStatusText(isRunning, hasDiagnostics)}
       </p>
 
-      {error && <Banner
+      {error && (
+        <Banner
           variant="error"
           title={error}
           description={diagnostics ? 'Showing the last check.' : 'Try again in a moment.'}
           onRetry={run}
-        />}
+        />
+      )}
 
       {isFirstCheck ? (
         <LoadingState label="Checking your connection…" />

@@ -25,10 +25,11 @@ import { cva, cx } from 'class-variance-authority'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 
 // Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
-const TILE_COLORS = { wifi: 'var(--series-down)', ethernet: 'var(--status-positive)', unknown: 'neutral' } as const satisfies Record<
-  string,
-  IconTileColor
->
+const TILE_COLORS = {
+  wifi: 'var(--series-down)',
+  ethernet: 'var(--status-positive)',
+  unknown: 'neutral',
+} as const satisfies Record<string, IconTileColor>
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
 const tagVariants = cva('type-caption', {
@@ -69,10 +70,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
     <Card as="li">
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
-          <IconTile
-            color={TILE_COLORS[iface.connectionType]}
-            icon={<InterfaceIcon iface={iface} />}
-          />
+          <IconTile color={TILE_COLORS[iface.connectionType]} icon={<InterfaceIcon iface={iface} />} />
           {/* text-lg: the widget-title size (e.g. "Traffic"), not type-heading-large's larger one. */}
           <h2 className="type-heading-large text-primary min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
@@ -95,10 +93,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Elem
       <CardBody>
         <DataList density="compact">
           <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
-          <DataRow
-            label="Link speed"
-            value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'}
-          />
+          <DataRow label="Link speed" value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'} />
           <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
           <DataRow label="MAC" value={formatMac(iface.macAddress)} />
         </DataList>
@@ -143,17 +138,13 @@ function InterfacesBody({
   onRefresh: () => void
 }): JSX.Element {
   if (isLoading && interfaces.length === 0) {
-    return (
-      <LoadingState label="Loading network interfaces…" />
-    )
+    return <LoadingState label="Loading network interfaces…" />
   }
   if (interfaces.length === 0) {
     return (
       <div className="page-empty">
         <p className="type-body-default text-tertiary">No network interfaces found.</p>
-        <Button onClick={onRefresh}>
-          Refresh
-        </Button>
+        <Button onClick={onRefresh}>Refresh</Button>
       </div>
     )
   }

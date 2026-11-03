@@ -8,7 +8,8 @@ import type { MouseEvent, MouseEventHandler } from 'react'
 export const PRESS = 'usable:active:transform-[translateY(0.5px)]'
 
 /** Disabled dims; loading stays at full opacity, since its spinner shows the wait. */
-export const STATE_CLASSES = 'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled) data-loading:cursor-default'
+export const STATE_CLASSES =
+  'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled) data-loading:cursor-default'
 
 interface PressableState {
   isDisabled?: boolean | null

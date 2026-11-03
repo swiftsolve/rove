@@ -81,9 +81,6 @@ function subscribe(listener: () => void): () => void {
  * the smallest unit you render, and no finer.
  */
 export function useNow(resolutionMs: number = TICK_MS): number {
-  const getSnapshot = useCallback(
-    () => Math.floor(current / resolutionMs) * resolutionMs,
-    [resolutionMs],
-  )
+  const getSnapshot = useCallback(() => Math.floor(current / resolutionMs) * resolutionMs, [resolutionMs])
   return useSyncExternalStore(subscribe, getSnapshot)
 }

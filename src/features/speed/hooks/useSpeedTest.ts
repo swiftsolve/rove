@@ -1,10 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@/types'
 import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
-import {
-  saveSpeedResult,
-  type SpeedRunContext,
-} from '@/features/speed/utils/speed-history'
+import { saveSpeedResult, type SpeedRunContext } from '@/features/speed/utils/speed-history'
 import { formatBand } from '@/lib/format'
 import { getNetworkApi } from '@/bridge/network-api'
 import { getLiveThroughput, subscribeLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
@@ -138,8 +135,7 @@ subscribeLiveThroughput(() => {
   const { downloadMbps, uploadMbps } = getLiveThroughput().throughput
   const peakDownloadMbps = Math.max(state.livePeakDownloadMbps, downloadMbps)
   const peakUploadMbps = Math.max(state.livePeakUploadMbps, uploadMbps)
-  const hasNewPeak =
-    peakDownloadMbps !== state.livePeakDownloadMbps || peakUploadMbps !== state.livePeakUploadMbps
+  const hasNewPeak = peakDownloadMbps !== state.livePeakDownloadMbps || peakUploadMbps !== state.livePeakUploadMbps
   if (!hasNewPeak) return
   setState({ ...state, livePeakDownloadMbps: peakDownloadMbps, livePeakUploadMbps: peakUploadMbps })
 })
@@ -219,9 +215,7 @@ async function runTest(): Promise<void> {
       ...state,
       isTesting: false,
       // A user-initiated stop is not an error — just return to the previous state.
-      error: isCancellation(cause)
-        ? null
-        : 'Speed test failed. Check your connection and try again.',
+      error: isCancellation(cause) ? null : 'Speed test failed. Check your connection and try again.',
       progress: INITIAL_PROGRESS,
     })
   }

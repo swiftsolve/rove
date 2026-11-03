@@ -40,15 +40,21 @@ const RULES = [
   ['padding', /^p[xytrblse]?-/],
   ['its own layout', /^(flex|inline-flex|grid|inline-grid|contents|table)$/],
   ['its own layout', /^flex-(row|col|wrap|nowrap)/],
-  ['its own layout', /^(grid-cols|grid-rows|grid-flow|gap|gap-x|gap-y|space-x|space-y|items|justify-items|place-items|place-content|divide)(-|$)/],
+  [
+    'its own layout',
+    /^(grid-cols|grid-rows|grid-flow|gap|gap-x|gap-y|space-x|space-y|items|justify-items|place-items|place-content|divide)(-|$)/,
+  ],
   ['its own layout', /^justify-(?!self)/],
   ['type', /^(type-|text-|font-|leading-|tracking-|whitespace-|line-clamp-|wrap-|break-)/],
   ['type', /^(truncate|num|tabular-nums|uppercase|lowercase|capitalize|italic|underline)$/],
   ['surface', /^(bg-|border|shadow|ring|outline|fill-|stroke-)/],
 ]
-const ARBITRARY_PROPERTIES = /^(padding|font|color|background|border|box-shadow|display|gap|line-height|letter-spacing|text-|white-space)/
+const ARBITRARY_PROPERTIES =
+  /^(padding|font|color|background|border|box-shadow|display|gap|line-height|letter-spacing|text-|white-space)/
 
-const utilityNames = [...readFileSync(join(ROOT, UTILITIES_CSS), 'utf8').matchAll(/@utility ([\w-]+)/g)].map((m) => m[1])
+const utilityNames = [...readFileSync(join(ROOT, UTILITIES_CSS), 'utf8').matchAll(/@utility ([\w-]+)/g)].map(
+  (m) => m[1],
+)
 
 /** Why a class restyles a component, or null when it only places it. */
 function restyles(token) {
@@ -84,7 +90,16 @@ const sources = new Map()
 function source(file) {
   if (!sources.has(file)) {
     const text = readFileSync(join(ROOT, file), 'utf8')
-    sources.set(file, ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS))
+    sources.set(
+      file,
+      ts.createSourceFile(
+        file,
+        text,
+        ts.ScriptTarget.Latest,
+        true,
+        file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      ),
+    )
   }
   return sources.get(file)
 }
@@ -95,7 +110,8 @@ function resolveImport(from, specifier) {
   if (specifier.startsWith('@/')) base = join('src', specifier.slice(2))
   else if (specifier.startsWith('.')) base = join(dirname(from), specifier)
   else return null
-  for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')]) if (existsSync(join(ROOT, candidate))) return candidate
+  for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')])
+    if (existsSync(join(ROOT, candidate))) return candidate
   return null
 }
 
@@ -105,10 +121,15 @@ function definition(file, name) {
   for (const statement of sf.statements) {
     if (ts.isVariableStatement(statement)) {
       for (const decl of statement.declarationList.declarations) {
-        if (ts.isIdentifier(decl.name) && decl.name.text === name && decl.initializer) return { file, node: decl.initializer }
+        if (ts.isIdentifier(decl.name) && decl.name.text === name && decl.initializer)
+          return { file, node: decl.initializer }
       }
     }
-    if (ts.isImportDeclaration(statement) && statement.importClause?.namedBindings && ts.isNamedImports(statement.importClause.namedBindings)) {
+    if (
+      ts.isImportDeclaration(statement) &&
+      statement.importClause?.namedBindings &&
+      ts.isNamedImports(statement.importClause.namedBindings)
+    ) {
       const element = statement.importClause.namedBindings.elements.find((e) => e.name.text === name)
       const target = element && resolveImport(file, statement.moduleSpecifier.text)
       if (target) return definition(target, (element.propertyName ?? element.name).text)
@@ -122,7 +143,10 @@ function classStrings(file, node, seen = new Set()) {
   if (!node) return []
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return [node.text]
   if (ts.isTemplateExpression(node)) {
-    return [node.head.text, ...node.templateSpans.flatMap((span) => [span.literal.text, ...classStrings(file, span.expression, seen)])]
+    return [
+      node.head.text,
+      ...node.templateSpans.flatMap((span) => [span.literal.text, ...classStrings(file, span.expression, seen)]),
+    ]
   }
   if (ts.isIdentifier(node)) {
     const key = `${file}:${node.text}`
@@ -131,14 +155,21 @@ function classStrings(file, node, seen = new Set()) {
     const found = definition(file, node.text)
     return found ? classStrings(found.file, found.node, seen) : []
   }
-  if (ts.isCallExpression(node)) return [...classStrings(file, node.expression, seen), ...node.arguments.flatMap((arg) => classStrings(file, arg, seen))]
+  if (ts.isCallExpression(node))
+    return [
+      ...classStrings(file, node.expression, seen),
+      ...node.arguments.flatMap((arg) => classStrings(file, arg, seen)),
+    ]
   if (ts.isObjectLiteralExpression(node)) {
     return node.properties.flatMap((p) => (ts.isPropertyAssignment(p) ? classStrings(file, p.initializer, seen) : []))
   }
   if (ts.isArrayLiteralExpression(node)) return node.elements.flatMap((e) => classStrings(file, e, seen))
-  if (ts.isConditionalExpression(node)) return [...classStrings(file, node.whenTrue, seen), ...classStrings(file, node.whenFalse, seen)]
-  if (ts.isBinaryExpression(node)) return [...classStrings(file, node.left, seen), ...classStrings(file, node.right, seen)]
-  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) return classStrings(file, node.expression, seen)
+  if (ts.isConditionalExpression(node))
+    return [...classStrings(file, node.whenTrue, seen), ...classStrings(file, node.whenFalse, seen)]
+  if (ts.isBinaryExpression(node))
+    return [...classStrings(file, node.left, seen), ...classStrings(file, node.right, seen)]
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node))
+    return classStrings(file, node.expression, seen)
   if (ts.isJsxExpression(node)) return classStrings(file, node.expression, seen)
   // A CSS module class (`styles.x`) or anything else: not readable here.
   return []
@@ -151,7 +182,10 @@ for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
   const sf = source(file)
   const uiNames = new Set()
   for (const statement of sf.statements) {
-    const bindings = ts.isImportDeclaration(statement) && statement.moduleSpecifier.text === '@/ui' && statement.importClause?.namedBindings
+    const bindings =
+      ts.isImportDeclaration(statement) &&
+      statement.moduleSpecifier.text === '@/ui' &&
+      statement.importClause?.namedBindings
     if (bindings && ts.isNamedImports(bindings)) bindings.elements.forEach((e) => uiNames.add(e.name.text))
   }
   if (uiNames.size === 0) continue
@@ -159,16 +193,22 @@ for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
   const visit = (node) => {
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
       const tag = node.tagName.getText(sf)
-      const attribute = uiNames.has(tag) && !isExempt(tag)
-        ? node.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sf) === 'className')
-        : null
+      const attribute =
+        uiNames.has(tag) && !isExempt(tag)
+          ? node.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sf) === 'className')
+          : null
       if (attribute) {
         checked++
         const line = sf.getLineAndCharacterOfPosition(attribute.getStart(sf)).line + 1
-        const tokens = new Set(classStrings(file, attribute.initializer).flatMap((s) => s.split(/\s+/)).filter(Boolean))
+        const tokens = new Set(
+          classStrings(file, attribute.initializer)
+            .flatMap((s) => s.split(/\s+/))
+            .filter(Boolean),
+        )
         for (const token of tokens) {
           const reason = restyles(token)
-          if (reason) problems.push(`${relative(ROOT, join(ROOT, file))}:${line}  <${tag} className>: '${token}' sets ${reason}`)
+          if (reason)
+            problems.push(`${relative(ROOT, join(ROOT, file))}:${line}  <${tag} className>: '${token}' sets ${reason}`)
         }
       }
     }

@@ -14,13 +14,7 @@ const onlineVariants = cva('whitespace-nowrap text-tertiary', {
 // left when the next scan starts and the status takes the slot. Like ScanStatus
 // it lingers mounted for SCAN_EXIT_MS so the slide-out can play rather than the
 // count just vanishing.
-export function OnlineIndicator({
-  isActive,
-  count,
-}: {
-  isActive: boolean
-  count: number
-}): JSX.Element | null {
+export function OnlineIndicator({ isActive, count }: { isActive: boolean; count: number }): JSX.Element | null {
   const isMounted = usePresence(isActive, SCAN_EXIT_MS)
 
   if (!isMounted) return null

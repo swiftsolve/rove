@@ -27,11 +27,16 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
-      { variant: 'soft', tone: 'neutral', class: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary' },
+      {
+        variant: 'soft',
+        tone: 'neutral',
+        class: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',
+      },
       {
         variant: 'soft',
         tone: 'negative',
-        class: 'bg-status-negative/(--opacity-tint-md) text-negative usable:hover:bg-status-negative/(--opacity-tint-lg)',
+        class:
+          'bg-status-negative/(--opacity-tint-md) text-negative usable:hover:bg-status-negative/(--opacity-tint-lg)',
       },
       { variant: 'solid', tone: 'accent', class: 'bg-accent-fill usable:hover:bg-accent-fill-hover' },
       {
@@ -50,26 +55,26 @@ const buttonVariants = cva(
  */
 export type ButtonAppearance =
   | {
-    /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
-    variant: 'solid'
-    /**
-     * Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface.
-     * @default accent (solid), neutral (soft)
-     */
-    tone?: 'accent' | 'negative'
-    /**
-     * `md`, or the more compact `sm`.
-     * @default md (solid), sm (soft)
-     */
-    size?: 'sm' | 'md'
+      /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
+      variant: 'solid'
+      /**
+       * Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface.
+       * @default accent (solid), neutral (soft)
+       */
+      tone?: 'accent' | 'negative'
+      /**
+       * `md`, or the more compact `sm`.
+       * @default md (solid), sm (soft)
+       */
+      size?: 'sm' | 'md'
     }
   | {
-    /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
-    variant?: 'soft'
-    /** Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface. */
-    tone?: 'neutral' | 'negative'
-    /** `md`, or the more compact `sm`. */
-    size?: 'sm' | 'md'
+      /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
+      variant?: 'soft'
+      /** Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface. */
+      tone?: 'neutral' | 'negative'
+      /** `md`, or the more compact `sm`. */
+      size?: 'sm' | 'md'
     }
 
 type Variant = NonNullable<ButtonAppearance['variant']>

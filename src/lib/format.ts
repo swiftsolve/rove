@@ -29,9 +29,7 @@ export function splitSpeedMbps(mbps: number): SplitSpeed {
 
 export function formatChannel(channel: number | null, frequency: number | null): string | null {
   if (channel == null || !Number.isFinite(channel)) return null
-  return frequency != null && Number.isFinite(frequency)
-    ? `${channel} (${frequency} MHz)`
-    : `${channel}`
+  return frequency != null && Number.isFinite(frequency) ? `${channel} (${frequency} MHz)` : `${channel}`
 }
 
 /** Wi‑Fi band derived from the channel's centre frequency (MHz). */

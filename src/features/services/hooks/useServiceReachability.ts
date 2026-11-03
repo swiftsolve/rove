@@ -52,7 +52,11 @@ export function useServiceReachability(): UseServiceReachabilityResult {
   const internet = useInternetStatus()
   const isEnabled = networkKey != null
 
-  const { data, error, reload: run } = useBackendQuery({
+  const {
+    data,
+    error,
+    reload: run,
+  } = useBackendQuery({
     queryKey: ['services', 'reachability', networkKey],
     queryFn: api ? () => probeServices(api) : undefined,
     isEnabled,

@@ -32,13 +32,16 @@ const PASCAL = '[A-Z][A-Za-z0-9]*'
 const HOOK = 'use[A-Z][A-Za-z0-9]*'
 
 // A kebab-case `use-…` name is a hook named the wrong way, not a module.
-const SCRIPT = new RegExp(`^(?:${PASCAL}(?:\\.test|\\.stories)?\\.tsx|${HOOK}(?:\\.test)?\\.tsx?|(?!use-)${KEBAB}(?:\\.d|\\.test)?\\.ts)$`)
+const SCRIPT = new RegExp(
+  `^(?:${PASCAL}(?:\\.test|\\.stories)?\\.tsx|${HOOK}(?:\\.test)?\\.tsx?|(?!use-)${KEBAB}(?:\\.d|\\.test)?\\.ts)$`,
+)
 const STYLESHEET = new RegExp(`^(?:${PASCAL}\\.module|${KEBAB})\\.css$`)
 const DATA = new RegExp(`^${KEBAB}\\.json$`)
 const FOLDER = new RegExp(`^${KEBAB}$`)
 
 const SCRIPT_RULE = 'name a component PascalCase.tsx, a hook useName.ts, and anything else kebab-case.ts'
-const STYLESHEET_RULE = 'name a CSS Module after its component (Name.module.css), and a global stylesheet kebab-case.css'
+const STYLESHEET_RULE =
+  'name a CSS Module after its component (Name.module.css), and a global stylesheet kebab-case.css'
 const DATA_RULE = 'name a data file kebab-case.json'
 
 const problems = []

@@ -57,12 +57,20 @@
     mix-blend-mode: normal;
   }
   /* Dark → light: the incoming light snapshot grows outward on top. */
-  ::view-transition-old(root) { z-index: 0; }
-  ::view-transition-new(root) { z-index: 1; }
+  ::view-transition-old(root) {
+    z-index: 0;
+  }
+  ::view-transition-new(root) {
+    z-index: 1;
+  }
   /* Light → dark: mirror it — the outgoing light snapshot stays on top and
      collapses to the centre, revealing the dark snapshot beneath. */
-  :root.theme-to-dark::view-transition-old(root) { z-index: 1; }
-  :root.theme-to-dark::view-transition-new(root) { z-index: 0; }
+  :root.theme-to-dark::view-transition-old(root) {
+    z-index: 1;
+  }
+  :root.theme-to-dark::view-transition-new(root) {
+    z-index: 0;
+  }
   /* While the theme class flips, every control takes its new colours at once
      rather than playing its hover transition (see applyThemeClass). Motion the
      theme doesn't touch opts out with `data-keeps-transition`: the theme
@@ -72,7 +80,6 @@
   :root.theme-switching *::after {
     transition: none !important;
   }
-
 
   * {
     margin: 0;
@@ -96,7 +103,9 @@
     font-size: var(--font-size-md);
     font-weight: var(--weight-regular);
     font-optical-sizing: auto;
-    font-feature-settings: 'cv11' 1, 'ss01' 1;
+    font-feature-settings:
+      'cv11' 1,
+      'ss01' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -188,22 +197,39 @@
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes status-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(7px); }
-    to { opacity: 1; transform: none; }
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   /* The ring around an item a navigation just scrolled to (the nav-flash

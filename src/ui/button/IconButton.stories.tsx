@@ -30,7 +30,11 @@ export const SmallIcon: Story = { args: { label: 'Run', icon: iconArg('PlayIcon'
 
 /** The tooltip says more than the label. */
 export const WithHint: Story = {
-  args: { label: 'Help', icon: iconArg('HelpIcon'), tooltip: 'Latency is the round trip to each service, every minute.' },
+  args: {
+    label: 'Help',
+    icon: iconArg('HelpIcon'),
+    tooltip: 'Latency is the round trip to each service, every minute.',
+  },
 }
 
 export const Loading: Story = { args: { isLoading: true } }

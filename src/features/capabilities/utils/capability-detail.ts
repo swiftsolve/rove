@@ -44,23 +44,15 @@ function summarize(level: CapabilityLevel, label: string, failing: string[]): st
     case 'good':
       return `Meets ${activity} requirements.`
     case 'fair':
-      return failing.length > 0
-        ? `${metricPhrase(failing)} below recommended.`
-        : `Works, but with little headroom.`
+      return failing.length > 0 ? `${metricPhrase(failing)} below recommended.` : `Works, but with little headroom.`
     case 'poor':
-      return failing.length > 0
-        ? `${metricPhrase(failing)} too low for ${activity}.`
-        : `Below what ${activity} needs.`
+      return failing.length > 0 ? `${metricPhrase(failing)} too low for ${activity}.` : `Below what ${activity} needs.`
     case 'unsupported':
       return `Not enough for ${activity}.`
   }
 }
 
-export function explainCapability(
-  id: CapabilityId,
-  level: CapabilityLevel,
-  speed: SpeedResult,
-): CapabilityExplanation {
+export function explainCapability(id: CapabilityId, level: CapabilityLevel, speed: SpeedResult): CapabilityExplanation {
   const definition = DEFINITIONS.get(id)
   if (!definition) return { summary: '', checks: [] }
 

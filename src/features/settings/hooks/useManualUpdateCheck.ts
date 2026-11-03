@@ -3,10 +3,7 @@ import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 
 /** Where a check the user asked for stands. */
 export type UpdateCheckState =
-  | { kind: 'idle' }
-  | { kind: 'checking' }
-  | { kind: 'up-to-date' }
-  | { kind: 'available'; update: PendingUpdate }
+  { kind: 'idle' } | { kind: 'checking' } | { kind: 'up-to-date' } | { kind: 'available'; update: PendingUpdate }
 
 interface ManualUpdateCheck {
   check: UpdateCheckState

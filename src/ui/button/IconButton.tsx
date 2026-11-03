@@ -27,27 +27,29 @@ const iconButtonVariants = cva(
   },
 )
 
-type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-label' | 'children' | 'onClick'> &
-  {
-    /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
-    label: string
-    /** The icon. */
-    icon: IconComponent
-    /** `soft`, an inset chip; `ghost`, no fill until hovered. */
-    variant?: 'soft' | 'ghost'
-    /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
-    iconSize?: 16 | 14
-    /** The tooltip, when it should say more than the label (a help button's hint). */
-    tooltip?: ReactNode
-    /** The side its tooltip opens on. */
-    tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
-    /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
-    isDisabled?: boolean
-    /** Drops input and swaps the icon for a spinner. */
-    isLoading?: boolean
-    /** Runs the action. Not called while disabled or loading. */
-    onClick?: MouseEventHandler<HTMLButtonElement>
-  }
+type IconButtonProps = Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'disabled' | 'aria-label' | 'children' | 'onClick'
+> & {
+  /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
+  label: string
+  /** The icon. */
+  icon: IconComponent
+  /** `soft`, an inset chip; `ghost`, no fill until hovered. */
+  variant?: 'soft' | 'ghost'
+  /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
+  iconSize?: 16 | 14
+  /** The tooltip, when it should say more than the label (a help button's hint). */
+  tooltip?: ReactNode
+  /** The side its tooltip opens on. */
+  tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
+  /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
+  isDisabled?: boolean
+  /** Drops input and swaps the icon for a spinner. */
+  isLoading?: boolean
+  /** Runs the action. Not called while disabled or loading. */
+  onClick?: MouseEventHandler<HTMLButtonElement>
+}
 
 /**
  * A square, icon-only button with a tooltip. Disabled and loading work as on

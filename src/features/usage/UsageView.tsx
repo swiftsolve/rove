@@ -29,8 +29,7 @@ interface UsageDatum {
   up: number
 }
 
-const USAGE_INFO_HINT =
-  'Measured while Rove runs, across all physical interfaces.'
+const USAGE_INFO_HINT = 'Measured while Rove runs, across all physical interfaces.'
 
 const CHART_HEIGHT = 124
 // The plot's side inset, shared by the chart margin and the day stops over it.
@@ -64,15 +63,7 @@ function BytesMetric({ label, bytes, series }: { label: string; bytes: number; s
 }
 
 /** A card footer: a label on the left, down / up byte totals on the right. */
-function TotalsFooter({
-  label,
-  rxBytes,
-  txBytes,
-}: {
-  label: string
-  rxBytes: number
-  txBytes: number
-}): JSX.Element {
+function TotalsFooter({ label, rxBytes, txBytes }: { label: string; rxBytes: number; txBytes: number }): JSX.Element {
   return (
     <p className={TOTALS_FOOTER}>
       <span>{label}</span>
@@ -123,15 +114,7 @@ function UsageTooltip({
 }
 
 /** X-axis tick that emphasises "Today". */
-function DayTick({
-  x,
-  y,
-  payload,
-}: {
-  x?: number
-  y?: number
-  payload?: { value?: string }
-}): JSX.Element {
+function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?: string } }): JSX.Element {
   const value = payload?.value ?? ''
   const isToday = value === 'Today'
   return (
@@ -283,9 +266,7 @@ export function UsageView(): JSX.Element {
         title="Usage"
         description="Download and upload across all interfaces"
         status={isFirstLoad ? 'Loading…' : undefined}
-        actions={
-          <IconButton label="About usage measurement" icon={HelpIcon} tooltip={USAGE_INFO_HINT} />
-        }
+        actions={<IconButton label="About usage measurement" icon={HelpIcon} tooltip={USAGE_INFO_HINT} />}
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
@@ -303,11 +284,7 @@ export function UsageView(): JSX.Element {
                 <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
                 <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
               </dl>
-              <TotalsFooter
-                label="Since boot"
-                rxBytes={usage.bootRxBytes}
-                txBytes={usage.bootTxBytes}
-              />
+              <TotalsFooter label="Since boot" rxBytes={usage.bootRxBytes} txBytes={usage.bootTxBytes} />
             </CardBody>
           </Card>
 

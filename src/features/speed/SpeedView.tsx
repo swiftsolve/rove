@@ -22,8 +22,7 @@ import {
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 
-const SPEED_HINT =
-  'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
+const SPEED_HINT = 'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
 
 /** Opens the speed-test history subpage. */
 function HistoryLink(): JSX.Element {
@@ -60,8 +59,7 @@ function HeaderDescription(): JSX.Element {
   return (
     <span className="inline-flex items-center gap-6">
       <span>
-        Updated{' '}
-        <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+        Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
       </span>
       <DotSeparator />
       <HistoryLink />
@@ -79,13 +77,7 @@ function TestButton(): JSX.Element {
 
   if (isTesting) {
     return (
-      <Button
-        variant="solid"
-        tone="negative"
-        icon={StopIcon}
-        onClick={cancelTest}
-        aria-label="Stop test"
-      >
+      <Button variant="solid" tone="negative" icon={StopIcon} onClick={cancelTest} aria-label="Stop test">
         Stop
       </Button>
     )
@@ -103,11 +95,7 @@ function TestButton(): JSX.Element {
 
   const runLabel = hasRunTest ? 'Test again' : 'Run test'
   return (
-    <Button
-      variant="solid"
-      icon={PlayIcon}
-      onClick={() => void runTest()}
-    >
+    <Button variant="solid" icon={PlayIcon} onClick={() => void runTest()}>
       {runLabel}
     </Button>
   )

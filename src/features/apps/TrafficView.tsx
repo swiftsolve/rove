@@ -83,18 +83,11 @@ export function TrafficView(): JSX.Element {
         description="Traffic by kind across every app, busiest first"
         status={isFirstLoad ? 'Loading…' : undefined}
         onBack={back}
-        actions={
-          <IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />
-        }
+        actions={<IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />}
       />
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
-      <UsageBody
-        support={usage.support}
-        isFirstLoad={isFirstLoad}
-        isEmpty={types.length === 0}
-        copy={BODY_COPY}
-      >
+      <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={types.length === 0} copy={BODY_COPY}>
         <CardList label="Traffic types by usage">
           {/* The same rows as the Apps view's, minus the icon fetch and the caret:
               these aren't links. */}

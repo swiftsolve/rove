@@ -49,10 +49,12 @@ const ALLOWED = [
 async function listFiles(dir) {
   if (SKIPPED.includes(dir)) return []
   const entries = await readdir(dir, { withFileTypes: true })
-  const nested = await Promise.all(entries.map((entry) => {
-    const path = join(dir, entry.name)
-    return entry.isDirectory() ? listFiles(path) : [path]
-  }))
+  const nested = await Promise.all(
+    entries.map((entry) => {
+      const path = join(dir, entry.name)
+      return entry.isDirectory() ? listFiles(path) : [path]
+    }),
+  )
   return nested.flat()
 }
 
@@ -77,7 +79,9 @@ function scale(tokens, prefix) {
 function stripComments(code, isCss) {
   const blank = (text) => text.replace(/[^\n]/g, ' ')
   const withoutBlocks = code.replace(/\/\*[\s\S]*?\*\//g, blank)
-  return isCss ? withoutBlocks : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_, before, comment) => before + blank(comment))
+  return isCss
+    ? withoutBlocks
+    : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_, before, comment) => before + blank(comment))
 }
 
 const tokens = await readTokens()
@@ -90,11 +94,13 @@ const DURATION = scale(tokens, '--duration-')
 const tokenSuffix = (name, prefix) => name.slice(prefix.length)
 
 // Tailwind utilities whose bare value is a spacing step (`p-12`, `size-4`, `-mt-6`).
-const SPACING_UTILITY = /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
+const SPACING_UTILITY =
+  /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
 const RADIUS_UTILITY = /^rounded(?:-[a-z]{1,2})?$/
 
 // CSS properties by the scale their lengths come from.
-const SPACING_PROPERTY = /^(?:padding|margin|gap|row-gap|column-gap|inset|top|right|bottom|left|width|height|min-width|min-height|max-width|max-height)(?:-[a-z-]+)?$/
+const SPACING_PROPERTY =
+  /^(?:padding|margin|gap|row-gap|column-gap|inset|top|right|bottom|left|width|height|min-width|min-height|max-width|max-height)(?:-[a-z-]+)?$/
 const RADIUS_PROPERTY = /^border(?:-[a-z]+)*-radius$/
 
 // Word edges leave out `_`: Tailwind writes a space as `_` in an arbitrary value.
@@ -106,10 +112,11 @@ const LENGTH = /^-?\d*\.?\d+px$/
 const TIME = /(?<![A-Za-z0-9.-])(\d*\.?\d+)(ms|s)(?![A-Za-z0-9-])/g
 
 const toMs = (amount, unit) => (unit === 's' ? Number(amount) * 1000 : Number(amount))
-const durationToken = (amount, unit) => [...DURATION].find(([value]) => {
-  const [, tokenAmount, tokenUnit] = value.match(/^(\d*\.?\d+)(ms|s)$/) ?? []
-  return tokenAmount !== undefined && toMs(tokenAmount, tokenUnit) === toMs(amount, unit)
-})?.[1]
+const durationToken = (amount, unit) =>
+  [...DURATION].find(([value]) => {
+    const [, tokenAmount, tokenUnit] = value.match(/^(\d*\.?\d+)(ms|s)$/) ?? []
+    return tokenAmount !== undefined && toMs(tokenAmount, tokenUnit) === toMs(amount, unit)
+  })?.[1]
 
 const files = (await listFiles(SRC)).filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
 const problems = []
@@ -130,14 +137,23 @@ for (const file of files) {
     problems.push(`${path}:${lineAt(index)}: ${message}`)
   }
 
-  for (const match of code.matchAll(HEX)) report(match.index, match[0], `${match[0]} is a raw colour; use a colour token`)
-  for (const match of code.matchAll(COLOUR_FUNCTION)) report(match.index, match[0], `${match[0]}…) is a raw colour; use a colour token`)
-  for (const match of code.matchAll(/cubic-bezier\(/g)) report(match.index, match[0], `${match[0]}…) is a raw easing; use --ease-out, --ease-in-out or --ease-pulse`)
+  for (const match of code.matchAll(HEX))
+    report(match.index, match[0], `${match[0]} is a raw colour; use a colour token`)
+  for (const match of code.matchAll(COLOUR_FUNCTION))
+    report(match.index, match[0], `${match[0]}…) is a raw colour; use a colour token`)
+  for (const match of code.matchAll(/cubic-bezier\(/g))
+    report(match.index, match[0], `${match[0]}…) is a raw easing; use --ease-out, --ease-in-out or --ease-pulse`)
 
   // Arbitrary values (`[...]`) and stylesheet declarations get the stricter rules.
   const checkValue = (index, value, describe, suggest = (token) => `var(${token})`) => {
-    for (const match of value.matchAll(NAMED_COLOUR)) report(index, match[0], `${describe(match[0])} is a raw colour; use a colour token`)
-    for (const match of value.matchAll(EASING_KEYWORD)) report(index, match[0], `${describe(match[0])} is a keyword easing; use var(--ease-out), var(--ease-in-out) or var(--ease-pulse)`)
+    for (const match of value.matchAll(NAMED_COLOUR))
+      report(index, match[0], `${describe(match[0])} is a raw colour; use a colour token`)
+    for (const match of value.matchAll(EASING_KEYWORD))
+      report(
+        index,
+        match[0],
+        `${describe(match[0])} is a keyword easing; use var(--ease-out), var(--ease-in-out) or var(--ease-pulse)`,
+      )
     for (const [time, amount, unit] of value.matchAll(TIME)) {
       const token = durationToken(amount, unit)
       if (token) report(index, time, `${describe(time)} is ${token}; use ${suggest(token)}`)
@@ -151,11 +167,15 @@ for (const file of files) {
       const [, property, value] = match
       checkValue(match.index, value, (raw) => `${property}: ${raw}`)
       for (const part of value.trim().split(/\s+/)) {
-        const fromScale = SPACING_PROPERTY.test(property) ? SPACING
-          : RADIUS_PROPERTY.test(property) ? RADIUS
-          : property === 'font-size' ? FONT_SIZE
-          : property === 'font-weight' ? WEIGHT
-          : null
+        const fromScale = SPACING_PROPERTY.test(property)
+          ? SPACING
+          : RADIUS_PROPERTY.test(property)
+            ? RADIUS
+            : property === 'font-size'
+              ? FONT_SIZE
+              : property === 'font-weight'
+                ? WEIGHT
+                : null
         const token = fromScale?.get(part)
         if (token) report(match.index, part, `${property}: ${part} is ${token}; use var(${token})`)
       }
@@ -172,11 +192,23 @@ for (const file of files) {
     if (!LENGTH.test(length)) continue
     if (SPACING_UTILITY.test(utility) && SPACING.has(length)) {
       const step = tokenSuffix(SPACING.get(length), '--spacing-')
-      report(match.index, whole, `${whole} is ${SPACING.get(length)}; use ${whole.startsWith('-') || value.startsWith('-') ? '-' : ''}${utility}-${step}`)
+      report(
+        match.index,
+        whole,
+        `${whole} is ${SPACING.get(length)}; use ${whole.startsWith('-') || value.startsWith('-') ? '-' : ''}${utility}-${step}`,
+      )
     } else if (RADIUS_UTILITY.test(utility) && RADIUS.has(length)) {
-      report(match.index, whole, `${whole} is ${RADIUS.get(length)}; use ${utility}-${tokenSuffix(RADIUS.get(length), '--radius-')}`)
+      report(
+        match.index,
+        whole,
+        `${whole} is ${RADIUS.get(length)}; use ${utility}-${tokenSuffix(RADIUS.get(length), '--radius-')}`,
+      )
     } else if (utility === 'text' && FONT_SIZE.has(length)) {
-      report(match.index, whole, `${whole} is ${FONT_SIZE.get(length)}; use text-${tokenSuffix(FONT_SIZE.get(length), '--font-size-')}`)
+      report(
+        match.index,
+        whole,
+        `${whole} is ${FONT_SIZE.get(length)}; use text-${tokenSuffix(FONT_SIZE.get(length), '--font-size-')}`,
+      )
     }
   }
 
@@ -188,7 +220,8 @@ for (const file of files) {
 }
 
 for (const entry of ALLOWED) {
-  if (!allowedUsed.has(entry)) problems.push(`scripts/check-raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`)
+  if (!allowedUsed.has(entry))
+    problems.push(`scripts/check-raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`)
 }
 
 if (problems.length > 0) {

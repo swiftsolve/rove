@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  busiestTotal,
-  totalBytes,
-  transferLabel,
-} from '@/features/apps/utils/transfer'
+import { busiestTotal, totalBytes, transferLabel } from '@/features/apps/utils/transfer'
 
 describe('totalBytes', () => {
   it('adds both directions', () => {

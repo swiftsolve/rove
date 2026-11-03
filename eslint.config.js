@@ -34,7 +34,22 @@ const NO_DOT_GLYPH = ['Literal[value=/[·•]/]', 'TemplateElement[value.raw=/[�
 )
 const CODE_STYLE = [...NO_READONLY, ...NO_DOT_GLYPH]
 
-const BOOLEAN_PREFIXES = ['is', 'are', 'has', 'have', 'can', 'should', 'was', 'were', 'did', 'does', 'will', 'needs', 'meets', 'may']
+const BOOLEAN_PREFIXES = [
+  'is',
+  'are',
+  'has',
+  'have',
+  'can',
+  'should',
+  'was',
+  'were',
+  'did',
+  'does',
+  'will',
+  'needs',
+  'meets',
+  'may',
+]
 const BOOLEAN_EXEMPT = '^(_|aria-|data-)|^(value|fallback)$'
 
 export default tseslint.config(
@@ -68,10 +83,7 @@ export default tseslint.config(
     rules: {
       // Match tsconfig's noUnusedLocals: underscore-prefixed names are
       // deliberate placeholders (e.g. destructuring to drop a field).
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       // The React-Compiler-era hooks rules (refs, set-state-in-effect, purity)
       // stay at their default `error`. Latest-value refs go through
       // `useLatestRef`, and text that ages reads the clock through `useNow`.

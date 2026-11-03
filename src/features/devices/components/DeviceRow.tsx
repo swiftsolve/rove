@@ -23,18 +23,10 @@ import {
 import { useNow } from '@/hooks/useNow'
 import { formatMac } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
-import {
-  deviceMetaParts,
-  deviceName,
-  gatewayProduct,
-  lastSeenAge,
-} from '@/features/devices/utils/device-display'
+import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
 
 // The device card: icon pinned to the top-left, the body column fills the rest.
-const DEVICE_ROW = cx(
-  'flex items-start gap-12',
-  'px-(--card-header-padding-x) py-(--card-header-padding-y)',
-)
+const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
 
 /** A device's kind icon, in a tile coloured by category so categories scan at a
  *  glance. The gateway is green whatever its kind; watches and unknown devices

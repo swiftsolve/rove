@@ -40,7 +40,13 @@ export const Unlabelled: Story = { args: { label: undefined }, render: (args) =>
 
 /** A summary card's figure. */
 export const Compact: Story = {
-  args: { label: undefined, size: 'compact', icon: <DirectionIcon series="down" size={12} />, value: '4.6', unit: 'GB' },
+  args: {
+    label: undefined,
+    size: 'compact',
+    icon: <DirectionIcon series="down" size={12} />,
+    value: '4.6',
+    unit: 'GB',
+  },
   render: (args) => <Readout {...args} />,
 }
 
@@ -49,8 +55,20 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex w-[480px] flex-col gap-20">
       <dl className="flex gap-20">
-        <Readout className="min-w-0 flex-1" label="Download" icon={<DirectionIcon series="down" />} value="182" unit="Mbps" />
-        <Readout className="min-w-0 flex-1" label="Upload" icon={<DirectionIcon series="up" />} value="24.6" unit="Mbps" />
+        <Readout
+          className="min-w-0 flex-1"
+          label="Download"
+          icon={<DirectionIcon series="down" />}
+          value="182"
+          unit="Mbps"
+        />
+        <Readout
+          className="min-w-0 flex-1"
+          label="Upload"
+          icon={<DirectionIcon series="up" />}
+          value="24.6"
+          unit="Mbps"
+        />
         <Readout className="min-w-0 flex-1" label="Data used" value="4.6" unit="GB" />
       </dl>
       <div className="flex items-baseline gap-20">

@@ -15,14 +15,7 @@ export function BrandIcon({
   const gradientId = useId()
   const paint = hasGradient ? `url(#${gradientId})` : 'currentColor'
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      className={className}
-      aria-hidden
-    >
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} aria-hidden>
       {hasGradient && (
         <defs>
           <linearGradient id={gradientId} x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">

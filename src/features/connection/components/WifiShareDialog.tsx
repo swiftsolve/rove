@@ -22,7 +22,11 @@ interface Notice {
 /** The backend's error, as a title and a line of help. */
 function describeShareError(message: string): Notice {
   if (/not connected/i.test(message)) {
-    return { icon: <WifiOffIcon size={20} />, title: 'Not on Wi‑Fi', description: 'Connect to a Wi‑Fi network to share it.' }
+    return {
+      icon: <WifiOffIcon size={20} />,
+      title: 'Not on Wi‑Fi',
+      description: 'Connect to a Wi‑Fi network to share it.',
+    }
   }
   if (/name is unavailable/i.test(message)) {
     // macOS withholds the SSID without Location Services, so point there
@@ -86,7 +90,9 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Eleme
       onClose={onClose}
       bodyClassName="flex flex-col items-center text-center"
       footnote={
-        qr ? <p className="animate-fade-in text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p> : undefined
+        qr ? (
+          <p className="animate-fade-in text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p>
+        ) : undefined
       }
     >
       {/* Live, so the QR code or a notice is announced when it replaces the

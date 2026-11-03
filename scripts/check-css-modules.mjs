@@ -19,10 +19,12 @@ const SRC = join(ROOT, 'src')
 
 async function listFiles(dir) {
   const entries = await readdir(dir, { withFileTypes: true })
-  const nested = await Promise.all(entries.map((entry) => {
-    const path = join(dir, entry.name)
-    return entry.isDirectory() ? listFiles(path) : [path]
-  }))
+  const nested = await Promise.all(
+    entries.map((entry) => {
+      const path = join(dir, entry.name)
+      return entry.isDirectory() ? listFiles(path) : [path]
+    }),
+  )
   return nested.flat()
 }
 
@@ -54,7 +56,8 @@ for (const file of files.filter((f) => /\.tsx?$/.test(f))) {
     const usedHere = used.get(cssPath) ?? new Set()
     for (const [, name] of code.matchAll(new RegExp(`\\b${binding}\\.(\\w+)`, 'g'))) {
       usedHere.add(name)
-      if (!defined.has(name)) problems.push(`${relative(ROOT, file)}: ${binding}.${name} is not a class in ${relative(ROOT, cssPath)}`)
+      if (!defined.has(name))
+        problems.push(`${relative(ROOT, file)}: ${binding}.${name} is not a class in ${relative(ROOT, cssPath)}`)
     }
     // `styles[...]` lookups can reach any class, so they count as using all of them.
     if (new RegExp(`\\b${binding}\\[`).test(code)) defined.forEach((name) => usedHere.add(name))

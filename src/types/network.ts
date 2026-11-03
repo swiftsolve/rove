@@ -74,9 +74,7 @@ export type ConnectionDetails = {
   product?: string | null
 }
 
-export function createDisconnectedNetworkInfo(
-  gateway: string | null = null,
-): DisconnectedNetworkInfo {
+export function createDisconnectedNetworkInfo(gateway: string | null = null): DisconnectedNetworkInfo {
   return {
     connectionType: 'unknown',
     interfaceName: 'none',
@@ -94,8 +92,7 @@ export function createWifiNetworkInfo(
   wifiStandard: string | null,
 ): WifiNetworkInfo {
   const signalStrength =
-    details.signalStrength ??
-    (details.signalDbm != null ? dbmToSignalPercent(details.signalDbm) : null)
+    details.signalStrength ?? (details.signalDbm != null ? dbmToSignalPercent(details.signalDbm) : null)
 
   return {
     ...base,
@@ -112,10 +109,7 @@ export function createWifiNetworkInfo(
   }
 }
 
-export function createEthernetNetworkInfo(
-  base: NetworkInfoBase,
-  details: ConnectionDetails,
-): EthernetNetworkInfo {
+export function createEthernetNetworkInfo(base: NetworkInfoBase, details: ConnectionDetails): EthernetNetworkInfo {
   return {
     ...base,
     connectionType: 'ethernet',

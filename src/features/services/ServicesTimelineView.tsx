@@ -1,10 +1,5 @@
 import { memo, useId, useMemo } from 'react'
-import type {
-  ConnectionEvent,
-  ServiceEvent,
-  ServicesRunningEvent,
-  ServiceTransitionEvent,
-} from '@/types'
+import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -215,7 +210,10 @@ const TransitionRow = memo(function TransitionRow({
   const shouldShowDuration = durationMs != null
 
   return (
-    <TimelineNode icon={isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />} color={isDown ? DOWN_COLOR : UP_COLOR}>
+    <TimelineNode
+      icon={isDown ? <ArrowDownIcon size={15} /> : <ArrowUpIcon size={15} />}
+      color={isDown ? DOWN_COLOR : UP_COLOR}
+    >
       <span className={HEAD}>
         <span className={TITLE}>{isDown ? 'Service went down' : 'Service came back up'}</span>
         <EventTime ts={event.ts} />
@@ -226,9 +224,7 @@ const TransitionRow = memo(function TransitionRow({
       </span>
       <span className="flex items-baseline gap-10 text-sm text-tertiary">
         <span className="min-w-0 truncate">{event.host}</span>
-        {shouldShowDuration && (
-          <span className={DURATION}>Down for {formatDuration(durationMs)}</span>
-        )}
+        {shouldShowDuration && <span className={DURATION}>Down for {formatDuration(durationMs)}</span>}
       </span>
     </TimelineNode>
   )
@@ -249,9 +245,7 @@ const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningE
         <EventTime ts={event.ts} />
       </span>
       <span className={subjectVariants({ isMuted: true })}>
-        {areAllHealthy
-          ? 'All services healthy'
-          : `${event.count} of ${event.total} services healthy`}
+        {areAllHealthy ? 'All services healthy' : `${event.count} of ${event.total} services healthy`}
       </span>
     </TimelineNode>
   )
@@ -270,7 +264,10 @@ const ConnectionRow = memo(function ConnectionRow({
   const shouldShowDuration = !isLost && durationMs != null
 
   return (
-    <TimelineNode icon={isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />} color={isLost ? DOWN_COLOR : UP_COLOR}>
+    <TimelineNode
+      icon={isLost ? <OfflineIcon size={15} /> : <GlobeIcon size={15} />}
+      color={isLost ? DOWN_COLOR : UP_COLOR}
+    >
       <span className={HEAD}>
         <span className={TITLE}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
         <EventTime ts={event.ts} />
@@ -385,10 +382,7 @@ export function ServicesTimelineView(): JSX.Element {
       {/* Nothing until the first read lands, so "No outages yet" doesn't flash
           before the log arrives. */}
       {!isLoaded ? null : events.length === 0 ? (
-        <EmptyState
-          title="No outages yet"
-          description="Outages appear here when a tracked service goes down."
-        />
+        <EmptyState title="No outages yet" description="Outages appear here when a tracked service goes down." />
       ) : (
         <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
           {groupByDay(events.slice(0, shownCount), now).map((group) => (

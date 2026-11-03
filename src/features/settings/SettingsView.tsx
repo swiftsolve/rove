@@ -53,13 +53,7 @@ const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [
 ]
 
 /** The colour theme picker: dark, light or system. */
-function ThemeSegmented({
-  labelId,
-  descriptionId,
-}: {
-  labelId: string
-  descriptionId: string
-}): JSX.Element {
+function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descriptionId: string }): JSX.Element {
   const { mode, setMode } = useTheme()
   return (
     <SegmentedControl
@@ -114,9 +108,7 @@ function renderCheckResult(check: UpdateCheckState): ReactNode {
     return (
       <div className={statusVariants({ kind: 'available' })}>
         <span>Version {check.update.version} is available.</span>
-        <Button onClick={() => void check.update.install()}>
-          Install &amp; restart
-        </Button>
+        <Button onClick={() => void check.update.install()}>Install &amp; restart</Button>
       </div>
     )
   }

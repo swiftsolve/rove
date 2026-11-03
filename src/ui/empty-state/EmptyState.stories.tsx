@@ -60,7 +60,9 @@ function RetryWithNote(): JSX.Element {
       <Button icon={RefreshIcon} onClick={() => setHasRetried(true)}>
         Try again
       </Button>
-      {hasRetried && <EmptyStateDescription role="status">Still nothing. Check the adapter is on.</EmptyStateDescription>}
+      {hasRetried && (
+        <EmptyStateDescription role="status">Still nothing. Check the adapter is on.</EmptyStateDescription>
+      )}
     </div>
   )
 }

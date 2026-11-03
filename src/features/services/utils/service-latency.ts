@@ -132,10 +132,7 @@ function replaceCache(next: LatencyHistory): void {
  * subscribers. A no-op (no write, no notification) when nothing changed — e.g.
  * while offline or with no services — so it's safe to call on every poll.
  */
-export function recordLatency(
-  reachability: ServiceReachability[],
-  internet: InternetStatus | undefined,
-): void {
+export function recordLatency(reachability: ServiceReachability[], internet: InternetStatus | undefined): void {
   const next = appendSamples(cache, reachability, internet)
   if (next === cache) return
   replaceCache(next)

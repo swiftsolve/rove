@@ -161,7 +161,9 @@ export function TimelineItem({
         <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
           <span>{INTERNET_SUBTITLES[event.type]}</span>
           {offlineMs != null && (
-            <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">Offline for {formatDuration(offlineMs)}</span>
+            <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">
+              Offline for {formatDuration(offlineMs)}
+            </span>
           )}
         </span>
       )}

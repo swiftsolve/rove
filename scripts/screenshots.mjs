@@ -66,14 +66,28 @@ const SCREENS = [
 const SCENES = [
   ['16-home-details', { tab: 'home', speedSub: null }, (page) => page.locator('button[aria-expanded]').first().click()],
   ['17-home-share-wifi', { tab: 'home', speedSub: null }, (page) => button(page, 'Share Wi‑Fi').click()],
-  ['18-speed-history-menu', { tab: 'speed', speedSub: { view: 'history' } }, (page) => button(page, 'History options').first().click()],
+  [
+    '18-speed-history-menu',
+    { tab: 'speed', speedSub: { view: 'history' } },
+    (page) => button(page, 'History options').first().click(),
+  ],
   ['19-services-add-dialog', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').click()],
-  ['20-services-row-menu', { tab: 'services', speedSub: null }, async (page) => {
-    // The kebab only shows on row hover or focus: open it from the keyboard.
-    await button(page, /^Options for/).first().focus()
-    await page.keyboard.press('Enter')
-  }],
-  ['21-services-timeline-menu', { tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } }, (page) => button(page, 'Timeline options').click()],
+  [
+    '20-services-row-menu',
+    { tab: 'services', speedSub: null },
+    async (page) => {
+      // The kebab only shows on row hover or focus: open it from the keyboard.
+      await button(page, /^Options for/)
+        .first()
+        .focus()
+      await page.keyboard.press('Enter')
+    },
+  ],
+  [
+    '21-services-timeline-menu',
+    { tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } },
+    (page) => button(page, 'Timeline options').click(),
+  ],
   ['22-help-tooltip', { tab: 'services', speedSub: null }, (page) => button(page, 'About service checks').hover()],
   ['23-rail-tooltip', { tab: 'home', speedSub: null }, (page) => button(page, 'Speed').hover()],
   ['24-focus-ring', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').focus()],
@@ -256,9 +270,7 @@ try {
     // The UI library, from Storybook: the states no screen shows. Its own page,
     // without the fake clock, which would stall Storybook's startup; paused
     // animations hold it still.
-    const storybook = existingStorybookUrl
-      ? { url: existingStorybookUrl, stop: () => {} }
-      : await startStorybook()
+    const storybook = existingStorybookUrl ? { url: existingStorybookUrl, stop: () => {} } : await startStorybook()
     try {
       const stories = await libraryStories(storybook.url)
       await mkdir(`${out}/25-library`, { recursive: true })
@@ -269,7 +281,11 @@ try {
         // Fonts, and a play function (a Tooltip story hovers its trigger).
         await libraryPage.evaluate(() => document.fonts.ready)
         await libraryPage.waitForTimeout(600)
-        await libraryPage.screenshot({ path: `${out}/25-library/${story.id}.png`, fullPage: true, animations: 'disabled' })
+        await libraryPage.screenshot({
+          path: `${out}/25-library/${story.id}.png`,
+          fullPage: true,
+          animations: 'disabled',
+        })
       }
       libraryCount = stories.length
       console.log(`  25-library/ (${stories.length} stories)`)
@@ -282,4 +298,6 @@ try {
   server.stop()
 }
 
-console.log(`\n${SCREENS.length + (isStable ? SCENES.length + libraryCount : 0)} screens at ${width}x${height} (@2x) -> ${out}`)
+console.log(
+  `\n${SCREENS.length + (isStable ? SCENES.length + libraryCount : 0)} screens at ${width}x${height} (@2x) -> ${out}`,
+)

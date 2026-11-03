@@ -17,7 +17,17 @@ function RowText({ title, description }: { title: string; description: string })
   )
 }
 
-function Rating({ value, color, label, isDimmed }: { value: number; color: string; label: string; isDimmed?: boolean }): JSX.Element {
+function Rating({
+  value,
+  color,
+  label,
+  isDimmed,
+}: {
+  value: number
+  color: string
+  label: string
+  isDimmed?: boolean
+}): JSX.Element {
   return (
     <>
       <BarMeter value={value} color={color} isDimmed={isDimmed} />
@@ -81,10 +91,38 @@ export const Disabled: Story = {
 }
 
 const CAPABILITIES = [
-  { title: 'Video calls', description: 'Zoom, Teams and FaceTime', Icon: VideoCallIcon, value: 4, color: 'var(--status-positive)', label: 'Excellent' },
-  { title: '4K streaming', description: 'Netflix and YouTube at 2160p', Icon: HdStreamIcon, value: 3, color: 'var(--status-good)', label: 'Good' },
-  { title: 'Online gaming', description: 'Low, steady latency', Icon: GamepadIcon, value: 2, color: 'var(--status-warning)', label: 'Fair' },
-  { title: 'Cloud gaming', description: 'GeForce Now and Xbox Cloud', Icon: CloudGamingIcon, value: 1, color: 'var(--status-poor)', label: 'Poor' },
+  {
+    title: 'Video calls',
+    description: 'Zoom, Teams and FaceTime',
+    Icon: VideoCallIcon,
+    value: 4,
+    color: 'var(--status-positive)',
+    label: 'Excellent',
+  },
+  {
+    title: '4K streaming',
+    description: 'Netflix and YouTube at 2160p',
+    Icon: HdStreamIcon,
+    value: 3,
+    color: 'var(--status-good)',
+    label: 'Good',
+  },
+  {
+    title: 'Online gaming',
+    description: 'Low, steady latency',
+    Icon: GamepadIcon,
+    value: 2,
+    color: 'var(--status-warning)',
+    label: 'Fair',
+  },
+  {
+    title: 'Cloud gaming',
+    description: 'GeForce Now and Xbox Cloud',
+    Icon: CloudGamingIcon,
+    value: 1,
+    color: 'var(--status-poor)',
+    label: 'Poor',
+  },
 ] as const
 
 /** A list of rows at each rating, then one disabled. */

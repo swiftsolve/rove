@@ -45,9 +45,7 @@ async function decode(url: string): Promise<AudioBuffer | null> {
   }
 }
 
-const samples = isAudioAvailable
-  ? { light: decode(switchOnUrl), dark: decode(switchOffUrl) }
-  : null
+const samples = isAudioAvailable ? { light: decode(switchOnUrl), dark: decode(switchOffUrl) } : null
 
 let context: AudioContext | null = null
 let idleTimer: ReturnType<typeof setTimeout> | undefined

@@ -46,7 +46,10 @@ const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
   defaultVariants: { isInvalid: false },
 })
 
-type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className' | 'placeholder'> & {
+type TextFieldProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'className' | 'placeholder'
+> & {
   /** Names the field, above it. */
   label: string
   /** What's typed in it. */

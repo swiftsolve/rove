@@ -46,7 +46,13 @@ type BarMeterProps = {
  * Four rising bars, some lit: signal strength or a rating at a glance. Visual
  * only; whatever it sits in says the value in words or with role="meter".
  */
-export function BarMeter({ value, size = 'lg', color = 'currentColor', isDimmed = false, className }: BarMeterProps): JSX.Element {
+export function BarMeter({
+  value,
+  size = 'lg',
+  color = 'currentColor',
+  isDimmed = false,
+  className,
+}: BarMeterProps): JSX.Element {
   const { width, heights } = SIZES[size]
   return (
     <span className={cn('inline-flex items-end gap-2', heights[3], className)} style={{ color }} aria-hidden>

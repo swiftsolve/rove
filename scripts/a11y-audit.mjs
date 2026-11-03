@@ -173,5 +173,7 @@ for (const [id, v] of sorted) {
   for (const place of [...v.places].slice(0, placeLimit)) console.log(`  - ${place}`)
   if (v.places.size > placeLimit) console.log(`  … and ${v.places.size - placeLimit} more`)
 }
-console.log(`\n${violations.size} rule${violations.size === 1 ? '' : 's'} violated across ${SCENARIOS.length} scenarios × 2 themes`)
+console.log(
+  `\n${violations.size} rule${violations.size === 1 ? '' : 's'} violated across ${SCENARIOS.length} scenarios × 2 themes`,
+)
 process.exit(violations.size > 0 ? 1 : 0)

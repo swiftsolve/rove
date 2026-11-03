@@ -9,9 +9,7 @@ export function useExpandedApps(focusApp: string | null | undefined): {
   isExpanded: (name: string) => boolean
   toggle: (name: string) => void
 } {
-  const [expanded, setExpanded] = useState<Set<string>>(() =>
-    focusApp ? new Set([focusApp]) : new Set(),
-  )
+  const [expanded, setExpanded] = useState<Set<string>>(() => (focusApp ? new Set([focusApp]) : new Set()))
   const isExpanded = (name: string): boolean => expanded.has(name)
   // Stable, so a memoised group re-renders only when its own app changes.
   const toggle = useCallback(

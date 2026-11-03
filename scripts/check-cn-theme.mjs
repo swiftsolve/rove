@@ -20,7 +20,19 @@ const CN_TS = 'src/ui/foundations/cn.ts'
 // Colours Tailwind has without a theme entry; cn.ts lists them so they still merge.
 const BUILT_IN_COLORS = ['transparent', 'current', 'inherit']
 // Longest first, so `--font-weight-*` isn't read as a `--font-*` name.
-const NAMESPACES = ['font-weight', 'font', 'spacing', 'text', 'color', 'leading', 'tracking', 'radius', 'shadow', 'ease', 'animate']
+const NAMESPACES = [
+  'font-weight',
+  'font',
+  'spacing',
+  'text',
+  'color',
+  'leading',
+  'tracking',
+  'radius',
+  'shadow',
+  'ease',
+  'animate',
+]
 
 const problems = []
 
@@ -47,7 +59,9 @@ function themeNames(css) {
 function cnNames(ts) {
   const code = stripComments(ts)
   const strings = (list) => [...list.matchAll(/'([^']*)'/g)].map((match) => match[1])
-  const constants = new Map([...code.matchAll(/const (\w+) = \[([\s\S]*?)\]/g)].map(([, name, list]) => [name, strings(list)]))
+  const constants = new Map(
+    [...code.matchAll(/const (\w+) = \[([\s\S]*?)\]/g)].map(([, name, list]) => [name, strings(list)]),
+  )
   const theme = code.match(/theme: \{([\s\S]*?)\n\s*\},/)
   if (!theme) throw new Error(`${CN_TS}: no \`theme: { … }\` object found`)
   const names = new Map()
@@ -76,7 +90,8 @@ for (const [namespace, listed] of cn) {
   const defined = theme.get(namespace) ?? new Set()
   for (const name of listed) {
     const isBuiltIn = namespace === 'color' && BUILT_IN_COLORS.includes(name)
-    if (!defined.has(name) && !isBuiltIn) problems.push(`${CN_TS}: theme.${namespace} lists '${name}', which ${THEME_CSS} doesn't define`)
+    if (!defined.has(name) && !isBuiltIn)
+      problems.push(`${CN_TS}: theme.${namespace} lists '${name}', which ${THEME_CSS} doesn't define`)
   }
 }
 

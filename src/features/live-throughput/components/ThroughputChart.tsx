@@ -109,8 +109,22 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
                 every point on every frame the scale eases. */}
             {latest && (
               <>
-                <ReferenceDot x={latest.index} y={latest.up} r={2.25} fill="var(--series-up)" stroke="none" ifOverflow="visible" />
-                <ReferenceDot x={latest.index} y={latest.down} r={2.5} fill="var(--series-down)" stroke="none" ifOverflow="visible" />
+                <ReferenceDot
+                  x={latest.index}
+                  y={latest.up}
+                  r={2.25}
+                  fill="var(--series-up)"
+                  stroke="none"
+                  ifOverflow="visible"
+                />
+                <ReferenceDot
+                  x={latest.index}
+                  y={latest.down}
+                  r={2.5}
+                  fill="var(--series-down)"
+                  stroke="none"
+                  ifOverflow="visible"
+                />
               </>
             )}
           </AreaChart>

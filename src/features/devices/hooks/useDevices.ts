@@ -38,8 +38,7 @@ export function useDevices(): UseDevicesResult {
   // user opens Devices or taps Discover on the Home card. Events never scans on
   // its own; it only shows the result and offers a rescan.
   const [isHomeDeviceScanEnabled] = useSetting('homeDeviceScan', true)
-  const shouldScanOnOpen =
-    location.tab === 'devices' || (location.tab === 'home' && !IS_MAC && isHomeDeviceScanEnabled)
+  const shouldScanOnOpen = location.tab === 'devices' || (location.tab === 'home' && !IS_MAC && isHomeDeviceScanEnabled)
 
   // No periodic poll: a LAN scan is heavy (ARP/SSDP/ping sweeps) and repeatedly
   // rescanning in the background is intrusive. Scan when a scanning screen

@@ -55,19 +55,13 @@ const VERDICT = cx(
  *  exactly one line of summary text tall and centres the icon, so the tick sits
  *  against the middle of the first line (the summary stays top-aligned when it
  *  wraps). */
-const verdictIconVariants = cva(
-  'inline-flex h-[calc(var(--font-size-sm)*1.45)] shrink-0 items-center',
-  {
-    variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
-  },
-)
+const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] shrink-0 items-center', {
+  variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
+})
 
-const verdictStatusVariants = cva(
-  'inline-flex shrink-0 items-center gap-6 text-xs font-semibold',
-  {
-    variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
-  },
-)
+const verdictStatusVariants = cva('inline-flex shrink-0 items-center gap-6 text-xs font-semibold', {
+  variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
+})
 
 type CapabilityDetailsViewProps = {
   /** Capability to scroll into view when the page opens (the one just clicked). */
@@ -181,9 +175,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
     let innerFrame = 0
     const outerFrame = requestAnimationFrame(() => {
       innerFrame = requestAnimationFrame(() => {
-        const card = listRef.current?.querySelector<HTMLElement>(
-          `[data-capability-id="${targetId}"]`,
-        )
+        const card = listRef.current?.querySelector<HTMLElement>(`[data-capability-id="${targetId}"]`)
         if (card) scrollCardToTop(card)
       })
     })
@@ -200,10 +192,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps):
         description={
           completedAt != null ? (
             <>
-              Updated{' '}
-              <time dateTime={new Date(completedAt).toISOString()}>
-                {formatTimeAgo(completedAt, now)}
-              </time>
+              Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
             </>
           ) : undefined
         }

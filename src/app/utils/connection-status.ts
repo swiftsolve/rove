@@ -26,10 +26,7 @@ export interface ConnectionStatus {
  * reaches the internet is "on". `internet` is null until the first heartbeat
  * lands — treat that as fine so the bar doesn't flash a false outage on launch.
  */
-export function describeConnectionStatus(
-  info: NetworkInfo | null,
-  internet: InternetStatus | null,
-): ConnectionStatus {
+export function describeConnectionStatus(info: NetworkInfo | null, internet: InternetStatus | null): ConnectionStatus {
   if (!info) return { tone: 'neutral', label: 'Connecting…', internet: undefined }
   if (!isConnectedNetwork(info)) return { tone: 'neutral', label: 'Offline', internet: 'offline' }
 

@@ -19,8 +19,7 @@ import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
 import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
 
-const FEED_HINT =
-  'Devices and access points joining or leaving between scans. Kept for 7 days.'
+const FEED_HINT = 'Devices and access points joining or leaving between scans. Kept for 7 days.'
 
 const EMPTY_HINT = 'Devices joining or leaving show up here.'
 
@@ -70,19 +69,13 @@ function EventsFeed({
 }): JSX.Element {
   if (events.length === 0) {
     if (isLoading) {
-      return (
-        <LoadingState label="Loading events…" />
-      )
+      return <LoadingState label="Loading events…" />
     }
     return (
       <EmptyState
         title="No events yet"
         description={EMPTY_HINT}
-        actions={
-          <Button onClick={onRefresh}>
-            Scan now
-          </Button>
-        }
+        actions={<Button onClick={onRefresh}>Scan now</Button>}
       />
     )
   }
@@ -119,16 +112,13 @@ export function EventsView(): JSX.Element {
       <PageHeader
         icon={<EventsIcon size={18} />}
         title="Timeline"
-        description={hasEvents ? <span className="type-caption text-tertiary">What’s changed in the past week</span> : undefined}
+        description={
+          hasEvents ? <span className="type-caption text-tertiary">What’s changed in the past week</span> : undefined
+        }
         actions={
           <>
             <IconButton label="About network events" icon={HelpIcon} tooltip={FEED_HINT} />
-            <IconButton
-              label="Scan for changes"
-              icon={RefreshIcon}
-              isLoading={isScanning}
-              onClick={rescan}
-            />
+            <IconButton label="Scan for changes" icon={RefreshIcon} isLoading={isScanning} onClick={rescan} />
           </>
         }
       />

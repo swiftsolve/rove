@@ -23,10 +23,7 @@ interface UseDiagnosticsResult {
 // landed it owns latency wholesale (a null ping means "unreachable", which must
 // win over the full run's stale value); until then the full run's own initial
 // reading shows, so nothing flashes empty on open.
-function overlayLiveMetrics(
-  full: NetworkDiagnostics | null,
-  live: LiveDiagnostics | null,
-): NetworkDiagnostics | null {
+function overlayLiveMetrics(full: NetworkDiagnostics | null, live: LiveDiagnostics | null): NetworkDiagnostics | null {
   if (full == null) return null
   if (live == null) return full
   return { ...full, gatewayPing: live.gatewayPing, internet: live.internet }

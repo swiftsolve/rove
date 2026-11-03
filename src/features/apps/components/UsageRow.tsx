@@ -74,20 +74,11 @@ type UsageRowProps = {
 /** One usage row, styled like a Services row: icon and name on the left, the
  *  total on the right, then a proportional down/up bar and the byte figures
  *  beneath. */
-export function UsageRow({
-  icon,
-  iconKind,
-  name,
-  transfer,
-  busiest,
-  link,
-}: UsageRowProps): JSX.Element {
+export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: UsageRowProps): JSX.Element {
   const isLink = link !== undefined
   return (
     <li className={rowVariants({ isLink })}>
-      {link && (
-        <StretchedLink className={ROW_LINK} label={link.label} onClick={link.onOpen} />
-      )}
+      {link && <StretchedLink className={ROW_LINK} label={link.label} onClick={link.onOpen} />}
       <div className={mainLineVariants({ isLink })}>
         <RowName icon={icon} name={name} />
         <span className="inline-flex shrink-0 items-center gap-8">
@@ -103,11 +94,7 @@ export function UsageRow({
         className={barVariants({ iconKind, isLink })}
       />
       {/* The bar's label above already reads these figures out. */}
-      <TransferFigures
-        transfer={transfer}
-        isDecorative
-        className={figuresVariants({ iconKind, isLink })}
-      />
+      <TransferFigures transfer={transfer} isDecorative className={figuresVariants({ iconKind, isLink })} />
     </li>
   )
 }

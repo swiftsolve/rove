@@ -27,20 +27,21 @@ type PageHeaderProps = {
   status?: ReactNode
   /** Controls at the end of the header (help, refresh, the page's main action). */
   actions?: ReactNode
-} & (
+} &
   // Exactly one of `icon` or `onBack`: each branch types the other as `never`,
   // so passing both is an error.
-  | {
-      /** The page's nav icon, in a chip: a top-level page. */
-      icon: ReactNode
-      onBack?: never
-    }
-  | {
-      /** A back button in the chip's place: a page layered over a tab. */
-      onBack: () => void
-      icon?: never
-    }
-)
+  (
+    | {
+        /** The page's nav icon, in a chip: a top-level page. */
+        icon: ReactNode
+        onBack?: never
+      }
+    | {
+        /** A back button in the chip's place: a page layered over a tab. */
+        onBack: () => void
+        icon?: never
+      }
+  )
 
 /**
  * The top of every page but Home: an icon chip (or a back button), the title

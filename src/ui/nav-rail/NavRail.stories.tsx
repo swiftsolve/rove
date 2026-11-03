@@ -58,7 +58,10 @@ function ClickableRail({ label }: { label: string }): JSX.Element {
     <NavRail
       label={label}
       main={MAIN_PAGES.map(item)}
-      footer={[<NavItem key="theme" label="Switch to light mode" icon={SunIcon} onClick={onToggleTheme} />, item(SETTINGS)]}
+      footer={[
+        <NavItem key="theme" label="Switch to light mode" icon={SunIcon} onClick={onToggleTheme} />,
+        item(SETTINGS),
+      ]}
     />
   )
 }

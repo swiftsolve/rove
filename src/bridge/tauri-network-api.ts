@@ -59,12 +59,10 @@ const tauriNetworkApi: NetworkAPI = {
   getInternetStatus: () => invoke<InternetStatus | null>('get_internet_status'),
   testService: (host: string) => invoke<number | null>('test_service', { host }),
   listServices: () => invoke<ServiceDefinition[]>('list_services'),
-  addService: (name: string, host: string) =>
-    invoke<ServiceDefinition[]>('add_service', { name, host }),
+  addService: (name: string, host: string) => invoke<ServiceDefinition[]>('add_service', { name, host }),
   updateService: (oldHost: string, name: string, host: string) =>
     invoke<ServiceDefinition[]>('update_service', { oldHost, name, host }),
-  deleteService: (host: string) =>
-    invoke<ServiceDefinition[]>('delete_service', { host }),
+  deleteService: (host: string) => invoke<ServiceDefinition[]>('delete_service', { host }),
   getServiceHistory: () => invoke<ServiceEvent[]>('get_service_history'),
   clearServiceHistory: () => invoke<void>('clear_service_history'),
   onServicesTimeline: (callback: () => void) => subscribeEvent('services-timeline', callback),
@@ -78,8 +76,7 @@ const tauriNetworkApi: NetworkAPI = {
   relaunchAsAdmin: () => invoke<void>('relaunch_as_admin'),
   getSpeedHistory: () => invoke<SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => invoke<void>('save_speed_result', { entry }),
-  importSpeedHistory: (entries: SpeedHistoryEntry[]) =>
-    invoke<void>('import_speed_history', { entries }),
+  importSpeedHistory: (entries: SpeedHistoryEntry[]) => invoke<void>('import_speed_history', { entries }),
   clearSpeedHistory: () => invoke<void>('clear_speed_history'),
 
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>
@@ -87,13 +84,11 @@ const tauriNetworkApi: NetworkAPI = {
 
   onNetworkChanged: (callback: () => void) => subscribeEvent('network-changed', callback),
 
-  onInternetStatus: (callback: (status: InternetStatus) => void) =>
-    subscribeEvent('internet-status', callback),
+  onInternetStatus: (callback: (status: InternetStatus) => void) => subscribeEvent('internet-status', callback),
 
   subscribeLiveThroughput: () => invoke<void>('subscribe_live_throughput'),
   unsubscribeLiveThroughput: () => invoke<void>('unsubscribe_live_throughput'),
-  onLiveThroughput: (callback: (throughput: LiveThroughput) => void) =>
-    subscribeEvent('live-throughput', callback),
+  onLiveThroughput: (callback: (throughput: LiveThroughput) => void) => subscribeEvent('live-throughput', callback),
 }
 
 const tauriWindowControls: WindowControls = {
