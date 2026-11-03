@@ -7,10 +7,19 @@ import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/r
 const STATE_KEY = '__roveNav'
 // The screen's return point, saved on its entry as we leave it for another.
 const RETURN_KEY = '__roveReturn'
+// How many of our own entries sit behind this one. Kept on the entry, not
+// counted on each pop, so a forward step or a reload can't throw it off.
+const DEPTH_KEY = '__roveDepth'
 
 function readLocation(state: unknown): AppLocation | null {
   if (state == null || typeof state !== 'object' || !(STATE_KEY in state)) return null
   return (state as Record<string, AppLocation>)[STATE_KEY] ?? null
+}
+
+function readDepth(state: unknown): number {
+  if (state == null || typeof state !== 'object' || !(DEPTH_KEY in state)) return 0
+  const depth = (state as Record<string, unknown>)[DEPTH_KEY]
+  return typeof depth === 'number' ? depth : 0
 }
 
 function readReturnPoint(state: unknown): ReturnPoint | null {
@@ -41,9 +50,6 @@ export function useHistoryNavigation(): Navigation {
   const locationRef = useRef<AppLocation>(location)
   // Set only when going back (or forward) onto an entry that saved one.
   const [returnPoint, setReturnPoint] = useState<ReturnPoint | null>(null)
-  // How many of our own entries sit behind the active one. Entries the host page
-  // left are never counted, so Back can't step out of the app (the web demo).
-  const appDepthRef = useRef(0)
 
   const applyLocation = useCallback((next: AppLocation, nextReturnPoint: ReturnPoint | null = null): void => {
     locationRef.current = next
@@ -63,9 +69,6 @@ export function useHistoryNavigation(): Navigation {
   // The app's back buttons, the mouse thumb button and Alt+←/→ all arrive here.
   useEffect(() => {
     const onPop = (event: PopStateEvent): void => {
-      // Under-counting only falls back to the in-app parent; over-counting
-      // could leave the app, so never drop below zero.
-      appDepthRef.current = Math.max(0, appDepthRef.current - 1)
       applyLocation(readLocation(event.state) ?? HOME_LOCATION, readReturnPoint(event.state))
     }
     window.addEventListener('popstate', onPop)
@@ -76,9 +79,9 @@ export function useHistoryNavigation(): Navigation {
     (to: AppLocation): void => {
       // E.g. tapping the active tab: no duplicate entry on the back stack.
       if (isSameLocation(locationRef.current, to)) return
+      const depth = readDepth(window.history.state)
       saveReturnPoint()
-      window.history.pushState(historyStateFor(to), '')
-      appDepthRef.current += 1
+      window.history.pushState({ ...historyStateFor(to), [DEPTH_KEY]: depth + 1 }, '')
       applyLocation(to)
     },
     [applyLocation],
@@ -86,8 +89,9 @@ export function useHistoryNavigation(): Navigation {
 
   const back = useCallback((): void => {
     // With nothing of ours behind us, `history.back()` would leave the app (or
-    // do nothing), so go to the parent screen in place instead.
-    if (appDepthRef.current > 0) {
+    // do nothing), so go to the parent screen in place instead. Entries the host
+    // page left (the web demo) carry no depth, so Back never steps out to them.
+    if (readDepth(window.history.state) > 0) {
       window.history.back()
       return
     }
