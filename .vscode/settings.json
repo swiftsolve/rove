@@ -10,8 +10,8 @@
   "tailwindCSS.classFunctions": ["cva", "cx", "cn"],
   "cssVariables.lookupFiles": [
     "src/**/*.css",
-    "node_modules/@swiftsolve/rove-tokens/tokens.css",
-    "node_modules/@swiftsolve/rove-tokens/text-styles.css"
+    "node_modules/@swiftsolve/rove-tokens/dist/tokens.css",
+    "node_modules/@swiftsolve/rove-tokens/dist/text-styles.css"
   ],
   "cssVariables.blacklistFolders": ["**/.git"],
   "cssVariables.languages": ["css", "tailwindcss", "javascriptreact", "typescriptreact"],
