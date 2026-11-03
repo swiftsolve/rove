@@ -1,8 +1,6 @@
-// Best-effort brand icon: map a process name to a registered domain so the
-// Services favicon lookup can be reused, falling back (in the caller) to a
-// letter monogram for anything unrecognised. Ordered most-specific first (e.g.
-// chromium before chrome, webkit/safari before the generic apple). Not
-// exhaustive — the monogram covers the long tail (daemons, CLIs) cleanly.
+// Maps a process name to a domain so the Services favicon lookup can be reused.
+// Matched by substring, so most-specific keys come first (chromium before
+// chrome). Not exhaustive: the monogram covers the long tail.
 const APP_DOMAINS: [string, string][] = [
   ['firefox', 'firefox.com'],
   ['chromium', 'google.com'],

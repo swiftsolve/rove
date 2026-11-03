@@ -1,8 +1,7 @@
 import type { MouseEvent, MouseEventHandler } from 'react'
 
-// The behaviour every pressable in the library shares (Button, IconButton,
-// PageHeader's back button…): how disabled and loading work. Each keeps its
-// own look.
+// How disabled and loading behave on every pressable in the library (Button,
+// IconButton, Link, ListRow…). Each keeps its own look.
 
 /** The press nudge, only while the control is usable. */
 export const PRESS = 'usable:active:transform-[translateY(0.5px)]'

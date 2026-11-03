@@ -47,7 +47,7 @@ export async function saveSpeedResult(result: SpeedResult, context: SpeedRunCont
   try {
     await getNetworkApi().saveSpeedResult(entry)
   } catch {
-    // Persistence is best-effort — a failed write shouldn't surface an error.
+    // Best-effort: a failed write shouldn't surface an error.
   }
 }
 
@@ -55,14 +55,13 @@ export async function clearSpeedHistory(): Promise<void> {
   try {
     await getNetworkApi().clearSpeedHistory()
   } catch {
-    // Ignore — nothing the user can do about a failed clear.
+    // Nothing the user can do about a failed clear.
   }
 }
 
 /**
- * One-time move of any results still sitting in localStorage into the database,
- * then drop the old key. Safe to call on every startup: it no-ops once the key
- * is gone.
+ * Moves results still in localStorage into the database, then drops the key.
+ * Safe on every startup: a no-op once the key is gone.
  */
 export async function migrateLegacySpeedHistory(): Promise<void> {
   let stored: string | null

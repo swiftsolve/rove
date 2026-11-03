@@ -46,8 +46,8 @@ type IconProps = {
   className?: string
 }
 
-/** Icon per traffic-type slug. Anything unmapped (including "other") falls back
- *  to the layers icon, so a new backend bucket never renders blank. */
+/** Anything unmapped (including "other") falls back to the layers icon, so a new
+ *  backend bucket never renders blank. */
 const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   https: GlobeIcon,
   http: GlobeIcon,
@@ -91,8 +91,6 @@ export function TrafficView() {
 
       <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={types.length === 0} copy={BODY_COPY}>
         <CardList label="Traffic types by usage">
-          {/* The same rows as the Apps view's, minus the icon fetch and the caret:
-              these aren't links. */}
           {types.map((type) => (
             <UsageRow
               key={type.id}

@@ -32,31 +32,27 @@ import {
 const INITIAL_ROWS = 20
 const ROWS_PER_STEP = 40
 
-// A service dropping off reads as an alarm (red); a recovery, or a healthy
-// summary ("N services running", with a check icon), reads positive (green):
-// the same colour language as the reachability numbers.
+// The same colour language as the reachability numbers: a drop is negative, a
+// recovery or healthy summary positive.
 const DOWN_COLOR = 'var(--status-negative)'
 const UP_COLOR = 'var(--status-positive)'
 
-// The subject line: the service's favicon and name, sitting under the title
-// (the events-feed shape: what happened on top, which service beneath).
+// The line under the title, as in the events feed: what happened on top, which
+// service beneath.
 const subjectVariants = cva('min-w-0 items-center gap-4 text-md', {
   variants: {
     /** A quiet aside (the running summary, the connection status), not a service name. */
     isMuted: { true: 'text-tertiary', false: 'text-secondary' },
-    /** The connection row keeps its status and offline duration on one line,
-     *  spanning the full content width: the status at the left, the duration
-     *  flush right (pushed by its margin-left:auto). */
+    /** Spans the content width so the connection row's duration can sit flush right. */
     isFullWidth: { true: 'flex w-full', false: 'inline-flex' },
   },
   defaultVariants: { isMuted: false, isFullWidth: false },
 })
 
-// Title on the left, time pinned to the right edge on the same line.
 const HEAD = 'flex items-baseline gap-10'
 const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
-// The outage length sits at the far right of its row, no dot before it.
+// Pushed flush right of its row.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 
 type DayGroup = {
@@ -76,7 +72,7 @@ type EventDurations = {
   now: number
 }
 
-// 12h time only, e.g. "1:24 PM" — the day is carried by the group heading above.
+// Time only, e.g. "1:24 PM": the day heading above carries the date.
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString(undefined, {
     hour: 'numeric',
@@ -94,7 +90,7 @@ function EventTime({ ts }: { ts: number }) {
   )
 }
 
-// A stable per-calendar-day key (local time) used to slice the feed into days.
+// Local calendar day, so groups split at the user's midnight.
 function dayKey(ts: number): string {
   const date = new Date(ts)
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
@@ -131,7 +127,6 @@ function groupByDay(events: ServiceEvent[], now: number): DayGroup[] {
   return groups
 }
 
-// The lookup key for a recovery's outage duration.
 function outageKey(host: string, ts: number): string {
   return `${host}:${ts}`
 }
@@ -157,10 +152,8 @@ function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
   return durations
 }
 
-// The still-open outage per host: if a host's most recent transition is a `down`
-// with no later `up`, its start ts — so the "went down" row can show a live
-// "Down for …" until it recovers. Events are newest-first, so the first
-// transition seen per host is its latest.
+// When each still-down host dropped, for the live "Down for …" on its latest
+// drop. Events are newest-first, so the first transition per host is its latest.
 function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
   const starts = new Map<string, number>()
   const seen = new Set<string>()
@@ -189,7 +182,6 @@ function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
   return durations
 }
 
-// A stable key per event for React lists.
 function eventKey(event: ServiceEvent): string {
   if (event.type === 'running') return `running:${event.ts}`
   if (event.type === 'connection') return `connection:${event.status}:${event.ts}`
@@ -230,9 +222,8 @@ const TransitionRow = memo(function TransitionRow({
 })
 
 const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningEvent }) {
-  // A recovery summary covers every service, but a baseline recorded while one
-  // was already down does not — so the subtext names the denominator rather than
-  // calling a partial tally all-clear.
+  // A baseline recorded while a service was already down is a partial tally, so
+  // the subtext names the denominator rather than calling it all-clear.
   const areAllHealthy = event.count >= event.total
 
   return (
@@ -271,7 +262,6 @@ const ConnectionRow = memo(function ConnectionRow({
         <span className={TITLE}>{isLost ? 'Internet disconnected' : 'Internet reconnected'}</span>
         <EventTime ts={event.ts} />
       </span>
-      {/* Status on the left, offline duration flush right — both on one line. */}
       <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
         <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
         {shouldShowDuration && (
@@ -333,21 +323,16 @@ function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDu
 }
 
 /**
- * A timeline of service outages and recoveries: when each tracked service went
- * down and when it came back, newest first and grouped by day.
+ * Service outages and recoveries, newest first and grouped by day.
  *
- * The log itself is the backend's (see `service_events`), recorded by the
- * always-on services heartbeat rather than by this page — so it covers outages
- * that happened while the window was closed. The live probes this page
- * receives only feed the header tally.
+ * The backend's always-on heartbeat records the log (see `service_events`), so it
+ * covers outages while the window was closed. Live probes only feed the header tally.
  */
 export function ServicesTimelineView() {
   const { back } = useNavigation()
-  // The latest reachability probes, for the up/down count in the header.
   const reachability = useServiceReachability().report?.services
-  // The app's live internet status — the same one the title bar shows — for the
-  // header tally: with no connection every probe fails at once, which is ours to
-  // own, not theirs.
+  // The title bar's live status: offline, every probe fails at once, and that's
+  // our fault, not the services'.
   const liveInternet = useConnectionStatus().internet
   const { events, isLoaded, clear } = useServiceHistory()
   // A full log is a few hundred rows: render the first screenful with the page
@@ -357,13 +342,11 @@ export function ServicesTimelineView() {
   const outageByKey = useMemo(() => outageDurations(events), [events])
   const offlineByTs = useMemo(() => offlineDurations(events), [events])
   const ongoingDownStartByHost = useMemo(() => ongoingDownStarts(events), [events])
-  // The live "Down for …" on open outages, and the day headings. Ticks at the
-  // second, because that's the finest unit `formatDuration` renders.
+  // Ticks each second, the finest unit `formatDuration` renders.
   const now = useNow()
   const durations: EventDurations = { outageByKey, offlineByTs, ongoingDownStartByHost, now }
 
-  // The current up/down tally, straight from the live probes. Until the first
-  // probes land there's nothing to count, so the header falls back to prose.
+  // Prose until the first probes land and there's something to count.
   const description = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
 
   const handleClear = (): void => {

@@ -3,9 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { type AppLocation, HOME_LOCATION, isSameLocation, type Navigation, parentLocation } from '@/app/utils/location'
 import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
 
-// We stash the location on `history.state` under a namespaced key rather than
-// owning the whole state object, so we don't clobber anything the webview host
-// might keep there.
+// Namespaced, so we don't clobber anything the webview host keeps on `history.state`.
 const STATE_KEY = '__roveNav'
 // The screen's return point, saved on its entry as we leave it for another.
 const RETURN_KEY = '__roveReturn'
@@ -33,30 +31,18 @@ function saveReturnPoint(): void {
 }
 
 /**
- * Navigation backed by the real browser/webview history stack, so the app's
- * own back buttons and the OS/mouse back gesture all pop the same stack.
- *
- * Each `navigate` pushes a history entry carrying its destination; each history
- * entry therefore *is* a screen. Pressing back fires `popstate` with the
- * previous entry's location, which we mirror into React state.
+ * Navigation on the real history stack, one entry per screen, so the app's back
+ * buttons and the OS/mouse back gesture all pop the same stack.
  */
 export function useHistoryNavigation(): Navigation {
-  // Adopt the location a reload left in history, or start at home.
   const [location, setLocation] = useState<AppLocation>(() => readLocation(window.history.state) ?? HOME_LOCATION)
-  // Mirror `location` in a ref so `navigate` can compare against the current
-  // screen without a stale closure — and, crucially, without doing the
-  // pushState side effect inside a setState updater (StrictMode invokes those
-  // twice in dev, which would push two entries and make Back need two presses).
+  // A ref, so `navigate` never pushes from inside a setState updater: StrictMode
+  // runs those twice, pushing two entries.
   const locationRef = useRef<AppLocation>(location)
   // Set only when going back (or forward) onto an entry that saved one.
   const [returnPoint, setReturnPoint] = useState<ReturnPoint | null>(null)
-  // How many of *our* entries sit behind the active one — i.e. how many times we
-  // can call `history.back()` and stay inside the app. `navigate` pushes one on
-  // (increment); popping one off via back/forward (popstate) takes one back. It
-  // starts at 0 and never counts entries the host page left behind us, so Back
-  // can tell "there's an app screen to return to" from "stepping back would leave
-  // the app" — the latter is where the web/mobile demo used to escape to the
-  // previous page (or do nothing at the very first entry).
+  // How many of our own entries sit behind the active one. Entries the host page
+  // left are never counted, so Back can't step out of the app (the web demo).
   const appDepthRef = useRef(0)
 
   const applyLocation = useCallback((next: AppLocation, nextReturnPoint: ReturnPoint | null = null): void => {
@@ -65,8 +51,6 @@ export function useHistoryNavigation(): Navigation {
     setReturnPoint(nextReturnPoint)
   }, [])
 
-  // Seed the first history entry with our location (via replaceState, so we
-  // don't grow the stack) unless a reload already left one. Runs once.
   useEffect(() => {
     if (!readLocation(window.history.state)) {
       window.history.replaceState(historyStateFor(HOME_LOCATION), '')
@@ -76,14 +60,11 @@ export function useHistoryNavigation(): Navigation {
   // The opener of the next screen is read from the click that opens it.
   useEffect(() => trackClicks(), [])
 
-  // Mirror back/forward — the app's back buttons, the mouse thumb button, and
-  // Alt+←/→ all arrive here.
+  // The app's back buttons, the mouse thumb button and Alt+←/→ all arrive here.
   useEffect(() => {
     const onPop = (event: PopStateEvent): void => {
-      // One of our entries just came off the top (back button, OS gesture,
-      // thumb button, Alt+←). Under-counting here is harmless — Back would just
-      // fall back to the in-app parent — whereas over-counting could escape, so
-      // never drop below zero.
+      // Under-counting only falls back to the in-app parent; over-counting
+      // could leave the app, so never drop below zero.
       appDepthRef.current = Math.max(0, appDepthRef.current - 1)
       applyLocation(readLocation(event.state) ?? HOME_LOCATION, readReturnPoint(event.state))
     }
@@ -93,8 +74,7 @@ export function useHistoryNavigation(): Navigation {
 
   const navigate = useCallback(
     (to: AppLocation): void => {
-      // Ignore navigations that don't change the screen, so the back stack never
-      // fills with duplicate entries (e.g. tapping the already-active tab).
+      // E.g. tapping the active tab: no duplicate entry on the back stack.
       if (isSameLocation(locationRef.current, to)) return
       saveReturnPoint()
       window.history.pushState(historyStateFor(to), '')
@@ -105,12 +85,8 @@ export function useHistoryNavigation(): Navigation {
   )
 
   const back = useCallback((): void => {
-    // If one of our own entries is behind us, pop it — this keeps the app's Back
-    // button, the OS back gesture and the history stack in lockstep (the
-    // `popstate` handler mirrors the previous screen). If nothing of ours is
-    // behind us, `history.back()` would leave the app entirely (or do nothing at
-    // the first entry), so instead navigate in-app to the current screen's
-    // parent and rewrite the current entry to match.
+    // With nothing of ours behind us, `history.back()` would leave the app (or
+    // do nothing), so go to the parent screen in place instead.
     if (appDepthRef.current > 0) {
       window.history.back()
       return

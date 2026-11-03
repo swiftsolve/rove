@@ -48,15 +48,13 @@ export type NetworkAPI = {
   relaunchAsAdmin(): Promise<void>
   runDiagnostics(): Promise<NetworkDiagnostics>
   /** The fast-changing gateway metrics only, for the Connection view's tight
-   *  refresh loop. Service reachability is NOT here — see `runServices`. */
+   *  refresh loop. */
   runDiagnosticsLive(): Promise<LiveDiagnostics>
-  /** Probe the user's service list — the Services view's own metric, separate
-   *  from the Connection diagnostics. Bundles the internet verdict from the same
-   *  batch so a mass "all down" reads as this machine being offline, not theirs. */
+  /** Probe the user's service list, with the internet verdict from the same
+   *  batch so a mass "all down" reads as this machine being offline. */
   runServices(): Promise<ServicesReport>
-  /** The last public-internet reachability verdict from the always-on
-   *  background heartbeat, or null before its first probe lands. A cheap cached
-   *  read (never probes) — drives the top-bar connectivity label. */
+  /** The background heartbeat's last internet verdict, or null before its first
+   *  probe. A cached read that never probes. */
   getInternetStatus(): Promise<InternetStatus | null>
   /** Probe a single host's reachability without storing it — the "test before
    *  add" step. Resolves to the latency in ms, or null when unreachable. */

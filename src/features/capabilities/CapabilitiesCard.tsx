@@ -30,34 +30,22 @@ import {
   ZapIcon,
 } from '@/ui'
 
-// The row of capabilities bleeds past the card body's padding so it spans the
-// full card width, the same pattern as the live throughput chart.
+// Bleeds past the body padding to span the card, like the throughput chart.
 const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body-padding) px-(--card-body-padding)')
 
-// Each capability's column: its icon tile with the rating meter centred beneath.
 const CAPABILITY_CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
 
-// A dark inset strip flush to the card's bottom edge, full-bleed like
-// ConnectionCard's details and the speed test footer. The strip itself isn't
-// clickable; only the link inside it is.
 const footerVariants = cva(
   [
     'flex items-center justify-end text-xs',
-    // Full-bleed to both card edges: the body's content box plus the padding on
-    // each side, then negative margins pull it out over that padding.
     'w-[calc(100%+2*var(--card-body-padding))]',
     '-mx-(--card-body-padding) -mb-(--card-body-padding)',
     'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
-    // The card runs `overflow: visible` (so tooltips can escape), so round the
-    // bottom corners here to sit flush inside the card's radius.
+    // The card is `overflow: visible` so tooltips escape; round the corners here.
     'rounded-b-lg',
   ],
   {
     variants: {
-      // The results footer (icon + "Updated …") is taller than the plain hint, so
-      // its centred text sits lower and reads as extra space under the bars: its
-      // top gap is trimmed a touch. The hint (before any test) pulls in closer
-      // still; it doesn't need the breathing room the populated row gets.
       isHint: { true: 'mt-12', false: 'mt-16' },
     },
     defaultVariants: { isHint: false },

@@ -3,10 +3,8 @@ import { useSyncExternalStore } from 'react'
 import { getLatencySnapshot, type LatencyHistory, subscribeLatency } from '@/features/services/utils/service-latency'
 
 /**
- * The rolling per-host latency history that feeds each service row's sparkline.
- * A read-only subscription to the shared store — the samples are appended once
- * per poll by `useServiceReachability` (see `recordLatency`), so this hook only
- * reads and re-renders on change, with no props to thread through.
+ * The per-host latency history behind each row's sparkline. Read-only:
+ * `useServiceReachability` appends to it once per poll (see `recordLatency`).
  */
 export function useServiceLatency(): LatencyHistory {
   return useSyncExternalStore(subscribeLatency, getLatencySnapshot)

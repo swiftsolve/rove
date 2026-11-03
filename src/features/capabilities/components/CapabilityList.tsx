@@ -10,19 +10,15 @@ import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/typ
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, ZapIcon } from '@/ui'
 
-// A few headline use-cases previewed in the empty state before any test runs —
-// the full breakdown appears once results come in.
+// A few headline use-cases previewed before any test runs.
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
 const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
   CAPABILITY_DEFINITIONS.filter((definition) => definition.id === id),
 )
 
-// Every row keeps the same symmetric vertical padding, with no first/last special
-// casing, so both the spacing between rows and each row's hover highlight read
-// identically. The card body's own padding supplies the outer breathing room.
+// No first/last padding special cases, so every row's hover highlight matches.
 const LIST = 'flex flex-col'
 
-// It takes the free width, so the meter after it sits on the right.
 const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
 
 function CapabilityRow({
@@ -83,8 +79,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
 function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | undefined {
   if (isTesting) {
     return (
-      // Secondary, to match the Devices/refresh button spinners (tertiary read
-      // as washed-out); the spinner takes it through currentColor.
+      // Secondary, to match the other button spinners; tertiary read washed-out.
       <span className="inline-flex items-center text-secondary" role="img" aria-label="Speed test running">
         <ButtonSpinner size={14} />
       </span>
@@ -96,7 +91,6 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
 
 export function CapabilityList() {
   const { navigate } = useNavigation()
-  // While a test runs, the stale rows grey out until the new result lands.
   const capabilities = useSpeedTest((test) => test.capabilities)
   const hasRunTest = useSpeedTest((test) => test.internetSpeed != null)
   const isTesting = useSpeedTest((test) => test.isTesting)

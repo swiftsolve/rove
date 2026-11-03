@@ -1,9 +1,8 @@
 import type { IconProps } from './Icons'
 
 /**
- * A hub-and-spoke network icon — a centre node linked to four surrounding
- * nodes. Custom (no exact Lucide match) but drawn to the same 24-grid, stroke
- * width and `currentColor` conventions as the aliased icons.
+ * A hub-and-spoke network icon: a centre node linked to four others. Custom,
+ * as Lucide has no exact match, on the aliases' 24-grid and stroke.
  */
 export function ConnectionIcon({ size = 18, className }: IconProps) {
   return (

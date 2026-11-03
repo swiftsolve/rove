@@ -18,11 +18,8 @@ type DirectionIconProps = IconProps & {
 }
 
 /**
- * The colour-keyed direction icon that marks a download/upload readout: a blue
- * down-arrow for download, a purple up-arrow for upload. Replaces the plain
- * colour dots so the icon itself carries the meaning. Colour comes from the
- * `--series-*` variables via the `text-series-*` utility; the icon inherits it through
- * `currentColor`.
+ * Marks a download or upload readout: a blue down-arrow or a purple up-arrow,
+ * in the `--series-*` colours, so the shape carries the meaning as well as the colour.
  */
 export function DirectionIcon({ series, size = 14, className }: DirectionIconProps) {
   const Icon = series === 'down' ? ArrowDownIcon : ArrowUpIcon

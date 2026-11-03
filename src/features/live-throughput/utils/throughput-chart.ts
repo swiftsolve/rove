@@ -15,9 +15,8 @@ export function buildChartRows(download: number[], upload: number[]): ChartRow[]
     down: sanitizeRate(download[index] ?? 0),
     up: sanitizeRate(upload[index] ?? 0),
   }))
-  // A lone sample renders as a dot centered in the plot (the x-domain collapses
-  // to a single value). Seed a leading zero so the first sample draws as a short
-  // line anchored to the right ("Now") instead, matching the steady-state trace.
+  // A lone sample collapses the x-domain and draws as a centred dot; a leading
+  // zero makes it a short line anchored at "Now".
   const first = rows[0]
   if (rows.length === 1 && first) {
     rows.unshift({ index: first.index - 1, down: 0, up: 0 })

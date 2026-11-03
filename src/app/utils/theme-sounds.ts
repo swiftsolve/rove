@@ -4,26 +4,19 @@ import { getSetting } from '@/hooks/useSetting'
 import { IS_WEBKIT_GTK } from '@/lib/platform'
 
 /**
- * The little mechanical click when the theme flips — the same switch-on/off
- * samples joshwcomeau.com uses (light → switch-on, dark → switch-off).
+ * The click when the theme flips (light plays switch-on, dark switch-off).
  *
- * It plays through Web Audio rather than `<audio>`: the samples are decoded once
- * up front, so a press only schedules an already-decoded buffer. An `<audio>`
- * element has to load, decode and open an output stream before it makes a
- * sound, and that setup competes with the theme swap for the main thread, so
- * the click would land a variable beat after the press.
+ * Web Audio rather than `<audio>`: the samples are decoded up front, so a press
+ * only schedules a buffer. An `<audio>` element's load and decode compete with
+ * the theme swap for the main thread, so the click would lag the press.
  *
- * Playback is best-effort: audio is unavailable in some webviews, and the
- * first play before any user gesture can be blocked by autoplay policy. Every
- * failure is swallowed so a missing sound can never disturb the theme swap.
- *
- * WebKitGTK is the one engine where "best-effort" isn't enough to keep us safe:
- * it decodes audio through GStreamer, which the AppImage doesn't bundle, so
- * the failure lands in the media backend rather than as a rejected promise we
- * could swallow. We skip the sound there outright — see IS_WEBKIT_GTK.
+ * Best-effort: some webviews have no audio and autoplay policy can block the
+ * first play, so every failure is swallowed. WebKitGTK skips the sound outright:
+ * it decodes through GStreamer, which the AppImage doesn't bundle, and fails in
+ * the media backend where we can't catch it (see IS_WEBKIT_GTK).
  */
 
-// Gate playback on the same persisted setting the Settings toggle writes.
+// The setting the Settings toggle writes.
 const SOUND_SETTING = 'themeSounds'
 const VOLUME = 0.35
 // Release the output stream once the clicks stop, so an idle app doesn't hold

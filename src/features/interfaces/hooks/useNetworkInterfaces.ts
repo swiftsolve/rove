@@ -22,7 +22,6 @@ export function useNetworkInterfaces(): UseNetworkInterfacesResult {
     pollIntervalMs: POLL_INTERVAL_MS,
   })
 
-  // Network changed — refresh at once instead of waiting out the poll interval.
   useOnNetworkChanged(() => void reload())
 
   return { interfaces: data ?? [], isLoading: isBusy, error, refresh: reload }

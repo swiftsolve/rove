@@ -27,7 +27,6 @@ import {
   WatchIcon,
 } from '@/ui'
 
-// The device card: icon pinned to the top-left, the body column fills the rest.
 const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
 
 /** A device's kind icon, in a tile coloured by category so categories scan at a
@@ -57,17 +56,12 @@ const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
   defaultVariants: { isReachable: false },
 })
 
-// A long name uses up to two lines rather than truncating; the card grows to
-// fit. It takes the row width the status doesn't. text-lg: the widget-title size
-// (e.g. "Capabilities"), not type-heading-large's larger one.
+// text-lg overrides type-heading-large's size to match the card titles.
 const DEVICE_NAME = cx(
   'type-heading-large text-primary min-w-0 flex-1 text-lg',
   'line-clamp-2 [line-clamp:2] wrap-anywhere',
 )
 
-// Device kind, vendor, OS and model as a subtitle line under the name. It stays
-// on one line and ellipsizes when space is tight, so an offline device's age
-// remains a clean right-hand column instead of wrapping beneath it.
 const DEVICE_META = 'type-caption text-tertiary flex min-w-0 items-baseline gap-8'
 
 const DEVICE_KIND = 'min-w-0 flex-[0_1_auto]'

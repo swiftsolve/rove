@@ -1,10 +1,8 @@
 import { useCallback, useState } from 'react'
 
-/** Which groups are expanded, by app name. Arriving via an app click opens that
- *  one; arriving via "All hosts" opens none, leaving the list scannable rather
- *  than dumping every host at once. Either way groups that appear on a later
- *  poll stay collapsed. The view remounts on each navigation, so seeding from
- *  `focusApp` here is enough. */
+/** Which groups are expanded, by app name. Only `focusApp` starts open, so the
+ *  list stays scannable. The view remounts on each navigation, so seeding the
+ *  initial state is enough. */
 export function useExpandedApps(focusApp: string | null | undefined): {
   isExpanded: (name: string) => boolean
   toggle: (name: string) => void

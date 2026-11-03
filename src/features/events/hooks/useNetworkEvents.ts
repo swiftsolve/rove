@@ -26,10 +26,8 @@ export function refreshNetworkEvents(): void {
 }
 
 /**
- * The network-change feed. Unlike a device scan this is a cheap local DB read,
- * so it both refetches when the Events tab opens and polls quietly in the
- * background — new events accrue whenever a scan runs (here or on another tab),
- * and the poll surfaces them without the user hitting refresh.
+ * The network-change feed: refetched when Events opens and polled in the
+ * background, since scans on any tab add events.
  */
 export function useNetworkEvents(): UseNetworkEventsResult {
   const api = window.networkAPI

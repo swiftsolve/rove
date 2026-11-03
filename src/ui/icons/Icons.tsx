@@ -1,8 +1,7 @@
 /**
- * App icons — thin aliases over lucide-react so every icon shares the same
- * optical size and stroke. Import these semantic names; swap the underlying
- * icon here in one place if the design changes. The custom ones have a
- * file each beside this one.
+ * App icons: semantic aliases over lucide-react, so every icon shares one
+ * stroke and the glyph behind a name changes here alone. The custom ones have
+ * a file each beside this one.
  */
 import type { LucideIcon } from 'lucide-react'
 import {

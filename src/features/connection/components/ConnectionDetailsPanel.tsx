@@ -28,11 +28,8 @@ type ConnectionDetailsPanelProps = {
  */
 export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
   return (
-    // A dark inset panel below the strip (like the live chart and bench
-    // footer): full card width, square top edge, and the card's overflow rounds
-    // the bottom. It keeps its padding whether open or not, so the rows hold
-    // their inset for the whole height animation; the wrapper around it does
-    // the clipping. DataListStack splits the groups with a full-width hairline.
+    // Keeps its padding when closed, so the rows hold their inset through the
+    // height animation; the wrapper does the clipping.
     <div className="bg-inset py-(--card-header-padding-y)">
       <DataListStack>
         {isWifiNetwork(info) && <WifiLinkRows info={info} />}
@@ -48,14 +45,11 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
   const linkSpeed = formatLinkSpeed(info)
   return (
     <DataList density="compact">
-      {/* The strip's title falls back to "WiFi Network" when the OS withholds
-          the name (e.g. without location permission); here the row just drops. */}
+      {/* The OS can withhold the name (e.g. without location permission). */}
       <DataRow label="Network name" value={info.ssid || null} />
       <DataRow label="Signal" align="center">
-        {/* Block flex (not inline-flex) avoids extra line-box strut height inside
-            .type-number-default, which would misalign the bars with the label text. The
-            bars have no text, so baseline alignment sits their bottom on the
-            text's baseline, and at 10px they reach its capitals. */}
+        {/* Block flex: inline-flex adds strut height that misaligns the bars. With
+            no text, the bars sit on the baseline and at 10px reach cap height. */}
         <div className="flex items-baseline justify-end gap-6">
           {info.signalStrength != null && <SignalMeter strength={info.signalStrength} placement="details" />}
           {formatSignalDetail(info)}

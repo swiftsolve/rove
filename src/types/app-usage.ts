@@ -19,9 +19,8 @@ export type AppUsageSummary = {
   /** Per-app totals, busiest first. Empty before the first sample. */
   apps: AppUsage[]
   /**
-   * `'supported'` where per-app metering works (Linux, macOS), or
-   * `'unsupported'` where it needs a facility Rove doesn't yet drive
-   * (Windows/ETW) — the view shows an explanatory note rather than a bare list.
+   * `'supported'` where per-app metering works: Linux, macOS, and Windows once
+   * its ETW session is up (it needs administrator).
    */
   support: AppUsageSupport
   /** Epoch ms of the first sample, or null before then. */

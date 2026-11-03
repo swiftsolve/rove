@@ -18,15 +18,9 @@ import { flashHighlight } from '@/lib/highlight'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader, StatusDot } from '@/ui'
 
-// Three-tier card: an intro row (icon + name/description + bars) on the panel
-// surface, a metrics grid on an inset panel, and the verdict on the chrome panel
-// at the very bottom, set apart from the metrics in both themes. When opened by
-// clicking a capability, that card is scrolled to the top of the viewport; the
-// scroll margin leaves a little air above it.
+// Three tiers: an intro row, a metrics grid on an inset panel, then the verdict.
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
 
-// All four requirements in a compact metric grid. Your value turns red only when
-// it misses the threshold, which stays a small muted line.
 const METRICS = cx(
   'grid grid-cols-4 gap-x-8 gap-y-12',
   '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
@@ -39,23 +33,15 @@ const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-n
   defaultVariants: { isUnmet: false },
 })
 
-// Verdict: the plain-language summary paired with a colour-keyed status, on the
-// chrome panel so it reads as the card's closing takeaway: a shade below the
-// metrics in dark mode, a shade above them in light. Framed on three sides
-// (not the top) with the metrics' inset colour, so the block sits
-// within the card edge rather than bleeding to it, seamless with the metrics
-// above. The horizontal padding is trimmed by the border width so the content
-// stays aligned with the metrics grid (14px from the card edge).
+// Framed on three sides in the metrics' inset colour, so it sits inside the card
+// edge. The padding gives back the 1px border to stay aligned with the grid.
 const VERDICT = cx(
   'flex items-center justify-between gap-12',
   '-mx-(--card-header-padding-x) px-[calc(var(--card-header-padding-x)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
-/** The verdict icon, left of the summary in the level colour. Its box is
- *  exactly one line of summary text tall and centres the icon, so the tick sits
- *  against the middle of the first line (the summary stays top-aligned when it
- *  wraps). */
+/** One summary line tall, so the icon centres on the first line when the summary wraps. */
 const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] shrink-0 items-center', {
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
@@ -70,14 +56,10 @@ type CapabilityDetailsViewProps = {
 }
 
 /**
- * Smooth-scroll a card to the top of the app's scroll container
- * (`[data-scroll-root]`; its scroll-margin leaves a little breathing room),
- * then flash it.
+ * Smooth-scroll a card to the top of `[data-scroll-root]`, then flash it.
  *
- * We scroll the container directly rather than calling card.scrollIntoView():
- * scrollIntoView walks up and scrolls *every* scrollable ancestor, which across
- * an iframe boundary reaches the host document — so on the marketing-site demo
- * it would drag the whole landing page down with it.
+ * Not card.scrollIntoView(): that scrolls every scrollable ancestor, across an
+ * iframe boundary too, so the marketing-site demo would drag its host page along.
  */
 function scrollCardToTop(card: HTMLElement): void {
   const scroller = card.closest<HTMLElement>('[data-scroll-root]')
@@ -88,8 +70,6 @@ function scrollCardToTop(card: HTMLElement): void {
   flashHighlight(card)
 }
 
-/** The verdict icon: a tick when the connection clears the bar, a warning when
- *  it only just scrapes by, a cross when it falls short. */
 function VerdictIcon({ level }: { level: CapabilityLevel }) {
   if (level === 'excellent' || level === 'good') return <CheckIcon size={14} />
   if (level === 'fair') return <AlertIcon size={13} />
@@ -103,7 +83,6 @@ function CapabilityDetailCard({ capability, speed }: { capability: CapabilityRat
     <Card as="li" className="scroll-mt-12" data-capability-id={capability.id}>
       <div className={CARD_CONTENT}>
         <div className="flex items-center gap-8 pb-12">
-          {/* The icon in the level colour on a faint tint of it, as in the capability rows. */}
           <IconTile
             size="sm"
             color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
@@ -113,8 +92,7 @@ function CapabilityDetailCard({ capability, speed }: { capability: CapabilityRat
             <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
             <span className="text-xs leading-caption text-tertiary">{capability.description}</span>
           </div>
-          {/* The bars sit at the bottom of the 12px meter box; nudged up to sit
-              optically centred against the two-line title block. */}
+          {/* Nudged up to centre optically against the two-line title. */}
           <CapabilityMeter
             level={capability.level}
             shouldShowLabel={false}
@@ -161,10 +139,8 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) 
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   const listRef = useRef<HTMLUListElement>(null)
 
-  // Scroll to the capability the user clicked, once on open. Deferred two
-  // frames: opening the subpage changes the app's screen key, whose effect
-  // resets the scroll container back to the top. Running a frame later than
-  // that reset lets our smooth scroll animate cleanly from the top to the target card.
+  // Two frames late: opening the subpage resets the scroll container to the top
+  // in an effect, and this scroll must start after that reset.
   useEffect(() => {
     if (targetId == null) return
     let innerFrame = 0

@@ -3,10 +3,8 @@ import 'ldrs/react/Ring.css'
 import { Ring } from 'ldrs/react'
 
 /**
- * Compact busy indicator for buttons. Uses the ldrs "ring" loader so buttons
- * show a smooth rotating arc instead of a spinning icon. Colour is inherited
- * from the button via `currentColor`, so it works on both primary (white text)
- * and secondary/icon buttons.
+ * A button's busy indicator: an ldrs ring in the button's text colour, so it
+ * suits a solid, soft or icon button alike.
  */
 export function ButtonSpinner({
   size = 14,

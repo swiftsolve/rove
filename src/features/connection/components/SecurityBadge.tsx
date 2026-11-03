@@ -4,19 +4,14 @@ import { normalizeSecurity, shortSecurityLabel } from '@/features/connection/uti
 import { isSecuredWifi } from '@/lib/format'
 import { LockIcon, Tooltip, UnlockIcon } from '@/ui'
 
-// Lock + protocol, green when secured, red when open. A block flex box (not
-// inline-flex) so the lock centres on the text instead of sitting on the line's
-// baseline, which drops it a couple of pixels low. In the expanded rows (the
-// details' <dl>) it right-aligns in the value cell.
+// Block flex, not inline-flex, which sits the lock on the baseline a little low.
 const securityBadgeVariants = cva('flex items-center gap-6 min-w-0 in-[dl]:justify-end', {
   variants: {
     isSecured: { true: null, false: 'text-negative' },
   },
 })
 
-// The lock is taller than the text's cap height, and centring on the line box
-// leaves it reading low; lift it to sit level with the protocol text (the same
-// optical nudge the signal bars get).
+// Centred on the line box the taller lock reads low, so it's lifted 1px.
 const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
   variants: {
     isSecured: { true: 'text-status-positive' },

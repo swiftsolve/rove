@@ -98,10 +98,8 @@ function Metric({ label, value, unit, series }: MetricProps) {
   )
 }
 
-// Closing banner on the chrome panel, matching the capabilities detail card's
-// verdict strip: framed on three sides with the inset colour, rounded to the card's
-// bottom corners. The horizontal padding is trimmed by the border width so its
-// content stays aligned with the metrics grid above.
+// Like the capability verdict strip: the padding gives back the 1px border so
+// the content stays aligned with the grid above.
 const CARD_FOOTER = cx(
   '-mx-(--card-body-padding) mt-8 px-[calc(var(--card-body-padding)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',
@@ -113,8 +111,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
 
   return (
-    // No bottom padding: the footer banner bleeds to the card's bottom edge, and
-    // overflow clips it to the rounded corners.
+    // No bottom padding: the footer bleeds to the card's rounded bottom edge.
     <Card as="li">
       <div className="px-(--card-body-padding) pt-(--card-body-padding)">
         <div className="mb-12 flex items-center justify-between gap-12">
@@ -186,9 +183,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }) {
 
 export function SpeedHistoryView() {
   const { back } = useNavigation()
-  // Undefined until the first read lands, so the tall "no tests yet"
-  // placeholder doesn't flash up (and swap to the list mid-transition) before
-  // we know the history is empty.
+  // Undefined until the first read, so the empty placeholder doesn't flash first.
   const { entries, clear } = useSpeedHistory()
 
   return (

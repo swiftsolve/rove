@@ -29,7 +29,7 @@ type BannerProps = {
 
 /**
  * A message above a page: icon, title, a line under it, then Dismiss and
- * Retry on the right. `error` is a failure. Dismiss hides this title until it changes or the banner
+ * Retry on the right. Dismiss hides this title until it changes or the banner
  * unmounts, so a poll that fails the same way again doesn't bring it back; a
  * caller renders it only while there's an error, which is what resets it.
  */

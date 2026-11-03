@@ -71,7 +71,6 @@ export function Card({ as: Element = 'section', onOpen, linkLabel, className, ch
         {...props}
       >
         {/* First, so it comes before the card's own controls in tab order. */}
-        {/* Named by the CardHeader's title, unless linkLabel says more. */}
         {isOpenable && (
           <StretchedLink label={linkLabel} aria-labelledby={linkLabel == null ? titleId : undefined} onClick={onOpen} />
         )}

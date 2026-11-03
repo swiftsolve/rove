@@ -32,7 +32,6 @@ function TimelineDay({ group, offlineDurationById }: { group: DayGroup; offlineD
   const headingId = useId()
   return (
     <li className="flex flex-col not-first:mt-[18px]">
-      {/* The date divider: quiet, uppercase, flush with the left edge. */}
       <h2
         id={headingId}
         className="mb-(--card-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
@@ -76,8 +75,7 @@ function EventsFeed({
   }
 
   return (
-    // No left pad so the marker column sits flush with the header icon; the small
-    // right pad keeps timestamps off the very edge.
+    // No left pad, so the markers line up with the header icon.
     <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
       {groupByDay(events, now).map((group) => (
         <TimelineDay key={group.key} group={group} offlineDurationById={offlineDurationById} />
@@ -95,11 +93,8 @@ export function EventsView() {
     void devices.rescan()
   }
   const now = useNow(DAY_HEADING_TICK_MS)
-  // Only render events the UI recognizes; unknown types are skipped entirely
-  // rather than surfaced as a generic row.
   const visibleEvents = useMemo(() => events.filter(isKnownEvent), [events])
   const hasEvents = visibleEvents.length > 0
-  // Offline durations for the `internet_restored` rows, keyed by event id.
   const offlineDurationById = useMemo(() => offlineDurations(visibleEvents), [visibleEvents])
 
   return (

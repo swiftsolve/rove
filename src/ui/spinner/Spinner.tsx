@@ -3,9 +3,8 @@ import 'ldrs/react/Waveform.css'
 import { Waveform } from 'ldrs/react'
 
 /**
- * Shared loading indicator. Wraps the ldrs "waveform" loader so every loading
- * state across the app shares one look. Callers keep their own layout wrapper
- * (e.g. `.page-empty`, `.loading-screen`) for centring and spacing.
+ * The one loading indicator (ldrs "waveform"), so every loading state looks
+ * alike. Callers own its centring and spacing (`.page-empty`).
  */
 export function Spinner({
   size = 24,

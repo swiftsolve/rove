@@ -24,10 +24,10 @@ const PLACEHOLDER_ROWS = [
 ] as const
 
 /**
- * The shared "nothing here yet" page: faded placeholder rows (with a lock badge
- * when the list is locked), a title, a short explanation and an optional action, centred
- * in the content region. Every view's blank state goes through this so they
- * line up on one rhythm and one measure.
+ * The shared "nothing here yet" page: faded placeholder rows (with a lock
+ * badge when locked), a title, a short explanation and an optional action,
+ * centred in the content region. Every blank state uses it, so they share one
+ * rhythm and measure.
  */
 export function EmptyState({ isLocked = false, title, description, actions }: EmptyStateProps) {
   return (
@@ -70,7 +70,7 @@ function PlaceholderRows({ isLocked }: { isLocked: boolean }) {
   )
 }
 
-/** A line of explanation under the title — also for extra notes the `actions` add. */
+/** A line of explanation under the title, also for extra notes the `actions` add. */
 export function EmptyStateDescription({
   children,
   role,

@@ -47,18 +47,12 @@ const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6 
   },
 })
 
-// Interface cards are entity headers (icon tile + name), like the connection
-// card, so they need more room around the tile than a plain card title. The
-// bottom pad is trimmed: with no divider, the header pad and body pad stacked
-// into too big a gap below the name. No divider either: the card reads as one unit.
+// The bottom pad is trimmed: with no divider, header and body padding stacked
+// into too big a gap below the name.
 const PANEL_HEADER = cx(
   'flex items-center justify-between gap-12',
   'px-(--card-header-padding-x) pt-(--card-header-padding-y) pb-8',
 )
-
-// With no divider the header sets most of the gap above the fields; a small top
-// pad adds a little room between the name and the first label. The rows carry
-// only a few fields, so they're compact.
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }) {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
@@ -72,7 +66,7 @@ function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <IconTile color={TILE_COLORS[iface.connectionType]} icon={<InterfaceIcon iface={iface} />} />
-          {/* text-lg: the widget-title size (e.g. "Traffic"), not type-heading-large's larger one. */}
+          {/* text-lg overrides type-heading-large's size to match the card titles. */}
           <h2 className="type-heading-large text-primary min-w-0 truncate text-lg">{iface.name}</h2>
           {iface.isDefault && (
             <Tooltip content="Used for internet traffic" shouldDescribe={false}>
@@ -169,7 +163,6 @@ export function InterfacesView() {
         title={headerTitle(interfaces.length)}
         description={
           interfaces.length > 0 ? (
-            // One line, so a long summary ellipsizes rather than wrapping.
             <InlineMeta shouldTruncate items={interfaceTypeSummaryParts(interfaces)} />
           ) : undefined
         }

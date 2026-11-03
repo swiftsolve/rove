@@ -3,10 +3,9 @@ import { useId } from 'react'
 import type { IconProps } from './Icons'
 
 /**
- * The Rove Mark — a filled centre dot inside an open ring. By default it's drawn
- * in `currentColor` (fill + stroke) so it inherits the accent color from its
- * container, matching the tray icon. Pass `hasGradient` for the app-icon treatment
- * — the same top-to-bottom blue the 1024px dock icon uses.
+ * The Rove Mark: a filled centre dot inside an open ring, in its container's
+ * colour like the tray icon. `hasGradient` gives it the dock icon's
+ * top-to-bottom blue.
  */
 export function BrandIcon({ size = 20, className, hasGradient = false }: IconProps & { hasGradient?: boolean }) {
   const gradientId = useId()

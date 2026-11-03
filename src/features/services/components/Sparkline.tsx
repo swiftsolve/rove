@@ -6,7 +6,6 @@ import type { LatencySample } from '@/features/services/utils/service-latency'
 import { type LatencyBand, latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 
-// A row-sized latency chart.
 const ROOT = 'inline-block shrink-0'
 
 const chartVariants = cva('cursor-crosshair overflow-visible', {
@@ -27,16 +26,13 @@ const chartVariants = cva('cursor-crosshair overflow-visible', {
 
 const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [stroke-linejoin:round]', {
   variants: {
-    /** The down state's flat baseline. It keeps the trend's stroke weight but
-     *  runs the full width with square ends, so it lines up flush with the
-     *  status text under it instead of stopping a pad short of either edge. */
+    /** The down state's flat line: square ends, so it sits flush with the text under it. */
     isFlat: { true: '[stroke-linecap:butt]', false: '[stroke-linecap:round]' },
   },
   defaultVariants: { isFlat: false },
 })
 
-// The value bubble that follows the hovered point: centred over its x and lifted
-// 3px above the chart.
+// Centred over the hovered point and lifted above the chart.
 const TIP = cx(
   'pointer-events-none fixed z-9999 -translate-x-1/2 -translate-y-full whitespace-nowrap',
   'rounded-xs border border-line bg-surface px-6 py-2 shadow-panel',
@@ -63,22 +59,17 @@ type SparklineProps = {
   height?: number
   /** What the chart is about, e.g. the service name; leads its spoken summary. */
   label?: string
-  /** How many samples the x-axis spans. Fixing this to the history window keeps
-   *  the newest sample pinned to the right edge while a partial history fills in
-   *  from the left, so a chart that's still filling grows the way a live trend
-   *  reads instead of stretching (or sprouting from the middle at one sample).
-   *  Defaults to the sample count, which stretches them across the full width. */
+  /** How many samples the x-axis spans. Set to the history window, a partial
+   *  history fills in from the left with the newest sample at the right edge,
+   *  instead of stretching. Defaults to the sample count. */
   slots?: number
-  /** The service is currently down: draw a single flat red line instead of the
-   *  latency trend, along the baseline, so an outage never reads as a
-   *  healthy-looking chart. */
+  /** Draw a flat red baseline instead of the trend, so an outage never reads as healthy. */
   isDown?: boolean
 }
 
-// A little vertical inset so the stroke and the dots aren't clipped at the top
-// and bottom. There's no horizontal inset: the line runs edge to edge so its
-// ends line up with the text above and below it (the svg doesn't clip, so the
-// round caps and dots can overhang the edges a touch).
+// Keeps the stroke and dots off the top and bottom edges. No horizontal inset:
+// the line runs edge to edge to align with the text around it, and the svg
+// doesn't clip, so caps and dots may overhang slightly.
 const VERTICAL_PAD = 3
 
 const DOT_RADIUS = 1.5
@@ -90,31 +81,24 @@ function chartStatus(ms: number | null): LatencyBand {
   return latencyBand(ms)
 }
 
-/** An SVG `points` list for a run of points. */
 function toSvgPoints(run: Point[]): string {
   return run.map((p) => `${p.x},${p.y}`).join(' ')
 }
 
-/** Lay the samples out in the chart's box, oldest on the left. */
 function placePoints(samples: LatencySample[], width: number, height: number, slots: number | undefined): Point[] {
   const sampleCount = samples.length
   const innerHeight = height - VERTICAL_PAD * 2
-  // The axis spans the full history window even before it has filled, so the
-  // newest sample always sits at the right edge.
   const span = Math.max(slots ?? sampleCount, sampleCount)
 
-  // Scale y over the observed latency range, with a small floor so a flat run
-  // of identical values still draws a centred line rather than pinning an edge.
+  // Scaled over the observed range, so small swings still show.
   const values = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
   const min = values.length > 0 ? Math.min(...values) : 0
   const max = values.length > 0 ? Math.max(...values) : 1
   const isFlat = max === min
 
-  // Right-aligned: the last sample lands on the right edge and older ones step
-  // back leftwards, leaving the unfilled part of the window blank.
+  // Right-aligned, leaving the unfilled part of the window blank.
   const xAt = (i: number): number => (span <= 1 ? width : ((span - sampleCount + i) / (span - 1)) * width)
-  // Higher latency sits higher on the chart, so a spike reads as a spike. A run
-  // of identical values has no range to scale over, so it sits on the midline.
+  // Identical values have no range to scale over, so they sit on the midline.
   const yAt = (ms: number): number =>
     isFlat ? VERTICAL_PAD + innerHeight / 2 : VERTICAL_PAD + innerHeight - ((ms - min) / (max - min)) * innerHeight
 
@@ -128,8 +112,7 @@ function placePoints(samples: LatencySample[], width: number, height: number, sl
 /** Consecutive reachable points: never empty. */
 type Run = [Point, ...Point[]]
 
-// Split the line into runs of consecutive reachable samples, so a "down"
-// sample leaves a gap instead of a line diving to the baseline and back.
+// A failed sample leaves a gap instead of a line diving to the baseline and back.
 function splitIntoRuns(points: Point[]): Run[] {
   const runs: Run[] = []
   let run: Run | null = null
@@ -146,7 +129,6 @@ function splitIntoRuns(points: Point[]): Run[] {
   return runs
 }
 
-// A soft area under a line run, closed down to the baseline, for the gradient fill.
 function areaPoints(run: Run, baseline: number): string {
   const firstX = run[0].x
   const lastX = (run.at(-1) ?? run[0]).x
@@ -170,7 +152,6 @@ function chartDescription(samples: LatencySample[], label: string | undefined): 
   return `${subject} over the last ${checks}: ${facts.join(', ')}`
 }
 
-/** The index of the point nearest to `x` horizontally. */
 function nearestPointIndex(points: Point[], x: number): number {
   let nearest = 0
   let bestDistance = Infinity
@@ -201,16 +182,15 @@ function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: R
 }
 
 /**
- * A tiny latency chart for a service row: the recent handshake times drawn as a
- * line, coloured by the latest reading's health band. Failed probes (null ms)
- * break the line and drop a marker to the baseline. Hovering a point reveals its
- * value in a small floating label. A down service is shown as a single flat red
- * baseline rather than its (now meaningless) trend.
+ * A service row's recent handshake times, coloured by the latest reading's health
+ * band. Failed probes break the line and leave a marker on the baseline; hovering
+ * shows a point's value. A down service draws a flat red baseline instead.
  */
 export function Sparkline({ samples, width = 76, height = 22, label, slots, isDown = false }: SparklineProps) {
   const [hover, setHover] = useState<Hover | null>(null)
   const isHovered = hover !== null
-  // Unique per instance so multiple sparklines on a page don't share a gradient.
+  // Per instance, so sparklines on one page don't share a gradient. Colons
+  // aren't safe in a `url(#…)` reference.
   const fillId = useId().replace(/:/g, '')
   const baseline = height - VERTICAL_PAD
 
@@ -228,10 +208,8 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
     return () => window.removeEventListener('scroll', hide, { capture: true })
   }, [isHovered])
 
-  // A down service reads as a single flat red line — its latency trend is
-  // meaningless once it's unreachable, and a green-looking chart on a down row is
-  // worse than none. It sits on the baseline, where failed probes drop to, so it
-  // reads as "nothing" rather than a mid-range reading. Hovering it says "Down".
+  // On the baseline, where failed probes sit, so it reads as nothing rather than
+  // a mid-range reading.
   if (isDown) {
     return (
       <span className={ROOT} style={{ width, height }}>
@@ -263,7 +241,6 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
 
   const latestMs = latest.ms
   const hovered = hover !== null ? points[hover.index] : null
-  // Only multi-point runs get an area — a lone point has none.
   const areaRuns = runs.filter((run) => run.length > 1)
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>): void => {
@@ -284,16 +261,13 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setHover(null)}
       >
-        {/* Area fill under the trend — a vertical fade from the band colour to
-            transparent, echoing the Traffic chart. currentColor ties it to
-            the active health band. */}
+        {/* Fades the band colour to transparent, as on the Traffic chart. */}
         <defs>
           <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="currentColor" stopOpacity={0.22} />
             <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
           </linearGradient>
         </defs>
-        {/* Its fill is the gradient above; it never draws an outline. */}
         {areaRuns.map((run, i) => (
           <polygon
             key={`area-${i}`}
@@ -306,8 +280,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
           run.length > 1 ? (
             <polyline key={i} className={lineVariants()} points={toSvgPoints(run)} />
           ) : (
-            // A lone reachable sample between gaps: draw it as a dot, since a
-            // one-point polyline renders nothing.
+            // A one-point polyline renders nothing, so a lone sample is a dot.
             <circle key={i} className="fill-current" cx={run[0].x} cy={run[0].y} r={DOT_RADIUS} />
           ),
         )}

@@ -28,10 +28,8 @@ export type UsageQuery<T> = {
 }
 
 /**
- * One of the per-app usage breakdowns (apps, hosts, traffic types), mirroring
- * `useDataUsage`: a silent background poll keeps the list live while its view
- * is open, and a missing bridge degrades to a clear message rather than a hung
- * spinner.
+ * One of the per-app usage breakdowns, polled while its view is open. A missing
+ * bridge gives a clear error rather than a hung spinner.
  */
 export function useUsageQuery<T>({
   queryKey,

@@ -25,10 +25,8 @@ type SpeedTestState = {
   /** Connection metadata captured when the last test finished. */
   runConnection: SpeedTestConnection | null
   /**
-   * Running peak of the live throughput per direction *during* the current
-   * test. Lives in this module store (not component state) so it survives the
-   * Speed view unmounting mid-test — otherwise switching tabs and back would
-   * zero the on-screen download/upload figures.
+   * Running peak of the live throughput per direction during the current test.
+   * Kept in the module store so it survives the Speed view unmounting mid-test.
    */
   livePeakDownloadMbps: number
   livePeakUploadMbps: number
@@ -126,11 +124,9 @@ function subscribe(listener: () => void): () => void {
   }
 }
 
-// While a test runs, the connection is saturated by the test itself, so the
-// live throughput is a real reading of the current speed. Fold each sample into
-// the running peak per direction so the on-screen numbers only ever climb. This
-// runs at the module level, independent of any mounted view, so the peaks keep
-// accumulating even while the Speed tab isn't on screen.
+// During a test the test itself saturates the link, so live throughput is a real
+// speed reading. Subscribed at module level so the peaks keep accumulating while
+// the Speed tab is off screen.
 subscribeLiveThroughput(() => {
   if (!state.isTesting) return
   const { downloadMbps, uploadMbps } = getLiveThroughput().throughput
@@ -144,10 +140,8 @@ subscribeLiveThroughput(() => {
 // Monotonic run id: a late progress event or a superseded run can never write
 // over a newer one's state.
 let latestRunId = 0
-// The run a stop was requested for. cancelTest() also bumps latestRunId (making
-// a stopped run non-current), so this is the belt-and-suspenders signal the
-// progress listener checks to keep a late tick from a just-cancelled run from
-// slipping through.
+// The run a stop was requested for: a second guard, beside latestRunId, against a
+// late progress tick from a just-cancelled run.
 let cancelledRunId = 0
 
 async function runTest(): Promise<void> {
@@ -182,12 +176,9 @@ async function runTest(): Promise<void> {
   })
 
   try {
-    // Fetch the run context concurrently with the test instead of awaiting it
-    // first. getNetworkInfo() takes 10s+ on Windows when a VPN and other virtual
-    // adapters are present (each PowerShell probe enumerates them all), and
-    // blocking on it here froze the UI at "Starting speed test…" for that whole
-    // time before the backend test even began. The context is only needed once
-    // the result is in, so overlap it with the test.
+    // Overlap the context read with the test: getNetworkInfo() can take 10s+ on
+    // Windows with a VPN and other virtual adapters, and awaiting it first froze
+    // the UI at "Starting speed test…".
     const contextPromise = currentRunContext()
     const result = await api.runSpeedTest()
     const context = await contextPromise
@@ -215,7 +206,7 @@ async function runTest(): Promise<void> {
     setState({
       ...state,
       isTesting: false,
-      // A user-initiated stop is not an error — just return to the previous state.
+      // A user-initiated stop is not an error.
       error: isCancellation(cause) ? null : 'Speed test failed. Check your connection and try again.',
       progress: INITIAL_PROGRESS,
     })
@@ -224,17 +215,13 @@ async function runTest(): Promise<void> {
 
 function cancelTest(): void {
   if (!state.isTesting) return
-  // Mark the in-flight run cancelled so a stop during the pre-flight still aborts
-  // it before kicking off the backend test.
+  // Lets a stop during the pre-flight abort the run before the backend test starts.
   cancelledRunId = latestRunId
-  // Settle the UI immediately rather than waiting for the backend's test promise
-  // to reject — that lag is what made Stop feel unresponsive. Bumping the run id
-  // makes the in-flight run non-current, so its trailing progress and terminal
-  // writes are ignored and can't clobber the idle state we set here.
+  // Settle the UI now rather than wait for the backend to reject, which made Stop
+  // feel unresponsive. The bumped run id turns the old run's late writes into no-ops.
   latestRunId++
   setState({ ...state, isTesting: false, progress: INITIAL_PROGRESS, error: null })
-  // Still ask the backend to actually stop its work (a no-op if it hasn't started —
-  // which is exactly the case the cancelled run id covers).
+  // A no-op if the backend test hasn't started; cancelledRunId covers that case.
   void window.networkAPI?.cancelSpeedTest()
 }
 

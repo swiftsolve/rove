@@ -7,23 +7,19 @@ import { buildChartRows, type ChartRow, formatAxisLabel } from '@/features/live-
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80
-// The right margin leaves room for the y-axis labels. Hoisted so each render
-// hands recharts the same object.
+// The right margin leaves room for the y-axis labels.
 const CHART_MARGIN = { top: 4, right: 28, bottom: 4, left: 2 }
 
-// The axis labels share one style, so the x and y labels read as one set.
 const AXIS_LABEL_TEXT = 'type-number-small text-tertiary num'
 
-// The y-axis labels are HTML rather than recharts ticks: recharts' own tick
-// labels ghost/duplicate when the domain changes. The 4px inset matches the
-// chart's top and bottom margin so the labels line up with the plot.
+// HTML, not recharts ticks, which ghost and duplicate when the domain changes.
+// The 4px inset matches the chart's vertical margin.
 const Y_AXIS_LABELS = cx(
   'pointer-events-none absolute top-4 right-0 bottom-4 w-[26px]',
   'flex flex-col items-end justify-between',
   AXIS_LABEL_TEXT,
 )
 
-// Props both series' areas share: a smooth line with no animation or dots.
 const AREA_DEFAULTS = {
   type: 'monotone',
   strokeLinecap: 'round',
@@ -49,12 +45,9 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
   const downFillId = `${gradientId}-down`
   const upFillId = `${gradientId}-up`
 
-  // Recomputed only when the samples change, not on every 1 Hz render.
   const rows = useMemo(() => buildChartRows(download, upload), [download, upload])
   const latest = rows.at(-1)
 
-  // Glide the axis toward a smaller scale so the trace doesn't jump taller all
-  // at once; spikes still expand the scale instantly (see useSmoothScale).
   const scaleMax = useSmoothScale(maxMbps)
 
   return (
@@ -64,8 +57,8 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
           <AreaChart
             data={rows}
             margin={CHART_MARGIN}
-            // The wrapper's role="img" label already describes the chart, and there's
-            // no tooltip to drive — so don't let the SVG take a dead Tab stop.
+            // The wrapper's role="img" label describes the chart and there's no
+            // tooltip, so the SVG shouldn't take a dead Tab stop.
             accessibilityLayer={false}
           >
             <defs>
@@ -80,8 +73,7 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
             </defs>
 
             <XAxis dataKey="index" type="number" domain={['dataMin', 'dataMax']} hide />
-            {/* Hidden: it only sets the [0, scaleMax] scale. The visible labels
-                are the HTML overlay below. */}
+            {/* Only sets the scale; the visible labels are the HTML overlay. */}
             <YAxis domain={[0, scaleMax]} hide />
 
             <ReferenceLine y={scaleMax / 2} stroke="var(--border-default)" strokeOpacity={0.15} />
@@ -105,9 +97,8 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
               fill={`url(#${downFillId})`}
             />
 
-            {/* One endpoint marker per series on the latest sample. A reference
-                dot draws just that one, where an Area's `dot` renderer runs for
-                every point on every frame the scale eases. */}
+            {/* A reference dot, not the Area's `dot` renderer, which runs for every
+                point on every frame the scale eases. */}
             {latest && (
               <>
                 <ReferenceDot
@@ -134,8 +125,7 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
         <div className={Y_AXIS_LABELS} aria-hidden>
           <span className="translate-y-[-50%]">{formatAxisLabel(scaleMax)}</span>
           <span>{formatAxisLabel(scaleMax / 2)}</span>
-          {/* Centred on the bottom edge (the y=0 baseline), mirroring the top
-              label, so it lines up with the reference line. */}
+          {/* Centred on the baseline so it lines up with the reference line. */}
           <span className="translate-y-[50%]">0</span>
         </div>
       </div>

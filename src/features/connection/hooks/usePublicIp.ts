@@ -20,9 +20,8 @@ export function usePublicIp(isEnabled: boolean, localIp: string | null): PublicI
     errorMessage: 'Failed to fetch the public IP.',
   })
 
-  // Keep the last known value rather than flashing to "—" on a blip: a network
-  // switch (new key) or a lookup that came back empty leaves `data` null, but
-  // the WAN IP rarely changes — show the previous one until the refetch lands.
+  // A new key or an empty lookup leaves `data` null; the WAN IP rarely changes,
+  // so show the previous one rather than flash "—".
   const [lastIp, setLastIp] = useState<string | null>(null)
   if (data != null && data !== lastIp) setLastIp(data)
 

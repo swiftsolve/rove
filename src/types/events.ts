@@ -2,7 +2,7 @@ import type { LanDeviceKind } from './devices'
 
 /** Slugs the backend stamps on each event; the UI switches on these for copy
  *  and iconography. Kept in sync with the `EVENT_*` constants in
- *  crates/rove-core/src/store.rs. */
+ *  crates/rove-core/src/store/events.rs. */
 export const NETWORK_EVENT_TYPES = [
   'initial_scan',
   'device_joined',

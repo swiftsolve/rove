@@ -87,8 +87,6 @@ function jitterValue(ping: PingStats | null | undefined): ReactNode {
 function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
   const { info } = useNetwork()
   const ping = diagnostics?.gatewayPing
-  // Negotiated link rate of the local connection to the router (Wi-Fi/Ethernet),
-  // or null when disconnected or the OS doesn't report it.
   const linkSpeedMbps = info ? getLinkCapacityMbps(info) : null
   // Many routers report their model as their name too; show it once.
   const model = sameText(diagnostics?.gatewayModel, diagnostics?.gatewayName) ? null : diagnostics?.gatewayModel || null
@@ -97,8 +95,6 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
   return (
     <Card>
       <CardHeader title="Router" icon={<RouterIcon size={15} />} />
-      {/* Three groups (quality, connection, device) split by a hairline that
-          runs the card's full width, like the connection card's details. */}
       <CardBody layout="flush">
         <DataListStack>
           <DataList density="compact">
@@ -158,12 +154,8 @@ function DnsCard({ servers }: { servers: string[] }) {
   )
 }
 
-// The ISP card's right-hand slot: a small "VPN" pill when our egress is a
-// hosting/datacenter ASN (the rows then describe the exit node, not the real
-// ISP), otherwise the brand mark — but only if one actually resolves. Plenty of
-// ISPs have no favicon (Comcast, for one), and a lone letter here would read as
-// a glitch rather than a brand, so this slot stays empty rather than falling
-// back to a monogram. A VPN exit has no brand domain, so the two never contend.
+// "VPN" when the egress is a hosting ASN, else the brand mark if one resolves.
+// No monogram fallback: many ISPs have no favicon, and a lone letter reads as a glitch.
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
   if (isp?.isVpn) return <Badge tone="positive">VPN</Badge>
   if (isp?.domain) {
@@ -181,23 +173,17 @@ function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
       <CardBody>
         {isp ? (
           <DataList density="compact">
-            {/* "Provider", not "ISP": the card's title already says ISP, and
-                under a VPN the value is the exit node's hosting company, which
-                "Provider" describes either way. */}
+            {/* "Provider", not "ISP": under a VPN this is the exit node's host. */}
             <DataRow label="Provider" value={isp.name} />
-            {/* "Website", not "Domain" — in a network tool the latter reads
-                as a DHCP search domain. DataRow hides itself when null, so
-                a lookup that named no domain simply has no row. */}
+            {/* "Website", not "Domain", which reads as a DHCP search domain here. */}
             <DataRow label="Website" value={isp.domain} />
             <DataRow label="ASN" value={isp.asn} />
             <DataRow label="Public IP" value={isp.publicIp} />
             <DataRow label="Location" value={formatLocation(isp)} />
           </DataList>
         ) : (
-          // The card resolves ISP/ASN/country on-device, so it only lands here
-          // when we couldn't even learn our own public IP — i.e. offline. Guard
-          // the copy on the known internet state anyway, so a transient
-          // echo-service blip while online doesn't claim we're offline.
+          // Reached only without a public IP, usually offline. The copy checks the
+          // internet state so an echo-service blip doesn't claim we're offline.
           <p className="type-body-small text-tertiary">
             {diagnostics?.internet === 'online'
               ? 'Provider details are momentarily unavailable.'

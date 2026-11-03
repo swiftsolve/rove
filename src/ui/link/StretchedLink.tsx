@@ -14,14 +14,13 @@ type StretchedLinkProps = Omit<ComponentProps<'button'>, 'aria-label' | 'childre
 
 /**
  * A transparent link stretched over its positioned container (a row; a Card
- * draws its own with `onOpen`),
- * so a click anywhere opens the view the container summarises. It's a link
- * to a screen reader: it moves to another view rather than acting. A control
- * in the container raises itself above it and stays a sibling, never nested.
- * Its focus ring follows the container's corners, just inside the edge.
- * `data-stretched-link` lets the container style itself while it has focus;
- * `className` can round the ring where the container's own corners don't (a
- * list's first and last rows).
+ * draws its own with `onOpen`), so a click anywhere opens the view the
+ * container summarises. It's a link to a screen reader, as it moves to another
+ * view rather than acting. A control in the container raises itself above it
+ * and stays a sibling, never nested. The focus ring follows the container's
+ * corners, just inside the edge; `className` can round it where they don't (a
+ * list's first and last rows). `data-stretched-link` lets the container style
+ * itself while it has focus.
  */
 export function StretchedLink({ label, type = 'button', className, ...buttonProps }: StretchedLinkProps) {
   return (

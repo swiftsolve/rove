@@ -1,18 +1,10 @@
 import type { InternetStatus, ServiceReachability } from '@/types'
 
 /**
- * A small, frontend-owned rolling buffer of per-service latency samples, powering
- * the sparkline beside each row on the Services page. It derives purely from the
- * reachability probes the Services view already polls and persists to
- * localStorage, so it needs no IPC surface — it just appends the latest latency
- * per host on each poll. (The outage *timeline* is the backend's, recorded by
- * the services heartbeat; this is only the trend line beside each row, which is
- * worth nothing once the tab is closed anyway.)
- *
- * Each poll appends one sample per host (the TLS-handshake latency, or null when
- * the probe failed) and keeps only the most recent MAX_SAMPLES per host, so the
- * store stays tiny and the sparkline shows a fixed recent window. Hosts that
- * leave the service list are dropped on the next record.
+ * A frontend-owned rolling buffer of per-host latency for the Services row
+ * sparklines, built from the probes the view already polls and kept in
+ * localStorage, so it needs no IPC. The outage timeline is the backend's; this
+ * is only the recent trend, so it doesn't warrant a backend store.
  */
 
 /** One latency reading for a service at a point in time. */
@@ -28,12 +20,9 @@ export type LatencyHistory = Record<string, LatencySample[]>
 
 const STORAGE_KEY = 'rove.service-latency.v1'
 
-// A short recent window — enough to read a trend at a glance without the store or
-// the sparkline getting busy. At the ~15 s services poll this is a few minutes
-// of history per service.
+// About six minutes at the 15 s services poll: enough to read a trend at a glance.
 export const MAX_SAMPLES = 24
 
-/** The most recent MAX_SAMPLES of a host's samples. */
 function latestWindow(samples: LatencySample[]): LatencySample[] {
   return samples.slice(Math.max(0, samples.length - MAX_SAMPLES))
 }
@@ -69,21 +58,18 @@ export function writeLatencyHistory(history: LatencyHistory): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
   } catch {
-    // Best-effort — a full or unavailable store just means no sparkline history.
+    // Best-effort: a full or unavailable store just means no sparkline history.
   }
 }
 
 /**
- * Append the latest probe's latency for each service to `history` and return the
- * updated map. Keeps only the most recent MAX_SAMPLES per host, and drops hosts
- * that are no longer in the list so the store can't grow without bound. Pure —
- * persistence is the caller's job (see `writeLatencyHistory`).
+ * Append each service's latest latency, keeping MAX_SAMPLES per host and dropping
+ * hosts no longer listed so the store can't grow without bound. Pure: the caller
+ * persists.
  *
- * When this machine is offline every probe fails at once as a side effect of
- * *our* being down, not the service's — recording those nulls would draw a
- * phantom cliff on every sparkline — so the sample is skipped (history returned
- * unchanged) until the network returns. Undefined internet is treated as online,
- * matching the reachability UI.
+ * Offline, every probe fails because we're down, not the service, so the batch is
+ * skipped (the same `history` is returned) rather than drawing a phantom cliff on
+ * every sparkline. Undefined internet counts as online, as in the Services view.
  */
 export function appendSamples(
   history: LatencyHistory,
@@ -108,19 +94,15 @@ export function clearLatencyHistory(): void {
   try {
     localStorage.removeItem(STORAGE_KEY)
   } catch {
-    // Ignore — nothing the user can do about a failed clear.
+    // Nothing the user can do about a failed clear.
   }
 }
 
-// A single module-level cache of the rolling history, appended to once per poll
-// by `recordLatency` (called after each probe in `useServiceReachability`) and
-// read by service rows through `useServiceLatency`. Exposing it as an external
-// store — subscribed via useSyncExternalStore — keeps the read reactive without
-// a per-component effect or a setState during render.
+// An external store (read with useSyncExternalStore), so rows stay reactive
+// without a per-component effect or a setState during render.
 let cache: LatencyHistory = readLatencyHistory()
 const listeners = new Set<() => void>()
 
-/** Adopt a new history: cache it, persist it, and tell every subscriber. */
 function replaceCache(next: LatencyHistory): void {
   cache = next
   writeLatencyHistory(next)
@@ -129,8 +111,8 @@ function replaceCache(next: LatencyHistory): void {
 
 /**
  * Append this poll's latencies to the shared history, persist it, and notify
- * subscribers. A no-op (no write, no notification) when nothing changed — e.g.
- * while offline or with no services — so it's safe to call on every poll.
+ * subscribers. A no-op while offline or with no services, so it's safe to call on
+ * every poll.
  */
 export function recordLatency(reachability: ServiceReachability[], internet: InternetStatus | undefined): void {
   const next = appendSamples(cache, reachability, internet)
@@ -139,11 +121,8 @@ export function recordLatency(reachability: ServiceReachability[], internet: Int
 }
 
 /**
- * Replace the history of the given hosts, keeping only the most recent
- * MAX_SAMPLES of each. This exists for the dev mock, which installs itself only
- * when the real bridge is absent: nothing in the store then came from a real
- * probe, so it hands us a full backdated window and the Services sparklines open
- * populated rather than drawing their first lone sample.
+ * Replace the history of the given hosts, keeping MAX_SAMPLES of each. For the
+ * dev mock, so its sparklines open populated rather than with one lone sample.
  */
 export function seedLatencyHistory(seed: LatencyHistory): void {
   const next: Record<string, LatencySample[]> = { ...cache }
@@ -161,7 +140,7 @@ export function subscribeLatency(listener: () => void): () => void {
   }
 }
 
-/** The current history — a stable reference between changes, as useSyncExternalStore requires. */
+/** The current history: a stable reference between changes, as useSyncExternalStore requires. */
 export function getLatencySnapshot(): LatencyHistory {
   return cache
 }

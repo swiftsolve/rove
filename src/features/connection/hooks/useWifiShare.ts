@@ -15,17 +15,15 @@ async function readWifiShare(): Promise<WifiShare> {
   try {
     return await getNetworkApi().getWifiShare()
   } catch (cause) {
-    // Tauri rejects with the backend's plain string; keep its text, which says
-    // why (not on Wi-Fi, name withheld), rather than a generic message.
+    // Tauri rejects with a plain string; keep its text, which says why.
     throw cause instanceof Error ? cause : new Error(String(cause))
   }
 }
 
 /**
- * The current Wi-Fi network as a QR code, read each time the share dialog
- * opens. Only Try again reads it again: reading the passphrase can raise an OS
- * auth prompt, so nothing retries on its own. The passphrase is in the result,
- * so it's dropped once the dialog closes rather than kept in the cache.
+ * The current Wi-Fi network as a QR code, read each time the share dialog opens.
+ * Nothing retries on its own, since the read can raise an OS auth prompt. Holds
+ * the passphrase, so it's dropped from the cache when the dialog closes.
  */
 export function useWifiShare(): WifiShareQuery {
   const { data, isBusy, error, reload } = useBackendQuery({

@@ -10,8 +10,7 @@ export function totalBytes({ rxBytes, txBytes }: Transfer): number {
   return rxBytes + txBytes
 }
 
-/** The largest total in a list: the scale its rows' bars share, so they read
- *  comparably at a glance. Zero for an empty list. */
+/** The largest total in a list, which every row's bar is scaled against. */
 export function busiestTotal(items: Transfer[]): number {
   return items.reduce((max, item) => Math.max(max, totalBytes(item)), 0)
 }

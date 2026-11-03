@@ -3,7 +3,7 @@ import { sanitizeRate } from '@/types'
 const MIN_SCALE_MBPS = 10
 const HEADROOM = 1.2
 const RECENT_PEAK_WINDOW = 20
-/** Short tail window — when it stays well below the longer peak, traffic has settled. */
+/** Short tail window: when it stays well below the longer peak, traffic has settled. */
 const TAIL_PEAK_WINDOW = 5
 const SETTLED_RATIO = 0.25
 /** Readable axis maxima; above the last one the scale rounds up to the next 1000. */
@@ -33,7 +33,7 @@ function peakInWindow(download: number[], upload: number[], window: number): num
   return peak
 }
 
-/** Peak for axis scaling — drops stale bursts once recent traffic has settled. */
+/** Peak for axis scaling; drops stale bursts once recent traffic has settled. */
 function trafficPeak(download: number[], upload: number[]): number {
   const recent = peakInWindow(download, upload, RECENT_PEAK_WINDOW)
   if (recent === 0) return 0
@@ -41,8 +41,8 @@ function trafficPeak(download: number[], upload: number[]): number {
   const tail = peakInWindow(download, upload, TAIL_PEAK_WINDOW)
   const current = Math.max(sanitizeRate(download.at(-1) ?? 0), sanitizeRate(upload.at(-1) ?? 0))
 
-  // After a speed test or counter spike the 20 s window still holds the burst
-  // even though live traffic has returned to normal — scale to what's on the wire now.
+  // After a speed test or counter spike the window still holds the burst, so
+  // scale to what's on the wire now.
   if (tail < recent * SETTLED_RATIO && current < recent * SETTLED_RATIO) {
     return Math.max(tail, current)
   }
@@ -51,8 +51,8 @@ function trafficPeak(download: number[], upload: number[]): number {
 }
 
 /**
- * Y-axis max from recent traffic. During a speed test, lock to link capacity.
- * Otherwise scale to fit the data — never jump to full link speed on light traffic.
+ * Y-axis max from recent traffic. During a speed test, lock to link capacity;
+ * otherwise fit the data, never jumping to full link speed on light traffic.
  */
 export function resolveChartScale(
   download: number[],

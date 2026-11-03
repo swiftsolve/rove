@@ -21,15 +21,9 @@ const INITIAL_STATE: LiveThroughputState = {
 }
 
 /**
- * The live feed is a single module-level store, not per-component state. One
- * owner (mounted high in the tree via `useLiveThroughputSource`) holds the
- * backend subscription and folds each 1 Hz sample into a rolling 60 s history;
- * views just read the store. Keeping one owner means the history is sampled
- * continuously — including while you're on another tab — so the chart is already
- * current when you return to Home instead of showing a frozen snapshot from when
- * you left. It also means the backend subscription is never toggled off-and-on
- * during a view swap, which previously raced two ordering-independent IPC calls
- * and could leave the feed stuck.
+ * One module-level store with a single owner (`useLiveThroughputSource`), so the
+ * history keeps sampling while another tab is open and a view swap never toggles
+ * the backend subscription, which raced two IPC calls and could stick the feed.
  */
 let storeState: LiveThroughputState = INITIAL_STATE
 const listeners = new Set<() => void>()
@@ -49,18 +43,14 @@ function ingestSample(update: LiveThroughput): void {
   setStoreState({ throughput, history })
 }
 
-// The window went out of view long enough to actually pause the feed. Drop the
-// stale trace so that when the window comes back the chart refills live from
-// "now" instead of resuming a snapshot from minutes ago. (This never fires on a
-// tab switch — the window stays visible then, so the feed keeps running.)
+// Once the feed has paused, drop the stale trace so the chart refills from now
+// instead of resuming minutes-old data.
 function resetHistory(): void {
   setStoreState(INITIAL_STATE)
 }
 
-// Backend subscribe/unsubscribe are a global on/off with no ref-count of their
-// own. A brief hidden blip (or React 18 StrictMode's mount/unmount/remount)
-// must not toggle them, so the teardown is deferred and cancelled if the owner
-// re-activates within the grace window.
+// The backend subscription is a global switch with no ref-count, so a brief
+// hidden blip or StrictMode's remount must not toggle it: teardown waits this long.
 const SUBSCRIPTION_GRACE_MS = 2_000
 let isSourceActive = false
 let detachEvents: (() => void) | null = null
@@ -101,9 +91,8 @@ function scheduleStopSource(): void {
 
 /**
  * Owns the shared live-throughput subscription. Mount once, high in the tree,
- * passing `isActive` = window visible. The feed then runs continuously across tab
- * switches (the window stays visible) and only pauses when the window is
- * genuinely hidden (minimised / occluded), matching the polling hooks.
+ * with `isActive` set to window visibility, so the feed runs across tab switches
+ * and pauses only while the window is hidden.
  */
 export function useLiveThroughputSource(isActive: boolean): void {
   useEffect(() => {
@@ -137,9 +126,8 @@ export function subscribeLiveThroughput(listener: () => void): () => void {
   return subscribeStore(listener)
 }
 
-// Vite HMR re-evaluates this module without tearing down the Rust backend or the
-// Tauri event listeners registered by the previous bundle — release them here so
-// the next bundle's owner starts from a clean slate.
+// Vite HMR re-evaluates this module but keeps the previous bundle's backend
+// subscription and Tauri listeners, so release them here.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     cancelScheduledStop()

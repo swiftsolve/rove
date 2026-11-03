@@ -11,11 +11,8 @@ const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   defaultVariants: { isLeaving: false },
 })
 
-// The online tally shares the scan status's slot and motion: it slides in from
-// the left when a scan finishes (active turns true) and slides back out to the
-// left when the next scan starts and the status takes the slot. Like ScanStatus
-// it lingers mounted for SCAN_EXIT_MS so the slide-out can play rather than the
-// count just vanishing.
+// Shares ScanStatus's slot and motion, and like it stays mounted for
+// SCAN_EXIT_MS so the slide-out can play.
 export function OnlineIndicator({ isActive, count }: { isActive: boolean; count: number }): JSX.Element | null {
   const isMounted = usePresence(isActive, SCAN_EXIT_MS)
 

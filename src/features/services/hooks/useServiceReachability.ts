@@ -6,46 +6,33 @@ import { recordLatency } from '@/features/services/utils/service-latency'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { NetworkAPI, ServicesReport } from '@/types'
 
-// The Services view's probe cadence — the same as the Connection view's live
-// poll, so the sparklines keep the rate they had when services rode on it.
+// Matches the Connection view's live poll, which services used to ride on, so
+// the sparklines keep their rate.
 const SERVICE_POLL_INTERVAL_MS = 15_000
 
 type UseServiceReachabilityResult = {
   /** The latest probe set, or null before the first read lands. */
   report: ServicesReport | null
   error: string | null
-  /** Re-probe now, ahead of the poll — used after a service is added or removed
-   *  so the changed row's latency lands immediately. */
+  /** Re-probe now, ahead of the poll, so a just-changed row's latency lands at once. */
   run: () => Promise<void>
 }
 
 async function probeServices(api: NetworkAPI): Promise<ServicesReport> {
   const report = await api.runServices()
-  // Record per-host latency from each probe so the Services page sparklines
-  // accrue while the tab is open. Done here, once per batch, rather than in an
-  // effect, which would record a batch again each time a Services screen mounts.
-  // The outage *timeline* is not recorded here — that's the backend heartbeat's
-  // job (see `spawn_services_heartbeat`), so it keeps accruing with this tab,
-  // and the window, closed.
-  //
-  // The batch's internet status goes along: when this machine is offline every
-  // service probe fails at once, which isn't the services' fault. It's paired
-  // with the probes from the same batch (see `ServicesReport`) so the two never
-  // disagree about that window.
+  // Recorded here, once per batch, not in an effect, which would record a batch
+  // again each time a Services screen mounts. The batch's own internet status
+  // goes along so offline failures aren't blamed on the services. The outage
+  // timeline is the backend heartbeat's (`spawn_services_heartbeat`).
   recordLatency(report.services, report.internet)
   return report
 }
 
 /**
- * Service reachability + the internet context to read it, on its own poll —
- * deliberately independent of `useDiagnostics`, so opening the Connection view
- * no longer probes the user's services (and vice versa). Fetches when the
- * Services tab opens and every {@link SERVICE_POLL_INTERVAL_MS} while it's open;
- * paused while hidden, one fresh read on resume. Keyed by network (and waiting
- * for it), so stale results never linger across networks.
- *
- * When the live internet status flips, the services are re-probed right away
- * (see below).
+ * Service reachability and the internet status to read it by, on its own poll,
+ * independent of `useDiagnostics` so the Connection view doesn't probe the user's
+ * services. Polls every {@link SERVICE_POLL_INTERVAL_MS} while the tab is open,
+ * paused while hidden. Keyed by network, so results never linger across networks.
  */
 export function useServiceReachability(): UseServiceReachabilityResult {
   const api = window.networkAPI
@@ -65,10 +52,9 @@ export function useServiceReachability(): UseServiceReachabilityResult {
     pollIntervalMs: SERVICE_POLL_INTERVAL_MS,
   })
 
-  // When the live internet status flips (lost or restored), re-probe right away
-  // rather than waiting out the poll, so the rows catch up with the header and
-  // title bar within a second instead of showing the previous batch's verdict.
-  // The first verdict after launch isn't a flip — the tab's own fetch covers it.
+  // Re-probe when the live internet status flips, so the rows catch up with the
+  // title bar instead of showing the last batch's verdict. The first verdict
+  // after launch isn't a flip: the tab's own fetch covers it.
   const lastInternetRef = useRef(internet)
   useEffect(() => {
     const previous = lastInternetRef.current

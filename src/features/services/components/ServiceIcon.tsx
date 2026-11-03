@@ -5,9 +5,8 @@ import { type JSX, useState } from 'react'
 // icon service has nothing to serve for them and answers 404.
 const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', '.localdomain']
 const IPV4_LITERAL = /^\d{1,3}(\.\d{1,3}){3}$/
-// No backing chip: favicons render on the panel directly, so logos with
-// transparent padding blend in instead of flashing a white square. Most service
-// favicons carry their own background, so this reads cleanly.
+// No backing chip, so logos with transparent padding blend into the panel
+// instead of showing a white square.
 const ICON = 'shrink-0 rounded-xs object-contain'
 const MONOGRAM = cx(
   ICON,
@@ -15,16 +14,15 @@ const MONOGRAM = cx(
   'text-2xs font-semibold leading-none text-secondary',
 )
 
-// Requested well above the rendered size so it stays crisp on high-DPI screens.
+// Well above the rendered size, so it stays crisp on high-DPI screens.
 const FAVICON_REQUEST_PX = 64
 
-/** Whether a public favicon could exist for `host`. LAN names (mDNS `.local`,
- *  bare single-label hostnames) and IP literals never resolve at the icon
- *  service — asking anyway just spends a request to be told 404. */
+/** Whether a public favicon could exist for `host`. LAN names and IP literals
+ *  only ever get a 404 from the icon service, so they aren't asked for. */
 function mayHaveFavicon(host: string): boolean {
   const normalized = host.trim().toLowerCase().replace(/\.$/, '')
   if (!normalized) return false
-  // IPv6 literal, bracketed or bare.
+  // An IPv6 literal, bracketed or bare.
   if (normalized.includes(':')) return false
   if (IPV4_LITERAL.test(normalized)) return false
   if (!normalized.includes('.')) return false
@@ -42,7 +40,7 @@ const failedFavicons = new Set<string>()
 type ServiceIconProps = {
   /** Hostname whose favicon to show, e.g. "netflix.com". */
   host: string
-  /** Service label, used for the monogram fallback and alt text. */
+  /** Service label, used for the monogram fallback. */
   name: string
   /** Rendered edge length in px. */
   size?: number
@@ -54,18 +52,15 @@ type ServiceIconProps = {
   src?: string | null
   /**
    * What to render when no icon resolves. `'monogram'` (the default) keeps a
-   * list's rows aligned by always occupying the box. `'none'` renders nothing —
-   * for a standalone slot, where a bare letter reads as a glitch rather than as
-   * a brand.
+   * list's rows aligned. `'none'` renders nothing, for a standalone slot where a
+   * bare letter reads as a glitch.
    */
   fallback?: 'monogram' | 'none'
 }
 
-/** An icon for a service or app, resolved in three tiers: an explicit `src`
- *  (e.g. the app's real OS icon), then the registered-domain favicon via Google's
- *  icon service (requested at 64px so it stays crisp on high-DPI screens even in a
- *  ~16px box), then a letter monogram (or nothing — see `fallback`). Each tier
- *  falls through to the next on a missing source or a load error. */
+/** An icon for a service or app: an explicit `src`, then the host's favicon from
+ *  Google's icon service, then a monogram (see `fallback`). Each tier falls
+ *  through to the next on a missing source or a load error. */
 export function ServiceIcon({
   host,
   name,
@@ -74,8 +69,8 @@ export function ServiceIcon({
   fallback = 'monogram',
 }: ServiceIconProps): JSX.Element | null {
   const [hasSrcFailed, setHasSrcFailed] = useState(false)
-  // Favicon failure is tracked per host in `failedFavicons`, not in state, so it
-  // survives remounts; this only re-renders us when a load error records one.
+  // Failures live in `failedFavicons` so they survive remounts; this state only
+  // forces the re-render after one is recorded.
   const [, noteFaviconFailure] = useState(0)
   const dimensions = { width: size, height: size }
 

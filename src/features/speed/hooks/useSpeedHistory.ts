@@ -13,9 +13,8 @@ type SpeedHistory = {
 }
 
 /**
- * Past speed-test results, read each time the history page opens. A test that
- * finishes while the page is open shows up without a refresh: saving its
- * result invalidates this query (see `useSpeedTest`).
+ * Past speed-test results, read each time the history page opens. A finished
+ * test invalidates the query (see `useSpeedTest`), so an open page updates.
  */
 export function useSpeedHistory(): SpeedHistory {
   const { data } = useBackendQuery({

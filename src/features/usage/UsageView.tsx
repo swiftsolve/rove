@@ -38,11 +38,7 @@ const CHART_SIDE_MARGIN = 4
 const BAR_MAX_WIDTH = 9
 const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
 
-// The footer strip: the inset tier, same as the capabilities and speed-test
-// footers, with no hairline (the colour step alone separates it). It bleeds to
-// the card's left, right and bottom edges, and the card's overflow:hidden rounds
-// its bottom corners. Its padding matches the speed-test footer's rhythm. The
-// "Since boot" label sits left, the down/up totals grouped at the right.
+// Full-bleed inset strip; the card's overflow:hidden rounds its bottom corners.
 const TOTALS_FOOTER = cx(
   'type-caption text-tertiary flex items-center justify-between gap-12',
   'mt-12 -mx-(--card-body-padding) -mb-(--card-body-padding) p-(--card-body-padding)',
@@ -133,9 +129,8 @@ function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?
   )
 }
 
-/** Hovered-bar highlight: the bar itself, capped with a dot at its top — the
- *  same marker language as the line charts' endpoint dots, rather than a grey
- *  box behind the whole day. Paired with `cursor={false}` so there's no pill. */
+/** Hovered-bar highlight: the bar capped with a dot, like the line charts'
+ *  endpoint dots. Paired with `cursor={false}` so there's no grey band. */
 const renderActiveBar =
   (color: string) =>
   ({ x = 0, y = 0, width = 0, height = 0 }: { x?: number; y?: number; width?: number; height?: number }) => (
@@ -146,9 +141,7 @@ const renderActiveBar =
         cy={y}
         r={5}
         fill={color}
-        // Ring in the band's own surface colour (not text-primary) so the dot
-        // reads as punched out of the chart in both themes — in light mode a
-        // text-primary ring resolved to a harsh near-black outline.
+        // The surface colour, not text-primary, which is near-black in light mode.
         stroke="var(--bg-inset)"
         strokeWidth={1.5}
       />
@@ -219,10 +212,8 @@ function WeekChart({ days }: { days: DailyUsage[] }) {
           />
         </BarChart>
       </ResponsiveContainer>
-      {/* One invisible column per day over the plot, matching the chart's equal
-          day bands, so Tab steps through the days. Mouse events pass through to
-          the chart. The tooltip and the bars' marker show the focused day, so
-          the columns draw no focus ring. */}
+      {/* An invisible tab stop per day over the plot; mouse events pass through.
+          No focus ring: the tooltip and bar marker show the focused day. */}
       <div
         className="pointer-events-none absolute inset-y-0 flex"
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
@@ -272,8 +263,6 @@ export function UsageView() {
           <Card>
             <CardHeader title="Today" icon={<TodayIcon size={15} />} />
             <CardBody>
-              {/* Today metrics sit on the plain card surface; the card body's top
-                  padding is the only gap below the title. */}
               <dl className="grid grid-cols-2 gap-16">
                 <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
                 <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />

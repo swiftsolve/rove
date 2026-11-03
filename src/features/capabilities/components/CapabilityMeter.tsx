@@ -8,7 +8,6 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import type { CapabilityLevel } from '@/types'
 import { BarMeter } from '@/ui'
 
-// How many of the four bars each level fills.
 const LEVEL_BAR_COUNT: Record<CapabilityLevel, number> = {
   excellent: 4,
   good: 3,
@@ -17,9 +16,7 @@ const LEVEL_BAR_COUNT: Record<CapabilityLevel, number> = {
   unsupported: 0,
 }
 
-// The bars take the level's fill colour (the same as the row's icon); muted is
-// the look an unsupported capability already has, so every "no rating right
-// now" meter reads the same.
+// Muted reuses the unsupported look, so every "no rating now" meter reads the same.
 const rootVariants = cva('inline-flex shrink-0 items-center gap-8 text-xs font-medium', {
   variants: {
     tone: { ...CAPABILITY_LEVEL_FILL_COLORS, muted: 'text-tertiary' },
@@ -58,7 +55,7 @@ export function CapabilityMeter({
   barsClassName,
 }: CapabilityMeterProps) {
   return (
-    // A <span> (styled inline-flex) so the meter can sit inside a button row.
+    // A <span> so the meter can sit inside a button.
     <span className={rootVariants({ tone: isMuted ? 'muted' : level })}>
       {/* Muted shows every bar unlit; dimmed still shows the stale rating, in grey. */}
       <BarMeter

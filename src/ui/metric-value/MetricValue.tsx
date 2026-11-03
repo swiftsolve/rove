@@ -4,7 +4,7 @@ import { cn } from '../foundations/cn'
 import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
 
-// The numeric face, with tabular figures so the width holds while it eases.
+// Tabular figures, so the width holds while it eases.
 const metricVariants = cva('num', {
   variants: {
     status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
@@ -15,9 +15,8 @@ const metricVariants = cva('num', {
 export type MetricStatus = VariantOf<typeof metricVariants, 'status'>
 
 /**
- * A numeric readout that eases toward its latest value each poll (up or down),
- * matching the Traffic readouts. On first paint it shows the value outright
- * — the ease only kicks in when a subsequent poll changes the number.
+ * A number that eases toward its latest value each poll. The first paint shows
+ * the value outright; only a later change eases.
  */
 export function MetricValue({
   value,

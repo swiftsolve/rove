@@ -6,15 +6,13 @@ export type DayGroup = {
   events: NetworkEvent[]
 }
 
-// A stable per-calendar-day key (local time) used to slice the feed into days.
+// Local time, so days split at the user's midnight.
 function dayKey(ts: number): string {
   const date = new Date(ts)
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
-// The date label for a day section: "Today" / "Yesterday" for the two most
-// recent days, otherwise "Monday, 12th January" (with the year appended when
-// it isn't the current one).
+// "Today", "Yesterday", else e.g. "Monday, 12th January" (plus the year if not this one).
 export function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
   const now = new Date(nowMs)
@@ -28,8 +26,7 @@ export function formatDayHeading(ts: number, nowMs: number): string {
   return date.getFullYear() === now.getFullYear() ? base : `${base} ${date.getFullYear()}`
 }
 
-// Slice the (already time-ordered) feed into consecutive same-day runs, keeping
-// the incoming order so the timeline stays continuous within each day.
+// Consecutive same-day runs of the already-ordered feed, order kept.
 export function groupByDay(events: NetworkEvent[], now: number): DayGroup[] {
   const groups: DayGroup[] = []
   for (const event of events) {

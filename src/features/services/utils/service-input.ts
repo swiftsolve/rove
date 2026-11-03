@@ -9,32 +9,26 @@ function isIpv4(host: string): boolean {
   return IPV4.test(host) && host.split('.').every((o) => Number(o) <= 255)
 }
 
-/** Derive a display label from a host: an IP stays as-is; a hostname becomes
- *  its registrable label, capitalized (api.github.com → "Github", zoom.us →
- *  "Zoom"). Best-effort — good enough for a card label, not a PSL parser. */
+/** A display label from a host, e.g. api.github.com → "Github". An IP stays as-is.
+ *  Best-effort: good enough for a label, not a public-suffix parser. */
 function deriveName(host: string): string {
   if (isIpv4(host)) return host
   const labels = host.split('.')
-  // The label before the public suffix — the second-to-last for a normal
-  // "name.tld", falling back to the first for anything shorter.
+  // Assumes a one-label suffix, so "bbc.co.uk" reads as "Co".
   const core = (labels.length >= 2 ? labels[labels.length - 2] : labels[0]) ?? host
   return core.charAt(0).toUpperCase() + core.slice(1)
 }
 
 /**
- * Parse a user's free-form entry — a URL ("https://github.com/x"), a bare host
- * ("github.com"), or an IP ("192.168.1.1:8080") — into a `{ name, host }` we can
- * probe and label. Returns null when nothing host-shaped can be extracted.
- *
- * The port and path are intentionally dropped: the reachability probe always
- * targets :443, and the host is all the favicon and probe need.
+ * Parse a URL, bare host or IP into a `{ name, host }`, or null when nothing
+ * host-shaped is there. The port and path are dropped: the probe always targets
+ * :443.
  */
 export function parseServiceInput(raw: string): ServiceDefinition | null {
   const trimmed = raw.trim()
   if (!trimmed) return null
 
-  // Prepending a scheme lets the URL parser handle "host:port/path" and bare
-  // hosts uniformly; a string that already carries a scheme is left alone.
+  // A scheme lets the URL parser handle "host:port/path" and bare hosts alike.
   const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 
   let host: string

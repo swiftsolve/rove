@@ -84,7 +84,6 @@ export function IconTileButton({
       className={cn(
         look.className,
         'transition-[background,transform] duration-(--duration-fast) ease-out data-disabled:cursor-default',
-        // Keyboard focus lifts it like hover, beside its focus ring.
         'usable:hover:bg-current/(--opacity-tint-lg) usable:hover:transform-[translateY(-2px)_scale(1.06)]',
         'usable:focus-visible:bg-current/(--opacity-tint-lg) usable:focus-visible:transform-[translateY(-2px)_scale(1.06)]',
         className,

@@ -1,8 +1,6 @@
-/** Is this peer address on the user's own network — a router or LAN device
- *  rather than a public host out on the internet? Covers the ranges that read as
- *  "local" to a person: RFC-1918, loopback, link-local, CGNAT, and the IPv6
- *  loopback / link-local / unique-local ranges. Anything unrecognised is treated
- *  as public: it's the safer default for a "this is local" cue. */
+/** Whether a peer address is on the user's own network: RFC 1918, loopback,
+ *  link-local, CGNAT and their IPv6 counterparts. Anything unrecognised counts as
+ *  public, the safer default for a "this is local" cue. */
 export function isPrivateIp(ip: string): boolean {
   const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip)
   if (v4) {

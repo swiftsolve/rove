@@ -32,9 +32,7 @@ const scanPhaseVariants = cva(
 type ScanPhaseState = VariantOf<typeof scanPhaseVariants, 'state'>
 
 // The scan runs its stages concurrently and reports no per-stage progress, so
-// ScanStatus steps through them on a timer — a forward-reading approximation, in
-// the pipeline's real order (sweep the subnet, listen for announcements, then
-// name and classify what replied). It holds on the last stage until the scan ends.
+// these step on a timer, in pipeline order, holding on the last until it ends.
 const SCAN_PHASES = ['Sweeping', 'Listening', 'Identifying'] as const
 const SCAN_PHASE_MS = 1300
 
@@ -43,20 +41,9 @@ function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
   return index < currentPhase ? 'past' : 'next'
 }
 
-// A pulsing green dot + one-word stage. On first load it fills the subtitle
-// slot alone; on a rescan it trails the subnet.
-//
-// Motion: the indicator slides in from the left when a scan starts, the stage
-// words fade upward through each other while it runs, and on completion the
-// whole thing slides back out to the left. The exit is why it takes `isActive`
-// instead of being conditionally rendered — it stays mounted for SCAN_EXIT_MS
-// after the scan ends so the slide-out can play.
-//
-// All three words are stacked (a hidden sizer holds the width to the longest
-// so the layout never jumps); each one's state class (past, current, next) places it.
-//
-// `isLiveRegion` makes it its own polite live region; off when it shares the
-// subnet's indicator slot, which is the live region there.
+// A pulsing dot and a one-word stage. Takes `isActive` rather than being
+// conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
+// `isLiveRegion` is off when it shares the subnet's slot, which is the live region.
 export function ScanStatus({
   isActive,
   isLiveRegion,
@@ -69,7 +56,6 @@ export function ScanStatus({
   // Rewind once unmounted, so the next scan starts from the first stage word.
   if (!isMounted && phase !== 0) setPhase(0)
 
-  // Step the stage word while a scan runs.
   useEffect(() => {
     if (!isActive) return
     const intervalId = window.setInterval(() => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)), SCAN_PHASE_MS)
@@ -84,8 +70,7 @@ export function ScanStatus({
       aria-hidden={isActive ? undefined : true}
     >
       <StatusDot tone="positive" pulse="busy" className={STATUS_DOT} />
-      {/* The stage words are stacked so they cross-fade in place; a hidden sizer
-          (the longest label) holds the box to a stable width so nothing reflows. */}
+      {/* A hidden sizer (the longest word) keeps the stacked words from reflowing. */}
       <span className="relative inline-block">
         <span className="invisible" aria-hidden>
           Identifying

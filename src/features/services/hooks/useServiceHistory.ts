@@ -17,13 +17,9 @@ type UseServiceHistoryResult = {
 }
 
 /**
- * The services outage timeline, owned by the backend store and recorded by the
- * always-on services heartbeat — so it holds outages that happened while this
- * page, or the whole window, was closed. It re-reads each time the timeline
- * opens, showing the cached copy meanwhile.
- *
- * Re-reads whenever the heartbeat says it folded in a fresh probe, so an outage
- * that starts while the timeline is on screen appears without a manual refresh.
+ * The services outage timeline, recorded by the backend's always-on heartbeat, so
+ * it holds outages from while the window was closed. Re-reads on open (showing
+ * the cached copy meanwhile) and whenever the heartbeat folds in a fresh probe.
  */
 export function useServiceHistory(): UseServiceHistoryResult {
   const api = window.networkAPI

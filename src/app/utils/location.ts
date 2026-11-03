@@ -9,9 +9,8 @@ export type SpeedSub = { view: 'details'; target: CapabilityId | null } | { view
 export type ServicesSub = { view: 'timeline' }
 
 /** A subpage layered over the Apps tab. `null` means the tab's main page.
- *  `'hosts'` is the per-app remote-host breakdown — `app` names the group to
- *  open expanded (others collapsed), omitted for the plain "All hosts" entry
- *  point. `'traffic'` is the flat by-protocol breakdown ("All traffic types"). */
+ *  `'hosts'` is the per-app remote-host breakdown, where `app` names the group to
+ *  open expanded. `'traffic'` is the by-protocol breakdown. */
 export type AppsSub = { view: 'hosts'; app?: string | null } | { view: 'traffic' }
 
 /**
@@ -39,24 +38,20 @@ export type Navigation = {
 export const HOME_LOCATION: AppLocation = { tab: 'home' }
 
 /**
- * The screen a subpage's Back button should return to: a subpage falls back to
- * its own tab's main page, anything else to Home. Used when there's no app
- * history entry to pop (e.g. loaded straight onto a subpage, or embedded in a
- * host page), so Back always lands somewhere sensible in-app instead of
- * escaping to whatever the browser had before us.
+ * Where Back goes when there's no app history entry to pop: a subpage to its
+ * tab's main page, anything else to Home. Keeps Back from leaving the app.
  */
 export function parentLocation(location: AppLocation): AppLocation {
   const isOnSubpage = location.speedSub != null || location.servicesSub != null || location.appsSub != null
   return isOnSubpage ? { tab: location.tab } : HOME_LOCATION
 }
 
-/** The focused app of an Apps subpage, or null — only the `hosts` view carries
- *  one, so this narrows the union before reaching for `app`. */
+/** The focused app of an Apps subpage, or null. Only `hosts` carries one. */
 function appsSubApp(sub: AppsSub | null | undefined): string | null {
   return sub?.view === 'hosts' ? (sub.app ?? null) : null
 }
 
-/** A short, stable key for a location — handy for keying effects (e.g. scroll). */
+/** A short, stable key for a location, for keying effects (e.g. scroll). */
 export function locationKey(location: AppLocation): string {
   return [
     location.tab,

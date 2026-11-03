@@ -5,10 +5,9 @@ import { cn } from '../foundations/cn'
 import { pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons/Icons'
 
-// Muted at rest and the accent on hover, unless disabled. Focus shows the way hover does
-// (accent and underline), not with a ring. The pill's padding hangs outside
-// the text (with the icons' empty edges), so the words line up with the text
-// around them.
+// Focus shows the way hover does (accent and underline), not with a ring. The
+// pill's padding hangs outside the text (with the icons' empty edges), so the
+// words line up with the text around them.
 const LINK = cx(
   'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 ml-[-9.5px] mr-[-9px]',
   'text-[length:inherit] font-medium whitespace-nowrap text-secondary no-underline',

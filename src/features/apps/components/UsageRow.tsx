@@ -7,10 +7,8 @@ import { TransferFigures } from '@/features/apps/components/TransferFigures'
 import { totalBytes, type Transfer, transferLabel } from '@/features/apps/utils/transfer'
 import { ChevronRightIcon, SplitBar, StretchedLink, type VariantOf } from '@/ui'
 
-// A row runs edge to edge in the card and owns the horizontal inset, so the
-// hairlines between rows (on the list) span the full width. Every row carries
-// equal top and bottom padding, so the first and last aren't special-cased.
-// A link row hovers with the Speed page's capability-row wash.
+// The row, not the list, owns the inset, so the hairlines between rows span the
+// full width.
 const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
   variants: {
     isLink: {
@@ -22,19 +20,17 @@ const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
   },
 })
 
-// In a link row the visual layers (this line, the bar and the figures) are
-// click-through, so the overlay button owns all pointer interaction (cursor and
-// click), the caret included.
+// In a link row the visual layers are click-through, so the overlay button owns
+// every pointer interaction.
 const mainLineVariants = cva('flex items-center justify-between gap-12', {
   variants: {
     isLink: { true: 'pointer-events-none' },
   },
 })
 
-// The bar and the figures start at the icon's drawn left edge. A tile fills its
-// box, so the bar starts flush and the figures pull left by the arrow icon's
-// side bearing (~2px at 11px). A line icon is inset by its own bearing, so the
-// bar sits just inside it and the down arrow lands centred under it.
+// The bar and figures start at the icon's drawn left edge. A tile fills its box,
+// so only the figures pull left, by the arrow's side bearing (~2px at 11px). A
+// line icon is inset by its own bearing, so the bar moves in to match.
 const barVariants = cva(null, {
   variants: {
     iconKind: { tile: null, line: 'ml-[3px]' },
@@ -48,10 +44,8 @@ const figuresVariants = cva(null, {
   },
 })
 
-// The whole row is the link, through a StretchedLink, so the block content
-// needn't nest inside a button. Its focus ring sits just inside the row (rows
-// run edge to edge), square except where the first and last rows meet the
-// card's rounded corners.
+// A StretchedLink, so the block content needn't nest inside a button. Its focus
+// ring rounds only where the first and last rows meet the card's corners.
 const ROW_LINK = 'group-first/row:rounded-t-lg group-last/row:rounded-b-lg'
 
 const CARET = cx(
@@ -72,9 +66,7 @@ type UsageRowProps = {
   link?: { label: string; onOpen: () => void }
 }
 
-/** One usage row, styled like a Services row: icon and name on the left, the
- *  total on the right, then a proportional down/up bar and the byte figures
- *  beneath. */
+/** A usage row: name and total, then a proportional down/up bar and the figures. */
 export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: UsageRowProps) {
   const isLink = link !== undefined
   return (

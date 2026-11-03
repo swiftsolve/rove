@@ -5,13 +5,7 @@ import { useSetting } from '@/hooks/useSetting'
 
 /**
  * The colour-theme preference: an explicit choice, or `system` to follow the
- * OS's `prefers-color-scheme`. A setting like any other (`useSetting`), so it
- * survives reloads and every window agrees on it. With nothing stored the app
- * starts dark; `system` is opt-in from Settings.
- *
- * The rest of the app only cares about the resolved light/dark boolean; this
- * hook derives it from the mode and, when `system`, from the live OS setting.
- * The circular-reveal animation the swap plays lives in theme-transition.ts.
+ * OS's `prefers-color-scheme`. Stored as a setting, so every window agrees.
  */
 export type ThemeMode = 'dark' | 'light' | 'system'
 
@@ -27,10 +21,8 @@ function themeModeFrom(stored: string, legacy: string): ThemeMode {
   // fresh install falls through to the default below.
   if (legacy === 'true') return 'light'
   if (legacy === 'false') return 'dark'
-  // Dark is the app's own look: it's what index.html declares (color-scheme,
-  // theme-color) and what the first paint shows, so starting there means no
-  // flash and no surprise for someone on a light desktop. 'system' remains a
-  // choice in Settings, just not the one we make for you.
+  // Dark matches what index.html declares and the first paint shows, so there's
+  // no flash. 'system' is opt-in from Settings.
   return 'dark'
 }
 
@@ -60,8 +52,7 @@ export function useThemeState(): Theme {
   const mode = themeModeFrom(storedMode, legacyMode)
   const [isSystemLight, setIsSystemLight] = useState<boolean>(systemPrefersLight)
 
-  // Track the OS preference so a 'system' choice reflects it live (e.g. the user
-  // flips their desktop to light while the app is open).
+  // So a 'system' choice follows the desktop live.
   useEffect(() => {
     const lightQuery = window.matchMedia(LIGHT_QUERY)
     const onChange = (): void => setIsSystemLight(lightQuery.matches)
@@ -71,10 +62,8 @@ export function useThemeState(): Theme {
 
   const isLight = isResolvedLight(mode, isSystemLight)
 
-  // Mirror the resolved theme onto the document element as a class so the design
-  // tokens switch to their Light values. Covers passive changes too (an OS flip while on
-  // 'system', or another window's choice), which arrive here without going
-  // through the animated setMode path.
+  // Also covers changes that skip the animated setMode path: an OS flip while
+  // on 'system', or another window's choice.
   useEffect(() => {
     applyThemeClass(isLight)
   }, [isLight])
@@ -86,8 +75,7 @@ export function useThemeState(): Theme {
     [setStoredMode],
   )
 
-  // The nav-rail toggle makes an explicit choice — the opposite of what's showing
-  // now — which also moves the user off 'system' if they were on it.
+  // An explicit choice, so it also moves the user off 'system'.
   const toggle = useCallback((): void => setMode(isLight ? 'dark' : 'light'), [setMode, isLight])
 
   return { mode, isLight, setMode, toggle }

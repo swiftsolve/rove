@@ -193,7 +193,7 @@
     "StretchedLink": {
       "group": "Actions",
       "source": "src/ui/link/StretchedLink.tsx",
-      "description": "A transparent link stretched over its positioned container (a row; a Card\ndraws its own with `onOpen`),\nso a click anywhere opens the view the container summarises. It's a link\nto a screen reader: it moves to another view rather than acting. A control\nin the container raises itself above it and stays a sibling, never nested.\nIts focus ring follows the container's corners, just inside the edge.\n`data-stretched-link` lets the container style itself while it has focus;\n`className` can round the ring where the container's own corners don't (a\nlist's first and last rows).",
+      "description": "A transparent link stretched over its positioned container (a row; a Card\ndraws its own with `onOpen`), so a click anywhere opens the view the\ncontainer summarises. It's a link to a screen reader, as it moves to another\nview rather than acting. A control in the container raises itself above it\nand stays a sibling, never nested. The focus ring follows the container's\ncorners, just inside the edge; `className` can round it where they don't (a\nlist's first and last rows). `data-stretched-link` lets the container style\nitself while it has focus.",
       "figma": null,
       "props": {
         "label": {
@@ -763,7 +763,7 @@
     "Spinner": {
       "group": "Status and feedback",
       "source": "src/ui/spinner/Spinner.tsx",
-      "description": "Shared loading indicator. Wraps the ldrs \"waveform\" loader so every loading\nstate across the app shares one look. Callers keep their own layout wrapper\n(e.g. `.page-empty`, `.loading-screen`) for centring and spacing.",
+      "description": "The one loading indicator (ldrs \"waveform\"), so every loading state looks\nalike. Callers own its centring and spacing (`.page-empty`).",
       "figma": {
         "name": "Spinner",
         "node": "43:40"
@@ -783,7 +783,7 @@
     "ButtonSpinner": {
       "group": "Status and feedback",
       "source": "src/ui/spinner/ButtonSpinner.tsx",
-      "description": "Compact busy indicator for buttons. Uses the ldrs \"ring\" loader so buttons\nshow a smooth rotating arc instead of a spinning icon. Colour is inherited\nfrom the button via `currentColor`, so it works on both primary (white text)\nand secondary/icon buttons.",
+      "description": "A button's busy indicator: an ldrs ring in the button's text colour, so it\nsuits a solid, soft or icon button alike.",
       "figma": {
         "name": "Button spinner",
         "node": "104:5176"
@@ -829,7 +829,7 @@
     "Banner": {
       "group": "Status and feedback",
       "source": "src/ui/banner/Banner.tsx",
-      "description": "A message above a page: icon, title, a line under it, then Dismiss and\nRetry on the right. `error` is a failure. Dismiss hides this title until it changes or the banner\nunmounts, so a poll that fails the same way again doesn't bring it back; a\ncaller renders it only while there's an error, which is what resets it.",
+      "description": "A message above a page: icon, title, a line under it, then Dismiss and\nRetry on the right. Dismiss hides this title until it changes or the banner\nunmounts, so a poll that fails the same way again doesn't bring it back; a\ncaller renders it only while there's an error, which is what resets it.",
       "figma": {
         "name": "Banner",
         "node": "374:1346"
@@ -864,7 +864,7 @@
     "EmptyState": {
       "group": "Status and feedback",
       "source": "src/ui/empty-state/EmptyState.tsx",
-      "description": "The shared \"nothing here yet\" page: faded placeholder rows (with a lock badge\nwhen the list is locked), a title, a short explanation and an optional action, centred\nin the content region. Every view's blank state goes through this so they\nline up on one rhythm and one measure.",
+      "description": "The shared \"nothing here yet\" page: faded placeholder rows (with a lock\nbadge when locked), a title, a short explanation and an optional action,\ncentred in the content region. Every blank state uses it, so they share one\nrhythm and measure.",
       "figma": {
         "name": "Empty state",
         "node": "356:175"
@@ -901,7 +901,7 @@
     "EmptyStateDescription": {
       "group": "Status and feedback",
       "source": "src/ui/empty-state/EmptyState.tsx",
-      "description": "A line of explanation under the title — also for extra notes the `actions` add.",
+      "description": "A line of explanation under the title, also for extra notes the `actions` add.",
       "figma": {
         "name": "Empty state",
         "node": "356:175"
@@ -1086,7 +1086,7 @@
     "MetricValue": {
       "group": "Data display",
       "source": "src/ui/metric-value/MetricValue.tsx",
-      "description": "A numeric readout that eases toward its latest value each poll (up or down),\nmatching the Traffic readouts. On first paint it shows the value outright\n— the ease only kicks in when a subsequent poll changes the number.",
+      "description": "A number that eases toward its latest value each poll. The first paint shows\nthe value outright; only a later change eases.",
       "figma": {
         "name": "Metric value",
         "node": "38:360"
@@ -1174,7 +1174,7 @@
     "SplitBar": {
       "group": "Data display",
       "source": "src/ui/split-bar/SplitBar.tsx",
-      "description": "A 3px track holding a download and an upload segment side by side, each\nscaled against `max`, for comparing rows' traffic at a glance; an empty\nsegment collapses to zero width.",
+      "description": "A 3px track holding a download and an upload segment side by side, each\nscaled against `max`, for comparing rows' traffic at a glance.",
       "figma": {
         "name": "Split bar",
         "node": "556:619"
@@ -1197,7 +1197,7 @@
         "max": {
           "type": "number",
           "isRequired": true,
-          "description": "The value a full track stands for. Rows in one list share it, so their\nbars read comparably at a glance."
+          "description": "The value a full track stands for. Rows in one list share it, so their bars compare at a glance."
         },
         "up": {
           "type": "number",
@@ -1943,7 +1943,7 @@
     "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's: Storybook's name shows it. Raise it when the library's API changes.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
-    "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. Used for the speed-test cells\nand the live-traffic readouts.",
+    "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePortalContainer": "The element a PortalProvider above names for overlays, or null for in place.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount."

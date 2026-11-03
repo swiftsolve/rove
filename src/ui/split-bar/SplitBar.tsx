@@ -8,9 +8,8 @@ function percentOf(value: number, max: number): number {
   return value * scale
 }
 
-/** One segment of the bar, coloured by its series. Its width eases as the
- *  values (and the shared max) change, so the bars glide in step with the
- *  count-up figures; the global reduced-motion rule neutralises it. */
+// The width eases so the bars glide in step with the count-up figures beside
+// them; the global reduced-motion rule turns it off.
 const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
   variants: {
     series: { down: 'bg-series-down', up: 'bg-series-up' },
@@ -22,8 +21,7 @@ type SplitBarProps = {
   down: number
   /** The upload segment's value, after the download one. */
   up: number
-  /** The value a full track stands for. Rows in one list share it, so their
-   *  bars read comparably at a glance. */
+  /** The value a full track stands for. Rows in one list share it, so their bars compare at a glance. */
   max: number
   /** Reads the bar out, since it's an image to screen readers. */
   label: string
@@ -31,9 +29,10 @@ type SplitBarProps = {
   className?: string
 }
 
-/** A 3px track holding a download and an upload segment side by side, each
- *  scaled against `max`, for comparing rows' traffic at a glance; an empty
- *  segment collapses to zero width. */
+/**
+ * A 3px track holding a download and an upload segment side by side, each
+ * scaled against `max`, for comparing rows' traffic at a glance.
+ */
 export function SplitBar({ down, up, max, label, className }: SplitBarProps) {
   return (
     <div className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)} role="img" aria-label={label}>

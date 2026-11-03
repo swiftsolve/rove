@@ -1,8 +1,7 @@
 import type { AppUsageSupport } from './app-usage'
 
-/** One kind of traffic — a protocol bucket the session's connections were
- *  grouped into by their remote (service) port. Mirrors the backend
- *  `TrafficType`. */
+/** One kind of traffic: the session's connections bucketed by remote (service)
+ *  port. Mirrors the backend `TrafficType`. */
 export type TrafficType = {
   /** Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
    *  The view keys its icon off this. */
@@ -13,18 +12,14 @@ export type TrafficType = {
   txBytes: number
 }
 
-/** Traffic broken down by kind for the Traffic Types view — a flat,
- *  busiest-first list. Same coverage as `HostUsageSummary` (grouped from the
- *  same per-connection samples), just bucketed by service port instead of peer
- *  IP. Mirrors the other usage summaries' shape so the frontend treats them
- *  alike. */
+/** Traffic by kind for the Traffic Types view. The same samples as
+ *  `HostUsageSummary`, bucketed by service port instead of peer IP. */
 export type TrafficUsageSummary = {
   /** Per-kind totals, busiest first. Empty before the first sample. */
   types: TrafficType[]
   /**
    * `'supported'` where per-connection metering works (Linux, macOS), or
-   * `'unsupported'` where it needs a facility Rove doesn't yet drive
-   * (Windows/ETW) — the view shows an explanatory note rather than a bare list.
+   * `'unsupported'` where the source carries no peer port (Windows/ETW).
    */
   support: AppUsageSupport
   /** Epoch ms of the first sample, or null before then. */

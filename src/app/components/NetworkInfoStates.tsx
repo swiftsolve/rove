@@ -27,10 +27,8 @@ type NetworkErrorInfo = {
   description: string
 }
 
-// Turn a raw error string into a title + plain-language description so a stalled
-// detection reads as a recoverable state, not a cryptic red line. A timeout in
-// particular isn't the same as "no network" — the connection may be fine while
-// the OS query is just slow — so it gets its own, calmer framing.
+// A timeout isn't "no network": the OS query may just be slow, so it gets a
+// calmer framing of its own.
 function describeNetworkError(message: string): NetworkErrorInfo {
   if (/timed out/i.test(message)) {
     return {
@@ -56,9 +54,8 @@ export function NetworkLoadingScreen() {
   const error = network.isLoading ? null : network.error
   const info = error ? describeNetworkError(error) : null
 
-  // A slow OS query is "still detecting", not a failure. The hook already
-  // re-runs on a 15s poll and on routing-table changes, so keep the spinner
-  // and skip the retry button — there's nothing for the user to do but wait.
+  // A slow OS query is still detecting, not a failure: the hook re-polls on its
+  // own, so there's no retry button.
   if (!info || info.kind === 'timeout') {
     return (
       // A status region, so the slow-detection note is announced when it appears.
@@ -94,20 +91,16 @@ export function NetworkLoadingScreen() {
 }
 
 /**
- * The screen, or the loading screen in its place while a screen that needs
- * network info waits for it. Network info is read here rather than in the
- * shell, so a reading that changes (a Wi‑Fi signal does, most polls) re-renders
- * only the screens that show it: `children` keeps its identity, so React skips
- * a screen that doesn't read the network itself.
+ * The screen, or the loading screen while a screen that needs network info
+ * waits for it. Read here, not in the shell, so a changed reading re-renders
+ * only the screens that use it: `children` keeps its identity.
  */
 export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; children: ReactNode }) {
   const { info } = useNetwork()
   return isNeeded && !info ? <NetworkLoadingScreen /> : <>{children}</>
 }
 
-// The compact counterpart to NetworkLoadingScreen: shown when background
-// refreshes keep failing while we already have network info on screen. That
-// info is now stale, so the banner says how old it is.
+// Shown when refreshes keep failing over info already on screen, saying how old it is.
 export function NetworkErrorBanner(): JSX.Element | null {
   const { info, error, lastReadAt, refresh } = useNetwork()
   if (!error || !info || lastReadAt === null) return null

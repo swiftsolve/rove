@@ -25,9 +25,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   const { tone, label, internet: verdict } = describeConnectionStatus(network.info, internet)
   const connection = useMemo(() => ({ tone, label, internet: verdict }), [tone, label, verdict])
 
-  // Own the live-throughput feed for the whole app, not per-view: keep sampling
-  // the 60 s history while the window is visible (across every tab) so the Home
-  // chart is already current on return instead of resuming a stale snapshot.
+  // App-wide, not per-view, so the Home chart's 60 s history is current on return.
   const isWindowVisible = usePageVisible()
   useLiveThroughputSource(isWindowVisible)
 

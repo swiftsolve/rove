@@ -11,14 +11,10 @@ import { useScreenFocus } from '@/app/hooks/useScreenFocus'
 import { locationKey } from '@/app/utils/location'
 import { PortalProvider } from '@/ui'
 
-// The scrolling content area. Column flex so <main> can grow to fill the
-// visible area, which centres the first-launch loading screen in the content
-// region instead of overflowing a fixed 100vh. The scrollbar is always laid
-// out (overflow-y: scroll; it has no thumb until there is something to scroll)
-// rather than reserved with scrollbar-gutter, which WebKitGTK ignores until the
-// content overflows. Both insets match the nav rail's 12px: the right one is
-// 7px of padding plus the 5px scrollbar (base.css). The error banner above
-// <main> has no flex gap to lean on.
+// Column flex so <main> fills the visible area and centres the loading screen.
+// overflow-y: scroll, not scrollbar-gutter, which WebKitGTK ignores until the
+// content overflows. The right inset is 7px of padding plus the 5px scrollbar
+// (base.css), matching the rail's 12px.
 const SCROLL = cx(
   'flex flex-1 flex-col min-w-0 min-h-0',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
@@ -42,11 +38,9 @@ export function AppShell() {
     // Dialogs anywhere in the shell, the update prompt's included, portal into
     // the content column, so they cover it and not the window.
     <PortalProvider container={contentColumn}>
-      {/* The shell owns the app background and clips every child to the window
-          edge. Square corners: the window is opaque (Tauri transparent:false,
-          required so WebKitGTK renders reliably on Linux/NVIDIA — see run() in
-          lib.rs), so a corner radius would just expose the window's background
-          rather than the desktop. A hairline edge keeps the frameless window crisp. */}
+      {/* Square corners: the window is opaque (Tauri transparent:false, needed by
+          WebKitGTK on NVIDIA, see run() in lib.rs), so a radius would expose the
+          window's background, not the desktop. */}
       <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
         <UpdatePrompt />
         <AppTitleBar />

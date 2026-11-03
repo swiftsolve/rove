@@ -5,10 +5,8 @@ import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
 
-// The live metrics (gateway latency + internet status) refresh on this
-// tight cadence so the Connection view's numbers stay current. The heavier full
-// run — ISP geolocation and SNMP router identity — is NOT polled; it only runs
-// on tab open and network change, so an external lookup isn't hit every poll.
+// Only the cheap live metrics poll. The full run makes an external ISP lookup,
+// so it runs just on open and on network change.
 const LIVE_POLL_INTERVAL_MS = 15_000
 
 const ERROR_MESSAGE = 'Couldn’t check your connection'
@@ -20,10 +18,8 @@ type UseDiagnosticsResult = {
   run: () => Promise<void>
 }
 
-// Overlay the live metrics on the last full snapshot. Once a live reading has
-// landed it owns latency wholesale (a null ping means "unreachable", which must
-// win over the full run's stale value); until then the full run's own initial
-// reading shows, so nothing flashes empty on open.
+// Once a live reading lands it owns latency outright: its null ping means
+// unreachable and must win over the full run's stale value.
 function overlayLiveMetrics(full: NetworkDiagnostics | null, live: LiveDiagnostics | null): NetworkDiagnostics | null {
   if (full == null) return null
   if (live == null) return full
@@ -39,8 +35,6 @@ export function useDiagnostics(): UseDiagnosticsResult {
   const api = window.networkAPI
   const networkKey = useNetworkKey()
 
-  // Full snapshot: identity (gateway, DNS, vendor, model) + ISP. Fetched on
-  // open and whenever the network switches — never on the poll interval.
   const full = useBackendQuery({
     queryKey: ['diagnostics', 'snapshot', networkKey],
     queryFn: api ? () => api.runDiagnostics() : undefined,
@@ -48,12 +42,8 @@ export function useDiagnostics(): UseDiagnosticsResult {
     errorMessage: ERROR_MESSAGE,
   })
 
-  // Live metrics, refreshed every 15s. Poll-only: the full run above already
-  // probes the gateway for the initial paint, so live must NOT fetch on open too
-  // — that was probing the target twice on each visit. It starts as null (so it
-  // never loads on open), never goes stale (so nothing but the poll, the
-  // window being shown again and `run()` refetches it), and takes over once its
-  // first reading lands.
+  // Poll-only: the full run already probes the gateway on open, so null initial
+  // data and an infinite stale time keep live from probing it a second time.
   const live = useQuery<LiveDiagnostics | null>({
     queryKey: ['diagnostics', 'live', networkKey],
     queryFn: api ? () => api.runDiagnosticsLive() : skipToken,
@@ -66,11 +56,8 @@ export function useDiagnostics(): UseDiagnosticsResult {
 
   const { reload: reloadFull } = full
   const { refetch: refetchLive } = live
-  // Manual refresh re-runs both so the overlaid live metrics don't linger stale
-  // over the freshly-probed full snapshot. A genuine network switch is handled
-  // by the network key (full refetches, live starts over) — we do NOT re-run on
-  // raw `network-changed` nudges, which macOS' route monitor emits for
-  // transient routing churn and which turned into a probe storm.
+  // Re-runs both so stale live metrics don't sit over a fresh snapshot. Not run on
+  // `network-changed` nudges: macOS emits them for routing churn (a probe storm).
   const run = useCallback(async (): Promise<void> => {
     await Promise.all([reloadFull(), api ? refetchLive() : undefined])
   }, [api, reloadFull, refetchLive])

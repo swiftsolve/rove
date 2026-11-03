@@ -6,18 +6,15 @@ const EASE_DOWN_FACTOR = 0.18
 const SETTLE_THRESHOLD_MBPS = 0.5
 
 /**
- * Smooths the chart's y-axis scale so it glides toward a smaller target instead
- * of snapping. Scale-ups are applied instantly — that keeps a sudden spike from
- * being clipped and avoids any lag on the way up — while scale-downs ease over a
- * few frames, which is the jarring direction (the trace would otherwise jump
- * taller all at once when the recent peak finally drops out of the window).
+ * Eases the chart's y-axis scale down over a few frames, so the trace doesn't
+ * jump taller when a peak leaves the window. Scale-ups are instant, so a spike
+ * is never clipped.
  */
 export function useSmoothScale(target: number): number {
   const [value, setValue] = useState(target)
   const currentRef = useRef(target)
 
   useEffect(() => {
-    // Grow immediately: never clip a live spike or trail the data on the way up.
     if (target >= currentRef.current) {
       currentRef.current = target
       setValue(target)

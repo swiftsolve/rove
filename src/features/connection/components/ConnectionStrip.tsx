@@ -26,16 +26,14 @@ import {
 
 import styles from './ConnectionStrip.module.css'
 
-// Each kind of connection's icon, on a tile in its colour.
 const CONNECTION_ICONS = {
   wifi: { Icon: WifiIcon, color: 'var(--series-down)' },
   ethernet: { Icon: EthernetIcon, color: 'var(--status-positive)' },
   disconnected: { Icon: OfflineIcon, color: 'var(--status-negative)' },
 } as const satisfies Record<ConnectionDisplayVariant, { Icon: IconComponent; color: IconTileColor }>
 
-// The whole strip is one expand toggle: a transparent button under everything
-// else. The content sits above it but lets clicks fall through, so the toggle
-// still takes them; only the share button opts back in.
+// Content sits above the stretched toggle but lets clicks fall through to it;
+// only the share button opts back in.
 const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 
 const STRIP = cx(

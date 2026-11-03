@@ -98,8 +98,7 @@ function renderCheckResult(check: UpdateCheckState): ReactNode {
   if (check.kind === 'up-to-date') {
     return (
       <p className={statusVariants({ kind: 'up-to-date' })}>
-        {/* Centring leaves the check a touch high against the text's x-height;
-            1px lower settles it onto the text. */}
+        {/* Centred, the check reads a touch high; 1px lower settles it. */}
         <CheckIcon size={14} className="shrink-0 transform-[translateY(1px)]" />
         You're on the latest version.
       </p>

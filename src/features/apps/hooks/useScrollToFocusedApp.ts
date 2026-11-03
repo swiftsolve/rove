@@ -3,15 +3,11 @@ import { type RefObject, useEffect, useRef } from 'react'
 import { flashHighlight } from '@/lib/highlight'
 import type { AppHosts } from '@/types'
 
-/** On arriving focused on an app, bring its group to the top of the list. Runs
- *  when the data arrives (it lands a poll or two after mount), then just once —
- *  later polls mustn't yank the scroll. Deferred a task so it lands *after* the
- *  app's scroll-to-top-on-navigation reset (a sibling effect that would
- *  otherwise clobber it). Scrolls the app's scroll container
- *  (`[data-scroll-root]`) directly rather than scrollIntoView, which walks up
- *  and scrolls every ancestor — reaching the host page when the app is
- *  embedded in an iframe (the marketing demo).
- *  Returns the ref to attach to the list. */
+/** Scrolls the focused app's group to the top once its data lands, then never
+ *  again, so later polls don't yank the scroll. Deferred a task to land after the
+ *  shell's scroll-to-top on navigation. Scrolls `[data-scroll-root]` directly:
+ *  scrollIntoView would also scroll the host page when embedded in the demo's
+ *  iframe. Returns the ref to attach to the list. */
 export function useScrollToFocusedApp(
   focusApp: string | null | undefined,
   apps: AppHosts[],
@@ -21,7 +17,7 @@ export function useScrollToFocusedApp(
   useEffect(() => {
     if (!focusApp || hasScrolledRef.current) return
     const group = listRef.current?.querySelector<HTMLElement>(`[data-app="${CSS.escape(focusApp)}"]`)
-    if (!group) return // data not in yet; a later poll re-runs this
+    if (!group) return // Not loaded yet; a later poll re-runs this.
     const timeoutId = setTimeout(() => {
       const scroller = group.closest<HTMLElement>('[data-scroll-root]')
       if (!scroller) return

@@ -8,7 +8,6 @@ import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon 
 // Each state fades in as it replaces the last, while the dialog eases to its height.
 const STATE = 'flex animate-fade-in flex-col items-center gap-12 py-16 text-center'
 
-/** The red icon chip over a notice. */
 const CHIP = cx(
   'inline-flex size-[40px] items-center justify-center rounded-full text-status-negative',
   'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
@@ -72,11 +71,9 @@ function shareNotice(share: WifiShare | null, error: string | null): Notice | nu
 }
 
 /**
- * Modal that turns the current Wi-Fi connection into a scannable QR code. The
- * passphrase is encoded in the QR so a phone can join by scanning, but it's
- * never shown in plaintext. Fetches the payload from the backend on open and on
- * Try again; the passphrase is read behind an OS auth prompt, so the fetch can
- * take a moment (or come back without a password if the user declines).
+ * A QR code a phone can scan to join the current Wi-Fi; the passphrase is never
+ * shown in plaintext. It sits behind an OS auth prompt, so the fetch can be slow
+ * or come back without a password if the user declines.
  */
 export function WifiShareDialog({ onClose }: { onClose: () => void }) {
   const { share, error, isLoading, retry } = useWifiShare()
@@ -96,8 +93,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
         ) : undefined
       }
     >
-      {/* Live, so the QR code or a notice is announced when it replaces the
-          loading state. */}
+      {/* Announces the QR code or notice when it replaces the loading state. */}
       <div className="flex w-full flex-col items-center" aria-live="polite" aria-busy={isLoading}>
         {isLoading ? (
           <div className={STATE}>

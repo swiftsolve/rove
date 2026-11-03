@@ -7,9 +7,7 @@ import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link } from '
 const REPO_URL = 'https://github.com/swiftsolve/rove'
 const COPYRIGHT_YEAR = 2026
 
-// The dock icon's tile: a charcoal squircle (corners ~22% of the tile) with a
-// soft blue glow just below centre, the same recipe the 1024px icon renders.
-// The mark carries the app icon's blue gradient (BrandIcon `hasGradient`).
+// The same recipe the 1024px app icon renders, so the two match.
 const APP_ICON_TILE = cx(
   'mb-8 inline-flex size-[72px] items-center justify-center rounded-[16px]',
   'bg-[radial-gradient(circle_at_50%_56%,rgba(91,140,255,0.22),rgba(91,140,255,0)_68%),linear-gradient(180deg,#1f2125_0%,#16171a_100%)]',

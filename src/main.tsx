@@ -13,7 +13,7 @@ import { migrateLegacySpeedHistory } from '@/features/speed/utils/speed-history'
 if (isTauri()) {
   installTauriBridge()
 } else if (import.meta.env.DEV) {
-  // Plain browser (Vite dev server): stand in a mock bridge for design work.
+  // The Vite dev server in a plain browser gets a mock bridge for design work.
   const { installMockNetworkApiIfNeeded } = await import('./dev/mock-network-api')
   installMockNetworkApiIfNeeded()
 }

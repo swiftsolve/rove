@@ -19,9 +19,7 @@ export function TrafficCard() {
           <SpeedReadout label="Upload" mbps={throughput.uploadMbps} series="up" />
         </dl>
 
-        {/* Fills the whole bottom of the card: bleeds left/right/bottom past the
-            card body's padding to the card edges (the card's overflow:hidden
-            rounds the corners), then pads the graph back in line with the title. */}
+        {/* Bleeds to the card edges, then pads the graph back in line with the title. */}
         <div className="-mx-(--card-body-padding) -mb-(--card-body-padding) bg-inset p-(--card-body-padding)">
           <ThroughputChart download={history.download} upload={history.upload} maxMbps={scaleMaxMbps} />
         </div>

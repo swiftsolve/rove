@@ -111,8 +111,7 @@ export function SpeedView(): JSX.Element | null {
 
   if (!info) return null
 
-  // The subpage layered over the Speed tab, or null for its main page. Owned by
-  // the app's navigation stack so Back pops the right screen.
+  // Owned by the app's navigation stack, so Back pops the right screen.
   const sub = location.speedSub ?? null
 
   if (sub?.view === 'history') {
@@ -130,8 +129,7 @@ export function SpeedView(): JSX.Element | null {
         title="Speed"
         description={<HeaderDescription />}
         status={isTesting ? <HeaderStatus /> : undefined}
-        // The header's 6px gap pairs icon chips; beside a full button the help
-        // chip needs the wider 10px step to read as its own control.
+        // Wider than the header's 6px icon gap, so the help chip reads apart from the button.
         actions={
           <div className="flex items-center gap-10">
             <IconButton label="About speed tests" icon={HelpIcon} tooltip={SPEED_HINT} />

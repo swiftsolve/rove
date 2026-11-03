@@ -46,8 +46,6 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
   defaultVariants: { isEmpty: false },
 })
 
-// Full-bleed inset panel at the card bottom, the same treatment as the live
-// throughput chart.
 const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
 
 /** A latency that came back: finite and below the backend's failed-ping sentinel. */
@@ -184,8 +182,6 @@ function ResultFooter({
   linkCapacityMbps: number | null
 }) {
   return (
-    // The strip under the results: connection left, link speed right. The text
-    // size comes from .type-caption.
     <div className={cx(INSET_PANEL, 'flex items-center')}>
       <p className="type-caption text-tertiary flex w-full min-w-0 items-center justify-between gap-12">
         {connection != null && <ConnectionTag connection={connection} />}
@@ -208,7 +204,6 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
   const error = useSpeedTest((test) => test.error)
   const testLinkCapacityMbps = useSpeedTest((test) => test.linkCapacityMbps)
   const runConnection = useSpeedTest((test) => test.runConnection)
-  // The hero cells: the live (running-peak) throughput while a test runs.
   const downloadMbps = useSpeedTest((test) =>
     heroCellMbps(
       test.isTesting,
@@ -230,14 +225,11 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
   const canTest = useCanRunSpeedTest()
 
   const hasResults = internetSpeed != null
-  // The footer describes the connection the last result was measured on, and
-  // falls back to the live connection before any test has run.
+  // The connection the result was measured on, else the live one before any test.
   const connection = hasResults && runConnection != null ? runConnection : connectionFromNetworkInfo(info)
   const linkCapacityMbps =
     hasResults && testLinkCapacityMbps != null ? testLinkCapacityMbps : info ? getLinkCapacityMbps(info) : null
-  // Empty state: connected and idle, but no test has run yet. We still lay out
-  // the full metric grid with placeholder values so the empty and filled states
-  // share the same structure.
+  // Still lays out the full grid with placeholders, so empty and filled match.
   const isEmpty = !hasResults && !isTesting
   const hasFooterInfo = connection != null || linkCapacityMbps != null
 

@@ -29,7 +29,6 @@ export function Menu({ isOpen, onOpenChange, children }: MenuProps) {
   )
 }
 
-// Tertiary until hovered or open.
 const TRIGGER = cx(
   'inline-flex size-[30px] shrink-0 items-center justify-center rounded-sm text-tertiary',
   'transition-[color,background] duration-(--duration-fast) ease-in-out',

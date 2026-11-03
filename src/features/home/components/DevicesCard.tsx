@@ -10,7 +10,6 @@ import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@
 export function DevicesCard() {
   const { lastScan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
-  // Null before the first scan lands.
   const onlineCount = lastScan ? lastScan.devices.filter((device) => device.isReachable).length : null
   // macOS doesn't scan on Home load, so until its first scan the card offers one.
   const canDiscover = IS_MAC && !lastScan && !isScanning
@@ -50,7 +49,7 @@ function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBod
   if (isScanning) return <ScanSpinner />
   if (onlineCount !== null) {
     return (
-      // The key dot is small, so it gets more room before the count than the usage arrows do.
+      // The small dot needs more room before the count than the usage arrows.
       <div aria-hidden>
         <StatReadout marker="online" value={String(onlineCount)} unit="online" className="gap-8" />
       </div>
@@ -84,7 +83,7 @@ function DiscoverButton({ onDiscover }: { onDiscover: () => void }) {
     onDiscover()
   }
   return (
-    // At the foot of the card, raised above its stretched link to take its own clicks, and nudged lower.
+    // Raised above the card's stretched link so it takes its own clicks.
     <div className="flex flex-1 items-end justify-center">
       <Button className="relative z-2 -mb-4" icon={SearchIcon} onClick={handleClick}>
         Discover

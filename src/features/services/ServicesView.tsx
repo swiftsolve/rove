@@ -40,10 +40,8 @@ import {
 const SERVICES_HINT =
   'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'
 
-// On hover-capable pointers the kebab is collapsed to zero width until its row is
-// hovered, then grows and fades in, nudging the latency column aside as it slides
-// in. It stays shown while its menu is open or it has keyboard focus. Touch keeps
-// it always visible.
+// With a hover-capable pointer the kebab stays collapsed until its row is hovered,
+// it has focus or its menu is open. Touch can't hover, so it always shows there.
 const KEBAB_REVEAL = cx(
   'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
   '[@media(hover:hover)]:w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
@@ -56,17 +54,6 @@ const KEBAB_REVEAL = cx(
 // that holds its width.
 const LINE = 'flex min-w-0 items-center gap-12'
 
-// Timeline link sitting in the header subtitle: the same quiet pill link as
-// Speed's "All Results" (see SpeedView's history link), down to the geometry and
-// weight; only the icon differs. The button reset carries the font family
-// across but not the size, so font-size: inherit is what keeps it at the
-// subtitle's caption size. The negative left margin cancels the pill's padding
-// and the icon's empty edge, so the dot keeps the same 8px to the icon as to
-// the text before it.
-// The dot is a plain subtitle child, so a window narrow enough to wrap the link
-// can strand it at the start of a line, where it reads as a bullet; only the web
-// demo's phone widths get that narrow, and the app's own window never does.
-//
 /** What the add/edit dialog shows. `openCount` tells one opening from the next,
  *  so reopening while the last one leaves starts it fresh. */
 type DialogState = ({ mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }) & { openCount: number }
@@ -150,17 +137,15 @@ type ServiceRowProps = {
 function ServiceRow({ service, probe, seededLatencyMs, samples, isInternetUnreachable, menu }: ServiceRowProps) {
   const latencyMs = probe ? probe.latencyMs : seededLatencyMs
   const isErroring = probe ? isHttpErroring(probe.httpStatus) : false
-  // Down the same way the status reads it: a failed path (only when the
-  // internet is up, else it's our fault) or a reachable-but-erroring host. A
-  // down row's sparkline is a flat red line, not its old trend.
+  // Matches LatencyReadout's "Down": an erroring host, or a failed path while
+  // the internet is up. A down row's sparkline is a flat red line.
   const isDown = probe ? isErroring || (probe.latencyMs === null && !isInternetUnreachable) : false
 
   return (
     // Less right padding than left so the kebab sits closer to the card edge: its
     // 30px hit area already carries visual breathing room around the dots.
     <li className="group/row flex items-center gap-8 py-12 pr-6 pl-16">
-      {/* Two stacked lines: favicon + name + trend on top, URL + status below.
-          Takes the row's free width so both lines can ellipsis their left-hand text. */}
+      {/* Takes the row's free width so both lines can ellipsise their left-hand text. */}
       <div className="flex min-w-0 flex-auto flex-col gap-2">
         <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
@@ -224,16 +209,12 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
 export function ServicesView() {
   const { navigate } = useNavigation()
   const { report, run: reprobe } = useServiceReachability()
-  // The latest reachability probes; latency is matched to rows by host.
   const reachability = report?.services
-  // The internet reachability measured alongside `reachability` (same probe
-  // batch). When it isn't `online`, a probe in that batch that failed means "we
-  // couldn't check", not "the service is down", so those rows read as unknown
-  // ("—") rather than "Down".
+  // Measured in the same batch as `reachability`. While it isn't online, a failed
+  // probe means we couldn't check, so those rows read as unknown, not "Down".
   const internet = report?.internet
-  // The app's live internet status — the same one the title bar shows. Drives
-  // the header ("No internet") and gates the Add button, so the page never
-  // disagrees with the title bar between probe batches.
+  // The title bar's live status, so the tally and Add button never disagree with
+  // it between probe batches.
   const liveInternet = useConnectionStatus().internet
   // Re-probe the services so a just-added/removed service's latency refreshes.
   const refreshServices = (): void => {
@@ -241,16 +222,11 @@ export function ServicesView() {
   }
   const openTimeline = (): void => navigate({ tab: 'services', servicesSub: { view: 'timeline' } })
   const { services, add, update, remove } = useServices()
-  // Rolling per-host latency history for each row's trend sparkline, appended
-  // on each services poll (see `useServiceReachability`).
   const latencyHistory = useServiceLatency()
 
-  // With the internet unreachable when this batch ran, a failed probe is our
-  // fault, not the service's — so read those rows as unknown.
   const isInternetUnreachable = isInternetDown(internet)
   const isOfflineNow = isInternetDown(liveInternet)
-  // The same live up/down count the timeline header shows, ahead of the timeline
-  // link. Null until the first probes land, so the link stands alone until then.
+  // Null until the first probes land, so the timeline link stands alone until then.
   const tally = serviceTally(reachability, liveInternet)
   // The dialog's content outlives its closing, so it can play its leave animation.
   const [dialog, setDialog] = useState<DialogState | null>(null)

@@ -1,7 +1,6 @@
 /**
  * Tauri implementation of the `window.networkAPI` / `window.windowControls`
- * bridge the UI was built against. Installed once at startup inside Tauri;
- * the browser dev mock covers everything else.
+ * bridge, installed once at startup.
  */
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'

@@ -7,8 +7,7 @@ const SNAP_THRESHOLD = 0.05
 
 /**
  * Eases a displayed number toward `target` each animation frame, so the value
- * visibly counts up or down instead of snapping. Used for the speed-test cells
- * and the live-traffic readouts.
+ * visibly counts up or down instead of snapping.
  */
 export function useCountUp(target: number): number {
   const [value, setValue] = useState(target)

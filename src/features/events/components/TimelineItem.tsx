@@ -28,15 +28,14 @@ import {
   WifiIcon,
 } from '@/ui'
 
-// The node's colour category. The icon says *what* happened; this tint says how
-// to read it at a glance.
+// The icon says what happened; the tint says how to read it.
 const TONE_COLORS = {
   /** Arrivals & connections: a device joined, came back, or linked up. */
   join: 'var(--status-positive)',
   /** A departure: quiet, not alarming; a known device just dropped off. The
    *  hollow ring reads as "gone", set apart from the filled markers. */
   leave: 'neutral',
-  /** The baseline snapshot: calm and neutral. */
+  /** The baseline snapshot. */
   baseline: 'var(--accent-default)',
   /** Cautionary: a new access point appeared (warning severity). */
   alert: 'var(--status-warning)',
@@ -46,15 +45,11 @@ const TONE_COLORS = {
 
 type EventTone = keyof typeof TONE_COLORS
 
-// Title on the left, time pinned to the right edge on the same line. The time
-// takes only the width it needs and never wraps, so a long title flows beneath
-// it rather than pushing it around.
 const HEAD = 'flex items-baseline gap-10'
 const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
 const SUBJECT = 'text-md text-secondary'
 
-// The address line, one step quieter than everything above it.
 const META = 'text-sm text-tertiary tabular-nums'
 
 type IconComponent = (props: { size?: number }) => JSX.Element
@@ -78,8 +73,7 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   internet_restored: { icon: GlobeIcon, tone: 'join' },
 }
 
-// The address line: MAC · Randomized · IP (any absent part is dropped). The
-// baseline row is network-wide, so it has none.
+// The network-wide baseline row has no address line.
 function addressItems(event: NetworkEvent): ReactNode[] {
   const items: ReactNode[] = []
   if (event.type === 'initial_scan') return items
@@ -97,8 +91,7 @@ function addressItems(event: NetworkEvent): ReactNode[] {
   return items
 }
 
-// 12h time only, e.g. "1:24 PM" — the day is carried by the group heading above,
-// so each node just shows the time within its day.
+// Time only: the group heading carries the day.
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString(undefined, {
     hour: 'numeric',
@@ -134,7 +127,6 @@ export function TimelineItem({
   const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type]
   const subject = eventSubject(event)
   const kindLabel = isInitial || !subject ? null : subjectKind(event, subject)
-  // InlineMeta renders each separator as a dot icon.
   const metaItems = addressItems(event)
 
   return (
@@ -145,16 +137,10 @@ export function TimelineItem({
       </span>
       {subject && (
         <div className={SUBJECT}>
-          <InlineMeta
-            // The device category after the name ("Apple · Phone"), a step quieter
-            // so the name still leads.
-            items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
-          />
+          <InlineMeta items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]} />
         </div>
       )}
       {isInternet && INTERNET_SUBTITLES[event.type] && (
-        // Status at the left, offline duration flush right (pushed by its
-        // margin-left:auto), on one line spanning the full content width.
         <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
           <span>{INTERNET_SUBTITLES[event.type]}</span>
           {offlineMs != null && (

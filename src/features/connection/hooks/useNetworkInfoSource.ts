@@ -8,14 +8,11 @@ import type { NetworkInfo } from '@/types'
 import { useLatestRef } from '@/ui'
 
 const REFRESH_INTERVAL_MS = 15_000
-// Sit above the backend's own per-command budget (15s, see
-// crates/rove-core/src/shell.rs). A 10s frontend timeout could fire while a
-// slow-but-healthy probe was still legitimately working, turning a momentary
-// stall into a scary error banner.
+// Above the backend's 15s per-command budget (crates/rove-core/src/shell.rs), so a
+// slow but healthy probe never trips an error here first.
 const NETWORK_INFO_TIMEOUT_MS = 20_000
-// A single slow or failed poll shouldn't wipe a good reading off the screen.
-// Keep showing the last good value and only surface an error once this many
-// polls fail back-to-back (~a sustained outage, not one unlucky poll).
+// Consecutive failed polls before the error shows; until then the last good
+// reading stays on screen.
 const FAILURES_BEFORE_ERROR = 3
 
 /** The local link (Wi-Fi / Ethernet): `info` is null until the first read lands. */
@@ -68,19 +65,12 @@ export function useNetworkInfoSource(): NetworkState {
   const lastReadAtRef = useRef<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const infoRef = useLatestRef(info)
-  // Count consecutive failures so a lone slow poll stays invisible but a real
-  // sustained outage still surfaces.
   const failuresRef = useRef(0)
-  // True while a refresh is awaiting the backend. Prevents an onNetworkChanged
-  // nudge (fired repeatedly during Wi-Fi roaming) from stacking a second poll
-  // on top of the interval poll — they'd only multiply backend load for the
-  // same answer.
+  // Stops network-changed nudges (fired repeatedly while Wi-Fi roams) from
+  // stacking polls on one already in flight.
   const isInFlightRef = useRef(false)
-  // Generation counter, bumped whenever the app resumes from the background.
-  // A poll captures the current generation when it starts; if the app is
-  // backgrounded and resumed while that poll is in flight, its result — and,
-  // crucially, its `setTimeout`-based timeout that a suspended webview fires
-  // the instant we return — belongs to a stale generation and is ignored.
+  // Bumped on each resume from the background. A suspended webview fires a frozen
+  // poll's timeout the instant it resumes; the generation check ignores it.
   const generationRef = useRef(0)
   const isVisible = usePageVisible()
 
@@ -113,14 +103,9 @@ export function useNetworkInfoSource(): NetworkState {
         setInfo((previous) => (isNetworkInfoEqual(previous, nextInfo) ? previous : nextInfo))
         setError(null)
       } catch (unknownError) {
-        // A poll that spanned a background stretch is stale — its failure (often a
-        // spurious timeout the frozen timer fired on resume) must not count.
         if (generation !== generationRef.current) return
         failuresRef.current += 1
         const message = unknownError instanceof Error ? unknownError.message : 'Failed to read network information'
-        // Keep the last good reading on screen through a transient blip. Only
-        // raise the banner on the very first load (nothing to fall back to) or
-        // once enough polls have failed in a row to mean a real outage.
         if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
           setError(message)
           setLastReadAt(lastReadAtRef.current)
@@ -136,10 +121,7 @@ export function useNetworkInfoSource(): NetworkState {
   )
 
   useEffect(() => {
-    // Poll only while the window is visible. On becoming visible again after a
-    // background stretch, invalidate any frozen in-flight poll (new generation),
-    // drop the failure streak so a stale timeout can't tip the banner, and read
-    // once immediately before resuming the interval.
+    // On resume, drop any frozen poll and the failure streak before reading again.
     if (!isVisible) return
     generationRef.current += 1
     isInFlightRef.current = false
@@ -152,7 +134,6 @@ export function useNetworkInfoSource(): NetworkState {
     return () => window.clearInterval(intervalId)
   }, [isVisible, refresh])
 
-  // Network changed — refresh at once instead of waiting out the poll interval.
   useOnNetworkChanged(() => void refresh(true))
 
   // Stable identities, so `useNetwork()` readers re-render only when a value changes.

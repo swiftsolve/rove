@@ -59,7 +59,6 @@ export function CollapsibleTrigger(props: ComponentProps<'button'>) {
   return <BaseCollapsible.Trigger data-collapsible-trigger="" {...props} />
 }
 
-// Grows and shrinks to its measured height, rather than appearing at once.
 const PANEL = cx(
   'h-(--collapsible-panel-height) overflow-hidden',
   'transition-[height] duration-(--duration-normal) ease-out',

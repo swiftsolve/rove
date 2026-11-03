@@ -28,14 +28,10 @@ function adoptList(list: ServiceDefinition[] | undefined): void {
 }
 
 /**
- * The editable reachability service list (built-in defaults + user additions,
- * minus removals), owned by the backend store. Only this app edits it, so it
- * loads once and stays cached: a return to Services shows it at once. Add, edit
- * and remove persist through the bridge and put the authoritative list they return
- * into the cache, so the list updates without waiting for the next services poll.
- *
- * Latency is deliberately NOT here — it comes from the services probes and is
- * matched to these rows by host in the view.
+ * The editable service list, owned by the backend store. Only this app edits it,
+ * so it loads once and stays cached. Each edit caches the authoritative list the
+ * backend returns, so the list updates without waiting for the next poll.
+ * Latency comes from the probes, matched to rows by host in the view.
  */
 export function useServices(): UseServicesResult {
   const api = window.networkAPI

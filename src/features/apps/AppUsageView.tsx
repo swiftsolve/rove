@@ -27,9 +27,7 @@ const BODY_COPY: UsageBodyCopy = {
   empty: 'Apps appear here as they use the network.',
 }
 
-/** The header subtitle once there's data: links into the per-app host breakdown
- *  and the by-protocol breakdown (mirrors the Services view's "View timeline"
- *  link). */
+/** The header subtitle: links into the per-app host and by-protocol breakdowns. */
 function AppSubtitleLinks() {
   const { navigate } = useNavigation()
   const onViewHosts = (): void => navigate({ tab: 'apps', appsSub: { view: 'hosts' } })
@@ -67,7 +65,6 @@ export function AppUsageView() {
 
       <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={apps.length === 0} copy={BODY_COPY}>
         <CardList label="Apps by usage">
-          {/* Each row links into that app's hosts. */}
           {apps.map((app) => (
             <UsageRow
               key={app.name}

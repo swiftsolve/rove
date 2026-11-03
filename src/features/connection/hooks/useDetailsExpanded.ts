@@ -19,7 +19,7 @@ export function useDetailsExpanded(): [boolean, () => void] {
       try {
         localStorage.setItem(EXPANDED_KEY, String(willExpand))
       } catch {
-        // Storage unavailable — remember for this session only.
+        // Storage unavailable: remember for this session only.
       }
       return willExpand
     })

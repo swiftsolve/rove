@@ -3,8 +3,7 @@
 const REGIONAL_INDICATOR_A = 0x1f1e6
 const CHAR_CODE_A = 65
 
-// Resolve the human-readable country name once — Intl.DisplayNames is stateless
-// and reusable, so we avoid rebuilding it per host row.
+// Built once rather than per host row.
 const regionNames =
   typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
 
@@ -16,9 +15,8 @@ function normalizeCountryCode(code: string | null | undefined): string | null {
 }
 
 /**
- * Turn an ISO-3166 alpha-2 country code into its flag emoji. Returns null for
- * anything that isn't two ASCII letters, so callers can cleanly render "no flag"
- * for unresolved / private-network peers.
+ * An ISO-3166 alpha-2 country code's flag emoji, or null for anything that isn't
+ * two ASCII letters (unresolved or private-network peers).
  */
 export function countryCodeToFlag(code: string | null | undefined): string | null {
   const cc = normalizeCountryCode(code)
@@ -30,9 +28,8 @@ export function countryCodeToFlag(code: string | null | undefined): string | nul
 }
 
 /**
- * Map an ISO-3166 alpha-2 country code to its English country name (e.g. "US" →
- * "United States"), for the flag's hover tooltip. Returns null for anything that
- * isn't two ASCII letters or that the runtime can't resolve.
+ * An ISO-3166 alpha-2 country code's English name (e.g. "US" → "United States"),
+ * or null when it isn't two ASCII letters or the runtime can't resolve it.
  */
 export function countryCodeToName(code: string | null | undefined): string | null {
   const cc = normalizeCountryCode(code)

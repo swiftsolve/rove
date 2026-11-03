@@ -1,9 +1,8 @@
 import { splitSpeedMbps } from '@/lib/format'
 import { DirectionIcon, Readout, type SpeedSeries, useCountUp } from '@/ui'
 
-/** Live rates below this are background noise (OS chatter, keepalives). Show them
- *  as zero rather than letting toFixed(1) round them up to 0.1 Mbps — otherwise
- *  the readout reads 0.1 when nothing is really downloading or uploading. */
+/** Rates below this are background noise (OS chatter, keepalives), shown as zero
+ *  so the readout doesn't sit at 0.1 when nothing is transferring. */
 const NOISE_FLOOR_MBPS = 0.1
 
 type SpeedReadoutProps = {

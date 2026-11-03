@@ -15,10 +15,9 @@ export function latencyBand(ms: number): LatencyBand {
 }
 
 /**
- * Whether a probed service reads as up or down: down when the network path
- * failed (no TLS handshake, so no latency) or the host answered but is erroring
- * (5xx). Mirrors the verdict the backend timeline records (`reachability_status`
- * in store.rs) so the live list and the timeline never disagree.
+ * Down when the network path failed (no handshake, so no latency) or the host
+ * answered with a 5xx. Mirrors the backend's `reachability_status`
+ * (store/services.rs) so the live list and the timeline never disagree.
  */
 export function reachabilityStatus(svc: ServiceReachability): ServiceStatus {
   if (svc.latencyMs === null) return 'down'

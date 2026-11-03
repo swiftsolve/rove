@@ -1,8 +1,6 @@
 /**
- * True when running on macOS. Device discovery is gated behind the system
- * Local Network permission there, so we don't kick off a scan the moment Home
- * loads — we wait until the user opens Devices (or taps Scan on the Home
- * widget), which is a clearer moment to surface the permission prompt.
+ * True on macOS, where a LAN scan raises the Local Network permission prompt,
+ * so scans wait for the user to open Devices or tap Scan.
  */
 export const IS_MAC = typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac')
 

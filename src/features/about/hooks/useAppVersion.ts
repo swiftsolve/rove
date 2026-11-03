@@ -11,7 +11,7 @@ export function useAppVersion(): string | null {
         if (isAlive) setVersion(appVersion)
       })
       .catch(() => {
-        // Not running under Tauri (e.g. a plain browser preview) — leave unknown.
+        // Not under Tauri (e.g. a browser preview): leave it unknown.
         if (isAlive) setVersion(null)
       })
     return () => {

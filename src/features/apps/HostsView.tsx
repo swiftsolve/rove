@@ -31,8 +31,7 @@ import {
   Tooltip as UiTooltip,
 } from '@/ui'
 
-/** An app group's collapsible chevron: points down when open, rotates to a right
- *  caret when closed. */
+/** Points down when open, right when closed. */
 const chevronVariants = cva('shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out', {
   variants: {
     isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
@@ -40,29 +39,21 @@ const chevronVariants = cva('shrink-0 text-tertiary transition-transform duratio
   defaultVariants: { isOpen: false },
 })
 
-// An app group sits flush against the card edge with no radius of its own, so a
-// ring's corners (the nav-flash highlight's, or the focus ring's) would run
-// square into the card's rounded ones and get shaved off by its overflow:hidden.
-// It matches the card's curve on whichever edges it touches; with no fill, the
-// radius is invisible the rest of the time. The header toggles the whole group,
-// so focus frames the group (header and, when expanded, its hosts) rather than
-// the header row alone. Scroll margin gives breathing room when a focused group
-// is scrolled to the top of the list.
+// Matches the card's curve on the edges it touches, so the nav-flash and focus
+// rings aren't shaved square by the card's overflow:hidden. With no fill, the
+// radius is otherwise invisible. Scroll margin leaves room above a focused group.
 const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 
-// The group header is a full-width toggle that carries the row's inset, so the
-// whole row is the click target, with a quiet hover to signal it. Expanded, the
-// hosts sit 8px below it. Its own ring is drawn on the group instead.
+// Carries the row's inset so the whole row is the click target. Its focus ring
+// is drawn on the group instead.
 const GROUP_HEADER = cx(
   'flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
   '[font:inherit] text-left text-inherit hover:text-primary focus-visible:text-primary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
 )
 
-// Fixed-width flag slot so hostnames stay aligned whether or not a flag (or a
-// fallback icon) is present. Twemoji flag glyphs come first so the country flags
-// render on Windows, which has no flag emoji; the SVG fallbacks aren't text and
-// are unaffected. See the @font-face note in styles/base.css.
+// Fixed width keeps hostnames aligned with or without a flag. Twemoji comes first
+// because Windows has no flag emoji (see the @font-face note in styles/base.css).
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
   "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)]",
@@ -73,10 +64,8 @@ const HOST_COUNT = cx(
   'text-center text-xs text-tertiary tabular-nums',
 )
 
-// The app's hosts, indented so each 18px flag sits centred under the 16px app
-// icon above it (past the chevron gutter): chevron 14 + gap 8 + half of
-// (16 − 18) ≈ 21px. The flag column then reads as a continuation of the
-// app-icon column.
+// Indented so each 18px flag centres under the 16px app icon: chevron 14 + gap 8
+// + half of (16 − 18) ≈ 21px.
 const HOSTS = cx('flex flex-col gap-8', 'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]')
 
 const HOST_USAGE_INFO_HINT =
@@ -94,10 +83,8 @@ const BODY_COPY: UsageBodyCopy = {
 function HostIcon({ host }: { host: HostConn }) {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
-  // A peer on the user's own network (private/LAN address — no country flag).
-  // These get a node-graph icon rather than the globe: the globe reads as "out
-  // on the internet", the opposite of a local address, and it explains an
-  // otherwise odd router-supplied hostname like "mynetwork".
+  // A LAN peer gets a node-graph icon, not the globe, which reads as "out on the
+  // internet". It also explains a router-supplied hostname like "mynetwork".
   const isLocal = !flag && isPrivateIp(host.ip)
   const isDecorative = !flag && !isLocal
   const label = hostIconLabel(flag, country, isLocal)
@@ -121,21 +108,16 @@ function HostIcon({ host }: { host: HostConn }) {
   )
 }
 
-/** The hostname (or bare IP), truncated with an ellipsis. Hovering reveals the
- *  whole thing — plus the underlying IP — in the styled tooltip. A tooltip rather
- *  than an in-place scroll: it shows the entire name at once, at any length, with
- *  no motion (an in-place marquee either scrolls forever or hides one end). Only
- *  meaningful once a hostname has resolved; when the label already is the IP
- *  there's nothing more to reveal, so it's disabled rather than unmounted, so the
- *  node survives the poll that fills the hostname in. */
+/** The hostname (or bare IP), truncated; a tooltip shows the full name and IP.
+ *  With no hostname yet there's nothing to reveal, so the tooltip is disabled
+ *  rather than unmounted, keeping the node across the poll that resolves it. */
 function HostName({ host }: { host: HostConn }) {
   return (
     <UiTooltip
       content={
         <span className="flex flex-col gap-2">
-          {/* Most hostnames fit the bubble's widened cap on one line, so the box
-              hugs them; a longer one fills each line to the edge rather than
-              breaking at a hyphen and leaving the box padded out to the cap. */}
+          {/* break-all fills each line to the edge, rather than breaking at a
+              hyphen and leaving the box padded out to its cap. */}
           <span className="text-primary break-all">{host.host}</span>
           <span className="text-tertiary tabular-nums">{host.ip}</span>
         </span>
@@ -144,15 +126,13 @@ function HostName({ host }: { host: HostConn }) {
       maxWidth={360}
       isDisabled={!host.host}
     >
-      {/* Shrinks with the row, so the name truncates; the portalled bubble isn't clipped. */}
       <span className="min-w-0 truncate text-xs text-secondary">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }
 
-/** One remote host beneath its app: flag + hostname on the left, the download /
- *  upload split on the right. Memoised, like `AppGroup`: each poll keeps an
- *  unchanged host's object, so only the hosts that moved re-render. */
+/** Memoised: each poll keeps an unchanged host's object, so only hosts that moved
+ *  re-render. */
 const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
   return (
     <li className="flex items-center justify-between gap-12">
@@ -165,8 +145,7 @@ const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
   )
 })
 
-/** One app group: an icon + name header with the app's total, then its hosts.
- *  Memoised: each poll keeps an idle app's object, so its group skips the render. */
+/** Memoised: each poll keeps an idle app's object, so its group skips the render. */
 const AppGroup = memo(function AppGroup({
   app,
   isExpanded,
@@ -187,10 +166,8 @@ const AppGroup = memo(function AppGroup({
       isOpen={isExpanded}
       onOpenChange={() => onToggle(app.name)}
     >
-      {/* An accordion header: the heading names the group, the button inside it
-          toggles the hosts beneath. The heading carries meaning only: it takes
-          the row's own font, so the button inside (font: inherit) renders as
-          before. */}
+      {/* The accordion heading pattern. The heading takes the row's font, so it
+          adds semantics without restyling the button. */}
       <h2 className="[font:inherit]">
         <CollapsibleTrigger className={GROUP_HEADER} aria-label={appGroupLabel(app.name, hostCount, total)}>
           <RowName
@@ -202,7 +179,6 @@ const AppGroup = memo(function AppGroup({
             }
             name={app.name}
           >
-            {/* Small muted count of hosts in the group, after the app name. */}
             <span className={HOST_COUNT}>{hostCount}</span>
           </RowName>
           <ByteTotal bytes={total} />
@@ -223,8 +199,7 @@ export function HostsView() {
   const { usage, isFirstLoad, error, reload } = useHostUsage()
   const { location, back } = useNavigation()
   const { apps } = usage
-  // Arrived by clicking an app: open only that app's group and collapse the
-  // rest. Otherwise every group starts collapsed.
+  // Arriving from an app opens only its group; otherwise all start collapsed.
   const focusApp = location.appsSub?.view === 'hosts' ? (location.appsSub.app ?? null) : null
   const { isExpanded, toggle } = useExpandedApps(focusApp)
   const listRef = useScrollToFocusedApp(focusApp, apps)

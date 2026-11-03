@@ -32,9 +32,8 @@ export type NetworkDiagnostics = {
 }
 
 /**
- * The fast-changing subset of diagnostics, refreshed on a tight poll so the
- * live numbers stay current without re-running the heavier ISP + router-identity
- * lookups. Merged over the last full NetworkDiagnostics in the view.
+ * The fast-changing diagnostics, polled tightly without re-running the ISP and
+ * router lookups. Merged over the last full NetworkDiagnostics.
  */
 export type LiveDiagnostics = {
   gatewayPing: PingStats | null
@@ -43,12 +42,9 @@ export type LiveDiagnostics = {
 }
 
 /**
- * Service reachability plus the internet context needed to read it, probed as
- * one batch and served by its own command — the Connection diagnostics no longer
- * probe services. Pairing the two atomically is what lets the Services view tell
- * a genuine outage apart from this machine being offline: when the machine has no
- * internet, every probe fails at once and the view collapses that to a single
- * "connection lost" rather than a wall of per-service downs.
+ * Service reachability plus the internet verdict from the same batch, so the
+ * Services view can show one "connection lost" instead of every service down
+ * when this machine is offline.
  */
 export type ServicesReport = {
   /** Public-internet reachability, from the same batch as `services`. */

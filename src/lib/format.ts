@@ -159,8 +159,7 @@ export function formatDateTime(timestamp: number): string {
   }).format(new Date(timestamp))
 }
 
-/** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". Used
- *  for service outage lengths on the Services timeline. */
+/** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". */
 export function formatDuration(ms: number): string {
   if (!Number.isFinite(ms) || ms < 0) return '—'
   const seconds = Math.round(ms / 1000)
@@ -185,9 +184,8 @@ export const TIME_AGO_RESOLUTION_MS = 10_000
 /** Past this age `formatTimeAgo` switches from relative to an absolute date. */
 const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
 
-/** Relative timestamp for recent times; absolute date after 24 h. `now` is the
- *  clock to measure against — see `useNow`, which is what makes the label age on
- *  screen rather than at whatever moment the caller last re-rendered. */
+/** Relative timestamp for recent times; absolute date after 24 h. `now` comes
+ *  from `useNow`, so the label ages on screen. */
 export function formatTimeAgo(timestamp: number, now: number): string {
   const elapsed = now - timestamp
   if (elapsed >= TIME_AGO_RELATIVE_MS) return formatDateTime(timestamp)

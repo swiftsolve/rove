@@ -2,9 +2,8 @@ import type { Transfer } from '@/features/apps/utils/transfer'
 import { formatBytes } from '@/lib/format'
 import { cn, DirectionIcon, MetricValue, type SpeedSeries } from '@/ui'
 
-// Each value is right-aligned in a fixed-width box, so the down and up columns
-// line up across rows.
 const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
+// Fixed width, so the down and up columns line up across rows.
 const FIGURE_VALUE = 'min-w-[46px] text-right'
 
 const SERIES_LABEL: Record<SpeedSeries, string> = { down: 'Down', up: 'Up' }

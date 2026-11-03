@@ -39,7 +39,6 @@ const groupVariants = cva(
   },
 )
 
-// The line under the field: a quiet caption, red when the value is invalid.
 const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
   variants: {
     isInvalid: { true: 'text-negative', false: 'text-tertiary' },
