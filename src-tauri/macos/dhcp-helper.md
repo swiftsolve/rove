@@ -3,14 +3,14 @@
 > **Note (macOS 26.x):** This helper is a **fallback**, not the primary macOS path.
 > Modern macOS (verified on 26.3, stock `net.inet.ip.portrange` sysctls) lets an
 > **unprivileged** process bind UDP `:67`, so Rove's in-process listener captures
-> DHCP fingerprints directly — no root helper, no LaunchDaemon, no signing needed.
+> DHCP fingerprints directly: no root helper, no LaunchDaemon, no signing needed.
 > You only need what's below if you're targeting an older macOS that still reserves
 > low ports for root, or a config where `:67` is otherwise unbindable.
 
 Passive DHCP fingerprinting needs to bind UDP `:67`. On Linux the installer grants
 `cap_net_bind_service`; on Windows there's no low-port restriction. On **older macOS**
 that reserves ports below 1024 for root with **no per-app capability grant**, the app
-can't bind `:67` itself — a small root helper does the capture instead and hands
+can't bind `:67` itself, so a small root helper does the capture instead and hands
 results to the app over a file.
 
 ## Architecture
@@ -54,7 +54,7 @@ These steps require code signing / notarization and run on your Mac:
 1. **Bundle the helper** into the app: copy `rove-dhcp-helper` to
    `/Library/Application Support/Rove/` and the plist to `/Library/LaunchDaemons/`
    (`root:wheel`, plist `0644`, binary `0755`).
-2. **Install with an admin prompt** on first opt-in — from the app, an
+2. **Install with an admin prompt** on first opt-in: from the app, an
    `AuthorizationExecuteWithPrivileges` flow or a one-shot
    `osascript -e 'do shell script "… launchctl bootstrap system …" with administrator privileges'`
    copies the files and loads the daemon:
@@ -68,4 +68,4 @@ These steps require code signing / notarization and run on your Mac:
 > A cleaner long-term option is `SMAppService.daemon` (macOS 13+), which registers the
 > daemon from within the signed app bundle with no manual `launchctl`. It still requires
 > signing and a bundled `Contents/Library/LaunchDaemons/` plist; the file-IPC design here
-> is unchanged either way — only the install/registration differs.
+> is unchanged either way; only the install/registration differs.
