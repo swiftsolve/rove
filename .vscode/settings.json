@@ -21,6 +21,8 @@
   "search.exclude": {
     "**/.claude/worktrees": true
   },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsserver.watchOptions": {
     "excludeDirectories": ["**/.claude/worktrees"]
   }
