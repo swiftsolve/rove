@@ -57,6 +57,10 @@ for what. Read it before writing or changing UI. For where files live, see
   is kebab-case: contexts, utils and types (`theme-context.ts`), global
   stylesheets (`base.css`) and folders (`live-throughput/`). `npm run lint`
   runs `scripts/check-file-names.mjs`, which fails on a name that fits none.
+- Prettier lays out the code (`.prettierrc.json`: no semicolons, single
+  quotes, 120 columns); `npm run format` applies it, and `npm run lint` fails
+  on a file it would change. Markdown and generated files are left alone
+  (`.prettierignore`).
 
 ## Names and copy
 

@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "lint": "eslint . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs && node scripts/check-raw-values.mjs && node scripts/check-ui-classname.mjs && node scripts/check-file-names.mjs && node scripts/build-ui-catalogue.mjs --check",
+    "lint": "eslint . && prettier --check . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs && node scripts/check-raw-values.mjs && node scripts/check-ui-classname.mjs && node scripts/check-file-names.mjs && node scripts/build-ui-catalogue.mjs --check",
+    "format": "prettier --write .",
     "catalogue": "node scripts/build-ui-catalogue.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm test",
@@ -66,6 +67,7 @@
     "happy-dom": "^21.0.4",
     "playwright": "^1.64.1",
     "playwright-core": "^1.61.1",
+    "prettier": "^3.9.10",
     "storybook": "^10.6.5",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.63.0",
