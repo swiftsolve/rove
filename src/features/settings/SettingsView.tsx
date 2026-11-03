@@ -4,6 +4,7 @@ import { type ReactNode, useId } from 'react'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
 import type { ThemeMode } from '@/app/hooks/useThemeState'
+import { InstallUpdateButton } from '@/features/settings/components/InstallUpdateButton'
 import { type UpdateCheckState, useManualUpdateCheck } from '@/features/settings/hooks/useManualUpdateCheck'
 import { useSetting } from '@/hooks/useSetting'
 import {
@@ -39,6 +40,7 @@ const statusVariants = cva('flex items-center text-xs', {
     kind: {
       'up-to-date': 'gap-6 text-positive',
       available: 'justify-between gap-12 text-secondary',
+      failed: 'text-negative',
     },
   },
 })
@@ -67,7 +69,7 @@ function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descripti
   )
 }
 
-/** A labelled row (a list item) with a description and a control (toggle, button, …) on the right. */
+/** A labelled row with a description and a control (toggle, button, …) on the right. */
 function SettingRow({
   title,
   description,
@@ -108,9 +110,12 @@ function renderCheckResult(check: UpdateCheckState): ReactNode {
     return (
       <div className={statusVariants({ kind: 'available' })}>
         <span>Version {check.update.version} is available.</span>
-        <Button onClick={() => void check.update.install()}>Install &amp; restart</Button>
+        <InstallUpdateButton update={check.update} />
       </div>
     )
+  }
+  if (check.kind === 'failed') {
+    return <p className={statusVariants({ kind: 'failed' })}>Couldn’t check for updates. Try again later.</p>
   }
   return undefined
 }
@@ -120,6 +125,7 @@ function checkStatusText(check: UpdateCheckState): string {
   if (check.kind === 'checking') return 'Checking for updates…'
   if (check.kind === 'up-to-date') return 'You’re on the latest version.'
   if (check.kind === 'available') return `Version ${check.update.version} is available.`
+  if (check.kind === 'failed') return 'Couldn’t check for updates.'
   return ''
 }
 

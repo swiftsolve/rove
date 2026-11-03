@@ -19,7 +19,8 @@ export function useUpdateCheck(): {
 
   useEffect(() => {
     if (!getSetting('autoUpdate', true)) return
-    void checkForUpdates().then(setPendingUpdate)
+    // A failed check at launch stays quiet: Settings' "Check now" reports one.
+    checkForUpdates().then(setPendingUpdate, (err: unknown) => console.warn('Update check failed:', err))
   }, [])
 
   return { pendingUpdate, isDismissed, dismissUpdate: () => setIsDismissed(true) }
