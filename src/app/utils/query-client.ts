@@ -1,4 +1,4 @@
-import { focusManager, QueryClient } from '@tanstack/react-query'
+import { focusManager, MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 // Pause polls while the window is hidden and read once when it's shown, on the
 // same `visibilitychange` event `usePageVisible` follows (on the document), so
@@ -16,6 +16,9 @@ focusManager.setEventListener((handleFocus) => {
  * never had.
  */
 export const queryClient = new QueryClient({
+  // A screen shows a failure as text; the log keeps what failed and why.
+  queryCache: new QueryCache({ onError: (error, query) => console.warn('Query failed:', query.queryKey, error) }),
+  mutationCache: new MutationCache({ onError: (error) => console.warn('Mutation failed:', error) }),
   defaultOptions: {
     queries: {
       // A failed read shows its error straight away; the next poll or reload is the retry.
