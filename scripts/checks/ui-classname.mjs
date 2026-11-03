@@ -4,9 +4,9 @@
  *
  * Placement is margin, position and z-index, its size, how it sits as a flex
  * or grid item, its own text alignment, rounding to fit its container, and
- * showing or hiding it. A class that changes how the component looks inside —
- * padding, its own layout, type, colour, surface, or a utility from
- * src/styles/utilities.css — is flagged: that's a variant the component is
+ * showing or hiding it. A class that changes how the component looks inside
+ * (padding, its own layout, type, colour, surface, or a utility from
+ * src/styles/utilities.css) is flagged: that's a variant the component is
  * missing, or a style for an element the view owns.
  *
  * It reads every `className` passed to a component imported from `@/ui` in

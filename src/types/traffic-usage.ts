@@ -5,10 +5,7 @@ import type { AppUsageSupport } from './app-usage'
  * port. Mirrors the backend `TrafficType`.
  */
 export type TrafficType = {
-  /**
-   * Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
-   * The view keys its icon off this.
-   */
+  /** Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …). The view keys its icon off this. */
   id: string
   /** Display name for the bucket (`'HTTPS'`, `'DNS'`, …). */
   label: string

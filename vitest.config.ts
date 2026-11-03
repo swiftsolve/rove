@@ -4,13 +4,11 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
-// Three kinds of test. `.test.ts` is pure logic (utils, formatters) and runs
-// in Node, never touching the DOM, the bridge or the styles. `.test.tsx`
-// renders components and hooks into happy-dom with Testing Library: behaviour
-// and accessibility, not looks (the stable screenshots cover those). Every
-// story is also a test: it renders in headless Chromium with the real styles,
-// runs its `play` function and the a11y addon's checks. The unit and DOM tests
-// share only the `@` alias with vite.config.ts; the stories build with all of it.
+// Three kinds of test: `.test.ts` is pure logic, in Node. `.test.tsx` renders
+// into happy-dom with Testing Library, for behaviour and accessibility, not
+// looks. Every story runs in headless Chromium with the real styles, its `play`
+// function and the a11y checks. Unit and DOM tests share only the `@` alias
+// with vite.config.ts; the stories build with all of it.
 export default defineConfig({
   resolve: {
     alias: {

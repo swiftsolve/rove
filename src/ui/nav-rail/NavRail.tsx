@@ -128,10 +128,7 @@ type NavRailProps = {
   footer: ReactNode
 }
 
-/**
- * The narrow icon-only rail down the window's left side. It stays above the
- * content column, like the title bar.
- */
+/** The narrow icon-only rail down the window's left side. It stays above the content column, like the title bar. */
 export function NavRail({ label, main, footer }: NavRailProps) {
   const railRef = useRef<HTMLElement>(null)
   const bar = useActiveBar(railRef)

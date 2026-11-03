@@ -1019,13 +1019,10 @@ function createMockNetworkApi(): NetworkAPI {
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
       const mb = 1_000_000
-      // Every app in MOCK_APP_ROWS gets hosts, in the same order: each Apps row
-      // links here focused on its app, so a missing app would land on a group
-      // that doesn't exist. [host, ip, cc, downMB, upMB]; a null cc (LAN peer)
-      // shows no flag, a null host shows the bare IP.
-      //
-      // Per-app sums stay at or under that app's getAppUsage totals: hosts count
-      // TCP-connection traffic only, so they're a subset of the app's bytes.
+      // Every app in MOCK_APP_ROWS gets hosts, in order, so an Apps row's link
+      // never lands on a missing group. [host, ip, cc, downMB, upMB]; a null cc
+      // (LAN peer) shows no flag, a null host the bare IP. Per-app sums stay
+      // within getAppUsage's totals: hosts count only TCP traffic.
       const apps: [string, [string | null, string, string | null, number, number][]][] = [
         [
           'firefox',

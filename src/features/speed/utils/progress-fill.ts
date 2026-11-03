@@ -15,10 +15,7 @@ function nextStepCeiling(backendPct: number): number {
   return 100
 }
 
-/**
- * One frame of the smoothed fill: creep toward the next step, catch up to a
- * backend jump, and never move backwards.
- */
+/** One frame of the smoothed fill: creep toward the next step, catch up to a backend jump, and never move backwards. */
 export function advanceFill(fillPct: number, backendPct: number): number {
   const ceiling = backendPct >= 100 ? 100 : nextStepCeiling(backendPct) - PROGRESS_MARGIN
   let next = Math.min(fillPct + PROGRESS_CREEP, ceiling)

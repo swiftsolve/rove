@@ -10,7 +10,7 @@
  *   npm run screenshots -- --stable --storybook-url http://127.0.0.1:6006   # reuse a running Storybook
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
- * (src/dev/mock-network-api.ts) — so the shots show the mock's network, not
+ * (src/dev/mock-network-api.ts), so the shots show the mock's network, not
  * yours. That's the point: they're reproducible, and they don't leak the SSID
  * and devices of whoever ran the script.
  *
@@ -18,7 +18,7 @@
  *
  *  - We drive a real Chrome via playwright-core rather than a headless shell,
  *    because the app pauses all polling while the page is hidden (see
- *    hooks/usePageVisible.ts) and an automated background tab reads as hidden —
+ *    hooks/usePageVisible.ts) and an automated background tab reads as hidden:
  *    it would sit on the loading screen forever.
  *  - We move between screens by writing history state directly. The app has no
  *    URL per screen: navigation lives on history.state (see
@@ -35,7 +35,7 @@ import { chromium } from 'playwright-core'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-// Kept in sync with src-tauri/tauri.conf.json — the shots are only useful if
+// Kept in sync with src-tauri/tauri.conf.json: the shots are only useful if
 // they're the size the window actually is.
 const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8'))
 const { width, height } = app.windows[0]
@@ -115,7 +115,7 @@ const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
 /**
  * An unused port, so we never fight a `tauri:dev` already holding vite's
- * default — the config pins that port with `strictPort`, so a collision is
+ * default. The config pins that port with `strictPort`, so a collision is
  * fatal rather than a bump to the next one.
  */
 function freePort() {
@@ -142,7 +142,7 @@ async function startDevServer() {
   const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], {
     cwd: ROOT,
     stdio: ['ignore', 'pipe', 'inherit'],
-    // vite.config.ts reads PORT — see its `server.port`.
+    // vite.config.ts reads PORT; see its `server.port`.
     env: { ...process.env, PORT: String(await freePort()) },
   })
   return new Promise((ok, fail) => {

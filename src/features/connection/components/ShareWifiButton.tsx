@@ -3,10 +3,7 @@ import { useState } from 'react'
 import { WifiShareDialog } from '@/features/connection/components/WifiShareDialog'
 import { DialogRoot, IconButton, QrCodeIcon } from '@/ui'
 
-/**
- * A QR button that opens the Wi-Fi share dialog. Mount it only on Wi-Fi: there's
- * nothing to share over Ethernet.
- */
+/** A QR button that opens the Wi-Fi share dialog. Mount it only on Wi-Fi: there's nothing to share over Ethernet. */
 export function ShareWifiButton() {
   const [isOpen, setIsOpen] = useState(false)
 

@@ -19,10 +19,7 @@ import {
   TerminalIcon,
 } from '@/ui'
 
-/**
- * Anything unmapped (including "other") falls back to the layers icon, so a new
- * backend bucket never renders blank.
- */
+/** Anything unmapped (including "other") falls back to the layers icon, so a new backend bucket never renders blank. */
 const TRAFFIC_ICONS: Record<string, IconComponent> = {
   https: GlobeIcon,
   http: GlobeIcon,

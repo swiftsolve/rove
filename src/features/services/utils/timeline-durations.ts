@@ -88,10 +88,7 @@ export function closedOutageMs(event: ServiceTransitionEvent, durations: EventDu
   return undefined
 }
 
-/**
- * Whether this is the latest drop of a service that's still down, whose row
- * counts the outage up live.
- */
+/** Whether this is the latest drop of a service that's still down, whose row counts the outage up live. */
 export function isOngoingDrop(event: ServiceTransitionEvent, durations: EventDurations): boolean {
   return event.status === 'down' && durations.ongoingDownStartByHost.get(event.host) === event.ts
 }

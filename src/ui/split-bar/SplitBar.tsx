@@ -21,10 +21,7 @@ type SplitBarProps = {
   down: number
   /** The upload segment's value, after the download one. */
   up: number
-  /**
-   * The value a full track stands for. Rows in one list share it, so their
-   * bars compare at a glance.
-   */
+  /** The value a full track stands for. Rows in one list share it, so their bars compare at a glance. */
   max: number
   /** Reads the bar out, since it's an image to screen readers. */
   label: string

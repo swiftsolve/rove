@@ -56,10 +56,7 @@ function renderDescription(
   return undefined
 }
 
-/**
- * The page body: a first-scan spinner, an empty state with a retry, or the
- * device list.
- */
+/** The page body: a first-scan spinner, an empty state with a retry, or the device list. */
 function DevicesBody({
   devices,
   isScanning,

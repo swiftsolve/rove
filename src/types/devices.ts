@@ -34,10 +34,7 @@ export type LanDevice = {
   hostname: string | null
   /** Hardware model from mDNS/UPnP (e.g. "MacBookPro18,3"), or null. */
   model: string | null
-  /**
-   * OS family from the passive DHCP fingerprint (e.g. "Android", "Windows",
-   * "Apple"), or null when unknown.
-   */
+  /** OS family from the passive DHCP fingerprint (e.g. "Android", "Windows", "Apple"), or null when unknown. */
   os: string | null
   /** True when the MAC is locally administered (privacy-randomized). */
   isRandomizedMac: boolean

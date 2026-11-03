@@ -23,17 +23,11 @@ export type NetworkDiagnostics = {
   defaultInterface: string | null
   dnsServers: string[]
   gatewayPing: PingStats | null
-  /**
-   * Public-internet reachability, so Services can tell an outage apart from
-   * this machine being offline.
-   */
+  /** Public-internet reachability, so Services can tell an outage apart from this machine being offline. */
   internet: InternetStatus
   /** Router make from the gateway's MAC OUI, or null when unknown. */
   gatewayVendor: string | null
-  /**
-   * Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null
-   * when unavailable.
-   */
+  /** Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null when unavailable. */
   gatewayModel: string | null
   /**
    * Router product name from the gateway's UPnP friendlyName (e.g. "Giga Hub

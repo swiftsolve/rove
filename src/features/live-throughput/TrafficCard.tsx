@@ -4,10 +4,7 @@ import { useLiveThroughput } from '@/features/live-throughput/hooks/useLiveThrou
 import { useThroughputScale } from '@/features/live-throughput/hooks/useThroughputScale'
 import { ActivityIcon, Card, CardBody, CardHeader, LiveBadge } from '@/ui'
 
-/**
- * Home's live traffic: the current download and upload rates over a chart of
- * the last minute.
- */
+/** Home's live traffic: the current download and upload rates over a chart of the last minute. */
 export function TrafficCard() {
   const { throughput, history } = useLiveThroughput()
   const scaleMaxMbps = useThroughputScale(history.download, history.upload)

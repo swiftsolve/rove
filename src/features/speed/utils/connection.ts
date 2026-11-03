@@ -29,10 +29,7 @@ export function connectionFromContext(context: SpeedRunContext): SpeedTestConnec
   return null
 }
 
-/**
- * The live connection, for the card before any test has run, or null when it
- * isn't Wi-Fi or Ethernet.
- */
+/** The live connection, for the card before any test has run, or null when it isn't Wi-Fi or Ethernet. */
 export function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnection | null {
   if (!info) return null
   if (isWifiNetwork(info)) {

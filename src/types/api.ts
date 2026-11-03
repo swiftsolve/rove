@@ -22,10 +22,7 @@ import type { TrafficUsageSummary } from './traffic-usage'
 
 export type NetworkAPI = {
   getNetworkInfo(): Promise<NetworkInfo>
-  /**
-   * Build a shareable QR + credentials for the current Wi-Fi network. Rejects
-   * when there's no Wi-Fi link to share.
-   */
+  /** Build a shareable QR + credentials for the current Wi-Fi network. Rejects when there's no Wi-Fi link to share. */
   getWifiShare(): Promise<WifiShare>
   getPublicIp(): Promise<string | null>
   getInterfaces(): Promise<NetworkInterfaceSummary[]>
@@ -56,10 +53,7 @@ export type NetworkAPI = {
    */
   relaunchAsAdmin(): Promise<void>
   runDiagnostics(): Promise<NetworkDiagnostics>
-  /**
-   * The fast-changing gateway metrics only, for the Connection view's tight
-   * refresh loop.
-   */
+  /** The fast-changing gateway metrics only, for the Connection view's tight refresh loop. */
   runDiagnosticsLive(): Promise<LiveDiagnostics>
   /**
    * Probe the user's service list, with the internet verdict from the same
@@ -76,10 +70,7 @@ export type NetworkAPI = {
    * Resolves to the latency in ms, or null when unreachable.
    */
   testService(host: string): Promise<number | null>
-  /**
-   * The user's service list: the built-in defaults plus any they added, minus
-   * any they removed. Ordered as shown.
-   */
+  /** The user's service list: the built-in defaults plus any they added, minus any they removed. Ordered as shown. */
   listServices(): Promise<ServiceDefinition[]>
   /**
    * Add a service to the list; returns the updated list. Re-adding an existing
@@ -92,10 +83,7 @@ export type NetworkAPI = {
    * that row, as re-adding it would.
    */
   updateService(oldHost: string, name: string, host: string): Promise<ServiceDefinition[]>
-  /**
-   * Remove the service with this host (built-in or custom); returns the
-   * updated list.
-   */
+  /** Remove the service with this host (built-in or custom); returns the updated list. */
   deleteService(host: string): Promise<ServiceDefinition[]>
   /**
    * The services outage timeline, newest first. Recorded by the always-on
@@ -105,10 +93,7 @@ export type NetworkAPI = {
   getServiceHistory(): Promise<ServiceEvent[]>
   /** Wipe the timeline and the baseline behind it, so the next probe re-seeds. */
   clearServiceHistory(): Promise<void>
-  /**
-   * Fires when the services heartbeat has folded a fresh probe into the
-   * timeline, so a page showing it can re-read.
-   */
+  /** Fires when the services heartbeat has folded a fresh probe into the timeline, so a page showing it can re-read. */
   onServicesTimeline(callback: () => void): Unsubscribe
   /** `runToken` names this run, so a Stop sent before the run reaches the backend still stops it. */
   runSpeedTest(runToken: string): Promise<SpeedTestResult>
@@ -124,10 +109,7 @@ export type NetworkAPI = {
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
   onNetworkChanged(callback: () => void): Unsubscribe
-  /**
-   * Fires when the background heartbeat observes a public-internet
-   * reachability change (WAN lost or restored).
-   */
+  /** Fires when the background heartbeat observes a public-internet reachability change (WAN lost or restored). */
   onInternetStatus(callback: (status: InternetStatus) => void): Unsubscribe
   subscribeLiveThroughput(): Promise<void>
   unsubscribeLiveThroughput(): Promise<void>

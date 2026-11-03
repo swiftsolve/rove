@@ -452,7 +452,7 @@
         "isDisabled": {
           "type": "boolean",
           "default": "false",
-          "description": "Drops input and dims the switch. It stays focusable, like a disabled\nButton, so a tooltip can say why."
+          "description": "Drops input and dims the switch. It stays focusable, like a disabled Button, so a tooltip can say why."
         },
         "label": {
           "type": "string",
@@ -1106,7 +1106,7 @@
         "format": {
           "type": "(n: number) => string | null",
           "isRequired": true,
-          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`.\nNull draws a NoValue bar."
+          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar."
         },
         "status": {
           "values": [
@@ -1204,7 +1204,7 @@
         "max": {
           "type": "number",
           "isRequired": true,
-          "description": "The value a full track stands for. Rows in one list share it, so their\nbars compare at a glance."
+          "description": "The value a full track stands for. Rows in one list share it, so their bars compare at a glance."
         },
         "up": {
           "type": "number",
@@ -1302,7 +1302,7 @@
     "IconTileButton": {
       "group": "Data display",
       "source": "src/ui/icon-tile/IconTile.tsx",
-      "description": "An IconTile that opens something: hover and keyboard focus deepen the tint\nand lift it, a touch larger.",
+      "description": "An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger.",
       "figma": {
         "name": "Icon tile",
         "node": "495:585"
@@ -1697,7 +1697,7 @@
     "TitleBarStatus": {
       "group": "App frame",
       "source": "src/ui/title-bar/TitleBar.tsx",
-      "description": "The connection status beside the brand: a dot (pulsing unless neutral) and\nits words, announced as they change.",
+      "description": "The connection status beside the brand: a dot (pulsing unless neutral) and its words, announced as they change.",
       "figma": {
         "name": "Title bar status",
         "node": "4:40"
@@ -1792,7 +1792,7 @@
     "NavRail": {
       "group": "App frame",
       "source": "src/ui/nav-rail/NavRail.tsx",
-      "description": "The narrow icon-only rail down the window's left side. It stays above the\ncontent column, like the title bar.",
+      "description": "The narrow icon-only rail down the window's left side. It stays above the content column, like the title bar.",
       "figma": {
         "name": "Nav rail",
         "node": "41:892"

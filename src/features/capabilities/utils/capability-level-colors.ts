@@ -19,10 +19,7 @@ export const CAPABILITY_LEVEL_TILE_COLORS: Record<CapabilityLevel, IconTileColor
   unsupported: 'neutral',
 }
 
-/**
- * Each level's text shade, for words beside a level: darker than the fill so
- * it reaches 4.5:1.
- */
+/** Each level's text shade, for words beside a level: darker than the fill so it reaches 4.5:1. */
 export const CAPABILITY_LEVEL_TEXT_COLORS: Record<CapabilityLevel, string> = {
   excellent: 'text-positive',
   good: 'text-good',

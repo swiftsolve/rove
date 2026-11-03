@@ -66,20 +66,12 @@ function errorText(error: unknown, fallback: string): string {
 /**
  * `useQuery` for a backend read, with the app's open/poll/busy rules:
  *
- * - **Open.** The query fetches when a screen that shows it opens, unless
- *   another such screen was open just before. It doesn't fetch again when one
- *   of those screens is swapped for another.
- * - **Poll.** With `pollIntervalMs` it refetches quietly while open. TanStack
- *   pauses the poll while the window is hidden and reads once when it's shown.
- * - **Busy.** `isBusy` is true for the first load, the open-time refetch and a
- *   manual `reload()`, never for a poll. During the opening fetch `error` reads
- *   null, so an error from a visit before doesn't flash up. A reload keeps the
- *   current error until it lands, so the banner that offered Retry can show it
- *   running. A failed poll keeps the last data and reports its error.
- *
- * StrictMode can't double-fetch: TanStack shares one in-flight fetch between
- * the mount and the dev remount, and busy comes from the query's own state,
- * so no spinner can be left behind.
+ * - **Open.** Fetches when a screen showing it opens, but not when one such
+ *   screen is swapped for another.
+ * - **Poll.** With `pollIntervalMs`, refetches quietly while open and visible.
+ * - **Busy.** `isBusy` covers the first load, the open-time refetch and
+ *   `reload()`, never a poll. `error` reads null during the opening fetch, so
+ *   an old error doesn't flash up; a failed poll keeps the last data.
  */
 export function useBackendQuery<T>({
   queryKey,
@@ -93,6 +85,7 @@ export function useBackendQuery<T>({
   const canFetch = queryFn !== undefined
   // Whether this screen's opening fetch has landed, as of its last commit.
   const isOpenedRef = useRef(false)
+  // StrictMode can't double-fetch: its dev remount joins the mount's fetch in flight.
   const query = useQuery({
     queryKey,
     queryFn: queryFn ?? skipToken,

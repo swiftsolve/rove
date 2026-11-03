@@ -72,10 +72,7 @@ function HostName({ host }: { host: HostConn }) {
   )
 }
 
-/**
- * Memoised: each poll keeps an unchanged host's object, so only hosts that moved
- * re-render.
- */
+/** Memoised: each poll keeps an unchanged host's object, so only hosts that moved re-render. */
 export const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
   return (
     <li className="flex items-center justify-between gap-12">

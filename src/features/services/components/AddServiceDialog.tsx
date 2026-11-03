@@ -93,20 +93,13 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
 }
 
 /**
- * The "add a service" popup: enter a URL/IP and **add** it. Adding tests the
- * host first (see `testService`, which probes without storing it): a reachable
- * one goes straight in, while a down one shows its result and waits for "Add
- * anyway". The inline Test checks an address without adding it. Editing the
- * address after a test clears the result, so the confirm always reflects what
- * was actually measured.
+ * The "add a service" popup. Adding tests the host first: a reachable one goes
+ * straight in, a down one shows its result and waits for "Add anyway". Editing
+ * the address clears the result, so the confirm reflects what was measured.
  *
- * The display name is auto-detected from the address (github.com → "Github") but
- * stays editable: once the user types their own name, we stop overwriting it.
- * Clearing the field back to empty resumes auto-detection.
- *
- * Passing `editing` pre-fills the fields and switches the copy to "Edit
- * service". The flow is the same (test, then save), except a rename alone saves
- * without a test; the caller decides how to persist it.
+ * The name is guessed from the address (github.com → "Github") until the user
+ * types their own; clearing it resumes the guess. `editing` pre-fills the
+ * fields for "Edit service", where a rename alone saves without a test.
  */
 export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps) {
   const [address, setAddress] = useState(editing?.host ?? '')

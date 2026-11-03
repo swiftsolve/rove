@@ -142,7 +142,9 @@ the mock.
 - A comment says why: a reason, constraint or trap the code can't show. One
   that restates the code goes. Exports, props and type fields take `/** */`,
   on one line when it fits, else opening on a line of its own; implementation
-  notes take `//`. No divider comments.
+  notes take `//`. Keep it short: a `//` note in at most 6 lines, a `/** */`
+  doc in at most 10, and anything longer in `docs/`. No em dash, no divider
+  comments, and a lint exception says why after `--`.
 
 ## Names and copy
 
@@ -282,6 +284,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Library and context import boundaries, no raw `<button>` | ESLint, `no-restricted-imports` and `no-restricted-syntax` |
 | No `readonly`, typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
 | Boolean prefixes, `type` over `interface`, import order, jsx-a11y | ESLint |
+| Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
 | File names | `checks/file-names.mjs` |
 | Tokens, not raw values | `checks/raw-values.mjs` |

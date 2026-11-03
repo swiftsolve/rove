@@ -171,12 +171,11 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
       >
         {data.map((point, index) => (
-          // Focusable to be read, not to act, so no interactive role fits.
-          // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions
+          // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- focusable to be read, not to act, so no interactive role fits
           <div
             key={point.key}
             role="img"
-            // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
+            // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex -- keyboard users reach each day to hear its totals
             tabIndex={0}
             aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
             className="flex-1 focus-visible:outline-none"

@@ -1,8 +1,11 @@
 import js from '@eslint/js'
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
 import jsxA11y from 'eslint-plugin-jsx-a11y-x'
 import reactHooks from 'eslint-plugin-react-hooks'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import tseslint from 'typescript-eslint'
+
+import comments from './scripts/eslint/comments.mjs'
 
 // ── Import boundaries ──────────────────────────────────────────────────────
 
@@ -99,6 +102,17 @@ export default tseslint.config(
     plugins: { 'simple-import-sort': simpleImportSort },
     rules: { 'simple-import-sort/imports': 'error' },
   },
+  {
+    // Comments: short, no em dash, one line when they fit
+    // (scripts/eslint/comments.mjs), and a lint exception says why.
+    plugins: { comments, 'eslint-comments': eslintComments },
+    rules: {
+      'comments/no-em-dash': 'error',
+      'comments/single-line-jsdoc': 'error',
+      'comments/max-lines': 'error',
+      'eslint-comments/require-description': 'error',
+    },
+  },
 
   // ── TypeScript ───────────────────────────────────────────────────────────
   {
@@ -134,13 +148,10 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
       // A rejection passes on whatever the inner promise rejected with.
       '@typescript-eslint/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
-      // A boolean reads as a yes/no question: isOpen, hasGradient, canRunTest,
-      // shouldShowLabel, wasDeclined, or a verb phrase (needsNetworkInfo,
-      // meetsRequirements). It needs types, so it covers src, as tsconfig does.
-      // Left alone: object literal keys and destructured names (the DOM's and
-      // libraries' own options), `aria-*` and `data-*` attributes, and a
-      // generic stored `value` or `fallback` (useSetting). A hook still starts
-      // with `use`.
+      // A boolean reads as a yes/no question (isOpen, canRunTest) or a verb
+      // phrase (needsNetworkInfo). It needs types, so it covers src. Left alone:
+      // object keys and destructured names (other APIs' options), `aria-*` and
+      // `data-*`, and useSetting's generic `value` and `fallback`.
       '@typescript-eslint/naming-convention': [
         'error',
         {

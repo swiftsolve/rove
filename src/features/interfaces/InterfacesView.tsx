@@ -15,10 +15,7 @@ import {
   RefreshIcon,
 } from '@/ui'
 
-/**
- * The page body: a first-load spinner, an empty state with a retry, or the
- * interface panels.
- */
+/** The page body: a first-load spinner, an empty state with a retry, or the interface panels. */
 function InterfacesBody({
   interfaces,
   isLoading,

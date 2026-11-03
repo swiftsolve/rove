@@ -71,10 +71,7 @@ function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descripti
   )
 }
 
-/**
- * A labelled row with a description and a control (toggle, button, …) on the
- * right, or below when `isStacked`.
- */
+/** A labelled row with a description and a control (toggle, button, …) on the right, or below when `isStacked`. */
 function SettingRow({
   title,
   description,

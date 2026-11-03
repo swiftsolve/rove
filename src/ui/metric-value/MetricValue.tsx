@@ -30,10 +30,7 @@ export function MetricValue({
   value: number
   /** How healthy the value is, in the status text colours. */
   status?: MetricStatus
-  /**
-   * Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`.
-   * Null draws a NoValue bar.
-   */
+  /** Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar. */
   format: (n: number) => string | null
   /**
    * Its place in a layout: a column's width and alignment

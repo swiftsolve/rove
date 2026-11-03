@@ -76,10 +76,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   )
 }
 
-/**
- * The card header's actions: a spinner while testing, a hint before
- * the first test, nothing once results are in.
- */
+/** The card header's actions: a spinner while testing, a hint before the first test, nothing once results are in. */
 function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | undefined {
   if (isTesting) {
     return (
