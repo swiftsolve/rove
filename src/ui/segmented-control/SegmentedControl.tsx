@@ -36,7 +36,7 @@ const SEGMENT = cx(
   'data-checked:text-accent-text data-checked:hover:bg-transparent data-checked:hover:text-accent-text',
 )
 
-export interface SegmentedOption<Value extends string> {
+export type SegmentedOption<Value extends string> = {
   value: Value
   label: string
   icon?: ReactNode
@@ -74,7 +74,7 @@ export function SegmentedControl<Value extends string>({
       className={TRACK}
       style={thumbPosition}
       value={value}
-      onValueChange={(next) => onChange(next as Value)}
+      onValueChange={(next) => onChange(next)}
       {...ariaProps}
     >
       {index >= 0 && <span className={THUMB} aria-hidden data-keeps-transition />}

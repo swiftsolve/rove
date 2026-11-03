@@ -6,7 +6,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 
-interface UseDevicesResult {
+type UseDevicesResult = {
   lastScan: LanDeviceScan | null
   isScanning: boolean
   error: string | null

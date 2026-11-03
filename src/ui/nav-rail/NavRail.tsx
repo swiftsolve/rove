@@ -72,7 +72,7 @@ function NavGroup({ className, children }: { className?: string; children: React
   )
 }
 
-interface BarPlacement {
+type BarPlacement = {
   /** Offset from the rail's top. */
   top: number
   /** Whether an item is the current page. */

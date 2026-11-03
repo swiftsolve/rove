@@ -21,7 +21,7 @@ export type LanDeviceKind = (typeof LAN_DEVICE_KINDS)[number]
 export type LanDeviceKindConfidence = 'high' | 'low'
 
 /** A single host discovered on the local network segment. */
-export interface LanDevice {
+export type LanDevice = {
   /** Best-effort category — vendor OUIs only reveal so much. */
   kind: LanDeviceKind
   /** 'low' when the kind is a thin-margin guess, rendered hedged ("Phone?"). */
@@ -63,7 +63,7 @@ export interface LanDevice {
  */
 export type DhcpStatus = 'starting' | 'active' | 'unavailable'
 
-export interface LanDeviceScan {
+export type LanDeviceScan = {
   devices: LanDevice[]
   /** CIDR of the scanned segment, e.g. "192.168.2.0/24". */
   subnet: string | null

@@ -9,7 +9,7 @@ const SETTLED_RATIO = 0.25
 /** Readable axis maxima; above the last one the scale rounds up to the next 1000. */
 const NICE_SCALE_STEPS_MBPS = [10, 25, 50, 100, 250, 500, 1000, 1500, 2500, 5000]
 
-interface ResolveChartScaleOptions {
+type ResolveChartScaleOptions = {
   linkCapacityMbps?: number | null
   isSpeedTestRunning?: boolean
 }

@@ -43,13 +43,13 @@ const TIP = cx(
 )
 
 // The hovered point, and the chart's top-left corner in the window when it was hovered.
-interface Hover {
+type Hover = {
   index: number
   left: number
   top: number
 }
 
-interface Point {
+type Point = {
   x: number
   y: number
   sample: LatencySample
@@ -124,27 +124,31 @@ function placePoints(samples: LatencySample[], width: number, height: number, sl
   }))
 }
 
+/** Consecutive reachable points: never empty. */
+type Run = [Point, ...Point[]]
+
 // Split the line into runs of consecutive reachable samples, so a "down"
 // sample leaves a gap instead of a line diving to the baseline and back.
-function splitIntoRuns(points: Point[]): Point[][] {
-  const runs: Point[][] = []
-  let run: Point[] = []
+function splitIntoRuns(points: Point[]): Run[] {
+  const runs: Run[] = []
+  let run: Run | null = null
   for (const point of points) {
     if (point.sample.ms === null) {
-      if (run.length > 0) runs.push(run)
-      run = []
-    } else {
+      run = null
+    } else if (run) {
       run.push(point)
+    } else {
+      run = [point]
+      runs.push(run)
     }
   }
-  if (run.length > 0) runs.push(run)
   return runs
 }
 
 // A soft area under a line run, closed down to the baseline, for the gradient fill.
-function areaPoints(run: Point[], baseline: number): string {
-  const firstX = run[0]!.x
-  const lastX = run[run.length - 1]!.x
+function areaPoints(run: Run, baseline: number): string {
+  const firstX = run[0].x
+  const lastX = (run.at(-1) ?? run[0]).x
   return `${toSvgPoints(run)} ${lastX},${baseline} ${firstX},${baseline}`
 }
 
@@ -169,13 +173,13 @@ function chartDescription(samples: LatencySample[], label: string | undefined): 
 function nearestPointIndex(points: Point[], x: number): number {
   let nearest = 0
   let bestDistance = Infinity
-  for (let i = 0; i < points.length; i++) {
-    const distance = Math.abs(points[i]!.x - x)
+  points.forEach((point, i) => {
+    const distance = Math.abs(point.x - x)
     if (distance < bestDistance) {
       bestDistance = distance
       nearest = i
     }
-  }
+  })
   return nearest
 }
 
@@ -251,11 +255,12 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
     )
   }
 
-  if (samples.length === 0) {
+  const latest = samples.at(-1)
+  if (!latest) {
     return <span className={chartVariants({ isEmpty: true })} style={{ width, height }} aria-hidden="true" />
   }
 
-  const latestMs = samples[samples.length - 1]!.ms
+  const latestMs = latest.ms
   const hovered = hover !== null ? points[hover.index] : null
   // Only multi-point runs get an area — a lone point has none.
   const areaRuns = runs.filter((run) => run.length > 1)
@@ -302,7 +307,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
           ) : (
             // A lone reachable sample between gaps: draw it as a dot, since a
             // one-point polyline renders nothing.
-            <circle key={i} className="fill-current" cx={run[0]!.x} cy={run[0]!.y} r={DOT_RADIUS} />
+            <circle key={i} className="fill-current" cx={run[0].x} cy={run[0].y} r={DOT_RADIUS} />
           ),
         )}
         {/* Baseline ticks for failed probes, red whatever the line's band. */}

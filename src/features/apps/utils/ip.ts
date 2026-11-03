@@ -4,7 +4,7 @@
  *  loopback / link-local / unique-local ranges. Anything unrecognised is treated
  *  as public: it's the safer default for a "this is local" cue. */
 export function isPrivateIp(ip: string): boolean {
-  const v4 = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip)
   if (v4) {
     const a = Number(v4[1])
     const b = Number(v4[2])

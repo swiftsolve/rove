@@ -5,7 +5,7 @@ import { useBackendQuery } from '@/hooks/useBackendQuery'
 // continuously.
 const REFRESH_INTERVAL_MS = 5_000
 
-interface UsageQueryOptions<T> {
+type UsageQueryOptions<T> = {
   /** The cache key, one per breakdown. */
   queryKey: string
   /** Reads the breakdown off the bridge. */
@@ -18,7 +18,7 @@ interface UsageQueryOptions<T> {
   isEmpty: (usage: T) => boolean
 }
 
-export interface UsageQuery<T> {
+export type UsageQuery<T> = {
   usage: T
   /** Loading with nothing to show yet: the view shows a spinner rather than an
    *  empty list. Later loads keep the rows up. */

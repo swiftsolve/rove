@@ -5,7 +5,7 @@ import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 export type UpdateCheckState =
   { kind: 'idle' } | { kind: 'checking' } | { kind: 'up-to-date' } | { kind: 'available'; update: PendingUpdate }
 
-interface ManualUpdateCheck {
+type ManualUpdateCheck = {
   check: UpdateCheckState
   /** Check now. A failed check reads as up to date, as `checkForUpdates` reports it. */
   runCheck: () => Promise<void>

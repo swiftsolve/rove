@@ -2,7 +2,6 @@ import type { JSX, ReactNode } from 'react'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { formatDuration, formatMac } from '@/lib/format'
 import {
-  ActivityIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   EthernetIcon,
@@ -59,7 +58,7 @@ const META = 'text-sm text-tertiary tabular-nums'
 
 type IconComponent = (props: { size?: number }) => JSX.Element
 
-interface EventStyle {
+type EventStyle = {
   icon: IconComponent
   tone: EventTone
 }
@@ -117,7 +116,7 @@ function EventTime({ ts }: { ts: number }) {
 }
 
 function EventIcon({ type }: { type: NetworkEventType }) {
-  const Icon = EVENT_STYLES[type]?.icon ?? ActivityIcon
+  const Icon = EVENT_STYLES[type].icon
   return <Icon size={15} />
 }
 
@@ -138,10 +137,7 @@ export function TimelineItem({
   const metaItems = addressItems(event)
 
   return (
-    <TimelineNode
-      icon={<EventIcon type={event.type} />}
-      color={TONE_COLORS[EVENT_STYLES[event.type]?.tone ?? 'baseline']}
-    >
+    <TimelineNode icon={<EventIcon type={event.type} />} color={TONE_COLORS[EVENT_STYLES[event.type].tone]}>
       <span className={HEAD}>
         <span className={TITLE}>{title}</span>
         <EventTime ts={event.ts} />

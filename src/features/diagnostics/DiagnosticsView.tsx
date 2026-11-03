@@ -39,7 +39,8 @@ const WARN_LATENCY_MAX_MS = 120
 const WARN_LOSS_MAX_PCT = 2
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
-  return a != null && b != null && a.trim().toLowerCase() === b.trim().toLowerCase()
+  if (a == null || b == null) return false
+  return a.trim().toLowerCase() === b.trim().toLowerCase()
 }
 
 function formatPercent(pct: number): string {

@@ -2,7 +2,7 @@
 // src/types.
 
 /** The link a speed test ran (or will run) over, as shown beside its results. */
-export interface SpeedTestConnection {
+export type SpeedTestConnection = {
   type: 'wifi' | 'ethernet'
   name: string | null
   band: string | null

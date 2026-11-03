@@ -16,7 +16,7 @@ import type { InternetStatus, ServiceReachability } from '@/types'
  */
 
 /** One latency reading for a service at a point in time. */
-export interface LatencySample {
+export type LatencySample = {
   /** Epoch milliseconds when the sample was taken. */
   ts: number
   /** TLS-handshake latency in ms, or null when the probe failed (service down). */

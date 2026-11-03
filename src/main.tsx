@@ -20,7 +20,10 @@ if (isTauri()) {
 // Move any speed-test history left in localStorage into the database, once.
 void migrateLegacySpeedHistory()
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root')
+if (!root) throw new Error('index.html has no #root element.')
+
+createRoot(root).render(
   <React.StrictMode>
     <AppErrorBoundary>
       <App />

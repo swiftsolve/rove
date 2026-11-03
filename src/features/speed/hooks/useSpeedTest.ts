@@ -9,7 +9,7 @@ import { SPEED_HISTORY_KEY } from '@/features/speed/hooks/useSpeedHistory'
 import { queryClient } from '@/app/utils/query-client'
 import type { SpeedTestConnection } from '@/features/speed/types'
 
-interface SpeedTestState {
+type SpeedTestState = {
   internetSpeed: SpeedResult | null
   capabilities: CapabilityRating[]
   isTesting: boolean
@@ -34,10 +34,10 @@ interface SpeedTestState {
 }
 
 /** The store's state and the actions that change it, as `useSpeedTest` selects from. */
-export interface SpeedTest extends SpeedTestState {
+export type SpeedTest = {
   runTest: () => Promise<void>
   cancelTest: () => void
-}
+} & SpeedTestState
 
 const INITIAL_PROGRESS = {
   phase: 'idle',

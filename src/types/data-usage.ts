@@ -1,12 +1,12 @@
 /** Bytes transferred during one calendar day (local time). */
-export interface DailyUsage {
+export type DailyUsage = {
   /** Local date key, e.g. "2026-07-03". */
   date: string
   rxBytes: number
   txBytes: number
 }
 
-export interface DataUsageSummary {
+export type DataUsageSummary = {
   /** Last 7 calendar days including today, oldest first. Days with no data are zero-filled. */
   days: DailyUsage[]
   /** Cumulative bytes since boot, read directly from kernel interface counters. */

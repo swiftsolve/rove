@@ -1,7 +1,7 @@
 import { sanitizeRate } from '@/types'
 
 /** One point on the chart: a sample's position and its rates (Mbps). */
-export interface ChartRow {
+export type ChartRow = {
   index: number
   down: number
   up: number

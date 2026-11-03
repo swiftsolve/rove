@@ -5,7 +5,7 @@ import { cn } from '../foundations/cn'
 import { ChevronRightIcon } from '../icons/Icons'
 import { StretchedLink } from '../link/StretchedLink'
 
-interface CardContextValue {
+type CardContextValue = {
   /** The id a CardHeader gives its title, so a `section` card is named by it. */
   titleId?: string
   /** The card opens something, so its CardHeader ends in a caret. */

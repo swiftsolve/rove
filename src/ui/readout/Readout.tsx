@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '../foundations/cn'
 
-interface ValueParts {
+type ValueParts = {
   /** The number, formatted: "182", "4.6". */
   value: string
   /** After the number, smaller: "Mbps", "GB". */

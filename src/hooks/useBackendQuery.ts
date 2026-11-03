@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { hashKey, skipToken, useQuery, type QueryKey } from '@tanstack/react-query'
 
-interface BackendQueryOptions<T> {
+type BackendQueryOptions<T> = {
   /** Names the data in the shared cache. Every caller with the same key shares one entry. */
   queryKey: QueryKey
   /** Reads the data. Undefined when there is no backend bridge: then nothing fetches. */
@@ -19,7 +19,7 @@ interface BackendQueryOptions<T> {
   shouldForgetWhenClosed?: boolean
 }
 
-export interface BackendQuery<T> {
+export type BackendQuery<T> = {
   data: T | undefined
   /** A first load, an open-time refetch or a manual reload is running. Never a background poll. */
   isBusy: boolean

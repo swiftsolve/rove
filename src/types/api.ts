@@ -20,7 +20,7 @@ import type { SpeedTestProgress } from './speed'
 import type { NetworkInfo, WifiShare } from './network'
 import type { SpeedHistoryEntry } from './history'
 
-export interface NetworkAPI {
+export type NetworkAPI = {
   getNetworkInfo(): Promise<NetworkInfo>
   /** Build a shareable QR + credentials for the current Wi-Fi network. Rejects
    *  when there's no Wi-Fi link to share. */
@@ -103,12 +103,13 @@ export interface NetworkAPI {
   onLiveThroughput(callback: (throughput: LiveThroughput) => void): Unsubscribe
 }
 
-export interface WindowControls {
+export type WindowControls = {
   minimize(): void
   close(): void
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Window merges only into an interface.
   interface Window {
     // Optional: the plain web build (`build:web`) ships without a bridge, so
     // every consumer must guard. Use `getNetworkApi()` where a throw is fine.

@@ -41,7 +41,7 @@ type MetricProps = {
   series?: SpeedSeries
 }
 
-interface ConnectionBadgeStyle {
+type ConnectionBadgeStyle = {
   Icon: typeof WifiIcon
   /** The badge's tint: the medium's colour, or plain for an unknown one. */
   type: VariantOf<typeof connVariants, 'type'>

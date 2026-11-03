@@ -2,14 +2,14 @@ import type { CapabilityId, CapabilityLevel, CapabilityRequirement, SpeedResult 
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 
-export interface RequirementCheck {
+export type RequirementCheck = {
   label: string
   need: string
   have: string
   isMet: boolean
 }
 
-export interface CapabilityExplanation {
+export type CapabilityExplanation = {
   summary: string
   checks: RequirementCheck[]
 }

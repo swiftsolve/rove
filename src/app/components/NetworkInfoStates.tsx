@@ -20,7 +20,7 @@ const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center',
 // second note in the same style.
 const LOADING_LINE = 'text-sm text-secondary'
 
-interface NetworkErrorInfo {
+type NetworkErrorInfo = {
   kind: 'timeout' | 'backend' | 'offline'
   title: string
   description: string

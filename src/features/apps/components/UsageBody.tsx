@@ -4,7 +4,7 @@ import { EmptyState, LoadingState } from '@/ui'
 import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 
 /** What a usage view says in each state before it has rows to show. */
-export interface UsageBodyCopy {
+export type UsageBodyCopy = {
   /** Why the view needs administrator access, on Windows. */
   unsupported: string
   loading: string

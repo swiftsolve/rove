@@ -12,7 +12,7 @@ const LIVE_POLL_INTERVAL_MS = 15_000
 
 const ERROR_MESSAGE = 'Couldn’t check your connection'
 
-interface UseDiagnosticsResult {
+type UseDiagnosticsResult = {
   diagnostics: NetworkDiagnostics | null
   isRunning: boolean
   error: string | null

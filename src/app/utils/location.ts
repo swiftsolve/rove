@@ -18,14 +18,14 @@ export type AppsSub = { view: 'hosts'; app?: string | null } | { view: 'traffic'
  * A single screen the app can show — a tab, optionally with a subpage. Each
  * subpage field only applies to its own tab; omit them all for a tab's main page.
  */
-export interface AppLocation {
+export type AppLocation = {
   tab: AppTab
   speedSub?: SpeedSub | null
   servicesSub?: ServicesSub | null
   appsSub?: AppsSub | null
 }
 
-export interface Navigation {
+export type Navigation = {
   location: AppLocation
   /** The control to focus on arriving, when the screen was left by opening
    *  another from it and is now returned to through history. */

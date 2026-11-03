@@ -10,7 +10,7 @@ export function formatChartWindowLabel(): string {
   return `${seconds}s ago`
 }
 
-export interface ThroughputHistory {
+export type ThroughputHistory = {
   download: number[]
   upload: number[]
 }

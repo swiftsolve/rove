@@ -6,7 +6,7 @@ const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tab
  * they pressed and how far the page was scrolled. It's saved on the screen's
  * history entry, so going back lands focus on that control again.
  */
-export interface ReturnPoint {
+export type ReturnPoint = {
   /** The opener's tag, name and text, to find it again in the re-rendered page. */
   signature: string
   /** Its place among the page's controls, for when its text changed meanwhile
@@ -19,7 +19,7 @@ export interface ReturnPoint {
 }
 
 function signatureOf(element: Element): string {
-  return [element.tagName, element.getAttribute('aria-label') ?? '', element.textContent?.trim() ?? ''].join('|')
+  return [element.tagName, element.getAttribute('aria-label') ?? '', element.textContent.trim()].join('|')
 }
 
 // The element a click is being dispatched to, until the event is over. A

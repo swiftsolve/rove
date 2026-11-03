@@ -6,7 +6,7 @@ import { queryClient } from '@/app/utils/query-client'
 
 const SERVICE_HISTORY_KEY = ['services', 'history']
 
-interface UseServiceHistoryResult {
+type UseServiceHistoryResult = {
   /** The timeline, newest first. Empty until the first read lands. */
   events: ServiceEvent[]
   /** The first read has landed, so an empty `events` really means none. */

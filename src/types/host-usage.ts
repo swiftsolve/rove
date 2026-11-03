@@ -1,7 +1,7 @@
 import type { AppUsageSupport } from './app-usage'
 
 /** One remote host an app has exchanged bytes with this session. */
-export interface HostConn {
+export type HostConn = {
   /** Remote peer IP (no port) — the stable grouping key for the host. */
   ip: string
   /**
@@ -19,7 +19,7 @@ export interface HostConn {
 }
 
 /** One app with the remote hosts it has talked to, busiest host first. */
-export interface AppHosts {
+export type AppHosts = {
   name: string
   /** The app's real OS icon (`data:` URI) or null — see `AppUsage.icon`. */
   icon: string | null
@@ -30,7 +30,7 @@ export interface AppHosts {
 }
 
 /** Per-app remote-host breakdown for the Hosts view. Mirrors `AppUsageSummary`. */
-export interface HostUsageSummary {
+export type HostUsageSummary = {
   /** Per-app host breakdown, busiest app first. Empty before the first sample. */
   apps: AppHosts[]
   /**

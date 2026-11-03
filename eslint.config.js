@@ -8,7 +8,7 @@ const UI_INTERNALS = {
 }
 const CONTEXT_OBJECTS = {
   group: ['**/context/*-context'],
-  message: 'Read a context through its hook (useTheme(), useNetwork()…), not useContext.',
+  message: 'Read a context through its hook (useTheme(), useNetwork()…), not use().',
 }
 const APP_CODE = {
   group: ['@/**'],
@@ -58,6 +58,11 @@ export default tseslint.config(
   { ignores: ['dist', 'storybook-static', 'src-tauri', 'crates', 'target', '.claude'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // The app's code has type information, so it gets the strict, type-aware sets.
+  ...[...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked].map((config) => ({
+    ...config,
+    files: ['src/**/*.{ts,tsx}'],
+  })),
   reactHooks.configs.flat.recommended,
   {
     // Tooling scripts run under Node, so they get Node's globals — plus the
@@ -88,6 +93,38 @@ export default tseslint.config(
       // stay at their default `error`. Latest-value refs go through
       // `useLatestRef`, and text that ages reads the clock through `useNow`.
       'no-restricted-syntax': ['error', ...CODE_STYLE],
+    },
+  },
+  {
+    // Where the strict sets fight ordinary React: numbers read fine in a
+    // template, `onClick={() => setOpen(true)}` is the idiom, and props are
+    // `type`s, not interfaces.
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+      // `|| null` turns an empty string into "no value", and `|| undefined`
+      // drops a false attribute: both on purpose.
+      '@typescript-eslint/prefer-nullish-coalescing': ['error', { ignorePrimitives: { string: true, boolean: true } }],
+      // A no-op callback is an empty arrow function.
+      '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
+      // A rejection passes on whatever the inner promise rejected with.
+      '@typescript-eslint/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
+    },
+  },
+  {
+    // invoke<void> types a Tauri command that returns nothing.
+    files: ['src/bridge/**'],
+    rules: { '@typescript-eslint/no-invalid-void-type': 'off' },
+  },
+  {
+    // The dev mock implements the async bridge with synchronous bodies, and its
+    // flags flip inside callbacks that narrowing can't see.
+    files: ['src/dev/**'],
+    rules: {
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {

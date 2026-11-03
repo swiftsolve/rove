@@ -18,7 +18,7 @@ const NETWORK_INFO_TIMEOUT_MS = 20_000
 const FAILURES_BEFORE_ERROR = 3
 
 /** The local link (Wi-Fi / Ethernet): `info` is null until the first read lands. */
-export interface NetworkState {
+export type NetworkState = {
   info: NetworkInfo | null
   error: string | null
   /**

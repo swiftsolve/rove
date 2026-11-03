@@ -4,7 +4,7 @@ export const CAPABILITY_LEVELS = ['excellent', 'good', 'fair', 'poor', 'unsuppor
 
 export type CapabilityLevel = (typeof CAPABILITY_LEVELS)[number]
 
-export interface CapabilityRequirement {
+export type CapabilityRequirement = {
   minDownloadMbps: number
   minUploadMbps: number
   /** Null when latency doesn't affect it. */
@@ -99,7 +99,7 @@ export const CAPABILITY_DEFINITIONS = [
 
 export type CapabilityId = (typeof CAPABILITY_DEFINITIONS)[number]['id']
 
-export interface CapabilityDefinition {
+export type CapabilityDefinition = {
   id: CapabilityId
   label: string
   description: string
@@ -107,7 +107,7 @@ export interface CapabilityDefinition {
   requirements: CapabilityRequirement
 }
 
-export interface CapabilityRating {
+export type CapabilityRating = {
   id: CapabilityId
   label: string
   description: string
@@ -115,7 +115,7 @@ export interface CapabilityRating {
   level: CapabilityLevel
 }
 
-export interface SpeedTestResult {
+export type SpeedTestResult = {
   internet: SpeedResult
   capabilities: CapabilityRating[]
   linkCapacityMbps: number | null

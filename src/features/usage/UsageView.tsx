@@ -22,7 +22,7 @@ import {
   WeekIcon,
 } from '@/ui'
 
-interface UsageDatum {
+type UsageDatum = {
   key: string
   label: string
   down: number

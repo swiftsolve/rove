@@ -27,7 +27,7 @@ export type NetworkEventSeverity = 'info' | 'warning' | 'critical'
  * successive device scans (see Store::record_devices). Append-only and pruned
  * to a 7-day window.
  */
-export interface NetworkEvent {
+export type NetworkEvent = {
   id: number
   /** Epoch milliseconds. */
   ts: number

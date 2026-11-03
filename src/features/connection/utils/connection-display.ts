@@ -4,7 +4,7 @@ import { formatSpeedMbps } from '@/lib/format'
 
 export type ConnectionDisplayVariant = 'wifi' | 'ethernet' | 'disconnected'
 
-export interface ConnectionDisplay {
+export type ConnectionDisplay = {
   variant: ConnectionDisplayVariant
   title: string
   subtitle: string

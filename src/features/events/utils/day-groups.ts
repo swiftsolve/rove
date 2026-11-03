@@ -1,6 +1,6 @@
 import type { NetworkEvent } from '@/types'
 
-export interface DayGroup {
+export type DayGroup = {
   key: string
   heading: string
   events: NetworkEvent[]
@@ -35,7 +35,7 @@ export function groupByDay(events: NetworkEvent[], now: number): DayGroup[] {
   for (const event of events) {
     const key = dayKey(event.ts)
     const last = groups[groups.length - 1]
-    if (last && last.key === key) {
+    if (last?.key === key) {
       last.events.push(event)
     } else {
       groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })

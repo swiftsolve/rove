@@ -31,6 +31,7 @@ import type {
   WindowControls,
 } from '@/types'
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T types the event's payload for listen().
 function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsubscribe {
   let isDisposed = false
   let dispose: (() => void) | null = null

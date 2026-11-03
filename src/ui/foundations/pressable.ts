@@ -11,7 +11,7 @@ export const PRESS = 'usable:active:transform-[translateY(0.5px)]'
 export const STATE_CLASSES =
   'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled) data-loading:cursor-default'
 
-interface PressableState {
+type PressableState = {
   isDisabled?: boolean | null
   isLoading?: boolean | null
   onClick?: MouseEventHandler<HTMLButtonElement>

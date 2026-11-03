@@ -8,7 +8,7 @@ import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
 import { cn } from '../foundations/cn'
 
-interface DialogState {
+type DialogState = {
   /** False while the Dialog plays its leave animation. */
   isOpen: boolean
   /** The leave animation finished: unmount. */

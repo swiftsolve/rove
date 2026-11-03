@@ -5,7 +5,7 @@ import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 // Keep interface values (link speed, IP, oper state) live while the tab is open.
 const POLL_INTERVAL_MS = 15_000
 
-interface UseNetworkInterfacesResult {
+type UseNetworkInterfacesResult = {
   interfaces: NetworkInterfaceSummary[]
   isLoading: boolean
   error: string | null

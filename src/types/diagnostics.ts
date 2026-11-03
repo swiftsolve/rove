@@ -10,7 +10,7 @@ import type { PingStats } from './speed'
  */
 export type InternetStatus = 'online' | 'noInternet' | 'offline'
 
-export interface NetworkDiagnostics {
+export type NetworkDiagnostics = {
   gateway: string | null
   defaultInterface: string | null
   dnsServers: string[]
@@ -36,7 +36,7 @@ export interface NetworkDiagnostics {
  * live numbers stay current without re-running the heavier ISP + router-identity
  * lookups. Merged over the last full NetworkDiagnostics in the view.
  */
-export interface LiveDiagnostics {
+export type LiveDiagnostics = {
   gatewayPing: PingStats | null
   /** Public-internet reachability, refreshed each poll. */
   internet: InternetStatus
@@ -50,7 +50,7 @@ export interface LiveDiagnostics {
  * internet, every probe fails at once and the view collapses that to a single
  * "connection lost" rather than a wall of per-service downs.
  */
-export interface ServicesReport {
+export type ServicesReport = {
   /** Public-internet reachability, from the same batch as `services`. */
   internet: InternetStatus
   /** TCP-connect reachability of the user's service list. */
@@ -58,7 +58,7 @@ export interface ServicesReport {
 }
 
 /** WAN-side identity from an IP-geolocation lookup; every field is optional. */
-export interface IspInfo {
+export type IspInfo = {
   /** ISP or organization name, e.g. "Comcast Cable". */
   name: string | null
   /** Autonomous-system number, formatted "AS15169". */
@@ -79,7 +79,7 @@ export interface IspInfo {
 
 /** A service in the user's reachability list — the durable definition, without
  *  a measurement. Ships with defaults but is editable per user (add/remove). */
-export interface ServiceDefinition {
+export type ServiceDefinition = {
   /** Human label, e.g. "Netflix". */
   name: string
   /** Host probed, a hostname ("netflix.com") or IP ("192.168.1.1"). */
@@ -89,7 +89,7 @@ export interface ServiceDefinition {
 /** Reachability of one internet service on two independent axes: network
  *  latency (TLS handshake to :443) and application health (an HTTP HEAD). They
  *  can disagree — a service can be reachable in a few ms yet answering 5xx. */
-export interface ServiceReachability {
+export type ServiceReachability = {
   /** Human label, e.g. "Netflix". */
   name: string
   /** Hostname probed, e.g. "netflix.com". */
@@ -106,7 +106,7 @@ export interface ServiceReachability {
 export type ServiceStatus = 'up' | 'down'
 
 /** One service crossing between up and down. */
-export interface ServiceTransitionEvent {
+export type ServiceTransitionEvent = {
   type: 'transition'
   /** Hostname probed — the stable key across renames. */
   host: string
@@ -122,7 +122,7 @@ export interface ServiceTransitionEvent {
  *  a full recovery after an outage). A recovery always has `count === total`; a
  *  baseline can be partial, when a service was already down the first time
  *  monitoring looked. */
-export interface ServicesRunningEvent {
+export type ServicesRunningEvent = {
   type: 'running'
   count: number
   total: number
@@ -131,7 +131,7 @@ export interface ServicesRunningEvent {
 
 /** This machine's own network dropping or returning. Recorded once in place of
  *  the per-service downs its probes would otherwise produce. */
-export interface ConnectionEvent {
+export type ConnectionEvent = {
   type: 'connection'
   status: 'lost' | 'restored'
   ts: number

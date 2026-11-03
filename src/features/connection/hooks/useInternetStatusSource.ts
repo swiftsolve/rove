@@ -23,15 +23,15 @@ export function useInternetStatusSource(): InternetStatus | null {
     // `isActive` guards against a late-resolving read or event landing after the
     // effect has torn down (e.g. Vite HMR remounts).
     let isActive = true
-    void api.getInternetStatus?.().then((nextStatus) => {
+    void api.getInternetStatus().then((nextStatus) => {
       if (isActive) setStatus(nextStatus)
     })
-    const detach = api.onInternetStatus?.((nextStatus) => {
+    const detach = api.onInternetStatus((nextStatus) => {
       if (isActive) setStatus(nextStatus)
     })
     return () => {
       isActive = false
-      detach?.()
+      detach()
     }
   }, [])
 

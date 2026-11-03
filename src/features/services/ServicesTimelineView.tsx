@@ -58,14 +58,14 @@ const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 // The outage length sits at the far right of its row, no dot before it.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 
-interface DayGroup {
+type DayGroup = {
   key: string
   heading: string
   events: ServiceEvent[]
 }
 
 /** The precomputed durations the timeline rows read, plus the live clock. */
-interface EventDurations {
+type EventDurations = {
   /** Closed outages, keyed by `outageKey` of the recovery. */
   outageByKey: Map<string, number>
   /** Offline spells, keyed by the "connection restored" event's ts. */
@@ -121,7 +121,7 @@ function groupByDay(events: ServiceEvent[], now: number): DayGroup[] {
   for (const event of events) {
     const key = dayKey(event.ts)
     const last = groups[groups.length - 1]
-    if (last && last.key === key) {
+    if (last?.key === key) {
       last.events.push(event)
     } else {
       groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })
@@ -141,8 +141,7 @@ function outageKey(host: string, ts: number): string {
 function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
   const durations = new Map<string, number>()
   const downAt = new Map<string, number>()
-  for (let i = newestFirst.length - 1; i >= 0; i--) {
-    const e = newestFirst[i]!
+  for (const e of [...newestFirst].reverse()) {
     if (e.type !== 'transition') continue
     if (e.status === 'down') {
       downAt.set(e.host, e.ts)
@@ -177,8 +176,7 @@ function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
 function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostAt: number | null = null
-  for (let i = newestFirst.length - 1; i >= 0; i--) {
-    const e = newestFirst[i]!
+  for (const e of [...newestFirst].reverse()) {
     if (e.type !== 'connection') continue
     if (e.status === 'lost') {
       lostAt = e.ts

@@ -6,7 +6,7 @@ const REFRESH_INTERVAL_MS = 10_000
 
 const EMPTY_USAGE = createEmptyDataUsage()
 
-interface UseDataUsageResult {
+type UseDataUsageResult = {
   usage: DataUsageSummary
   isLoading: boolean
   error: string | null

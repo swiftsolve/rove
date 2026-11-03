@@ -21,7 +21,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
     setHasFailed(false)
     // install() ends in relaunch(), so this promise never resolves on success;
     // only a failure returns control here.
-    update.install().catch((err) => {
+    update.install().catch((err: unknown) => {
       console.warn('Update install failed:', err)
       setIsInstalling(false)
       setHasFailed(true)

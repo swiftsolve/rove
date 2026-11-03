@@ -1,7 +1,7 @@
 import { formatBytes } from '@/lib/format'
 
 /** Bytes moved each way, as every usage row (app, host, traffic type) has them. */
-export interface Transfer {
+export type Transfer = {
   rxBytes: number
   txBytes: number
 }

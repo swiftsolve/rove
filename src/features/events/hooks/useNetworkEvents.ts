@@ -7,7 +7,7 @@ const EVENTS_POLL_INTERVAL_MS = 5000
 
 const NETWORK_EVENTS_KEY = ['networkEvents']
 
-interface UseNetworkEventsResult {
+type UseNetworkEventsResult = {
   events: NetworkEvent[]
   isLoading: boolean
   error: string | null
@@ -21,7 +21,8 @@ interface UseNetworkEventsResult {
 export function refreshNetworkEvents(): void {
   const api = window.networkAPI
   if (!api) return
-  void queryClient.prefetchQuery({ queryKey: NETWORK_EVENTS_KEY, queryFn: () => api.getNetworkEvents() })
+  // A failed refresh keeps the last list; the next poll tries again.
+  queryClient.query({ queryKey: NETWORK_EVENTS_KEY, queryFn: () => api.getNetworkEvents() }).catch(() => {})
 }
 
 /**

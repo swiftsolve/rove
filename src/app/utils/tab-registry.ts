@@ -30,7 +30,7 @@ import { AboutView } from '@/features/about/AboutView'
 
 type Screen = () => JSX.Element | null
 
-export interface TabDefinition {
+export type TabDefinition = {
   label: string
   Icon: (props: { size?: number; className?: string }) => JSX.Element
   /** The tab's main page. */

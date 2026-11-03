@@ -27,5 +27,5 @@ export const IS_WINDOWS = typeof navigator !== 'undefined' && navigator.userAgen
 export const IS_WEBKIT_GTK =
   typeof navigator !== 'undefined' &&
   /\bLinux\b/.test(navigator.userAgent) &&
-  /AppleWebKit/.test(navigator.userAgent) &&
+  navigator.userAgent.includes('AppleWebKit') &&
   !/Chrom(e|ium)/.test(navigator.userAgent)

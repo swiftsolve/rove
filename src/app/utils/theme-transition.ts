@@ -2,14 +2,14 @@ import { flushSync } from 'react-dom'
 import { IS_WEBKIT_GTK } from '@/lib/platform'
 import { playThemeSwitchSound } from '@/app/utils/theme-sounds'
 
-interface ViewTransition {
+type ViewTransition = {
   ready: Promise<void>
   finished: Promise<void>
 }
 
 /** Book-keeping for a swap that's currently animating, so a fresh press can fold
  *  into it (reverse the clip) instead of starting a second, jumpy transition. */
-interface RunningSwap {
+type RunningSwap = {
   transition: ViewTransition
   /** The theme the clip circle is currently heading toward. */
   isTargetLight: boolean
@@ -51,9 +51,9 @@ export function applyThemeClass(isLight: boolean): void {
 }
 
 /** A cross-fade in progress (see `fadeThemeClass`). */
-interface RunningFade {
+type RunningFade = {
   /** Each colour token the themes disagree on, with its dark and light value. */
-  tokens: Array<{ name: string; dark: string; light: string }>
+  tokens: { name: string; dark: string; light: string }[]
   /** 0 is all dark, 1 all light. */
   progress: number
   isTargetLight: boolean
@@ -237,9 +237,8 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
   // path (animated or instant) runs below.
   playThemeSwitchSound(themeName(isNextLight))
 
-  const doc = document as Document & {
-    startViewTransition?: (callback: () => void) => ViewTransition
-  }
+  // Older WebKit has no view transitions, whatever the DOM types say.
+  const doc: { startViewTransition?: (callback: () => void) => ViewTransition } = document
   const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (shouldReduceMotion) {
     persist()
@@ -284,7 +283,7 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
 
   // Once the swap settles (or is skipped), drop the direction flag and free the
   // slot so the next press starts a fresh transition.
-  transition.finished.finally(() => {
+  void transition.finished.finally(() => {
     root.classList.remove('theme-to-dark')
     if (running === swap) running = null
   })

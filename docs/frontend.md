@@ -76,8 +76,8 @@ for what. Read it before writing or changing UI. For where files live, see
   `isActive` where you read it.
 - No `readonly`, `Readonly<>`, `ReadonlyArray`, `ReadonlyMap` or
   `ReadonlySet`; use the plain type.
-- A component's props are a `type`, never an `interface`, so a props shape
-  that grows into a union or an intersection keeps its keyword. A prop it
+- An object shape is a `type`, never an `interface` (lint enforces it), so a
+  shape that grows into a union or an intersection keeps its keyword. A prop it
   redeclares from a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed

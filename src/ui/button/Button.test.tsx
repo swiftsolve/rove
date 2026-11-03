@@ -49,7 +49,7 @@ describe('Button', () => {
   it('never submits its form while disabled or loading', async () => {
     const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault())
     render(
-      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+      <form onSubmit={(event) => onSubmit(event.nativeEvent)}>
         <Button type="submit" isDisabled>
           Add
         </Button>

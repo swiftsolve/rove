@@ -3,7 +3,7 @@ import type { AppUsageSupport } from './app-usage'
 /** One kind of traffic — a protocol bucket the session's connections were
  *  grouped into by their remote (service) port. Mirrors the backend
  *  `TrafficType`. */
-export interface TrafficType {
+export type TrafficType = {
   /** Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
    *  The view keys its icon off this. */
   id: string
@@ -18,7 +18,7 @@ export interface TrafficType {
  *  same per-connection samples), just bucketed by service port instead of peer
  *  IP. Mirrors the other usage summaries' shape so the frontend treats them
  *  alike. */
-export interface TrafficUsageSummary {
+export type TrafficUsageSummary = {
   /** Per-kind totals, busiest first. Empty before the first sample. */
   types: TrafficType[]
   /**

@@ -13,7 +13,7 @@ const CHIP = cx(
   'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
 )
 
-interface Notice {
+type Notice = {
   icon: ReactNode
   title: string
   description: string

@@ -1,10 +1,10 @@
-export interface PingStats {
+export type PingStats = {
   avgMs: number
   jitterMs: number
   packetLoss: number
 }
 
-export interface SpeedResult {
+export type SpeedResult = {
   downloadMbps: number
   uploadMbps: number
   latencyMs: number
@@ -12,7 +12,7 @@ export interface SpeedResult {
   packetLoss: number
 }
 
-export interface Throughput {
+export type Throughput = {
   downloadMbps: number
   uploadMbps: number
 }
@@ -21,7 +21,7 @@ export const SPEED_TEST_PHASES = ['idle', 'internet', 'complete', 'error'] as co
 
 export type SpeedTestPhase = (typeof SPEED_TEST_PHASES)[number]
 
-export interface SpeedTestProgress {
+export type SpeedTestProgress = {
   phase: SpeedTestPhase
   message: string
   /** Progress percentage from 0 to 100. */

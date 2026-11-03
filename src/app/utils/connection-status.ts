@@ -7,7 +7,7 @@ import { formatConnectionType } from '@/lib/format'
 // with no WAN route); 'neutral' = connecting, or no usable link at all.
 export type StatusTone = 'positive' | 'negative' | 'neutral'
 
-export interface ConnectionStatus {
+export type ConnectionStatus = {
   tone: StatusTone
   /** The title bar's label: "Wi-Fi", "No internet", "Offline", … */
   label: string

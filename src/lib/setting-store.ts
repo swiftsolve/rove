@@ -15,7 +15,7 @@ type Listener = () => void
 /** The part of `Storage` the store uses, so tests can hand it a fake. */
 export type SettingStorage = Pick<Storage, 'getItem' | 'setItem'>
 
-export interface SettingStore {
+export type SettingStore = {
   /** The stored text for `key`, or null when nothing is stored. */
   read: (key: string) => string | null
   /** Store `value` for `key` and tell its readers. */

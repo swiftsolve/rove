@@ -5,7 +5,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
  * A newer signed release that has been found but not yet installed. The UI
  * presents it to the user and calls `install()` if they accept.
  */
-export interface PendingUpdate {
+export type PendingUpdate = {
   version: string
   currentVersion: string
   notes: string

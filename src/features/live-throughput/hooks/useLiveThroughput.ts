@@ -7,7 +7,7 @@ import {
   type ThroughputHistory,
 } from '@/features/live-throughput/utils/throughput-history'
 
-export interface LiveThroughputState {
+export type LiveThroughputState = {
   /** The latest sample. */
   throughput: LiveThroughput
   /** The last minute of samples, oldest first. */
@@ -86,7 +86,7 @@ function stopSourceNow(): void {
   isSourceActive = false
   detachEvents?.()
   detachEvents = null
-  void window.networkAPI?.unsubscribeLiveThroughput?.()
+  void window.networkAPI?.unsubscribeLiveThroughput()
   resetHistory()
 }
 

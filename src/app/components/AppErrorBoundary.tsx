@@ -4,7 +4,7 @@ type AppErrorBoundaryProps = {
   children: ReactNode
 }
 
-interface AppErrorBoundaryState {
+type AppErrorBoundaryState = {
   error: Error | null
 }
 

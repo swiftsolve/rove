@@ -4,7 +4,7 @@ export const INTERFACE_OPER_STATES = ['up', 'down', 'unknown'] as const
 
 export type InterfaceOperState = (typeof INTERFACE_OPER_STATES)[number]
 
-export interface NetworkInterfaceSummary {
+export type NetworkInterfaceSummary = {
   name: string
   connectionType: ConnectionType
   operState: InterfaceOperState

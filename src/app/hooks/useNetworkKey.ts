@@ -12,5 +12,5 @@ import { useNetwork } from '@/app/hooks/useNetwork'
  */
 export function useNetworkKey(): string | null {
   const { info } = useNetwork()
-  return info ? `${info.interfaceName ?? ''}|${info.ipAddress ?? ''}` : null
+  return info ? `${info.interfaceName}|${info.ipAddress ?? ''}` : null
 }

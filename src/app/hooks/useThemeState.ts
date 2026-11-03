@@ -42,7 +42,7 @@ function isResolvedLight(mode: ThemeMode, isSystemLight: boolean): boolean {
   return mode === 'light' || (mode === 'system' && isSystemLight)
 }
 
-export interface Theme {
+export type Theme = {
   /** The user's stored preference: 'dark' | 'light' | 'system'. */
   mode: ThemeMode
   /** The resolved theme currently on screen. */

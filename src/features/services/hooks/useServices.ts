@@ -5,7 +5,7 @@ import { queryClient } from '@/app/utils/query-client'
 
 const SERVICES_KEY = ['services', 'list']
 
-interface UseServicesResult {
+type UseServicesResult = {
   /** The user's ordered service list, or null before the first load resolves. */
   services: ServiceDefinition[] | null
   error: string | null

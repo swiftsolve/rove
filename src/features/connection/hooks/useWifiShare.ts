@@ -2,7 +2,7 @@ import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/network-api'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 
-interface WifiShareQuery {
+type WifiShareQuery = {
   share: WifiShare | null
   /** The backend's error text, which the dialog words its notice from. */
   error: string | null

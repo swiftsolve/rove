@@ -9,7 +9,7 @@ import { recordLatency } from '@/features/services/utils/service-latency'
 // poll, so the sparklines keep the rate they had when services rode on it.
 const SERVICE_POLL_INTERVAL_MS = 15_000
 
-interface UseServiceReachabilityResult {
+type UseServiceReachabilityResult = {
   /** The latest probe set, or null before the first read lands. */
   report: ServicesReport | null
   error: string | null

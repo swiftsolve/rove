@@ -10,7 +10,7 @@ const regionNames =
 
 /** Upper-cased code when it's exactly two ASCII letters, else null. */
 function normalizeCountryCode(code: string | null | undefined): string | null {
-  if (!code || code.length !== 2) return null
+  if (code?.length !== 2) return null
   const upper = code.toUpperCase()
   return /^[A-Z]{2}$/.test(upper) ? upper : null
 }

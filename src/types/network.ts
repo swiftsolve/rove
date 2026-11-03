@@ -5,7 +5,7 @@ export const CONNECTION_TYPES = ['wifi', 'ethernet', 'unknown'] as const
 export type ConnectionType = (typeof CONNECTION_TYPES)[number]
 
 /** Fields shared by every network snapshot. */
-export interface NetworkInfoBase {
+export type NetworkInfoBase = {
   interfaceName: string
   isConnected: boolean
   ipAddress: string | null
@@ -14,7 +14,7 @@ export interface NetworkInfoBase {
   dns: string[]
 }
 
-export interface WifiNetworkInfo extends NetworkInfoBase {
+export type WifiNetworkInfo = {
   connectionType: 'wifi'
   isConnected: true
   ssid: string | null
@@ -25,21 +25,21 @@ export interface WifiNetworkInfo extends NetworkInfoBase {
   security: string | null
   wifiStandard: string | null
   linkSpeedMbps: number | null
-}
+} & NetworkInfoBase
 
-export interface EthernetNetworkInfo extends NetworkInfoBase {
+export type EthernetNetworkInfo = {
   connectionType: 'ethernet'
   isConnected: true
   linkSpeedMbps: number | null
   duplex: string | null
   vendor: string | null
   product: string | null
-}
+} & NetworkInfoBase
 
-export interface DisconnectedNetworkInfo extends NetworkInfoBase {
+export type DisconnectedNetworkInfo = {
   connectionType: 'unknown'
   isConnected: false
-}
+} & NetworkInfoBase
 
 export type ConnectedNetworkInfo = WifiNetworkInfo | EthernetNetworkInfo
 
@@ -53,7 +53,7 @@ export type WifiEncryption = 'WPA' | 'WEP' | 'nopass'
  * the human-readable parts to render alongside it. `password` is null for open
  * networks and for secured ones whose saved secret the OS wouldn't hand over.
  */
-export interface WifiShare {
+export type WifiShare = {
   ssid: string
   encryption: WifiEncryption
   password: string | null

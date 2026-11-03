@@ -12,7 +12,9 @@ import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capa
 // A few headline use-cases previewed in the empty state before any test runs —
 // the full breakdown appears once results come in.
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
-const PREVIEW_CAPABILITIES = PREVIEW_IDS.map((id) => CAPABILITY_DEFINITIONS.find((definition) => definition.id === id)!)
+const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
+  CAPABILITY_DEFINITIONS.filter((definition) => definition.id === id),
+)
 
 // Every row keeps the same symmetric vertical padding, with no first/last special
 // casing, so both the spacing between rows and each row's hover highlight read

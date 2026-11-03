@@ -5,7 +5,7 @@ import { clearSpeedHistory, getSpeedHistory, type SpeedHistoryEntry } from '@/fe
 /** The history's cache entry. A finished test invalidates it once its result is saved. */
 export const SPEED_HISTORY_KEY = ['speed', 'history']
 
-interface SpeedHistory {
+type SpeedHistory = {
   /** Past results, newest first; undefined until the first read lands. */
   entries: SpeedHistoryEntry[] | undefined
   /** Delete every result. */

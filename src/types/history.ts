@@ -1,7 +1,7 @@
 import type { SpeedResult } from './speed'
 
 /** The connection a speed test ran on, captured at record time. */
-export interface SpeedRunContext {
+export type SpeedRunContext = {
   connectionType: string // 'wifi' | 'ethernet' | 'unknown'
   networkName: string | null // SSID for Wi-Fi, else null
   linkSpeedMbps: number | null
@@ -9,6 +9,7 @@ export interface SpeedRunContext {
 }
 
 /** A past speed-test result as persisted in the local database. */
-export interface SpeedHistoryEntry extends SpeedResult, SpeedRunContext {
+export type SpeedHistoryEntry = {
   timestamp: number // epoch ms
-}
+} & SpeedResult &
+  SpeedRunContext

@@ -14,6 +14,7 @@ const ICON_COMPONENTS: Record<string, Icons.IconComponent> = Object.fromEntries(
  * option's name and swaps in the icon at render, so the name is what lets the
  * control show it as picked; typed as the prop it fills.
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- the caller names the prop type it fills.
 export function iconArg<T>(name: string): T {
   return name as T
 }

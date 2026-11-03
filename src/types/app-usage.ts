@@ -2,7 +2,7 @@
 export type AppUsageSupport = 'supported' | 'unsupported'
 
 /** One application's network usage since Rove started watching. */
-export interface AppUsage {
+export type AppUsage = {
   /** Process name; all processes sharing it are summed together. */
   name: string
   rxBytes: number
@@ -15,7 +15,7 @@ export interface AppUsage {
   icon: string | null
 }
 
-export interface AppUsageSummary {
+export type AppUsageSummary = {
   /** Per-app totals, busiest first. Empty before the first sample. */
   apps: AppUsage[]
   /**

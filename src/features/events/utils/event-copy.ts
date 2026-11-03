@@ -29,8 +29,7 @@ export const INTERNET_SUBTITLES: Partial<Record<NetworkEventType, string>> = {
 export function offlineDurations(newestFirst: NetworkEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostTs: number | null = null
-  for (let i = newestFirst.length - 1; i >= 0; i--) {
-    const e = newestFirst[i]!
+  for (const e of [...newestFirst].reverse()) {
     if (e.type === 'internet_lost') {
       lostTs = e.ts
     } else if (e.type === 'internet_restored' && lostTs != null) {

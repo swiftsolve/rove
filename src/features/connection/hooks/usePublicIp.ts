@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 
-interface PublicIpState {
+type PublicIpState = {
   publicIp: string | null
   isLoading: boolean
 }

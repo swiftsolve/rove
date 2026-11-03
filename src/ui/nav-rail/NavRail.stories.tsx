@@ -17,7 +17,7 @@ import {
 import { ConnectionIcon } from '../icons/ConnectionIcon'
 import { NavItem, NavRail } from './NavRail'
 
-interface Page {
+type Page = {
   label: string
   icon: IconComponent
 }

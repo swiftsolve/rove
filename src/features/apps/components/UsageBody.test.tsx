@@ -11,7 +11,7 @@ const COPY: UsageBodyCopy = {
   empty: 'Rows appear here.',
 }
 
-interface BodyState {
+type BodyState = {
   support?: AppUsageSupport
   isFirstLoad?: boolean
   isEmpty?: boolean

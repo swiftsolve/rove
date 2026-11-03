@@ -21,10 +21,10 @@ const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
 
 type TestPhase = 'idle' | 'testing' | 'tested'
 
-interface TestOutcome extends ServiceDefinition {
+type TestOutcome = {
   /** Measured latency in ms, or null when the host couldn't be reached. */
   latencyMs: number | null
-}
+} & ServiceDefinition
 
 type AddServiceDialogProps = {
   /** Persist the confirmed service, passing the latency just measured by the
@@ -150,7 +150,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   }
 
   const confirm = (tested: TestOutcome | null = outcome): void => {
-    const target = tested ?? (isRenameOnly && parsedAddress ? { ...parsedAddress, latencyMs: undefined } : null)
+    const target = tested ?? (isRenameOnly ? { ...parsedAddress, latencyMs: undefined } : null)
     if (!target) return
     setIsAdding(true)
     // The editable name wins over the auto-detected one; fall back to the

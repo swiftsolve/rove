@@ -6,7 +6,7 @@ export function formatSpeedMbps(mbps: number): string {
   return `${mbps.toFixed(1)} Mbps`
 }
 
-export interface SplitSpeed {
+export type SplitSpeed = {
   value: string
   unit: string
 }
@@ -50,9 +50,11 @@ const WIFI_STANDARD_LABELS: Record<string, string> = {
 
 /** Prettify a Wi‑Fi standard, dropping uninformative generic values. */
 export function formatWifiStandard(standard: string | null | undefined): string | null {
-  const normalized = standard?.trim().toLowerCase()
-  if (!normalized || normalized === 'wireless' || normalized === 'unknown') return null
-  return WIFI_STANDARD_LABELS[normalized] ?? standard!.trim()
+  const trimmed = standard?.trim()
+  if (!trimmed) return null
+  const normalized = trimmed.toLowerCase()
+  if (normalized === 'wireless' || normalized === 'unknown') return null
+  return WIFI_STANDARD_LABELS[normalized] ?? trimmed
 }
 
 export function formatSignalStrength(strength: number): string {
@@ -115,7 +117,7 @@ export function isDisplayableMbps(mbps: number | null | undefined): mbps is numb
 
 const BYTE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
 
-export interface SplitBytes {
+export type SplitBytes = {
   value: string
   unit: string
 }
