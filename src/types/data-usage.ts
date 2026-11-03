@@ -19,3 +19,8 @@ export type DataUsageSummary = {
 export function createEmptyDataUsage(): DataUsageSummary {
   return { days: [], bootRxBytes: 0, bootTxBytes: 0, trackingSince: null }
 }
+
+/** Today's totals: the last of `days`. Undefined before the first load. */
+export function todayOf(usage: DataUsageSummary): DailyUsage | undefined {
+  return usage.days.at(-1)
+}

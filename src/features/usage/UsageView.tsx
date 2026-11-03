@@ -5,7 +5,7 @@ import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } 
 
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
-import type { DailyUsage } from '@/types'
+import { type DailyUsage, todayOf } from '@/types'
 import {
   Banner,
   Card,
@@ -239,7 +239,7 @@ function WeekChart({ days }: { days: DailyUsage[] }) {
 
 export function UsageView() {
   const { usage, isLoading, error, reload } = useDataUsage()
-  const today = usage.days.at(-1)
+  const today = todayOf(usage)
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)
   const weekTx = usage.days.reduce((sum, day) => sum + day.txBytes, 0)
   const isFirstLoad = isLoading && usage.days.length === 0
