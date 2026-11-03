@@ -127,6 +127,10 @@ fn parse_nmcli_wifi_line(line: &str) -> ConnectionDetails {
 /// tool has everything, so each fills only what the earlier ones left empty.
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
+    // `connection_details` already validates `iface`, but this is pub.
+    if !crate::util::net::is_shell_safe_iface(iface) {
+        return d;
+    }
 
     let nmcli = try_run(&format!(
         "nmcli -t -f ACTIVE,SSID,SIGNAL,FREQ,CHAN,SECURITY dev wifi list ifname {iface} 2>/dev/null | grep '^yes'"
@@ -209,6 +213,10 @@ async fn active_connection_name(iface: &str) -> Option<String> {
 
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
+    // `connection_details` already validates `iface`, but this is pub.
+    if !crate::util::net::is_shell_safe_iface(iface) {
+        return d;
+    }
 
     if let Some(out) = try_run(&format!("ethtool {iface} 2>/dev/null")).await {
         d.link_speed_mbps = first_int(&out, &ETHTOOL_SPEED);

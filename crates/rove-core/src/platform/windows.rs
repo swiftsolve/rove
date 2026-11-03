@@ -213,6 +213,10 @@ fn channel_to_frequency(band_ghz: f64, channel: i64) -> Option<i64> {
 }
 
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
+    // `connection_details` already validates `iface`, but this is pub.
+    if !crate::util::net::is_shell_safe_iface(iface) {
+        return ConnectionDetails::default();
+    }
     // One call, pipe-delimited: link speed ("2.5 Gbps"), duplex state (0
     // unknown, 1 half, 2 full) and the adapter description ("Realtek PCIe 2.5GbE
     // Family Controller"). Vendor comes from the MAC OUI instead, because the
