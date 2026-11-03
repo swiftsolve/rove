@@ -7,34 +7,31 @@ use crate::services::{
 };
 use rusqlite::{params, Connection, OptionalExtension};
 
-/// `meta` key holding whether the services timeline currently sits inside a
-/// recorded connection drop ("lost"/"restored"). Deliberately separate from
-/// [`META_INTERNET_STATUS`]: that one is the device feed's baseline and is
-/// consumed by `record_internet`'s own diff, so sharing it would mean whichever
-/// recorder ran first swallowed the crossing before the other saw it.
+/// `meta` key for whether the services timeline sits inside a recorded
+/// connection drop ("lost"/"restored"). Separate from `META_INTERNET_STATUS` in
+/// `events.rs`, which `record_internet` diffs against: sharing one key would let
+/// whichever recorder ran first swallow the crossing before the other saw it.
 const META_SERVICE_CONNECTION: &str = "service_connection_status";
 
-/// The services timeline keeps a longer memory than the device feed's 7 days:
-/// "when was Netflix last down" is worth a month, and the log only grows on a
-/// crossing, so a month of it is still tiny.
+/// Longer than the network feed's 7 days: "when was Netflix last down" is worth
+/// a month, and the log only grows on a crossing, so a month is still tiny.
 const SERVICE_EVENT_RETENTION_MS: i64 = 30 * 24 * 60 * 60 * 1000;
 
-/// Hard cap on retained timeline entries, so a flapping service can't grow the
-/// table without bound inside the retention window.
+/// Hard cap, so a flapping service can't grow the table without bound inside
+/// the retention window.
 const SERVICE_EVENT_LIMIT: i64 = 500;
 
 impl Store {
     /// Fold one probe batch into the services timeline, recording only what
     /// changed: a service crossing up or down, a `Running` baseline the first
-    /// time the services are ever seen, a `Running` summary when the last outage
-    /// clears, and a single connection drop/return when *this machine* is the one
-    /// that's offline. Re-running with unchanged probes writes nothing, so the
-    /// heartbeat can call it every tick.
+    /// time the services are seen, a `Running` summary when the last outage
+    /// clears, and one connection drop or return when *this machine* is
+    /// offline. Unchanged probes write nothing, so the heartbeat calls it every
+    /// tick.
     ///
     /// While this machine has no internet, per-service diffing freezes: every
-    /// probe fails at once as a side effect of *our* outage, so logging them
-    /// would be a wall of lies. Freezing means the eventual recovery diffs
-    /// against the real pre-outage state rather than a phantom mass-down.
+    /// probe fails because of *our* outage, so logging them would be a wall of
+    /// false downs. The recovery then diffs against the real pre-outage state.
     pub fn record_services(
         &self,
         report: &ServicesReport,
@@ -59,8 +56,8 @@ impl Store {
 
         let tx = conn.transaction()?;
 
-        // We're the ones offline. Record the drop once on the way in, then stop —
-        // the per-service state stays frozen at its pre-outage values.
+        // Record the drop once on the way in, then stop: the per-service state
+        // stays frozen at its pre-outage values.
         if offline {
             if !was_offline {
                 Self::insert_service_event(
@@ -76,8 +73,8 @@ impl Store {
 
         let mut events: Vec<ServiceEvent> = Vec::new();
 
-        // Back online after a recorded drop: close it before resuming per-service
-        // diffing, so the timeline reads as one outage rather than a gap.
+        // Close a recorded drop before resuming per-service diffing, so the
+        // timeline reads as one outage rather than a gap.
         if was_offline {
             events.push(ServiceEvent::Connection { status: ConnectionChange::Restored, ts: now_ms });
             Self::set_service_connection(&tx, "restored")?;
@@ -91,11 +88,9 @@ impl Store {
             .count() as i64;
         let total_count = report.services.len() as i64;
 
-        // Baseline: anchor a brand-new timeline with a summary rather than
-        // leaving it blank until something first breaks. This one can be partial
-        // — a service already down the first time we look is reported here as
-        // `up_count < total_count`, and paired with its own "went down" row
-        // below — so it carries the total to say so.
+        // Anchor a brand-new timeline with a summary instead of leaving it blank
+        // until something breaks. It can be partial: a service already down is
+        // counted out here and gets its own "went down" row below.
         if Self::service_events_is_empty(&tx)? && up_count > 0 {
             events.push(ServiceEvent::Running { count: up_count, total: total_count, ts: now_ms });
         }
@@ -130,15 +125,14 @@ impl Store {
             Self::set_service_state(&tx, &svc.host, status)?;
         }
 
-        // Full recovery: something had been down, and now nothing is — so this
-        // summary is always the whole set, `up_count == total_count`.
+        // Full recovery, so this summary is always `up_count == total_count`.
         if recovered && previously_any_down && !now_any_down {
             events.push(ServiceEvent::Running { count: up_count, total: total_count, ts: now_ms });
         }
 
         if events.is_empty() {
-            // Still commit: the per-host state rows above may have seeded hosts
-            // seen for the first time, and dropping that would re-seed forever.
+            // Still commit: the state rows above may have seeded new hosts, and
+            // dropping them would re-seed forever.
             tx.commit()?;
             return Ok(());
         }
@@ -150,9 +144,9 @@ impl Store {
         Ok(())
     }
 
-    /// A service reads as down when the network path failed (no TLS handshake, so
-    /// no latency) or the host answered but is erroring. Mirrors the verdict the
-    /// Services page renders, so the timeline never disagrees with the live list.
+    /// Down when the path failed (no latency) or the host answered with a 5xx.
+    /// Matches the Services view's verdict, so the timeline never disagrees with
+    /// the live list.
     fn reachability_status(svc: &ServiceReachability) -> ServiceStatus {
         match (svc.latency_ms, svc.http_status) {
             (None, _) => ServiceStatus::Down,
@@ -266,10 +260,8 @@ impl Store {
             Ok(match kind.as_str() {
                 "running" => {
                     let count = count.unwrap_or(0);
-                    // A row the backfill couldn't reach (no `services` rows to
-                    // count from) still has no denominator; treating it as its
-                    // own total reads as all-clear, which is what every summary
-                    // claimed before partial baselines were distinguishable.
+                    // A pre-`total` row the backfill left null reads as
+                    // all-clear, which is what every summary claimed back then.
                     Some(ServiceEvent::Running { count, total: total.unwrap_or(count), ts })
                 }
                 "connection" => Some(ServiceEvent::Connection {
@@ -301,10 +293,8 @@ impl Store {
         Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?.into_iter().flatten().collect())
     }
 
-    /// Drop the timeline and the baseline it diffs against. Clearing the state
-    /// too means the next probe re-seeds from scratch — otherwise a service
-    /// currently down would never log its `down` again, having "already" been
-    /// down as far as the baseline knew.
+    /// Drop the timeline and the baseline it diffs against. Without clearing the
+    /// baseline, a service that's down now would never log its `down` again.
     pub fn clear_service_events(&self) -> rusqlite::Result<()> {
         let mut conn = self.lock();
         let tx = conn.transaction()?;
@@ -314,8 +304,6 @@ impl Store {
         tx.commit()?;
         Ok(())
     }
-
-    // ---- reachability services --------------------------------------------
 
     /// The user's service list, in display order.
     pub fn services(&self) -> rusqlite::Result<Vec<ServiceDef>> {
@@ -460,10 +448,9 @@ mod tests {
         assert_eq!(events, vec![ServiceEvent::Running { count: 2, total: 2, ts: 1_000 }]);
     }
 
-    /// The timeline reads `count`/`total` off the wire verbatim to decide
-    /// between "all healthy" and "5 of 6 healthy". A rename here would leave the
-    /// frontend comparing against `undefined` — which reads as a partial tally
-    /// for every summary — so pin the shape the UI actually consumes.
+    /// The UI reads `count`/`total` verbatim to tell "all healthy" from "5 of 6
+    /// healthy". A rename would leave it comparing against `undefined`, so pin
+    /// the wire shape.
     #[test]
     fn running_event_serializes_with_the_field_names_the_ui_reads() {
         let json = serde_json::to_value(ServiceEvent::Running {
@@ -500,7 +487,7 @@ mod tests {
     fn services_records_only_crossings_not_every_probe() {
         let store = Store::open_in_memory().unwrap();
         store.record_services(&report(&["a.com"], &[]), 1_000).unwrap();
-        // Same verdict three more times — the log must not grow.
+        // Same verdict three more times: the log must not grow.
         store.record_services(&report(&["a.com"], &[]), 2_000).unwrap();
         store.record_services(&report(&["a.com"], &[]), 3_000).unwrap();
 
@@ -541,7 +528,7 @@ mod tests {
 
         let events = store.service_events().unwrap();
         assert_eq!(events[0], ServiceEvent::Connection { status: ConnectionChange::Lost, ts: 2_000 });
-        // Only the drop and the original baseline — no per-service downs, and the
+        // Only the drop and the original baseline: no per-service downs, and the
         // second offline probe adds nothing.
         assert_eq!(events.len(), 2);
 

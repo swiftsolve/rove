@@ -3,52 +3,43 @@
 //! number + organization, i.e. the network operator).
 //!
 //! Resolved entirely on-device. The Hosts view geolocates every public peer an
-//! app talks to, which is both far too many lookups for a free hosted API's
-//! daily quota and — since the peer list is browsing-history-shaped — not data
-//! worth handing to a third party to begin with. A bundled table has neither
-//! problem, and keeps working offline. The ISP card leans on the same tables to
-//! name our own network without depending on a live geolocation API that
-//! rate-limits (see [`asn_info`] and [`country_name`]).
+//! app talks to: far too many lookups for a free API's quota, and a
+//! browsing-history-shaped list that shouldn't go to a third party at all. A
+//! bundled table avoids both and works offline. The ISP card uses the same
+//! tables to name our own network without a rate-limited live API.
 //!
-//! Both databases are MMDB (MaxMind's format, which DB-IP publishes for reader
-//! compatibility), embedded gzip'd and decoded once on first lookup. Unlike
-//! `data/oui.tsv`, the sources are checked in already compressed: they're opaque
-//! upstream binaries either way, so there's no greppable plaintext for the repo
-//! to be the source of truth for, and no build-time compression step to run.
+//! Both are MMDB (MaxMind's format, which DB-IP publishes too), embedded
+//! gzipped and decoded on first lookup. Unlike `data/oui.tsv` they're checked
+//! in compressed: opaque upstream binaries have no greppable plaintext worth
+//! keeping.
 //!
-//! Refresh with `cargo run -p rove-core --example gen_geoip` (DB-IP cuts new
-//! releases monthly). The data is CC BY 4.0 — attribution lives in the README.
-//! Chosen over MaxMind's GeoLite2, whose EULA requires destroying superseded
-//! copies within 30 days of each twice-weekly release: a promise a shipped
-//! binary can't keep.
+//! Refresh with `cargo run -p rove-core --example gen_geoip` (DB-IP releases
+//! monthly). CC BY 4.0; attribution is in the README. Chosen over GeoLite2,
+//! whose EULA requires destroying superseded copies within 30 days: a promise a
+//! shipped binary can't keep.
 use std::net::IpAddr;
 use std::sync::OnceLock;
 
-/// The databases as downloaded from DB-IP, each decoded once, on first lookup,
-/// by the readers below.
 static DBIP_COUNTRY_GZ: &[u8] = include_bytes!("../../data/dbip-country-lite.mmdb.gz");
 static DBIP_ASN_GZ: &[u8] = include_bytes!("../../data/dbip-asn-lite.mmdb.gz");
 
-/// Datacenter / hosting / VPN ASNs, one per line, sorted (see [`is_hosting_asn`]
-/// and `examples/gen_hosting_asns.rs`). Small enough to embed as text and parse
-/// once rather than ship another binary table.
+/// Datacenter, hosting and VPN ASNs, one per line (see [`is_hosting_asn`] and
+/// `examples/gen_hosting_asns.rs`). Small enough to embed as text.
 static HOSTING_ASNS_TXT: &str = include_str!("../../data/hosting-asns.txt");
 
-/// Autonomous-system identity for an address: the network operator's number and
-/// registered name. Either field may be absent even on a hit — the table names
-/// most networks but not all.
+/// Autonomous-system identity for an address: the operator's number and
+/// registered name. Either may be absent even on a hit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AsnInfo {
-    /// AS number, e.g. `15169`. The ISP card formats this as "AS15169".
+    /// AS number, e.g. `15169`.
     pub number: Option<u32>,
-    /// The AS organization — usually the ISP, sometimes a parent or upstream.
+    /// The AS organisation: usually the ISP, sometimes a parent or upstream.
     pub org: Option<String>,
 }
 
-/// Decode one embedded gzip'd MMDB blob into a reader, or `None` if it's
-/// unreadable — which would be a build-time packaging fault, not a runtime
-/// condition, so it's logged once here rather than at every lookup. `label` is
-/// the file name, so the log names which table failed.
+/// Decode one embedded gzipped MMDB into a reader, or `None` if it's
+/// unreadable. That's a packaging fault, not a runtime condition, so it's
+/// logged once here rather than at every lookup.
 fn decode_mmdb(gz: &[u8], label: &str) -> Option<maxminddb::Reader<Vec<u8>>> {
     let mut raw = Vec::new();
     if let Err(e) = std::io::Read::read_to_end(&mut flate2::read::GzDecoder::new(gz), &mut raw) {
@@ -60,7 +51,6 @@ fn decode_mmdb(gz: &[u8], label: &str) -> Option<maxminddb::Reader<Vec<u8>>> {
         .ok()
 }
 
-/// The parsed IP-to-Country database, decoded once on first use.
 fn country_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
     static READER: OnceLock<Option<maxminddb::Reader<Vec<u8>>>> = OnceLock::new();
     READER
@@ -68,7 +58,6 @@ fn country_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
         .as_ref()
 }
 
-/// The parsed IP-to-ASN database, decoded once on first use.
 fn asn_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
     static READER: OnceLock<Option<maxminddb::Reader<Vec<u8>>>> = OnceLock::new();
     READER
@@ -78,11 +67,9 @@ fn asn_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
 
 /// Resolve an IP to its ISO-3166 alpha-2 country code, uppercase.
 ///
-/// `None` means the address has no country — unparseable, private/reserved, or
-/// genuinely absent from the table (DB-IP's coverage is good but not total).
-/// All three are stable answers for a given address, so callers are free to
-/// cache a miss; there is no transient failure to retry, which is the point of
-/// resolving locally.
+/// `None` when the address is unparseable, private or reserved, or missing
+/// from the table. All are stable answers, so callers may cache a miss: there's
+/// no transient failure to retry.
 pub fn country_code(ip: &str) -> Option<String> {
     let addr: IpAddr = ip.parse().ok()?;
     let code = country_reader()?
@@ -92,20 +79,17 @@ pub fn country_code(ip: &str) -> Option<String> {
         .ok()??
         .country
         .iso_code?;
-    // The table is well-formed, but this crosses into the UI as a flag lookup —
-    // hold the shape the callers assume rather than trusting the input blindly.
+    // This becomes a flag lookup in the UI, so enforce the shape rather than
+    // trust the table.
     (code.len() == 2 && code.bytes().all(|b| b.is_ascii_alphabetic()))
         .then(|| code.to_uppercase())
 }
 
 /// Resolve an IP to its English country name, e.g. "United States".
 ///
-/// Falls back to the uppercase ISO code ([`country_code`]) on the rare hit that
-/// carries a code but no English label, and is `None` for the same private/
-/// reserved/absent addresses `country_code` rejects. This fills the ISP card's
-/// Location row from local data when the live enrichment lookup is unavailable,
-/// so it holds the full-name shape that lookup would have supplied rather than a
-/// bare code.
+/// Falls back to the ISO code on the rare hit with no English label; `None`
+/// where [`country_code`] is. Fills the ISP card's Location row when the live
+/// enrichment is unavailable, in the full-name shape that lookup would give.
 pub fn country_name(ip: &str) -> Option<String> {
     let addr: IpAddr = ip.parse().ok()?;
     let english = country_reader()?
@@ -120,14 +104,11 @@ pub fn country_name(ip: &str) -> Option<String> {
     english.or_else(|| country_code(ip))
 }
 
-/// Resolve an IP to its autonomous-system identity — the operator's number and
-/// name. `None` when the address is unparseable or the table has no entry for
-/// it; a hit with both fields empty is possible but not useful, so callers get
-/// `None` there too rather than an all-`None` [`AsnInfo`].
+/// Resolve an IP to its operator's AS number and name. `None` when the address
+/// is unparseable, has no entry, or has an entry with both fields empty.
 ///
-/// This is how the ISP card names our own network on-device: fed our public IP,
-/// it yields the ASN and the operator name without a hosted lookup, so a
-/// rate-limited or down geolocation API no longer blanks the card.
+/// How the ISP card names our own network from our public IP, so a
+/// rate-limited or down geolocation API can't blank it.
 pub fn asn_info(ip: &str) -> Option<AsnInfo> {
     let addr: IpAddr = ip.parse().ok()?;
     let record = asn_reader()?
@@ -143,10 +124,9 @@ pub fn asn_info(ip: &str) -> Option<AsnInfo> {
     (number.is_some() || org.is_some()).then_some(AsnInfo { number, org })
 }
 
-/// The embedded hosting-ASN list, parsed once into a sorted slice for binary
-/// search. `#` comments and blank lines are skipped; the file is already sorted,
-/// so this preserves that order (and would still be correct if it weren't — the
-/// list is tiny, but membership below assumes sorted, so guard it here).
+/// The hosting-ASN list as a sorted slice for binary search. Comment and blank
+/// lines don't parse, so they drop out. Sorted again here, since the search
+/// silently misses on a mis-sorted file.
 fn hosting_asns() -> &'static [u32] {
     static ASNS: OnceLock<Vec<u32>> = OnceLock::new();
     ASNS.get_or_init(|| {
@@ -160,14 +140,10 @@ fn hosting_asns() -> &'static [u32] {
     })
 }
 
-/// Whether `asn` belongs to a datacenter / hosting / VPN provider rather than a
-/// consumer access network.
-///
-/// A residential IP is on an ISP's own AS; a hosting AS reaching the internet as
-/// *someone's* egress almost always means a VPN or proxy. The ISP card feeds
-/// this the ASN resolved for our public IP to decide whether to flag the card as
-/// a VPN exit — which works even when the live enrichment lookup is unavailable,
-/// since the ASN comes from the bundled table ([`asn_info`]).
+/// Whether `asn` belongs to a datacenter, hosting or VPN provider rather than a
+/// consumer access network. A residential IP sits on its ISP's own AS, so a
+/// hosting AS as our egress almost always means a VPN or proxy. The ISP card
+/// flags a VPN from this, offline, via [`asn_info`].
 pub fn is_hosting_asn(asn: u32) -> bool {
     hosting_asns().binary_search(&asn).is_ok()
 }
@@ -252,14 +228,14 @@ mod tests {
 
     #[test]
     fn hosting_asns_flag_datacenters_not_consumer_isps() {
-        // Datacenter/VPN networks: AWS, M247 (the host behind many commercial
-        // VPNs), DigitalOcean, OVH — the exits a VPN'd user appears to come from.
+        // Datacenter and VPN networks: the exits a VPN user appears to come
+        // from. M247 hosts many commercial VPNs.
         assert!(is_hosting_asn(16509)); // Amazon AWS
         assert!(is_hosting_asn(9009)); // M247
         assert!(is_hosting_asn(14061)); // DigitalOcean
         assert!(is_hosting_asn(16276)); // OVH
-        // Consumer access ISPs must never be flagged — that's the false positive
-        // that would wrongly relabel a real connection as a VPN.
+        // Consumer ISPs must never be flagged, or a real connection reads as a
+        // VPN.
         assert!(!is_hosting_asn(577)); // Bell Canada
         assert!(!is_hosting_asn(7922)); // Comcast
         assert!(!is_hosting_asn(0));

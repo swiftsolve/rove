@@ -57,9 +57,9 @@ fn an_unreachable_live_device_keeps_its_last_known_identity() {
     phone.hostname = Some("Janes-Phone".into());
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
 
-    // Still in the ARP table but no longer answering — the fresh scan rebuilt
-    // it as a bare "Generic device" (no hostname/os, kind unknown). The merge
-    // must restore its remembered identity rather than surface the bare row.
+    // Still in the ARP table but no longer answering, so the fresh scan rebuilt
+    // it as a bare "Generic device". The merge must restore its remembered
+    // identity.
     let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "unknown");
     silent.hostname = None;
     silent.os = None;
@@ -78,10 +78,9 @@ fn an_unreachable_live_device_keeps_its_last_known_identity() {
 #[test]
 fn an_offline_row_with_an_unknown_kind_is_not_guessed_from_the_vendor() {
     // The complement to the preservation tests: when the stored kind really is
-    // "unknown" — a randomized-MAC device we only ever pinned to a vendor
-    // ("Apple") — the offline row must stay Unknown, not be guessed into a
-    // "phone" from the vendor alone. An Apple host could be a Mac, iPad, TV or
-    // watch; we surface only what we actually identified.
+    // "unknown" (a randomized MAC we only pinned to "Apple"), the offline row
+    // must stay unknown, not become a "phone" from the vendor alone. An Apple
+    // host could be a Mac, iPad, TV or watch.
     let store = Store::open_in_memory().unwrap();
     let mut vendor_only = device("ae:4a:06:fe:b5:37", "192.168.2.14", "unknown");
     vendor_only.vendor = Some("Apple".into());
@@ -226,8 +225,8 @@ fn touch_devices_never_marks_an_absent_device_offline() {
     store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
     let before = store.network_events(100).unwrap().len();
 
-    // A passive pass that only saw `a` must not declare `b` gone — passive
-    // discovery can't prove absence, so it only ever adds presence.
+    // A passive pass that only saw `a` must not declare `b` gone: passive
+    // discovery can't prove absence.
     store.touch_devices(std::slice::from_ref(&a), 2_000).unwrap();
     let events = store.network_events(100).unwrap();
     assert_eq!(events.len(), before, "no event for the device it didn't see");
@@ -300,8 +299,8 @@ fn offline_is_not_re_emitted_and_stale_devices_never_fire() {
         .collect();
     assert_eq!(offline.len(), 1, "offline should fire once, not every scan");
 
-    // A device last seen long ago (beyond the recency window) is the
-    // historical roster, not a fresh drop — a scan without it stays quiet.
+    // A device last seen beyond the recency window is history, not a fresh
+    // drop, so a scan without it stays quiet.
     let stale = device("cc:cc:cc:cc:cc:cc", "192.168.1.12", "tv");
     let long_ago = 10_000;
     store.record_devices(&[a.clone(), stale], long_ago).unwrap();
@@ -325,10 +324,9 @@ fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
 
     store.record_devices(&[gw.clone(), phone.clone(), laptop.clone()], 1_000).unwrap(); // baseline
 
-    // Going offline: the scan confirms nobody — not even self or the gateway
-    // (all unreachable). Model that as the stale roster with reachable=false,
-    // which is what a scan yields with no uplink. No per-device offline burst
-    // should fire — the machine left, the LAN didn't empty out.
+    // Going offline: nobody answers, not even self or the gateway, which is
+    // what a scan yields with no link. No per-device offline burst should
+    // fire: the machine left, the LAN didn't empty out.
     let offline_scan: Vec<LanDevice> = [gw, phone, laptop]
         .into_iter()
         .map(|mut d| {
@@ -346,7 +344,7 @@ fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
         .count();
     assert_eq!(offline, 0, "an offline scan must not mark every device departed");
 
-    // Back online — everyone answers again. They were never marked offline, so
+    // Back online: everyone answers again. They were never marked offline, so
     // there's no spurious reconnect flurry either.
     let back = [
         device("00:00:00:00:00:01", "192.168.1.1", "router"),
@@ -365,11 +363,10 @@ fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
 
 #[test]
 fn a_disconnected_host_does_not_fire_departures_for_peers() {
-    // The macOS case behind the flood: when the uplink drops, a scan still
-    // enumerates `self` as reachable, so `live` is non-empty and the
-    // empty-scan guard alone misses it. The host's recorded connection state
-    // (`disconnected`) must suppress the per-device offline burst — only the
-    // single `connection_lost` event should stand in for the drop.
+    // The macOS case: when the link drops, a scan still lists self as
+    // reachable, so `live` isn't empty and the empty-scan guard misses it. The
+    // recorded `disconnected` state must suppress the burst; only the one
+    // `connection_lost` stands in for the drop.
     let store = Store::open_in_memory().unwrap();
     store.record_connection("wifi", Some("home"), None, None, None, 500).unwrap();
     let mut me = device("00:00:00:00:00:0a", "192.168.1.5", "computer");
@@ -399,9 +396,9 @@ fn a_disconnected_host_does_not_fire_departures_for_peers() {
 
 #[test]
 fn a_real_departure_still_fires_when_others_remain_reachable() {
-    // The guard keys on *nothing* being reachable. As long as at least one
-    // device answered (here the gateway), a genuinely absent device is still a
-    // real departure and must fire — the offline suppression must not swallow it.
+    // The guard keys on *nothing* being reachable. While at least one device
+    // answers (here the gateway), an absent device is a real departure and must
+    // fire.
     let store = Store::open_in_memory().unwrap();
     let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
     gw.is_gateway = true;
@@ -455,9 +452,9 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
 
     store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
 
-    // The phone stops answering probes but is still in the ARP table — it's
-    // in the scan with reachable=false ("Offline" in the Devices view). The
-    // feed must reflect that, not wait for the device to vanish entirely.
+    // The phone stops answering but is still in the ARP table, so it's in the
+    // scan unreachable ("Offline" in the Devices view). The feed must reflect
+    // that, not wait for it to vanish.
     let mut asleep = phone.clone();
     asleep.is_reachable = false;
     store.record_devices(&[keep.clone(), asleep.clone()], 2_000).unwrap();
@@ -509,9 +506,9 @@ fn a_departed_randomized_device_keeps_its_live_label() {
     let store = Store::open_in_memory().unwrap();
     let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
 
-    // A randomized-MAC phone with no hostname/vendor, but the DHCP
-    // fingerprint gave up its OS and the classifier its kind — exactly the
-    // signals the live Devices view stitches into "Android phone".
+    // A randomized-MAC phone with no hostname or vendor, but the DHCP
+    // fingerprint gave up its OS and the classifier its kind: the signals the
+    // Devices view stitches into "Android phone".
     let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", "phone");
     phone.is_randomized_mac = true;
     phone.os = Some("Android".into());
@@ -533,8 +530,8 @@ fn a_vendor_known_device_keeps_its_kind_in_the_name() {
     let store = Store::open_in_memory().unwrap();
     let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
 
-    // An Apple phone with a known maker but no hostname — the case where the
-    // vendor used to swallow the kind, reading "Apple" instead of "Phone".
+    // An Apple phone with no hostname: the vendor used to swallow the kind,
+    // reading "Apple" without "Phone".
     let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", "phone");
     phone.vendor = Some("Apple".into());
     phone.is_randomized_mac = true;
@@ -556,9 +553,8 @@ fn a_departed_anonymous_randomized_device_still_reads_private() {
     let store = Store::open_in_memory().unwrap();
     let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
 
-    // Nothing was ever learned — no hostname, vendor, OS, or kind. The name
-    // stays null so the UI falls back to "Private device" from the
-    // randomized flag, matching how the device read when it joined.
+    // Nothing was ever learned. The name stays null so the UI falls back to
+    // "Private device" from the randomized flag, as when the device joined.
     let mut ghost = device("1a:78:49:c6:0d:df", "192.168.1.20", "unknown");
     ghost.is_randomized_mac = true;
 
@@ -576,9 +572,9 @@ fn a_past_offline_relabels_once_the_classifier_catches_up() {
     let store = Store::open_in_memory().unwrap();
     let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
 
-    // First sight of a randomized phone is thin — no hostname/vendor/OS and
-    // the classifier hasn't committed to a kind. It joins, then drops off,
-    // recording an offline row with no identity ("Private device" in the UI).
+    // First sight of a randomized phone is thin: no hostname, vendor, OS or
+    // kind. It joins, then drops off, recording an offline row with no
+    // identity ("Private device" in the UI).
     let mut thin = device("1a:78:49:c6:0d:df", "192.168.1.20", "unknown");
     thin.is_randomized_mac = true;
     store.record_devices(&[keep.clone(), thin.clone()], 1_000).unwrap(); // baseline
@@ -640,10 +636,9 @@ fn a_departed_device_keeps_its_snapshot_label() {
 fn a_connection_event_keeps_its_ssid_despite_a_matching_mac() {
     let store = Store::open_in_memory().unwrap();
 
-    // The machine's own MAC is in the roster (it's scanned like any device),
-    // so a wifi_connected event — which stores the SSID as its `name` and
-    // happens to carry that same MAC — must NOT be relabeled to a device
-    // name by the roster join.
+    // The machine's own MAC is in the roster, so a wifi_connected event (its
+    // `name` is the SSID, and it carries that same MAC) must NOT be relabeled
+    // by the roster join.
     let mut selfd = device("aa:bb:cc:dd:ee:ff", "192.168.1.5", "computer");
     selfd.hostname = Some("my-macbook".into());
     selfd.is_self = true;

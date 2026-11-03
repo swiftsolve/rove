@@ -1,4 +1,6 @@
-//! The Tauri command handlers: each maps 1:1 to a rove-core service.
+//! The Tauri command handlers, each a thin wrapper around a rove-core service.
+//! Anything that probes, shells out or hits the network is `async`, so it runs
+//! off the main thread; cheap in-memory and database reads stay sync.
 use crate::scanner::DeviceScanner;
 use crate::AppState;
 use rove_core::{
@@ -19,8 +21,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::Emitter;
 
-/// Stringify an error for the wire: fallible commands all return
-/// `Result<_, String>`, the one error shape the frontend consumes.
+/// Fallible commands all return `Result<_, String>`, the one error shape the
+/// UI consumes.
 fn err_str(e: impl std::fmt::Display) -> String {
     e.to_string()
 }
@@ -37,9 +39,8 @@ pub async fn get_network_info(
         interface = ?info.interface_name,
         "network info resolved"
     );
-    // Log a connection event if this machine has moved onto a new Wi-Fi/Ethernet
-    // network since the last poll. Best-effort: a DB hiccup must not fail the
-    // network-info read the whole UI depends on.
+    // Best-effort: a database hiccup must not fail the read the whole UI
+    // depends on.
     let _ = store.record_connection(
         &info.connection_type,
         info.details.ssid.as_deref(),
@@ -87,9 +88,8 @@ pub async fn get_devices(
     );
     let now = rove_core::util::net::now_ms() as i64;
     let _ = store.record_devices(&scan.devices, now);
-    // Merge in recently-seen devices that didn't answer this scan, so an offline
-    // device stays listed (marked Offline, with a "last seen" time) instead of
-    // vanishing the moment the OS ages its ARP entry out.
+    // Keep recently seen devices listed as Offline instead of vanishing when
+    // the OS ages their ARP entries out.
     if let Ok(merged) =
         store.devices_with_offline(&scan.devices, now, rove_core::store::OFFLINE_LIST_KEEP_MS)
     {
@@ -103,8 +103,7 @@ pub async fn run_diagnostics(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<NetworkDiagnostics, String> {
     let diag = rove_core::diagnostics::run().await;
-    // Log an internet up/down transition if WAN reachability changed since the last
-    // poll. Best-effort: a DB hiccup must not fail the diagnostics read.
+    // Best-effort: a database hiccup must not fail the diagnostics read.
     let _ = store.record_internet(diag.internet, rove_core::util::net::now_ms() as i64);
     Ok(diag)
 }
@@ -114,41 +113,32 @@ pub async fn run_diagnostics_live(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<LiveDiagnostics, String> {
     let live = rove_core::diagnostics::run_live().await;
-    // The 15s poll is where a WAN outage or recovery is normally caught; record the
-    // transition so it surfaces on the Timeline. Best-effort, idempotent per poll.
+    // The view's 15 s poll catches a WAN crossing sooner than the heartbeat.
+    // Idempotent, so every poll can record.
     let _ = store.record_internet(live.internet, rove_core::util::net::now_ms() as i64);
     Ok(live)
 }
 
-/// Probe the user's service list — the Services view's own metric, independent
-/// of the Connection diagnostics above (which no longer touch services). Bundles
-/// the internet verdict from the same batch so the view can pair each result set
-/// with whether this machine had internet when they were taken.
+/// Probe the user's service list, with the internet verdict from the same batch
+/// (see `ServicesReport`).
 #[tauri::command]
 pub async fn run_services(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<ServicesReport, String> {
-    // Fall back to the built-in defaults on a store read error so the list never
-    // blanks over a transient DB hiccup.
     let services = store.services().unwrap_or_else(|_| rove_core::services::default_service_list());
     let report = rove_core::services::run_services(&services).await;
     let now = rove_core::util::net::now_ms() as i64;
-    // The service poll also catches WAN transitions while the Services tab is open;
-    // record it so the Timeline stays current here too. Best-effort, idempotent.
     let _ = store.record_internet(report.internet, now);
-    // Fold this batch into the services timeline too. The heartbeat is what makes
-    // the log complete (it runs with the window shut), but it only ticks each
-    // minute — folding the view's own 15s poll in as well means a transition the
-    // user is watching land on the list also lands on the timeline at the same
-    // moment, rather than up to a minute later. `record_services` diffs against
-    // its own baseline, so the two writers can't double-log a crossing.
+    // The heartbeat keeps the log complete but ticks only each minute; folding
+    // in the view's 15 s poll puts a crossing the user is watching on the
+    // timeline at once. `record_services` diffs against its own baseline, so
+    // the two writers can't double-log one.
     let _ = store.record_services(&report, now);
     Ok(report)
 }
 
-/// The services outage timeline, newest first. Recorded by the always-on
-/// heartbeat (and topped up by the Services view's own poll), so it covers
-/// outages that happened while the window was closed.
+/// The services outage timeline, newest first. The always-on heartbeat records
+/// it, so it covers outages while the window was closed.
 #[tauri::command]
 pub fn get_service_history(
     store: tauri::State<'_, Arc<Store>>,
@@ -156,17 +146,14 @@ pub fn get_service_history(
     store.service_events().map_err(|e| e.to_string())
 }
 
-/// Wipe the timeline and the baseline behind it, so the next probe re-seeds from
-/// scratch rather than treating a currently-down service as old news.
+/// Wipe the timeline and its baseline (see `Store::clear_service_events`).
 #[tauri::command]
 pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
     store.clear_service_events().map_err(|e| e.to_string())
 }
 
-/// The last public-internet reachability verdict from the background heartbeat,
-/// or None before its first probe lands. A cheap cached read — it never probes;
-/// [`monitors::spawn_internet_heartbeat`] owns the probing. Drives the top-bar
-/// connectivity label.
+/// The heartbeat's last internet status, or None before its first probe. A
+/// cached read that never probes, so it's sync.
 #[tauri::command]
 pub fn get_internet_status(
     state: tauri::State<'_, AppState>,
@@ -238,11 +225,9 @@ pub async fn run_speed_test(
         runs.running = Some((run_token.clone(), cancel.clone()));
     }
 
-    // Run the link-capacity probe concurrently with the test rather than before
-    // it. network_info() takes 10s+ on Windows when a VPN and other virtual
-    // adapters are present, and awaiting it here froze the UI at "Starting speed
-    // test…" for that whole time before the first phase emitted. The capacity is
-    // only used to annotate the result, so it overlaps the ~18s test for free.
+    // Alongside the test, not before: network_info() takes 10 s+ on Windows with
+    // a VPN and other virtual adapters, and awaiting it froze the UI at
+    // "Starting speed test…". The capacity only annotates the result.
     let emitter = app.clone();
     let (info, result) = tokio::join!(
         rove_core::connection::network_info(),
@@ -251,8 +236,7 @@ pub async fn run_speed_test(
         }),
     );
 
-    // Clear our slot unconditionally (on success, error, or cancel), but only
-    // if a newer run hasn't already replaced it.
+    // Clear our slot however the run ended, unless a newer run replaced it.
     {
         let mut runs = lock(&state.speed_runs);
         if runs.running.as_ref().is_some_and(|(token, _)| *token == run_token) {
@@ -293,62 +277,55 @@ pub fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
         })
 }
 
-/// Per-app network usage since Rove started watching. A cheap in-memory read —
-/// the background sampler (see `monitors::spawn_app_usage_sampler`) does the work.
+/// Per-app network usage since Rove started watching. An in-memory read;
+/// `monitors::spawn_app_usage_sampler` does the work.
 #[tauri::command]
 pub fn get_app_usage(state: tauri::State<'_, AppState>) -> AppUsageSummary {
     lock(&state.app_usage).summary()
 }
 
-/// Per-app remote-host breakdown for the Hosts view. A cheap in-memory read —
-/// the background sampler (`monitors::spawn_host_usage_sampler`) does the
-/// sampling, reverse-DNS, and geolocation.
+/// Per-app remote-host breakdown for the Hosts view. An in-memory read;
+/// `monitors::spawn_host_usage_sampler` does the sampling, reverse DNS and
+/// geolocation.
 #[tauri::command]
 pub fn get_host_usage(state: tauri::State<'_, AppState>) -> HostUsageSummary {
     lock(&state.host_usage).summary()
 }
 
-/// Traffic broken down by kind (protocol) for the Traffic Types view. A cheap
-/// in-memory read off the very same tracker `get_host_usage` reads — the host
-/// sampler's connections, regrouped by service port instead of peer IP, so no
-/// extra sampling and the two views can't disagree on totals.
+/// Traffic by kind for the Traffic view: the host tracker's connections grouped
+/// by service port instead of peer IP, so the two views can't disagree on
+/// totals.
 #[tauri::command]
 pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSummary {
     lock(&state.host_usage).traffic_summary()
 }
 
-/// Why per-app usage is unavailable, for the "needs administrator" empty state.
-/// On Windows this is the last ETW session start error (`None` once it's up);
-/// elsewhere always `None`. Lets the UI show the real cause instead of only
-/// suggesting elevation when elevation isn't the problem.
+/// Why per-app usage is unavailable: on Windows the last ETW session error
+/// (`None` once it's up), elsewhere always `None`. Lets the "needs
+/// administrator" state show the real cause when elevation isn't the problem.
 #[tauri::command]
 pub fn usage_support_detail() -> Option<String> {
     rove_core::usage::app::support_detail()
 }
 
-/// Relaunch Rove elevated so the ETW session behind the Apps/Hosts/Traffic
-/// views can open (it needs administrator rights). Windows-only: launches an
-/// elevated copy via the shell's `RunAs` verb — which raises the UAC prompt —
-/// then exits this unelevated instance once the elevated one is on its way. If
-/// the user dismisses the prompt nothing is launched, so this instance stays up
-/// and the caller surfaces the returned error.
+/// Relaunch Rove elevated so the ETW session behind the Apps, Hosts and Traffic
+/// views can open. Windows-only: `RunAs` raises the UAC prompt, then this
+/// instance exits. If the user declines, nothing launches and this instance
+/// stays up to show the error.
 #[tauri::command]
 pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
-        // Don't flash a console window for the launcher PowerShell.
+        // Don't flash a console window for the launcher.
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
         let exe = std::env::current_exe().map_err(err_str)?;
         // Single-quote the path for PowerShell, doubling any embedded quote.
         let exe = exe.to_string_lossy().replace('\'', "''");
-        // `Start-Process -Verb RunAs` raises the UAC prompt. Its failure on a
-        // dismissed prompt is non-terminating by default (PowerShell would still
-        // exit 0), so force it terminating with `-ErrorAction Stop` and map the
-        // decline to a non-zero exit — that's how we tell "elevated" from
-        // "declined". Run on a blocking thread: the prompt can sit for as long
-        // as the user takes, and we deliberately don't time it out.
+        // A dismissed prompt is a non-terminating error (PowerShell would still
+        // exit 0), so `-ErrorAction Stop` and `exit 1` are how "declined" shows.
+        // On a blocking thread with no timeout: the prompt waits on the user.
         let script =
             format!("try {{ Start-Process -FilePath '{exe}' -Verb RunAs -ErrorAction Stop }} catch {{ exit 1 }}");
         let launched = tokio::task::spawn_blocking(move || {
@@ -363,9 +340,8 @@ pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
         .map_err(err_str)?;
 
         if launched {
-            // Hand off to the elevated instance. There's no single-instance
-            // guard, so the brief overlap is fine — ferrisetw stops the old
-            // ETW session by name before the new one opens it.
+            // No single-instance guard, so the brief overlap is fine: ferrisetw
+            // stops the old ETW session by name before the new one opens it.
             app.exit(0);
             Ok(())
         } else {
@@ -386,8 +362,8 @@ pub fn get_speed_history(
     store.speed_history().map_err(err_str)
 }
 
-/// The network-change feed (newest first). Populated as a side effect of device
-/// scans — see `get_devices`/`Store::record_devices` — so this is a cheap read.
+/// The network-change feed, newest first. Written as a side effect of scans,
+/// network-info reads and internet checks, so this is only a read.
 #[tauri::command]
 pub fn get_network_events(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<NetworkEvent>, String> {
     store.network_events(200).map_err(err_str)
@@ -401,7 +377,7 @@ pub fn save_speed_result(
     store.insert_speed(&entry).map_err(err_str)
 }
 
-/// One-time migration hook: import results the UI still had in localStorage.
+/// One-time migration of results the UI kept in localStorage before the store.
 #[tauri::command]
 pub fn import_speed_history(
     store: tauri::State<'_, Arc<Store>>,

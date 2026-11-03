@@ -1,5 +1,5 @@
-//! The speed test: adaptive download/upload against Cloudflare, plus what the
-//! result is good enough for.
+//! The speed test: adaptive download and upload against Cloudflare, plus what
+//! the result is good enough for.
 pub mod capabilities;
 
 use crate::diagnostics::ping;
@@ -37,21 +37,19 @@ pub struct SpeedTestProgress {
     pub progress: u8,
 }
 
+/// The error a cancelled test returns; `useSpeedTest` matches on it to tell a
+/// cancel from a failure.
 pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
 
-// Download endpoints, tried in order. Cloudflare is primary: its anycast network
-// is local and fast almost everywhere and is purpose-built for parallel speed
-// tests, so stacking connections on it measures the link rather than an origin
-// cap. Two caveats drive the details:
-//   - Its __down endpoint caps the `bytes` parameter just under 100 MB
-//     (100_000_000 exactly returns 403), so we request 90 MB — the largest round
-//     size safely under the cap. Workers refetch when a file drains, but the
-//     client keeps the TCP connection alive between fetches so the congestion
-//     window carries over and a refetch pays no fresh slow-start.
-//   - Cloudflare rate-limits by request volume and will start returning 429 under
-//     heavy or repeated use. When that happens a worker advances to the fallback
-//     (DataPacket, a CDN speed-test file — not an origin that per-connection
-//     throttles) so download still reports a real number instead of zero.
+/// Download endpoints, tried in order. Cloudflare first: its anycast network is
+/// near almost everywhere and built for parallel tests, so stacking connections
+/// measures the link, not an origin cap. Two caveats:
+///   - `__down` caps `bytes` just under 100 MB (100_000_000 returns 403), so we
+///     ask for 90 MB. Workers refetch when a file drains, over a kept-alive
+///     connection, so a refetch pays no fresh slow-start.
+///   - Cloudflare rate-limits by request volume and returns 429 under heavy
+///     use. A worker then moves to DataPacket, a CDN test file that doesn't
+///     throttle per connection, so download still reports a real number.
 const DOWNLOAD_URLS: [&str; 2] = [
     "https://speed.cloudflare.com/__down?bytes=90000000",
     "https://nyc.download.datapacket.com/100mb.bin",
@@ -59,12 +57,10 @@ const DOWNLOAD_URLS: [&str; 2] = [
 const UPLOAD_URL: &str = "https://speed.cloudflare.com/__up";
 const PING_HOST: &str = "1.1.1.1";
 
-// A single TCP connection can only keep bandwidth×RTT bytes in flight before it
-// stalls waiting for ACKs, so on a fast link one connection tops out well below
-// line rate. The right number of parallel connections depends on the link and
-// its latency — too few undershoots gigabit, too many wastes setup on a slow
-// link. Instead of hardcoding a count we ramp connections up during warmup and
-// stop once aggregate throughput stops climbing, auto-tuning to the link.
+// One TCP connection keeps only bandwidth×RTT bytes in flight before waiting
+// on ACKs, so on a fast link it tops out well below line rate. Too few
+// connections undershoot gigabit; too many waste setup on a slow link. So the
+// count ramps up during warmup until aggregate throughput stops climbing.
 const MIN_CONNS: usize = 4;
 const MAX_CONNS: usize = 32;
 /// Connections added each ramp step while throughput is still climbing.
@@ -75,10 +71,9 @@ const RAMP_SAMPLE: Duration = Duration::from_millis(300);
 /// more than this fraction; below it we treat the link as saturated.
 const RAMP_GROWTH_THRESHOLD: f64 = 0.12;
 
-/// Ramp-up period at the start of each phase. Bytes transferred during warmup
-/// are discarded so TCP slow-start doesn't drag down the measured throughput,
-/// and the connection ramp runs within this window so we hit the measurement
-/// window already saturated.
+/// Ramp-up at the start of each phase. Its bytes are discarded so slow-start
+/// doesn't drag the result down, and the connection ramp runs inside it so the
+/// measurement window starts saturated.
 const WARMUP: Duration = Duration::from_secs(3);
 /// Measurement window, timed after warmup completes.
 const WINDOW: Duration = Duration::from_secs(6);
@@ -122,14 +117,10 @@ impl Counters {
     }
 }
 
-/// Runs the connection ramp for one phase: starts `MIN_CONNS` workers, then
-/// samples aggregate throughput on a fixed cadence and adds `RAMP_STEP` more
-/// workers whenever the rate is still climbing, up to `MAX_CONNS`. Ramping only
-/// happens during warmup; once the measurement window opens the connection set
-/// is held steady. Returns the bytes transferred within the window.
-///
-/// `spawn_worker` launches one worker task that loops until the deadline,
-/// feeding the shared `Counters`.
+/// Run one phase's connection ramp: start `MIN_CONNS` workers, then add
+/// `RAMP_STEP` more each sample while the rate still climbs, up to `MAX_CONNS`.
+/// The set is held steady once the measurement window opens. Returns the bytes
+/// transferred within the window.
 async fn adaptive_transfer(
     counters: &Counters,
     measure_start: Instant,
@@ -150,7 +141,6 @@ async fn adaptive_transfer(
         let rate = total.saturating_sub(last_sample_bytes) as f64 / RAMP_SAMPLE.as_secs_f64();
         last_sample_bytes = total;
 
-        // Only grow the pool while still warming up and still climbing.
         if !saturated && Instant::now() < measure_start && conns < MAX_CONNS {
             if rate > last_rate * (1.0 + RAMP_GROWTH_THRESHOLD) {
                 let step = RAMP_STEP.min(MAX_CONNS - conns);
@@ -170,10 +160,9 @@ async fn adaptive_transfer(
     counters.counted.load(Ordering::Relaxed)
 }
 
-/// One download connection: pulls the file back-to-back until the deadline,
-/// feeding the shared counters. Starts on the primary endpoint and, on refusal,
-/// advances to the next — so once Cloudflare 429s the worker settles on the
-/// fallback instead of retrying a rate-limited origin every fetch.
+/// One download connection, pulling the file back-to-back until the deadline.
+/// On refusal it advances to the next endpoint, so once Cloudflare 429s the
+/// worker settles on the fallback instead of retrying it every fetch.
 async fn download_worker(
     client: reqwest::Client,
     measure_start: Instant,
@@ -186,10 +175,8 @@ async fn download_worker(
         let url = DOWNLOAD_URLS[url_index % DOWNLOAD_URLS.len()];
         let response = match client.get(url).send().await {
             Ok(r) if r.status().is_success() => r,
-            // A non-2xx (e.g. 429 Too Many Requests) or transport error means the
-            // origin refused this request; its tiny error body must not be counted
-            // as throughput. Advance to the next endpoint and back off briefly so
-            // we neither hammer a rate-limited origin nor spin on it.
+            // A refusal's tiny error body mustn't count as throughput. Back off
+            // briefly so we neither hammer a rate-limited origin nor spin.
             _ => {
                 url_index += 1;
                 tokio::time::sleep(Duration::from_millis(250)).await;
@@ -212,11 +199,9 @@ async fn download_worker(
 }
 
 pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
-    // Force HTTP/1.1: every worker requests the same host, and over HTTP/2
-    // reqwest coalesces them onto one TCP connection as multiplexed streams that
-    // then throttle each other via a shared flow-control window — collapsing the
-    // measured rate. HTTP/1.1 can't multiplex, so each concurrent worker opens
-    // its own TCP connection and we get real parallelism.
+    // HTTP/1.1 only: over HTTP/2 reqwest coalesces every worker onto one TCP
+    // connection, whose shared flow-control window collapses the measured rate.
+    // HTTP/1.1 can't multiplex, so each worker gets its own connection.
     let Ok(client) = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
         .http1_only()
@@ -244,13 +229,10 @@ pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
     mbps(bytes, start.elapsed().saturating_sub(WARMUP))
 }
 
-/// One connection's worth of upload. Rather than firing discrete POSTs and
-/// counting only the ones that fully complete (which drops all in-flight bytes
-/// and quantizes the result to whole requests), we open a single chunked POST
-/// and feed its body on demand. The HTTP layer only pulls the next chunk once
-/// the socket has room, so tallying bytes as they're pulled tracks the real
-/// send rate via TCP backpressure. Bytes handed over during warmup fill the
-/// send buffer but aren't counted, so the count reflects steady-state send.
+/// One upload connection: a single chunked POST whose body is fed on demand.
+/// Counting only completed POSTs would drop in-flight bytes and quantise the
+/// result to whole requests. The HTTP layer pulls a chunk only when the socket
+/// has room, so tallying pulls tracks the real send rate through backpressure.
 async fn upload_worker(
     client: reqwest::Client,
     payload: Bytes,
@@ -292,8 +274,8 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
         return 0.0;
     };
 
-    // One shared random buffer, handed to the body stream as a cheap refcounted
-    // clone. 64 KB keeps the byte count fine-grained on slow uplinks.
+    // Random so nothing on the path can compress it; shared as a cheap
+    // refcounted clone. 64 KB keeps the count fine-grained on slow uplinks.
     use rand::RngCore;
     let mut buf = vec![0u8; 64 * 1024];
     rand::thread_rng().fill_bytes(&mut buf);
@@ -322,11 +304,10 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
 /// Full test. `report` receives phase updates; `cancel` aborts between and
 /// within phases (streams poll it each chunk).
 ///
-/// The result's `link_capacity_mbps` is left `None` here and filled in by the
-/// caller: resolving it means a full `network_info()` probe (10s+ on Windows
-/// when a VPN and other virtual adapters are present), and blocking the test on
-/// it froze the UI at "Starting speed test…" before the first phase began. The
-/// command runs that probe concurrently with this test instead.
+/// `link_capacity_mbps` is left `None` for the caller to fill: it needs a full
+/// `network_info()` probe (10 s+ on Windows with a VPN and other virtual
+/// adapters), and waiting on it froze the UI at "Starting speed test…". The
+/// command runs that probe alongside the test instead.
 pub async fn run<F: Fn(SpeedTestProgress)>(
     cancel: Arc<AtomicBool>,
     report: F,
@@ -371,6 +352,6 @@ pub async fn run<F: Fn(SpeedTestProgress)>(
     Ok(SpeedTestResult {
         capabilities: assess(&internet),
         internet,
-        link_capacity_mbps: None, // filled in by the caller (see doc comment)
+        link_capacity_mbps: None, // filled in by the caller
     })
 }

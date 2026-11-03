@@ -3,16 +3,16 @@ use super::Store;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 
-/// Newest-first cap on retained speed-test results, matching the old
-/// localStorage behaviour the UI was built around.
+/// How many speed-test results are kept, newest first.
 pub const SPEED_HISTORY_LIMIT: i64 = 50;
 
-/// One recorded speed test. Field names are camelCase on the wire so the
-/// existing React `SpeedHistoryEntry` consumes them unchanged.
+/// One recorded speed test. Mirrors `SpeedHistoryEntry` in
+/// `src/types/history.ts`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpeedHistoryRecord {
-    pub timestamp: i64, // epoch ms
+    /// Epoch ms.
+    pub timestamp: i64,
     pub download_mbps: f64,
     pub upload_mbps: f64,
     pub latency_ms: f64,
@@ -21,12 +21,11 @@ pub struct SpeedHistoryRecord {
     pub connection_type: String,
     pub network_name: Option<String>,
     pub link_speed_mbps: Option<f64>,
-    pub frequency: Option<f64>, // Wi-Fi centre frequency (MHz), for band label
+    /// Wi-Fi centre frequency in MHz, for the band label.
+    pub frequency: Option<f64>,
 }
 
 impl Store {
-    // ---- speed-test history ------------------------------------------------
-
     /// Record one result and trim back to `SPEED_HISTORY_LIMIT` newest.
     pub fn insert_speed(&self, rec: &SpeedHistoryRecord) -> rusqlite::Result<()> {
         let conn = self.lock();

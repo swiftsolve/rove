@@ -1,13 +1,14 @@
+//! Running the platform tools the probes read, windowless and with a timeout.
 use std::time::Duration;
 use tokio::process::Command;
 
-/// Windows `CREATE_NO_WINDOW`: spawn console child processes without briefly
-/// flashing a terminal window on screen.
+/// Windows `CREATE_NO_WINDOW`: without it each console child flashes a
+/// terminal window on screen.
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
-/// Suppress the console window a child process would otherwise pop up. No-op
-/// off Windows, where these commands never open a window to begin with.
+/// Keep a child from popping up a console window. A no-op off Windows, where
+/// these commands never open one.
 #[cfg(windows)]
 fn hide_window(cmd: &mut Command) {
     cmd.creation_flags(CREATE_NO_WINDOW);
@@ -15,8 +16,8 @@ fn hide_window(cmd: &mut Command) {
 #[cfg(not(windows))]
 fn hide_window(_cmd: &mut Command) {}
 
-/// Run a shell command, capturing stdout. Returns None on failure/timeout —
-/// callers treat missing tools as "no data", mirroring the Electron app.
+/// Run a shell command, capturing stdout. None on failure, timeout or empty
+/// output, so callers treat a missing tool as "no data".
 pub async fn try_run(command: &str) -> Option<String> {
     try_run_timeout(command, Duration::from_secs(15)).await
 }
@@ -37,12 +38,10 @@ pub async fn try_run_timeout(command: &str, timeout: Duration) -> Option<String>
 
 /// Run a PowerShell expression on Windows, capturing stdout.
 ///
-/// The script is passed as a single argument to `powershell.exe` rather than
-/// embedded in a `cmd /C "powershell -Command \"...\""` string. Routing it
-/// through `cmd` makes cmd.exe collapse the nested `\"` escapes, so PowerShell
-/// receives the expression as a bare string literal and echoes it back instead
-/// of executing it — which is why the UI showed raw command text. Passing it
-/// as one arg means PowerShell parses it exactly once, intact. Runs windowless.
+/// The script goes to `powershell.exe` as one argument, not inside a
+/// `cmd /C "powershell -Command \"...\""` string: cmd.exe collapses the nested
+/// `\"` escapes, so PowerShell gets a bare string literal and echoes it back
+/// instead of running it (the UI once showed raw command text).
 pub async fn try_run_powershell(script: &str) -> Option<String> {
     let mut cmd = Command::new("powershell");
     cmd.args(["-NoProfile", "-NonInteractive", "-Command", script]);

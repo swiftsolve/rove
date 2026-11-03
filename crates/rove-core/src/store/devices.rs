@@ -18,46 +18,34 @@ pub struct KnownDevice {
     pub ip: Option<String>,
     pub hostname: Option<String>,
     pub vendor: Option<String>,
-    /// OS family from the DHCP fingerprint (e.g. "Android", "Apple"), persisted
-    /// so a departed device with no hostname/vendor can still read "Android
-    /// device" in the feed instead of collapsing to "Unknown" (see `known_name`).
+    /// OS family from the DHCP fingerprint ("Android", "Apple"), kept so a
+    /// departed device with no hostname or vendor still reads "Android device"
+    /// in the feed (see `known_name`).
     pub os: Option<String>,
     pub kind: String,
-    /// Whether the scans that saw this device reported a privacy-randomized MAC.
-    /// Persisted so a departure event can carry it — otherwise a randomized
-    /// phone reads "Private device" when it joins but "Unknown device" when it
-    /// leaves, since the departure path only has this stored row to work from.
+    /// Whether the MAC is privacy-randomized. Kept because a departure only has
+    /// this row: without it a randomized phone joins as "Private device" but
+    /// leaves as "Unknown device".
     pub randomized: bool,
     pub first_seen: i64,
     pub last_seen: i64,
 }
 
-/// A device is only an "offline" candidate when it was seen this recently
-/// before a scan missed it. Anything older is the historical roster (a device
-/// that left days ago), not one that just dropped — so it never fires, which is
-/// what keeps a fresh scan after a long gap from marking everything offline.
+/// A device only goes "offline" if it was seen this recently before a scan
+/// missed it. Anything older is history, not a drop, which keeps a scan after a
+/// long gap from marking everything offline.
 const OFFLINE_RECENCY_MS: i64 = 15 * 60 * 1000;
 
-/// How long an offline device stays in the Devices list after it last answered.
-/// It lingers marked Offline (with a "last seen" time) for a day, then drops out
-/// — long enough to cover a phone asleep overnight, short enough that a device
-/// truly gone for good clears on its own. The roster row is kept in the DB.
+/// How long an offline device stays in the Devices list after it last answered:
+/// long enough to cover a phone asleep overnight, short enough that one gone for
+/// good clears on its own. Its roster row stays in the database.
 pub const OFFLINE_LIST_KEEP_MS: i64 = 24 * 60 * 60 * 1000;
 
 impl Store {
-    // ---- known LAN devices -------------------------------------------------
-
-    /// Upsert one device row. First-seen is set on insert and preserved on
-    /// conflict; the mutable fields (ip/hostname/vendor/kind) advance to the
-    /// latest, keeping a previously-known hostname/vendor when this scan lacks
-    /// one. `conn` is the open transaction (a `Transaction` derefs here).
-    ///
-    /// `kind` follows the same keep-what-we-knew rule as hostname/vendor/os: a
-    /// scan that fails to classify the device (a phone asleep in power-save
-    /// answers nothing, so it reads back as `unknown`) must not erase a kind we
-    /// settled on earlier — otherwise a device that was a "phone" collapses to a
-    /// "Generic device" the moment it stops answering. A confident new
-    /// classification (any non-`unknown` kind) still advances it.
+    /// Upsert one device row. A field this scan lacks keeps its earlier value,
+    /// `kind` included: a phone asleep in power-save answers nothing and reads
+    /// back `unknown`, and must not collapse from "phone" to "Generic device".
+    /// Any known kind still replaces the old one.
     fn upsert_device(conn: &Connection, device: &LanDevice, now_ms: i64) -> rusqlite::Result<()> {
         conn.execute(
             "INSERT INTO known_devices
@@ -86,11 +74,8 @@ impl Store {
         Ok(())
     }
 
-    /// Bump only the liveness columns (`ip`, `last_seen`) of an existing row,
-    /// leaving the identity (hostname/vendor/kind/os) exactly as an active scan
-    /// settled it. Used by the passive refresh, whose thin evidence must never
-    /// overwrite a better name; a row that doesn't exist yet is simply not
-    /// touched (the caller inserts genuinely new devices via `upsert_device`).
+    /// Bump only `ip` and `last_seen` of an existing row. For the passive
+    /// refresh, whose thin evidence must never overwrite a better identity.
     fn bump_last_seen(conn: &Connection, mac: &str, ip: &str, now_ms: i64) -> rusqlite::Result<()> {
         conn.execute(
             "UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1",
@@ -99,23 +84,18 @@ impl Store {
         Ok(())
     }
 
-    /// Record a passive presence sweep — the devices the background refresh could
-    /// positively confirm are on the network right now (see
-    /// [`crate::devices::passive_refresh`]). Unlike [`Self::record_devices`] this
-    /// asserts **no** departures: passive discovery can't prove a device is gone,
-    /// so a host missing from `present` is left as-is rather than marked offline.
-    /// The refresh only ever advances the roster forward — it bumps `last_seen`
-    /// for a known device, logs a genuinely new MAC as an arrival, and re-flags a
-    /// device that had gone offline as back online. A known device's richer
-    /// identity is preserved (see [`Self::bump_last_seen`]).
+    /// Record the devices [`crate::devices::passive_refresh`] confirmed present.
+    /// Unlike [`Self::record_devices`] it asserts **no** departures: passive
+    /// discovery can't prove a device is gone. It only moves forward: bumping
+    /// `last_seen`, logging a new MAC as an arrival, and flagging an offline
+    /// device as back online.
     ///
-    /// No-ops until an active scan has seeded the roster: seeding a partial
-    /// passive view (only the announcing hosts) would make that first full scan
-    /// report every silent device as a new arrival.
+    /// A no-op until an active scan has seeded the roster: seeding from the few
+    /// hosts that announce themselves would make that first full scan report
+    /// every silent device as an arrival.
     pub fn touch_devices(&self, present: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
         let mut conn = self.lock();
         let prior = Self::load_known_map(&conn)?;
-        // Wait for the first active scan to establish the baseline (see above).
         if prior.is_empty() {
             return Ok(());
         }
@@ -125,16 +105,14 @@ impl Store {
         for device in present.iter().filter(|d| !d.mac.is_empty() && d.is_reachable) {
             match prior.get(&device.mac) {
                 None => {
-                    // A device we've never recorded, seen only passively. Store
-                    // its (thin) identity so the arrival isn't blank, and announce
-                    // it — an active scan will enrich it on the next real scan.
+                    // Store its thin identity so the arrival isn't blank; the
+                    // next active scan enriches it.
                     Self::emit_new_device(&tx, device, now_ms)?;
                     Self::upsert_device(&tx, device, now_ms)?;
                 }
                 Some(_) => {
-                    // Back after we'd marked it offline: mirror `record_devices`'
-                    // online transition so a device returning while the window is
-                    // backgrounded still lands on the feed.
+                    // Mirror `record_devices`' online transition, so a device
+                    // returning while the window is hidden still lands on the feed.
                     if last_event.get(&device.mac).map(String::as_str)
                         == Some(EVENT_DEVICE_OFFLINE)
                     {
@@ -158,39 +136,32 @@ impl Store {
         Ok(())
     }
 
-    /// Upsert the devices from a scan and derive the network-change events that
-    /// scan implies (arrivals, departures, and mutated identity), diffing the
-    /// batch against the remembered roster before it's overwritten.
+    /// Upsert a scan's devices and log what it implies (arrivals, departures,
+    /// returns, a gateway change), diffing against the roster before it's
+    /// overwritten.
     pub fn record_devices(&self, devices: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
         let mut conn = self.lock();
         let tx = conn.transaction()?;
 
-        // The baseline we diff against — captured before any upsert overwrites it.
+        // Captured before any upsert overwrites it.
         let prior = Self::load_known_map(&tx)?;
-        // Most-recent event per MAC, to drive the offline↔online state machine
-        // and keep a departed device a single "offline" row until it returns.
+        // Most-recent event per MAC, so a departed device stays a single
+        // "offline" row until it returns.
         let last_event = Self::load_last_event_types(&tx)?;
-        // A first-ever scan (empty roster) is a baseline, not a burst of new
-        // arrivals: remember the devices but emit no join/AP events for them, so
-        // the very first scan doesn't produce a wall of "joined" rows.
+        // An empty roster makes this scan a baseline, not a wall of "joined" rows.
         let bootstrap = prior.is_empty();
-        // The first scan to ever write to the feed is a pure baseline. Instead
-        // of leaving the page blank (or bursting granular events for an existing
-        // user upgrading into the feature), we record the roster, summarize it
-        // as one "N devices discovered" row, and suppress the per-device diff
-        // this once — real join/change/offline events start on the next scan.
+        // The first scan to write to the feed summarises the roster as one
+        // "N devices discovered" row and skips the per-device diff this once,
+        // rather than leaving the page blank or bursting events at an existing
+        // user upgrading into the feature.
         let seed = Self::events_is_empty(&tx)?;
 
-        // A device counts as present on the feed only when it actually answered
-        // this scan. One still in the ARP table but failing liveness probes
-        // (reachable=false) reads "Offline" in the Devices view, so treat it as
-        // gone here too — otherwise the feed's offline/online state lags what the
-        // user sees, staying silent until the OS ages the stale ARP entry out
-        // (~20 min later). Self and the gateway are always reachable, so they
-        // never spuriously drop. The liveness debounce (see `liveness`) holds a
-        // device reachable until it has both missed several scans and stayed
-        // silent for a wall-clock floor, so a brief sleep — or a burst of
-        // event-driven scans landing seconds apart — doesn't flap the feed.
+        // Present only if it answered this scan. One still in the ARP table but
+        // failing liveness reads "Offline" in the Devices view, so it's gone here
+        // too; otherwise the feed would lag until the OS ages the entry out (~20
+        // min). The debounce in `devices/liveness.rs` holds a device reachable
+        // across a brief sleep or a burst of scans seconds apart, so this doesn't
+        // flap.
         let live: HashSet<&str> = devices
             .iter()
             .filter(|d| !d.mac.is_empty() && d.is_reachable)
@@ -206,9 +177,8 @@ impl Store {
                         }
                     }
                     Some(_) => {
-                        // Answered again after we'd marked it offline. Gate on
-                        // `reachable` so a device that's back in the ARP table
-                        // but still not responding doesn't read as reconnected.
+                        // Gate on `is_reachable` so a device back in the ARP
+                        // table but not answering doesn't read as reconnected.
                         if device.is_reachable
                             && last_event.get(&device.mac).map(String::as_str)
                                 == Some(EVENT_DEVICE_OFFLINE)
@@ -223,20 +193,18 @@ impl Store {
                                 None,
                             )?;
                         }
-                        // Identity changes (hostname/IP/vendor/kind) are no longer
-                        // surfaced as events — they proved too noisy to be useful.
+                        // Identity changes (hostname, IP, vendor, kind) aren't
+                        // logged: they proved too noisy.
                     }
                 }
             }
             Self::upsert_device(&tx, device, now_ms)?;
         }
 
-        // The host's own link state, as last recorded by `record_connection`
-        // (identity `"wifi|…"`/`"ethernet|…"` when connected, `"disconnected|"`
-        // otherwise). A scan that runs while this machine is itself off-network
-        // sees every LAN peer stop answering at once — that's our uplink dropping,
-        // not the whole network emptying out. An absent identity (never polled)
-        // reads as connected so we don't over-suppress a genuine departure.
+        // This machine's link as `record_connection` last saw it. Off-network,
+        // every peer stops answering at once; that's our link dropping, not the
+        // LAN emptying. Never polled reads as connected, so real departures
+        // aren't suppressed.
         let host_connected: bool = tx
             .query_row(
                 "SELECT value FROM meta WHERE key = ?1",
@@ -247,22 +215,14 @@ impl Store {
             .map(|id| id.starts_with("wifi|") || id.starts_with("ethernet|"))
             .unwrap_or(true);
 
-        // Departures: recently-seen devices that didn't answer this scan —
-        // whether absent entirely or present but failing liveness. Skip any
-        // already marked offline so a device stays one event until it returns.
-        // Suppressed on the seed scan along with the rest of the diff.
-        //
-        // Two conditions suppress the whole burst, both meaning "this machine
-        // dropped off, the LAN didn't empty out":
-        //   * An empty `live` set — *nothing at all* answered, not even self or
-        //     the gateway (always reachable when we have a link): the scan wholly
-        //     failed.
-        //   * The host itself is disconnected — on macOS a downed uplink still
-        //     enumerates `self` as reachable, so `live` is non-empty and the check
-        //     above misses it; the stored connection identity catches it.
-        // In both cases the single `connection_lost` event (from
-        // `record_connection`) represents the drop instead. The devices are
-        // untouched, so they simply resume when we return.
+        // Departures: recently seen devices that didn't answer this scan, unless
+        // already marked offline. Two conditions suppress the whole burst, both
+        // meaning this machine dropped off:
+        //   * An empty `live` set: not even self or the gateway answered, so the
+        //     scan failed.
+        //   * The host is disconnected: on macOS a downed link still lists self
+        //     as reachable, so `live` isn't empty; the stored identity catches it.
+        // The one `connection_lost` from `record_connection` stands in instead.
         if !seed && !live.is_empty() && host_connected {
             for (mac, prev) in &prior {
                 if live.contains(mac.as_str()) {
@@ -289,13 +249,10 @@ impl Store {
             }
         }
 
-        // The default gateway's MAC changing under us is the classic
-        // rogue-gateway / ARP-spoof signal — track it across scans on its own.
-        // Self-guards on the stored baseline, so on a seed scan it just records
-        // the current gateway (no event) for future scans to diff against.
+        // A gateway MAC changing under us is the classic rogue-gateway or
+        // ARP-spoof signal. With no stored baseline it only records one.
         Self::detect_gateway_change(&tx, devices, now_ms)?;
 
-        // The baseline summary — one row so a fresh feed isn't blank.
         if seed {
             let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
             if count > 0 {
@@ -319,7 +276,7 @@ impl Store {
         Ok(())
     }
 
-    /// The remembered roster keyed by MAC — the diff baseline for a scan.
+    /// The roster keyed by MAC: a scan's diff baseline.
     fn load_known_map(conn: &Connection) -> rusqlite::Result<HashMap<String, KnownDevice>> {
         let mut stmt = conn.prepare(
             "SELECT mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized \
@@ -346,8 +303,7 @@ impl Store {
         Ok(map)
     }
 
-    /// Most-recent event `type` per MAC (the newest row wins), for the
-    /// offline/online state machine.
+    /// The newest event `type` per MAC.
     fn load_last_event_types(conn: &Connection) -> rusqlite::Result<HashMap<String, String>> {
         let mut stmt = conn.prepare(
             "SELECT mac, type FROM network_events WHERE id IN
@@ -363,8 +319,8 @@ impl Store {
         Ok(map)
     }
 
-    /// A newly-seen device: a router that isn't our gateway is a new AP / mesh
-    /// node (a higher-signal security event), everything else a plain arrival.
+    /// A router that isn't our gateway is a new AP or mesh node, a
+    /// higher-signal security event; anything else is a plain arrival.
     fn emit_new_device(conn: &Connection, device: &LanDevice, ts: i64) -> rusqlite::Result<()> {
         let (event_type, severity) = if device.kind == "router" && !device.is_gateway {
             (EVENT_AP_APPEARED, "warning")
@@ -374,8 +330,6 @@ impl Store {
         Self::record_event(conn, ts, event_type, severity, device, None, None)
     }
 
-    /// Compare this scan's gateway MAC to the last one we recorded (in `meta`),
-    /// emitting a critical event on a change and always refreshing the baseline.
     fn detect_gateway_change(
         conn: &Connection,
         devices: &[LanDevice],
@@ -433,14 +387,11 @@ impl Store {
         rows.collect()
     }
 
-    /// The live scan merged with recently-seen roster devices that didn't answer
-    /// this scan, so a device that has aged out of the ARP table still shows as
-    /// Offline (with a "last seen" time) instead of vanishing. Live devices are
-    /// stamped with `now_ms`; a roster-only device carries its stored `last_seen`
-    /// and is dropped from the list once that's older than `keep_ms` (its row is
-    /// still kept in the DB). A scanner can't tell "asleep" from "gone", so the
-    /// list never asserts a departure — it just reports how long ago each device
-    /// was last seen and lets the reader judge.
+    /// The live scan plus roster devices seen within `keep_ms` that didn't
+    /// answer, so a device aged out of the ARP table shows as Offline with a
+    /// "last seen" time instead of vanishing. A scanner can't tell asleep from
+    /// gone, so the list never asserts a departure; the reader judges from the
+    /// age.
     pub fn devices_with_offline(
         &self,
         live: &[LanDevice],
@@ -460,14 +411,10 @@ impl Store {
             .cloned()
             .map(|mut d| {
                 d.last_seen = Some(now_ms);
-                // A device still in the ARP table but not answering this scan is
-                // rebuilt from thin evidence: a randomized-MAC phone asleep in
-                // power-save announces nothing, so this pass has no hostname,
-                // vendor or kind for it and it would read "Generic device" even
-                // though we identified it minutes ago. Backfill the gaps from the
-                // remembered roster so an offline device keeps its last-known
-                // identity. Only while unreachable — a live device's fresh scan is
-                // authoritative and may legitimately reclassify it.
+                // A device in the ARP table but not answering is rebuilt from
+                // thin evidence (a phone asleep in power-save announces nothing)
+                // and would read "Generic device". Backfill from the roster, but
+                // only while unreachable: a live device's scan may reclassify it.
                 if !d.is_reachable {
                     if let Some(kd) = known.get(&d.mac) {
                         d.hostname = d.hostname.take().or_else(|| kd.hostname.clone());
@@ -476,8 +423,8 @@ impl Store {
                         if d.kind == "unknown" && kd.kind != "unknown" {
                             d.kind = kd.kind.clone();
                         }
-                        // A remembered kind is a settled fact, not a thin-margin
-                        // guess — don't hedge it with a "?" while the device is away.
+                        // A remembered kind is settled, not a thin-margin guess,
+                        // so don't hedge it with a "?" while the device is away.
                         d.kind_confidence = "high";
                     }
                 }
@@ -499,8 +446,7 @@ impl Store {
                 model: None,
                 os: kd.os,
                 kind: kd.kind,
-                // The kind we stored is a settled fact, not a fresh thin-margin
-                // guess, so don't hedge it with a "?" while the device is away.
+                // Settled, as above.
                 kind_confidence: "high",
                 is_randomized_mac: kd.randomized,
                 is_gateway: false,

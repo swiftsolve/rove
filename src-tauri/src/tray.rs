@@ -1,4 +1,4 @@
-//! The system tray icon and its menu — the app's presence when the window is
+//! The system tray icon and its menu: the app's presence when the window is
 //! closed to the background.
 use tauri::{
     menu::{Menu, MenuItem},
@@ -15,11 +15,10 @@ pub fn show_main_window(app: &tauri::AppHandle) {
     }
 }
 
-/// Install a GLib log handler that drops warnings from the
-/// `libayatana-appindicator` domain, silencing the library's runtime
-/// deprecation notice without affecting any other log output. Idempotent in
-/// practice — `build_tray` is only called once — but installing twice would
-/// merely stack a second identical filter.
+/// Drop warnings from the `libayatana-appindicator` GLib log domain only. On
+/// first use the library warns that it's deprecated in favour of
+/// libayatana-appindicator-glib; that's advice for tao/tray-icon upstream, with
+/// no glib-only tray API for us to switch to.
 #[cfg(target_os = "linux")]
 fn suppress_appindicator_deprecation_warning() {
     glib::log_set_handler(
@@ -27,25 +26,14 @@ fn suppress_appindicator_deprecation_warning() {
         glib::LogLevels::LEVEL_WARNING,
         false, // not fatal
         false, // no recursion
-        |_domain, _level, _message| {
-            // Intentionally swallow: the deprecation targets upstream, not us.
-        },
+        |_domain, _level, _message| {},
     );
 }
 
-/// Build the system tray icon and its menu. The menu (Open / Quit) is the whole
-/// interaction: it's a native menu, so it renders identically and reliably on
-/// Windows, macOS and every Linux desktop — no custom webview panel to paint.
-/// Returns an error if the platform can't host a tray, letting the caller fall
-/// back to quit-on-close.
+/// Build the tray icon and its native Open/Quit menu, which renders reliably on
+/// every desktop where a custom webview panel wouldn't. Errors when the
+/// platform can't host a tray, so the caller keeps quit-on-close.
 pub fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-    // On Linux, tray-icon drives libayatana-appindicator3 (the GTK variant),
-    // which prints a deprecation WARNING to stderr the first time it's touched:
-    //   "libayatana-appindicator is deprecated. Please use
-    //    libayatana-appindicator-glib in newly written code."
-    // That advice targets upstream tao/tray-icon, not us — there's no glib-only
-    // tray API exposed here — so the message is pure noise. Swallow just that
-    // one log domain's warnings (everything else still prints normally).
     #[cfg(target_os = "linux")]
     suppress_appindicator_deprecation_warning();
 
@@ -53,17 +41,10 @@ pub fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     let quit = MenuItem::with_id(app, "quit", "Quit Rove", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &quit])?;
 
-    // A dedicated tray glyph: the bare Rove Mark, monochrome on a
-    // transparent background — no rounded tile — so it sits flush in the menu
-    // bar / taskbar like other native tray icons rather than showing the boxed
-    // app icon.
-    //
-    // The glyph colour has to differ by platform. macOS treats a black-on-alpha
-    // image as a *template* and tints it to the menu bar itself (see
-    // `icon_as_template` below), so black is correct there. Windows and Linux
-    // ignore the template flag and paint the pixels as-is — a black glyph then
-    // vanishes on their (dark by default) taskbars — so they get a white glyph
-    // with the same alpha. Both PNGs share `tray.png`'s exact silhouette.
+    // The bare Rove Mark, monochrome with no tile, so it sits flush like other
+    // tray icons. macOS tints a black template image to the menu bar; Windows
+    // and Linux paint pixels as-is, where black vanishes on dark taskbars, so
+    // they get the white glyph with the same silhouette.
     #[cfg(target_os = "macos")]
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
     #[cfg(not(target_os = "macos"))]
@@ -71,15 +52,11 @@ pub fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     TrayIconBuilder::with_id("main")
         .icon(icon)
-        // Render as a macOS template image: the system ignores the glyph's own
-        // colour and tints it to match the menu bar, so the mark stays legible
-        // on both light and dark bars. No-op on other platforms.
+        // No-op off macOS.
         .icon_as_template(true)
         .tooltip("Rove")
         .menu(&menu)
-        // Left-click opens the app directly; the menu (Open / Quit) is reserved
-        // for right-click. Disabling the built-in left-click menu lets us handle
-        // the left button ourselves in `on_tray_icon_event`.
+        // Left-click opens the app (below); the menu is for right-click.
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => show_main_window(app),
@@ -87,8 +64,6 @@ pub fn build_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
-            // A completed left-click (button released over the icon) surfaces the
-            // main window. Right-click falls through to the native menu.
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,

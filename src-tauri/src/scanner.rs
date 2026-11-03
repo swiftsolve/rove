@@ -6,35 +6,27 @@ use std::sync::atomic::Ordering;
 type SharedScan =
     futures_util::future::Shared<std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>>;
 
-/// Hard ceiling on a single LAN scan. A healthy scan takes ~6s, so this sits
-/// well above the normal case, yet low enough that a wedged probe or a host that
-/// stalls an enrichment round can't tie up device polling for minutes.
-/// Overlapping scans — the usual cause of runaway times — are already prevented
-/// by the dedupe guard below; this is the backstop for everything else.
+/// Hard ceiling on one LAN scan. A healthy scan takes ~6 s; this is the
+/// backstop for a wedged probe or a host that stalls enrichment. Overlapping
+/// scans, the usual cause of runaway times, are prevented below.
 const SCAN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
-/// Coalesces concurrent LAN scans. Each `scan()` probes the subnet with up to
-/// 64 concurrent `ping` subprocesses; if the frontend's 45s poll (plus
-/// `onNetworkChanged` nudges during Wi-Fi roaming) fires a new request while a
-/// slow scan is still running, launching a *second* scan doubles that
-/// subprocess load and starves the tokio runtime — which is what made
-/// `get_network_info` time out. This guard makes overlapping callers await the
-/// single in-flight scan instead of starting their own.
+/// Coalesces concurrent LAN scans. A scan runs up to 64 `ping` subprocesses at
+/// once; a second scan started while a slow one runs doubles that and starves
+/// the tokio runtime, which once made `get_network_info` time out. Overlapping
+/// callers await the one in-flight scan instead.
 #[derive(Default)]
 pub struct DeviceScanner {
-    /// The in-flight scan (a cheaply-cloneable `Shared` future) tagged with a
-    /// generation id, or `None` when idle. The id lets the caller that started
-    /// a scan clear the slot on completion *without* clobbering a newer scan
-    /// that a later caller may have installed in the meantime.
+    /// The in-flight scan, or `None` when idle. The generation id lets the
+    /// starter clear the slot on completion without clobbering a newer scan.
     inflight: tokio::sync::Mutex<Option<(u64, SharedScan)>>,
     next_id: std::sync::atomic::AtomicU64,
 }
 
 impl DeviceScanner {
-    /// Run a scan, or join the one already in flight. Sequential (non-overlapping)
-    /// calls each get a fresh scan; overlapping calls all resolve to the same result.
-    /// The scan is bounded by `SCAN_TIMEOUT`; on expiry it yields an empty result
-    /// rather than letting a wedged probe run unbounded.
+    /// Run a scan, or join the one in flight. Sequential calls each get a fresh
+    /// scan; results aren't cached. Past `SCAN_TIMEOUT` it yields an empty
+    /// result.
     pub async fn scan(&self) -> LanDeviceScan {
         self.scan_with(|| {
             Box::pin(async {
@@ -59,8 +51,7 @@ impl DeviceScanner {
         .await
     }
 
-    /// The dedupe machinery, parameterised over the scan producer so tests can
-    /// substitute a counted stub for the real (subprocess-heavy) `scan()`. The
+    /// Parameterised over the producer so tests can count runs with a stub. The
     /// producer runs only when no scan is in flight.
     async fn scan_with<F>(&self, produce: F) -> LanDeviceScan
     where
@@ -80,9 +71,7 @@ impl DeviceScanner {
 
         let result = fut.await;
 
-        // Clear the slot so the next caller starts a fresh scan — but only if it
-        // still holds the future we just awaited. A newer scan may already have
-        // replaced it, in which case leave that one alone.
+        // Only if it still holds our scan; a newer one may have replaced it.
         let mut guard = self.inflight.lock().await;
         if guard.as_ref().map(|(id, _)| *id) == Some(id) {
             *guard = None;
@@ -152,8 +141,8 @@ mod tests {
         assert!(scanner.inflight.lock().await.is_none());
     }
 
-    /// Non-overlapping callers must each get their own fresh scan — the guard
-    /// coalesces concurrency, it does not cache results.
+    /// Non-overlapping callers must each get a fresh scan: the guard coalesces
+    /// concurrency, it doesn't cache.
     #[tokio::test]
     async fn sequential_scans_each_run() {
         let scanner = DeviceScanner::default();

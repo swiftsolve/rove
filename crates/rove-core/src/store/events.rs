@@ -7,43 +7,41 @@ use crate::diagnostics::InternetStatus;
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
 
-/// One entry in the network-change feed, derived by diffing successive scans
-/// against the remembered device roster. Field names are camelCase on the wire.
+/// One entry in the network-change feed. Mirrors `NetworkEvent` in `src/types/events.ts`.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkEvent {
     pub id: i64,
-    pub ts: i64, // epoch ms
-    /// One of the `EVENT_*` slugs below; drives the icon/copy the UI renders.
+    /// Epoch ms.
+    pub ts: i64,
+    /// One of the `EVENT_*` slugs below; picks the icon and copy the UI renders.
     #[serde(rename = "type")]
     pub event_type: String,
-    /// "info" | "warning" | "critical" — the row's visual weight.
+    /// "info", "warning" or "critical": the row's visual weight.
     pub severity: String,
     pub mac: Option<String>,
     pub ip: Option<String>,
-    /// Best-effort device label captured at event time (the device's identity
-    /// may drift later, so we snapshot what it was called then).
+    /// Best-effort label snapshotted at event time, since a device's identity
+    /// can drift later.
     pub name: Option<String>,
-    /// The device's kind slug (e.g. "phone", "tv") for device-subject events,
-    /// read live from the current roster so the timeline can show a category
-    /// alongside the name — the same "Phone" the Devices view shows. `None` when
-    /// the kind is unknown or the event isn't about a single device (an SSID, a
-    /// count, a gateway change).
+    /// The device's kind slug ("phone", "tv"), read live from the roster so the
+    /// timeline shows the same category as the Devices view. `None` when unknown
+    /// or when the event isn't about one device.
     pub kind: Option<String>,
     /// For change events: the value before and after (e.g. old/new IP).
     pub old_value: Option<String>,
     pub new_value: Option<String>,
-    /// The device's MAC was privacy-randomized. Presence events for such
-    /// devices are inherently noisy (a phone re-randomizes roughly daily and
-    /// then reads as brand-new), so the UI flags rather than hides them.
+    /// The MAC is privacy-randomized. Such a device's presence events are noisy
+    /// (a phone can re-randomize and read as brand-new), so the UI flags them.
     pub is_randomized: bool,
 }
 
-// Event-type slugs. Kept as constants so the detector and any tests reference
-// the same strings the UI switches on.
-/// The one-time baseline row the first populated scan writes, so a brand-new
-/// feed reads as "13 devices discovered" rather than a blank page. Its
-/// `new_value` carries the device count.
+// Event-type slugs: the strings the UI switches on, shared by the detector and
+// the tests.
+
+/// The one-time baseline row the first populated scan writes, so a new feed
+/// reads "13 devices discovered" rather than a blank page. `new_value` carries
+/// the count.
 pub(super) const EVENT_INITIAL_SCAN: &str = "initial_scan";
 
 pub(super) const EVENT_DEVICE_JOINED: &str = "device_joined";
@@ -56,58 +54,49 @@ pub(super) const EVENT_DEVICE_ONLINE: &str = "device_online";
 
 pub(super) const EVENT_GATEWAY_CHANGED: &str = "gateway_changed";
 
-/// This machine joined a Wi-Fi / Ethernet network. Unlike the events above,
-/// these describe *our own* connection (from `network_info`) rather than a LAN
-/// device, and are diffed against the last connection stashed in `meta`.
+/// This machine joined a Wi-Fi or Ethernet network. Unlike the events above,
+/// these are about *our own* connection, diffed against the last one in `meta`.
 const EVENT_WIFI_CONNECTED: &str = "wifi_connected";
 
 const EVENT_ETHERNET_CONNECTED: &str = "ethernet_connected";
 
-/// This machine lost its network connection entirely (dropped to disconnected).
-/// One of these stands in for the flood of per-device "offline" rows a scan
-/// would otherwise emit while offline — with no uplink we can't confirm any host,
-/// so every device looks departed, but the truth is that *we* left, not them.
+/// This machine dropped off its network. One row stands in for the flood of
+/// per-device "offline" rows a scan would emit: with no link every device looks
+/// departed, but it was *us* that left.
 const EVENT_CONNECTION_LOST: &str = "connection_lost";
 
-/// This machine lost / regained public-internet reachability (the WAN), as
-/// classified by the diagnostics poll's [`InternetStatus`]. Distinct from
-/// `connection_lost`, which tracks the local link (Wi-Fi/Ethernet) dropping: the
-/// internet can be unreachable while the link is up (an ISP outage), and this
-/// pair captures exactly that — mirroring the online/offline split the Services
-/// timeline already shows.
+/// This machine lost or regained the public internet. Distinct from
+/// `connection_lost` (the local link dropping): the internet can be unreachable
+/// while the link is up, as in an ISP outage.
 const EVENT_INTERNET_LOST: &str = "internet_lost";
 
 const EVENT_INTERNET_RESTORED: &str = "internet_restored";
 
-/// `meta` key holding the last connection this machine was on, so a change of
-/// network can be detected across the frequent `network_info` polls.
+/// `meta` key for the last connection this machine was on, so a network change
+/// is caught across `network_info` polls.
 pub(super) const META_CONNECTION_IDENTITY: &str = "connection_identity";
 
-/// `meta` key holding the last internet-reachability verdict ("online"/"offline"),
-/// so a WAN up/down transition can be detected across diagnostics polls.
+/// `meta` key for the last internet verdict ("online"/"offline"), so a crossing
+/// is caught across checks.
 const META_INTERNET_STATUS: &str = "internet_status";
 
-/// Drop events older than this (matches the 7-day feed consumer tools keep).
+/// A week, the window consumer network tools typically keep.
 const EVENT_RETENTION_MS: i64 = 7 * 24 * 60 * 60 * 1000;
 
-/// Hard cap on retained events, so a churny network can't grow the table
-/// without bound even inside the retention window.
+/// Hard cap, so a churny network can't grow the table without bound inside the
+/// retention window.
 const EVENT_LIMIT: i64 = 1000;
 
 impl Store {
-    /// Record the machine's own active connection, appending an event when it
-    /// changes to a newly-joined Wi-Fi or Ethernet network. Called on every
-    /// `network_info` fetch (app load, `network-changed` nudges, polling), so it
-    /// mirrors the gateway detector: the last connection lives in `meta`, an
-    /// unchanged connection is silent, and the first-ever observation only seeds
-    /// the baseline — opening the app on a network you're already on isn't a
-    /// "connected" event. A drop to disconnected updates the baseline (so the
-    /// next reconnect fires) but posts no event of its own.
+    /// Record this machine's active connection, logging joining a Wi-Fi or
+    /// Ethernet network and dropping off one. Called on every `network_info`
+    /// fetch, so an unchanged connection is silent, and the first observation
+    /// only seeds the baseline: opening the app on a network you're already on
+    /// isn't a "connected" event.
     ///
-    /// `network_name` is the Wi-Fi SSID (None off Wi-Fi); `interface` is the
-    /// active interface, which is what distinguishes one wired link from another
-    /// when there's no SSID to key on. `ip`/`mac` are this machine's own, shown
-    /// as the event's context line.
+    /// `network_name` is the SSID (None off Wi-Fi); `interface` tells one wired
+    /// link from another where there's no SSID. `ip`/`mac` are this machine's
+    /// own, shown as the event's context line.
     pub fn record_connection(
         &self,
         connection_type: &str,
@@ -117,9 +106,9 @@ impl Store {
         mac: Option<&str>,
         now_ms: i64,
     ) -> rusqlite::Result<()> {
-        // The discriminator between networks: the SSID on Wi-Fi, the interface
-        // on Ethernet. Anything else (disconnected, VPN, cellular) has no
-        // connect event but still updates the baseline below.
+        // The SSID on Wi-Fi, the interface on Ethernet. Anything else
+        // (disconnected, VPN, cellular) has no connect event but still updates
+        // the baseline.
         let label = match connection_type {
             "wifi" => network_name,
             "ethernet" => interface,
@@ -136,21 +125,15 @@ impl Store {
             )
             .optional()?;
 
-        // Unchanged connection — the common case on a poll. Nothing to do.
         if prev.as_deref() == Some(identity.as_str()) {
             return Ok(());
         }
 
         let tx = conn.transaction()?;
-        // Emit only on a transition *into* a connected Wi-Fi/Ethernet state, and
-        // only once a baseline exists (so the first observation after launch is
-        // silent rather than a spurious "connected").
+        // No baseline yet: the first observation after launch stays silent.
         if let Some(prev) = prev.as_deref() {
-            // A transition *into* a connected network is a connect event; a
-            // transition from a connected network *out* to disconnected is a
-            // connection-lost event. Anything else (still disconnected, VPN↔VPN)
-            // is silent. `prev_connected` gates the loss so we don't fire it when
-            // we were already off-network (e.g. VPN → disconnected).
+            // `prev_connected` keeps a loss from firing when we were already
+            // off-network (VPN to disconnected, say).
             let prev_connected =
                 prev.starts_with("wifi|") || prev.starts_with("ethernet|");
             let event: Option<(&str, &str, &str)> = match connection_type {
@@ -158,8 +141,8 @@ impl Store {
                 "ethernet" => {
                     Some((EVENT_ETHERNET_CONNECTED, "info", interface.unwrap_or("Ethernet")))
                 }
-                // Dropped off the network. Name what we lost from the prior
-                // baseline — the new state has no interface/SSID of its own.
+                // Name what we lost from the prior baseline: the new state has
+                // no interface or SSID of its own.
                 _ if prev_connected => {
                     let lost = prev.split_once('|').map(|(_, label)| label).unwrap_or("");
                     let lost = if lost.is_empty() { "your network" } else { lost };
@@ -193,22 +176,12 @@ impl Store {
         Ok(())
     }
 
-    /// Log an internet-reachability transition. The diagnostics poll classifies
-    /// whether this machine can reach the public internet (see [`InternetStatus`]);
-    /// this diffs that verdict against the last one stashed in `meta` and, on a
-    /// crossing, appends a single `internet_lost` / `internet_restored` event.
-    ///
-    /// `noInternet` (WAN down but on a LAN) and `offline` (no network at all) both
-    /// collapse to "no internet" here — the timeline only cares whether the public
-    /// internet is reachable, matching the Services timeline's online/offline
-    /// split. The first observation after launch is silent (it just seeds the
-    /// baseline in `meta`), so a cold start doesn't read as a fresh outage.
-    ///
-    /// Best-effort and safe to call on every poll: an unchanged verdict does
-    /// nothing.
+    /// Log an `internet_lost` or `internet_restored` when the verdict crosses
+    /// the last one in `meta`. `NoInternet` (WAN down, still on a LAN) and
+    /// `Offline` both count as no internet. The first observation after launch
+    /// only seeds the baseline, so a cold start doesn't read as an outage. An
+    /// unchanged verdict does nothing, so every internet check can call it.
     pub fn record_internet(&self, internet: InternetStatus, now_ms: i64) -> rusqlite::Result<()> {
-        // Collapse the three-way status to the only axis this event tracks: can we
-        // reach the public internet, or not.
         let online = matches!(internet, InternetStatus::Online);
         let value = if online { "online" } else { "offline" };
 
@@ -221,15 +194,11 @@ impl Store {
             )
             .optional()?;
 
-        // Unchanged since the last poll — the common case. Nothing to record.
         if prev.as_deref() == Some(value) {
             return Ok(());
         }
 
         let tx = conn.transaction()?;
-        // Emit only on a genuine crossing, and only once a baseline exists, so the
-        // first observation after launch seeds `meta` silently rather than logging
-        // a phantom outage or recovery.
         if prev.is_some() {
             let (event_type, severity) = if online {
                 (EVENT_INTERNET_RESTORED, "info")
@@ -251,8 +220,9 @@ impl Store {
         Ok(())
     }
 
-    /// Whether the feed has never held an event — true only before the first
-    /// baseline scan writes its summary row.
+    /// Whether the feed holds no events: normally only until the first scan
+    /// writes its baseline row, though a connection or internet event can land
+    /// first.
     pub(super) fn events_is_empty(conn: &Connection) -> rusqlite::Result<bool> {
         let count: i64 = conn.query_row("SELECT COUNT(*) FROM network_events", [], |row| row.get(0))?;
         Ok(count == 0)
@@ -271,9 +241,8 @@ impl Store {
         )
     }
 
-    /// Best-effort label for a remembered device (used for departures, where we
-    /// only have the stored row). Mirrors `device_name` so a device reads the
-    /// same when it leaves as when it joined.
+    /// Best-effort label from the stored row, for departures. Matches
+    /// `device_name` so a device reads the same leaving as joining.
     pub(super) fn known_name(device: &KnownDevice) -> Option<String> {
         Self::compose_name(
             device.hostname.as_deref(),
@@ -283,31 +252,27 @@ impl Store {
         )
     }
 
-    /// The event-feed device label, mirroring the live Devices view's
-    /// `deviceName`/`describeUnnamed` (DevicesView.tsx): a real hostname, else a
-    /// noun built from the maker (vendor/OS) and the kind we learned ("Apple
-    /// phone", "Android phone", "Phone"). Returns `None` only when nothing at all
-    /// is known — the caller then falls back to "Private device"/"Unknown device"
-    /// from the randomized flag.
+    /// The feed's device label, mirroring `deviceName`/`describeUnnamed` in
+    /// `src/features/devices/utils/device-display.ts`: the hostname, else the
+    /// maker (vendor or OS) with the kind ("Android phone", "Phone").
+    /// `None` only when nothing is known; the UI then says "Private device" or
+    /// "Unknown device".
     fn compose_name(
         hostname: Option<&str>,
         vendor: Option<&str>,
         os: Option<&str>,
         kind: &str,
     ) -> Option<String> {
-        // A real hostname is the name the user gave the device — it always wins.
+        // A hostname is the name the user gave the device, so it always wins.
         if let Some(hostname) = hostname {
             return Some(hostname.to_string());
         }
         let noun = Self::kind_noun(kind);
-        // A known maker keeps the kind beside it rather than replacing it, so a
-        // device's kind never drops out of the name. A vendor is a brand (proper
-        // noun), so it reads as maker · type — "Apple · Phone" — matching the
-        // dot-separated meta line; an OS reads as a natural phrase below.
+        // A vendor is a brand, so it stands beside the kind as a separate part
+        // rather than in a phrase, as an OS does below.
         if let Some(vendor) = vendor {
-            // Exception: a smart-home device's noun ("smart home device") is
-            // verbose and already carried by the kind chip beside the name, so the
-            // maker stands alone there — mirroring `deviceName` in DevicesView.tsx.
+            // The kind chip beside the name already says "Smart home", so the
+            // verbose noun would repeat it.
             if kind == "iot" {
                 return Some(vendor.to_string());
             }
@@ -324,8 +289,8 @@ impl Store {
         }
     }
 
-    /// The human noun for a device kind, mirroring the frontend `KIND_NOUNS`
-    /// map. `None` for the "unknown" sentinel (nothing worth naming).
+    /// The noun for a device kind, mirroring `KIND_NOUNS` in
+    /// `device-display.ts`. `None` for "unknown".
     fn kind_noun(kind: &str) -> Option<&'static str> {
         Some(match kind {
             "router" => "router",
@@ -344,8 +309,7 @@ impl Store {
         })
     }
 
-    /// Uppercase the first character, leaving the rest as-is (so "NAS" and
-    /// "game console" survive: "NAS", "Game console").
+    /// Uppercase only the first character, so "NAS" survives.
     fn capitalize(s: &str) -> String {
         let mut chars = s.chars();
         match chars.next() {
@@ -415,15 +379,12 @@ impl Store {
 
     /// The change feed, newest first, capped at `limit`.
     ///
-    /// A device-subject event's label is resolved against the *current* roster,
-    /// not just the snapshot taken when it fired: once the classifier learns more
-    /// about a MAC (evidence accrues across scans), its past presence events read
-    /// with the improved identity too, so a device that departed as "Private
-    /// device" reads "Android phone" once it's been pinned. The LEFT JOIN keeps
-    /// events whose device has since left the roster — they fall back to the
-    /// stored snapshot, as do events whose `name` isn't a device label at all
-    /// (the SSID on wifi_connected, the count on initial_scan, "Router" on
-    /// gateway_changed). `kd.mac` being non-null is the "still known" signal.
+    /// A device event's label is resolved against the *current* roster, not
+    /// just its snapshot: as evidence about a MAC accrues across scans, its past
+    /// events pick up the better identity, so a device that left as "Private
+    /// device" reads "Android phone" once pinned. The LEFT JOIN keeps events
+    /// whose device has left the roster; they, and events whose `name` isn't a
+    /// device label (an SSID, a count, "Router"), keep the snapshot.
     pub fn network_events(&self, limit: i64) -> rusqlite::Result<Vec<NetworkEvent>> {
         let conn = self.lock();
         let mut stmt = conn.prepare(
@@ -442,9 +403,6 @@ impl Store {
             let event_type: String = row.get(2)?;
             let stored_name: Option<String> = row.get(6)?;
             let stored_randomized = row.get::<_, i64>(9)? != 0;
-            // Only events whose `name` is a device identity get relabeled from
-            // the live roster; connection/baseline/gateway rows keep their
-            // snapshot (their `name` is an SSID, a count, or a fixed "Router").
             let is_device_subject = matches!(
                 event_type.as_str(),
                 EVENT_DEVICE_JOINED
@@ -454,8 +412,7 @@ impl Store {
             );
             let in_roster = row.get::<_, Option<String>>(10)?.is_some();
             let (name, randomized, kind) = if is_device_subject && in_roster {
-                // Relabel the way the live Devices view would now; keep the
-                // snapshot if the current roster can't name it any better.
+                // Keep the snapshot if the roster can't name it any better.
                 let kd_kind: String = row.get(14)?;
                 let live = Self::compose_name(
                     row.get::<_, Option<String>>(11)?.as_deref(),
@@ -463,8 +420,6 @@ impl Store {
                     row.get::<_, Option<String>>(13)?.as_deref(),
                     &kd_kind,
                 );
-                // Carry the roster kind so the timeline can show a category next
-                // to the name; the "unknown" sentinel has nothing worth showing.
                 let kind = (kd_kind != "unknown").then_some(kd_kind);
                 (live.or(stored_name), row.get::<_, i64>(15)? != 0, kind)
             } else {
@@ -504,7 +459,7 @@ mod tests {
                 .collect::<Vec<_>>()
         };
 
-        // First observation just seeds the baseline — launching on an existing
+        // First observation just seeds the baseline: launching on an existing
         // Wi-Fi connection isn't a "connected" event.
         store
             .record_connection("wifi", Some("Home"), Some("wlan0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 1_000)
@@ -517,7 +472,7 @@ mod tests {
             .unwrap();
         assert!(types(&store).is_empty(), "an unchanged connection emits nothing");
 
-        // A cable goes in → ethernet_connected, carrying the interface name.
+        // A cable goes in: ethernet_connected, carrying the interface name.
         store
             .record_connection("ethernet", None, Some("eth0"), Some("192.168.1.6"), Some("aa:bb:cc:dd:ee:00"), 2_000)
             .unwrap();
@@ -525,7 +480,7 @@ mod tests {
         assert_eq!(latest.event_type, "ethernet_connected");
         assert_eq!(latest.name.as_deref(), Some("eth0"));
 
-        // Unplug → connection_lost (warning), naming the network we dropped from
+        // Unplug: connection_lost (warning), naming the network we dropped from
         // the prior baseline, since the disconnected state carries no interface.
         store
             .record_connection("disconnected", None, None, None, None, 3_000)
@@ -535,15 +490,14 @@ mod tests {
         assert_eq!(latest.severity, "warning");
         assert_eq!(latest.name.as_deref(), Some("eth0"), "names the lost network");
 
-        // A second disconnected poll (still off-network) is silent — the loss
-        // already fired, and there's no connected baseline to leave again.
+        // A second disconnected poll is silent: the loss already fired.
         let before = types(&store).len();
         store
             .record_connection("disconnected", None, None, None, None, 3_200)
             .unwrap();
         assert_eq!(types(&store).len(), before, "staying disconnected emits nothing further");
 
-        // …and back onto Wi-Fi → wifi_connected with the SSID as its subject.
+        // Back onto Wi-Fi: wifi_connected with the SSID as its subject.
         store
             .record_connection("wifi", Some("Cafe"), Some("wlan0"), Some("10.0.0.9"), Some("aa:bb:cc:dd:ee:ff"), 4_000)
             .unwrap();
@@ -564,7 +518,7 @@ mod tests {
                 .collect::<Vec<_>>()
         };
 
-        // First observation just seeds the baseline — launching with working
+        // First observation just seeds the baseline: launching with working
         // internet isn't a "restored" event.
         store.record_internet(InternetStatus::Online, 1_000).unwrap();
         assert!(types(&store).is_empty(), "the first verdict only seeds a baseline");
@@ -573,14 +527,13 @@ mod tests {
         store.record_internet(InternetStatus::Online, 1_500).unwrap();
         assert!(types(&store).is_empty(), "an unchanged verdict emits nothing");
 
-        // WAN drops while still on a LAN → a single internet_lost (warning).
+        // WAN drops while still on a LAN: one internet_lost (warning).
         store.record_internet(InternetStatus::NoInternet, 2_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "internet_lost");
         assert_eq!(latest.severity, "warning");
 
-        // Dropping the gateway too (offline) is still "no internet" — no second
-        // event, since we never regained reachability in between.
+        // Losing the gateway too is still "no internet", so no second event.
         let before = types(&store).len();
         store.record_internet(InternetStatus::Offline, 2_500).unwrap();
         assert_eq!(
@@ -589,7 +542,7 @@ mod tests {
             "noInternet → offline is still offline, so nothing new fires"
         );
 
-        // Back online → internet_restored (info).
+        // Back online: internet_restored (info).
         store.record_internet(InternetStatus::Online, 3_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "internet_restored");

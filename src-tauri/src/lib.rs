@@ -1,5 +1,5 @@
-//! Thin Tauri shell over rove-core: each command maps 1:1 to a service.
-//! This file is the builder wiring; the substance lives in the modules below.
+//! Thin Tauri shell over rove-core: each command wraps one service. This file
+//! is the builder wiring; the substance lives in the modules below.
 mod commands;
 mod logging;
 mod monitors;
@@ -32,41 +32,35 @@ struct SpeedRuns {
 struct AppState {
     speed_runs: Mutex<SpeedRuns>,
     usage: Mutex<Option<UsageTracker>>,
-    /// Per-app usage totals, fed by the background app-usage sampler. Always
-    /// present (unlike `usage`, which waits on the store) — the tracker is pure
-    /// in-memory state, so it needs no initialization.
+    /// Per-app usage totals from the background sampler. In memory, so unlike
+    /// `usage` it doesn't wait on the store.
     app_usage: Mutex<AppUsageTracker>,
-    /// Per-app remote-host breakdown for the Hosts view, fed by its own
-    /// background sampler + enrichment loop. In-memory like `app_usage`.
+    /// Per-app remote-host breakdown for the Hosts view, from its own sampler.
+    /// In memory like `app_usage`.
     host_usage: Mutex<HostUsageTracker>,
     networks: Mutex<sysinfo::Networks>,
-    /// True while any UI consumer wants 1 Hz live-throughput samples. The
-    /// frontend ref-counts and toggles this; a bool avoids counter drift if
-    /// subscribe/unsubscribe calls ever get out of sync (e.g. Vite HMR).
+    /// True while any UI consumer wants 1 Hz live-throughput samples. The UI
+    /// ref-counts; a bool here can't drift if subscribe and unsubscribe calls
+    /// get out of step (Vite HMR, say).
     throughput_active: AtomicBool,
-    /// True once the system tray icon is live. Gates the close-to-tray
-    /// behaviour: if the tray never came up (e.g. a Linux desktop with no
-    /// StatusNotifier host), closing the window must actually quit so the user
-    /// isn't left with an invisible, unreachable process.
+    /// True once the tray icon is live. Gates close-to-tray: without a tray (a
+    /// Linux desktop with no StatusNotifier host, say), closing must quit, or
+    /// the user is left with an invisible, unreachable process.
     tray_active: AtomicBool,
-    /// Latest public-internet reachability from the background heartbeat, or
-    /// None before the first probe lands. The top bar reads this cheaply; the
-    /// heartbeat owns the probing and the Timeline logging.
+    /// The heartbeat's latest internet status, or None before its first probe,
+    /// so `get_internet_status` answers without probing.
     internet: Mutex<Option<InternetStatus>>,
 }
 
 pub fn run() {
-    // File logging first, so everything below — including a panic during setup —
-    // lands in the log. The guard flushes on drop, so it must outlive the app;
-    // hold it until `run()` returns.
+    // Logging first, so everything below (a setup panic included) lands in the
+    // log. The guard flushes on drop, so it's held until `run()` returns.
     let _log_guard = logging::init_logging();
     logging::install_panic_logger();
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "Rove starting");
-    // Capture the desktop/render environment up front: this is exactly the
-    // context (GDK backend, Wayland socket, and the AppArmor label that governs
-    // whether WebKit's sandboxed WebProcess can start) that has caused the
-    // blank-window / freeze issues, so a future report can be diagnosed from the
-    // log alone.
+    // The GDK backend, Wayland socket and AppArmor label (which decides whether
+    // WebKit's sandboxed WebProcess can start) are behind the blank-window and
+    // freeze reports, so log them to diagnose one from the log alone.
     #[cfg(target_os = "linux")]
     tracing::info!(
         gdk_backend = ?std::env::var("GDK_BACKEND").ok(),
@@ -78,28 +72,17 @@ pub fn run() {
         "linux desktop environment"
     );
 
-    // WebKitGTK + the NVIDIA proprietary driver have a long history of render
-    // stalls: the webview's accelerated compositor paints one frame then waits on
-    // a frame callback the NVIDIA driver never delivers, so it only repaints on
-    // input and an async network scan finishing never reaches the screen — the
-    // window looks hung even though the Rust backend keeps running.
+    // WebKitGTK on the NVIDIA proprietary driver stalls: the accelerated
+    // compositor paints one frame, then waits on a frame callback the driver
+    // never delivers, so the window repaints only on input and looks hung.
     //
-    // The old workaround forced GDK_BACKEND=x11 *and* WEBKIT_DISABLE_COMPOSITING_MODE
-    // together, then a later change dropped both — on the theory WebKitGTK 2.52
-    // renders fine on native Wayland. That holds on many stacks but NOT on NVIDIA:
-    // there the compositor stall is back (reproduced on RTX 20-series, driver 595,
-    // WebKitGTK 2.52.3, Wayland session), so removing the workaround wholesale
-    // regressed those machines.
-    //
-    // The two halves are separable. Forcing x11/XWayland is the half that freezes
-    // on 2.52, so we do NOT touch GDK_BACKEND — GTK picks the session-native
-    // backend, which is what works. Disabling the accelerated compositor is the
-    // half that fixes NVIDIA: repaints then flush synchronously, sidestepping the
-    // never-delivered frame callback, at a small cost to GPU-composited effects we
-    // don't use. So on Linux we set only WEBKIT_DISABLE_COMPOSITING_MODE (unless
-    // the user already set it), and leave the backend alone. The window is opaque
-    // (`transparent: false` in tauri.conf.json), which the non-composited path
-    // relies on and which is harmless here.
+    // The old fix forced GDK_BACKEND=x11 and WEBKIT_DISABLE_COMPOSITING_MODE;
+    // dropping both regressed NVIDIA (RTX 20-series, driver 595, WebKitGTK
+    // 2.52.3, Wayland). The halves are separable: forcing x11 is what freezes
+    // on 2.52, so GDK_BACKEND is left alone, and disabling the compositor is
+    // what fixes NVIDIA, since repaints then flush synchronously. Respects a
+    // value the user set. The non-composited path needs the opaque window
+    // (`transparent: false` in tauri.conf.json).
     #[cfg(target_os = "linux")]
     if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
         std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
@@ -120,9 +103,8 @@ pub fn run() {
         })
         .manage(Arc::new(DeviceScanner::default()))
         .setup(|app| {
-            // macOS 14+ withholds the Wi-Fi SSID unless the app holds Location
-            // authorization; prompt once at startup. No-op on other platforms,
-            // and this runs on the main thread as CoreLocation requires.
+            // macOS 14+ withholds the SSID without Location authorisation. Asked
+            // here because CoreLocation needs the main thread; a no-op elsewhere.
             let loc_status = rove_core::platform::mac_native::request_location_permission();
             tracing::info!(status = loc_status, "location authorization");
 
@@ -137,8 +119,6 @@ pub fn run() {
             monitors::spawn_internet_heartbeat(handle.clone());
             monitors::spawn_services_heartbeat(handle.clone());
 
-            // If the tray comes up, closing the window will hide to tray;
-            // otherwise we leave close-to-quit intact so the app stays reachable.
             match tray::build_tray(&handle) {
                 Ok(()) => app.state::<AppState>().tray_active.store(true, Ordering::Relaxed),
                 Err(err) => tracing::warn!(
@@ -157,8 +137,6 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| match event {
-            // Main window's close button hides to tray (when the tray is live)
-            // instead of quitting the app.
             tauri::WindowEvent::CloseRequested { api, .. } if window.label() == "main" => {
                 let app = window.app_handle();
                 if app.state::<AppState>().tray_active.load(Ordering::Relaxed) {
@@ -205,10 +183,9 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running Rove")
         .run(move |_app_handle, _event| {
-            // macOS: once the window is closed to the tray it's hidden but the
-            // Dock icon stays. Clicking it fires `Reopen` (with no visible
-            // windows) rather than creating a window — without this handler the
-            // click does nothing and the app looks stuck. Bring it back.
+            // macOS: a window closed to the tray leaves the Dock icon, whose
+            // click fires `Reopen` rather than creating a window. Unhandled, the
+            // click does nothing and the app looks stuck.
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Reopen { .. } = _event {
                 tray::show_main_window(_app_handle);

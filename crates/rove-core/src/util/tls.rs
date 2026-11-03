@@ -7,10 +7,9 @@ use tokio_rustls::rustls::pki_types::ServerName;
 use tokio_rustls::rustls::{ClientConfig, RootCertStore};
 use tokio_rustls::TlsConnector;
 
-/// Shared client TLS config for the TLS reachability probes. Trust anchors come from
-/// webpki-roots (bundled) and the crypto provider is aws-lc-rs — the same one
-/// reqwest already compiles in — selected explicitly so the probe never depends
-/// on a process-wide default provider being installed.
+/// Client config for the probes: bundled webpki-roots, and aws-lc-rs (which
+/// reqwest already compiles in) chosen explicitly, so the probe never depends on
+/// a process-wide default provider being installed.
 static TLS_CONFIG: LazyLock<Arc<ClientConfig>> = LazyLock::new(|| {
     let mut roots = RootCertStore::empty();
     roots.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
@@ -23,16 +22,13 @@ static TLS_CONFIG: LazyLock<Arc<ClientConfig>> = LazyLock::new(|| {
     Arc::new(config)
 });
 
-/// Time to establish a *secure* connection to `host:443`, in ms, or None on
-/// failure. Covers DNS + TCP + the full TLS handshake (certificate validation
-/// included), so — unlike a bare TCP connect — it confirms HTTPS actually works
-/// and isn't being intercepted or blocked mid-path. Runs ~1 RTT slower than a
-/// plain connect as a result.
+/// Time to a *secure* connection to `host:443` in ms, or None on failure: DNS,
+/// TCP and the full TLS handshake with certificate validation. Unlike a bare
+/// TCP connect it confirms HTTPS works and isn't intercepted or blocked
+/// mid-path, at the cost of about one extra round trip.
 pub async fn handshake_latency(host: &str) -> Option<f64> {
-    // A bare IP literal has no certificate name to validate against, so the TLS
-    // probe below would spuriously read "unreachable". Fall back to a plain TCP
-    // connect to :443, which still measures reachability — it just can't assert
-    // that HTTPS specifically completes the way the hostname path does.
+    // An IP literal has no certificate name to validate, so TLS would always
+    // fail. A TCP connect still measures reachability, just not HTTPS.
     if host.parse::<std::net::IpAddr>().is_ok() {
         return tcp_connect_latency(host).await;
     }
@@ -50,8 +46,7 @@ pub async fn handshake_latency(host: &str) -> Option<f64> {
     Some((ms * 10.0).round() / 10.0)
 }
 
-/// Time to open a plain TCP connection to `host:443`, in ms, or None on failure.
-/// Used for IP-literal services, where there's no hostname for a TLS cert check.
+/// Time to open a TCP connection to `host:443` in ms, or None on failure.
 async fn tcp_connect_latency(host: &str) -> Option<f64> {
     let start = Instant::now();
     let connect = tokio::net::TcpStream::connect((host, 443));

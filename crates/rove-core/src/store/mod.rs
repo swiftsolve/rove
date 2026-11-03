@@ -1,13 +1,11 @@
 //! The app's single durable store: one SQLite file in the app-data directory.
 //!
-//! Everything worth keeping across restarts lives here, one file per domain:
-//! speed-test history (`speed`), daily data-usage buckets (`usage`), the
-//! service list and its timeline (`services`), the roster of LAN devices we've
-//! seen (`devices`) and the network-change feed (`events`). The
-//! Rust side owns it (the samplers and scans that produce the data run here),
-//! and the UI reaches it through thin Tauri commands. All methods lock an
-//! internal `Mutex<Connection>`, so a shared `Arc<Store>` is safe to hand to
-//! both command handlers and the background usage sampler.
+//! Everything worth keeping across restarts lives here, one module per domain:
+//! speed-test history (`speed`), daily data-usage buckets (`usage`), the service
+//! list and its timeline (`services`), the LAN devices we've seen (`devices`)
+//! and the network-change feed (`events`). The UI reaches it only through Tauri
+//! commands. Every method locks an internal `Mutex<Connection>`, so one
+//! `Arc<Store>` is shared by the command handlers and the background monitors.
 mod devices;
 mod events;
 mod services;
@@ -65,10 +63,9 @@ CREATE TABLE IF NOT EXISTS known_devices (
 );
 ";
 
-/// v2 — speed_history gains the link speed and Wi-Fi band captured at test time.
-/// The old table is dropped and recreated rather than altered: past rows never
-/// carried these fields and speed history is disposable, so there's nothing
-/// worth preserving through the upgrade.
+/// v2: speed_history gains the link speed and Wi-Fi band at test time. Dropped
+/// and recreated rather than altered: old rows never had these fields and speed
+/// history is disposable.
 const SCHEMA_V2: &str = "
 DROP TABLE IF EXISTS speed_history;
 CREATE TABLE speed_history (
@@ -87,8 +84,8 @@ CREATE TABLE speed_history (
 CREATE INDEX IF NOT EXISTS idx_speed_history_ts ON speed_history(timestamp DESC);
 ";
 
-/// v3 — the network-change event feed. Append-only; rows are derived by
-/// diffing each scan against `known_devices` and pruned by age/count.
+/// v3: the network-change event feed. Append-only; rows come from diffing each
+/// scan against `known_devices`, pruned by age and count.
 const SCHEMA_V3: &str = "
 CREATE TABLE IF NOT EXISTS network_events (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,9 +102,9 @@ CREATE TABLE IF NOT EXISTS network_events (
 CREATE INDEX IF NOT EXISTS idx_network_events_ts ON network_events(ts DESC);
 ";
 
-/// v4 — the user-editable reachability service list. Seeded with the built-in
-/// defaults exactly once (in the `version < 4` block), so removing a default
-/// sticks: unlike the idempotent table-creation guards, the seed never re-runs.
+/// v4: the user-editable service list. Seeded with the defaults exactly once
+/// (in the `version < 4` block), so removing a default sticks: unlike the
+/// idempotent table-creation guards, the seed never re-runs.
 const SCHEMA_V4: &str = "
 CREATE TABLE IF NOT EXISTS services (
     host     TEXT    PRIMARY KEY,
@@ -116,17 +113,14 @@ CREATE TABLE IF NOT EXISTS services (
 );
 ";
 
-/// v5 — the services outage timeline, previously a frontend localStorage log
-/// that only accrued while the Services tab was open. Owning it here is what
-/// lets the always-on heartbeat record an outage whether or not the window is
-/// even up. Two tables: the append-only log (pruned by age/count), and the
-/// per-host baseline the diff compares each probe against, so only crossings
-/// land in the log.
+/// v5: the services outage timeline. It lives here, not in the UI, so the
+/// always-on heartbeat records outages even with the window closed. Two tables:
+/// the append-only log (pruned by age and count), and the per-host baseline each
+/// probe is diffed against, so only crossings land in the log.
 ///
-/// `status` carries a transition's 'up'/'down' and a connection event's
-/// 'lost'/'restored'; `count`/`total` are the running summary's tally and the
-/// number of services it was drawn from. Each is null for the shapes that don't
-/// use it — the row's `type` says which apply.
+/// `status` holds a transition's 'up'/'down' or a connection event's
+/// 'lost'/'restored'; `count`/`total` are a running summary's tally. Columns a
+/// row's `type` doesn't use are null.
 const SCHEMA_V5: &str = "
 CREATE TABLE IF NOT EXISTS service_events (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -146,9 +140,8 @@ CREATE TABLE IF NOT EXISTS service_state (
 ";
 
 impl Store {
-    /// Lock the connection, recovering the guard if a previous holder panicked
-    /// rather than propagating the poison (which would wedge every subsequent
-    /// query for the app's lifetime).
+    /// Lock the connection, recovering from poison: one panicked holder must not
+    /// wedge every later query for the app's lifetime.
     fn lock(&self) -> std::sync::MutexGuard<'_, Connection> {
         crate::util::net::lock(&self.conn)
     }
@@ -189,9 +182,8 @@ impl Store {
         }
         if version < 4 {
             conn.execute_batch(SCHEMA_V4)?;
-            // Seed the defaults exactly once. INSERT OR IGNORE so a re-run of this
-            // block (e.g. a colliding version number) can't duplicate rows, while
-            // the version gate keeps deleted defaults from being resurrected.
+            // INSERT OR IGNORE so a re-run (a colliding version number) can't
+            // duplicate rows; the version gate keeps deleted defaults deleted.
             for (i, (name, host)) in DEFAULT_SERVICES.iter().enumerate() {
                 conn.execute(
                     "INSERT OR IGNORE INTO services (host, name, position) VALUES (?1, ?2, ?3)",
@@ -204,53 +196,41 @@ impl Store {
             conn.execute_batch(SCHEMA_V5)?;
             conn.pragma_update(None, "user_version", 5)?;
         }
-        // Same defensive stance as the speed_history columns below: a colliding
-        // user_version from a parallel branch could stamp the DB at >=3 without
-        // ever creating this table, and every event insert/read would then fail
-        // with "no such table". The DDL is `IF NOT EXISTS`, so (re)running it
-        // unconditionally is idempotent and can't wedge the feed.
+        // A user_version stamped by a parallel branch can skip a block above
+        // without its tables ever being created, and every insert and read then
+        // fails with "no such table". The DDL is `IF NOT EXISTS` (and V4 never
+        // re-seeds), so re-running it unconditionally is idempotent.
         conn.execute_batch(SCHEMA_V3)?;
-        // Same guard for the services table — (re)creating it is idempotent and
-        // never re-seeds, so a collided version number can't wedge the list.
         conn.execute_batch(SCHEMA_V4)?;
-        // And the same for the timeline's tables, for the same reason: a version
-        // number collided from another branch must not leave the heartbeat
-        // writing into tables that were never created.
         conn.execute_batch(SCHEMA_V5)?;
-        // Independently of the version counter, guarantee the columns the
-        // insert/read SQL relies on actually exist. A parallel feature branch
-        // also bumped the schema to v2 (adding its own `bufferbloat_ms` column),
-        // so some installs reach user_version 2 without link_speed_mbps/frequency
-        // — and the `version < 2` gate above then skips adding them. Every insert
-        // and read would fail with "no such column" on those DBs. Add whatever is
-        // missing, idempotently, so a collided version number can't wedge history.
+        // Same trap for columns: a parallel branch also bumped the schema to v2
+        // (adding its own `bufferbloat_ms`), so some installs reach version 2
+        // without link_speed_mbps/frequency, and the `version < 2` gate skips
+        // them. Add whatever is missing so history can't fail with "no such
+        // column".
         Self::ensure_column(&conn, "speed_history", "link_speed_mbps", "REAL")?;
         Self::ensure_column(&conn, "speed_history", "frequency", "REAL")?;
-        // `total` arrived after the timeline shipped: a running summary used to
-        // record only how many services were up, which left a partial baseline
-        // ("5 up" while a 6th was down) indistinguishable from a full recovery,
-        // and the UI read every summary as all-clear. Nullable, so existing rows
-        // survive the add — the backfill below gives them a denominator.
+        // `total` arrived after the timeline shipped. Without it a partial
+        // baseline ("5 up" while a 6th was down) read the same as a full
+        // recovery. Nullable, so existing rows survive; the backfill below gives
+        // them a denominator.
         Self::ensure_column(&conn, "service_events", "total", "INTEGER")?;
-        // Reconstruct that denominator for pre-`total` rows. A recovery summary
-        // had everything up by construction, so its own count is already right;
-        // a baseline may have been partial, and today's service list is the best
-        // estimate left of what it was counting. MAX keeps the two consistent —
-        // a list that has since shrunk must not read as "6 of 5 healthy". Gated
-        // on IS NULL, so it can't rewrite a total a later probe recorded.
+        // A recovery had everything up, so its count is already right; for a
+        // baseline, today's service list is the best estimate left. MAX keeps a
+        // list that has since shrunk from reading "6 of 5 healthy". Gated on IS
+        // NULL, so it never rewrites a recorded total.
         conn.execute(
             "UPDATE service_events
                 SET total = MAX(count, (SELECT COUNT(*) FROM services))
               WHERE type = 'running' AND total IS NULL",
             [],
         )?;
-        // Scrub reverse-DNS error text that earlier builds stored as a hostname.
-        // macOS `dig` prints diagnostics like ";; connection timed out; no servers
-        // could be reached" to stdout, and it leaked through as a device name; the
-        // `COALESCE` upsert then pins it forever. A real hostname holds only
-        // `[A-Za-z0-9._-]`, so null anything with a character outside that set —
-        // it re-resolves to the correct name (or Unknown) on the next scan. The
-        // `IF EXISTS`-style guard keeps this safe on a DB that predates the table.
+        // Scrub reverse-DNS error text earlier builds stored as a hostname. macOS
+        // `dig` prints diagnostics like ";; connection timed out; no servers could
+        // be reached" to stdout, and the `COALESCE` upsert then pinned it forever.
+        // A real hostname holds only `[A-Za-z0-9._-]`, so null anything else; it
+        // re-resolves on the next scan. The table check covers a DB whose
+        // collided version skipped creating it.
         let has_known_devices: bool = conn.query_row(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='known_devices'",
             [],
@@ -262,22 +242,19 @@ impl Store {
                  WHERE hostname IS NOT NULL AND hostname GLOB '*[^A-Za-z0-9._-]*'",
                 [],
             )?;
-            // Added after known_devices shipped without them: the OS family and
-            // the randomized-MAC flag, so a departure event can label a device
-            // the same way the live Devices view does rather than degrading to
-            // "Unknown". Nullable/defaulted, so existing rows are untouched. The
-            // `has_known_devices` guard keeps this safe on a DB whose collided
-            // version number skipped the table's creation entirely.
+            // Added after known_devices shipped: the OS family and the
+            // randomized-MAC flag, so a departure event labels a device the way
+            // the live Devices view does instead of "Unknown". Nullable or
+            // defaulted, so existing rows are untouched.
             Self::ensure_column(&conn, "known_devices", "os", "TEXT")?;
             Self::ensure_column(&conn, "known_devices", "randomized", "INTEGER NOT NULL DEFAULT 0")?;
         }
         Ok(())
     }
 
-    /// Add `column` to `table` if it isn't already present. Names are fixed
-    /// literals from the migration, never user input, so interpolating them into
-    /// the DDL is safe (and unavoidable — SQLite takes no bind params in DDL or
-    /// PRAGMA). Nullable additive columns leave existing rows untouched.
+    /// Add `column` to `table` if it's missing. Names are fixed literals from the
+    /// migration, never user input, so interpolating them is safe (and
+    /// unavoidable: SQLite takes no bind parameters in DDL or PRAGMA).
     fn ensure_column(
         conn: &Connection,
         table: &str,
@@ -299,8 +276,8 @@ impl Store {
         Ok(())
     }
 
-    // ---- small key/value meta ---------------------------------------------
-
+    /// A small key/value table for one-off markers, such as when usage tracking
+    /// began.
     pub fn get_meta_u64(&self, key: &str) -> rusqlite::Result<Option<u64>> {
         let conn = self.lock();
         let value = conn

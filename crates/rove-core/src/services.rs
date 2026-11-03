@@ -5,9 +5,8 @@ use crate::util::tls::handshake_latency;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-/// One service in the user's reachability list — the durable definition, without
-/// a measurement. Ships with defaults but is editable per user. camelCase on the
-/// wire to match the React `ServiceDefinition`.
+/// One service in the user's reachability list: the stored definition, without a
+/// measurement. Mirrors `ServiceDefinition` in `src/types/diagnostics.ts`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceDef {
@@ -25,8 +24,8 @@ pub const DEFAULT_SERVICES: &[(&str, &str)] = &[
     ("Zoom", "zoom.us"),
 ];
 
-/// The defaults as owned `ServiceDef`s — the fallback a diagnostics run uses if
-/// the store can't be read, so the card never blanks on a transient DB error.
+/// The defaults as owned `ServiceDef`s: the fallback when the store can't be
+/// read, so the Services view never blanks on a transient database error.
 pub fn default_service_list() -> Vec<ServiceDef> {
     DEFAULT_SERVICES
         .iter()
@@ -34,41 +33,37 @@ pub fn default_service_list() -> Vec<ServiceDef> {
         .collect()
 }
 
-/// Service reachability plus the internet context needed to read it, probed as
-/// one batch and served by its own command — the Connection diagnostics no
-/// longer probe services (that's the Services view's own concern). Pairing the
-/// two atomically is what lets the Services view tell a genuine outage apart
-/// from this machine simply being offline: when the machine has no internet,
-/// every probe fails at once and the view collapses that to a single
-/// "connection lost" rather than a wall of per-service downs.
+/// Service reachability plus this machine's internet verdict, probed as one
+/// batch. Pairing them is what lets the Services view tell a real outage from
+/// this machine being offline: then every probe fails at once, and the view
+/// shows one "connection lost" instead of a wall of per-service downs.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServicesReport {
     /// Public-internet reachability, from the same batch as `services`.
     pub internet: InternetStatus,
-    /// TCP-connect reachability of the user's service list. Empty only if the
-    /// list is somehow cleared; each entry may still be Unreachable.
+    /// One entry per service in the user's list, in list order.
     pub services: Vec<ServiceReachability>,
 }
 
-/// Reachability of one internet service, along two independent axes: a network
-/// signal (`latency_ms`, the time to complete a TLS handshake to :443 — many of
-/// these block ICMP echo) and an application signal (`http_status`, what a
-/// lightweight HTTP HEAD actually returns). They can disagree: a service can be
-/// reachable in a few ms yet answering 5xx, e.g. a Cloudflare tunnel failure
-/// (Error 1033) whose edge TLS completes fine but returns HTTP 530.
+/// Reachability of one service on two independent axes: the network path
+/// (`latency_ms`, a TLS handshake to :443, since many of these block ICMP) and
+/// the application (`http_status`, from a HEAD). They can disagree: a Cloudflare
+/// tunnel failure (Error 1033) completes TLS at the edge in a few ms but returns
+/// HTTP 530.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceReachability {
     /// Human label, e.g. "Netflix".
     pub name: String,
-    /// Hostname probed, e.g. "netflix.com".
+    /// Host probed, e.g. "netflix.com".
     pub host: String,
-    /// TLS-handshake latency to :443 in ms, or None when it failed/timed out.
+    /// TLS handshake time to :443 in ms (a TCP connect for an IP literal), or
+    /// None when it failed or timed out.
     pub latency_ms: Option<f64>,
-    /// HTTP status from a HEAD to `https://host/`, or None for IP-literal hosts
-    /// and when no HTTP response came back. A 5xx here means the network path is
-    /// up but the service itself is erroring.
+    /// HTTP status from a HEAD to `https://host/`, or None for an IP literal or
+    /// when no response came back. A 5xx means the path is up but the service
+    /// is erroring.
     pub http_status: Option<u16>,
 }
 
@@ -89,20 +84,20 @@ pub enum ConnectionChange {
     Restored,
 }
 
-/// One entry in the services timeline. Only moments are stored — never a sample
-/// per probe — so the log stays small and reads as a history of outages and
-/// recoveries rather than a firehose.
+/// One entry in the services timeline. Only changes are stored, never a sample
+/// per probe, so the log stays small and reads as a history of outages and
+/// recoveries.
 ///
-/// A `Connection` event exists because when *this machine* loses its network,
-/// every probe fails at once. That isn't an outage of theirs, so the log records
-/// a single connection drop in place of the wall of per-service downs, and
-/// freezes per-service diffing until the network returns.
+/// `Connection` exists because when *this machine* loses its network, every
+/// probe fails at once. That isn't the services' outage, so the log records one
+/// connection drop instead of a wall of per-service downs, and per-service
+/// diffing pauses until the network returns.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ServiceEvent {
     /// A single service crossed between up and down.
     Transition {
-        /// Hostname probed — the stable key across renames.
+        /// Host probed: the stable key across renames.
         host: String,
         /// The service's label as it read when the crossing was recorded.
         name: String,
@@ -110,28 +105,21 @@ pub enum ServiceEvent {
         status: ServiceStatus,
         ts: i64,
     },
-    /// A summary of the tracked services: `count` of `total` were up. Logged
-    /// once as a baseline when monitoring first sees the services, and again
-    /// whenever everything recovers after an outage. A recovery is always
-    /// `count == total`, but a baseline can be partial — a service may already
-    /// have been down the first time we looked — so the two must stay distinct.
+    /// `count` of `total` tracked services were up. Logged once as a baseline
+    /// when monitoring first sees the services, and again whenever everything
+    /// recovers. A recovery is always `count == total`, but a baseline can be
+    /// partial (a service may already be down the first time we look).
     Running { count: i64, total: i64, ts: i64 },
     /// This machine's own connection dropped or returned.
     Connection { status: ConnectionChange, ts: i64 },
 }
 
-/// The HTTP status a lightweight HEAD to `https://host/` returns, or None when
-/// there's no usable HTTP answer (IP-literal host, or the request failed/timed
-/// out). This is the application-layer counterpart to [`handshake_latency`]: the
-/// two can disagree, and that's the point — a 5xx here on a service that
-/// `handshake_latency` reaches in a few ms means the network path is fine but the
-/// service itself is failing. A Cloudflare tunnel error (Error 1033) is exactly
-/// this shape: TLS to the edge completes, but the edge returns HTTP 530.
+/// The status a HEAD to `https://host/` returns, or None when there's no usable
+/// answer. The application-layer counterpart to [`handshake_latency`]; see
+/// [`ServiceReachability`] for why the two can disagree.
 async fn service_health(host: &str) -> Option<u16> {
     // An IP literal has no certificate name and no virtual host to route on, so
-    // an HTTP probe would be meaningless (or hit an unrelated default vhost).
-    // The reachability latency alone stands in for it, as it does in
-    // `handshake_latency`.
+    // an HTTP probe would be meaningless or hit an unrelated default vhost.
     if host.parse::<std::net::IpAddr>().is_ok() {
         return None;
     }
@@ -146,18 +134,14 @@ async fn service_health(host: &str) -> Option<u16> {
     Some(resp.status().as_u16())
 }
 
-/// Reachability of a single host, measured on both axes — the TLS handshake (or
-/// an IP's TCP connect) *and* the HTTP health — so its verdict matches what the
-/// Services list shows. Returns the latency in ms when the service is up, or None
-/// when it's Down: either the network path failed, or the host answered but with
-/// a server error (a Cloudflare tunnel that's down returns HTTP 530, for
-/// instance). Used by the "test before add" step so a service can be checked
-/// without being stored — the dialog must agree with the list it will land in.
+/// Latency in ms when `host` is up, or None when the path failed or the host
+/// answered with a 5xx. Backs "test before add", so it judges on both axes like
+/// the Services list does: the dialog must agree with the list the service will
+/// land in.
 pub async fn probe_service(host: &str) -> Option<f64> {
     let (latency, health) = tokio::join!(handshake_latency(host), service_health(host));
-    // The path has to be reachable at all (TLS/TCP), and — for hostnames, where
-    // an HTTP probe is meaningful — the service must not be answering a 5xx. An
-    // IP literal has no HTTP check (`service_health` is None), so latency stands.
+    // An IP literal has no HTTP check (`service_health` is None), so its latency
+    // alone decides.
     let latency = latency?;
     if health.is_some_and(|status| status >= 500) {
         return None;
@@ -165,10 +149,8 @@ pub async fn probe_service(host: &str) -> Option<f64> {
     Some(latency)
 }
 
-/// Probe each service in `services` concurrently, preserving their order. Each
-/// service is measured on both axes — network latency (TLS handshake) and HTTP
-/// health (HEAD) — at once, so a service that's reachable but erroring reads as
-/// such rather than as a clean green latency.
+/// Probe every service concurrently on both axes, keeping list order, so one
+/// that's reachable but erroring doesn't read as a clean green latency.
 pub async fn service_reachability(services: &[ServiceDef]) -> Vec<ServiceReachability> {
     let probes = services.iter().map(|svc| async move {
         let (latency_ms, http_status) =
@@ -183,12 +165,9 @@ pub async fn service_reachability(services: &[ServiceDef]) -> Vec<ServiceReachab
     futures_util::future::join_all(probes).await
 }
 
-/// Service reachability, on its own — the Services view's probe, independent of
-/// the Connection diagnostics above. Bundles the machine's own internet verdict,
-/// probed in the same batch, so the view can pair each set of service results
-/// with whether *we* had internet when they were taken (see [`ServicesReport`]).
-/// The gateway lookup is only what `classify_internet` needs to tell "WAN down"
-/// (on a LAN) apart from "no network at all".
+/// The Services view's probe: every service plus this machine's internet
+/// verdict from the same batch (see [`ServicesReport`]). The gateway lookup only
+/// lets `classify_internet` tell "WAN down" (still on a LAN) from "no network".
 pub async fn run_services(service_list: &[ServiceDef]) -> ServicesReport {
     let gateway = crate::connection::default_gateway().await;
     let (internet, services) =

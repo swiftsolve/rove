@@ -1,29 +1,25 @@
-//! Small helpers shared across service modules.
+//! Address, interface and shell-safety helpers the domains share.
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// The bare IP of a socket's peer, or `None` when that peer isn't a host out on
-/// the network. Shared by the per-app and per-host trackers so the two agree on
-/// what counts as traffic — they read the same sockets, and a rule that lived in
-/// only one of them would silently drift.
+/// The bare IP of a socket's peer, or `None` when that peer isn't a host on the
+/// network. Shared by the per-app and per-host trackers so they agree on what
+/// counts as traffic; they read the same sockets.
 ///
-/// `None` covers two different problems that happen to want the same answer:
+/// `None` covers two problems that want the same answer:
 ///
-///   * **A wildcard peer** (`*:*`, or `*.*` for v6) is an unconnected socket,
-///     and it has no identity: `nettop` names a socket only by its address pair,
-///     so one process can hold several printing the identical label with
-///     different counters — nine `udp4 *:5353<->*:*` mDNS sockets, say — that
-///     nothing distinguishes. Keyed together they re-bank each other every tick;
-///     keyed apart they can't be. They are not meterable at all.
+///   * **A wildcard peer** (`*:*`, or `*.*` for v6) is an unconnected socket
+///     with no identity: `nettop` names a socket only by its address pair, so
+///     one process can hold several identical labels with different counters
+///     (nine `udp4 *:5353<->*:*` mDNS sockets, say). Keyed together they
+///     re-bank each other every tick; keyed apart they can't be. Unmeterable.
 ///   * **A loopback, unspecified or broadcast peer** never reaches the network.
-///     Counting it would report a local dev server as bandwidth, and on Linux
-///     both ends of a loopback connection are separate sockets, so an app talking
-///     to itself would count every byte twice.
+///     It would report a local dev server as bandwidth, and on Linux both ends
+///     of a loopback connection are sockets, so every byte would count twice.
 ///
-/// Private/LAN peers *are* routable here: a NAS on the same subnet is a real
-/// host that real bytes crossed a real link to reach. It just has no country —
-/// that's a separate question, see `usage::host::ip_is_public`.
+/// Private/LAN peers *are* routable: a NAS on the subnet is a real host over a
+/// real link. It just has no country (see `usage::host::ip_is_public`).
 pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {
@@ -39,13 +35,12 @@ pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
 /// Strip the port from a peer token across the formats our sources emit:
 /// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
 pub(crate) fn strip_port(addr: &str) -> Option<String> {
-    // ss IPv6 bracket form: [addr]:port
     if let Some(rest) = addr.strip_prefix('[') {
         return rest.split(']').next().map(str::to_string).filter(|s| !s.is_empty());
     }
     if addr.matches(':').count() >= 2 {
-        // IPv6. nettop tacks the port on with a dot after the address; strip a
-        // trailing ".<digits>" only when it sits past the last colon.
+        // nettop appends the port after a dot; strip a trailing ".<digits>"
+        // only when it sits past the last colon.
         if let (Some(dot), Some(colon)) = (addr.rfind('.'), addr.rfind(':')) {
             if colon < dot && addr[dot + 1..].bytes().all(|b| b.is_ascii_digit()) {
                 return Some(addr[..dot].to_string());
@@ -53,7 +48,6 @@ pub(crate) fn strip_port(addr: &str) -> Option<String> {
         }
         return Some(addr.to_string());
     }
-    // IPv4 (or a bare host): trim a trailing :port.
     match addr.rsplit_once(':') {
         Some((ip, port)) if !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => {
             Some(ip.to_string())
@@ -62,24 +56,21 @@ pub(crate) fn strip_port(addr: &str) -> Option<String> {
     }
 }
 
-/// The port from a peer token, across the same formats [`strip_port`] handles:
-/// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
-/// `None` when there's no port (a bare address, or a `*` wildcard) or it doesn't
-/// parse — the traffic-type classifier then treats it as unknown. The peer port
-/// is the *service* end of a client connection (443, 53, …), so it names the
-/// kind of traffic; the local port is ephemeral and carries no such meaning.
+/// The port from a peer token, in the formats [`strip_port`] handles. `None`
+/// when there's no port (a bare address, a `*` wildcard) or it doesn't parse.
+/// The peer port is the *service* end of a client connection (443, 53, …), so
+/// it names the kind of traffic; the local port is ephemeral.
 pub(crate) fn peer_port(addr: &str) -> Option<u16> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {
         return None;
     }
-    // ss IPv6 bracket form: [addr]:port
     if let Some(rest) = a.strip_prefix('[') {
         return rest.rsplit_once("]:").and_then(|(_, port)| port.parse().ok());
     }
     if a.matches(':').count() >= 2 {
-        // IPv6. nettop tacks the port on after a dot past the last colon; a bare
-        // IPv6 literal (no trailing ".<digits>") has no port to read.
+        // nettop's port follows a dot past the last colon; a bare IPv6 literal
+        // has none.
         if let (Some(dot), Some(colon)) = (a.rfind('.'), a.rfind(':')) {
             if colon < dot {
                 return a[dot + 1..].parse().ok();
@@ -87,7 +78,6 @@ pub(crate) fn peer_port(addr: &str) -> Option<u16> {
         }
         return None;
     }
-    // IPv4 (or a bare host): the port trails the last colon.
     a.rsplit_once(':').and_then(|(_, port)| port.parse().ok())
 }
 
@@ -100,17 +90,16 @@ fn is_routable_peer(ip: IpAddr) -> bool {
     }
 }
 
-/// Lock a mutex, recovering the guard on poison instead of panicking. A single
-/// panic while holding one of these locks would otherwise wedge every caller
-/// that touches the same state for the rest of the process's life.
+/// Lock a mutex, recovering from poison: one panic while holding it would
+/// otherwise wedge every later caller for the life of the process.
 pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 /// Canonical MAC form: lowercase, colon-separated, zero-padded octets
-/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0"). Accepts `:`- or `-`-separated
-/// input (Windows uses dashes), so BSD's stripped octets match sysinfo/OUI
-/// formatting and dedupe cleanly against the local machine's own address.
+/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0"). Accepts Windows' dashes too. BSD
+/// strips leading zeros, so without this its MACs wouldn't match sysinfo or the
+/// OUI table, or dedupe against this machine's own address.
 pub fn normalize_mac_colons(raw: &str) -> String {
     raw.split([':', '-'])
         .map(|octet| format!("{:0>2}", octet.to_ascii_lowercase()))
@@ -118,9 +107,9 @@ pub fn normalize_mac_colons(raw: &str) -> String {
         .join(":")
 }
 
-/// Bare MAC form: 12 lowercase hex chars, no separators ("AA:BB:CC:11:22:33" →
+/// Bare MAC form: 12 lowercase hex chars ("AA:BB:CC:11:22:33" →
 /// "aabbcc112233"). The DHCP cache keys on this so hits join the neighbor table
-/// regardless of separator or case.
+/// whatever the separator or case.
 pub fn normalize_mac_bare(mac: &str) -> String {
     mac.chars()
         .filter(|c| c.is_ascii_hexdigit())
@@ -130,22 +119,20 @@ pub fn normalize_mac_bare(mac: &str) -> String {
 
 const VIRTUAL_PREFIXES: [&str; 18] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
-    // macOS pseudo-interfaces: VPN tunnels (utunN — note "tun" above misses the
+    // macOS pseudo-interfaces: VPN tunnels (utunN; "tun" above misses the
     // leading "u"), VM host networking (vmenetN, bridgeN), Apple Wireless Direct
-    // Link / low-latency WLAN sidebands, and generic 4-in-6/6-in-4 tunnels.
+    // Link and low-latency WLAN sidebands, and 4-in-6/6-in-4 tunnels.
     "utun", "vmenet", "bridge", "awdl", "llw", "gif",
-    // Linux link-aggregation masters (`bond0`, `team0`). The master's counters
-    // are the *sum* of its enslaved physical NICs, so counting both the master
-    // and its slaves reports the traffic twice — the same double-count the Npcap
-    // shim caused on Windows. The physical slaves carry the real bytes; drop the
-    // master.
+    // Linux link-aggregation masters (`bond0`, `team0`). A master's counters
+    // are the *sum* of its physical NICs, so counting both doubles the traffic.
+    // Keep the NICs, drop the master.
     "bond", "team",
 ];
 
-/// Case-insensitive markers for Windows virtual/pseudo adapters that aren't real
-/// hardware: Hyper-V switches, WFP/filter miniports, Wi-Fi Direct radios and
-/// tunnelling pseudo-interfaces. A fallback for when the OS `Virtual` flag can't
-/// be read; none of these substrings occur in a physical NIC's name.
+/// Case-insensitive markers for Windows pseudo-adapters: Hyper-V switches,
+/// filter miniports, Wi-Fi Direct radios and tunnel pseudo-interfaces. A
+/// fallback for when the OS `Virtual` flag can't be read; none occurs in a
+/// physical NIC's name.
 const VIRTUAL_SUBSTRINGS: [&str; 10] = [
     "vethernet",
     "wi-fi direct",
@@ -156,28 +143,23 @@ const VIRTUAL_SUBSTRINGS: [&str; 10] = [
     "teredo",
     "pseudo-interface",
     "ip-https",
-    // Npcap (Wireshark/Nmap, and bundled by some VPNs) installs a packet-capture
-    // shim per physical NIC — e.g. "Ethernet-Npcap Packet Driver (NPCAP)-0000" —
-    // that shadows the real adapter's byte counters exactly. Left in, the live
-    // throughput sampler sums it alongside the real "Ethernet" and reports double
-    // the actual rate. It never carries traffic of its own, so drop it.
+    // Npcap (Wireshark, Nmap, some VPNs) adds a capture shim per NIC, such as
+    // "Ethernet-Npcap Packet Driver (NPCAP)-0000", that mirrors the real
+    // adapter's counters exactly. Left in, live throughput reads double.
     "npcap",
 ];
 
-/// True for a bare kernel-bridge master (`br0`, `br1`, …). The Docker-style
-/// `br-<hash>` form is already caught by the `br-` prefix; this covers the plain
-/// numeric naming `iproute2` gives a hand-created bridge. Like a bond master, a
-/// bridge's counters overlap its enslaved ports, so summing both double-counts.
+/// True for a hand-made kernel bridge (`br0`, `br1`, …); Docker's `br-<hash>`
+/// is caught by the prefix. A bridge's counters overlap its ports, so summing
+/// both double-counts. Not a prefix, so names like "brtest" survive.
 fn is_numbered_bridge(name: &str) -> bool {
     name.strip_prefix("br")
         .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_digit()))
 }
 
-/// True for a Linux VLAN subinterface (`eth0.100`, `enp3s0.42`, `bond0.5`). The
-/// tagged frames it counts have already crossed — and been counted on — its
-/// parent, so the parent is always a superset: dropping the child removes the
-/// duplication without hiding any traffic. No Windows or macOS interface name
-/// contains a dot, so this is inert on those platforms.
+/// True for a Linux VLAN subinterface (`eth0.100`, `bond0.5`). Its frames are
+/// already counted on the parent, so dropping it hides no traffic. No Windows or
+/// macOS interface name contains a dot, so it's inert there.
 fn is_vlan_subinterface(name: &str) -> bool {
     match name.rsplit_once('.') {
         Some((parent, tag)) => {
@@ -187,7 +169,8 @@ fn is_vlan_subinterface(name: &str) -> bool {
     }
 }
 
-/// Loopback / container / VPN interfaces that shouldn't count as hardware.
+/// Loopback, container, VPN and aggregate interfaces, which would hide or
+/// double-count real traffic if summed with the hardware.
 pub fn is_virtual_interface(name: &str) -> bool {
     if name == "lo" || VIRTUAL_PREFIXES.iter().any(|p| name.starts_with(p)) {
         return true;
@@ -206,40 +189,35 @@ pub fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
-/// True when `s` is a valid IP literal, and therefore safe to interpolate into
-/// a shell command: a parsed address can only contain `[0-9a-fA-F:.]`, never a
-/// shell metacharacter. Guards the `ping`/`getent`/`dscacheutil` call sites
-/// that take an address straight from the neighbor table.
+/// True when `s` is an IP literal, and so safe to put in a shell command: a
+/// parsed address holds only `[0-9a-fA-F:.]`. Guards call sites that take an
+/// address straight from the neighbor table.
 pub fn is_shell_safe_ip(s: &str) -> bool {
     s.parse::<std::net::IpAddr>().is_ok()
 }
 
-/// True when `s` is a plausible network-interface name: non-empty, short, and
-/// limited to the characters the kernel actually uses. Rejects anything that
-/// could carry shell metacharacters or break PowerShell quoting.
+/// True when `s` is a plausible interface name: short, and limited to the
+/// characters interface names use, so it can't carry shell metacharacters or
+/// break PowerShell quoting.
 pub fn is_shell_safe_iface(s: &str) -> bool {
-    // Windows interface names routinely contain spaces ("Ethernet 2", "Local
-    // Area Connection"), so a space is permitted; every genuine shell
-    // metacharacter (quotes, ;, |, &, $, backtick, …) stays rejected.
+    // Spaces are allowed for Windows names ("Ethernet 2"); quotes, `;`, `|`,
+    // `&`, `$` and backticks are not.
     !s.is_empty()
         && s.len() <= 40
         && s.bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
 }
 
-/// Wrap `s` in single quotes for safe interpolation into a `sh -c` command,
-/// escaping any embedded single quote (`'` → `'\''`). Use for values we can't
-/// constrain to a safe charset the way [`is_shell_safe_iface`] does — chiefly
-/// SSIDs and NetworkManager profile names, which may contain spaces, quotes or
-/// shell metacharacters. Not for Windows `cmd`, whose quoting rules differ.
+/// Single-quote `s` for a `sh -c` command, escaping embedded quotes
+/// (`'` → `'\''`). For values no safe charset can constrain, chiefly SSIDs and
+/// NetworkManager profile names. Not for Windows `cmd`, whose quoting differs.
 pub fn shell_single_quote(s: &str) -> String {
     format!("'{}'", s.replace('\'', "'\\''"))
 }
 
-/// Strip control characters and bidi overrides from a display string sourced
-/// from the network (mDNS TXT records, reverse DNS) before it is persisted or
-/// rendered, and bound its length. Prevents a neighbor from injecting RTL
-/// overrides or terminal control sequences into the device list.
+/// Strip control characters and bidi overrides from a network-sourced display
+/// string (mDNS TXT, reverse DNS) and cap its length, so a neighbour can't
+/// inject RTL overrides or terminal control sequences into the device list.
 pub fn sanitize_display(s: &str) -> String {
     s.chars()
         .filter(|c| !c.is_control() && !is_bidi_control(*c))

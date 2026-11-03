@@ -1,8 +1,8 @@
 //! File logging and panic capture, so field issues can be diagnosed from
 //! `rove.log` alone.
 
-/// Per-user log directory, following each platform's convention. Chosen so a
-/// user (or we, when debugging) can find `rove.log.<date>` without root.
+/// Per-user log directory in each platform's usual place, so `rove.log.<date>`
+/// can be found without root.
 fn log_dir() -> Option<std::path::PathBuf> {
     #[cfg(target_os = "windows")]
     {
@@ -23,10 +23,9 @@ fn log_dir() -> Option<std::path::PathBuf> {
 }
 
 /// Start file logging into a daily-rolled `rove.log` under [`log_dir`]. The
-/// returned guard flushes the non-blocking writer on drop, so the caller must
-/// hold it for the process's lifetime. Level defaults to `info`; override with
-/// the `ROVE_LOG` env var (e.g. `ROVE_LOG=debug`). Best-effort — returns
-/// `None` if the log dir can't be created rather than failing startup.
+/// guard flushes on drop, so hold it for the process's lifetime. `info` unless
+/// `ROVE_LOG` says otherwise (`ROVE_LOG=debug`). Best-effort: `None` rather
+/// than failing startup.
 pub fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
     let dir = log_dir()?;
     std::fs::create_dir_all(&dir).ok()?;
@@ -48,9 +47,8 @@ pub fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
     ok.then_some(guard)
 }
 
-/// Route panics to the log file (in addition to the default stderr handler), so
-/// a crash leaves a durable breadcrumb even when the app was launched from a
-/// desktop menu with no visible console.
+/// Also log panics to the file, so a crash leaves a trace when launched from a
+/// desktop menu with no console.
 pub fn install_panic_logger() {
     let default = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {

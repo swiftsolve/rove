@@ -3,8 +3,6 @@ use super::Store;
 use rusqlite::{params, OptionalExtension};
 
 impl Store {
-    // ---- daily data usage --------------------------------------------------
-
     /// Add a delta into a day's bucket, creating the row on first write.
     pub fn add_usage(&self, date: &str, rx_delta: u64, tx_delta: u64) -> rusqlite::Result<()> {
         self.lock().execute(
@@ -40,6 +38,7 @@ impl Store {
         Ok(())
     }
 
+    /// Whether no day has been recorded yet; gates the one-time legacy import.
     pub fn usage_is_empty(&self) -> rusqlite::Result<bool> {
         let conn = self.lock();
         let count: i64 = conn.query_row("SELECT COUNT(*) FROM usage_day", [], |row| row.get(0))?;

@@ -30,11 +30,11 @@ pub fn init_store(app: &tauri::App) {
     app.manage(store);
 }
 
-/// Fold the old `data-usage.json` daily buckets into the database once, then
-/// leave the file in place (harmless) so a downgrade could still read it.
+/// Fold the old `data-usage.json` daily buckets into an empty usage table once.
+/// The file stays, so a downgrade could still read it.
 fn import_legacy_usage(store: &Store, json_path: &std::path::Path) {
     if !store.usage_is_empty().unwrap_or(true) {
-        return; // already have usage rows — nothing to import.
+        return;
     }
 
     #[derive(serde::Deserialize)]

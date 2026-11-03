@@ -1,6 +1,7 @@
-//! The background loops: usage sampling, live-throughput broadcasting, the
-//! passive device-roster refresh, and the OS network-change monitor that nudges
-//! the UI off its polling interval.
+//! The background loops: usage sampling, live throughput, the passive device
+//! refresh, the internet and services heartbeats, and the OS network-change
+//! monitor that nudges the UI off its polling interval. They run whether or not
+//! the window is open.
 use crate::AppState;
 use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
 use std::sync::atomic::Ordering;
@@ -9,22 +10,19 @@ use std::time::Duration;
 use tauri::{Emitter, Manager};
 
 /// How often the passive refresh tops up the device roster. A full scan is heavy
-/// and noisy (ping sweep + per-host TCP probe), so the UI only scans on demand;
-/// this passive pass (neighbor table + mDNS/SSDP announcements, no probing) is
-/// cheap enough to run on a timer and keep `last_seen`/online state warm even
-/// while the window is hidden to tray.
+/// and noisy, so the UI scans only on demand; the passive pass (neighbour table
+/// and mDNS/SSDP announcements, no probing) is cheap enough for a timer.
 const PASSIVE_REFRESH_INTERVAL: Duration = Duration::from_secs(5 * 60);
 
-/// Delay before the first passive refresh, giving the UI's initial on-open scan
-/// time to seed the roster — `touch_devices` no-ops until that baseline exists.
+/// Gives the UI's on-open scan time to seed the roster; `touch_devices` is a
+/// no-op until it has.
 const PASSIVE_REFRESH_WARMUP: Duration = Duration::from_secs(60);
 
 /// Accumulate data usage into daily buckets every 30s.
 pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
-            // Isolate a panic in the sampling path so it can never kill this
-            // loop (and stop usage tracking for the rest of the session).
+            // A panic here must not end usage tracking for the session.
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let state = handle.state::<AppState>();
                 let mut networks = lock(&state.networks);
@@ -42,18 +40,13 @@ pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
     });
 }
 
-/// How often per-app usage is sampled. Shorter is more accurate — a socket that
-/// opens *and* closes entirely within one interval is never observed, so its
-/// bytes are missed — but each tick shells out to `ss`/`nettop`, so this trades
-/// a little accuracy for a light touch. A few seconds catches all but the most
-/// fleeting connections.
+/// How often per-app usage is sampled. A socket that opens *and* closes within
+/// one interval is never seen, but each tick shells out to `ss`/`nettop`; a few
+/// seconds catches all but the most fleeting connections.
 const APP_USAGE_INTERVAL: Duration = Duration::from_secs(4);
 
-/// Accumulate per-app network usage every [`APP_USAGE_INTERVAL`]. Unlike the
-/// interface usage sampler this reads a per-process source (`ss` on Linux,
-/// `nettop` on macOS) and is async, so it lives in its own loop rather than the
-/// sysinfo tick. A panic in the sampling path must not stop the loop for the
-/// rest of the session, so each tick's fallible work is isolated.
+/// Accumulate per-app network usage every [`APP_USAGE_INTERVAL`]. Its own loop,
+/// since it reads an async per-process source rather than the sysinfo counters.
 pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
@@ -69,41 +62,34 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
     });
 }
 
-/// How often per-app remote hosts are sampled. A touch slower than the per-app
-/// byte sampler: each tick may also reverse-DNS and geolocate newly-seen peers,
-/// so it does more work, and the host list churns less than raw byte totals.
+/// Slower than the per-app sampler: each tick may also reverse-resolve and
+/// geolocate new peers, and the host list churns less than byte totals.
 const HOST_USAGE_INTERVAL: Duration = Duration::from_secs(6);
 
-/// Sample per-app remote hosts every [`HOST_USAGE_INTERVAL`], then enrich the
-/// newly-seen peers: reverse-DNS the whole batch in one process, and geolocate
-/// every new public peer against the bundled table. Runs independently of the
-/// per-app byte sampler (that one keeps its own `-P`/process-total source); this
-/// pass is the peer-aware one behind the Hosts view. A panic in the sampling
-/// path must not stop the loop, so each tick's fallible work is isolated per
-/// await section.
+/// Sample per-app remote hosts every [`HOST_USAGE_INTERVAL`] for the Hosts and
+/// Traffic views, then enrich new peers: reverse DNS for the batch in one
+/// process, and a country from the bundled table. Separate from the per-app
+/// sampler, which keeps its own per-process source.
 pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     use std::collections::HashMap;
     tauri::async_runtime::spawn(async move {
         loop {
             let sampled = rove_core::usage::host::sample().await;
 
-            // Ingest and capture what still needs resolving, dropping the lock
-            // before any await (a std Mutex must never be held across .await).
+            // Scoped so the std Mutex is released before any await.
             let (need_hosts, need_countries) = {
                 let state = handle.state::<AppState>();
                 let mut tracker = lock(&state.host_usage);
-                // A failed sample is skipped rather than ingested as an empty
-                // one, which the tracker would read as every socket having
-                // closed. The enrichment below still runs: it drains whatever
-                // peers are already pending, and doesn't need this tick's rows.
+                // A failed sample is skipped, not ingested as an empty one the
+                // tracker would read as every socket closing. Enrichment still
+                // runs on the peers already pending.
                 if let Some(readings) = sampled {
                     tracker.ingest(readings);
                 }
                 (tracker.pending_hostnames(), tracker.pending_countries())
             };
 
-            // Reverse-DNS the entire new batch in a single process, then bank
-            // the answers (misses cached too, so a peer is resolved once).
+            // Misses are recorded too, so each peer resolves once.
             if !need_hosts.is_empty() {
                 let names = rove_core::devices::hostname::resolve_many(&need_hosts).await;
                 let resolved: HashMap<String, Option<String>> =
@@ -112,12 +98,9 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                 lock(&state.host_usage).record_hostnames(resolved);
             }
 
-            // Geolocate every new public peer against the bundled table, then
-            // bank the answers (misses cached too, so a peer is resolved once).
-            // No per-tick cap: these are local table reads, so the whole backlog
-            // clears in one pass and flags land on the Hosts view's next poll.
-            // Off the async workers, since the first read decodes the ~8 MB
-            // table; spawn_blocking also keeps a panic here from killing the loop.
+            // No per-tick cap: local table reads clear the whole backlog in one
+            // pass. Blocking thread, since the first read decodes the ~8 MB
+            // table; it also keeps a panic here from killing the loop.
             if !need_countries.is_empty() {
                 let resolved = tauri::async_runtime::spawn_blocking(move || {
                     need_countries
@@ -153,8 +136,8 @@ pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
                 continue;
             }
             if !was_active {
-                // First tick after (re)subscribing: reset the baseline and skip
-                // one emit so the idle gap isn't reported as a giant spike.
+                // Reset the baseline and skip one emit, so the idle gap isn't
+                // reported as a giant spike.
                 sampler.prime();
                 was_active = true;
                 continue;
@@ -165,20 +148,13 @@ pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
     });
 }
 
-/// Keep the device roster warm in the background. Every
-/// [`PASSIVE_REFRESH_INTERVAL`] this runs a no-probe presence pass (see
-/// [`rove_core::devices::passive_refresh`]) — the kernel neighbor table plus
-/// mDNS/SSDP announcements, no ping sweep or TCP probe — and folds the confirmed
-/// devices into the store. That bumps `last_seen` and logs arrivals/returns
-/// without the traffic or battery cost of a full scan, so a device seen (or a
-/// return) while the app sits in the tray isn't lost by the time the user next
-/// opens the Devices tab. Runs regardless of window visibility, unlike the
-/// frontend's on-open scan.
+/// Keep the device roster warm: every [`PASSIVE_REFRESH_INTERVAL`], fold a
+/// no-probe presence pass ([`rove_core::devices::passive_refresh`]) into the
+/// store, so arrivals and returns while Rove sits in the tray aren't lost.
 ///
-/// Deliberately fire-and-persist with no UI event: the frontend's only device
-/// fetch runs a *full active* scan, so nudging an open view to reload would
-/// reintroduce the very scan-storm this passive pass exists to avoid. The warmed
-/// store is read on the next natural load (tab open, resume, network change).
+/// No UI event on purpose: the UI's only device fetch is a *full* scan, so a
+/// nudge would bring back the scan storm this pass avoids. The store is read on
+/// the next natural load.
 pub fn spawn_device_refresh(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(PASSIVE_REFRESH_WARMUP).await;
@@ -194,22 +170,14 @@ pub fn spawn_device_refresh(handle: tauri::AppHandle) {
     });
 }
 
-/// How often the background internet heartbeat checks public reachability. Each
-/// tick is two concurrent TLS handshakes to well-known anchors plus a gateway
-/// lookup (see [`rove_core::diagnostics::check_internet`]) — cheap enough to run
-/// always, including while the window is hidden to tray. This is what makes an
-/// internet up/down transition land on the Timeline no matter which tab is open
-/// (the diagnostics poll that used to be the only source runs only on the
-/// Diagnostics tab), and what keeps the top-bar connectivity label honest.
+/// Each tick is two TLS handshakes and a gateway lookup
+/// ([`rove_core::diagnostics::check_internet`]), cheap enough to run always, so
+/// a crossing lands on the Timeline whichever tab is open.
 const INTERNET_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(20);
 
-/// Probe public-internet reachability on a steady timer, independent of the UI.
-/// Each tick caches the verdict for the top bar, folds it into the store (which
-/// logs an `internet_lost` / `internet_restored` event only on a genuine
-/// crossing — `record_internet` diffs its own baseline, so calling it every tick
-/// is safe and idempotent), and — on a change — nudges the UI so the status bar
-/// updates at once rather than on its next read. Runs regardless of window
-/// visibility, so an ISP outage while Rove sits in the tray is still recorded.
+/// Check the internet on a steady timer: cache the status for
+/// `get_internet_status`, record it (`record_internet` only logs crossings),
+/// and emit `internet-status` on a change so the UI updates at once.
 pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         let mut last: Option<rove_core::diagnostics::InternetStatus> = None;
@@ -233,27 +201,20 @@ pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
     });
 }
 
-/// How often the services heartbeat re-probes the tracked services. Slower than
-/// the Services view's own 15s poll on purpose: unlike the local counters the
-/// other samplers read, every tick here opens a TLS handshake and an HTTP HEAD
-/// to each service — third parties who didn't ask to be health-checked — so the
-/// cadence is set by what's neighbourly, not by what the UI could display. A
-/// minute is ample for an outage log a human reads.
+/// Slower than the Services view's 15 s poll on purpose: every tick sends a TLS
+/// handshake and a HEAD to third parties who didn't ask to be health-checked,
+/// so the cadence is set by what's neighbourly. A minute is ample for an outage
+/// log a human reads.
 const SERVICES_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(60);
 
-/// Delay before the first heartbeat probe. The Services view probes on open
-/// anyway, and both write the same timeline, so this stays out of the way while
-/// the app finds its feet rather than piling a second probe onto launch.
+/// The Services view probes on open and writes the same timeline, so this
+/// doesn't pile a second probe onto launch.
 const SERVICES_HEARTBEAT_WARMUP: Duration = Duration::from_secs(10);
 
-/// Probe the user's tracked services on a steady timer, independent of the UI.
-///
-/// This is what makes the Services timeline trustworthy: the view's own poll
-/// only runs while the Services tab is open, so an outage that started while you
-/// were on another tab — or with the window hidden to tray — was simply never
-/// recorded. `record_services` diffs against its own per-host baseline and logs
-/// only crossings, so calling it every tick is idempotent — and harmless
-/// alongside the `run_services` command, which folds its own probes in too.
+/// Probe the tracked services on a steady timer. The view's poll only runs
+/// while its tab is open, so without this an outage on another tab or in the
+/// tray would go unrecorded. `record_services` logs only crossings, so it's
+/// safe alongside the `run_services` command's own writes.
 pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(SERVICES_HEARTBEAT_WARMUP).await;
@@ -267,8 +228,7 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
                 let now = rove_core::util::net::now_ms() as i64;
                 let store = handle.state::<Arc<Store>>();
                 match store.record_services(&report, now) {
-                    // Nudge the timeline so an outage recorded while it's on
-                    // screen lands without waiting for a remount.
+                    // So an outage lands on a timeline already on screen.
                     Ok(()) => {
                         let _ = handle.emit("services-timeline", &());
                     }
@@ -280,14 +240,12 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
     });
 }
 
-/// Watch for connectivity changes and nudge the UI the moment they happen
-/// (cable pulled, Wi-Fi joined) instead of waiting out its polling interval.
+/// Nudge the UI the moment connectivity changes (cable pulled, Wi-Fi joined)
+/// instead of waiting out its poll.
 ///
-/// Linux streams kernel route events via `ip monitor route`; macOS streams the
-/// routing socket via `route -n monitor`; Windows subscribes to .NET
-/// `NetworkChange` notifications through a long-lived PowerShell. Each prints on
-/// every change, which we debounce into a single `network-changed` event.
-/// Other platforms fall back to the UI's polling interval.
+/// Linux runs `ip monitor route`, macOS `route -n monitor`, and Windows a
+/// long-lived PowerShell on .NET `NetworkChange`. Each prints on every change,
+/// throttled into `network-changed` events. Other platforms rely on the poll.
 pub fn spawn_route_monitor(handle: tauri::AppHandle) {
     #[cfg(target_os = "linux")]
     tauri::async_runtime::spawn(monitor_connectivity(handle, || {
@@ -296,10 +254,8 @@ pub fn spawn_route_monitor(handle: tauri::AppHandle) {
         cmd
     }));
 
-    // `route -n monitor` reads the PF_ROUTE socket (no privileges needed) and
-    // prints a multi-line block per routing change — a cable pull or Wi-Fi hop
-    // reassigns the default route, so it shows up here. The burst of lines
-    // collapses to one event via the 800 ms debounce below.
+    // Reads the PF_ROUTE socket without privileges and prints a multi-line
+    // block per routing change; the throttle collapses the block.
     #[cfg(target_os = "macos")]
     tauri::async_runtime::spawn(monitor_connectivity(handle, || {
         let mut cmd = tokio::process::Command::new("route");
@@ -319,20 +275,18 @@ pub fn spawn_route_monitor(handle: tauri::AppHandle) {
     let _ = handle;
 }
 
-/// PowerShell that blocks on .NET network-change notifications and prints one
-/// line per change. `NetworkAddressChanged` is the one that matters for an
-/// Ethernet ↔ Wi-Fi swap (the default route's address is reassigned);
-/// availability changes are folded in for good measure. Pending events are
-/// drained so a burst collapses to a single line, matching the Rust-side
-/// debounce below.
+/// PowerShell that blocks on .NET network-change notifications and prints a
+/// line per change. `NetworkAddressChanged` is what catches an Ethernet to Wi-Fi
+/// swap; availability changes ride along. Pending events are drained so a burst
+/// prints once.
 #[cfg(target_os = "windows")]
 const WINDOWS_NET_MONITOR: &str = "\
 Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAddressChanged -SourceIdentifier RoveAddr | Out-Null; \
 Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAvailabilityChanged -SourceIdentifier RoveAvail | Out-Null; \
 while ($true) { Wait-Event | Out-Null; Get-Event | Remove-Event; [Console]::Out.WriteLine('network-changed'); [Console]::Out.Flush() }";
 
-/// Read change lines from a spawned monitor child, emitting a debounced
-/// `network-changed` per line and respawning it (with backoff) if it dies.
+/// Emit `network-changed` for a monitor child's output, at most once per 800 ms,
+/// and respawn the child with backoff if it dies.
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 async fn monitor_connectivity<F>(handle: tauri::AppHandle, spawn: F)
 where
@@ -369,9 +323,8 @@ where
             }
         }
 
-        // The monitor exited (transient failure); reap it and respawn. One that
-        // stayed up a while resets the backoff; rapid crashes escalate it
-        // (capped) so we don't spin respawning.
+        // One that stayed up a while resets the backoff; rapid crashes escalate
+        // it so we don't spin respawning.
         let _ = child.kill().await;
         if started.elapsed() >= Duration::from_secs(60) {
             backoff = Duration::from_secs(1);
