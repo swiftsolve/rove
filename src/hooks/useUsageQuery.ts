@@ -1,9 +1,9 @@
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { NetworkAPI } from '@/types'
 
-// Faster than the daily usage summary's poll: the per-app totals climb
-// continuously.
-const REFRESH_INTERVAL_MS = 5_000
+// The per-app breakdowns' poll, faster than the daily summary's: their totals
+// climb continuously.
+const DEFAULT_REFRESH_INTERVAL_MS = 5_000
 
 type UsageQueryOptions<T> = {
   /** The cache key, one per breakdown. */
@@ -16,10 +16,14 @@ type UsageQueryOptions<T> = {
   errorMessage: string
   /** Whether a breakdown has no rows yet. */
   isEmpty: (usage: T) => boolean
+  /** How often to poll while the view is open. */
+  pollIntervalMs?: number
 }
 
 export type UsageQuery<T> = {
   usage: T
+  /** A load is in flight, the first or a poll. */
+  isLoading: boolean
   /** Loading with nothing to show yet: the view shows a spinner rather than an
    *  empty list. Later loads keep the rows up. */
   isFirstLoad: boolean
@@ -28,8 +32,8 @@ export type UsageQuery<T> = {
 }
 
 /**
- * One of the per-app usage breakdowns, polled while its view is open. A missing
- * bridge gives a clear error rather than a hung spinner.
+ * A usage summary or breakdown, polled while its view is open. A missing bridge
+ * gives a clear error rather than a hung spinner.
  */
 export function useUsageQuery<T>({
   queryKey,
@@ -37,6 +41,7 @@ export function useUsageQuery<T>({
   empty,
   errorMessage,
   isEmpty,
+  pollIntervalMs = DEFAULT_REFRESH_INTERVAL_MS,
 }: UsageQueryOptions<T>): UsageQuery<T> {
   const api = window.networkAPI
   const fetchUsage = api ? () => read(api) : undefined
@@ -46,13 +51,13 @@ export function useUsageQuery<T>({
     queryFn: fetchUsage,
     isEnabled: true,
     errorMessage,
-    pollIntervalMs: REFRESH_INTERVAL_MS,
+    pollIntervalMs,
   })
 
   if (!fetchUsage) {
-    return { usage: empty, isFirstLoad: false, error: 'Can’t reach the app', reload }
+    return { usage: empty, isLoading: false, isFirstLoad: false, error: 'Can’t reach the app', reload }
   }
 
   const usage = data ?? empty
-  return { usage, isFirstLoad: isBusy && isEmpty(usage), error, reload }
+  return { usage, isLoading: isBusy, isFirstLoad: isBusy && isEmpty(usage), error, reload }
 }

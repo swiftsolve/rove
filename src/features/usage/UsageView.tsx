@@ -21,11 +21,10 @@ import {
 const USAGE_INFO_HINT = 'Measured while Rove runs, across all physical interfaces.'
 
 export function UsageView() {
-  const { usage, isLoading, error, reload } = useDataUsage()
+  const { usage, isFirstLoad, error, reload } = useDataUsage()
   const today = todaysUsage(usage)
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)
   const weekTx = usage.days.reduce((sum, day) => sum + day.txBytes, 0)
-  const isFirstLoad = isLoading && usage.days.length === 0
 
   return (
     <div className="page">

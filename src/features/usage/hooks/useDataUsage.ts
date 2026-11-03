@@ -1,34 +1,20 @@
-import { useBackendQuery } from '@/hooks/useBackendQuery'
+import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { DataUsageSummary } from '@/types'
 import { createEmptyDataUsage } from '@/types'
 
+// Slower than the per-app breakdowns: the daily totals are a summary.
 const REFRESH_INTERVAL_MS = 10_000
 
 const EMPTY_USAGE = createEmptyDataUsage()
 
-type UseDataUsageResult = {
-  usage: DataUsageSummary
-  isLoading: boolean
-  error: string | null
-  reload: () => Promise<void>
-}
-
-export function useDataUsage(): UseDataUsageResult {
-  const api = window.networkAPI
-  const fetchUsage = api ? () => api.getDataUsage() : undefined
-
-  const { data, isBusy, error, reload } = useBackendQuery({
-    queryKey: ['dataUsage'],
-    queryFn: fetchUsage,
-    isEnabled: true,
+/** Download and upload per day for the last week, plus the totals since boot. */
+export function useDataUsage(): UsageQuery<DataUsageSummary> {
+  return useUsageQuery({
+    queryKey: 'dataUsage',
+    read: (api) => api.getDataUsage(),
+    empty: EMPTY_USAGE,
     errorMessage: 'Couldn’t load data usage',
+    isEmpty: (usage) => usage.days.length === 0,
     pollIntervalMs: REFRESH_INTERVAL_MS,
   })
-
-  // No bridge: report it and skip the spinner rather than hang on "Loading…".
-  if (!fetchUsage) {
-    return { usage: EMPTY_USAGE, isLoading: false, error: 'Can’t reach the app', reload }
-  }
-
-  return { usage: data ?? EMPTY_USAGE, isLoading: isBusy, error, reload }
 }

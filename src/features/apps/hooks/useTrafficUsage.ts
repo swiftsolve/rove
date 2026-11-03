@@ -1,4 +1,4 @@
-import { type UsageQuery, useUsageQuery } from '@/features/apps/hooks/useUsageQuery'
+import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { TrafficUsageSummary } from '@/types'
 import { createEmptyTrafficUsage } from '@/types'
 
