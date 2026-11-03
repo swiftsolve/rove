@@ -1,6 +1,22 @@
+import { cva } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
+import type { VariantOf } from '../foundations/variants'
+
+const figureVariants = cva('metric num', {
+  variants: {
+    size: { large: null, compact: 'metric-compact' },
+  },
+  defaultVariants: { size: 'large' },
+})
+
+const valueVariants = cva('metric-value', {
+  variants: {
+    size: { large: 'type-number-display', compact: 'type-number-large' },
+  },
+  defaultVariants: { size: 'large' },
+})
 
 type ValueParts = {
   /** The number, formatted: "182", "4.6". */
@@ -18,10 +34,7 @@ function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<Read
   const isSpokenApart = spokenValue != null
   return (
     <>
-      <span
-        className={cn(size === 'compact' ? 'type-number-large' : 'type-number-display', 'metric-value')}
-        aria-hidden={isSpokenApart || undefined}
-      >
+      <span className={valueVariants({ size })} aria-hidden={isSpokenApart || undefined}>
         {value}
       </span>
       <span className="type-body-small metric-unit" aria-hidden={isSpokenApart || undefined}>
@@ -38,7 +51,7 @@ type ReadoutProps = ValueParts & {
   /** An icon: before the label, or before the figure when there's no label. */
   icon?: ReactNode
   /** `compact` for a summary card's figure, which has no label. */
-  size?: 'large' | 'compact'
+  size?: VariantOf<typeof figureVariants, 'size'>
   /** Its place in a layout: `min-w-0 flex-1` to share a row with other readouts. */
   className?: string
 }
@@ -49,7 +62,7 @@ type ReadoutProps = ValueParts & {
  * `<dl>`; without a label, the icon sits inline with the figure.
  */
 export function Readout({ label, icon, size = 'large', className, ...valueParts }: ReadoutProps) {
-  const figureClass = cn('metric num', size === 'compact' && 'metric-compact')
+  const figureClass = figureVariants({ size })
   if (label == null) {
     return (
       <div className={cn(figureClass, 'min-w-0', className)}>

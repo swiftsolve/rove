@@ -56,6 +56,7 @@ export { UltraHdStreamIcon } from './icons/UltraHdStreamIcon'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
 
 export { cn } from './foundations/cn'
+export { STATUS_TEXT } from './foundations/status'
 export type { VariantOf } from './foundations/variants'
 export { useCountUp } from './hooks/useCountUp'
 export { useLatestRef } from './hooks/useLatestRef'

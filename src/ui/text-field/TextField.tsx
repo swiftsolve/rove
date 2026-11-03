@@ -26,25 +26,14 @@ const BORDERED_INPUT = cx(
 // borderless, so the two read as one control.
 const GROUPED_INPUT = cx(INPUT, 'min-w-0 flex-auto border-none bg-transparent')
 
-const groupVariants = cva(
-  [
-    'flex items-center gap-4 rounded-sm border bg-inset pr-6',
-    'transition-[border-color] duration-(--duration-fast) ease-in-out',
-  ],
-  {
-    variants: {
-      isInvalid: { true: 'border-status-negative', false: 'border-line focus-within:border-accent' },
-    },
-    defaultVariants: { isInvalid: false },
-  },
+// Invalid reads from the input's `data-invalid`, which Field sets.
+const GROUP = cx(
+  'flex items-center gap-4 rounded-sm border bg-inset pr-6',
+  'border-line focus-within:border-accent has-data-invalid:border-status-negative',
+  'transition-[border-color] duration-(--duration-fast) ease-in-out',
 )
 
-const feedbackVariants = cva('mt-8 type-body-small', {
-  variants: {
-    isInvalid: { true: 'text-negative', false: 'text-tertiary' },
-  },
-  defaultVariants: { isInvalid: false },
-})
+const FEEDBACK = 'mt-8 empty:mt-0 type-body-small text-tertiary data-invalid:text-negative'
 
 type TextFieldProps = Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'className' | 'placeholder'> & {
   /** Names the field, above it. */
@@ -93,14 +82,14 @@ export function TextField({
       {action == null ? (
         control
       ) : (
-        <div className={groupVariants({ isInvalid })}>
+        <div className={GROUP}>
           {control}
           {action}
         </div>
       )}
       {/* Always mounted, so the first message is announced: a region that mounts
           already holding its text often isn't. Empty, it takes no space. */}
-      <Field.Description render={<div role="status" />} className={cn(feedbackVariants({ isInvalid }), 'empty:mt-0')}>
+      <Field.Description render={<div role="status" />} className={FEEDBACK}>
         {feedback}
       </Field.Description>
     </Field.Root>

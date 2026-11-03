@@ -8,7 +8,7 @@ import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition } from '@/types'
-import { Button, Dialog, NoValue, TextField, TextFieldAction, useLatestRef } from '@/ui'
+import { Button, Dialog, NoValue, STATUS_TEXT, TextField, TextFieldAction, useLatestRef } from '@/ui'
 
 // The tested result swaps in for the field's hint as a taller inset row, at the
 // address field's outer height (line-height 18 + 20 padding + 2 border), so it
@@ -18,7 +18,7 @@ const RESULT = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-li
 const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
   variants: {
     /** The measured latency's health band, or negative when the host was down. */
-    status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
+    status: STATUS_TEXT,
   },
 })
 

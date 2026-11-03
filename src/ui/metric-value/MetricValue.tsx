@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority'
 
 import { cn } from '../foundations/cn'
+import { STATUS_TEXT } from '../foundations/status'
 import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
 import { NoValue } from '../no-value/NoValue'
@@ -8,7 +9,7 @@ import { NoValue } from '../no-value/NoValue'
 // Tabular figures, so the width holds while it eases.
 const metricVariants = cva('num', {
   variants: {
-    status: { positive: 'text-positive', warning: 'text-warning', negative: 'text-negative' },
+    status: STATUS_TEXT,
   },
 })
 

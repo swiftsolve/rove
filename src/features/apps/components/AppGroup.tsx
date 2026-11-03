@@ -1,4 +1,4 @@
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import { memo } from 'react'
 
 import { AppIcon } from '@/features/apps/components/AppIcon'
@@ -10,13 +10,11 @@ import { totalBytes } from '@/features/apps/utils/transfer'
 import type { AppHosts } from '@/types'
 import { ChevronDownIcon, Collapsible, CollapsiblePanel, CollapsibleTrigger } from '@/ui'
 
-/** Points down when open, right when closed. */
-const chevronVariants = cva('shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out', {
-  variants: {
-    isOpen: { true: 'transform-[rotate(0deg)]', false: 'transform-[rotate(-90deg)]' },
-  },
-  defaultVariants: { isOpen: false },
-})
+/** Points down when open, right when closed: the header's `data-panel-open`. */
+const CHEVRON = cx(
+  'shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out',
+  'transform-[rotate(-90deg)] group-data-panel-open/header:transform-[rotate(0deg)]',
+)
 
 // Matches the card's curve on the edges it touches, so the nav-flash and focus
 // rings aren't shaved square by the card's overflow:hidden. With no fill, the
@@ -26,7 +24,7 @@ const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 // Carries the row's inset so the whole row is the click target. Its focus ring
 // is drawn on the group instead.
 const GROUP_HEADER = cx(
-  'flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
+  'group/header flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
   '[font:inherit] text-left text-inherit hover:text-primary focus-visible:text-primary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
 )
@@ -68,7 +66,7 @@ export const AppGroup = memo(function AppGroup({
           <RowName
             icon={
               <>
-                <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />
+                <ChevronDownIcon size={14} className={CHEVRON} aria-hidden />
                 <AppIcon app={app} />
               </>
             }

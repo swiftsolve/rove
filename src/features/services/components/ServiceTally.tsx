@@ -3,7 +3,7 @@ import type { JSX } from 'react'
 
 import { reachabilityStatus } from '@/features/services/utils/service-status'
 import { type InternetStatus, isInternetDown, type ServiceReachability } from '@/types'
-import { ArrowDownIcon, ArrowUpIcon, DotSeparator } from '@/ui'
+import { ArrowDownIcon, ArrowUpIcon, DotSeparator, STATUS_TEXT } from '@/ui'
 
 // Inherits the header subtitle's size and colour. Wraps between the two halves
 // rather than squeezing either: below ~390px of header width both don't fit.
@@ -20,7 +20,7 @@ const ICON = 'ml-[-3px] shrink-0 translate-y-[-1px]'
 const halfVariants = cva('inline-flex items-center gap-[3px] whitespace-nowrap', {
   variants: {
     /** The half's text (and arrow) colour: green for up, red for any down. */
-    status: { positive: 'text-positive', negative: 'text-negative' },
+    status: { positive: STATUS_TEXT.positive, negative: STATUS_TEXT.negative },
   },
 })
 

@@ -1,7 +1,8 @@
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { type ConnectionKind, connectionKind, connectionName } from '@/features/speed/utils/connection'
+import { ConnectionIcon } from '@/features/speed/components/ConnectionIcon'
+import { connectionKind, connectionName } from '@/features/speed/utils/connection'
 import {
   formatBand,
   formatDateTime,
@@ -11,29 +12,10 @@ import {
   splitSpeedMbps,
 } from '@/lib/format'
 import { isMeasuredLatency, type SpeedHistoryEntry } from '@/types'
-import {
-  Card,
-  DirectionIcon,
-  DotSeparator,
-  EthernetIcon,
-  GlobeIcon,
-  type IconComponent,
-  InlineMeta,
-  NoValue,
-  type SpeedSeries,
-  WifiIcon,
-} from '@/ui'
+import { Card, DirectionIcon, DotSeparator, InlineMeta, NoValue, type SpeedSeries } from '@/ui'
 
-/** Connection badge, tinted by medium. */
-const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-medium', {
-  variants: {
-    type: {
-      wifi: 'text-series-down',
-      ethernet: 'text-status-positive',
-      unknown: 'text-secondary',
-    },
-  },
-})
+/** Connection badge; its icon is tinted by medium. */
+const CONNECTION = 'inline-flex min-w-0 items-center gap-6 text-sm font-medium'
 
 type MetricProps = {
   label: string
@@ -42,20 +24,13 @@ type MetricProps = {
   series?: SpeedSeries
 }
 
-const CONNECTION_ICONS: Record<ConnectionKind, IconComponent> = {
-  wifi: WifiIcon,
-  ethernet: EthernetIcon,
-  unknown: GlobeIcon,
-}
-
 function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
   const kind = connectionKind(entry.connectionType)
-  const Icon = CONNECTION_ICONS[kind]
   const band = formatBand(entry.frequency)
 
   return (
-    <span className={connVariants({ type: kind })}>
-      <Icon size={13} />
+    <span className={CONNECTION}>
+      <ConnectionIcon kind={kind} size={13} />
       <span className="min-w-0 truncate text-primary">{connectionName(kind, entry.networkName)}</span>
       {band != null && (
         <>

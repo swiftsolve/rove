@@ -2,6 +2,7 @@ import { cva, cx } from 'class-variance-authority'
 import { memo, type ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
+import { ConnectionIcon } from '@/features/speed/components/ConnectionIcon'
 import { WavyProgress } from '@/features/speed/components/WavyProgress'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -17,21 +18,15 @@ import {
   CardBody,
   CardHeader,
   DirectionIcon,
-  EthernetIcon,
   InlineMeta,
   NoValue,
   SpeedIcon,
   type SpeedSeries,
   useCountUp,
-  WifiIcon,
 } from '@/ui'
 
 /** The connection the footer names, its icon tinted by medium. */
-const connVariants = cva('inline-flex items-center gap-6 font-medium text-secondary', {
-  variants: {
-    type: { wifi: '[&_svg]:text-series-down', ethernet: '[&_svg]:text-status-positive' },
-  },
-})
+const CONNECTION = 'inline-flex items-center gap-6 font-medium text-secondary'
 
 /**
  * A hero speed's digits; a muted NoValue bar before any test has run, so the
@@ -60,8 +55,8 @@ function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
 function ConnectionTag({ connection }: { connection: SpeedTestConnection }) {
   const name = connectionName(connection.type, connection.name)
   return (
-    <span className={connVariants({ type: connection.type })}>
-      {connection.type === 'wifi' ? <WifiIcon size={12} /> : <EthernetIcon size={12} />}
+    <span className={CONNECTION}>
+      <ConnectionIcon kind={connection.type} size={12} />
       <InlineMeta items={[name, connection.band]} />
     </span>
   )

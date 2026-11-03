@@ -1953,6 +1953,7 @@
   ],
   "helpers": {
     "PortalProvider": "Sets where the library's dialogs inside it portal to.",
+    "STATUS_TEXT": "The status text colours (green, amber, red), keyed as recipes name their\nstatus axis: `status: STATUS_TEXT`, or `{ positive: STATUS_TEXT.positive, … }`\nfor a subset.",
     "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's; Storybook's name\nshows it. Raise it when the library's API changes.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
