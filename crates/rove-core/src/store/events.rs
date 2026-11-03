@@ -76,6 +76,11 @@ const EVENT_INTERNET_RESTORED: &str = "internet_restored";
 /// is caught across `network_info` polls.
 pub(super) const META_CONNECTION_IDENTITY: &str = "connection_identity";
 
+/// Set once a device scan has written the feed's baseline. A flag, not "the
+/// feed is empty": a connection event can land before the first scan, and
+/// pruning can empty the feed later, and neither should change the answer.
+const META_FEED_SEEDED: &str = "feed_seeded";
+
 /// `meta` key for the last internet verdict ("online"/"offline"), so a crossing
 /// is caught across checks.
 const META_INTERNET_STATUS: &str = "internet_status";
@@ -220,12 +225,43 @@ impl Store {
         Ok(())
     }
 
-    /// Whether the feed holds no events: normally only until the first scan
-    /// writes its baseline row, though a connection or internet event can land
-    /// first.
-    pub(super) fn events_is_empty(conn: &Connection) -> rusqlite::Result<bool> {
-        let count: i64 = conn.query_row("SELECT COUNT(*) FROM network_events", [], |row| row.get(0))?;
-        Ok(count == 0)
+    /// Whether a device scan has seeded the feed. A feed from before the flag
+    /// existed counts as seeded if it holds any device-scan event.
+    pub(super) fn is_feed_seeded(conn: &Connection) -> rusqlite::Result<bool> {
+        let has_flag = conn
+            .query_row("SELECT 1 FROM meta WHERE key = ?1", [META_FEED_SEEDED], |_| Ok(()))
+            .optional()?
+            .is_some();
+        if has_flag {
+            return Ok(true);
+        }
+        let has_scan_event = conn
+            .query_row(
+                "SELECT 1 FROM network_events WHERE type IN (?1, ?2, ?3, ?4, ?5, ?6) LIMIT 1",
+                [
+                    EVENT_INITIAL_SCAN,
+                    EVENT_DEVICE_JOINED,
+                    EVENT_AP_APPEARED,
+                    EVENT_DEVICE_OFFLINE,
+                    EVENT_DEVICE_ONLINE,
+                    EVENT_GATEWAY_CHANGED,
+                ],
+                |_| Ok(()),
+            )
+            .optional()?
+            .is_some();
+        if has_scan_event {
+            Self::mark_feed_seeded(conn)?;
+        }
+        Ok(has_scan_event)
+    }
+
+    pub(super) fn mark_feed_seeded(conn: &Connection) -> rusqlite::Result<()> {
+        conn.execute(
+            "INSERT OR IGNORE INTO meta (key, value) VALUES (?1, '1')",
+            [META_FEED_SEEDED],
+        )?;
+        Ok(())
     }
 
     /// Best-effort human label for a live device at event time.

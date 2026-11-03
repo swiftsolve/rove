@@ -663,3 +663,33 @@ fn a_connection_event_keeps_its_ssid_despite_a_matching_mac() {
         .unwrap();
     assert_eq!(wifi.name.as_deref(), Some("Home"), "the SSID must survive the roster join");
 }
+
+#[test]
+fn a_connection_event_before_the_first_scan_still_gets_the_baseline() {
+    let store = Store::open_in_memory().unwrap();
+    store.record_connection("wifi", Some("Home"), Some("wlan0"), None, None, 100).unwrap();
+    store.record_connection("wifi", Some("Cafe"), Some("wlan0"), None, None, 200).unwrap();
+    assert_eq!(store.network_events(10).unwrap().len(), 1, "a joined-Wi-Fi event lands first");
+
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
+    assert_eq!(store.network_events(1).unwrap()[0].event_type, "initial_scan");
+}
+
+#[test]
+fn a_feed_pruned_empty_is_not_seeded_again() {
+    let store = Store::open_in_memory().unwrap();
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
+
+    // Past the retention window: this scan prunes the baseline away.
+    let later = 1_000 + 8 * 24 * 60 * 60 * 1000;
+    store.record_devices(std::slice::from_ref(&phone), later).unwrap();
+    assert!(store.network_events(10).unwrap().is_empty());
+
+    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    store.record_devices(&[phone, laptop], later + 1_000).unwrap();
+    let events = store.network_events(10).unwrap();
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].event_type, "device_joined", "a real join, not a second baseline");
+}

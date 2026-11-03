@@ -154,7 +154,7 @@ impl Store {
         // "N devices discovered" row and skips the per-device diff this once,
         // rather than leaving the page blank or bursting events at an existing
         // user upgrading into the feature.
-        let seed = Self::events_is_empty(&tx)?;
+        let seed = !Self::is_feed_seeded(&tx)?;
 
         // Present only if it answered this scan. One still in the ARP table but
         // failing liveness reads "Offline" in the Devices view, so it's gone here
@@ -268,6 +268,7 @@ impl Store {
                     Some(&count.to_string()),
                     false,
                 )?;
+                Self::mark_feed_seeded(&tx)?;
             }
         }
 
