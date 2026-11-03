@@ -26,13 +26,16 @@ const IDLE_SUSPEND_MS = 10_000
 const isAudioAvailable =
   !IS_WEBKIT_GTK && typeof AudioContext !== 'undefined' && typeof OfflineAudioContext !== 'undefined'
 
+// Any rate works: a buffer plays in any context, resampled if the rates differ.
+const DECODE_SAMPLE_RATE = 44_100
+
 // Decode with an offline context so the samples are ready before the first
 // press; a live context created before a gesture starts suspended and warns.
-// A buffer plays in any context, resampled if the rates differ.
 async function decode(url: string): Promise<AudioBuffer | null> {
   try {
     const bytes = await (await fetch(url)).arrayBuffer()
-    return await new OfflineAudioContext(1, 1, 44_100).decodeAudioData(bytes)
+    // Only its decoder is used, so one channel and one frame are enough.
+    return await new OfflineAudioContext(1, 1, DECODE_SAMPLE_RATE).decodeAudioData(bytes)
   } catch {
     return null
   }

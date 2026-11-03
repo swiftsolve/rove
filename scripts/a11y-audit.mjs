@@ -116,7 +116,8 @@ async function startDevServer() {
 
 const existingUrl = flag('url', null)
 // How many places to list per rule; `--limit all` lists every one.
-const placeLimit = flag('limit', '12') === 'all' ? Infinity : Number(flag('limit', '12'))
+const limitFlag = flag('limit', '12')
+const placeLimit = limitFlag === 'all' ? Infinity : Number(limitFlag)
 const server = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
@@ -151,10 +152,11 @@ try {
           window.axe.run({ include: [['html']], exclude }, { runOnly: { type: 'tag', values: tags } }),
         { tags: RULE_TAGS, exclude: EXCLUDED },
       )
-      for (const v of result.violations) {
-        const entry = violations.get(v.id) ?? { impact: v.impact, help: v.help, helpUrl: v.helpUrl, places: new Set() }
-        for (const node of v.nodes) {
-          if (isPortalledMenu(v.id, node)) continue
+      for (const violation of result.violations) {
+        const { id, impact, help, helpUrl } = violation
+        const entry = violations.get(id) ?? { impact, help, helpUrl, places: new Set() }
+        for (const node of violation.nodes) {
+          if (isPortalledMenu(id, node)) continue
           // Contrast failures carry the measured colours; show them so the fix
           // can go to the right design token.
           const contrast = node.any.find((check) => check.data?.contrastRatio)?.data
@@ -163,7 +165,7 @@ try {
             : ''
           entry.places.add(`${theme} ${name}: ${node.target.join(' ')}${detail}`)
         }
-        if (entry.places.size > 0) violations.set(v.id, entry)
+        if (entry.places.size > 0) violations.set(id, entry)
       }
     }
     await page.close()
@@ -175,10 +177,10 @@ try {
 
 const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor']
 const sorted = [...violations].sort(([, a], [, b]) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact))
-for (const [id, v] of sorted) {
-  console.log(`\n[${v.impact}] ${id}: ${v.help} (${v.places.size} places)\n  ${v.helpUrl}`)
-  for (const place of [...v.places].slice(0, placeLimit)) console.log(`  - ${place}`)
-  if (v.places.size > placeLimit) console.log(`  … and ${v.places.size - placeLimit} more`)
+for (const [id, rule] of sorted) {
+  console.log(`\n[${rule.impact}] ${id}: ${rule.help} (${rule.places.size} places)\n  ${rule.helpUrl}`)
+  for (const place of [...rule.places].slice(0, placeLimit)) console.log(`  - ${place}`)
+  if (rule.places.size > placeLimit) console.log(`  … and ${rule.places.size - placeLimit} more`)
 }
 console.log(
   `\n${violations.size} rule${violations.size === 1 ? '' : 's'} violated across ${SCENARIOS.length} scenarios × 2 themes`,

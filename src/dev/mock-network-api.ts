@@ -40,6 +40,13 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
+const MINUTE_MS = 60_000
+const HOUR_MS = 60 * MINUTE_MS
+const DAY_MS = 24 * HOUR_MS
+// Decimal units, as the usage views format bytes.
+const MB = 1_000_000
+const GB = 1_000_000_000
+
 /** Whether `value` is within `limit` scaled by `factor`; no limit always is. */
 function isWithin(value: number, limit: number | null, factor: number): boolean {
   return limit === null || value <= limit * factor
@@ -116,30 +123,34 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
  */
 function mockQrSvg(): string {
   const size = 25
-  const quiet = 4
-  const dim = size + quiet * 2
+  // The blank margin a scanner needs around the code.
+  const quietZone = 4
+  const side = size + quietZone * 2
+  // The three 7x7 corner squares a scanner locks onto.
+  const finderSize = 7
+  const finderEdge = finderSize - 1
   const isFinder = (x: number, y: number): boolean => {
     const isInBox = (bx: number, by: number): boolean => {
       const dx = x - bx
       const dy = y - by
-      if (dx < 0 || dx > 6 || dy < 0 || dy > 6) return false
-      const isOnRing = dx === 0 || dx === 6 || dy === 0 || dy === 6
+      if (dx < 0 || dx > finderEdge || dy < 0 || dy > finderEdge) return false
+      const isOnRing = dx === 0 || dx === finderEdge || dy === 0 || dy === finderEdge
       const isInCore = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4
       return isOnRing || isInCore
     }
-    return isInBox(0, 0) || isInBox(size - 7, 0) || isInBox(0, size - 7)
+    return isInBox(0, 0) || isInBox(size - finderSize, 0) || isInBox(0, size - finderSize)
   }
   let rects = ''
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       // Finder patterns where they belong, otherwise a deterministic speckle.
-      const isDark = isFinder(x, y) ? true : (x * 7 + y * 13 + x * y) % 3 === 0
-      if (isDark) rects += `<rect x="${x + quiet}" y="${y + quiet}" width="1" height="1"/>`
+      const isDark = isFinder(x, y) || (x * 7 + y * 13 + x * y) % 3 === 0
+      if (isDark) rects += `<rect x="${x + quietZone}" y="${y + quietZone}" width="1" height="1"/>`
     }
   }
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" shape-rendering="crispEdges">` +
-    `<rect width="${dim}" height="${dim}" fill="#ffffff"/>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" shape-rendering="crispEdges">` +
+    `<rect width="${side}" height="${side}" fill="#ffffff"/>` +
     `<g fill="#000000">${rects}</g></svg>`
   )
 }
@@ -498,7 +509,7 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
     kindConfidence: device.kindConfidence ?? 'high',
     // Reachable devices were just seen; the offline camera is a roster device
     // merged back in, so it carries an older "last seen" to exercise the label.
-    lastSeen: device.isReachable ? Date.now() : Date.now() - 5 * 60 * 60_000,
+    lastSeen: device.isReachable ? Date.now() : Date.now() - 5 * HOUR_MS,
   })),
 }
 
@@ -506,11 +517,9 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
 // and severities all show. Timestamps are relative to now so the day headers
 // ("Today", "Yesterday") stay meaningful in the demo.
 function seedNetworkEvents(): NetworkEvent[] {
-  const min = 60_000
-  const hour = 3_600_000
   const rows: (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
     {
-      ago: 74 * min,
+      ago: 74 * MINUTE_MS,
       type: 'wifi_connected',
       severity: 'info',
       mac: MOCK_SELF_MAC,
@@ -522,7 +531,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 8 * min,
+      ago: 8 * MINUTE_MS,
       type: 'device_joined',
       severity: 'info',
       mac: '96:bc:d3:21:af:00',
@@ -534,7 +543,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: true,
     },
     {
-      ago: 2 * hour,
+      ago: 2 * HOUR_MS,
       type: 'ethernet_connected',
       severity: 'info',
       mac: MOCK_ETHERNET_MAC,
@@ -546,7 +555,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 75 * min,
+      ago: 75 * MINUTE_MS,
       type: 'connection_lost',
       severity: 'warning',
       mac: null,
@@ -558,7 +567,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 27 * hour,
+      ago: 27 * HOUR_MS,
       type: 'internet_lost',
       severity: 'warning',
       mac: null,
@@ -570,7 +579,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 26 * hour,
+      ago: 26 * HOUR_MS,
       type: 'internet_restored',
       severity: 'info',
       mac: null,
@@ -582,7 +591,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 40 * min,
+      ago: 40 * MINUTE_MS,
       type: 'ap_appeared',
       severity: 'warning',
       mac: '24:5a:4c:88:19:2f',
@@ -594,7 +603,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 5 * hour,
+      ago: 5 * HOUR_MS,
       type: 'device_offline',
       severity: 'info',
       mac: 'ec:71:db:77:88:99',
@@ -606,7 +615,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 28 * hour,
+      ago: 28 * HOUR_MS,
       type: 'device_online',
       severity: 'info',
       mac: 'ec:71:db:77:88:99',
@@ -618,7 +627,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 30 * hour,
+      ago: 30 * HOUR_MS,
       type: 'gateway_changed',
       severity: 'critical',
       mac: '24:5a:4c:11:b2:03',
@@ -630,7 +639,7 @@ function seedNetworkEvents(): NetworkEvent[] {
       isRandomized: false,
     },
     {
-      ago: 34 * hour,
+      ago: 34 * HOUR_MS,
       type: 'initial_scan',
       severity: 'info',
       mac: null,
@@ -677,10 +686,16 @@ const mockServices: ServiceDefinition[] = [
   { name: 'Home Server', host: 'homeserver.local' },
 ]
 
+/** Like the store: a host already listed takes the new label in place, any other is appended. */
+function upsertMockService(name: string, host: string): void {
+  const existing = mockServices.findIndex((s) => s.host === host)
+  if (existing >= 0) mockServices[existing] = { name, host }
+  else mockServices.push({ name, host })
+}
+
 // A seeded timeline reaching about two days back, so the Services timeline has
 // days to group and durations to render. The backend's heartbeat records the
 // real one.
-const HOUR_MS = 60 * 60 * 1000
 const mockServiceHistory: ServiceEvent[] = (() => {
   const now = Date.now()
   // Newest first, as `get_service_history` returns it. Home Server never
@@ -726,9 +741,9 @@ const mockLatencyWalk = new Map<string, number>()
  * settles like a real signal instead of a jagged fuzz. The pull back toward the
  * baseline keeps a long run from wandering into another band.
  */
-function stepLatency(host: string, from?: number): number {
+function stepLatency(host: string): number {
   const { base, spread } = latencyProfile(host)
-  const prev = from ?? mockLatencyWalk.get(host) ?? base
+  const prev = mockLatencyWalk.get(host) ?? base
   const pull = (base - prev) * 0.3
   const step = (Math.random() - 0.5) * spread
   const next = Math.max(1, prev + pull + step)
@@ -767,12 +782,12 @@ const MOCK_SEEDED_BLIP: Record<string, number> = { 'youtube.com': 5 }
 function mockSeededLatencyHistory(): Record<string, LatencySample[]> {
   const now = Date.now()
   const history: Record<string, LatencySample[]> = {}
-  for (const svc of mockServices) {
-    if (!isMockReachable(svc.host)) continue
-    const blipAgo = MOCK_SEEDED_BLIP[svc.host]
-    history[svc.host] = Array.from({ length: MAX_SAMPLES }, (_, i) => {
+  for (const service of mockServices) {
+    if (!isMockReachable(service.host)) continue
+    const blipAgo = MOCK_SEEDED_BLIP[service.host]
+    history[service.host] = Array.from({ length: MAX_SAMPLES }, (_, i) => {
       const ago = MAX_SAMPLES - 1 - i
-      const ms = ago === blipAgo ? null : Math.round(stepLatency(svc.host) * 10) / 10
+      const ms = ago === blipAgo ? null : mockLatencyFor(service.host)
       return { ts: now - ago * MOCK_POLL_INTERVAL_MS, ms }
     })
   }
@@ -833,7 +848,6 @@ const MOCK_SPEED_CONTEXT = {
 // A couple of weeks of history so the "View history" trend isn't empty. Newest
 // first; values wobble around the current result the way a real link does.
 function seedSpeedHistory(): SpeedHistoryEntry[] {
-  const hour = 3_600_000
   const points: (SpeedResult & { agoHours: number })[] = [
     { downloadMbps: 181.9, uploadMbps: 5.3, latencyMs: 17, jitterMs: 12.1, packetLoss: 0, agoHours: 6 },
     { downloadMbps: 174.6, uploadMbps: 5.1, latencyMs: 19, jitterMs: 13.6, packetLoss: 0, agoHours: 27 },
@@ -847,7 +861,7 @@ function seedSpeedHistory(): SpeedHistoryEntry[] {
   return points.map(({ agoHours, ...speed }) => ({
     ...speed,
     ...MOCK_SPEED_CONTEXT,
-    timestamp: Date.now() - agoHours * hour,
+    timestamp: Date.now() - agoHours * HOUR_MS,
   }))
 }
 
@@ -859,7 +873,7 @@ function wobble(base: number, spread: number): number {
 }
 
 // How far back the usage views claim tracking started.
-const MOCK_TRACKING_SINCE_AGO_MS = 42 * 60_000
+const MOCK_TRACKING_SINCE_AGO_MS = 42 * MINUTE_MS
 // Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store/speed.rs.
 const MOCK_SPEED_HISTORY_LIMIT = 50
 
@@ -912,8 +926,8 @@ function createMockNetworkApi(): NetworkAPI {
     liveTimer = setInterval(() => {
       if (testTraffic) {
         // Light ±3% jitter so the driven line reads as live, not flat.
-        const j = 0.97 + Math.random() * 0.06
-        emitLive(testTraffic.downloadMbps * j, testTraffic.uploadMbps * j)
+        const jitter = 0.97 + Math.random() * 0.06
+        emitLive(testTraffic.downloadMbps * jitter, testTraffic.uploadMbps * jitter)
         return
       }
       const { down, up } = idleSample()
@@ -959,10 +973,10 @@ function createMockNetworkApi(): NetworkAPI {
     // long enough to walk all three, which is what shows the indicator in the
     // site demo.
     getDevices: (() => {
-      let scans = 0
+      let scanCount = 0
       return async () => {
-        scans += 1
-        await delay(scans === 1 ? 700 : 3600)
+        scanCount += 1
+        await delay(scanCount === 1 ? 700 : 3600)
         return { ...MOCK_DEVICE_SCAN, scannedAt: Date.now() }
       }
     })(),
@@ -975,8 +989,6 @@ function createMockNetworkApi(): NetworkAPI {
     },
     getDataUsage: async () => {
       await delay(200)
-      const day = 86_400_000
-      const gb = 1_000_000_000
       // A believable week: lighter midweek, heavier at the weekend, today still
       // filling in. Index 0 is six days ago, index 6 today. [downGB, upGB].
       const byDay: [number, number][] = [
@@ -989,28 +1001,27 @@ function createMockNetworkApi(): NetworkAPI {
         [4.9, 0.6],
       ]
       const days = byDay.map(([down, up], i) => {
-        const when = new Date(Date.now() - (6 - i) * day)
+        const when = new Date(Date.now() - (6 - i) * DAY_MS)
         const key = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, '0')}-${String(when.getDate()).padStart(2, '0')}`
         return {
           date: key,
-          rxBytes: Math.round(down * gb),
-          txBytes: Math.round(up * gb),
+          rxBytes: Math.round(down * GB),
+          txBytes: Math.round(up * GB),
         }
       })
       return {
         days,
         bootRxBytes: 23_400_000_000,
         bootTxBytes: 3_100_000_000,
-        trackingSince: Date.now() - 6 * day,
+        trackingSince: Date.now() - 6 * DAY_MS,
       }
     },
     getAppUsage: async (): Promise<AppUsageSummary> => {
       await delay(200)
-      const mb = 1_000_000
       const apps = MOCK_APP_ROWS.map(([name, down, up]) => ({
         name,
-        rxBytes: Math.round(down * mb),
-        txBytes: Math.round(up * mb),
+        rxBytes: Math.round(down * MB),
+        txBytes: Math.round(up * MB),
         // The mock has no real OS icons; rows fall back to favicon/monogram.
         icon: null,
       }))
@@ -1018,9 +1029,8 @@ function createMockNetworkApi(): NetworkAPI {
     },
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
-      const mb = 1_000_000
       // Every app in MOCK_APP_ROWS gets hosts, in order, so an Apps row's link
-      // never lands on a missing group. [host, ip, cc, downMB, upMB]; a null cc
+      // never lands on a missing group. [host, ip, countryCode, downMB, upMB]; a null country code
       // (LAN peer) shows no flag, a null host the bare IP. Per-app sums stay
       // within getAppUsage's totals: hosts count only TCP traffic.
       const apps: [string, [string | null, string, string | null, number, number][]][] = [
@@ -1076,12 +1086,12 @@ function createMockNetworkApi(): NetworkAPI {
       ]
       return {
         apps: apps.map(([name, hosts]) => {
-          const mapped = hosts.map(([host, ip, cc, down, up]) => ({
+          const mapped = hosts.map(([host, ip, countryCode, down, up]) => ({
             ip: ip ?? host ?? '',
             host,
-            countryCode: cc,
-            rxBytes: Math.round(down * mb),
-            txBytes: Math.round(up * mb),
+            countryCode,
+            rxBytes: Math.round(down * MB),
+            txBytes: Math.round(up * MB),
           }))
           return {
             name,
@@ -1103,7 +1113,6 @@ function createMockNetworkApi(): NetworkAPI {
     },
     getTrafficUsage: async (): Promise<TrafficUsageSummary> => {
       await delay(200)
-      const mb = 1_000_000
       // A believable protocol mix for the session above: the web dominates,
       // then a QUIC/HTTP3 slice, DNS, push keepalives, an ssh session's upload,
       // and a long tail of unrecognised ports. [id, label, downMB, upMB].
@@ -1124,8 +1133,8 @@ function createMockNetworkApi(): NetworkAPI {
         .map(([id, label, down, up]) => ({
           id,
           label,
-          rxBytes: Math.round(down * mb),
-          txBytes: Math.round(up * mb),
+          rxBytes: Math.round(down * MB),
+          txBytes: Math.round(up * MB),
         }))
         .sort((a, b) => b.rxBytes + b.txBytes - (a.rxBytes + a.txBytes))
       return { types, support: 'supported', trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS }
@@ -1173,9 +1182,7 @@ function createMockNetworkApi(): NetworkAPI {
     },
     addService: async (name: string, host: string) => {
       await delay(160)
-      const existing = mockServices.findIndex((s) => s.host === host)
-      if (existing >= 0) mockServices[existing] = { name, host }
-      else mockServices.push({ name, host })
+      upsertMockService(name, host)
       return mockServices.map((s) => ({ ...s }))
     },
     updateService: async (oldHost: string, name: string, host: string) => {
@@ -1187,9 +1194,7 @@ function createMockNetworkApi(): NetworkAPI {
       } else {
         // Like the store: fold into the row that already has the host, or append.
         if (at >= 0) mockServices.splice(at, 1)
-        const existing = mockServices.findIndex((s) => s.host === host)
-        if (existing >= 0) mockServices[existing] = { name, host }
-        else mockServices.push({ name, host })
+        upsertMockService(name, host)
       }
       return mockServices.map((s) => ({ ...s }))
     },
@@ -1212,7 +1217,7 @@ function createMockNetworkApi(): NetworkAPI {
     onServicesTimeline: () => () => undefined,
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       isCancelled = false
-      const { downloadMbps: DOWN, uploadMbps: UP } = MOCK_SPEED_RESULT
+      const { downloadMbps: resultDownloadMbps, uploadMbps: resultUploadMbps } = MOCK_SPEED_RESULT
 
       // A realistic ~10 s test, stepped every 200 ms. Each phase's band starts on
       // one of the backend's progress steps (PROGRESS_STEPS in progress-fill.ts),
@@ -1233,20 +1238,20 @@ function createMockNetworkApi(): NetworkAPI {
             testTraffic = null
             throw new Error('SPEED_TEST_CANCELLED')
           }
-          const pf = i / ticks // 0..1 through this phase
+          const phaseProgress = i / ticks // 0..1
 
           if (phase.name === 'download') {
             // Quick rise, then hold near the achieved rate with a little wobble.
-            const ramp = smoothstep(pf * 1.5)
+            const ramp = smoothstep(phaseProgress * 1.5)
             testTraffic = {
-              downloadMbps: DOWN * ramp * (0.98 + Math.random() * 0.04),
+              downloadMbps: resultDownloadMbps * ramp * (0.98 + Math.random() * 0.04),
               uploadMbps: 0.05 + Math.random() * 0.1,
             }
           } else if (phase.name === 'upload') {
-            const ramp = smoothstep(pf * 1.5)
+            const ramp = smoothstep(phaseProgress * 1.5)
             testTraffic = {
-              downloadMbps: DOWN * 0.03 * (1 - pf), // download tapers as upload takes over
-              uploadMbps: UP * ramp * (0.98 + Math.random() * 0.04),
+              downloadMbps: resultDownloadMbps * 0.03 * (1 - phaseProgress), // download tapers as upload takes over
+              uploadMbps: resultUploadMbps * ramp * (0.98 + Math.random() * 0.04),
             }
           } else {
             // Latency and finish: the link is mostly quiet.
@@ -1259,7 +1264,7 @@ function createMockNetworkApi(): NetworkAPI {
           emitProgress({
             phase: 'internet',
             message: phase.message,
-            progress: phase.from + (phase.to - phase.from) * pf,
+            progress: phase.from + (phase.to - phase.from) * phaseProgress,
           })
         }
       }

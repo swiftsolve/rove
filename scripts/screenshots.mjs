@@ -42,21 +42,21 @@ const { width, height } = app.windows[0]
 
 /** Every screen worth a shot: each tab, plus the subpages layered over one. */
 const SCREENS = [
-  ['01-home', { tab: 'home', speedSub: null }],
-  ['02-speed', { tab: 'speed', speedSub: null }],
+  ['01-home', { tab: 'home' }],
+  ['02-speed', { tab: 'speed' }],
   ['03-speed-details', { tab: 'speed', speedSub: { view: 'details', target: 'streaming-4k' } }],
   ['04-speed-history', { tab: 'speed', speedSub: { view: 'history' } }],
-  ['05-interfaces', { tab: 'interfaces', speedSub: null }],
-  ['06-devices', { tab: 'devices', speedSub: null }],
-  ['07-events', { tab: 'events', speedSub: null }],
-  ['08-usage', { tab: 'usage', speedSub: null }],
-  ['09-apps', { tab: 'apps', speedSub: null }],
-  ['10-apps-hosts', { tab: 'apps', speedSub: null, appsSub: { view: 'hosts' } }],
-  ['11-diagnostics', { tab: 'diagnostics', speedSub: null }],
-  ['12-services', { tab: 'services', speedSub: null }],
-  ['13-services-timeline', { tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } }],
-  ['14-settings', { tab: 'settings', speedSub: null }],
-  ['15-about', { tab: 'about', speedSub: null }],
+  ['05-interfaces', { tab: 'interfaces' }],
+  ['06-devices', { tab: 'devices' }],
+  ['07-events', { tab: 'events' }],
+  ['08-usage', { tab: 'usage' }],
+  ['09-apps', { tab: 'apps' }],
+  ['10-apps-hosts', { tab: 'apps', appsSub: { view: 'hosts' } }],
+  ['11-diagnostics', { tab: 'diagnostics' }],
+  ['12-services', { tab: 'services' }],
+  ['13-services-timeline', { tab: 'services', servicesSub: { view: 'timeline' } }],
+  ['14-settings', { tab: 'settings' }],
+  ['15-about', { tab: 'about' }],
 ]
 
 /**
@@ -65,17 +65,17 @@ const SCREENS = [
  * [name, location, what to do once it has settled].
  */
 const SCENES = [
-  ['16-home-details', { tab: 'home', speedSub: null }, (page) => page.locator('button[aria-expanded]').first().click()],
-  ['17-home-share-wifi', { tab: 'home', speedSub: null }, (page) => button(page, 'Share Wi‑Fi').click()],
+  ['16-home-details', { tab: 'home' }, (page) => page.locator('button[aria-expanded]').first().click()],
+  ['17-home-share-wifi', { tab: 'home' }, (page) => button(page, 'Share Wi‑Fi').click()],
   [
     '18-speed-history-menu',
     { tab: 'speed', speedSub: { view: 'history' } },
     (page) => button(page, 'History options').first().click(),
   ],
-  ['19-services-add-dialog', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').click()],
+  ['19-services-add-dialog', { tab: 'services' }, (page) => button(page, 'Add service').click()],
   [
     '20-services-row-menu',
-    { tab: 'services', speedSub: null },
+    { tab: 'services' },
     async (page) => {
       // The kebab only shows on row hover or focus: open it from the keyboard.
       await button(page, /^Options for/)
@@ -86,12 +86,12 @@ const SCENES = [
   ],
   [
     '21-services-timeline-menu',
-    { tab: 'services', speedSub: null, servicesSub: { view: 'timeline' } },
+    { tab: 'services', servicesSub: { view: 'timeline' } },
     (page) => button(page, 'Timeline options').click(),
   ],
-  ['22-help-tooltip', { tab: 'services', speedSub: null }, (page) => button(page, 'About service checks').hover()],
-  ['23-rail-tooltip', { tab: 'home', speedSub: null }, (page) => button(page, 'Speed').hover()],
-  ['24-focus-ring', { tab: 'services', speedSub: null }, (page) => button(page, 'Add service').focus()],
+  ['22-help-tooltip', { tab: 'services' }, (page) => button(page, 'About service checks').hover()],
+  ['23-rail-tooltip', { tab: 'home' }, (page) => button(page, 'Speed').hover()],
+  ['24-focus-ring', { tab: 'services' }, (page) => button(page, 'Add service').focus()],
 ]
 
 function button(page, name) {

@@ -8,6 +8,5 @@ export function isValidRate(value: number): boolean {
 
 /** Coerce invalid rates to zero for calculations and live readouts. */
 export function sanitizeRate(value: number): number {
-  if (!Number.isFinite(value) || value < 0) return 0
-  return value
+  return isValidRate(value) ? value : 0
 }

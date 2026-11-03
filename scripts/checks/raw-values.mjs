@@ -93,6 +93,15 @@ const DURATION = scale(tokens, '--duration-')
 
 const tokenSuffix = (name, prefix) => name.slice(prefix.length)
 
+/** The token scale a CSS property's values come from, or null for one no scale covers. */
+function scaleForProperty(property) {
+  if (SPACING_PROPERTY.test(property)) return SPACING
+  if (RADIUS_PROPERTY.test(property)) return RADIUS
+  if (property === 'font-size') return FONT_SIZE
+  if (property === 'font-weight') return WEIGHT
+  return null
+}
+
 // Tailwind utilities whose bare value is a spacing step (`p-12`, `size-4`, `-mt-6`).
 const SPACING_UTILITY =
   /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
@@ -166,16 +175,8 @@ for (const file of files) {
     for (const match of styles.matchAll(/(?<![\w-])([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
       const [, property, value] = match
       checkValue(match.index, value, (raw) => `${property}: ${raw}`)
+      const fromScale = scaleForProperty(property)
       for (const part of value.trim().split(/\s+/)) {
-        const fromScale = SPACING_PROPERTY.test(property)
-          ? SPACING
-          : RADIUS_PROPERTY.test(property)
-            ? RADIUS
-            : property === 'font-size'
-              ? FONT_SIZE
-              : property === 'font-weight'
-                ? WEIGHT
-                : null
         const token = fromScale?.get(part)
         if (token) report(match.index, part, `${property}: ${part} is ${token}; use var(${token})`)
       }
@@ -192,11 +193,8 @@ for (const file of files) {
     if (!LENGTH.test(length)) continue
     if (SPACING_UTILITY.test(utility) && SPACING.has(length)) {
       const step = tokenSuffix(SPACING.get(length), '--spacing-')
-      report(
-        match.index,
-        whole,
-        `${whole} is ${SPACING.get(length)}; use ${whole.startsWith('-') || value.startsWith('-') ? '-' : ''}${utility}-${step}`,
-      )
+      const sign = whole.startsWith('-') || value.startsWith('-') ? '-' : ''
+      report(match.index, whole, `${whole} is ${SPACING.get(length)}; use ${sign}${utility}-${step}`)
     } else if (RADIUS_UTILITY.test(utility) && RADIUS.has(length)) {
       report(
         match.index,

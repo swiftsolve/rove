@@ -4,33 +4,36 @@ import { type AppLocation, HOME_LOCATION, isSameLocation, type Navigation, paren
 import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
 
 // Namespaced, so we don't clobber anything the webview host keeps on `history.state`.
-const STATE_KEY = '__roveNav'
+const LOCATION_KEY = '__roveNav'
 // The screen's return point, saved on its entry as we leave it for another.
 const RETURN_KEY = '__roveReturn'
 // How many of our own entries sit behind this one. Kept on the entry, not
 // counted on each pop, so a forward step or a reload can't throw it off.
 const DEPTH_KEY = '__roveDepth'
 
+/** One of our fields on a history entry's state, or undefined on an entry we didn't write. */
+function readField(state: unknown, key: string): unknown {
+  if (state == null || typeof state !== 'object') return undefined
+  return (state as Record<string, unknown>)[key]
+}
+
 function readLocation(state: unknown): AppLocation | null {
-  if (state == null || typeof state !== 'object' || !(STATE_KEY in state)) return null
-  return (state as Record<string, AppLocation>)[STATE_KEY] ?? null
+  return (readField(state, LOCATION_KEY) as AppLocation | undefined) ?? null
 }
 
 function readDepth(state: unknown): number {
-  if (state == null || typeof state !== 'object' || !(DEPTH_KEY in state)) return 0
-  const depth = (state as Record<string, unknown>)[DEPTH_KEY]
+  const depth = readField(state, DEPTH_KEY)
   return typeof depth === 'number' ? depth : 0
 }
 
 function readReturnPoint(state: unknown): ReturnPoint | null {
-  if (state == null || typeof state !== 'object' || !(RETURN_KEY in state)) return null
-  return (state as Record<string, ReturnPoint>)[RETURN_KEY] ?? null
+  return (readField(state, RETURN_KEY) as ReturnPoint | undefined) ?? null
 }
 
 // A new entry starts with no return point: the current entry's is its own.
 function historyStateFor(location: AppLocation): Record<string, unknown> {
   const { [RETURN_KEY]: _returnPoint, ...current } = (window.history.state as Record<string, unknown> | null) ?? {}
-  return { ...current, [STATE_KEY]: location }
+  return { ...current, [LOCATION_KEY]: location }
 }
 
 /** Saves the screen being left's return point on its own entry. */

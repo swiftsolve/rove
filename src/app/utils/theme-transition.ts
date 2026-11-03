@@ -21,7 +21,7 @@ type RunningSwap = {
 }
 
 // Module-level: there is only one document root to animate.
-let running: RunningSwap | null = null
+let runningSwap: RunningSwap | null = null
 
 // Little ease-in and no long tail: a slow finish reads as dragging.
 const SWAP_DURATION_MS = 200
@@ -59,7 +59,7 @@ type RunningFade = {
   lastFrameAt: number
 }
 
-let fade: RunningFade | null = null
+let runningFade: RunningFade | null = null
 
 /** The tokens the light theme overrides, read from the stylesheet so the list follows rove-tokens. */
 function lightThemeTokenNames(rules: CSSRuleList): string[] {
@@ -95,23 +95,23 @@ function easeInOut(progress: number): number {
 }
 
 function stepFade(now: number): void {
-  if (!fade) return
+  if (!runningFade) return
   const root = document.documentElement
-  const delta = (now - fade.lastFrameAt) / SWAP_DURATION_MS
-  fade.lastFrameAt = now
-  fade.progress = Math.min(1, Math.max(0, fade.progress + (fade.isTargetLight ? delta : -delta)))
+  const delta = (now - runningFade.lastFrameAt) / SWAP_DURATION_MS
+  runningFade.lastFrameAt = now
+  runningFade.progress = Math.min(1, Math.max(0, runningFade.progress + (runningFade.isTargetLight ? delta : -delta)))
 
-  if (fade.progress === (fade.isTargetLight ? 1 : 0)) {
+  if (runningFade.progress === (runningFade.isTargetLight ? 1 : 0)) {
     // Landed: hand the tokens back to the stylesheet, which the theme class
     // already points at the target.
-    for (const { name } of fade.tokens) root.style.removeProperty(name)
+    for (const { name } of runningFade.tokens) root.style.removeProperty(name)
     root.classList.remove('theme-switching')
-    fade = null
+    runningFade = null
     return
   }
 
-  const lightPercent = easeInOut(fade.progress) * 100
-  for (const { name, dark, light } of fade.tokens) {
+  const lightPercent = easeInOut(runningFade.progress) * 100
+  for (const { name, dark, light } of runningFade.tokens) {
     root.style.setProperty(name, `color-mix(in srgb, ${light} ${lightPercent}%, ${dark})`)
   }
   requestAnimationFrame(stepFade)
@@ -128,8 +128,8 @@ function fadeThemeClass(isLight: boolean): void {
   const root = document.documentElement
   if (root.classList.contains('theme-light') === isLight) return
 
-  if (fade) {
-    fade.isTargetLight = isLight
+  if (runningFade) {
+    runningFade.isTargetLight = isLight
     root.classList.toggle('theme-light', isLight)
     return
   }
@@ -149,7 +149,7 @@ function fadeThemeClass(isLight: boolean): void {
     // Colours only: shadows and the like just switch.
     .filter(({ dark, light }) => dark !== light && CSS.supports('color', dark) && CSS.supports('color', light))
 
-  fade = { tokens, progress: isLight ? 0 : 1, isTargetLight: isLight, lastFrameAt: performance.now() }
+  runningFade = { tokens, progress: isLight ? 0 : 1, isTargetLight: isLight, lastFrameAt: performance.now() }
   // Hold the outgoing colours for the first paint; the frames take it from there.
   tokens.forEach(({ name, dark, light }) => root.style.setProperty(name, isLight ? dark : light))
   requestAnimationFrame(stepFade)
@@ -208,8 +208,8 @@ function animateClipCircle(root: HTMLElement, isNextLight: boolean): Animation {
 export function swapResolvedTheme(isNextLight: boolean, persist: () => void): void {
   const root = document.documentElement
 
-  if (running) {
-    foldIntoRunningSwap(running, isNextLight, persist)
+  if (runningSwap) {
+    foldIntoRunningSwap(runningSwap, isNextLight, persist)
     return
   }
 
@@ -246,7 +246,7 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
     applyThemeClass(isNextLight)
   })
   const swap: RunningSwap = { transition, isTargetLight: isNextLight, animation: null }
-  running = swap
+  runningSwap = swap
 
   transition.ready
     .then(() => {
@@ -261,6 +261,6 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
 
   void transition.finished.finally(() => {
     root.classList.remove('theme-to-dark')
-    if (running === swap) running = null
+    if (runningSwap === swap) runningSwap = null
   })
 }

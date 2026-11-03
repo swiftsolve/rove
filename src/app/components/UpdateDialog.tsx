@@ -5,6 +5,12 @@ import { releaseNoteItems } from '@/app/utils/release-notes'
 import type { PendingUpdate } from '@/app/utils/updater'
 import { ArrowRightIcon, Button, Dialog, DownloadIcon } from '@/ui'
 
+function installLabel(isInstalling: boolean, hasFailed: boolean): string {
+  if (isInstalling) return 'Installing…'
+  if (hasFailed) return 'Try again'
+  return 'Install and restart'
+}
+
 /**
  * The update prompt. Not window.confirm: native JS dialogs block the GTK loop
  * and freeze the webview on WebKitGTK. A failed install stays open with the error.
@@ -37,7 +43,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
       actions={
         <>
           <Button variant="solid" icon={DownloadIcon} onClick={() => install.mutate()} isLoading={isInstalling}>
-            {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
+            {installLabel(isInstalling, hasFailed)}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}
           <p className="sr-only" role="status">
