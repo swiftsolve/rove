@@ -21,7 +21,7 @@ async fn main() {
         Ok(()) => {}
         Err(e) => {
             eprintln!("rove-dhcp-helper: could not start capture: {e}");
-            eprintln!("(binding UDP :67 needs root — run under sudo, or as a LaunchDaemon)");
+            eprintln!("(binding UDP :67 needs root: run it under sudo, or as a LaunchDaemon)");
             std::process::exit(1);
         }
     }

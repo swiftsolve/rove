@@ -93,7 +93,7 @@ mod tests {
         // Third miss, and past MIN_ABSENCE: really gone.
         assert!(
             !reachable_at(mac, false, t0 + Duration::from_secs(120)),
-            "three misses plus a real absence flips to cached",
+            "three misses plus a real absence flips to offline",
         );
     }
 
@@ -122,7 +122,7 @@ mod tests {
         assert!(reachable_at(mac, false, t0 + Duration::from_secs(5)));
         assert!(
             reachable_at(mac, false, t0 + Duration::from_secs(6)),
-            "the absence floor is measured from the last sighting, not the process start",
+            "the absence floor runs from the first miss after a sighting, not the process start",
         );
     }
 }

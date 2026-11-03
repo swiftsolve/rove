@@ -151,7 +151,7 @@ mod tests {
         iot_first.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
 
         assert_eq!(tv_first.mdns.kind, Some("iot"));
-        assert_eq!(iot_first.mdns.kind, iot_first.mdns.kind);
+        assert_eq!(iot_first.mdns.kind, Some("iot"));
         assert_eq!(tv_first.mdns.kind, iot_first.mdns.kind);
     }
 

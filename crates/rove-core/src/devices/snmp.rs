@@ -240,11 +240,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn encodes_a_getrequest_that_round_trips() {
-        let pkt = encode_get(OID_SYS_DESCR, COMMUNITY, REQUEST_ID);
-        assert_eq!(pkt[0], 0x30);
-        // Only the outer SEQUENCE is checked here. A GetRequest carries no value
-        // to decode; the response tests exercise the same nesting.
+    fn encodes_the_sys_descr_getrequest_byte_for_byte() {
+        // Written out by hand, not with `tlv`, so a bug there can't hide.
+        #[rustfmt::skip]
+        let expected: &[u8] = &[
+            0x30, 0x29,                                     // Message
+            0x02, 0x01, 0x01,                               //   version: v2c
+            0x04, 0x06, b'p', b'u', b'b', b'l', b'i', b'c', //   community
+            0xa0, 0x1c,                                     //   GetRequest-PDU
+            0x02, 0x04, 0x72, 0x6f, 0x76, 0x65,             //     request-id "rove"
+            0x02, 0x01, 0x00,                               //     error-status
+            0x02, 0x01, 0x00,                               //     error-index
+            0x30, 0x0e,                                     //     VarBindList
+            0x30, 0x0c,                                     //       VarBind
+            0x06, 0x08, 0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x01, 0x00, // sysDescr.0
+            0x05, 0x00,                                     //         NULL
+        ];
+        assert_eq!(encode_get(OID_SYS_DESCR, COMMUNITY, REQUEST_ID), expected);
     }
 
     /// Build a minimal GetResponse for `descr` to exercise the decoder.
