@@ -1,11 +1,12 @@
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 import type { JSX, ReactNode } from 'react'
 
+import { ErrorNotice } from '@/app/components/ErrorNotice'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import type { NetworkError } from '@/features/connection/hooks/useNetworkInfoSource'
 import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
-import { AlertIcon, Banner, Button, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
+import { AlertIcon, Banner, OfflineIcon, Spinner } from '@/ui'
 
 // What the app shows while network info is missing or its refresh failed.
 
@@ -71,22 +72,13 @@ export function NetworkLoadingScreen() {
   const { kind, title, description } = info
   return (
     <div className={loadingVariants({ isError: true })} role="alert">
-      <span
-        className={cx(
-          'inline-flex items-center justify-center size-[48px] rounded-full text-status-negative',
-          'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
-        )}
-        aria-hidden
-      >
-        <NetworkErrorIcon kind={kind} size={24} />
-      </span>
-      <div className="flex flex-col items-center gap-4 text-center">
-        <p className="text-lg font-semibold text-primary">{title}</p>
-        <p className="max-w-[260px] text-sm text-tertiary">{description}</p>
-      </div>
-      <Button icon={RefreshIcon} onClick={() => void network.refresh()}>
-        Try again
-      </Button>
+      <ErrorNotice
+        icon={<NetworkErrorIcon kind={kind} size={24} />}
+        title={title}
+        description={description}
+        size="page"
+        onRetry={() => void network.refresh()}
+      />
     </div>
   )
 }

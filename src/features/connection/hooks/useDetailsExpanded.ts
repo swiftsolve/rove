@@ -1,29 +1,19 @@
-import { useState } from 'react'
+import { useSetting } from '@/hooks/useSetting'
 
-const EXPANDED_KEY = 'rove.connection-details-expanded'
+// Its key before it became a setting; still read, so an open panel stays open.
+const LEGACY_KEY = 'rove.connection-details-expanded'
 
-/** Remembers whether the details are open. Persisted so the choice survives
- *  tab switches (which unmount the card) and restarts; defaults to collapsed. */
-export function useDetailsExpanded(): [boolean, () => void] {
-  const [isExpanded, setIsExpanded] = useState(() => {
-    try {
-      return localStorage.getItem(EXPANDED_KEY) === 'true'
-    } catch {
-      return false
-    }
-  })
-
-  const toggleExpanded = (): void => {
-    setIsExpanded((wasExpanded) => {
-      const willExpand = !wasExpanded
-      try {
-        localStorage.setItem(EXPANDED_KEY, String(willExpand))
-      } catch {
-        // Storage unavailable: remember for this session only.
-      }
-      return willExpand
-    })
+function wasExpandedBefore(): boolean {
+  try {
+    return localStorage.getItem(LEGACY_KEY) === 'true'
+  } catch {
+    return false
   }
+}
 
-  return [isExpanded, toggleExpanded]
+/** Remembers whether the details are open. A setting, so the choice survives
+ *  tab switches (which unmount the card) and restarts, and every window agrees. */
+export function useDetailsExpanded(): [boolean, () => void] {
+  const [isExpanded, setIsExpanded] = useSetting('connectionDetailsExpanded', wasExpandedBefore())
+  return [isExpanded, () => setIsExpanded(!isExpanded)]
 }

@@ -1,74 +1,18 @@
-import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
+import { ErrorNotice } from '@/app/components/ErrorNotice'
 import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
-import type { WifiShare } from '@/types'
-import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon } from '@/ui'
+import { type ShareNotice, shareNotice } from '@/features/connection/utils/wifi-share-notice'
+import { AlertIcon, Dialog, LockIcon, Spinner, WifiOffIcon } from '@/ui'
 
 // Each state fades in as it replaces the last, while the dialog eases to its height.
 const STATE = 'flex animate-fade-in flex-col items-center gap-12 py-16 text-center'
 
-const CHIP = cx(
-  'inline-flex size-[40px] items-center justify-center rounded-full text-status-negative',
-  'bg-[color-mix(in_srgb,var(--status-negative)_var(--opacity-tint-sm),transparent)]',
-)
-
-type Notice = {
-  icon: ReactNode
-  title: string
-  description: string
-}
-
-/** The backend's error, as a title and a line of help. */
-function describeShareError(message: string): Notice {
-  if (/not connected/i.test(message)) {
-    return {
-      icon: <WifiOffIcon size={20} />,
-      title: 'Not on Wi‑Fi',
-      description: 'Connect to a Wi‑Fi network to share it.',
-    }
-  }
-  if (/name is unavailable/i.test(message)) {
-    // macOS withholds the SSID without Location Services, so point there
-    // without asserting it.
-    return {
-      icon: <WifiOffIcon size={20} />,
-      title: 'Network name hidden',
-      description: 'Your system withheld it. On a Mac, check Location Services.',
-    }
-  }
-  return { icon: <AlertIcon size={20} />, title: 'Couldn’t make a QR code', description: message }
-}
-
-const MISSING_PASSWORD: Notice = {
-  icon: <LockIcon size={20} />,
-  title: 'Password not available',
-  description: 'Allow access when asked, so the code can include it.',
-}
-
-function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void }) {
-  return (
-    <div className={STATE} role="alert">
-      <span className={CHIP} aria-hidden>
-        {notice.icon}
-      </span>
-      <div className="flex flex-col items-center gap-4">
-        <p className="text-lg font-semibold text-primary">{notice.title}</p>
-        <p className="max-w-[260px] text-sm text-tertiary">{notice.description}</p>
-      </div>
-      <Button icon={RefreshIcon} onClick={onRetry}>
-        Try again
-      </Button>
-    </div>
-  )
-}
-
-/** The notice to show instead of the QR code, if any. */
-function shareNotice(share: WifiShare | null, error: string | null): Notice | null {
-  if (error) return describeShareError(error)
-  if (share && share.encryption !== 'nopass' && !share.password) return MISSING_PASSWORD
-  return null
-}
+const NOTICE_ICONS = {
+  'wifi-off': <WifiOffIcon size={20} />,
+  lock: <LockIcon size={20} />,
+  alert: <AlertIcon size={20} />,
+} satisfies Record<ShareNotice['icon'], ReactNode>
 
 /**
  * A QR code a phone can scan to join the current Wi-Fi; the passphrase is never
@@ -101,7 +45,15 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
             <p className="type-body-default text-tertiary text-sm">Generating QR code…</p>
           </div>
         ) : notice ? (
-          <ShareNotice notice={notice} onRetry={retry} />
+          <div className={STATE} role="alert">
+            <ErrorNotice
+              icon={NOTICE_ICONS[notice.icon]}
+              title={notice.title}
+              description={notice.description}
+              size="dialog"
+              onRetry={retry}
+            />
+          </div>
         ) : qr ? (
           // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
           <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
