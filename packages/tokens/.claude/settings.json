@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Edit(tokens.css)",
+      "Edit(text-styles.css)",
+      "Edit(tokens/**)",
+      "Edit(src/figma/**)",
+      "Edit(storybook-static/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/guard-bash.mjs\"" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/lint-edited-file.mjs\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

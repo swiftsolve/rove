@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Lint and format-check what this commit holds. Only the staged files: other
+# sessions' uncommitted work in the same checkout isn't this commit's to fail
+# on. `npm run check` covers the whole tree.
+set -euo pipefail
+
+mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACMR)
+[ ${#staged[@]} -eq 0 ] && exit 0
+
+scripts=()
+for file in "${staged[@]}"; do
+  case "$file" in *.js | *.jsx | *.mjs) scripts+=("$file") ;; esac
+done
+
+if [ ${#scripts[@]} -gt 0 ]; then
+  npx eslint --no-warn-ignored -- "${scripts[@]}"
+fi
+npx prettier --check --ignore-unknown -- "${staged[@]}"
