@@ -7,11 +7,12 @@ import { TodayIcon } from '@/ui'
 
 /** Today's download and upload totals; opens the Usage tab. */
 export function UsageCard() {
-  const { usage, isLoading } = useDataUsage()
+  const { usage, isLoading, error } = useDataUsage()
   const { navigate } = useNavigation()
   const today = todaysUsage(usage)
-  // No day yet means the first load hasn't landed (or failed): zeros once it ends.
-  const hasTotals = today != null || !isLoading
+  // No day yet: still loading, or the load failed, and neither is zero use. A
+  // load that landed with no day for today is: nothing has moved yet.
+  const hasTotals = today != null || (!isLoading && error == null)
   const downloaded = splitBytes(today?.rxBytes ?? 0)
   const uploaded = splitBytes(today?.txBytes ?? 0)
   const summary = hasTotals
@@ -24,7 +25,7 @@ export function UsageCard() {
       title="Usage"
       linkLabel={`Usage: ${summary}. Open Usage.`}
       onOpen={() => navigate({ tab: 'usage' })}
-      isLoading={!hasTotals}
+      isLoading={!hasTotals && isLoading}
     >
       {hasTotals ? (
         <div className="grid grid-cols-2 gap-8 w-full" aria-hidden>
