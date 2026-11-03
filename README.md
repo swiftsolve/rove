@@ -156,7 +156,7 @@ All of it is keyless — Rove ships no API credentials.
 | IP → ASN (`data/dbip-asn-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
 | Hosting/VPN ASNs (`data/hosting-asns.txt`) | [brianhama/bad-asn-list](https://github.com/brianhama/bad-asn-list) | [MIT](https://opensource.org/licenses/MIT) | `cargo run -p rove-core --example gen_hosting_asns` |
 
-Both are chosen to be freely redistributable in a shipped binary: IEEE over
+The OUI and IP sources are chosen to be freely redistributable in a shipped binary: IEEE over
 Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA
 requires destroying superseded copies within 30 days of each twice-weekly
 release — a term a binary already on users' machines cannot honour.
@@ -203,25 +203,30 @@ rove/
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
 │   ├── bridge/                 Tauri implementation of the contract
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
-├── crates/rove-core/         all platform services in pure Rust (no Tauri/GTK
-│                               deps — compiles and tests anywhere), a module per
-│                               domain: connection/, devices/, diagnostics/,
-│                               services, speed/, usage/; plus platform/ (per-OS
-│                               probes), store/ (SQLite, a file per domain) and
-│                               util/ (net, shell, geoip, tls)
+├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
+│   │                           deps — compiles and tests anywhere), a module per
+│   │                           domain: connection/, devices/, diagnostics/,
+│   │                           services, speed/, usage/; plus platform/ (per-OS
+│   │                           probes), store/ (SQLite, a file per domain) and
+│   │                           util/ (net, shell, geoip, tls)
 │   └── data/                   bundled lookup tables (OUI, IP-to-country)
-└── src-tauri/                  thin Tauri shell: one #[tauri::command] per
-    │                           service, events, capabilities, window config
-    ├── linux/                  .deb install/remove scripts, AppArmor profile
-    └── macos/                  the optional root DHCP helper's LaunchDaemon
+├── src-tauri/                  thin Tauri shell: one #[tauri::command] per
+│   │                           service, events, capabilities, window config
+│   ├── linux/                  .deb install/remove scripts, AppArmor profile
+│   └── macos/                  the optional root DHCP helper's LaunchDaemon
+├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
+│                               runs), hooks/ (git and Claude Code), the UI
+│                               catalogue, screenshots and the a11y audit
+└── docs/                       the deeper dives (index in docs/README.md),
+                                diagrams and screenshots
 ```
 
 ## Frontend
 
 The UI follows a few conventions: state from context and TanStack Query, never
 props passed through; Tailwind utilities built only from the design tokens;
-shared components before new markup. [docs/develop/frontend.md](docs/develop/frontend.md) has
-them all, with the component table.
+shared components before new markup. [docs/develop/frontend.md](docs/develop/frontend.md)
+has them all, with checklists for common changes and the component table.
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma is the source of truth for tokens and components. To browse it without
@@ -240,16 +245,27 @@ sudo apt install -y build-essential libwebkit2gtk-4.1-dev libgtk-3-dev \
 Then:
 
 ```bash
-npm install
+npm install                  # also turns on the git hooks (scripts/hooks/git)
+npx playwright install chromium   # once, for the story tests
 npm run tauri:dev            # run the desktop app (hot-reloads the UI)
 npm run dev                  # UI only, in a browser, against the mock bridge
 npm run storybook            # the UI library's components, at localhost:6006
 npm run screenshots          # refresh docs/screenshots — every screen, at window size
-npm test                     # the UI's unit, DOM and story tests (Vitest)
 npm run format               # lay out the code with Prettier
-cargo check -p rove-core   # typecheck the service layer alone
+npm run catalogue            # regenerate src/ui/components.json after a library change
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
+
+Checking a change:
+
+```bash
+npm run check                # typecheck, lint, the repo's checks and every Vitest test
+npm test                     # just the UI's unit, DOM and story tests
+npm run a11y                 # axe on every screen and dialog, both themes
+cargo test -p rove-core      # the service layer's tests
+```
+
+CI runs `npm run check` on every push and pull request.
 
 > **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
 > VS Code from snap), unset its library path first or the binary picks up
@@ -265,7 +281,7 @@ npm run tauri:build   # .deb ~5 MB, AppImage, dmg (macOS), nsis (Windows)
 ## Platform support
 
 All services run on Linux, macOS and Windows. Each looks for the native tool
-for the job and degrades gracefully (missing values render as “—”):
+for the job and degrades gracefully (a missing value shows as a short bar):
 
 | | Linux | macOS | Windows |
 |---|---|---|---|
@@ -288,4 +304,5 @@ On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
 deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN — including the
 link-speed / transmit rate, which the shell tools no longer expose. The SSID
 sits behind Location Services, so Rove asks for that permission once at startup;
-without it the network name shows as “—” while everything else still resolves.
+without it the network name shows as missing while everything else still
+resolves.
