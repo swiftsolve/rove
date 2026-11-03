@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+
 import { getSetting, useSetting } from './useSetting'
 
 function SoundToggle({ label }: { label: string }) {

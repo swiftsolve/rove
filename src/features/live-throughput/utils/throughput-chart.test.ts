@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { buildChartRows, formatAxisLabel } from './throughput-chart'
 
 describe('buildChartRows', () => {

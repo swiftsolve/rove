@@ -1,5 +1,5 @@
 import { splitSpeedMbps } from '@/lib/format'
-import { DirectionIcon, Readout, useCountUp, type SpeedSeries } from '@/ui'
+import { DirectionIcon, Readout, type SpeedSeries, useCountUp } from '@/ui'
 
 /** Live rates below this are background noise (OS chatter, keepalives). Show them
  *  as zero rather than letting toFixed(1) round them up to 0.1 Mbps — otherwise

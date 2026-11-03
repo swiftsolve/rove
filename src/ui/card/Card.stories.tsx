@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
 import { DataList, DataListStack, DataRow } from '../data-list/DataList'

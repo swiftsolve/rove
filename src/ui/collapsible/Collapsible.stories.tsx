@@ -1,6 +1,7 @@
-import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
+
 import { Card } from '../card/Card'
 import { DataList, DataRow } from '../data-list/DataList'
 import { ChevronDownIcon } from '../icons/Icons'

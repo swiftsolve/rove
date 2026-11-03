@@ -1,10 +1,10 @@
-import type { LanDeviceScan, NetworkAPI } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
-import { useSetting } from '@/hooks/useSetting'
-import { IS_MAC } from '@/lib/platform'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import { useSetting } from '@/hooks/useSetting'
+import { IS_MAC } from '@/lib/platform'
+import type { LanDeviceScan, NetworkAPI } from '@/types'
 
 type UseDevicesResult = {
   lastScan: LanDeviceScan | null

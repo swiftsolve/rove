@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
+
+import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 import type { AppUsageSupport } from '@/types'
 import { EmptyState, LoadingState } from '@/ui'
-import { RestartAsAdminAction } from '@/features/apps/components/RestartAsAdminAction'
 
 /** What a usage view says in each state before it has rows to show. */
 export type UsageBodyCopy = {

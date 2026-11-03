@@ -1,7 +1,7 @@
+import switchOffUrl from '@/assets/sounds/switch-off.mp3'
+import switchOnUrl from '@/assets/sounds/switch-on.mp3'
 import { getSetting } from '@/hooks/useSetting'
 import { IS_WEBKIT_GTK } from '@/lib/platform'
-import switchOnUrl from '@/assets/sounds/switch-on.mp3'
-import switchOffUrl from '@/assets/sounds/switch-off.mp3'
 
 /**
  * The little mechanical click when the theme flips — the same switch-on/off

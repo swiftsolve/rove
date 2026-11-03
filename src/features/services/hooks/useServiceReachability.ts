@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
-import type { NetworkAPI, ServicesReport } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
-import { useNetworkKey } from '@/app/hooks/useNetworkKey'
+
 import { useInternetStatus } from '@/app/hooks/useInternetStatus'
+import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { recordLatency } from '@/features/services/utils/service-latency'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { NetworkAPI, ServicesReport } from '@/types'
 
 // The Services view's probe cadence — the same as the Connection view's live
 // poll, so the sparklines keep the rate they had when services rode on it.

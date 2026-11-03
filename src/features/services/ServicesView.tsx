@@ -1,4 +1,18 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { cx } from 'class-variance-authority'
+import { type ReactNode, useMemo, useState } from 'react'
+
+import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
+import { serviceTally } from '@/features/services/components/ServiceTally'
+import { Sparkline } from '@/features/services/components/Sparkline'
+import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
+import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
+import { useServices } from '@/features/services/hooks/useServices'
+import { type LatencySample, MAX_SAMPLES } from '@/features/services/utils/service-latency'
+import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
+import { formatLatencyMs } from '@/lib/format'
 import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
 import {
   Button,
@@ -11,6 +25,7 @@ import {
   EventsIcon,
   HelpIcon,
   IconButton,
+  Link,
   Menu,
   MenuContent,
   MenuItem,
@@ -20,21 +35,7 @@ import {
   PlusIcon,
   Tooltip,
   TrashIcon,
-  Link,
 } from '@/ui'
-import { ServiceIcon } from '@/features/services/components/ServiceIcon'
-import { serviceTally } from '@/features/services/components/ServiceTally'
-import { MAX_SAMPLES, type LatencySample } from '@/features/services/utils/service-latency'
-import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
-import { Sparkline } from '@/features/services/components/Sparkline'
-import { useServices } from '@/features/services/hooks/useServices'
-import { useNavigation } from '@/app/hooks/useNavigation'
-import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
-import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
-import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
-import { AddServiceDialog } from '@/features/services/components/AddServiceDialog'
-import { formatLatencyMs } from '@/lib/format'
-import { cx } from 'class-variance-authority'
 
 const SERVICES_HINT =
   'Latency is a full HTTPS handshake, so it reads higher than a ping. A server error counts as down.'

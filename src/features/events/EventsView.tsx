@@ -1,12 +1,16 @@
 import { useId, useMemo } from 'react'
-import type { NetworkEvent } from '@/types'
-import { useNow } from '@/hooks/useNow'
+
 import { useDevices } from '@/features/devices/hooks/useDevices'
+import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
+import { type DayGroup, groupByDay } from '@/features/events/utils/day-groups'
+import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
+import { useNow } from '@/hooks/useNow'
+import type { NetworkEvent } from '@/types'
 import {
+  Banner,
   Button,
   EmptyState,
-  Banner,
   EventsIcon,
   HelpIcon,
   IconButton,
@@ -15,9 +19,6 @@ import {
   POLLING_DESCRIPTION,
   RefreshIcon,
 } from '@/ui'
-import { TimelineItem } from '@/features/events/components/TimelineItem'
-import { groupByDay, type DayGroup } from '@/features/events/utils/day-groups'
-import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
 
 const FEED_HINT = 'Devices and access points joining or leaving between scans. Kept for 7 days.'
 

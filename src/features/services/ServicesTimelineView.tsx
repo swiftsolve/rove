@@ -1,4 +1,15 @@
+import { cva, cx } from 'class-variance-authority'
 import { memo, useId, useMemo } from 'react'
+
+import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
+import { serviceTally } from '@/features/services/components/ServiceTally'
+import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
+import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
+import { useIncrementalCount } from '@/hooks/useIncrementalCount'
+import { useNow } from '@/hooks/useNow'
+import { formatDuration } from '@/lib/format'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import {
   ArrowDownIcon,
@@ -15,16 +26,6 @@ import {
   TimelineNode,
   TrashIcon,
 } from '@/ui'
-import { ServiceIcon } from '@/features/services/components/ServiceIcon'
-import { serviceTally } from '@/features/services/components/ServiceTally'
-import { formatDuration } from '@/lib/format'
-import { useNow } from '@/hooks/useNow'
-import { useIncrementalCount } from '@/hooks/useIncrementalCount'
-import { useServiceHistory } from '@/features/services/hooks/useServiceHistory'
-import { useNavigation } from '@/app/hooks/useNavigation'
-import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
-import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
-import { cva, cx } from 'class-variance-authority'
 
 // Rows rendered with the page (more than the window holds), and how many more
 // each step after it has settled.

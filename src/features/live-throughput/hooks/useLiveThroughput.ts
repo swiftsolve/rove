@@ -1,11 +1,12 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import type { LiveThroughput } from '@/types'
-import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@/types'
+
 import {
   appendThroughputHistory,
   EMPTY_THROUGHPUT_HISTORY,
   type ThroughputHistory,
 } from '@/features/live-throughput/utils/throughput-history'
+import type { LiveThroughput } from '@/types'
+import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@/types'
 
 export type LiveThroughputState = {
   /** The latest sample. */

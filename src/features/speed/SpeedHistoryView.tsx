@@ -1,8 +1,10 @@
 import { cva, cx } from 'class-variance-authority'
-import { splitSpeedMbps, formatLatencyMs, formatBand, formatSpeedMbps } from '@/lib/format'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
 import { formatHistoryTimestamp, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
+import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
+import { FAILED_PING } from '@/types'
 import {
   Card,
   DirectionIcon,
@@ -16,12 +18,11 @@ import {
   MenuItem,
   MenuTrigger,
   PageHeader,
-  TrashIcon,
-  WifiIcon,
   type SpeedSeries,
+  TrashIcon,
   type VariantOf,
+  WifiIcon,
 } from '@/ui'
-import { FAILED_PING } from '@/types'
 
 /** Connection badge, tinted by medium. */
 const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-medium', {

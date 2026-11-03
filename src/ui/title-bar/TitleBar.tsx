@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
+import type { ReactNode } from 'react'
+
 import type { VariantOf } from '../foundations/variants'
-import { StatusDot } from '../status-dot/StatusDot'
 import { CloseIcon, MinimizeIcon } from '../icons/Icons'
+import { StatusDot } from '../status-dot/StatusDot'
 
 type TitleBarProps = {
   /** The product mark and name, at the start. */

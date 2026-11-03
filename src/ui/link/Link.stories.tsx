@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
-import { GlobeIcon, PlayIcon } from '../icons/Icons'
+
 import { iconArg, iconComponentControl } from '../icons/icon-options'
+import { GlobeIcon, PlayIcon } from '../icons/Icons'
 import { Link } from './Link'
 
 const meta = {

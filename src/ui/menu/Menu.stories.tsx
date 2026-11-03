@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { expect, fn, screen, waitFor, within } from 'storybook/test'
+
 import { EditIcon, TrashIcon } from '../icons/Icons'
 import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
 

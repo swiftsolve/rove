@@ -1,9 +1,9 @@
-import type { SpeedHistoryEntry, SpeedResult, SpeedRunContext } from '@/types'
 import { getNetworkApi } from '@/bridge/network-api'
+import type { SpeedHistoryEntry, SpeedResult, SpeedRunContext } from '@/types'
 
 // Re-exported so existing imports from this module keep resolving.
-export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
 export { formatDateTime as formatHistoryTimestamp } from '@/lib/format'
+export type { SpeedHistoryEntry, SpeedRunContext } from '@/types'
 
 /** An entry as older versions saved it: only the core result fields are guaranteed. */
 type LegacyEntry = SpeedResult & { timestamp: number }

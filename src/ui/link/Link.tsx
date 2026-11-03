@@ -1,8 +1,9 @@
-import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
+import { pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons/Icons'
-import { STATE_CLASSES, pressableProps } from '../foundations/pressable'
 
 // Muted at rest and the accent on hover, unless disabled. Focus shows the way hover does
 // (accent and underline), not with a ring. The pill's padding hangs outside

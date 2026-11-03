@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getSetting } from '@/hooks/useSetting'
+
 import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
+import { getSetting } from '@/hooks/useSetting'
 
 /**
  * Check for a newer signed release once, shortly after launch — unless the

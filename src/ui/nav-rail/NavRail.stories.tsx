@@ -1,20 +1,21 @@
-import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { fn } from 'storybook/test'
+
+import { ConnectionIcon } from '../icons/ConnectionIcon'
 import {
   AppsIcon,
   CloudIcon,
   DevicesIcon,
   EventsIcon,
   HomeIcon,
+  type IconComponent,
   LayersIcon,
   SettingsIcon,
   SpeedIcon,
   SunIcon,
   UsageIcon,
-  type IconComponent,
 } from '../icons/Icons'
-import { ConnectionIcon } from '../icons/ConnectionIcon'
 import { NavItem, NavRail } from './NavRail'
 
 type Page = {

@@ -1,9 +1,10 @@
-import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { TextField, TextFieldAction } from './TextField'
+
 import { Button } from '../button/Button'
+import { TextField, TextFieldAction } from './TextField'
 
 function Harness({ onSubmit, onTest }: { onSubmit: () => void; onTest: () => void }) {
   const [address, setAddress] = useState('')

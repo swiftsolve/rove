@@ -10,7 +10,7 @@
  *
  *   node scripts/check-css-modules.mjs
  */
-import { readFile, readdir } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 

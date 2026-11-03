@@ -1,9 +1,10 @@
 import type { MouseEvent } from 'react'
-import { useDevices } from '@/features/devices/hooks/useDevices'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { useDevices } from '@/features/devices/hooks/useDevices'
+import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
-import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard() {

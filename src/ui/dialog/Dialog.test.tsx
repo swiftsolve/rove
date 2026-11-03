@@ -1,9 +1,10 @@
-import { useState } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { Dialog, DialogRoot } from './Dialog'
+
 import { Button } from '../button/Button'
+import { Dialog, DialogRoot } from './Dialog'
 
 /** Opens the dialog from a button, as the app does, and counts closes. */
 function Harness({ canClose, isDirty }: { canClose?: boolean; isDirty?: boolean }) {
@@ -23,6 +24,7 @@ function Harness({ canClose, isDirty }: { canClose?: boolean; isDirty?: boolean 
         >
           {/* As in the app's add dialog: the field takes focus, not the close
               button (whose tooltip would take the first Escape). */}
+          {/* eslint-disable-next-line jsx-a11y-x/no-autofocus -- as in the app's add dialog. */}
           <input aria-label="Address" autoFocus />
         </Dialog>
       </DialogRoot>

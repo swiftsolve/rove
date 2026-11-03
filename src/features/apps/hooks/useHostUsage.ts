@@ -1,6 +1,6 @@
+import { type UsageQuery, useUsageQuery } from '@/features/apps/hooks/useUsageQuery'
 import type { HostUsageSummary } from '@/types'
 import { createEmptyHostUsage } from '@/types'
-import { useUsageQuery, type UsageQuery } from '@/features/apps/hooks/useUsageQuery'
 
 const EMPTY_USAGE = createEmptyHostUsage()
 

@@ -1,5 +1,5 @@
-import type { IconProps } from './Icons'
 import { CustomIcon } from './CustomIcon'
+import type { IconProps } from './Icons'
 
 /**
  * 4K as bare lettering, drawn with HdStreamIcon's HD: one cap height

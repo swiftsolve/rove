@@ -1,7 +1,8 @@
-import { useState } from 'react'
 import { cx } from 'class-variance-authority'
-import type { PendingUpdate } from '@/app/utils/updater'
+import { useState } from 'react'
+
 import { releaseNoteItems } from '@/app/utils/release-notes'
+import type { PendingUpdate } from '@/app/utils/updater'
 import { ArrowRightIcon, Button, Dialog, DownloadIcon } from '@/ui'
 
 /**

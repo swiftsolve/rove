@@ -1,9 +1,10 @@
-import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
-import { ButtonSpinner } from '../spinner/ButtonSpinner'
+import { PRESS, pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import type { IconComponent } from '../icons/Icons'
-import { PRESS, STATE_CLASSES, pressableProps } from '../foundations/pressable'
+import { ButtonSpinner } from '../spinner/ButtonSpinner'
 
 const buttonVariants = cva(
   [

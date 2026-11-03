@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { NetworkEvent } from '@/types'
+
 import { formatDayHeading, groupByDay } from '@/features/events/utils/day-groups'
+import type { NetworkEvent } from '@/types'
 
 // Local-time dates, so the tests hold in any time zone.
 const now = new Date(2026, 9, 28, 15, 0).getTime()

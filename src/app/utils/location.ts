@@ -1,6 +1,6 @@
-import type { CapabilityId } from '@/types'
-import type { AppTab } from '@/app/utils/tabs'
 import type { ReturnPoint } from '@/app/utils/return-point'
+import type { AppTab } from '@/app/utils/tabs'
+import type { CapabilityId } from '@/types'
 
 /** A subpage layered over the Speed tab. `null` means the tab's main page. */
 export type SpeedSub = { view: 'details'; target: CapabilityId | null } | { view: 'history' }

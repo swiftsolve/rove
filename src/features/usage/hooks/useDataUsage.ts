@@ -1,6 +1,6 @@
+import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { DataUsageSummary } from '@/types'
 import { createEmptyDataUsage } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
 
 const REFRESH_INTERVAL_MS = 10_000
 

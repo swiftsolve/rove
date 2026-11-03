@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Link } from './Link'
+
 import { GlobeIcon } from '../icons/Icons'
+import { Link } from './Link'
 
 describe('Link', () => {
   it('opens a view as a button named by its label, ending in a caret', () => {

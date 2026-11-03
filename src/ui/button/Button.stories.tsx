@@ -1,8 +1,9 @@
-import { Fragment } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Fragment } from 'react'
 import { fn } from 'storybook/test'
-import { PlayIcon } from '../icons/Icons'
+
 import { iconArg, iconComponentControl } from '../icons/icon-options'
+import { PlayIcon } from '../icons/Icons'
 import { Button } from './Button'
 
 const meta = {

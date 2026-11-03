@@ -1,5 +1,5 @@
+import { hashKey, type QueryKey, skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { hashKey, skipToken, useQuery, type QueryKey } from '@tanstack/react-query'
 
 type BackendQueryOptions<T> = {
   /** Names the data in the shared cache. Every caller with the same key shares one entry. */

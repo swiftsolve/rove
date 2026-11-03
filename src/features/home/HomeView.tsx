@@ -1,12 +1,13 @@
 import type { JSX } from 'react'
-import { isConnectedNetwork } from '@/types'
+
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { ConnectionCard } from '@/features/connection/ConnectionCard'
 import { CapabilitiesCard } from '@/features/capabilities/CapabilitiesCard'
-import { UsageCard } from '@/features/home/components/UsageCard'
+import { ConnectionCard } from '@/features/connection/ConnectionCard'
 import { DevicesCard } from '@/features/home/components/DevicesCard'
+import { UsageCard } from '@/features/home/components/UsageCard'
 import { TrafficCard } from '@/features/live-throughput/TrafficCard'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import { isConnectedNetwork } from '@/types'
 
 export function HomeView(): JSX.Element | null {
   const { info } = useNetwork()

@@ -1,5 +1,5 @@
-import type { NetworkEvent, NetworkEventType } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
+import type { NetworkEvent, NetworkEventType } from '@/types'
 
 export const EVENT_TITLES: Record<NetworkEventType, string> = {
   initial_scan: 'Network baseline', // overridden with the live count below

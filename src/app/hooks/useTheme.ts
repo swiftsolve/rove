@@ -1,6 +1,7 @@
 import { use } from 'react'
-import type { Theme } from '@/app/hooks/useThemeState'
+
 import { ThemeContext } from '@/app/context/theme-context'
+import type { Theme } from '@/app/hooks/useThemeState'
 
 /** The colour theme: `mode` (dark / light / system), `isLight`, `setMode` and `toggle`. */
 export function useTheme(): Theme {

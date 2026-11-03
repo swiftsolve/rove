@@ -1,6 +1,7 @@
 import { useId } from 'react'
-import type { IconProps } from './Icons'
+
 import { CustomIcon } from './CustomIcon'
+import type { IconProps } from './Icons'
 
 // Lucide's cloud, mirrored and at 0.4 scale, in the top-right corner.
 const SMALL_CLOUD = 'M16.3 6.6h3.4a2.8 2.8 0 1 0-2.684-3.6H16.3a1.8 1.8 0 1 0 0 3.6Z'

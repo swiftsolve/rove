@@ -1,23 +1,25 @@
-import type { JSX, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { CapabilityDefinition, CapabilityRating } from '@/types'
-import { CAPABILITY_DEFINITIONS } from '@/types'
+import type { JSX, ReactNode } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useNow } from '@/hooks/useNow'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import { testStatusText } from '@/features/speed/utils/test-status'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
-import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import { testStatusText } from '@/features/speed/utils/test-status'
+import { useNow } from '@/hooks/useNow'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import type { CapabilityDefinition, CapabilityRating } from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
 import {
   Card,
   CardBody,
   CardHeader,
   HistoryIcon,
   IconButton,
+  type IconComponent,
   IconTile,
   IconTileButton,
   InlineMeta,
@@ -26,7 +28,6 @@ import {
   RefreshIcon,
   Tooltip,
   ZapIcon,
-  type IconComponent,
 } from '@/ui'
 
 // The row of capabilities bleeds past the card body's padding so it spans the

@@ -1,5 +1,7 @@
 import js from '@eslint/js'
+import jsxA11y from 'eslint-plugin-jsx-a11y-x'
 import reactHooks from 'eslint-plugin-react-hooks'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import tseslint from 'typescript-eslint'
 
 const UI_INTERNALS = {
@@ -64,6 +66,19 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}'],
   })),
   reactHooks.configs.flat.recommended,
+  { ...jsxA11y.configs.strict, files: ['src/**/*.tsx'] },
+  {
+    files: ['src/**/*.tsx'],
+    // Safari drops a list's role once its markers are styled away, so a
+    // styled <ul> says role="list" on purpose.
+    rules: { 'jsx-a11y-x/no-redundant-roles': ['error', { ul: ['list'] }] },
+  },
+  {
+    // Packages, then the app's own modules (@/…), then relative paths; each
+    // group alphabetical. `--fix` sorts them.
+    plugins: { 'simple-import-sort': simpleImportSort },
+    rules: { 'simple-import-sort/imports': 'error' },
+  },
   {
     // Tooling scripts run under Node, so they get Node's globals — plus the
     // browser ones, because a script driving a page (see screenshots.mjs) ships

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react'
+import { type RefObject, useLayoutEffect, useRef } from 'react'
 
 /**
  * A ref that always holds the latest `value`, for callbacks that must read

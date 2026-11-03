@@ -1,12 +1,13 @@
+import { cva } from 'class-variance-authority'
 import { useEffect, useId, useRef, useState } from 'react'
-import type { ServiceDefinition } from '@/types'
+
 import { getNetworkApi } from '@/bridge/network-api'
-import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
-import { cva } from 'class-variance-authority'
+import type { ServiceDefinition } from '@/types'
+import { Button, Dialog, TextField, TextFieldAction } from '@/ui'
 
 // The tested result swaps in for the field's hint as a taller inset row. Matches the address field's outer height (line-height 18 + 20 padding + 2
 // border), so the result reads as the same-sized box swapping in.
@@ -267,6 +268,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           onChange={onAddressChange}
           placeholder="example.com or 192.168.1.1"
           isInvalid={error != null}
+          // eslint-disable-next-line jsx-a11y-x/no-autofocus -- a dialog's field takes focus; on the close button, the first Escape would close its tooltip.
           autoFocus
           action={
             <TextFieldAction

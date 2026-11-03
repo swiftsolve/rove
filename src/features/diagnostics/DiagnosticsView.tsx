@@ -1,8 +1,14 @@
 import type { ReactNode } from 'react'
+
+import { useNetwork } from '@/app/hooks/useNetwork'
+import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
+import { ServiceIcon } from '@/features/services/components/ServiceIcon'
+import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps } from '@/types'
 import {
   Badge,
+  Banner,
   Card,
   CardBody,
   CardFooter,
@@ -12,21 +18,16 @@ import {
   DataListStack,
   DataRow,
   DnsIcon,
-  Banner,
   GlobeIcon,
   HelpIcon,
   IconButton,
   LoadingState,
+  type MetricStatus,
   MetricValue,
   PageHeader,
   RefreshIcon,
   RouterIcon,
-  type MetricStatus,
 } from '@/ui'
-import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
-import { ServiceIcon } from '@/features/services/components/ServiceIcon'
-import { useNetwork } from '@/app/hooks/useNetwork'
-import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'

@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Button } from './Button'
+
 import { PlayIcon } from '../icons/Icons'
+import { Button } from './Button'
 
 describe('Button', () => {
   it('is a plain button, not a submit, unless told otherwise', () => {

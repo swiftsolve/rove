@@ -1,7 +1,8 @@
-import { useEffect, useState, type JSX } from 'react'
 import { cva } from 'class-variance-authority'
-import { StatusDot, usePresence, type VariantOf } from '@/ui'
+import { type JSX, useEffect, useState } from 'react'
+
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
+import { StatusDot, usePresence, type VariantOf } from '@/ui'
 
 /** `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be
  *  nudged to the text's optical middle with vertical-align (flex centring reads

@@ -8,13 +8,14 @@
  * design/polish work. It is only wired up in dev builds and only when the real
  * bridge is absent — see `installMockNetworkApiIfNeeded`.
  */
+import type { LatencySample } from '@/features/services/utils/service-latency'
+import { MAX_SAMPLES, seedLatencyHistory } from '@/features/services/utils/service-latency'
 import type {
   AppUsageSummary,
-  HostUsageSummary,
-  TrafficUsageSummary,
   CapabilityLevel,
-  CapabilityRequirement,
   CapabilityRating,
+  CapabilityRequirement,
+  HostUsageSummary,
   LanDevice,
   LanDeviceScan,
   LiveDiagnostics,
@@ -31,13 +32,12 @@ import type {
   SpeedResult,
   SpeedTestProgress,
   SpeedTestResult,
+  TrafficUsageSummary,
   Unsubscribe,
   WifiShare,
   WindowControls,
 } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
-import type { LatencySample } from '@/features/services/utils/service-latency'
-import { MAX_SAMPLES, seedLatencyHistory } from '@/features/services/utils/service-latency'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 

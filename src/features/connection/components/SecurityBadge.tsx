@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
-import { isSecuredWifi } from '@/lib/format'
+
 import { normalizeSecurity, shortSecurityLabel } from '@/features/connection/utils/wifi-security'
+import { isSecuredWifi } from '@/lib/format'
 import { LockIcon, Tooltip, UnlockIcon } from '@/ui'
 
 // Lock + protocol, green when secured, red when open. A block flex box (not

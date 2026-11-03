@@ -1,6 +1,7 @@
-import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { type ComponentProps, useState } from 'react'
 import { expect, fn, waitFor } from 'storybook/test'
+
 import { Button } from '../button/Button'
 import { PortalProvider } from '../context/PortalProvider'
 import { PlusIcon } from '../icons/Icons'
@@ -75,6 +76,7 @@ export const EscapeCloses: Story = {
   tags: ['!autodocs'],
   // As in the app's add dialog, the field takes focus. On the close button,
   // the first Escape would close its tooltip instead.
+  // eslint-disable-next-line jsx-a11y-x/no-autofocus -- as in the app's add dialog.
   args: { children: <TextField label="Address" value="" onChange={() => {}} autoFocus /> },
   render: (args) => <DialogWithTrigger {...args} />,
   play: async ({ args, canvas, userEvent }) => {

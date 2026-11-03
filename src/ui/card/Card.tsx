@@ -1,7 +1,8 @@
-import { createContext, use, useId, type ComponentProps, type ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { VariantOf } from '../foundations/variants'
+import { type ComponentProps, createContext, type ReactNode, use, useId } from 'react'
+
 import { cn } from '../foundations/cn'
+import type { VariantOf } from '../foundations/variants'
 import { ChevronRightIcon } from '../icons/Icons'
 import { StretchedLink } from '../link/StretchedLink'
 

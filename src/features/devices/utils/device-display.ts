@@ -1,5 +1,5 @@
-import type { LanDevice, LanDeviceKind } from '@/types'
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
+import type { LanDevice, LanDeviceKind } from '@/types'
 
 // Singular device nouns for synthesizing a name — distinct from the category
 // labels in LAN_DEVICE_KIND_LABELS ("Mobile", "Smart home"), which don't read

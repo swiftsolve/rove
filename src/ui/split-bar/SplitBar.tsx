@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority'
+
 import { cn } from '../foundations/cn'
 
 /** `value` as a percentage of `max`, guarding the divide for the all-zero case. */

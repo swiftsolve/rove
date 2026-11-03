@@ -1,7 +1,8 @@
-import { Children, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { Tooltip } from '../tooltip/Tooltip'
+import { Children, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
+
 import type { IconComponent } from '../icons/Icons'
+import { Tooltip } from '../tooltip/Tooltip'
 
 // The accent bar's shape, hugging the rail's left edge.
 const BAR_SHAPE = 'w-[3px] h-20 rounded-[0_3px_3px_0] bg-accent'

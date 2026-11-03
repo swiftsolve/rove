@@ -1,6 +1,7 @@
-import { useEffect, useRef, type RefObject } from 'react'
-import type { AppHosts } from '@/types'
+import { type RefObject, useEffect, useRef } from 'react'
+
 import { flashHighlight } from '@/lib/highlight'
+import type { AppHosts } from '@/types'
 
 /** On arriving focused on an app, bring its group to the top of the list. Runs
  *  when the data arrives (it lands a poll or two after mount), then just once —

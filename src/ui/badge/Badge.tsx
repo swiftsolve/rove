@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
+import type { ReactNode } from 'react'
+
 import type { VariantOf } from '../foundations/variants'
 import { StatusDot } from '../status-dot/StatusDot'
 

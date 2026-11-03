@@ -1,6 +1,7 @@
 import { use } from 'react'
-import type { ConnectionStatus } from '@/app/utils/connection-status'
+
 import { ConnectionStatusContext } from '@/app/context/connection-status-context'
+import type { ConnectionStatus } from '@/app/utils/connection-status'
 
 /** The title bar's verdict (`tone`, `label`, `internet`), made from network info and internet status. */
 export function useConnectionStatus(): ConnectionStatus {

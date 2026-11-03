@@ -1,5 +1,5 @@
-import type { NetworkAPI } from '@/types'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { NetworkAPI } from '@/types'
 
 // Faster than the daily usage summary's poll: the per-app totals climb
 // continuously.

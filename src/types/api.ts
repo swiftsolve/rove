@@ -1,10 +1,8 @@
-import type { Unsubscribe } from './common'
 import type { AppUsageSummary } from './app-usage'
-import type { HostUsageSummary } from './host-usage'
-import type { TrafficUsageSummary } from './traffic-usage'
+import type { SpeedTestResult } from './capabilities'
+import type { Unsubscribe } from './common'
 import type { DataUsageSummary } from './data-usage'
 import type { LanDeviceScan } from './devices'
-import type { NetworkEvent } from './events'
 import type {
   InternetStatus,
   LiveDiagnostics,
@@ -13,12 +11,14 @@ import type {
   ServiceEvent,
   ServicesReport,
 } from './diagnostics'
+import type { NetworkEvent } from './events'
+import type { SpeedHistoryEntry } from './history'
+import type { HostUsageSummary } from './host-usage'
 import type { NetworkInterfaceSummary } from './interfaces'
 import type { LiveThroughput } from './live-throughput'
-import type { SpeedTestResult } from './capabilities'
-import type { SpeedTestProgress } from './speed'
 import type { NetworkInfo, WifiShare } from './network'
-import type { SpeedHistoryEntry } from './history'
+import type { SpeedTestProgress } from './speed'
+import type { TrafficUsageSummary } from './traffic-usage'
 
 export type NetworkAPI = {
   getNetworkInfo(): Promise<NetworkInfo>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+
 import { NavigationContext } from '@/app/context/navigation-context'
 import { useHistoryNavigation } from '@/app/hooks/useHistoryNavigation'
 

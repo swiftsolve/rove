@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+
 import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@/ui'
 
 // The content fills the body's height, so a control can sit at its foot.

@@ -1,8 +1,9 @@
-import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode, Ref } from 'react'
 import { cva } from 'class-variance-authority'
-import type { VariantOf } from '../foundations/variants'
+import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode, Ref } from 'react'
+
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
+import type { VariantOf } from '../foundations/variants'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
   variants: {

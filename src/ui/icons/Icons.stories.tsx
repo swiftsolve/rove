@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { BrandIcon } from './BrandIcon'
 import { CloudGamingIcon } from './CloudGamingIcon'
 import { ConnectionIcon } from './ConnectionIcon'
 import { DirectionIcon } from './DirectionIcon'
 import { HdStreamIcon } from './HdStreamIcon'
-import * as Icons from './Icons'
 import type { IconProps } from './Icons'
+import * as Icons from './Icons'
 import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
 // Every Lucide alias (the types are gone at runtime) and custom icon, by name.

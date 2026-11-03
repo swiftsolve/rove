@@ -1,10 +1,11 @@
-import type { ComponentProps, ComponentType, ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ComponentProps, ComponentType, ReactNode } from 'react'
 import { fn } from 'storybook/test'
+
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
-import { GlobeIcon, HelpIcon, PlusIcon, SearchIcon } from '../icons/Icons'
 import { iconElementControl } from '../icons/icon-options'
+import { GlobeIcon, HelpIcon, PlusIcon, SearchIcon } from '../icons/Icons'
 import { PageHeader } from './PageHeader'
 
 // PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj

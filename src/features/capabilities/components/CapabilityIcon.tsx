@@ -5,10 +5,10 @@ import {
   DownloadIcon,
   GamepadIcon,
   HdStreamIcon,
+  type IconComponent,
   LiveStreamIcon,
   UltraHdStreamIcon,
   VideoCallIcon,
-  type IconComponent,
 } from '@/ui'
 
 type CapabilityIconProps = {

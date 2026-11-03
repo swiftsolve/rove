@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { MetricValue, type MetricStatus } from './MetricValue'
+import { useEffect, useState } from 'react'
+
+import { type MetricStatus, MetricValue } from './MetricValue'
 
 const formatMs = (n: number): string => `${Math.round(n)} ms`
 

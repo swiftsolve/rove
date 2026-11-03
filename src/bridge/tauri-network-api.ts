@@ -6,11 +6,11 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+
 import type {
   AppUsageSummary,
-  HostUsageSummary,
-  TrafficUsageSummary,
   DataUsageSummary,
+  HostUsageSummary,
   InternetStatus,
   LanDeviceScan,
   LiveDiagnostics,
@@ -26,6 +26,7 @@ import type {
   SpeedHistoryEntry,
   SpeedTestProgress,
   SpeedTestResult,
+  TrafficUsageSummary,
   Unsubscribe,
   WifiShare,
   WindowControls,

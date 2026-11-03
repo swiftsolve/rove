@@ -1,6 +1,7 @@
-import { useId, useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { type ComponentProps, useId, useState } from 'react'
 import { expect, fn } from 'storybook/test'
+
 import { Toggle } from './Toggle'
 
 const meta = {

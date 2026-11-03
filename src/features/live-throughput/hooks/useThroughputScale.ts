@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { getLinkCapacityMbps } from '@/types'
+
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import { getLinkCapacityMbps } from '@/types'
 
 /**
  * The live chart's ceiling (Mbps) for these samples. A running speed test

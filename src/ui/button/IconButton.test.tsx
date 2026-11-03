@@ -1,9 +1,10 @@
-import { createRef } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { IconButton } from './IconButton'
+
 import { RefreshIcon } from '../icons/Icons'
+import { IconButton } from './IconButton'
 
 describe('IconButton', () => {
   it('is named by its label, which is also its tooltip', async () => {

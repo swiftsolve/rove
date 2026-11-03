@@ -1,6 +1,6 @@
-import type { WifiShare } from '@/types'
 import { getNetworkApi } from '@/bridge/network-api'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { WifiShare } from '@/types'
 
 type WifiShareQuery = {
   share: WifiShare | null

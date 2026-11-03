@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, RouterIcon, SearchIcon } from '../icons/Icons'
 import { TimelineNode } from './TimelineNode'
 

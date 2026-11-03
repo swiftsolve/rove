@@ -1,6 +1,6 @@
-import type { NetworkInterfaceSummary } from '@/types'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
+import type { NetworkInterfaceSummary } from '@/types'
 
 // Keep interface values (link speed, IP, oper state) live while the tab is open.
 const POLL_INTERVAL_MS = 15_000

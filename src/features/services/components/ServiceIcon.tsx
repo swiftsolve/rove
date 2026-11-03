@@ -1,5 +1,5 @@
-import { useState, type JSX } from 'react'
 import { cx } from 'class-variance-authority'
+import { type JSX, useState } from 'react'
 
 // Suffixes that only ever name something on the local network, so the public
 // icon service has nothing to serve for them and answers 404.

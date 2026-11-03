@@ -1,12 +1,13 @@
-import { createContext, use, useState, type JSX, type ReactNode } from 'react'
 import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import { cx } from 'class-variance-authority'
-import { CloseIcon } from '../icons/Icons'
+import { createContext, type JSX, type ReactNode, use, useState } from 'react'
+
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
+import { cn } from '../foundations/cn'
 import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
-import { cn } from '../foundations/cn'
+import { CloseIcon } from '../icons/Icons'
 
 type DialogState = {
   /** False while the Dialog plays its leave animation. */

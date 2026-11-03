@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { StatusDot } from './StatusDot'
 
 // The dot is decorative, so each story shows it beside the words it marks.

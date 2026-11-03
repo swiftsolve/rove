@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { Banner, POLLING_DESCRIPTION } from './Banner'
 
 const meta = {

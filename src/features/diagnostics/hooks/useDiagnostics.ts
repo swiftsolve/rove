@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
 import { skipToken, useQuery } from '@tanstack/react-query'
-import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
+import { useCallback } from 'react'
+
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
 
 // The live metrics (gateway latency + internet status) refresh on this
 // tight cadence so the Connection view's numbers stay current. The heavier full

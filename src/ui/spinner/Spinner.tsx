@@ -1,5 +1,6 @@
-import { Waveform } from 'ldrs/react'
 import 'ldrs/react/Waveform.css'
+
+import { Waveform } from 'ldrs/react'
 
 /**
  * Shared loading indicator. Wraps the ldrs "waveform" loader so every loading

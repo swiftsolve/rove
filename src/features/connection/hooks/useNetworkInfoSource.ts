@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { NetworkInfo } from '@/types'
-import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
+
 import { getNetworkApi } from '@/bridge/network-api'
-import { useLatestRef } from '@/ui'
+import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
+import type { NetworkInfo } from '@/types'
+import { useLatestRef } from '@/ui'
 
 const REFRESH_INTERVAL_MS = 15_000
 // Sit above the backend's own per-command budget (15s, see

@@ -1,6 +1,6 @@
+import { type UsageQuery, useUsageQuery } from '@/features/apps/hooks/useUsageQuery'
 import type { AppUsageSummary } from '@/types'
 import { createEmptyAppUsage } from '@/types'
-import { useUsageQuery, type UsageQuery } from '@/features/apps/hooks/useUsageQuery'
 
 const EMPTY_USAGE = createEmptyAppUsage()
 

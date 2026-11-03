@@ -1,7 +1,8 @@
 import { cx } from 'class-variance-authority'
-import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link } from '@/ui'
-import { IS_MAC } from '@/lib/platform'
+
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
+import { IS_MAC } from '@/lib/platform'
+import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link } from '@/ui'
 
 const REPO_URL = 'https://github.com/swiftsolve/rove'
 const COPYRIGHT_YEAR = 2026

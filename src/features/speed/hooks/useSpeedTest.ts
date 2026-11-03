@@ -1,13 +1,14 @@
 import { useSyncExternalStore } from 'react'
-import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@/types'
-import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
-import { saveSpeedResult, type SpeedRunContext } from '@/features/speed/utils/speed-history'
-import { formatBand } from '@/lib/format'
+
+import { queryClient } from '@/app/utils/query-client'
 import { getNetworkApi } from '@/bridge/network-api'
 import { getLiveThroughput, subscribeLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
 import { SPEED_HISTORY_KEY } from '@/features/speed/hooks/useSpeedHistory'
-import { queryClient } from '@/app/utils/query-client'
 import type { SpeedTestConnection } from '@/features/speed/types'
+import { saveSpeedResult, type SpeedRunContext } from '@/features/speed/utils/speed-history'
+import { formatBand } from '@/lib/format'
+import type { CapabilityRating, SpeedResult, SpeedTestProgress } from '@/types'
+import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
 
 type SpeedTestState = {
   internetSpeed: SpeedResult | null

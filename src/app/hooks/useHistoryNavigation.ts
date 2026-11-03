@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { HOME_LOCATION, isSameLocation, parentLocation, type AppLocation, type Navigation } from '@/app/utils/location'
-import { captureReturnPoint, trackClicks, type ReturnPoint } from '@/app/utils/return-point'
+
+import { type AppLocation, HOME_LOCATION, isSameLocation, type Navigation, parentLocation } from '@/app/utils/location'
+import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
 
 // We stash the location on `history.state` under a namespaced key rather than
 // owning the whole state object, so we don't clobber anything the webview host

@@ -25,12 +25,13 @@
  *    app/hooks/useHistoryNavigation.ts), so pushing an entry and firing popstate is
  *    exactly what the tab bar does.
  */
-import { chromium } from 'playwright-core'
 import { spawn } from 'node:child_process'
-import { createServer } from 'node:net'
 import { mkdir, readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { chromium } from 'playwright-core'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 

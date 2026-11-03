@@ -1,6 +1,7 @@
 import { use } from 'react'
-import type { InternetStatus } from '@/types'
+
 import { InternetStatusContext } from '@/app/context/internet-status-context'
+import type { InternetStatus } from '@/types'
 
 /** Whether the public internet is reachable, from the backend heartbeat. Null until the first verdict. */
 export function useInternetStatus(): InternetStatus | null {

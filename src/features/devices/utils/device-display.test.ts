@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { LanDevice } from '@/types'
+
 import {
   deviceMetaParts,
   deviceName,
@@ -7,6 +7,7 @@ import {
   lastSeenAge,
   sortDevices,
 } from '@/features/devices/utils/device-display'
+import type { LanDevice } from '@/types'
 
 function device(overrides: Partial<LanDevice> = {}): LanDevice {
   return {

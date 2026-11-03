@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import { addons, types } from 'storybook/manager-api'
 import { themes } from 'storybook/theming'
+
 import { UI_LIBRARY_VERSION } from '../src/ui/version'
 import { FigmaPanel } from './figma-panel'
 

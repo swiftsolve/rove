@@ -1,9 +1,10 @@
-import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import type { LatencySample } from '@/features/services/utils/service-latency'
-import { latencyBand, type LatencyBand } from '@/features/services/utils/service-status'
-import { formatLatencyMs } from '@/lib/format'
 import { cva, cx } from 'class-variance-authority'
+import { type ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+
+import type { LatencySample } from '@/features/services/utils/service-latency'
+import { type LatencyBand, latencyBand } from '@/features/services/utils/service-status'
+import { formatLatencyMs } from '@/lib/format'
 
 // A row-sized latency chart.
 const ROOT = 'inline-block shrink-0'

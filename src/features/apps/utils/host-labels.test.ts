@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { appGroupLabel, hostIconLabel } from '@/features/apps/utils/host-labels'
 
 describe('hostIconLabel', () => {

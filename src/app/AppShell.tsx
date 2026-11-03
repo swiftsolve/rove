@@ -1,13 +1,14 @@
-import { locationKey } from '@/app/utils/location'
-import { useNavigation } from '@/app/hooks/useNavigation'
-import { useScreenFocus } from '@/app/hooks/useScreenFocus'
+import { cx } from 'class-variance-authority'
+import { useState } from 'react'
+
+import { AppTitleBar } from '@/app/components/AppTitleBar'
+import { CurrentScreen } from '@/app/components/CurrentScreen'
+import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
 import { TabBar } from '@/app/components/TabBar'
 import { UpdatePrompt } from '@/app/components/UpdatePrompt'
-import { AppTitleBar } from '@/app/components/AppTitleBar'
-import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
-import { CurrentScreen } from '@/app/components/CurrentScreen'
-import { useState } from 'react'
-import { cx } from 'class-variance-authority'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import { useScreenFocus } from '@/app/hooks/useScreenFocus'
+import { locationKey } from '@/app/utils/location'
 import { PortalProvider } from '@/ui'
 
 // The scrolling content area. Column flex so <main> can grow to fill the

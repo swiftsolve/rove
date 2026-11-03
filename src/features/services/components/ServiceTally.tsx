@@ -1,8 +1,9 @@
+import { cva } from 'class-variance-authority'
 import type { JSX } from 'react'
+
+import { reachabilityStatus } from '@/features/services/utils/service-status'
 import type { InternetStatus, ServiceReachability } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, DotSeparator } from '@/ui'
-import { reachabilityStatus } from '@/features/services/utils/service-status'
-import { cva } from 'class-variance-authority'
 
 // The header up/down tally, e.g. "5 Up · 1 Down": the dot is the shared
 // InlineMeta separator. Sits in the header subtitle, so it inherits that line's

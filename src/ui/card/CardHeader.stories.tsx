@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
-import { RefreshIcon } from '../icons/Icons'
 import { iconArg, iconElementControl } from '../icons/icon-options'
+import { RefreshIcon } from '../icons/Icons'
 import { Card, CardBody, CardHeader } from './Card'
 
 const ACTIONS = {

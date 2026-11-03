@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
-import { isEthernetNetwork, isWifiNetwork } from '@/types'
+
+import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
+import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import { formatLinkSpeed } from '@/features/connection/utils/connection-display'
 import {
   formatBand,
@@ -11,9 +12,9 @@ import {
   formatSignalStrength,
   formatWifiStandard,
 } from '@/lib/format'
+import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
+import { isEthernetNetwork, isWifiNetwork } from '@/types'
 import { DataList, DataListStack, DataRow, InlineMeta } from '@/ui'
-import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
-import { SignalMeter } from '@/features/connection/components/SignalMeter'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo

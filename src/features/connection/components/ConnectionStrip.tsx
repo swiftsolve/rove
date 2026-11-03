@@ -1,27 +1,29 @@
-import type { ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { NetworkInfo } from '@/types'
-import { isWifiNetwork } from '@/types'
+import type { ReactNode } from 'react'
+
+import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
+import { ShareWifiButton } from '@/features/connection/components/ShareWifiButton'
+import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import {
+  type ConnectionDisplayVariant,
   formatLinkSpeed,
   getConnectionDisplay,
-  type ConnectionDisplayVariant,
 } from '@/features/connection/utils/connection-display'
 import { formatBand } from '@/lib/format'
+import type { NetworkInfo } from '@/types'
+import { isWifiNetwork } from '@/types'
 import {
   ChevronDownIcon,
   CollapsibleTrigger,
   EthernetIcon,
+  type IconComponent,
   IconTile,
+  type IconTileColor,
   InlineMeta,
   OfflineIcon,
   WifiIcon,
-  type IconComponent,
-  type IconTileColor,
 } from '@/ui'
-import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
-import { ShareWifiButton } from '@/features/connection/components/ShareWifiButton'
-import { SignalMeter } from '@/features/connection/components/SignalMeter'
+
 import styles from './ConnectionStrip.module.css'
 
 // Each kind of connection's icon, on a tile in its colour.

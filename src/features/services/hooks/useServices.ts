@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
-import type { ServiceDefinition } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
+
 import { queryClient } from '@/app/utils/query-client'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { ServiceDefinition } from '@/types'
 
 const SERVICES_KEY = ['services', 'list']
 

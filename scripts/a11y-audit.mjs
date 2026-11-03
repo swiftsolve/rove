@@ -12,12 +12,13 @@
  * moves between screens by writing history state. Exits non-zero when axe
  * reports any violation, so it can gate a commit or CI.
  */
-import { chromium } from 'playwright-core'
 import { spawn } from 'node:child_process'
-import { createServer } from 'node:net'
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { chromium } from 'playwright-core'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8'))

@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import type { ServiceEvent } from '@/types'
-import { useBackendQuery } from '@/hooks/useBackendQuery'
+import { useEffect } from 'react'
+
 import { queryClient } from '@/app/utils/query-client'
+import { useBackendQuery } from '@/hooks/useBackendQuery'
+import type { ServiceEvent } from '@/types'
 
 const SERVICE_HISTORY_KEY = ['services', 'history']
 

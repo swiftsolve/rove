@@ -1,6 +1,6 @@
+import { formatConnectionType } from '@/lib/format'
 import type { InternetStatus, NetworkInfo } from '@/types'
 import { isConnectedNetwork } from '@/types'
-import { formatConnectionType } from '@/lib/format'
 
 // Top-bar connectivity state. 'positive' = a link that reaches the internet; 'negative' =
 // a link is up but the public internet is unreachable (ISP outage, or a bridge

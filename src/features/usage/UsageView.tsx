@@ -1,16 +1,17 @@
-import { useState, type JSX } from 'react'
 import { cx } from 'class-variance-authority'
-import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { type JSX, useState } from 'react'
 import type { RectangleProps } from 'recharts'
-import type { DailyUsage } from '@/types'
+import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
+import type { DailyUsage } from '@/types'
 import {
+  Banner,
   Card,
   CardBody,
   CardHeader,
   DirectionIcon,
-  Banner,
   HelpIcon,
   IconButton,
   LoadingState,
@@ -227,9 +228,12 @@ function WeekChart({ days }: { days: DailyUsage[] }) {
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
       >
         {data.map((point, index) => (
+          // Focusable to be read, not to act, so no interactive role fits.
+          // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions
           <div
             key={point.key}
             role="img"
+            // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
             tabIndex={0}
             aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
             className="flex-1 focus-visible:outline-none"

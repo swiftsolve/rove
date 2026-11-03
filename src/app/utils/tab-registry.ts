@@ -1,6 +1,21 @@
 import { createElement, type JSX, type ReactElement } from 'react'
-import type { AppTab } from '@/app/utils/tabs'
+
 import type { AppLocation } from '@/app/utils/location'
+import type { AppTab } from '@/app/utils/tabs'
+import { AboutView } from '@/features/about/AboutView'
+import { AppUsageView } from '@/features/apps/AppUsageView'
+import { HostsView } from '@/features/apps/HostsView'
+import { TrafficView } from '@/features/apps/TrafficView'
+import { DevicesView } from '@/features/devices/DevicesView'
+import { DiagnosticsView } from '@/features/diagnostics/DiagnosticsView'
+import { EventsView } from '@/features/events/EventsView'
+import { HomeView } from '@/features/home/HomeView'
+import { InterfacesView } from '@/features/interfaces/InterfacesView'
+import { ServicesTimelineView } from '@/features/services/ServicesTimelineView'
+import { ServicesView } from '@/features/services/ServicesView'
+import { SettingsView } from '@/features/settings/SettingsView'
+import { SpeedView } from '@/features/speed/SpeedView'
+import { UsageView } from '@/features/usage/UsageView'
 import {
   AppsIcon,
   CloudIcon,
@@ -13,20 +28,6 @@ import {
   SpeedIcon,
   UsageIcon,
 } from '@/ui'
-import { HomeView } from '@/features/home/HomeView'
-import { SpeedView } from '@/features/speed/SpeedView'
-import { InterfacesView } from '@/features/interfaces/InterfacesView'
-import { DevicesView } from '@/features/devices/DevicesView'
-import { EventsView } from '@/features/events/EventsView'
-import { UsageView } from '@/features/usage/UsageView'
-import { AppUsageView } from '@/features/apps/AppUsageView'
-import { HostsView } from '@/features/apps/HostsView'
-import { TrafficView } from '@/features/apps/TrafficView'
-import { DiagnosticsView } from '@/features/diagnostics/DiagnosticsView'
-import { ServicesView } from '@/features/services/ServicesView'
-import { ServicesTimelineView } from '@/features/services/ServicesTimelineView'
-import { SettingsView } from '@/features/settings/SettingsView'
-import { AboutView } from '@/features/about/AboutView'
 
 type Screen = () => JSX.Element | null
 

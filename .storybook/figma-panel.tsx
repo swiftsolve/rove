@@ -2,6 +2,7 @@
 import React from 'react'
 import { AddonPanel, EmptyTabContent, Link } from 'storybook/internal/components'
 import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
+
 import figma from '../src/ui/figma.json'
 
 type FigmaNode = { name: string; node: string }

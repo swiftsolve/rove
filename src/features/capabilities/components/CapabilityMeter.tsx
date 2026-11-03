@@ -1,11 +1,12 @@
 import { cva } from 'class-variance-authority'
-import type { CapabilityLevel } from '@/types'
-import { BarMeter } from '@/ui'
-import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+
 import {
   CAPABILITY_LEVEL_FILL_COLORS,
   CAPABILITY_LEVEL_TEXT_COLORS,
 } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import type { CapabilityLevel } from '@/types'
+import { BarMeter } from '@/ui'
 
 // How many of the four bars each level fills.
 const LEVEL_BAR_COUNT: Record<CapabilityLevel, number> = {

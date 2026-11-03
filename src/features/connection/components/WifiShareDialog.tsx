@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import type { WifiShare } from '@/types'
+import type { ReactNode } from 'react'
+
 import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
+import type { WifiShare } from '@/types'
 import { AlertIcon, Button, Dialog, LockIcon, RefreshIcon, Spinner, WifiOffIcon } from '@/ui'
 
 // Each state fades in as it replaces the last, while the dialog eases to its height.

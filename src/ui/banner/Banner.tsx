@@ -1,7 +1,8 @@
-import { useState, type JSX } from 'react'
 import { cva } from 'class-variance-authority'
-import { AlertIcon, RefreshIcon } from '../icons/Icons'
+import { type JSX, useState } from 'react'
+
 import { Button } from '../button/Button'
+import { AlertIcon, RefreshIcon } from '../icons/Icons'
 
 /** The second line for a page whose data polls: a failure there heals itself. */
 export const POLLING_DESCRIPTION = 'Rove keeps trying in the background.'

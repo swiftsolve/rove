@@ -1,27 +1,28 @@
 import type { JSX } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
-import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
-import { CapabilityList } from '@/features/capabilities/components/CapabilityList'
 import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetailsView'
+import { CapabilityList } from '@/features/capabilities/components/CapabilityList'
+import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
+import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
+import { useNow } from '@/hooks/useNow'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import {
   Button,
   DotSeparator,
   HelpIcon,
   HistoryIcon,
   IconButton,
+  Link,
   PageHeader,
   PlayIcon,
   SpeedIcon,
   StopIcon,
   Tooltip,
-  Link,
 } from '@/ui'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
-import { useNow } from '@/hooks/useNow'
 
 const SPEED_HINT = 'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
 

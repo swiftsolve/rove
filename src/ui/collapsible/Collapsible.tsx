@@ -1,6 +1,7 @@
-import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible'
 import { cx } from 'class-variance-authority'
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
 
 type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {

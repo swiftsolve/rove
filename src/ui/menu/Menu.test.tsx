@@ -1,8 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
+
 import { TrashIcon } from '../icons/Icons'
+import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
 
 function renderMenu(onEdit = vi.fn(), onRemove = vi.fn()): void {
   render(

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { WindowButton } from './TitleBar'
 
 const meta = {

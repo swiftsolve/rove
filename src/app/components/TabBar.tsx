@@ -1,8 +1,8 @@
-import { APP_TABS, type AppTab } from '@/app/utils/tabs'
-import { TABS } from '@/app/utils/tab-registry'
-import { MoonIcon, NavItem, NavRail, SunIcon } from '@/ui'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
+import { TABS } from '@/app/utils/tab-registry'
+import { APP_TABS, type AppTab } from '@/app/utils/tabs'
+import { MoonIcon, NavItem, NavRail, SunIcon } from '@/ui'
 
 const MAIN_TABS = APP_TABS.filter((id) => TABS[id].rail === 'main')
 const FOOTER_TABS = APP_TABS.filter((id) => TABS[id].rail === 'footer')

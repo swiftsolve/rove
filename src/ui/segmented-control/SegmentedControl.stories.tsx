@@ -1,6 +1,7 @@
-import { useState, type ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
+
 import { ComputerIcon, MoonIcon, SunIcon } from '../icons/Icons'
 import { SegmentedControl, type SegmentedOption } from './SegmentedControl'
 

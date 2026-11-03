@@ -1,7 +1,8 @@
 import { cva } from 'class-variance-authority'
+
+import { cn } from '../foundations/cn'
 import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
-import { cn } from '../foundations/cn'
 
 // The numeric face, with tabular figures so the width holds while it eases.
 const metricVariants = cva('num', {

@@ -1,12 +1,13 @@
-import { useMemo, type ReactNode } from 'react'
-import { useNetworkInfoSource } from '@/features/connection/hooks/useNetworkInfoSource'
+import { type ReactNode, useMemo } from 'react'
+
+import { ConnectionStatusContext } from '@/app/context/connection-status-context'
+import { InternetStatusContext } from '@/app/context/internet-status-context'
+import { NetworkContext } from '@/app/context/network-context'
+import { describeConnectionStatus } from '@/app/utils/connection-status'
 import { useInternetStatusSource } from '@/features/connection/hooks/useInternetStatusSource'
+import { useNetworkInfoSource } from '@/features/connection/hooks/useNetworkInfoSource'
 import { useLiveThroughputSource } from '@/features/live-throughput/hooks/useLiveThroughput'
 import { usePageVisible } from '@/hooks/usePageVisible'
-import { NetworkContext } from '@/app/context/network-context'
-import { InternetStatusContext } from '@/app/context/internet-status-context'
-import { ConnectionStatusContext } from '@/app/context/connection-status-context'
-import { describeConnectionStatus } from '@/app/utils/connection-status'
 
 /**
  * Owns the app-wide network state: network info, internet status and the

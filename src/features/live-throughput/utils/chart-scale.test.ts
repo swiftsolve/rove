@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { resolveChartScale } from '@/features/live-throughput/utils/chart-scale'
 
 describe('resolveChartScale', () => {

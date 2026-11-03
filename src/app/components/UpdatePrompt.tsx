@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+
 import { UpdateDialog } from '@/app/components/UpdateDialog'
 import { useUpdateCheck } from '@/app/hooks/useUpdateCheck'
 import { DialogRoot } from '@/ui'

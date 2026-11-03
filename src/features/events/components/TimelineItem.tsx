@@ -1,6 +1,16 @@
+import { cx } from 'class-variance-authority'
 import type { JSX, ReactNode } from 'react'
-import type { NetworkEvent, NetworkEventType } from '@/types'
+
+import {
+  EVENT_TITLES,
+  eventSubject,
+  initialScanTitle,
+  INTERNET_SUBTITLES,
+  isInternetEvent,
+  subjectKind,
+} from '@/features/events/utils/event-copy'
 import { formatDuration, formatMac } from '@/lib/format'
+import type { NetworkEvent, NetworkEventType } from '@/types'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -13,19 +23,10 @@ import {
   SearchIcon,
   ShieldAlertIcon,
   TimelineNode,
+  type TimelineNodeColor,
   Tooltip,
   WifiIcon,
-  type TimelineNodeColor,
 } from '@/ui'
-import { cx } from 'class-variance-authority'
-import {
-  EVENT_TITLES,
-  INTERNET_SUBTITLES,
-  eventSubject,
-  initialScanTitle,
-  isInternetEvent,
-  subjectKind,
-} from '@/features/events/utils/event-copy'
 
 // The node's colour category. The icon says *what* happened; this tint says how
 // to read it at a glance.

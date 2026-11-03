@@ -1,10 +1,11 @@
-import { useId, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
-import { useSetting } from '@/hooks/useSetting'
-import { useManualUpdateCheck, type UpdateCheckState } from '@/features/settings/hooks/useManualUpdateCheck'
-import type { ThemeMode } from '@/app/hooks/useThemeState'
-import { useTheme } from '@/app/hooks/useTheme'
+import { type ReactNode, useId } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { useTheme } from '@/app/hooks/useTheme'
+import type { ThemeMode } from '@/app/hooks/useThemeState'
+import { type UpdateCheckState, useManualUpdateCheck } from '@/features/settings/hooks/useManualUpdateCheck'
+import { useSetting } from '@/hooks/useSetting'
 import {
   Button,
   Card,
@@ -18,10 +19,10 @@ import {
   PageHeader,
   RefreshIcon,
   SegmentedControl,
+  type SegmentedOption,
   SettingsIcon,
   SunIcon,
   Toggle,
-  type SegmentedOption,
 } from '@/ui'
 
 const rowVariants = cva('flex justify-between py-(--row-padding-y)', {

@@ -1,8 +1,9 @@
-import { useId, useMemo } from 'react'
 import { cx } from 'class-variance-authority'
+import { useId, useMemo } from 'react'
 import { Area, AreaChart, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
-import { buildChartRows, formatAxisLabel, type ChartRow } from '@/features/live-throughput/utils/throughput-chart'
+import { buildChartRows, type ChartRow, formatAxisLabel } from '@/features/live-throughput/utils/throughput-chart'
 import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80

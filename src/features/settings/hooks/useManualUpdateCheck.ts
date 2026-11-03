@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 
 /** Where a check the user asked for stands. */

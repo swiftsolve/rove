@@ -1,8 +1,8 @@
+import { SpeedReadout } from '@/features/live-throughput/components/SpeedReadout'
+import { ThroughputChart } from '@/features/live-throughput/components/ThroughputChart'
 import { useLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
 import { useThroughputScale } from '@/features/live-throughput/hooks/useThroughputScale'
 import { ActivityIcon, Card, CardBody, CardHeader, LiveBadge } from '@/ui'
-import { SpeedReadout } from '@/features/live-throughput/components/SpeedReadout'
-import { ThroughputChart } from '@/features/live-throughput/components/ThroughputChart'
 
 /** Home's live traffic: the current download and upload rates over a chart of
  *  the last minute. */

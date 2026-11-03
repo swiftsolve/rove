@@ -1,6 +1,6 @@
+import { formatSpeedMbps } from '@/lib/format'
 import type { NetworkInfo } from '@/types'
 import { isEthernetNetwork, isWifiNetwork } from '@/types'
-import { formatSpeedMbps } from '@/lib/format'
 
 export type ConnectionDisplayVariant = 'wifi' | 'ethernet' | 'disconnected'
 

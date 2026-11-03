@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
 import { IconTile } from '../icon-tile/IconTile'

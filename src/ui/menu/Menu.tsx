@@ -1,9 +1,10 @@
-import type { ComponentProps, ReactNode } from 'react'
 import { Menu as BaseMenu } from '@base-ui/react/menu'
 import { cva, cx } from 'class-variance-authority'
-import type { VariantOf } from '../foundations/variants'
+import type { ComponentProps, ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
-import { MoreVerticalIcon, type IconComponent } from '../icons/Icons'
+import type { VariantOf } from '../foundations/variants'
+import { type IconComponent, MoreVerticalIcon } from '../icons/Icons'
 
 type MenuProps = {
   /** Controlled open state; leave both out to let the menu keep its own. */

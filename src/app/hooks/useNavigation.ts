@@ -1,6 +1,7 @@
 import { use } from 'react'
-import type { Navigation } from '@/app/utils/location'
+
 import { NavigationContext } from '@/app/context/navigation-context'
+import type { Navigation } from '@/app/utils/location'
 
 /** Where the app is (`location`) and how to move: `navigate(to)` and `back()`. */
 export function useNavigation(): Navigation {

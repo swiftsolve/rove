@@ -1,4 +1,9 @@
+import { cva, cx } from 'class-variance-authority'
 import type { JSX } from 'react'
+
+import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
+import { useNow } from '@/hooks/useNow'
+import { formatMac } from '@/lib/format'
 import type { LanDevice, LanDeviceKind } from '@/types'
 import {
   CameraIcon,
@@ -8,6 +13,7 @@ import {
   ConsoleIcon,
   DeviceIcon,
   IconTile,
+  type IconTileColor,
   InlineMeta,
   NasIcon,
   PrinterIcon,
@@ -19,12 +25,7 @@ import {
   TvIcon,
   UnknownDeviceIcon,
   WatchIcon,
-  type IconTileColor,
 } from '@/ui'
-import { useNow } from '@/hooks/useNow'
-import { formatMac } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
-import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
 
 // The device card: icon pinned to the top-left, the body column fills the rest.
 const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')

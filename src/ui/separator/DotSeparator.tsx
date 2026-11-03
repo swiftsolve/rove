@@ -1,5 +1,6 @@
-import { Fragment, type ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
+import { Fragment, type ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
 
 /**

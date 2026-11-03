@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { normalizeSecurity, shortSecurityLabel } from './wifi-security'
 
 describe('normalizeSecurity', () => {

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { DataList, DataRow } from '../data-list/DataList'
 import { Card, CardBody, CardFooter, CardHeader } from './Card'
 

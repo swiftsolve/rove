@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { NetworkEvent, NetworkEventType } from '@/types'
+
 import {
   eventSubject,
   initialScanTitle,
@@ -7,6 +7,7 @@ import {
   offlineDurations,
   subjectKind,
 } from '@/features/events/utils/event-copy'
+import type { NetworkEvent, NetworkEventType } from '@/types'
 
 function event(id: number, type: NetworkEventType, overrides: Partial<NetworkEvent> = {}): NetworkEvent {
   return {

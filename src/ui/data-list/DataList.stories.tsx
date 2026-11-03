@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
 import { DataList, DataListStack, DataRow } from './DataList'

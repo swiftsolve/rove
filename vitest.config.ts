@@ -1,7 +1,8 @@
-import { defineConfig } from 'vitest/config'
+import path from 'node:path'
+
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
-import path from 'node:path'
+import { defineConfig } from 'vitest/config'
 
 // Three kinds of test. `.test.ts` is pure logic (utils, formatters) and runs
 // in Node, never touching the DOM, the bridge or the styles. `.test.tsx`

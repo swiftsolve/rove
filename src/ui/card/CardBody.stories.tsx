@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { DataList, DataListStack, DataRow } from '../data-list/DataList'
 import { Toggle } from '../toggle/Toggle'
 import { Card, CardBody, CardFooter, CardHeader } from './Card'

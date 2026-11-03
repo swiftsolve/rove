@@ -1,8 +1,9 @@
-import { useState, type JSX } from 'react'
-import { IS_WINDOWS } from '@/lib/platform'
+import { type JSX, useState } from 'react'
+
 import { getNetworkApi } from '@/bridge/network-api'
 import { isTauri } from '@/bridge/tauri-network-api'
 import { useUsageSupportDetail } from '@/features/apps/hooks/useUsageSupportDetail'
+import { IS_WINDOWS } from '@/lib/platform'
 import { Button, EmptyStateDescription } from '@/ui'
 
 /**

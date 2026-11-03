@@ -1,11 +1,16 @@
-import { memo } from 'react'
 import { cva, cx } from 'class-variance-authority'
+import { memo } from 'react'
+
+import { useNetwork } from '@/app/hooks/useNetwork'
+import { WavyProgress } from '@/features/speed/components/WavyProgress'
+import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import type { SpeedTestConnection } from '@/features/speed/types'
+import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/speed/utils/progress-fill'
+import { testStatusText } from '@/features/speed/utils/test-status'
+import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import type { NetworkInfo } from '@/types'
 import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
-import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
-import { useNetwork } from '@/app/hooks/useNetwork'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import {
   Card,
   CardBody,
@@ -14,14 +19,10 @@ import {
   EthernetIcon,
   InlineMeta,
   SpeedIcon,
-  WifiIcon,
-  useCountUp,
   type SpeedSeries,
+  useCountUp,
+  WifiIcon,
 } from '@/ui'
-import type { SpeedTestConnection } from '@/features/speed/types'
-import { WavyProgress } from '@/features/speed/components/WavyProgress'
-import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/speed/utils/progress-fill'
-import { testStatusText } from '@/features/speed/utils/test-status'
 
 /** The connection the footer names, its icon tinted by medium. */
 const connVariants = cva('inline-flex items-center gap-6 font-medium text-secondary', {

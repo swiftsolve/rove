@@ -1,7 +1,7 @@
-import type { AppLocation } from '@/app/utils/location'
-import { useNavigation } from '@/app/hooks/useNavigation'
-import { TABS, renderScreen } from '@/app/utils/tab-registry'
 import { NetworkInfoGate } from '@/app/components/NetworkInfoStates'
+import { useNavigation } from '@/app/hooks/useNavigation'
+import type { AppLocation } from '@/app/utils/location'
+import { renderScreen, TABS } from '@/app/utils/tab-registry'
 
 /** Home and Speed can't render without network info; the other tabs can. */
 function needsNetworkInfo(location: AppLocation): boolean {

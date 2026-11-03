@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+
 import { createSettingStore, decodeSetting, type SettingStorage } from './setting-store'
 
 function fakeStorage(entries: Record<string, string> = {}): SettingStorage & { entries: Map<string, string> } {

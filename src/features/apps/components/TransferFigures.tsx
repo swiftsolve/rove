@@ -1,6 +1,6 @@
+import type { Transfer } from '@/features/apps/utils/transfer'
 import { formatBytes } from '@/lib/format'
 import { cn, DirectionIcon, MetricValue, type SpeedSeries } from '@/ui'
-import type { Transfer } from '@/features/apps/utils/transfer'
 
 // Each value is right-aligned in a fixed-width box, so the down and up columns
 // line up across rows.

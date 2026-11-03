@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import { getVersion } from '@tauri-apps/api/app'
+import { useEffect, useState } from 'react'
 
 /** Read the running app version from Tauri, falling back gracefully outside it. */
 export function useAppVersion(): string | null {

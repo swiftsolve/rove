@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
+
 import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { NavItem } from './NavRail'
 

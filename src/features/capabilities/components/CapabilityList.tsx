@@ -1,13 +1,14 @@
 import type { JSX } from 'react'
-import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
-import { CAPABILITY_DEFINITIONS } from '@/types'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
-import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, ZapIcon } from '@/ui'
-import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
+import { CAPABILITY_DEFINITIONS } from '@/types'
+import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, ZapIcon } from '@/ui'
 
 // A few headline use-cases previewed in the empty state before any test runs —
 // the full breakdown appears once results come in.

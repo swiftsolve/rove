@@ -1,7 +1,8 @@
-import type { JSX } from 'react'
 import { cva } from 'class-variance-authority'
-import { StatusDot, usePresence } from '@/ui'
+import type { JSX } from 'react'
+
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
+import { StatusDot, usePresence } from '@/ui'
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   variants: {

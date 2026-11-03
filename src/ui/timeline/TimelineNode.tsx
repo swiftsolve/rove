@@ -1,5 +1,6 @@
-import type { ComponentProps, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
+import type { ComponentProps, ReactNode } from 'react'
+
 import { cn } from '../foundations/cn'
 
 // A marker column and the content beside it, nudged 5px in so the markers

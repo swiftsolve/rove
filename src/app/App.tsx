@@ -1,9 +1,10 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from '@/app/utils/query-client'
-import { NavigationProvider } from '@/app/context/NavigationProvider'
-import { ThemeProvider } from '@/app/context/ThemeProvider'
-import { NetworkProvider } from '@/app/context/NetworkProvider'
+
 import { AppShell } from '@/app/AppShell'
+import { NavigationProvider } from '@/app/context/NavigationProvider'
+import { NetworkProvider } from '@/app/context/NetworkProvider'
+import { ThemeProvider } from '@/app/context/ThemeProvider'
+import { queryClient } from '@/app/utils/query-client'
 
 /** The app: shared state (query cache, navigation, theme, network) around the shell. */
 export function App() {

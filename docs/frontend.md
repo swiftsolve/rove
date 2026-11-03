@@ -65,6 +65,10 @@ for what. Read it before writing or changing UI. For where files live, see
   quotes, 120 columns); `npm run format` applies it, and `npm run lint` fails
   on a file it would change. Markdown and generated files are left alone
   (`.prettierignore`).
+- Imports come in three groups, each sorted: packages, then the app's own
+  modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
+  JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
+  exception is a line-level disable that says why.
 
 ## Names and copy
 

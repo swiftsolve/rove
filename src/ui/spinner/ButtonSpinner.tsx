@@ -1,5 +1,6 @@
-import { Ring } from 'ldrs/react'
 import 'ldrs/react/Ring.css'
+
+import { Ring } from 'ldrs/react'
 
 /**
  * Compact busy indicator for buttons. Uses the ldrs "ring" loader so buttons

@@ -1,12 +1,13 @@
 // First, so the cascade layers are declared before any CSS uses them. It
 // brings in the tokens and every global stylesheet.
 import '@/styles/tailwind.css'
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '@/app/App'
 
-import { installTauriBridge, isTauri } from '@/bridge/tauri-network-api'
+import { App } from '@/app/App'
 import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'
+import { installTauriBridge, isTauri } from '@/bridge/tauri-network-api'
 import { migrateLegacySpeedHistory } from '@/features/speed/utils/speed-history'
 
 if (isTauri()) {

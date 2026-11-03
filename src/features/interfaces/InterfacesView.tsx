@@ -1,14 +1,19 @@
+import { cva, cx } from 'class-variance-authority'
+
+import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
+import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import type { NetworkInterfaceSummary } from '@/types'
 import {
+  Banner,
   Button,
   Card,
   CardBody,
   DataList,
   DataRow,
-  Banner,
   EthernetIcon,
   IconButton,
   IconTile,
+  type IconTileColor,
   InlineMeta,
   LayersIcon,
   LoadingState,
@@ -18,11 +23,7 @@ import {
   StatusDot,
   Tooltip,
   WifiIcon,
-  type IconTileColor,
 } from '@/ui'
-import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
-import { cva, cx } from 'class-variance-authority'
-import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 
 // Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
 const TILE_COLORS = {

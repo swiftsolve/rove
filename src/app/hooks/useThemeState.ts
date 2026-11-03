@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSetting } from '@/hooks/useSetting'
+
 import { applyThemeClass, swapResolvedTheme } from '@/app/utils/theme-transition'
+import { useSetting } from '@/hooks/useSetting'
 
 /**
  * The colour-theme preference: an explicit choice, or `system` to follow the

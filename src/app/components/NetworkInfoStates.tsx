@@ -1,9 +1,10 @@
-import type { JSX, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import { AlertIcon, Button, Banner, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
+import type { JSX, ReactNode } from 'react'
+
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import { AlertIcon, Banner, Button, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
 
 // What the app shows while network info is missing or its refresh failed.
 

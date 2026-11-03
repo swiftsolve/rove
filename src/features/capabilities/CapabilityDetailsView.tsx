@@ -1,21 +1,22 @@
-import { useEffect, useRef } from 'react'
 import { cva, cx } from 'class-variance-authority'
-import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
+import { useEffect, useRef } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
-import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
-import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader, StatusDot } from '@/ui'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
-import { useNow } from '@/hooks/useNow'
-import { flashHighlight } from '@/lib/highlight'
-import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import {
   CAPABILITY_LEVEL_FILL_COLORS,
   CAPABILITY_LEVEL_TEXT_COLORS,
   CAPABILITY_LEVEL_TILE_COLORS,
 } from '@/features/capabilities/utils/capability-level-colors'
+import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
+import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import { useNow } from '@/hooks/useNow'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
+import { flashHighlight } from '@/lib/highlight'
+import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader, StatusDot } from '@/ui'
 
 // Three-tier card: an intro row (icon + name/description + bars) on the panel
 // surface, a metrics grid on an inset panel, and the verdict on the chrome panel

@@ -1,4 +1,5 @@
 import { createElement, type ReactElement } from 'react'
+
 import * as Icons from './Icons'
 
 // Every icon the library exports (the types are gone at runtime), by name, for

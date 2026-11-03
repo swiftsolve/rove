@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { advanceFill } from '@/features/speed/utils/progress-fill'
 
 describe('advanceFill', () => {

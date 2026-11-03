@@ -1,7 +1,7 @@
-import { cloneElement, useId, type ReactElement, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip'
 import { cx } from 'class-variance-authority'
+import { cloneElement, type ReactElement, type ReactNode, useId } from 'react'
+import { createPortal } from 'react-dom'
 
 // Fades in from 3px above its place. Not hoverable: the pointer passes through.
 const BUBBLE = cx(

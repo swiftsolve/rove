@@ -1,9 +1,13 @@
 import type { JSX } from 'react'
-import type { TrafficType } from '@/types'
-import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
+import { UsageRow } from '@/features/apps/components/UsageRow'
+import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
+import type { TrafficType } from '@/types'
 import {
+  Banner,
   BellIcon,
   CardList,
   ClockIcon,
@@ -11,7 +15,6 @@ import {
   ConnectionIcon,
   DatabaseIcon,
   DnsIcon,
-  Banner,
   FileTransferIcon,
   GlobeIcon,
   HelpIcon,
@@ -27,8 +30,6 @@ import {
   ShareIcon,
   TerminalIcon,
 } from '@/ui'
-import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
-import { UsageRow } from '@/features/apps/components/UsageRow'
 
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
