@@ -4,7 +4,7 @@ import { Area, AreaChart, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxi
 
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
 import { buildChartRows, type ChartRow, formatAxisLabel } from '@/features/live-throughput/utils/throughput-chart'
-import { formatChartWindowLabel } from '@/features/live-throughput/utils/throughput-history'
+import { CHART_WINDOW_LABEL } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80
 // The right margin leaves room for the y-axis labels.
@@ -132,7 +132,7 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
 
       {/* The time axis; its right padding matches the y-axis labels' width. */}
       <div className={cx('mt-6 flex justify-between pr-[26px]', AXIS_LABEL_TEXT)} aria-hidden>
-        <span>{formatChartWindowLabel()}</span>
+        <span>{CHART_WINDOW_LABEL}</span>
         <span>Now</span>
       </div>
     </div>

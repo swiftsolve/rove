@@ -2,13 +2,9 @@ import { sanitizeRate } from '@/types'
 
 /** One minute of history at one sample per second. */
 const THROUGHPUT_HISTORY_LENGTH = 60
-const CHART_WINDOW_MS = THROUGHPUT_HISTORY_LENGTH * 1_000
 
-export function formatChartWindowLabel(): string {
-  const seconds = CHART_WINDOW_MS / 1000
-  if (seconds >= 120 && seconds % 60 === 0) return `${seconds / 60}m ago`
-  return `${seconds}s ago`
-}
+/** The chart's left-edge label: how far back the history reaches. */
+export const CHART_WINDOW_LABEL = `${THROUGHPUT_HISTORY_LENGTH}s ago`
 
 export type ThroughputHistory = {
   download: number[]
