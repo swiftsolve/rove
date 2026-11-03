@@ -13,7 +13,7 @@ import {
 } from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { flashHighlight } from '@/lib/highlight'
+import { scrollToTopAndFlash } from '@/lib/highlight'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, PageHeader, StatusDot } from '@/ui'
 
@@ -52,21 +52,6 @@ const verdictStatusVariants = cva('inline-flex shrink-0 items-center gap-6 text-
 type CapabilityDetailsViewProps = {
   /** Capability to scroll into view when the page opens (the one just clicked). */
   targetId?: CapabilityId | null
-}
-
-/**
- * Smooth-scroll a card to the top of `[data-scroll-root]`, then flash it.
- *
- * Not card.scrollIntoView(): that scrolls every scrollable ancestor, across an
- * iframe boundary too, so the marketing-site demo would drag its host page along.
- */
-function scrollCardToTop(card: HTMLElement): void {
-  const scroller = card.closest<HTMLElement>('[data-scroll-root]')
-  if (!scroller) return
-  const margin = parseFloat(getComputedStyle(card).scrollMarginTop) || 0
-  const offset = card.getBoundingClientRect().top - scroller.getBoundingClientRect().top
-  scroller.scrollTo({ top: scroller.scrollTop + offset - margin, behavior: 'smooth' })
-  flashHighlight(card)
 }
 
 function VerdictIcon({ level }: { level: CapabilityLevel }) {
@@ -147,7 +132,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) 
     const outerFrame = requestAnimationFrame(() => {
       innerFrame = requestAnimationFrame(() => {
         const card = listRef.current?.querySelector<HTMLElement>(`[data-capability-id="${targetId}"]`)
-        if (card) scrollCardToTop(card)
+        if (card) scrollToTopAndFlash(card, 'smooth')
       })
     })
     return () => {
