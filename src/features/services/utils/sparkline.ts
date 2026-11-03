@@ -96,7 +96,8 @@ export function chartDescription(samples: LatencySample[], label: string | undef
   if (values.length > 0) {
     const min = Math.min(...values)
     const max = Math.max(...values)
-    const [minText, maxText] = [formatLatencyMs(min) ?? 'unknown', formatLatencyMs(max) ?? 'unknown']
+    const minText = formatLatencyMs(min) ?? 'unknown'
+    const maxText = formatLatencyMs(max) ?? 'unknown'
     facts.push(min === max ? minText : `${minText} to ${maxText}`)
   }
   if (failedCount > 0) facts.push(`${failedCount} failed`)

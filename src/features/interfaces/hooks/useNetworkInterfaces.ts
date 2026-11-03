@@ -9,7 +9,7 @@ type UseNetworkInterfacesResult = {
   interfaces: NetworkInterfaceSummary[]
   isLoading: boolean
   error: string | null
-  refresh: () => Promise<void>
+  reload: () => Promise<void>
 }
 
 export function useNetworkInterfaces(): UseNetworkInterfacesResult {
@@ -26,5 +26,5 @@ export function useNetworkInterfaces(): UseNetworkInterfacesResult {
   // would spin the Refresh button and cancel the read in flight on each one.
   useOnNetworkChanged(() => void refresh())
 
-  return { interfaces: data ?? [], isLoading: isBusy, error, refresh: reload }
+  return { interfaces: data ?? [], isLoading: isBusy, error, reload }
 }

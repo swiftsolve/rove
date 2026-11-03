@@ -41,8 +41,8 @@ function InterfacesBody({
 }
 
 export function InterfacesView() {
-  const { interfaces, isLoading, error, refresh } = useNetworkInterfaces()
-  const onRefresh = (): void => void refresh()
+  const { interfaces, isLoading, error, reload } = useNetworkInterfaces()
+  const onRefresh = (): void => void reload()
 
   return (
     <div className="page">
@@ -57,7 +57,7 @@ export function InterfacesView() {
         actions={<IconButton label="Refresh" icon={RefreshIcon} isLoading={isLoading} onClick={onRefresh} />}
       />
 
-      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={refresh} />}
+      {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <InterfacesBody interfaces={interfaces} isLoading={isLoading} onRefresh={onRefresh} />
     </div>

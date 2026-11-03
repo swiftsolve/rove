@@ -46,7 +46,7 @@ export function serviceTally(
 
   const probes = reachability ?? []
   if (probes.length === 0) return null
-  const upCount = probes.filter((svc) => reachabilityStatus(svc) === 'up').length
+  const upCount = probes.filter((probe) => reachabilityStatus(probe) === 'up').length
   const downCount = probes.length - upCount
 
   return (

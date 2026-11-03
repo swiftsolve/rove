@@ -86,6 +86,12 @@ function AddressFeedback({
   return <>{isEditing ? 'Tested when you save it.' : 'Tested when you add it.'}</>
 }
 
+function testPhase(isTesting: boolean, outcome: TestOutcome | null): TestPhase {
+  if (isTesting) return 'testing'
+  if (outcome) return 'tested'
+  return 'idle'
+}
+
 function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): string {
   if (isBusy) return isEditing ? 'Saving…' : 'Adding…'
   if (isDown) return isEditing ? 'Save anyway' : 'Add anyway'
@@ -125,8 +131,8 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const formId = useId()
   const isEditing = editing != null
   const outcome = test.isSuccess ? test.data : null
-  const phase: TestPhase = test.isPending ? 'testing' : outcome ? 'tested' : 'idle'
   const isTesting = test.isPending
+  const phase = testPhase(isTesting, outcome)
   const error =
     inputError ??
     (test.isError ? 'Could not test that address. Try again.' : null) ??
@@ -148,7 +154,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
     onClose()
   }
 
-  const confirm = (target: ServiceDefinition & { latencyMs: number | null | undefined }): void => {
+  const confirm = (target: SaveTarget): void => {
     // The typed name wins; a blank field falls back to the derived one.
     const finalName = nameRef.current.trim() || target.name
     save.mutate({ name: finalName, host: target.host, latencyMs: target.latencyMs }, { onSuccess: close })

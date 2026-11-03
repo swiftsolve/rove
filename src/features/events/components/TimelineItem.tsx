@@ -6,7 +6,6 @@ import {
   eventSubject,
   initialScanTitle,
   INTERNET_SUBTITLES,
-  isInternetEvent,
   subjectKind,
   subjectParts,
 } from '@/features/events/utils/event-copy'
@@ -110,7 +109,7 @@ export function TimelineItem({
   offlineMs?: number
 }) {
   const isInitial = event.type === 'initial_scan'
-  const isInternet = isInternetEvent(event)
+  const internetSubtitle = INTERNET_SUBTITLES[event.type]
   const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type]
   const subject = eventSubject(event)
   const kindLabel = isInitial || !subject ? null : subjectKind(event, subject)
@@ -126,9 +125,9 @@ export function TimelineItem({
           />
         </div>
       )}
-      {isInternet && INTERNET_SUBTITLES[event.type] && (
+      {internetSubtitle && (
         <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
-          <span>{INTERNET_SUBTITLES[event.type]}</span>
+          <span>{internetSubtitle}</span>
           {offlineMs != null && (
             <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">
               Offline for {formatDuration(offlineMs) ?? <NoValue label="Unknown" />}

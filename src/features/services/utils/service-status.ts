@@ -19,9 +19,9 @@ export function latencyBand(ms: number): LatencyBand {
  * answered with a 5xx. Mirrors the backend's `reachability_status`
  * (store/services.rs) so the live list and the timeline never disagree.
  */
-export function reachabilityStatus(svc: ServiceReachability): ServiceStatus {
-  if (svc.latencyMs === null) return 'down'
-  if (isHttpErroring(svc.httpStatus)) return 'down'
+export function reachabilityStatus(probe: ServiceReachability): ServiceStatus {
+  if (probe.latencyMs === null) return 'down'
+  if (isHttpErroring(probe.httpStatus)) return 'down'
   return 'up'
 }
 

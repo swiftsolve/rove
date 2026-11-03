@@ -163,19 +163,19 @@ export function ServicesView() {
         // Rows are separated by the same hairline the data cards use, running edge
         // to edge: the rows, not the list, carry the horizontal padding.
         <CardList label="Tracked services">
-          {listedServices.map((svc) => (
+          {listedServices.map((service) => (
             <ServiceRow
-              key={svc.host}
-              service={svc}
-              probe={probeByHost.get(svc.host)}
-              seededLatencyMs={seededLatency.get(svc.host)}
-              samples={latencyHistory[svc.host] ?? []}
+              key={service.host}
+              service={service}
+              probe={probeByHost.get(service.host)}
+              seededLatencyMs={seededLatency.get(service.host)}
+              samples={latencyHistory[service.host] ?? []}
               isInternetUnreachable={isInternetUnreachable}
               menu={
                 <RowMenu
-                  service={svc}
-                  onEdit={() => openDialog({ mode: 'edit', service: svc })}
-                  onRemove={() => removeService(svc.host)}
+                  service={service}
+                  onEdit={() => openDialog({ mode: 'edit', service })}
+                  onRemove={() => removeService(service.host)}
                 />
               }
             />

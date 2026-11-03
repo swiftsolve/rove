@@ -24,15 +24,15 @@ function outageKey(host: string, ts: number): string {
 export function outageDurations(newestFirst: ServiceEvent[]): Map<string, number> {
   const durations = new Map<string, number>()
   const downAt = new Map<string, number>()
-  for (const e of [...newestFirst].reverse()) {
-    if (e.type !== 'transition') continue
-    if (e.status === 'down') {
-      downAt.set(e.host, e.ts)
+  for (const event of [...newestFirst].reverse()) {
+    if (event.type !== 'transition') continue
+    if (event.status === 'down') {
+      downAt.set(event.host, event.ts)
     } else {
-      const start = downAt.get(e.host)
+      const start = downAt.get(event.host)
       if (start != null) {
-        durations.set(outageKey(e.host, e.ts), e.ts - start)
-        downAt.delete(e.host)
+        durations.set(outageKey(event.host, event.ts), event.ts - start)
+        downAt.delete(event.host)
       }
     }
   }
@@ -46,10 +46,10 @@ export function outageDurations(newestFirst: ServiceEvent[]): Map<string, number
 export function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, number> {
   const starts = new Map<string, number>()
   const seen = new Set<string>()
-  for (const e of newestFirst) {
-    if (e.type !== 'transition' || seen.has(e.host)) continue
-    seen.add(e.host)
-    if (e.status === 'down') starts.set(e.host, e.ts)
+  for (const event of newestFirst) {
+    if (event.type !== 'transition' || seen.has(event.host)) continue
+    seen.add(event.host)
+    if (event.status === 'down') starts.set(event.host, event.ts)
   }
   return starts
 }
@@ -61,12 +61,12 @@ export function ongoingDownStarts(newestFirst: ServiceEvent[]): Map<string, numb
 export function offlineDurations(newestFirst: ServiceEvent[]): Map<number, number> {
   const durations = new Map<number, number>()
   let lostAt: number | null = null
-  for (const e of [...newestFirst].reverse()) {
-    if (e.type !== 'connection') continue
-    if (e.status === 'lost') {
-      lostAt = e.ts
+  for (const event of [...newestFirst].reverse()) {
+    if (event.type !== 'connection') continue
+    if (event.status === 'lost') {
+      lostAt = event.ts
     } else if (lostAt != null) {
-      durations.set(e.ts, e.ts - lostAt)
+      durations.set(event.ts, event.ts - lostAt)
       lostAt = null
     }
   }

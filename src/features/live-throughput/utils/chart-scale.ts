@@ -1,7 +1,9 @@
 import { sanitizeRate } from '@/types'
 
 const MIN_SCALE_MBPS = 10
+/** Room above the peak, so the trace never touches the top of the chart. */
 const HEADROOM = 1.2
+/** Samples (one a second) the peak is taken over. */
 const RECENT_PEAK_WINDOW = 20
 /** Short tail window: when it stays well below the longer peak, traffic has settled. */
 const TAIL_PEAK_WINDOW = 5

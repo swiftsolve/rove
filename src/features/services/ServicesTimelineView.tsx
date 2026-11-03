@@ -91,19 +91,20 @@ export function ServicesTimelineView() {
       )}
       {/* Nothing until the first read lands, so "No outages yet" doesn't flash
           before the log arrives. */}
-      {!isLoaded ? null : events.length === 0 ? (
-        <EmptyState title="No outages yet" description="Outages appear here when a tracked service goes down." />
-      ) : (
-        <TimelineDayList>
-          {dayGroups.map((group) => (
-            <TimelineDay key={group.key} heading={group.heading}>
-              {group.events.map((event) => (
-                <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
-              ))}
-            </TimelineDay>
-          ))}
-        </TimelineDayList>
-      )}
+      {isLoaded &&
+        (events.length === 0 ? (
+          <EmptyState title="No outages yet" description="Outages appear here when a tracked service goes down." />
+        ) : (
+          <TimelineDayList>
+            {dayGroups.map((group) => (
+              <TimelineDay key={group.key} heading={group.heading}>
+                {group.events.map((event) => (
+                  <TimelineEvent key={eventKey(event)} event={event} durations={durations} />
+                ))}
+              </TimelineDay>
+            ))}
+          </TimelineDayList>
+        ))}
     </div>
   )
 }

@@ -27,8 +27,8 @@ function latestWindow(samples: LatencySample[]): LatencySample[] {
 
 function isSample(value: unknown): value is LatencySample {
   if (typeof value !== 'object' || value == null) return false
-  const s = value as Record<string, unknown>
-  return typeof s.ts === 'number' && (s.ms === null || typeof s.ms === 'number')
+  const fields = value as Record<string, unknown>
+  return typeof fields.ts === 'number' && (fields.ms === null || typeof fields.ms === 'number')
 }
 
 export function readLatencyHistory(): LatencyHistory {
@@ -80,9 +80,9 @@ export function appendSamples(
 
   const now = Date.now()
   const next: Record<string, LatencySample[]> = {}
-  for (const svc of reachability) {
-    const previous = history[svc.host] ?? []
-    next[svc.host] = latestWindow([...previous, { ts: now, ms: svc.latencyMs }])
+  for (const probe of reachability) {
+    const previous = history[probe.host] ?? []
+    next[probe.host] = latestWindow([...previous, { ts: now, ms: probe.latencyMs }])
   }
   return next
 }
