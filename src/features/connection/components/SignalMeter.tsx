@@ -1,7 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 
-import { signalBarCount, signalLevel } from '@/features/connection/utils/wifi-signal'
-import { formatSignalStrength } from '@/lib/format'
+import { signalBarCount, signalLevel, signalWord } from '@/features/connection/utils/wifi-signal'
 import { BarMeter, type VariantOf } from '@/ui'
 
 const signalMeterVariants = cva('flex items-center gap-8', {
@@ -25,7 +24,7 @@ export function SignalMeter({ strength, placement, className }: SignalMeterProps
     <div
       className={cx(signalMeterVariants({ level: signalLevel(strength), placement }), className)}
       role="meter"
-      aria-label={`Wi‑Fi signal: ${formatSignalStrength(strength)}`}
+      aria-label={`Wi‑Fi signal: ${signalWord(strength)}`}
       aria-valuenow={strength}
       aria-valuemin={0}
       aria-valuemax={100}

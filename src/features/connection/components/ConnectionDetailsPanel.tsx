@@ -3,13 +3,13 @@ import type { ReactNode } from 'react'
 import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
 import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import { formatLinkSpeed } from '@/features/connection/utils/connection-display'
+import { signalWord } from '@/features/connection/utils/wifi-signal'
 import {
   formatBand,
   formatChannel,
   formatDisplayValue,
   formatDuplex,
   formatMac,
-  formatSignalStrength,
   formatWifiStandard,
 } from '@/lib/format'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
@@ -115,7 +115,7 @@ function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
   const { signalStrength, signalDbm } = info
   if (signalStrength != null && Number.isFinite(signalStrength)) {
     const percent = signalDbm != null ? `${signalStrength}% (${signalDbm} dBm)` : `${signalStrength}%`
-    return <InlineMeta items={[formatSignalStrength(signalStrength), percent]} />
+    return <InlineMeta items={[signalWord(signalStrength), percent]} />
   }
   if (signalDbm != null && Number.isFinite(signalDbm)) return `${signalDbm} dBm`
   return <NoValue />

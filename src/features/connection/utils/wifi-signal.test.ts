@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { signalBarCount, signalLevel } from './wifi-signal'
+import { signalBarCount, signalLevel, signalWord } from './wifi-signal'
 
 describe('signalBarCount', () => {
   it('fills a bar per threshold reached, and always at least one', () => {
@@ -21,5 +21,17 @@ describe('signalLevel', () => {
     expect(signalLevel(54)).toBe('fair')
     expect(signalLevel(35)).toBe('fair')
     expect(signalLevel(34)).toBe('poor')
+  })
+})
+
+describe('signalWord', () => {
+  it('says one word per bar count, so the word, the bars and their colour agree', () => {
+    expect(signalWord(100)).toBe('Excellent')
+    expect(signalWord(58)).toBe('Good')
+    expect(signalLevel(58)).toBe('good')
+    expect(signalWord(38)).toBe('Fair')
+    expect(signalLevel(38)).toBe('fair')
+    expect(signalWord(10)).toBe('Weak')
+    expect(signalWord(Number.NaN)).toBe('Weak')
   })
 })
