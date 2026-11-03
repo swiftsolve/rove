@@ -138,6 +138,9 @@ subscribeLiveThroughput(() => {
 // Monotonic run id: a late progress event, a stopped run or a superseded one can
 // never write over a newer one's state, or save its result.
 let latestRunId = 0
+// The backend's name for the run in flight, unique across reloads, so a Stop
+// reaches the right run even before it has started there.
+let runToken = ''
 
 async function runTest(): Promise<void> {
   if (state.isTesting) return
@@ -150,6 +153,7 @@ async function runTest(): Promise<void> {
 
   const runId = ++latestRunId
   const isCurrentRun = (): boolean => runId === latestRunId
+  runToken = `${Date.now()}-${runId}`
 
   setState({
     ...state,
@@ -174,7 +178,7 @@ async function runTest(): Promise<void> {
     // Windows with a VPN and other virtual adapters, and awaiting it first froze
     // the UI at "Starting speed test…".
     const contextPromise = currentRunContext()
-    const result = await api.runSpeedTest()
+    const result = await api.runSpeedTest(runToken)
     const context = await contextPromise
     isSettled = true
     unsubscribe()
@@ -215,9 +219,10 @@ function cancelTest(): void {
   // feel unresponsive. The bumped run id turns the old run's late writes into no-ops.
   latestRunId++
   setState({ ...state, isTesting: false, progress: INITIAL_PROGRESS, error: null })
-  // A no-op if the backend test hasn't registered yet; the bumped run id still
-  // keeps that run's result off screen and out of history.
-  window.networkAPI?.cancelSpeedTest().catch((err: unknown) => console.warn('Cancelling the speed test failed:', err))
+  // Stops the run even if it hasn't reached the backend yet.
+  window.networkAPI
+    ?.cancelSpeedTest(runToken)
+    .catch((err: unknown) => console.warn('Cancelling the speed test failed:', err))
 }
 
 /**

@@ -222,14 +222,20 @@ pub async fn get_public_ip() -> Option<String> {
 pub async fn run_speed_test(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
+    run_token: String,
 ) -> Result<SpeedTestResult, String> {
     let cancel = Arc::new(AtomicBool::new(false));
     {
-        let mut slot = lock(&state.speed_cancel);
-        if let Some(previous) = slot.take() {
+        let mut runs = lock(&state.speed_runs);
+        // Stopped before it got here: don't start a test nobody wants.
+        if runs.stopped_early.as_deref() == Some(run_token.as_str()) {
+            runs.stopped_early = None;
+            return Err(rove_core::speed::CANCELLED.into());
+        }
+        if let Some((_, previous)) = runs.running.take() {
             previous.store(true, Ordering::Relaxed);
         }
-        *slot = Some(cancel.clone());
+        runs.running = Some((run_token.clone(), cancel.clone()));
     }
 
     // Run the link-capacity probe concurrently with the test rather than before
@@ -245,12 +251,12 @@ pub async fn run_speed_test(
         }),
     );
 
-    // Clear our cancel slot unconditionally (on success, error, or cancel), but
-    // only if a newer run hasn't already replaced it.
+    // Clear our slot unconditionally (on success, error, or cancel), but only
+    // if a newer run hasn't already replaced it.
     {
-        let mut slot = lock(&state.speed_cancel);
-        if slot.as_ref().is_some_and(|c| Arc::ptr_eq(c, &cancel)) {
-            *slot = None;
+        let mut runs = lock(&state.speed_runs);
+        if runs.running.as_ref().is_some_and(|(token, _)| *token == run_token) {
+            runs.running = None;
         }
     }
 
@@ -260,9 +266,16 @@ pub async fn run_speed_test(
 }
 
 #[tauri::command]
-pub fn cancel_speed_test(state: tauri::State<'_, AppState>) {
-    if let Some(cancel) = lock(&state.speed_cancel).take() {
-        cancel.store(true, Ordering::Relaxed);
+pub fn cancel_speed_test(state: tauri::State<'_, AppState>, run_token: String) {
+    let mut runs = lock(&state.speed_runs);
+    match runs.running.take() {
+        Some((token, cancel)) if token == run_token => cancel.store(true, Ordering::Relaxed),
+        other => {
+            // Not this run (it hasn't registered yet): put back whatever is
+            // running, and stop this one when it arrives.
+            runs.running = other;
+            runs.stopped_early = Some(run_token);
+        }
     }
 }
 

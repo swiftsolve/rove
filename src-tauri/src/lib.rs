@@ -16,8 +16,21 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
+/// The speed test in flight, and a Stop that arrived before its run did.
+///
+/// The UI starts a test and may stop it before `run_speed_test` has registered
+/// itself: both are separate IPC calls, and nothing orders them. So a Stop for a
+/// run that isn't here yet is kept, and that run returns cancelled on arrival.
+#[derive(Default)]
+struct SpeedRuns {
+    /// The running test's token and its cancel flag.
+    running: Option<(String, Arc<AtomicBool>)>,
+    /// The token of a run stopped before it started.
+    stopped_early: Option<String>,
+}
+
 struct AppState {
-    speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
+    speed_runs: Mutex<SpeedRuns>,
     usage: Mutex<Option<UsageTracker>>,
     /// Per-app usage totals, fed by the background app-usage sampler. Always
     /// present (unlike `usage`, which waits on the store) — the tracker is pure
@@ -96,7 +109,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(AppState {
-            speed_cancel: Mutex::new(None),
+            speed_runs: Mutex::new(SpeedRuns::default()),
             usage: Mutex::new(None),
             app_usage: Mutex::new(AppUsageTracker::new()),
             host_usage: Mutex::new(HostUsageTracker::new()),

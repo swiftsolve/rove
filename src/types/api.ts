@@ -81,8 +81,10 @@ export type NetworkAPI = {
   /** Fires when the services heartbeat has folded a fresh probe into the
    *  timeline, so a page showing it can re-read. */
   onServicesTimeline(callback: () => void): Unsubscribe
-  runSpeedTest(): Promise<SpeedTestResult>
-  cancelSpeedTest(): Promise<void>
+  /** `runToken` names this run, so a Stop sent before the run reaches the backend still stops it. */
+  runSpeedTest(runToken: string): Promise<SpeedTestResult>
+  /** Stops the run with this token, now or as soon as it starts. */
+  cancelSpeedTest(runToken: string): Promise<void>
   /** Past speed-test results, newest first, from the local database. */
   getSpeedHistory(): Promise<SpeedHistoryEntry[]>
   /** Persist one completed speed-test result. */
