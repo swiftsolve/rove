@@ -24,6 +24,8 @@ import { Banner, EmptyState, Menu, MenuContent, MenuItem, MenuTrigger, PageHeade
 const INITIAL_ROWS = 20
 const ROWS_PER_STEP = 40
 
+const HEADING_CLOCK_MS = 60_000
+
 /** The header overflow menu: Clear history, which drops everything recorded. */
 function TimelineMenu({ onClear }: { onClear: () => void }) {
   return (
@@ -55,12 +57,19 @@ export function ServicesTimelineView() {
   // and the rest once it has settled in.
   const shownCount = useIncrementalCount(events.length, INITIAL_ROWS, ROWS_PER_STEP)
 
-  const outageByKey = useMemo(() => outageDurations(events), [events])
-  const offlineByTs = useMemo(() => offlineDurations(events), [events])
-  const ongoingDownStartByHost = useMemo(() => ongoingDownStarts(events), [events])
-  // Ticks each second, the finest unit `formatDuration` renders.
-  const now = useNow()
-  const durations: EventDurations = { outageByKey, offlineByTs, ongoingDownStartByHost, now }
+  const durations = useMemo<EventDurations>(
+    () => ({
+      outageByKey: outageDurations(events),
+      offlineByTs: offlineDurations(events),
+      ongoingDownStartByHost: ongoingDownStarts(events),
+    }),
+    [events],
+  )
+  // Only for the day headings ("Today", "Yesterday"), so a minute's lag at
+  // midnight is fine. The live "Down for …" row reads its own clock, so the
+  // list doesn't regroup each second.
+  const headingNow = useNow(HEADING_CLOCK_MS)
+  const dayGroups = useMemo(() => groupByDay(events.slice(0, shownCount), headingNow), [events, shownCount, headingNow])
 
   // Prose until the first probes land and there's something to count.
   const description = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
@@ -86,7 +95,7 @@ export function ServicesTimelineView() {
         <EmptyState title="No outages yet" description="Outages appear here when a tracked service goes down." />
       ) : (
         <TimelineDayList>
-          {groupByDay(events.slice(0, shownCount), now).map((group) => (
+          {dayGroups.map((group) => (
             <TimelineDay key={group.key} heading={group.heading}>
               {group.events.map((event) => (
                 <TimelineEvent key={eventKey(event)} event={event} durations={durations} />

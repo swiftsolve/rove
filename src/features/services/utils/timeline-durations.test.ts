@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest'
 import type { ServiceEvent, ServiceTransitionEvent } from '@/types'
 
 import {
+  closedOutageMs,
   type EventDurations,
+  isOngoingDrop,
   offlineDurations,
   ongoingDownStarts,
   outageDurations,
-  transitionDurationMs,
 } from './timeline-durations'
 
 function transition(host: string, status: 'up' | 'down', ts: number): ServiceTransitionEvent {
@@ -41,15 +42,17 @@ describe('timeline durations', () => {
     expect(ongoingDownStarts(LOG)).toEqual(new Map([['a.com', 900]]))
   })
 
-  it('times a recovery by its outage, the latest drop live, and older drops not at all', () => {
+  it('times a recovery by its outage, marks the latest drop live, and leaves older drops untimed', () => {
     const durations: EventDurations = {
       outageByKey: outageDurations(LOG),
       offlineByTs: offlineDurations(LOG),
       ongoingDownStartByHost: ongoingDownStarts(LOG),
-      now: 1000,
     }
-    expect(transitionDurationMs(transition('a.com', 'up', 500), durations)).toBe(300)
-    expect(transitionDurationMs(transition('a.com', 'down', 900), durations)).toBe(100)
-    expect(transitionDurationMs(transition('a.com', 'down', 200), durations)).toBeUndefined()
+    expect(closedOutageMs(transition('a.com', 'up', 500), durations)).toBe(300)
+    expect(closedOutageMs(transition('a.com', 'down', 900), durations)).toBeUndefined()
+    expect(isOngoingDrop(transition('a.com', 'down', 900), durations)).toBe(true)
+    expect(isOngoingDrop(transition('a.com', 'down', 200), durations)).toBe(false)
+    expect(closedOutageMs(transition('a.com', 'down', 200), durations)).toBeUndefined()
+    expect(isOngoingDrop(transition('a.com', 'up', 500), durations)).toBe(false)
   })
 })

@@ -2,8 +2,9 @@ import { cva, cx } from 'class-variance-authority'
 import { memo } from 'react'
 
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
-import { type EventDurations, transitionDurationMs } from '@/features/services/utils/timeline-durations'
+import { closedOutageMs, type EventDurations, isOngoingDrop } from '@/features/services/utils/timeline-durations'
 import { EventHeading } from '@/features/timeline/components/EventHeading'
+import { useNow } from '@/hooks/useNow'
 import { formatCount, formatDuration } from '@/lib/format'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, GlobeIcon, NoValue, OfflineIcon, TimelineNode } from '@/ui'
@@ -28,8 +29,7 @@ const subjectVariants = cva('min-w-0 items-center gap-4 text-md', {
 // Pushed flush right of its row.
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 
-// The rows are memoised: the clock ticks every second, and only a row whose
-// duration it moves should re-render, not a few hundred of them.
+// The rows are memoised, so a list a few hundred long renders each row once.
 const TransitionRow = memo(function TransitionRow({
   event,
   durationMs,
@@ -59,6 +59,14 @@ const TransitionRow = memo(function TransitionRow({
     </TimelineNode>
   )
 })
+
+/** The latest drop of a service still down: the one row that reads the clock,
+ *  so only it re-renders as its "Down for …" ticks each second, the finest
+ *  unit `formatDuration` renders. */
+function OngoingDropRow({ event }: { event: ServiceTransitionEvent }) {
+  const now = useNow()
+  return <TransitionRow event={event} durationMs={now - event.ts} />
+}
 
 const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningEvent }) {
   // A baseline recorded while a service was already down is a partial tally, so
@@ -111,5 +119,6 @@ export function TimelineEvent({ event, durations }: { event: ServiceEvent; durat
   if (event.type === 'connection') {
     return <ConnectionRow event={event} durationMs={durations.offlineByTs.get(event.ts)} />
   }
-  return <TransitionRow event={event} durationMs={transitionDurationMs(event, durations)} />
+  if (isOngoingDrop(event, durations)) return <OngoingDropRow event={event} />
+  return <TransitionRow event={event} durationMs={closedOutageMs(event, durations)} />
 }

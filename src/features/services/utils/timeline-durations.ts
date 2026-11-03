@@ -1,6 +1,7 @@
 import type { ServiceEvent, ServiceTransitionEvent } from '@/types'
 
-/** The precomputed durations the timeline rows read, plus the live clock. */
+/** The precomputed durations the timeline rows read. The live one, an ongoing
+ *  outage's, is the clock less its start, read by that row alone. */
 export type EventDurations = {
   /** Closed outages, keyed by `outageKey` of the recovery. */
   outageByKey: Map<string, number>
@@ -8,7 +9,6 @@ export type EventDurations = {
   offlineByTs: Map<number, number>
   /** When each still-down host dropped. */
   ongoingDownStartByHost: Map<string, number>
-  now: number
 }
 
 function outageKey(host: string, ts: number): string {
@@ -73,9 +73,15 @@ export function eventKey(event: ServiceEvent): string {
 }
 
 // "Down for …" on a recovery is the outage it closed; on the latest drop of a
-// still-down service it's the live elapsed time since then. Older drops get none.
-export function transitionDurationMs(event: ServiceTransitionEvent, durations: EventDurations): number | undefined {
+// still-down service it's the live elapsed time since then (see `isOngoingDrop`).
+// Older drops get none.
+export function closedOutageMs(event: ServiceTransitionEvent, durations: EventDurations): number | undefined {
   if (event.status === 'up') return durations.outageByKey.get(outageKey(event.host, event.ts))
-  if (durations.ongoingDownStartByHost.get(event.host) === event.ts) return durations.now - event.ts
   return undefined
+}
+
+/** Whether this is the latest drop of a service that's still down, whose row
+ *  counts the outage up live. */
+export function isOngoingDrop(event: ServiceTransitionEvent, durations: EventDurations): boolean {
+  return event.status === 'down' && durations.ongoingDownStartByHost.get(event.host) === event.ts
 }
