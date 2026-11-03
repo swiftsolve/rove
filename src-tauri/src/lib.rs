@@ -58,94 +58,16 @@ pub fn run() {
     let _log_guard = logging::init_logging();
     logging::install_panic_logger();
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "Rove starting");
-    // The GDK backend, Wayland socket and AppArmor label (which decides whether
-    // WebKit's sandboxed WebProcess can start) are behind the blank-window and
-    // freeze reports, so log them to diagnose one from the log alone.
     #[cfg(target_os = "linux")]
-    tracing::info!(
-        gdk_backend = ?std::env::var("GDK_BACKEND").ok(),
-        wayland_display = ?std::env::var("WAYLAND_DISPLAY").ok(),
-        session_type = ?std::env::var("XDG_SESSION_TYPE").ok(),
-        apparmor = ?std::fs::read_to_string("/proc/self/attr/current")
-            .ok()
-            .map(|s| s.trim().to_string()),
-        "linux desktop environment"
-    );
-
-    // WebKitGTK on the NVIDIA proprietary driver stalls: the accelerated
-    // compositor paints one frame, then waits on a frame callback the driver
-    // never delivers, so the window repaints only on input and looks hung.
-    //
-    // The old fix forced GDK_BACKEND=x11 and WEBKIT_DISABLE_COMPOSITING_MODE;
-    // dropping both regressed NVIDIA (RTX 20-series, driver 595, WebKitGTK
-    // 2.52.3, Wayland). The halves are separable: forcing x11 is what freezes
-    // on 2.52, so GDK_BACKEND is left alone, and disabling the compositor is
-    // what fixes NVIDIA, since repaints then flush synchronously. Respects a
-    // value the user set. The non-composited path needs the opaque window
-    // (`transparent: false` in tauri.conf.json).
-    #[cfg(target_os = "linux")]
-    if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
-        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-    }
+    prepare_linux_desktop();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .manage(AppState {
-            speed_runs: Mutex::new(SpeedRuns::default()),
-            usage: Mutex::new(None),
-            app_usage: Mutex::new(AppUsageTracker::new()),
-            host_usage: Mutex::new(HostUsageTracker::new()),
-            networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
-            is_throughput_subscribed: AtomicBool::new(false),
-            has_tray: AtomicBool::new(false),
-            internet: Mutex::new(None),
-        })
+        .manage(AppState::new())
         .manage(Arc::new(DeviceScanner::default()))
-        .setup(|app| {
-            // macOS 14+ withholds the SSID without Location authorisation. Asked
-            // here because CoreLocation needs the main thread; a no-op elsewhere.
-            let location_status = rove_core::platform::mac_native::request_location_permission();
-            tracing::info!(status = location_status, "location authorization");
-
-            let handle = app.handle().clone();
-            store_init::init_store(app);
-            monitors::spawn_usage_sampler(handle.clone());
-            monitors::spawn_app_usage_sampler(handle.clone());
-            monitors::spawn_host_usage_sampler(handle.clone());
-            monitors::spawn_throughput_broadcaster(handle.clone());
-            monitors::spawn_device_refresh(handle.clone());
-            monitors::spawn_route_monitor(handle.clone());
-            monitors::spawn_internet_heartbeat(handle.clone());
-            monitors::spawn_services_heartbeat(handle.clone());
-
-            match tray::build_tray(&handle) {
-                Ok(()) => app.state::<AppState>().has_tray.store(true, Ordering::Relaxed),
-                Err(err) => {
-                    tracing::warn!("system tray unavailable ({err}); the window close button will quit the app")
-                }
-            }
-
-            // The window is created hidden (`visible: false` in tauri.conf.json)
-            // and shown here. On Linux tao maps a visible window before it drops
-            // the decorations, and GTK keeps the decorated size for a
-            // non-resizable window, so it came up ~52px larger each way.
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-            }
-
-            Ok(())
-        })
-        .on_window_event(|window, event| match event {
-            tauri::WindowEvent::CloseRequested { api, .. } if window.label() == "main" => {
-                let app = window.app_handle();
-                if app.state::<AppState>().has_tray.load(Ordering::Relaxed) {
-                    let _ = window.hide();
-                    api.prevent_close();
-                }
-            }
-            _ => {}
-        })
+        .setup(setup)
+        .on_window_event(on_window_event)
         .invoke_handler(tauri::generate_handler![
             commands::get_network_info,
             commands::get_wifi_share,
@@ -190,4 +112,99 @@ pub fn run() {
                 tray::show_main_window(_app_handle);
             }
         });
+}
+
+impl AppState {
+    fn new() -> Self {
+        Self {
+            speed_runs: Mutex::new(SpeedRuns::default()),
+            usage: Mutex::new(None),
+            app_usage: Mutex::new(AppUsageTracker::new()),
+            host_usage: Mutex::new(HostUsageTracker::new()),
+            networks: Mutex::new(sysinfo::Networks::new_with_refreshed_list()),
+            is_throughput_subscribed: AtomicBool::new(false),
+            has_tray: AtomicBool::new(false),
+            internet: Mutex::new(None),
+        }
+    }
+}
+
+/// Log the Linux desktop's details and work around WebKitGTK's NVIDIA stall,
+/// before the webview starts.
+#[cfg(target_os = "linux")]
+fn prepare_linux_desktop() {
+    // The GDK backend, Wayland socket and AppArmor label (which decides whether
+    // WebKit's sandboxed WebProcess can start) are behind the blank-window and
+    // freeze reports, so log them to diagnose one from the log alone.
+    tracing::info!(
+        gdk_backend = ?std::env::var("GDK_BACKEND").ok(),
+        wayland_display = ?std::env::var("WAYLAND_DISPLAY").ok(),
+        session_type = ?std::env::var("XDG_SESSION_TYPE").ok(),
+        apparmor = ?std::fs::read_to_string("/proc/self/attr/current")
+            .ok()
+            .map(|s| s.trim().to_string()),
+        "linux desktop environment"
+    );
+
+    // WebKitGTK on the NVIDIA proprietary driver stalls: the accelerated
+    // compositor paints one frame, then waits on a frame callback the driver
+    // never delivers, so the window repaints only on input and looks hung.
+    //
+    // The old fix forced GDK_BACKEND=x11 and WEBKIT_DISABLE_COMPOSITING_MODE;
+    // dropping both regressed NVIDIA (RTX 20-series, driver 595, WebKitGTK
+    // 2.52.3, Wayland). The halves are separable: forcing x11 is what freezes
+    // on 2.52, so GDK_BACKEND is left alone, and disabling the compositor is
+    // what fixes NVIDIA, since repaints then flush synchronously. Respects a
+    // value the user set. The non-composited path needs the opaque window
+    // (`transparent: false` in tauri.conf.json).
+    if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
+        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    }
+}
+
+/// Open the store, start the background monitors and the tray, then show the
+/// window.
+fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    // macOS 14+ withholds the SSID without Location authorisation. Asked
+    // here because CoreLocation needs the main thread; a no-op elsewhere.
+    let location_status = rove_core::platform::mac_native::request_location_permission();
+    tracing::info!(status = location_status, "location authorization");
+
+    let handle = app.handle().clone();
+    store_init::init_store(app);
+    monitors::spawn_usage_sampler(handle.clone());
+    monitors::spawn_app_usage_sampler(handle.clone());
+    monitors::spawn_host_usage_sampler(handle.clone());
+    monitors::spawn_throughput_broadcaster(handle.clone());
+    monitors::spawn_device_refresh(handle.clone());
+    monitors::spawn_route_monitor(handle.clone());
+    monitors::spawn_internet_heartbeat(handle.clone());
+    monitors::spawn_services_heartbeat(handle.clone());
+
+    match tray::build_tray(&handle) {
+        Ok(()) => app.state::<AppState>().has_tray.store(true, Ordering::Relaxed),
+        Err(err) => {
+            tracing::warn!("system tray unavailable ({err}); the window close button will quit the app")
+        }
+    }
+
+    // The window is created hidden (`visible: false` in tauri.conf.json)
+    // and shown here. On Linux tao maps a visible window before it drops
+    // the decorations, and GTK keeps the decorated size for a
+    // non-resizable window, so it came up ~52px larger each way.
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+    }
+
+    Ok(())
+}
+
+/// Closing the main window hides it to the tray when there is one.
+fn on_window_event(window: &tauri::Window, event: &tauri::WindowEvent) {
+    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+        if window.label() == "main" && window.app_handle().state::<AppState>().has_tray.load(Ordering::Relaxed) {
+            let _ = window.hide();
+            api.prevent_close();
+        }
+    }
 }

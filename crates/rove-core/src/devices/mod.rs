@@ -360,13 +360,7 @@ fn build_device(
     // the kind, so classify from the per-MAC union of everything seen (see
     // `history`). DHCP accumulates in its own listener. A MAC-less device can't
     // be keyed, so it uses this scan alone.
-    let fresh = history::DeviceEvidence {
-        mdns: enrichment.mdns.get(&neighbor.ip).cloned().unwrap_or_default(),
-        ssdp: enrichment.ssdp.get(&neighbor.ip).cloned().unwrap_or_default(),
-        banner: enrichment.banner.get(&neighbor.ip).cloned().unwrap_or_default(),
-        snmp: enrichment.snmp.get(&neighbor.ip).cloned().unwrap_or_default(),
-        ports: enrichment.open_ports.get(&neighbor.ip).cloned().unwrap_or_default(),
-    };
+    let fresh = scan_evidence(enrichment, &neighbor.ip);
     let evidence = if neighbor.mac.is_empty() { fresh } else { history::merge_and_snapshot(&neighbor.mac, fresh) };
 
     // An Amazon OUI advertising Spotify Connect is an Echo: Fire TVs and other
@@ -376,29 +370,7 @@ fn build_device(
     let is_amazon = vendor.as_deref().is_some_and(|v| v.to_ascii_lowercase().contains("amazon"));
     let is_echo = is_amazon && evidence.mdns.spotify_connect && !is_gateway && !is_self;
 
-    // Most human name first. Each carries its rank so the per-MAC name cache
-    // keeps this order across scans: a flap-prone reverse-DNS PTR resolved later
-    // mustn't overwrite a stronger name remembered from earlier.
-    use history::NameRank;
-    let hostname = evidence
-        .mdns
-        .name
-        .clone()
-        .map(|n| (n, NameRank::Mdns))
-        .or_else(|| evidence.ssdp.name.clone().map(|n| (n, NameRank::Ssdp)))
-        .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned().map(|n| (n, NameRank::NetBios)))
-        .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()).map(|n| (n, NameRank::Dhcp)))
-        .or_else(|| resolved_hostname.map(|n| (n, NameRank::ReverseDns)))
-        .or_else(|| is_echo.then(|| ("Amazon Echo".to_string(), NameRank::Synthetic)));
-
-    // Reverse-DNS and NetBIOS names flap, and a nameless scan would drop the
-    // hostname vote (an "Office-LaserJet" falling back to its HP OUI, so
-    // computer). Remembering the name per MAC keeps it and the kind stable.
-    let hostname = if neighbor.mac.is_empty() {
-        hostname.map(|(name, _)| name)
-    } else {
-        history::stable_name(&neighbor.mac, hostname)
-    };
+    let hostname = pick_hostname(&neighbor, &evidence, enrichment, dhcp, resolved_hostname, is_echo);
 
     // mDNS TXT is the most precise; SNMP is the only source for routers that
     // announce on neither mDNS nor SSDP.
@@ -433,30 +405,7 @@ fn build_device(
     // After vendor inference, which needs the raw "<family><gen>,<rev>" shape.
     let model = model.map(|m| humanize_model(&m));
 
-    // The macOS/Windows neighbor table has no state, so a departed device would
-    // read Online for ~20 min. Any answer this scan (ICMP, TCP accept or RST,
-    // an announcement) or a Linux REACHABLE counts as live, debounced per MAC
-    // (see `liveness`) so one dropped probe doesn't flip it to Offline.
-    let is_reachable = if is_self || is_gateway {
-        true
-    } else if !enrichment.was_probed {
-        neighbor.is_reachable
-    } else {
-        let ip = neighbor.ip.as_str();
-        let is_live_now = (neighbor.is_stateful && neighbor.is_reachable)
-            || enrichment.ping_live.contains(ip)
-            || enrichment.tcp_live.contains(ip)
-            || enrichment.mdns.contains_key(ip)
-            || enrichment.ssdp.contains_key(ip)
-            || enrichment.netbios.contains_key(ip)
-            || enrichment.snmp.contains_key(ip)
-            || enrichment.banner.contains_key(ip);
-        if neighbor.mac.is_empty() {
-            is_live_now // no stable key to debounce against
-        } else {
-            liveness::record_and_check(&neighbor.mac, is_live_now)
-        }
-    };
+    let is_reachable = is_self || is_gateway || is_reachable(&neighbor, enrichment);
 
     LanDevice {
         kind: verdict.kind,
@@ -473,6 +422,77 @@ fn build_device(
         mac: neighbor.mac,
         // Stamped by the store's roster merge (see `devices_with_offline`).
         last_seen: None,
+    }
+}
+
+/// What this scan's enrichment passes heard from `ip`.
+fn scan_evidence(enrichment: &Enrichment, ip: &str) -> history::DeviceEvidence {
+    history::DeviceEvidence {
+        mdns: enrichment.mdns.get(ip).cloned().unwrap_or_default(),
+        ssdp: enrichment.ssdp.get(ip).cloned().unwrap_or_default(),
+        banner: enrichment.banner.get(ip).cloned().unwrap_or_default(),
+        snmp: enrichment.snmp.get(ip).cloned().unwrap_or_default(),
+        ports: enrichment.open_ports.get(ip).cloned().unwrap_or_default(),
+    }
+}
+
+/// The device's name, most human source first: mDNS, SSDP, NetBIOS, DHCP,
+/// reverse DNS, then "Amazon Echo" for an Echo with none of those.
+///
+/// Each source carries its rank so the per-MAC name cache keeps this order
+/// across scans: a flap-prone reverse-DNS PTR resolved later mustn't overwrite
+/// a stronger name remembered from earlier. Remembering it also keeps the kind
+/// stable, since a nameless scan would drop the hostname vote (an
+/// "Office-LaserJet" falling back to its HP OUI, so computer).
+fn pick_hostname(
+    neighbor: &RawNeighbor,
+    evidence: &history::DeviceEvidence,
+    enrichment: &Enrichment,
+    dhcp: Option<&dhcp::DhcpHit>,
+    resolved_hostname: Option<String>,
+    is_echo: bool,
+) -> Option<String> {
+    use history::NameRank;
+    let ranked = evidence
+        .mdns
+        .name
+        .clone()
+        .map(|n| (n, NameRank::Mdns))
+        .or_else(|| evidence.ssdp.name.clone().map(|n| (n, NameRank::Ssdp)))
+        .or_else(|| enrichment.netbios.get(&neighbor.ip).cloned().map(|n| (n, NameRank::NetBios)))
+        .or_else(|| dhcp.and_then(|hit| hit.hostname.clone()).map(|n| (n, NameRank::Dhcp)))
+        .or_else(|| resolved_hostname.map(|n| (n, NameRank::ReverseDns)))
+        .or_else(|| is_echo.then(|| ("Amazon Echo".to_string(), NameRank::Synthetic)));
+
+    if neighbor.mac.is_empty() {
+        ranked.map(|(name, _)| name)
+    } else {
+        history::stable_name(&neighbor.mac, ranked)
+    }
+}
+
+/// Whether the device answered this scan. The macOS/Windows neighbor table has
+/// no state, so a departed device would read Online for ~20 min. Any answer
+/// (ICMP, TCP accept or RST, an announcement) or a Linux REACHABLE counts as
+/// live, debounced per MAC (see `liveness`) so one dropped probe doesn't flip
+/// it to Offline. With no probe run, the neighbor table's own state stands.
+fn is_reachable(neighbor: &RawNeighbor, enrichment: &Enrichment) -> bool {
+    if !enrichment.was_probed {
+        return neighbor.is_reachable;
+    }
+    let ip = neighbor.ip.as_str();
+    let is_live_now = (neighbor.is_stateful && neighbor.is_reachable)
+        || enrichment.ping_live.contains(ip)
+        || enrichment.tcp_live.contains(ip)
+        || enrichment.mdns.contains_key(ip)
+        || enrichment.ssdp.contains_key(ip)
+        || enrichment.netbios.contains_key(ip)
+        || enrichment.snmp.contains_key(ip)
+        || enrichment.banner.contains_key(ip);
+    if neighbor.mac.is_empty() {
+        is_live_now // no stable key to debounce against
+    } else {
+        liveness::record_and_check(&neighbor.mac, is_live_now)
     }
 }
 

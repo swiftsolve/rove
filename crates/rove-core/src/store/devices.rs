@@ -187,27 +187,8 @@ impl Store {
 
         for device in devices.iter().filter(|d| !d.mac.is_empty()) {
             if !is_seeding_feed {
-                match prior.get(&device.mac) {
-                    None => {
-                        if !is_roster_empty {
-                            Self::emit_new_device(&tx, device, now_ms)?;
-                        }
-                    }
-                    Some(_) => {
-                        // Gate on `is_reachable` so a device back in the ARP
-                        // table but not answering doesn't read as reconnected.
-                        if device.is_reachable && is_marked_offline(&last_event, &device.mac) {
-                            Self::record_device_event(
-                                &tx,
-                                now_ms,
-                                device,
-                                NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info),
-                            )?;
-                        }
-                        // Identity changes (hostname, IP, vendor, kind) aren't
-                        // logged: they proved too noisy.
-                    }
-                }
+                let is_known = prior.contains_key(&device.mac);
+                Self::emit_arrival(&tx, device, is_known, is_roster_empty, &last_event, now_ms)?;
             }
             Self::upsert_device(&tx, device, now_ms)?;
         }
@@ -229,26 +210,7 @@ impl Store {
         //     as reachable, so `live` isn't empty; the stored identity catches it.
         // The one `connection_lost` from `record_connection` stands in instead.
         if !is_seeding_feed && !live.is_empty() && host_connected {
-            for (mac, prev) in &prior {
-                if live.contains(mac.as_str()) {
-                    continue;
-                }
-                if now_ms - prev.last_seen > OFFLINE_RECENCY_MS {
-                    continue;
-                }
-                if is_marked_offline(&last_event, mac) {
-                    continue;
-                }
-                let name = Self::known_name(prev);
-                let event = NewEvent {
-                    mac: Some(mac),
-                    ip: prev.ip.as_deref(),
-                    name: name.as_deref(),
-                    is_randomized: prev.randomized,
-                    ..NewEvent::new(EVENT_DEVICE_OFFLINE, Severity::Info)
-                };
-                Self::insert_event(&tx, now_ms, &event)?;
-            }
+            Self::emit_departures(&tx, &prior, &live, &last_event, now_ms)?;
         }
 
         // A gateway MAC changing under us is the classic rogue-gateway or
@@ -256,18 +218,76 @@ impl Store {
         Self::detect_gateway_change(&tx, devices, now_ms)?;
 
         if is_seeding_feed {
-            let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
-            if count > 0 {
-                let count = count.to_string();
-                let event = NewEvent { new_value: Some(&count), ..NewEvent::new(EVENT_INITIAL_SCAN, Severity::Info) };
-                Self::insert_event(&tx, now_ms, &event)?;
-                Self::mark_feed_seeded(&tx)?;
-            }
+            Self::seed_feed(&tx, devices, now_ms)?;
         }
 
         Self::prune_events(&tx, now_ms)?;
         tx.commit()?;
         Ok(())
+    }
+
+    /// A new device's "joined" (or "AP appeared") row, or a known one's
+    /// "back online". A new device on an empty roster is the baseline, so it
+    /// logs nothing.
+    fn emit_arrival(
+        conn: &Connection,
+        device: &LanDevice,
+        is_known: bool,
+        is_roster_empty: bool,
+        last_event: &HashMap<String, String>,
+        now_ms: i64,
+    ) -> rusqlite::Result<()> {
+        if !is_known {
+            return if is_roster_empty { Ok(()) } else { Self::emit_new_device(conn, device, now_ms) };
+        }
+        // Gate on `is_reachable` so a device back in the ARP table but not
+        // answering doesn't read as reconnected. Identity changes (hostname, IP,
+        // vendor, kind) aren't logged: they proved too noisy.
+        if device.is_reachable && is_marked_offline(last_event, &device.mac) {
+            Self::record_device_event(conn, now_ms, device, NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info))?;
+        }
+        Ok(())
+    }
+
+    /// An "offline" row for each recently seen device that didn't answer this
+    /// scan and isn't already marked offline.
+    fn emit_departures(
+        conn: &Connection,
+        prior: &HashMap<String, KnownDevice>,
+        live: &HashSet<&str>,
+        last_event: &HashMap<String, String>,
+        now_ms: i64,
+    ) -> rusqlite::Result<()> {
+        let departed = prior.iter().filter(|(mac, prev)| {
+            !live.contains(mac.as_str())
+                && now_ms - prev.last_seen <= OFFLINE_RECENCY_MS
+                && !is_marked_offline(last_event, mac)
+        });
+        for (mac, prev) in departed {
+            let name = Self::known_name(prev);
+            let event = NewEvent {
+                mac: Some(mac),
+                ip: prev.ip.as_deref(),
+                name: name.as_deref(),
+                is_randomized: prev.randomized,
+                ..NewEvent::new(EVENT_DEVICE_OFFLINE, Severity::Info)
+            };
+            Self::insert_event(conn, now_ms, &event)?;
+        }
+        Ok(())
+    }
+
+    /// The first populated scan's one "N devices discovered" row, after which
+    /// the feed counts as seeded.
+    fn seed_feed(conn: &Connection, devices: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
+        let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
+        if count == 0 {
+            return Ok(());
+        }
+        let count = count.to_string();
+        let event = NewEvent { new_value: Some(&count), ..NewEvent::new(EVENT_INITIAL_SCAN, Severity::Info) };
+        Self::insert_event(conn, now_ms, &event)?;
+        Self::mark_feed_seeded(conn)
     }
 
     /// The roster keyed by MAC: a scan's diff baseline.
