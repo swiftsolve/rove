@@ -1,4 +1,5 @@
 {
+  "description": "Written by hand. Each library component's Figma component: its name and the node id from its link's node-id (- as :), or null when Figma has none. npm run catalogue copies it into components.gen.json.",
   "file": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": { "name": "Button", "node": "42:189" },
