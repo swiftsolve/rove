@@ -1,4 +1,5 @@
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
+import { formatCount } from '@/lib/format'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 
 export const EVENT_TITLES: Record<NetworkEventType, string> = {
@@ -56,7 +57,7 @@ export function subjectKind(event: NetworkEvent, subject: string): string | null
 // The baseline row carries its device count in `newValue`.
 export function initialScanTitle(event: NetworkEvent): string {
   const count = Number(event.newValue ?? 0)
-  return `${count} ${count === 1 ? 'device' : 'devices'} discovered`
+  return `${formatCount(count, 'device')} discovered`
 }
 
 // About this machine's WAN reachability, not a device, so these get a fixed

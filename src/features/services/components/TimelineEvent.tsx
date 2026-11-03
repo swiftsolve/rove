@@ -4,7 +4,7 @@ import { memo } from 'react'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { type EventDurations, transitionDurationMs } from '@/features/services/utils/timeline-durations'
 import { EventHeading } from '@/features/timeline/components/EventHeading'
-import { formatDuration } from '@/lib/format'
+import { formatCount, formatDuration } from '@/lib/format'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, GlobeIcon, OfflineIcon, TimelineNode } from '@/ui'
 
@@ -65,7 +65,7 @@ const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningE
 
   return (
     <TimelineNode icon={<CheckIcon size={15} />} color={UP_COLOR}>
-      <EventHeading title={`${event.count} ${event.count === 1 ? 'service' : 'services'} running`} ts={event.ts} />
+      <EventHeading title={`${formatCount(event.count, 'service')} running`} ts={event.ts} />
       <span className={subjectVariants({ isMuted: true })}>
         {areAllHealthy ? 'All services healthy' : `${event.count} of ${event.total} services healthy`}
       </span>

@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { type LatencyBand, latencyBand } from '@/features/services/utils/service-status'
-import { formatLatencyMs } from '@/lib/format'
+import { formatCount, formatLatencyMs } from '@/lib/format'
 
 const ROOT = 'inline-block shrink-0'
 
@@ -139,7 +139,7 @@ function areaPoints(run: Run, baseline: number): string {
  *  how many failed, e.g. "GitHub latency over the last 24 checks: 18.2 ms to 42.0 ms, 1 failed". */
 function chartDescription(samples: LatencySample[], label: string | undefined): string {
   const subject = label ? `${label} latency` : 'Latency'
-  const checks = `${samples.length} ${samples.length === 1 ? 'check' : 'checks'}`
+  const checks = formatCount(samples.length, 'check')
   const values = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
   const failedCount = samples.length - values.length
   const facts: string[] = []

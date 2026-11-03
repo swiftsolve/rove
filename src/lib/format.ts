@@ -197,3 +197,8 @@ export function formatTimeAgo(timestamp: number, now: number): string {
   const hours = Math.round(minutes / 60)
   return `${hours} h ago`
 }
+
+/** "1 device", "3 devices". Every noun the UI counts takes a plain -s. */
+export function formatCount(count: number, noun: string): string {
+  return `${count} ${count === 1 ? noun : `${noun}s`}`
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatBand,
+  formatCount,
   formatDuration,
   formatMac,
   formatSpeedMbps,
@@ -60,5 +61,13 @@ describe('formatMac', () => {
   it('upper-cases and trims', () => {
     expect(formatMac(' a4:c3:f0:01:02:03 ')).toBe('A4:C3:F0:01:02:03')
     expect(formatMac('')).toBe('—')
+  })
+})
+
+describe('formatCount', () => {
+  it('pluralises every count but one', () => {
+    expect(formatCount(0, 'device')).toBe('0 devices')
+    expect(formatCount(1, 'device')).toBe('1 device')
+    expect(formatCount(3, 'interface')).toBe('3 interfaces')
   })
 })

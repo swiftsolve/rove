@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
+import { formatCount } from '@/lib/format'
 import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
 
@@ -34,7 +35,7 @@ export function DevicesCard() {
 function devicesLinkLabel(onlineCount: number | null, isScanning: boolean): string {
   if (isScanning) return 'Scanning for devices. Open Devices.'
   if (onlineCount === null) return 'Open Devices.'
-  return `${onlineCount} ${onlineCount === 1 ? 'device' : 'devices'} online. Open Devices.`
+  return `${formatCount(onlineCount, 'device')} online. Open Devices.`
 }
 
 type DevicesCardBodyProps = {

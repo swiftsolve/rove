@@ -5,6 +5,7 @@ import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { sortDevices } from '@/features/devices/utils/device-display'
+import { formatCount } from '@/lib/format'
 import { IS_MAC } from '@/lib/platform'
 import type { LanDevice } from '@/types'
 import {
@@ -30,7 +31,7 @@ const LOCAL_NETWORK_HINT =
 /** "3 devices" once some are listed, else the plain page name. */
 function headerTitle(count: number): string {
   if (count === 0) return 'Devices'
-  return `${count} ${count === 1 ? 'device' : 'devices'}`
+  return formatCount(count, 'device')
 }
 
 /** The header's description once the scan has a subnet; until then the scan's
