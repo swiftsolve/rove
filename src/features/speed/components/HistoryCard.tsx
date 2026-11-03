@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
+import { type ConnectionKind, connectionKind, connectionName } from '@/features/speed/utils/connection'
 import {
   formatBand,
   formatDateTime,
@@ -16,10 +17,10 @@ import {
   DotSeparator,
   EthernetIcon,
   GlobeIcon,
+  type IconComponent,
   InlineMeta,
   NoValue,
   type SpeedSeries,
-  type VariantOf,
   WifiIcon,
 } from '@/ui'
 
@@ -41,31 +42,21 @@ type MetricProps = {
   series?: SpeedSeries
 }
 
-type ConnectionBadgeStyle = {
-  Icon: typeof WifiIcon
-  /** The badge's tint: the medium's colour, or plain for an unknown one. */
-  type: VariantOf<typeof connVariants, 'type'>
-  /** Shown when the entry has no network name. */
-  fallbackName: string
-}
-
-function connectionBadgeStyle(connectionType: string): ConnectionBadgeStyle {
-  if (connectionType === 'wifi') return { Icon: WifiIcon, type: 'wifi', fallbackName: 'Wi‑Fi' }
-  if (connectionType === 'ethernet') {
-    return { Icon: EthernetIcon, type: 'ethernet', fallbackName: 'Ethernet' }
-  }
-  return { Icon: GlobeIcon, type: 'unknown', fallbackName: 'Unknown' }
+const CONNECTION_ICONS: Record<ConnectionKind, IconComponent> = {
+  wifi: WifiIcon,
+  ethernet: EthernetIcon,
+  unknown: GlobeIcon,
 }
 
 function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
-  const { connectionType, networkName } = entry
-  const { Icon, type, fallbackName } = connectionBadgeStyle(connectionType)
+  const kind = connectionKind(entry.connectionType)
+  const Icon = CONNECTION_ICONS[kind]
   const band = formatBand(entry.frequency)
 
   return (
-    <span className={connVariants({ type })}>
+    <span className={connVariants({ type: kind })}>
       <Icon size={13} />
-      <span className="min-w-0 truncate text-primary">{networkName ?? fallbackName}</span>
+      <span className="min-w-0 truncate text-primary">{connectionName(kind, entry.networkName)}</span>
       {band != null && (
         <>
           <DotSeparator />

@@ -5,8 +5,8 @@ import { getNetworkApi } from '@/bridge/network-api'
 import { getLiveThroughput, subscribeLiveThroughput } from '@/features/live-throughput/hooks/useLiveThroughput'
 import { SPEED_HISTORY_KEY } from '@/features/speed/hooks/useSpeedHistory'
 import type { SpeedTestConnection } from '@/features/speed/types'
+import { connectionFromContext } from '@/features/speed/utils/connection'
 import { saveSpeedResult } from '@/features/speed/utils/speed-history'
-import { formatBand } from '@/lib/format'
 import type { CapabilityRating, SpeedResult, SpeedRunContext, SpeedTestProgress } from '@/types'
 import { getLinkCapacityMbps, isWifiNetwork } from '@/types'
 
@@ -49,20 +49,6 @@ const UNKNOWN_RUN_CONTEXT: SpeedRunContext = {
   networkName: null,
   linkSpeedMbps: null,
   frequency: null,
-}
-
-function connectionFromContext(context: SpeedRunContext): SpeedTestConnection | null {
-  if (context.connectionType === 'wifi') {
-    return {
-      type: 'wifi',
-      name: context.networkName,
-      band: formatBand(context.frequency),
-    }
-  }
-  if (context.connectionType === 'ethernet') {
-    return { type: 'ethernet', name: null, band: null }
-  }
-  return null
 }
 
 /** The connection in use right now, to stamp onto the recorded result. */

@@ -6,11 +6,12 @@ import { WavyProgress } from '@/features/speed/components/WavyProgress'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import type { SpeedTestConnection } from '@/features/speed/types'
+import { connectionFromNetworkInfo, connectionName } from '@/features/speed/utils/connection'
+import { heroCellMbps } from '@/features/speed/utils/hero-cell'
 import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/speed/utils/progress-fill'
 import { testStatusText } from '@/features/speed/utils/test-status'
-import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
-import type { NetworkInfo } from '@/types'
-import { getLinkCapacityMbps, isMeasuredLatency, isWifiNetwork } from '@/types'
+import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
+import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {
   Card,
   CardBody,
@@ -49,40 +50,13 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
 
 const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
 
-/**
- * What a hero cell shows. While testing, a direction shows its live peak once
- * its phase has begun, and 0 before that so unset cells read as zero;
- * otherwise it shows the last result.
- */
-function heroCellMbps(
-  isTesting: boolean,
-  progressPct: number,
-  phaseStartPct: number,
-  liveMbps: number,
-  resultMbps: number | undefined,
-): number | null {
-  if (!isTesting) return resultMbps ?? null
-  return progressPct >= phaseStartPct ? liveMbps : 0
-}
-
 /** A substat's value: the measured one, else a NoValue bar. */
 function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
   return measured ?? <NoValue label={isEmpty ? 'Not tested yet' : 'Not measured'} />
 }
 
-function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnection | null {
-  if (!info) return null
-  if (isWifiNetwork(info)) {
-    return { type: 'wifi', name: info.ssid ?? null, band: formatBand(info.frequency) }
-  }
-  if (info.connectionType === 'ethernet') {
-    return { type: 'ethernet', name: null, band: null }
-  }
-  return null
-}
-
 function ConnectionTag({ connection }: { connection: SpeedTestConnection }) {
-  const name = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
+  const name = connectionName(connection.type, connection.name)
   return (
     <span className={connVariants({ type: connection.type })}>
       {connection.type === 'wifi' ? <WifiIcon size={12} /> : <EthernetIcon size={12} />}
