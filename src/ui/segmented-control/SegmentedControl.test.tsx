@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { SegmentedControl } from './SegmentedControl'
 
@@ -36,5 +36,11 @@ describe('SegmentedControl', () => {
     await userEvent.keyboard('{ArrowRight}')
     expect(screen.getByRole('radio', { name: 'System' })).toBeChecked()
     expect(screen.getByRole('radio', { name: 'System' })).toHaveFocus()
+  })
+
+  it('is named by its label when no text on screen names it', () => {
+    render(<SegmentedControl options={OPTIONS} value="light" onChange={vi.fn()} label="Theme" />)
+    expect(screen.getByRole('radiogroup', { name: 'Theme' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked()
   })
 })

@@ -61,4 +61,26 @@ describe('Tooltip', () => {
     await userEvent.hover(trigger)
     expect(screen.queryByText('Excellent')).not.toBeInTheDocument()
   })
+
+  it('opens on keyboard focus too, not only on hover', async () => {
+    render(
+      <Tooltip content="Refresh the list">
+        <button type="button">Refresh</button>
+      </Tooltip>,
+    )
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: 'Refresh' })).toHaveFocus()
+    expect(await screen.findByText('Refresh the list', { selector: '[data-open]' })).toBeVisible()
+  })
+
+  it("doesn't describe its trigger when told not to", () => {
+    render(
+      <Tooltip content="Open Settings" shouldDescribe={false}>
+        <button type="button" aria-label="Settings" />
+      </Tooltip>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Settings' })
+    expect(trigger).not.toHaveAttribute('aria-describedby')
+    expect(trigger).not.toHaveAccessibleDescription()
+  })
 })

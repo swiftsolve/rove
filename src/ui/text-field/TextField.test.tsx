@@ -69,4 +69,14 @@ describe('TextField', () => {
     await userEvent.click(test)
     expect(onTest).not.toHaveBeenCalled()
   })
+
+  it('has its feedback region before any feedback, so the first message is announced', () => {
+    const { rerender } = render(<TextField label="Address" value="" onChange={vi.fn()} />)
+    const region = screen.getByRole('status')
+    expect(region).toBeEmptyDOMElement()
+
+    rerender(<TextField label="Address" value="bad" onChange={vi.fn()} isInvalid feedback="Not an address." />)
+    expect(screen.getByRole('status')).toBe(region)
+    expect(region).toHaveTextContent('Not an address.')
+  })
 })

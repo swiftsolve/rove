@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { Card, CardHeader } from './Card'
+import { Button } from '../button/Button'
+import { Card, CardHeader, focusCardLink } from './Card'
 
 describe('Card', () => {
   it('names an openable card’s link by its header’s title', async () => {
@@ -33,5 +34,31 @@ describe('Card', () => {
     )
     expect(screen.queryByRole('link')).toBeNull()
     expect(container.querySelector('svg')).toBeNull()
+  })
+})
+
+describe('focusCardLink', () => {
+  it('moves focus from a control in an openable card to the card’s link', () => {
+    render(
+      <Card onOpen={vi.fn()}>
+        <CardHeader title="Usage" actions={<Button>Reset</Button>} />
+      </Card>,
+    )
+    const reset = screen.getByRole('button', { name: 'Reset' })
+    reset.focus()
+    focusCardLink(reset)
+    expect(screen.getByRole('link', { name: 'Usage' })).toHaveFocus()
+  })
+
+  it('leaves focus alone outside an openable card', () => {
+    render(
+      <Card>
+        <CardHeader title="Usage" actions={<Button>Reset</Button>} />
+      </Card>,
+    )
+    const reset = screen.getByRole('button', { name: 'Reset' })
+    reset.focus()
+    focusCardLink(reset)
+    expect(reset).toHaveFocus()
   })
 })
