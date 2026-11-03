@@ -1,9 +1,8 @@
 import { focusManager, MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 // Pause polls while the window is hidden and read once when it's shown, on the
-// same `visibilitychange` event `usePageVisible` follows (on the document), so
-// TanStack's polls and the app's own pause and resume together. TanStack's
-// default listens on `window` and so misses an event that doesn't bubble.
+// `visibilitychange` listener `usePageVisible` uses (on the document), so
+// TanStack's polls and the app's own pause and resume on the same event.
 focusManager.setEventListener((handleFocus) => {
   const onVisibilityChange = (): void => handleFocus()
   document.addEventListener('visibilitychange', onVisibilityChange)

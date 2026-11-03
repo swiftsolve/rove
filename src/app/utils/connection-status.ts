@@ -1,6 +1,6 @@
 import { formatConnectionType } from '@/lib/format'
 import type { InternetStatus, NetworkInfo } from '@/types'
-import { isConnectedNetwork } from '@/types'
+import { isConnectedNetwork, isInternetDown } from '@/types'
 
 // Top-bar connectivity state. 'positive' = a link that reaches the internet; 'negative' =
 // a link is up but the public internet is unreachable (ISP outage, or a bridge
@@ -30,8 +30,7 @@ export function describeConnectionStatus(info: NetworkInfo | null, internet: Int
   if (!info) return { tone: 'neutral', label: 'Connecting…', internet: undefined }
   if (!isConnectedNetwork(info)) return { tone: 'neutral', label: 'Offline', internet: 'offline' }
 
-  const isInternetDown = internet === 'noInternet' || internet === 'offline'
-  if (isInternetDown) return { tone: 'negative', label: 'No internet', internet }
+  if (internet != null && isInternetDown(internet)) return { tone: 'negative', label: 'No internet', internet }
 
   return { tone: 'positive', label: formatConnectionType(info.connectionType), internet: 'online' }
 }

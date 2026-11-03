@@ -94,9 +94,8 @@
 
   body {
     font-family: var(--font-family-sans);
-    /* Transparent so the window's rounded corners (clipped on the app shell) reveal
-       the desktop behind them instead of a square opaque backdrop. The app's
-       background lives on the app shell (AppShell.tsx). */
+    /* The app shell paints the background (AppShell.tsx); the window itself is
+       opaque, with square corners. */
     background: transparent;
     color: var(--text-primary);
     line-height: 1.45;
