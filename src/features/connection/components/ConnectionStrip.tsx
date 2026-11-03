@@ -68,7 +68,7 @@ type ConnectionStripProps = {
  * (IP, then band and security or link speed), the Wi‑Fi share button and
  * signal, and the chevron for the details below.
  */
-export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripProps): JSX.Element {
+export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripProps) {
   const display = getConnectionDisplay(info)
   const { Icon, color } = CONNECTION_ICONS[display.variant]
   const metaItems = stripMetaItems(info)

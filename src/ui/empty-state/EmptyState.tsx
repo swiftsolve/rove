@@ -28,7 +28,7 @@ const PLACEHOLDER_ROWS = [
  * in the content region. Every view's blank state goes through this so they
  * line up on one rhythm and one measure.
  */
-export function EmptyState({ isLocked = false, title, description, actions }: EmptyStateProps): JSX.Element {
+export function EmptyState({ isLocked = false, title, description, actions }: EmptyStateProps) {
   return (
     // `.page-empty` lays out the page; the bottom pad lifts the group a little
     // above centre, under the header, and the action is nudged down from the
@@ -44,7 +44,7 @@ export function EmptyState({ isLocked = false, title, description, actions }: Em
 }
 
 /** The shape of the list to come: one row, and a second fading out below it. */
-function PlaceholderRows({ isLocked }: { isLocked: boolean }): JSX.Element {
+function PlaceholderRows({ isLocked }: { isLocked: boolean }) {
   return (
     <div aria-hidden className="relative mb-12 w-[min(300px,80%)]">
       <div className="flex flex-col gap-8 [mask-image:linear-gradient(to_bottom,#000_45%,transparent_105%)]">
@@ -78,7 +78,7 @@ export function EmptyStateDescription({
   children: ReactNode
   /** `status` for a note that appears in answer to an action, so it's announced. */
   role?: 'status'
-}): JSX.Element {
+}) {
   return (
     <p className="max-w-[34ch] text-sm leading-body-small text-tertiary" role={role}>
       {children}

@@ -15,6 +15,6 @@ export function ButtonSpinner({
   size?: number
   /** Any CSS colour. */
   color?: string
-}): JSX.Element {
+}) {
   return <Ring size={size} stroke={2} bgOpacity={0.2} speed={2} color={color} />
 }

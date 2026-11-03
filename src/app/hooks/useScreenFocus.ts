@@ -14,8 +14,8 @@ export function useScreenFocus(
   screenKey: string,
   returnPoint: ReturnPoint | null,
 ): {
-  scrollRef: RefObject<HTMLDivElement>
-  mainRef: RefObject<HTMLElement>
+  scrollRef: RefObject<HTMLDivElement | null>
+  mainRef: RefObject<HTMLElement | null>
 } {
   const scrollRef = useRef<HTMLDivElement>(null)
   const mainRef = useRef<HTMLElement>(null)

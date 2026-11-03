@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
@@ -91,7 +91,7 @@ const DEFAULT_SIZES: Record<Variant, Size> = { solid: 'md', soft: 'sm' }
 /** Every icon a button draws, and the spinner that takes the leading one's place. */
 const ICON_SIZE = 13
 
-export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'children' | 'onClick'> &
+export type ButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'children' | 'onClick'> &
   ButtonAppearance & {
     /** The label. */
     children?: ReactNode
@@ -111,27 +111,23 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disable
  * A text button. Extra props (aria-*, a Tooltip's handlers) pass straight to
  * the `<button>`, which is `type="button"` unless told otherwise.
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    variant = 'soft',
-    tone,
-    size,
-    icon: Icon,
-    isDisabled = false,
-    isLoading = false,
-    loadingLabel,
-    className,
-    type = 'button',
-    onClick,
-    children,
-    ...buttonProps
-  },
-  ref,
-) {
+export function Button({
+  variant = 'soft',
+  tone,
+  size,
+  icon: Icon,
+  isDisabled = false,
+  isLoading = false,
+  loadingLabel,
+  className,
+  type = 'button',
+  onClick,
+  children,
+  ...buttonProps
+}: ButtonProps) {
   const label = isLoading && loadingLabel != null ? loadingLabel : children
   return (
     <button
-      ref={ref}
       type={type}
       className={cn(
         buttonVariants({
@@ -148,4 +144,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {label}
     </button>
   )
-})
+}

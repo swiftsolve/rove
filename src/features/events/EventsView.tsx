@@ -1,4 +1,4 @@
-import { useId, useMemo, type JSX } from 'react'
+import { useId, useMemo } from 'react'
 import type { NetworkEvent } from '@/types'
 import { useNow } from '@/hooks/useNow'
 import { useDevices } from '@/features/devices/hooks/useDevices'
@@ -27,13 +27,7 @@ const EMPTY_HINT = 'Devices joining or leaving show up here.'
 const DAY_HEADING_TICK_MS = 60_000
 
 /** One day of the feed: its date heading over the list of that day's events. */
-function TimelineDay({
-  group,
-  offlineDurationById,
-}: {
-  group: DayGroup
-  offlineDurationById: Map<number, number>
-}): JSX.Element {
+function TimelineDay({ group, offlineDurationById }: { group: DayGroup; offlineDurationById: Map<number, number> }) {
   const headingId = useId()
   return (
     <li className="flex flex-col not-first:mt-[18px]">
@@ -66,7 +60,7 @@ function EventsFeed({
   offlineDurationById: Map<number, number>
   now: number
   onRefresh: () => void
-}): JSX.Element {
+}) {
   if (events.length === 0) {
     if (isLoading) {
       return <LoadingState label="Loading events…" />
@@ -91,7 +85,7 @@ function EventsFeed({
   )
 }
 
-export function EventsView(): JSX.Element {
+export function EventsView() {
   const { events, isLoading, error, reload } = useNetworkEvents()
   const devices = useDevices()
   // A device scan is what produces new events, so refreshing means scanning again.

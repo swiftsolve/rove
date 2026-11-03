@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from 'react'
+import { createElement, type JSX, type ReactElement } from 'react'
 import type { AppTab } from '@/app/utils/tabs'
 import type { AppLocation } from '@/app/utils/location'
 import {

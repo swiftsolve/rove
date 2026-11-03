@@ -97,7 +97,7 @@ export const ChoosingAnItem: Story = {
   },
 }
 
-function OpenMenu({ onOpenChange, ...args }: Parameters<typeof Menu>[0]): JSX.Element {
+function OpenMenu({ onOpenChange, ...args }: Parameters<typeof Menu>[0]) {
   const [isOpen, setIsOpen] = useState(true)
   return (
     <Menu

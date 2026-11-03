@@ -53,7 +53,7 @@ export const WithNote: Story = {
   },
 }
 
-function RetryWithNote(): JSX.Element {
+function RetryWithNote() {
   const [hasRetried, setHasRetried] = useState(false)
   return (
     <div className="flex flex-col items-center gap-8">

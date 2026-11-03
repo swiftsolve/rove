@@ -108,7 +108,7 @@ function formatTime(ts: number): string {
 }
 
 /** The time of day as a machine-readable `<time>`. */
-function EventTime({ ts }: { ts: number }): JSX.Element {
+function EventTime({ ts }: { ts: number }) {
   return (
     <time className="shrink-0 text-sm whitespace-nowrap text-tertiary" dateTime={new Date(ts).toISOString()}>
       {formatTime(ts)}
@@ -116,7 +116,7 @@ function EventTime({ ts }: { ts: number }): JSX.Element {
   )
 }
 
-function EventIcon({ type }: { type: NetworkEventType }): JSX.Element {
+function EventIcon({ type }: { type: NetworkEventType }) {
   const Icon = EVENT_STYLES[type]?.icon ?? ActivityIcon
   return <Icon size={15} />
 }
@@ -128,7 +128,7 @@ export function TimelineItem({
   event: NetworkEvent
   /** For `internet_restored`, how long we were offline before reconnecting. */
   offlineMs?: number
-}): JSX.Element {
+}) {
   const isInitial = event.type === 'initial_scan'
   const isInternet = isInternetEvent(event)
   const title = isInitial ? initialScanTitle(event) : EVENT_TITLES[event.type]

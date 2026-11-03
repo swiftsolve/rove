@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
@@ -27,10 +27,7 @@ const iconButtonVariants = cva(
   },
 )
 
-type IconButtonProps = Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'disabled' | 'aria-label' | 'children' | 'onClick'
-> & {
+type IconButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'aria-label' | 'children' | 'onClick'> & {
   /** Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more. */
   label: string
   /** The icon. */
@@ -55,27 +52,23 @@ type IconButtonProps = Omit<
  * A square, icon-only button with a tooltip. Disabled and loading work as on
  * Button. Extra props pass straight to the `<button>`.
  */
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  {
-    label,
-    icon: Icon,
-    variant = 'soft',
-    iconSize = 16,
-    tooltip,
-    tooltipSide = 'bottom',
-    isDisabled = false,
-    isLoading = false,
-    className,
-    type = 'button',
-    onClick,
-    ...buttonProps
-  },
-  ref,
-) {
+export function IconButton({
+  label,
+  icon: Icon,
+  variant = 'soft',
+  iconSize = 16,
+  tooltip,
+  tooltipSide = 'bottom',
+  isDisabled = false,
+  isLoading = false,
+  className,
+  type = 'button',
+  onClick,
+  ...buttonProps
+}: IconButtonProps) {
   return (
     <Tooltip content={tooltip ?? label} side={tooltipSide}>
       <button
-        ref={ref}
         type={type}
         className={cn(iconButtonVariants({ variant }), className)}
         aria-label={label}
@@ -86,4 +79,4 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       </button>
     </Tooltip>
   )
-})
+}

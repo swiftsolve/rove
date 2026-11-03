@@ -13,7 +13,7 @@ interface ValueParts {
   spokenValue?: string
 }
 
-function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<ReadoutProps, 'size'>): JSX.Element {
+function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<ReadoutProps, 'size'>) {
   const isSpokenApart = spokenValue != null
   return (
     <>
@@ -47,7 +47,7 @@ type ReadoutProps = ValueParts & {
  * icon. A labelled readout is a term and its description, so it goes inside a
  * `<dl>`; without a label, the icon sits inline with the figure.
  */
-export function Readout({ label, icon, size = 'large', className, ...valueParts }: ReadoutProps): JSX.Element {
+export function Readout({ label, icon, size = 'large', className, ...valueParts }: ReadoutProps) {
   const figureClass = cn('metric num', size === 'compact' && 'metric-compact')
   if (label == null) {
     return (

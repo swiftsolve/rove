@@ -99,7 +99,7 @@ export const List: Story = {
   ),
 }
 
-function SettingRow({ title }: { title: string }): JSX.Element {
+function SettingRow({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between gap-12 py-(--row-padding-y) text-sm text-primary">
       {title}
@@ -108,7 +108,7 @@ function SettingRow({ title }: { title: string }): JSX.Element {
   )
 }
 
-function RouterCard(props: { as?: 'section' | 'div' | 'li' }): JSX.Element {
+function RouterCard(props: { as?: 'section' | 'div' | 'li' }) {
   return (
     <Card {...props}>
       <CardHeader title="Router" icon={<RouterIcon size={16} />} />
@@ -128,7 +128,7 @@ function RouterCard(props: { as?: 'section' | 'div' | 'li' }): JSX.Element {
   )
 }
 
-function OpenableCard(): JSX.Element {
+function OpenableCard() {
   return (
     // The link takes the header's title as its name.
     <Card onOpen={fn()}>

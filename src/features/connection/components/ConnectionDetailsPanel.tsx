@@ -25,11 +25,7 @@ type ConnectionDetailsPanelProps = {
  * The expanded details, grouped by topic: the link itself, then the addresses
  * from the device outward, then the hardware it runs over.
  */
-export function ConnectionDetailsPanel({
-  info,
-  publicIp,
-  isPublicIpLoading,
-}: ConnectionDetailsPanelProps): JSX.Element {
+export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
   return (
     // A dark inset panel below the strip (like the live chart and bench
     // footer): full card width, square top edge, and the card's overflow rounds
@@ -47,7 +43,7 @@ export function ConnectionDetailsPanel({
   )
 }
 
-function WifiLinkRows({ info }: { info: WifiNetworkInfo }): JSX.Element {
+function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
   const linkSpeed = formatLinkSpeed(info)
   return (
     <DataList density="compact">
@@ -79,7 +75,7 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }): JSX.Element {
   )
 }
 
-function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }): JSX.Element {
+function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }) {
   const linkSpeed = formatLinkSpeed(info)
   return (
     <DataList density="compact">
@@ -91,7 +87,7 @@ function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }): JSX.Element 
 
 type AddressRowsProps = Pick<ConnectionDetailsPanelProps, 'info' | 'publicIp' | 'isPublicIpLoading'>
 
-function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps): JSX.Element {
+function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
   return (
     <DataList density="compact">
       <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
@@ -102,7 +98,7 @@ function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps): J
   )
 }
 
-function HardwareRows({ info }: { info: NetworkInfo }): JSX.Element {
+function HardwareRows({ info }: { info: NetworkInfo }) {
   return (
     <DataList density="compact">
       {isEthernetNetwork(info) && (

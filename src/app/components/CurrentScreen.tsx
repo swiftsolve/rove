@@ -13,7 +13,7 @@ function needsNetworkInfo(location: AppLocation): boolean {
  * subpages, as `TABS` maps them. Each view reads its own data and navigation
  * from context.
  */
-export function CurrentScreen(): JSX.Element {
+export function CurrentScreen() {
   const { location } = useNavigation()
   // Show the loading/error state only in the content area (not full-screen) so
   // the window chrome and tabs stay usable even before info arrives.

@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
@@ -25,7 +26,7 @@ import { useNow } from '@/hooks/useNow'
 const SPEED_HINT = 'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
 
 /** Opens the speed-test history subpage. */
-function HistoryLink(): JSX.Element {
+function HistoryLink() {
   const { navigate } = useNavigation()
   return (
     <Link icon={HistoryIcon} onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}>
@@ -36,7 +37,7 @@ function HistoryLink(): JSX.Element {
 
 /** "Testing…" in the description's place while a test runs, still linking to
  *  the history once there is a result. */
-function HeaderStatus(): JSX.Element {
+function HeaderStatus() {
   const completedAt = useSpeedTest((test) => test.completedAt)
   return (
     <span className="inline-flex items-center gap-6">
@@ -52,7 +53,7 @@ function HeaderStatus(): JSX.Element {
 }
 
 /** When the last result landed, linking to the history; an intro before any. */
-function HeaderDescription(): JSX.Element {
+function HeaderDescription() {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   const completedAt = useSpeedTest((test) => test.completedAt)
   if (completedAt == null) return <>Measure your download and upload speeds</>
@@ -68,7 +69,7 @@ function HeaderDescription(): JSX.Element {
 }
 
 /** Stop while a test runs; otherwise Run (or Test again), disabled offline. */
-function TestButton(): JSX.Element {
+function TestButton() {
   const hasRunTest = useSpeedTest((test) => test.internetSpeed != null)
   const isTesting = useSpeedTest((test) => test.isTesting)
   const runTest = useSpeedTest((test) => test.runTest)

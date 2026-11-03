@@ -7,7 +7,7 @@ import { WifiShareDialog } from '@/features/connection/components/WifiShareDialo
  * in the Home connection card. Mount it only when the active connection is
  * Wi-Fi — there's nothing to share over Ethernet.
  */
-export function ShareWifiButton(): JSX.Element {
+export function ShareWifiButton() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (

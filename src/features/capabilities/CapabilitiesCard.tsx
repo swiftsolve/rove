@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import type { CapabilityDefinition, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
@@ -65,7 +65,7 @@ const footerVariants = cva(
 
 /** Home's summary of what the connection can handle: a tile per capability,
  *  coloured by the last speed test's rating, each opening its details. */
-export function CapabilitiesCard(): JSX.Element {
+export function CapabilitiesCard() {
   const capabilities = useSpeedTest((test) => test.capabilities)
   const hasResults = capabilities.length > 0
 
@@ -90,7 +90,7 @@ export function CapabilitiesCard(): JSX.Element {
 
 /** Starts a test in place; the Speed tab shows the same run (one shared store),
  *  and the footer links there. */
-function RunTestButton(): JSX.Element {
+function RunTestButton() {
   const runTest = useSpeedTest((test) => test.runTest)
   const isTesting = useSpeedTest((test) => test.isTesting)
   const hasResults = useSpeedTest((test) => test.capabilities.length > 0)
@@ -111,7 +111,7 @@ function RunTestButton(): JSX.Element {
 }
 
 /** A tested capability: its tile, coloured by the rating, opens its details. */
-function RatedCapability({ capability }: { capability: CapabilityRating }): JSX.Element {
+function RatedCapability({ capability }: { capability: CapabilityRating }) {
   const { navigate } = useNavigation()
   // A test can be started here or from the Speed tab; either way it greys the row.
   const isTesting = useSpeedTest((test) => test.isTesting)
@@ -146,7 +146,7 @@ function RatedCapability({ capability }: { capability: CapabilityRating }): JSX.
 }
 
 /** A capability before any test: a greyed-out tile with an empty meter. */
-function UnratedCapability({ capability }: { capability: CapabilityDefinition }): JSX.Element {
+function UnratedCapability({ capability }: { capability: CapabilityDefinition }) {
   return (
     <li className={CAPABILITY_CELL}>
       <Tooltip content={capability.label} side="top">
@@ -193,7 +193,7 @@ function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Elemen
 }
 
 /** "Updated 5 min ago", kept current as time passes. */
-function LastUpdatedLink({ completedAt }: { completedAt: number }): JSX.Element {
+function LastUpdatedLink({ completedAt }: { completedAt: number }) {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   return (
     <OpenSpeedLink icon={HistoryIcon}>
@@ -202,7 +202,7 @@ function LastUpdatedLink({ completedAt }: { completedAt: number }): JSX.Element 
   )
 }
 
-function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: ReactNode }): JSX.Element {
+function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: ReactNode }) {
   const { navigate } = useNavigation()
 
   return (
@@ -217,7 +217,7 @@ function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: Rea
 
 /** The Speed page's announcements, for a test run from here. Home shows no
  *  failure, so the error is read out too. */
-function TestStatusAnnouncement(): JSX.Element {
+function TestStatusAnnouncement() {
   const isTesting = useSpeedTest((test) => test.isTesting)
   const progress = useSpeedTest((test) => test.progress)
   const internetSpeed = useSpeedTest((test) => test.internetSpeed)

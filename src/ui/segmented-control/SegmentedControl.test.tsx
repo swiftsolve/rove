@@ -11,7 +11,7 @@ const OPTIONS: { value: Mode; label: string }[] = [
   { value: 'system', label: 'System' },
 ]
 
-function Harness(): JSX.Element {
+function Harness() {
   const [mode, setMode] = useState<Mode>('dark')
   return (
     <>

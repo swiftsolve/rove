@@ -4,6 +4,7 @@
  * icon here in one place if the design changes. The custom ones have a
  * file each beside this one.
  */
+import type { JSX } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
@@ -94,7 +95,7 @@ export type IconProps = {
 export type IconComponent = (props: IconProps) => JSX.Element
 
 function make(Base: LucideIcon, defaultSize: number): IconComponent {
-  return function Icon({ size = defaultSize, className }: IconProps): JSX.Element {
+  return function Icon({ size = defaultSize, className }: IconProps) {
     return <Base size={size} className={className} strokeWidth={1.75} aria-hidden />
   }
 }

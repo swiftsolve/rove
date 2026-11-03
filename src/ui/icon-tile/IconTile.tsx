@@ -1,4 +1,4 @@
-import { forwardRef, type CSSProperties, type HTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
+import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode, Ref } from 'react'
 import { cva } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
@@ -37,23 +37,20 @@ function tileLook(size: TileLookProps['size'], color: IconTileColor): { classNam
   return { className: tileVariants({ size, isNeutral }), style: isNeutral ? undefined : { color } }
 }
 
-type IconTileProps = TileLookProps & Omit<HTMLAttributes<HTMLSpanElement>, keyof TileLookProps | 'children'>
+type IconTileProps = TileLookProps & Omit<ComponentProps<'span'>, keyof TileLookProps | 'children'>
 
 /**
  * A rounded square holding an item's icon, tinted by what the item is. It
  * takes a ref and extra props, so it can be a Tooltip's trigger.
  */
-export const IconTile = forwardRef<HTMLSpanElement, IconTileProps>(function IconTile(
-  { size = 'md', color, className, icon, style, ...props },
-  ref,
-) {
+export function IconTile({ size = 'md', color, className, icon, style, ...props }: IconTileProps) {
   const look = tileLook(size, color)
   return (
-    <span ref={ref} className={cn(look.className, className)} style={{ ...look.style, ...style }} {...props}>
+    <span className={cn(look.className, className)} style={{ ...look.style, ...style }} {...props}>
       {icon}
     </span>
   )
-})
+}
 
 type IconTileButtonProps = TileLookProps & {
   /** Names it: the icon alone says nothing to a screen reader. */
@@ -62,13 +59,21 @@ type IconTileButtonProps = TileLookProps & {
   onClick: MouseEventHandler<HTMLButtonElement>
   /** Inert while what it opens is being replaced: no hover, no action, same look. */
   isDisabled?: boolean
+  /** The `<button>`, to focus or measure it. */
+  ref?: Ref<HTMLButtonElement>
 }
 
 /** An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger. */
-export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>(function IconTileButton(
-  { size = 'md', color, className, label, onClick, isDisabled = false, icon },
+export function IconTileButton({
+  size = 'md',
+  color,
+  className,
+  label,
+  onClick,
+  isDisabled = false,
+  icon,
   ref,
-) {
+}: IconTileButtonProps) {
   const look = tileLook(size, color)
   return (
     <button
@@ -89,4 +94,4 @@ export const IconTileButton = forwardRef<HTMLButtonElement, IconTileButtonProps>
       {icon}
     </button>
   )
-})
+}

@@ -13,7 +13,7 @@ import { describeConnectionStatus } from '@/app/utils/connection-status'
  * connection verdict made from the two. Each has its own context, so a reader
  * re-renders only when its value changes.
  */
-export function NetworkProvider({ children }: { children: ReactNode }): JSX.Element {
+export function NetworkProvider({ children }: { children: ReactNode }) {
   // The local link (Wi-Fi / Ethernet) and, separately, whether the public
   // internet is reachable through it: the link can be up while the WAN is down
   // (an ISP outage, or a bridge interface with no route out).
@@ -31,10 +31,10 @@ export function NetworkProvider({ children }: { children: ReactNode }): JSX.Elem
   useLiveThroughputSource(isWindowVisible)
 
   return (
-    <NetworkContext.Provider value={network}>
-      <InternetStatusContext.Provider value={internet}>
-        <ConnectionStatusContext.Provider value={connection}>{children}</ConnectionStatusContext.Provider>
-      </InternetStatusContext.Provider>
-    </NetworkContext.Provider>
+    <NetworkContext value={network}>
+      <InternetStatusContext value={internet}>
+        <ConnectionStatusContext value={connection}>{children}</ConnectionStatusContext>
+      </InternetStatusContext>
+    </NetworkContext>
   )
 }

@@ -10,7 +10,7 @@ const SMALL_CLOUD = 'M16.3 6.6h3.4a2.8 2.8 0 1 0-2.684-3.6H16.3a1.8 1.8 0 1 0 0 
  * controller 1.5 units clear of the cloud's stroke (4.75 = 1.75 + 2 × 1.5), so
  * the gap shows whatever is behind the icon.
  */
-export function CloudGamingIcon({ size = 22, className }: IconProps): JSX.Element {
+export function CloudGamingIcon({ size = 22, className }: IconProps) {
   const maskId = useId()
   return (
     <CustomIcon size={size} className={className}>

@@ -6,7 +6,7 @@ import { CustomIcon } from './CustomIcon'
  * (y 6.5–17.5), 3.5 between letters (a stroke's width of clear space), and
  * Inter's skeletons.
  */
-export function HdStreamIcon({ size = 22, className }: IconProps): JSX.Element {
+export function HdStreamIcon({ size = 22, className }: IconProps) {
   return (
     <CustomIcon size={size} className={className}>
       <path d="M3.375 6.5v11M9.975 6.5v11M3.375 12h6.6" />

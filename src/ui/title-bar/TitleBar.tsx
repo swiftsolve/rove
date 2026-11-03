@@ -18,7 +18,7 @@ type TitleBarProps = {
  * stays above the scrolling content, so nothing (buttons, tooltips, escaped
  * absolutes) can ever paint over it.
  */
-export function TitleBar({ brand, status, controls }: TitleBarProps): JSX.Element {
+export function TitleBar({ brand, status, controls }: TitleBarProps) {
   return (
     // The left inset aligns the brand with the nav rail below; the right keeps
     // the controls at the standard header edge.
@@ -63,7 +63,7 @@ type TitleBarStatusProps = {
 }
 
 /** The connection status beside the brand: a dot (pulsing unless neutral) and its words, announced as they change. */
-export function TitleBarStatus({ tone, children }: TitleBarStatusProps): JSX.Element {
+export function TitleBarStatus({ tone, children }: TitleBarStatusProps) {
   return (
     <span className={statusVariants({ tone })} role="status">
       <StatusDot pulse={tone === 'neutral' ? undefined : 'calm'} />
@@ -104,7 +104,7 @@ type WindowButtonProps = {
  * bar's: otherwise the first Tab lands here instead of the nav rail, and a
  * stray Enter closes the window.
  */
-export function WindowButton({ action, onClick }: WindowButtonProps): JSX.Element {
+export function WindowButton({ action, onClick }: WindowButtonProps) {
   const { label, icon: Icon } = WINDOW_ACTIONS[action]
   return (
     <button

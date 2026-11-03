@@ -18,7 +18,7 @@ type StatCardProps = {
 }
 
 /** One of the small summary cards on Home: a title over a readout, opening its tab. */
-export function StatCard({ icon, title, linkLabel, onOpen, isLoading, children }: StatCardProps): JSX.Element {
+export function StatCard({ icon, title, linkLabel, onOpen, isLoading, children }: StatCardProps) {
   return (
     <Card onOpen={onOpen} linkLabel={linkLabel} aria-busy={isLoading || undefined}>
       <CardHeader title={title} icon={icon} />
@@ -38,13 +38,13 @@ type StatReadoutProps = {
 }
 
 /** A compact value behind its marker. */
-export function StatReadout({ marker, value, unit, className }: StatReadoutProps): JSX.Element {
+export function StatReadout({ marker, value, unit, className }: StatReadoutProps) {
   const icon = marker === 'online' ? <StatusDot tone="positive" /> : <DirectionIcon series={marker} size={12} />
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
 /** The "no reading" body: a dash where the value would be. */
-export function EmptyStatReadout(): JSX.Element {
+export function EmptyStatReadout() {
   return (
     <div className="metric mt-2" aria-hidden>
       <span className="type-number-display metric-value">—</span>

@@ -43,7 +43,7 @@ function statusOf(ms: number): MetricStatus {
   return 'negative'
 }
 
-function PollingMetric(): JSX.Element {
+function PollingMetric() {
   const [poll, setPoll] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setPoll((n) => (n + 1) % POLLS.length), 2000)

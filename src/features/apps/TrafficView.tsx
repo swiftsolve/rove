@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import type { TrafficType } from '@/types'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -65,12 +66,12 @@ const TRAFFIC_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   messaging: MessageIcon,
 }
 
-function TrafficIcon({ type }: { type: TrafficType }): JSX.Element {
+function TrafficIcon({ type }: { type: TrafficType }) {
   const Icon = TRAFFIC_ICONS[type.id] ?? LayersIcon
   return <Icon size={15} className="shrink-0 text-tertiary" />
 }
 
-export function TrafficView(): JSX.Element {
+export function TrafficView() {
   const { usage, isFirstLoad, error, reload } = useTrafficUsage()
   const { back } = useNavigation()
   const { types } = usage

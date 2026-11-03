@@ -114,7 +114,7 @@ export const AllStates: Story = {
 type TextFieldProps = ComponentProps<typeof TextField>
 
 /** Holds the value, so typing works in the canvas. */
-function ControlledTextField({ value, onChange, ...args }: TextFieldProps): JSX.Element {
+function ControlledTextField({ value, onChange, ...args }: TextFieldProps) {
   const [text, setText] = useState(value)
   return (
     <TextField
@@ -129,7 +129,7 @@ function ControlledTextField({ value, onChange, ...args }: TextFieldProps): JSX.
 }
 
 /** The Add service field: Test turns on once there's an address. */
-function AddressField({ value, onChange, ...args }: TextFieldProps): JSX.Element {
+function AddressField({ value, onChange, ...args }: TextFieldProps) {
   const [address, setAddress] = useState(value)
   return (
     <TextField

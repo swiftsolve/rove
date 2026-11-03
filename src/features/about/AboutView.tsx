@@ -22,7 +22,7 @@ function platformLabel(): string {
   return 'Desktop'
 }
 
-export function AboutView(): JSX.Element {
+export function AboutView() {
   const version = useAppVersion()
 
   return (

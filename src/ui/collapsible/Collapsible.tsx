@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react'
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible'
 import { cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
@@ -36,7 +36,7 @@ export function Collapsible({
   className,
   children,
   ...props
-}: CollapsibleProps): JSX.Element {
+}: CollapsibleProps) {
   return (
     <BaseCollapsible.Root
       open={isOpen}
@@ -54,11 +54,9 @@ export function Collapsible({
  * The button that opens and closes the panel; it says which (aria-expanded)
  * and what it controls. `data-panel-open` is set while open, for styling.
  */
-export const CollapsibleTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(
-  function CollapsibleTrigger(props, ref) {
-    return <BaseCollapsible.Trigger ref={ref} data-collapsible-trigger="" {...props} />
-  },
-)
+export function CollapsibleTrigger(props: ComponentProps<'button'>) {
+  return <BaseCollapsible.Trigger data-collapsible-trigger="" {...props} />
+}
 
 // Grows and shrinks to its measured height, rather than appearing at once.
 const PANEL = cx(
@@ -78,6 +76,6 @@ type CollapsiblePanelProps = {
  * What the trigger shows and hides, growing and shrinking to its height; out
  * of the page, and the accessibility tree, while closed.
  */
-export function CollapsiblePanel({ className, children }: CollapsiblePanelProps): JSX.Element {
+export function CollapsiblePanel({ className, children }: CollapsiblePanelProps) {
   return <BaseCollapsible.Panel className={cn(PANEL, className)}>{children}</BaseCollapsible.Panel>
 }

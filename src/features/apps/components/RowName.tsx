@@ -10,7 +10,7 @@ type RowNameProps = {
 
 /** A row's leading cell: its icon and name, the name truncating as the row
  *  narrows. */
-export function RowName({ icon, name, children }: RowNameProps): JSX.Element {
+export function RowName({ icon, name, children }: RowNameProps) {
   return (
     <span className="inline-flex min-w-0 items-center gap-8">
       {icon}

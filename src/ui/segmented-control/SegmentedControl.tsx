@@ -66,7 +66,7 @@ export function SegmentedControl<Value extends string>({
   value,
   onChange,
   ...ariaProps
-}: SegmentedControlProps<Value>): JSX.Element {
+}: SegmentedControlProps<Value>) {
   const index = options.findIndex((option) => option.value === value)
   const thumbPosition = { '--count': options.length, '--index': index } as CSSProperties
   return (

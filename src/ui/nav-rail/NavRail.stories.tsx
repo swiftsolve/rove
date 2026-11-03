@@ -40,9 +40,9 @@ const onNavigate = fn()
 const onToggleTheme = fn()
 
 /** Holds the current page, so clicking an item moves the active state. */
-function ClickableRail({ label }: { label: string }): JSX.Element {
+function ClickableRail({ label }: { label: string }) {
   const [page, setPage] = useState('Home')
-  const item = ({ label: itemLabel, icon }: Page): JSX.Element => (
+  const item = ({ label: itemLabel, icon }: Page) => (
     <NavItem
       key={itemLabel}
       label={itemLabel}

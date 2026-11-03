@@ -29,7 +29,7 @@ const ICONS: Record<CapabilityId, IconComponent> = {
 }
 
 /** The icon that stands for a capability: a gamepad for gaming, and so on. */
-export function CapabilityIcon({ id, size = 22, className }: CapabilityIconProps): JSX.Element {
+export function CapabilityIcon({ id, size = 22, className }: CapabilityIconProps) {
   const Icon = ICONS[id]
   return <Icon size={size} className={className} />
 }

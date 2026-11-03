@@ -89,19 +89,13 @@ function scrollCardToTop(card: HTMLElement): void {
 
 /** The verdict icon: a tick when the connection clears the bar, a warning when
  *  it only just scrapes by, a cross when it falls short. */
-function VerdictIcon({ level }: { level: CapabilityLevel }): JSX.Element {
+function VerdictIcon({ level }: { level: CapabilityLevel }) {
   if (level === 'excellent' || level === 'good') return <CheckIcon size={14} />
   if (level === 'fair') return <AlertIcon size={13} />
   return <CloseIcon size={14} />
 }
 
-function CapabilityDetailCard({
-  capability,
-  speed,
-}: {
-  capability: CapabilityRating
-  speed: SpeedResult
-}): JSX.Element {
+function CapabilityDetailCard({ capability, speed }: { capability: CapabilityRating; speed: SpeedResult }) {
   const { summary, checks } = explainCapability(capability.id, capability.level, speed)
 
   return (
@@ -158,7 +152,7 @@ function CapabilityDetailCard({
   )
 }
 
-export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps): JSX.Element {
+export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) {
   const { back } = useNavigation()
   const capabilities = useSpeedTest((test) => test.capabilities)
   const speed = useSpeedTest((test) => test.internetSpeed)

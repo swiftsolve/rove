@@ -94,7 +94,7 @@ type DialogProps = ComponentProps<typeof Dialog>
 const FRAME = 'relative h-[300px] overflow-hidden rounded-lg'
 
 /** The dialog open in its frame. */
-function DialogFrame(args: DialogProps): JSX.Element {
+function DialogFrame(args: DialogProps) {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   return (
     <div ref={setContainer} className={FRAME}>
@@ -109,7 +109,7 @@ function DialogFrame(args: DialogProps): JSX.Element {
   )
 }
 
-function DialogWithTrigger({ onClose, ...args }: DialogProps): JSX.Element {
+function DialogWithTrigger({ onClose, ...args }: DialogProps) {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const close = (): void => {

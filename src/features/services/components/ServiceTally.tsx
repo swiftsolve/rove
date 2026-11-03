@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import type { InternetStatus, ServiceReachability } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, DotSeparator } from '@/ui'
 import { reachabilityStatus } from '@/features/services/utils/service-status'

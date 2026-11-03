@@ -8,14 +8,14 @@ const MAIN_TABS = APP_TABS.filter((id) => TABS[id].rail === 'main')
 const FOOTER_TABS = APP_TABS.filter((id) => TABS[id].rail === 'footer')
 
 /** A tab's rail item, lit while its screen (or one of its subpages) is showing. */
-function TabItem({ id }: { id: AppTab }): JSX.Element {
+function TabItem({ id }: { id: AppTab }) {
   const { location, navigate } = useNavigation()
   const tab = TABS[id]
   const isActive = (TABS[location.tab].railTab ?? location.tab) === id
   return <NavItem label={tab.label} icon={tab.Icon} isActive={isActive} onClick={() => navigate({ tab: id })} />
 }
 
-function ThemeToggle(): JSX.Element {
+function ThemeToggle() {
   const { isLight, toggle } = useTheme()
   // Show the icon for the mode you'll switch *to*, matching the tooltip.
   return (
@@ -28,7 +28,7 @@ function ThemeToggle(): JSX.Element {
 }
 
 /** The nav rail: one item per tab, with the theme toggle and Settings in its footer. */
-export function TabBar(): JSX.Element {
+export function TabBar() {
   return (
     <NavRail
       label="Main navigation"

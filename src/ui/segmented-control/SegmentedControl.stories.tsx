@@ -66,7 +66,7 @@ export const Choosing: Story = {
 type SegmentedControlProps = ComponentProps<typeof SegmentedControl<string>>
 
 /** Holds the choice, so the segments switch in the canvas. */
-function ControlledSegmentedControl({ value, onChange, ...args }: SegmentedControlProps): JSX.Element {
+function ControlledSegmentedControl({ value, onChange, ...args }: SegmentedControlProps) {
   const [choice, setChoice] = useState(value)
   return (
     <SegmentedControl

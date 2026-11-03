@@ -66,7 +66,7 @@ export const AllStates: Story = {
 type ToggleProps = ComponentProps<typeof Toggle>
 
 /** Holds the state, so the switch flips in the canvas. */
-function ControlledToggle({ isChecked, onChange, ...args }: ToggleProps): JSX.Element {
+function ControlledToggle({ isChecked, onChange, ...args }: ToggleProps) {
   const [isOn, setIsOn] = useState(isChecked)
   return (
     <Toggle
@@ -80,7 +80,7 @@ function ControlledToggle({ isChecked, onChange, ...args }: ToggleProps): JSX.El
   )
 }
 
-function SettingRow(args: ToggleProps): JSX.Element {
+function SettingRow(args: ToggleProps) {
   const descriptionId = useId()
   return (
     <div className="flex w-[360px] items-center justify-between gap-12">

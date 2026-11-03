@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, use, useState, type JSX, type ReactNode } from 'react'
 import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import { cx } from 'class-variance-authority'
 import { CloseIcon } from '../icons/Icons'
@@ -34,9 +34,7 @@ export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element |
   if (isOpen && !isMounted) setIsMounted(true)
   if (!isMounted) return null
   return (
-    <DialogStateContext.Provider value={{ isOpen, onExitComplete: () => setIsMounted(false) }}>
-      {children}
-    </DialogStateContext.Provider>
+    <DialogStateContext value={{ isOpen, onExitComplete: () => setIsMounted(false) }}>{children}</DialogStateContext>
   )
 }
 
@@ -110,8 +108,8 @@ export function Dialog({
   onClose,
   canClose = true,
   isDirty = false,
-}: DialogProps): JSX.Element {
-  const { isOpen, onExitComplete } = useContext(DialogStateContext)
+}: DialogProps) {
+  const { isOpen, onExitComplete } = use(DialogStateContext)
   const portalContainer = usePortalContainer()
   // Whatever had focus as the dialog mounted: the control that opened it, which
   // gets focus back on close. Base UI only knows its own Trigger part.

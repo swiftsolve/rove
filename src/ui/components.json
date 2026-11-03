@@ -1001,8 +1001,8 @@
       "props": {
         "align": {
           "values": [
-            "baseline",
-            "center"
+            "center",
+            "baseline"
           ],
           "default": "baseline",
           "description": "`center` for a value with no text baseline of its own (signal bars, a badge)."
@@ -1325,6 +1325,10 @@
           "isRequired": true,
           "description": "Opens what the tile stands for."
         },
+        "ref": {
+          "type": "Ref<HTMLButtonElement>",
+          "description": "The `<button>`, to focus or measure it."
+        },
         "size": {
           "values": [
             "sm",
@@ -1335,7 +1339,6 @@
           "description": "30, 32 or 36px square."
         }
       },
-      "hasElementProps": true,
       "stories": [
         "data-display-icontile--default",
         "data-display-icontile--disconnected",
@@ -1384,9 +1387,9 @@
       "props": {
         "as": {
           "values": [
-            "section",
             "div",
-            "li"
+            "li",
+            "section"
           ],
           "default": "section",
           "description": "`section` is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
@@ -1941,7 +1944,7 @@
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. Used for the speed-test cells\nand the live-traffic readouts.",
-    "useLatestRef": "A ref that always holds the latest `value`, for callbacks, timers and frame\nloops that must read fresh props without re-subscribing.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
+    "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePortalContainer": "The element a PortalProvider above names for overlays, or null for in place.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount."
   }

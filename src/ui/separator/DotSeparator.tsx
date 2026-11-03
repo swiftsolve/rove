@@ -7,7 +7,7 @@ import { cn } from '../foundations/cn'
  * 6px, and its margin adds 2px for the dot alone, so the gaps between other
  * items in the same row stay at 6px.
  */
-export function DotSeparator(): JSX.Element {
+export function DotSeparator() {
   return <span className="sep-dot mx-2 size-[3px] shrink-0 rounded-full bg-tertiary" aria-hidden="true" />
 }
 
@@ -34,7 +34,7 @@ type InlineMetaProps = {
 }
 
 /** Inline metadata chunks separated by a tertiary dot, in the type of the line it sits in. */
-export function InlineMeta({ items, className, shouldTruncate = false }: InlineMetaProps): JSX.Element {
+export function InlineMeta({ items, className, shouldTruncate = false }: InlineMetaProps) {
   const visibleItems = items.filter((item): item is ReactNode => Boolean(item))
   if (visibleItems.length === 0) return <></>
   if (visibleItems.length === 1) {

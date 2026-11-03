@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import type { LanDevice, LanDeviceKind } from '@/types'
 import {
   CameraIcon,
@@ -90,7 +91,7 @@ const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Elemen
 // clock ticks in a list that can be long.
 const ROW_CLOCK_INTERVAL_MS = 30_000
 
-function KindIcon({ kind }: { kind: LanDeviceKind }): JSX.Element {
+function KindIcon({ kind }: { kind: LanDeviceKind }) {
   const Icon = KIND_ICONS[kind]
   return <Icon size={16} />
 }
@@ -137,7 +138,7 @@ function DeviceMetaLine({
   )
 }
 
-export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
+export function DeviceRow({ device }: { device: LanDevice }) {
   const now = useNow(ROW_CLOCK_INTERVAL_MS)
   const name = deviceName(device)
   const lastSeenLabel = lastSeenAge(device, now)

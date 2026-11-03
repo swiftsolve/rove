@@ -1,4 +1,4 @@
-import { createContext, forwardRef, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
+import { createContext, use, useId, type ComponentProps, type ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
@@ -14,7 +14,7 @@ interface CardContextValue {
 
 const CardContext = createContext<CardContextValue>({ isOpenable: false })
 
-type CardProps = Omit<HTMLAttributes<HTMLElement>, 'className' | 'children'> & {
+type CardProps = Omit<ComponentProps<'section'>, 'className' | 'children'> & {
   /**
    * `section` is named by its CardHeader's title, so give it one.
    * `div` or `li` for a card with no header, such as a card in a list.
@@ -56,14 +56,11 @@ const cardVariants = cva('surface overflow-hidden contain-content', {
  * content in an element of your own inside it. With `onOpen` the whole card
  * is a link; a control inside it raises itself above the link (`relative z-2`).
  */
-export const Card = forwardRef<HTMLElement, CardProps>(function Card(
-  { as: Element = 'section', onOpen, linkLabel, className, children, ...props },
-  ref,
-) {
+export function Card({ as: Element = 'section', onOpen, linkLabel, className, children, ref, ...props }: CardProps) {
   const titleId = useId()
   const isOpenable = onOpen != null
   return (
-    <CardContext.Provider value={{ titleId, isOpenable }}>
+    <CardContext value={{ titleId, isOpenable }}>
       <Element
         // One ref type for the three elements it can be.
         ref={ref as never}
@@ -79,9 +76,9 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
         )}
         {children}
       </Element>
-    </CardContext.Provider>
+    </CardContext>
   )
-})
+}
 
 /**
  * Moves focus to the link of the openable card holding `element`: for a
@@ -92,7 +89,7 @@ export function focusCardLink(element: HTMLElement): void {
   element.closest('[data-openable]')?.querySelector<HTMLElement>(':scope > [data-stretched-link]')?.focus()
 }
 
-type CardListProps = Omit<HTMLAttributes<HTMLUListElement>, 'aria-label' | 'children'> & {
+type CardListProps = Omit<ComponentProps<'ul'>, 'aria-label' | 'children'> & {
   /** Names the list. */
   label: string
   /** The rows, as `<li>`s. They own their padding, so the hairlines run edge to edge. */
@@ -100,13 +97,9 @@ type CardListProps = Omit<HTMLAttributes<HTMLUListElement>, 'aria-label' | 'chil
 }
 
 /** A list that is one card, with a hairline between its rows. */
-export const CardList = forwardRef<HTMLUListElement, CardListProps>(function CardList(
-  { label, className, ...props },
-  ref,
-) {
+export function CardList({ label, className, ...props }: CardListProps) {
   return (
     <ul
-      ref={ref}
       // Safari drops a list's role when its markers are styled away.
       role="list"
       aria-label={label}
@@ -114,7 +107,7 @@ export const CardList = forwardRef<HTMLUListElement, CardListProps>(function Car
       {...props}
     />
   )
-})
+}
 
 // A fixed height, so a header with a button is no taller than one without.
 const HEADER = cx('flex items-center justify-between gap-12', 'h-(--card-header-height) px-(--card-header-padding-x)')
@@ -136,8 +129,8 @@ type CardHeaderProps = {
 }
 
 /** The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something. */
-export function CardHeader({ title, icon, actions }: CardHeaderProps): JSX.Element {
-  const { titleId, isOpenable } = useContext(CardContext)
+export function CardHeader({ title, icon, actions }: CardHeaderProps) {
+  const { titleId, isOpenable } = use(CardContext)
   return (
     <div className={HEADER}>
       <div className="flex min-w-0 items-center gap-8">
@@ -187,7 +180,7 @@ type CardBodyProps = {
 }
 
 /** The padded body. A little top padding gives the content more room below the title than above it. */
-export function CardBody({ layout = 'default', children }: CardBodyProps): JSX.Element {
+export function CardBody({ layout = 'default', children }: CardBodyProps) {
   return <div className={bodyVariants({ layout })}>{children}</div>
 }
 
@@ -197,7 +190,7 @@ type CardFooterProps = {
 }
 
 /** A sunken band below the body, flush to the card's edges: a footnote or status. */
-export function CardFooter({ children }: CardFooterProps): JSX.Element {
+export function CardFooter({ children }: CardFooterProps) {
   return (
     <div className="bg-inset px-(--card-body-padding) py-12" data-card-footer="">
       {children}

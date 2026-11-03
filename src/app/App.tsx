@@ -6,7 +6,7 @@ import { NetworkProvider } from '@/app/context/NetworkProvider'
 import { AppShell } from '@/app/AppShell'
 
 /** The app: shared state (query cache, navigation, theme, network) around the shell. */
-export function App(): JSX.Element {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationProvider>

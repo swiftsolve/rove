@@ -5,7 +5,7 @@ import { TodayIcon } from '@/ui'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
 /** Today's download and upload totals; opens the Usage tab. */
-export function UsageCard(): JSX.Element {
+export function UsageCard() {
   const { usage, isLoading } = useDataUsage()
   const { navigate } = useNavigation()
   const today = usage.days.at(-1)

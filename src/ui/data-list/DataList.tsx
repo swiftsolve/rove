@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { cva } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
 import { cn } from '../foundations/cn'
@@ -41,7 +41,7 @@ type DataListProps = {
  * A `<dl>` of DataRows: each row is a `<div>` holding a `<dt>` label and a
  * `<dd>` value, so the pairs read as a description list.
  */
-export function DataList({ className, density = 'default', children }: DataListProps): JSX.Element {
+export function DataList({ className, density = 'default', children }: DataListProps) {
   return <dl className={cn(listVariants({ density }), className)}>{children}</dl>
 }
 
@@ -81,7 +81,7 @@ export function DataListStack({
   className?: string
   /** The DataLists, one per topic. */
   children: ReactNode
-}): JSX.Element {
+}) {
   return (
     <div
       className={cn(

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type JSX } from 'react'
 import { cva } from 'class-variance-authority'
 import { AlertIcon, RefreshIcon } from '../icons/Icons'
 import { Button } from '../button/Button'

@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { cva } from 'class-variance-authority'
 import { StatusDot, usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'

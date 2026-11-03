@@ -82,7 +82,7 @@ function jitterValue(ping: PingStats | null | undefined): ReactNode {
   return <MetricValue value={ping.jitterMs} format={formatLatencyMs} />
 }
 
-function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
+function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
   const { info } = useNetwork()
   const ping = diagnostics?.gatewayPing
   // Negotiated link rate of the local connection to the router (Wi-Fi/Ethernet),
@@ -137,7 +137,7 @@ function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null })
   )
 }
 
-function DnsCard({ servers }: { servers: string[] }): JSX.Element {
+function DnsCard({ servers }: { servers: string[] }) {
   return (
     <Card>
       <CardHeader title="DNS" icon={<DnsIcon size={15} />} />
@@ -170,7 +170,7 @@ function ispBadge(isp: IspInfo | null | undefined): ReactNode {
   return undefined
 }
 
-function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): JSX.Element {
+function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
   const isp = diagnostics?.isp
 
   return (
@@ -207,7 +207,7 @@ function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }): J
   )
 }
 
-export function DiagnosticsView(): JSX.Element {
+export function DiagnosticsView() {
   const { diagnostics, isRunning, error, run } = useDiagnostics()
   const runDiagnostics = (): void => {
     void run()

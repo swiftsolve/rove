@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { Menu as BaseMenu } from '@base-ui/react/menu'
 import { cva, cx } from 'class-variance-authority'
 import type { VariantOf } from '../foundations/variants'
@@ -19,7 +19,7 @@ type MenuProps = {
  * move between items, Escape or a click outside closes it, and focus returns
  * to the kebab.
  */
-export function Menu({ isOpen, onOpenChange, children }: MenuProps): JSX.Element {
+export function Menu({ isOpen, onOpenChange, children }: MenuProps) {
   return (
     // Not modal: a click outside closes the menu and still lands where it was aimed.
     <BaseMenu.Root open={isOpen} onOpenChange={onOpenChange && ((isNowOpen) => onOpenChange(isNowOpen))} modal={false}>
@@ -35,22 +35,19 @@ const TRIGGER = cx(
   'hover:bg-hover hover:text-primary data-popup-open:bg-hover data-popup-open:text-primary',
 )
 
-type MenuTriggerProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children'> & {
+type MenuTriggerProps = Omit<ComponentProps<'button'>, 'aria-label' | 'children'> & {
   /** Names the kebab, which has no visible text: "Options for Google". */
   label: string
 }
 
 /** The kebab that opens the menu. `className` is for where it sits (a row that reveals it on hover). */
-export const MenuTrigger = forwardRef<HTMLButtonElement, MenuTriggerProps>(function MenuTrigger(
-  { label, className, ...buttonProps },
-  ref,
-) {
+export function MenuTrigger({ label, className, ...buttonProps }: MenuTriggerProps) {
   return (
-    <BaseMenu.Trigger ref={ref} className={cn(TRIGGER, className)} aria-label={label} {...buttonProps}>
+    <BaseMenu.Trigger className={cn(TRIGGER, className)} aria-label={label} {...buttonProps}>
       <MoreVerticalIcon size={16} />
     </BaseMenu.Trigger>
   )
-})
+}
 
 const CONTENT = cx(
   'flex min-w-[112px] flex-col gap-2 p-4',
@@ -67,7 +64,7 @@ export function MenuContent({
 }: {
   /** MenuItems, in order. */
   children: ReactNode
-}): JSX.Element {
+}) {
   return (
     <BaseMenu.Portal>
       <BaseMenu.Positioner className="z-20" side="bottom" align="end" sideOffset={4}>
@@ -109,7 +106,7 @@ type MenuItemProps = {
 }
 
 /** One action in a MenuContent. */
-export function MenuItem({ icon: Icon, tone = 'neutral', onClick, children }: MenuItemProps): JSX.Element {
+export function MenuItem({ icon: Icon, tone = 'neutral', onClick, children }: MenuItemProps) {
   return (
     <BaseMenu.Item className={itemVariants({ tone })} onClick={onClick} nativeButton render={<button type="button" />}>
       {Icon && <Icon size={14} />}

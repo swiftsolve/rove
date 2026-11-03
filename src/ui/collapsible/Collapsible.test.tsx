@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './Collapsible'
 
-function Harness(): JSX.Element {
+function Harness() {
   const [isOpen, setIsOpen] = useState(false)
   return (
     <Collapsible isOpen={isOpen} onOpenChange={setIsOpen}>

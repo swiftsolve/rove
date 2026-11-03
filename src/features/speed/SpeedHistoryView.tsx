@@ -62,7 +62,7 @@ function connectionBadgeStyle(connectionType: string): ConnectionBadgeStyle {
   return { Icon: GlobeIcon, type: 'unknown', fallbackName: 'Unknown' }
 }
 
-function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
+function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
   const { connectionType, networkName } = entry
   const { Icon, type, fallbackName } = connectionBadgeStyle(connectionType)
   const band = formatBand(entry.frequency)
@@ -82,7 +82,7 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
   )
 }
 
-function Metric({ label, value, unit, series }: MetricProps): JSX.Element {
+function Metric({ label, value, unit, series }: MetricProps) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <dt className="flex items-center gap-6">
@@ -106,7 +106,7 @@ const CARD_FOOTER = cx(
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
-function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
+function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
   const download = splitSpeedMbps(entry.downloadMbps)
   const upload = splitSpeedMbps(entry.uploadMbps)
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
@@ -154,7 +154,7 @@ function HistoryCard({ entry }: { entry: SpeedHistoryEntry }): JSX.Element {
 }
 
 /** The header overflow menu: Delete, which clears all history. */
-function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
+function HistoryMenu({ onDelete }: { onDelete: () => void }) {
   return (
     <Menu>
       <MenuTrigger label="History options" />
@@ -167,7 +167,7 @@ function HistoryMenu({ onDelete }: { onDelete: () => void }): JSX.Element {
   )
 }
 
-function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element {
+function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }) {
   if (entries.length === 0) {
     return <EmptyState title="No speed tests yet" description="Run a test to start your history." />
   }
@@ -183,7 +183,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }): JSX.Element
   )
 }
 
-export function SpeedHistoryView(): JSX.Element {
+export function SpeedHistoryView() {
   const { back } = useNavigation()
   // Undefined until the first read lands, so the tall "no tests yet"
   // placeholder doesn't flash up (and swap to the list mid-transition) before

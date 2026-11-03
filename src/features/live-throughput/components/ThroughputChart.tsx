@@ -43,7 +43,7 @@ type ThroughputChartProps = {
 
 /** The last minute of download (solid) and upload (dashed) as areas, with a
  *  dot on each latest sample. */
-export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartProps): JSX.Element {
+export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartProps) {
   const gradientId = useId().replace(/:/g, '')
   const downFillId = `${gradientId}-down`
   const upFillId = `${gradientId}-up`

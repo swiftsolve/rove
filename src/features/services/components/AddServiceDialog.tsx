@@ -55,7 +55,7 @@ function AddressFeedback({
   outcome: TestOutcome | null
   name: string
   isEditing: boolean
-}): JSX.Element {
+}) {
   if (error) return <span role="alert">{error}</span>
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
@@ -99,7 +99,7 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
  * the flow is otherwise identical (test, then save), and the caller decides how to
  * persist (re-adding the same host updates its label; a changed host is a move).
  */
-export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps): JSX.Element {
+export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps) {
   const [address, setAddress] = useState(editing?.host ?? '')
   const [name, setName] = useState(editing?.name ?? '')
   // The name as last typed. A test started by Add confirms from the render

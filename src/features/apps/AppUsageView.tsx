@@ -30,7 +30,7 @@ const BODY_COPY: UsageBodyCopy = {
 /** The header subtitle once there's data: links into the per-app host breakdown
  *  and the by-protocol breakdown (mirrors the Services view's "View timeline"
  *  link). */
-function AppSubtitleLinks(): JSX.Element {
+function AppSubtitleLinks() {
   const { navigate } = useNavigation()
   const onViewHosts = (): void => navigate({ tab: 'apps', appsSub: { view: 'hosts' } })
   const onViewTraffic = (): void => navigate({ tab: 'apps', appsSub: { view: 'traffic' } })
@@ -47,7 +47,7 @@ function AppSubtitleLinks(): JSX.Element {
   )
 }
 
-export function AppUsageView(): JSX.Element {
+export function AppUsageView() {
   const { usage, isFirstLoad, error, reload } = useAppUsage()
   const { navigate } = useNavigation()
   const { apps } = usage

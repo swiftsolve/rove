@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { isConnectedNetwork } from '@/types'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'

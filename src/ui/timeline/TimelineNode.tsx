@@ -1,4 +1,4 @@
-import { forwardRef, type LiHTMLAttributes, type ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 
@@ -34,7 +34,7 @@ const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 /** A TimelineNode colour: any CSS colour, usually a token (`var(--status-positive)`), or `neutral`. */
 export type TimelineNodeColor = 'neutral' | (string & {})
 
-type TimelineNodeProps = Omit<LiHTMLAttributes<HTMLLIElement>, 'color'> & {
+type TimelineNodeProps = Omit<ComponentProps<'li'>, 'color'> & {
   /** The marker's icon, sized by the caller: `<ArrowRightIcon size={15} />`. */
   icon: ReactNode
   /**
@@ -51,17 +51,14 @@ type TimelineNodeProps = Omit<LiHTMLAttributes<HTMLLIElement>, 'color'> & {
  * One event on a timeline: a round marker tinted by what happened, its lines
  * beside it, and a line down to the next node. An `<li>`: put nodes in a list.
  */
-export const TimelineNode = forwardRef<HTMLLIElement, TimelineNodeProps>(function TimelineNode(
-  { icon, color, className, children, ...props },
-  ref,
-) {
+export function TimelineNode({ icon, color, className, children, ...props }: TimelineNodeProps) {
   const isNeutral = color === 'neutral'
   return (
-    <li ref={ref} className={cn(NODE, className)} {...props}>
+    <li className={cn(NODE, className)} {...props}>
       <span className={markerVariants({ isNeutral })} style={isNeutral ? undefined : { color }} aria-hidden>
         {icon}
       </span>
       <div className={CONTENT}>{children}</div>
     </li>
   )
-})
+}

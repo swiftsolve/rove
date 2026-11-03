@@ -29,7 +29,7 @@ const SCROLL = cx(
  * The window's layout: title bar, nav rail and the scrolling content column.
  * The screen inside it is picked by `CurrentScreen` from the current location.
  */
-export function AppShell(): JSX.Element {
+export function AppShell() {
   const { location, returnPoint } = useNavigation()
   const { scrollRef, mainRef } = useScreenFocus(locationKey(location), returnPoint)
   // State, not a ref: the provider has to re-render with the column once it mounts.

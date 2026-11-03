@@ -55,7 +55,7 @@ export function Tooltip({
   isDisabled = false,
   shouldDescribe = true,
   maxWidth = 260,
-}: TooltipProps): JSX.Element {
+}: TooltipProps) {
   const descriptionId = useId()
   const isLabelRepeat = typeof content === 'string' && content === children.props['aria-label']
   const isDescribing = shouldDescribe && !isDisabled && !isLabelRepeat

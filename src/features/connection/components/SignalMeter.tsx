@@ -19,7 +19,7 @@ type SignalMeterProps = {
 }
 
 /** The Wi‑Fi signal as four bars, coloured by how good it is. */
-export function SignalMeter({ strength, placement, className }: SignalMeterProps): JSX.Element {
+export function SignalMeter({ strength, placement, className }: SignalMeterProps) {
   return (
     <div
       className={cx(signalMeterVariants({ level: signalLevel(strength), placement }), className)}

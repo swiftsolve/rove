@@ -81,7 +81,7 @@ type RowMenuProps = {
 }
 
 /** The per-row overflow menu: a kebab that opens Edit and Remove. */
-function RowMenu({ service, onEdit, onRemove }: RowMenuProps): JSX.Element {
+function RowMenu({ service, onEdit, onRemove }: RowMenuProps) {
   return (
     <Menu>
       <MenuTrigger label={`Options for ${service.name}`} className={KEBAB_REVEAL} />
@@ -98,7 +98,7 @@ function RowMenu({ service, onEdit, onRemove }: RowMenuProps): JSX.Element {
 }
 
 /** A glyph standing in for a latency ("…", "—"), read aloud as a word instead. */
-function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }): JSX.Element {
+function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }) {
   return (
     <span className="type-body-small text-tertiary">
       <span aria-hidden="true">{glyph}</span>
@@ -119,7 +119,7 @@ function LatencyReadout({
   latencyMs: number | null | undefined
   isErroring: boolean
   isInternetUnreachable: boolean
-}): JSX.Element {
+}) {
   if (latencyMs === undefined) return <PlaceholderReadout glyph="…" spoken="Measuring" />
   if (latencyMs === null) {
     // Path failed. Only a genuine "Down" when we know the internet is up;
@@ -146,14 +146,7 @@ type ServiceRowProps = {
   menu: ReactNode
 }
 
-function ServiceRow({
-  service,
-  probe,
-  seededLatencyMs,
-  samples,
-  isInternetUnreachable,
-  menu,
-}: ServiceRowProps): JSX.Element {
+function ServiceRow({ service, probe, seededLatencyMs, samples, isInternetUnreachable, menu }: ServiceRowProps) {
   const latencyMs = probe ? probe.latencyMs : seededLatencyMs
   const isErroring = probe ? isHttpErroring(probe.httpStatus) : false
   // Down the same way the status reads it: a failed path (only when the
@@ -203,7 +196,7 @@ function ServiceRow({
 }
 
 /** There's nothing to probe against while offline, so adding is disabled until we're back. */
-function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick: () => void }): JSX.Element {
+function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick: () => void }) {
   if (isOffline) {
     return (
       <Tooltip content="Connect to the internet first">
@@ -227,7 +220,7 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
  * `useServices`); latency is overlaid from the latest services probes so each
  * row shows how it's doing.
  */
-export function ServicesView(): JSX.Element {
+export function ServicesView() {
   const { navigate } = useNavigation()
   const { report, run: reprobe } = useServiceReachability()
   // The latest reachability probes; latency is matched to rows by host.

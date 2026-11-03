@@ -1,16 +1,15 @@
-import { useEffect } from 'react'
-import { useLatestRef } from '@/ui'
+import { useEffect, useEffectEvent } from 'react'
 
 /**
  * Runs `callback` whenever the backend nudges us that the OS routing table
  * changed (cable pulled, Wi-Fi joined) — so data hooks can refresh at once
  * instead of waiting out their poll interval.
  *
- * The callback is kept in a ref, so callers may pass a fresh closure each
+ * The callback is an effect event, so callers may pass a fresh closure each
  * render without churning the subscription; only `isEnabled` re-subscribes.
  */
 export function useOnNetworkChanged(callback: () => void, isEnabled = true): void {
-  const callbackRef = useLatestRef(callback)
+  const onChanged = useEffectEvent(callback)
 
   useEffect(() => {
     if (!isEnabled) return
@@ -21,11 +20,11 @@ export function useOnNetworkChanged(callback: () => void, isEnabled = true): voi
     // arrive after cleanup started.
     let isActive = true
     const detach = api.onNetworkChanged(() => {
-      if (isActive) callbackRef.current()
+      if (isActive) onChanged()
     })
     return () => {
       isActive = false
       detach()
     }
-  }, [isEnabled, callbackRef])
+  }, [isEnabled])
 }

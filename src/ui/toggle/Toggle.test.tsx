@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Toggle } from './Toggle'
 
-function Harness(): JSX.Element {
+function Harness() {
   const [isChecked, setIsChecked] = useState(false)
   return (
     <>

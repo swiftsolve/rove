@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type JSX } from 'react'
 import { cx } from 'class-variance-authority'
 import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { RectangleProps } from 'recharts'
@@ -57,13 +57,13 @@ function dayLabel(dateKey: string, isLast: boolean): string {
   return WEEKDAY_FORMAT.format(new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1))
 }
 
-function BytesMetric({ label, bytes, series }: { label: string; bytes: number; series: 'down' | 'up' }): JSX.Element {
+function BytesMetric({ label, bytes, series }: { label: string; bytes: number; series: 'down' | 'up' }) {
   const { value, unit } = splitBytes(bytes)
   return <Readout label={label} icon={<DirectionIcon series={series} />} value={value} unit={unit} />
 }
 
 /** A card footer: a label on the left, down / up byte totals on the right. */
-function TotalsFooter({ label, rxBytes, txBytes }: { label: string; rxBytes: number; txBytes: number }): JSX.Element {
+function TotalsFooter({ label, rxBytes, txBytes }: { label: string; rxBytes: number; txBytes: number }) {
   return (
     <p className={TOTALS_FOOTER}>
       <span>{label}</span>
@@ -114,7 +114,7 @@ function UsageTooltip({
 }
 
 /** X-axis tick that emphasises "Today". */
-function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?: string } }): JSX.Element {
+function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?: string } }) {
   const value = payload?.value ?? ''
   const isToday = value === 'Today'
   return (
@@ -137,17 +137,7 @@ function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?
  *  box behind the whole day. Paired with `cursor={false}` so there's no pill. */
 const renderActiveBar =
   (color: string) =>
-  ({
-    x = 0,
-    y = 0,
-    width = 0,
-    height = 0,
-  }: {
-    x?: number
-    y?: number
-    width?: number
-    height?: number
-  }): JSX.Element => (
+  ({ x = 0, y = 0, width = 0, height = 0 }: { x?: number; y?: number; width?: number; height?: number }) => (
     <g>
       <rect x={x} y={y} width={width} height={height} rx={2} ry={2} fill={color} />
       <circle
@@ -168,10 +158,10 @@ const renderActiveBar =
  *  keyboard focus: Recharts marks only hovered bars as active. */
 const renderBar =
   (color: string, focusedIndex: number | null) =>
-  ({ index, ...props }: RectangleProps & { index?: number }): JSX.Element =>
+  ({ index, ...props }: RectangleProps & { index?: number }) =>
     index === focusedIndex ? renderActiveBar(color)(props) : <Rectangle {...props} />
 
-function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
+function WeekChart({ days }: { days: DailyUsage[] }) {
   const data: UsageDatum[] = days.map((day, index) => ({
     key: day.date,
     label: dayLabel(day.date, index === days.length - 1),
@@ -252,7 +242,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
   )
 }
 
-export function UsageView(): JSX.Element {
+export function UsageView() {
   const { usage, isLoading, error, reload } = useDataUsage()
   const today = usage.days[usage.days.length - 1]
   const weekRx = usage.days.reduce((sum, day) => sum + day.rxBytes, 0)

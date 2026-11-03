@@ -43,7 +43,7 @@ type NavItemProps = {
 }
 
 /** One rail button: a page, or an action such as the theme switch. */
-export function NavItem({ label, icon: Icon, isActive = false, onClick }: NavItemProps): JSX.Element {
+export function NavItem({ label, icon: Icon, isActive = false, onClick }: NavItemProps) {
   return (
     <Tooltip content={label} side="right">
       <button
@@ -62,7 +62,7 @@ export function NavItem({ label, icon: Icon, isActive = false, onClick }: NavIte
 const GROUP = 'flex flex-col items-center gap-12'
 
 /** One group's items, each a flex item so it shrinks to its 38px control rather than growing a line box. */
-function NavGroup({ className, children }: { className?: string; children: ReactNode }): JSX.Element {
+function NavGroup({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <ul role="list" className={cx(GROUP, className)}>
       {Children.map(children, (item) => (
@@ -82,7 +82,7 @@ interface BarPlacement {
 }
 
 /** Follows the current page's item, so one accent bar can slide between items. */
-function useActiveBar(railRef: RefObject<HTMLElement>): BarPlacement {
+function useActiveBar(railRef: RefObject<HTMLElement | null>): BarPlacement {
   const [bar, setBar] = useState<BarPlacement>({ top: 0, isVisible: false, isSliding: false })
   useLayoutEffect(() => {
     const rail = railRef.current
@@ -124,7 +124,7 @@ type NavRailProps = {
  * The narrow icon-only rail down the window's left side. It stays above the
  * content column, like the title bar.
  */
-export function NavRail({ label, main, footer }: NavRailProps): JSX.Element {
+export function NavRail({ label, main, footer }: NavRailProps) {
   const railRef = useRef<HTMLElement>(null)
   const bar = useActiveBar(railRef)
   return (

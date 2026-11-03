@@ -6,7 +6,7 @@ import { Dialog, DialogRoot } from './Dialog'
 import { Button } from '../button/Button'
 
 /** Opens the dialog from a button, as the app does, and counts closes. */
-function Harness({ canClose, isDirty }: { canClose?: boolean; isDirty?: boolean }): JSX.Element {
+function Harness({ canClose, isDirty }: { canClose?: boolean; isDirty?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   return (
     <>

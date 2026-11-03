@@ -8,7 +8,7 @@ import { HdStreamIcon } from '../icons/HdStreamIcon'
 import { GamepadIcon, VideoCallIcon } from '../icons/Icons'
 import { ListRow } from './ListRow'
 
-function RowText({ title, description }: { title: string; description: string }): JSX.Element {
+function RowText({ title, description }: { title: string; description: string }) {
   return (
     <span className="flex min-w-0 flex-1 flex-col">
       <span className="type-body-default text-primary truncate">{title}</span>
@@ -27,7 +27,7 @@ function Rating({
   color: string
   label: string
   isDimmed?: boolean
-}): JSX.Element {
+}) {
   return (
     <>
       <BarMeter value={value} color={color} isDimmed={isDimmed} />

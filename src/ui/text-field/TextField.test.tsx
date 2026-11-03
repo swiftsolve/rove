@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { TextField, TextFieldAction } from './TextField'
 import { Button } from '../button/Button'
 
-function Harness({ onSubmit, onTest }: { onSubmit: () => void; onTest: () => void }): JSX.Element {
+function Harness({ onSubmit, onTest }: { onSubmit: () => void; onTest: () => void }) {
   const [address, setAddress] = useState('')
   return (
     <>

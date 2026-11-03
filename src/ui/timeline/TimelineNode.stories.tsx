@@ -13,7 +13,7 @@ const COLORS = [
 
 // An event's lines, as the timelines set them: what happened and when, then
 // what it happened to.
-function Lines({ title, subject, time = '1:24 PM' }: { title: string; subject: string; time?: string }): JSX.Element {
+function Lines({ title, subject, time = '1:24 PM' }: { title: string; subject: string; time?: string }) {
   return (
     <>
       <span className="flex items-baseline gap-10">

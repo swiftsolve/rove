@@ -1,10 +1,7 @@
-import { forwardRef, type ButtonHTMLAttributes, type MouseEventHandler } from 'react'
+import type { ComponentProps, MouseEventHandler } from 'react'
 import { cn } from '../foundations/cn'
 
-type StretchedLinkProps = Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'aria-label' | 'children' | 'role' | 'onClick'
-> & {
+type StretchedLinkProps = Omit<ComponentProps<'button'>, 'aria-label' | 'children' | 'role' | 'onClick'> & {
   /**
    * Names it: it has no text of its own, since the container's content shows
    * through. Leave it out only to name it by a heading (`aria-labelledby`).
@@ -25,15 +22,11 @@ type StretchedLinkProps = Omit<
  * `className` can round the ring where the container's own corners don't (a
  * list's first and last rows).
  */
-export const StretchedLink = forwardRef<HTMLButtonElement, StretchedLinkProps>(function StretchedLink(
-  { label, type = 'button', className, ...buttonProps },
-  ref,
-) {
+export function StretchedLink({ label, type = 'button', className, ...buttonProps }: StretchedLinkProps) {
   return (
     // A button, as the app has no URLs to link to: views change through
     // history state (see Link).
     <button
-      ref={ref}
       type={type}
       role="link"
       className={cn('absolute inset-0 z-1 rounded-[inherit] focus-visible:outline-offset-(--focus-inset)', className)}
@@ -42,4 +35,4 @@ export const StretchedLink = forwardRef<HTMLButtonElement, StretchedLinkProps>(f
       {...buttonProps}
     />
   )
-})
+}

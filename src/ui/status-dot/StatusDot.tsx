@@ -31,6 +31,6 @@ type StatusDotProps = {
 }
 
 /** A small dot that marks a status beside its words; decorative, so the words carry it. */
-export function StatusDot({ tone = 'current', pulse, className }: StatusDotProps): JSX.Element {
+export function StatusDot({ tone = 'current', pulse, className }: StatusDotProps) {
   return <span className={cn(dotVariants({ tone, pulse }), className)} aria-hidden />
 }

@@ -11,6 +11,6 @@ export function Spinner({
 }: {
   /** Its width in px. */
   size?: number
-}): JSX.Element {
+}) {
   return <Waveform size={size} stroke={3} speed={1} color="var(--accent-default)" />
 }

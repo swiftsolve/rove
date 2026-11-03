@@ -32,7 +32,7 @@ export function MetricValue({
   format: (n: number) => string
   /** Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it. */
   className?: string
-}): JSX.Element {
+}) {
   const animated = useCountUp(value)
   return <span className={cn(metricVariants({ status }), className)}>{format(animated)}</span>
 }

@@ -74,7 +74,7 @@ type UsageRowProps = {
 /** One usage row, styled like a Services row: icon and name on the left, the
  *  total on the right, then a proportional down/up bar and the byte figures
  *  beneath. */
-export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: UsageRowProps): JSX.Element {
+export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: UsageRowProps) {
   const isLink = link !== undefined
   return (
     <li className={rowVariants({ isLink })}>

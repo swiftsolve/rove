@@ -50,7 +50,7 @@ type PageHeaderProps = {
  * the content they drop into. The actions hold their size, so a long
  * description wraps instead of squeezing them.
  */
-export function PageHeader({ title, description, status, actions, icon, onBack }: PageHeaderProps): JSX.Element {
+export function PageHeader({ title, description, status, actions, icon, onBack }: PageHeaderProps) {
   const hasLine = description !== undefined || status !== undefined
   return (
     <header className="page-header relative z-20 flex items-center gap-12">

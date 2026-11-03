@@ -23,7 +23,7 @@ type DirectionIconProps = IconProps & {
  * `--series-*` variables via the `text-series-*` utility; the icon inherits it through
  * `currentColor`.
  */
-export function DirectionIcon({ series, size = 14, className }: DirectionIconProps): JSX.Element {
+export function DirectionIcon({ series, size = 14, className }: DirectionIconProps) {
   const Icon = series === 'down' ? ArrowDownIcon : ArrowUpIcon
   return (
     <span className={cn(rootVariants({ series }), className)} aria-hidden>

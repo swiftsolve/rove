@@ -46,7 +46,7 @@ const MISSING_PASSWORD: Notice = {
   description: 'Allow access when asked, so the code can include it.',
 }
 
-function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void }): JSX.Element {
+function ShareNotice({ notice, onRetry }: { notice: Notice; onRetry: () => void }) {
   return (
     <div className={STATE} role="alert">
       <span className={CHIP} aria-hidden>
@@ -77,7 +77,7 @@ function shareNotice(share: WifiShare | null, error: string | null): Notice | nu
  * Try again; the passphrase is read behind an OS auth prompt, so the fetch can
  * take a moment (or come back without a password if the user declines).
  */
-export function WifiShareDialog({ onClose }: { onClose: () => void }): JSX.Element {
+export function WifiShareDialog({ onClose }: { onClose: () => void }) {
   const { share, error, isLoading, retry } = useWifiShare()
   const notice = isLoading ? null : shareNotice(share, error)
   const qr = isLoading || notice ? null : share

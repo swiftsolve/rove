@@ -2,7 +2,7 @@ import { BrandIcon, TitleBar, TitleBarStatus, WindowButton } from '@/ui'
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 
 /** The window's title bar: Rove's mark, the connection status and, on a frameless window, its controls. */
-export function AppTitleBar(): JSX.Element {
+export function AppTitleBar() {
   const { tone, label } = useConnectionStatus()
   const controls = window.windowControls
   return (

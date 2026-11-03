@@ -1,4 +1,4 @@
-import { forwardRef, type InputHTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { Field } from '@base-ui/react/field'
 import { cva, cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
@@ -46,10 +46,7 @@ const feedbackVariants = cva('mt-8 text-sm leading-body-small', {
   defaultVariants: { isInvalid: false },
 })
 
-type TextFieldProps = Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  'value' | 'onChange' | 'className' | 'placeholder'
-> & {
+type TextFieldProps = Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'className' | 'placeholder'> & {
   /** Names the field, above it. */
   label: string
   /** What's typed in it. */
@@ -72,13 +69,18 @@ type TextFieldProps = Omit<
 }
 
 /** A labelled single-line text input. */
-export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { label, value, onChange, isInvalid = false, feedback, action, className, ...inputProps },
-  ref,
-) {
+export function TextField({
+  label,
+  value,
+  onChange,
+  isInvalid = false,
+  feedback,
+  action,
+  className,
+  ...inputProps
+}: TextFieldProps) {
   const control = (
     <Field.Control
-      ref={ref}
       value={value}
       onValueChange={(next) => onChange(next)}
       className={action == null ? BORDERED_INPUT : GROUPED_INPUT}
@@ -103,7 +105,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
       )}
     </Field.Root>
   )
-})
+}
 
 // A quiet accent wash with an accent label, so it reads as secondary to the
 // form's solid confirm. Loading, the label is just a spinner, so the button
@@ -143,7 +145,7 @@ export function TextFieldAction({
   isDisabled = false,
   isLoading = false,
   loadingLabel,
-}: TextFieldActionProps): JSX.Element {
+}: TextFieldActionProps) {
   return (
     <button
       type="button"

@@ -14,7 +14,7 @@ type SpeedReadoutProps = {
 
 /** A live rate behind its direction arrow. The digits count up to each new
  *  sample; screen readers get the settled value instead of a mid-count one. */
-export function SpeedReadout({ label, mbps, series }: SpeedReadoutProps): JSX.Element {
+export function SpeedReadout({ label, mbps, series }: SpeedReadoutProps) {
   const settledMbps = mbps < NOISE_FLOOR_MBPS ? 0 : mbps
   const countingMbps = useCountUp(settledMbps)
   const shown = splitSpeedMbps(countingMbps)

@@ -24,7 +24,7 @@ type BadgeProps = {
 }
 
 /** A small tinted flag beside a title: a word or two, in capitals. */
-export function Badge({ tone, children }: BadgeProps): JSX.Element {
+export function Badge({ tone, children }: BadgeProps) {
   return <span className={badgeVariants({ tone })}>{children}</span>
 }
 
@@ -34,7 +34,7 @@ export function LiveBadge({
 }: {
   /** Its words. */
   children?: ReactNode
-}): JSX.Element {
+}) {
   return (
     <span className="type-caption inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4 text-positive">
       <StatusDot pulse="live" />

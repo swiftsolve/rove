@@ -53,7 +53,7 @@ const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [
 ]
 
 /** The colour theme picker: dark, light or system. */
-function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descriptionId: string }): JSX.Element {
+function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descriptionId: string }) {
   const { mode, setMode } = useTheme()
   return (
     <SegmentedControl
@@ -76,7 +76,7 @@ function SettingRow({
   description: string
   /** Renders the control, given the description's id so it can point at it. */
   control: (descriptionId: string) => ReactNode
-}): JSX.Element {
+}) {
   const descriptionId = useId()
   return (
     <div className={rowVariants()}>
@@ -123,7 +123,7 @@ function checkStatusText(check: UpdateCheckState): string {
   return ''
 }
 
-export function SettingsView(): JSX.Element {
+export function SettingsView() {
   const { navigate } = useNavigation()
   const [isAutoUpdateEnabled, setIsAutoUpdateEnabled] = useSetting('autoUpdate', true)
   const [areThemeSoundsEnabled, setAreThemeSoundsEnabled] = useSetting('themeSounds', true)

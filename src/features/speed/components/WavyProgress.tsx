@@ -1,5 +1,4 @@
-import { useEffect, useId, useRef, type CSSProperties } from 'react'
-import { useLatestRef } from '@/ui'
+import { useEffect, useEffectEvent, useId, useRef, type CSSProperties } from 'react'
 import { advanceFill } from '@/features/speed/utils/progress-fill'
 
 // Material 3 "wavy" determinate progress, matching Android's LinearWavyProgressIndicator:
@@ -56,9 +55,9 @@ function buildStaticWave(width: number): string {
   return path
 }
 
-export function WavyProgress({ progress, runId }: { progress: number; runId: number }): JSX.Element {
+export function WavyProgress({ progress, runId }: { progress: number; runId: number }) {
   const targetPct = Math.max(0, Math.min(100, progress))
-  const targetRef = useLatestRef(targetPct)
+  const readTarget = useEffectEvent(() => targetPct)
 
   // Sanitize the colons React's useId emits — they're fine in most contexts but
   // brittle inside an SVG url(#…) fragment reference.
@@ -131,7 +130,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
     }
 
     const loop = (): void => {
-      fillPct = advanceFill(fillPct, targetRef.current)
+      fillPct = advanceFill(fillPct, readTarget())
       // survive a remount mid-test
       persistedFill.runId = runId
       persistedFill.pct = fillPct
@@ -147,7 +146,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
       cancelAnimationFrame(frameId)
       observer.disconnect()
     }
-  }, [targetRef, runId])
+  }, [runId])
 
   // Static shell. The wave is drawn once and scrolls via CSS; a clip rect (grown
   // by the loop) reveals the filled portion; the dot rides its leading edge and

@@ -41,6 +41,10 @@ for what. Read it before writing or changing UI. For where files live, see
   it. A new tab is its id in `app/utils/tabs.ts` plus that entry.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
   component file.
+- React 19 idioms: a component's return type is inferred (annotate it only as
+  `JSX.Element | null`, when it can render nothing); a context is read with
+  `use(SomeContext)` and provided as `<SomeContext value={…}>`; an effect reads
+  fresh props through `useEffectEvent`.
 - A view file holds the page and its layout; the rows, cards and widgets it is
   built from go in the feature's `components/`, and the logic behind the copy
   (names, ages, grouping) in `utils/` as plain functions.
@@ -291,8 +295,9 @@ Every component follows the same rules:
 - Composition happens through compound parts and slots, never `cloneElement`
   or reaching into a child's DOM.
 
-A component that renders one element forwards its ref and passes extra props
-through to it.
+A component that renders one element takes its props as `ComponentProps<'button'>`
+(or its element's), so `ref` and extra props pass through to it. No `forwardRef`:
+in React 19 `ref` is a prop.
 
 ## Components
 

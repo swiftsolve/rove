@@ -23,7 +23,7 @@ type UsageBodyProps = {
 
 /** A usage view's body: the admin prompt, a first-load spinner, an empty
  *  state, or the list. */
-export function UsageBody({ support, isFirstLoad, isEmpty, copy, children }: UsageBodyProps): JSX.Element {
+export function UsageBody({ support, isFirstLoad, isEmpty, copy, children }: UsageBodyProps) {
   if (support === 'unsupported') {
     return (
       <EmptyState

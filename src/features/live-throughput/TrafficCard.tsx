@@ -6,7 +6,7 @@ import { ThroughputChart } from '@/features/live-throughput/components/Throughpu
 
 /** Home's live traffic: the current download and upload rates over a chart of
  *  the last minute. */
-export function TrafficCard(): JSX.Element {
+export function TrafficCard() {
   const { throughput, history } = useLiveThroughput()
   const scaleMaxMbps = useThroughputScale(history.download, history.upload)
 

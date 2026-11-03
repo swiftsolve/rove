@@ -6,7 +6,7 @@ import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 
 /** How many devices on the network are online; opens the Devices tab. */
-export function DevicesCard(): JSX.Element {
+export function DevicesCard() {
   const { lastScan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
   // Null before the first scan lands.
@@ -45,7 +45,7 @@ type DevicesCardBodyProps = {
   onDiscover?: () => void
 }
 
-function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBodyProps): JSX.Element {
+function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBodyProps) {
   if (isScanning) return <ScanSpinner />
   if (onlineCount !== null) {
     return (
@@ -64,7 +64,7 @@ function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBod
  * Usage card's), nudged down toward the body's centre. No min-height: it would
  * make the grid row taller.
  */
-function ScanSpinner(): JSX.Element {
+function ScanSpinner() {
   return (
     <div className="flex flex-1 items-center justify-center pt-6" aria-hidden>
       <ButtonSpinner size={14} color="var(--text-secondary)" />
@@ -77,7 +77,7 @@ function ScanSpinner(): JSX.Element {
  * spinner replaces it once the scan starts, so focus moves to the card's link
  * rather than being lost.
  */
-function DiscoverButton({ onDiscover }: { onDiscover: () => void }): JSX.Element {
+function DiscoverButton({ onDiscover }: { onDiscover: () => void }) {
   const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
     focusCardLink(event.currentTarget)
     onDiscover()

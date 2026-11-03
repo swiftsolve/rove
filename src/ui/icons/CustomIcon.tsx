@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { IconProps } from './Icons'
 
 /** The 24-grid stroke frame the custom icons share with the Lucide aliases. */
-export function CustomIcon({ size, className, children }: IconProps & { children: ReactNode }): JSX.Element {
+export function CustomIcon({ size, className, children }: IconProps & { children: ReactNode }) {
   return (
     <svg
       width={size}

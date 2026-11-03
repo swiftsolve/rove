@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { getSetting, useSetting } from './useSetting'
 
-function SoundToggle({ label }: { label: string }): JSX.Element {
+function SoundToggle({ label }: { label: string }) {
   const [isOn, setIsOn] = useSetting('testSound', true)
   return (
     <button type="button" onClick={() => setIsOn(!isOn)}>
@@ -11,7 +11,7 @@ function SoundToggle({ label }: { label: string }): JSX.Element {
   )
 }
 
-function NameReadout(): JSX.Element {
+function NameReadout() {
   const [name] = useSetting('testName', 'fallback')
   return <p>{name}</p>
 }

@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -29,7 +30,7 @@ function CapabilityRow({
   capability: CapabilityRating
   isTesting: boolean
   onOpen: () => void
-}): JSX.Element {
+}) {
   return (
     <li>
       <ListRow onClick={onOpen} isDisabled={isTesting}>
@@ -56,7 +57,7 @@ const PREVIEW_ROW =
 
 /** A greyed-out preview of a capability, shown before any test has run. Faded
  *  like a disabled control, the same as the Home strip's placeholder tiles. */
-function PreviewRow({ definition }: { definition: CapabilityDefinition }): JSX.Element {
+function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   return (
     <li className={PREVIEW_ROW}>
       <div className="flex min-w-0 flex-1 items-center gap-12">
@@ -90,7 +91,7 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
   return undefined
 }
 
-export function CapabilityList(): JSX.Element {
+export function CapabilityList() {
   const { navigate } = useNavigation()
   // While a test runs, the stale rows grey out until the new result lands.
   const capabilities = useSpeedTest((test) => test.capabilities)

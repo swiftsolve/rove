@@ -87,7 +87,7 @@ function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnectio
   return null
 }
 
-function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX.Element {
+function ConnectionTag({ connection }: { connection: SpeedTestConnection }) {
   const name = connection.name ?? (connection.type === 'wifi' ? 'Wi‑Fi' : 'Ethernet')
   return (
     <span className={connVariants({ type: connection.type })}>
@@ -97,7 +97,7 @@ function ConnectionTag({ connection }: { connection: SpeedTestConnection }): JSX
   )
 }
 
-function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPlaceholder?: boolean }): JSX.Element {
+function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPlaceholder?: boolean }) {
   const animatedMbps = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
@@ -111,7 +111,7 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
 
 /** The running test's phase and percentage. Reads the progress itself, so a
  *  tick re-renders this strip rather than the whole card. */
-function TestProgress(): JSX.Element {
+function TestProgress() {
   const progress = useSpeedTest((test) => test.progress)
   const runId = useSpeedTest((test) => test.runId)
   return (
@@ -135,7 +135,7 @@ function TestProgress(): JSX.Element {
 }
 
 /** Each phase and the result, for screen readers. Reads the test itself, like `TestProgress`. */
-function TestStatus(): JSX.Element {
+function TestStatus() {
   const text = useSpeedTest((test) => testStatusText(test.isTesting, test.progress, test.internetSpeed))
   return (
     <p className="sr-only" role="status">
@@ -154,7 +154,7 @@ function HeroCell({
   series: SpeedSeries
   mbps: number | null
   isPlaceholder: boolean
-}): JSX.Element {
+}) {
   return (
     <div className="flex flex-col gap-8">
       <dt className="flex items-center gap-6">
@@ -166,7 +166,7 @@ function HeroCell({
   )
 }
 
-function Substat({ label, text, isEmpty }: { label: string; text: string; isEmpty: boolean }): JSX.Element {
+function Substat({ label, text, isEmpty }: { label: string; text: string; isEmpty: boolean }) {
   return (
     <div className="flex flex-col gap-4">
       <dt className="type-overline text-tertiary">{label}</dt>
@@ -181,7 +181,7 @@ function ResultFooter({
 }: {
   connection: SpeedTestConnection | null
   linkCapacityMbps: number | null
-}): JSX.Element {
+}) {
   return (
     // The strip under the results: connection left, link speed right. The text
     // size comes from .type-caption.
@@ -198,7 +198,7 @@ function ResultFooter({
   )
 }
 
-export const SpeedTestCard = memo(function SpeedTestCard(): JSX.Element {
+export const SpeedTestCard = memo(function SpeedTestCard() {
   const { info } = useNetwork()
   // Each pick is its own subscription, so the card re-renders only when one of
   // them changes: not on a progress tick, which only the progress strip shows.

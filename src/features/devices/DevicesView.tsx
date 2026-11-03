@@ -79,7 +79,7 @@ function DevicesBody({
   isScanning: boolean
   shouldShowLocalNetworkHint: boolean
   onRescan: () => void
-}): JSX.Element {
+}) {
   if (isScanning && devices.length === 0) {
     return <LoadingState label="Scanning your network…" />
   }
@@ -110,7 +110,7 @@ function DevicesBody({
   )
 }
 
-export function DevicesView(): JSX.Element {
+export function DevicesView() {
   const { lastScan, isScanning, error, rescan } = useDevices()
   const onRescan = (): void => void rescan()
   const devices = sortDevices(lastScan?.devices ?? [])

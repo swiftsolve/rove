@@ -7,11 +7,7 @@ import type { IconProps } from './Icons'
  * container, matching the tray icon. Pass `hasGradient` for the app-icon treatment
  * — the same top-to-bottom blue the 1024px dock icon uses.
  */
-export function BrandIcon({
-  size = 20,
-  className,
-  hasGradient = false,
-}: IconProps & { hasGradient?: boolean }): JSX.Element {
+export function BrandIcon({ size = 20, className, hasGradient = false }: IconProps & { hasGradient?: boolean }) {
   const gradientId = useId()
   const paint = hasGradient ? `url(#${gradientId})` : 'currentColor'
   return (

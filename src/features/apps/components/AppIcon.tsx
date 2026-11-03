@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { appDomain } from '@/features/apps/utils/app-domain'
 

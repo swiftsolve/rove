@@ -12,6 +12,6 @@ type PortalProviderProps = {
 }
 
 /** Sets where the library's dialogs inside it portal to. */
-export function PortalProvider({ container, children }: PortalProviderProps): JSX.Element {
-  return <PortalContext.Provider value={container}>{children}</PortalContext.Provider>
+export function PortalProvider({ container, children }: PortalProviderProps) {
+  return <PortalContext value={container}>{children}</PortalContext>
 }

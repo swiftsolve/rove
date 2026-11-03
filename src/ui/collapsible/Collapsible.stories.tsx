@@ -24,7 +24,7 @@ const CHEVRON = [
 const DETAILS = 'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)'
 
 /** The connection card's details: a trigger row and the rows it shows. */
-function details(): JSX.Element {
+function details() {
   return (
     <>
       <CollapsibleTrigger className={TRIGGER}>
@@ -43,7 +43,7 @@ function details(): JSX.Element {
 }
 
 /** Holds the open state, so the trigger works in the canvas. */
-function ControlledCollapsible({ isOpen: isInitiallyOpen, onOpenChange, ...props }: CollapsibleArgs): JSX.Element {
+function ControlledCollapsible({ isOpen: isInitiallyOpen, onOpenChange, ...props }: CollapsibleArgs) {
   const [isOpen, setIsOpen] = useState(isInitiallyOpen)
   return (
     <Card as="div" className="w-[360px]">

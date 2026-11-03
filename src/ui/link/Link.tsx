@@ -1,11 +1,4 @@
-import {
-  forwardRef,
-  type AnchorHTMLAttributes,
-  type ButtonHTMLAttributes,
-  type MouseEventHandler,
-  type ReactNode,
-  type Ref,
-} from 'react'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons/Icons'
@@ -46,7 +39,7 @@ type SharedProps = {
 }
 
 type ViewProps = SharedProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'type' | 'onClick'> & {
+  Omit<ComponentProps<'button'>, 'disabled' | 'type' | 'onClick'> & {
     href?: never
     /**
      * Drops input and dims the link. It stays focusable, so a tooltip can say why.
@@ -58,7 +51,7 @@ type ViewProps = SharedProps &
   }
 
 type AddressProps = SharedProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'target' | 'rel'> & {
+  Omit<ComponentProps<'a'>, 'target' | 'rel'> & {
     /** A real address, opened in a new window. */
     href: string
   }
@@ -71,17 +64,11 @@ type LinkProps = ViewProps | AddressProps
  * `href` it opens a real address in a new window, ends in an arrow, and says
  * so to a screen reader.
  */
-export const Link = forwardRef<HTMLButtonElement | HTMLAnchorElement, LinkProps>(function Link(props, ref) {
+export function Link(props: LinkProps) {
   if (props.href !== undefined) {
     const { icon: Icon, className, children, ...anchorProps } = props
     return (
-      <a
-        ref={ref as Ref<HTMLAnchorElement>}
-        className={cn(LINK, className)}
-        target="_blank"
-        rel="noreferrer"
-        {...anchorProps}
-      >
+      <a className={cn(LINK, className)} target="_blank" rel="noreferrer" {...anchorProps}>
         {Icon && <Icon size={ICON_SIZE} className={ICON} />}
         <span className={LABEL}>{children}</span>
         <span className="sr-only"> (opens in a new window)</span>
@@ -91,16 +78,10 @@ export const Link = forwardRef<HTMLButtonElement | HTMLAnchorElement, LinkProps>
   }
   const { icon: Icon, isDisabled, className, onClick, children, ...buttonProps } = props
   return (
-    <button
-      ref={ref as Ref<HTMLButtonElement>}
-      type="button"
-      className={cn(LINK, className)}
-      {...pressableProps({ isDisabled, onClick })}
-      {...buttonProps}
-    >
+    <button type="button" className={cn(LINK, className)} {...pressableProps({ isDisabled, onClick })} {...buttonProps}>
       {Icon && <Icon size={ICON_SIZE} className={ICON} />}
       <span className={LABEL}>{children}</span>
       <ChevronRightIcon size={ICON_SIZE} className={cx(ICON, '-mx-4')} />
     </button>
   )
-})
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type JSX } from 'react'
 import { IS_WINDOWS } from '@/lib/platform'
 import { getNetworkApi } from '@/bridge/network-api'
 import { isTauri } from '@/bridge/tauri-network-api'

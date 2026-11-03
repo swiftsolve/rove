@@ -55,7 +55,7 @@ export function CapabilityMeter({
   isMuted = false,
   isDimmed = false,
   barsClassName,
-}: CapabilityMeterProps): JSX.Element {
+}: CapabilityMeterProps) {
   return (
     // A <span> (styled inline-flex) so the meter can sit inside a button row.
     <span className={rootVariants({ tone: isMuted ? 'muted' : level })}>

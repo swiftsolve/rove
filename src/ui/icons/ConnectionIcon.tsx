@@ -5,7 +5,7 @@ import type { IconProps } from './Icons'
  * nodes. Custom (no exact Lucide match) but drawn to the same 24-grid, stroke
  * width and `currentColor` conventions as the aliased icons.
  */
-export function ConnectionIcon({ size = 18, className }: IconProps): JSX.Element {
+export function ConnectionIcon({ size = 18, className }: IconProps) {
   return (
     <svg
       width={size}

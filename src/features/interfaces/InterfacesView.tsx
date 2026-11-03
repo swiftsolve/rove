@@ -59,13 +59,13 @@ const PANEL_HEADER = cx(
 // pad adds a little room between the name and the first label. The rows carry
 // only a few fields, so they're compact.
 
-function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
+function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }) {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />
   if (iface.connectionType === 'ethernet') return <EthernetIcon size={15} />
   return <LayersIcon size={15} />
 }
 
-function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }): JSX.Element {
+function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
   return (
     <Card as="li">
       <div className={PANEL_HEADER}>
@@ -136,7 +136,7 @@ function InterfacesBody({
   interfaces: NetworkInterfaceSummary[]
   isLoading: boolean
   onRefresh: () => void
-}): JSX.Element {
+}) {
   if (isLoading && interfaces.length === 0) {
     return <LoadingState label="Loading network interfaces…" />
   }
@@ -157,7 +157,7 @@ function InterfacesBody({
   )
 }
 
-export function InterfacesView(): JSX.Element {
+export function InterfacesView() {
   const { interfaces, isLoading, error, refresh } = useNetworkInterfaces()
   const onRefresh = (): void => void refresh()
 

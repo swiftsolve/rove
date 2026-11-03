@@ -90,7 +90,7 @@ const BODY_COPY: UsageBodyCopy = {
 
 /** The icon left of a host's name: the country flag when geolocated, else a
  *  LAN or globe (public but unresolved) fallback. */
-function HostIcon({ host }: { host: HostConn }): JSX.Element {
+function HostIcon({ host }: { host: HostConn }) {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
   // A peer on the user's own network (private/LAN address — no country flag).
@@ -127,7 +127,7 @@ function HostIcon({ host }: { host: HostConn }): JSX.Element {
  *  meaningful once a hostname has resolved; when the label already is the IP
  *  there's nothing more to reveal, so it's disabled rather than unmounted, so the
  *  node survives the poll that fills the hostname in. */
-function HostName({ host }: { host: HostConn }): JSX.Element {
+function HostName({ host }: { host: HostConn }) {
   return (
     <UiTooltip
       content={
@@ -152,7 +152,7 @@ function HostName({ host }: { host: HostConn }): JSX.Element {
 /** One remote host beneath its app: flag + hostname on the left, the download /
  *  upload split on the right. Memoised, like `AppGroup`: each poll keeps an
  *  unchanged host's object, so only the hosts that moved re-render. */
-const HostRow = memo(function HostRow({ host }: { host: HostConn }): JSX.Element {
+const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
   return (
     <li className="flex items-center justify-between gap-12">
       <span className="inline-flex min-w-0 items-center gap-[7px]">
@@ -174,7 +174,7 @@ const AppGroup = memo(function AppGroup({
   app: AppHosts
   isExpanded: boolean
   onToggle: (name: string) => void
-}): JSX.Element {
+}) {
   const total = totalBytes(app)
   const hostCount = app.hosts.length
   return (
@@ -218,7 +218,7 @@ const AppGroup = memo(function AppGroup({
   )
 })
 
-export function HostsView(): JSX.Element {
+export function HostsView() {
   const { usage, isFirstLoad, error, reload } = useHostUsage()
   const { location, back } = useNavigation()
   const { apps } = usage

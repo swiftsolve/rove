@@ -33,7 +33,7 @@ type SplitBarProps = {
 /** A 3px track holding a download and an upload segment side by side, each
  *  scaled against `max`, for comparing rows' traffic at a glance; an empty
  *  segment collapses to zero width. */
-export function SplitBar({ down, up, max, label, className }: SplitBarProps): JSX.Element {
+export function SplitBar({ down, up, max, label, className }: SplitBarProps) {
   return (
     <div className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)} role="img" aria-label={label}>
       <span className={segVariants({ series: 'down' })} style={{ width: `${percentOf(down, max)}%` }} />

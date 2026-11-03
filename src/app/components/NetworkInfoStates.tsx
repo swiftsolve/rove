@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { cva, cx } from 'class-variance-authority'
 import { AlertIcon, Button, Banner, OfflineIcon, RefreshIcon, Spinner } from '@/ui'
 import { useNetwork } from '@/app/hooks/useNetwork'
@@ -44,12 +44,12 @@ function describeNetworkError(message: string): NetworkErrorInfo {
   return { kind: 'offline', title: 'Can’t reach your network', description: message }
 }
 
-function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size: number }): JSX.Element {
+function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size: number }) {
   return kind === 'offline' ? <OfflineIcon size={size} /> : <AlertIcon size={size} />
 }
 
 /** Fills the content area while the first network info hasn't arrived yet. */
-export function NetworkLoadingScreen(): JSX.Element {
+export function NetworkLoadingScreen() {
   const network = useNetwork()
   // While a read is in flight, any earlier error is stale: show the spinner.
   const error = network.isLoading ? null : network.error
@@ -99,7 +99,7 @@ export function NetworkLoadingScreen(): JSX.Element {
  * only the screens that show it: `children` keeps its identity, so React skips
  * a screen that doesn't read the network itself.
  */
-export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; children: ReactNode }): JSX.Element {
+export function NetworkInfoGate({ isNeeded, children }: { isNeeded: boolean; children: ReactNode }) {
   const { info } = useNetwork()
   return isNeeded && !info ? <NetworkLoadingScreen /> : <>{children}</>
 }
@@ -122,7 +122,7 @@ function StaleNetworkBanner({
   error: string
   lastReadAt: number
   onRetry: () => Promise<void>
-}): JSX.Element {
+}) {
   const now = useNow(TIME_AGO_RESOLUTION_MS)
   return (
     <Banner

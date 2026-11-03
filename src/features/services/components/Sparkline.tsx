@@ -186,7 +186,7 @@ function pointerOver(e: React.MouseEvent<SVGSVGElement>): { x: number; left: num
 }
 
 /** The value bubble, portalled so the card the row sits in never clips it. */
-function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: ReactNode }): JSX.Element {
+function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: ReactNode }) {
   return createPortal(
     <span className={TIP} style={{ left: hover.left + x, top: hover.top - 3 }} aria-hidden="true">
       {children}
@@ -202,14 +202,7 @@ function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: R
  * value in a small floating label. A down service is shown as a single flat red
  * baseline rather than its (now meaningless) trend.
  */
-export function Sparkline({
-  samples,
-  width = 76,
-  height = 22,
-  label,
-  slots,
-  isDown = false,
-}: SparklineProps): JSX.Element {
+export function Sparkline({ samples, width = 76, height = 22, label, slots, isDown = false }: SparklineProps) {
   const [hover, setHover] = useState<Hover | null>(null)
   const isHovered = hover !== null
   // Unique per instance so multiple sparklines on a page don't share a gradient.

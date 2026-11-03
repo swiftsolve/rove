@@ -85,7 +85,7 @@ function formatTime(ts: number): string {
 }
 
 /** The time of day as a machine-readable `<time>`. */
-function EventTime({ ts }: { ts: number }): JSX.Element {
+function EventTime({ ts }: { ts: number }) {
   return (
     <time className="shrink-0 text-sm whitespace-nowrap text-tertiary" dateTime={new Date(ts).toISOString()}>
       {formatTime(ts)}
@@ -205,7 +205,7 @@ const TransitionRow = memo(function TransitionRow({
 }: {
   event: ServiceTransitionEvent
   durationMs: number | undefined
-}): JSX.Element {
+}) {
   const isDown = event.status === 'down'
   const shouldShowDuration = durationMs != null
 
@@ -230,7 +230,7 @@ const TransitionRow = memo(function TransitionRow({
   )
 })
 
-const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningEvent }): JSX.Element {
+const RunningRow = memo(function RunningRow({ event }: { event: ServicesRunningEvent }) {
   // A recovery summary covers every service, but a baseline recorded while one
   // was already down does not — so the subtext names the denominator rather than
   // calling a partial tally all-clear.
@@ -259,7 +259,7 @@ const ConnectionRow = memo(function ConnectionRow({
 }: {
   event: ConnectionEvent
   durationMs: number | undefined
-}): JSX.Element {
+}) {
   const isLost = event.status === 'lost'
   const shouldShowDuration = !isLost && durationMs != null
 
@@ -284,7 +284,7 @@ const ConnectionRow = memo(function ConnectionRow({
 })
 
 /** The header overflow menu: Clear history, which drops everything recorded. */
-function TimelineMenu({ onClear }: { onClear: () => void }): JSX.Element {
+function TimelineMenu({ onClear }: { onClear: () => void }) {
   return (
     <Menu>
       <MenuTrigger label="Timeline options" />
@@ -305,7 +305,7 @@ function transitionDurationMs(event: ServiceTransitionEvent, durations: EventDur
   return undefined
 }
 
-function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: EventDurations }): JSX.Element {
+function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: EventDurations }) {
   if (event.type === 'running') return <RunningRow event={event} />
   if (event.type === 'connection') {
     return <ConnectionRow event={event} durationMs={durations.offlineByTs.get(event.ts)} />
@@ -314,7 +314,7 @@ function TimelineEvent({ event, durations }: { event: ServiceEvent; durations: E
 }
 
 /** One day of the timeline: its date heading over the list of that day's events. */
-function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDurations }): JSX.Element {
+function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDurations }) {
   const headingId = useId()
   return (
     <li className="flex flex-col not-first:mt-[18px]">
@@ -342,7 +342,7 @@ function TimelineDay({ group, durations }: { group: DayGroup; durations: EventDu
  * that happened while the window was closed. The live probes this page
  * receives only feed the header tally.
  */
-export function ServicesTimelineView(): JSX.Element {
+export function ServicesTimelineView() {
   const { back } = useNavigation()
   // The latest reachability probes, for the up/down count in the header.
   const reachability = useServiceReachability().report?.services
