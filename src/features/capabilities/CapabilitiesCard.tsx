@@ -34,14 +34,15 @@ const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body
 
 const CAPABILITY_CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
 
+// Bleeds to the card's edges; the card's own clip rounds its bottom corners.
+// Hand-built, not CardFooter: this band pads 14px and sits 12 or 16px below
+// the tiles, where CardFooter pads 12px under the body's 14px.
 const footerVariants = cva(
   [
     'flex items-center justify-end text-xs',
     'w-[calc(100%+2*var(--card-body-padding))]',
     '-mx-(--card-body-padding) -mb-(--card-body-padding)',
     'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
-    // The card is `overflow: visible` so tooltips escape; round the corners here.
-    'rounded-b-lg',
   ],
   {
     variants: {
