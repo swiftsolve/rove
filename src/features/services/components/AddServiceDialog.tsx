@@ -8,7 +8,7 @@ import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition } from '@/types'
-import { Button, Dialog, TextField, TextFieldAction, useLatestRef } from '@/ui'
+import { Button, Dialog, NoValue, TextField, TextFieldAction, useLatestRef } from '@/ui'
 
 // The tested result swaps in for the field's hint as a taller inset row. Matches the address field's outer height (line-height 18 + 20 padding + 2
 // border), so the result reads as the same-sized box swapping in.
@@ -71,7 +71,7 @@ function AddressFeedback({
           <span className={resultStatusVariants({ status: 'negative' })}>Down</span>
         ) : (
           <span className={resultStatusVariants({ status: latencyBand(outcome.latencyMs) })}>
-            {formatLatencyMs(outcome.latencyMs)}
+            {formatLatencyMs(outcome.latencyMs) ?? <NoValue />}
           </span>
         )}
       </div>

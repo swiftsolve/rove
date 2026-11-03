@@ -28,6 +28,7 @@ export { EmptyState, EmptyStateDescription } from './empty-state/EmptyState'
 
 // Data display
 export { DataList, DataListStack, DataRow } from './data-list/DataList'
+export { NoValue } from './no-value/NoValue'
 export { Readout } from './readout/Readout'
 export { MetricValue, type MetricStatus } from './metric-value/MetricValue'
 export { BarMeter } from './bar-meter/BarMeter'

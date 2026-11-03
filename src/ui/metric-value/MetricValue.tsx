@@ -3,6 +3,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '../foundations/cn'
 import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
+import { NoValue } from '../no-value/NoValue'
 
 // Tabular figures, so the width holds while it eases.
 const metricVariants = cva('num', {
@@ -28,11 +29,11 @@ export function MetricValue({
   value: number
   /** How healthy the value is, in the status text colours. */
   status?: MetricStatus
-  /** Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. */
-  format: (n: number) => string
+  /** Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar. */
+  format: (n: number) => string | null
   /** Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it. */
   className?: string
 }) {
   const animated = useCountUp(value)
-  return <span className={cn(metricVariants({ status }), className)}>{format(animated)}</span>
+  return <span className={cn(metricVariants({ status }), className)}>{format(animated) ?? <NoValue />}</span>
 }

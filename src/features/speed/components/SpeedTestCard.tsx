@@ -1,5 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
-import { memo } from 'react'
+import { memo, type ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { WavyProgress } from '@/features/speed/components/WavyProgress'
@@ -18,6 +18,7 @@ import {
   DirectionIcon,
   EthernetIcon,
   InlineMeta,
+  NoValue,
   SpeedIcon,
   type SpeedSeries,
   useCountUp,
@@ -64,10 +65,10 @@ function heroCellMbps(
   return progressPct >= phaseStartPct ? liveMbps : 0
 }
 
-/** A substat's text: the measured value, or a placeholder when there's none. */
-function substatText(measured: string | null, isEmpty: boolean): string {
+/** A substat's value: the measured one, "…" before any test, else a NoValue bar. */
+function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
   if (measured != null) return measured
-  return isEmpty ? '…' : '—'
+  return isEmpty ? '…' : <NoValue label="Not measured" />
 }
 
 function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnection | null {
@@ -160,11 +161,11 @@ function HeroCell({
   )
 }
 
-function Substat({ label, text, isEmpty }: { label: string; text: string; isEmpty: boolean }) {
+function Substat({ label, value, isEmpty }: { label: string; value: ReactNode; isEmpty: boolean }) {
   return (
     <div className="flex flex-col gap-4">
       <dt className="type-overline text-tertiary">{label}</dt>
-      <dd className={substatValueVariants({ isEmpty })}>{text}</dd>
+      <dd className={substatValueVariants({ isEmpty })}>{value}</dd>
     </div>
   )
 }
@@ -182,7 +183,7 @@ function ResultFooter({
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
           <span className="ml-auto shrink-0">
-            Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps)}</span>
+            Link speed <span className="num">{formatSpeedMbps(linkCapacityMbps) ?? <NoValue />}</span>
           </span>
         )}
       </p>
@@ -255,9 +256,9 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
 
         {!isTesting && (
           <dl className="mt-16 grid grid-cols-3 gap-16">
-            <Substat label="Ping" text={substatText(measuredPing, isEmpty)} isEmpty={isEmpty} />
-            <Substat label="Jitter" text={substatText(measuredJitter, isEmpty)} isEmpty={isEmpty} />
-            <Substat label="Loss" text={substatText(measuredLoss, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Ping" value={substatValue(measuredPing, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Jitter" value={substatValue(measuredJitter, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Loss" value={substatValue(measuredLoss, isEmpty)} isEmpty={isEmpty} />
           </dl>
         )}
 

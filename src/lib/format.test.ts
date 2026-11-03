@@ -35,7 +35,7 @@ describe('formatDuration', () => {
     expect(formatDuration(12 * 60_000)).toBe('12 min')
     expect(formatDuration(200 * 60_000)).toBe('3 h 20 min')
     expect(formatDuration(52 * 3_600_000)).toBe('2 d 4 h')
-    expect(formatDuration(Number.NaN)).toBe('—')
+    expect(formatDuration(Number.NaN)).toBeNull()
   })
 })
 
@@ -60,7 +60,7 @@ describe('formatBand', () => {
 describe('formatMac', () => {
   it('upper-cases and trims', () => {
     expect(formatMac(' a4:c3:f0:01:02:03 ')).toBe('A4:C3:F0:01:02:03')
-    expect(formatMac('')).toBe('—')
+    expect(formatMac('')).toBeNull()
   })
 })
 

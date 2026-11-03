@@ -2,7 +2,7 @@ import { cx } from 'class-variance-authority'
 
 import { useAppVersion } from '@/features/about/hooks/useAppVersion'
 import { IS_MAC } from '@/lib/platform'
-import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link } from '@/ui'
+import { BrandIcon, Card, CardBody, CardHeader, DataList, DataRow, Link, NoValue } from '@/ui'
 
 const REPO_URL = 'https://github.com/swiftsolve/rove'
 const COPYRIGHT_YEAR = 2026
@@ -41,7 +41,7 @@ export function AboutView() {
         <CardHeader title="Details" />
         <CardBody>
           <DataList>
-            <DataRow label="Version" value={version ?? '—'} />
+            <DataRow label="Version">{version ?? <NoValue />}</DataRow>
             <DataRow label="Platform" value={platformLabel()} />
             <DataRow label="Source">
               <Link href={REPO_URL}>github.com/swiftsolve/rove</Link>

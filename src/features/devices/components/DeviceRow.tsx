@@ -16,6 +16,7 @@ import {
   type IconTileColor,
   InlineMeta,
   NasIcon,
+  NoValue,
   PrinterIcon,
   RouterIcon,
   SpeakerIcon,
@@ -170,7 +171,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
                 items={[
                   <>
                     <span className="sr-only">MAC address </span>
-                    {formatMac(device.mac)}
+                    {formatMac(device.mac) ?? <NoValue />}
                   </>,
                   shouldShowRandomizedTag && (
                     // The hint isn't announced here; the sr-only words say it.

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { type LatencyBand, latencyBand } from '@/features/services/utils/service-status'
 import { formatCount, formatLatencyMs } from '@/lib/format'
+import { NoValue } from '@/ui'
 
 const ROOT = 'inline-block shrink-0'
 
@@ -146,7 +147,8 @@ function chartDescription(samples: LatencySample[], label: string | undefined): 
   if (values.length > 0) {
     const min = Math.min(...values)
     const max = Math.max(...values)
-    facts.push(min === max ? formatLatencyMs(min) : `${formatLatencyMs(min)} to ${formatLatencyMs(max)}`)
+    const [minText, maxText] = [formatLatencyMs(min) ?? 'unknown', formatLatencyMs(max) ?? 'unknown']
+    facts.push(min === max ? minText : `${minText} to ${maxText}`)
   }
   if (failedCount > 0) facts.push(`${failedCount} failed`)
   return `${subject} over the last ${checks}: ${facts.join(', ')}`
@@ -304,7 +306,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
       </svg>
       {hover && hovered && (
         <HoverTip hover={hover} x={hovered.x}>
-          {hovered.sample.ms === null ? 'Down' : formatLatencyMs(hovered.sample.ms)}
+          {hovered.sample.ms === null ? 'Down' : (formatLatencyMs(hovered.sample.ms) ?? <NoValue />)}
         </HoverTip>
       )}
     </span>

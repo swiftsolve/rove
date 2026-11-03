@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@/ui'
+import { Card, CardBody, CardHeader, DirectionIcon, NoValue, Readout, StatusDot } from '@/ui'
 
 // The content fills the body's height, so a control can sit at its foot.
 const READOUT_AREA = 'flex h-full flex-col whitespace-nowrap'
@@ -44,11 +44,13 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
-/** The "no reading" body: a dash where the value would be. */
+/** The "no reading" body: a NoValue bar where the value would be. */
 export function EmptyStatReadout() {
   return (
     <div className="metric mt-2" aria-hidden>
-      <span className="type-number-display metric-value">—</span>
+      <span className="type-number-display metric-value">
+        <NoValue />
+      </span>
     </div>
   )
 }

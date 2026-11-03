@@ -7,5 +7,5 @@ import type { SpeedResult, SpeedTestProgress } from '@/types'
 export function testStatusText(isTesting: boolean, progress: SpeedTestProgress, result: SpeedResult | null): string {
   if (isTesting) return progress.message || 'Starting…'
   if (progress.phase !== 'complete' || result == null) return ''
-  return `Speed test complete. Download ${formatSpeedMbps(result.downloadMbps)}, upload ${formatSpeedMbps(result.uploadMbps)}.`
+  return `Speed test complete. Download ${formatSpeedMbps(result.downloadMbps) ?? 'unknown'}, upload ${formatSpeedMbps(result.uploadMbps) ?? 'unknown'}.`
 }

@@ -1029,6 +1029,27 @@
         "data-display-datalist--all-states"
       ]
     },
+    "NoValue": {
+      "group": "Data display",
+      "source": "src/ui/no-value/NoValue.tsx",
+      "description": "A short drawn bar where a value would be but there's none, never a typed\ndash. It's sized in em, so it scales with the line it sits in, from a data\nrow to a hero number, and sits on that line's middle.",
+      "figma": {
+        "name": "No value",
+        "node": "708:667"
+      },
+      "props": {
+        "label": {
+          "type": "string",
+          "default": "None",
+          "description": "What a screen reader hears in its place: \"Not measured\", \"Unknown\"."
+        }
+      },
+      "stories": [
+        "data-display-novalue--default",
+        "data-display-novalue--in-context",
+        "data-display-novalue--all-sizes"
+      ]
+    },
     "Readout": {
       "group": "Data display",
       "source": "src/ui/readout/Readout.tsx",
@@ -1097,9 +1118,9 @@
           "description": "Its place in a layout: a column's width and alignment (`min-w-[46px] text-right`). It takes its size and colour from the text around it."
         },
         "format": {
-          "type": "(n: number) => string",
+          "type": "(n: number) => string | null",
           "isRequired": true,
-          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`."
+          "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar."
         },
         "status": {
           "values": [
@@ -1943,7 +1964,7 @@
     "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's: Storybook's name shows it. Raise it when the library's API changes.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
-    "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping.",
+    "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePortalContainer": "The element a PortalProvider above names for overlays, or null for in place.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount."

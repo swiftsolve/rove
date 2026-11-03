@@ -5,7 +5,8 @@ import { CAPABILITY_DEFINITIONS } from '@/types'
 export type RequirementCheck = {
   label: string
   need: string
-  have: string
+  /** The measured figure, or null when it isn't a real one. */
+  have: string | null
   isMet: boolean
 }
 
@@ -60,13 +61,13 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
   const checks: RequirementCheck[] = [
     {
       label: 'Download',
-      need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps)}`,
+      need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.downloadMbps),
       isMet: speed.downloadMbps >= requirements.minDownloadMbps,
     },
     {
       label: 'Upload',
-      need: `≥ ${formatSpeedMbps(requirements.minUploadMbps)}`,
+      need: `≥ ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.uploadMbps),
       isMet: speed.uploadMbps >= requirements.minUploadMbps,
     },

@@ -18,6 +18,7 @@ import {
   EthernetIcon,
   GlobeIcon,
   InlineMeta,
+  NoValue,
   OfflineIcon,
   RefreshIcon,
   RouterIcon,
@@ -76,7 +77,7 @@ function addressItems(event: NetworkEvent): ReactNode[] {
   const items: ReactNode[] = []
   if (event.type === 'initial_scan') return items
   if (event.mac) {
-    items.push(<span className="num">{formatMac(event.mac)}</span>)
+    items.push(<span className="num">{formatMac(event.mac) ?? <NoValue />}</span>)
     if (event.isRandomized) {
       items.push(
         <Tooltip content="Privacy-randomized MAC address">
@@ -122,7 +123,7 @@ export function TimelineItem({
           <span>{INTERNET_SUBTITLES[event.type]}</span>
           {offlineMs != null && (
             <span className="ml-auto shrink-0 text-sm whitespace-nowrap text-tertiary">
-              Offline for {formatDuration(offlineMs)}
+              Offline for {formatDuration(offlineMs) ?? <NoValue label="Unknown" />}
             </span>
           )}
         </span>

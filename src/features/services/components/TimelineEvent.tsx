@@ -6,7 +6,7 @@ import { type EventDurations, transitionDurationMs } from '@/features/services/u
 import { EventHeading } from '@/features/timeline/components/EventHeading'
 import { formatCount, formatDuration } from '@/lib/format'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
-import { ArrowDownIcon, ArrowUpIcon, CheckIcon, GlobeIcon, OfflineIcon, TimelineNode } from '@/ui'
+import { ArrowDownIcon, ArrowUpIcon, CheckIcon, GlobeIcon, NoValue, OfflineIcon, TimelineNode } from '@/ui'
 
 // The same colour language as the reachability numbers: a drop is negative, a
 // recovery or healthy summary positive.
@@ -52,7 +52,9 @@ const TransitionRow = memo(function TransitionRow({
       </span>
       <span className="flex items-baseline gap-10 text-sm text-tertiary">
         <span className="min-w-0 truncate">{event.host}</span>
-        {shouldShowDuration && <span className={DURATION}>Down for {formatDuration(durationMs)}</span>}
+        {shouldShowDuration && (
+          <span className={DURATION}>Down for {formatDuration(durationMs) ?? <NoValue label="Unknown" />}</span>
+        )}
       </span>
     </TimelineNode>
   )
@@ -94,7 +96,9 @@ const ConnectionRow = memo(function ConnectionRow({
       <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
         <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
         {shouldShowDuration && (
-          <span className={cx(DURATION, 'text-sm')}>Offline for {formatDuration(durationMs)}</span>
+          <span className={cx(DURATION, 'text-sm')}>
+            Offline for {formatDuration(durationMs) ?? <NoValue label="Unknown" />}
+          </span>
         )}
       </span>
     </TimelineNode>

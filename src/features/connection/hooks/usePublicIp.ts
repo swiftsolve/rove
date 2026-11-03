@@ -23,7 +23,7 @@ export function usePublicIp(isEnabled: boolean): PublicIpState {
   })
 
   // A refetch or an empty lookup leaves `data` null; the WAN IP rarely changes,
-  // so show this network's previous one rather than flash "—". Never another
+  // so show this network's previous one rather than drop the row. Never another
   // network's: that would be wrong data, not stale data.
   const [last, setLast] = useState<{ networkKey: string | null; ip: string } | null>(null)
   if (data != null && (data !== last?.ip || networkKey !== last.networkKey)) setLast({ networkKey, ip: data })

@@ -5,16 +5,27 @@ import { formatPercent, latencyStatus, lossStatus, sameText } from '@/features/d
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { NetworkDiagnostics, PingStats } from '@/types'
 import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
-import { Card, CardBody, CardFooter, CardHeader, DataList, DataListStack, DataRow, MetricValue, RouterIcon } from '@/ui'
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  DataList,
+  DataListStack,
+  DataRow,
+  MetricValue,
+  NoValue,
+  RouterIcon,
+} from '@/ui'
 
 function latencyValue(ping: PingStats | null | undefined): ReactNode {
-  if (ping == null) return '—'
+  if (ping == null) return <NoValue />
   if (!isMeasuredLatency(ping.avgMs)) return <span className="text-negative">Down</span>
   return <MetricValue value={ping.avgMs} status={latencyStatus(ping.avgMs)} format={formatLatencyMs} />
 }
 
 function jitterValue(ping: PingStats | null | undefined): ReactNode {
-  if (ping == null) return '—'
+  if (ping == null) return <NoValue />
   if (!isMeasuredLatency(ping.jitterMs)) return 'Down'
   return <MetricValue value={ping.jitterMs} format={formatLatencyMs} />
 }
@@ -39,13 +50,13 @@ export function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | 
               {ping ? (
                 <MetricValue value={ping.packetLoss} status={lossStatus(ping.packetLoss)} format={formatPercent} />
               ) : (
-                '—'
+                <NoValue />
               )}
             </DataRow>
           </DataList>
           <DataList density="compact">
-            <DataRow label="Gateway" value={diagnostics?.gateway ?? '—'} />
-            <DataRow label="Interface" value={diagnostics?.defaultInterface ?? '—'} />
+            <DataRow label="Gateway">{diagnostics?.gateway ?? <NoValue />}</DataRow>
+            <DataRow label="Interface">{diagnostics?.defaultInterface ?? <NoValue />}</DataRow>
             {linkSpeedMbps != null && (
               <DataRow label="Link speed">
                 <MetricValue value={linkSpeedMbps} format={formatSpeedMbps} />

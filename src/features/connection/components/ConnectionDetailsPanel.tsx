@@ -14,7 +14,7 @@ import {
 } from '@/lib/format'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isEthernetNetwork, isWifiNetwork } from '@/types'
-import { DataList, DataListStack, DataRow, InlineMeta } from '@/ui'
+import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo
@@ -64,7 +64,9 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
           <SecurityBadge security={info.security} />
         </DataRow>
       ) : (
-        <DataRow label="Security" value="—" />
+        <DataRow label="Security">
+          <NoValue />
+        </DataRow>
       )}
     </DataList>
   )
@@ -75,7 +77,7 @@ function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }) {
   return (
     <DataList density="compact">
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
-      <DataRow label="Duplex" value={formatDisplayValue(formatDuplex(info.duplex))} />
+      <DataRow label="Duplex">{formatDisplayValue(formatDuplex(info.duplex)) ?? <NoValue />}</DataRow>
     </DataList>
   )
 }
@@ -85,9 +87,9 @@ type AddressRowsProps = Pick<ConnectionDetailsPanelProps, 'info' | 'publicIp' | 
 function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
   return (
     <DataList density="compact">
-      <DataRow label="IP address" value={formatDisplayValue(info.ipAddress)} />
-      <DataRow label="Gateway" value={formatDisplayValue(info.gateway)} />
-      {info.dns.length > 0 && <DataRow label="DNS" value={formatDisplayValue(info.dns.join(', '))} />}
+      <DataRow label="IP address">{formatDisplayValue(info.ipAddress) ?? <NoValue />}</DataRow>
+      <DataRow label="Gateway">{formatDisplayValue(info.gateway) ?? <NoValue />}</DataRow>
+      {info.dns.length > 0 && <DataRow label="DNS">{formatDisplayValue(info.dns.join(', ')) ?? <NoValue />}</DataRow>}
       <DataRow label="Public IP" value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)} />
     </DataList>
   )
@@ -98,17 +100,17 @@ function HardwareRows({ info }: { info: NetworkInfo }) {
     <DataList density="compact">
       {isEthernetNetwork(info) && (
         <>
-          <DataRow label="Adapter" value={formatDisplayValue(info.product)} />
-          <DataRow label="Vendor" value={formatDisplayValue(info.vendor)} />
+          <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
+          <DataRow label="Vendor">{formatDisplayValue(info.vendor) ?? <NoValue />}</DataRow>
         </>
       )}
-      <DataRow label="Interface" value={formatDisplayValue(info.interfaceName)} />
-      <DataRow label="MAC" value={formatMac(info.macAddress)} />
+      <DataRow label="Interface">{formatDisplayValue(info.interfaceName) ?? <NoValue />}</DataRow>
+      <DataRow label="MAC">{formatMac(info.macAddress) ?? <NoValue />}</DataRow>
     </DataList>
   )
 }
 
-/** Signal as its rating and percent (plus dBm when known), else dBm alone, else a dash. */
+/** Signal as its rating and percent (plus dBm when known), else dBm alone, else a NoValue bar. */
 function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
   const { signalStrength, signalDbm } = info
   if (signalStrength != null && Number.isFinite(signalStrength)) {
@@ -116,5 +118,5 @@ function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
     return <InlineMeta items={[formatSignalStrength(signalStrength), percent]} />
   }
   if (signalDbm != null && Number.isFinite(signalDbm)) return `${signalDbm} dBm`
-  return '—'
+  return <NoValue />
 }

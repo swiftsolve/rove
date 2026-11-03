@@ -1,4 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
+import type { ReactNode } from 'react'
 
 import { formatHistoryTimestamp, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
@@ -10,6 +11,7 @@ import {
   EthernetIcon,
   GlobeIcon,
   InlineMeta,
+  NoValue,
   type SpeedSeries,
   type VariantOf,
   WifiIcon,
@@ -28,7 +30,7 @@ const connVariants = cva('inline-flex min-w-0 items-center gap-6 text-sm font-me
 
 type MetricProps = {
   label: string
-  value: string
+  value: ReactNode
   unit?: string
   series?: SpeedSeries
 }
@@ -112,7 +114,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
           <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
           <Metric
             label="Ping"
-            value={hasValidPing ? formatLatencyMs(entry.latencyMs).replace(' ms', '') : '—'}
+            value={hasValidPing ? entry.latencyMs.toFixed(1) : <NoValue label="Not measured" />}
             unit={hasValidPing ? 'ms' : undefined}
           />
         </dl>
@@ -121,13 +123,15 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
           <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
             <InlineMeta
               items={[
-                <>Jitter {hasValidPing ? formatLatencyMs(entry.jitterMs) : '—'}</>,
+                <>
+                  Jitter {(hasValidPing ? formatLatencyMs(entry.jitterMs) : null) ?? <NoValue label="Not measured" />}
+                </>,
                 <>{entry.packetLoss}% loss</>,
               ]}
             />
             {entry.linkSpeedMbps != null && (
               <span className="ml-auto shrink-0">
-                Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps)}</span>
+                Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps) ?? <NoValue />}</span>
               </span>
             )}
           </p>

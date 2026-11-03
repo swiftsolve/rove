@@ -1,7 +1,8 @@
 import { isValidRate, sanitizeRate } from '@/types'
 
-export function formatSpeedMbps(mbps: number): string {
-  if (!isValidRate(mbps)) return '—'
+/** The speed with its unit, or null for one that isn't a real rate. */
+export function formatSpeedMbps(mbps: number): string | null {
+  if (!isValidRate(mbps)) return null
   if (mbps >= 1000) return `${(mbps / 1000).toFixed(1)} Gbps`
   return `${mbps.toFixed(1)} Mbps`
 }
@@ -78,13 +79,14 @@ export function formatConnectionType(type: string): string {
   return type
 }
 
-export function formatDisplayValue(value: string | null | undefined): string {
-  return value?.trim() ? value : '—'
+/** The value, or null when it's blank. */
+export function formatDisplayValue(value: string | null | undefined): string | null {
+  return value?.trim() ? value : null
 }
 
 /** MAC addresses always display upper-case (A4:C3:F0:…), wherever they appear. */
-export function formatMac(mac: string | null | undefined): string {
-  return mac?.trim() ? mac.trim().toUpperCase() : '—'
+export function formatMac(mac: string | null | undefined): string | null {
+  return mac?.trim() ? mac.trim().toUpperCase() : null
 }
 
 /**
@@ -106,8 +108,9 @@ export function formatDuplex(duplex: string | null | undefined): string | null {
   return duplex
 }
 
-export function formatLatencyMs(ms: number): string {
-  if (!Number.isFinite(ms) || ms < 0) return '—'
+/** The latency in ms, or null for one that isn't a real duration. */
+export function formatLatencyMs(ms: number): string | null {
+  if (!Number.isFinite(ms) || ms < 0) return null
   return `${ms.toFixed(1)} ms`
 }
 
@@ -160,8 +163,8 @@ export function formatDateTime(timestamp: number): string {
 }
 
 /** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". */
-export function formatDuration(ms: number): string {
-  if (!Number.isFinite(ms) || ms < 0) return '—'
+export function formatDuration(ms: number): string | null {
+  if (!Number.isFinite(ms) || ms < 0) return null
   const seconds = Math.round(ms / 1000)
   if (seconds < 60) return `${seconds} s`
   const minutes = Math.round(seconds / 60)

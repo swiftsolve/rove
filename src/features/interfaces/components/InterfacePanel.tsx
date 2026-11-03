@@ -11,6 +11,7 @@ import {
   IconTile,
   type IconTileColor,
   LayersIcon,
+  NoValue,
   StatusDot,
   Tooltip,
   WifiIcon,
@@ -79,9 +80,11 @@ export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <CardBody>
         <DataList density="compact">
           <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
-          <DataRow label="Link speed" value={iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : '—'} />
-          <DataRow label="IP address" value={formatDisplayValue(iface.ipAddress)} />
-          <DataRow label="MAC" value={formatMac(iface.macAddress)} />
+          <DataRow label="Link speed">
+            {(iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : null) ?? <NoValue />}
+          </DataRow>
+          <DataRow label="IP address">{formatDisplayValue(iface.ipAddress) ?? <NoValue />}</DataRow>
+          <DataRow label="MAC">{formatMac(iface.macAddress) ?? <NoValue />}</DataRow>
         </DataList>
       </CardBody>
     </Card>

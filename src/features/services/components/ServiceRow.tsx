@@ -7,7 +7,7 @@ import { type LatencySample, MAX_SAMPLES } from '@/features/services/utils/servi
 import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
 import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition, ServiceReachability } from '@/types'
-import { EditIcon, Menu, MenuContent, MenuItem, MenuTrigger, MetricValue, TrashIcon } from '@/ui'
+import { EditIcon, Menu, MenuContent, MenuItem, MenuTrigger, MetricValue, NoValue, TrashIcon } from '@/ui'
 
 // With a hover-capable pointer the kebab stays collapsed until its row is hovered,
 // it has focus or its menu is open. Touch can't hover, so it always shows there.
@@ -46,7 +46,7 @@ export function RowMenu({ service, onEdit, onRemove }: RowMenuProps) {
   )
 }
 
-/** A glyph standing in for a latency ("…", "—"), read aloud as a word instead. */
+/** A glyph standing in for a latency ("…"), read aloud as a word instead. */
 function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }) {
   return (
     <span className="type-body-small text-tertiary">
@@ -74,7 +74,9 @@ function LatencyReadout({
     // Path failed. Only a genuine "Down" when we know the internet is up;
     // otherwise the failure is ours, so read it as unknown.
     return isInternetUnreachable ? (
-      <PlaceholderReadout glyph="—" spoken="Unknown" />
+      <span className="type-body-small text-tertiary">
+        <NoValue label="Unknown" />
+      </span>
     ) : (
       <span className="text-negative">Down</span>
     )

@@ -16,7 +16,7 @@ import { useNow } from '@/hooks/useNow'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { flashHighlight } from '@/lib/highlight'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
-import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, PageHeader, StatusDot } from '@/ui'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, PageHeader, StatusDot } from '@/ui'
 
 // Three tiers: an intro row, a metrics grid on an inset panel, then the verdict.
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
@@ -104,7 +104,9 @@ function CapabilityDetailCard({ capability, speed }: { capability: CapabilityRat
           {checks.map((check) => (
             <div key={check.label} className="flex min-w-0 flex-col gap-6">
               <dt className="type-overline text-tertiary leading-[1.15]">{check.label}</dt>
-              <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>{check.have}</dd>
+              <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
+                {check.have ?? <NoValue label="Not measured" />}
+              </dd>
               <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
                 <span className="sr-only">Needs </span>
                 {check.need}

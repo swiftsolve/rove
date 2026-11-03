@@ -34,7 +34,14 @@ const NO_DOT_GLYPH_MESSAGE = 'Separate inline items with DotSeparator or InlineM
 const NO_DOT_GLYPH = ['Literal[value=/[·•]/]', 'TemplateElement[value.raw=/[·•]/]', 'JSXText[value=/[·•]/]'].map(
   (selector) => ({ selector, message: NO_DOT_GLYPH_MESSAGE }),
 )
-const CODE_STYLE = [...NO_READONLY, ...NO_DOT_GLYPH]
+// A missing value is a drawn bar that scales with its line, so a lone typed
+// dash standing in for one is out too.
+const NO_DASH_VALUE_MESSAGE = 'Show a missing value with NoValue from @/ui, not a typed "—".'
+const NO_DASH_VALUE = ['Literal[value=/^\\s*—\\s*$/]', 'JSXText[value=/^\\s*—\\s*$/]'].map((selector) => ({
+  selector,
+  message: NO_DASH_VALUE_MESSAGE,
+}))
+const CODE_STYLE = [...NO_READONLY, ...NO_DOT_GLYPH, ...NO_DASH_VALUE]
 
 const BOOLEAN_PREFIXES = [
   'is',

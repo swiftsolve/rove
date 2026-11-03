@@ -86,6 +86,8 @@ for what. Read it before writing or changing UI. For where files live, see
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
+- A missing value is `NoValue`, never a typed `—`. A formatter returns null
+  for one, and the caller renders the bar.
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
@@ -336,7 +338,8 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes (`value`, `size`, `color`): any colour, usually a status token (`var(--status-good)`), or the text colour around it. `CapabilityMeter` and the connection card's signal use it. |
 | Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
 | Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
-| Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. |
+| Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. A `format` that returns null draws `NoValue`. |
+| No value | `NoValue` | A short drawn bar where a value is missing, never a typed dash. It scales with its line, and screen readers hear `label` ("Not measured"; default "None"). Formatters return null for a missing value; the caller renders `NoValue`. |
 | Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact (a summary card's figure, with no label), with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
 | Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
 | Sparkline | `Sparkline` (services) | Recent latency for a service row. |
