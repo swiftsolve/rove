@@ -18,7 +18,7 @@
  * own props has no doc comment, a prop has a default the Default column misses
  * (one in a recipe's `defaultVariants`, or only in its words), or a component
  * has no entry in figma.json (`null` says it has no Figma counterpart) or no
- * row in docs/frontend.md's Components table.
+ * row in docs/develop/frontend.md's Components table.
  */
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
@@ -34,7 +34,7 @@ const UI = join(ROOT, 'src/ui')
 const INDEX = join(UI, 'index.ts')
 const CATALOGUE = join(UI, 'components.json')
 const FIGMA = join(UI, 'figma.json')
-const FRONTEND_DOC = join(ROOT, 'docs/frontend.md')
+const FRONTEND_DOC = join(ROOT, 'docs/develop/frontend.md')
 const isCheck = process.argv.includes('--check')
 
 // The Default column shows only a default written into the destructured props

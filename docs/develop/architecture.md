@@ -5,11 +5,11 @@ and the backend starts, which direction data moves, and what a call across that
 gap actually is.
 
 > **Companion pages:**
-> - [Learning Rust & Tauri through Rove](./learning-rust-and-tauri.md) — the same
+> - [Learning Rust & Tauri through Rove](learning-rust-and-tauri.md) — the same
 >   boundary from the language side, with the Rust concepts spelled out.
-> - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — the
+> - [How Rove Captures Network Data (per OS)](../networking/data-capture.md) — the
 >   per-OS probes behind every command below.
-> - [How Rove Discovers & Identifies LAN Devices](./device-discovery.md) — the
+> - [How Rove Discovers & Identifies LAN Devices](../networking/device-discovery.md) — the
 >   device-scan pipeline in full.
 
 ---
@@ -20,7 +20,7 @@ Every screen reads from one object on `window`. Two things can supply it, and
 nothing above the line can tell which one did.
 
 <div align="center">
-  <img src="assets/bridge-seam.svg" width="820" alt="React views and hooks sit above a dashed seam labelled window.networkAPI; below it the path splits into a Tauri bridge leading to the Rust backend, or a browser mock leading to nothing at all" />
+  <img src="../assets/bridge-seam.svg" width="820" alt="React views and hooks sit above a dashed seam labelled window.networkAPI; below it the path splits into a Tauri bridge leading to the Rust backend, or a browser mock leading to nothing at all" />
 </div>
 
 `src/types/api.ts` declares the interface. Two files implement it:
@@ -67,7 +67,7 @@ desktop doesn't.*
 ## 2. Two directions, and only five exceptions
 
 <div align="center">
-  <img src="assets/pull-push.svg" width="820" alt="React on the left and Rust on the right: React sends about thirty invoke commands rightward and receives JSON back, while Rust pushes five named events leftward without being asked" />
+  <img src="../assets/pull-push.svg" width="820" alt="React on the left and Rust on the right: React sends about thirty invoke commands rightward and receives JSON back, while Rust pushes five named events leftward without being asked" />
 </div>
 
 **Pull when React knows it needs something** — a tab opened, a button was
@@ -103,7 +103,7 @@ Two places the directions mix:
 ## 3. The event that carries nothing
 
 <div align="center">
-  <img src="assets/network-changed.svg" width="820" alt="The kernel's routing table changes; a Rust monitor emits a network-changed event carrying no payload; React responds by re-running the fetch it already had" />
+  <img src="../assets/network-changed.svg" width="820" alt="The kernel's routing table changes; a Rust monitor emits a network-changed event carrying no payload; React responds by re-running the fetch it already had" />
 </div>
 
 A 15-second poll is correct and feels dead. Rather than build a second data path
@@ -131,7 +131,7 @@ Windows fall back to the poll.
 ## 4. What one `invoke` actually is
 
 <div align="center">
-  <img src="assets/ipc-anatomy.svg" width="820" alt="A POST to ipc://localhost/get_network_info carrying a Tauri-Invoke-Key header and a JSON body; the reply is application/json with a Tauri-Response header reading ok" />
+  <img src="../assets/ipc-anatomy.svg" width="820" alt="A POST to ipc://localhost/get_network_info carrying a Tauri-Invoke-Key header and a JSON body; the reply is application/json with a Tauri-Response header reading ok" />
 </div>
 
 Tauri registers custom URI schemes with the webview — the same mechanism that

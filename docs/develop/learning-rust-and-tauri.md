@@ -5,13 +5,13 @@ Every concept points at real code in this repo, with file/line references you ca
 click through in your editor.
 
 > **Companion pages:**
-> - [How Rove Is Put Together](./architecture.md) — the same boundary as a set of
+> - [How Rove Is Put Together](architecture.md) — the same boundary as a set of
 >   diagrams: the bridge's two implementations, pull vs push, and the anatomy of
 >   one `invoke`.
-> - [How Rove Captures Network Data (per OS)](./networking-data-capture.md) — a
+> - [How Rove Captures Network Data (per OS)](../networking/data-capture.md) — a
 >   deep dive into the per-OS probes (`ip`/`netsh`/CoreWLAN, byte counters) that
 >   feed everything below.
-> - [How Rove Discovers & Identifies LAN Devices](./device-discovery.md) — the
+> - [How Rove Discovers & Identifies LAN Devices](../networking/device-discovery.md) — the
 >   full device-scan pipeline: the ARP-table trick, TCP/mDNS probing, OUI vendor
 >   lookup, and the weighted-vote classifier.
 
@@ -22,7 +22,7 @@ click through in your editor.
 A Tauri app is two worlds glued together:
 
 <div align="center">
-  <img src="assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
+  <img src="../assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
 </div>
 
 The frontend is literally a web page. It can't open a socket or read `/sys`.
@@ -634,5 +634,5 @@ That's the full tour — IPC, ownership, `Option`/`Result`, structs/traits/deriv
 async and tokio, generics, shared-state concurrency, and the complete round-trip
 across the process boundary, every concept anchored in code you can open and
 run. The companion pages go deeper on the two richest subsystems: the
-[per-OS data capture](./networking-data-capture.md) and the
-[device-discovery pipeline](./device-discovery.md).
+[per-OS data capture](../networking/data-capture.md) and the
+[device-discovery pipeline](../networking/device-discovery.md).

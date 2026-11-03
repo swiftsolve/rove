@@ -7,7 +7,7 @@ glossary of every acronym that shows up in the discovery pipeline
 (`crates/rove-core/src/devices/`) and where each one fits.
 
 If you want the full pipeline walkthrough, see
-[`device-discovery.md`](./device-discovery.md). This page is the "what does that
+[`device-discovery.md`](device-discovery.md). This page is the "what does that
 acronym even mean" companion.
 
 ---

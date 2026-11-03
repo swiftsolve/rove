@@ -7,10 +7,10 @@ everything:
 | Task | Read |
 | --- | --- |
 | Any | `README.md`: How it works, Layout, Development |
-| UI | `docs/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what) |
-| The UI↔backend boundary, commands, events | `docs/architecture.md` |
-| A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking-data-capture.md` |
-| Device discovery | `docs/device-discovery.md`, `docs/networking-protocols.md` |
+| UI | `docs/develop/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what) |
+| The UI↔backend boundary, commands, events | `docs/develop/architecture.md` |
+| A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking/data-capture.md` |
+| Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
 
 The Rove Design System in Figma is the source of truth for tokens and
@@ -24,8 +24,8 @@ before `src/ui`'s files when you need the library's API.
 
 A design change (a token, text style, component variant or prop, copy,
 spacing) lands on both sides in the same task: the Figma file, the
-`rove-tokens` export and build, this code, and `docs/frontend.md`. A token
-change also updates every Figma page that shows it: labels, swatches and
+`rove-tokens` export and build, this code, and `docs/develop/frontend.md`. A
+token change also updates every Figma page that shows it: labels, swatches and
 hard-coded fills. Say in the summary that both sides changed and how you
 checked.
 

@@ -213,7 +213,7 @@ same everywhere.
 
 > This is a summary. For the full pipeline — TCP/mDNS probing, OUI vendor lookup,
 > reverse-DNS batching, and the weighted-vote device classifier — see the
-> dedicated page: [How Rove Discovers & Identifies LAN Devices](./device-discovery.md).
+> dedicated page: [How Rove Discovers & Identifies LAN Devices](device-discovery.md).
 
 The device scanner (`crates/rove-core/src/devices/mod.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
@@ -251,7 +251,7 @@ model from mDNS/SSDP; and a device `kind` from a 13-way weighted-vote classifier
 that also folds in HTTP-banner hints. The local machine is added manually because
 it never appears in its own neighbor table (`add_self_if_missing`,
 `devices/mod.rs:174`). The full pipeline — SSDP, HTTP banners, NetBIOS, and the
-classifier — is covered in the [device-discovery page](./device-discovery.md).
+classifier — is covered in the [device-discovery page](device-discovery.md).
 
 ---
 
@@ -293,7 +293,7 @@ times and parsing the RTT out of each reply line with a regex
 ## 8. The design in one picture
 
 <div align="center">
-  <img src="assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into each module's Serialize structs that serialize across IPC to the UI" />
+  <img src="../assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into each module's Serialize structs that serialize across IPC to the UI" />
 </div>
 
 **The whole philosophy:** define the facts once as OS-agnostic functions, dispatch

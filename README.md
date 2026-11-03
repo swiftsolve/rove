@@ -46,16 +46,18 @@ Rove is two programs talking over a thin, typed bridge:
   which is why `npm run dev` works in a plain browser for UI work.
 
 > **Deeper dives**
-> - [Rove frontend](docs/frontend.md): how the UI is organised and styled, and
+> - [Rove frontend](docs/develop/frontend.md): how the UI is organised and styled, and
 >   which component to use for what.
-> - [How Rove Is Put Together](docs/architecture.md) — the swap seam, pull vs
+> - [How Rove Is Put Together](docs/develop/architecture.md) — the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
-> - [Learning Rust & Tauri through Rove](docs/learning-rust-and-tauri.md) — the
+> - [Learning Rust & Tauri through Rove](docs/develop/learning-rust-and-tauri.md) — the
 >   same boundary from the language side.
-> - [How Rove Captures Network Data (per OS)](docs/networking-data-capture.md)
-> - [How Rove Discovers & Identifies LAN Devices](docs/device-discovery.md)
-> - [The Networking Protocols Behind Rove's Device Discovery](docs/networking-protocols.md)
-> - [Why "Rove"?](docs/why-rove.md)
+> - [How Rove Captures Network Data (per OS)](docs/networking/data-capture.md)
+> - [How Rove Discovers & Identifies LAN Devices](docs/networking/device-discovery.md)
+> - [The Networking Protocols Behind Rove's Device Discovery](docs/networking/protocols.md)
+> - [Why "Rove"?](docs/project/why-rove.md)
+>
+> All of them, grouped: [docs/](docs/README.md).
 
 ### What each feature actually measures
 
@@ -71,7 +73,7 @@ exponential moving average, and emits an event. Virtual interfaces (docker,
 veth, vpn…) are excluded.
 
 **Devices.** A five-stage pipeline (`crates/rove-core/src/devices/`), walked
-in full in [docs/device-discovery.md](docs/device-discovery.md):
+in full in [docs/networking/device-discovery.md](docs/networking/device-discovery.md):
 
 <div align="center">
   <img src="docs/assets/pipeline-glance.svg" width="820" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
@@ -218,7 +220,7 @@ rove/
 
 The UI follows a few conventions: state from context and TanStack Query, never
 props passed through; Tailwind utilities built only from the design tokens;
-shared components before new markup. [docs/frontend.md](docs/frontend.md) has
+shared components before new markup. [docs/develop/frontend.md](docs/develop/frontend.md) has
 them all, with the component table.
 
 The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)

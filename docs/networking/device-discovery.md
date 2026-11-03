@@ -42,7 +42,7 @@ identified device. That's the pipeline.
 From `scan()` in `crates/rove-core/src/devices/mod.rs:25`:
 
 <div align="center">
-  <img src="assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
+  <img src="../assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
 </div>
 
 1. **Scope** — find my subnet (e.g. `192.168.1.0/24`).
@@ -396,7 +396,7 @@ Finally (`mod.rs:77-88`):
 - **Dedupe by MAC** so a host with two IPs shows once.
 
 The result is a `LanDeviceScan` that serializes across the IPC bridge (see the
-[main learning doc](./learning-rust-and-tauri.md)) to the Devices screen.
+[main learning doc](../develop/learning-rust-and-tauri.md)) to the Devices screen.
 
 ---
 
@@ -415,7 +415,7 @@ the shell-injection path.
 ## The whole thing in one diagram
 
 <div align="center">
-  <img src="assets/discovery-fusion.svg" width="860" alt="Full discovery pipeline: two active probes (ICMP sweep, TCP connect) provoke the kernel neighbor table, two passive listeners (mDNS, SSDP) supply self-announced identity, enrichment adds vendor and hostname, and a 13-signal weighted vote in classify() decides each device kind before assembly into a LanDeviceScan" />
+  <img src="../assets/discovery-fusion.svg" width="860" alt="Full discovery pipeline: two active probes (ICMP sweep, TCP connect) provoke the kernel neighbor table, two passive listeners (mDNS, SSDP) supply self-announced identity, enrichment adds vendor and hostname, and a 13-signal weighted vote in classify() decides each device kind before assembly into a LanDeviceScan" />
 </div>
 
 **The philosophy:** you can't ask the network "who are you," so you *provoke*

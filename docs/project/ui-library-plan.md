@@ -5,7 +5,7 @@
 **Done:** phases 0–6, 8 and 11, most of 7, and part of 9.
 - `src/ui` is the library, behind lint boundaries. Its primitives/components
   split was later flattened to one folder per component, grouped by purpose
-  in `index.ts`, the stories and `docs/frontend.md` instead.
+  in `index.ts`, the stories and `docs/develop/frontend.md` instead.
 - Button has variant × tone × size on one pressable base. It was later cut
   to solid, soft and ghost, with a tone on solid only; the link variant became
   ViewLink, which always ends in a caret.
@@ -210,7 +210,7 @@ Every DOM-rendering component follows the same rules:
   `data-open`, `data-selected`), and styles key off them.
 - Composition uses compound parts (`Menu.Trigger`, `Card.Header`) and a
   `render` prop for polymorphism. No `cloneElement`, no wrapper spans.
-- Prop names follow docs/frontend.md (`variant`, `tone`, `status`, `level`,
+- Prop names follow docs/develop/frontend.md (`variant`, `tone`, `status`, `level`,
   `description`, `actions`, `isDisabled`, `isLoading`, …). Every rename is
   logged in `docs/figma-delta.md` for the Figma pass.
 
@@ -311,7 +311,7 @@ passes, the screenshot diff is clean in both themes, and `npm run a11y` passes.
 | 8 | Shell | Props-only TitleBar and NavRail. |
 | 9 | Features | Views split, Apps/Hosts/Traffic deduplicated, logic moved to tested utils, fetches moved to hooks, bugs fixed. |
 | 10 | Styles | Component styles out of `utilities.css`. Type utilities set type only, with colour as a separate class `cn` can merge. |
-| 11 | Docs | docs/frontend.md rewritten, lint scripts updated, `docs/figma-delta.md` handed over for the Figma pass. |
+| 11 | Docs | docs/develop/frontend.md rewritten, lint scripts updated, `docs/figma-delta.md` handed over for the Figma pass. |
 
 ## 4. Decisions for you
 

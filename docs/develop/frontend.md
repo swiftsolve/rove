@@ -2,7 +2,7 @@
 
 How the React UI in `src/` is organised and styled, and which component to use
 for what. Read it before writing or changing UI. For where files live, see
-[Layout](../README.md#layout) in the README.
+[Layout](../../README.md#layout) in the README.
 
 - [Checklists](#checklists) for the common changes
 - Rules: [State](#state-context-not-prop-drilling),
@@ -14,7 +14,7 @@ for what. Read it before writing or changing UI. For where files live, see
 
 ## Checklists
 
-Each list ends in the checks for it; [AGENTS.md](../AGENTS.md) has the steps
+Each list ends in the checks for it; [AGENTS.md](../../AGENTS.md) has the steps
 after a commit (syncing the sites and Storybook).
 
 ### Add a library component
