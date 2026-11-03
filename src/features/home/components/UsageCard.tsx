@@ -2,14 +2,14 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { splitBytes } from '@/lib/format'
-import { todayOf } from '@/types'
+import { todaysUsage } from '@/types'
 import { TodayIcon } from '@/ui'
 
 /** Today's download and upload totals; opens the Usage tab. */
 export function UsageCard() {
   const { usage, isLoading } = useDataUsage()
   const { navigate } = useNavigation()
-  const today = todayOf(usage)
+  const today = todaysUsage(usage)
   // No day yet means the first load hasn't landed (or failed): zeros once it ends.
   const hasTotals = today != null || !isLoading
   const downloaded = splitBytes(today?.rxBytes ?? 0)

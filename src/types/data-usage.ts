@@ -21,6 +21,6 @@ export function createEmptyDataUsage(): DataUsageSummary {
 }
 
 /** Today's totals: the last of `days`. Undefined before the first load. */
-export function todayOf(usage: DataUsageSummary): DailyUsage | undefined {
+export function todaysUsage(usage: DataUsageSummary): DailyUsage | undefined {
   return usage.days.at(-1)
 }
