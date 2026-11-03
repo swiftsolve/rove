@@ -3,6 +3,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
+import { LAYER_POPOVER } from '../foundations/layers'
 import type { VariantOf } from '../foundations/variants'
 import { type IconComponent, MoreVerticalIcon } from '../icons/Icons'
 
@@ -67,7 +68,7 @@ export function MenuContent({
 }) {
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Positioner className="z-20" side="bottom" align="end" sideOffset={4}>
+      <BaseMenu.Positioner className={LAYER_POPOVER} side="bottom" align="end" sideOffset={4}>
         <BaseMenu.Popup className={CONTENT}>{children}</BaseMenu.Popup>
       </BaseMenu.Positioner>
     </BaseMenu.Portal>

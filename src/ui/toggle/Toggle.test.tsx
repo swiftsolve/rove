@@ -31,6 +31,15 @@ describe('Toggle', () => {
     const onChange = vi.fn()
     render(<Toggle isChecked={false} onChange={onChange} label="Sounds" isDisabled />)
     await userEvent.click(screen.getByRole('switch'))
+    await userEvent.keyboard(' ')
     expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('stays in the Tab order while disabled, announced as disabled', async () => {
+    render(<Toggle isChecked={false} onChange={vi.fn()} label="Sounds" isDisabled />)
+    await userEvent.tab()
+    const toggle = screen.getByRole('switch', { name: 'Sounds' })
+    expect(toggle).toHaveFocus()
+    expect(toggle).toHaveAttribute('aria-disabled', 'true')
   })
 })

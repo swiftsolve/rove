@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
+import { LAYER_CHROME } from '../foundations/layers'
 import type { VariantOf } from '../foundations/variants'
 import { CloseIcon, MinimizeIcon } from '../icons/Icons'
 import { StatusDot } from '../status-dot/StatusDot'
@@ -16,8 +17,8 @@ type TitleBarProps = {
 
 /**
  * The full-width bar across the window's top, which drags the window. It
- * stays above the scrolling content, so nothing (buttons, tooltips, escaped
- * absolutes) can ever paint over it.
+ * stays above the scrolling content and its dialogs; only menus and tooltips,
+ * which float, paint over it.
  */
 export function TitleBar({ brand, status, controls }: TitleBarProps) {
   return (
@@ -25,8 +26,9 @@ export function TitleBar({ brand, status, controls }: TitleBarProps) {
     // the controls at the standard header edge.
     <header
       className={cx(
-        'relative z-100 flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
+        'relative flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
         'pl-16 pr-(--card-header-padding-x) bg-chrome border-b border-line [-webkit-app-region:drag]',
+        LAYER_CHROME,
       )}
       data-tauri-drag-region
     >

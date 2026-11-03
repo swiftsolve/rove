@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import { Children, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 
+import { LAYER_CHROME } from '../foundations/layers'
 import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
 
@@ -136,8 +137,9 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       ref={railRef}
       data-nav-rail
       className={cx(
-        'relative z-100 flex flex-col items-center justify-between gap-12 shrink-0',
+        'relative flex flex-col items-center justify-between gap-12 shrink-0',
         'px-12 py-12 bg-chrome border-r border-line',
+        LAYER_CHROME,
       )}
       aria-label={label}
     >
