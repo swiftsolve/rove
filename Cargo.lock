@@ -3094,7 +3094,6 @@ dependencies = [
  "futures-util",
  "glib",
  "rove-core",
- "serde",
  "serde_json",
  "sysinfo",
  "tauri",

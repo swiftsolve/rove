@@ -12,7 +12,6 @@ rove-core = { path = "../crates/rove-core" }
 tauri = { version = "2", features = ["macos-private-api", "tray-icon", "image-png"] }
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
-serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 futures-util = "0.3"
