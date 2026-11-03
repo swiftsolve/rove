@@ -61,15 +61,19 @@ const CONTENT = cx(
 
 /** The dropdown, under the kebab and lined up with its right edge. */
 export function MenuContent({
+  className,
   children,
-}: {
+  ...props
+}: Omit<ComponentProps<'div'>, 'children'> & {
   /** MenuItems, in order. */
   children: ReactNode
 }) {
   return (
     <BaseMenu.Portal>
       <BaseMenu.Positioner className={LAYER_POPOVER} side="bottom" align="end" sideOffset={4}>
-        <BaseMenu.Popup className={CONTENT}>{children}</BaseMenu.Popup>
+        <BaseMenu.Popup className={cn(CONTENT, className)} render={<div {...props} />}>
+          {children}
+        </BaseMenu.Popup>
       </BaseMenu.Positioner>
     </BaseMenu.Portal>
   )
@@ -95,7 +99,7 @@ const itemVariants = cva(
   },
 )
 
-type MenuItemProps = {
+type MenuItemProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'type'> & {
   /** An icon before the label. */
   icon?: IconComponent
   /** `negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight. */
@@ -107,9 +111,14 @@ type MenuItemProps = {
 }
 
 /** One action in a MenuContent. */
-export function MenuItem({ icon: Icon, tone = 'neutral', onClick, children }: MenuItemProps) {
+export function MenuItem({ icon: Icon, tone = 'neutral', onClick, className, children, ...props }: MenuItemProps) {
   return (
-    <BaseMenu.Item className={itemVariants({ tone })} onClick={onClick} nativeButton render={<button type="button" />}>
+    <BaseMenu.Item
+      className={cn(itemVariants({ tone }), className)}
+      onClick={onClick}
+      nativeButton
+      render={<button type="button" {...props} />}
+    >
       {Icon && <Icon size={14} />}
       {children}
     </BaseMenu.Item>

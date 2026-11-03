@@ -20,7 +20,7 @@ const RANGE_OPTIONS: SegmentedOption<string>[] = [
 const meta = {
   title: 'Inputs/SegmentedControl',
   component: SegmentedControl,
-  args: { options: THEME_OPTIONS, value: 'dark', onChange: fn(), 'aria-label': 'Theme' },
+  args: { options: THEME_OPTIONS, value: 'dark', onChange: fn(), label: 'Theme' },
   argTypes: {
     options: { control: false },
     value: { control: false },
@@ -34,7 +34,7 @@ type Story = StoryObj<typeof meta>
 /** The theme picker in Settings. */
 export const WithIcons: Story = {}
 
-export const TextOnly: Story = { args: { options: RANGE_OPTIONS, value: 'day', 'aria-label': 'Time range' } }
+export const TextOnly: Story = { args: { options: RANGE_OPTIONS, value: 'day', label: 'Time range' } }
 
 /** Two options. */
 export const TwoOptions: Story = {
@@ -44,7 +44,7 @@ export const TwoOptions: Story = {
       { value: 'up', label: 'Upload' },
     ],
     value: 'down',
-    'aria-label': 'Direction',
+    label: 'Direction',
   },
 }
 

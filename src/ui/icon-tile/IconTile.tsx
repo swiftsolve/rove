@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode, Ref } from 'react'
+import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
@@ -53,16 +53,15 @@ export function IconTile({ size = 'md', color, className, icon, style, ...props 
   )
 }
 
-type IconTileButtonProps = TileLookProps & {
-  /** Names it: the icon alone says nothing to a screen reader. */
-  label: string
-  /** Opens what the tile stands for. */
-  onClick: MouseEventHandler<HTMLButtonElement>
-  /** Inert while what it opens is being replaced: no hover, no action, same look. */
-  isDisabled?: boolean
-  /** The `<button>`, to focus or measure it. */
-  ref?: Ref<HTMLButtonElement>
-}
+type IconTileButtonProps = TileLookProps &
+  Omit<ComponentProps<'button'>, keyof TileLookProps | 'children' | 'onClick' | 'disabled' | 'type'> & {
+    /** Names it: the icon alone says nothing to a screen reader. */
+    label: string
+    /** Opens what the tile stands for. */
+    onClick: MouseEventHandler<HTMLButtonElement>
+    /** Inert while what it opens is being replaced: no hover, no action, same look. */
+    isDisabled?: boolean
+  }
 
 /** An IconTile that opens something: hover and keyboard focus deepen the tint and lift it, a touch larger. */
 export function IconTileButton({
@@ -73,14 +72,15 @@ export function IconTileButton({
   onClick,
   isDisabled = false,
   icon,
-  ref,
+  style,
+  ...props
 }: IconTileButtonProps) {
   const look = tileLook(size, color)
   return (
     <button
-      ref={ref}
+      {...props}
       type="button"
-      style={look.style}
+      style={{ ...look.style, ...style }}
       className={cn(
         look.className,
         'transition-[background,transform] duration-(--duration-fast) ease-out data-disabled:cursor-default',

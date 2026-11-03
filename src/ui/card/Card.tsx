@@ -119,7 +119,7 @@ const CARET = cx(
   'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',
 )
 
-type CardHeaderProps = {
+type CardHeaderProps = Omit<ComponentProps<'div'>, 'title' | 'children'> & {
   /** Names the card: a `section` card is labelled by it. */
   title: string
   /** A 16px icon before the title. */
@@ -129,10 +129,10 @@ type CardHeaderProps = {
 }
 
 /** The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something. */
-export function CardHeader({ title, icon, actions }: CardHeaderProps) {
+export function CardHeader({ title, icon, actions, className, ...props }: CardHeaderProps) {
   const { titleId, isOpenable } = use(CardContext)
   return (
-    <div className={HEADER}>
+    <div className={cn(HEADER, className)} {...props}>
       <div className="flex min-w-0 items-center gap-8">
         {icon != null && (
           <span className="inline-flex shrink-0 items-center justify-center text-tertiary" aria-hidden>
@@ -168,7 +168,7 @@ const bodyVariants = cva('grow', {
   defaultVariants: { layout: 'default' },
 })
 
-type CardBodyProps = {
+type CardBodyProps = Omit<ComponentProps<'div'>, 'children'> & {
   /**
    * `default` pads all round. `rows` for rows that carry their own vertical
    * padding (settings, list rows): no top padding. `flush` for a
@@ -180,19 +180,23 @@ type CardBodyProps = {
 }
 
 /** The padded body. A little top padding gives the content more room below the title than above it. */
-export function CardBody({ layout = 'default', children }: CardBodyProps) {
-  return <div className={bodyVariants({ layout })}>{children}</div>
+export function CardBody({ layout = 'default', className, children, ...props }: CardBodyProps) {
+  return (
+    <div className={cn(bodyVariants({ layout }), className)} {...props}>
+      {children}
+    </div>
+  )
 }
 
-type CardFooterProps = {
+type CardFooterProps = Omit<ComponentProps<'div'>, 'children'> & {
   /** The footnote or status. */
   children: ReactNode
 }
 
 /** A sunken band below the body, flush to the card's edges: a footnote or status. */
-export function CardFooter({ children }: CardFooterProps) {
+export function CardFooter({ className, children, ...props }: CardFooterProps) {
   return (
-    <div className="bg-inset px-(--card-body-padding) py-12" data-card-footer="">
+    <div className={cn('bg-inset px-(--card-body-padding) py-12', className)} data-card-footer="" {...props}>
       {children}
     </div>
   )

@@ -257,6 +257,7 @@
           "description": "MenuItems, in order."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
@@ -297,6 +298,7 @@
           "description": "`negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "actions-menu--closed",
         "actions-menu--open",
@@ -413,7 +415,7 @@
         },
         "loadingLabel": {
           "type": "string",
-          "description": "Names the button while loading, when only a spinner shows (\"Testing\")."
+          "description": "Names the button while loading, when only a spinner shows (\"Testing\"); the label when left out."
         },
         "onClick": {
           "type": "MouseEventHandler<HTMLButtonElement>",
@@ -421,6 +423,7 @@
           "description": "Runs the action on the field's value."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "inputs-textfield--empty",
         "inputs-textfield--filled",
@@ -482,17 +485,9 @@
         "node": "499:758"
       },
       "props": {
-        "aria-describedby": {
+        "label": {
           "type": "string",
-          "description": "Id of the text that explains it."
-        },
-        "aria-label": {
-          "type": "string",
-          "description": "Names the group."
-        },
-        "aria-labelledby": {
-          "type": "string",
-          "description": "Id of the text that names the group, in place of `aria-label`."
+          "description": "Names the group, unless `aria-labelledby` points at text on screen that does."
         },
         "onChange": {
           "type": "(value: Value) => void",
@@ -510,6 +505,7 @@
           "description": "The chosen option's value."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "inputs-segmentedcontrol--with-icons",
         "inputs-segmentedcontrol--text-only",
@@ -687,6 +683,7 @@
           "description": "Green, amber or red. Green is good news, such as the ISP card's VPN flag; amber a caveat, not a fault."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "status-and-feedback-badge--positive",
         "status-and-feedback-badge--warning",
@@ -710,6 +707,7 @@
           "description": "Its words."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "status-and-feedback-badge--positive",
         "status-and-feedback-badge--warning",
@@ -727,10 +725,6 @@
         "node": "494:735"
       },
       "props": {
-        "className": {
-          "type": "string",
-          "description": "Its place in a line: a gap and alignment beside text (`mr-8 align-middle`)."
-        },
         "pulse": {
           "values": [
             "calm",
@@ -748,6 +742,7 @@
           "description": "Its colour: the text colour (`current`), or `positive` when its words stay quiet."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "status-and-feedback-statusdot--default",
         "status-and-feedback-statusdot--calm",
@@ -818,6 +813,7 @@
           "description": "What's loading, as a sentence that ends in an ellipsis: \"Loading usage…\"."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "status-and-feedback-loadingstate--default",
         "status-and-feedback-loadingstate--scanning"
@@ -907,15 +903,10 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "The note."
-        },
-        "role": {
-          "values": [
-            "status"
-          ],
-          "description": "`status` for a note that appears in answer to an action, so it's announced."
+          "description": "The note. Give it `role=\"status\"` when it appears in answer to an action, so it's announced."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "status-and-feedback-emptystate--with-action",
         "status-and-feedback-emptystate--description-only",
@@ -1254,6 +1245,7 @@
           "description": "What the row opens."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "data-display-listrow--default",
         "data-display-listrow--text-only",
@@ -1343,10 +1335,6 @@
           "isRequired": true,
           "description": "Opens what the tile stands for."
         },
-        "ref": {
-          "type": "Ref<HTMLButtonElement>",
-          "description": "The `<button>`, to focus or measure it."
-        },
         "size": {
           "values": [
             "sm",
@@ -1357,6 +1345,7 @@
           "description": "30, 32 or 36px square."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "data-display-icontile--default",
         "data-display-icontile--disconnected",
@@ -1464,6 +1453,7 @@
           "description": "`default` pads all round. `rows` for rows that carry their own vertical\npadding (settings, list rows): no top padding. `flush` for a\nDataListStack, whose hairlines run to the card's sides."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "containers-card-cardbody--default",
         "containers-card-cardbody--rows",
@@ -1485,6 +1475,7 @@
           "description": "The footnote or status."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "containers-card-cardfooter--default"
       ]
@@ -1512,6 +1503,7 @@
           "description": "Names the card: a `section` card is labelled by it."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "containers-card-cardheader--default",
         "containers-card-cardheader--with-badge",
@@ -1595,13 +1587,10 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "What the trigger shows and hides."
-        },
-        "className": {
-          "type": "string",
-          "description": "Its place in a layout: space above it (`mt-8`). Inset its content on an element inside it."
+          "description": "What the trigger shows and hides. Inset it on an element inside: the panel's `className` is for its place (`mt-8`)."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "containers-collapsible--closed",
         "containers-collapsible--open",
@@ -1788,6 +1777,7 @@
           "description": "Goes to the page, or runs the action."
         }
       },
+      "hasElementProps": true,
       "stories": [
         "app-frame-navrail-navitem--default",
         "app-frame-navrail-navitem--active"

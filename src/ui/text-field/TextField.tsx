@@ -3,7 +3,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
-import { pressableProps } from '../foundations/pressable'
+import { PRESS, pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 
 // The same 8px above the field as the feedback line below it.
@@ -114,18 +114,19 @@ const actionVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
     'bg-accent-muted type-label-default text-accent-text',
-    'transition-[background,color] duration-(--duration-fast) ease-in-out',
-    'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled)',
+    'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
+    PRESS,
+    STATE_CLASSES,
   ],
   {
     variants: {
-      isLoading: { true: 'w-[30px] min-w-0 cursor-default', false: 'min-w-[52px] px-10' },
+      isLoading: { true: 'w-[30px] min-w-0', false: 'min-w-[52px] px-10' },
     },
     defaultVariants: { isLoading: false },
   },
 )
 
-type TextFieldActionProps = {
+type TextFieldActionProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'disabled' | 'type'> & {
   /** The label: a word, "Test". */
   children: string
   /** Runs the action on the field's value. */
@@ -134,7 +135,7 @@ type TextFieldActionProps = {
   isDisabled?: boolean
   /** Drops input and shows a spinner in the label's place. */
   isLoading?: boolean
-  /** Names the button while loading, when only a spinner shows ("Testing"). */
+  /** Names the button while loading, when only a spinner shows ("Testing"); the label when left out. */
   loadingLabel?: string
 }
 
@@ -145,12 +146,16 @@ export function TextFieldAction({
   isDisabled = false,
   isLoading = false,
   loadingLabel,
+  className,
+  ...props
 }: TextFieldActionProps) {
   return (
     <button
+      {...props}
       type="button"
-      className={actionVariants({ isLoading })}
-      aria-label={isLoading ? loadingLabel : undefined}
+      className={cn(actionVariants({ isLoading }), className)}
+      // Loading, only a spinner shows, so the button still needs a name.
+      aria-label={isLoading ? (loadingLabel ?? children) : undefined}
       {...pressableProps({ isDisabled, isLoading, onClick })}
     >
       {isLoading ? <ButtonSpinner size={13} /> : children}

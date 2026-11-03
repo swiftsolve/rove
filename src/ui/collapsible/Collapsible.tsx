@@ -1,10 +1,10 @@
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible'
 import { cx } from 'class-variance-authority'
-import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
 
-type CollapsibleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
+type CollapsibleProps = Omit<ComponentProps<'div'>, 'children'> & {
   /** Whether the panel shows. */
   isOpen: boolean
   /** Called with the new state when the trigger is pressed. */
@@ -65,10 +65,8 @@ const PANEL = cx(
   'data-starting-style:h-0 data-ending-style:h-0',
 )
 
-type CollapsiblePanelProps = {
-  /** Its place in a layout: space above it (`mt-8`). Inset its content on an element inside it. */
-  className?: string
-  /** What the trigger shows and hides. */
+type CollapsiblePanelProps = Omit<ComponentProps<'div'>, 'children'> & {
+  /** What the trigger shows and hides. Inset it on an element inside: the panel's `className` is for its place (`mt-8`). */
   children: ReactNode
 }
 
@@ -76,6 +74,10 @@ type CollapsiblePanelProps = {
  * What the trigger shows and hides, growing and shrinking to its height; out
  * of the page, and the accessibility tree, while closed.
  */
-export function CollapsiblePanel({ className, children }: CollapsiblePanelProps) {
-  return <BaseCollapsible.Panel className={cn(PANEL, className)}>{children}</BaseCollapsible.Panel>
+export function CollapsiblePanel({ className, children, ...props }: CollapsiblePanelProps) {
+  return (
+    <BaseCollapsible.Panel className={cn(PANEL, className)} render={<div {...props} />}>
+      {children}
+    </BaseCollapsible.Panel>
+  )
 }

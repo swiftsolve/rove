@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
-import { Children, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
+import { Children, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 
+import { cn } from '../foundations/cn'
 import { LAYER_CHROME } from '../foundations/layers'
 import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
@@ -33,7 +34,7 @@ const itemVariants = cva(
   },
 )
 
-type NavItemProps = {
+type NavItemProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'type' | 'aria-label'> & {
   /** Names the item, which shows only its icon; also its tooltip. */
   label: string
   /** The icon. */
@@ -45,12 +46,13 @@ type NavItemProps = {
 }
 
 /** One rail button: a page, or an action such as the theme switch. */
-export function NavItem({ label, icon: Icon, isActive = false, onClick }: NavItemProps) {
+export function NavItem({ label, icon: Icon, isActive = false, onClick, className, ...props }: NavItemProps) {
   return (
     <Tooltip content={label} side="right">
       <button
+        {...props}
         type="button"
-        className={itemVariants({ isActive })}
+        className={cn(itemVariants({ isActive }), className)}
         onClick={onClick}
         aria-current={isActive ? 'page' : undefined}
         aria-label={label}

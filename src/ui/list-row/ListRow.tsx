@@ -1,6 +1,7 @@
 import { cx } from 'class-variance-authority'
-import type { MouseEventHandler, ReactNode } from 'react'
+import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 
+import { cn } from '../foundations/cn'
 import { pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ChevronRightIcon } from '../icons/Icons'
 
@@ -23,7 +24,7 @@ const CHEVRON = cx(
   'group-usable/row:group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
 )
 
-type ListRowProps = {
+type ListRowProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'disabled' | 'type'> & {
   /** What the row opens. */
   onClick: MouseEventHandler<HTMLButtonElement>
   /**
@@ -39,9 +40,9 @@ type ListRowProps = {
 }
 
 /** A whole-row button in a card's list that opens something, with a trailing chevron. */
-export function ListRow({ onClick, isDisabled = false, children }: ListRowProps) {
+export function ListRow({ onClick, isDisabled = false, className, children, ...props }: ListRowProps) {
   return (
-    <button type="button" className={ROW} {...pressableProps({ isDisabled, onClick })}>
+    <button {...props} type="button" className={cn(ROW, className)} {...pressableProps({ isDisabled, onClick })}>
       <span className="flex min-w-0 flex-1 items-center gap-12">{children}</span>
       <ChevronRightIcon size={16} className={CHEVRON} />
     </button>

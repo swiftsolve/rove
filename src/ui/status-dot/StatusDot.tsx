@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority'
+import type { ComponentProps } from 'react'
 
 import { cn } from '../foundations/cn'
 import type { VariantOf } from '../foundations/variants'
@@ -18,7 +19,7 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
   defaultVariants: { tone: 'current' },
 })
 
-type StatusDotProps = {
+type StatusDotProps = Omit<ComponentProps<'span'>, 'children'> & {
   /** Its colour: the text colour (`current`), or `positive` when its words stay quiet. */
   tone?: VariantOf<typeof dotVariants, 'tone'>
   /**
@@ -32,6 +33,6 @@ type StatusDotProps = {
 }
 
 /** A small dot that marks a status beside its words; decorative, so the words carry it. */
-export function StatusDot({ tone = 'current', pulse, className }: StatusDotProps) {
-  return <span className={cn(dotVariants({ tone, pulse }), className)} aria-hidden />
+export function StatusDot({ tone = 'current', pulse, className, ...props }: StatusDotProps) {
+  return <span className={cn(dotVariants({ tone, pulse }), className)} aria-hidden {...props} />
 }

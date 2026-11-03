@@ -1,7 +1,9 @@
 import { Radio } from '@base-ui/react/radio'
 import { RadioGroup } from '@base-ui/react/radio-group'
 import { cx } from 'class-variance-authority'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ComponentProps, CSSProperties, ReactNode } from 'react'
+
+import { cn } from '../foundations/cn'
 
 // An inset track, like the Toggle's, so the two read as a set. A grid of equal
 // columns, so every segment is as wide as the widest and the thumb can slide
@@ -37,24 +39,26 @@ const SEGMENT = cx(
 )
 
 export type SegmentedOption<Value extends string> = {
+  /** What choosing it sets. */
   value: Value
+  /** Its words. */
   label: string
+  /** A 15px icon before the words. */
   icon?: ReactNode
 }
 
-type SegmentedControlProps<Value extends string> = {
+type SegmentedControlProps<Value extends string> = Omit<
+  ComponentProps<'div'>,
+  'children' | 'onChange' | 'defaultValue' | 'aria-label'
+> & {
   /** The segments, in order: each a value, its label and an optional icon. */
   options: SegmentedOption<Value>[]
   /** The chosen option's value. */
   value: Value
   /** Called with the option the user picks. */
   onChange: (value: Value) => void
-  /** Names the group. */
-  'aria-label'?: string
-  /** Id of the text that names the group, in place of `aria-label`. */
-  'aria-labelledby'?: string
-  /** Id of the text that explains it. */
-  'aria-describedby'?: string
+  /** Names the group, unless `aria-labelledby` points at text on screen that does. */
+  label?: string
 }
 
 /**
@@ -65,17 +69,22 @@ export function SegmentedControl<Value extends string>({
   options,
   value,
   onChange,
-  ...ariaProps
+  label,
+  className,
+  style,
+  ...props
 }: SegmentedControlProps<Value>) {
   const index = options.findIndex((option) => option.value === value)
   const thumbPosition = { '--count': options.length, '--index': index } as CSSProperties
   return (
     <RadioGroup
-      className={TRACK}
-      style={thumbPosition}
+      className={cn(TRACK, className)}
+      style={{ ...thumbPosition, ...style }}
       value={value}
       onValueChange={(next) => onChange(next)}
-      {...ariaProps}
+      aria-label={label}
+      // The element's own props go on the rendered div: Base UI merges them.
+      render={<div {...props} />}
     >
       {index >= 0 && <span className={THUMB} aria-hidden data-keeps-transition />}
       {options.map((option) => (

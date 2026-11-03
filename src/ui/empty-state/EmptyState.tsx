@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
+import { cn } from '../foundations/cn'
 import { LockIcon } from '../icons/Icons'
 
 type EmptyStateProps = {
@@ -72,16 +73,15 @@ function PlaceholderRows({ isLocked }: { isLocked: boolean }) {
 
 /** A line of explanation under the title, also for extra notes the `actions` add. */
 export function EmptyStateDescription({
+  className,
   children,
-  role,
-}: {
-  /** The note. */
+  ...props
+}: Omit<ComponentProps<'p'>, 'children'> & {
+  /** The note. Give it `role="status"` when it appears in answer to an action, so it's announced. */
   children: ReactNode
-  /** `status` for a note that appears in answer to an action, so it's announced. */
-  role?: 'status'
 }) {
   return (
-    <p className="max-w-[34ch] type-body-small text-tertiary" role={role}>
+    <p className={cn('max-w-[34ch] type-body-small text-tertiary', className)} {...props}>
       {children}
     </p>
   )
