@@ -32,8 +32,8 @@ const connVariants = cva('inline-flex items-center gap-6 font-medium text-second
   },
 })
 
-/** A hero speed's digits; muted "…" before any test has run, so the labels lead
- *  and the "…" reads as pending, not zeroed. */
+/** A hero speed's digits; a muted NoValue bar before any test has run, so the
+ *  labels lead and the cell reads as empty, not zeroed. */
 const speedValueVariants = cva('type-number-display metric-value', {
   variants: {
     isPlaceholder: { true: 'text-tertiary' },
@@ -65,10 +65,9 @@ function heroCellMbps(
   return progressPct >= phaseStartPct ? liveMbps : 0
 }
 
-/** A substat's value: the measured one, "…" before any test, else a NoValue bar. */
+/** A substat's value: the measured one, else a NoValue bar. */
 function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
-  if (measured != null) return measured
-  return isEmpty ? '…' : <NoValue label="Not measured" />
+  return measured ?? <NoValue label={isEmpty ? 'Not tested yet' : 'Not measured'} />
 }
 
 function connectionFromNetworkInfo(info: NetworkInfo | null): SpeedTestConnection | null {
@@ -98,7 +97,9 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
 
   return (
     <dd className="metric num">
-      <span className={speedValueVariants({ isPlaceholder })}>{isPlaceholder ? '…' : value}</span>
+      <span className={speedValueVariants({ isPlaceholder })}>
+        {isPlaceholder ? <NoValue label="Not tested yet" /> : value}
+      </span>
       {!isPlaceholder && <span className="type-body-small metric-unit">{unit}</span>}
     </dd>
   )

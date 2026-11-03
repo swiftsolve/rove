@@ -8,7 +8,7 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
-import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, ZapIcon } from '@/ui'
+import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, NoValue, ZapIcon } from '@/ui'
 
 // A few headline use-cases previewed before any test runs.
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
@@ -68,7 +68,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
       </div>
       {/* Where the rating meter will land. */}
       <span className="shrink-0 font-medium text-tertiary" aria-hidden>
-        …
+        <NoValue />
       </span>
     </li>
   )
