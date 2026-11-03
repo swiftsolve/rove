@@ -9,9 +9,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "strict": true,
     "noUncheckedIndexedAccess": true,
