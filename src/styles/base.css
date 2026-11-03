@@ -47,7 +47,7 @@
   }
 
   /* ---- Theme switch transition ----
-     The theme toggle (App.tsx) runs the swap inside a View Transition and drives
+     The theme toggle (app/utils/theme-transition.ts) runs the swap inside a View Transition and drives
      a clip-path circle that grows from the window's centre. Suppress the built-in
      cross-fade so only the circular reveal plays, and keep the incoming theme's
      snapshot stacked above the outgoing one so it's revealed on top. */

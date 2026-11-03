@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Whether the app window is visible (not minimised, occluded or asleep).
- *
- * Polls pause while hidden and read once on resume, rather than letting the
- * webview's throttled timers stampede the backend. A `setTimeout` frozen while
- * hidden fires the instant the app returns, so a poll's timeout that spans a
- * hidden stretch is discarded rather than read as a spurious "timed out".
+ * Whether the app window is visible (not minimised, occluded or asleep), so
+ * polling can pause while it's hidden rather than stampede the backend when
+ * the webview's throttled timers catch up.
  */
 export function usePageVisible(): boolean {
   const [isVisible, setIsVisible] = useState(() =>

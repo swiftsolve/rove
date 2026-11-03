@@ -410,7 +410,8 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    serde turns it into JSON, and Tauri sends it back across the boundary.
 7. **The Promise resolves** with that JSON, now typed as `DataUsageSummary` on the
    JS side. If the command had returned `Result::Err`, the Promise would **reject**
-   instead — caught by the `try/catch` in `useBackendResource.ts:63`.
+   instead. The bridge (`src/bridge/tauri-network-api.ts`) turns the error
+   string into an `Error`, and `useBackendQuery` shows its message.
 8. **React re-renders** with the new data.
 
 That's the whole loop: JS call → serialize → cross boundary → dispatch → run →
@@ -615,7 +616,7 @@ Say you want to surface the machine's uptime:
 5. **Implement the bridge** in `src/bridge/tauri-network-api.ts`
    (`() => invoke<number | null>('get_uptime')`) *and* mirror it in
    `src/dev/mock-network-api.ts` so `npm run dev` keeps working in a plain browser.
-6. **Consume it** from a hook via `useBackendResource` and render it in a view.
+6. **Consume it** from a hook via `useBackendQuery` and render it in a view.
 
 Notice what *doesn't* change: the IPC plumbing, the serialization, the event
 system. The architecture from this whole doc — pure core, thin Tauri shell, typed

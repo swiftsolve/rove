@@ -55,9 +55,9 @@ Two consequences worth knowing:
   `rate` in `crates/rove-core/src/speed/capabilities.rs` so demo ratings match
   production. Two copies of one rule, also synced by hand.
 
-**Not everything goes through the bridge.** Three files call Tauri directly —
-`RestartAsAdminAction.tsx` (elevation), `AboutView.tsx` (app version), and
-`lib/updater.ts` (check + relaunch). All are desktop-only by nature with nothing
+**Not everything goes through the bridge.** Two files call Tauri directly:
+`features/about/hooks/useAppVersion.ts` (app version) and
+`app/utils/updater.ts` (check + relaunch). All are desktop-only by nature with nothing
 meaningful to mock, and each degrades to nothing in a browser. The rule is:
 *anything the UI renders goes through the bridge; anything that only exists on a
 desktop doesn't.*
@@ -167,7 +167,7 @@ nothing in the type system would warn you.
 | The bridge — one object on `window`, two implementations | The window — native, frameless, from JSON config |
 | The contract — TypeScript types mirrored by Rust structs | The IPC transport plus the `#[tauri::command]` glue |
 | The mock — data *and* time, ~960 lines | Asset embedding — the UI compiled into the binary |
-| `useBackendResource` — loading, polling, pause-when-hidden, race handling | Permissions — the deny-by-default capability manifest |
+| `useBackendQuery` — loading, polling, pause-when-hidden, race handling | Permissions — the deny-by-default capability manifest |
 | The live store — one owner, 60 s history, idle hysteresis | Installers — deb, AppImage, dmg, nsis, msi, and signing |
 | Every measurement in `crates/rove-core` | Rendering — React renders; it has no opinion on fetching |
 
