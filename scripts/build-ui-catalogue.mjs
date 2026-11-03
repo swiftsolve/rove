@@ -1,5 +1,5 @@
 /**
- * Write `src/ui/components.json`: the UI library's public API in one file, so
+ * Write `src/ui/gen/components.json`: the UI library's public API in one file, so
  * an agent (or a person) learns it without opening every component. For each
  * component it lists:
  *
@@ -32,7 +32,7 @@ import ts from 'typescript'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const UI = join(ROOT, 'src/ui')
 const INDEX = join(UI, 'index.ts')
-const CATALOGUE = join(UI, 'components.json')
+const CATALOGUE = join(UI, 'gen/components.json')
 const FIGMA = join(UI, 'figma.json')
 const FRONTEND_DOC = join(ROOT, 'docs/develop/frontend.md')
 const isCheck = process.argv.includes('--check')

@@ -1,6 +1,8 @@
 node_modules/
 dist/
 target/
+# Tauri rewrites these JSON Schemas on every build.
+src-tauri/gen/schemas/
 *.log
 .claude/*
 !.claude/settings.json

@@ -30,7 +30,7 @@ badgeVariants({ tone: 'warning' })
 Why bother: every option is listed in one place, TypeScript knows the allowed
 values (`'positive' | 'warning' | 'negative'`), and the props match the Figma
 component's variants one to one. Rove's catalogue
-([components.json](../../../../src/ui/components.json)) reads these to document every
+([components.json](../../../../src/ui/gen/components.json)) reads these to document every
 component.
 
 ## `cx`: just join

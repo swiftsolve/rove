@@ -11,13 +11,14 @@
  *   node scripts/checks/cn-theme.mjs
  */
 import { readFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const THEME_CSS = 'src/styles/tailwind.css'
 const CN_TS = 'src/ui/foundations/cn.ts'
-const TEXT_STYLES_CSS = 'node_modules/@swiftsolve/rove-tokens/text-styles.css'
+const TEXT_STYLES_CSS = '@swiftsolve/rove-tokens/text-styles.css'
 
 // Colours Tailwind has without a theme entry; cn.ts lists them so they still merge.
 const BUILT_IN_COLORS = ['transparent', 'current', 'inherit']
@@ -98,9 +99,11 @@ for (const [namespace, listed] of cn) {
 }
 
 const textStyles = new Set(
-  [...(await readFile(join(ROOT, TEXT_STYLES_CSS), 'utf8')).matchAll(/^\s*\.(type-[a-z0-9-]+)\s*\{/gm)].map(
-    (match) => match[1],
-  ),
+  [
+    ...(await readFile(createRequire(import.meta.url).resolve(TEXT_STYLES_CSS), 'utf8')).matchAll(
+      /^\s*\.(type-[a-z0-9-]+)\s*\{/gm,
+    ),
+  ].map((match) => match[1]),
 )
 const listedTextStyles = stripComments(await readFile(join(ROOT, CN_TS), 'utf8')).match(
   /const TEXT_STYLE_CLASSES = \[([\s\S]*?)\]/,

@@ -357,7 +357,7 @@ Components v1.0.0"). Raise it when the library's API changes.
   interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
   moving focus would scroll its Docs page. A play that leaves the story as it
   found it (`DisabledOff`) can stay on the Docs page.
-- `components.json` is the library's API in one file, for agents and people:
+- `gen/components.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
   and `figma.json`, which names each component's Figma component and node
