@@ -21,11 +21,9 @@ How the features measure what they show.
 
 ## Project
 
-Background and history.
+Background.
 
 - [Why "Rove"?](project/why-rove.md)
-- [UI library: audit and plan](project/ui-library-plan.md): the plan the UI
-  library was built from, kept as a record.
 
 `assets/` holds the docs' diagrams, and `screenshots/` the app's screens
 (`npm run screenshots`).
