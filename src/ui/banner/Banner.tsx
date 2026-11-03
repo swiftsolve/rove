@@ -3,6 +3,7 @@ import { type JSX, useState } from 'react'
 
 import { Button } from '../button/Button'
 import { AlertIcon, RefreshIcon } from '../icons/Icons'
+import type { VariantOf } from '../utils/variants'
 
 const bannerVariants = cva('type-body-default banner', {
   variants: {
@@ -15,7 +16,7 @@ const bannerVariants = cva('type-body-default banner', {
 
 type BannerProps = {
   /** `error`, a failure: a red wash, and a red Dismiss. */
-  variant: 'error'
+  variant: VariantOf<typeof bannerVariants, 'variant'>
   /** What happened. Dismiss hides the banner until this changes. */
   title: string
   /** One short line under the title: how old what's on screen is, or what happens next. */

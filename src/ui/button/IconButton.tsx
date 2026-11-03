@@ -6,6 +6,7 @@ import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { Tooltip } from '../tooltip/Tooltip'
 import { cn } from '../utils/cn'
 import { PRESS, pressableProps, STATE_CLASSES } from '../utils/pressable'
+import type { VariantOf } from '../utils/variants'
 
 const iconButtonVariants = cva(
   [
@@ -34,7 +35,7 @@ type IconButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'aria-label' 
   /** The icon. */
   icon: IconComponent
   /** `soft`, an inset chip; `ghost`, no fill until hovered. */
-  variant?: 'soft' | 'ghost'
+  variant?: VariantOf<typeof iconButtonVariants, 'variant'>
   /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
   iconSize?: 16 | 14
   /** The tooltip, when it should say more than the label (a help button's hint). */

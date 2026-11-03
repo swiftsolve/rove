@@ -5,6 +5,7 @@ import type { IconComponent } from '../icons/Icons'
 import { ButtonSpinner } from '../spinner/ButtonSpinner'
 import { cn } from '../utils/cn'
 import { PRESS, pressableProps, STATE_CLASSES } from '../utils/pressable'
+import type { VariantOf } from '../utils/variants'
 
 const buttonVariants = cva(
   [
@@ -67,7 +68,7 @@ export type ButtonAppearance =
        * `md`, or the more compact `sm`.
        * @default md (solid), sm (soft)
        */
-      size?: 'sm' | 'md'
+      size?: VariantOf<typeof buttonVariants, 'size'>
     }
   | {
       /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
@@ -75,7 +76,7 @@ export type ButtonAppearance =
       /** Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface. */
       tone?: 'neutral' | 'negative'
       /** `md`, or the more compact `sm`. */
-      size?: 'sm' | 'md'
+      size?: VariantOf<typeof buttonVariants, 'size'>
     }
 
 type Variant = NonNullable<ButtonAppearance['variant']>
