@@ -74,14 +74,11 @@ When a Tauri command returns `Result`, the frontend's `invoke()` promise
 onto a JS `try/catch`. That's the whole error story: `Option` for "might be
 absent," `Result` for "might fail." No hidden control flow.
 
-The `?` operator is the payoff. See `import_speed_history` at
-`src-tauri/src/lib.rs:219`:
+The `?` operator is the payoff. See `relaunch_as_admin` in
+`src-tauri/src/commands.rs`:
 
 ```rust
-for entry in &entries {
-    store.insert_speed(entry).map_err(|e| e.to_string())?;   // ← the ?
-}
-Ok(())
+let exe = std::env::current_exe().map_err(err_str)?;   // ← the ?
 ```
 
 `?` means: "if this is `Err`, return that error from the whole function right

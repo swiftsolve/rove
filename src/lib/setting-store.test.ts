@@ -76,7 +76,7 @@ describe('createSettingStore', () => {
     const store = createSettingStore(() => fakeStorage())
     const listener = vi.fn()
     store.subscribe('mode', listener)
-    store.adoptExternalChange('rove.speed-history.v1')
+    store.adoptExternalChange('rove.other-key')
     expect(listener).not.toHaveBeenCalled()
   })
 

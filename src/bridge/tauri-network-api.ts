@@ -93,7 +93,6 @@ const tauriNetworkApi: NetworkAPI = {
   relaunchAsAdmin: () => call<void>('relaunch_as_admin'),
   getSpeedHistory: () => call<SpeedHistoryEntry[]>('get_speed_history'),
   saveSpeedResult: (entry: SpeedHistoryEntry) => call<void>('save_speed_result', { entry }),
-  importSpeedHistory: (entries: SpeedHistoryEntry[]) => call<void>('import_speed_history', { entries }),
   clearSpeedHistory: () => call<void>('clear_speed_history'),
 
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>

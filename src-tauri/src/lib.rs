@@ -174,7 +174,6 @@ pub fn run() {
             commands::get_speed_history,
             commands::get_network_events,
             commands::save_speed_result,
-            commands::import_speed_history,
             commands::clear_speed_history,
             commands::subscribe_live_throughput,
             commands::unsubscribe_live_throughput,

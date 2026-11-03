@@ -1280,9 +1280,6 @@ function createMockNetworkApi(): NetworkAPI {
     saveSpeedResult: async (entry: SpeedHistoryEntry) => {
       mockHistory = [entry, ...mockHistory].slice(0, MOCK_SPEED_HISTORY_LIMIT)
     },
-    importSpeedHistory: async (entries: SpeedHistoryEntry[]) => {
-      mockHistory = [...entries, ...mockHistory].slice(0, MOCK_SPEED_HISTORY_LIMIT)
-    },
     clearSpeedHistory: async () => {
       mockHistory = []
     },

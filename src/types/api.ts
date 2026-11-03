@@ -103,8 +103,6 @@ export type NetworkAPI = {
   getSpeedHistory(): Promise<SpeedHistoryEntry[]>
   /** Persist one completed speed-test result. */
   saveSpeedResult(entry: SpeedHistoryEntry): Promise<void>
-  /** Bulk-insert results (used once to migrate legacy localStorage history). */
-  importSpeedHistory(entries: SpeedHistoryEntry[]): Promise<void>
   clearSpeedHistory(): Promise<void>
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */

@@ -377,18 +377,6 @@ pub fn save_speed_result(
     store.insert_speed(&entry).map_err(err_str)
 }
 
-/// One-time migration of results the UI kept in localStorage before the store.
-#[tauri::command]
-pub fn import_speed_history(
-    store: tauri::State<'_, Arc<Store>>,
-    entries: Vec<SpeedHistoryRecord>,
-) -> Result<(), String> {
-    for entry in &entries {
-        store.insert_speed(entry).map_err(err_str)?;
-    }
-    Ok(())
-}
-
 #[tauri::command]
 pub fn clear_speed_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
     store.clear_speed_history().map_err(err_str)
