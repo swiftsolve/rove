@@ -35,3 +35,8 @@ export const FAILED_PING = {
   jitterMs: 999,
   packetLoss: 100,
 } as const satisfies PingStats
+
+/** A real round trip: not the FAILED_PING sentinel, and a number. */
+export function isMeasuredLatency(ms: number): boolean {
+  return Number.isFinite(ms) && ms < FAILED_PING.avgMs
+}

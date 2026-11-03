@@ -2,10 +2,18 @@ import type { ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
+import {
+  formatLocation,
+  formatPercent,
+  latencyStatus,
+  lossStatus,
+  runStatusText,
+  sameText,
+} from '@/features/diagnostics/utils/diagnostics-display'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { IspInfo, NetworkDiagnostics, PingStats } from '@/types'
-import { FAILED_PING, getLinkCapacityMbps } from '@/types'
+import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {
   Badge,
   Banner,
@@ -22,7 +30,6 @@ import {
   HelpIcon,
   IconButton,
   LoadingState,
-  type MetricStatus,
   MetricValue,
   PageHeader,
   RefreshIcon,
@@ -32,55 +39,15 @@ import {
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'
 
-/** Gateway round trips up to this read as healthy (green). */
-const GOOD_LATENCY_MAX_MS = 40
-/** Up to this they read as sluggish (amber); anything slower reads as bad. */
-const WARN_LATENCY_MAX_MS = 120
-/** Any packet loss is worth flagging; past this it reads as bad, not just amber. */
-const WARN_LOSS_MAX_PCT = 2
-
-function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
-  if (a == null || b == null) return false
-  return a.trim().toLowerCase() === b.trim().toLowerCase()
-}
-
-function formatPercent(pct: number): string {
-  return `${Math.round(pct * 10) / 10}%`
-}
-
-function latencyStatus(ms: number): MetricStatus {
-  if (!Number.isFinite(ms) || ms >= FAILED_PING.avgMs) return 'negative'
-  if (ms <= GOOD_LATENCY_MAX_MS) return 'positive'
-  if (ms <= WARN_LATENCY_MAX_MS) return 'warning'
-  return 'negative'
-}
-
-function lossStatus(pct: number): MetricStatus {
-  if (pct <= 0) return 'positive'
-  if (pct <= WARN_LOSS_MAX_PCT) return 'warning'
-  return 'negative'
-}
-
-function formatLocation(isp: IspInfo): string | null {
-  const parts = [isp.city, isp.region, isp.country].filter(Boolean)
-  return parts.length > 0 ? parts.join(', ') : null
-}
-
-/** What the screen-reader status line says: each run's start and its end. */
-function runStatusText(isRunning: boolean, hasDiagnostics: boolean): string {
-  if (isRunning) return 'Checking your connection…'
-  return hasDiagnostics ? 'Connection checks finished.' : ''
-}
-
 function latencyValue(ping: PingStats | null | undefined): ReactNode {
   if (ping == null) return '—'
-  if (ping.avgMs >= FAILED_PING.avgMs) return <span className="text-negative">Down</span>
+  if (!isMeasuredLatency(ping.avgMs)) return <span className="text-negative">Down</span>
   return <MetricValue value={ping.avgMs} status={latencyStatus(ping.avgMs)} format={formatLatencyMs} />
 }
 
 function jitterValue(ping: PingStats | null | undefined): ReactNode {
   if (ping == null) return '—'
-  if (ping.jitterMs >= FAILED_PING.avgMs) return 'Down'
+  if (!isMeasuredLatency(ping.jitterMs)) return 'Down'
   return <MetricValue value={ping.jitterMs} format={formatLatencyMs} />
 }
 

@@ -10,7 +10,7 @@ import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/spe
 import { testStatusText } from '@/features/speed/utils/test-status'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import type { NetworkInfo } from '@/types'
-import { FAILED_PING, getLinkCapacityMbps, isWifiNetwork } from '@/types'
+import { getLinkCapacityMbps, isMeasuredLatency, isWifiNetwork } from '@/types'
 import {
   Card,
   CardBody,
@@ -47,11 +47,6 @@ const substatValueVariants = cva(['num', 'text-md font-medium'], {
 })
 
 const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
-
-/** A latency that came back: finite and below the backend's failed-ping sentinel. */
-function isMeasuredLatency(ms: number): boolean {
-  return Number.isFinite(ms) && ms < FAILED_PING.avgMs
-}
 
 /**
  * What a hero cell shows. While testing, a direction shows its live peak once

@@ -1,10 +1,11 @@
-import { useId, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { TimelineItem } from '@/features/events/components/TimelineItem'
 import { useNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
-import { type DayGroup, groupByDay } from '@/features/events/utils/day-groups'
 import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-copy'
+import { TimelineDay, TimelineDayList } from '@/features/timeline/components/TimelineDay'
+import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useNow } from '@/hooks/useNow'
 import type { NetworkEvent } from '@/types'
 import {
@@ -26,26 +27,6 @@ const EMPTY_HINT = 'Devices joining or leaving show up here.'
 
 // Only the day headings need the clock, and they only turn over at midnight.
 const DAY_HEADING_TICK_MS = 60_000
-
-/** One day of the feed: its date heading over the list of that day's events. */
-function TimelineDay({ group, offlineDurationById }: { group: DayGroup; offlineDurationById: Map<number, number> }) {
-  const headingId = useId()
-  return (
-    <li className="flex flex-col not-first:mt-[18px]">
-      <h2
-        id={headingId}
-        className="mb-(--card-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
-      >
-        {group.heading}
-      </h2>
-      <ul role="list" className="flex flex-col" aria-labelledby={headingId}>
-        {group.events.map((event) => (
-          <TimelineItem key={event.id} event={event} offlineMs={offlineDurationById.get(event.id)} />
-        ))}
-      </ul>
-    </li>
-  )
-}
 
 /** The day-grouped feed, or its loading / empty placeholder. */
 function EventsFeed({
@@ -75,12 +56,15 @@ function EventsFeed({
   }
 
   return (
-    // No left pad, so the markers line up with the header icon.
-    <ul role="list" className="flex flex-col pt-6 pr-4 pb-8">
+    <TimelineDayList>
       {groupByDay(events, now).map((group) => (
-        <TimelineDay key={group.key} group={group} offlineDurationById={offlineDurationById} />
+        <TimelineDay key={group.key} heading={group.heading}>
+          {group.events.map((event) => (
+            <TimelineItem key={event.id} event={event} offlineMs={offlineDurationById.get(event.id)} />
+          ))}
+        </TimelineDay>
       ))}
-    </ul>
+    </TimelineDayList>
   )
 }
 

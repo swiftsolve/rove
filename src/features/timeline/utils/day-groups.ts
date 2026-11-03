@@ -1,9 +1,8 @@
-import type { NetworkEvent } from '@/types'
-
-export type DayGroup = {
+/** A run of same-day entries under its heading ("Today", "Monday, 12 January"). */
+export type DayGroup<T> = {
   key: string
   heading: string
-  events: NetworkEvent[]
+  events: T[]
 }
 
 // Local time, so days split at the user's midnight.
@@ -12,7 +11,7 @@ function dayKey(ts: number): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
-// "Today", "Yesterday", else e.g. "Monday, 12th January" (plus the year if not this one).
+// "Today", "Yesterday", else e.g. "Monday, 12 January" (plus the year if not this one).
 export function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
   const now = new Date(nowMs)
@@ -27,11 +26,11 @@ export function formatDayHeading(ts: number, nowMs: number): string {
 }
 
 // Consecutive same-day runs of the already-ordered feed, order kept.
-export function groupByDay(events: NetworkEvent[], now: number): DayGroup[] {
-  const groups: DayGroup[] = []
+export function groupByDay<T extends { ts: number }>(events: T[], now: number): DayGroup<T>[] {
+  const groups: DayGroup<T>[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
-    const last = groups[groups.length - 1]
+    const last = groups.at(-1)
     if (last?.key === key) {
       last.events.push(event)
     } else {

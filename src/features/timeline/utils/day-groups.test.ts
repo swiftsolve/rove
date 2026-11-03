@@ -1,25 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDayHeading, groupByDay } from '@/features/events/utils/day-groups'
-import type { NetworkEvent } from '@/types'
+import { formatDayHeading, groupByDay } from '@/features/timeline/utils/day-groups'
 
 // Local-time dates, so the tests hold in any time zone.
 const now = new Date(2026, 9, 28, 15, 0).getTime()
 
-function event(id: number, ts: number): NetworkEvent {
-  return {
-    id,
-    ts,
-    type: 'device_joined',
-    severity: 'info',
-    mac: null,
-    ip: null,
-    name: null,
-    kind: null,
-    oldValue: null,
-    newValue: null,
-    isRandomized: false,
-  }
+function event(id: number, ts: number): { id: number; ts: number } {
+  return { id, ts }
 }
 
 describe('formatDayHeading', () => {

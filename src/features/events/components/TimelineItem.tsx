@@ -9,6 +9,7 @@ import {
   isInternetEvent,
   subjectKind,
 } from '@/features/events/utils/event-copy'
+import { EventHeading } from '@/features/timeline/components/EventHeading'
 import { formatDuration, formatMac } from '@/lib/format'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import {
@@ -44,9 +45,6 @@ const TONE_COLORS = {
 } as const satisfies Record<string, TimelineNodeColor>
 
 type EventTone = keyof typeof TONE_COLORS
-
-const HEAD = 'flex items-baseline gap-10'
-const TITLE = 'min-w-0 flex-1 text-lg font-semibold text-primary wrap-anywhere'
 
 const SUBJECT = 'text-md text-secondary'
 
@@ -91,24 +89,6 @@ function addressItems(event: NetworkEvent): ReactNode[] {
   return items
 }
 
-// Time only: the group heading carries the day.
-function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
-
-/** The time of day as a machine-readable `<time>`. */
-function EventTime({ ts }: { ts: number }) {
-  return (
-    <time className="shrink-0 text-sm whitespace-nowrap text-tertiary" dateTime={new Date(ts).toISOString()}>
-      {formatTime(ts)}
-    </time>
-  )
-}
-
 function EventIcon({ type }: { type: NetworkEventType }) {
   const Icon = EVENT_STYLES[type].icon
   return <Icon size={15} />
@@ -131,10 +111,7 @@ export function TimelineItem({
 
   return (
     <TimelineNode icon={<EventIcon type={event.type} />} color={TONE_COLORS[EVENT_STYLES[event.type].tone]}>
-      <span className={HEAD}>
-        <span className={TITLE}>{title}</span>
-        <EventTime ts={event.ts} />
-      </span>
+      <EventHeading title={title} ts={event.ts} />
       {subject && (
         <div className={SUBJECT}>
           <InlineMeta items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]} />

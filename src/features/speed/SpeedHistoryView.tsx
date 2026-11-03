@@ -4,7 +4,7 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
 import { formatHistoryTimestamp, type SpeedHistoryEntry } from '@/features/speed/utils/speed-history'
 import { formatBand, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
-import { FAILED_PING } from '@/types'
+import { isMeasuredLatency } from '@/types'
 import {
   Card,
   DirectionIcon,
@@ -48,11 +48,6 @@ type ConnectionBadgeStyle = {
   type: VariantOf<typeof connVariants, 'type'>
   /** Shown when the entry has no network name. */
   fallbackName: string
-}
-
-/** A ping that came back: finite and below the backend's failed-ping sentinel. */
-function isMeasuredLatency(ms: number): boolean {
-  return Number.isFinite(ms) && ms < FAILED_PING.avgMs
 }
 
 function connectionBadgeStyle(connectionType: string): ConnectionBadgeStyle {
