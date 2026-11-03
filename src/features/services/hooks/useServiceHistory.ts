@@ -12,8 +12,10 @@ type UseServiceHistoryResult = {
   events: ServiceEvent[]
   /** The first read has landed, so an empty `events` really means none. */
   isLoaded: boolean
-  /** Wipe the stored timeline, and the cached copy with it. */
+  /** Wipe the stored timeline, and the cached copy with it. Never rejects: a failure shows in `clearError`. */
   clear: () => Promise<void>
+  /** Why the last clear failed, until the next one. */
+  clearError: string | null
 }
 
 /**
@@ -36,13 +38,18 @@ export function useServiceHistory(): UseServiceHistoryResult {
   )
 
   const clearMutation = useMutation({
-    mutationFn: async () => api?.clearServiceHistory(),
+    mutationFn: async () => {
+      // A read that started before the clear would land after it and refill the list.
+      await queryClient.cancelQueries({ queryKey: SERVICE_HISTORY_KEY })
+      await api?.clearServiceHistory()
+    },
     onSuccess: () => queryClient.setQueryData<ServiceEvent[]>(SERVICE_HISTORY_KEY, []),
   })
 
   const clear = async (): Promise<void> => {
-    await clearMutation.mutateAsync()
+    await clearMutation.mutateAsync().catch(() => undefined)
   }
+  const clearError = clearMutation.error ? clearMutation.error.message || 'Couldn’t clear the timeline' : null
 
-  return { events: data ?? [], isLoaded: data !== undefined, clear }
+  return { events: data ?? [], isLoaded: data !== undefined, clear, clearError }
 }

@@ -17,7 +17,7 @@ import { TimelineDay, TimelineDayList } from '@/features/timeline/components/Tim
 import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useIncrementalCount } from '@/hooks/useIncrementalCount'
 import { useNow } from '@/hooks/useNow'
-import { EmptyState, Menu, MenuContent, MenuItem, MenuTrigger, PageHeader, TrashIcon } from '@/ui'
+import { Banner, EmptyState, Menu, MenuContent, MenuItem, MenuTrigger, PageHeader, TrashIcon } from '@/ui'
 
 // Rows rendered with the page (more than the window holds), and how many more
 // each step after it has settled.
@@ -50,7 +50,7 @@ export function ServicesTimelineView() {
   // The title bar's live status: offline, every probe fails at once, and that's
   // our fault, not the services'.
   const liveInternet = useConnectionStatus().internet
-  const { events, isLoaded, clear } = useServiceHistory()
+  const { events, isLoaded, clear, clearError } = useServiceHistory()
   // A full log is a few hundred rows: render the first screenful with the page
   // and the rest once it has settled in.
   const shownCount = useIncrementalCount(events.length, INITIAL_ROWS, ROWS_PER_STEP)
@@ -77,6 +77,9 @@ export function ServicesTimelineView() {
         onBack={back}
         actions={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
       />
+      {clearError && (
+        <Banner variant="error" title={clearError} description="The timeline is as it was." onRetry={clear} />
+      )}
       {/* Nothing until the first read lands, so "No outages yet" doesn't flash
           before the log arrives. */}
       {!isLoaded ? null : events.length === 0 ? (
