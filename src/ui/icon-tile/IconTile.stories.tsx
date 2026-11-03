@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import * as Icons from '../icons/Icons'
 import { DeviceIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, WifiOffIcon } from '../icons/Icons'
@@ -80,6 +80,51 @@ export const ButtonDisabled: Story = {
       icon={<VideoCallIcon size={16} />}
     />
   ),
+}
+
+const onOpenTile = fn()
+
+/** The button form opens on a click, and on Enter once it has focus. */
+export const ButtonOpening: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <IconTileButton
+      color="var(--status-good)"
+      label="Video calls: Good"
+      onClick={onOpenTile}
+      icon={<VideoCallIcon size={16} />}
+    />
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const tile = canvas.getByRole('button', { name: 'Video calls: Good' })
+    await userEvent.click(tile)
+    await expect(onOpenTile).toHaveBeenCalledOnce()
+    await userEvent.keyboard('{Enter}')
+    await expect(onOpenTile).toHaveBeenCalledTimes(2)
+  },
+}
+
+/** Disabled, it stays in the Tab order, announced as disabled, but Enter or a click does nothing. */
+export const ButtonDisabledStaysInert: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <IconTileButton
+      color="neutral"
+      label="Video calls: Testing"
+      onClick={onOpenTile}
+      isDisabled
+      icon={<VideoCallIcon size={16} />}
+    />
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const tile = canvas.getByRole('button', { name: 'Video calls: Testing' })
+    await userEvent.keyboard('{Tab}')
+    await expect(tile).toHaveFocus()
+    await expect(tile).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(tile)
+    await expect(onOpenTile).not.toHaveBeenCalled()
+  },
 }
 
 /** Every size in each colour the app uses, then the button form. */

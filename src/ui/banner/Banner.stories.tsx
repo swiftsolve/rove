@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn, waitFor } from 'storybook/test'
 
 import { Banner } from './Banner'
 
@@ -42,5 +42,32 @@ export const Stale: Story = {
     title: "Couldn't refresh usage",
     description: 'Showing figures from 5 minutes ago.',
     onRetry: fn(() => Promise.resolve()),
+  },
+}
+
+/** Dismiss hides it. */
+export const Dismissing: Story = {
+  tags: ['!autodocs'],
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole('alert')).toHaveTextContent("Couldn't load devices")
+    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }))
+    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
+  },
+}
+
+/** Retry runs the retry and shows busy, then settles once it does. */
+export const Retrying: Story = {
+  tags: ['!autodocs'],
+  args: {
+    title: 'Speed test failed',
+    description: "The server didn't answer.",
+    onRetry: fn(() => new Promise<void>((resolve) => setTimeout(resolve, 300))),
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Retry' }))
+    await expect(args.onRetry).toHaveBeenCalledOnce()
+    await expect(canvas.getByRole('button', { name: 'Retrying…' })).toHaveAttribute('aria-busy', 'true')
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Retry' })).not.toHaveAttribute('aria-busy'))
+    await expect(canvas.getByRole('alert')).toBeInTheDocument()
   },
 }

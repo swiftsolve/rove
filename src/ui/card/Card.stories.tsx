@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
@@ -85,6 +85,44 @@ export const FlushBody: Story = {
 /** With `onOpen` the whole card is a link: its header ends in a caret, and it lifts on hover and presses in. */
 export const Openable: Story = {
   render: () => <OpenableCard />,
+}
+
+const onRefresh = fn()
+
+/** What a click at the middle of `element` lands on, as the browser hit-tests it. */
+function hitAt(element: Element): Element | null {
+  const box = element.getBoundingClientRect()
+  return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+}
+
+/** A click anywhere on the card opens it, while a control in its header still takes its own click. */
+export const OpeningAndHeaderAction: Story = {
+  tags: ['!autodocs'],
+  args: { onOpen: fn() },
+  render: (args) => (
+    <Card {...args}>
+      <CardHeader title="DNS" actions={<IconButton label="Refresh" icon={RefreshIcon} onClick={onRefresh} />} />
+      <CardBody>
+        <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
+      </CardBody>
+    </Card>
+  ),
+  play: async ({ args, canvas, userEvent }) => {
+    const link = canvas.getByRole('link', { name: 'DNS' })
+    // The link lies over the body, so a click on its text lands on the link.
+    const overBody = hitAt(canvas.getByText('Lookups answer in 14 ms on average.'))
+    await expect(overBody).toBe(link)
+    await userEvent.click(link)
+    await expect(args.onOpen).toHaveBeenCalledOnce()
+
+    // The header's control is raised above the link, so it takes its own click.
+    const refresh = canvas.getByRole('button', { name: 'Refresh' })
+    const overRefresh = hitAt(refresh)
+    await expect(overRefresh !== null && refresh.contains(overRefresh)).toBe(true)
+    await userEvent.click(refresh)
+    await expect(onRefresh).toHaveBeenCalledOnce()
+    await expect(args.onOpen).toHaveBeenCalledOnce()
+  },
 }
 
 /** CardList: a list that is one card, with a hairline between its rows. */

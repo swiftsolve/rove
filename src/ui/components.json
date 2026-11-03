@@ -184,6 +184,7 @@
         "actions-link--with-icon",
         "actions-link--without-icon",
         "actions-link--external",
+        "actions-link--opening-with-keyboard",
         "actions-link--disabled",
         "actions-link--small-text",
         "actions-link--all-states"
@@ -846,7 +847,9 @@
       "stories": [
         "status-and-feedback-banner--polling",
         "status-and-feedback-banner--with-retry",
-        "status-and-feedback-banner--stale"
+        "status-and-feedback-banner--stale",
+        "status-and-feedback-banner--dismissing",
+        "status-and-feedback-banner--retrying"
       ]
     },
     "EmptyState": {
@@ -1245,6 +1248,8 @@
         "data-display-listrow--default",
         "data-display-listrow--text-only",
         "data-display-listrow--disabled",
+        "data-display-listrow--opening",
+        "data-display-listrow--disabled-stays-inert",
         "data-display-listrow--all-states"
       ]
     },
@@ -1289,6 +1294,8 @@
         "data-display-icontile--large",
         "data-display-icontile--button",
         "data-display-icontile--button-disabled",
+        "data-display-icontile--button-opening",
+        "data-display-icontile--button-disabled-stays-inert",
         "data-display-icontile--all-states"
       ]
     },
@@ -1348,6 +1355,8 @@
         "data-display-icontile--large",
         "data-display-icontile--button",
         "data-display-icontile--button-disabled",
+        "data-display-icontile--button-opening",
+        "data-display-icontile--button-disabled-stays-inert",
         "data-display-icontile--all-states"
       ]
     },
@@ -1420,6 +1429,7 @@
         "containers-card-card--rows-body",
         "containers-card-card--flush-body",
         "containers-card-card--openable",
+        "containers-card-card--opening-and-header-action",
         "containers-card-card--list",
         "containers-card-card--all-states"
       ]
@@ -1775,7 +1785,8 @@
       "hasElementProps": true,
       "stories": [
         "app-frame-navrail-navitem--default",
-        "app-frame-navrail-navitem--active"
+        "app-frame-navrail-navitem--active",
+        "app-frame-navrail-navitem--activating"
       ]
     },
     "NavRail": {

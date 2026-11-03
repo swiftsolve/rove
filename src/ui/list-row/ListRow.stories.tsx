@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
@@ -88,6 +88,35 @@ export const Disabled: Story = {
         <Rating value={4} color="var(--status-positive)" label="Excellent" isDimmed />
       </>
     ),
+  },
+}
+
+/** A click opens it, and so do Enter and Space once it has focus. */
+export const Opening: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const row = canvas.getByRole('button', { name: /Video calls/ })
+    await userEvent.click(row)
+    await expect(args.onClick).toHaveBeenCalledOnce()
+    await expect(row).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await userEvent.keyboard(' ')
+    await expect(args.onClick).toHaveBeenCalledTimes(3)
+  },
+}
+
+/** Disabled, it stays in the Tab order, announced as disabled, but Enter or a click does nothing. */
+export const DisabledStaysInert: Story = {
+  tags: ['!autodocs'],
+  args: Disabled.args,
+  play: async ({ args, canvas, userEvent }) => {
+    const row = canvas.getByRole('button', { name: /Video calls/ })
+    await userEvent.keyboard('{Tab}')
+    await expect(row).toHaveFocus()
+    await expect(row).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(row)
+    await expect(args.onClick).not.toHaveBeenCalled()
   },
 }
 

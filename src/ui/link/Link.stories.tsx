@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { GlobeIcon, PlayIcon } from '../icons/Icons'
@@ -29,6 +29,18 @@ export const WithoutIcon: Story = { args: { icon: undefined, children: 'View tim
 /** Opens a real address in a new window, ends in an arrow, and says so to a screen reader. */
 export const External: Story = {
   args: { icon: undefined, href: 'https://github.com/swiftsolve/rove', children: 'github.com/swiftsolve/rove' },
+}
+
+/** An in-app link is a link to a screen reader, and Enter opens its view. */
+export const OpeningWithKeyboard: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const link = canvas.getByRole('link', { name: 'All hosts' })
+    await userEvent.keyboard('{Tab}')
+    await expect(link).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect(args.onClick).toHaveBeenCalledOnce()
+  },
 }
 
 /** Still focusable, so a tooltip can say why. */

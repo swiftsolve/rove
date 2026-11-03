@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { NavItem } from './NavRail'
@@ -27,3 +27,17 @@ export const Default: Story = {}
 
 /** The current page: tinted, with the accent bar. */
 export const Active: Story = { args: { isActive: true } }
+
+/** A click runs it, and so does Enter once it has focus; the current page's item says so. */
+export const Activating: Story = {
+  tags: ['!autodocs'],
+  args: { isActive: true },
+  play: async ({ args, canvas, userEvent }) => {
+    const item = canvas.getByRole('button', { name: 'Home' })
+    await expect(item).toHaveAttribute('aria-current', 'page')
+    await userEvent.click(item)
+    await expect(args.onClick).toHaveBeenCalledOnce()
+    await userEvent.keyboard('{Enter}')
+    await expect(args.onClick).toHaveBeenCalledTimes(2)
+  },
+}
