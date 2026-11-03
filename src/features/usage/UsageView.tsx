@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cx } from 'class-variance-authority'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { DailyUsage } from '@/types'
@@ -31,6 +32,8 @@ const USAGE_INFO_HINT =
   'Measured while Rove runs, across all physical interfaces.'
 
 const CHART_HEIGHT = 124
+// The plot's side inset, shared by the chart margin and the day stops over it.
+const CHART_SIDE_MARGIN = 4
 const BAR_MAX_WIDTH = 9
 const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
 
@@ -185,21 +188,18 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
     up: day.txBytes,
   }))
 
-  const chartLabel =
-    'Data used per day, last 7 days. ' +
-    data
-      .map((point) => `${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`)
-      .join('. ')
+  // The day a keyboard user has tabbed to; its tooltip shows as if hovered.
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
 
   return (
-    <div className="relative" role="img" aria-label={chartLabel}>
+    <div className="relative" role="group" aria-label="Data used per day, last 7 days">
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <BarChart
           data={data}
-          // The wrapper is the chart's accessible image; the keyboard layer
-          // would put a focusable application inside it.
+          // The day stops below are the keyboard layer, a tab stop per day;
+          // Recharts' own would add one more stop that arrows between them.
           accessibilityLayer={false}
-          margin={{ top: 8, right: 4, bottom: 0, left: 4 }}
+          margin={{ top: 8, right: CHART_SIDE_MARGIN, bottom: 0, left: CHART_SIDE_MARGIN }}
           barCategoryGap="26%"
           barGap={3}
         >
@@ -210,6 +210,8 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
             cursor={false}
             wrapperStyle={{ outline: 'none' }}
             isAnimationActive={false}
+            active={focusedIndex === null ? undefined : true}
+            defaultIndex={focusedIndex ?? undefined}
           />
           <Bar
             dataKey="down"
@@ -229,6 +231,25 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
           />
         </BarChart>
       </ResponsiveContainer>
+      {/* One invisible column per day over the plot, matching the chart's equal
+          day bands, so Tab steps through the days. Mouse events pass through to
+          the chart. */}
+      <div
+        className="pointer-events-none absolute inset-y-0 flex"
+        style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
+      >
+        {data.map((point, index) => (
+          <div
+            key={point.key}
+            role="img"
+            tabIndex={0}
+            aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
+            className="flex-1 rounded-sm focus-visible:outline-offset-(--focus-inset)"
+            onFocus={() => setFocusedIndex(index)}
+            onBlur={() => setFocusedIndex(null)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
