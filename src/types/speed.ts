@@ -28,8 +28,6 @@ export type SpeedTestProgress = {
   progress: number
 }
 
-export type ProgressReporter = (progress: SpeedTestProgress) => void
-
 export const FAILED_PING = {
   avgMs: 999,
   jitterMs: 999,

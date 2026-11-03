@@ -1,14 +1,4 @@
-import type {
-  ConnectedNetworkInfo,
-  DisconnectedNetworkInfo,
-  EthernetNetworkInfo,
-  NetworkInfo,
-  WifiNetworkInfo,
-} from './network'
-
-export function isDisconnectedNetwork(info: NetworkInfo): info is DisconnectedNetworkInfo {
-  return info.connectionType === 'unknown'
-}
+import type { ConnectedNetworkInfo, EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from './network'
 
 export function isWifiNetwork(info: NetworkInfo): info is WifiNetworkInfo {
   return info.connectionType === 'wifi'

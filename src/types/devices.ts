@@ -71,7 +71,3 @@ export type LanDeviceScan = {
   scannedAt: number
   dhcpStatus: DhcpStatus
 }
-
-export function createEmptyDeviceScan(): LanDeviceScan {
-  return { devices: [], subnet: null, interfaceName: null, scannedAt: 0, dhcpStatus: 'starting' }
-}
