@@ -122,6 +122,19 @@ Each of those keeps a small store of its own
 [useSpeedTest.ts](../../src/features/speed/hooks/useSpeedTest.ts)), read with
 React's `useSyncExternalStore`.
 
+The backend pushes three more events, and those do go through queries, because
+each one updates data you can also ask for:
+
+- **Internet status** sends a new verdict. It's written straight into its
+  query's cache with `setQueryData`
+  ([useInternetStatusSource.ts](../../src/features/connection/hooks/useInternetStatusSource.ts)):
+  the query reads once, and the pushes keep it current.
+- **Services timeline** and **network changed** carry nothing. They're nudges:
+  the timeline invalidates its query
+  ([useServiceHistory.ts](../../src/features/services/hooks/useServiceHistory.ts)),
+  and a network change reruns the reads that already exist
+  ([useOnNetworkChanged.ts](../../src/hooks/useOnNetworkChanged.ts)).
+
 ### Was it worth it?
 
 Without it, Rove would hand-write a cache, request sharing, polling and
@@ -344,7 +357,11 @@ as two colours and drop one. So `cn.ts` lists every theme name, and
 
 - New backend read → a hook in the feature's `hooks/` calling `useBackendQuery`
   with a key that names the data (and the network, if it belongs to one).
-- Something the backend pushes → a store with `useSyncExternalStore`, not a query.
+- Something the backend pushes:
+  - a stream, or a long job with its own state → a store with
+    `useSyncExternalStore`;
+  - a new value for data you can also ask for → `setQueryData` on its query;
+  - a nudge with no payload → invalidate the query it's about.
 - A new spacing, colour or size → add it in Figma, release rove-tokens, map it
   in `tailwind.css` (and `cn.ts`). Never a raw value in code.
 - Text → a `type-*` class.
