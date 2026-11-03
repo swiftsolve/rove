@@ -5,9 +5,9 @@ import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { Sparkline } from '@/features/services/components/Sparkline'
 import { type LatencySample, MAX_SAMPLES } from '@/features/services/utils/service-latency'
 import { isHttpErroring, latencyBand } from '@/features/services/utils/service-status'
-import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition, ServiceReachability } from '@/types'
 import { EditIcon, Menu, MenuContent, MenuItem, MenuTrigger, MetricValue, NoValue, TrashIcon } from '@/ui'
+import { formatLatencyMs } from '@/utils/format'
 
 // With a hover-capable pointer the kebab stays collapsed until its row is hovered,
 // it has focus or its menu is open. Touch can't hover, so it always shows there.

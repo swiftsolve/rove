@@ -13,8 +13,8 @@ import {
   toSvgPoints,
   VERTICAL_PAD,
 } from '@/features/services/utils/sparkline'
-import { formatLatencyMs } from '@/lib/format'
 import { NoValue } from '@/ui'
+import { formatLatencyMs } from '@/utils/format'
 
 const ROOT = 'inline-block shrink-0'
 

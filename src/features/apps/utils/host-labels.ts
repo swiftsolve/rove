@@ -1,4 +1,4 @@
-import { formatBytes, formatCount } from '@/lib/format'
+import { formatBytes, formatCount } from '@/utils/format'
 
 const LOCAL_PEER_LABEL = 'On your network'
 

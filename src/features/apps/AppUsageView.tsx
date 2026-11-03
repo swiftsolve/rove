@@ -4,7 +4,6 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import {
   AppsIcon,
   Banner,
@@ -17,6 +16,7 @@ import {
   Link,
   PageHeader,
 } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const APP_USAGE_INFO_HINT = 'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 

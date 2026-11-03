@@ -1,4 +1,4 @@
-import { FOCUSABLE } from '@/lib/highlight'
+import { FOCUSABLE } from '@/utils/highlight'
 
 /**
  * Where the user was on a screen when they opened another from it: the control

@@ -1,5 +1,5 @@
-import { splitBytes } from '@/lib/format'
 import { DirectionIcon, Readout } from '@/ui'
+import { splitBytes } from '@/utils/format'
 
 export function BytesMetric({ label, bytes, series }: { label: string; bytes: number; series: 'down' | 'up' }) {
   const { value, unit } = splitBytes(bytes)

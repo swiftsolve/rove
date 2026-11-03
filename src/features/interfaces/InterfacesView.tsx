@@ -1,7 +1,6 @@
 import { InterfacePanel } from '@/features/interfaces/components/InterfacePanel'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { interfacesTitle, interfaceTypeSummaryParts } from '@/features/interfaces/utils/interface-summary'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { NetworkInterfaceSummary } from '@/types'
 import {
   Banner,
@@ -14,6 +13,7 @@ import {
   PageHeader,
   RefreshIcon,
 } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 /** The page body: a first-load spinner, an empty state with a retry, or the interface panels. */
 function InterfacesBody({

@@ -11,7 +11,6 @@ import { connectionFromNetworkInfo, connectionName } from '@/features/speed/util
 import { heroCellMbps } from '@/features/speed/utils/hero-cell'
 import { DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT } from '@/features/speed/utils/progress-fill'
 import { testStatusText } from '@/features/speed/utils/test-status'
-import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
 import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {
   Card,
@@ -24,6 +23,7 @@ import {
   type SpeedSeries,
   useCountUp,
 } from '@/ui'
+import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/utils/format'
 
 /** The connection the footer names, its icon tinted by medium. */
 const CONNECTION = 'inline-flex items-center gap-6 font-medium text-secondary'

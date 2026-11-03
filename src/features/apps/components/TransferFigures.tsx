@@ -1,6 +1,6 @@
 import type { Transfer } from '@/features/apps/utils/transfer'
-import { formatBytes } from '@/lib/format'
 import { cn, DirectionIcon, MetricValue, type SpeedSeries } from '@/ui'
+import { formatBytes } from '@/utils/format'
 
 const FIGURE = 'inline-flex items-center gap-[5px] text-xs text-tertiary'
 // Fixed width, so the down and up columns line up across rows.

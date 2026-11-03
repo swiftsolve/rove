@@ -1,6 +1,6 @@
-import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { CapabilityId, CapabilityLevel, CapabilityRequirement, SpeedResult } from '@/types'
 import { CAPABILITY_DEFINITIONS, isMeasuredLatency } from '@/types'
+import { formatLatencyMs, formatSpeedMbps } from '@/utils/format'
 
 export type RequirementCheck = {
   label: string

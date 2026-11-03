@@ -1,4 +1,4 @@
-import { formatBytes } from '@/lib/format'
+import { formatBytes } from '@/utils/format'
 
 /** Bytes moved each way, as every usage row (app, host, traffic type) has them. */
 export type Transfer = {

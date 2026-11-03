@@ -3,8 +3,8 @@ import type { MouseEvent } from 'react'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
-import { formatCount } from '@/lib/format'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
+import { formatCount } from '@/utils/format'
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard() {

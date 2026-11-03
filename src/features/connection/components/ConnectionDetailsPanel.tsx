@@ -4,6 +4,9 @@ import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
 import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import { formatLinkSpeed } from '@/features/connection/utils/connection-display'
 import { signalWord } from '@/features/connection/utils/wifi-signal'
+import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
+import { isEthernetNetwork, isWifiNetwork } from '@/types'
+import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
 import {
   formatBand,
   formatChannel,
@@ -11,10 +14,7 @@ import {
   formatDuplex,
   formatMac,
   formatWifiStandard,
-} from '@/lib/format'
-import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
-import { isEthernetNetwork, isWifiNetwork } from '@/types'
-import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
+} from '@/utils/format'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo

@@ -1,6 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
 
-import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/lib/format'
 import type { NetworkInterfaceSummary } from '@/types'
 import {
   Card,
@@ -16,6 +15,7 @@ import {
   Tooltip,
   WifiIcon,
 } from '@/ui'
+import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/utils/format'
 
 // Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
 const TILE_COLORS = {

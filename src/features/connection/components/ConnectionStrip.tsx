@@ -9,7 +9,6 @@ import {
   formatLinkSpeed,
   getConnectionDisplay,
 } from '@/features/connection/utils/connection-display'
-import { formatBand } from '@/lib/format'
 import type { NetworkInfo } from '@/types'
 import { isWifiNetwork } from '@/types'
 import {
@@ -23,6 +22,7 @@ import {
   OfflineIcon,
   WifiIcon,
 } from '@/ui'
+import { formatBand } from '@/utils/format'
 
 import styles from './ConnectionStrip.module.css'
 

@@ -1,5 +1,5 @@
-import { formatBytes } from '@/lib/format'
 import { MetricValue } from '@/ui'
+import { formatBytes } from '@/utils/format'
 
 /**
  * A row's combined total, right of its name: counts up each poll like every

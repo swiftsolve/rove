@@ -2,9 +2,9 @@ import { type JSX, useState } from 'react'
 import type { RectangleProps } from 'recharts'
 import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-import { formatBytes } from '@/lib/format'
 import type { DailyUsage } from '@/types'
 import { DirectionIcon } from '@/ui'
+import { formatBytes } from '@/utils/format'
 
 type UsageDatum = {
   key: string

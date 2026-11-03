@@ -1,6 +1,6 @@
-import { formatConnectionType } from '@/lib/format'
 import type { InternetStatus, NetworkInfo } from '@/types'
 import { isConnectedNetwork, isInternetDown } from '@/types'
+import { formatConnectionType } from '@/utils/format'
 
 /**
  * The title bar's connectivity tone. `positive`: a link that reaches the

@@ -4,8 +4,8 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import { Banner, CardList, HelpIcon, IconButton, PageHeader } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'

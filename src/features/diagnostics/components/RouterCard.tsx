@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { formatPercent, latencyStatus, lossStatus, sameText } from '@/features/diagnostics/utils/diagnostics-display'
-import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { NetworkDiagnostics, PingStats } from '@/types'
 import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {
@@ -17,6 +16,7 @@ import {
   NoValue,
   RouterIcon,
 } from '@/ui'
+import { formatLatencyMs, formatSpeedMbps } from '@/utils/format'
 
 function latencyValue(ping: PingStats | null | undefined): ReactNode {
   if (ping == null) return <NoValue />

@@ -215,7 +215,7 @@
   animation: fade-in var(--duration-fast) var(--ease-out);
 }
 
-/* The ring around an item a navigation just scrolled to (lib/highlight.ts): an
+/* The ring around an item a navigation just scrolled to (utils/highlight.ts): an
    outline, so it costs no layout, inset by its width so an overflow-clipped
    card doesn't shave it. It holds, then fades. The fill is a gradient layer,
    not a background-color: animating the colour would replace the target's own

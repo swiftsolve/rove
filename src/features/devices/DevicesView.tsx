@@ -5,8 +5,6 @@ import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { sortDevices } from '@/features/devices/utils/device-display'
-import { countTitle } from '@/lib/format'
-import { IS_MAC } from '@/lib/platform'
 import type { LanDevice } from '@/types'
 import {
   Banner,
@@ -19,6 +17,8 @@ import {
   PageHeader,
   RefreshIcon,
 } from '@/ui'
+import { countTitle } from '@/utils/format'
+import { IS_MAC } from '@/utils/platform'
 
 const SCAN_HINT =
   'Rove probes your subnet and listens for device announcements. Sleeping devices, guest networks and subnets over /24 can hide some.'

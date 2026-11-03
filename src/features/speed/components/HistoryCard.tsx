@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 
 import { ConnectionIcon } from '@/features/speed/components/ConnectionIcon'
 import { connectionKind, connectionName } from '@/features/speed/utils/connection'
+import { isMeasuredLatency, type SpeedHistoryEntry } from '@/types'
+import { Card, DirectionIcon, DotSeparator, InlineMeta, NoValue, type SpeedSeries } from '@/ui'
 import {
   formatBand,
   formatDateTime,
@@ -10,9 +12,7 @@ import {
   formatSpeedMbps,
   splitLatencyMs,
   splitSpeedMbps,
-} from '@/lib/format'
-import { isMeasuredLatency, type SpeedHistoryEntry } from '@/types'
-import { Card, DirectionIcon, DotSeparator, InlineMeta, NoValue, type SpeedSeries } from '@/ui'
+} from '@/utils/format'
 
 /** Connection badge; its icon is tinted by medium. */
 const CONNECTION = 'inline-flex min-w-0 items-center gap-6 text-sm font-medium'

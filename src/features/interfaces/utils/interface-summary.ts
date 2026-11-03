@@ -1,5 +1,5 @@
-import { countTitle } from '@/lib/format'
 import type { NetworkInterfaceSummary } from '@/types'
+import { countTitle } from '@/utils/format'
 
 /** Per-category counts, e.g. ["1 Wi‑Fi", "1 Ethernet", "2 Virtual"]. */
 export function interfaceTypeSummaryParts(interfaces: NetworkInterfaceSummary[]): string[] {

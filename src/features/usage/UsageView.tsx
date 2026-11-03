@@ -2,7 +2,6 @@ import { BytesMetric } from '@/features/usage/components/BytesMetric'
 import { TotalsFooter } from '@/features/usage/components/TotalsFooter'
 import { WeekChart } from '@/features/usage/components/WeekChart'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import { todaysUsage } from '@/types'
 import {
   Banner,
@@ -17,6 +16,7 @@ import {
   UsageIcon,
   WeekIcon,
 } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const USAGE_INFO_HINT = 'Measured while Rove runs, across all physical interfaces.'
 

@@ -1,4 +1,4 @@
-import { isIpv4 } from '@/lib/ip'
+import { isIpv4 } from '@/utils/ip'
 
 // Suffixes that only ever name something on the local network, so the public
 // icon service has nothing to serve for them and answers 404.

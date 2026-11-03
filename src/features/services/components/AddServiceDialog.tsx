@@ -6,9 +6,9 @@ import { getNetworkApi } from '@/bridge/network-api'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { parseServiceInput } from '@/features/services/utils/service-input'
 import { latencyBand } from '@/features/services/utils/service-status'
-import { formatLatencyMs } from '@/lib/format'
 import type { ServiceDefinition } from '@/types'
 import { Button, Dialog, NoValue, STATUS_TEXT, TextField, TextFieldAction, useLatestRef } from '@/ui'
+import { formatLatencyMs } from '@/utils/format'
 
 // The tested result swaps in for the field's hint as a taller inset row, at the
 // address field's outer height (line-height 18 + 20 padding + 2 border), so it

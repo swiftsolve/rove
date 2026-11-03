@@ -1,7 +1,7 @@
 import { type RefObject, useEffect, useRef } from 'react'
 
-import { scrollToTopAndFlash } from '@/lib/highlight'
 import type { AppHosts } from '@/types'
+import { scrollToTopAndFlash } from '@/utils/highlight'
 
 /**
  * Scrolls the focused app's group to the top once its data lands, then never

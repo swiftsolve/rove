@@ -5,8 +5,8 @@ import { ErrorNotice } from '@/app/components/ErrorNotice'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import type { NetworkError } from '@/features/connection/hooks/useNetworkInfoSource'
 import { useNow } from '@/hooks/useNow'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { AlertIcon, Banner, OfflineIcon, Spinner } from '@/ui'
+import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/utils/format'
 
 // What the app shows while network info is missing or its refresh failed.
 

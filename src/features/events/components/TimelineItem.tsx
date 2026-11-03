@@ -11,7 +11,6 @@ import {
   subjectParts,
 } from '@/features/events/utils/event-copy'
 import { EventHeading } from '@/features/timeline/components/EventHeading'
-import { formatDuration, formatMac } from '@/lib/format'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import {
   ArrowLeftIcon,
@@ -31,6 +30,7 @@ import {
   Tooltip,
   WifiIcon,
 } from '@/ui'
+import { formatDuration, formatMac } from '@/utils/format'
 
 // The icon says what happened; the tint says how to read it.
 const TONE_COLORS = {

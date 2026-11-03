@@ -7,7 +7,6 @@ import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-co
 import { TimelineDay, TimelineDayList } from '@/features/timeline/components/TimelineDay'
 import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useNow } from '@/hooks/useNow'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { NetworkEvent } from '@/types'
 import {
   Banner,
@@ -20,6 +19,7 @@ import {
   PageHeader,
   RefreshIcon,
 } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const FEED_HINT = 'Devices and access points joining or leaving between scans. Kept for 7 days.'
 

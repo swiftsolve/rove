@@ -252,7 +252,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 
 ## Tests
 
-- Pure logic in `utils/` and `lib/` has unit tests beside it, named after its
+- Pure logic in a `utils/` folder has unit tests beside it, named after its
   module plus `.test` (`chart-scale.test.ts`). They run in Node and never touch
   the DOM or the bridge, so keep logic worth testing out of components and
   hooks.

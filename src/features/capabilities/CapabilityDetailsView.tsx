@@ -4,9 +4,9 @@ import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { CapabilityDetailCard } from '@/features/capabilities/components/CapabilityDetailCard'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { scrollToTopAndFlash } from '@/lib/highlight'
 import type { CapabilityId } from '@/types'
 import { PageHeader } from '@/ui'
+import { scrollToTopAndFlash } from '@/utils/highlight'
 
 type CapabilityDetailsViewProps = {
   /** Capability to scroll into view when the page opens (the one just clicked). */

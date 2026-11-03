@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
-import { decodeSetting, settingStore } from '@/lib/setting-store'
+import { decodeSetting, settingStore } from '@/utils/setting-store'
 
 /**
  * A preference persisted to localStorage (see `setting-store.ts`): a boolean

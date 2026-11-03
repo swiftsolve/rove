@@ -1,6 +1,6 @@
 import type { LatencySample } from '@/features/services/utils/service-latency'
 import { type LatencyBand, latencyBand } from '@/features/services/utils/service-status'
-import { formatCount, formatLatencyMs } from '@/lib/format'
+import { formatCount, formatLatencyMs } from '@/utils/format'
 
 // Keeps the stroke and dots off the top and bottom edges. No horizontal inset:
 // the line runs edge to edge to align with the text around it, and the svg

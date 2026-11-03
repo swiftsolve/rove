@@ -1,6 +1,6 @@
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
-import { formatCount } from '@/lib/format'
 import type { NetworkEvent, NetworkEventType } from '@/types'
+import { formatCount } from '@/utils/format'
 
 export const EVENT_TITLES: Record<NetworkEventType, string> = {
   initial_scan: 'Network baseline', // shown as initialScanTitle's count instead

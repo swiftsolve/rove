@@ -1,5 +1,5 @@
-import { splitSpeedMbps } from '@/lib/format'
 import { DirectionIcon, Readout, type SpeedSeries, useCountUp } from '@/ui'
+import { splitSpeedMbps } from '@/utils/format'
 
 /**
  * Rates below this are background noise (OS chatter, keepalives), shown as zero

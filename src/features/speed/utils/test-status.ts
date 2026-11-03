@@ -1,5 +1,5 @@
-import { formatSpeedMbps } from '@/lib/format'
 import type { SpeedResult, SpeedTestProgress } from '@/types'
+import { formatSpeedMbps } from '@/utils/format'
 
 /**
  * What a speed test's live region announces: the current phase while a test

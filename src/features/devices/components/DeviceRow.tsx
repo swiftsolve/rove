@@ -3,7 +3,6 @@ import type { JSX } from 'react'
 
 import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
 import { useNow } from '@/hooks/useNow'
-import { formatMac } from '@/lib/format'
 import type { LanDevice, LanDeviceKind } from '@/types'
 import {
   CameraIcon,
@@ -27,6 +26,7 @@ import {
   UnknownDeviceIcon,
   WatchIcon,
 } from '@/ui'
+import { formatMac } from '@/utils/format'
 
 const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
 

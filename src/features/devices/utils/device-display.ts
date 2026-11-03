@@ -1,6 +1,6 @@
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
-import { formatTimeAgo } from '@/lib/format'
 import type { LanDevice, LanDeviceKind } from '@/types'
+import { formatTimeAgo } from '@/utils/format'
 
 // Nouns for synthesizing a name. The category labels in LAN_DEVICE_KIND_LABELS
 // ("Mobile") don't read naturally after an OS ("Android Mobile").

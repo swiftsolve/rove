@@ -195,7 +195,7 @@ rove/
 │   │                           and icons
 │   ├── hooks/                  shared hooks (useBackendQuery is the
 │   │                           useQuery shape every data hook builds on)
-│   ├── lib/                    shared helpers (format, platform, highlight)
+│   ├── utils/                  shared helpers (format, platform, highlight)
 │   ├── styles/                 the global CSS: tailwind.css (the theme from
 │   │                           the tokens; imports the rest), base.css
 │   │                           (fonts, resets) and utilities.css (shared

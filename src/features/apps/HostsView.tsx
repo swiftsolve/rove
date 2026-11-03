@@ -4,8 +4,8 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
-import { POLLING_DESCRIPTION } from '@/lib/copy'
 import { Banner, CardList, HelpIcon, IconButton, PageHeader } from '@/ui'
+import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'

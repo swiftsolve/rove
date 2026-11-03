@@ -4,9 +4,9 @@ import { memo } from 'react'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag'
 import { hostIconLabel } from '@/features/apps/utils/host-labels'
-import { isPrivateIp } from '@/lib/ip'
 import type { HostConn } from '@/types'
 import { GlobeIcon, IpIcon, Tooltip as UiTooltip } from '@/ui'
+import { isPrivateIp } from '@/utils/ip'
 
 // Fixed width keeps hostnames aligned with or without a flag. Twemoji comes first
 // because Windows has no flag emoji (see the @font-face note in styles/base.css).

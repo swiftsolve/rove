@@ -2,8 +2,8 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
-import { IS_MAC } from '@/lib/platform'
 import type { LanDeviceScan, NetworkAPI } from '@/types'
+import { IS_MAC } from '@/utils/platform'
 
 type UseDevicesResult = {
   /** Home scans on its own here; when it doesn't (macOS), its card offers Discover instead. */

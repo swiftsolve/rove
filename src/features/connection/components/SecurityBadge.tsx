@@ -1,8 +1,8 @@
 import { cva, cx } from 'class-variance-authority'
 
 import { normalizeSecurity, shortSecurityLabel } from '@/features/connection/utils/wifi-security'
-import { isSecuredWifi } from '@/lib/format'
 import { LockIcon, Tooltip, UnlockIcon } from '@/ui'
+import { isSecuredWifi } from '@/utils/format'
 
 // Block flex, not inline-flex, which sits the lock on the baseline a little low.
 const securityBadgeVariants = cva('flex items-center gap-6 min-w-0 in-[dl]:justify-end', {

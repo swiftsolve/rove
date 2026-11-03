@@ -1,7 +1,7 @@
 import { cx } from 'class-variance-authority'
 
-import { formatBytes } from '@/lib/format'
 import { DirectionIcon } from '@/ui'
+import { formatBytes } from '@/utils/format'
 
 // Full-bleed inset strip; the card's overflow:hidden rounds its bottom corners.
 const TOTALS_FOOTER = cx(

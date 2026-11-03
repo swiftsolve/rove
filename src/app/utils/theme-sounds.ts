@@ -1,7 +1,7 @@
 import switchOffUrl from '@/assets/sounds/switch-off.mp3'
 import switchOnUrl from '@/assets/sounds/switch-on.mp3'
 import { getSetting } from '@/hooks/useSetting'
-import { IS_WEBKIT_GTK } from '@/lib/platform'
+import { IS_WEBKIT_GTK } from '@/utils/platform'
 
 /**
  * The click when the theme flips (light plays switch-on, dark switch-off).

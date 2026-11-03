@@ -1,6 +1,6 @@
 import type { SpeedTestConnection } from '@/features/speed/types'
-import { formatBand } from '@/lib/format'
 import { isWifiNetwork, type NetworkInfo, type SpeedRunContext } from '@/types'
+import { formatBand } from '@/utils/format'
 
 /** The medium a speed test ran over; `unknown` for anything else a result recorded. */
 export type ConnectionKind = SpeedTestConnection['type'] | 'unknown'

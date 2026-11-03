@@ -1,7 +1,7 @@
 import { flushSync } from 'react-dom'
 
 import { playThemeSwitchSound } from '@/app/utils/theme-sounds'
-import { IS_WEBKIT_GTK } from '@/lib/platform'
+import { IS_WEBKIT_GTK } from '@/utils/platform'
 
 type ViewTransition = {
   ready: Promise<void>

@@ -1,9 +1,9 @@
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
-import { splitBytes } from '@/lib/format'
 import { todaysUsage } from '@/types'
 import { TodayIcon } from '@/ui'
+import { splitBytes } from '@/utils/format'
 
 /** Today's download and upload totals; opens the Usage tab. */
 export function UsageCard() {

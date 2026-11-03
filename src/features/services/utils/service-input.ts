@@ -1,5 +1,5 @@
-import { isIpv4 } from '@/lib/ip'
 import type { ServiceDefinition } from '@/types'
+import { isIpv4 } from '@/utils/ip'
 
 /** A plausible DNS hostname: dot-separated labels of letters/digits/hyphens. */
 const HOSTNAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/

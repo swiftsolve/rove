@@ -5,9 +5,9 @@ import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import { closedOutageMs, type EventDurations, isOngoingDrop } from '@/features/services/utils/timeline-durations'
 import { EventHeading } from '@/features/timeline/components/EventHeading'
 import { useNow } from '@/hooks/useNow'
-import { formatCount, formatDuration } from '@/lib/format'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, GlobeIcon, NoValue, OfflineIcon, TimelineNode } from '@/ui'
+import { formatCount, formatDuration } from '@/utils/format'
 
 // The same colour language as the reachability numbers: a drop is negative, a
 // recovery or healthy summary positive.

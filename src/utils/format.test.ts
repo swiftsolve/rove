@@ -12,7 +12,7 @@ import {
   splitBytes,
   splitLatencyMs,
   splitSpeedMbps,
-} from '@/lib/format'
+} from '@/utils/format'
 
 describe('formatSpeedMbps / splitSpeedMbps', () => {
   it('switches to Gbps at 1000 Mbps', () => {

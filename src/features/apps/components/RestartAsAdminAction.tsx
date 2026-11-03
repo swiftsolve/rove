@@ -4,8 +4,8 @@ import type { JSX } from 'react'
 import { getNetworkApi } from '@/bridge/network-api'
 import { isTauri } from '@/bridge/tauri-network-api'
 import { useUsageSupportDetail } from '@/features/apps/hooks/useUsageSupportDetail'
-import { IS_WINDOWS } from '@/lib/platform'
 import { Button, EmptyStateDescription } from '@/ui'
+import { IS_WINDOWS } from '@/utils/platform'
 
 /**
  * Relaunches Rove as administrator for the per-app usage views, whose ETW session
