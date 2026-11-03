@@ -7,13 +7,13 @@
  * a whole namespace missing means its utilities never merge. Names in the lists
  * that the theme no longer has are dead.
  *
- *   node scripts/check-cn-theme.mjs
+ *   node scripts/checks/cn-theme.mjs
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const THEME_CSS = 'src/styles/tailwind.css'
 const CN_TS = 'src/ui/foundations/cn.ts'
 

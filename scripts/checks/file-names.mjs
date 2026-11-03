@@ -15,13 +15,13 @@
  * name agents look for in a folder. Assets keep the names they came with
  * (`InterVariable.woff2`), so `src/assets` isn't checked.
  *
- *   node scripts/check-file-names.mjs
+ *   node scripts/checks/file-names.mjs
  */
 import { readdir } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets')]
 const ENTRY_POINTS = ['main.tsx']

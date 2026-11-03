@@ -17,14 +17,14 @@
  * A raw value that has to stay goes in ALLOWED with its reason. Dev mocks
  * (src/dev), tests and assets aren't checked.
  *
- *   node scripts/check-raw-values.mjs
+ *   node scripts/checks/raw-values.mjs
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets'), join(SRC, 'dev')]
 const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
@@ -221,7 +221,9 @@ for (const file of files) {
 
 for (const entry of ALLOWED) {
   if (!allowedUsed.has(entry))
-    problems.push(`scripts/check-raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`)
+    problems.push(
+      `scripts/checks/raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
+    )
 }
 
 if (problems.length > 0) {

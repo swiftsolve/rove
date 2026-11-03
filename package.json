@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "lint": "eslint . && prettier --check . && node scripts/check-css-modules.mjs && node scripts/check-cn-theme.mjs && node scripts/check-raw-values.mjs && node scripts/check-ui-classname.mjs && node scripts/check-file-names.mjs && node scripts/build-ui-catalogue.mjs --check",
+    "lint": "eslint . && prettier --check . && node scripts/checks/run.mjs",
     "format": "prettier --write .",
     "catalogue": "node scripts/build-ui-catalogue.mjs",
     "typecheck": "tsc --noEmit",
@@ -24,7 +24,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "git config core.hooksPath scripts/hooks/git || true"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

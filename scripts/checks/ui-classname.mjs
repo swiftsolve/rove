@@ -14,7 +14,7 @@
  * imported constants to their strings. A prop passed through or a CSS module
  * class can't be read, so it isn't checked.
  *
- *   node scripts/check-ui-classname.mjs
+ *   node scripts/checks/ui-classname.mjs
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
@@ -22,7 +22,7 @@ import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const ts = createRequire(import.meta.url)('typescript')
 const SCANNED = ['src/app', 'src/features']
 const UTILITIES_CSS = 'src/styles/utilities.css'

@@ -8,13 +8,13 @@
  * Class names are kebab-case in the CSS and camelCase in code (Vite's
  * `localsConvention: 'camelCaseOnly'`): `.row-name` is `styles.rowName`.
  *
- *   node scripts/check-css-modules.mjs
+ *   node scripts/checks/css-modules.mjs
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
 
 async function listFiles(dir) {

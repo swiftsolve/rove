@@ -2,7 +2,8 @@ node_modules/
 dist/
 target/
 *.log
-.claude/
+.claude/*
+!.claude/settings.json
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
