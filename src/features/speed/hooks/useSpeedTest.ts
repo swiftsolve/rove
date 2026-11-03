@@ -135,12 +135,9 @@ subscribeLiveThroughput(() => {
   setState({ ...state, livePeakDownloadMbps: peakDownloadMbps, livePeakUploadMbps: peakUploadMbps })
 })
 
-// Monotonic run id: a late progress event or a superseded run can never write
-// over a newer one's state.
+// Monotonic run id: a late progress event, a stopped run or a superseded one can
+// never write over a newer one's state, or save its result.
 let latestRunId = 0
-// The run a stop was requested for: a second guard, beside latestRunId, against a
-// late progress tick from a just-cancelled run.
-let cancelledRunId = 0
 
 async function runTest(): Promise<void> {
   if (state.isTesting) return
@@ -153,7 +150,6 @@ async function runTest(): Promise<void> {
 
   const runId = ++latestRunId
   const isCurrentRun = (): boolean => runId === latestRunId
-  const isCancelledRun = (): boolean => cancelledRunId === runId
 
   setState({
     ...state,
@@ -169,7 +165,7 @@ async function runTest(): Promise<void> {
   // "complete" tick) from racing the terminal state write below.
   let isSettled = false
   const unsubscribe = api.onSpeedTestProgress((progress) => {
-    if (isSettled || !isCurrentRun() || isCancelledRun()) return
+    if (isSettled || !isCurrentRun()) return
     setState({ ...state, progress })
   })
 
@@ -182,6 +178,8 @@ async function runTest(): Promise<void> {
     const context = await contextPromise
     isSettled = true
     unsubscribe()
+    // A run stopped after the backend finished it still resolves: it isn't kept.
+    if (!isCurrentRun()) return
     await saveSpeedResult(result.internet, context)
     // A history page that's open re-reads now; a closed one reads when it opens.
     void queryClient.invalidateQueries({ queryKey: SPEED_HISTORY_KEY })
@@ -213,14 +211,13 @@ async function runTest(): Promise<void> {
 
 function cancelTest(): void {
   if (!state.isTesting) return
-  // Lets a stop during the pre-flight abort the run before the backend test starts.
-  cancelledRunId = latestRunId
   // Settle the UI now rather than wait for the backend to reject, which made Stop
   // feel unresponsive. The bumped run id turns the old run's late writes into no-ops.
   latestRunId++
   setState({ ...state, isTesting: false, progress: INITIAL_PROGRESS, error: null })
-  // A no-op if the backend test hasn't started; cancelledRunId covers that case.
-  void window.networkAPI?.cancelSpeedTest()
+  // A no-op if the backend test hasn't registered yet; the bumped run id still
+  // keeps that run's result off screen and out of history.
+  window.networkAPI?.cancelSpeedTest().catch((err: unknown) => console.warn('Cancelling the speed test failed:', err))
 }
 
 /**
