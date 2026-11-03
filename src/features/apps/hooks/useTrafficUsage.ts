@@ -1,8 +1,7 @@
 import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { TrafficUsageSummary } from '@/types'
-import { createEmptyTrafficUsage } from '@/types'
 
-const EMPTY_USAGE = createEmptyTrafficUsage()
+const EMPTY_USAGE: TrafficUsageSummary = { types: [], support: 'supported', trackingSince: null }
 
 /**
  * Session traffic bucketed by kind (protocol). Reads off the same backend

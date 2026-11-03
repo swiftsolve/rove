@@ -28,7 +28,3 @@ export type TrafficUsageSummary = {
   /** Epoch ms of the first sample, or null before then. */
   trackingSince: number | null
 }
-
-export function createEmptyTrafficUsage(): TrafficUsageSummary {
-  return { types: [], support: 'supported', trackingSince: null }
-}

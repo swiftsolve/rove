@@ -26,7 +26,3 @@ export type AppUsageSummary = {
   /** Epoch ms of the first sample, or null before then. */
   trackingSince: number | null
 }
-
-export function createEmptyAppUsage(): AppUsageSummary {
-  return { apps: [], support: 'supported', trackingSince: null }
-}

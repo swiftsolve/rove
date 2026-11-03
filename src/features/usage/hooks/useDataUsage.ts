@@ -1,11 +1,10 @@
 import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { DataUsageSummary } from '@/types'
-import { createEmptyDataUsage } from '@/types'
 
 // Slower than the per-app breakdowns: the daily totals are a summary.
 const REFRESH_INTERVAL_MS = 10_000
 
-const EMPTY_USAGE = createEmptyDataUsage()
+const EMPTY_USAGE: DataUsageSummary = { days: [], bootRxBytes: 0, bootTxBytes: 0, trackingSince: null }
 
 /** Download and upload per day for the last week, plus the totals since boot. */
 export function useDataUsage(): UsageQuery<DataUsageSummary> {

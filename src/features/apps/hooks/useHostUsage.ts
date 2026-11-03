@@ -1,8 +1,7 @@
 import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { HostUsageSummary } from '@/types'
-import { createEmptyHostUsage } from '@/types'
 
-const EMPTY_USAGE = createEmptyHostUsage()
+const EMPTY_USAGE: HostUsageSummary = { apps: [], support: 'supported', trackingSince: null }
 
 /**
  * Per-app remote-host breakdown. Hostnames and country flags fill in over the

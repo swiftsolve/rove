@@ -6,7 +6,7 @@ import {
   type ThroughputHistory,
 } from '@/features/live-throughput/utils/throughput-history'
 import type { LiveThroughput } from '@/types'
-import { EMPTY_LIVE_THROUGHPUT, sanitizeRate } from '@/types'
+import { sanitizeRate } from '@/types'
 
 export type LiveThroughputState = {
   /** The latest sample. */
@@ -16,7 +16,7 @@ export type LiveThroughputState = {
 }
 
 const INITIAL_STATE: LiveThroughputState = {
-  throughput: EMPTY_LIVE_THROUGHPUT,
+  throughput: { downloadMbps: 0, uploadMbps: 0, timestamp: 0 },
   history: EMPTY_THROUGHPUT_HISTORY,
 }
 

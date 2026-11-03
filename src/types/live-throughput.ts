@@ -3,9 +3,3 @@ export type LiveThroughput = {
   uploadMbps: number
   timestamp: number
 }
-
-export const EMPTY_LIVE_THROUGHPUT: LiveThroughput = {
-  downloadMbps: 0,
-  uploadMbps: 0,
-  timestamp: 0,
-}

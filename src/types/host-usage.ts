@@ -41,7 +41,3 @@ export type HostUsageSummary = {
   /** Epoch ms of the first sample, or null before then. */
   trackingSince: number | null
 }
-
-export function createEmptyHostUsage(): HostUsageSummary {
-  return { apps: [], support: 'supported', trackingSince: null }
-}
