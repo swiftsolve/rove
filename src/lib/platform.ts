@@ -8,6 +8,15 @@ export const IS_MAC = typeof navigator !== 'undefined' && navigator.userAgent.in
  * has no privileged-port restriction, so DHCP capture needs no setup there). */
 export const IS_WINDOWS = typeof navigator !== 'undefined' && navigator.userAgent.includes('Win')
 
+/** The OS's name, for display (About): macOS, Windows, Linux, or Desktop when it can't tell. */
+export const PLATFORM_NAME = IS_MAC
+  ? 'macOS'
+  : IS_WINDOWS
+    ? 'Windows'
+    : typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent)
+      ? 'Linux'
+      : 'Desktop'
+
 /**
  * True on WebKitGTK, the Linux Tauri webview. Two of its quirks need dodging,
  * and neither is feature-detectable — the APIs are advertised, they just break:

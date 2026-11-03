@@ -14,7 +14,7 @@ export function getConnectionDisplay(info: NetworkInfo): ConnectionDisplay {
   if (isWifiNetwork(info)) {
     return {
       variant: 'wifi',
-      title: info.ssid ?? 'WiFi Network',
+      title: info.ssid ?? 'Wi‑Fi network',
       subtitle: info.interfaceName,
     }
   }

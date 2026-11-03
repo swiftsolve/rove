@@ -69,27 +69,33 @@ function ThemeSegmented({ labelId, descriptionId }: { labelId: string; descripti
   )
 }
 
-/** A labelled row with a description and a control (toggle, button, …) on the right. */
+/** A labelled row with a description and a control (toggle, button, …) on the right, or below when `isStacked`. */
 function SettingRow({
   title,
   description,
+  isStacked = false,
   control,
 }: {
   title: string
   description: string
-  /** Renders the control, given the description's id so it can point at it. */
-  control: (descriptionId: string) => ReactNode
+  /** The control goes under the text: for one too wide to sit beside it (the theme picker). */
+  isStacked?: boolean
+  /** Renders the control, given the title's and the description's ids so it can point at them. */
+  control: (ids: { labelId: string; descriptionId: string }) => ReactNode
 }) {
+  const labelId = useId()
   const descriptionId = useId()
   return (
-    <div className={rowVariants()}>
+    <div className={rowVariants({ isStacked })}>
       <div className={ROW_TEXT}>
-        <span className={ROW_TITLE}>{title}</span>
+        <span id={labelId} className={ROW_TITLE}>
+          {title}
+        </span>
         <span id={descriptionId} className={ROW_DESC}>
           {description}
         </span>
       </div>
-      <div className="shrink-0">{control(descriptionId)}</div>
+      <div className="shrink-0">{control({ labelId, descriptionId })}</div>
     </div>
   )
 }
@@ -136,8 +142,6 @@ export function SettingsView() {
   const { check, runCheck } = useManualUpdateCheck()
   const isChecking = check.kind === 'checking'
   const checkResult = renderCheckResult(check)
-  const themeLabelId = useId()
-  const themeDescriptionId = useId()
 
   return (
     <div className="page">
@@ -150,7 +154,7 @@ export function SettingsView() {
           <SettingRow
             title="Check for updates automatically"
             description="Look for a newer signed release each time Rove launches."
-            control={(descriptionId) => (
+            control={({ descriptionId }) => (
               <Toggle
                 isChecked={isAutoUpdateEnabled}
                 onChange={setIsAutoUpdateEnabled}
@@ -162,7 +166,7 @@ export function SettingsView() {
           <SettingRow
             title="Check for updates now"
             description="Query GitHub Releases for the latest signed build."
-            control={(descriptionId) => (
+            control={({ descriptionId }) => (
               <Button
                 aria-describedby={descriptionId}
                 icon={RefreshIcon}
@@ -180,21 +184,16 @@ export function SettingsView() {
       <Card>
         <CardHeader title="Appearance" />
         <CardBody layout="rows">
-          <div className={rowVariants({ isStacked: true })}>
-            <div className={ROW_TEXT}>
-              <span id={themeLabelId} className={ROW_TITLE}>
-                Theme
-              </span>
-              <span id={themeDescriptionId} className={ROW_DESC}>
-                Use a dark or light appearance, or match your system setting.
-              </span>
-            </div>
-            <ThemeSegmented labelId={themeLabelId} descriptionId={themeDescriptionId} />
-          </div>
+          <SettingRow
+            title="Theme"
+            description="Use a dark or light appearance, or match your system setting."
+            isStacked
+            control={(ids) => <ThemeSegmented {...ids} />}
+          />
           <SettingRow
             title="Theme switch sound"
             description="Play a soft click when toggling between light and dark."
-            control={(descriptionId) => (
+            control={({ descriptionId }) => (
               <Toggle
                 isChecked={areThemeSoundsEnabled}
                 onChange={setAreThemeSoundsEnabled}
