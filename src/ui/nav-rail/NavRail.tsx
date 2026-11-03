@@ -7,7 +7,8 @@ import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
 
 // The accent bar's shape, hugging the rail's left edge. BAR_HEIGHT is its
-// `h-20` in px, for centring it on an item: change the two together.
+// `h-20` in px, for centring it on an item, and ACTIVE_BAR repeats the shape
+// as `before:` classes: change all three together.
 const BAR_SHAPE = 'w-[3px] h-20 rounded-[0_3px_3px_0] bg-accent'
 const BAR_HEIGHT = 20
 

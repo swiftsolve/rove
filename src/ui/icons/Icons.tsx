@@ -83,6 +83,8 @@ import {
 } from 'lucide-react'
 import type { JSX } from 'react'
 
+import { ICON_STROKE_WIDTH } from './CustomIcon'
+
 export type IconProps = {
   /** Its width and height in px. Each icon has its own default. */
   size?: number
@@ -95,7 +97,7 @@ export type IconComponent = (props: IconProps) => JSX.Element
 
 function make(Base: LucideIcon, defaultSize: number): IconComponent {
   return function Icon({ size = defaultSize, className }: IconProps) {
-    return <Base size={size} className={className} strokeWidth={1.75} aria-hidden />
+    return <Base size={size} className={className} strokeWidth={ICON_STROKE_WIDTH} aria-hidden />
   }
 }
 

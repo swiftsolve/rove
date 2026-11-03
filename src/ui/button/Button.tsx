@@ -127,17 +127,12 @@ export function Button({
   ...buttonProps
 }: ButtonProps) {
   const label = isLoading && loadingLabel != null ? loadingLabel : children
+  const variantTones = TONES[variant]
+  const resolvedTone = tone && variantTones.includes(tone) ? tone : variantTones[0]
   return (
     <button
       type={type}
-      className={cn(
-        buttonVariants({
-          variant,
-          tone: tone && TONES[variant].includes(tone) ? tone : TONES[variant][0],
-          size: size ?? DEFAULT_SIZES[variant],
-        }),
-        className,
-      )}
+      className={cn(buttonVariants({ variant, tone: resolvedTone, size: size ?? DEFAULT_SIZES[variant] }), className)}
       {...pressableProps({ isDisabled, isLoading, onClick })}
       {...buttonProps}
     >

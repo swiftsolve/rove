@@ -10,7 +10,7 @@ function percentOf(value: number, max: number): number {
 
 // The width eases so the bars glide in step with the count-up figures beside
 // them; the global reduced-motion rule turns it off.
-const segVariants = cva('h-full transition-[width] duration-400 ease-out', {
+const segmentVariants = cva('h-full transition-[width] duration-400 ease-out', {
   variants: {
     series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
@@ -36,8 +36,8 @@ type SplitBarProps = {
 export function SplitBar({ down, up, max, label, className }: SplitBarProps) {
   return (
     <div className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)} role="img" aria-label={label}>
-      <span className={segVariants({ series: 'down' })} style={{ width: `${percentOf(down, max)}%` }} />
-      <span className={segVariants({ series: 'up' })} style={{ width: `${percentOf(up, max)}%` }} />
+      <span className={segmentVariants({ series: 'down' })} style={{ width: `${percentOf(down, max)}%` }} />
+      <span className={segmentVariants({ series: 'up' })} style={{ width: `${percentOf(up, max)}%` }} />
     </div>
   )
 }

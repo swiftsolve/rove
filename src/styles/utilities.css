@@ -67,8 +67,9 @@
    tab change. Fill mode `backwards`, not `both`: `both` would leave an identity
    transform on every child, making each a stacking context that traps header
    tooltips behind later siblings. From the 5th child on they share the last
-   step, so a long page still settles in order. An error banner in the page
-   staggers in with it rather than running its own fade. */
+   step, so a long page still settles in order. `& > .banner` is there for
+   specificity: it outranks the banner's own fade-in, which `& > *` only ties,
+   so a banner in the page staggers in with the cards. */
 @utility page {
   display: flex;
   flex: 1;

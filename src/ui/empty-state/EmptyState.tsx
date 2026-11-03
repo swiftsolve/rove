@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
@@ -54,8 +55,8 @@ function PlaceholderRows({ isLocked }: { isLocked: boolean }) {
           <div key={titleWidth} className="flex items-center gap-10 rounded-lg bg-surface px-12 py-10">
             <div className="size-[22px] shrink-0 rounded-sm bg-fill-default" />
             <div className="flex flex-1 flex-col gap-6">
-              <div className={`h-6 rounded-full bg-fill-default ${titleWidth}`} />
-              <div className={`h-4 rounded-full bg-fill-default ${metaWidth}`} />
+              <div className={cx('h-6 rounded-full bg-fill-default', titleWidth)} />
+              <div className={cx('h-4 rounded-full bg-fill-default', metaWidth)} />
             </div>
             <div className="h-6 w-[36px] rounded-full bg-fill-default" />
           </div>

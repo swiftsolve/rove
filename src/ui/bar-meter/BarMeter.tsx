@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 
 import { cn } from '../foundations/cn'
+import type { VariantOf } from '../foundations/variants'
 
 // Each size's bar width and the four heights, shortest first. Whole pixels, or
 // the thin bars blur across subpixel boundaries and read fuzzy; the ends round
@@ -30,6 +31,13 @@ const barVariants = cva('rounded-full', {
   },
 })
 
+type BarFill = VariantOf<typeof barVariants, 'fill'>
+
+function barFill(isLit: boolean, isDimmed: boolean): BarFill {
+  if (isDimmed) return isLit ? 'dimmedLit' : 'dimmed'
+  return isLit ? 'lit' : 'unlit'
+}
+
 type BarMeterProps = {
   /** Lit bars, 0 to 4. */
   value: number
@@ -51,11 +59,9 @@ export function BarMeter({ value, size = 'lg', color = 'currentColor', isDimmed 
   const { width, heights } = SIZES[size]
   return (
     <span className={cn('inline-flex items-end gap-2', heights[3], className)} style={{ color }} aria-hidden>
-      {heights.map((height, i) => {
-        const isLit = i < value
-        const fill = isDimmed ? (isLit ? 'dimmedLit' : 'dimmed') : isLit ? 'lit' : 'unlit'
-        return <span key={height} className={cx(barVariants({ fill }), width, height)} />
-      })}
+      {heights.map((height, i) => (
+        <span key={height} className={cx(barVariants({ fill: barFill(i < value, isDimmed) }), width, height)} />
+      ))}
     </span>
   )
 }
