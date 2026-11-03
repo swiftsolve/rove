@@ -49,7 +49,7 @@ impl KindPatterns {
         Self(
             table
                 .iter()
-                .map(|(pattern, kind)| (Regex::new(pattern).unwrap(), *kind))
+                .map(|(pattern, kind)| (Regex::new(pattern).expect("a valid classifier pattern"), *kind))
                 .collect(),
         )
     }

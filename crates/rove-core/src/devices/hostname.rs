@@ -12,7 +12,7 @@ use std::time::Duration;
 const UNIX_HOSTNAME_CONCURRENCY: usize = 16;
 
 static HOST_SUFFIX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\.(local|lan|home|localdomain|internal)\.?$").unwrap());
+    LazyLock::new(|| Regex::new(r"\.(local|lan|home|localdomain|internal)\.?$").expect("a valid pattern"));
 
 /// "pixel-7.lan" → "pixel-7".
 pub fn trim_suffix(host: &str) -> String {

@@ -206,7 +206,8 @@ use crate::usage::app::{field_u64, ss_proc_name, ss_proc_pid};
 fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
     // (app, conn_key, peer_ip, peer_port, pid) awaiting its following info line.
-    let mut pending: Option<(String, String, String, Option<u16>, Option<u32>)> = None;
+    type Pending = (String, String, String, Option<u16>, Option<u32>);
+    let mut pending: Option<Pending> = None;
 
     for line in output.lines() {
         let trimmed = line.trim();

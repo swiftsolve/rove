@@ -6,3 +6,13 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "time", "sync", "fs", "net"] }
+
+# Each crate opts in with `[lints] workspace = true`. CI runs clippy with
+# `-D warnings`, so these warnings fail the build.
+[workspace.lints.clippy]
+# A panic in a long-lived service takes its feature down for the rest of the
+# run: handle the error, or say why it can't happen with `expect`. Tests are
+# exempt (clippy.toml).
+unwrap_used = "warn"
+# Every `unsafe` block says, in a `// SAFETY:` comment, why it's sound.
+undocumented_unsafe_blocks = "warn"

@@ -118,7 +118,7 @@ static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
     // 1-2 hex digits because BSD drops leading zeros ("af:0"), separated by `:`
     // or, on Windows, `-`.
     Regex::new(r"([0-9]{1,3}(?:\.[0-9]{1,3}){3}).*?([0-9a-fA-F]{1,2}(?:[:-][0-9a-fA-F]{1,2}){5})")
-        .unwrap()
+        .expect("a valid pattern")
 });
 
 /// The kernel neighbor table. Linux's `ip neigh` has a reachability state; the

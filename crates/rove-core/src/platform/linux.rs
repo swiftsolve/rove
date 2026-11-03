@@ -11,7 +11,7 @@ use std::sync::LazyLock;
 
 macro_rules! static_regex {
     ($name:ident, $pattern:literal) => {
-        static $name: LazyLock<Regex> = LazyLock::new(|| Regex::new($pattern).unwrap());
+        static $name: LazyLock<Regex> = LazyLock::new(|| Regex::new($pattern).expect("a valid pattern"));
     };
 }
 

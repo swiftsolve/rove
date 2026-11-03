@@ -22,7 +22,7 @@ use ferrisetw::EventRecord;
 use std::collections::{HashMap, HashSet};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{LazyLock, Mutex, RwLock};
+use std::sync::{LazyLock, Mutex, MutexGuard, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Microsoft-Windows-Kernel-Network. `by_guid` takes the GUID as a `u128`.
 const PROVIDER_GUID: u128 = 0x7DD4_2A49_5329_4832_8DFD_43D9_7915_3A88;
@@ -136,6 +136,23 @@ static START_LOCK: Mutex<()> = Mutex::new(());
 /// the cause is visible without the log. `None` once it's running.
 static LAST_ERROR: LazyLock<Mutex<Option<String>>> = LazyLock::new(|| Mutex::new(None));
 
+// The locks below are taken through these, which carry on past a poisoned lock
+// instead of panicking. A panic mid-update leaves at worst one stale counter or
+// name, but a poisoned global would panic every later event and sample, so the
+// ETW callback thread and the Apps and Hosts views would die with it.
+
+fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+    mutex.lock().unwrap_or_else(PoisonError::into_inner)
+}
+
+fn read<T>(rw: &RwLock<T>) -> RwLockReadGuard<'_, T> {
+    rw.read().unwrap_or_else(PoisonError::into_inner)
+}
+
+fn write<T>(rw: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
+    rw.write().unwrap_or_else(PoisonError::into_inner)
+}
+
 /// This host's interface IPs, v4 and v6. An error gives an empty set, and the
 /// peer pick in [`on_event`] falls back to the packet direction.
 fn local_ips() -> HashSet<IpAddr> {
@@ -153,7 +170,7 @@ fn host_port(raw: u16) -> Option<u16> {
 
 /// The instance a PID currently refers to.
 fn current_instance(pid: u32) -> Instance {
-    let generation = GENERATION.read().unwrap().get(&pid).copied().unwrap_or(0);
+    let generation = read(&GENERATION).get(&pid).copied().unwrap_or(0);
     instance(pid, generation)
 }
 
@@ -188,12 +205,12 @@ fn on_process_event(record: &EventRecord, locator: &SchemaLocator) {
     };
 
     if event_id == EVENT_PROCESS_STOP {
-        ENDED.lock().unwrap().insert(current_instance(pid));
+        lock(&ENDED).insert(current_instance(pid));
         return;
     }
 
     let inst = {
-        let mut generations = GENERATION.write().unwrap();
+        let mut generations = write(&GENERATION);
         let generation = generations.entry(pid).and_modify(|g| *g += 1).or_insert(1);
         instance(pid, *generation)
     };
@@ -202,7 +219,7 @@ fn on_process_event(record: &EventRecord, locator: &SchemaLocator) {
         .ok()
         .as_deref()
         .and_then(image_base_name);
-    NAMES.write().unwrap().insert(inst, name);
+    write(&NAMES).insert(inst, name);
 }
 
 /// Name an instance when its first byte lands, so a process that dies before
@@ -214,12 +231,12 @@ fn on_process_event(record: &EventRecord, locator: &SchemaLocator) {
 /// this is a backstop. A failure is tombstoned so a protected or dead PID isn't
 /// reopened on every event.
 fn note_instance(inst: Instance) {
-    if instance_generation(inst) != 0 || NAMES.read().unwrap().contains_key(&inst) {
+    if instance_generation(inst) != 0 || read(&NAMES).contains_key(&inst) {
         return;
     }
     let name = crate::platform::app_icon::exe_path_for_pid(instance_pid(inst))
         .and_then(|path| path.file_name().map(|f| f.to_string_lossy().into_owned()));
-    NAMES.write().unwrap().insert(inst, name);
+    write(&NAMES).insert(inst, name);
 }
 
 /// Kernel-Network callback: add each send/receive to its process instance's
@@ -261,7 +278,7 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
 
     // Apps view.
     {
-        let mut acc = ACC.lock().unwrap();
+        let mut acc = lock(&ACC);
         let entry = acc.entry(inst).or_default();
         if is_rx {
             entry.rx = entry.rx.saturating_add(u64::from(size));
@@ -282,7 +299,7 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
     let dport: u16 = parser.try_parse("dport").unwrap_or(0);
 
     let (local_ip, local_port, peer_ip, peer_port) = {
-        let locals = LOCAL_IPS.read().unwrap();
+        let locals = read(&LOCAL_IPS);
         let saddr_local = locals.contains(&saddr);
         let daddr_local = locals.contains(&daddr);
         match (saddr_local, daddr_local) {
@@ -307,7 +324,7 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
         host_port(local_port).unwrap_or(0),
         host_port(peer_port).unwrap_or(0)
     );
-    let mut peers = PEER_ACC.lock().unwrap();
+    let mut peers = lock(&PEER_ACC);
     let entry = peers.entry(conn_key).or_insert_with(|| PeerAcc {
         inst,
         ip: peer_ip.to_string(),
@@ -332,7 +349,7 @@ fn ensure_started() {
     if ACTIVE.load(Ordering::Acquire) {
         return;
     }
-    let _guard = START_LOCK.lock().unwrap();
+    let _guard = lock(&START_LOCK);
     // Another sample may have started it while we waited on the lock.
     if ACTIVE.load(Ordering::Acquire) {
         return;
@@ -374,7 +391,7 @@ fn try_start() -> Result<(), TraceError> {
     });
     std::mem::forget(trace);
     ACTIVE.store(true, Ordering::Release);
-    *LAST_ERROR.lock().unwrap() = None;
+    *lock(&LAST_ERROR) = None;
     Ok(())
 }
 
@@ -384,7 +401,7 @@ fn try_start() -> Result<(), TraceError> {
 fn record_start_error(e: &TraceError) {
     let detail = format!("{e:?}");
     tracing::warn!("per-app ETW trace could not start: {detail}");
-    *LAST_ERROR.lock().unwrap() = Some(detail);
+    *lock(&LAST_ERROR) = Some(detail);
 }
 
 /// True while the ETW session is running.
@@ -397,7 +414,7 @@ pub fn last_error() -> Option<String> {
     if ACTIVE.load(Ordering::Acquire) {
         return None;
     }
-    LAST_ERROR.lock().unwrap().clone()
+    lock(&LAST_ERROR).clone()
 }
 
 /// Last-resort naming from the process table, for instances the other sources
@@ -412,7 +429,7 @@ fn refresh_names(instances: &[Instance]) {
     static SYS: LazyLock<Mutex<System>> = LazyLock::new(|| Mutex::new(System::new()));
 
     let unresolved: Vec<Instance> = {
-        let names = NAMES.read().unwrap();
+        let names = read(&NAMES);
         instances
             .iter()
             .copied()
@@ -424,9 +441,9 @@ fn refresh_names(instances: &[Instance]) {
         return;
     }
 
-    let mut sys = SYS.lock().unwrap();
+    let mut sys = lock(&SYS);
     sys.refresh_processes(ProcessesToUpdate::All, true);
-    let mut names = NAMES.write().unwrap();
+    let mut names = write(&NAMES);
     for inst in unresolved {
         if let Some(proc_) = sys.process(Pid::from_u32(instance_pid(inst))) {
             names.insert(inst, Some(proc_.name().to_string_lossy().into_owned()));
@@ -456,7 +473,7 @@ fn label(names: &HashMap<Instance, Option<String>>, inst: Instance) -> String {
 /// the peer path could drop bytes the Apps view never saw.
 fn prune_ended(sampled: &[Instance]) {
     let done: Vec<Instance> = {
-        let mut ended = ENDED.lock().unwrap();
+        let mut ended = lock(&ENDED);
         if ended.is_empty() {
             return;
         }
@@ -470,8 +487,8 @@ fn prune_ended(sampled: &[Instance]) {
     if done.is_empty() {
         return;
     }
-    let mut acc = ACC.lock().unwrap();
-    let mut names = NAMES.write().unwrap();
+    let mut acc = lock(&ACC);
+    let mut names = write(&NAMES);
     for inst in &done {
         acc.remove(inst);
         names.remove(inst);
@@ -483,14 +500,14 @@ pub fn sample_units() -> Vec<UsageUnit> {
     ensure_started();
 
     let snapshot: Vec<(Instance, ByteAcc)> = {
-        let acc = ACC.lock().unwrap();
+        let acc = lock(&ACC);
         acc.iter().map(|(&inst, &bytes)| (inst, bytes)).collect()
     };
     let instances: Vec<Instance> = snapshot.iter().map(|(inst, _)| *inst).collect();
     refresh_names(&instances);
 
     let units: Vec<UsageUnit> = {
-        let names = NAMES.read().unwrap();
+        let names = read(&NAMES);
         snapshot
             .into_iter()
             .map(|(inst, bytes)| UsageUnit {
@@ -514,10 +531,10 @@ pub fn sample_units() -> Vec<UsageUnit> {
 /// ephemeral-port key won't recur.
 pub fn sample_peer_units() -> Vec<PeerUnit> {
     ensure_started();
-    *LOCAL_IPS.write().unwrap() = local_ips();
+    *write(&LOCAL_IPS) = local_ips();
 
     let snapshot: Vec<(String, PeerAcc)> = {
-        let mut peers = PEER_ACC.lock().unwrap();
+        let mut peers = lock(&PEER_ACC);
         peers.retain(|_, e| e.touched);
         let snap: Vec<(String, PeerAcc)> =
             peers.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
@@ -530,7 +547,7 @@ pub fn sample_peer_units() -> Vec<PeerUnit> {
     refresh_names(&instances);
 
     // No `prune_ended` here; `sample_units` owns eviction (see its docs).
-    let names = NAMES.read().unwrap();
+    let names = read(&NAMES);
     snapshot
         .into_iter()
         .map(|(conn_key, e)| PeerUnit {

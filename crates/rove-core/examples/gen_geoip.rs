@@ -62,7 +62,7 @@ const DATABASES: &[Db] = &[
         // A country database that can't place 8.8.8.8 as US is not worth shipping.
         sample: |reader| {
             let got = reader
-                .lookup("8.8.8.8".parse().unwrap())
+                .lookup("8.8.8.8".parse().expect("a valid IP"))
                 .map_err(|e| format!("sample lookup failed: {e}"))?
                 .decode::<maxminddb::geoip2::Country>()
                 .map_err(|e| format!("sample decode failed: {e}"))?
@@ -79,7 +79,7 @@ const DATABASES: &[Db] = &[
         // Google's block is AS15169; a table that doesn't say so is the wrong one.
         sample: |reader| {
             let got = reader
-                .lookup("8.8.8.8".parse().unwrap())
+                .lookup("8.8.8.8".parse().expect("a valid IP"))
                 .map_err(|e| format!("sample lookup failed: {e}"))?
                 .decode::<maxminddb::geoip2::Asn>()
                 .map_err(|e| format!("sample decode failed: {e}"))?

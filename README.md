@@ -263,9 +263,11 @@ npm run check                # typecheck, lint, the repo's checks and every Vite
 npm test                     # just the UI's unit, DOM and story tests
 npm run a11y                 # axe on every screen and dialog, both themes
 cargo test -p rove-core      # the service layer's tests
+cargo clippy --workspace --all-targets -- -D warnings   # the Rust lints (Cargo.toml)
 ```
 
-CI runs `npm run check` on every push and pull request.
+CI runs `npm run check` on every push and pull request, and clippy on all
+three OSes.
 
 > **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
 > VS Code from snap), unset its library path first or the binary picks up

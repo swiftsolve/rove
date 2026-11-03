@@ -209,7 +209,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                 let ServiceEvent::ServiceResolved(info) = event else {
                     continue;
                 };
-                let sighting = sighting(&info, service, *kind, *is_strong);
+                let sighting = sighting(&info, service, kind, *is_strong);
                 for addr in info.get_addresses() {
                     if addr.is_ipv4() {
                         hits.entry(addr.to_string()).or_default().absorb(&sighting);

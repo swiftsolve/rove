@@ -958,7 +958,7 @@ mod imp {
                 let count = ((y1 - y0) * (x1 - x0)) as u64;
                 let alpha = sum[3];
                 for channel in sum.iter().take(3) {
-                    out.push(if alpha == 0 { 0 } else { (channel / alpha) as u8 });
+                    out.push(channel.checked_div(alpha).unwrap_or(0) as u8);
                 }
                 out.push((alpha / count) as u8);
             }
@@ -1025,7 +1025,7 @@ mod linux_tests {
     fn temp_dir(test: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("rove-app-icon-{test}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
+        fs::create_dir_all(&dir).expect("create the test dir");
         dir
     }
 

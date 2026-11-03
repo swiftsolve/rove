@@ -100,7 +100,7 @@ pub struct LiveDiagnostics {
 }
 
 static PING_TIME: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap());
+    LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").expect("a valid pattern"));
 
 /// How long each reply is waited for before it counts as lost.
 const PING_REPLY_TIMEOUT_MS: u32 = 1000;

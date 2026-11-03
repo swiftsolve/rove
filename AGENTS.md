@@ -34,6 +34,7 @@ checked.
 ```bash
 npm run check                # typecheck, lint, the repo's checks, and every Vitest test
 cargo test -p rove-core      # when Rust changed
+cargo clippy --workspace --all-targets -- -D warnings   # likewise
 ```
 
 Lint enforces the house rules (no readonly, boolean prefixes, no em dash in

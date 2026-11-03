@@ -10,7 +10,7 @@ fn main() {
     println!("cargo:rerun-if-changed=data/oui.tsv");
 
     let src = std::fs::read("data/oui.tsv").expect("read data/oui.tsv");
-    let out = std::path::Path::new(&std::env::var("OUT_DIR").unwrap()).join("oui.tsv.gz");
+    let out = std::path::Path::new(&std::env::var("OUT_DIR").expect("cargo sets OUT_DIR")).join("oui.tsv.gz");
 
     let file = std::fs::File::create(&out).expect("create oui.tsv.gz");
     let mut encoder = flate2::write::GzEncoder::new(file, flate2::Compression::best());
