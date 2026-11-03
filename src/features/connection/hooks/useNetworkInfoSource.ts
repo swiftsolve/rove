@@ -83,24 +83,25 @@ export function useNetworkInfoSource(): NetworkState {
     queryFn: readNetworkInfo,
     enabled: hasBridge,
     refetchInterval: REFRESH_INTERVAL_MS,
-    // A failed poll over a good reading tries again a poll later, so the error
-    // shows only once FAILURES_BEFORE_ERROR reads in a row have failed. The
-    // first read has nothing to fall back on, so it reports at once.
+    // A failed read over a good reading retries a poll later, so the error
+    // shows only after FAILURES_BEFORE_ERROR failures in a row. The first read
+    // has nothing to fall back on, so it reports at once.
     retry: (failureCount) =>
       queryClient.getQueryData(NETWORK_INFO_KEY) !== undefined && failureCount < FAILURES_BEFORE_ERROR - 1,
     retryDelay: REFRESH_INTERVAL_MS,
     // An unchanged reading keeps its identity, so readers don't re-render.
     structuralSharing: (previous, next) =>
       isNetworkInfoEqual((previous as NetworkInfo | undefined) ?? null, next as NetworkInfo) ? previous : next,
-    // Not `dataUpdatedAt` or `isFetching`: a quiet poll that changes nothing
-    // re-renders nothing.
+    // Not `dataUpdatedAt` or `isFetching`: a poll that changes nothing
+    // re-renders nothing. `lastReadAt` still reads `dataUpdatedAt` fresh, on
+    // the render the error brings.
     notifyOnChangeProps: ['data', 'error', 'status'],
   })
   const { data, dataUpdatedAt, refetch, status } = query
   const queryError = query.error
 
-  // Reads the user asked for (or a resume) in flight: they show the spinner
-  // while there's no reading yet. A poll or nudge never does.
+  // Reloads in flight (Retry, or a resume). Until the first reading lands they
+  // show the spinner; a poll or nudge never does.
   const [reloadCount, setReloadCount] = useState(0)
   const reload = useCallback(async (): Promise<void> => {
     if (!hasBridge) return
@@ -118,7 +119,8 @@ export function useNetworkInfoSource(): NetworkState {
   const isVisible = usePageVisible()
   const wasVisibleRef = useRef(isVisible)
   useEffect(() => {
-    // The first read is TanStack's own; this is each resume after it.
+    // Each resume reads afresh, here rather than through TanStack's focus
+    // refetch, which would join the frozen read. The first read is TanStack's own.
     const wasVisible = wasVisibleRef.current
     wasVisibleRef.current = isVisible
     if (isVisible && !wasVisible) void reload()

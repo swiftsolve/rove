@@ -7,6 +7,7 @@ import type { InternetStatus } from '@/types'
 
 const INTERNET_STATUS_KEY = ['network', 'internet-status']
 
+/** The backend's verdict, or the cached one when a heartbeat beat it or the read failed. */
 async function readInternetStatus(): Promise<InternetStatus | null> {
   const startedAt = Date.now()
   const cached = (): InternetStatus | null =>
