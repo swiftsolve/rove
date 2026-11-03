@@ -36,12 +36,15 @@
 
 /* Element resets and app-wide behaviour, under every component and utility. */
 @layer base {
-  /* Border utilities set only a width; they need a solid style to show. This
-     is the one piece of Tailwind's preflight the app uses. */
+  /* The reset. Border utilities set only a width; they need a solid style to
+     show, the one piece of Tailwind's preflight the app uses. */
   *,
   ::before,
   ::after,
   ::backdrop {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     border-width: 0;
     border-style: solid;
   }
@@ -77,12 +80,6 @@
   :root.theme-switching *::before,
   :root.theme-switching *::after {
     transition: none !important;
-  }
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
   }
 
   html {
@@ -137,20 +134,17 @@
     }
   }
 
-  /* Native controls, carets and autofill follow the theme, not index.html's dark. */
+  /* Native controls, carets and autofill follow the theme, not index.html's
+     dark. The content column's right inset is 12px like the left, its
+     always-on scrollbar included: padding makes up what the bar doesn't. */
   :root {
     color-scheme: dark;
+    --scrollbar-size: 5px;
+    --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));
   }
 
   :root.theme-light {
     color-scheme: light;
-  }
-
-  /* The content column's right inset is 12px like the left, its always-on
-     scrollbar included: padding makes up what the bar doesn't. */
-  :root {
-    --scrollbar-size: 5px;
-    --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));
   }
 
   *::-webkit-scrollbar {
@@ -170,8 +164,6 @@
   button {
     font-family: inherit;
     cursor: pointer;
-    border: none;
-    outline: none;
     background: none;
     white-space: nowrap;
   }
@@ -191,15 +183,16 @@
     outline: none;
   }
 
-  /* Lists are markup for meaning, not bullets: no markers, no indent. They carry
-     role="list" because WebKit stops announcing a list once its markers are off.
-     :where() keeps this at zero specificity, so a list's own class always wins. */
+  /* Lists are markup for meaning, not bullets: no markers (the reset above
+     drops the indent). They carry role="list" because WebKit stops announcing a
+     list once its markers are off. :where() keeps this at zero specificity, so
+     a list's own class always wins. */
   :where(ul[role='list'], ol[role='list']) {
     list-style: none;
-    margin: 0;
-    padding: 0;
   }
 
+  /* Every keyframe the app uses: the `animate-*` utilities (tailwind.css) and
+     the utilities in utilities.css name these. */
   @keyframes spin {
     to {
       transform: rotate(360deg);
@@ -248,6 +241,57 @@
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes overlay-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes scan-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes scan-slide-out {
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @keyframes wavy-scroll {
+    to {
+      transform: translateX(var(--wave-length));
     }
   }
 

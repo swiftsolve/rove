@@ -169,86 +169,29 @@
   --ease-spring: var(--ease-spring);
 }
 
-/* Entrance and exit animations (`animate-*`), with their keyframes. */
+/* Entrance and exit animations (`animate-*`). Their keyframes are in base.css. */
 @theme inline {
   /* A dialog's backdrop fades in and the dialog rises into place; closing
      plays the same in reverse, quicker. */
-  --animate-overlay-in: overlay-in var(--duration-fast) var(--ease-out);
+  --animate-overlay-in: fade-in var(--duration-fast) var(--ease-out);
   --animate-dialog-in: dialog-in var(--duration-normal) var(--ease-out);
   --animate-overlay-out: overlay-out var(--duration-fast) var(--ease-in-out) forwards;
   --animate-dialog-out: dialog-out var(--duration-fast) var(--ease-in-out) forwards;
-  /* A view, a header subtitle or a status message fades in (keyframes in base.css). */
+  /* A view, a header subtitle or a status message fades in. */
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
   /* A dropdown menu drops into place. */
   --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
-  /* StatusDot's pulses (keyframes in base.css): calm, live data, work under way. */
+  /* StatusDot's pulses: calm, live data, work under way. */
   --animate-pulse-calm: status-pulse 2.4s var(--ease-pulse) infinite;
   --animate-pulse-live: status-pulse 2s var(--ease-pulse) infinite;
   --animate-pulse-busy: status-pulse 1.6s var(--ease-pulse) infinite;
   /* The Devices header's scan status and online tally trade places. */
   --animate-scan-slide-in: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
   --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
-  /* ButtonSpinner's ring turns while its arc grows and shrinks (keyframes in base.css). */
+  /* ButtonSpinner's ring turns while its arc grows and shrinks. */
   --animate-ring-rotate: spin 2s linear infinite;
   --animate-ring-stretch: ring-stretch 1.5s var(--ease-pulse) infinite;
   /* The speed test's squiggle scrolls one wavelength (`--wave-length`) per
      loop; the element sets the duration inline, in step with the JS. */
   --animate-wavy-scroll: wavy-scroll linear infinite;
-
-  @keyframes overlay-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes dialog-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px) scale(0.98);
-    }
-  }
-
-  @keyframes overlay-out {
-    to {
-      opacity: 0;
-    }
-  }
-
-  @keyframes dialog-out {
-    to {
-      opacity: 0;
-      transform: translateY(6px) scale(0.98);
-    }
-  }
-
-  @keyframes menu-in {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-  }
-
-  @keyframes scan-slide-in {
-    from {
-      opacity: 0;
-      transform: translateX(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @keyframes scan-slide-out {
-    to {
-      opacity: 0;
-      transform: translateX(-8px);
-    }
-  }
-
-  @keyframes wavy-scroll {
-    to {
-      transform: translateX(var(--wave-length));
-    }
-  }
 }
