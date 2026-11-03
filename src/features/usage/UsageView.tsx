@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { cx } from 'class-variance-authority'
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import type { RectangleProps } from 'recharts'
 import type { DailyUsage } from '@/types'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { formatBytes, splitBytes } from '@/lib/format'
@@ -180,6 +181,13 @@ const renderActiveBar =
     </g>
   )
 
+/** A bar as Recharts draws it, or with the hover marker when its day has
+ *  keyboard focus: Recharts marks only hovered bars as active. */
+const renderBar =
+  (color: string, focusedIndex: number | null) =>
+  ({ index, ...props }: RectangleProps & { index?: number }): JSX.Element =>
+    index === focusedIndex ? renderActiveBar(color)(props) : <Rectangle {...props} />
+
 function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
   const data: UsageDatum[] = days.map((day, index) => ({
     key: day.date,
@@ -220,6 +228,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
             maxBarSize={BAR_MAX_WIDTH}
             isAnimationActive={false}
             activeBar={renderActiveBar('var(--series-down)')}
+            shape={renderBar('var(--series-down)', focusedIndex)}
           />
           <Bar
             dataKey="up"
@@ -228,12 +237,14 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
             maxBarSize={BAR_MAX_WIDTH}
             isAnimationActive={false}
             activeBar={renderActiveBar('var(--series-up)')}
+            shape={renderBar('var(--series-up)', focusedIndex)}
           />
         </BarChart>
       </ResponsiveContainer>
       {/* One invisible column per day over the plot, matching the chart's equal
           day bands, so Tab steps through the days. Mouse events pass through to
-          the chart. */}
+          the chart. The tooltip and the bars' marker show the focused day, so
+          the columns draw no focus ring. */}
       <div
         className="pointer-events-none absolute inset-y-0 flex"
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
@@ -244,7 +255,7 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
             role="img"
             tabIndex={0}
             aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
-            className="flex-1 rounded-sm focus-visible:outline-offset-(--focus-inset)"
+            className="flex-1 focus-visible:outline-none"
             onFocus={() => setFocusedIndex(index)}
             onBlur={() => setFocusedIndex(null)}
           />
