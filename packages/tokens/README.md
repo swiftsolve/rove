@@ -153,7 +153,7 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
    ```
 
    Use `patch` for fixes and `major` for breaking changes.
-3. The tag runs three workflows: **Build** checks the tokens, **Publish** puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens), and **Presentation** exports the Figma file and republishes <https://swiftsolve.github.io/rove-tokens/>. The page's header shows the version from `package.json`. To republish the slideshow between releases (after Figma edits), run Presentation by hand from the Actions tab.
+3. The tag runs three workflows: **Build** checks the tokens, **Publish** puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens) through npm trusted publishing (`npx npm@11 trust list @swiftsolve/rove-tokens` shows the link to `publish.yml`; if Publish fails, `npm publish` by hand works too), and **Presentation** exports the Figma file and republishes <https://swiftsolve.github.io/rove-tokens/>. The page's header shows the version from `package.json`. To republish the slideshow between releases (after Figma edits), run Presentation by hand from the Actions tab.
 4. Update Rove to the new version (`npm install @swiftsolve/rove-tokens@latest`).
 
 ## 🗂️ What's where
