@@ -107,7 +107,7 @@
     },
     {
       "name": "Caption",
-      "description": "Badges, captions, footer hints. Code: .type-caption",
+      "description": "Live badge, captions, footer hints. Code: .type-caption",
       "fontFamily": "Inter",
       "fontStyle": "Regular",
       "fontWeight": 400,
@@ -226,6 +226,26 @@
       }
     },
     {
+      "name": "Label/Menu",
+      "description": "Menu items. Code: .type-label-menu",
+      "fontFamily": "Inter",
+      "fontStyle": "Medium",
+      "fontWeight": 500,
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 145
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/sm"
+      }
+    },
+    {
       "name": "Label/Default",
       "description": "Bold small labels on tinted chips. Code: .type-label-default",
       "fontFamily": "Inter",
@@ -283,6 +303,47 @@
       "boundVariables": {
         "fontFamily": "font-family/sans",
         "fontSize": "font-size/sm"
+      }
+    },
+    {
+      "name": "Heading/XSmall",
+      "description": "Empty state titles. Code: .type-heading-xsmall",
+      "fontFamily": "Inter",
+      "fontStyle": "Semi Bold",
+      "fontWeight": 600,
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 145
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/md"
+      }
+    },
+    {
+      "name": "Badge",
+      "description": "Badge labels. Code: .type-badge",
+      "fontFamily": "Inter",
+      "fontStyle": "Semi Bold",
+      "fontWeight": 600,
+      "fontSize": 10,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 100
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 4
+      },
+      "textCase": "UPPER",
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/2xs"
       }
     }
   ]

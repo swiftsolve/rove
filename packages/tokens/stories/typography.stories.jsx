@@ -13,10 +13,13 @@ const SPECIMENS = {
   'heading-large': 'Starlight_5G',
   'heading-medium': 'Add a service',
   'heading-small': 'Capabilities',
+  'heading-xsmall': 'No devices found',
   'body-default': <Joined parts={['192.168.1.42', '5 GHz']} />,
   'body-small': 'Devices will appear after a scan.',
   caption: 'Live',
+  badge: 'VPN',
   'label-large': 'Run test',
+  'label-menu': 'Edit',
   'label-default': 'Add service',
   'label-small': 'Wi‑Fi',
   overline: 'Download',
@@ -35,16 +38,16 @@ const families = Object.fromEntries(
   group(typography, 'font-family').map((token) => [`{${token.path.join('.')}}`, token.$value[0]]),
 )
 
-// heading-large is Heading/Large, as Figma names the style.
+// heading-large is Heading/Large, as Figma names the style; xsmall is XSmall.
 const styleName = (key) =>
   key
     .split('-')
-    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .map((word) => (word === 'xsmall' ? 'XSmall' : word[0].toUpperCase() + word.slice(1)))
     .join('/')
 
 const percent = (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
 
-function Spec({ name, value }) {
+function Spec({ value, textCase }) {
   const size = fontSizes[value.fontSize]
   const letterSpacing = value.letterSpacing.value / size
   const metrics = [`${size}px / ${Math.round(value.lineHeight * 100)}%`]
@@ -55,7 +58,7 @@ function Spec({ name, value }) {
         {families[value.fontFamily]} {WEIGHTS[value.fontWeight]}
       </span>
       <Joined parts={metrics} />
-      {name === 'overline' && <span>Uppercase</span>}
+      {textCase === 'UPPER' && <span>Uppercase</span>}
     </span>
   )
 }
@@ -142,7 +145,7 @@ function TextStyles() {
           <TableRow key={key}>
             <span className={`specimen ${className}`}>{SPECIMENS[key]}</span>
             <Name name={styleName(key)} description={token.$description?.replace(/ Code:.*$/, '')} />
-            <Spec name={key} value={token.$value} />
+            <Spec value={token.$value} textCase={token.$extensions?.['net.swiftsolve.rove-tokens']?.textCase} />
             <Code copy={className}>.{className}</Code>
           </TableRow>
         )

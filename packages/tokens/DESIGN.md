@@ -129,15 +129,18 @@ Apply a style with its class from `text-styles.css`. Each class reads four varia
 | Heading/Small | `.type-heading-small` | 14px 600 | Card headings. |
 | Body/Default | `.type-body-default` | 13px 400 | Body text. |
 | Overline | `.type-overline` | 11px 500 | Uppercase labels above values. |
-| Caption | `.type-caption` | 11px 400 | Badges, captions, footer hints. |
+| Caption | `.type-caption` | 11px 400 | Live badge, captions, footer hints. |
 | Label/Large | `.type-label-large` | 12px 600 | Solid button labels. In code: Button variant=solid |
 | Number/Display | `.type-number-display` | 28px 400, Questrial | Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
 | Number/Large | `.type-number-large` | 17px 400, Questrial | Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact |
 | Number/Default | `.type-number-default` | 13px 400, Questrial | Data row values. |
 | Number/Small | `.type-number-small` | 10px 400, Questrial | Chart axes and scale. |
+| Label/Menu | `.type-label-menu` | 12px 500 | Menu items. |
 | Label/Default | `.type-label-default` | 11px 600 | Bold small labels on tinted chips. |
 | Label/Small | `.type-label-small` | 11px 500 | Soft buttons, title bar status. |
 | Body/Small | `.type-body-small` | 12px 400 | Helper text, hints and units. |
+| Heading/XSmall | `.type-heading-xsmall` | 13px 600 | Empty state titles. |
+| Badge | `.type-badge` | 10px 600 | Badge labels. |
 
 ### Code-only tokens
 
