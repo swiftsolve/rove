@@ -21,6 +21,16 @@
   "search.exclude": {
     "**/.claude/worktrees": true
   },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, .nvmrc, chromatic.config.json",
+    "Cargo.toml": "Cargo.lock",
+    "vite.config.ts": "vitest.config.ts, tsconfig.json",
+    "eslint.config.js": ".prettierrc.json, .prettierignore",
+    ".gitignore": ".git-blame-ignore-revs",
+    "README.md": "AGENTS.md, THIRD-PARTY-NOTICES.md"
+  },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsserver.watchOptions": {
