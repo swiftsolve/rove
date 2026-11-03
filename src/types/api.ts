@@ -22,63 +22,93 @@ import type { TrafficUsageSummary } from './traffic-usage'
 
 export type NetworkAPI = {
   getNetworkInfo(): Promise<NetworkInfo>
-  /** Build a shareable QR + credentials for the current Wi-Fi network. Rejects
-   *  when there's no Wi-Fi link to share. */
+  /**
+   * Build a shareable QR + credentials for the current Wi-Fi network. Rejects
+   * when there's no Wi-Fi link to share.
+   */
   getWifiShare(): Promise<WifiShare>
   getPublicIp(): Promise<string | null>
   getInterfaces(): Promise<NetworkInterfaceSummary[]>
   getDevices(): Promise<LanDeviceScan>
-  /** The network-change feed, newest first. Recorded as a side effect of
-   *  device scans, network-info reads and internet verdicts, never on its own. */
+  /**
+   * The network-change feed, newest first. Recorded as a side effect of
+   * device scans, network-info reads and internet verdicts, never on its own.
+   */
   getNetworkEvents(): Promise<NetworkEvent[]>
   getDataUsage(): Promise<DataUsageSummary>
   /** Per-app network usage since Rove started watching, busiest first. */
   getAppUsage(): Promise<AppUsageSummary>
   /** Per-app remote-host breakdown (hostname + country + bytes), busiest first. */
   getHostUsage(): Promise<HostUsageSummary>
-  /** Session traffic by kind (protocol), busiest first: the same connections
-   *  as `getHostUsage`, grouped by service port instead of peer. */
+  /**
+   * Session traffic by kind (protocol), busiest first: the same connections
+   * as `getHostUsage`, grouped by service port instead of peer.
+   */
   getTrafficUsage(): Promise<TrafficUsageSummary>
-  /** Why per-app usage can't be read, for the "needs administrator" state: on
-   *  Windows the ETW session's last start error, else (and once it's up) null. */
+  /**
+   * Why per-app usage can't be read, for the "needs administrator" state: on
+   * Windows the ETW session's last start error, else (and once it's up) null.
+   */
   getUsageSupportDetail(): Promise<string | null>
-  /** Relaunch Rove as administrator, raising the UAC prompt (Windows only).
-   *  Rejects when the prompt is declined; on success this instance exits. */
+  /**
+   * Relaunch Rove as administrator, raising the UAC prompt (Windows only).
+   * Rejects when the prompt is declined; on success this instance exits.
+   */
   relaunchAsAdmin(): Promise<void>
   runDiagnostics(): Promise<NetworkDiagnostics>
-  /** The fast-changing gateway metrics only, for the Connection view's tight
-   *  refresh loop. */
+  /**
+   * The fast-changing gateway metrics only, for the Connection view's tight
+   * refresh loop.
+   */
   runDiagnosticsLive(): Promise<LiveDiagnostics>
-  /** Probe the user's service list, with the internet verdict from the same
-   *  batch so a mass "all down" reads as this machine being offline. */
+  /**
+   * Probe the user's service list, with the internet verdict from the same
+   * batch so a mass "all down" reads as this machine being offline.
+   */
   runServices(): Promise<ServicesReport>
-  /** The background heartbeat's last internet verdict, or null before its first
-   *  probe. A cached read that never probes. */
+  /**
+   * The background heartbeat's last internet verdict, or null before its first
+   * probe. A cached read that never probes.
+   */
   getInternetStatus(): Promise<InternetStatus | null>
-  /** Probe one host without storing it, for the "test before add" step.
-   *  Resolves to the latency in ms, or null when unreachable. */
+  /**
+   * Probe one host without storing it, for the "test before add" step.
+   * Resolves to the latency in ms, or null when unreachable.
+   */
   testService(host: string): Promise<number | null>
-  /** The user's service list: the built-in defaults plus any they added, minus
-   *  any they removed. Ordered as shown. */
+  /**
+   * The user's service list: the built-in defaults plus any they added, minus
+   * any they removed. Ordered as shown.
+   */
   listServices(): Promise<ServiceDefinition[]>
-  /** Add a service to the list; returns the updated list. Re-adding an existing
-   *  host updates its label rather than duplicating it. */
+  /**
+   * Add a service to the list; returns the updated list. Re-adding an existing
+   * host updates its label rather than duplicating it.
+   */
   addService(name: string, host: string): Promise<ServiceDefinition[]>
-  /** Edit the service listed under `oldHost`, keeping its place in the list;
-   *  returns the updated list. A new host that's already listed merges into
-   *  that row, as re-adding it would. */
+  /**
+   * Edit the service listed under `oldHost`, keeping its place in the list;
+   * returns the updated list. A new host that's already listed merges into
+   * that row, as re-adding it would.
+   */
   updateService(oldHost: string, name: string, host: string): Promise<ServiceDefinition[]>
-  /** Remove the service with this host (built-in or custom); returns the
-   *  updated list. */
+  /**
+   * Remove the service with this host (built-in or custom); returns the
+   * updated list.
+   */
   deleteService(host: string): Promise<ServiceDefinition[]>
-  /** The services outage timeline, newest first. Recorded by the always-on
-   *  backend heartbeat, so it covers outages that happened while the Services
-   *  tab, or the whole window, was closed. */
+  /**
+   * The services outage timeline, newest first. Recorded by the always-on
+   * backend heartbeat, so it covers outages that happened while the Services
+   * tab, or the whole window, was closed.
+   */
   getServiceHistory(): Promise<ServiceEvent[]>
   /** Wipe the timeline and the baseline behind it, so the next probe re-seeds. */
   clearServiceHistory(): Promise<void>
-  /** Fires when the services heartbeat has folded a fresh probe into the
-   *  timeline, so a page showing it can re-read. */
+  /**
+   * Fires when the services heartbeat has folded a fresh probe into the
+   * timeline, so a page showing it can re-read.
+   */
   onServicesTimeline(callback: () => void): Unsubscribe
   /** `runToken` names this run, so a Stop sent before the run reaches the backend still stops it. */
   runSpeedTest(runToken: string): Promise<SpeedTestResult>
@@ -94,8 +124,10 @@ export type NetworkAPI = {
   onSpeedTestProgress(callback: (progress: SpeedTestProgress) => void): Unsubscribe
   /** Fires when the OS routing table changes (cable pulled, Wi-Fi joined). */
   onNetworkChanged(callback: () => void): Unsubscribe
-  /** Fires when the background heartbeat observes a public-internet
-   *  reachability change (WAN lost or restored). */
+  /**
+   * Fires when the background heartbeat observes a public-internet
+   * reachability change (WAN lost or restored).
+   */
   onInternetStatus(callback: (status: InternetStatus) => void): Unsubscribe
   subscribeLiveThroughput(): Promise<void>
   unsubscribeLiveThroughput(): Promise<void>

@@ -113,9 +113,11 @@ const existingStorybookUrl = flag('storybook-url', null)
 const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
-/** An unused port, so we never fight a `tauri:dev` already holding vite's
- *  default — the config pins that port with `strictPort`, so a collision is
- *  fatal rather than a bump to the next one. */
+/**
+ * An unused port, so we never fight a `tauri:dev` already holding vite's
+ * default — the config pins that port with `strictPort`, so a collision is
+ * fatal rather than a bump to the next one.
+ */
 function freePort() {
   return new Promise((ok) => {
     const probe = createServer()

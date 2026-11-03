@@ -52,8 +52,10 @@ const footerVariants = cva(
   },
 )
 
-/** Home's summary of what the connection can handle: a tile per capability,
- *  coloured by the last speed test's rating, each opening its details. */
+/**
+ * Home's summary of what the connection can handle: a tile per capability,
+ * coloured by the last speed test's rating, each opening its details.
+ */
 export function CapabilitiesCard() {
   const capabilities = useSpeedTest((test) => test.capabilities)
   const hasResults = capabilities.length > 0
@@ -78,8 +80,10 @@ export function CapabilitiesCard() {
   )
 }
 
-/** Starts a test in place; the Speed tab shows the same run (one shared store),
- *  and the footer links there. */
+/**
+ * Starts a test in place; the Speed tab shows the same run (one shared store),
+ * and the footer links there.
+ */
 function RunTestButton() {
   const runTest = useSpeedTest((test) => test.runTest)
   const isTesting = useSpeedTest((test) => test.isTesting)
@@ -204,8 +208,10 @@ function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: Rea
   )
 }
 
-/** The Speed page's announcements, for a test run from here. Home shows no
- *  failure, so the error is read out too. */
+/**
+ * The Speed page's announcements, for a test run from here. Home shows no
+ * failure, so the error is read out too.
+ */
 function TestStatusAnnouncement() {
   const isTesting = useSpeedTest((test) => test.isTesting)
   const progress = useSpeedTest((test) => test.progress)

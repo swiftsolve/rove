@@ -44,8 +44,10 @@ type CapabilityMeterProps = {
   barsClassName?: string
 }
 
-/** A capability's rating as four bars in its level's colour, with the level's
- *  name beside them unless `shouldShowLabel` is false. */
+/**
+ * A capability's rating as four bars in its level's colour, with the level's
+ * name beside them unless `shouldShowLabel` is false.
+ */
 export function CapabilityMeter({
   level,
   shouldShowLabel = true,

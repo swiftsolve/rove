@@ -10,8 +10,10 @@ import type { PingStats } from './speed'
  */
 export type InternetStatus = 'online' | 'noInternet' | 'offline'
 
-/** Whether the public internet is unreachable. Unknown (`undefined`) counts as
- *  up, so nothing reads as down before the first check lands. */
+/**
+ * Whether the public internet is unreachable. Unknown (`undefined`) counts as
+ * up, so nothing reads as down before the first check lands.
+ */
 export function isInternetDown(status: InternetStatus | undefined): boolean {
   return status === 'noInternet' || status === 'offline'
 }
@@ -21,19 +23,27 @@ export type NetworkDiagnostics = {
   defaultInterface: string | null
   dnsServers: string[]
   gatewayPing: PingStats | null
-  /** Public-internet reachability, so Services can tell an outage apart from
-   *  this machine being offline. */
+  /**
+   * Public-internet reachability, so Services can tell an outage apart from
+   * this machine being offline.
+   */
   internet: InternetStatus
   /** Router make from the gateway's MAC OUI, or null when unknown. */
   gatewayVendor: string | null
-  /** Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null
-   *  when unavailable. */
+  /**
+   * Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null
+   * when unavailable.
+   */
   gatewayModel: string | null
-  /** Router product name from the gateway's UPnP friendlyName (e.g. "Giga Hub
-   *  2.0"), or null when it doesn't announce over SSDP. */
+  /**
+   * Router product name from the gateway's UPnP friendlyName (e.g. "Giga Hub
+   * 2.0"), or null when it doesn't announce over SSDP.
+   */
   gatewayName: string | null
-  /** WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
-   *  service is unreachable (no internet, or the request timed out). */
+  /**
+   * WAN-side identity (ISP, ASN, location, public IP), or null when the lookup
+   * service is unreachable (no internet, or the request timed out).
+   */
   isp: IspInfo | null
 }
 
@@ -65,22 +75,28 @@ export type IspInfo = {
   name: string | null
   /** Autonomous-system number, formatted "AS15169". */
   asn: string | null
-  /** The ISP's registered domain, e.g. "bell.ca", or null when the lookup didn't
-   *  report one. Resolved to a brand icon on the card. */
+  /**
+   * The ISP's registered domain, e.g. "bell.ca", or null when the lookup didn't
+   * report one. Resolved to a brand icon on the card.
+   */
   domain: string | null
   city: string | null
   region: string | null
   country: string | null
   /** Public (WAN) IP reported by the same lookup. */
   publicIp: string | null
-  /** The public IP's ASN is a datacentre or hosting network: we're behind a
-   *  VPN or proxy, so the fields above describe the exit node rather than the
-   *  real ISP. The ISP card then reads "VPN". */
+  /**
+   * The public IP's ASN is a datacentre or hosting network: we're behind a
+   * VPN or proxy, so the fields above describe the exit node rather than the
+   * real ISP. The ISP card then reads "VPN".
+   */
   isVpn: boolean
 }
 
-/** A service in the user's reachability list: the durable definition, without
- *  a measurement. Ships with defaults the user can add to, edit and remove. */
+/**
+ * A service in the user's reachability list: the durable definition, without
+ * a measurement. Ships with defaults the user can add to, edit and remove.
+ */
 export type ServiceDefinition = {
   /** Human label, e.g. "Netflix". */
   name: string
@@ -88,9 +104,11 @@ export type ServiceDefinition = {
   host: string
 }
 
-/** Reachability of one internet service on two independent axes: network
- *  latency (TLS handshake to :443) and application health (an HTTP HEAD). They
- *  can disagree: a service can answer in a few ms yet return 5xx. */
+/**
+ * Reachability of one internet service on two independent axes: network
+ * latency (TLS handshake to :443) and application health (an HTTP HEAD). They
+ * can disagree: a service can answer in a few ms yet return 5xx.
+ */
 export type ServiceReachability = {
   /** Human label, e.g. "Netflix". */
   name: string
@@ -98,9 +116,11 @@ export type ServiceReachability = {
   host: string
   /** TLS-handshake latency in ms, or null when it failed or timed out. */
   latencyMs: number | null
-  /** HTTP status from a HEAD to the host, or null for IP-literal hosts and when
-   *  no HTTP response came back. A 5xx means the path is up but the service is
-   *  erroring (e.g. a Cloudflare 1033 tunnel error surfaces as 530). */
+  /**
+   * HTTP status from a HEAD to the host, or null for IP-literal hosts and when
+   * no HTTP response came back. A 5xx means the path is up but the service is
+   * erroring (e.g. a Cloudflare 1033 tunnel error surfaces as 530).
+   */
   httpStatus: number | null
 }
 
@@ -120,10 +140,12 @@ export type ServiceTransitionEvent = {
   ts: number
 }
 
-/** A summary of the tracked services: `count` of `total` were up (a baseline, or
- *  a full recovery after an outage). A recovery always has `count === total`; a
- *  baseline can be partial, when a service was already down the first time
- *  monitoring looked. */
+/**
+ * A summary of the tracked services: `count` of `total` were up (a baseline, or
+ * a full recovery after an outage). A recovery always has `count === total`; a
+ * baseline can be partial, when a service was already down the first time
+ * monitoring looked.
+ */
 export type ServicesRunningEvent = {
   type: 'running'
   count: number
@@ -131,8 +153,10 @@ export type ServicesRunningEvent = {
   ts: number
 }
 
-/** This machine's own network dropping or returning. Recorded once in place of
- *  the per-service downs its probes would otherwise produce. */
+/**
+ * This machine's own network dropping or returning. Recorded once in place of
+ * the per-service downs its probes would otherwise produce.
+ */
 export type ConnectionEvent = {
   type: 'connection'
   status: 'lost' | 'restored'

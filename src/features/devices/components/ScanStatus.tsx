@@ -4,9 +4,11 @@ import { type JSX, useEffect, useState } from 'react'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 import { StatusDot, usePresence, type VariantOf } from '@/ui'
 
-/** `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be
- *  nudged to the text's optical middle with vertical-align (flex centring reads
- *  a touch low). */
+/**
+ * `isLeaving` plays the slide-out. Inline-block, not flex, so its dot can be
+ * nudged to the text's optical middle with vertical-align (flex centring reads
+ * a touch low).
+ */
 const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   variants: {
     isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
@@ -14,8 +16,10 @@ const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   defaultVariants: { isLeaving: false },
 })
 
-/** One stage word: waits below, settles as the current stage, then drifts up,
- *  so entering and leaving read as one continuous rising motion. */
+/**
+ * One stage word: waits below, settles as the current stage, then drifts up,
+ * so entering and leaving read as one continuous rising motion.
+ */
 const scanPhaseVariants = cva(
   'absolute top-0 left-0 transition-[opacity,transform] duration-(--duration-normal) ease-out',
   {
@@ -41,10 +45,12 @@ function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
   return index < currentPhase ? 'past' : 'next'
 }
 
-/** A pulsing dot and a one-word stage. Takes `isActive` rather than being
- *  conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
- *  `isLiveRegion` is off when it shares the subnet's slot, which is the live
- *  region. */
+/**
+ * A pulsing dot and a one-word stage. Takes `isActive` rather than being
+ * conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
+ * `isLiveRegion` is off when it shares the subnet's slot, which is the live
+ * region.
+ */
 export function ScanStatus({
   isActive,
   isLiveRegion,

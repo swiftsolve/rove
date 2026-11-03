@@ -11,8 +11,10 @@ const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   defaultVariants: { isLeaving: false },
 })
 
-/** The header's "N online" tally. Shares ScanStatus's slot and motion, and like
- *  it stays mounted for SCAN_EXIT_MS so the slide-out can play. */
+/**
+ * The header's "N online" tally. Shares ScanStatus's slot and motion, and like
+ * it stays mounted for SCAN_EXIT_MS so the slide-out can play.
+ */
 export function OnlineIndicator({ isActive, count }: { isActive: boolean; count: number }): JSX.Element | null {
   const isMounted = usePresence(isActive, SCAN_EXIT_MS)
 

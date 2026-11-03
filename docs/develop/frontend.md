@@ -135,6 +135,10 @@ the mock.
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
   exception is a line-level disable that says why.
+- A comment says why: a reason, constraint or trap the code can't show. One
+  that restates the code goes. Exports, props and type fields take `/** */`,
+  on one line when it fits, else opening on a line of its own; implementation
+  notes take `//`. No divider comments.
 
 ## Names and copy
 

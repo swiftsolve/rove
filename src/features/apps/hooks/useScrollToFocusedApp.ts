@@ -3,9 +3,11 @@ import { type RefObject, useEffect, useRef } from 'react'
 import { scrollToTopAndFlash } from '@/lib/highlight'
 import type { AppHosts } from '@/types'
 
-/** Scrolls the focused app's group to the top once its data lands, then never
- *  again, so later polls don't yank the scroll. Deferred a task to land after the
- *  shell's scroll-to-top on navigation. Returns the ref to attach to the list. */
+/**
+ * Scrolls the focused app's group to the top once its data lands, then never
+ * again, so later polls don't yank the scroll. Deferred a task to land after the
+ * shell's scroll-to-top on navigation. Returns the ref to attach to the list.
+ */
 export function useScrollToFocusedApp(
   focusApp: string | null | undefined,
   apps: AppHosts[],

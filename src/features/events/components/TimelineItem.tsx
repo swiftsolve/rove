@@ -35,8 +35,10 @@ import {
 const TONE_COLORS = {
   /** Arrivals & connections: a device joined, came back, or linked up. */
   join: 'var(--status-positive)',
-  /** A departure: quiet, not alarming; a known device just dropped off. The
-   *  hollow ring reads as "gone", set apart from the filled markers. */
+  /**
+   * A departure: quiet, not alarming; a known device just dropped off. The
+   * hollow ring reads as "gone", set apart from the filled markers.
+   */
   leave: 'neutral',
   /** The baseline snapshot. */
   baseline: 'var(--accent-default)',

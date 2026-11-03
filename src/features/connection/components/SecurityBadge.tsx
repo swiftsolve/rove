@@ -26,8 +26,10 @@ type SecurityBadgeProps = {
   className?: string
 }
 
-/** Wi‑Fi security with a lock: closed and green when the network is secured,
- *  open and red when it's open. */
+/**
+ * Wi‑Fi security with a lock: closed and green when the network is secured,
+ * open and red when it's open.
+ */
 export function SecurityBadge({ security, isShort = false, className }: SecurityBadgeProps) {
   const isSecured = isSecuredWifi(security) === true
   const fullLabel = normalizeSecurity(security)

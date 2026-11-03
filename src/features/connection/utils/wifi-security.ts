@@ -1,8 +1,10 @@
 // Strongest first: the collapsed strip names the best protocol the network offers.
 const SECURITY_PROTOCOLS = ['WPA3', 'WPA2', 'WPA', 'OWE', 'WEP']
 
-/** The OS's security string with runs of spaces collapsed: Windows reports
- *  e.g. "WPA3-Personal  (H2E)". */
+/**
+ * The OS's security string with runs of spaces collapsed: Windows reports
+ * e.g. "WPA3-Personal  (H2E)".
+ */
 export function normalizeSecurity(security: string): string {
   return security.trim().replace(/\s+/g, ' ')
 }

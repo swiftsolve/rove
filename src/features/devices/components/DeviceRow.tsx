@@ -30,9 +30,11 @@ import {
 
 const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
 
-/** A device's kind icon, in a tile coloured by category so categories scan at a
- *  glance. The gateway is green whatever its kind; watches and unknown devices
- *  stay neutral. */
+/**
+ * A device's kind icon, in a tile coloured by category so categories scan at a
+ * glance. The gateway is green whatever its kind; watches and unknown devices
+ * stay neutral.
+ */
 const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
   router: 'var(--status-positive)',
   nas: 'var(--series-down)',
@@ -92,10 +94,12 @@ function KindIcon({ kind }: { kind: LanDeviceKind }) {
   return <Icon size={16} />
 }
 
-/** The line under a device's name. The gateway shows its green "Gateway" role
- *  beside the resolved product (or a bare "Gateway" when nothing resolved);
- *  other devices show their kind/vendor/OS/model and, when offline, how long
- *  ago they were last seen. */
+/**
+ * The line under a device's name. The gateway shows its green "Gateway" role
+ * beside the resolved product (or a bare "Gateway" when nothing resolved);
+ * other devices show their kind/vendor/OS/model and, when offline, how long
+ * ago they were last seen.
+ */
 function DeviceMetaLine({
   device,
   name,

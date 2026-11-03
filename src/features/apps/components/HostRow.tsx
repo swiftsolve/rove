@@ -15,8 +15,10 @@ const FLAG_SLOT = cx(
   "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)]",
 )
 
-/** The icon left of a host's name: the country flag when geolocated, else a
- *  LAN or globe (public but unresolved) fallback. */
+/**
+ * The icon left of a host's name: the country flag when geolocated, else a
+ * LAN or globe (public but unresolved) fallback.
+ */
 function HostIcon({ host }: { host: HostConn }) {
   const flag = countryCodeToFlag(host.countryCode)
   const country = countryCodeToName(host.countryCode)
@@ -45,9 +47,11 @@ function HostIcon({ host }: { host: HostConn }) {
   )
 }
 
-/** The hostname (or bare IP), truncated; a tooltip shows the full name and IP.
- *  With no hostname yet there's nothing to reveal, so the tooltip is disabled
- *  rather than unmounted, keeping the node across the poll that resolves it. */
+/**
+ * The hostname (or bare IP), truncated; a tooltip shows the full name and IP.
+ * With no hostname yet there's nothing to reveal, so the tooltip is disabled
+ * rather than unmounted, keeping the node across the poll that resolves it.
+ */
 function HostName({ host }: { host: HostConn }) {
   return (
     <UiTooltip
@@ -68,8 +72,10 @@ function HostName({ host }: { host: HostConn }) {
   )
 }
 
-/** Memoised: each poll keeps an unchanged host's object, so only hosts that moved
- *  re-render. */
+/**
+ * Memoised: each poll keeps an unchanged host's object, so only hosts that moved
+ * re-render.
+ */
 export const HostRow = memo(function HostRow({ host }: { host: HostConn }) {
   return (
     <li className="flex items-center justify-between gap-12">

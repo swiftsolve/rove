@@ -1,8 +1,10 @@
 import type { LanDeviceKind } from './devices'
 
-/** Slugs the backend stamps on each event; the UI switches on these for copy
- *  and iconography. Kept in sync with the `EVENT_*` constants in
- *  crates/rove-core/src/store/events.rs. */
+/**
+ * Slugs the backend stamps on each event; the UI switches on these for copy
+ * and iconography. Kept in sync with the `EVENT_*` constants in
+ * crates/rove-core/src/store/events.rs.
+ */
 export const NETWORK_EVENT_TYPES = [
   'initial_scan',
   'device_joined',
@@ -38,14 +40,18 @@ export type NetworkEvent = {
   ip: string | null
   /** Best-effort device label captured when the event fired. */
   name: string | null
-  /** Device category (the kind the Devices view shows), read live from the
-   *  current roster for device events. Null when unknown or the event isn't
-   *  about a single device (an SSID, a count, a gateway change). */
+  /**
+   * Device category (the kind the Devices view shows), read live from the
+   * current roster for device events. Null when unknown or the event isn't
+   * about a single device (an SSID, a count, a gateway change).
+   */
   kind: LanDeviceKind | null
   /** Change events only: the value before and after (e.g. old/new IP). */
   oldValue: string | null
   newValue: string | null
-  /** The device's MAC was privacy-randomized. Its presence events are noisier
-   *  (a phone re-randomizes about daily), so the UI flags them. */
+  /**
+   * The device's MAC was privacy-randomized. Its presence events are noisier
+   * (a phone re-randomizes about daily), so the UI flags them.
+   */
   isRandomized: boolean
 }

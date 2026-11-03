@@ -54,8 +54,10 @@ function CapabilityRow({
 const PREVIEW_ROW =
   'flex items-center gap-12 -mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y) opacity-(--opacity-disabled)'
 
-/** A greyed-out preview of a capability, shown before any test has run. Faded
- *  like a disabled control, the same as the Home strip's placeholder tiles. */
+/**
+ * A greyed-out preview of a capability, shown before any test has run. Faded
+ * like a disabled control, the same as the Home strip's placeholder tiles.
+ */
 function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   return (
     <li className={PREVIEW_ROW}>
@@ -74,8 +76,10 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   )
 }
 
-/** The card header's actions: a spinner while testing, a hint before
- *  the first test, nothing once results are in. */
+/**
+ * The card header's actions: a spinner while testing, a hint before
+ * the first test, nothing once results are in.
+ */
 function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | undefined {
   if (isTesting) {
     return (

@@ -11,8 +11,10 @@ function wasExpandedBefore(): boolean {
   }
 }
 
-/** Remembers whether the details are open. A setting, so the choice survives
- *  tab switches (which unmount the card) and restarts, and every window agrees. */
+/**
+ * Remembers whether the details are open. A setting, so the choice survives
+ * tab switches (which unmount the card) and restarts, and every window agrees.
+ */
 export function useDetailsExpanded(): [boolean, () => void] {
   const [isExpanded, setIsExpanded] = useSetting('connectionDetailsExpanded', wasExpandedBefore())
   return [isExpanded, () => setIsExpanded(!isExpanded)]

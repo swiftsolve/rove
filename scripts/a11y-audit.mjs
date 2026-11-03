@@ -33,15 +33,19 @@ const RULE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 // Hidden-yet-focusable is the technique, so aria-hidden-focus would flag it.
 const EXCLUDED = [['[data-base-ui-focus-guard]']]
 
-/** An open menu is portalled to the end of <body>, outside the landmarks; it
- *  belongs to its trigger, which is inside them. Only `region` is waived for it. */
+/**
+ * An open menu is portalled to the end of <body>, outside the landmarks; it
+ * belongs to its trigger, which is inside them. Only `region` is waived for it.
+ */
 function isPortalledMenu(ruleId, node) {
   return ruleId === 'region' && node.html.includes('role="menu"')
 }
 
-/** Runs in the page: click the first button whose label or text contains `label`
- *  (or, with no label, the first disclosure button). Page functions can't close
- *  over script variables, so the label travels as an argument. */
+/**
+ * Runs in the page: click the first button whose label or text contains `label`
+ * (or, with no label, the first disclosure button). Page functions can't close
+ * over script variables, so the label travels as an argument.
+ */
 function clickButton(label) {
   const buttons = [...document.querySelectorAll('button, [role="button"]')]
   const button = label
@@ -50,8 +54,10 @@ function clickButton(label) {
   button?.click()
 }
 
-/** [name, location, optional label of a button to click once it has settled
- *  ('' clicks the first disclosure button)]. */
+/**
+ * [name, location, optional label of a button to click once it has settled
+ * ('' clicks the first disclosure button)].
+ */
 const SCENARIOS = [
   ['home', { tab: 'home' }],
   ['home: details open', { tab: 'home' }, ''],

@@ -103,8 +103,10 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
   )
 }
 
-/** The meta line's items: the IP, then band and security on Wi‑Fi or link
- *  speed otherwise. Missing pieces are dropped. */
+/**
+ * The meta line's items: the IP, then band and security on Wi‑Fi or link
+ * speed otherwise. Missing pieces are dropped.
+ */
 function stripMetaItems(info: NetworkInfo): ReactNode[] {
   const items = isWifiNetwork(info)
     ? [

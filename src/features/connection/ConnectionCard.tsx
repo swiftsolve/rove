@@ -12,8 +12,10 @@ type ConnectionCardProps = {
   info: NetworkInfo
 }
 
-/** Home's connection card: a strip naming the network, which expands into its
- *  link, address and hardware details. */
+/**
+ * Home's connection card: a strip naming the network, which expands into its
+ * link, address and hardware details.
+ */
 export function ConnectionCard({ info }: ConnectionCardProps) {
   const [isExpanded, toggleExpanded] = useDetailsExpanded()
   // Fetched here rather than in the details, which unmount while closed, so

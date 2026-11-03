@@ -1,10 +1,14 @@
 import type { AppUsageSupport } from './app-usage'
 
-/** One kind of traffic: the session's connections bucketed by remote (service)
- *  port. Mirrors the backend `TrafficType`. */
+/**
+ * One kind of traffic: the session's connections bucketed by remote (service)
+ * port. Mirrors the backend `TrafficType`.
+ */
 export type TrafficType = {
-  /** Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
-   *  The view keys its icon off this. */
+  /**
+   * Stable classification slug (`'https'`, `'dns'`, `'ssh'`, `'other'`, …).
+   * The view keys its icon off this.
+   */
   id: string
   /** Display name for the bucket (`'HTTPS'`, `'DNS'`, …). */
   label: string
@@ -12,8 +16,10 @@ export type TrafficType = {
   txBytes: number
 }
 
-/** Traffic by kind for the Traffic Types view. The same samples as
- *  `HostUsageSummary`, bucketed by service port instead of peer IP. */
+/**
+ * Traffic by kind for the Traffic Types view. The same samples as
+ * `HostUsageSummary`, bucketed by service port instead of peer IP.
+ */
 export type TrafficUsageSummary = {
   /** Per-kind totals, busiest first. Empty before the first sample. */
   types: TrafficType[]

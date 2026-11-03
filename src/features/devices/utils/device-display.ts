@@ -54,17 +54,21 @@ export function deviceName(device: LanDevice): string[] {
   return noun ? [device.vendor, capitalize(noun)] : [device.vendor]
 }
 
-/** An offline device's last-seen age, e.g. "5 min ago". Null within
- *  RECENTLY_SEEN_MS: a device still in the ARP table but not answering would
- *  read "Offline, just now". */
+/**
+ * An offline device's last-seen age, e.g. "5 min ago". Null within
+ * RECENTLY_SEEN_MS: a device still in the ARP table but not answering would
+ * read "Offline, just now".
+ */
 export function lastSeenAge(device: LanDevice, now: number): string | null {
   if (device.isReachable || device.lastSeen == null) return null
   if (now - device.lastSeen < RECENTLY_SEEN_MS) return null
   return formatTimeAgo(device.lastSeen, now)
 }
 
-/** Kind, vendor, OS and model, dropping any part that repeats the name or an
- *  earlier part (an Apple handheld whose vendor and OS are both "Apple"). */
+/**
+ * Kind, vendor, OS and model, dropping any part that repeats the name or an
+ * earlier part (an Apple handheld whose vendor and OS are both "Apple").
+ */
 export function deviceMetaParts(device: LanDevice, name: string[]): string[] {
   const seen = new Set<string>([name.join(' ').toLowerCase()])
   return [
@@ -85,8 +89,10 @@ function isGenericGatewayName(part: string): boolean {
   return part.toLowerCase() === 'router' || part.toLowerCase() === 'gateway'
 }
 
-/** The gateway is always named "Router", so its product ("Giga Hub 2.0") shows
- *  apart: its hostname, else its model, skipping generic names like "router". */
+/**
+ * The gateway is always named "Router", so its product ("Giga Hub 2.0") shows
+ * apart: its hostname, else its model, skipping generic names like "router".
+ */
 export function gatewayProduct(device: LanDevice): string | null {
   return [device.hostname, device.model].find((part) => part && !isGenericGatewayName(part)) ?? null
 }

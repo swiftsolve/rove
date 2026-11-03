@@ -28,9 +28,11 @@ const NO_DEVICES_HINT = 'Nothing answered on this network. Check you’re on the
 const LOCAL_NETWORK_HINT =
   'Missing devices? Allow Rove in System Settings › Privacy & Security › Local Network, then scan again.'
 
-/** The header's description once the scan has a subnet; until then the scan's
- *  status fills the line. A plain function rather than a component: PageHeader
- *  collapses the line only when both are undefined. */
+/**
+ * The header's description once the scan has a subnet; until then the scan's
+ * status fills the line. A plain function rather than a component: PageHeader
+ * collapses the line only when both are undefined.
+ */
 function renderDescription(
   subnet: string | null,
   hasDevices: boolean,
@@ -54,8 +56,10 @@ function renderDescription(
   return undefined
 }
 
-/** The page body: a first-scan spinner, an empty state with a retry, or the
- *  device list. */
+/**
+ * The page body: a first-scan spinner, an empty state with a retry, or the
+ * device list.
+ */
 function DevicesBody({
   devices,
   isScanning,

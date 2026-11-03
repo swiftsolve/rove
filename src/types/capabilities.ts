@@ -11,8 +11,10 @@ export type CapabilityRequirement = {
   maxLatencyMs: number | null
   /** Null when jitter doesn't affect it. */
   maxJitterMs: number | null
-  /** False when a slow connection only makes it slow, so it bottoms out at
-   *  'poor' instead of 'unsupported'. True when left out. */
+  /**
+   * False when a slow connection only makes it slow, so it bottoms out at
+   * 'poor' instead of 'unsupported'. True when left out.
+   */
   canBeUnsupported?: boolean
 }
 

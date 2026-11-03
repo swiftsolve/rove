@@ -2,8 +2,10 @@ import { formatBytes, formatCount } from '@/lib/format'
 
 const LOCAL_PEER_LABEL = 'On your network'
 
-/** Accessible name and tooltip for a host's icon: the country name when
- *  geolocated, a "local network" hint for a LAN peer, else nothing. */
+/**
+ * Accessible name and tooltip for a host's icon: the country name when
+ * geolocated, a "local network" hint for a LAN peer, else nothing.
+ */
 export function hostIconLabel(flag: string | null, country: string | null, isLocal: boolean): string | null {
   if (flag && country) return country
   if (isLocal) return LOCAL_PEER_LABEL

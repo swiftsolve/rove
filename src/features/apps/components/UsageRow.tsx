@@ -55,8 +55,10 @@ const CARET = cx(
 
 type UsageRowProps = {
   icon: ReactNode
-  /** How the icon is drawn: a `tile` (an app icon) fills its box, a `line` icon is
-   *  inset. Lines the bar and figures up with it. */
+  /**
+   * How the icon is drawn: a `tile` (an app icon) fills its box, a `line` icon is
+   * inset. Lines the bar and figures up with it.
+   */
   iconKind: VariantOf<typeof barVariants, 'iconKind'>
   name: string
   transfer: Transfer

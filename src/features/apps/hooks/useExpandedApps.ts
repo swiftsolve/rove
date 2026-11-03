@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react'
 
-/** Which groups are expanded, by app name. Only `focusApp` starts open, so the
- *  list stays scannable. The view remounts on each navigation, so seeding the
- *  initial state is enough. */
+/**
+ * Which groups are expanded, by app name. Only `focusApp` starts open, so the
+ * list stays scannable. The view remounts on each navigation, so seeding the
+ * initial state is enough.
+ */
 export function useExpandedApps(focusApp: string | null | undefined): {
   isExpanded: (name: string) => boolean
   toggle: (name: string) => void
