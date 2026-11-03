@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge'
 // tailwind-merge must know the theme's names (src/styles/tailwind.css), or it
 // can't tell a font size from a colour: `text-md` and `text-secondary` would
 // look like two text colours, and it would drop one. `npm run lint` checks
-// these lists against the theme (scripts/check-cn-theme.mjs).
+// these lists against the theme (scripts/checks/cn-theme.mjs).
 const SPACING = ['0', 'px', '2', '4', '6', '8', '10', '12', '14', '16', '20']
 // The Figma text styles, as `leading-*` and `tracking-*` names.
 const TYPE_STYLES = [
@@ -93,6 +93,8 @@ const mergeClasses = extendTailwindMerge({
         'pulse-calm',
         'pulse-live',
         'pulse-busy',
+        'ring-rotate',
+        'ring-stretch',
         'scan-slide-in',
         'scan-slide-out',
         'wavy-scroll',

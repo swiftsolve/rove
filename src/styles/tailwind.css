@@ -190,7 +190,7 @@
   --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;
   /* ButtonSpinner's ring turns while its arc grows and shrinks (keyframes in base.css). */
   --animate-ring-rotate: spin 2s linear infinite;
-  --animate-ring-stretch: ring-stretch 1.5s ease-in-out infinite;
+  --animate-ring-stretch: ring-stretch 1.5s var(--ease-pulse) infinite;
   /* The speed test's squiggle scrolls one wavelength (`--wave-length`) per
      loop; the element sets the duration inline, in step with the JS. */
   --animate-wavy-scroll: wavy-scroll linear infinite;
