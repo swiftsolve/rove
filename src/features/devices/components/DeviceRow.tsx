@@ -83,8 +83,8 @@ const KIND_ICONS: Record<LanDeviceKind, (props: { size?: number }) => JSX.Elemen
   unknown: UnknownDeviceIcon,
 }
 
-// Coarse on purpose: `relativeAge` only ever renders whole minutes, and a row's
-// clock ticks in a list that can be long.
+// Coarse on purpose: a last-seen age only ever renders whole minutes, and a
+// row's clock ticks in a list that can be long.
 const ROW_CLOCK_INTERVAL_MS = 30_000
 
 function KindIcon({ kind }: { kind: LanDeviceKind }) {

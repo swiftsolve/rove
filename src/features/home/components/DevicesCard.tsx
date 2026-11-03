@@ -4,16 +4,15 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 import { formatCount } from '@/lib/format'
-import { IS_MAC } from '@/lib/platform'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
 
 /** How many devices on the network are online; opens the Devices tab. */
 export function DevicesCard() {
-  const { lastScan, isScanning, rescan } = useDevices()
+  const { canHomeAutoScan, lastScan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
   const onlineCount = lastScan ? lastScan.devices.filter((device) => device.isReachable).length : null
-  // macOS doesn't scan on Home load, so until its first scan the card offers one.
-  const canDiscover = IS_MAC && !lastScan && !isScanning
+  // Where Home doesn't scan on load, the card offers one until the first scan.
+  const canDiscover = !canHomeAutoScan && !lastScan && !isScanning
 
   return (
     <StatCard

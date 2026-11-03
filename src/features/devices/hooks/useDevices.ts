@@ -2,11 +2,12 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
-import { useSetting } from '@/hooks/useSetting'
 import { IS_MAC } from '@/lib/platform'
 import type { LanDeviceScan, NetworkAPI } from '@/types'
 
 type UseDevicesResult = {
+  /** Home scans on its own here; when it doesn't (macOS), its card offers Discover instead. */
+  canHomeAutoScan: boolean
   lastScan: LanDeviceScan | null
   isScanning: boolean
   error: string | null
@@ -33,8 +34,8 @@ export function useDevices(): UseDevicesResult {
 
   // Home never auto-scans on macOS: discovery prompts for the Local Network
   // permission, which should follow the user opening Devices or tapping Discover.
-  const [isHomeDeviceScanEnabled] = useSetting('homeDeviceScan', true)
-  const shouldScanOnOpen = location.tab === 'devices' || (location.tab === 'home' && !IS_MAC && isHomeDeviceScanEnabled)
+  const canHomeAutoScan = !IS_MAC
+  const shouldScanOnOpen = location.tab === 'devices' || (location.tab === 'home' && canHomeAutoScan)
 
   // No poll: a LAN scan (ARP/SSDP/ping sweeps) is too heavy to repeat in the
   // background. A network switch rescans through the key. Raw `network-changed`
@@ -47,5 +48,5 @@ export function useDevices(): UseDevicesResult {
     errorMessage: 'Couldn’t scan for devices',
   })
 
-  return { lastScan: data ?? null, isScanning: isBusy, error, rescan: reload }
+  return { canHomeAutoScan, lastScan: data ?? null, isScanning: isBusy, error, rescan: reload }
 }

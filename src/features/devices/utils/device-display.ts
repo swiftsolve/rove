@@ -1,4 +1,5 @@
 import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-labels'
+import { formatTimeAgo } from '@/lib/format'
 import type { LanDevice, LanDeviceKind } from '@/types'
 
 // Nouns for synthesizing a name. The category labels in LAN_DEVICE_KIND_LABELS
@@ -17,8 +18,6 @@ const KIND_NOUNS: Record<Exclude<LanDeviceKind, 'unknown'>, string> = {
   speaker: 'speaker',
   iot: 'smart home device',
 }
-
-const MINUTE_MS = 60_000
 
 // An offline device seen this recently is still in the ARP table but not
 // answering, so its age is suppressed (see lastSeenAge).
@@ -55,22 +54,13 @@ export function deviceName(device: LanDevice): string[] {
   return noun ? [device.vendor, capitalize(noun)] : [device.vendor]
 }
 
-// Coarse ("3m ago", "2h ago", "4d ago"): only offline devices show an age.
-export function relativeAge(ms: number): string {
-  const mins = Math.floor(ms / MINUTE_MS)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
-
 // The age beside an offline badge. Suppressed within RECENTLY_SEEN_MS: a device
 // still in the ARP table but not answering would read "Offline, just now".
 export function lastSeenAge(device: LanDevice, now: number): string | null {
   if (device.isReachable || device.lastSeen == null) return null
-  const ms = now - device.lastSeen
-  if (ms < RECENTLY_SEEN_MS) return null
-  return relativeAge(ms)
+  if (now - device.lastSeen < RECENTLY_SEEN_MS) return null
+  // Worded like every other age in the app.
+  return formatTimeAgo(device.lastSeen, now)
 }
 
 // Kind, vendor, OS and model, dropping any part that repeats the name or an
