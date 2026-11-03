@@ -314,9 +314,11 @@ Components v1.0.0"). Raise it when the library's API changes.
 
   Figma has one more page after them, Patterns: the cards, charts and
   content that features build from the library.
-- `foundations/` (`cn`, and `pressable`, the behaviour everything pressable
-  shares), `hooks/` (generic UI hooks), `context/` (where dialogs portal), and
-  `icons/`.
+- `foundations/` (`cn`; `pressable`, the behaviour everything pressable
+  shares; `layers`, the one stacking order, so an overlay picks a named layer
+  rather than a z-index; and `tint`, the "any colour or neutral" wash IconTile
+  and TimelineNode share), `hooks/` (generic UI hooks), `context/` (where
+  dialogs portal), and `icons/`.
 - Each component has stories beside it (`Button.stories.tsx`), titled by the
   same groups (`Actions/Button`). A family sits in a folder named for its
   parent (`Containers/Card/CardHeader`), and the parent's page shows its
@@ -352,6 +354,11 @@ Components v1.0.0"). Raise it when the library's API changes.
 Every component follows the same rules:
 
 - It takes `className` for its place in a layout.
+- A component that renders one element passes `ref` and that element's other
+  props through, so any can be a Tooltip's trigger or take an `aria-*`.
+- A status line is announced from a region that's always mounted, changing
+  only its text: a region that mounts already holding its text often isn't
+  read. TextField's feedback and PageHeader's `status` work this way.
 - Styles are CVA recipes, with variant, tone and size as separate axes.
 - State is exposed as data attributes.
 - Composition happens through compound parts and slots, never `cloneElement`
@@ -411,8 +418,8 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab, on `bg-popover` with `shadow-popover`; `MenuItem tone="negative"` for a destructive action. |
 | Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, an optional `footnote` under it, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. Its height springs to fit when its content changes (`ease-spring` over `--duration-spring`); fade a swapped-in state with `animate-fade-in`. |
 | Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, centred on it, on `bg-popover` with `shadow-popover`. Screen readers get it as the trigger's description. |
-| Toggle | `Toggle` | On/off switch for a setting. |
-| Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group. |
+| Toggle | `Toggle` | On/off switch for a setting. Disabled, it stays in the Tab order, like a disabled Button. |
+| Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group, named by `label` or `aria-labelledby`. |
 | Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
 | — | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible, not the trigger, whose header takes its hover look on focus; the panel animates its height. |
 | Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `onOpen` makes the whole card a link, named by its header's title (`linkLabel` when it should say more): it draws the link, its header ends in a caret, and it lifts on hover and presses in. A control inside raises itself above the link (`relative z-2`); header actions already do. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
