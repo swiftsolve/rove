@@ -1,9 +1,9 @@
 import { cx } from 'class-variance-authority'
 import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
-import { pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons/Icons'
+import { cn } from '../utils/cn'
+import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 
 // Focus shows the way hover does (accent and underline), not with a ring. The
 // pill's padding hangs outside the text (with the icons' empty edges), so the

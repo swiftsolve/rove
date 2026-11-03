@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 import { ArrowDownIcon, ArrowUpIcon, type IconProps } from './Icons'
 
 const rootVariants = cva('inline-flex items-center shrink-0', {

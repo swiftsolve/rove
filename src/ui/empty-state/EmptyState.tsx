@@ -1,8 +1,8 @@
 import { cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
 import { LockIcon } from '../icons/Icons'
+import { cn } from '../utils/cn'
 
 type EmptyStateProps = {
   /**

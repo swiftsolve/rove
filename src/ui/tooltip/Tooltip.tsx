@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority'
 import { cloneElement, type ReactElement, type ReactNode, useId } from 'react'
 import { createPortal } from 'react-dom'
 
-import { LAYER_POPOVER } from '../foundations/layers'
+import { LAYER_POPOVER } from '../utils/layers'
 
 // Fades in from 3px above its place. Not hoverable: the pointer passes through.
 const BUBBLE = cx(

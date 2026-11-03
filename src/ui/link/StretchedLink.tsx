@@ -1,6 +1,6 @@
 import type { ComponentProps, MouseEventHandler } from 'react'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 
 type StretchedLinkProps = Omit<ComponentProps<'button'>, 'aria-label' | 'children' | 'role' | 'onClick'> & {
   /**

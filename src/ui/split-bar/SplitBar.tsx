@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 
 /** `value` as a percentage of `max`, guarding the divide for the all-zero case. */
 function percentOf(value: number, max: number): number {

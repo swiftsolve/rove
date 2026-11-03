@@ -1,7 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 
-import { cn } from '../foundations/cn'
-import type { VariantOf } from '../foundations/variants'
+import { cn } from '../utils/cn'
+import type { VariantOf } from '../utils/variants'
 
 // Each size's bar width and the four heights, shortest first. Whole pixels, or
 // the thin bars blur across subpixel boundaries and read fuzzy; the ends round

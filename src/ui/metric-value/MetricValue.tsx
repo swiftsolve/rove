@@ -1,10 +1,10 @@
 import { cva } from 'class-variance-authority'
 
-import { cn } from '../foundations/cn'
-import { STATUS_TEXT } from '../foundations/status'
-import type { VariantOf } from '../foundations/variants'
 import { useCountUp } from '../hooks/useCountUp'
 import { NoValue } from '../no-value/NoValue'
+import { cn } from '../utils/cn'
+import { STATUS_TEXT } from '../utils/status'
+import type { VariantOf } from '../utils/variants'
 
 // Tabular figures, so the width holds while it eases.
 const metricVariants = cva('num', {

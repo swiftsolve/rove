@@ -225,7 +225,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
     boolean axis leaves out a branch that adds nothing.
 
-- `cn()` (from `@/ui`, in `ui/foundations/cn.ts`) joins classes and lets a
+- `cn()` (from `@/ui`, in `ui/utils/cn.ts`) joins classes and lets a
   later utility override an earlier one that sets the same thing; use it
   wherever a component merges a `className` from outside, which is how a view
   adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
@@ -326,7 +326,7 @@ Components v1.0.0"). Raise it when the library's API changes.
 
   Figma has one more page after them, Patterns: the cards, charts and
   content that features build from the library.
-- `foundations/` (`cn`; `pressable`, the behaviour everything pressable
+- `utils/` (`cn`; `pressable`, the behaviour everything pressable
   shares; `layers`, the one stacking order, so an overlay picks a named layer
   rather than a z-index; and `tint`, the "any colour or neutral" wash IconTile
   and TimelineNode share), `hooks/` (generic UI hooks), `context/` (where
@@ -410,7 +410,7 @@ Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 - An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
   bubble's text when it should say more.
 - Everything pressable shares that behaviour through
-  `ui/foundations/pressable.ts`, and styles a hover or press that only
+  `ui/utils/pressable.ts`, and styles a hover or press that only
   applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
 
 ## Components

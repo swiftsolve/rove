@@ -1,8 +1,8 @@
 import { cva } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 
-import { cn } from '../foundations/cn'
-import type { VariantOf } from '../foundations/variants'
+import { cn } from '../utils/cn'
+import type { VariantOf } from '../utils/variants'
 
 const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
   variants: {

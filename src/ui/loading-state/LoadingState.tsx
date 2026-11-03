@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 
-import { cn } from '../foundations/cn'
 import { Spinner } from '../spinner/Spinner'
+import { cn } from '../utils/cn'
 
 type LoadingStateProps = Omit<ComponentProps<'div'>, 'children'> & {
   /** What's loading, as a sentence that ends in an ellipsis: "Loading usage…". */

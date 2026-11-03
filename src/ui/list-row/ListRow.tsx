@@ -1,9 +1,9 @@
 import { cx } from 'class-variance-authority'
 import type { ComponentProps, MouseEventHandler, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
-import { pressableProps, STATE_CLASSES } from '../foundations/pressable'
 import { ChevronRightIcon } from '../icons/Icons'
+import { cn } from '../utils/cn'
+import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 
 // The hover wash bleeds 8px into the card's padding while the content stays on
 // the 16px edge, so the focus ring (the ring alone, no wash) goes inside it.

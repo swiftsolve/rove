@@ -2,7 +2,7 @@ import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible'
 import { cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 
 type CollapsibleProps = Omit<ComponentProps<'div'>, 'children'> & {
   /** Whether the panel shows. */

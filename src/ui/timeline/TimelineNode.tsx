@@ -1,8 +1,8 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
-import { type TintColor, tintStyle } from '../foundations/tint'
+import { cn } from '../utils/cn'
+import { type TintColor, tintStyle } from '../utils/tint'
 
 // A marker column and the content beside it, nudged 5px in so the markers
 // aren't flush with the edge. The line to the next node runs from 2px below

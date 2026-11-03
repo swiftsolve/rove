@@ -1,10 +1,10 @@
 import { cva, cx } from 'class-variance-authority'
 import { Children, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 
-import { cn } from '../foundations/cn'
-import { LAYER_CHROME } from '../foundations/layers'
 import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
+import { cn } from '../utils/cn'
+import { LAYER_CHROME } from '../utils/layers'
 
 // The accent bar's shape, hugging the rail's left edge. BAR_HEIGHT is its
 // `h-20` in px, for centring it on an item, and ACTIVE_BAR repeats the shape

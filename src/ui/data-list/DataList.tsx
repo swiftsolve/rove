@@ -1,8 +1,8 @@
 import { cva } from 'class-variance-authority'
 import type { JSX, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
-import type { VariantOf } from '../foundations/variants'
+import { cn } from '../utils/cn'
+import type { VariantOf } from '../utils/variants'
 
 // The air between rows, set on the list as a variable its rows read, so it
 // reaches rows rendered by another component: 8px, or 4px for a short or

@@ -1,11 +1,11 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { LAYER_CHROME } from '../foundations/layers'
-import { STATUS_TEXT } from '../foundations/status'
-import type { VariantOf } from '../foundations/variants'
 import { CloseIcon, MinimizeIcon } from '../icons/Icons'
 import { StatusDot } from '../status-dot/StatusDot'
+import { LAYER_CHROME } from '../utils/layers'
+import { STATUS_TEXT } from '../utils/status'
+import type { VariantOf } from '../utils/variants'
 
 type TitleBarProps = {
   /** The product mark and name, at the start. */

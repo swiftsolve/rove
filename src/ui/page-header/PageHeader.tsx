@@ -1,10 +1,10 @@
 import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { LAYER_RAISED } from '../foundations/layers'
-import { PRESS } from '../foundations/pressable'
 import { ArrowLeftIcon } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
+import { LAYER_RAISED } from '../utils/layers'
+import { PRESS } from '../utils/pressable'
 
 // The back button in the icon chip's slot: the same box (a rail item's, 10px
 // radius), so a subpage's header reads like a top-level page's.

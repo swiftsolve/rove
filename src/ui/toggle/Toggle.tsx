@@ -2,8 +2,8 @@ import { Switch } from '@base-ui/react/switch'
 import { cx } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 
-import { cn } from '../foundations/cn'
-import { STATE_CLASSES } from '../foundations/pressable'
+import { cn } from '../utils/cn'
+import { STATE_CLASSES } from '../utils/pressable'
 
 const TRACK = cx(
   'relative shrink-0 w-[36px] h-20 rounded-full border',

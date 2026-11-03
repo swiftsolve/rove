@@ -36,7 +36,7 @@
 @custom-variant hover (&:hover);
 
 /* A control that takes input: not disabled, not loading. The library's
-   pressables set these attributes (ui/foundations/pressable.ts), so a
+   pressables set these attributes (ui/utils/pressable.ts), so a
    hover or press style is `usable:hover:…`. */
 @custom-variant usable (&:not([data-disabled], [data-loading]));
 

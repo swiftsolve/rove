@@ -1,10 +1,10 @@
 import { cva } from 'class-variance-authority'
 import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
-import { pressableProps } from '../foundations/pressable'
-import { type TintColor, tintStyle } from '../foundations/tint'
-import type { VariantOf } from '../foundations/variants'
+import { cn } from '../utils/cn'
+import { pressableProps } from '../utils/pressable'
+import { type TintColor, tintStyle } from '../utils/tint'
+import type { VariantOf } from '../utils/variants'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
   variants: {

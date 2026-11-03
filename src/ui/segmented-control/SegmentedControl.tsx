@@ -3,7 +3,7 @@ import { RadioGroup } from '@base-ui/react/radio-group'
 import { cx } from 'class-variance-authority'
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 
 // An inset track, like the Toggle's, so the two read as a set. Equal grid
 // columns make every segment as wide as the widest, so the thumb slides by its

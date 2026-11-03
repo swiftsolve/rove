@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 import { Fragment, type ReactNode } from 'react'
 
-import { cn } from '../foundations/cn'
+import { cn } from '../utils/cn'
 
 /**
  * A small tertiary dot between inline items. Its 2px margin on the row's 6px

@@ -49,7 +49,7 @@ which you wrote last.
 
 ## `cn`: join, and let the last one win
 
-[`cn`](../../../../src/ui/foundations/cn.ts) is `cx` plus **tailwind-merge**, which
+[`cn`](../../../../src/ui/utils/cn.ts) is `cx` plus **tailwind-merge**, which
 knows that `px-12` and `px-8` both set horizontal padding and keeps only the
 last:
 

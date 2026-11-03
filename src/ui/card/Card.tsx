@@ -1,10 +1,10 @@
 import { cva, cx } from 'class-variance-authority'
 import { type ComponentProps, createContext, type ReactNode, use, useId } from 'react'
 
-import { cn } from '../foundations/cn'
-import type { VariantOf } from '../foundations/variants'
 import { ChevronRightIcon } from '../icons/Icons'
 import { StretchedLink } from '../link/StretchedLink'
+import { cn } from '../utils/cn'
+import type { VariantOf } from '../utils/variants'
 
 type CardContextValue = {
   /** The id a CardHeader gives its title, so a `section` card is named by it. */

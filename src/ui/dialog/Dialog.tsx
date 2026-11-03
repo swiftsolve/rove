@@ -4,11 +4,11 @@ import { createContext, type JSX, type ReactNode, use, useState } from 'react'
 
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
-import { cn } from '../foundations/cn'
-import { LAYER_DIALOG } from '../foundations/layers'
 import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
 import { CloseIcon } from '../icons/Icons'
+import { cn } from '../utils/cn'
+import { LAYER_DIALOG } from '../utils/layers'
 
 type DialogState = {
   /** False while the Dialog plays its leave animation. */
