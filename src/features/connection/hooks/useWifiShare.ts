@@ -11,15 +11,6 @@ type WifiShareQuery = {
   retry: () => void
 }
 
-async function readWifiShare(): Promise<WifiShare> {
-  try {
-    return await getNetworkApi().getWifiShare()
-  } catch (cause) {
-    // Tauri rejects with a plain string; keep its text, which says why.
-    throw cause instanceof Error ? cause : new Error(String(cause))
-  }
-}
-
 /**
  * The current Wi-Fi network as a QR code, read each time the share dialog opens.
  * Nothing retries on its own, since the read can raise an OS auth prompt. Holds
@@ -28,7 +19,7 @@ async function readWifiShare(): Promise<WifiShare> {
 export function useWifiShare(): WifiShareQuery {
   const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['connection', 'wifi-share'],
-    queryFn: readWifiShare,
+    queryFn: () => getNetworkApi().getWifiShare(),
     isEnabled: true,
     errorMessage: 'Could not read the Wi‑Fi network.',
     shouldForgetWhenClosed: true,

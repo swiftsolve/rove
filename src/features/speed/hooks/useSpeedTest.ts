@@ -81,10 +81,8 @@ async function currentRunContext(): Promise<SpeedRunContext> {
 }
 
 function isCancellation(cause: unknown): boolean {
-  // The browser mock throws an Error; Tauri rejects with the backend's plain
-  // error string. Handle both so a user-initiated stop never reads as a failure.
-  const message = cause instanceof Error ? cause.message : String(cause)
-  return message.includes('SPEED_TEST_CANCELLED')
+  // The backend marks a user's stop with this code, so it never reads as a failure.
+  return cause instanceof Error && cause.message.includes('SPEED_TEST_CANCELLED')
 }
 
 // A module-level store, not component state: the last result and an in-flight
