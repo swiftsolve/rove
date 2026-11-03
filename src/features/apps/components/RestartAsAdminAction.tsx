@@ -1,4 +1,5 @@
-import { type JSX, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import type { JSX } from 'react'
 
 import { getNetworkApi } from '@/bridge/network-api'
 import { isTauri } from '@/bridge/tauri-network-api'
@@ -7,46 +8,27 @@ import { IS_WINDOWS } from '@/lib/platform'
 import { Button, EmptyStateDescription } from '@/ui'
 
 /**
- * The "needs administrator" control for the per-app usage views (Apps, Hosts,
- * Traffic Types). Those all read from an ETW session that only opens with
- * elevation, so when the platform reports itself unsupported on Windows this
- * relaunches Rove as administrator, raising the UAC prompt. On success the
- * backend exits this instance and the elevated one takes over; if the prompt is
- * dismissed we surface a short note and stay put.
- *
- * When the session fails to open for a reason other than elevation, the backend
- * reports the underlying error; we show it here so the cause is visible instead
- * of only ever blaming elevation.
- *
- * Renders nothing off Windows or outside the desktop app: elsewhere the views
- * are always supported, and there's no shell to elevate through in the browser.
+ * Relaunches Rove as administrator for the per-app usage views, whose ETW session
+ * only opens with elevation on Windows. On success the backend exits this
+ * instance and the elevated one takes over. Renders nothing off Windows or in the
+ * browser, where there's nothing to elevate.
  */
 export function RestartAsAdminAction(): JSX.Element | null {
-  const [isBusy, setIsBusy] = useState(false)
-  const [wasDeclined, setWasDeclined] = useState(false)
+  // On success the backend exits this process, so only a declined prompt settles it.
+  const relaunch = useMutation({ mutationFn: () => getNetworkApi().relaunchAsAdmin() })
+  const isBusy = relaunch.isPending
+  const wasDeclined = relaunch.isError
 
   const isEnabled = IS_WINDOWS && isTauri()
-  // The real reason the session won't open, so a failure that isn't about
-  // elevation (a policy block, a provider error) is visible rather than hidden.
+  // So a failure that isn't about elevation (a policy block, a provider error)
+  // isn't blamed on it.
   const detail = useUsageSupportDetail(isEnabled)
 
   if (!isEnabled) return null
 
-  const relaunchAsAdmin = async (): Promise<void> => {
-    setIsBusy(true)
-    setWasDeclined(false)
-    try {
-      await getNetworkApi().relaunchAsAdmin()
-      // On success the backend exits this process; nothing more to do.
-    } catch {
-      setWasDeclined(true)
-      setIsBusy(false)
-    }
-  }
-
   return (
     <>
-      <Button onClick={() => void relaunchAsAdmin()} isLoading={isBusy}>
+      <Button onClick={() => relaunch.mutate()} isLoading={isBusy}>
         {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
       </Button>
       {wasDeclined && <EmptyStateDescription role="status">Elevation was declined.</EmptyStateDescription>}

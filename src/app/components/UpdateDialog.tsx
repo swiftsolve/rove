@@ -1,33 +1,23 @@
+import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { useState } from 'react'
 
 import { releaseNoteItems } from '@/app/utils/release-notes'
 import type { PendingUpdate } from '@/app/utils/updater'
 import { ArrowRightIcon, Button, Dialog, DownloadIcon } from '@/ui'
 
 /**
- * Non-blocking update prompt. Replaces window.confirm, which freezes the
- * webview on Linux/WebKitGTK because native JS dialogs block the GTK loop.
- *
- * The header carries a version-diff line; a recessed
- * "What's new" well follows when the release ships notes. A failed install
- * stays open with the error, to try again or leave for later.
+ * The update prompt. Not window.confirm: native JS dialogs block the GTK loop
+ * and freeze the webview on WebKitGTK. A failed install stays open with the error.
  */
 export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onDismiss: () => void }) {
-  const [isInstalling, setIsInstalling] = useState(false)
-  const [hasFailed, setHasFailed] = useState(false)
-
-  const handleInstall = (): void => {
-    setIsInstalling(true)
-    setHasFailed(false)
-    // install() ends in relaunch(), so this promise never resolves on success;
-    // only a failure returns control here.
-    update.install().catch((err: unknown) => {
-      console.warn('Update install failed:', err)
-      setIsInstalling(false)
-      setHasFailed(true)
-    })
-  }
+  // install() ends in relaunch(), so it never resolves on success; only a
+  // failure returns control here.
+  const install = useMutation({
+    mutationFn: () => update.install(),
+    onError: (err) => console.warn('Update install failed:', err),
+  })
+  const isInstalling = install.isPending
+  const hasFailed = install.isError
 
   return (
     <Dialog
@@ -46,7 +36,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
       cancelLabel="Later"
       actions={
         <>
-          <Button variant="solid" icon={DownloadIcon} onClick={handleInstall} isLoading={isInstalling}>
+          <Button variant="solid" icon={DownloadIcon} onClick={() => install.mutate()} isLoading={isInstalling}>
             {isInstalling ? 'Installing…' : hasFailed ? 'Try again' : 'Install and restart'}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}

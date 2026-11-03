@@ -1,6 +1,8 @@
 import { relaunch } from '@tauri-apps/plugin-process'
 import { check } from '@tauri-apps/plugin-updater'
 
+import { isTauri } from '@/bridge/tauri-network-api'
+
 /**
  * A newer signed release that has been found but not yet installed. The UI
  * presents it to the user and calls `install()` if they accept.
@@ -14,19 +16,15 @@ export type PendingUpdate = {
 }
 
 /**
- * Check GitHub Releases for a newer signed build. Returns a descriptor the UI
- * can present, or null if there's nothing to install. The updater verifies
- * every package against the public key embedded in tauri.conf.json, so a
- * tampered or unsigned build is rejected before it can run.
- *
- * Silent by design: any failure (offline, no release yet, endpoint 404) is
- * swallowed and reported as null so a failed check never disrupts a launch.
- *
- * Note: prompting is intentionally left to the caller via a React modal rather
- * than window.confirm — native JS dialogs block the GTK main loop and freeze
- * the entire webview on Linux/WebKitGTK.
+ * Check GitHub Releases for a newer signed build, or null if there's nothing to
+ * install. Packages are verified against the public key in tauri.conf.json.
+ * Any failure reads as null, so a failed check never disrupts a launch. The
+ * caller prompts with a React dialog, not window.confirm: native JS dialogs
+ * block the GTK main loop and freeze the webview on WebKitGTK.
  */
 export async function checkForUpdates(): Promise<PendingUpdate | null> {
+  // The browser builds (dev server, the site's demo) have nothing to update.
+  if (!isTauri()) return null
   try {
     const update = await check()
     if (!update) return null
