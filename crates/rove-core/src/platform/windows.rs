@@ -288,12 +288,12 @@ pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     Some((ip, prefix))
 }
 
-/// The local timezone's offset from UTC in seconds, via PowerShell; `None` on
-/// any failure. Note `BaseUtcOffset` is the zone's standard offset and ignores
-/// daylight saving.
+/// The local timezone's offset from UTC in seconds right now, daylight saving
+/// included, via PowerShell; `None` on any failure. (`BaseUtcOffset` would be
+/// the standard offset, an hour off all summer.)
 pub fn utc_offset_secs() -> Option<i64> {
     let mut cmd = std::process::Command::new("powershell");
-    cmd.args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"]);
+    cmd.args(["-NoProfile", "-Command", "[TimeZoneInfo]::Local.GetUtcOffset([DateTime]::Now).TotalMinutes"]);
     super::hide_console(&mut cmd);
     cmd.output()
         .ok()
