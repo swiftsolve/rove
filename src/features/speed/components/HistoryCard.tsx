@@ -1,7 +1,14 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { formatBand, formatDateTime, formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/lib/format'
+import {
+  formatBand,
+  formatDateTime,
+  formatLatencyMs,
+  formatSpeedMbps,
+  splitLatencyMs,
+  splitSpeedMbps,
+} from '@/lib/format'
 import { isMeasuredLatency, type SpeedHistoryEntry } from '@/types'
 import {
   Card,
@@ -96,6 +103,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
   const download = splitSpeedMbps(entry.downloadMbps)
   const upload = splitSpeedMbps(entry.uploadMbps)
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
+  const ping = hasValidPing ? splitLatencyMs(entry.latencyMs) : null
 
   return (
     // No bottom padding: the footer bleeds to the card's rounded bottom edge.
@@ -111,11 +119,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
         <dl className="grid grid-cols-3 gap-12">
           <Metric label="Download" value={download.value} unit={download.unit} series="down" />
           <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
-          <Metric
-            label="Ping"
-            value={hasValidPing ? entry.latencyMs.toFixed(1) : <NoValue label="Not measured" />}
-            unit={hasValidPing ? 'ms' : undefined}
-          />
+          <Metric label="Ping" value={ping?.value ?? <NoValue label="Not measured" />} unit={ping?.unit} />
         </dl>
 
         <div className={CARD_FOOTER}>

@@ -97,10 +97,16 @@ export function formatDuplex(duplex: string | null | undefined): string | null {
   return duplex
 }
 
-/** The latency in ms, or null for one that isn't a real duration. */
-export function formatLatencyMs(ms: number): string | null {
+/** 12.34 → { value: "12.3", unit: "ms" }, or null for one that isn't a real duration. */
+export function splitLatencyMs(ms: number): ValueWithUnit | null {
   if (!Number.isFinite(ms) || ms < 0) return null
-  return `${ms.toFixed(1)} ms`
+  return { value: ms.toFixed(1), unit: 'ms' }
+}
+
+/** The latency in ms ("12.3 ms"), or null for one that isn't a real duration. */
+export function formatLatencyMs(ms: number): string | null {
+  const split = splitLatencyMs(ms)
+  return split && `${split.value} ${split.unit}`
 }
 
 const BYTE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const

@@ -4,10 +4,12 @@ import {
   formatBand,
   formatCount,
   formatDuration,
+  formatLatencyMs,
   formatMac,
   formatSpeedMbps,
   formatTimeAgo,
   splitBytes,
+  splitLatencyMs,
   splitSpeedMbps,
 } from '@/lib/format'
 
@@ -87,5 +89,20 @@ describe('formatCount', () => {
     expect(formatCount(0, 'device')).toBe('0 devices')
     expect(formatCount(1, 'device')).toBe('1 device')
     expect(formatCount(3, 'interface')).toBe('3 interfaces')
+  })
+})
+
+describe('formatLatencyMs / splitLatencyMs', () => {
+  it('shows one decimal place in ms', () => {
+    expect(formatLatencyMs(12.34)).toBe('12.3 ms')
+    expect(splitLatencyMs(12.34)).toEqual({ value: '12.3', unit: 'ms' })
+    expect(splitLatencyMs(0)).toEqual({ value: '0.0', unit: 'ms' })
+  })
+
+  it('is null for a negative or non-finite duration', () => {
+    for (const ms of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(formatLatencyMs(ms)).toBeNull()
+      expect(splitLatencyMs(ms)).toBeNull()
+    }
   })
 })
