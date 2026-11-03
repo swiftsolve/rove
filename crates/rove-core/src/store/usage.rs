@@ -37,13 +37,6 @@ impl Store {
         )?;
         Ok(())
     }
-
-    /// Whether no day has been recorded yet; gates the one-time legacy import.
-    pub fn usage_is_empty(&self) -> rusqlite::Result<bool> {
-        let conn = self.lock();
-        let count: i64 = conn.query_row("SELECT COUNT(*) FROM usage_day", [], |row| row.get(0))?;
-        Ok(count == 0)
-    }
 }
 
 #[cfg(test)]
@@ -53,7 +46,6 @@ mod tests {
     #[test]
     fn usage_accumulates_and_prunes() {
         let store = Store::open_in_memory().unwrap();
-        assert!(store.usage_is_empty().unwrap());
         store.add_usage("2026-01-01", 10, 5).unwrap();
         store.add_usage("2026-01-01", 3, 2).unwrap();
         assert_eq!(store.usage_day("2026-01-01").unwrap(), (13, 7));
