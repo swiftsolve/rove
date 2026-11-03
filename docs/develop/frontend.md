@@ -30,7 +30,10 @@ after a commit (syncing the sites and Storybook).
    An interactive one gets a `play` story too.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
 6. Its entry in `src/ui/figma.json` (`null` when Figma has none) and its row in
-   the [Components](#components) table.
+   the [Components](#components) table. The entry's `name` and `node` are the
+   Figma component's (or component set's) name and the id in its link's
+   `node-id`, with `-` as `:`; never guess one. With `FIGMA_TOKEN` in
+   `.env.local`, `npm run check` checks them against the file.
 7. `npm run catalogue`. Raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
    when the library's API changes, this included.
 8. The Figma side: the component on its group's page in the Figma file, with
@@ -293,6 +296,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | CSS Module classes match their use | `checks/css-modules.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
+| `figma.json`'s nodes exist in Figma under their names (skipped without `FIGMA_TOKEN`) | `checks/figma-nodes.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
 Review still has to catch: props passed only to pass down, hints over two
