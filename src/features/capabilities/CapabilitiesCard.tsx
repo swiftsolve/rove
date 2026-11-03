@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import type { JSX, ReactNode } from 'react'
 
+import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
@@ -9,8 +10,6 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { testStatusText } from '@/features/speed/utils/test-status'
-import { useNow } from '@/hooks/useNow'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import type { CapabilityDefinition, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 import {
@@ -181,12 +180,11 @@ function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Elemen
   )
 }
 
-/** "Updated 5 min ago", kept current as time passes. */
+/** "Updated 5 min ago", opening Speed. */
 function LastUpdatedLink({ completedAt }: { completedAt: number }) {
-  const now = useNow(TIME_AGO_RESOLUTION_MS)
   return (
     <OpenSpeedLink icon={HistoryIcon}>
-      Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+      <UpdatedAgo timestamp={completedAt} />
     </OpenSpeedLink>
   )
 }

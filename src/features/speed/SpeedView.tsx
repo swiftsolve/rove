@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 
+import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { CapabilityDetailsView } from '@/features/capabilities/CapabilityDetailsView'
@@ -8,8 +9,6 @@ import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
-import { useNow } from '@/hooks/useNow'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import {
   Button,
   DotSeparator,
@@ -55,13 +54,12 @@ function HeaderStatus() {
 
 /** When the last result landed, linking to the history; an intro before any. */
 function HeaderDescription() {
-  const now = useNow(TIME_AGO_RESOLUTION_MS)
   const completedAt = useSpeedTest((test) => test.completedAt)
   if (completedAt == null) return <>Measure your download and upload speeds</>
   return (
     <span className="inline-flex items-center gap-6">
       <span>
-        Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
+        <UpdatedAgo timestamp={completedAt} />
       </span>
       <DotSeparator />
       <HistoryLink />

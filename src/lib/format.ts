@@ -1,31 +1,28 @@
 import { isValidRate, sanitizeRate } from '@/types'
 
-/** The speed with its unit, or null for one that isn't a real rate. */
-export function formatSpeedMbps(mbps: number): string | null {
-  if (!isValidRate(mbps)) return null
-  if (mbps >= 1000) return `${(mbps / 1000).toFixed(1)} Gbps`
-  return `${mbps.toFixed(1)} Mbps`
-}
-
-export type SplitSpeed = {
+/** A number as it's shown, and its unit: `{ value: "1.53", unit: "GB" }`. */
+export type ValueWithUnit = {
   value: string
   unit: string
 }
 
-export function splitSpeedMbps(mbps: number): SplitSpeed {
-  const safe = sanitizeRate(mbps)
+// Each unit and precision is chosen from the value as it will be shown, after
+// rounding, so 999.96 Mbps reads "1.0 Gbps", never "1000.0 Mbps".
 
-  if (safe >= 1000) {
-    const gbps = safe / 1000
-    return {
-      value: gbps >= 10 ? gbps.toFixed(1) : gbps.toFixed(2),
-      unit: 'Gbps',
-    }
-  }
-  if (safe >= 100) {
-    return { value: Math.round(safe).toString(), unit: 'Mbps' }
-  }
-  return { value: safe.toFixed(1), unit: 'Mbps' }
+/** The speed with its unit, or null for one that isn't a real rate. */
+export function formatSpeedMbps(mbps: number): string | null {
+  if (!isValidRate(mbps)) return null
+  if (Number(mbps.toFixed(1)) < 1000) return `${mbps.toFixed(1)} Mbps`
+  return `${(mbps / 1000).toFixed(1)} Gbps`
+}
+
+/** Three significant figures: 41.2 / 412 Mbps, 4.12 / 41.2 Gbps. Anything but a real rate reads as 0. */
+export function splitSpeedMbps(mbps: number): ValueWithUnit {
+  const safe = sanitizeRate(mbps)
+  if (Number(safe.toFixed(1)) < 100) return { value: safe.toFixed(1), unit: 'Mbps' }
+  if (Math.round(safe) < 1000) return { value: Math.round(safe).toString(), unit: 'Mbps' }
+  const gbps = safe / 1000
+  return { value: Number(gbps.toFixed(2)) < 10 ? gbps.toFixed(2) : gbps.toFixed(1), unit: 'Gbps' }
 }
 
 export function formatChannel(channel: number | null, frequency: number | null): string | null {
@@ -58,14 +55,6 @@ export function formatWifiStandard(standard: string | null | undefined): string 
   return WIFI_STANDARD_LABELS[normalized] ?? trimmed
 }
 
-export function formatSignalStrength(strength: number): string {
-  const safe = sanitizeRate(strength)
-  if (safe >= 80) return 'Excellent'
-  if (safe >= 60) return 'Good'
-  if (safe >= 40) return 'Fair'
-  return 'Weak'
-}
-
 export function formatOperState(state: string): string {
   if (state === 'up') return 'Connected'
   if (state === 'down') return 'Disconnected'
@@ -79,9 +68,9 @@ export function formatConnectionType(type: string): string {
   return type
 }
 
-/** The value, or null when it's blank. */
+/** The value trimmed, or null when it's blank. */
 export function formatDisplayValue(value: string | null | undefined): string | null {
-  return value?.trim() ? value : null
+  return value?.trim() || null
 }
 
 /** MAC addresses always display upper-case (A4:C3:F0:…), wherever they appear. */
@@ -114,16 +103,7 @@ export function formatLatencyMs(ms: number): string | null {
   return `${ms.toFixed(1)} ms`
 }
 
-export function isDisplayableMbps(mbps: number | null | undefined): mbps is number {
-  return mbps != null && Number.isFinite(mbps) && mbps > 0
-}
-
 const BYTE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
-
-export type SplitBytes = {
-  value: string
-  unit: string
-}
 
 /** Three significant figures, e.g. 153 / 15.3 / 1.53; whole bytes never get decimals. */
 function byteFractionDigits(value: number, unitIndex: number): number {
@@ -133,16 +113,20 @@ function byteFractionDigits(value: number, unitIndex: number): number {
 }
 
 /** 1_530_000_000 → { value: "1.53", unit: "GB" } (decimal units, like ISPs bill). */
-export function splitBytes(bytes: number): SplitBytes {
+export function splitBytes(bytes: number): ValueWithUnit {
   if (!Number.isFinite(bytes) || bytes < 0) return { value: '0', unit: 'B' }
   let value = bytes
   let unitIndex = 0
-  while (value >= 1000 && unitIndex < BYTE_UNITS.length - 1) {
+  const isLastUnit = (): boolean => unitIndex === BYTE_UNITS.length - 1
+  // Step up while the value, as it would be shown, reaches 1000: 999.6 KB is "1.00 MB".
+  while (!isLastUnit() && Number(value.toFixed(byteFractionDigits(value, unitIndex))) >= 1000) {
     value /= 1000
     unitIndex += 1
   }
+  // Rounding can cross a precision step too: 9.996 KB shows as "10.0", not "10.00".
+  const shown = Number(value.toFixed(byteFractionDigits(value, unitIndex)))
   return {
-    value: value.toFixed(byteFractionDigits(value, unitIndex)),
+    value: value.toFixed(byteFractionDigits(shown, unitIndex)),
     unit: BYTE_UNITS[unitIndex] ?? 'B',
   }
 }
@@ -152,14 +136,17 @@ export function formatBytes(bytes: number): string {
   return `${value} ${unit}`
 }
 
-/** Absolute timestamp, e.g. "Jul 4, 8:30 PM" — matches speed history cards. */
+// Built once: a formatter is costly to make, and the history list formats many.
+const DATE_TIME = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+/** Absolute timestamp in the user's locale, e.g. "Jul 4, 8:30 PM", as on the speed history cards. */
 export function formatDateTime(timestamp: number): string {
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(timestamp))
+  return DATE_TIME.format(new Date(timestamp))
 }
 
 /** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". */
@@ -188,17 +175,18 @@ export const TIME_AGO_RESOLUTION_MS = 10_000
 const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
 
 /** Relative timestamp for recent times; absolute date after 24 h. `now` comes
- *  from `useNow`, so the label ages on screen. */
-export function formatTimeAgo(timestamp: number, now: number): string {
+ *  from `useNow`, so the label ages on screen. Hours are whole ones passed, as
+ *  in `formatDuration`: 91 min is "1 h ago". Null for a time that isn't one. */
+export function formatTimeAgo(timestamp: number, now: number): string | null {
   const elapsed = now - timestamp
+  if (!Number.isFinite(elapsed)) return null
   if (elapsed >= TIME_AGO_RELATIVE_MS) return formatDateTime(timestamp)
 
   const seconds = Math.round(elapsed / 1000)
   if (seconds < 45) return 'just now'
   const minutes = Math.round(seconds / 60)
   if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.round(minutes / 60)
-  return `${hours} h ago`
+  return `${Math.floor(minutes / 60)} h ago`
 }
 
 /** "1 device", "3 devices". Every noun the UI counts takes a plain -s. */

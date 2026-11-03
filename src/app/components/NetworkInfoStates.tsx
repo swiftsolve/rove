@@ -123,7 +123,7 @@ function StaleNetworkBanner({
     <Banner
       variant="error"
       title={describeNetworkError(error).title}
-      description={`Last updated ${formatTimeAgo(lastReadAt, now)}.`}
+      description={`Last updated ${formatTimeAgo(lastReadAt, now) ?? 'a while ago'}.`}
       onRetry={onRetry}
     />
   )

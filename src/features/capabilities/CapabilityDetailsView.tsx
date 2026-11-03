@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import { useEffect, useRef } from 'react'
 
+import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
 import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
@@ -12,8 +13,6 @@ import {
 } from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
-import { useNow } from '@/hooks/useNow'
-import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/lib/format'
 import { flashHighlight } from '@/lib/highlight'
 import type { CapabilityId, CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, PageHeader, StatusDot } from '@/ui'
@@ -138,7 +137,6 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) 
   const capabilities = useSpeedTest((test) => test.capabilities)
   const speed = useSpeedTest((test) => test.internetSpeed)
   const completedAt = useSpeedTest((test) => test.completedAt)
-  const now = useNow(TIME_AGO_RESOLUTION_MS)
   const listRef = useRef<HTMLUListElement>(null)
 
   // Two frames late: opening the subpage resets the scroll container to the top
@@ -162,13 +160,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) 
     <div className="page">
       <PageHeader
         title="Capabilities"
-        description={
-          completedAt != null ? (
-            <>
-              Updated <time dateTime={new Date(completedAt).toISOString()}>{formatTimeAgo(completedAt, now)}</time>
-            </>
-          ) : undefined
-        }
+        description={completedAt != null ? <UpdatedAgo timestamp={completedAt} /> : undefined}
         onBack={back}
       />
       <ul role="list" className="flex flex-col gap-10" ref={listRef}>
