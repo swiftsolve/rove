@@ -35,7 +35,13 @@ type BannerProps = {
  */
 export function Banner({ variant, title, description, onRetry }: BannerProps): JSX.Element | null {
   const [dismissedTitle, setDismissedTitle] = useState<string | null>(null)
+  const [shownTitle, setShownTitle] = useState(title)
   const [isRetrying, setIsRetrying] = useState(false)
+  // A new title clears the dismissal, so a dismissed one that comes back later shows again.
+  if (shownTitle !== title) {
+    setShownTitle(title)
+    setDismissedTitle(null)
+  }
   if (dismissedTitle === title) return null
 
   const retry = async (): Promise<void> => {
@@ -43,6 +49,8 @@ export function Banner({ variant, title, description, onRetry }: BannerProps): J
     setIsRetrying(true)
     try {
       await onRetry()
+    } catch {
+      // A failed retry shows as the banner staying up.
     } finally {
       setIsRetrying(false)
     }
