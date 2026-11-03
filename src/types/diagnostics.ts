@@ -10,6 +10,12 @@ import type { PingStats } from './speed'
  */
 export type InternetStatus = 'online' | 'noInternet' | 'offline'
 
+/** Whether the public internet is unreachable. Unknown (`undefined`) counts as
+ *  up, so nothing reads as down before the first check lands. */
+export function isInternetDown(status: InternetStatus | undefined): boolean {
+  return status === 'noInternet' || status === 'offline'
+}
+
 export type NetworkDiagnostics = {
   gateway: string | null
   defaultInterface: string | null

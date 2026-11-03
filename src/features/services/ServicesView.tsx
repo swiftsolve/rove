@@ -8,7 +8,7 @@ import { serviceTally } from '@/features/services/components/ServiceTally'
 import { useServiceLatency } from '@/features/services/hooks/useServiceLatency'
 import { useServiceReachability } from '@/features/services/hooks/useServiceReachability'
 import { useServices } from '@/features/services/hooks/useServices'
-import type { InternetStatus, ServiceDefinition, ServiceReachability } from '@/types'
+import { isInternetDown, type ServiceDefinition, type ServiceReachability } from '@/types'
 import {
   Banner,
   Button,
@@ -32,10 +32,6 @@ const SERVICES_HINT =
 /** What the add/edit dialog shows. `openCount` tells one opening from the next,
  *  so reopening while the last one leaves starts it fresh. */
 type DialogState = ({ mode: 'add' } | { mode: 'edit'; service: ServiceDefinition }) & { openCount: number }
-
-function isInternetDown(status: InternetStatus | undefined): boolean {
-  return status === 'noInternet' || status === 'offline'
-}
 
 /** There's nothing to probe against while offline, so adding is disabled until we're back. */
 function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick: () => void }) {

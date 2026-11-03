@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority'
 import type { JSX } from 'react'
 
 import { reachabilityStatus } from '@/features/services/utils/service-status'
-import type { InternetStatus, ServiceReachability } from '@/types'
+import { type InternetStatus, isInternetDown, type ServiceReachability } from '@/types'
 import { ArrowDownIcon, ArrowUpIcon, DotSeparator } from '@/ui'
 
 // Inherits the header subtitle's size and colour. Wraps between the two halves
@@ -36,7 +36,7 @@ export function serviceTally(
 ): JSX.Element | null {
   // Offline, every probe fails at once, and a "6 Down" tally would blame the
   // services for our own outage. Say so in the title bar's words instead.
-  if (internet === 'noInternet' || internet === 'offline') {
+  if (isInternetDown(internet)) {
     return (
       <span className={ROOT} role="status">
         <span className="text-negative">No internet</span>

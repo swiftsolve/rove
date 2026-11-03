@@ -1,4 +1,4 @@
-import type { InternetStatus, ServiceReachability } from '@/types'
+import { type InternetStatus, isInternetDown, type ServiceReachability } from '@/types'
 
 /**
  * A frontend-owned rolling buffer of per-host latency for the Services row
@@ -54,7 +54,7 @@ export function readLatencyHistory(): LatencyHistory {
   }
 }
 
-export function writeLatencyHistory(history: LatencyHistory): void {
+function writeLatencyHistory(history: LatencyHistory): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
   } catch {
@@ -78,8 +78,7 @@ export function appendSamples(
 ): LatencyHistory {
   if (reachability.length === 0) return history
 
-  const isOffline = internet === 'noInternet' || internet === 'offline'
-  if (isOffline) return history
+  if (isInternetDown(internet)) return history
 
   const now = Date.now()
   const next: Record<string, LatencySample[]> = {}
@@ -88,14 +87,6 @@ export function appendSamples(
     next[svc.host] = latestWindow([...previous, { ts: now, ms: svc.latencyMs }])
   }
   return next
-}
-
-export function clearLatencyHistory(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // Nothing the user can do about a failed clear.
-  }
 }
 
 // An external store (read with useSyncExternalStore), so rows stay reactive
