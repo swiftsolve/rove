@@ -165,7 +165,7 @@ export function DeviceRow({ device }: { device: LanDevice }): JSX.Element {
             <h2 className={DEVICE_NAME}>
               <InlineMeta items={name} />
             </h2>
-            <Tooltip content={device.isReachable ? 'Reachable' : 'Offline — no response to recent scans'}>
+            <Tooltip content={device.isReachable ? 'Reachable' : 'No response to recent scans'}>
               <span className={stateVariants({ isReachable: device.isReachable })}>
                 <StatusDot />
                 {device.isReachable ? 'Online' : 'Offline'}

@@ -36,7 +36,7 @@ export function SecurityBadge({ security, isShort = false, className }: Security
   const isSecured = isSecuredWifi(security) === true
   const fullLabel = normalizeSecurity(security)
   const securedLabel = isShort ? shortSecurityLabel(fullLabel) : fullLabel
-  const description = isSecured ? `Secured (${fullLabel})` : 'Open network — traffic is not encrypted'
+  const description = isSecured ? `Secured (${fullLabel})` : "Open network. Traffic isn't encrypted."
   const Icon = isSecured ? LockIcon : UnlockIcon
 
   return (

@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import { StatusDot, Tooltip, usePresence } from '@/ui'
+import { StatusDot, usePresence } from '@/ui'
 import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
@@ -25,11 +25,9 @@ export function OnlineIndicator({
 
   if (!isMounted) return null
   return (
-    <Tooltip content="Responding to the last scan" isDisabled={!isActive}>
-      <span className={onlineVariants({ isLeaving: !isActive })} aria-hidden={isActive ? undefined : true}>
-        <StatusDot tone="positive" className={STATUS_DOT} />
-        <span className="num text-secondary">{count}</span> online
-      </span>
-    </Tooltip>
+    <span className={onlineVariants({ isLeaving: !isActive })} aria-hidden={isActive ? undefined : true}>
+      <StatusDot tone="positive" className={STATUS_DOT} />
+      <span className="num text-secondary">{count}</span> online
+    </span>
   )
 }
