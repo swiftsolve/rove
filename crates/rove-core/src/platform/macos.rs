@@ -1,5 +1,6 @@
-//! macOS host/network probes: `ifconfig`, `netstat`, `networksetup` and
-//! `system_profiler`.
+//! macOS host/network probes: `ifconfig`, `netstat`, `networksetup`,
+//! `system_profiler` and the Keychain via `security`. CoreWLAN reads live in
+//! [`super::mac_native`].
 use crate::util::net::is_virtual_interface;
 use crate::util::shell::try_run;
 use crate::connection::ConnectionDetails;
@@ -10,12 +11,12 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
-    // The SSID lives behind Location Services on macOS 14+ and is only reachable
-    // in-process via CoreWLAN — every shell tool returns "<redacted>".
+    // On macOS 14+ the SSID sits behind Location Services and only CoreWLAN,
+    // in-process, can read it; every shell tool prints "<redacted>".
     let mut d =
         ConnectionDetails { ssid: super::mac_native::current_ssid(), ..Default::default() };
-    // Last resort: `networksetup` (also redacted without Location access, but
-    // harmless to try).
+    // `networksetup` is redacted too without Location access, but harmless to
+    // try.
     if d.ssid.is_none() && crate::util::net::is_shell_safe_iface(iface) {
         if let Some(out) = try_run(&format!("networksetup -getairportnetwork {iface}")).await {
             // Success: "Current Wi-Fi Network: <SSID>". Otherwise a message with
@@ -29,10 +30,10 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
         }
     }
 
-    // Signal strength (and channel/security/rate) come from `system_profiler`,
-    // the only rootless RSSI source left on modern macOS — but it takes seconds.
-    // Serve the last cached reading immediately and refresh in the background so
-    // the value fills in on the next poll rather than stalling the whole card.
+    // Signal, channel, security and rate come from `system_profiler`, the only
+    // rootless RSSI source left, but it takes seconds. Serve the cached reading
+    // and refresh in the background, so the value fills in on the next poll
+    // instead of stalling the card.
     apply_cached_signal(&mut d);
 
     super::finalize_wifi(d)
@@ -64,8 +65,7 @@ pub async fn wifi_password(ssid: &str) -> Option<String> {
 /// vendor/product for the built-in or USB/Thunderbolt NICs.
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
-    // Caller (`connection_details`) has already validated `iface`, but this is a
-    // pub entry point — keep it safe if called directly.
+    // `connection_details` already validates `iface`, but this is pub.
     if !crate::util::net::is_shell_safe_iface(iface) {
         return d;
     }
@@ -99,15 +99,15 @@ static SIGNAL_CACHE: Mutex<Option<WifiSignal>> = Mutex::new(None);
 static REFRESH_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
 const SIGNAL_TTL: Duration = Duration::from_secs(12);
 
-/// Fill `d` with the last cached signal reading and, when it's stale, kick off a
-/// background `system_profiler` refresh. Never blocks: a cold cache just means
-/// the signal appears one poll later.
+/// Fill `d` from the cached signal reading and, when it's stale, start a
+/// background refresh. Never blocks: a cold cache just means the signal shows
+/// one poll later.
 fn apply_cached_signal(d: &mut ConnectionDetails) {
     let cached = crate::util::net::lock(&SIGNAL_CACHE).clone();
     let stale = cached.as_ref().is_none_or(|s| s.at.elapsed() > SIGNAL_TTL);
     if stale {
-        // `swap` inside the task dedupes concurrent refreshes; spawning needs the
-        // Tokio runtime this fn always runs under (called from an async command).
+        // The `swap` in the task dedupes concurrent refreshes. `tokio::spawn`
+        // needs a runtime, which the async command calling this provides.
         tokio::spawn(refresh_signal_cache());
     }
     if let Some(s) = cached {
@@ -137,9 +137,9 @@ async fn query_wifi_signal() -> Option<WifiSignal> {
 }
 
 /// Parse the "Current Network Information" block of `system_profiler
-/// SPAirPortDataType`. The block's first indented child is the SSID (or
-/// `<redacted>` when macOS withholds it); deeper `Key: value` lines carry the
-/// stats. Stops at the next section (equal-or-lesser indent).
+/// SPAirPortDataType`. Its first child is the SSID (or `<redacted>`); deeper
+/// `Key: value` lines carry the stats. Stops at the next section (same or
+/// lesser indent).
 fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
     let indent = |line: &str| line.len() - line.trim_start().len();
     let mut lines = out.lines();
@@ -162,9 +162,8 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
         };
         let value = value.trim();
         if value.is_empty() {
-            // The network name line ("<SSID>:"); first one wins. macOS prints
-            // "<redacted>" when it withholds the SSID (no Location permission) —
-            // not a real name, so skip it and keep the stats below.
+            // The network name line ("<SSID>:"); first one wins. Skip
+            // "<redacted>" (no Location permission) but keep the stats below.
             let name = key.trim();
             if ssid.is_none() && name != "<redacted>" {
                 ssid = Some(name.to_string());
@@ -175,8 +174,8 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
                 "Signal / Noise" => {
                     signal_dbm = value.split_whitespace().next().and_then(|v| v.parse().ok());
                 }
-                // "Channel: 44 (5GHz, 80MHz)" → channel 44 + centre frequency,
-                // from which the frontend labels the band and channel.
+                // "Channel: 44 (5GHz, 80MHz)" → 44, plus the centre frequency
+                // the frontend labels the band from.
                 "Channel" => {
                     channel = value.split_whitespace().next().and_then(|v| v.parse().ok());
                     frequency = channel.and_then(|ch| channel_to_frequency(ch, value));
@@ -190,7 +189,7 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
         }
     }
 
-    // A redacted SSID with no stats is worthless; require at least a real signal.
+    // Without a signal the reading is worthless, even with an SSID.
     signal_dbm?;
     Some(WifiSignal {
         ssid,
@@ -204,9 +203,9 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
     })
 }
 
-/// Wi‑Fi channel → representative centre frequency (MHz). The band is ambiguous
-/// from the channel number alone (6E reuses 2.4 GHz numbers), so `system_profiler`'s
-/// band hint ("5GHz", "2GHz", "6GHz") disambiguates; fall back to channel ranges.
+/// Wi-Fi channel to centre frequency (MHz). Channel numbers repeat across
+/// bands (6 GHz reuses 2.4 GHz numbers), so `system_profiler`'s band hint
+/// ("2GHz", "5GHz", "6GHz") decides, falling back to channel ranges.
 fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
     use super::WifiBand;
     let band = if band_hint.contains("6GHz") {
@@ -226,23 +225,20 @@ fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
 }
 
 /// The preferred IPv4 default route as `(interface, gateway)`. A VPN tunnel
-/// (`utun*`) or VM bridge can outrank the physical link in the routing table, so
-/// `route -n get default` alone lands on an interface with no address, no
-/// gateway and the wrong subnet. Prefer a non-virtual interface that carries a
-/// real IPv4 gateway; degrade gracefully when none does.
+/// (`utun*`) or VM bridge can outrank the physical link, so `route -n get
+/// default` alone can land on an interface with no address, no gateway and the
+/// wrong subnet. See `pick_default_route`.
 pub async fn best_default_route() -> Option<(String, Option<String>)> {
     let out = try_run("netstat -rn -f inet 2>/dev/null").await?;
     pick_default_route(&out)
 }
 
-/// Choose the physical default route from `netstat -rn -f inet` output. A VPN
-/// tunnel (`utun*`) or VM bridge (`bridge100`) keeps its own default route that
-/// can outrank — or outlive — the physical link: turn Wi-Fi off with a VM
-/// running and the only remaining default route is the bridge's, pointing at an
-/// interface that carries no real uplink. Virtual interfaces are therefore never
-/// chosen, so an all-virtual routing table yields `None` and the app reports
-/// "disconnected" rather than a phantom wired connection. A physical link whose
-/// gateway didn't parse is still returned (gateway `None`) as a last resort.
+/// Choose the physical default route from `netstat -rn -f inet`. A VPN tunnel
+/// or VM bridge (`bridge100`) keeps its own default route that can outrank, or
+/// outlive, the physical link: turn Wi-Fi off with a VM running and only the
+/// bridge's is left. Virtual interfaces are never chosen, so an all-virtual
+/// table gives `None` ("disconnected", not a phantom wired link). A physical
+/// link whose gateway didn't parse is the last resort, with gateway `None`.
 fn pick_default_route(out: &str) -> Option<(String, Option<String>)> {
     let mut physical_no_gw: Option<(String, Option<String>)> = None;
     for line in out.lines() {
@@ -252,41 +248,36 @@ fn pick_default_route(out: &str) -> Option<(String, Option<String>)> {
             continue;
         }
         let iface = cols[3].to_string();
-        // Skip VPN tunnels and VM bridges outright — they route packets but
-        // aren't the machine's uplink, and treating one as the active connection
-        // is exactly the bridge100-shows-as-"Wired" bug.
+        // Tunnels and bridges route packets but aren't the uplink; taking one
+        // was the bridge100-shows-as-"Wired" bug.
         if is_virtual_interface(&iface) {
             continue;
         }
         let gw = cols[1].parse::<Ipv4Addr>().ok().map(|ip| ip.to_string());
         if gw.is_some() {
-            return Some((iface, gw)); // physical link with a real gateway — ideal
+            return Some((iface, gw));
         }
         physical_no_gw.get_or_insert((iface, gw));
     }
     physical_no_gw
 }
 
-/// The last successfully-parsed Wi-Fi hardware-port map. The port layout is
-/// fixed for the machine's lifetime, so once we've read it we keep it: a later
-/// `networksetup` hiccup then reuses the known-good answer instead of returning
-/// empty and letting `en0` fall through to "ethernet" — a misclassification that
-/// otherwise flip-flops the connection type and spawns spurious connect events.
+/// The last good Wi-Fi hardware-port map. The layout doesn't change while the
+/// machine runs, so a later `networksetup` hiccup reuses it rather than letting
+/// `en0` fall through to "ethernet", which flip-flops the connection type and
+/// fires spurious connect events.
 static WIFI_DEVICES_CACHE: Mutex<Option<Vec<String>>> = Mutex::new(None);
 
-/// `enN` device names bound to a "Wi-Fi" hardware port. macOS names Wi-Fi
-/// interfaces `enN` just like Ethernet, so the cross-platform name heuristic
-/// can't tell them apart — this hardware-port map is the authoritative source.
-/// A transient probe failure reuses the last good reading; empty only before the
-/// first successful read, letting callers fall back.
+/// The `enN` devices on a "Wi-Fi" hardware port. macOS names Wi-Fi `enN` like
+/// Ethernet, so the name heuristic can't tell them apart. Empty only before
+/// the first good read, so callers can fall back.
 pub async fn wifi_devices() -> Vec<String> {
     let devices = try_run("networksetup -listallhardwareports 2>/dev/null")
         .await
         .map(|out| parse_wifi_devices(&out))
         .unwrap_or_default();
-    // A failed probe or an empty parse (unexpected output shape) is treated the
-    // same: keep the last good map rather than overwriting it with empty, so a
-    // one-poll hiccup doesn't reclassify `en0` from Wi-Fi to Ethernet.
+    // A failed probe and an empty parse (unexpected output) both keep the last
+    // good map.
     if devices.is_empty() {
         return crate::util::net::lock(&WIFI_DEVICES_CACHE)
             .clone()
@@ -324,10 +315,9 @@ pub async fn connection_type_for(iface: &str) -> &'static str {
     }
 }
 
-/// Per-interface facts scraped from a single `ifconfig -a`: oper-state, the
-/// first IPv4 address, and (Ethernet only) the negotiated link speed. sysinfo
-/// already gives names/MACs/IPs, but its IPv4 view can lag `ifconfig`, and it
-/// exposes no link speed at all — so the macOS list builder enriches from here.
+/// Per-interface facts from one `ifconfig -a`: oper state, first IPv4 and
+/// (Ethernet only) link speed. sysinfo's IPv4 can lag `ifconfig` and it has no
+/// link speed, so the macOS list builder enriches its list from here.
 #[derive(Default, Clone)]
 pub struct IfaceInfo {
     pub oper_state: Option<String>,
@@ -335,8 +325,8 @@ pub struct IfaceInfo {
     pub speed_mbps: Option<i64>,
 }
 
-/// Parse `ifconfig -a` into a per-interface [`IfaceInfo`] map, one shell call.
-/// Interfaces absent from the map keep their sysinfo-derived defaults.
+/// `ifconfig -a` as a per-interface [`IfaceInfo`] map. Interfaces missing from
+/// it keep their sysinfo values.
 pub async fn interface_info() -> HashMap<String, IfaceInfo> {
     let mut map: HashMap<String, IfaceInfo> = HashMap::new();
     // Blocks like:
@@ -358,7 +348,7 @@ pub async fn interface_info() -> HashMap<String, IfaceInfo> {
         if let Some(status) = line.strip_prefix("status: ") {
             entry.oper_state = Some(if status.trim() == "active" { "up" } else { "down" }.into());
         } else if let Some(rest) = line.strip_prefix("inet ") {
-            // First IPv4 wins ("inet 192.168.2.16 netmask ...").
+            // First IPv4 wins.
             if entry.ipv4.is_none() {
                 entry.ipv4 = rest.split_whitespace().next().map(str::to_string);
             }
@@ -369,18 +359,18 @@ pub async fn interface_info() -> HashMap<String, IfaceInfo> {
     map
 }
 
-/// Pull a link speed (Mbps) from an `ifconfig` `media:` descriptor, e.g.
-/// "autoselect (1000baseT <full-duplex,flow-control>)" → 1000, or "100baseTX" →
-/// 100, or "10GbaseT" → 10000. Wi-Fi reports a bare "autoselect" with no rate,
-/// so this returns `None` there (CoreWLAN supplies Wi-Fi speed instead).
+/// Link speed (Mbps) from an `ifconfig` `media:` descriptor:
+/// "autoselect (1000baseT <full-duplex,flow-control>)" → 1000, "100baseTX" →
+/// 100, "10GbaseT" → 10000. Wi-Fi shows a bare "autoselect", so `None` there
+/// (CoreWLAN supplies Wi-Fi speed).
 fn parse_media_speed(media: &str) -> Option<i64> {
-    // The rate lives in a "<N>base…" or "<N>Gbase…" token; scan for it.
+    // The rate is in a "<N>base…" or "<N>Gbase…" token.
     let token = media
         .split(|c: char| !c.is_ascii_alphanumeric())
         .find(|t| t.to_ascii_lowercase().contains("base"))?;
     let lower = token.to_ascii_lowercase();
     let (mut num, _) = lower.split_at(lower.find("base")?);
-    let gigabit = num.ends_with('g'); // "10G" → 10 Gbps
+    let gigabit = num.ends_with('g');
     if gigabit {
         num = &num[..num.len() - 1];
     }
@@ -388,11 +378,9 @@ fn parse_media_speed(media: &str) -> Option<i64> {
     Some(if gigabit { n * 1000 } else { n })
 }
 
-/// Duplex from an `ifconfig` `media:` descriptor. The mode lives in the
-/// angle-bracketed option list, e.g. "autoselect (1000baseT <full-duplex,
-/// flow-control>)" → "full". Returns the lowercase token the UI's duplex
-/// formatter expects; `None` when the media line carries no duplex hint (Wi-Fi,
-/// or a down link reporting "autoselect" alone).
+/// Duplex from an `ifconfig` `media:` descriptor's option list, e.g.
+/// "<full-duplex,flow-control>" → "full", the lowercase token the UI expects.
+/// `None` without a hint (Wi-Fi, or a down link's bare "autoselect").
 fn parse_media_duplex(media: &str) -> Option<String> {
     let lower = media.to_ascii_lowercase();
     if lower.contains("full-duplex") {
@@ -493,13 +481,12 @@ Device: bridge0
 
     #[test]
     fn wifi_devices_falls_back_to_last_good_on_transient_failure() {
-        // The static cache is process-wide; scope this test to a private map so
-        // it doesn't race the real probe. We exercise the fallback contract
-        // directly: an empty parse must not clobber a known-good reading.
+        // The cache is process-wide and would race the real probe, so this
+        // pins what the fallback relies on: an unusable probe parses to empty.
         let good = parse_wifi_devices("Hardware Port: Wi-Fi\nDevice: en0\n");
         assert_eq!(good, vec!["en0".to_string()]);
-        // A probe that returns nothing (unavailable) or an unparseable blob
-        // yields an empty list — the signal for "reuse the cache".
+        // Nothing, or no Wi-Fi port, parses to empty: the cue to reuse the cache.
+
         assert!(parse_wifi_devices("").is_empty());
         assert!(parse_wifi_devices("Hardware Port: Ethernet\nDevice: en1\n").is_empty());
     }

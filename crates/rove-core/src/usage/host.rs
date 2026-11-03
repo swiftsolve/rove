@@ -1,39 +1,33 @@
-//! Per-app *remote host* attribution — "which hosts is each app talking to, and
-//! how much". Where [`crate::usage::app`] answers "how many bytes has this app
-//! moved" (a per-process total), this module keeps the traffic broken down by
-//! the remote peer on the other end of each connection, so the Hosts view can
-//! show, under each app, the hosts it reached with a hostname, country flag, and
-//! byte split.
+//! Per-app remote hosts and traffic kinds: which hosts each app talks to, and
+//! how much. [`crate::usage::app`] keeps one total per process; this keeps the
+//! same traffic split by the peer on the other end of each connection, for the
+//! Hosts view (hostname, country flag, bytes) and, bucketed by peer port, the
+//! Traffic Types view.
 //!
-//! It reuses the same peer-address sources the OS already exposes — no packet
-//! capture, no elevated privileges:
+//! The sources are the per-connection ones the OS already exposes:
 //!
-//!   * **Linux** — `ss -tinHp` lists each TCP socket with its `LOCAL`/`PEER`
-//!     address pair and the owning process, plus `bytes_sent`/`bytes_received`.
-//!     (TCP only — Linux app-byte metering is likewise TCP-only, so the two
-//!     views still agree; UDP/QUIC per-host attribution on Linux is future work.)
-//!   * **macOS** — `nettop` *without* `-P` prints one row per process followed
-//!     by a row per connection (`tcp4 local<->peer …`, and `udp4 …` for QUIC)
-//!     carrying that connection's cumulative byte counts. Every protocol with a
-//!     concrete peer is attributed, so this matches the byte-total view's
-//!     coverage rather than trailing it by the QUIC volume.
-//!   * **Windows** — the `Microsoft-Windows-Kernel-Network` ETW events carry the
-//!     connection's remote address alongside the PID and size, so the same
-//!     admin-only session that meters per-app bytes ([`crate::usage::app`]) also
-//!     feeds per-host attribution here. TCP and UDP (QUIC) alike, matching the
-//!     byte-total view's coverage.
-//!   * **other** — no per-connection peer source, so unsupported.
+//!   * **Linux**: `ss -tinHp`, each TCP socket's address pair, owning process
+//!     and `bytes_sent`/`bytes_received`. TCP only, like Linux app metering, so
+//!     the two views still agree; UDP/QUIC per host is future work.
+//!   * **macOS**: `nettop` without `-P`, a row per process then a row per
+//!     connection (`tcp4 local<->peer …`, `udp4 …` for QUIC) with that
+//!     connection's cumulative bytes.
+//!   * **Windows**: the Kernel-Network ETW events carry the remote address next
+//!     to the PID and size, so the admin-only session behind
+//!     [`crate::usage::app`] feeds this view too. TCP and UDP alike.
+//!   * **other**: no per-connection source, so unsupported.
 //!
-//! Both supported sources report *cumulative* counters per socket, so — exactly
-//! like the interface and per-app trackers — [`HostUsageTracker`] banks the
-//! delta per socket into a running per-`(app, peer-ip)` total.
+//! Every source gives a cumulative counter per connection, so
+//! [`HostUsageTracker`] banks each connection's delta into a per-`(app, peer
+//! ip)` total.
 //!
-//! Hostnames (reverse DNS) and countries ([`crate::util::geoip`], a bundled table —
-//! no per-peer network call) are resolved *outside* the tracker and fed back in:
-//! [`HostUsageTracker`] exposes the peer IPs still awaiting each lookup
-//! ([`pending_hostnames`], [`pending_countries`]) and accepts the answers
-//! ([`record_hostnames`], [`record_countries`]), caching them (including misses)
-//! so a peer is resolved at most once.
+//! Hostnames (reverse DNS) and countries ([`crate::util::geoip`], a bundled
+//! table, so no per-peer network call) are resolved outside the tracker. It
+//! lists the IPs still waiting ([`HostUsageTracker::pending_hostnames`],
+//! [`HostUsageTracker::pending_countries`]) and caches the answers, misses
+//! included ([`HostUsageTracker::record_hostnames`],
+//! [`HostUsageTracker::record_countries`]), so each peer is resolved at most
+//! once.
 
 use crate::usage::app::CounterSemantics;
 use crate::util::net::{peer_port, routable_peer_ip};
@@ -41,69 +35,60 @@ use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-/// One remote host an app has exchanged bytes with this session. `ip` is the
-/// grouping key (all connections to the same peer are summed); `host` and
-/// `country_code` are filled in asynchronously after the peer is first seen, so
-/// both are `None` until reverse-DNS / geolocation resolve (or if they fail).
+/// One remote host an app has exchanged bytes with this session, summed over
+/// every connection to that IP. `host` and `country_code` are resolved after
+/// the peer is first seen, so both start as `None`.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostConn {
-    /// Remote peer IP (no port). Stable identity for the host across samples.
+    /// Remote peer IP, no port: the host's identity across samples.
     pub ip: String,
-    /// Reverse-DNS hostname, or `None` until resolved / when it has no PTR.
+    /// Reverse-DNS hostname; `None` until resolved, or when there's no PTR.
     pub host: Option<String>,
-    /// ISO-3166 alpha-2 country code (e.g. "US"), or `None` until resolved,
-    /// for a private/reserved address, or when the geolocation lookup fails.
+    /// ISO 3166 alpha-2 country code (e.g. "US"); `None` until resolved, for a
+    /// private or reserved address, or when the table has no record.
     pub country_code: Option<String>,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
 }
 
 /// One application with the remote hosts it has talked to, busiest host first.
-/// The app-level `rx_bytes`/`tx_bytes` are the sum across its hosts, and should
-/// match the same app's [`AppUsage`] total closely: both bank per-socket deltas,
-/// both gate on the same peer rule (`util::net::routable_peer_ip`), and both cover
-/// the same protocols — every connected socket with a real peer, TCP and UDP
-/// (QUIC) alike. So loopback, wildcard sockets, and protocol coverage all cancel.
-///
-/// The totals still won't be identical to the byte, for one structural reason:
-/// the two samplers run on their own intervals with independently primed
-/// baselines, so any single read compares totals banked up to slightly different
-/// instants, and the gap widens while traffic is actively flowing. It's a timing
-/// skew, not a coverage difference — over a quiet moment the two converge.
-/// (A per-host peer with no country still draws without a flag; that's a UI
-/// detail, not a byte difference.)
+/// `rx_bytes`/`tx_bytes` sum its hosts. On Linux and macOS they track the same
+/// app's [`AppUsage`](crate::usage::app::AppUsage) closely: both bank
+/// per-socket deltas from the same protocols and drop the same peers
+/// (`util::net::routable_peer_ip`). They differ slightly while traffic flows,
+/// because the two samplers run on their own intervals, and converge when it's
+/// quiet. On Windows the Apps total also counts loopback, which this view drops.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppHosts {
     pub name: String,
-    /// The app's real OS icon as a `data:` URI, or `None` (see [`AppUsage::icon`]).
+    /// The app's OS icon as a `data:` URI; see
+    /// [`AppUsage::icon`](crate::usage::app::AppUsage::icon).
     pub icon: Option<String>,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
     pub hosts: Vec<HostConn>,
 }
 
-/// Per-app remote-host breakdown for the Hosts view. Mirrors
-/// [`AppUsageSummary`]'s shape (apps busiest first, platform `support`, and the
-/// tracking-since epoch) so the frontend can treat the two the same way.
+/// Per-app remote hosts for the Hosts view. Same shape as
+/// [`AppUsageSummary`](crate::usage::app::AppUsageSummary) (busiest first,
+/// `support`, `tracking_since`) so the frontend treats them alike.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostUsageSummary {
     pub apps: Vec<AppHosts>,
-    /// `"supported"` where per-host attribution works (Linux, macOS) or
-    /// `"unsupported"` elsewhere (Windows ETW carries no peer address).
+    /// See [`platform_support`].
     pub support: &'static str,
     pub tracking_since: Option<u64>,
 }
 
-/// One kind of traffic — a protocol bucket the connections were grouped into by
-/// their remote (service) port, e.g. HTTPS on 443 or DNS on 53. `id` is a stable
-/// slug the frontend keys an icon off; `label` is the human name to show.
+/// One kind of traffic: the connections grouped by their peer (service) port,
+/// e.g. HTTPS on 443 or DNS on 53.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrafficType {
-    /// Stable classification slug (`"https"`, `"dns"`, `"ssh"`, `"other"`, …).
+    /// Stable slug the frontend keys an icon off (`"https"`, `"dns"`, `"other"`, …).
     pub id: &'static str,
     /// Display name for the bucket (`"HTTPS"`, `"DNS"`, …).
     pub label: &'static str,
@@ -111,36 +96,28 @@ pub struct TrafficType {
     pub tx_bytes: u64,
 }
 
-/// Traffic broken down by kind (protocol) rather than by app or host — a flat,
-/// busiest-first list for the Traffic Types view. Same coverage as
-/// [`HostUsageSummary`] (it's grouped from the very same per-connection samples,
-/// so TCP + connected UDP/QUIC only, routable peers only), just bucketed by the
-/// peer port instead of the peer IP. Mirrors the other usage summaries' shape
-/// (`support` + `tracking_since`) so the frontend treats them alike.
+/// Traffic by kind for the Traffic Types view, busiest first. Grouped from the
+/// same per-connection samples as [`HostUsageSummary`], so it covers exactly
+/// the same traffic, bucketed by peer port instead of peer IP.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrafficUsageSummary {
     /// Per-kind totals, busiest first. Empty before the first sample.
     pub types: Vec<TrafficType>,
-    /// `"supported"` where per-connection metering works (Linux, macOS) or
-    /// `"unsupported"` elsewhere (Windows ETW carries no peer port either).
+    /// See [`platform_support`].
     pub support: &'static str,
     pub tracking_since: Option<u64>,
 }
 
-/// `"supported"` on platforms whose per-socket source carries a peer address
-/// (Linux, macOS), and on Windows once the shared ETW session is up; the
-/// Kernel-Network events carry the connection's remote address, so — unlike an
-/// earlier belief that they didn't — the Hosts view works there too. Windows is
-/// therefore a runtime check gated on the same admin-only session that backs
-/// [`crate::usage::app`], not a compile-time constant.
+/// `"supported"` on Linux and macOS, and on Windows while the ETW session is up
+/// (so a runtime check there); `"unsupported"` otherwise.
 pub fn platform_support() -> &'static str {
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
         "supported"
     }
-    // The peer readings come from the same ETW session as per-app bytes, so the
-    // two views light up together (and both need Rove run as administrator).
+    // Same ETW session as per-app bytes, so both views need Rove run as
+    // administrator and light up together.
     #[cfg(windows)]
     {
         crate::usage::app::platform_support()
@@ -151,54 +128,48 @@ pub fn platform_support() -> &'static str {
     }
 }
 
-/// One cumulative reading for a single connection (socket). `conn_key` is a
-/// stable identity for that socket across samples (its local/peer address pair),
-/// so the tracker can diff it tick to tick; `app` is the owning process name,
-/// `ip` the remote peer with the port stripped (the host grouping key).
+/// One cumulative reading for a single connection. `conn_key` identifies the
+/// connection across samples (its address pair) so the tracker can diff it;
+/// `ip` is the peer without its port, the host grouping key.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PeerReading {
     pub conn_key: String,
     pub app: String,
     pub ip: String,
-    /// The peer's (service) port — 443, 53, … — used to bucket the connection
-    /// into a traffic type. `None` when the source token carried no readable
-    /// port, in which case it falls into the "other" bucket.
+    /// The peer's service port (443, 53, …), which picks the traffic type.
+    /// `None` when the source gave no readable port; it lands in "other".
     pub port: Option<u16>,
     pub rx: u64,
     pub tx: u64,
-    /// Owning process id when the source reports one (macOS), used to resolve
-    /// the app icon; `None` on Linux (keyed by socket, no icon lookup).
+    /// Owning process id, when the source gives one. Only used to resolve the
+    /// app icon; accounting stays keyed by `conn_key`.
     pub pid: Option<u32>,
 }
 
-/// Take one snapshot of per-connection cumulative byte counters, tagged with the
-/// remote peer.
+/// One snapshot of per-connection cumulative byte counters, tagged with the
+/// peer.
 ///
-/// `None` means no sample was taken (source tool missing, errored, timed out, or
-/// an unsupported platform); `Some(vec![])` means the sample worked and there
-/// were no connected sockets. As in [`crate::usage::app::sample_units`], the two
-/// must not be conflated: ingesting a failure as an empty snapshot would forget
-/// every socket's baseline and re-credit each one's full counter next tick.
+/// `None` means no sample was taken (tool missing, failed, timed out, or an
+/// unsupported platform); `Some(vec![])` means no connected sockets. Keep them
+/// apart, as in [`crate::usage::app::sample_units`]: ingesting a failure as
+/// empty would drop every baseline and re-credit each counter in full next
+/// tick.
 pub async fn sample() -> Option<Vec<PeerReading>> {
     #[cfg(target_os = "linux")]
     {
         return crate::util::shell::try_run("ss -tinHp").await.map(|out| parse_ss_peers(&out));
     }
-    // No -P: nettop prints per-connection sub-rows (peer + per-conn bytes) under
-    // each process row. No -m either: the default lists TCP *and* UDP, so QUIC
-    // (HTTP/3, on :443) is attributed to its host like any TCP flow. Unconnected
-    // UDP — mDNS, DNS listeners — has a `*` peer and is dropped by
-    // `routable_peer_ip`, the same gate the byte-total view uses. -x raw bytes,
-    // -n no DNS (we do our own reverse lookup).
+    // No -P, so each process row is followed by its connections. No -m, so UDP
+    // is listed too and QUIC (HTTP/3 on :443) counts like TCP; unconnected UDP
+    // (mDNS, DNS listeners) has a `*` peer and `routable_peer_ip` drops it.
+    // -x raw bytes, -n no DNS (we resolve names ourselves).
     #[cfg(target_os = "macos")]
     {
         return crate::util::shell::try_run("nettop -L 1 -x -n")
             .await
             .map(|out| parse_nettop_peers(&out));
     }
-    // Windows reads the same running ETW session as per-app bytes, tagging each
-    // connection's cumulative counter with its remote peer. A synchronous
-    // in-process snapshot that can't fail, so there's nothing to await.
+    // An in-process read of the ETW accumulator: synchronous, and it can't fail.
     #[cfg(windows)]
     {
         return Some(
@@ -222,15 +193,14 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
     }
 }
 
-/// Reuses [`crate::usage::app`]'s field/proc-name readers so the two `ss` parsers
-/// stay consistent.
+// The same `ss` field readers as `usage::app`, so the two parsers can't drift.
 #[cfg(any(target_os = "linux", test))]
 use crate::usage::app::{field_u64, ss_proc_name, ss_proc_pid};
 
-/// Parse `ss -tinHp` into per-socket peer readings. Each socket is a header line
-/// (`STATE recvq sendq LOCAL PEER users:((...))`) followed by an indented info
-/// line carrying the byte counters. Sockets without a process, without a byte
-/// line, or without a routable peer (listeners, loopback) are dropped.
+/// Parse `ss -tinHp` into per-socket readings. Each socket is a header line
+/// (`STATE recvq sendq LOCAL PEER users:((...))`) then an indented info line
+/// with the byte counters. Sockets with no process, no byte line or no routable
+/// peer (listeners, loopback) are dropped.
 #[cfg(any(target_os = "linux", test))]
 fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
@@ -261,8 +231,8 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
                     (Some(local), Some(peer), Some(ip)) => {
                         Some((app, format!("{local}|{peer}"), ip, peer_port(peer), ss_proc_pid(trimmed)))
                     }
-                    // A socket with no routable peer (listener/loopback) resets
-                    // the pairing so its info line isn't misattributed.
+                    // No routable peer: reset the pairing so its info line
+                    // isn't credited to the previous socket.
                     _ => None,
                 }
             }
@@ -272,16 +242,13 @@ fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     readings
 }
 
-/// Parse `nettop -L 1 -x -n` (no `-P`, no `-m`). Output alternates a process row
-/// (`name.pid,,,bytes_in,bytes_out,…`) with the connection rows beneath it
-/// (`tcp4 local<->peer,iface,state,bytes_in,bytes_out,…`, and `udp4 …` for QUIC
-/// and other connected UDP). The process row sets the owning app for the
-/// connection rows that follow, until the next process row. Connections without
-/// a routable peer (listeners, `*` wildcards, loopback) are skipped.
+/// Parse `nettop -L 1 -x -n`. A process row (`name.pid,,,bytes_in,bytes_out,…`)
+/// owns the connection rows after it (`tcp4 local<->peer,iface,state,bytes_in,
+/// bytes_out,…`, or `udp4 …`) until the next process row. Connections with no
+/// routable peer (listeners, `*` wildcards, loopback) are skipped.
 #[cfg(any(target_os = "macos", test))]
 fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
-    // The app + pid whose connection rows we're currently reading.
     let mut current: Option<(String, Option<u32>)> = None;
 
     for line in output.lines() {
@@ -293,8 +260,6 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
             continue;
         }
 
-        // A connection row: "tcpN/udpN local<->peer". Attribute it to the
-        // current process; pull its per-connection byte columns.
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((app, pid)) = &current else { continue };
             let peer = peer.trim();
@@ -314,25 +279,22 @@ fn parse_nettop_peers(output: &str) -> Vec<PeerReading> {
             continue;
         }
 
-        // Otherwise a process row: "name.pid". Set the context for the rows
-        // beneath it. Anything without a numeric pid suffix (the header) is
-        // ignored and leaves the previous context untouched only if we clear it.
+        // Otherwise a process row, "name.pid" with a numeric pid.
         if let Some((name, pid)) = label.rsplit_once('.') {
             if !name.is_empty() && !pid.is_empty() && pid.bytes().all(|b| b.is_ascii_digit()) {
                 current = Some((name.to_string(), pid.parse::<u32>().ok()));
                 continue;
             }
         }
-        // Unrecognised leading field (e.g. the header row): drop the context so
-        // stray following rows aren't misattributed.
+        // Anything else (the header row) clears the owner so stray rows that
+        // follow aren't misattributed.
         current = None;
     }
     readings
 }
 
-/// Whether a peer IP is a public, geolocatable address — false for private,
-/// carrier-NAT, link-local, and reserved ranges, which have no meaningful
-/// country and so are never sent to the geolocation service.
+/// Whether a peer IP is public. Private, carrier-NAT, link-local and reserved
+/// ranges have no meaningful country, so they're never geolocated.
 fn ip_is_public(ip: &str) -> bool {
     match ip.parse::<IpAddr>() {
         Ok(IpAddr::V4(v4)) => v4_is_public(v4),
@@ -343,7 +305,7 @@ fn ip_is_public(ip: &str) -> bool {
 
 fn v4_is_public(v4: Ipv4Addr) -> bool {
     let [a, b, ..] = v4.octets();
-    // 100.64.0.0/10 — carrier-grade NAT (not covered by `is_private`).
+    // 100.64.0.0/10, carrier-grade NAT, which `is_private` doesn't cover.
     let is_cgnat = a == 100 && (64..=127).contains(&b);
     !(v4.is_private()
         || v4.is_loopback()
@@ -361,38 +323,33 @@ fn v6_is_public(v6: Ipv6Addr) -> bool {
     !(v6.is_loopback() || v6.is_unspecified() || is_link_local || is_unique_local)
 }
 
-/// A traffic-type bucket: a stable `id` slug (what the frontend keys an icon
-/// off) and a human `label`. Both are static — the set of buckets is fixed.
+/// A traffic-type bucket; see [`TrafficType`].
 #[derive(Clone, Copy)]
 struct TrafficClass {
     id: &'static str,
     label: &'static str,
 }
 
-/// Everything not on the well-known list below. Ephemeral-port peers,
-/// unrecognised services, and readings whose source token carried no port all
-/// land here — an honest catch-all rather than a guess.
+/// Everything not on the list in [`classify_port`]: ephemeral ports,
+/// unrecognised services and readings with no port. A catch-all, not a guess.
 const OTHER: TrafficClass = TrafficClass { id: "other", label: "Other" };
 
 const fn cls(id: &'static str, label: &'static str) -> TrafficClass {
     TrafficClass { id, label }
 }
 
-/// Bucket a connection by its peer (service) port. Only ports Rove can actually
-/// observe are listed — this reads the same TCP + connected-UDP samples the
-/// hosts view does, so LAN broadcast/multicast chatter (mDNS, SSDP, NetBIOS
-/// name service, DHCP) never reaches here; those sockets have wildcard peers and
-/// are dropped upstream. Grouping is by service, so the encrypted and plaintext
-/// members of a protocol family (IMAP/IMAPS, submission/SMTP) share one bucket.
+/// Bucket a connection by its peer (service) port. Only ports Rove can see are
+/// listed: broadcast and multicast chatter (mDNS, SSDP, NetBIOS names, DHCP)
+/// has wildcard peers and is dropped upstream. Plaintext and TLS members of a
+/// family (IMAP/IMAPS, SMTP/submission) share a bucket.
 ///
-/// The list favours ports that carry real *volume* — the point of a byte
-/// breakdown — so the heavy hitters that would otherwise swell "Other" (file
-/// shares, tunnels, media, torrents, databases) get named, while rare
-/// low-traffic control ports are left to fall through.
+/// The list favours ports that carry volume (file shares, tunnels, media,
+/// torrents, databases) so they don't swell "Other"; rare low-traffic control
+/// ports fall through.
 fn classify_port(port: Option<u16>) -> TrafficClass {
     match port {
-        // The web, by far the bulk of it: HTTPS and HTTP/3 (QUIC) both ride 443,
-        // plaintext HTTP and its common alternates on the rest.
+        // HTTPS and HTTP/3 (QUIC) both ride 443; plaintext HTTP and its common
+        // alternates the rest.
         Some(443 | 8443) => cls("https", "HTTPS"),
         Some(80 | 8080 | 8000 | 8888) => cls("http", "HTTP"),
         // DNS proper (53) and DNS-over-TLS (853); DoH is just HTTPS on 443.
@@ -414,8 +371,8 @@ fn classify_port(port: Option<u16>) -> TrafficClass {
         Some(1935 | 554) => cls("media", "Streaming media"),
         // Remote desktop: RDP and VNC.
         Some(3389 | 5900) => cls("remote", "Remote desktop"),
-        // Network file sharing: SMB, NFS, NetBIOS session (the TCP one, :139 —
-        // the :137/:138 name/datagram services are UDP broadcast, dropped above).
+        // SMB, NFS and the NetBIOS session service (TCP :139). NetBIOS
+        // :137/:138 are UDP broadcast and never get here.
         Some(445 | 2049 | 139) => cls("fileshare", "File sharing"),
         // BitTorrent's default client-port range.
         Some(6881..=6889) => cls("p2p", "Peer-to-peer"),
@@ -431,37 +388,34 @@ struct ByteCounts {
     tx: u64,
 }
 
-/// Turns per-connection cumulative counters into per-`(app, peer-ip)` running
-/// totals, and holds the resolved hostname/country per peer IP. `last` holds the
-/// previous reading per socket (to diff); `totals` banks bytes per app then per
-/// peer. Hostname/country caches are populated asynchronously from outside and
-/// joined in at [`summary`] time.
+/// Turns per-connection cumulative counters into per-`(app, peer ip)` running
+/// totals. `last` is the previous reading per connection, to diff against;
+/// `totals` is bytes per app, then per peer. The hostname and country caches
+/// are filled from outside and joined in at [`summary`](Self::summary) time.
 #[derive(Default)]
 pub struct HostUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, HashMap<String, ByteCounts>>,
-    /// Running totals bucketed by traffic type (see [`classify_port`]), banked
-    /// from the very same per-socket deltas as `totals` so the Traffic Types
-    /// view and the Hosts view stay in step. Keyed by the class `id`; the label
-    /// rides in the value so `traffic_summary` needn't re-derive it.
+    /// Totals by traffic type ([`classify_port`]), banked from the same deltas
+    /// as `totals` so the Traffic Types and Hosts views agree. Keyed by class
+    /// `id`.
     protocols: HashMap<&'static str, (TrafficClass, ByteCounts)>,
     since: Option<u64>,
-    /// Resolved app icon per app name (`None` cached too — see [`crate::usage::app`]).
+    /// App icon per app name, misses cached as `None` (as in [`crate::usage::app`]).
     icons: HashMap<String, Option<String>>,
-    /// Reverse-DNS hostname per peer IP. Presence marks "already attempted";
-    /// `None` is a cached miss (no PTR) so we don't re-resolve every tick.
+    /// Reverse-DNS hostname per peer IP. A key means "already tried"; `None` is
+    /// a cached miss (no PTR), so it isn't retried every tick.
     hostnames: HashMap<String, Option<String>>,
-    /// Country code per peer IP. Presence marks "already resolved"; a private
-    /// address is seeded `None` at ingest so it's never sent to the lookup.
+    /// Country code per peer IP. A key means "already resolved"; private
+    /// addresses are seeded `None` at ingest so they're never looked up.
     countries: HashMap<String, Option<String>>,
 }
 
-/// How this platform's peer readings must be banked. Linux/macOS snapshot live
-/// OS socket counters ([`CounterSemantics::Socket`] — primed on the first sample
-/// since a socket open at launch carries pre-Rove history). Windows reads a
-/// zero-based ETW accumulator Rove starts itself ([`CounterSemantics::PidAccumulator`]),
-/// so its first sample is entirely traffic Rove watched and must *not* be primed
-/// away — matching how [`crate::usage::app`] banks the same session.
+/// How this platform's readings are banked. Linux and macOS read live OS socket
+/// counters ([`CounterSemantics::Socket`]), which carry history from before
+/// launch and so are primed. Windows reads a zero-based ETW accumulator Rove
+/// started itself ([`CounterSemantics::PidAccumulator`]), so its first sample
+/// is all watched traffic and must not be primed away.
 const fn peer_counter_semantics() -> CounterSemantics {
     #[cfg(windows)]
     {
@@ -478,27 +432,19 @@ impl HostUsageTracker {
         Self::default()
     }
 
-    /// Fold one successful snapshot into the running totals: credit each socket's
-    /// growth since its last reading, and forget sockets that vanished (their
-    /// bytes are already banked in `totals`).
+    /// Fold one successful snapshot into the running totals: credit each
+    /// connection's growth since its last reading, and forget connections that
+    /// vanished (their bytes are already in `totals`).
     ///
-    /// This path is keyed per socket/connection on every platform — Linux `ss` by
-    /// address pair, macOS `nettop` without `-P` by its `local<->peer` label, and
-    /// Windows ETW by the connection's `local|peer` address pair — so a decrease
-    /// really does mean a recycled key rather than a closed socket. Don't port
-    /// `usage::app`'s macOS process-aggregate handling over; it would be wrong here.
-    /// The exact banking rule ([`peer_counter_semantics`]) still differs by
-    /// platform: the OS socket sources are primed on the first snapshot, the
-    /// zero-based Windows accumulator isn't.
+    /// Every platform keys this per connection (an address pair, or nettop's
+    /// `local<->peer` label), so a decrease means a recycled key, not a closed
+    /// socket. Banking follows `peer_counter_semantics`, the same rule the Apps
+    /// view uses: on Linux and macOS the first snapshot only sets baselines,
+    /// because connections open at launch carry traffic from before Rove was
+    /// watching. Skipping that would bank history the Apps view discards, and an
+    /// app could show here having never appeared there.
     ///
-    /// What *does* carry over is priming: the first snapshot only sets baselines
-    /// ([`crate::usage::app::CounterSemantics::primes_on_first_snapshot`]), because
-    /// the connections already established at launch arrive holding however much
-    /// they moved before Rove existed. Without it this view banks that history
-    /// while the Apps view discards it, and the same app reads as busier here than
-    /// there — or shows up here having never appeared there at all.
-    ///
-    /// Only ever pass a snapshot that was actually taken — see [`sample`].
+    /// Only pass a snapshot that was actually taken; see [`sample`].
     pub fn ingest(&mut self, readings: Vec<PeerReading>) {
         let first_snapshot = self.since.is_none();
         if first_snapshot {
@@ -522,8 +468,8 @@ impl HostUsageTracker {
             self.last.insert(reading.conn_key.clone(), ByteCounts { rx: reading.rx, tx: reading.tx });
             seen.insert(reading.conn_key);
 
-            // Resolve the app icon once per name (skipped under cfg(test) so the
-            // accounting tests don't shell into AppKit).
+            // Once per name. Skipped under cfg(test) so the accounting tests
+            // don't call into the OS icon APIs.
             if !self.icons.contains_key(&reading.app) {
                 #[cfg(not(test))]
                 let icon = crate::platform::app_icon::app_icon_data_uri(&reading.app, reading.pid);
@@ -532,18 +478,16 @@ impl HostUsageTracker {
                 self.icons.insert(reading.app.clone(), icon);
             }
 
-            // A private/reserved peer has no country: seed the cache with a miss
-            // now so it's never offered for geolocation. The table would answer
-            // "no record" for most of these anyway, but not all — CGNAT and other
-            // shared ranges can carry a record, and reporting a country for the
-            // carrier's block would be a fiction about the peer.
+            // Seed a miss for private and reserved peers so they're never
+            // geolocated. The table has no record for most, but CGNAT and other
+            // shared ranges can have one, and the carrier's country says nothing
+            // about the peer.
             if !ip_is_public(&reading.ip) {
                 self.countries.entry(reading.ip.clone()).or_insert(None);
             }
 
-            // Bucket the same delta by traffic type. Uses the connection's peer
-            // port, so it's the identical growth being banked here and per-host —
-            // the two views can't disagree about how much moved.
+            // The same delta, by traffic type, so the two views can't disagree
+            // about how much moved.
             let class = classify_port(reading.port);
             let proto = self.protocols.entry(class.id).or_insert((class, ByteCounts::default()));
             proto.1.rx = proto.1.rx.saturating_add(drx);
@@ -557,15 +501,14 @@ impl HostUsageTracker {
         self.last.retain(|key, _| seen.contains(key));
     }
 
-    /// Peer IPs seen but not yet reverse-resolved, so the caller can batch a
-    /// reverse-DNS lookup and feed the answers back via [`record_hostnames`].
+    /// Peer IPs not yet reverse-resolved, for the caller to look up in a batch
+    /// and hand back via [`Self::record_hostnames`].
     pub fn pending_hostnames(&self) -> Vec<String> {
         self.known_ips().filter(|ip| !self.hostnames.contains_key(*ip)).cloned().collect()
     }
 
-    /// Public peer IPs seen but not yet geolocated, for the caller to resolve
-    /// via [`crate::util::geoip`] and feed back through [`record_countries`].
-    /// Private/reserved addresses are pre-seeded at ingest and never appear here.
+    /// Public peer IPs not yet geolocated, for the caller to resolve via
+    /// [`crate::util::geoip`] and hand back via [`Self::record_countries`].
     pub fn pending_countries(&self) -> Vec<String> {
         self.known_ips().filter(|ip| !self.countries.contains_key(*ip)).cloned().collect()
     }
@@ -574,22 +517,21 @@ impl HostUsageTracker {
         self.totals.values().flat_map(HashMap::keys)
     }
 
-    /// Record reverse-DNS results (IP → hostname, `None` for no PTR). Cached
-    /// including misses so each IP is resolved at most once.
+    /// Record reverse-DNS results (`None` for no PTR). Misses are cached too, so
+    /// each IP is resolved at most once.
     pub fn record_hostnames(&mut self, resolved: HashMap<String, Option<String>>) {
         self.hostnames.extend(resolved);
     }
 
-    /// Record geolocation results (IP → ISO-2 country code, `None` for an
-    /// address the table has no country for). Cached including misses: the
-    /// lookup is a local table read, so a miss is a stable answer about the
-    /// address rather than a failure that might succeed on a retry.
+    /// Record country codes (`None` when the table has no country). Misses are
+    /// cached too: the lookup is a local table read, so a miss won't change on
+    /// a retry.
     pub fn record_countries(&mut self, resolved: HashMap<String, Option<String>>) {
         self.countries.extend(resolved);
     }
 
-    /// Per-app remote-host breakdown, busiest app (and busiest host within each)
-    /// first, dropping hosts and apps that have moved nothing.
+    /// Per-app remote hosts, busiest app and host first, without the ones that
+    /// moved nothing.
     pub fn summary(&self) -> HostUsageSummary {
         let mut apps: Vec<AppHosts> = self
             .totals
@@ -634,9 +576,7 @@ impl HostUsageTracker {
         HostUsageSummary { apps, support: platform_support(), tracking_since: self.since }
     }
 
-    /// Traffic broken down by kind, busiest first, dropping buckets that have
-    /// moved nothing. Grouped from the same samples as [`summary`], so it covers
-    /// exactly the same traffic — just bucketed by service port, not peer IP.
+    /// Traffic by kind, busiest first, without empty buckets.
     pub fn traffic_summary(&self) -> TrafficUsageSummary {
         let mut types: Vec<TrafficType> = self
             .protocols
@@ -710,9 +650,8 @@ time,,interface,state,bytes_in,bytes_out,rx_dupe
         assert_eq!(r[1].port, Some(443));
     }
 
-    /// QUIC (HTTP/3) is UDP to a concrete peer on :443 — real traffic to a real
-    /// host, so it's attributed like any TCP flow now that the sampler drops
-    /// `-m tcp`. Unconnected UDP (mDNS, `*` peer) and loopback UDP stay out.
+    /// QUIC (HTTP/3) is UDP to a real peer on :443, so it's attributed like TCP.
+    /// Unconnected UDP (mDNS, `*` peer) and loopback UDP stay out.
     #[test]
     fn parses_connected_udp_and_drops_peerless_udp() {
         let out = "\
@@ -759,7 +698,7 @@ time,,interface,state,bytes_in,bytes_out
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
         let firefox = &s.apps[0];
-        // Busiest host (8.8.8.8, 500) first. 1.1.1.1 carries only s1's growth —
+        // Busiest host (8.8.8.8, 500) first. 1.1.1.1 carries only s1's growth;
         // neither socket's pre-baseline history is banked.
         assert_eq!(firefox.hosts[0].ip, "8.8.8.8");
         assert_eq!(firefox.hosts[1].ip, "1.1.1.1");
@@ -767,9 +706,8 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(firefox.hosts[1].tx_bytes, 50);
         assert_eq!(firefox.rx_bytes, 500 + 150);
 
-        // The same growth, bucketed by service port: DNS (500, from s3 on :53)
-        // ahead of HTTPS (150+50, the :443 sockets), busiest first. Neither
-        // socket's pre-baseline history is banked here either.
+        // The same growth by service port: DNS (500, s3 on :53) ahead of HTTPS
+        // (150 + 50, the :443 sockets).
         let tt = t.traffic_summary();
         assert_eq!(tt.types.len(), 2);
         assert_eq!(tt.types[0].id, "dns");
@@ -779,11 +717,9 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(tt.types[1].tx_bytes, 50);
     }
 
-    /// The Hosts view's half of the priming contract. This view reads a different
-    /// `nettop` invocation than the Apps view, and only the Apps one discards
-    /// pre-launch history — so without priming here, a connection already
-    /// established at launch banks its whole counter, and the app shows up on
-    /// Hosts (at an inflated total) having never appeared on Apps at all.
+    /// The Hosts view primes like the Apps view. Without it a connection open at
+    /// launch banks its whole counter, and the app shows on Hosts, inflated,
+    /// having never appeared on Apps.
     #[test]
     fn primes_on_the_first_snapshot() {
         let mut t = HostUsageTracker::new();
@@ -811,17 +747,15 @@ time,,interface,state,bytes_in,bytes_out
 
     #[test]
     fn resolves_countries_end_to_end_through_the_bundled_table() {
-        // The sequence `spawn_host_usage_sampler` runs each tick, minus tokio:
-        // ingest → pending_countries → geoip → record_countries → summary. The
-        // per-piece tests above stub the country in, so this is what would catch
-        // the two halves being wired together wrong.
+        // What `spawn_host_usage_sampler` runs each tick, minus tokio: ingest,
+        // pending_countries, geoip, record_countries, summary. The other tests
+        // stub the country, so only this catches the halves wired up wrong.
         let mut t = HostUsageTracker::new();
         t.ingest(vec![
             PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 10, tx: 0, pid: None },
             PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 5, tx: 0, pid: None },
         ]);
-        // Past the baseline snapshot, so both peers carry bytes and so reach the
-        // summary at all.
+        // Past the baseline, so both peers have bytes and reach the summary.
         t.ingest(vec![
             PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 20, tx: 0, pid: None },
             PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 15, tx: 0, pid: None },
@@ -841,11 +775,10 @@ time,,interface,state,bytes_in,bytes_out
         let public = hosts.iter().find(|h| h.ip == "8.8.8.8").expect("public peer in summary");
         let private = hosts.iter().find(|h| h.ip == "192.168.1.5").expect("private peer in summary");
         assert_eq!(public.country_code.as_deref(), Some("US"));
-        // The LAN peer is still a listed host — it just has no flag.
+        // The LAN peer is still listed, just without a flag.
         assert_eq!(private.country_code, None);
 
-        // One pass clears the whole backlog: nothing is left waiting, which is
-        // what dropping the old per-tick lookup budget bought.
+        // One pass clears the whole backlog.
         assert!(t.pending_countries().is_empty());
     }
 
@@ -933,7 +866,7 @@ time,,interface,state,bytes_in,bytes_out
                 conn_key: "p".into(),
                 app: "some-daemon".into(),
                 ip: "203.0.113.7".into(),
-                port: Some(48211), // ephemeral peer port — not a known service
+                port: Some(48211), // ephemeral, not a known service
                 rx,
                 tx: 0,
                 pid: None,

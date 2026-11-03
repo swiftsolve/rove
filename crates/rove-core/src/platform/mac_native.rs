@@ -1,25 +1,24 @@
-//! macOS-native Wi-Fi bits that shell tools can't provide.
+//! macOS Wi-Fi facts the shell tools no longer give.
 //!
-//! Since macOS 14 the current SSID is withheld from every command-line tool
-//! (`airport`, `networksetup`, `system_profiler`, `ipconfig` all return
-//! `<redacted>`) unless the *calling application* holds Location Services
-//! authorization. A shelled-out child doesn't inherit that grant, so the SSID
-//! has to be requested in-process: authorize via CoreLocation, then read it via
-//! CoreWLAN. Everything here no-ops to `None` off macOS.
+//! Since macOS 14 every command-line tool (`airport`, `networksetup`,
+//! `system_profiler`, `ipconfig`) prints `<redacted>` for the SSID unless the
+//! calling app holds Location Services permission, and a child process doesn't
+//! inherit it. So the SSID is read in-process: authorise via CoreLocation, then
+//! ask CoreWLAN. Off macOS everything here returns `None`.
 
 #[cfg(target_os = "macos")]
 mod imp {
     use objc2_core_location::{CLAuthorizationStatus, CLLocationManager};
     use objc2_core_wlan::CWWiFiClient;
 
-    /// Trigger the Location Services prompt (needs `NSLocationWhenInUseUsage-
-    /// Description` in Info.plist). Called once at startup; the manager is leaked
-    /// so it outlives the async authorization round-trip. Must run on the main
-    /// thread — CoreLocation asserts otherwise. Returns the current authorization
-    /// status for logging.
+    /// Trigger the Location Services prompt (needs
+    /// `NSLocationWhenInUseUsageDescription` in Info.plist). Called once at
+    /// startup, on the main thread, which CoreLocation asserts. The manager is
+    /// leaked so it outlives the async authorisation. Returns the current status
+    /// for logging.
     pub fn request_location_permission() -> &'static str {
-        // SAFETY: standard AppKit init; the object is intentionally kept alive
-        // for the lifetime of the process so the authorization can complete.
+        // SAFETY: plain CoreLocation init on the main thread; the manager is
+        // leaked on purpose so the authorisation can complete.
         unsafe {
             let manager = CLLocationManager::new();
             manager.requestWhenInUseAuthorization();
@@ -53,11 +52,11 @@ mod imp {
         }
     }
 
-    /// Current Wi-Fi transmit rate in Mbps, read in-process via CoreWLAN.
-    /// `ifconfig` reports Wi-Fi media only as "autoselect" with no rate, so this
-    /// is the interface list's only source of link speed for Wi-Fi. Unlike the
-    /// SSID, the transmit rate isn't gated behind Location Services. Returns
-    /// `None` with no associated Wi-Fi (the accessor yields 0).
+    /// Current Wi-Fi transmit rate in Mbps. `ifconfig` shows Wi-Fi media as a
+    /// bare "autoselect", so this is the interface list's only Wi-Fi link speed.
+    /// Not gated by Location Services. `None` when not associated (the accessor
+    /// returns 0).
+
     pub fn wifi_tx_rate() -> Option<i64> {
         // SAFETY: CoreWLAN accessors; `interface()` is null with no Wi-Fi.
         unsafe {

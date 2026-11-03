@@ -27,10 +27,9 @@ const SUMMARY_DAYS: i64 = 7;
 /// `meta` key holding the epoch-ms of the first-ever usage sample.
 const FIRST_SAMPLE_KEY: &str = "usage_first_sample_at";
 
-// Local dates without pulling in chrono: apply the local-UTC offset to the
-// UNIX clock, then bucket by day. The offset is cached but re-derived at most
-// hourly so a machine that crosses a DST boundary (or changes timezone) while
-// running starts bucketing into the correct day within the hour.
+// Local dates without chrono: add the UTC offset to the UNIX clock and bucket
+// by day. The offset is re-derived hourly so a DST change or a new timezone
+// moves the day boundary within the hour.
 static LOCAL_OFFSET: std::sync::Mutex<Option<(i64, u64)>> = std::sync::Mutex::new(None);
 const OFFSET_TTL_SECS: u64 = 3600;
 
@@ -51,7 +50,6 @@ fn local_offset_secs() -> i64 {
 }
 
 fn compute_local_offset_secs() -> i64 {
-    // Windows: minutes from UTC via PowerShell; Unix: `date +%z`.
     if cfg!(target_os = "windows") {
         return crate::platform::windows::utc_offset_secs().unwrap_or(0);
     }
@@ -102,10 +100,9 @@ struct ByteCounts {
     tx: u64,
 }
 
-/// Turns per-interface cumulative counters into daily deltas, persisting each
-/// tick into the shared [`Store`]. The only in-memory state is `last_bytes`,
-/// the previous reading needed to compute a delta; everything durable lives in
-/// the database.
+/// Turns per-interface cumulative counters into daily deltas, persisted each
+/// tick to the shared [`Store`]. Only `last_bytes`, the previous reading to diff
+/// against, lives in memory.
 pub struct UsageTracker {
     store: Arc<Store>,
     last_bytes: HashMap<String, ByteCounts>,
@@ -122,7 +119,7 @@ impl UsageTracker {
         Self { store, last_bytes: HashMap::new(), first_sample_recorded }
     }
 
-    /// One 30s tick: accumulate per-interface deltas into today's bucket.
+    /// One 30 s tick: add the per-interface deltas to today's bucket.
     pub fn sample(&mut self, networks: &sysinfo::Networks) {
         let mut rx_delta = 0u64;
         let mut tx_delta = 0u64;
@@ -134,16 +131,16 @@ impl UsageTracker {
             let rx = data.total_received();
             let tx = data.total_transmitted();
             if let Some(last) = self.last_bytes.get(name) {
-                // On a counter decrease (reboot, driver reload, re-enumeration)
-                // credit nothing rather than the full new reading — the latter
-                // would dump a phantom multi-GB spike into today's bucket.
+                // A counter that went down (reboot, driver reload, re-enumeration)
+                // credits nothing: crediting the new reading in full would dump a
+                // phantom multi-GB spike into today's bucket.
                 rx_delta += rx.saturating_sub(last.rx);
                 tx_delta += tx.saturating_sub(last.tx);
             }
             self.last_bytes.insert(name.clone(), ByteCounts { rx, tx });
         }
-        // Drop counters for interfaces that disappeared (Docker/VPN churn) so
-        // `last_bytes` doesn't grow without bound across a long session.
+        // Forget interfaces that disappeared (Docker/VPN churn) so `last_bytes`
+        // stays bounded over a long session.
         self.last_bytes
             .retain(|name, _| networks.contains_key(name) && !crate::util::net::is_virtual_interface(name));
 

@@ -10,9 +10,12 @@ pub struct LiveThroughput {
     pub timestamp: u64,
 }
 
+/// Weight of the newest reading in the moving average: smooths the chart
+/// without lagging a real change by more than a few seconds.
 const SMOOTH_ALPHA: f64 = 0.35;
 
-/// Stateful 1 Hz sampler over kernel counters (sysinfo is cross-platform).
+/// 1 Hz sampler over the kernel's per-interface byte counters, via sysinfo so
+/// it needs no per-OS code.
 pub struct ThroughputSampler {
     networks: Networks,
     smoothed_down: f64,
@@ -36,16 +39,17 @@ impl ThroughputSampler {
         }
     }
 
-    /// Reset the timing/counter baseline without emitting a sample. Call this
-    /// when the UI (re)subscribes after an idle gap: it discards the bytes that
-    /// accumulated while nobody was listening, so the next `sample()` reflects
-    /// one real interval instead of reporting the whole gap as a false spike.
+    /// Reset the baseline without emitting a sample. Call it when the UI
+    /// resubscribes after an idle gap, so the next `sample()` covers one real
+    /// interval rather than reporting the whole gap as a spike.
     pub fn prime(&mut self) {
         self.networks.refresh(true);
         self.last_sample = Some(std::time::Instant::now());
     }
 
     fn smooth(previous: f64, next: f64) -> f64 {
+        // From zero (first sample, or after idle) jump straight to the reading
+        // rather than ramping up to it.
         if previous <= 0.0 {
             (next * 10.0).round() / 10.0
         } else {
@@ -53,8 +57,9 @@ impl ThroughputSampler {
         }
     }
 
-    /// Refresh counters and return the current smoothed rates. sysinfo's
-    /// received()/transmitted() are the deltas since the previous refresh.
+    /// Refresh the counters and return the smoothed rates. sysinfo's
+    /// `received()`/`transmitted()` are deltas since the previous refresh, so
+    /// they're divided by the real elapsed time, not an assumed second.
     pub fn sample(&mut self) -> LiveThroughput {
         self.networks.refresh(true);
         let now = std::time::Instant::now();
@@ -62,6 +67,7 @@ impl ThroughputSampler {
             .last_sample
             .map(|t| now.duration_since(t).as_secs_f64())
             .unwrap_or(1.0)
+            // Two samples close together would turn a few bytes into a huge rate.
             .max(0.25);
         self.last_sample = Some(now);
 

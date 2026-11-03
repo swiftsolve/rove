@@ -1,4 +1,4 @@
-//! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Find-NetRoute`,
+//! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Get-NetRoute`,
 //! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and `netsh wlan`.
 use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
@@ -7,38 +7,30 @@ use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
 use std::net::Ipv4Addr;
 
-// ---- routing / DNS -------------------------------------------------------
-
-/// The interface Windows forwards internet traffic through, ranked so a VPN
-/// tunnel never masquerades as the machine's LAN uplink.
+/// The default route Windows forwards through, ranked so a VPN tunnel never
+/// passes for the LAN uplink.
 ///
-/// `Find-NetRoute -RemoteIPAddress '8.8.8.8'` reports the *effective* route to the
-/// internet — which is precisely the tunnel once a VPN is up. Device discovery is
-/// scoped to this interface, so keying off that route made the scan target the
-/// tunnel's point-to-point range and find nothing. Modern VPNs (WireGuard/Wintun,
-/// NordLynx, Mullvad, OpenVPN) install their default via the `0.0.0.0/1` +
-/// `128.0.0.0/1` split and leave the physical adapter's own `0.0.0.0/0` in place,
-/// so the real LAN route is still present — it just no longer wins to `8.8.8.8`.
+/// `Find-NetRoute -RemoteIPAddress 8.8.8.8` gives the *effective* route, which
+/// is the tunnel once a VPN is up, and device discovery would then scan the
+/// tunnel's point-to-point range and find nothing. Modern VPNs (WireGuard,
+/// NordLynx, Mullvad, OpenVPN) route through `0.0.0.0/1` + `128.0.0.0/1` and
+/// leave the adapter's own `0.0.0.0/0` in place, so the LAN route is still
+/// there to find. Every default route is ranked, like macOS's
+/// `pick_default_route`:
 ///
-/// So enumerate every default route and rank them, mirroring macOS's
-/// [`pick_default_route`](crate::platform::macos):
+///  1. `Status -eq 'Up'`: rejects the stale metric-0 default Windows keeps on
+///     a just-unplugged Ethernet adapter.
+///  2. `HardwareInterface` first: puts a physical NIC above any tunnel without
+///     matching vendor names. A Hyper-V "vEthernet" adapter isn't hardware, but
+///     when it holds the only default route (the NIC is bound to the vSwitch)
+///     it still wins from the second tier.
+///  3. Lowest route + interface metric, which prefers Ethernet over Wi-Fi as
+///     Windows does.
 ///
-///  1. `Status -eq 'Up'` — media actually connected. This rejects the stale
-///     metric-0 default Windows keeps on a just-unplugged Ethernet adapter (the
-///     dead-link case the old `Find-NetRoute` guard existed for).
-///  2. `HardwareInterface` first — the OS's own "is this real hardware" verdict
-///     ranks a physical NIC above any VPN/tunnel pseudo-adapter without matching
-///     vendor-specific tunnel names. A Hyper-V "vEthernet" host adapter is *not*
-///     hardware, yet when it owns the only default route (the physical NIC is
-///     bound to the vSwitch and has none) it still wins by falling through to the
-///     second tier — so that setup keeps working.
-///  3. Lowest effective metric (route + interface) breaks ties between two live
-///     physical links, preferring Ethernet over Wi-Fi exactly as Windows does.
-///
-/// `field` is `InterfaceAlias` or `NextHop`, so the interface and gateway lookups
-/// share this one ranked selection and can't disagree on which route won.
+/// `field` is `InterfaceAlias` or `NextHop`, so the interface and gateway come
+/// from the same ranking and can't disagree.
 fn default_route_field(field: &str) -> String {
-    // `field` is only ever an internal literal below, never caller input.
+    // Safe to splice: `field` is always one of the two literals passed below.
     const SCRIPT: &str = "\
         Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | ForEach-Object { \
           $r = $_; $a = Get-NetAdapter -InterfaceIndex $r.ifIndex -ErrorAction SilentlyContinue; \
@@ -51,18 +43,16 @@ fn default_route_field(field: &str) -> String {
     SCRIPT.replace("@FIELD@", field)
 }
 
-/// Default gateway — the `NextHop` of the same ranked default route
-/// [`default_interface`] selects, so the two always describe one link. See
-/// [`default_route_field`] for why the effective internet route can't be trusted.
+/// The default gateway: the `NextHop` of the route [`default_interface`]
+/// picks. See `default_route_field` for the ranking.
 pub async fn default_gateway() -> Option<String> {
     let out = try_run_powershell(&default_route_field("NextHop")).await?;
     let ip = out.trim().to_string();
     if ip.is_empty() { None } else { Some(ip) }
 }
 
-/// Interface Windows actually forwards through — a live physical NIC in
-/// preference to any VPN tunnel or stale route on a disconnected adapter. See
-/// [`default_route_field`] for the full ranking.
+/// The interface Windows forwards through: a live physical NIC over a VPN
+/// tunnel or a stale route on an unplugged adapter. See `default_route_field`.
 pub async fn default_interface() -> Option<String> {
     let out = try_run_powershell(&default_route_field("InterfaceAlias")).await?;
     let name = out.trim().to_string();
@@ -80,12 +70,9 @@ pub async fn dns_servers() -> Vec<String> {
     Vec::new()
 }
 
-// ---- interface list ------------------------------------------------------
-
-/// One PowerShell call listing every present adapter with the fields the UI
-/// needs. `Virtual` is the OS's own verdict on Hyper-V switches, tunnels and
-/// pseudo adapters; the per-adapter `Get-NetIPAddress` supplies the IPv4 (APIPA
-/// 169.254.* excluded) that a down/virtual adapter may lack.
+/// One PowerShell call listing every present adapter. `Virtual` is the OS's
+/// own verdict on Hyper-V switches, tunnels and pseudo adapters; the IPv4 comes
+/// from `Get-NetIPAddress`, skipping APIPA 169.254.*.
 const WINDOWS_ADAPTERS: &str = "\
 Get-NetAdapter | Where-Object { $_.Status -ne 'Not Present' } | ForEach-Object { \
 $ip = (Get-NetIPAddress -InterfaceIndex $_.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -notlike '169.254.*' } | Select-Object -First 1).IPAddress; \
@@ -110,7 +97,6 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             continue; // phantom/disabled rows carry no status
         }
         let speed = parts.next().and_then(parse_link_speed).filter(|v| *v > 0);
-        // "10-A5-1D-01-8F-9C" → "10:a5:1d:01:8f:9c"; `None` when empty.
         let mac = parts
             .next()
             .map(str::trim)
@@ -119,18 +105,17 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
         let is_virtual_flag = parts.next().map(str::trim) == Some("1");
         let ip = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(String::from);
 
-        // Filter/pseudo miniports (WFP, Npcap, …) report an all-zero MAC — they
-        // aren't real interfaces, so drop them entirely.
+        // Filter and pseudo miniports (WFP, Npcap, …) report an all-zero MAC;
+        // they aren't real interfaces.
         if mac.as_deref() == Some("00:00:00:00:00:00") {
             continue;
         }
 
         let is_virtual = is_virtual_flag || is_virtual_interface(name);
         let is_default = default.as_deref() == Some(name);
-        // Physical NICs always show (even unplugged). Virtual/pseudo adapters
-        // show only when actually in use — carrying an IP or serving as the
-        // default route — so a live Hyper-V switch or VPN stays visible while
-        // the pile of idle WAN miniports, Bluetooth PAN and tunnels stays out.
+        // Physical NICs always show, even unplugged. Virtual adapters show only
+        // with an IP or the default route, so a live Hyper-V switch or VPN
+        // stays while idle WAN miniports, Bluetooth PAN and tunnels don't.
         if is_virtual && ip.is_none() && !is_default {
             continue;
         }
@@ -155,8 +140,6 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
     result
 }
 
-// ---- connection details --------------------------------------------------
-
 pub async fn wifi_details() -> ConnectionDetails {
     let Some(out) = try_run("netsh wlan show interfaces").await else {
         return ConnectionDetails::default();
@@ -167,11 +150,10 @@ pub async fn wifi_details() -> ConnectionDetails {
 fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
     let mut band_ghz: Option<f64> = None;
-    // Match only the top-level "Key : Value" rows. Wi-Fi 6E/7 APs make netsh
-    // print a "Colocated APs" block whose inline "Band:"/"Channel:" values come
-    // *before* the real interface lines, so a naive first-match grabs a
-    // colocated radio's channel (e.g. "Channel: 1") instead of the connected
-    // one (e.g. "Channel : 101"). Keying off the whole-line label avoids that.
+    // Match whole-line "Key : Value" labels only. For Wi-Fi 6E/7 APs netsh
+    // prints a "Colocated APs" block whose inline "Band:"/"Channel:" values
+    // come before the real ones, so a first match would take a colocated
+    // radio's "Channel: 1" over the connected "Channel : 101".
     for line in out.lines() {
         let Some((key, value)) = line.split_once(':') else { continue };
         let (key, value) = (key.trim(), value.trim());
@@ -187,9 +169,8 @@ fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
         }
     }
 
-    // netsh reports band + channel but not the centre frequency, so derive it
-    // from the standard channel plan. This lets the UI's frequency-based band
-    // and channel formatters render exactly as they do on Linux/macOS.
+    // netsh gives band and channel but no frequency, which the UI's band and
+    // channel labels are built from on every platform; derive it.
     if let (Some(band), Some(channel)) = (band_ghz, d.channel) {
         d.frequency = channel_to_frequency(band, channel);
     }
@@ -200,12 +181,11 @@ fn non_empty(s: &str) -> Option<String> {
     Some(s.to_string()).filter(|s| !s.is_empty())
 }
 
-/// The saved passphrase for the `ssid` profile via `netsh wlan show profile
-/// … key=clear`. The clear key is only emitted to an elevated (Administrator)
-/// caller; run without elevation, netsh simply omits the "Key Content" line and
-/// we return `None`. The double quotes around the profile name can't be escaped
-/// inside a `cmd` argument, so an embedded quote is stripped first (SSIDs
-/// effectively never contain one).
+/// The saved passphrase for the `ssid` profile via `netsh wlan show profile …
+/// key=clear`. netsh only prints "Key Content" to an elevated caller, so
+/// without admin this returns `None`. A double quote can't be escaped inside
+/// a `cmd` argument, so any in the SSID is stripped (real SSIDs rarely have
+/// one).
 pub async fn wifi_password(ssid: &str) -> Option<String> {
     let safe = ssid.replace('"', "");
     let out = try_run(&format!("netsh wlan show profile name=\"{safe}\" key=clear")).await?;
@@ -216,9 +196,8 @@ pub async fn wifi_password(ssid: &str) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
-/// Centre frequency (MHz) for a Wi-Fi `channel` in the given band (GHz), per the
-/// 802.11 channel plans. The band is required because channel numbers repeat
-/// across bands (6 GHz channel 1 is not 2.4 GHz channel 1).
+/// Centre frequency (MHz) for `channel` in a band given in GHz; `None` for an
+/// unknown band.
 fn channel_to_frequency(band_ghz: f64, channel: i64) -> Option<i64> {
     use super::WifiBand;
     let band = if band_ghz >= 5.9 {
@@ -234,10 +213,10 @@ fn channel_to_frequency(band_ghz: f64, channel: i64) -> Option<i64> {
 }
 
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
-    // One call for the three adapter fields, pipe-delimited: link speed
-    // ("2.5 Gbps"), duplex state (0 unknown / 1 half / 2 full) and the adapter
-    // description ("Realtek PCIe 2.5GbE Family Controller"). Vendor is filled
-    // separately from the MAC OUI — the driver provider is often just "Microsoft".
+    // One call, pipe-delimited: link speed ("2.5 Gbps"), duplex state (0
+    // unknown, 1 half, 2 full) and the adapter description ("Realtek PCIe 2.5GbE
+    // Family Controller"). Vendor comes from the MAC OUI instead, because the
+    // driver provider is often just "Microsoft".
     let out = try_run_powershell(&format!(
         "Get-NetAdapter -Name '{iface}' | ForEach-Object {{ \"$($_.LinkSpeed)|$($_.MediaDuplexState)|$($_.InterfaceDescription)\" }}"
     ))
@@ -253,9 +232,9 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     d
 }
 
-/// Current negotiated link rate (Mbps) for a Windows adapter, from Get-NetAdapter.
-/// Fills Wi-Fi's link speed, which `netsh` doesn't report as one figure — keeping
-/// the connection card and speed-test footer consistent with the interface list.
+/// Negotiated link rate (Mbps) from `Get-NetAdapter`. Used for Wi-Fi, where
+/// `netsh` has no single figure, so the connection card and speed-test footer
+/// match the interface list.
 pub async fn link_speed(iface: &str) -> Option<i64> {
     if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
@@ -268,8 +247,8 @@ pub async fn link_speed(iface: &str) -> Option<i64> {
     parse_link_speed(line).filter(|v| *v > 0)
 }
 
-/// Windows `MediaDuplexState` (0 unknown / 1 half / 2 full) — accepting the enum
-/// name too — into the lowercase token the UI's duplex formatter expects.
+/// `MediaDuplexState` (0 unknown, 1 half, 2 full, or the enum name) as the
+/// lowercase token the UI expects.
 fn parse_duplex_state(raw: &str) -> Option<String> {
     match raw.trim() {
         "2" | "Full" => Some("full".to_string()),
@@ -289,16 +268,12 @@ pub(crate) fn parse_link_speed(text: &str) -> Option<i64> {
     }
 }
 
-// ---- subnet --------------------------------------------------------------
-
-/// The interface's IPv4 address and prefix length via `Get-NetIPAddress`. `None`
-/// when the adapter has no usable IPv4; the caller turns this into a CIDR.
+/// The interface's IPv4 address and prefix length via `Get-NetIPAddress`.
+/// `None` when the adapter has no usable IPv4.
 ///
-/// `Get-NetIPAddress` is authoritative here — sysinfo's `ip_networks()` is
-/// unreliable on Windows, intermittently reporting no IPv4 for the adapter,
-/// which left the scan with a null subnet (empty "Subnet" subtitle). APIPA
-/// (169.254/16) is skipped so a half-configured adapter doesn't scope the scan
-/// to its link-local range instead of the real LAN.
+/// sysinfo's `ip_networks()` intermittently reports no IPv4 on Windows, which
+/// left the scan with no subnet. APIPA (169.254/16) is skipped so a
+/// half-configured adapter doesn't scope the scan to its link-local range.
 pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     if !crate::util::net::is_shell_safe_iface(interface) {
         return None;
@@ -313,10 +288,9 @@ pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     Some((ip, prefix))
 }
 
-// ---- misc system probes --------------------------------------------------
-
-/// Local timezone's offset from UTC in seconds, via PowerShell. `None` on any
-/// failure so the caller can default to 0.
+/// The local timezone's offset from UTC in seconds, via PowerShell; `None` on
+/// any failure. Note `BaseUtcOffset` is the zone's standard offset and ignores
+/// daylight saving.
 pub fn utc_offset_secs() -> Option<i64> {
     let mut cmd = std::process::Command::new("powershell");
     cmd.args(["-NoProfile", "-Command", "(Get-TimeZone).BaseUtcOffset.TotalMinutes"]);
@@ -332,9 +306,10 @@ pub fn utc_offset_secs() -> Option<i64> {
 mod tests {
     use super::*;
 
-    // A Wi-Fi 6E connection whose AP advertises colocated 2.4/5 GHz radios. The
-    // colocated block lists "Channel: 1" and "Channel: 60" *before* the real
-    // "Channel : 101" line — the parser must not be fooled into either.
+    // A Wi-Fi 6E connection whose AP advertises colocated 2.4/5 GHz radios,
+    // listed with "Channel: 1" and "Channel: 60" before the real
+    // "Channel : 101". The parser must pick neither.
+
     const NETSH_6E: &str = "\
     Name                   : Wi-Fi
     Description            : Intel(R) Wi-Fi 6E AX210 160MHz

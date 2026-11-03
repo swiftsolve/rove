@@ -20,9 +20,8 @@ macro_rules! static_regex {
 }
 
 /// Negotiated link speed (Mbps) from `/sys/class/net/<iface>/speed`. `None`
-/// when the file is unreadable or reports a non-positive placeholder (a down
-/// link or virtual interface prints -1). Linux-only by nature — callers on
-/// other platforms must not reach for it.
+/// when unreadable or non-positive (a down link or virtual interface prints
+/// -1). Linux only.
 pub fn sysfs_link_speed(iface: &str) -> Option<i64> {
     std::fs::read_to_string(format!("/sys/class/net/{iface}/speed"))
         .ok()
@@ -30,16 +29,14 @@ pub fn sysfs_link_speed(iface: &str) -> Option<i64> {
         .filter(|v| *v > 0)
 }
 
-/// Whether `iface` currently has physical link (carrier), from
-/// `/sys/class/net/<iface>/carrier`. Unlike the routing table, this is the
-/// hardware's own signal: an unplugged Ethernet reads `0` here even while the
-/// kernel keeps a stale `linkdown` default route pointing at it, which is exactly
-/// the case `default_interface` must reject.
+/// Whether `iface` has physical link, from `/sys/class/net/<iface>/carrier`.
+/// An unplugged Ethernet reads `0` here even while the kernel keeps a stale
+/// `linkdown` default route on it, the case `default_interface` must reject.
 ///
-/// Only a definitive `0` counts as down. A read error, an administratively-down
-/// interface (the file returns `EINVAL`), or a virtual interface with no carrier
-/// concept (`tun`/`tap`/bridges) all fall back to "up" — those legitimately carry
-/// traffic, so a missing carrier reading must never be treated as a dead link.
+/// Only a definite `0` is down. A read error, an administratively down
+/// interface (`EINVAL`) or one with no carrier concept (`tun`, `tap`, bridges)
+/// reads as up: those can carry traffic, so a missing reading isn't a dead
+/// link.
 pub fn carrier_up(iface: &str) -> bool {
     match std::fs::read_to_string(format!("/sys/class/net/{iface}/carrier")) {
         Ok(raw) => raw.trim() != "0",
@@ -126,6 +123,8 @@ fn parse_nmcli_wifi_line(line: &str) -> ConnectionDetails {
     d
 }
 
+/// Wi-Fi details from `nmcli`, then `iw dev link`/`info`, then `iwgetid`. No one
+/// tool has everything, so each fills only what the earlier ones left empty.
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
 
@@ -171,11 +170,10 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 }
 
 /// The saved passphrase for the Wi-Fi network on `iface`, via NetworkManager.
-/// `-s` asks nmcli to include secrets, which polkit gates: an authorised
-/// session gets it silently, otherwise the user sees a polkit auth prompt (or,
-/// if they decline / aren't allowed, we get nothing and return `None`). `ssid`
-/// is only a fallback profile name — NetworkManager keys secrets by connection
-/// name, which is usually but not always the SSID.
+/// `-s` includes secrets, which polkit gates: an authorised session gets it
+/// silently, otherwise the user sees a polkit prompt, and declining gives
+/// `None`. `ssid` is only a fallback profile name: secrets are keyed by
+/// connection name, which is usually but not always the SSID.
 pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
     let profile = active_connection_name(iface)
         .await
@@ -193,9 +191,8 @@ pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
     }
 }
 
-/// The name of the connection profile currently active on `iface`, so we read
-/// the secret for the network we're actually joined to rather than guessing
-/// from the SSID.
+/// The connection profile active on `iface`, so the secret read is for the
+/// network actually joined rather than a guess from the SSID.
 async fn active_connection_name(iface: &str) -> Option<String> {
     if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
@@ -217,7 +214,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
         d.link_speed_mbps = first_int(&out, &ETHTOOL_SPEED);
         d.duplex = first_match(&out, &ETHTOOL_DUPLEX);
     }
-    // /sys fallback when ethtool is missing
+    // sysfs when ethtool is missing or reports no speed.
     if d.link_speed_mbps.is_none() {
         d.link_speed_mbps = sysfs_link_speed(iface);
     }
@@ -240,8 +237,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
 }
 
 /// The interface's IPv4 address and prefix length via `ip -j addr show`. `None`
-/// when `ip` is missing or the interface has no IPv4; the caller turns this into
-/// a CIDR. `ip -j` is authoritative on Linux.
+/// when `ip` is missing or the interface has no IPv4.
 pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     if !crate::util::net::is_shell_safe_iface(interface) {
         return None;
@@ -272,8 +268,7 @@ pub async fn neighbors() -> Option<Vec<RawNeighbor>> {
                     ip: c[1].to_string(),
                     mac: c[2].to_lowercase(),
                     reachable: matches!(&c[3], "REACHABLE" | "DELAY" | "PROBE"),
-                    // `ip neigh` carries a real kernel state, so the scan can
-                    // trust `reachable` as one of its liveness signals.
+                    // A real kernel state the scan can use as a liveness signal.
                     stateful: true,
                 })
             })
@@ -281,9 +276,10 @@ pub async fn neighbors() -> Option<Vec<RawNeighbor>> {
     )
 }
 
-/// Kernel-cumulative rx/tx byte totals across physical interfaces, read from
-/// `/sys/class/net/*/statistics`. `None` when `/sys` can't be enumerated, so
-/// the caller falls back to sysinfo totals.
+/// Byte totals since boot across physical interfaces, from
+/// `/sys/class/net/*/statistics`. `None` when `/sys` can't be listed, so the
+/// caller falls back to sysinfo.
+
 pub fn boot_totals() -> Option<(u64, u64)> {
     let entries = std::fs::read_dir("/sys/class/net").ok()?;
     let mut rx = 0u64;

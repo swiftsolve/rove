@@ -1,21 +1,18 @@
-//! OS-specific implementations of host and network state.
+//! Per-OS probes for host and network state. Every platform reports the same
+//! facts (interfaces, Wi-Fi and Ethernet details, subnet, routing, DNS) through
+//! different tools, one file each:
 //!
-//! Rove observes the same facts on every platform — the interface list, the
-//! active Wi-Fi/Ethernet details, the LAN subnet, routing and DNS — but each OS
-//! exposes them through different tools (`ip`/`iw` on Linux, `Get-NetAdapter`
-//! /`netsh` on Windows, `ifconfig`/CoreWLAN on macOS). This module collects
-//! those per-OS probes in one place, one file per platform:
+//!   * [`linux`]: `ip`, `iw`, `ethtool`, `nmcli`, `/sys`
+//!   * [`windows`]: PowerShell (`Get-NetAdapter`, `Get-NetRoute`), `netsh`
+//!   * [`macos`]: `ifconfig`, `netstat`, `networksetup`, `system_profiler`,
+//!     and CoreWLAN via [`mac_native`]
+//!   * [`app_icon`]: each OS's native app icons
 //!
-//!   * [`linux`]   — `ip`, `iw`, `ethtool`, `nmcli`, `/sys`
-//!   * [`windows`] — PowerShell (`Get-NetAdapter`, `Find-NetRoute`), `netsh`
-//!   * [`macos`]   — `ifconfig`, `system_profiler`, CoreWLAN (via [`mac_native`])
-//!
-//! The cross-platform *contract* — which probe to call, and the fallback chain
-//! when a tool is missing — stays in the feature modules (`connection`,
-//! `connection::interfaces`, `devices::subnet`, `usage::data`); they dispatch
-//! into here.
-//! Shared, OS-agnostic glue (the sysinfo fallback, Wi-Fi post-processing, the
-//! windowless-spawn helper, interface sorting) lives in this file.
+//! Which probe to call, and the fallback when a tool is missing, stays in the
+//! feature modules (`connection`, `devices`, `usage`). This file holds the
+//! shared pieces: the sysinfo interface fallback, Wi-Fi post-processing and
+//! channel plans, interface sorting, the neighbor table, `ping` flags, and the
+//! windowless-spawn helper.
 
 pub mod app_icon;
 pub mod linux;
@@ -31,10 +28,9 @@ use crate::connection::interfaces::InterfaceSummary;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
-/// Spawn console child processes without briefly flashing a terminal window on
-/// Windows. No-op elsewhere, where these commands never open a window. Applied
-/// to the synchronous [`std::process::Command`] call sites (timezone probe,
-/// `hostname`); the async [`crate::util::shell`] runner has its own equivalent.
+/// Stop a console child process flashing a terminal window on Windows; a no-op
+/// elsewhere. For the synchronous [`std::process::Command`] call sites (the
+/// timezone probe, `hostname`); [`crate::util::shell`] has its own.
 #[cfg(windows)]
 pub fn hide_console(cmd: &mut std::process::Command) {
     use std::os::windows::process::CommandExt;
@@ -44,13 +40,14 @@ pub fn hide_console(cmd: &mut std::process::Command) {
 #[cfg(not(windows))]
 pub fn hide_console(_cmd: &mut std::process::Command) {}
 
-/// dBm RSSI → rough 0-100% bar, matching the Electron heuristic.
+/// dBm RSSI to a rough 0-100% bar (-100 dBm is 0, -50 is 100), the curve the
+/// Electron app used.
 fn dbm_to_percent(dbm: i64) -> i64 {
     (2 * (dbm + 100)).clamp(0, 100)
 }
 
-/// Shared Wi-Fi post-processing: derive a percentage bar from RSSI when the OS
-/// only gave us dBm. Every platform's `wifi_details` funnels through here.
+/// Every platform's `wifi_details` ends here: fill the percentage bar from dBm
+/// when the OS gave only dBm, so the meter looks the same everywhere.
 pub(crate) fn finalize_wifi(mut d: ConnectionDetails) -> ConnectionDetails {
     if d.signal_strength.is_none() {
         if let Some(dbm) = d.signal_dbm {
@@ -60,8 +57,8 @@ pub(crate) fn finalize_wifi(mut d: ConnectionDetails) -> ConnectionDetails {
     d
 }
 
-/// Non-Linux fallback interface list via sysinfo: names, MACs and first IPv4.
-/// Also the ultimate fallback when a platform's native probe fails.
+/// Interface list from sysinfo (names, MACs, first IPv4), for when a native
+/// probe fails or a platform has none.
 pub(crate) fn generic_interface_list() -> Vec<InterfaceSummary> {
     let networks = sysinfo::Networks::new_with_refreshed_list();
     let mut result: Vec<InterfaceSummary> = networks
@@ -69,8 +66,8 @@ pub(crate) fn generic_interface_list() -> Vec<InterfaceSummary> {
         .filter(|(name, _)| !is_virtual_interface(name))
         .filter_map(|(name, data)| {
             let mac = data.mac_address().to_string().to_lowercase();
-            // Filter/pseudo miniports (WFP, Npcap, …) report an all-zero
-            // hardware address — they aren't real interfaces.
+            // Filter and pseudo miniports (WFP, Npcap, …) report an all-zero
+            // MAC; they aren't real interfaces.
             if mac == "00:00:00:00:00:00" {
                 return None;
             }
@@ -95,9 +92,8 @@ pub(crate) fn generic_interface_list() -> Vec<InterfaceSummary> {
     result
 }
 
-/// Canonical interface ordering shared by every platform's list builder:
-/// default route first, then real hardware before virtual, connected before
-/// down, then by name.
+/// The interface order on every platform: default route first, then hardware
+/// before virtual, up before down, then by name.
 pub(crate) fn sort_interfaces(list: &mut [InterfaceSummary]) {
     list.sort_by(|a, b| {
         let rank = |i: &InterfaceSummary| {
@@ -107,33 +103,29 @@ pub(crate) fn sort_interfaces(list: &mut [InterfaceSummary]) {
     });
 }
 
-// ---- neighbor (ARP/NDP) table -------------------------------------------
-
 /// One entry from the OS neighbor table: an IP the kernel has resolved to a MAC.
 pub struct RawNeighbor {
     pub ip: String,
     pub mac: String,
     pub reachable: bool,
-    /// Whether `reachable` reflects a real kernel liveness state (Linux `ip
-    /// neigh`) rather than the `arp -a` fallback's blanket `true`. The device
-    /// scan only trusts `reachable` for its liveness verdict when this is set;
-    /// on macOS/Windows it relies on active probes instead.
+    /// Whether `reachable` is a real kernel state (Linux `ip neigh`) rather than
+    /// the `arp -a` fallback's blanket `true`. The device scan only trusts
+    /// `reachable` when this is set, and relies on its own probes otherwise.
     pub stateful: bool,
 }
 
 static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
-    // An IPv4, then (lazily, across whatever separates them) a 6-group MAC. The
-    // separator must be matched with `.*?`, not a non-hex class: BSD `arp -a`
-    // writes "<ip> at <mac>", and the `a` in "at" is itself a hex digit. Octets
-    // are 1–2 hex because BSD zero-strips them ("af:0"); groups may be `:`- or
-    // `-`-separated (Windows uses dashes).
+    // An IPv4, then lazily a 6-group MAC. The gap is `.*?`, not a non-hex class:
+    // BSD writes "<ip> at <mac>", and the `a` in "at" is a hex digit. Groups are
+    // 1-2 hex digits because BSD drops leading zeros ("af:0"), separated by `:`
+    // or, on Windows, `-`.
     Regex::new(r"([0-9]{1,3}(?:\.[0-9]{1,3}){3}).*?([0-9a-fA-F]{1,2}(?:[:-][0-9a-fA-F]{1,2}){5})")
         .unwrap()
 });
 
-/// The kernel neighbor table. Linux's `ip neigh` carries a reachability state;
-/// the `arp -a` fallback (macOS, Windows, and any Linux without `iproute2`) has
-/// no state column, so entries are assumed reachable.
+/// The kernel neighbor table. Linux's `ip neigh` has a reachability state; the
+/// `arp -a` fallback (macOS, Windows, Linux without `iproute2`) doesn't, so
+/// its entries are marked reachable but not `stateful`.
 pub async fn neighbor_table() -> Vec<RawNeighbor> {
     if cfg!(target_os = "linux") {
         if let Some(neighbors) = linux::neighbors().await {
@@ -143,9 +135,8 @@ pub async fn neighbor_table() -> Vec<RawNeighbor> {
     arp_neighbors().await
 }
 
-/// Shared `arp` parse for the platforms without a stateful neighbor tool. Uses
-/// the numeric table (`-n`) off Windows to skip per-host reverse DNS (the app
-/// resolves names itself) — Windows `arp` doesn't take `-n`.
+/// `arp` for the platforms without `ip neigh`. `-n` skips per-host reverse DNS
+/// (Rove resolves names itself), but Windows `arp` doesn't take it.
 async fn arp_neighbors() -> Vec<RawNeighbor> {
     let cmd = if cfg!(target_os = "windows") { "arp -a" } else { "arp -an" };
     let Some(out) = try_run(cmd).await else {
@@ -155,20 +146,17 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
             let mac = crate::util::net::normalize_mac_colons(&c[2]);
-            // Drop broadcast and multicast pseudo-neighbors; they aren't devices.
+            // Broadcast and multicast (IPv4 01:00:5e, IPv6 33:33) aren't devices.
             if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33")
             {
                 return None;
             }
-            // `arp -a` has no liveness column, so `reachable` here is a
-            // placeholder the scan ignores (stateful: false) in favour of its
-            // own active probe.
+            // No liveness column, so `reachable` is a placeholder the scan
+            // ignores (`stateful: false`).
             Some(RawNeighbor { ip: c[1].to_string(), mac, reachable: true, stateful: false })
         })
         .collect()
 }
-
-// ---- Wi-Fi channel plans ---------------------------------------------------
 
 /// The three Wi-Fi bands, disambiguated by each platform's own hint (channel
 /// numbers repeat across bands: 6 GHz channel 1 is not 2.4 GHz channel 1).
@@ -190,21 +178,17 @@ pub(crate) fn channel_to_frequency(band: WifiBand, channel: i64) -> i64 {
     }
 }
 
-// ---- ping ----------------------------------------------------------------
-
-/// Build the OS-appropriate `ping` command sending `count` probes to `host`.
-/// `timeout_ms` is the per-reply wait: Windows spells it `-w` and macOS `-W`,
-/// both in milliseconds; Linux/BSD `-W` is in *seconds*, so there we use a fixed
-/// `-W 1`. All Unix variants space probes 0.2 s apart (`-i 0.2`) and discard
-/// stderr. `host` must be a validated address — it is interpolated in.
+/// The `ping` command for this OS, sending `count` probes to `host`.
+/// `timeout_ms` is the per-reply wait: Windows `-w` and macOS `-W` take
+/// milliseconds, but Linux `-W` takes seconds, so Linux gets a fixed `-W 1`.
+/// `host` is spliced into a shell command, so it must be a validated address.
 pub fn ping_command(host: &str, count: u32, timeout_ms: u32) -> String {
     if cfg!(target_os = "windows") {
         format!("ping -n {count} -w {timeout_ms} {host}")
     } else if cfg!(target_os = "macos") {
-        // macOS `ping -W` is the per-reply wait in MILLISECONDS. The Linux `-W 1`
-        // would be a 1 ms deadline that drops every real reply as "out of wait
-        // time", printing no `time=` lines — so latency/jitter/loss came back
-        // empty (100% loss) and every capability rated "unsupported".
+        // The Linux `-W 1` here is a 1 ms wait: every reply arrives too late,
+        // so diagnostics read 100% loss and every capability "unsupported".
+
         format!("ping -c {count} -i 0.2 -W {timeout_ms} {host} 2>/dev/null")
     } else {
         format!("ping -c {count} -i 0.2 -W 1 {host} 2>/dev/null")

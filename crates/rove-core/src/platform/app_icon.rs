@@ -1,28 +1,25 @@
 //! Real per-application icons on macOS, Windows and Linux.
 //!
-//! The per-app usage list ([`crate::usage::app`]) only knows a process *name* and
-//! its pid. To show the same icon the Dock/Finder/Explorer would, we resolve that
-//! process to its native icon and rasterise it to a small PNG the frontend renders
-//! directly (a `data:` URI). Two lookups on each platform, best-effort and in the
-//! order the pid is preferred to the name — the pid is the exact process that moved
-//! the bytes, while the name lookup catches a pid that has since exited (its bytes
-//! stay banked, but the process is gone by the time we resolve its icon).
+//! The usage views ([`crate::usage::app`], [`crate::usage::host`]) know only a
+//! process name and pid. This resolves that to the icon the Dock, Finder or
+//! Explorer would show, as a small PNG (or SVG) `data:` URI. The pid is tried
+//! first, being the exact process that moved the bytes; the name catches a pid
+//! that has exited by the time its icon is looked up.
 //!
-//!   * **macOS** — `NSRunningApplication(pid)` for the running app's AppKit icon
-//!     (gated on `bundleURL` so daemons don't match a generic placeholder), else
+//!   * **macOS**: `NSRunningApplication(pid)`'s icon, gated on `bundleURL` so
+//!     daemons don't get a generic placeholder, else
 //!     `NSWorkspace.fullPathForApplication` by name via Launch Services.
-//!   * **Windows** — the pid's (or a same-named live process's) executable path,
-//!     then the Shell's icon for that `.exe` via `IShellItemImageFactory` — the
-//!     same high-resolution icon Explorer draws, alpha included.
-//!   * **Linux** — the pid's (or a same-named live process's) `.desktop` entry:
+//!   * **Windows**: the pid's (or a same-named live process's) executable, then
+//!     the Shell's icon for it via `IShellItemImageFactory`: the same
+//!     high-resolution icon Explorer draws, alpha included.
+//!   * **Linux**: the pid's (or a same-named live process's) `.desktop` entry:
 //!     its Flatpak app id or snap cgroup when sandboxed, else its executable or
 //!     name against each entry's `Exec`, `StartupWMClass` and id. The entry's
 //!     `Icon=` comes from the `hicolor` theme or `pixmaps` (or is a path), PNGs
 //!     scaled down to 64px, SVGs passed through.
 //!
-//! Anything that resolves to none of these (CLIs, system daemons, unrecognised
-//! names) returns `None`, and the UI keeps its existing favicon/monogram
-//! fallback. On any other platform this is a no-op returning `None`.
+//! Anything else (CLIs, system daemons, unknown names) gets `None` and the UI
+//! shows a favicon or monogram. Other platforms always return `None`.
 
 #[cfg(target_os = "macos")]
 mod imp {
@@ -37,10 +34,9 @@ mod imp {
     };
     use objc2_foundation::{NSDictionary, NSPoint, NSRect, NSSize, NSString};
 
-    /// Edge length of the rasterised icon, in pixels. App icons ship at up to
-    /// 1024px; downscaling to 64 keeps the `data:` URI to a few KB so a list of
-    /// them stays cheap to serialise across IPC while staying crisp in a ~16–24px
-    /// box on high-DPI screens.
+    /// Edge of the rasterised icon in pixels. App icons ship at up to 1024px; 64
+    /// keeps each `data:` URI to a few KB over IPC and is still crisp in a
+    /// 16-24px box on high-DPI screens.
     const ICON_PX: isize = 64;
 
     /// A `data:image/png;base64,…` icon for the app that owns `pid` (preferred),
@@ -51,10 +47,9 @@ mod imp {
         render_png_data_uri(&icon)
     }
 
-    /// The exact icon of the running application with this pid, but only if it is
-    /// a bundled `.app` (the `bundleURL` gate) — so background/helper pids that
-    /// aren't applications fall through to the name lookup rather than yielding a
-    /// generic executable icon.
+    /// The icon of the running app with this pid, only if it's a bundled `.app`
+    /// (the `bundleURL` gate), so helper pids fall through to the name lookup
+    /// instead of getting a generic executable icon.
     fn icon_via_pid(pid: u32) -> Option<Retained<NSImage>> {
         // Each accessor returns null when the pid isn't a bundled app, which the
         // `?` chain turns into `None`.
@@ -79,9 +74,9 @@ mod imp {
         Some(workspace.iconForFile(&path))
     }
 
-    /// Draw `icon` into an offscreen [`ICON_PX`]²  RGBA bitmap and return it as a
-    /// base64 PNG `data:` URI. Drawing (rather than reading a representation)
-    /// guarantees the exact target size regardless of which reps the icon ships.
+    /// Draw `icon` into an offscreen [`ICON_PX`]² RGBA bitmap and return it as a
+    /// PNG `data:` URI. Drawing, rather than reading a representation, gives the
+    /// exact size whatever reps the icon ships.
     fn render_png_data_uri(icon: &NSImage) -> Option<String> {
         // SAFETY: an offscreen bitmap-backed graphics context; every call returns
         // null on failure (→ `None`) and none require the main thread.
@@ -160,10 +155,9 @@ mod imp {
         SIIGBF_ICONONLY,
     };
 
-    /// Edge length of the rasterised icon, in pixels. `.exe`s ship icons up to
-    /// 256px; 64 keeps the `data:` URI to a few KB so a list of them stays cheap
-    /// to serialise across IPC while staying crisp in a ~16–24px box on high-DPI
-    /// screens. Matches the macOS path's target size.
+    /// Edge of the rasterised icon in pixels, as on macOS. `.exe` icons go up to
+    /// 256px; 64 keeps each `data:` URI to a few KB over IPC and is still crisp
+    /// in a 16-24px box on high-DPI screens.
     const ICON_PX: i32 = 64;
 
     /// A `data:image/png;base64,…` icon for the app that owns `pid` (preferred),
@@ -172,20 +166,19 @@ mod imp {
     pub fn app_icon_data_uri(name: &str, pid: Option<u32>) -> Option<String> {
         let path = pid.and_then(exe_path_for_pid).or_else(|| exe_path_for_name(name))?;
         let (rgba, w, h) = rasterize_icon(&path)?;
-        // Trim the transparent margin each `.exe` bakes around its glyph, so icons
-        // with wildly different padding (Edge/Notion pad heavily, node/svchost are
-        // edge-to-edge) all fill their tile to the same visual size. Falls back to
-        // the untrimmed image if nothing is visible to bound.
+        // Trim the transparent margin each `.exe` bakes in, so icons with very
+        // different padding (Edge and Notion pad heavily, node and svchost are
+        // edge to edge) fill their tile alike. Untrimmed if nothing is visible.
         match trim_to_content_square(&rgba, w, h) {
             Some((cropped, side)) => encode_png_data_uri(&cropped, side, side),
             None => encode_png_data_uri(&rgba, w, h),
         }
     }
 
-    /// The full image path of the process with this pid, via
-    /// `QueryFullProcessImageNameW`. `None` if the pid has exited or can't be
-    /// opened — Rove runs elevated for the ETW session, so access is not the usual
-    /// cause; a since-exited pid is (that's what [`exe_path_for_name`] covers).
+    /// The image path of the process with this pid, via
+    /// `QueryFullProcessImageNameW`. `None` if the pid has exited (which
+    /// [`exe_path_for_name`] covers) or can't be opened, such as a protected
+    /// process.
     pub(crate) fn exe_path_for_pid(pid: u32) -> Option<PathBuf> {
         // SAFETY: a scoped process handle, closed on every path out; the path
         // buffer is sized up front and the OS writes back the used length.
@@ -203,11 +196,10 @@ mod imp {
         }
     }
 
-    /// The executable path of the first *live* process whose image file name
-    /// equals `name` (case-insensitively, e.g. "claude.exe"). This is the fallback
-    /// for when the pid that moved the bytes has already exited but another
-    /// instance — or a sibling helper of the same name — is still running, which
-    /// is the common shape for multi-process apps (browsers, Electron apps).
+    /// The executable of the first live process whose image name is `name`,
+    /// ignoring case (e.g. "claude.exe"). For when the pid that moved the bytes
+    /// has exited but another instance or same-named helper still runs, as is
+    /// usual for browsers and Electron apps.
     fn exe_path_for_name(name: &str) -> Option<PathBuf> {
         // SAFETY: a scoped snapshot handle, closed on every path out; the entry is
         // fully initialised with its required `dwSize` before the first read.
@@ -257,11 +249,10 @@ mod imp {
 
     /// Copy a 32-bpp `HBITMAP`'s pixels into a straight-alpha RGBA buffer.
     ///
-    /// `IShellItemImageFactory` returns *premultiplied* BGRA top-down; PNG wants
-    /// straight RGBA, so each channel is divided back out by its alpha. Some icons
-    /// come back with an all-zero alpha plane (no transparency information rather
-    /// than fully transparent) — detected up front and rendered opaque, else the
-    /// whole icon would vanish.
+    /// `IShellItemImageFactory` returns premultiplied BGRA; PNG wants straight
+    /// RGBA, so each channel is divided by its alpha. Some icons come back with
+    /// an all-zero alpha plane, meaning no transparency data rather than fully
+    /// transparent; those are drawn opaque, or the whole icon would vanish.
     unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Option<(Vec<u8>, i32, i32)> {
         let mut info = BITMAP::default();
         let read = GetObjectW(
@@ -328,18 +319,14 @@ mod imp {
         ((channel as u32 * 255) / alpha as u32).min(255) as u8
     }
 
-    /// Crop `rgba` (`w`×`h`, straight-alpha) to a centred square that tightly
-    /// bounds its visible pixels plus a small uniform margin. This is what makes
-    /// the icons render at a consistent size: a `.exe`'s icon canvas includes
-    /// however much transparent padding its designer chose, and `object-fit:
-    /// contain` in the UI scales that whole canvas — padding and all — into the
-    /// tile, so a heavily-padded glyph looks small next to an edge-to-edge one.
-    /// Cropping to the glyph itself removes that variable, leaving only the ~5%
-    /// margin this adds back uniformly.
+    /// Crop `rgba` (`w`×`h`, straight alpha) to a centred square around its
+    /// visible pixels plus a small uniform margin. An `.exe` icon's canvas has
+    /// whatever padding its designer chose, and the UI's `object-fit: contain`
+    /// scales the whole canvas into the tile, so a padded glyph looks small next
+    /// to an edge-to-edge one. Cropping to the glyph removes that difference.
     ///
-    /// The crop is square and centred on the content so aspect ratio is preserved
-    /// (never stretched). Returns `None` when nothing is visible to bound — a
-    /// fully transparent bitmap the caller should encode as-is.
+    /// Square and centred, so the aspect ratio is kept. `None` when nothing is
+    /// visible: a fully transparent bitmap to encode as is.
     fn trim_to_content_square(rgba: &[u8], w: i32, h: i32) -> Option<(Vec<u8>, i32)> {
         // Ignore near-transparent anti-aliasing fringe so a faint halo doesn't
         // defeat the trim by pinning the bounds to the full canvas.
@@ -416,11 +403,10 @@ mod imp {
         Some(format!("data:image/png;base64,{b64}"))
     }
 
-    /// Initialises COM for the current thread and balances it on drop. The Shell
-    /// item factory needs an initialised apartment; each successful
-    /// `CoInitializeEx` (including `S_FALSE`, "already initialised on this thread")
-    /// must be paired with a `CoUninitialize`, but a `RPC_E_CHANGED_MODE` failure
-    /// must not — so uninit is gated on the call having succeeded.
+    /// Initialises COM for the current thread, which the Shell item factory
+    /// needs, and balances it on drop. Every successful `CoInitializeEx`,
+    /// `S_FALSE` ("already initialised") included, needs a `CoUninitialize`; a
+    /// `RPC_E_CHANGED_MODE` failure must not get one.
     struct ComGuard {
         owned: bool,
     }
@@ -470,8 +456,8 @@ mod imp {
             buf
         }
 
-        /// A small glyph adrift in a large transparent canvas is cropped down to
-        /// a tight, centred square — the whole point of the trim.
+        /// A small glyph in a large transparent canvas is cropped to a tight,
+        /// centred square.
         #[test]
         fn crops_away_transparent_padding() {
             // 20px block centred in a 100px canvas.
@@ -489,7 +475,7 @@ mod imp {
         }
 
         /// A near-transparent haze below the alpha threshold doesn't pin the
-        /// bounds to the full canvas — the solid core is what gets bounded.
+        /// bounds to the full canvas; only the solid core is bounded.
         #[test]
         fn ignores_faint_antialias_fringe() {
             let mut buf = vec![0u8; 40 * 40 * 4];
@@ -992,9 +978,8 @@ mod imp {
 
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 mod imp {
-    /// No native icon source wired up on this platform; the UI falls back to
-    /// favicon + monogram. `name`/`pid` are accepted so callers stay
-    /// platform-agnostic.
+    /// No icon source on this platform; the UI shows a favicon or monogram.
+
     pub fn app_icon_data_uri(_name: &str, _pid: Option<u32>) -> Option<String> {
         None
     }
