@@ -13,7 +13,7 @@ mod speed;
 mod usage;
 
 pub use devices::{KnownDevice, OFFLINE_LIST_KEEP_MS};
-pub use events::NetworkEvent;
+pub use events::{NetworkEvent, Severity};
 pub use speed::{SpeedHistoryRecord, SPEED_HISTORY_LIMIT};
 
 use crate::services::DEFAULT_SERVICES;

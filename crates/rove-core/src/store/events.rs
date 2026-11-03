@@ -5,6 +5,7 @@ use super::Store;
 use crate::devices::DeviceKind;
 use crate::devices::LanDevice;
 use crate::diagnostics::InternetStatus;
+use rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
 
@@ -18,8 +19,7 @@ pub struct NetworkEvent {
     /// One of the `EVENT_*` slugs below; picks the icon and copy the UI renders.
     #[serde(rename = "type")]
     pub event_type: String,
-    /// "info", "warning" or "critical": the row's visual weight.
-    pub severity: String,
+    pub severity: Severity,
     pub mac: Option<String>,
     pub ip: Option<String>,
     /// Best-effort label snapshotted at event time, since a device's identity
@@ -35,6 +35,63 @@ pub struct NetworkEvent {
     /// The MAC is privacy-randomized. Such a device's presence events are noisy
     /// (a phone can re-randomize and read as brand-new), so the UI flags them.
     pub is_randomized: bool,
+}
+
+/// The row's visual weight. Mirrors `NetworkEventSeverity` in
+/// `src/types/events.ts`; stored as its slug.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Severity {
+    #[default]
+    Info,
+    Warning,
+    Critical,
+}
+
+impl Severity {
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::Info => "info",
+            Self::Warning => "warning",
+            Self::Critical => "critical",
+        }
+    }
+}
+
+impl ToSql for Severity {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
+        Ok(ToSqlOutput::from(self.as_str()))
+    }
+}
+
+impl FromSql for Severity {
+    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
+        value.as_str().map(|slug| match slug {
+            "warning" => Self::Warning,
+            "critical" => Self::Critical,
+            _ => Self::Info,
+        })
+    }
+}
+
+/// One row to write to the feed. Start from [`NewEvent::new`] and set only the
+/// fields the event has; the rest are null (and `is_randomized` false).
+#[derive(Default)]
+pub(super) struct NewEvent<'a> {
+    pub event_type: &'a str,
+    pub severity: Severity,
+    pub mac: Option<&'a str>,
+    pub ip: Option<&'a str>,
+    pub name: Option<&'a str>,
+    pub old_value: Option<&'a str>,
+    pub new_value: Option<&'a str>,
+    pub is_randomized: bool,
+}
+
+impl<'a> NewEvent<'a> {
+    pub(super) fn new(event_type: &'a str, severity: Severity) -> Self {
+        Self { event_type, severity, ..Self::default() }
+    }
 }
 
 // Event-type slugs: the strings the UI switches on, shared by the detector and
@@ -142,20 +199,21 @@ impl Store {
             // `prev_connected` keeps a loss from firing when we were already
             // off-network (VPN to disconnected, say).
             let prev_connected = is_connected_identity(prev);
-            let event: Option<(&str, &str, &str)> = match connection_type {
-                "wifi" => Some((EVENT_WIFI_CONNECTED, "info", network_name.unwrap_or("Wi-Fi"))),
-                "ethernet" => Some((EVENT_ETHERNET_CONNECTED, "info", interface.unwrap_or("Ethernet"))),
+            let event: Option<(&str, Severity, &str)> = match connection_type {
+                "wifi" => Some((EVENT_WIFI_CONNECTED, Severity::Info, network_name.unwrap_or("Wi-Fi"))),
+                "ethernet" => Some((EVENT_ETHERNET_CONNECTED, Severity::Info, interface.unwrap_or("Ethernet"))),
                 // Name what we lost from the prior baseline: the new state has
                 // no interface or SSID of its own.
                 _ if prev_connected => {
                     let lost = prev.split_once('|').map(|(_, label)| label).unwrap_or("");
                     let lost = if lost.is_empty() { "your network" } else { lost };
-                    Some((EVENT_CONNECTION_LOST, "warning", lost))
+                    Some((EVENT_CONNECTION_LOST, Severity::Warning, lost))
                 }
                 _ => None,
             };
             if let Some((event_type, severity, name)) = event {
-                Self::insert_event(&tx, now_ms, event_type, severity, mac, ip, Some(name), None, None, false)?;
+                let event = NewEvent { mac, ip, name: Some(name), ..NewEvent::new(event_type, severity) };
+                Self::insert_event(&tx, now_ms, &event)?;
                 Self::prune_events(&tx, now_ms)?;
             }
         }
@@ -183,9 +241,12 @@ impl Store {
 
         let tx = conn.transaction()?;
         if prev.is_some() {
-            let (event_type, severity) =
-                if online { (EVENT_INTERNET_RESTORED, "info") } else { (EVENT_INTERNET_LOST, "warning") };
-            Self::insert_event(&tx, now_ms, event_type, severity, None, None, None, None, None, false)?;
+            let (event_type, severity) = if online {
+                (EVENT_INTERNET_RESTORED, Severity::Info)
+            } else {
+                (EVENT_INTERNET_LOST, Severity::Warning)
+            };
+            Self::insert_event(&tx, now_ms, &NewEvent::new(event_type, severity))?;
             Self::prune_events(&tx, now_ms)?;
         }
 
@@ -309,47 +370,41 @@ impl Store {
         }
     }
 
-    pub(super) fn record_event(
+    /// Write `event` about `device`, filling in its MAC, IP, name and
+    /// randomized flag.
+    pub(super) fn record_device_event(
         conn: &Connection,
         ts: i64,
-        event_type: &str,
-        severity: &str,
         device: &LanDevice,
-        old_value: Option<&str>,
-        new_value: Option<&str>,
+        event: NewEvent<'_>,
     ) -> rusqlite::Result<()> {
-        Self::insert_event(
-            conn,
-            ts,
-            event_type,
-            severity,
-            Some(&device.mac),
-            Some(&device.ip),
-            Self::device_name(device).as_deref(),
-            old_value,
-            new_value,
-            device.is_randomized_mac,
-        )
+        let name = Self::device_name(device);
+        let event = NewEvent {
+            mac: Some(&device.mac),
+            ip: Some(&device.ip),
+            name: name.as_deref(),
+            is_randomized: device.is_randomized_mac,
+            ..event
+        };
+        Self::insert_event(conn, ts, &event)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub(super) fn insert_event(
-        conn: &Connection,
-        ts: i64,
-        event_type: &str,
-        severity: &str,
-        mac: Option<&str>,
-        ip: Option<&str>,
-        name: Option<&str>,
-        old_value: Option<&str>,
-        new_value: Option<&str>,
-        randomized: bool,
-    ) -> rusqlite::Result<()> {
+    pub(super) fn insert_event(conn: &Connection, ts: i64, event: &NewEvent<'_>) -> rusqlite::Result<()> {
         conn.execute(
             "INSERT INTO network_events
                 (ts, type, severity, mac, ip, name, old_value, new_value, randomized)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-            params![ts, event_type, severity, mac, ip, name, old_value, new_value, randomized],
+            params![
+                ts,
+                event.event_type,
+                event.severity,
+                event.mac,
+                event.ip,
+                event.name,
+                event.old_value,
+                event.new_value,
+                event.is_randomized
+            ],
         )?;
         Ok(())
     }
@@ -478,7 +533,7 @@ mod tests {
         store.record_connection("disconnected", None, None, None, None, 3_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "connection_lost");
-        assert_eq!(latest.severity, "warning");
+        assert_eq!(latest.severity, Severity::Warning);
         assert_eq!(latest.name.as_deref(), Some("eth0"), "names the lost network");
 
         // A second disconnected poll is silent: the loss already fired.
@@ -514,7 +569,7 @@ mod tests {
         store.record_internet(InternetStatus::NoInternet, 2_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "internet_lost");
-        assert_eq!(latest.severity, "warning");
+        assert_eq!(latest.severity, Severity::Warning);
 
         // Losing the gateway too is still "no internet", so no second event.
         let before = types(&store).len();
@@ -525,6 +580,6 @@ mod tests {
         store.record_internet(InternetStatus::Online, 3_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "internet_restored");
-        assert_eq!(latest.severity, "info");
+        assert_eq!(latest.severity, Severity::Info);
     }
 }

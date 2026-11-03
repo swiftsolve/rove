@@ -162,7 +162,7 @@ fn derives_join_change_offline_and_gateway_events() {
     store.record_devices(&[gw2, phone.clone(), moved.clone()], 6_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "gateway_changed");
-    assert_eq!(latest.severity, "critical");
+    assert_eq!(latest.severity, Severity::Critical);
 }
 
 #[test]
@@ -261,7 +261,7 @@ fn touch_devices_flags_a_new_router_as_an_ap_appeared_warning() {
     store.touch_devices(std::slice::from_ref(&ap), 2_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "ap_appeared");
-    assert_eq!(latest.severity, "warning");
+    assert_eq!(latest.severity, Severity::Warning);
 }
 
 #[test]

@@ -1,8 +1,8 @@
 //! The roster of LAN devices seen across scans, and the feed events a scan
 //! diff derives from it: joins, departures, returns and gateway changes.
 use super::events::{
-    is_connected_identity, EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE, EVENT_DEVICE_ONLINE,
-    EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
+    is_connected_identity, NewEvent, Severity, EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE,
+    EVENT_DEVICE_ONLINE, EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
 };
 use super::Store;
 use crate::devices::LanDevice;
@@ -139,7 +139,12 @@ impl Store {
                     // Mirror `record_devices`' online transition, so a device
                     // returning while the window is hidden still lands on the feed.
                     if is_marked_offline(&last_event, &device.mac) {
-                        Self::record_event(&tx, now_ms, EVENT_DEVICE_ONLINE, "info", device, None, None)?;
+                        Self::record_device_event(
+                            &tx,
+                            now_ms,
+                            device,
+                            NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info),
+                        )?;
                     }
                     Self::bump_last_seen(&tx, &device.mac, &device.ip, now_ms)?;
                 }
@@ -192,7 +197,12 @@ impl Store {
                         // Gate on `is_reachable` so a device back in the ARP
                         // table but not answering doesn't read as reconnected.
                         if device.is_reachable && is_marked_offline(&last_event, &device.mac) {
-                            Self::record_event(&tx, now_ms, EVENT_DEVICE_ONLINE, "info", device, None, None)?;
+                            Self::record_device_event(
+                                &tx,
+                                now_ms,
+                                device,
+                                NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info),
+                            )?;
                         }
                         // Identity changes (hostname, IP, vendor, kind) aren't
                         // logged: they proved too noisy.
@@ -229,18 +239,15 @@ impl Store {
                 if is_marked_offline(&last_event, mac) {
                     continue;
                 }
-                Self::insert_event(
-                    &tx,
-                    now_ms,
-                    EVENT_DEVICE_OFFLINE,
-                    "info",
-                    Some(mac),
-                    prev.ip.as_deref(),
-                    Self::known_name(prev).as_deref(),
-                    None,
-                    None,
-                    prev.randomized,
-                )?;
+                let name = Self::known_name(prev);
+                let event = NewEvent {
+                    mac: Some(mac),
+                    ip: prev.ip.as_deref(),
+                    name: name.as_deref(),
+                    is_randomized: prev.randomized,
+                    ..NewEvent::new(EVENT_DEVICE_OFFLINE, Severity::Info)
+                };
+                Self::insert_event(&tx, now_ms, &event)?;
             }
         }
 
@@ -251,18 +258,9 @@ impl Store {
         if is_seeding_feed {
             let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
             if count > 0 {
-                Self::insert_event(
-                    &tx,
-                    now_ms,
-                    EVENT_INITIAL_SCAN,
-                    "info",
-                    None,
-                    None,
-                    None,
-                    None,
-                    Some(&count.to_string()),
-                    false,
-                )?;
+                let count = count.to_string();
+                let event = NewEvent { new_value: Some(&count), ..NewEvent::new(EVENT_INITIAL_SCAN, Severity::Info) };
+                Self::insert_event(&tx, now_ms, &event)?;
                 Self::mark_feed_seeded(&tx)?;
             }
         }
@@ -303,11 +301,11 @@ impl Store {
     /// higher-signal security event; anything else is a plain arrival.
     fn emit_new_device(conn: &Connection, device: &LanDevice, ts: i64) -> rusqlite::Result<()> {
         let (event_type, severity) = if device.kind == DeviceKind::Router && !device.is_gateway {
-            (EVENT_AP_APPEARED, "warning")
+            (EVENT_AP_APPEARED, Severity::Warning)
         } else {
-            (EVENT_DEVICE_JOINED, "info")
+            (EVENT_DEVICE_JOINED, Severity::Info)
         };
-        Self::record_event(conn, ts, event_type, severity, device, None, None)
+        Self::record_device_event(conn, ts, device, NewEvent::new(event_type, severity))
     }
 
     fn detect_gateway_change(conn: &Connection, devices: &[LanDevice], ts: i64) -> rusqlite::Result<()> {
@@ -317,15 +315,12 @@ impl Store {
         let prev = Self::read_meta(conn, META_GATEWAY_MAC)?;
         if let Some(old) = prev.as_deref() {
             if old != gateway.mac {
-                Self::record_event(
-                    conn,
-                    ts,
-                    EVENT_GATEWAY_CHANGED,
-                    "critical",
-                    gateway,
-                    Some(old),
-                    Some(&gateway.mac),
-                )?;
+                let event = NewEvent {
+                    old_value: Some(old),
+                    new_value: Some(&gateway.mac),
+                    ..NewEvent::new(EVENT_GATEWAY_CHANGED, Severity::Critical)
+                };
+                Self::record_device_event(conn, ts, gateway, event)?;
             }
         }
         Self::write_meta(conn, META_GATEWAY_MAC, &gateway.mac)
