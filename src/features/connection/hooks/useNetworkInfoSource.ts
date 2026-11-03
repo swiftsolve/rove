@@ -8,8 +8,8 @@ import type { NetworkInfo } from '@/types'
 import { useLatestRef } from '@/ui'
 
 const REFRESH_INTERVAL_MS = 15_000
-// Above the backend's 15s per-command budget (crates/rove-core/src/shell.rs), so a
-// slow but healthy probe never trips an error here first.
+// Above the backend's 15s per-command budget (crates/rove-core/src/util/shell.rs),
+// so a slow but healthy probe never trips an error here first.
 const NETWORK_INFO_TIMEOUT_MS = 20_000
 // Consecutive failed polls before the error shows; until then the last good
 // reading stays on screen.

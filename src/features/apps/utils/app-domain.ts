@@ -1,6 +1,7 @@
 // Maps a process name to a domain so the Services favicon lookup can be reused.
 // Matched against the name's whole words, never a substring, so Xcode isn't VS
-// Code and codesign isn't either. Not exhaustive: the monogram covers the long tail.
+// Code and codesign isn't either. Not exhaustive: the monogram covers the long
+// tail.
 const APP_DOMAINS: [string, string][] = [
   ['firefox', 'firefox.com'],
   ['chromium', 'google.com'],

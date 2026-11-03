@@ -20,11 +20,9 @@ const INITIAL_STATE: LiveThroughputState = {
   history: EMPTY_THROUGHPUT_HISTORY,
 }
 
-/**
- * One module-level store with a single owner (`useLiveThroughputSource`), so the
- * history keeps sampling while another tab is open and a view swap never toggles
- * the backend subscription, which raced two IPC calls and could stick the feed.
- */
+// One module-level store with a single owner (`useLiveThroughputSource`), so the
+// history keeps sampling while another tab is open and a view swap never toggles
+// the backend subscription, which raced two IPC calls and could stick the feed.
 let storeState: LiveThroughputState = INITIAL_STATE
 const listeners = new Set<() => void>()
 

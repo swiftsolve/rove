@@ -32,7 +32,7 @@ export function formatAxisLabel(mbps: number): string {
   return `${formatTickNumber(safeMbps)}M`
 }
 
-/** A clean, consistent tick: no trailing ".0", one decimal only below 10. */
+/** No trailing ".0", and one decimal only below 10, so ticks stay short. */
 function formatTickNumber(value: number): string {
   return String(Number(value.toFixed(value >= 10 ? 0 : 1)))
 }

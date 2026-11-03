@@ -148,8 +148,8 @@ export function DeviceRow({ device }: { device: LanDevice }) {
           icon={<KindIcon kind={device.kind} />}
         />
         <div className="flex min-w-0 flex-1 flex-col gap-4">
-          {/* Name on the left, status on the right. mb-2 adds a touch more air
-              below the (larger) name, on top of the column's 4px gap. */}
+          {/* mb-2 adds a touch more air below the larger name, on top of the
+              column's 4px gap. */}
           <div className="mb-2 flex items-start justify-between gap-8">
             <h2 className={DEVICE_NAME}>
               <InlineMeta items={name} />
@@ -166,7 +166,6 @@ export function DeviceRow({ device }: { device: LanDevice }) {
 
           <DeviceMetaLine device={device} name={name} lastSeenLabel={lastSeenLabel} />
 
-          {/* MAC on the left, IP pinned to the bottom-right. */}
           <div className="flex items-baseline justify-between gap-8">
             <span className="type-caption text-tertiary min-w-0 tabular-nums">
               <InlineMeta

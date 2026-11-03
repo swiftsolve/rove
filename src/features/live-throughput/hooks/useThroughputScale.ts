@@ -8,7 +8,7 @@ import { getLinkCapacityMbps } from '@/types'
 /**
  * The live chart's ceiling (Mbps) for these samples. A running speed test
  * saturates the link, and the link's capacity bounds the scale, so both feed it
- * (see resolveChartScale). Recomputed only when an input changes.
+ * (see resolveChartScale).
  */
 export function useThroughputScale(download: number[], upload: number[]): number {
   const { info } = useNetwork()

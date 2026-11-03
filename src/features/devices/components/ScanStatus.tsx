@@ -41,9 +41,10 @@ function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
   return index < currentPhase ? 'past' : 'next'
 }
 
-// A pulsing dot and a one-word stage. Takes `isActive` rather than being
-// conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
-// `isLiveRegion` is off when it shares the subnet's slot, which is the live region.
+/** A pulsing dot and a one-word stage. Takes `isActive` rather than being
+ *  conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
+ *  `isLiveRegion` is off when it shares the subnet's slot, which is the live
+ *  region. */
 export function ScanStatus({
   isActive,
   isLiveRegion,

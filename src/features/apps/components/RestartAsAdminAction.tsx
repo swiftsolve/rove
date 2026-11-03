@@ -14,7 +14,7 @@ import { Button, EmptyStateDescription } from '@/ui'
  * browser, where there's nothing to elevate.
  */
 export function RestartAsAdminAction(): JSX.Element | null {
-  // On success the backend exits this process, so only a declined prompt settles it.
+  // Success exits this process, so an error here means the prompt was declined.
   const relaunch = useMutation({ mutationFn: () => getNetworkApi().relaunchAsAdmin() })
   const isBusy = relaunch.isPending
   const wasDeclined = relaunch.isError

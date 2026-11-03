@@ -1,7 +1,7 @@
 import { getVersion } from '@tauri-apps/api/app'
 import { useEffect, useState } from 'react'
 
-/** Read the running app version from Tauri, falling back gracefully outside it. */
+/** The running app's version from Tauri; null until it's read, and outside Tauri. */
 export function useAppVersion(): string | null {
   const [version, setVersion] = useState<string | null>(null)
   useEffect(() => {

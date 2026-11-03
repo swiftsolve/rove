@@ -62,7 +62,8 @@ export function CapabilitiesCard() {
     <Card>
       <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={<RunTestButton />} />
       <CardBody>
-        {/* Before the first test, every capability shows as a faded placeholder. */}
+        {/* Before the first test the tiles are faded placeholders with no rating
+            to read, so screen readers skip them. */}
         <ul role="list" className={CAPABILITY_ROW} aria-hidden={!hasResults || undefined}>
           {hasResults
             ? capabilities.map((capability) => <RatedCapability key={capability.id} capability={capability} />)

@@ -48,23 +48,23 @@ export function deviceName(device: LanDevice): string[] {
   // A hostname is the name the user gave the device, so it always wins.
   if (device.hostname) return [device.hostname]
   if (!device.vendor) return [describeUnnamed(device)]
-  // The kind chip already says "Smart home", so the verbose noun would repeat it.
+  // The meta line already says "Smart home", so the noun would repeat it.
   if (device.kind === 'iot') return [device.vendor]
   const noun = kindNoun(device)
   return noun ? [device.vendor, capitalize(noun)] : [device.vendor]
 }
 
-// The age beside an offline badge. Suppressed within RECENTLY_SEEN_MS: a device
-// still in the ARP table but not answering would read "Offline, just now".
+/** An offline device's last-seen age, e.g. "5 min ago". Null within
+ *  RECENTLY_SEEN_MS: a device still in the ARP table but not answering would
+ *  read "Offline, just now". */
 export function lastSeenAge(device: LanDevice, now: number): string | null {
   if (device.isReachable || device.lastSeen == null) return null
   if (now - device.lastSeen < RECENTLY_SEEN_MS) return null
-  // Worded like every other age in the app.
   return formatTimeAgo(device.lastSeen, now)
 }
 
-// Kind, vendor, OS and model, dropping any part that repeats the name or an
-// earlier part (an Apple handheld whose vendor and OS are both "Apple").
+/** Kind, vendor, OS and model, dropping any part that repeats the name or an
+ *  earlier part (an Apple handheld whose vendor and OS are both "Apple"). */
 export function deviceMetaParts(device: LanDevice, name: string[]): string[] {
   const seen = new Set<string>([name.join(' ').toLowerCase()])
   return [
@@ -85,13 +85,13 @@ function isGenericGatewayName(part: string): boolean {
   return part.toLowerCase() === 'router' || part.toLowerCase() === 'gateway'
 }
 
-// The gateway is always named "Router", so surface its product ("Giga Hub 2.0")
-// separately: its hostname, else its model, skipping generic names like "router".
+/** The gateway is always named "Router", so its product ("Giga Hub 2.0") shows
+ *  apart: its hostname, else its model, skipping generic names like "router". */
 export function gatewayProduct(device: LanDevice): string | null {
   return [device.hostname, device.model].find((part) => part && !isGenericGatewayName(part)) ?? null
 }
 
-// Online first in scan order (the sort is stable), then offline by last seen.
+/** Online first in scan order (the sort is stable), then offline by last seen. */
 export function sortDevices(devices: LanDevice[]): LanDevice[] {
   return [...devices].sort((a, b) => {
     if (a.isReachable !== b.isReachable) return a.isReachable ? -1 : 1
