@@ -24,8 +24,7 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
-const SOURCE: &str =
-    "https://raw.githubusercontent.com/brianhama/bad-asn-list/master/bad-asn-list.csv";
+const SOURCE: &str = "https://raw.githubusercontent.com/brianhama/bad-asn-list/master/bad-asn-list.csv";
 
 /// Pull the leading integer out of a CSV row like `16509,"Amazon.com, Inc."`.
 /// Returns None for the header row and anything malformed, so both are skipped.
@@ -41,14 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(path) => std::fs::read_to_string(&path)?,
         None => {
             eprintln!("fetching {SOURCE}");
-            let body = reqwest::Client::builder()
-                .build()?
-                .get(SOURCE)
-                .send()
-                .await?
-                .error_for_status()?
-                .text()
-                .await?;
+            let body = reqwest::Client::builder().build()?.get(SOURCE).send().await?.error_for_status()?.text().await?;
             body
         }
     };

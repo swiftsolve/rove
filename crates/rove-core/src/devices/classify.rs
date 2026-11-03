@@ -20,8 +20,8 @@
 //! hedge the label.
 use crate::devices::banner::BannerHit;
 use crate::devices::dhcp::DhcpHit;
-use crate::devices::ssdp::SsdpHit;
 use crate::devices::mdns::MdnsHit;
+use crate::devices::ssdp::SsdpHit;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
@@ -55,10 +55,7 @@ impl KindPatterns {
     }
 
     fn matches(&self, text: &str) -> Option<&'static str> {
-        self.0
-            .iter()
-            .find(|(pattern, _)| pattern.is_match(text))
-            .map(|(_, kind)| *kind)
+        self.0.iter().find(|(pattern, _)| pattern.is_match(text)).map(|(_, kind)| *kind)
     }
 }
 
@@ -130,10 +127,7 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// `kasa` or `tapo` hostname, or an SSDP type.
 static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (
-            r"(?i)synology|\bqnap\b|western digital|seagate|\bdrobo\b|terramaster|asustor",
-            "nas",
-        ),
+        (r"(?i)synology|\bqnap\b|western digital|seagate|\bdrobo\b|terramaster|asustor", "nas"),
         (
             r"(?i)hikvision|\bdahua\b|reolink|amcrest|\blorex\b|axis comm|\bwyze\b|\barlo\b|\bswann\b|uniview|ezviz|foscam|vivotek|hanwha|annke",
             "camera",
@@ -152,10 +146,7 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
             r"(?i)espressif|\btuya\b|sonoff|itead|shelly|allterco|\bnest\b|\bring\b|\beufy\b|philips lighting|signify|ecobee|\blifx\b|nanoleaf|govee|yeelight|roborock|ecovacs|irobot|\bneato\b|tradfri|\bikea\b|lutron|leviton|sengled|meross|switchbot|aqara|lumi|\bwiz\b|vesync|cosori|broadlink|netatmo|\bsomfy\b|resideo|honeywell|chamberlain|liftmaster|rachio|rain bird|ledvance|osram|\bmidea\b|\bdyson\b|\bgree\b|daikin|smartthings|samjin|emporia|enphase|solaredge|fronius|growatt|wallbox|chargepoint|ecoflow|\bnuki\b|august home|allegion|schlage|kwikset|shenzhen.*(smart|iot|tech)",
             "iot",
         ),
-        (
-            r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum|oki electric",
-            "printer",
-        ),
+        (r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum|oki electric", "printer"),
         (
             r"(?i)roku|vizio|lg elec|hisense|\btcl\b|skyworth|funai|\bonn\b|\bsony\b|amlogic|insignia|panasonic|xgimi",
             "tv",
@@ -185,7 +176,10 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (r"(?i)synology|diskstation|\bqnap\b", "nas"),
-        (r"(?i)macbook|imac|macmini|mac-?mini|macpro|mac-?studio|macstudio|windows|surface|thinkpad|optiplex|latitude", "computer"),
+        (
+            r"(?i)macbook|imac|macmini|mac-?mini|macpro|mac-?studio|macstudio|windows|surface|thinkpad|optiplex|latitude",
+            "computer",
+        ),
         (r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle", "tablet"),
         // Apple Watch reports "Watch6,1" and Samsung watches SM-R models; both
         // must beat the phone row's broader patterns.
@@ -204,10 +198,7 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// router (usually already decided by the gateway flag); MediaServer leans NAS.
 static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (
-            r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice|WLANAccessPointDevice",
-            "router",
-        ),
+        (r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice|WLANAccessPointDevice", "router"),
         (r"(?i)Printer", "printer"),
         (r"(?i)ZonePlayer", "speaker"),
         // Belkin Wemo plugs/switches announce vendor URNs like
@@ -315,10 +306,8 @@ const CONFIDENCE_ANCHOR: i32 = W_HOSTNAME;
 
 // Most specific first, so a full tie resolves toward the narrower kind: nas
 // over computer, camera or speaker over iot, console over tv.
-const KIND_NAMES: [&str; 12] = [
-    "router", "nas", "computer", "tablet", "watch", "phone", "console", "tv", "printer", "camera",
-    "speaker", "iot",
-];
+const KIND_NAMES: [&str; 12] =
+    ["router", "nas", "computer", "tablet", "watch", "phone", "console", "tv", "printer", "camera", "speaker", "iot"];
 const KIND_COUNT: usize = KIND_NAMES.len();
 
 fn kind_index(kind: &str) -> Option<usize> {
@@ -379,9 +368,7 @@ impl Tally {
             }
             let better = match winner {
                 None => true,
-                Some(w) => {
-                    (self.total[i], self.best_single[i]) > (self.total[w], self.best_single[w])
-                }
+                Some(w) => (self.total[i], self.best_single[i]) > (self.total[w], self.best_single[w]),
             };
             if better {
                 winner = Some(i);
@@ -390,14 +377,9 @@ impl Tally {
         let Some(w) = winner else {
             return Verdict { kind: "unknown", confidence: Confidence::Low };
         };
-        let runner_up =
-            (0..KIND_COUNT).filter(|&i| i != w).map(|i| self.total[i].max(0)).max().unwrap_or(0);
-        let decisive = self.total[w] - runner_up >= CONFIDENCE_MARGIN
-            || self.best_single[w] >= CONFIDENCE_ANCHOR;
-        Verdict {
-            kind: KIND_NAMES[w],
-            confidence: if decisive { Confidence::High } else { Confidence::Low },
-        }
+        let runner_up = (0..KIND_COUNT).filter(|&i| i != w).map(|i| self.total[i].max(0)).max().unwrap_or(0);
+        let decisive = self.total[w] - runner_up >= CONFIDENCE_MARGIN || self.best_single[w] >= CONFIDENCE_ANCHOR;
+        Verdict { kind: KIND_NAMES[w], confidence: if decisive { Confidence::High } else { Confidence::Low } }
     }
 }
 
@@ -440,10 +422,7 @@ pub fn classify(s: &Signals) -> Verdict {
     tally.cast(mdns.and_then(|hit| hit.kind), W_MDNS_STRONG);
     tally.cast(strong_port_kind(open_ports), W_STRONG_PORT);
     // SSDP's model, name and manufacturer join the free-text channels below.
-    tally.cast(
-        ssdp.and_then(|hit| hit.device_type.as_deref()).and_then(|t| SSDP_TYPE_KINDS.matches(t)),
-        W_SSDP_TYPE,
-    );
+    tally.cast(ssdp.and_then(|hit| hit.device_type.as_deref()).and_then(|t| SSDP_TYPE_KINDS.matches(t)), W_SSDP_TYPE);
     // DHCP's vendor class and hostname join them too.
     tally.cast(dhcp.and_then(|hit| hit.kind), W_DHCP);
     tally.cast(mdns.and_then(|hit| hit.kind_hint), W_MDNS_HINT);
@@ -465,10 +444,7 @@ pub fn classify(s: &Signals) -> Verdict {
 
     // An owned join of Server header and title, so it bypasses the channels.
     if let Some(identity) = banner.and_then(|b| b.identity()) {
-        tally.cast(
-            VENDOR_KINDS.matches(&identity).or_else(|| HOSTNAME_KINDS.matches(&identity)),
-            W_BANNER,
-        );
+        tally.cast(VENDOR_KINDS.matches(&identity).or_else(|| HOSTNAME_KINDS.matches(&identity)), W_BANNER);
     }
 
     tally.cast_all(apple_mobile_port_votes(open_ports));

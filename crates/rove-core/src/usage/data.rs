@@ -1,5 +1,5 @@
-use crate::usage::ByteCounts;
 use crate::store::Store;
+use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -39,10 +39,7 @@ static LOCAL_OFFSET: std::sync::Mutex<Option<(i64, u64)>> = std::sync::Mutex::ne
 const OFFSET_TTL_SECS: u64 = 3600;
 
 fn local_offset_secs() -> i64 {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
+    let now = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
     let mut cached = crate::util::net::lock(&LOCAL_OFFSET);
     if let Some((offset, computed_at)) = *cached {
         if now.saturating_sub(computed_at) < OFFSET_TTL_SECS {
@@ -74,10 +71,7 @@ fn compute_local_offset_secs() -> i64 {
 }
 
 pub fn local_date_key(offset_days: i64) -> String {
-    let secs = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs() as i64)
-        .unwrap_or(0)
+    let secs = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
         + local_offset_secs()
         + offset_days * SECS_PER_DAY;
     let days = secs.div_euclid(SECS_PER_DAY);
@@ -110,11 +104,7 @@ pub struct UsageTracker {
 
 impl UsageTracker {
     pub fn new(store: Arc<Store>) -> Self {
-        let first_sample_recorded = store
-            .get_meta_u64(FIRST_SAMPLE_KEY)
-            .ok()
-            .flatten()
-            .is_some();
+        let first_sample_recorded = store.get_meta_u64(FIRST_SAMPLE_KEY).ok().flatten().is_some();
         Self { store, last_bytes: HashMap::new(), first_sample_recorded }
     }
 
@@ -140,8 +130,7 @@ impl UsageTracker {
         }
         // Forget interfaces that disappeared (Docker/VPN churn) so `last_bytes`
         // stays bounded over a long session.
-        self.last_bytes
-            .retain(|name, _| networks.contains_key(name) && !crate::util::net::is_virtual_interface(name));
+        self.last_bytes.retain(|name, _| networks.contains_key(name) && !crate::util::net::is_virtual_interface(name));
 
         if !self.first_sample_recorded {
             if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::util::net::now_ms()) {

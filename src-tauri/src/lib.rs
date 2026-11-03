@@ -7,10 +7,10 @@ mod scanner;
 mod store_init;
 mod tray;
 
+use rove_core::diagnostics::InternetStatus;
 use rove_core::usage::app::AppUsageTracker;
 use rove_core::usage::data::UsageTracker;
 use rove_core::usage::host::HostUsageTracker;
-use rove_core::diagnostics::InternetStatus;
 use scanner::DeviceScanner;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -121,9 +121,9 @@ pub fn run() {
 
             match tray::build_tray(&handle) {
                 Ok(()) => app.state::<AppState>().has_tray.store(true, Ordering::Relaxed),
-                Err(err) => tracing::warn!(
-                    "system tray unavailable ({err}); the window close button will quit the app"
-                ),
+                Err(err) => {
+                    tracing::warn!("system tray unavailable ({err}); the window close button will quit the app")
+                }
             }
 
             // The window is created hidden (`visible: false` in tauri.conf.json)

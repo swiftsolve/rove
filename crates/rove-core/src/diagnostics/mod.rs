@@ -19,8 +19,7 @@ pub struct PingStats {
 impl PingStats {
     /// No replies at all: 100% loss, with latency and jitter at the 9999 ms
     /// sentinel the UI reads as "Down".
-    pub(crate) const UNREACHABLE: PingStats =
-        PingStats { avg_ms: 9999.0, jitter_ms: 9999.0, packet_loss: 100.0 };
+    pub(crate) const UNREACHABLE: PingStats = PingStats { avg_ms: 9999.0, jitter_ms: 9999.0, packet_loss: 100.0 };
 }
 
 /// Whether this machine can reach the public internet: the context a service
@@ -99,8 +98,7 @@ pub struct LiveDiagnostics {
     pub internet: InternetStatus,
 }
 
-static PING_TIME: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").expect("a valid pattern"));
+static PING_TIME: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").expect("a valid pattern"));
 
 /// How long each reply is waited for before it counts as lost.
 const PING_REPLY_TIMEOUT_MS: u32 = 1000;
@@ -123,12 +121,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 
     let times: Vec<f64> = out
         .lines()
-        .filter_map(|line| {
-            PING_TIME
-                .captures(line)
-                .and_then(|c| c.get(1))
-                .and_then(|m| m.as_str().parse().ok())
-        })
+        .filter_map(|line| PING_TIME.captures(line).and_then(|c| c.get(1)).and_then(|m| m.as_str().parse().ok()))
         .collect();
 
     if times.is_empty() {
@@ -175,10 +168,7 @@ pub async fn isp_info() -> Option<IspInfo> {
 
     // Decided from the local AS number so it holds when ipwho.is is throttled,
     // which is exactly what a VPN user often hits.
-    let is_vpn = asn
-        .as_ref()
-        .and_then(|a| a.number)
-        .is_some_and(crate::util::geoip::is_hosting_asn);
+    let is_vpn = asn.as_ref().and_then(|a| a.number).is_some_and(crate::util::geoip::is_hosting_asn);
 
     // Prefer ipwho.is where it answered: its ISP name is often friendlier than
     // the raw AS org, and taking its whole identity keeps name and ASN
@@ -201,10 +191,7 @@ pub async fn isp_info() -> Option<IspInfo> {
 /// One request, about *our own* address. Per-peer lookups never use it: they
 /// once exhausted its daily quota within minutes and blanked this card.
 async fn ipwho_enrich() -> Option<IspInfo> {
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(5))
-        .build()
-        .ok()?;
+    let client = reqwest::Client::builder().timeout(Duration::from_secs(5)).build().ok()?;
     let response = client.get("https://ipwho.is/").send().await.ok()?;
     // reqwest treats 4xx/5xx as Ok, so a throttle would read as "no data", like
     // being offline. Log it: this card going quiet is the first symptom of a
@@ -220,23 +207,16 @@ async fn ipwho_enrich() -> Option<IspInfo> {
     // routine failures, and `message` is what tells a rate limit from a bad
     // lookup.
     if json.get("success").and_then(serde_json::Value::as_bool) == Some(false) {
-        let message = json
-            .get("message")
-            .and_then(serde_json::Value::as_str)
-            .unwrap_or("no message");
+        let message = json.get("message").and_then(serde_json::Value::as_str).unwrap_or("no message");
         tracing::warn!("ipwho.is ISP lookup unsuccessful: {message}");
         return None;
     }
 
     let str_field = |v: &serde_json::Value, key: &str| {
-        v.get(key)
-            .and_then(serde_json::Value::as_str)
-            .map(str::to_string)
-            .filter(|s| !s.is_empty())
+        v.get(key).and_then(serde_json::Value::as_str).map(str::to_string).filter(|s| !s.is_empty())
     };
     let connection = json.get("connection");
-    let name = connection
-        .and_then(|c| str_field(c, "isp").or_else(|| str_field(c, "org")));
+    let name = connection.and_then(|c| str_field(c, "isp").or_else(|| str_field(c, "org")));
     let asn = connection
         .and_then(|c| c.get("asn"))
         .and_then(serde_json::Value::as_u64)
@@ -246,9 +226,7 @@ async fn ipwho_enrich() -> Option<IspInfo> {
     // The card percent-encodes it anyway; this keeps junk from becoming an icon
     // request that can only 404.
     let domain = connection.and_then(|c| str_field(c, "domain")).filter(|d| {
-        d.len() <= 253
-            && d.contains('.')
-            && d.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-')
+        d.len() <= 253 && d.contains('.') && d.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-')
     });
 
     Some(IspInfo {
@@ -280,10 +258,7 @@ const INTERNET_ANCHORS: [&str; 2] = ["cloudflare.com", "www.google.com"];
 /// so this costs one 5 s timeout at worst, and only when really offline.
 pub(crate) async fn internet_reachable() -> bool {
     let probes = INTERNET_ANCHORS.iter().map(|host| handshake_latency(host));
-    futures_util::future::join_all(probes)
-        .await
-        .into_iter()
-        .any(|latency| latency.is_some())
+    futures_util::future::join_all(probes).await.into_iter().any(|latency| latency.is_some())
 }
 
 /// Fold the anchor result and gateway presence into an [`InternetStatus`]. The
@@ -305,12 +280,8 @@ pub(crate) fn classify_internet(reachable: bool, gateway: Option<&str>) -> Inter
 /// change.
 pub async fn run_live() -> LiveDiagnostics {
     let gateway = default_gateway().await;
-    let (gateway_ping, internet) =
-        tokio::join!(gateway_ping(gateway.as_deref()), internet_reachable());
-    LiveDiagnostics {
-        gateway_ping,
-        internet: classify_internet(internet, gateway.as_deref()),
-    }
+    let (gateway_ping, internet) = tokio::join!(gateway_ping(gateway.as_deref()), internet_reachable());
+    LiveDiagnostics { gateway_ping, internet: classify_internet(internet, gateway.as_deref()) }
 }
 
 /// Internet status and nothing else, for the always-on heartbeat: just the
@@ -330,10 +301,9 @@ pub async fn run() -> NetworkDiagnostics {
     // The Router card is named from the gateway's OUI and SNMP, since this view
     // never runs a device scan.
     let local_ipv4 = match &iface {
-        Some(name) => crate::connection::interfaces::address_of(name)
-            .await
-            .0
-            .and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok()),
+        Some(name) => {
+            crate::connection::interfaces::address_of(name).await.0.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok())
+        }
         None => None,
     };
 

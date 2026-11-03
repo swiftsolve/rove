@@ -1,10 +1,10 @@
 //! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Get-NetRoute`,
 //! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and `netsh wlan`.
-use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
-use crate::util::shell::{trimmed_non_empty, try_run, try_run_powershell};
-use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
+use crate::connection::ConnectionDetails;
+use crate::util::net::is_virtual_interface;
+use crate::util::shell::{trimmed_non_empty, try_run, try_run_powershell};
 use std::net::Ipv4Addr;
 
 /// The default route Windows forwards through, ranked so a VPN tunnel never
@@ -58,10 +58,9 @@ pub async fn default_interface() -> Option<String> {
 }
 
 pub async fn dns_servers() -> Vec<String> {
-    if let Some(out) = try_run_powershell(
-        "(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses | Select-Object -Unique",
-    )
-    .await
+    if let Some(out) =
+        try_run_powershell("(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses | Select-Object -Unique")
+            .await
     {
         return out.lines().map(str::trim).filter(|l| !l.is_empty()).map(String::from).collect();
     }
@@ -77,10 +76,7 @@ $ip = (Get-NetIPAddress -InterfaceIndex $_.ifIndex -AddressFamily IPv4 -ErrorAct
 \"$($_.Name)|$($_.Status)|$($_.LinkSpeed)|$($_.MacAddress)|$([int]$_.Virtual)|$ip\" }";
 
 pub async fn interface_list() -> Vec<InterfaceSummary> {
-    let (out, default) = tokio::join!(
-        try_run_powershell(WINDOWS_ADAPTERS),
-        crate::connection::default_interface()
-    );
+    let (out, default) = tokio::join!(try_run_powershell(WINDOWS_ADAPTERS), crate::connection::default_interface());
     let Some(out) = out else {
         return Vec::new();
     };
@@ -95,11 +91,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             continue; // phantom/disabled rows carry no status
         }
         let speed = parts.next().and_then(parse_link_speed).filter(|v| *v > 0);
-        let mac = parts
-            .next()
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .map(crate::util::net::normalize_mac_colons);
+        let mac = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(crate::util::net::normalize_mac_colons);
         let is_virtual_flag = parts.next().map(str::trim) == Some("1");
         let ip = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(String::from);
 
@@ -120,11 +112,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
 
         let oper_state = if status.eq_ignore_ascii_case("up") { "up" } else { "down" };
         result.push(InterfaceSummary {
-            connection_type: if is_virtual {
-                "virtual".into()
-            } else {
-                infer_connection_type(name).into()
-            },
+            connection_type: if is_virtual { "virtual".into() } else { infer_connection_type(name).into() },
             oper_state: oper_state.into(),
             ip_address: ip,
             mac_address: mac,
@@ -237,10 +225,8 @@ pub async fn link_speed(iface: &str) -> Option<i64> {
     if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
     }
-    let out = try_run_powershell(&format!(
-        "(Get-NetAdapter -Name '{iface}' -ErrorAction SilentlyContinue).LinkSpeed"
-    ))
-    .await?;
+    let out = try_run_powershell(&format!("(Get-NetAdapter -Name '{iface}' -ErrorAction SilentlyContinue).LinkSpeed"))
+        .await?;
     let line = out.lines().find(|l| !l.trim().is_empty())?;
     parse_link_speed(line).filter(|v| *v > 0)
 }

@@ -1,9 +1,9 @@
 //! macOS host/network probes: `ifconfig`, `netstat`, `networksetup`,
 //! `system_profiler` and the Keychain via `security`. CoreWLAN reads live in
 //! [`super::mac_native`].
+use crate::connection::ConnectionDetails;
 use crate::util::net::is_virtual_interface;
 use crate::util::shell::{trimmed_non_empty, try_run};
-use crate::connection::ConnectionDetails;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -13,8 +13,7 @@ use std::time::{Duration, Instant};
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     // On macOS 14+ the SSID sits behind Location Services and only CoreWLAN,
     // in-process, can read it; every shell tool prints "<redacted>".
-    let mut d =
-        ConnectionDetails { ssid: super::mac_native::current_ssid(), ..Default::default() };
+    let mut d = ConnectionDetails { ssid: super::mac_native::current_ssid(), ..Default::default() };
     // `networksetup` is redacted too without Location access, but harmless to
     // try.
     if d.ssid.is_none() && crate::util::net::is_shell_safe_iface(iface) {
@@ -45,10 +44,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 /// declining, or a Keychain that has no entry, yields `None`.
 pub async fn wifi_password(ssid: &str) -> Option<String> {
     let quoted = crate::util::net::shell_single_quote(ssid);
-    let out = try_run(&format!(
-        "security find-generic-password -w -a {quoted} 2>/dev/null"
-    ))
-    .await?;
+    let out = try_run(&format!("security find-generic-password -w -a {quoted} 2>/dev/null")).await?;
     trimmed_non_empty(&out)
 }
 
@@ -65,11 +61,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
         return d;
     }
     if let Some(out) = try_run(&format!("ifconfig {iface} 2>/dev/null")).await {
-        if let Some(media) = out
-            .lines()
-            .map(str::trim)
-            .find_map(|line| line.strip_prefix("media: "))
-        {
+        if let Some(media) = out.lines().map(str::trim).find_map(|line| line.strip_prefix("media: ")) {
             d.link_speed_mbps = parse_media_speed(media);
             d.duplex = parse_media_duplex(media);
         }
@@ -138,9 +130,7 @@ async fn query_wifi_signal() -> Option<WifiSignal> {
 fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
     let indent = |line: &str| line.len() - line.trim_start().len();
     let mut lines = out.lines();
-    let header = lines
-        .by_ref()
-        .find(|l| l.trim() == "Current Network Information:")?;
+    let header = lines.by_ref().find(|l| l.trim() == "Current Network Information:")?;
     let base = indent(header);
 
     let mut reading = WifiSignal {
@@ -273,9 +263,7 @@ pub async fn wifi_devices() -> Vec<String> {
     // A failed probe and an empty parse (unexpected output) both keep the last
     // good map.
     if devices.is_empty() {
-        return crate::util::net::lock(&WIFI_DEVICES_CACHE)
-            .clone()
-            .unwrap_or_default();
+        return crate::util::net::lock(&WIFI_DEVICES_CACHE).clone().unwrap_or_default();
     }
     *crate::util::net::lock(&WIFI_DEVICES_CACHE) = Some(devices.clone());
     devices
@@ -359,9 +347,7 @@ pub async fn interface_info() -> HashMap<String, IfaceInfo> {
 /// (CoreWLAN supplies Wi-Fi speed).
 fn parse_media_speed(media: &str) -> Option<i64> {
     // The rate is in a "<N>base…" or "<N>Gbase…" token.
-    let token = media
-        .split(|c: char| !c.is_ascii_alphanumeric())
-        .find(|t| t.to_ascii_lowercase().contains("base"))?;
+    let token = media.split(|c: char| !c.is_ascii_alphanumeric()).find(|t| t.to_ascii_lowercase().contains("base"))?;
     let lower = token.to_ascii_lowercase();
     let (mut num, _) = lower.split_at(lower.find("base")?);
     let gigabit = num.ends_with('g');
@@ -418,10 +404,7 @@ Destination        Gateway            Flags        Netif Expire
 default            192.168.2.1        UGScg          en0
 default            link#24            UCSIg      bridge100      !
 ";
-        assert_eq!(
-            pick_default_route(out),
-            Some(("en0".to_string(), Some("192.168.2.1".to_string())))
-        );
+        assert_eq!(pick_default_route(out), Some(("en0".to_string(), Some("192.168.2.1".to_string()))));
     }
 
     #[test]

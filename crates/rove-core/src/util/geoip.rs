@@ -46,23 +46,17 @@ fn decode_mmdb(gz: &[u8], label: &str) -> Option<maxminddb::Reader<Vec<u8>>> {
         tracing::error!("embedded {label} is not valid gzip: {e}");
         return None;
     }
-    maxminddb::Reader::from_source(raw)
-        .inspect_err(|e| tracing::error!("embedded {label} is unreadable: {e}"))
-        .ok()
+    maxminddb::Reader::from_source(raw).inspect_err(|e| tracing::error!("embedded {label} is unreadable: {e}")).ok()
 }
 
 fn country_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
     static READER: OnceLock<Option<maxminddb::Reader<Vec<u8>>>> = OnceLock::new();
-    READER
-        .get_or_init(|| decode_mmdb(DBIP_COUNTRY_GZ, "dbip-country-lite.mmdb.gz"))
-        .as_ref()
+    READER.get_or_init(|| decode_mmdb(DBIP_COUNTRY_GZ, "dbip-country-lite.mmdb.gz")).as_ref()
 }
 
 fn asn_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
     static READER: OnceLock<Option<maxminddb::Reader<Vec<u8>>>> = OnceLock::new();
-    READER
-        .get_or_init(|| decode_mmdb(DBIP_ASN_GZ, "dbip-asn-lite.mmdb.gz"))
-        .as_ref()
+    READER.get_or_init(|| decode_mmdb(DBIP_ASN_GZ, "dbip-asn-lite.mmdb.gz")).as_ref()
 }
 
 /// Resolve an IP to its ISO-3166 alpha-2 country code, uppercase.
@@ -72,17 +66,10 @@ fn asn_reader() -> Option<&'static maxminddb::Reader<Vec<u8>>> {
 /// no transient failure to retry.
 pub fn country_code(ip: &str) -> Option<String> {
     let addr: IpAddr = ip.parse().ok()?;
-    let code = country_reader()?
-        .lookup(addr)
-        .ok()?
-        .decode::<maxminddb::geoip2::Country>()
-        .ok()??
-        .country
-        .iso_code?;
+    let code = country_reader()?.lookup(addr).ok()?.decode::<maxminddb::geoip2::Country>().ok()??.country.iso_code?;
     // This becomes a flag lookup in the UI, so enforce the shape rather than
     // trust the table.
-    (code.len() == 2 && code.bytes().all(|b| b.is_ascii_alphabetic()))
-        .then(|| code.to_uppercase())
+    (code.len() == 2 && code.bytes().all(|b| b.is_ascii_alphabetic())).then(|| code.to_uppercase())
 }
 
 /// Resolve an IP to its English country name, e.g. "United States".
@@ -111,16 +98,9 @@ pub fn country_name(ip: &str) -> Option<String> {
 /// rate-limited or down geolocation API can't blank it.
 pub fn asn_info(ip: &str) -> Option<AsnInfo> {
     let addr: IpAddr = ip.parse().ok()?;
-    let record = asn_reader()?
-        .lookup(addr)
-        .ok()?
-        .decode::<maxminddb::geoip2::Asn>()
-        .ok()??;
+    let record = asn_reader()?.lookup(addr).ok()?.decode::<maxminddb::geoip2::Asn>().ok()??;
     let number = record.autonomous_system_number;
-    let org = record
-        .autonomous_system_organization
-        .map(str::to_string)
-        .filter(|s| !s.is_empty());
+    let org = record.autonomous_system_organization.map(str::to_string).filter(|s| !s.is_empty());
     (number.is_some() || org.is_some()).then_some(AsnInfo { number, org })
 }
 
@@ -130,10 +110,7 @@ pub fn asn_info(ip: &str) -> Option<AsnInfo> {
 fn hosting_asns() -> &'static [u32] {
     static ASNS: OnceLock<Vec<u32>> = OnceLock::new();
     ASNS.get_or_init(|| {
-        let mut v: Vec<u32> = HOSTING_ASNS_TXT
-            .lines()
-            .filter_map(|line| line.trim().parse::<u32>().ok())
-            .collect();
+        let mut v: Vec<u32> = HOSTING_ASNS_TXT.lines().filter_map(|line| line.trim().parse::<u32>().ok()).collect();
         v.sort_unstable();
         v.dedup();
         v
@@ -234,8 +211,8 @@ mod tests {
         assert!(is_hosting_asn(9009)); // M247
         assert!(is_hosting_asn(14061)); // DigitalOcean
         assert!(is_hosting_asn(16276)); // OVH
-        // Consumer ISPs must never be flagged, or a real connection reads as a
-        // VPN.
+                                        // Consumer ISPs must never be flagged, or a real connection reads as a
+                                        // VPN.
         assert!(!is_hosting_asn(577)); // Bell Canada
         assert!(!is_hosting_asn(7922)); // Comcast
         assert!(!is_hosting_asn(0));

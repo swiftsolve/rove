@@ -86,9 +86,7 @@ pub fn trimmed_non_empty(text: &str) -> Option<String> {
 }
 
 pub fn first_match(text: &str, re: &regex_lite::Regex) -> Option<String> {
-    re.captures(text)
-        .and_then(|c| c.get(1))
-        .map(|m| m.as_str().to_string())
+    re.captures(text).and_then(|c| c.get(1)).map(|m| m.as_str().to_string())
 }
 
 pub fn first_int(text: &str, re: &regex_lite::Regex) -> Option<i64> {

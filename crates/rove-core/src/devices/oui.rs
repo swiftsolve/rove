@@ -32,21 +32,13 @@ fn table() -> &'static OuiTable {
         // Leaked so the maps can hold `&'static str` slices; the table lives for
         // the whole process anyway.
         let mut raw = String::new();
-        flate2::read::GzDecoder::new(OUI_GZ)
-            .read_to_string(&mut raw)
-            .expect("embedded oui.tsv.gz is valid gzip");
+        flate2::read::GzDecoder::new(OUI_GZ).read_to_string(&mut raw).expect("embedded oui.tsv.gz is valid gzip");
         let data: &'static str = Box::leak(raw.into_boxed_str());
 
-        let mut t = OuiTable {
-            b24: HashMap::new(),
-            b28: HashMap::new(),
-            b36: HashMap::new(),
-        };
+        let mut t = OuiTable { b24: HashMap::new(), b28: HashMap::new(), b36: HashMap::new() };
         for line in data.lines() {
             let mut fields = line.splitn(3, '\t');
-            let (Some(bits), Some(prefix), Some(vendor)) =
-                (fields.next(), fields.next(), fields.next())
-            else {
+            let (Some(bits), Some(prefix), Some(vendor)) = (fields.next(), fields.next(), fields.next()) else {
                 continue;
             };
             match bits {
@@ -119,16 +111,58 @@ const VENDOR_ALIASES: &[(&str, &str)] = &[
 /// Co.,Ltd" becomes "Samsung". Matched case-insensitively against each word
 /// stripped of surrounding punctuation.
 const VENDOR_NOISE: &[&str] = &[
-    "technologies", "technology", "mobility", "communication", "communications",
-    "systems", "system", "electronics", "electronic", "networks", "network",
-    "corporation", "corp", "company", "co", "ltd", "inc", "gmbh", "llc",
-    "international", "holdings", "group", "industries", "industry", "manufacturing",
-    "semiconductor", "semiconductors", "devices", "device", "solutions",
-    "information", "computer", "computers", "enterprise", "enterprises", "limited",
-    "incorporated", "plc", "electric", "lighting",
+    "technologies",
+    "technology",
+    "mobility",
+    "communication",
+    "communications",
+    "systems",
+    "system",
+    "electronics",
+    "electronic",
+    "networks",
+    "network",
+    "corporation",
+    "corp",
+    "company",
+    "co",
+    "ltd",
+    "inc",
+    "gmbh",
+    "llc",
+    "international",
+    "holdings",
+    "group",
+    "industries",
+    "industry",
+    "manufacturing",
+    "semiconductor",
+    "semiconductors",
+    "devices",
+    "device",
+    "solutions",
+    "information",
+    "computer",
+    "computers",
+    "enterprise",
+    "enterprises",
+    "limited",
+    "incorporated",
+    "plc",
+    "electric",
+    "lighting",
     // Non-English legal-entity suffixes, treated like "Inc"/"Ltd" ("Philips
     // Lighting BV" -> "Philips", "Foo Oy" -> "Foo").
-    "bv", "ag", "sa", "oy", "ab", "pty", "pte", "kk", "sarl", "spa",
+    "bv",
+    "ag",
+    "sa",
+    "oy",
+    "ab",
+    "pty",
+    "pte",
+    "kk",
+    "sarl",
+    "spa",
 ];
 
 /// A curated alias when one matches, else the tidied name. Never empty.
@@ -142,10 +176,7 @@ fn clean_vendor(vendor: &str) -> String {
 /// Substring match, which survives the registry's varying punctuation.
 fn alias_vendor(vendor: &str) -> Option<&'static str> {
     let lower = vendor.to_ascii_lowercase();
-    VENDOR_ALIASES
-        .iter()
-        .find(|(needle, _)| lower.contains(needle))
-        .map(|(_, brand)| *brand)
+    VENDOR_ALIASES.iter().find(|(needle, _)| lower.contains(needle)).map(|(_, brand)| *brand)
 }
 
 /// Trim an IEEE legal name to the brand: drop asides like "(Wuhan)", then keep
@@ -164,10 +195,8 @@ fn tidy_vendor(vendor: &str) -> String {
         }
     }
 
-    let words: Vec<&str> = without_brackets
-        .split(|c: char| c.is_whitespace() || c == ',')
-        .filter(|w| !w.is_empty())
-        .collect();
+    let words: Vec<&str> =
+        without_brackets.split(|c: char| c.is_whitespace() || c == ',').filter(|w| !w.is_empty()).collect();
 
     // Never cut at position 0: a few brands begin with a descriptor ("Digital
     // Devices", "General Electric").
@@ -180,10 +209,7 @@ fn tidy_vendor(vendor: &str) -> String {
         }
     }
 
-    let cleaned = words[..end]
-        .join(" ")
-        .trim_matches(|c: char| c == ',' || c == '.' || c.is_whitespace())
-        .to_string();
+    let cleaned = words[..end].join(" ").trim_matches(|c: char| c == ',' || c == '.' || c.is_whitespace()).to_string();
 
     if cleaned.is_empty() {
         vendor.trim().to_string()
@@ -195,12 +221,7 @@ fn tidy_vendor(vendor: &str) -> String {
 /// The precedence logic, apart from the global table so tests can use a
 /// synthetic one whatever the embedded snapshot contains.
 fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
-    let hex: String = mac
-        .chars()
-        .filter(|c| c.is_ascii_hexdigit())
-        .take(9)
-        .collect::<String>()
-        .to_uppercase();
+    let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(9).collect::<String>().to_uppercase();
     if hex.len() < 6 {
         return None;
     }
@@ -235,10 +256,7 @@ mod tests {
     #[test]
     fn resolves_a_common_24_bit_oui() {
         // B8:27:EB is the Raspberry Pi Foundation MA-L block.
-        assert!(lookup_vendor("b8:27:eb:11:22:33")
-            .unwrap()
-            .to_lowercase()
-            .contains("raspberry"));
+        assert!(lookup_vendor("b8:27:eb:11:22:33").unwrap().to_lowercase().contains("raspberry"));
     }
 
     #[test]
@@ -264,10 +282,7 @@ mod tests {
     #[test]
     fn tidy_strips_location_asides_and_corporate_suffixes() {
         // The reported case: a verbose legal name collapses to the brand.
-        assert_eq!(
-            tidy_vendor("Motorola (Wuhan) Mobility Technologies Communication Co., Ltd."),
-            "Motorola"
-        );
+        assert_eq!(tidy_vendor("Motorola (Wuhan) Mobility Technologies Communication Co., Ltd."), "Motorola");
         assert_eq!(tidy_vendor("Samsung Electronics Co.,Ltd"), "Samsung");
         assert_eq!(tidy_vendor("Cisco Systems, Inc"), "Cisco");
         assert_eq!(tidy_vendor("Espressif Inc."), "Espressif");
@@ -311,11 +326,7 @@ mod tests {
     fn prefers_more_specific_assignments() {
         // 00:55:DA is an MA-L carved into MA-M blocks; a 28-bit match must win
         // over the 24-bit fallback.
-        let mut t = OuiTable {
-            b24: HashMap::new(),
-            b28: HashMap::new(),
-            b36: HashMap::new(),
-        };
+        let mut t = OuiTable { b24: HashMap::new(), b28: HashMap::new(), b36: HashMap::new() };
         t.b24.insert(0x0055DA, "Shared MA-L holder");
         t.b28.insert(0x0055DA1, "KoolPOS Inc.");
         // 0055DA1 has an MA-M entry, so the finer block wins.
@@ -345,10 +356,7 @@ mod tests {
     #[test]
     fn alias_leaves_unmapped_vendors_untouched() {
         // Raspberry Pi has no alias, so the registry name passes through.
-        assert!(lookup_vendor("b8:27:eb:11:22:33")
-            .unwrap()
-            .to_lowercase()
-            .contains("raspberry"));
+        assert!(lookup_vendor("b8:27:eb:11:22:33").unwrap().to_lowercase().contains("raspberry"));
     }
 
     #[test]

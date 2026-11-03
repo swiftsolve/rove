@@ -72,8 +72,7 @@ impl MdnsHit {
     /// window that misses it.
     pub(crate) fn absorb(&mut self, other: &MdnsHit) {
         if let Some(kind) = other.kind {
-            let is_better =
-                self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
+            let is_better = self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
             if is_better {
                 self.kind = Some(kind);
             }
@@ -96,8 +95,7 @@ impl MdnsHit {
 /// Rejecting them lets the device fall back to a real name; a user-renamed
 /// endpoint ("Kitchen") won't match.
 fn is_generic_service_name(name: &str) -> bool {
-    let compact: String =
-        name.chars().filter(|c| !c.is_whitespace()).collect::<String>().to_ascii_lowercase();
+    let compact: String = name.chars().filter(|c| !c.is_whitespace()).collect::<String>().to_ascii_lowercase();
     matches!(compact.as_str(), "spotifyconnect")
 }
 
@@ -176,9 +174,7 @@ fn instance_name(fullname: &str) -> Option<String> {
 /// Browse the known service types for `window`, keyed by IPv4. `mdns-sd`
 /// blocks, so it runs off the async workers.
 pub async fn discover(window: Duration) -> HashMap<String, MdnsHit> {
-    tokio::task::spawn_blocking(move || discover_blocking(window))
-        .await
-        .unwrap_or_default()
+    tokio::task::spawn_blocking(move || discover_blocking(window)).await.unwrap_or_default()
 }
 
 fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {

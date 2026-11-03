@@ -134,10 +134,7 @@ fn validate(db: &Db, gz: &[u8]) -> Result<String, String> {
 
     let kind = reader.metadata().database_type.clone();
     if !kind.contains(db.type_marker) {
-        return Err(format!(
-            "expected a {} database (type contains {:?}), got {kind:?}",
-            db.slug, db.type_marker
-        ));
+        return Err(format!("expected a {} database (type contains {:?}), got {kind:?}", db.slug, db.type_marker));
     }
     (db.sample)(&reader)?;
     Ok(kind)
@@ -146,11 +143,7 @@ fn validate(db: &Db, gz: &[u8]) -> Result<String, String> {
 /// Download `db`'s latest monthly release (walking back a few months if the
 /// newest isn't posted yet), or read it from `local` when given, then validate
 /// and write it into place.
-async fn refresh(
-    client: &reqwest::Client,
-    db: &Db,
-    local: Option<&str>,
-) -> Result<(), Box<dyn std::error::Error>> {
+async fn refresh(client: &reqwest::Client, db: &Db, local: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
     let dest = Path::new(env!("CARGO_MANIFEST_DIR")).join(db.dest);
 
     let (gz, from) = match local {
@@ -162,10 +155,7 @@ async fn refresh(
             let mut found = None;
             for back in 0..3 {
                 let (y, m) = months_back(year, month, back);
-                let url = format!(
-                    "https://download.db-ip.com/free/dbip-{}-lite-{y}-{m:02}.mmdb.gz",
-                    db.slug
-                );
+                let url = format!("https://download.db-ip.com/free/dbip-{}-lite-{y}-{m:02}.mmdb.gz", db.slug);
                 eprintln!("trying {url}");
                 let response = client.get(&url).send().await?;
                 if response.status().is_success() {
@@ -174,9 +164,7 @@ async fn refresh(
                 }
                 eprintln!("  → HTTP {} (not published yet?)", response.status());
             }
-            found.ok_or_else(|| {
-                format!("no DB-IP {} Lite release found for the last 3 months", db.slug)
-            })?
+            found.ok_or_else(|| format!("no DB-IP {} Lite release found for the last 3 months", db.slug))?
         }
     };
 

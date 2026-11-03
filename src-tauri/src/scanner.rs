@@ -134,11 +134,7 @@ mod tests {
             h.await.unwrap();
         }
 
-        assert_eq!(
-            runs.load(Ordering::SeqCst),
-            1,
-            "all {N} overlapping callers should share a single scan"
-        );
+        assert_eq!(runs.load(Ordering::SeqCst), 1, "all {N} overlapping callers should share a single scan");
         // The slot must be released afterwards, so a later call scans afresh.
         assert!(scanner.inflight.lock().await.is_none());
     }

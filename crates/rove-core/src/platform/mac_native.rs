@@ -32,8 +32,7 @@ mod imp {
         match status {
             CLAuthorizationStatus::NotDetermined => "prompt",
             CLAuthorizationStatus::Restricted | CLAuthorizationStatus::Denied => "denied",
-            CLAuthorizationStatus::AuthorizedAlways
-            | CLAuthorizationStatus::AuthorizedWhenInUse => "granted",
+            CLAuthorizationStatus::AuthorizedAlways | CLAuthorizationStatus::AuthorizedWhenInUse => "granted",
             _ => "unknown",
         }
     }

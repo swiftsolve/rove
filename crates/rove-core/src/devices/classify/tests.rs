@@ -23,14 +23,7 @@ fn jetdirect_port_types_a_printer_without_any_other_signal() {
 #[test]
 fn hostname_beats_a_merely_ambiguous_port() {
     // SSH alone would lean "computer", but a clear hostname outweighs it.
-    assert_eq!(
-        kind(Signals {
-            hostname: Some("Living-Room-AppleTV"),
-            open_ports: &[22],
-            ..Default::default()
-        }),
-        "tv"
-    );
+    assert_eq!(kind(Signals { hostname: Some("Living-Room-AppleTV"), open_ports: &[22], ..Default::default() }), "tv");
 }
 
 #[test]
@@ -46,10 +39,7 @@ fn dhcp_does_not_override_a_definitive_mdns_service() {
     // mDNS strong service (100) must still beat the DHCP vote (45).
     let mdns = strong("printer");
     let dhcp = DhcpHit { kind: Some("computer"), ..Default::default() };
-    assert_eq!(
-        kind(Signals { mdns: Some(&mdns), dhcp: Some(&dhcp), ..Default::default() }),
-        "printer"
-    );
+    assert_eq!(kind(Signals { mdns: Some(&mdns), dhcp: Some(&dhcp), ..Default::default() }), "printer");
 }
 
 #[test]
@@ -60,49 +50,27 @@ fn ambiguous_ports_are_a_last_resort_over_unknown() {
 
 #[test]
 fn role_flags_short_circuit_everything() {
-    assert_eq!(
-        kind(Signals { open_ports: &[9100], is_gateway: true, ..Default::default() }),
-        "router"
-    );
-    assert_eq!(
-        kind(Signals { open_ports: &[9100], is_self: true, ..Default::default() }),
-        "computer"
-    );
+    assert_eq!(kind(Signals { open_ports: &[9100], is_gateway: true, ..Default::default() }), "router");
+    assert_eq!(kind(Signals { open_ports: &[9100], is_self: true, ..Default::default() }), "computer");
 }
 
 #[test]
 fn a_strong_mdns_service_outvotes_a_disagreeing_vendor() {
-    assert_eq!(
-        kind(Signals {
-            vendor: Some("Google"),
-            mdns: Some(&strong("tv")),
-            ..Default::default()
-        }),
-        "tv"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Google"), mdns: Some(&strong("tv")), ..Default::default() }), "tv");
 }
 
 #[test]
 fn android_tv_hostname_is_a_tv_not_a_phone() {
-    assert_eq!(
-        kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
-        "tv"
-    );
+    assert_eq!(kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }), "tv");
 }
 
 #[test]
 fn generic_android_hostname_is_a_phone() {
     // A randomized-MAC Android with no vendor/mDNS still exposes a generic
     // "android-<hex>" hostname, which alone should type it as a phone.
-    assert_eq!(
-        kind(Signals { hostname: Some("android-1a2b3c4d"), ..Default::default() }),
-        "phone"
-    );
+    assert_eq!(kind(Signals { hostname: Some("android-1a2b3c4d"), ..Default::default() }), "phone");
     // ...but the "android-<hex>" token must not swallow an Android TV.
-    assert_eq!(
-        kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }),
-        "tv"
-    );
+    assert_eq!(kind(Signals { hostname: Some("android-tv-livingroom"), ..Default::default() }), "tv");
 }
 
 #[test]
@@ -116,16 +84,10 @@ fn a_bare_watch_hostname_is_a_watch() {
 fn wearable_brands_type_as_watch_not_phone() {
     // "galaxy watch" shares the "galaxy" token with phones; the watch row must
     // win.
-    assert_eq!(
-        kind(Signals { hostname: Some("Galaxy-Watch5"), ..Default::default() }),
-        "watch"
-    );
+    assert_eq!(kind(Signals { hostname: Some("Galaxy-Watch5"), ..Default::default() }), "watch");
     // Apple Watch mDNS model, even alongside an Apple vendor that leans phone.
     let mdns = MdnsHit { model: Some("Watch6,1".into()), ..Default::default() };
-    assert_eq!(
-        kind(Signals { vendor: Some("Apple, Inc."), mdns: Some(&mdns), ..Default::default() }),
-        "watch"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Apple, Inc."), mdns: Some(&mdns), ..Default::default() }), "watch");
     // A Garmin OUI on a home LAN is a wearable, not a generic handheld.
     assert_eq!(kind(Signals { vendor: Some("Garmin International"), ..Default::default() }), "watch");
 }
@@ -135,16 +97,10 @@ fn lockdownd_does_not_flip_a_named_watch_to_a_phone() {
     // An Apple Watch known only by reverse-DNS "Watch" exposes lockdownd
     // (62078), shared with iPhone and iPad. That port must not override the
     // hostname, or the device flaps to "phone" whenever a scan catches it open.
-    assert_eq!(
-        kind(Signals { hostname: Some("Watch"), open_ports: &[62078], ..Default::default() }),
-        "watch"
-    );
+    assert_eq!(kind(Signals { hostname: Some("Watch"), open_ports: &[62078], ..Default::default() }), "watch");
     // Same for an iPad that only names itself via reverse-DNS (no mDNS model):
     // its hostname must still win over the shared lockdownd port.
-    assert_eq!(
-        kind(Signals { hostname: Some("Johns-iPad"), open_ports: &[62078], ..Default::default() }),
-        "tablet"
-    );
+    assert_eq!(kind(Signals { hostname: Some("Johns-iPad"), open_ports: &[62078], ..Default::default() }), "tablet");
     // ...but lockdownd alone (nothing more specific) still lands on "phone".
     assert_eq!(kind(Signals { open_ports: &[62078], ..Default::default() }), "phone");
 }
@@ -152,11 +108,7 @@ fn lockdownd_does_not_flip_a_named_watch_to_a_phone() {
 #[test]
 fn a_persons_name_does_not_trip_iot_substrings() {
     assert_eq!(
-        kind(Signals {
-            vendor: Some("Apple, Inc."),
-            hostname: Some("Camerons-MacBook-Pro"),
-            ..Default::default()
-        }),
+        kind(Signals { vendor: Some("Apple, Inc."), hostname: Some("Camerons-MacBook-Pro"), ..Default::default() }),
         "computer"
     );
 }
@@ -173,14 +125,7 @@ fn nas_is_distinguished_from_a_plain_computer() {
         "nas"
     );
     // A Plex media server port also reads as NAS-class.
-    assert_eq!(
-        kind(Signals {
-            hostname: Some("media-server"),
-            open_ports: &[32400],
-            ..Default::default()
-        }),
-        "nas"
-    );
+    assert_eq!(kind(Signals { hostname: Some("media-server"), open_ports: &[32400], ..Default::default() }), "nas");
 }
 
 #[test]
@@ -212,16 +157,9 @@ fn tablet_is_split_out_from_phone() {
 
 #[test]
 fn game_consoles_get_their_own_kind() {
+    assert_eq!(kind(Signals { hostname: Some("Xbox-Living-Room"), ..Default::default() }), "console");
     assert_eq!(
-        kind(Signals { hostname: Some("Xbox-Living-Room"), ..Default::default() }),
-        "console"
-    );
-    assert_eq!(
-        kind(Signals {
-            vendor: Some("Nintendo Co., Ltd."),
-            hostname: Some("Switch"),
-            ..Default::default()
-        }),
+        kind(Signals { vendor: Some("Nintendo Co., Ltd."), hostname: Some("Switch"), ..Default::default() }),
         "console"
     );
 }
@@ -248,11 +186,7 @@ fn cameras_and_speakers_split_out_from_iot() {
     );
     // A generic smart plug is still plain IoT.
     assert_eq!(
-        kind(Signals {
-            vendor: Some("Espressif Inc."),
-            hostname: Some("smartplug-1"),
-            ..Default::default()
-        }),
+        kind(Signals { vendor: Some("Espressif Inc."), hostname: Some("smartplug-1"), ..Default::default() }),
         "iot"
     );
 }
@@ -269,20 +203,10 @@ fn a_bare_tp_link_oui_stays_unknown() {
 #[test]
 fn a_tp_link_router_still_types_as_router_via_stronger_signals() {
     // The gateway is a router regardless of vendor (role flag short-circuits).
-    assert_eq!(
-        kind(Signals { vendor: Some("TP-Link"), is_gateway: true, ..Default::default() }),
-        "router"
-    );
+    assert_eq!(kind(Signals { vendor: Some("TP-Link"), is_gateway: true, ..Default::default() }), "router");
     // A non-gateway TP-Link mesh node/AP names itself: the router hostname
     // (weight 40) outvotes the IoT vendor lean (weight 25).
-    assert_eq!(
-        kind(Signals {
-            vendor: Some("TP-Link"),
-            hostname: Some("Deco-X20"),
-            ..Default::default()
-        }),
-        "router"
-    );
+    assert_eq!(kind(Signals { vendor: Some("TP-Link"), hostname: Some("Deco-X20"), ..Default::default() }), "router");
 }
 
 #[test]
@@ -315,10 +239,8 @@ fn a_cast_speaker_is_not_overridden_by_its_cast_family_signals() {
 #[test]
 fn ssdp_device_type_types_a_silent_media_renderer() {
     // A TV that drops ping and announces nothing over mDNS, but answers SSDP.
-    let ssdp = SsdpHit {
-        device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()),
-        ..Default::default()
-    };
+    let ssdp =
+        SsdpHit { device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()), ..Default::default() };
     assert_eq!(kind(Signals { ssdp: Some(&ssdp), ..Default::default() }), "tv");
 }
 
@@ -330,76 +252,49 @@ fn ssdp_model_and_name_corroborate_a_printer() {
         manufacturer: Some("Hewlett-Packard".into()),
         device_type: Some("urn:schemas-upnp-org:device:Printer:1".into()),
     };
-    assert_eq!(
-        kind(Signals { ssdp: Some(&ssdp), open_ports: &[80], ..Default::default() }),
-        "printer"
-    );
+    assert_eq!(kind(Signals { ssdp: Some(&ssdp), open_ports: &[80], ..Default::default() }), "printer");
 }
 
 #[test]
 fn a_definitive_mdns_service_still_outvotes_an_ambiguous_ssdp_type() {
     // MediaRenderer leans TV, but a Sonos mDNS service is definitive speaker.
-    let ssdp = SsdpHit {
-        device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()),
-        ..Default::default()
-    };
-    assert_eq!(
-        kind(Signals {
-            mdns: Some(&strong("speaker")),
-            ssdp: Some(&ssdp),
-            ..Default::default()
-        }),
-        "speaker"
-    );
+    let ssdp =
+        SsdpHit { device_type: Some("urn:schemas-upnp-org:device:MediaRenderer:1".into()), ..Default::default() };
+    assert_eq!(kind(Signals { mdns: Some(&strong("speaker")), ssdp: Some(&ssdp), ..Default::default() }), "speaker");
 }
 
 #[test]
 fn http_banner_title_types_a_silent_router_web_ui() {
     // A device that only exposes an HTTP admin page: no mDNS, SSDP or hostname.
     let banner = BannerHit { server: Some("lighttpd".into()), title: Some("NETGEAR Router".into()) };
-    assert_eq!(
-        kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
-        "router"
-    );
+    assert_eq!(kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }), "router");
 }
 
 #[test]
 fn registry_name_collisions_resolve_to_the_specific_brand() {
     // PlayStations register as "Sony Interactive Entertainment": a console,
     // not swept up by the TV row's broad \bsony\b (Bravia OUIs).
-    assert_eq!(
-        kind(Signals { vendor: Some("Sony Interactive Entertainment Inc."), ..Default::default() }),
-        "console"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Sony Interactive Entertainment Inc."), ..Default::default() }), "console");
     assert_eq!(kind(Signals { vendor: Some("Sony Corporation"), ..Default::default() }), "tv");
     // Transsion phones register as "Shenzhen Transsion …"; the IoT row's
     // shenzhen catch-all must not swallow them.
-    assert_eq!(
-        kind(Signals {
-            vendor: Some("Shenzhen Transsion Technologies Co.Ltd"),
-            ..Default::default()
-        }),
-        "phone"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Shenzhen Transsion Technologies Co.Ltd"), ..Default::default() }), "phone");
     // Bare "Nokia" OUIs are ISP gateways; Nokia-brand phones are HMD Global.
     assert_eq!(kind(Signals { vendor: Some("Nokia"), ..Default::default() }), "router");
     assert_eq!(kind(Signals { vendor: Some("HMD Global Oy"), ..Default::default() }), "phone");
     // Compal Broadband makes cable modems; Compal Electronics builds laptops.
-    assert_eq!(
-        kind(Signals { vendor: Some("Compal Broadband Networks, Inc."), ..Default::default() }),
-        "router"
-    );
-    assert_eq!(
-        kind(Signals { vendor: Some("COMPAL ELECTRONICS, INC."), ..Default::default() }),
-        "computer"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Compal Broadband Networks, Inc."), ..Default::default() }), "router");
+    assert_eq!(kind(Signals { vendor: Some("COMPAL ELECTRONICS, INC."), ..Default::default() }), "computer");
 }
 
 #[test]
 fn broader_vendor_coverage_types_common_home_brands() {
     assert_eq!(kind(Signals { vendor: Some("IKEA of Sweden AB"), ..Default::default() }), "iot");
     assert_eq!(kind(Signals { vendor: Some("Netatmo"), ..Default::default() }), "iot");
-    assert_eq!(kind(Signals { vendor: Some("Harman/Becker Automotive Systems GmbH"), ..Default::default() }), "speaker");
+    assert_eq!(
+        kind(Signals { vendor: Some("Harman/Becker Automotive Systems GmbH"), ..Default::default() }),
+        "speaker"
+    );
     assert_eq!(kind(Signals { vendor: Some("Yamaha Corporation"), ..Default::default() }), "speaker");
     assert_eq!(kind(Signals { vendor: Some("EZVIZ CO.,LTD."), ..Default::default() }), "camera");
     assert_eq!(kind(Signals { vendor: Some("Panasonic Corporation"), ..Default::default() }), "tv");
@@ -450,10 +345,7 @@ fn a_smart_plug_control_port_types_iot_without_any_other_signal() {
 
 #[test]
 fn wemo_ssdp_device_type_is_iot() {
-    let ssdp = SsdpHit {
-        device_type: Some("urn:Belkin:device:controllee:1".into()),
-        ..Default::default()
-    };
+    let ssdp = SsdpHit { device_type: Some("urn:Belkin:device:controllee:1".into()), ..Default::default() };
     assert_eq!(kind(Signals { ssdp: Some(&ssdp), ..Default::default() }), "iot");
 }
 
@@ -462,10 +354,7 @@ fn samsung_watch_model_is_a_watch_not_a_phone() {
     // Galaxy Watch models are "SM-R…" and must land on the watch row, not the
     // phone row's broader "sm-[a-z]".
     let mdns = MdnsHit { model: Some("SM-R930".into()), ..Default::default() };
-    assert_eq!(
-        kind(Signals { vendor: Some("Samsung Electronics"), mdns: Some(&mdns), ..Default::default() }),
-        "watch"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Samsung Electronics"), mdns: Some(&mdns), ..Default::default() }), "watch");
 }
 
 #[test]
@@ -495,12 +384,7 @@ fn distinct_names_still_corroborate() {
     let mdns = MdnsHit { model: Some("iPad13,4".into()), ..Default::default() };
     let dhcp = DhcpHit { hostname: Some("Johns-iPhone".into()), ..Default::default() };
     assert_eq!(
-        kind(Signals {
-            hostname: Some("iPhone-15-Pro"),
-            mdns: Some(&mdns),
-            dhcp: Some(&dhcp),
-            ..Default::default()
-        }),
+        kind(Signals { hostname: Some("iPhone-15-Pro"), mdns: Some(&mdns), dhcp: Some(&dhcp), ..Default::default() }),
         "phone"
     );
 }
@@ -510,14 +394,7 @@ fn computer_ports_rule_out_a_handheld_vendor_guess() {
     // A Mac with SSH + SMB sharing on and no useful hostname: the Apple
     // OUI's phone lean (25) used to beat the weak computer ports (12); the
     // negative handheld evidence now flips it to what the ports prove.
-    assert_eq!(
-        kind(Signals {
-            vendor: Some("Apple, Inc."),
-            open_ports: &[22, 445],
-            ..Default::default()
-        }),
-        "computer"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Apple, Inc."), open_ports: &[22, 445], ..Default::default() }), "computer");
     // ...but a real handheld signal survives the penalty: a device that
     // names itself an iPhone stays a phone even with such a port open.
     assert_eq!(
@@ -534,10 +411,7 @@ fn computer_ports_rule_out_a_handheld_vendor_guess() {
 #[test]
 fn samsung_galaxy_phones_type_across_every_signal() {
     // OUI vendor (non-randomized handset, or a hotspot).
-    assert_eq!(
-        kind(Signals { vendor: Some("Samsung Electronics Co.,Ltd"), ..Default::default() }),
-        "phone"
-    );
+    assert_eq!(kind(Signals { vendor: Some("Samsung Electronics Co.,Ltd"), ..Default::default() }), "phone");
     // The randomization-surviving DHCP fingerprint.
     let dhcp = DhcpHit { kind: Some("phone"), os: Some("Android"), ..Default::default() };
     assert_eq!(kind(Signals { dhcp: Some(&dhcp), ..Default::default() }), "phone");
@@ -565,29 +439,17 @@ fn a_signalless_device_stays_unknown() {
 fn confidence_separates_decisive_calls_from_hedges() {
     // Role flags and hostname-grade (or better) signals are decisive.
     assert_eq!(confidence(Signals { is_gateway: true, ..Default::default() }), Confidence::High);
-    assert_eq!(
-        confidence(Signals { hostname: Some("Office-LaserJet"), ..Default::default() }),
-        Confidence::High
-    );
-    assert_eq!(
-        confidence(Signals { open_ports: &[80, 9100], ..Default::default() }),
-        Confidence::High
-    );
+    assert_eq!(confidence(Signals { hostname: Some("Office-LaserJet"), ..Default::default() }), Confidence::High);
+    assert_eq!(confidence(Signals { open_ports: &[80, 9100], ..Default::default() }), Confidence::High);
     // A lone weak port, the ambiguous Apple-mobile port, or no signal at
     // all is a best guess the UI should hedge.
     assert_eq!(confidence(Signals { open_ports: &[22], ..Default::default() }), Confidence::Low);
-    assert_eq!(
-        confidence(Signals { open_ports: &[62078], ..Default::default() }),
-        Confidence::Low
-    );
+    assert_eq!(confidence(Signals { open_ports: &[62078], ..Default::default() }), Confidence::Low);
     assert_eq!(confidence(Signals::default()), Confidence::Low);
 }
 
 #[test]
 fn http_banner_corroborates_a_nas() {
     let banner = BannerHit { server: None, title: Some("Synology DiskStation".into()) };
-    assert_eq!(
-        kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }),
-        "nas"
-    );
+    assert_eq!(kind(Signals { banner: Some(&banner), open_ports: &[80], ..Default::default() }), "nas");
 }

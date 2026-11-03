@@ -282,9 +282,7 @@ fn parse_ss(output: &str) -> Vec<UsageUnit> {
                 // A non-routable peer (loopback, listener) drops the pairing so
                 // its info line isn't banked.
                 pending = match (local, peer, peer.and_then(crate::util::net::routable_peer_ip)) {
-                    (Some(local), Some(peer), Some(_)) => {
-                        Some((name, format!("{local}|{peer}"), ss_proc_pid(trimmed)))
-                    }
+                    (Some(local), Some(peer), Some(_)) => Some((name, format!("{local}|{peer}"), ss_proc_pid(trimmed))),
                     _ => None,
                 };
             }
@@ -341,11 +339,7 @@ fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
         // A process row is "name.pid" with a numeric pid. Anything else (the
         // header) clears the owner so stray rows aren't misattributed.
         match label.rsplit_once('.') {
-            Some((name, pid))
-                if !name.is_empty()
-                    && !pid.is_empty()
-                    && pid.bytes().all(|b| b.is_ascii_digit()) =>
-            {
+            Some((name, pid)) if !name.is_empty() && !pid.is_empty() && pid.bytes().all(|b| b.is_ascii_digit()) => {
                 current = Some((label.to_string(), name.to_string(), pid.parse().ok()));
             }
             _ => current = None,
@@ -415,10 +409,7 @@ impl AppUsageTracker {
             let (rx_delta, tx_delta) = if priming {
                 (0, 0)
             } else {
-                (
-                    self.semantics.credit(unit.rx, prev.map(|p| p.rx)),
-                    self.semantics.credit(unit.tx, prev.map(|p| p.tx)),
-                )
+                (self.semantics.credit(unit.rx, prev.map(|p| p.rx)), self.semantics.credit(unit.tx, prev.map(|p| p.tx)))
             };
 
             self.last.insert(unit.key.clone(), ByteCounts { rx: unit.rx, tx: unit.tx });
@@ -457,9 +448,7 @@ impl AppUsageTracker {
             .collect();
         // Ties broken by name so the order is stable.
         apps.sort_by(|a, b| {
-            (b.rx_bytes + b.tx_bytes)
-                .cmp(&(a.rx_bytes + a.tx_bytes))
-                .then_with(|| a.name.cmp(&b.name))
+            (b.rx_bytes + b.tx_bytes).cmp(&(a.rx_bytes + a.tx_bytes)).then_with(|| a.name.cmp(&b.name))
         });
 
         AppUsageSummary { apps, support: platform_support(), tracking_since: self.tracking_since }
@@ -500,7 +489,6 @@ pub fn support_detail() -> Option<String> {
         None
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -802,11 +790,13 @@ tcp4 192.168.2.16:51000<->17.248.1.1:443,1000,1000,";
     #[test]
     fn socket_source_does_not_rebank_history_when_a_key_is_recycled() {
         let mut t = AppUsageTracker::with_semantics(CounterSemantics::Socket);
-        let tick = |rx: u64| vec![UsageUnit { key: "cupsd.99|tcp4 a<->b".into(), name: "cupsd".into(), rx, tx: 0, pid: Some(99) }];
+        let tick = |rx: u64| {
+            vec![UsageUnit { key: "cupsd.99|tcp4 a<->b".into(), name: "cupsd".into(), rx, tx: 0, pid: Some(99) }]
+        };
         t.ingest(tick(5_000_000)); // first snapshot: baseline
         t.ingest(tick(5_000_400)); // +400 watched
         t.ingest(vec![]); // socket closed: absent from the sample
-        // The address pair is recycled by a new socket, counting from scratch.
+                          // The address pair is recycled by a new socket, counting from scratch.
         t.ingest(tick(600));
         assert_eq!(t.summary().apps[0].rx_bytes, 1000);
     }

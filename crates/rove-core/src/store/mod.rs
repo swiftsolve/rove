@@ -231,11 +231,9 @@ impl Store {
         // A real hostname holds only `[A-Za-z0-9._-]`, so null anything else; it
         // re-resolves on the next scan. The table check covers a DB whose
         // collided version skipped creating it.
-        let has_known_devices: bool = conn.query_row(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='known_devices'",
-            [],
-            |_| Ok(()),
-        ).is_ok();
+        let has_known_devices: bool = conn
+            .query_row("SELECT 1 FROM sqlite_master WHERE type='table' AND name='known_devices'", [], |_| Ok(()))
+            .is_ok();
         if has_known_devices {
             conn.execute(
                 "UPDATE known_devices SET hostname = NULL \
@@ -255,12 +253,7 @@ impl Store {
     /// Add `column` to `table` if it's missing. Names are fixed literals from the
     /// migration, never user input, so interpolating them is safe (and
     /// unavoidable: SQLite takes no bind parameters in DDL or PRAGMA).
-    fn ensure_column(
-        conn: &Connection,
-        table: &str,
-        column: &str,
-        decl_type: &str,
-    ) -> rusqlite::Result<()> {
+    fn ensure_column(conn: &Connection, table: &str, column: &str, decl_type: &str) -> rusqlite::Result<()> {
         let present = conn
             .prepare(&format!("PRAGMA table_info({table})"))?
             .query_map([], |row| row.get::<_, String>(1))?
@@ -268,10 +261,7 @@ impl Store {
             .iter()
             .any(|name| name == column);
         if !present {
-            conn.execute(
-                &format!("ALTER TABLE {table} ADD COLUMN {column} {decl_type}"),
-                [],
-            )?;
+            conn.execute(&format!("ALTER TABLE {table} ADD COLUMN {column} {decl_type}"), [])?;
         }
         Ok(())
     }
@@ -290,8 +280,7 @@ impl Store {
     /// The `meta` value under `key`, on a connection or transaction the caller
     /// already holds.
     pub(super) fn read_meta(conn: &Connection, key: &str) -> rusqlite::Result<Option<String>> {
-        conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| row.get(0))
-            .optional()
+        conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| row.get(0)).optional()
     }
 
     /// Insert or overwrite the `meta` value under `key`.
@@ -339,9 +328,7 @@ mod tests {
         store.migrate().unwrap();
 
         let known = store.known_devices().unwrap();
-        let by_mac = |mac: &str| {
-            known.iter().find(|d| d.mac == mac).unwrap().hostname.clone()
-        };
+        let by_mac = |mac: &str| known.iter().find(|d| d.mac == mac).unwrap().hostname.clone();
         assert_eq!(by_mac("11:11:11:11:11:11"), None);
         assert_eq!(by_mac("22:22:22:22:22:22").as_deref(), Some("pixel-7"));
     }

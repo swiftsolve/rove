@@ -20,11 +20,11 @@ pub mod mac_native;
 pub mod macos;
 pub mod windows;
 
-use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
-use crate::util::shell::try_run;
-use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
+use crate::connection::ConnectionDetails;
+use crate::util::net::is_virtual_interface;
+use crate::util::shell::try_run;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
@@ -69,11 +69,7 @@ pub(crate) fn generic_interface_list() -> Vec<InterfaceSummary> {
             if mac == "00:00:00:00:00:00" {
                 return None;
             }
-            let ip = data
-                .ip_networks()
-                .iter()
-                .find(|ip| ip.addr.is_ipv4())
-                .map(|ip| ip.addr.to_string());
+            let ip = data.ip_networks().iter().find(|ip| ip.addr.is_ipv4()).map(|ip| ip.addr.to_string());
             Some(InterfaceSummary {
                 connection_type: infer_connection_type(name).into(),
                 oper_state: if ip.is_some() { "up".into() } else { "unknown".into() },
@@ -94,9 +90,7 @@ pub(crate) fn generic_interface_list() -> Vec<InterfaceSummary> {
 /// before virtual, up before down, then by name.
 pub(crate) fn sort_interfaces(list: &mut [InterfaceSummary]) {
     list.sort_by(|a, b| {
-        let rank = |i: &InterfaceSummary| {
-            (!i.is_default, i.is_virtual, i.oper_state != "up", i.name.clone())
-        };
+        let rank = |i: &InterfaceSummary| (!i.is_default, i.is_virtual, i.oper_state != "up", i.name.clone());
         rank(a).cmp(&rank(b))
     });
 }
@@ -145,8 +139,7 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
             let c = ARP_A.captures(line)?;
             let mac = crate::util::net::normalize_mac_colons(&c[2]);
             // Broadcast and multicast (IPv4 01:00:5e, IPv6 33:33) aren't devices.
-            if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33")
-            {
+            if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33") {
                 return None;
             }
             // No liveness column, so `is_reachable` is a placeholder the scan

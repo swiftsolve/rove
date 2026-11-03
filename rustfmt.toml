@@ -1,0 +1,4 @@
+# The Rust layout, checked by `cargo fmt --check` in the pre-commit hook and CI.
+# 120 columns, as the code was already written.
+max_width = 120
+use_small_heuristics = "Max"

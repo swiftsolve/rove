@@ -59,10 +59,7 @@ pub async fn discover(window: Duration, local_ip: Option<Ipv4Addr>) -> HashMap<S
 }
 
 /// Send `M-SEARCH` and collect one description URL (`LOCATION`) per responder IP.
-async fn search(
-    window: Duration,
-    local_ip: Option<Ipv4Addr>,
-) -> std::io::Result<HashMap<String, String>> {
+async fn search(window: Duration, local_ip: Option<Ipv4Addr>) -> std::io::Result<HashMap<String, String>> {
     let bind_ip = local_ip.unwrap_or(Ipv4Addr::UNSPECIFIED);
     let socket = UdpSocket::bind((bind_ip, 0)).await?;
 
@@ -105,16 +102,9 @@ ST: ssdp:all\r\n\r\n";
     Ok(locations)
 }
 
-async fn fetch_descriptions(
-    locations: HashMap<String, String>,
-    deadline: Instant,
-) -> HashMap<String, SsdpHit> {
+async fn fetch_descriptions(locations: HashMap<String, String>, deadline: Instant) -> HashMap<String, SsdpHit> {
     // LAN description URLs must never go through an ambient HTTP(S) proxy.
-    let Ok(client) = reqwest::Client::builder()
-        .no_proxy()
-        .timeout(FETCH_TIMEOUT)
-        .build()
-    else {
+    let Ok(client) = reqwest::Client::builder().no_proxy().timeout(FETCH_TIMEOUT).build() else {
         return HashMap::new();
     };
 
@@ -204,10 +194,7 @@ mod tests {
         assert_eq!(hit.name.as_deref(), Some("Living Room TV"));
         assert_eq!(hit.manufacturer.as_deref(), Some("Sony"));
         assert_eq!(hit.model.as_deref(), Some("BRAVIA KD-55X"));
-        assert_eq!(
-            hit.device_type.as_deref(),
-            Some("urn:schemas-upnp-org:device:MediaRenderer:1")
-        );
+        assert_eq!(hit.device_type.as_deref(), Some("urn:schemas-upnp-org:device:MediaRenderer:1"));
     }
 
     #[test]
@@ -225,10 +212,7 @@ mod tests {
     fn parses_location_header_case_insensitively() {
         let reply = b"HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\n\
 LOCATION: http://192.168.1.5:8060/dial/dd.xml\r\nST: ssdp:all\r\n\r\n";
-        assert_eq!(
-            header_value(reply, "location").as_deref(),
-            Some("http://192.168.1.5:8060/dial/dd.xml")
-        );
+        assert_eq!(header_value(reply, "location").as_deref(), Some("http://192.168.1.5:8060/dial/dd.xml"));
     }
 
     #[test]

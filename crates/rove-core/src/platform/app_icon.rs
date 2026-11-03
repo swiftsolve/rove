@@ -28,9 +28,8 @@ mod imp {
     use objc2::runtime::AnyObject;
     use objc2::AnyThread as _;
     use objc2_app_kit::{
-        NSBitmapImageFileType, NSBitmapImageRep, NSBitmapImageRepPropertyKey,
-        NSCalibratedRGBColorSpace, NSCompositingOperation, NSGraphicsContext, NSImage,
-        NSRunningApplication, NSWorkspace,
+        NSBitmapImageFileType, NSBitmapImageRep, NSBitmapImageRepPropertyKey, NSCalibratedRGBColorSpace,
+        NSCompositingOperation, NSGraphicsContext, NSImage, NSRunningApplication, NSWorkspace,
     };
     use objc2_foundation::{NSDictionary, NSPoint, NSRect, NSSize, NSString};
 
@@ -100,22 +99,15 @@ mod imp {
             let context = NSGraphicsContext::graphicsContextWithBitmapImageRep(&rep)?;
             NSGraphicsContext::saveGraphicsState_class();
             NSGraphicsContext::setCurrentContext(Some(&context));
-            let dest =
-                NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(ICON_PX as f64, ICON_PX as f64));
+            let dest = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(ICON_PX as f64, ICON_PX as f64));
             // A zero source rect means "the whole image", letting AppKit pick the
             // best representation for the destination size.
             let whole = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(0.0, 0.0));
-            icon.drawInRect_fromRect_operation_fraction(
-                dest,
-                whole,
-                NSCompositingOperation::SourceOver,
-                1.0,
-            );
+            icon.drawInRect_fromRect_operation_fraction(dest, whole, NSCompositingOperation::SourceOver, 1.0);
             NSGraphicsContext::restoreGraphicsState_class();
 
             let props = NSDictionary::<NSBitmapImageRepPropertyKey, AnyObject>::new();
-            let png =
-                rep.representationUsingType_properties(NSBitmapImageFileType::PNG, &props)?;
+            let png = rep.representationUsingType_properties(NSBitmapImageFileType::PNG, &props)?;
             let bytes = png.to_vec();
             if bytes.is_empty() {
                 return None;
@@ -136,23 +128,18 @@ mod imp {
     use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::{CloseHandle, SIZE};
     use windows::Win32::Graphics::Gdi::{
-        DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO,
-        BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HGDIOBJ,
+        DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
+        DIB_RGB_COLORS, HGDIOBJ,
     };
-    use windows::Win32::System::Com::{
-        CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED,
-    };
+    use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
     use windows::Win32::System::Diagnostics::ToolHelp::{
-        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
-        TH32CS_SNAPPROCESS,
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
     };
     use windows::Win32::System::Threading::{
-        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32,
-        PROCESS_QUERY_LIMITED_INFORMATION,
+        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
     };
     use windows::Win32::UI::Shell::{
-        IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF_BIGGERSIZEOK,
-        SIIGBF_ICONONLY,
+        IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF_BIGGERSIZEOK, SIIGBF_ICONONLY,
     };
 
     /// Edge of the rasterised icon in pixels, as on macOS. `.exe` icons go up to
@@ -188,8 +175,7 @@ mod imp {
             // location without a resize round-trip.
             let mut buf = vec![0u16; 1024];
             let mut len = buf.len() as u32;
-            let query =
-                QueryFullProcessImageNameW(handle, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len);
+            let query = QueryFullProcessImageNameW(handle, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len);
             let _ = CloseHandle(handle);
             query.ok()?;
             Some(PathBuf::from(OsString::from_wide(&buf[..len as usize])))
@@ -205,10 +191,7 @@ mod imp {
         // fully initialised with its required `dwSize` before the first read.
         unsafe {
             let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0).ok()?;
-            let mut entry = PROCESSENTRY32W {
-                dwSize: size_of::<PROCESSENTRY32W>() as u32,
-                ..Default::default()
-            };
+            let mut entry = PROCESSENTRY32W { dwSize: size_of::<PROCESSENTRY32W>() as u32, ..Default::default() };
             let mut pid: Option<u32> = None;
             if Process32FirstW(snapshot, &mut entry).is_ok() {
                 loop {
@@ -237,8 +220,7 @@ mod imp {
         unsafe {
             let _com = ComGuard::new();
             let wide = to_wide(path.as_os_str());
-            let factory: IShellItemImageFactory =
-                SHCreateItemFromParsingName(PCWSTR(wide.as_ptr()), None).ok()?;
+            let factory: IShellItemImageFactory = SHCreateItemFromParsingName(PCWSTR(wide.as_ptr()), None).ok()?;
             let size = SIZE { cx: ICON_PX, cy: ICON_PX };
             let bitmap = factory.GetImage(size, SIIGBF_ICONONLY | SIIGBF_BIGGERSIZEOK).ok()?;
             let pixels = bitmap_to_rgba(bitmap);
@@ -526,23 +508,32 @@ mod imp {
     /// The icon sizes to try, best first: 128px is crisp in a ~24px box on a
     /// high-DPI screen and still small, then the scalable SVG, then whatever
     /// else the theme has, nearest first.
-    const ICON_SIZES: &[&str] =
-        &["128x128", "scalable", "96x96", "256x256", "64x64", "512x512", "48x48", "32x32"];
+    const ICON_SIZES: &[&str] = &["128x128", "scalable", "96x96", "256x256", "64x64", "512x512", "48x48", "32x32"];
 
     /// Launchers and interpreters an `Exec=` line can start with. Their name says
     /// nothing about the app, so matching on it would give every `python3` or
     /// `node` process the icon of whichever app happens to launch through one.
     const GENERIC_PROGRAMS: &[&str] = &[
-        "sh", "bash", "env", "python", "python3", "java", "node", "electron", "wine", "flatpak",
-        "snap", "gjs", "perl", "ruby",
+        "sh", "bash", "env", "python", "python3", "java", "node", "electron", "wine", "flatpak", "snap", "gjs", "perl",
+        "ruby",
     ];
 
     /// Directories shared by unrelated programs, where "same folder as the
     /// launcher" says nothing about which app a process belongs to.
     const SHARED_DIRS: &[&str] = &[
-        "/bin", "/sbin", "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin", "/usr/lib",
-        "/usr/lib64", "/usr/libexec", "/usr/lib/x86_64-linux-gnu", "/usr/lib/aarch64-linux-gnu",
-        "/snap/bin", "/app/bin",
+        "/bin",
+        "/sbin",
+        "/usr/bin",
+        "/usr/sbin",
+        "/usr/local/bin",
+        "/usr/local/sbin",
+        "/usr/lib",
+        "/usr/lib64",
+        "/usr/libexec",
+        "/usr/lib/x86_64-linux-gnu",
+        "/usr/lib/aarch64-linux-gnu",
+        "/snap/bin",
+        "/app/bin",
     ];
 
     /// The parts of an application `.desktop` entry the lookup uses.
@@ -616,9 +607,8 @@ mod imp {
             push_name(&mut facts.names, file_name);
         }
         // A Flatpak app's sandbox says which app it is.
-        facts.flatpak_id = fs::read_to_string(proc_dir.join("root/.flatpak-info"))
-            .ok()
-            .and_then(|info| flatpak_info_name(&info));
+        facts.flatpak_id =
+            fs::read_to_string(proc_dir.join("root/.flatpak-info")).ok().and_then(|info| flatpak_info_name(&info));
         // A snap app runs in a `snap.<snap>.<app>…` cgroup. Other launchers'
         // `app-…` scopes aren't used: every child inherits them, so a command
         // run from a terminal would get the terminal's icon.
@@ -995,8 +985,8 @@ mod windows_tests {
     /// pid→path→bitmap→PNG pipeline and must yield a valid PNG `data:` URI.
     #[test]
     fn resolves_the_current_process_icon_as_a_png_data_uri() {
-        let uri = app_icon_data_uri("", Some(std::process::id()))
-            .expect("the current process should resolve to an icon");
+        let uri =
+            app_icon_data_uri("", Some(std::process::id())).expect("the current process should resolve to an icon");
         assert!(uri.starts_with("data:image/png;base64,"), "not a PNG data URI: {uri:.40}");
         // A 64px RGBA icon is far larger than a few dozen base64 characters; this
         // guards against an empty/degenerate encode slipping through as `Some`.
@@ -1070,12 +1060,15 @@ mod linux_tests {
     #[test]
     fn reads_the_sandboxed_app_from_flatpak_info_and_snap_cgroups() {
         assert_eq!(
-            flatpak_info_name("[Application]\nname=com.obsproject.Studio\nruntime=x\n\n[Instance]\nname=other").as_deref(),
+            flatpak_info_name("[Application]\nname=com.obsproject.Studio\nruntime=x\n\n[Instance]\nname=other")
+                .as_deref(),
             Some("com.obsproject.Studio")
         );
         assert_eq!(
-            snap_desktop_id("0::/user.slice/user-1000.slice/user@1000.service/app.slice/snap.code.code-9287e34f.scope\n")
-                .as_deref(),
+            snap_desktop_id(
+                "0::/user.slice/user-1000.slice/user@1000.service/app.slice/snap.code.code-9287e34f.scope\n"
+            )
+            .as_deref(),
             Some("code_code")
         );
         assert_eq!(snap_desktop_id("0::/user.slice/app-gnome-org.gnome.Terminal-1.scope"), None);
@@ -1098,7 +1091,10 @@ mod linux_tests {
     #[test]
     fn prefers_the_menu_entry_over_a_hidden_helper() {
         let entries = vec![
-            entry("code-url-handler", "[Desktop Entry]\nType=Application\nExec=code --open-url %U\nIcon=handler\nNoDisplay=true"),
+            entry(
+                "code-url-handler",
+                "[Desktop Entry]\nType=Application\nExec=code --open-url %U\nIcon=handler\nNoDisplay=true",
+            ),
             entry("code", "[Desktop Entry]\nType=Application\nExec=code %F\nIcon=vscode"),
         ];
         assert_eq!(best_entry(&entries, &facts(&["code"])).map(|e| e.icon.as_str()), Some("vscode"));
@@ -1134,9 +1130,11 @@ mod linux_tests {
         fs::create_dir_all(&app_dir).unwrap();
         fs::write(app_dir.join("browser-launcher"), "#!/bin/sh").unwrap();
         fs::write(app_dir.join("engine"), "").unwrap();
-        let exec = format!("[Desktop Entry]\nType=Application\nExec={}/browser-launcher\nIcon=browser", app_dir.display());
+        let exec =
+            format!("[Desktop Entry]\nType=Application\nExec={}/browser-launcher\nIcon=browser", app_dir.display());
         let entries = vec![entry("browser", &exec)];
-        let engine = ProcessFacts { exe: Some(fs::canonicalize(app_dir.join("engine")).unwrap()), ..facts(&["engine"]) };
+        let engine =
+            ProcessFacts { exe: Some(fs::canonicalize(app_dir.join("engine")).unwrap()), ..facts(&["engine"]) };
         assert_eq!(best_entry(&entries, &engine).map(|e| e.icon.as_str()), Some("browser"));
         fs::remove_dir_all(dir).unwrap();
     }

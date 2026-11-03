@@ -3,8 +3,8 @@
 //! monitor that nudges the UI off its polling interval. They run whether or not
 //! the window is open.
 use crate::AppState;
-use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
 use futures_util::FutureExt;
+use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
 use std::panic::AssertUnwindSafe;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -104,8 +104,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                 // Misses are recorded too, so each peer resolves once.
                 if !need_hosts.is_empty() {
                     let names = rove_core::devices::hostname::resolve_many(&need_hosts).await;
-                    let resolved: HashMap<String, Option<String>> =
-                        need_hosts.into_iter().zip(names).collect();
+                    let resolved: HashMap<String, Option<String>> = need_hosts.into_iter().zip(names).collect();
                     let state = handle.state::<AppState>();
                     lock(&state.host_usage).record_hostnames(resolved);
                 }
@@ -327,9 +326,7 @@ where
     loop {
         let spawned = {
             let mut cmd = spawn();
-            cmd.stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::null())
-                .kill_on_drop(true); // don't leave the monitor orphaned on exit
+            cmd.stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::null()).kill_on_drop(true); // don't leave the monitor orphaned on exit
             cmd.spawn()
         };
         let Ok(mut child) = spawned else {

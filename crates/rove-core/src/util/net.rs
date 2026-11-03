@@ -49,9 +49,7 @@ pub(crate) fn strip_port(addr: &str) -> Option<String> {
         return Some(addr.to_string());
     }
     match addr.rsplit_once(':') {
-        Some((ip, port)) if !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => {
-            Some(ip.to_string())
-        }
+        Some((ip, port)) if !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => Some(ip.to_string()),
         _ => Some(addr.to_string()),
     }
 }
@@ -101,20 +99,14 @@ pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
 /// strips leading zeros, so without this its MACs wouldn't match sysinfo or the
 /// OUI table, or dedupe against this machine's own address.
 pub fn normalize_mac_colons(raw: &str) -> String {
-    raw.split([':', '-'])
-        .map(|octet| format!("{:0>2}", octet.to_ascii_lowercase()))
-        .collect::<Vec<_>>()
-        .join(":")
+    raw.split([':', '-']).map(|octet| format!("{:0>2}", octet.to_ascii_lowercase())).collect::<Vec<_>>().join(":")
 }
 
 /// Bare MAC form: 12 lowercase hex chars ("AA:BB:CC:11:22:33" →
 /// "aabbcc112233"). The DHCP cache keys on this so hits join the neighbor table
 /// whatever the separator or case.
 pub fn normalize_mac_bare(mac: &str) -> String {
-    mac.chars()
-        .filter(|c| c.is_ascii_hexdigit())
-        .map(|c| c.to_ascii_lowercase())
-        .collect()
+    mac.chars().filter(|c| c.is_ascii_hexdigit()).map(|c| c.to_ascii_lowercase()).collect()
 }
 
 const VIRTUAL_PREFIXES: [&str; 18] = [
@@ -153,8 +145,7 @@ const VIRTUAL_SUBSTRINGS: [&str; 10] = [
 /// is caught by the prefix. A bridge's counters overlap its ports, so summing
 /// both double-counts. Not a prefix, so names like "brtest" survive.
 fn is_numbered_bridge(name: &str) -> bool {
-    name.strip_prefix("br")
-        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_digit()))
+    name.strip_prefix("br").is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_digit()))
 }
 
 /// True for a Linux VLAN subinterface (`eth0.100`, `bond0.5`). Its frames are
@@ -162,9 +153,7 @@ fn is_numbered_bridge(name: &str) -> bool {
 /// macOS interface name contains a dot, so it's inert there.
 fn is_vlan_subinterface(name: &str) -> bool {
     match name.rsplit_once('.') {
-        Some((parent, tag)) => {
-            !parent.is_empty() && !tag.is_empty() && tag.bytes().all(|b| b.is_ascii_digit())
-        }
+        Some((parent, tag)) => !parent.is_empty() && !tag.is_empty() && tag.bytes().all(|b| b.is_ascii_digit()),
         None => false,
     }
 }
@@ -183,10 +172,7 @@ pub fn is_virtual_interface(name: &str) -> bool {
 }
 
 pub fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0)
+    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0)
 }
 
 /// True when `s` is an IP literal, and so safe to put in a shell command: a
@@ -204,8 +190,7 @@ pub fn is_shell_safe_iface(s: &str) -> bool {
     // `&`, `$` and backticks are not.
     !s.is_empty()
         && s.len() <= 40
-        && s.bytes()
-            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
+        && s.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
 }
 
 /// Single-quote `s` for a `sh -c` command, escaping embedded quotes
@@ -219,12 +204,7 @@ pub fn shell_single_quote(s: &str) -> String {
 /// string (mDNS TXT, reverse DNS) and cap its length, so a neighbour can't
 /// inject RTL overrides or terminal control sequences into the device list.
 pub fn sanitize_display(s: &str) -> String {
-    s.chars()
-        .filter(|c| !c.is_control() && !is_bidi_control(*c))
-        .take(64)
-        .collect::<String>()
-        .trim()
-        .to_string()
+    s.chars().filter(|c| !c.is_control() && !is_bidi_control(*c)).take(64).collect::<String>().trim().to_string()
 }
 
 fn is_bidi_control(c: char) -> bool {

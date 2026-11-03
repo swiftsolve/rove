@@ -143,9 +143,7 @@ impl Store {
             let prev_connected = is_connected_identity(prev);
             let event: Option<(&str, &str, &str)> = match connection_type {
                 "wifi" => Some((EVENT_WIFI_CONNECTED, "info", network_name.unwrap_or("Wi-Fi"))),
-                "ethernet" => {
-                    Some((EVENT_ETHERNET_CONNECTED, "info", interface.unwrap_or("Ethernet")))
-                }
+                "ethernet" => Some((EVENT_ETHERNET_CONNECTED, "info", interface.unwrap_or("Ethernet"))),
                 // Name what we lost from the prior baseline: the new state has
                 // no interface or SSID of its own.
                 _ if prev_connected => {
@@ -156,18 +154,7 @@ impl Store {
                 _ => None,
             };
             if let Some((event_type, severity, name)) = event {
-                Self::insert_event(
-                    &tx,
-                    now_ms,
-                    event_type,
-                    severity,
-                    mac,
-                    ip,
-                    Some(name),
-                    None,
-                    None,
-                    false,
-                )?;
+                Self::insert_event(&tx, now_ms, event_type, severity, mac, ip, Some(name), None, None, false)?;
                 Self::prune_events(&tx, now_ms)?;
             }
         }
@@ -195,14 +182,9 @@ impl Store {
 
         let tx = conn.transaction()?;
         if prev.is_some() {
-            let (event_type, severity) = if online {
-                (EVENT_INTERNET_RESTORED, "info")
-            } else {
-                (EVENT_INTERNET_LOST, "warning")
-            };
-            Self::insert_event(
-                &tx, now_ms, event_type, severity, None, None, None, None, None, false,
-            )?;
+            let (event_type, severity) =
+                if online { (EVENT_INTERNET_RESTORED, "info") } else { (EVENT_INTERNET_LOST, "warning") };
+            Self::insert_event(&tx, now_ms, event_type, severity, None, None, None, None, None, false)?;
             Self::prune_events(&tx, now_ms)?;
         }
 
@@ -214,10 +196,8 @@ impl Store {
     /// Whether a device scan has seeded the feed. A feed from before the flag
     /// existed counts as seeded if it holds any device-scan event.
     pub(super) fn is_feed_seeded(conn: &Connection) -> rusqlite::Result<bool> {
-        let has_flag = conn
-            .query_row("SELECT 1 FROM meta WHERE key = ?1", [META_FEED_SEEDED], |_| Ok(()))
-            .optional()?
-            .is_some();
+        let has_flag =
+            conn.query_row("SELECT 1 FROM meta WHERE key = ?1", [META_FEED_SEEDED], |_| Ok(())).optional()?.is_some();
         if has_flag {
             return Ok(true);
         }
@@ -243,10 +223,7 @@ impl Store {
     }
 
     pub(super) fn mark_feed_seeded(conn: &Connection) -> rusqlite::Result<()> {
-        conn.execute(
-            "INSERT OR IGNORE INTO meta (key, value) VALUES (?1, '1')",
-            [META_FEED_SEEDED],
-        )?;
+        conn.execute("INSERT OR IGNORE INTO meta (key, value) VALUES (?1, '1')", [META_FEED_SEEDED])?;
         Ok(())
     }
 
@@ -255,23 +232,13 @@ impl Store {
         if device.is_gateway {
             return Some("Router".to_string());
         }
-        Self::compose_name(
-            device.hostname.as_deref(),
-            device.vendor.as_deref(),
-            device.os.as_deref(),
-            &device.kind,
-        )
+        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), &device.kind)
     }
 
     /// Best-effort label from the stored row, for departures. Matches
     /// `device_name` so a device reads the same leaving as joining.
     pub(super) fn known_name(device: &KnownDevice) -> Option<String> {
-        Self::compose_name(
-            device.hostname.as_deref(),
-            device.vendor.as_deref(),
-            device.os.as_deref(),
-            &device.kind,
-        )
+        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), &device.kind)
     }
 
     /// The feed's device label, mirroring `deviceName`/`describeUnnamed` in
@@ -279,12 +246,7 @@ impl Store {
     /// maker (vendor or OS) with the kind ("Android phone", "Phone").
     /// `None` only when nothing is known; the UI then says "Private device" or
     /// "Unknown device".
-    fn compose_name(
-        hostname: Option<&str>,
-        vendor: Option<&str>,
-        os: Option<&str>,
-        kind: &str,
-    ) -> Option<String> {
+    fn compose_name(hostname: Option<&str>, vendor: Option<&str>, os: Option<&str>, kind: &str) -> Option<String> {
         // A hostname is the name the user gave the device, so it always wins.
         if let Some(hostname) = hostname {
             return Some(hostname.to_string());
@@ -388,10 +350,7 @@ impl Store {
 
     /// Trim the feed to the retention window and the hard row cap.
     pub(super) fn prune_events(conn: &Connection, now_ms: i64) -> rusqlite::Result<()> {
-        conn.execute(
-            "DELETE FROM network_events WHERE ts < ?1",
-            [now_ms - EVENT_RETENTION_MS],
-        )?;
+        conn.execute("DELETE FROM network_events WHERE ts < ?1", [now_ms - EVENT_RETENTION_MS])?;
         conn.execute(
             "DELETE FROM network_events WHERE id NOT IN
                 (SELECT id FROM network_events ORDER BY ts DESC, id DESC LIMIT ?1)",
@@ -428,10 +387,7 @@ impl Store {
             let stored_randomized = row.get::<_, i64>(9)? != 0;
             let is_device_subject = matches!(
                 event_type.as_str(),
-                EVENT_DEVICE_JOINED
-                    | EVENT_AP_APPEARED
-                    | EVENT_DEVICE_OFFLINE
-                    | EVENT_DEVICE_ONLINE
+                EVENT_DEVICE_JOINED | EVENT_AP_APPEARED | EVENT_DEVICE_OFFLINE | EVENT_DEVICE_ONLINE
             );
             let in_roster = row.get::<_, Option<String>>(10)?.is_some();
             let (name, randomized, kind) = if is_device_subject && in_roster {
@@ -473,25 +429,33 @@ mod tests {
     #[test]
     fn records_connection_transitions_but_stays_quiet_on_the_baseline() {
         let store = Store::open_in_memory().unwrap();
-        let types = |store: &Store| {
-            store
-                .network_events(100)
-                .unwrap()
-                .into_iter()
-                .map(|e| e.event_type)
-                .collect::<Vec<_>>()
-        };
+        let types =
+            |store: &Store| store.network_events(100).unwrap().into_iter().map(|e| e.event_type).collect::<Vec<_>>();
 
         // First observation just seeds the baseline: launching on an existing
         // Wi-Fi connection isn't a "connected" event.
         store
-            .record_connection("wifi", Some("Home"), Some("wlan0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 1_000)
+            .record_connection(
+                "wifi",
+                Some("Home"),
+                Some("wlan0"),
+                Some("192.168.1.5"),
+                Some("aa:bb:cc:dd:ee:ff"),
+                1_000,
+            )
             .unwrap();
         assert!(types(&store).is_empty(), "the first connection only seeds a baseline");
 
         // Re-polling the same network is silent.
         store
-            .record_connection("wifi", Some("Home"), Some("wlan0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 1_500)
+            .record_connection(
+                "wifi",
+                Some("Home"),
+                Some("wlan0"),
+                Some("192.168.1.5"),
+                Some("aa:bb:cc:dd:ee:ff"),
+                1_500,
+            )
             .unwrap();
         assert!(types(&store).is_empty(), "an unchanged connection emits nothing");
 
@@ -505,9 +469,7 @@ mod tests {
 
         // Unplug: connection_lost (warning), naming the network we dropped from
         // the prior baseline, since the disconnected state carries no interface.
-        store
-            .record_connection("disconnected", None, None, None, None, 3_000)
-            .unwrap();
+        store.record_connection("disconnected", None, None, None, None, 3_000).unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "connection_lost");
         assert_eq!(latest.severity, "warning");
@@ -515,9 +477,7 @@ mod tests {
 
         // A second disconnected poll is silent: the loss already fired.
         let before = types(&store).len();
-        store
-            .record_connection("disconnected", None, None, None, None, 3_200)
-            .unwrap();
+        store.record_connection("disconnected", None, None, None, None, 3_200).unwrap();
         assert_eq!(types(&store).len(), before, "staying disconnected emits nothing further");
 
         // Back onto Wi-Fi: wifi_connected with the SSID as its subject.
@@ -532,14 +492,8 @@ mod tests {
     #[test]
     fn records_internet_transitions_but_stays_quiet_on_the_baseline() {
         let store = Store::open_in_memory().unwrap();
-        let types = |store: &Store| {
-            store
-                .network_events(100)
-                .unwrap()
-                .into_iter()
-                .map(|e| e.event_type)
-                .collect::<Vec<_>>()
-        };
+        let types =
+            |store: &Store| store.network_events(100).unwrap().into_iter().map(|e| e.event_type).collect::<Vec<_>>();
 
         // First observation just seeds the baseline: launching with working
         // internet isn't a "restored" event.
@@ -559,11 +513,7 @@ mod tests {
         // Losing the gateway too is still "no internet", so no second event.
         let before = types(&store).len();
         store.record_internet(InternetStatus::Offline, 2_500).unwrap();
-        assert_eq!(
-            types(&store).len(),
-            before,
-            "noInternet → offline is still offline, so nothing new fires"
-        );
+        assert_eq!(types(&store).len(), before, "noInternet → offline is still offline, so nothing new fires");
 
         // Back online: internet_restored (info).
         store.record_internet(InternetStatus::Online, 3_000).unwrap();

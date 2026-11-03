@@ -47,11 +47,7 @@ pub async fn current_wifi_share() -> Result<WifiShare, String> {
     let encryption = encryption_token(info.details.security.as_deref());
 
     // Open networks have no secret; skip the lookup and the prompt it triggers.
-    let password = if encryption == "nopass" {
-        None
-    } else {
-        read_password(&iface, &ssid).await
-    };
+    let password = if encryption == "nopass" { None } else { read_password(&iface, &ssid).await };
 
     let uri = build_wifi_uri(&ssid, &encryption, password.as_deref());
     let qr_svg = qr_svg(&uri)?;
@@ -137,9 +133,7 @@ fn qr_svg(data: &str) -> Result<String, String> {
             if colors[y * width + x] == Color::Dark {
                 let px = x + QUIET;
                 let py = y + QUIET;
-                rects.push_str(&format!(
-                    "<rect x=\"{px}\" y=\"{py}\" width=\"1\" height=\"1\"/>"
-                ));
+                rects.push_str(&format!("<rect x=\"{px}\" y=\"{py}\" width=\"1\" height=\"1\"/>"));
             }
         }
     }
@@ -180,10 +174,7 @@ mod tests {
     #[test]
     fn build_wifi_uri_shapes_open_and_secured_networks() {
         assert_eq!(build_wifi_uri("Net", "nopass", None), "WIFI:T:nopass;S:Net;;");
-        assert_eq!(
-            build_wifi_uri("Net", "WPA", Some("p@ss")),
-            "WIFI:T:WPA;S:Net;P:p@ss;;"
-        );
+        assert_eq!(build_wifi_uri("Net", "WPA", Some("p@ss")), "WIFI:T:WPA;S:Net;P:p@ss;;");
         // Secured but secret unknown: an empty password field, not a dropped one.
         assert_eq!(build_wifi_uri("Net", "WPA", None), "WIFI:T:WPA;S:Net;P:;;");
     }

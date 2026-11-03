@@ -6,8 +6,7 @@
 fn log_dir() -> Option<std::path::PathBuf> {
     #[cfg(target_os = "windows")]
     {
-        std::env::var_os("LOCALAPPDATA")
-            .map(|d| std::path::PathBuf::from(d).join("rove").join("logs"))
+        std::env::var_os("LOCALAPPDATA").map(|d| std::path::PathBuf::from(d).join("rove").join("logs"))
     }
     #[cfg(target_os = "macos")]
     {
@@ -30,10 +29,7 @@ pub fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
     let dir = log_dir()?;
     std::fs::create_dir_all(&dir).ok()?;
 
-    let (writer, guard) = tracing_appender::non_blocking(tracing_appender::rolling::daily(
-        &dir,
-        "rove.log",
-    ));
+    let (writer, guard) = tracing_appender::non_blocking(tracing_appender::rolling::daily(&dir, "rove.log"));
     let filter = tracing_subscriber::EnvFilter::try_from_env("ROVE_LOG")
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
 

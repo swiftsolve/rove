@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Lint and format-check what this commit holds, and run the Rust tests when it
-# holds Rust. Only the staged files: other sessions' uncommitted work in the
+# Lint and format-check what this commit holds, and format-check and test the
+# Rust when it holds Rust. Only the staged files: other sessions' uncommitted work in the
 # same checkout isn't this commit's to fail on. `npm run check` in CI covers
 # the whole tree.
 set -euo pipefail
@@ -20,7 +20,8 @@ npx prettier --check --ignore-unknown -- "${staged[@]}"
 
 for file in "${staged[@]}"; do
   case "$file" in
-    crates/* | src-tauri/* | Cargo.toml | Cargo.lock)
+    crates/* | src-tauri/* | Cargo.toml | Cargo.lock | rustfmt.toml)
+      cargo fmt --all -- --check
       cargo test --quiet -p rove-core
       break
       ;;

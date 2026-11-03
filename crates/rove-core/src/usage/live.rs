@@ -35,12 +35,7 @@ impl Default for ThroughputSampler {
 
 impl ThroughputSampler {
     pub fn new() -> Self {
-        Self {
-            networks: Networks::new_with_refreshed_list(),
-            smoothed_down: 0.0,
-            smoothed_up: 0.0,
-            last_sample: None,
-        }
+        Self { networks: Networks::new_with_refreshed_list(), smoothed_down: 0.0, smoothed_up: 0.0, last_sample: None }
     }
 
     /// Reset the baseline without emitting a sample. Call it when the UI
@@ -55,11 +50,7 @@ impl ThroughputSampler {
     fn smooth(previous: f64, next: f64) -> f64 {
         // From zero (first sample, or after idle) jump straight to the reading
         // rather than ramping up to it.
-        let average = if previous <= 0.0 {
-            next
-        } else {
-            previous * (1.0 - SMOOTH_ALPHA) + next * SMOOTH_ALPHA
-        };
+        let average = if previous <= 0.0 { next } else { previous * (1.0 - SMOOTH_ALPHA) + next * SMOOTH_ALPHA };
         (average * 10.0).round() / 10.0
     }
 

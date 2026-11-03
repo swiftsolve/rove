@@ -2,9 +2,7 @@
 //! diffed against a per-host baseline.
 use super::Store;
 use crate::diagnostics::InternetStatus;
-use crate::services::{
-    ConnectionChange, ServiceDef, ServiceEvent, ServiceReachability, ServiceStatus, ServicesReport,
-};
+use crate::services::{ConnectionChange, ServiceDef, ServiceEvent, ServiceReachability, ServiceStatus, ServicesReport};
 use rusqlite::{params, Connection};
 
 /// `meta` key for whether the services timeline sits inside a recorded
@@ -32,20 +30,14 @@ impl Store {
     /// While this machine has no internet, per-service diffing freezes: every
     /// probe fails because of *our* outage, so logging them would be a wall of
     /// false downs. The recovery then diffs against the real pre-outage state.
-    pub fn record_services(
-        &self,
-        report: &ServicesReport,
-        now_ms: i64,
-    ) -> rusqlite::Result<()> {
-
+    pub fn record_services(&self, report: &ServicesReport, now_ms: i64) -> rusqlite::Result<()> {
         if report.services.is_empty() {
             return Ok(());
         }
         let offline = !matches!(report.internet, InternetStatus::Online);
 
         let mut conn = self.lock();
-        let was_offline =
-            Self::read_meta(&conn, META_SERVICE_CONNECTION)?.as_deref() == Some("lost");
+        let was_offline = Self::read_meta(&conn, META_SERVICE_CONNECTION)?.as_deref() == Some("lost");
 
         let tx = conn.transaction()?;
 
@@ -74,11 +66,8 @@ impl Store {
         }
 
         let previous = Self::service_state(&tx)?;
-        let up_count = report
-            .services
-            .iter()
-            .filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up)
-            .count() as i64;
+        let up_count =
+            report.services.iter().filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up).count() as i64;
         let total_count = report.services.len() as i64;
 
         // Anchor a brand-new timeline with a summary instead of leaving it blank
@@ -148,11 +137,7 @@ impl Store {
         }
     }
 
-    fn set_service_state(
-        conn: &Connection,
-        host: &str,
-        status: ServiceStatus,
-    ) -> rusqlite::Result<()> {
+    fn set_service_state(conn: &Connection, host: &str, status: ServiceStatus) -> rusqlite::Result<()> {
         conn.execute(
             "INSERT INTO service_state (host, status) VALUES (?1, ?2)
              ON CONFLICT(host) DO UPDATE SET status = excluded.status",
@@ -163,9 +148,7 @@ impl Store {
 
     /// The last known status per host. A host absent from the map has never been
     /// seen, which the diff reads as "not currently down".
-    fn service_state(
-        conn: &Connection,
-    ) -> rusqlite::Result<std::collections::HashMap<String, ServiceStatus>> {
+    fn service_state(conn: &Connection) -> rusqlite::Result<std::collections::HashMap<String, ServiceStatus>> {
         let mut stmt = conn.prepare("SELECT host, status FROM service_state")?;
         let rows = stmt.query_map([], |row| {
             let host: String = row.get(0)?;
@@ -197,10 +180,7 @@ impl Store {
         Ok(count == 0)
     }
 
-    fn insert_service_event(
-        conn: &Connection,
-        event: &ServiceEvent,
-    ) -> rusqlite::Result<()> {
+    fn insert_service_event(conn: &Connection, event: &ServiceEvent) -> rusqlite::Result<()> {
         match event {
             ServiceEvent::Transition { host, name, status, ts } => conn.execute(
                 "INSERT INTO service_events (ts, type, host, name, status)
@@ -214,20 +194,20 @@ impl Store {
             )?,
             ServiceEvent::Connection { status, ts } => conn.execute(
                 "INSERT INTO service_events (ts, type, status) VALUES (?1, 'connection', ?2)",
-                params![ts, match status {
-                    ConnectionChange::Lost => "lost",
-                    ConnectionChange::Restored => "restored",
-                }],
+                params![
+                    ts,
+                    match status {
+                        ConnectionChange::Lost => "lost",
+                        ConnectionChange::Restored => "restored",
+                    }
+                ],
             )?,
         };
         Ok(())
     }
 
     fn prune_service_events(conn: &Connection, now_ms: i64) -> rusqlite::Result<()> {
-        conn.execute(
-            "DELETE FROM service_events WHERE ts < ?1",
-            [now_ms - SERVICE_EVENT_RETENTION_MS],
-        )?;
+        conn.execute("DELETE FROM service_events WHERE ts < ?1", [now_ms - SERVICE_EVENT_RETENTION_MS])?;
         conn.execute(
             "DELETE FROM service_events WHERE id NOT IN
                 (SELECT id FROM service_events ORDER BY ts DESC, id DESC LIMIT ?1)",
@@ -269,12 +249,9 @@ impl Store {
                 // A transition needs both a host and a label to render; a row
                 // missing either is corrupt, so drop it rather than invent one.
                 "transition" => match (host, name) {
-                    (Some(host), Some(name)) => Some(ServiceEvent::Transition {
-                        host,
-                        name,
-                        status: Self::parse_status(status.as_deref()),
-                        ts,
-                    }),
+                    (Some(host), Some(name)) => {
+                        Some(ServiceEvent::Transition { host, name, status: Self::parse_status(status.as_deref()), ts })
+                    }
                     _ => None,
                 },
                 _ => None,
@@ -299,9 +276,7 @@ impl Store {
     pub fn services(&self) -> rusqlite::Result<Vec<ServiceDef>> {
         let conn = self.lock();
         let mut stmt = conn.prepare("SELECT name, host FROM services ORDER BY position, rowid")?;
-        let rows = stmt.query_map([], |row| {
-            Ok(ServiceDef { name: row.get(0)?, host: row.get(1)? })
-        })?;
+        let rows = stmt.query_map([], |row| Ok(ServiceDef { name: row.get(0)?, host: row.get(1)? }))?;
         rows.collect()
     }
 
@@ -310,11 +285,8 @@ impl Store {
     pub fn add_service(&self, name: &str, host: &str) -> rusqlite::Result<Vec<ServiceDef>> {
         {
             let conn = self.lock();
-            let next: i64 = conn.query_row(
-                "SELECT COALESCE(MAX(position), -1) + 1 FROM services",
-                [],
-                |row| row.get(0),
-            )?;
+            let next: i64 =
+                conn.query_row("SELECT COALESCE(MAX(position), -1) + 1 FROM services", [], |row| row.get(0))?;
             conn.execute(
                 "INSERT INTO services (host, name, position) VALUES (?1, ?2, ?3)
                  ON CONFLICT(host) DO UPDATE SET name = excluded.name",
@@ -328,12 +300,7 @@ impl Store {
     /// If the new `host` is already listed elsewhere, the edit folds into that
     /// row (as re-adding it would); if `old_host` isn't listed, the service is
     /// appended. Returns the updated list.
-    pub fn update_service(
-        &self,
-        old_host: &str,
-        name: &str,
-        host: &str,
-    ) -> rusqlite::Result<Vec<ServiceDef>> {
+    pub fn update_service(&self, old_host: &str, name: &str, host: &str) -> rusqlite::Result<Vec<ServiceDef>> {
         let updated = {
             let conn = self.lock();
             // OR IGNORE: a new host that's already listed skips the row rather
@@ -421,11 +388,7 @@ mod tests {
         };
         ServicesReport {
             internet: InternetStatus::Online,
-            services: up
-                .iter()
-                .map(|h| svc(h, Some(12.0)))
-                .chain(down.iter().map(|h| svc(h, None)))
-                .collect(),
+            services: up.iter().map(|h| svc(h, Some(12.0))).chain(down.iter().map(|h| svc(h, None))).collect(),
         }
     }
 
@@ -443,17 +406,9 @@ mod tests {
     /// the wire shape.
     #[test]
     fn running_event_serializes_with_the_field_names_the_ui_reads() {
-        let json = serde_json::to_value(ServiceEvent::Running {
-            count: 5,
-            total: 6,
-            ts: 1_000,
-        })
-        .unwrap();
+        let json = serde_json::to_value(ServiceEvent::Running { count: 5, total: 6, ts: 1_000 }).unwrap();
 
-        assert_eq!(
-            json,
-            serde_json::json!({ "type": "running", "count": 5, "total": 6, "ts": 1_000 })
-        );
+        assert_eq!(json, serde_json::json!({ "type": "running", "count": 5, "total": 6, "ts": 1_000 }));
     }
 
     /// A service already down the first time we look makes the baseline partial.
@@ -461,15 +416,10 @@ mod tests {
     #[test]
     fn services_first_sight_baseline_is_partial_when_one_is_already_down() {
         let store = Store::open_in_memory().unwrap();
-        store
-            .record_services(&report(&["a.com", "b.com"], &["c.com"]), 1_000)
-            .unwrap();
+        store.record_services(&report(&["a.com", "b.com"], &["c.com"]), 1_000).unwrap();
 
         let events = store.service_events().unwrap();
-        let baseline = events
-            .iter()
-            .find(|e| matches!(e, ServiceEvent::Running { .. }))
-            .expect("a baseline summary");
+        let baseline = events.iter().find(|e| matches!(e, ServiceEvent::Running { .. })).expect("a baseline summary");
         assert_eq!(*baseline, ServiceEvent::Running { count: 2, total: 3, ts: 1_000 });
     }
 
@@ -526,10 +476,7 @@ mod tests {
         // means no phantom "recovery" for services that never actually fell.
         store.record_services(&report(&["a.com", "b.com"], &[]), 4_000).unwrap();
         let events = store.service_events().unwrap();
-        assert_eq!(
-            events[0],
-            ServiceEvent::Connection { status: ConnectionChange::Restored, ts: 4_000 }
-        );
+        assert_eq!(events[0], ServiceEvent::Connection { status: ConnectionChange::Restored, ts: 4_000 });
         assert_eq!(events.len(), 3);
     }
 
@@ -543,10 +490,7 @@ mod tests {
         store.record_services(&erroring, 2_000).unwrap();
 
         let events = store.service_events().unwrap();
-        assert!(matches!(
-            &events[0],
-            ServiceEvent::Transition { status: ServiceStatus::Down, ts: 2_000, .. }
-        ));
+        assert!(matches!(&events[0], ServiceEvent::Transition { status: ServiceStatus::Down, ts: 2_000, .. }));
     }
 
     #[test]

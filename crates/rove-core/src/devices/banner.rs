@@ -55,11 +55,7 @@ pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, Ban
     }
 
     // LAN requests must never go through an ambient HTTP proxy.
-    let Ok(client) = reqwest::Client::builder()
-        .no_proxy()
-        .timeout(GRAB_TIMEOUT)
-        .build()
-    else {
+    let Ok(client) = reqwest::Client::builder().no_proxy().timeout(GRAB_TIMEOUT).build() else {
         return HashMap::new();
     };
 
@@ -126,10 +122,7 @@ mod tests {
 
     #[test]
     fn title_with_attributes_is_handled() {
-        assert_eq!(
-            extract_title(r#"<title id="t">NETGEAR Router</title>"#).as_deref(),
-            Some("NETGEAR Router")
-        );
+        assert_eq!(extract_title(r#"<title id="t">NETGEAR Router</title>"#).as_deref(), Some("NETGEAR Router"));
     }
 
     #[test]

@@ -34,7 +34,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          components: clippy
+          components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
 
       - uses: actions/setup-node@v6
@@ -49,6 +49,9 @@ jobs:
 
       # On every OS, so each platform's cfg-gated code (ETW on Windows,
       # CoreWLAN on macOS) is linted where it compiles. Lints: Cargo.toml.
+      - name: Rust format
+        run: cargo fmt --all -- --check
+
       - name: Lint service layer
         run: cargo clippy -p rove-core --all-targets -- -D warnings
 

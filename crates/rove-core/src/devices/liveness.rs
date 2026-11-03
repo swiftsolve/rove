@@ -41,8 +41,7 @@ struct Streak {
     silent_since: Instant,
 }
 
-static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Fold this scan's result for `mac` into its miss streak and return whether
 /// the device still reads as reachable.
@@ -57,12 +56,9 @@ fn record_and_check_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
         streaks.remove(mac);
         return true;
     }
-    let streak = streaks
-        .entry(mac.to_string())
-        .or_insert(Streak { misses: 0, silent_since: now });
+    let streak = streaks.entry(mac.to_string()).or_insert(Streak { misses: 0, silent_since: now });
     streak.misses += 1;
-    let is_gone = streak.misses >= MISS_LIMIT
-        && now.duration_since(streak.silent_since) >= MIN_ABSENCE;
+    let is_gone = streak.misses >= MISS_LIMIT && now.duration_since(streak.silent_since) >= MIN_ABSENCE;
     !is_gone
 }
 

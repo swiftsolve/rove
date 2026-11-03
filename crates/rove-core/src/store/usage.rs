@@ -19,11 +19,9 @@ impl Store {
     pub fn usage_day(&self, date: &str) -> rusqlite::Result<(u64, u64)> {
         let conn = self.lock();
         let row = conn
-            .query_row(
-                "SELECT rx_bytes, tx_bytes FROM usage_day WHERE date = ?1",
-                [date],
-                |row| Ok((row.get::<_, i64>(0)? as u64, row.get::<_, i64>(1)? as u64)),
-            )
+            .query_row("SELECT rx_bytes, tx_bytes FROM usage_day WHERE date = ?1", [date], |row| {
+                Ok((row.get::<_, i64>(0)? as u64, row.get::<_, i64>(1)? as u64))
+            })
             .optional()?;
         Ok(row.unwrap_or((0, 0)))
     }

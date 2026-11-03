@@ -11,10 +11,7 @@ use rove_core::devices::dhcp;
 
 #[tokio::main]
 async fn main() {
-    let path = std::env::args()
-        .nth(1)
-        .map(std::path::PathBuf::from)
-        .unwrap_or_else(dhcp::helper_cache_path);
+    let path = std::env::args().nth(1).map(std::path::PathBuf::from).unwrap_or_else(dhcp::helper_cache_path);
 
     eprintln!("rove-dhcp-helper: capturing DHCP fingerprints to {}", path.display());
     if let Err(e) = dhcp::run_capture_to_file(&path).await {

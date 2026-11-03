@@ -98,8 +98,7 @@ impl RawCapture {
     }
 
     fn into_hit(self) -> (String, DhcpHit) {
-        let (kind, os) =
-            classify_fingerprint(self.vendor_class.as_deref(), self.fingerprint.as_deref());
+        let (kind, os) = classify_fingerprint(self.vendor_class.as_deref(), self.fingerprint.as_deref());
         let hit = DhcpHit {
             fingerprint: self.fingerprint,
             vendor_class: self.vendor_class,
@@ -113,8 +112,7 @@ impl RawCapture {
 
 /// Lifetime cache of everything the background listener has seen, keyed by
 /// normalized MAC (12 lowercase hex chars, no separators).
-static CACHE: LazyLock<Mutex<HashMap<String, DhcpHit>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static CACHE: LazyLock<Mutex<HashMap<String, DhcpHit>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 /// Ensures the listener is spawned at most once, on the first scan.
 static START: Once = Once::new();
 
@@ -287,9 +285,7 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
         let val = &buf[start..end];
         match code {
             OPT_MESSAGE_TYPE => msg_type = val.first().copied(),
-            OPT_PARAMETER_REQUEST_LIST => {
-                prl = Some(val.iter().map(u8::to_string).collect::<Vec<_>>().join(","))
-            }
+            OPT_PARAMETER_REQUEST_LIST => prl = Some(val.iter().map(u8::to_string).collect::<Vec<_>>().join(",")),
             OPT_VENDOR_CLASS => vendor_class = clean_str(val),
             OPT_HOSTNAME => hostname = clean_str(val),
             _ => {}
@@ -368,10 +364,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
 
 /// Best-effort `(kind, os)` for a fingerprint. The first matching row wins, and
 /// vendor-class rows come before the version-sensitive PRL rows.
-fn classify_fingerprint(
-    vendor_class: Option<&str>,
-    prl: Option<&str>,
-) -> (Option<&'static str>, Option<&'static str>) {
+fn classify_fingerprint(vendor_class: Option<&str>, prl: Option<&str>) -> (Option<&'static str>, Option<&'static str>) {
     let vendor_lc = vendor_class.map(|v| v.to_ascii_lowercase());
     for row in fingerprint_table() {
         let matched = match row.matcher {
@@ -423,7 +416,8 @@ mod tests {
 
     #[test]
     fn android_vendor_class_is_a_phone() {
-        let opts = [53, 1, 1, 60, 14, b'a', b'n', b'd', b'r', b'o', b'i', b'd', b'-', b'd', b'h', b'c', b'p', b'-', b'9'];
+        let opts =
+            [53, 1, 1, 60, 14, b'a', b'n', b'd', b'r', b'o', b'i', b'd', b'-', b'd', b'h', b'c', b'p', b'-', b'9'];
         let (_, hit) = parse_packet(&packet(&opts)).expect("valid");
         assert_eq!(hit.kind, Some("phone"));
         assert_eq!(hit.os, Some("Android"));
@@ -466,16 +460,10 @@ mod tests {
     #[test]
     fn prl_prefix_table_lookups() {
         // Apple's shared iOS/macOS PRL: OS known, kind deliberately left open.
-        assert_eq!(
-            classify_fingerprint(None, Some("1,121,3,6,15,119,252")),
-            (None, Some("Apple")),
-        );
+        assert_eq!(classify_fingerprint(None, Some("1,121,3,6,15,119,252")), (None, Some("Apple")),);
         // A real modern-iOS capture whose tail drifted from the classic PRL, so
         // the match must key on the "1,121,3,6,15" prefix.
-        assert_eq!(
-            classify_fingerprint(None, Some("1,121,3,6,15,108,114,119,162,252")),
-            (None, Some("Apple")),
-        );
+        assert_eq!(classify_fingerprint(None, Some("1,121,3,6,15,108,114,119,162,252")), (None, Some("Apple")),);
         // Trailing options still match the prefix.
         assert_eq!(
             classify_fingerprint(None, Some("1,15,3,6,44,46,47,31,33,121,249,43,252")),
@@ -489,10 +477,7 @@ mod tests {
         );
         // The bare 26,28,51,58,59 signature (no trailing 43) and newer builds
         // that extend the tail differently both resolve off the shortened prefix.
-        assert_eq!(
-            classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59")),
-            (Some("phone"), Some("Android")),
-        );
+        assert_eq!(classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59")), (Some("phone"), Some("Android")),);
         assert_eq!(
             classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,108,109,114,252")),
             (Some("phone"), Some("Android")),

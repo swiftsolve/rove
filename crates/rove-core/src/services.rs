@@ -27,10 +27,7 @@ pub const DEFAULT_SERVICES: &[(&str, &str)] = &[
 /// The defaults as owned `ServiceDef`s: the fallback when the store can't be
 /// read, so the Services view never blanks on a transient database error.
 pub fn default_service_list() -> Vec<ServiceDef> {
-    DEFAULT_SERVICES
-        .iter()
-        .map(|&(name, host)| ServiceDef { name: name.to_string(), host: host.to_string() })
-        .collect()
+    DEFAULT_SERVICES.iter().map(|&(name, host)| ServiceDef { name: name.to_string(), host: host.to_string() }).collect()
 }
 
 /// Service reachability plus this machine's internet verdict, probed as one
@@ -153,14 +150,8 @@ pub async fn probe_service(host: &str) -> Option<f64> {
 /// that's reachable but erroring doesn't read as a clean green latency.
 pub async fn service_reachability(services: &[ServiceDef]) -> Vec<ServiceReachability> {
     let probes = services.iter().map(|svc| async move {
-        let (latency_ms, http_status) =
-            tokio::join!(handshake_latency(&svc.host), service_health(&svc.host));
-        ServiceReachability {
-            name: svc.name.clone(),
-            host: svc.host.clone(),
-            latency_ms,
-            http_status,
-        }
+        let (latency_ms, http_status) = tokio::join!(handshake_latency(&svc.host), service_health(&svc.host));
+        ServiceReachability { name: svc.name.clone(), host: svc.host.clone(), latency_ms, http_status }
     });
     futures_util::future::join_all(probes).await
 }
@@ -170,10 +161,6 @@ pub async fn service_reachability(services: &[ServiceDef]) -> Vec<ServiceReachab
 /// lets `classify_internet` tell "WAN down" (still on a LAN) from "no network".
 pub async fn run_services(service_list: &[ServiceDef]) -> ServicesReport {
     let gateway = crate::connection::default_gateway().await;
-    let (internet, services) =
-        tokio::join!(diagnostics::internet_reachable(), service_reachability(service_list));
-    ServicesReport {
-        internet: diagnostics::classify_internet(internet, gateway.as_deref()),
-        services,
-    }
+    let (internet, services) = tokio::join!(diagnostics::internet_reachable(), service_reachability(service_list));
+    ServicesReport { internet: diagnostics::classify_internet(internet, gateway.as_deref()), services }
 }

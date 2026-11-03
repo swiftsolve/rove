@@ -97,17 +97,14 @@ struct PeerAcc {
 /// Cumulative bytes per process instance since the trace started, read by
 /// [`sample_units`]. Monotonic per instance, so the tracker diffs it like a
 /// kernel counter.
-static ACC: LazyLock<Mutex<HashMap<Instance, ByteAcc>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static ACC: LazyLock<Mutex<HashMap<Instance, ByteAcc>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 /// Cumulative bytes per connection, keyed by its `local|peer` address pair,
 /// read by [`sample_peer_units`]. Zero-based and monotonic like [`ACC`].
-static PEER_ACC: LazyLock<Mutex<HashMap<String, PeerAcc>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static PEER_ACC: LazyLock<Mutex<HashMap<String, PeerAcc>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 /// This host's addresses, to tell which end of an event's (source,
 /// destination) pair is the peer. Refreshed per sample, not per event, since
 /// they rarely change.
-static LOCAL_IPS: LazyLock<RwLock<HashSet<IpAddr>>> =
-    LazyLock::new(|| RwLock::new(local_ips()));
+static LOCAL_IPS: LazyLock<RwLock<HashSet<IpAddr>>> = LazyLock::new(|| RwLock::new(local_ips()));
 /// Instance to process name. `Some(None)` is a tombstone: the lookup failed,
 /// so it isn't retried on every event for a PID that's already gone.
 ///
@@ -115,16 +112,13 @@ static LOCAL_IPS: LazyLock<RwLock<HashSet<IpAddr>>> =
 /// ([`on_process_event`], unaffected by the process exiting), a
 /// `QueryFullProcessImageNameW` on first sighting ([`note_instance`]), and the
 /// process table at sample time ([`refresh_names`]).
-static NAMES: LazyLock<RwLock<HashMap<Instance, Option<String>>>> =
-    LazyLock::new(|| RwLock::new(HashMap::new()));
+static NAMES: LazyLock<RwLock<HashMap<Instance, Option<String>>>> = LazyLock::new(|| RwLock::new(HashMap::new()));
 /// PID to how many times it has been seen to start; absent means generation
 /// 0. Bounded by the PID space, in practice a few thousand values.
-static GENERATION: LazyLock<RwLock<HashMap<u32, u32>>> =
-    LazyLock::new(|| RwLock::new(HashMap::new()));
+static GENERATION: LazyLock<RwLock<HashMap<u32, u32>>> = LazyLock::new(|| RwLock::new(HashMap::new()));
 /// Instances whose process has exited, awaiting one last sample before
 /// [`prune_ended`] drops them.
-static ENDED: LazyLock<Mutex<HashSet<Instance>>> =
-    LazyLock::new(|| Mutex::new(HashSet::new()));
+static ENDED: LazyLock<Mutex<HashSet<Instance>>> = LazyLock::new(|| Mutex::new(HashSet::new()));
 /// Whether the trace session is running. Start is retried every sample until
 /// it sticks, not tried once: a first attempt can fail for a recoverable reason
 /// (a previous session still tearing down), and giving up would leave the
@@ -156,9 +150,7 @@ fn write<T>(rw: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
 /// This host's interface IPs, v4 and v6. An error gives an empty set, and the
 /// peer pick in [`on_event`] falls back to the packet direction.
 fn local_ips() -> HashSet<IpAddr> {
-    if_addrs::get_if_addrs()
-        .map(|addrs| addrs.into_iter().map(|a| a.ip()).collect())
-        .unwrap_or_default()
+    if_addrs::get_if_addrs().map(|addrs| addrs.into_iter().map(|a| a.ip()).collect()).unwrap_or_default()
 }
 
 /// A `win:Port` field is big-endian (network order) but ferrisetw reads it as
@@ -214,11 +206,7 @@ fn on_process_event(record: &EventRecord, locator: &SchemaLocator) {
         let generation = generations.entry(pid).and_modify(|g| *g += 1).or_insert(1);
         instance(pid, *generation)
     };
-    let name = parser
-        .try_parse::<String>("ImageName")
-        .ok()
-        .as_deref()
-        .and_then(image_base_name);
+    let name = parser.try_parse::<String>("ImageName").ok().as_deref().and_then(image_base_name);
     write(&NAMES).insert(inst, name);
 }
 
@@ -319,11 +307,8 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
         }
     };
 
-    let conn_key = format!(
-        "{local_ip}:{}|{peer_ip}:{}",
-        host_port(local_port).unwrap_or(0),
-        host_port(peer_port).unwrap_or(0)
-    );
+    let conn_key =
+        format!("{local_ip}:{}|{peer_ip}:{}", host_port(local_port).unwrap_or(0), host_port(peer_port).unwrap_or(0));
     let mut peers = lock(&PEER_ACC);
     let entry = peers.entry(conn_key).or_insert_with(|| PeerAcc {
         inst,
@@ -376,16 +361,11 @@ fn ensure_started() {
 /// The consumer runs on its own thread (`process_from_handle` blocks), and the
 /// `UserTrace` is leaked because dropping it would stop tracing.
 fn try_start() -> Result<(), TraceError> {
-    let processes = Provider::by_guid(PROCESS_PROVIDER_GUID)
-        .add_callback(on_process_event)
-        .any(KEYWORD_PROCESS)
-        .build();
+    let processes =
+        Provider::by_guid(PROCESS_PROVIDER_GUID).add_callback(on_process_event).any(KEYWORD_PROCESS).build();
     let provider = Provider::by_guid(PROVIDER_GUID).add_callback(on_event).build();
-    let (trace, handle) = UserTrace::new()
-        .named(String::from(SESSION_NAME))
-        .enable(processes)
-        .enable(provider)
-        .start()?;
+    let (trace, handle) =
+        UserTrace::new().named(String::from(SESSION_NAME)).enable(processes).enable(provider).start()?;
     std::thread::spawn(move || {
         let _ = UserTrace::process_from_handle(handle);
     });
@@ -454,11 +434,7 @@ fn refresh_names(instances: &[Instance]) {
 /// The display name for an instance, falling back to the shared
 /// [`UNRESOLVED_LABEL`] bucket.
 fn label(names: &HashMap<Instance, Option<String>>, inst: Instance) -> String {
-    names
-        .get(&inst)
-        .cloned()
-        .flatten()
-        .unwrap_or_else(|| UNRESOLVED_LABEL.to_owned())
+    names.get(&inst).cloned().flatten().unwrap_or_else(|| UNRESOLVED_LABEL.to_owned())
 }
 
 /// Forget exited instances, but only those in `sampled`, whose bytes have just
@@ -477,8 +453,7 @@ fn prune_ended(sampled: &[Instance]) {
         if ended.is_empty() {
             return;
         }
-        let done: Vec<Instance> =
-            sampled.iter().copied().filter(|inst| ended.contains(inst)).collect();
+        let done: Vec<Instance> = sampled.iter().copied().filter(|inst| ended.contains(inst)).collect();
         for inst in &done {
             ended.remove(inst);
         }
@@ -536,8 +511,7 @@ pub fn sample_peer_units() -> Vec<PeerUnit> {
     let snapshot: Vec<(String, PeerAcc)> = {
         let mut peers = lock(&PEER_ACC);
         peers.retain(|_, e| e.touched);
-        let snap: Vec<(String, PeerAcc)> =
-            peers.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        let snap: Vec<(String, PeerAcc)> = peers.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
         for e in peers.values_mut() {
             e.touched = false;
         }
@@ -574,10 +548,7 @@ mod tests {
             image_base_name(r"\Device\HarddiskVolume4\Windows\System32\svchost.exe").as_deref(),
             Some("svchost.exe"),
         );
-        assert_eq!(
-            image_base_name(r"C:\Program Files\Rove\Rove.exe").as_deref(),
-            Some("Rove.exe"),
-        );
+        assert_eq!(image_base_name(r"C:\Program Files\Rove\Rove.exe").as_deref(), Some("Rove.exe"),);
         // Nothing usable rather than an empty label the UI would render blank.
         assert_eq!(image_base_name(""), None);
         assert_eq!(image_base_name(r"C:\dir\"), None);

@@ -1,8 +1,8 @@
 //! The roster of LAN devices seen across scans, and the feed events a scan
 //! diff derives from it: joins, departures, returns and gateway changes.
 use super::events::{
-    is_connected_identity, EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE,
-    EVENT_DEVICE_ONLINE, EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
+    is_connected_identity, EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE, EVENT_DEVICE_ONLINE,
+    EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
 };
 use super::Store;
 use crate::devices::LanDevice;
@@ -46,8 +46,7 @@ pub const OFFLINE_LIST_KEEP_MS: i64 = 24 * 60 * 60 * 1000;
 const META_GATEWAY_MAC: &str = "gateway_mac";
 
 /// The `known_devices` columns in the order `known_device_from_row` reads them.
-const KNOWN_DEVICE_COLUMNS: &str =
-    "mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized";
+const KNOWN_DEVICE_COLUMNS: &str = "mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized";
 
 fn known_device_from_row(row: &Row) -> rusqlite::Result<KnownDevice> {
     Ok(KnownDevice {
@@ -105,10 +104,7 @@ impl Store {
     /// Bump only `ip` and `last_seen` of an existing row. For the passive
     /// refresh, whose thin evidence must never overwrite a better identity.
     fn bump_last_seen(conn: &Connection, mac: &str, ip: &str, now_ms: i64) -> rusqlite::Result<()> {
-        conn.execute(
-            "UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1",
-            params![mac, ip, now_ms],
-        )?;
+        conn.execute("UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1", params![mac, ip, now_ms])?;
         Ok(())
     }
 
@@ -142,15 +138,7 @@ impl Store {
                     // Mirror `record_devices`' online transition, so a device
                     // returning while the window is hidden still lands on the feed.
                     if is_marked_offline(&last_event, &device.mac) {
-                        Self::record_event(
-                            &tx,
-                            now_ms,
-                            EVENT_DEVICE_ONLINE,
-                            "info",
-                            device,
-                            None,
-                            None,
-                        )?;
+                        Self::record_event(&tx, now_ms, EVENT_DEVICE_ONLINE, "info", device, None, None)?;
                     }
                     Self::bump_last_seen(&tx, &device.mac, &device.ip, now_ms)?;
                 }
@@ -188,11 +176,8 @@ impl Store {
         // min). The debounce in `devices/liveness.rs` holds a device reachable
         // across a brief sleep or a burst of scans seconds apart, so this doesn't
         // flap.
-        let live: HashSet<&str> = devices
-            .iter()
-            .filter(|d| !d.mac.is_empty() && d.is_reachable)
-            .map(|d| d.mac.as_str())
-            .collect();
+        let live: HashSet<&str> =
+            devices.iter().filter(|d| !d.mac.is_empty() && d.is_reachable).map(|d| d.mac.as_str()).collect();
 
         for device in devices.iter().filter(|d| !d.mac.is_empty()) {
             if !is_seeding_feed {
@@ -206,15 +191,7 @@ impl Store {
                         // Gate on `is_reachable` so a device back in the ARP
                         // table but not answering doesn't read as reconnected.
                         if device.is_reachable && is_marked_offline(&last_event, &device.mac) {
-                            Self::record_event(
-                                &tx,
-                                now_ms,
-                                EVENT_DEVICE_ONLINE,
-                                "info",
-                                device,
-                                None,
-                                None,
-                            )?;
+                            Self::record_event(&tx, now_ms, EVENT_DEVICE_ONLINE, "info", device, None, None)?;
                         }
                         // Identity changes (hostname, IP, vendor, kind) aren't
                         // logged: they proved too noisy.
@@ -312,8 +289,7 @@ impl Store {
             "SELECT mac, type FROM network_events WHERE id IN
                 (SELECT MAX(id) FROM network_events WHERE mac IS NOT NULL GROUP BY mac)",
         )?;
-        let rows =
-            stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?;
+        let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?;
         let mut map = HashMap::new();
         for row in rows {
             let (mac, event_type) = row?;
@@ -333,11 +309,7 @@ impl Store {
         Self::record_event(conn, ts, event_type, severity, device, None, None)
     }
 
-    fn detect_gateway_change(
-        conn: &Connection,
-        devices: &[LanDevice],
-        ts: i64,
-    ) -> rusqlite::Result<()> {
+    fn detect_gateway_change(conn: &Connection, devices: &[LanDevice], ts: i64) -> rusqlite::Result<()> {
         let Some(gateway) = devices.iter().find(|d| d.is_gateway && !d.mac.is_empty()) else {
             return Ok(());
         };
@@ -361,9 +333,8 @@ impl Store {
     /// Every device we've ever recorded, most-recently-seen first.
     pub fn known_devices(&self) -> rusqlite::Result<Vec<KnownDevice>> {
         let conn = self.lock();
-        let mut stmt = conn.prepare(&format!(
-            "SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices ORDER BY last_seen DESC"
-        ))?;
+        let mut stmt =
+            conn.prepare(&format!("SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices ORDER BY last_seen DESC"))?;
         let rows = stmt.query_map([], known_device_from_row)?;
         rows.collect()
     }
@@ -379,14 +350,9 @@ impl Store {
         now_ms: i64,
         keep_ms: i64,
     ) -> rusqlite::Result<Vec<LanDevice>> {
-        let live_macs: HashSet<&str> =
-            live.iter().map(|d| d.mac.as_str()).filter(|m| !m.is_empty()).collect();
-        let known: HashMap<String, KnownDevice> = self
-            .known_devices()?
-            .into_iter()
-            .filter(|kd| !kd.mac.is_empty())
-            .map(|kd| (kd.mac.clone(), kd))
-            .collect();
+        let live_macs: HashSet<&str> = live.iter().map(|d| d.mac.as_str()).filter(|m| !m.is_empty()).collect();
+        let known: HashMap<String, KnownDevice> =
+            self.known_devices()?.into_iter().filter(|kd| !kd.mac.is_empty()).map(|kd| (kd.mac.clone(), kd)).collect();
         let mut merged: Vec<LanDevice> = live
             .iter()
             .cloned()

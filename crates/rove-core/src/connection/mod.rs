@@ -52,8 +52,7 @@ pub async fn default_gateway() -> Option<String> {
     // `!/linkdown/` drops the stale gateway of a just-unplugged NIC, so
     // diagnostics read Offline rather than a misleading NoInternet. Same filter
     // as `default_interface`.
-    let ip_route =
-        try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await;
+    let ip_route = try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await;
     if let Some(ip) = ip_route.as_deref().and_then(trimmed_non_empty) {
         return Some(ip);
     }
@@ -99,9 +98,7 @@ pub async fn dns_servers() -> Vec<String> {
         return platform::windows::dns_servers().await;
     }
     // Linux and macOS both keep the active resolvers in resolv.conf.
-    if let Some(out) =
-        try_run("grep '^nameserver' /etc/resolv.conf 2>/dev/null | awk '{print $2}'").await
-    {
+    if let Some(out) = try_run("grep '^nameserver' /etc/resolv.conf 2>/dev/null | awk '{print $2}'").await {
         return out.lines().map(str::trim).filter(|l| !l.is_empty()).map(String::from).collect();
     }
     Vec::new()
@@ -130,9 +127,7 @@ pub async fn connection_details(iface: &str, connection_type: &str) -> Connectio
 /// Linux. Wrong on macOS, where Wi-Fi is `enN` too.
 pub fn infer_connection_type(name: &str) -> &'static str {
     let lower = name.to_lowercase();
-    if cfg!(target_os = "linux")
-        && std::path::Path::new(&format!("/sys/class/net/{name}/wireless")).exists()
-    {
+    if cfg!(target_os = "linux") && std::path::Path::new(&format!("/sys/class/net/{name}/wireless")).exists() {
         return "wifi";
     }
     if lower.starts_with("wl") || lower.contains("wi-fi") || lower.contains("wlan") || lower.contains("airport") {
@@ -146,10 +141,7 @@ pub fn infer_connection_type(name: &str) -> &'static str {
 /// `curl`, which a stock Windows or minimal Linux install lacks and which would
 /// bypass our TLS config.
 pub async fn public_ip() -> Option<String> {
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(5))
-        .build()
-        .ok()?;
+    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(5)).build().ok()?;
     let response = client.get("https://api.ipify.org").send().await.ok()?;
     // The parse below would reject an error page too, but that looks the same as
     // being offline. Log which it was.
@@ -163,8 +155,7 @@ pub async fn public_ip() -> Option<String> {
 }
 
 pub async fn network_info() -> NetworkInfo {
-    let (iface, gateway, dns) =
-        tokio::join!(default_interface(), default_gateway(), dns_servers());
+    let (iface, gateway, dns) = tokio::join!(default_interface(), default_gateway(), dns_servers());
 
     let Some(iface) = iface else {
         return NetworkInfo {

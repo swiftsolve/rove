@@ -35,6 +35,7 @@ checked.
 npm run check                # typecheck, lint, the repo's checks, and every Vitest test
 cargo test -p rove-core      # when Rust changed
 cargo clippy --workspace --all-targets -- -D warnings   # likewise
+cargo fmt --all              # likewise (rustfmt.toml)
 ```
 
 Lint enforces the house rules (boolean prefixes, no em dash in copy,

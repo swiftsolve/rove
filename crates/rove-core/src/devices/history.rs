@@ -60,8 +60,7 @@ fn fill(dst: &mut Option<String>, src: &Option<String>) {
     }
 }
 
-static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// How authoritative a display name is, by source. `build_device`'s name chain
 /// follows this order within a scan; the rank carries it across scans, so a
@@ -86,8 +85,7 @@ pub enum NameRank {
 /// it. Remembering the name keeps the label and the kind stable: an
 /// "Office-LaserJet" stays a printer instead of falling back to its HP OUI
 /// (computer) on a nameless scan.
-static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Merge this scan's `fresh` signals for `mac` and return the union to
 /// classify from.
@@ -188,10 +186,7 @@ mod tests {
         // A Kasa plug's reverse DNS resolves "HS103" one scan and nothing the
         // next.
         let mac = "aa:bb:cc:00:00:02";
-        assert_eq!(
-            stable_name(mac, Some(("HS103".into(), NameRank::ReverseDns))).as_deref(),
-            Some("HS103")
-        );
+        assert_eq!(stable_name(mac, Some(("HS103".into(), NameRank::ReverseDns))).as_deref(), Some("HS103"));
         assert_eq!(stable_name(mac, None).as_deref(), Some("HS103"));
     }
 
@@ -199,10 +194,7 @@ mod tests {
     fn a_freshly_resolved_name_replaces_the_remembered_one_at_the_same_tier() {
         let mac = "aa:bb:cc:00:00:03";
         stable_name(mac, Some(("old-name".into(), NameRank::Mdns)));
-        assert_eq!(
-            stable_name(mac, Some(("new-name".into(), NameRank::Mdns))).as_deref(),
-            Some("new-name")
-        );
+        assert_eq!(stable_name(mac, Some(("new-name".into(), NameRank::Mdns))).as_deref(), Some("new-name"));
         assert_eq!(stable_name(mac, None).as_deref(), Some("new-name"));
     }
 
@@ -210,10 +202,7 @@ mod tests {
     fn a_stronger_signal_upgrades_the_remembered_name() {
         let mac = "aa:bb:cc:00:00:04";
         stable_name(mac, Some(("living-room".into(), NameRank::ReverseDns)));
-        assert_eq!(
-            stable_name(mac, Some(("Kitchen-Sonos".into(), NameRank::Mdns))).as_deref(),
-            Some("Kitchen-Sonos")
-        );
+        assert_eq!(stable_name(mac, Some(("Kitchen-Sonos".into(), NameRank::Mdns))).as_deref(), Some("Kitchen-Sonos"));
     }
 
     #[test]

@@ -7,8 +7,8 @@ use bytes::Bytes;
 use capabilities::{assess, CapabilityRating};
 use futures_util::{stream, StreamExt};
 use serde::Serialize;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Serialize)]
@@ -50,10 +50,8 @@ pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
 ///   - Cloudflare rate-limits by request volume and returns 429 under heavy
 ///     use. A worker then moves to DataPacket, a CDN test file that doesn't
 ///     throttle per connection, so download still reports a real number.
-const DOWNLOAD_URLS: [&str; 2] = [
-    "https://speed.cloudflare.com/__down?bytes=90000000",
-    "https://nyc.download.datapacket.com/100mb.bin",
-];
+const DOWNLOAD_URLS: [&str; 2] =
+    ["https://speed.cloudflare.com/__down?bytes=90000000", "https://nyc.download.datapacket.com/100mb.bin"];
 const UPLOAD_URL: &str = "https://speed.cloudflare.com/__up";
 const PING_HOST: &str = "1.1.1.1";
 
@@ -111,10 +109,7 @@ struct Counters {
 
 impl Counters {
     fn new() -> Self {
-        Self {
-            raw: Arc::new(AtomicU64::new(0)),
-            counted: Arc::new(AtomicU64::new(0)),
-        }
+        Self { raw: Arc::new(AtomicU64::new(0)), counted: Arc::new(AtomicU64::new(0)) }
     }
 
     /// Record `n` transferred bytes; `now` decides whether they fall in the
@@ -194,8 +189,7 @@ async fn download_worker(
         };
         let mut stream = response.bytes_stream();
 
-        while let Ok(Some(chunk)) = tokio::time::timeout(STALL_TIMEOUT, stream.next()).await
-        {
+        while let Ok(Some(chunk)) = tokio::time::timeout(STALL_TIMEOUT, stream.next()).await {
             let Ok(chunk) = chunk else { break };
             let now = Instant::now();
             counters.add(chunk.len() as u64, now, measure_start);
@@ -210,11 +204,7 @@ pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
     // HTTP/1.1 only: over HTTP/2 reqwest coalesces every worker onto one TCP
     // connection, whose shared flow-control window collapses the measured rate.
     // HTTP/1.1 can't multiplex, so each worker gets its own connection.
-    let Ok(client) = reqwest::Client::builder()
-        .timeout(REQUEST_TIMEOUT)
-        .http1_only()
-        .build()
-    else {
+    let Ok(client) = reqwest::Client::builder().timeout(REQUEST_TIMEOUT).http1_only().build() else {
         tracing::error!("could not build HTTP client for download test");
         return 0.0;
     };
@@ -223,15 +213,8 @@ pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
     let deadline = measure_start + WINDOW;
     let counters = Counters::new();
 
-    let spawn = || {
-        tokio::spawn(download_worker(
-            client.clone(),
-            measure_start,
-            deadline,
-            cancel.clone(),
-            counters.clone(),
-        ))
-    };
+    let spawn =
+        || tokio::spawn(download_worker(client.clone(), measure_start, deadline, cancel.clone(), counters.clone()));
 
     let bytes = adaptive_transfer(&counters, measure_start, deadline, cancel, spawn).await;
     mbps(bytes, start.elapsed().saturating_sub(WARMUP))
@@ -275,11 +258,7 @@ async fn upload_worker(
 
 pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
     // HTTP/1.1 only, as for download: one connection per worker.
-    let Ok(client) = reqwest::Client::builder()
-        .timeout(REQUEST_TIMEOUT)
-        .http1_only()
-        .build()
-    else {
+    let Ok(client) = reqwest::Client::builder().timeout(REQUEST_TIMEOUT).http1_only().build() else {
         tracing::error!("could not build HTTP client for upload test");
         return 0.0;
     };
@@ -318,10 +297,7 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
 /// `network_info()` probe (10 s+ on Windows with a VPN and other virtual
 /// adapters), and waiting on it froze the UI at "Starting speed test…". The
 /// command runs that probe alongside the test instead.
-pub async fn run<F: Fn(SpeedTestProgress)>(
-    cancel: Arc<AtomicBool>,
-    report: F,
-) -> Result<SpeedTestResult, String> {
+pub async fn run<F: Fn(SpeedTestProgress)>(cancel: Arc<AtomicBool>, report: F) -> Result<SpeedTestResult, String> {
     let ensure_not_cancelled = || {
         if cancel.load(Ordering::Relaxed) {
             Err(CANCELLED.to_string())

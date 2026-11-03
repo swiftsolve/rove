@@ -62,9 +62,7 @@ pub async fn probe(subnet: &str) -> ProbeResult {
     };
     // Materialize the (host, port) pairs so the stream has a plain owned source
     // and the resulting future stays `Send + 'static` for the Tauri command.
-    let targets: Vec<(Ipv4Addr, u16)> = hosts
-        .flat_map(|ip| PROBE_PORTS.iter().map(move |&port| (ip, port)))
-        .collect();
+    let targets: Vec<(Ipv4Addr, u16)> = hosts.flat_map(|ip| PROBE_PORTS.iter().map(move |&port| (ip, port))).collect();
 
     let answers: Vec<(String, Option<u16>)> = futures_util::stream::iter(targets)
         .map(|(ip, port)| async move {
@@ -73,9 +71,7 @@ pub async fn probe(subnet: &str) -> ProbeResult {
                 Ok(Ok(_stream)) => Some((ip.to_string(), Some(port))),
                 // Refused (RST): the port is closed but the host is alive. This
                 // catches a power-saving phone that ignores ICMP.
-                Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => {
-                    Some((ip.to_string(), None))
-                }
+                Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => Some((ip.to_string(), None)),
                 // Timeout or unreachable proves nothing.
                 _ => None,
             }

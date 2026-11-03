@@ -1,6 +1,6 @@
 /**
  * A Claude Code PostToolUse hook: after an Edit or Write, format the file with
- * Prettier and lint it with ESLint, so a problem goes back to the agent while
+ * Prettier (rustfmt for Rust) and lint it with ESLint, so a problem goes back to the agent while
  * the change is still in its context. Exit 2 hands stderr to the agent.
  *
  * Wired up in .claude/settings.json; reads the hook's JSON on stdin.
@@ -21,6 +21,11 @@ if (!path || path.startsWith('..')) process.exit(0)
 
 const run = (command, args) => spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
 
+if (path.endsWith('.rs')) {
+  // rustfmt finds rustfmt.toml from the file's directory up.
+  spawnSync('rustfmt', ['--edition', '2021', path], { cwd: ROOT })
+  process.exit(0)
+}
 run('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', path])
 if (!SCRIPT.test(path)) process.exit(0)
 

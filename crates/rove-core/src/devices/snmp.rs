@@ -66,9 +66,7 @@ impl SnmpHit {
 fn has_model_token(s: &str) -> bool {
     s.split_whitespace().any(|token| {
         let token = token.trim_matches(|c: char| !c.is_ascii_alphanumeric());
-        token.len() >= 2
-            && token.bytes().any(|b| b.is_ascii_digit())
-            && token.bytes().any(|b| b.is_ascii_alphabetic())
+        token.len() >= 2 && token.bytes().any(|b| b.is_ascii_digit()) && token.bytes().any(|b| b.is_ascii_alphabetic())
     })
 }
 
@@ -172,8 +170,7 @@ fn encode_int(n: i32) -> Vec<u8> {
     let mut i = 0;
     // Drop leading bytes that are pure sign-extension of the next byte.
     while i < bytes.len() - 1
-        && ((bytes[i] == 0x00 && bytes[i + 1] & 0x80 == 0)
-            || (bytes[i] == 0xff && bytes[i + 1] & 0x80 != 0))
+        && ((bytes[i] == 0x00 && bytes[i + 1] & 0x80 == 0) || (bytes[i] == 0xff && bytes[i + 1] & 0x80 != 0))
     {
         i += 1;
     }
@@ -317,12 +314,8 @@ mod tests {
     fn model_keeps_the_whole_banner_when_the_first_field_is_generic() {
         // Cisco's model sits past the first (tokenless) comma-field, so the whole
         // banner is kept rather than the useless "Cisco IOS Software".
-        let hit =
-            SnmpHit { sys_descr: Some("Cisco IOS Software, C2960 Software, Version 12.2".into()) };
-        assert_eq!(
-            hit.model().as_deref(),
-            Some("Cisco IOS Software, C2960 Software, Version 12.2")
-        );
+        let hit = SnmpHit { sys_descr: Some("Cisco IOS Software, C2960 Software, Version 12.2".into()) };
+        assert_eq!(hit.model().as_deref(), Some("Cisco IOS Software, C2960 Software, Version 12.2"));
     }
 
     #[test]

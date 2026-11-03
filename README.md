@@ -264,6 +264,7 @@ npm test                     # just the UI's unit, DOM and story tests
 npm run a11y                 # axe on every screen and dialog, both themes
 cargo test -p rove-core      # the service layer's tests
 cargo clippy --workspace --all-targets -- -D warnings   # the Rust lints (Cargo.toml)
+cargo fmt --all              # the Rust layout (rustfmt.toml)
 ```
 
 CI runs `npm run check` on every push and pull request, and clippy on all

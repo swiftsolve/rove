@@ -1,10 +1,10 @@
 //! Linux host/network probes: `ip`, `iw`, `ethtool`, `nmcli`, `/sys`.
 use super::RawNeighbor;
-use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
-use crate::util::shell::{first_int, first_match, trimmed_non_empty, try_run};
-use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
+use crate::connection::ConnectionDetails;
+use crate::util::net::is_virtual_interface;
+use crate::util::shell::{first_int, first_match, trimmed_non_empty, try_run};
 use regex_lite::Regex;
 use std::net::Ipv4Addr;
 use std::sync::LazyLock;
@@ -74,12 +74,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
 
         let ip = entry["addr_info"]
             .as_array()
-            .and_then(|addrs| {
-                addrs
-                    .iter()
-                    .find(|a| a["family"] == "inet")
-                    .and_then(|a| a["local"].as_str())
-            })
+            .and_then(|addrs| addrs.iter().find(|a| a["family"] == "inet").and_then(|a| a["local"].as_str()))
             .map(String::from);
 
         let oper_state = entry["operstate"].as_str().unwrap_or("unknown").to_lowercase();
@@ -88,11 +83,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
 
         let is_virtual = is_virtual_interface(&name);
         result.push(InterfaceSummary {
-            connection_type: if is_virtual {
-                "virtual".into()
-            } else {
-                infer_connection_type(&name).into()
-            },
+            connection_type: if is_virtual { "virtual".into() } else { infer_connection_type(&name).into() },
             is_default: default_iface.as_deref() == Some(name.as_str()),
             is_virtual,
             oper_state,
@@ -173,14 +164,10 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 /// `None`. `ssid` is only a fallback profile name: secrets are keyed by
 /// connection name, which is usually but not always the SSID.
 pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
-    let profile = active_connection_name(iface)
-        .await
-        .unwrap_or_else(|| ssid.to_string());
+    let profile = active_connection_name(iface).await.unwrap_or_else(|| ssid.to_string());
     let quoted = crate::util::net::shell_single_quote(&profile);
-    let out = try_run(&format!(
-        "nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null"
-    ))
-    .await?;
+    let out =
+        try_run(&format!("nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null")).await?;
     trimmed_non_empty(&out)
 }
 
@@ -190,10 +177,7 @@ async fn active_connection_name(iface: &str) -> Option<String> {
     if !crate::util::net::is_shell_safe_iface(iface) {
         return None;
     }
-    let out = try_run(&format!(
-        "nmcli -t -f GENERAL.CONNECTION device show {iface} 2>/dev/null"
-    ))
-    .await?;
+    let out = try_run(&format!("nmcli -t -f GENERAL.CONNECTION device show {iface} 2>/dev/null")).await?;
     out.lines()
         .find_map(|line| line.strip_prefix("GENERAL.CONNECTION:"))
         .map(|name| name.trim().to_string())
@@ -216,10 +200,8 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
         d.link_speed_mbps = sysfs_link_speed(iface);
     }
 
-    if let Some(out) = try_run(&format!(
-        "nmcli -t -f GENERAL.VENDOR,GENERAL.PRODUCT device show {iface} 2>/dev/null"
-    ))
-    .await
+    if let Some(out) =
+        try_run(&format!("nmcli -t -f GENERAL.VENDOR,GENERAL.PRODUCT device show {iface} 2>/dev/null")).await
     {
         for line in out.lines() {
             if let Some(v) = line.strip_prefix("GENERAL.VENDOR:") {
@@ -241,12 +223,7 @@ pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     }
     let out = try_run(&format!("ip -j addr show {interface} 2>/dev/null")).await?;
     let parsed: Vec<serde_json::Value> = serde_json::from_str(&out).ok()?;
-    let addr = parsed
-        .first()?["addr_info"]
-        .as_array()?
-        .iter()
-        .find(|a| a["family"] == "inet")?
-        .clone();
+    let addr = parsed.first()?["addr_info"].as_array()?.iter().find(|a| a["family"] == "inet")?.clone();
 
     let ip: Ipv4Addr = addr["local"].as_str()?.parse().ok()?;
     let prefix = addr["prefixlen"].as_u64()? as u32;

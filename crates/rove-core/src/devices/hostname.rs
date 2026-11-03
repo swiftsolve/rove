@@ -37,8 +37,7 @@ fn is_meaningful(host: &str) -> bool {
         return false;
     }
     // Drop MAC separators so every written form collapses to 12 hex digits.
-    let hex_only: String =
-        host.chars().filter(|c| *c != '-' && *c != '_' && *c != ':').collect();
+    let hex_only: String = host.chars().filter(|c| *c != '-' && *c != '_' && *c != ':').collect();
     !(hex_only.len() == 12 && hex_only.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
@@ -66,11 +65,7 @@ const UNIX_BATCH_BUDGET_MS: u64 = 4000;
 
 async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
     // Only validated IPs reach the script; the rest stay `None`.
-    let safe: Vec<&str> = ips
-        .iter()
-        .map(String::as_str)
-        .filter(|ip| crate::util::net::is_shell_safe_ip(ip))
-        .collect();
+    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::util::net::is_shell_safe_ip(ip)).collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {
@@ -94,12 +89,8 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
         } else {
             r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         };
-        let script = format!(
-            "printf '%s\\n' {list} | xargs -P {UNIX_HOSTNAME_CONCURRENCY} -I@ sh -c '{per_ip}' _ @"
-        );
-        if let Some(out) =
-            try_run_timeout(&script, Duration::from_millis(UNIX_BATCH_BUDGET_MS)).await
-        {
+        let script = format!("printf '%s\\n' {list} | xargs -P {UNIX_HOSTNAME_CONCURRENCY} -I@ sh -c '{per_ip}' _ @");
+        if let Some(out) = try_run_timeout(&script, Duration::from_millis(UNIX_BATCH_BUDGET_MS)).await {
             resolved = parse_lookup_output(&out);
         }
     }
@@ -128,11 +119,7 @@ const WINDOWS_BATCH_BUDGET_MS: u32 = 2000;
 
 async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     // Only validated IPs reach the script; the rest stay `None`.
-    let safe: Vec<&str> = ips
-        .iter()
-        .map(String::as_str)
-        .filter(|ip| crate::util::net::is_shell_safe_ip(ip))
-        .collect();
+    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::util::net::is_shell_safe_ip(ip)).collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {

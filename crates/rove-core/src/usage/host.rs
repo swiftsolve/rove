@@ -29,8 +29,8 @@
 //! [`HostUsageTracker::record_countries`]), so each peer is resolved at most
 //! once.
 
-use crate::usage::ByteCounts;
 use crate::usage::app::CounterSemantics;
+use crate::usage::ByteCounts;
 use crate::util::net::{peer_port, routable_peer_ip};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
@@ -166,9 +166,7 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
     // -x raw bytes, -n no DNS (we resolve names ourselves).
     #[cfg(target_os = "macos")]
     {
-        return crate::util::shell::try_run("nettop -L 1 -x -n")
-            .await
-            .map(|out| parse_nettop_peers(&out));
+        return crate::util::shell::try_run("nettop -L 1 -x -n").await.map(|out| parse_nettop_peers(&out));
     }
     // An in-process read of the ETW accumulator: synchronous, and it can't fail.
     #[cfg(windows)]
@@ -456,10 +454,7 @@ impl HostUsageTracker {
             let (rx_delta, tx_delta) = if priming {
                 (0, 0)
             } else {
-                (
-                    semantics.credit(reading.rx, prev.map(|p| p.rx)),
-                    semantics.credit(reading.tx, prev.map(|p| p.tx)),
-                )
+                (semantics.credit(reading.rx, prev.map(|p| p.rx)), semantics.credit(reading.tx, prev.map(|p| p.tx)))
             };
 
             self.last.insert(reading.conn_key.clone(), ByteCounts { rx: reading.rx, tx: reading.tx });
@@ -486,8 +481,7 @@ impl HostUsageTracker {
             // The same delta, by traffic type, so the two views can't disagree
             // about how much moved.
             let class = classify_port(reading.port);
-            let (_, by_type) =
-                self.by_traffic_type.entry(class.id).or_insert((class, ByteCounts::default()));
+            let (_, by_type) = self.by_traffic_type.entry(class.id).or_insert((class, ByteCounts::default()));
             by_type.rx = by_type.rx.saturating_add(rx_delta);
             by_type.tx = by_type.tx.saturating_add(tx_delta);
 
@@ -550,9 +544,7 @@ impl HostUsageTracker {
                     return None;
                 }
                 hosts.sort_by(|a, b| {
-                    (b.rx_bytes + b.tx_bytes)
-                        .cmp(&(a.rx_bytes + a.tx_bytes))
-                        .then_with(|| a.ip.cmp(&b.ip))
+                    (b.rx_bytes + b.tx_bytes).cmp(&(a.rx_bytes + a.tx_bytes)).then_with(|| a.ip.cmp(&b.ip))
                 });
                 let rx_bytes = hosts.iter().map(|h| h.rx_bytes).sum();
                 let tx_bytes = hosts.iter().map(|h| h.tx_bytes).sum();
@@ -566,9 +558,7 @@ impl HostUsageTracker {
             })
             .collect();
         apps.sort_by(|a, b| {
-            (b.rx_bytes + b.tx_bytes)
-                .cmp(&(a.rx_bytes + a.tx_bytes))
-                .then_with(|| a.name.cmp(&b.name))
+            (b.rx_bytes + b.tx_bytes).cmp(&(a.rx_bytes + a.tx_bytes)).then_with(|| a.name.cmp(&b.name))
         });
 
         HostUsageSummary { apps, support: platform_support(), tracking_since: self.tracking_since }
@@ -580,17 +570,10 @@ impl HostUsageTracker {
             .by_traffic_type
             .values()
             .filter(|(_, b)| b.rx > 0 || b.tx > 0)
-            .map(|(class, b)| TrafficType {
-                id: class.id,
-                label: class.label,
-                rx_bytes: b.rx,
-                tx_bytes: b.tx,
-            })
+            .map(|(class, b)| TrafficType { id: class.id, label: class.label, rx_bytes: b.rx, tx_bytes: b.tx })
             .collect();
         types.sort_by(|a, b| {
-            (b.rx_bytes + b.tx_bytes)
-                .cmp(&(a.rx_bytes + a.tx_bytes))
-                .then_with(|| a.label.cmp(b.label))
+            (b.rx_bytes + b.tx_bytes).cmp(&(a.rx_bytes + a.tx_bytes)).then_with(|| a.label.cmp(b.label))
         });
         TrafficUsageSummary { types, support: platform_support(), tracking_since: self.tracking_since }
     }
@@ -683,15 +666,55 @@ time,,interface,state,bytes_in,bytes_out
         let mut t = HostUsageTracker::new();
         // First snapshot: baseline only, for both already-open sockets.
         t.ingest(vec![
-            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 100, tx: 40, pid: None },
-            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 50, tx: 10, pid: None },
+            PeerReading {
+                conn_key: "s1".into(),
+                app: "firefox".into(),
+                ip: "1.1.1.1".into(),
+                port: Some(443),
+                rx: 100,
+                tx: 40,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "s2".into(),
+                app: "firefox".into(),
+                ip: "1.1.1.1".into(),
+                port: Some(443),
+                rx: 50,
+                tx: 10,
+                pid: None,
+            },
         ]);
         // s1 grows (credit delta), s2 unchanged, plus a new host for firefox on
         // a connection opened since the last tick (credited in full).
         t.ingest(vec![
-            PeerReading { conn_key: "s1".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 250, tx: 90, pid: None },
-            PeerReading { conn_key: "s2".into(), app: "firefox".into(), ip: "1.1.1.1".into(), port: Some(443), rx: 50, tx: 10, pid: None },
-            PeerReading { conn_key: "s3".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 500, tx: 0, pid: None },
+            PeerReading {
+                conn_key: "s1".into(),
+                app: "firefox".into(),
+                ip: "1.1.1.1".into(),
+                port: Some(443),
+                rx: 250,
+                tx: 90,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "s2".into(),
+                app: "firefox".into(),
+                ip: "1.1.1.1".into(),
+                port: Some(443),
+                rx: 50,
+                tx: 10,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "s3".into(),
+                app: "firefox".into(),
+                ip: "8.8.8.8".into(),
+                port: Some(53),
+                rx: 500,
+                tx: 0,
+                pid: None,
+            },
         ]);
         let s = t.summary();
         assert_eq!(s.apps.len(), 1);
@@ -750,13 +773,45 @@ time,,interface,state,bytes_in,bytes_out
         // stub the country, so only this catches the halves wired up wrong.
         let mut t = HostUsageTracker::new();
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 10, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 5, tx: 0, pid: None },
+            PeerReading {
+                conn_key: "a".into(),
+                app: "firefox".into(),
+                ip: "8.8.8.8".into(),
+                port: Some(53),
+                rx: 10,
+                tx: 0,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "b".into(),
+                app: "firefox".into(),
+                ip: "192.168.1.5".into(),
+                port: Some(53),
+                rx: 5,
+                tx: 0,
+                pid: None,
+            },
         ]);
         // Past the baseline, so both peers have bytes and reach the summary.
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "firefox".into(), ip: "8.8.8.8".into(), port: Some(53), rx: 20, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "firefox".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 15, tx: 0, pid: None },
+            PeerReading {
+                conn_key: "a".into(),
+                app: "firefox".into(),
+                ip: "8.8.8.8".into(),
+                port: Some(53),
+                rx: 20,
+                tx: 0,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "b".into(),
+                app: "firefox".into(),
+                ip: "192.168.1.5".into(),
+                port: Some(53),
+                rx: 15,
+                tx: 0,
+                pid: None,
+            },
         ]);
 
         let resolved: HashMap<String, Option<String>> = t
@@ -784,8 +839,24 @@ time,,interface,state,bytes_in,bytes_out
     fn private_peers_never_pending_for_country() {
         let mut t = HostUsageTracker::new();
         t.ingest(vec![
-            PeerReading { conn_key: "a".into(), app: "app".into(), ip: "192.168.1.5".into(), port: Some(53), rx: 10, tx: 0, pid: None },
-            PeerReading { conn_key: "b".into(), app: "app".into(), ip: "140.82.113.25".into(), port: Some(443), rx: 10, tx: 0, pid: None },
+            PeerReading {
+                conn_key: "a".into(),
+                app: "app".into(),
+                ip: "192.168.1.5".into(),
+                port: Some(53),
+                rx: 10,
+                tx: 0,
+                pid: None,
+            },
+            PeerReading {
+                conn_key: "b".into(),
+                app: "app".into(),
+                ip: "140.82.113.25".into(),
+                port: Some(443),
+                rx: 10,
+                tx: 0,
+                pid: None,
+            },
         ]);
         // Only the public peer awaits a country lookup.
         assert_eq!(t.pending_countries(), vec!["140.82.113.25".to_string()]);
@@ -851,7 +922,7 @@ time,,interface,state,bytes_in,bytes_out
         assert_eq!(classify_port(Some(6881)).id, "p2p"); // BitTorrent (range)
         assert_eq!(classify_port(Some(6889)).id, "p2p"); // range upper bound
         assert_eq!(classify_port(Some(5222)).id, "messaging"); // XMPP
-        // Ephemeral / unrecognised / missing ports still fall through to "other".
+                                                               // Ephemeral / unrecognised / missing ports still fall through to "other".
         assert_eq!(classify_port(Some(54312)).id, "other");
         assert_eq!(classify_port(None).id, "other");
     }

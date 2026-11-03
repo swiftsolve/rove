@@ -50,34 +50,22 @@ fn bits_for(registry: &str) -> Option<u8> {
 /// withheld/blank registrations so a lookup returns `None` rather than a
 /// placeholder.
 fn rows_from_csv(text: &str, rows: &mut BTreeSet<(u8, String, String)>) {
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(true)
-        .flexible(true)
-        .from_reader(text.as_bytes());
+    let mut rdr = csv::ReaderBuilder::new().has_headers(true).flexible(true).from_reader(text.as_bytes());
     for record in rdr.records().flatten() {
         // Columns: Registry, Assignment, Organization Name, Organization Address.
-        let (Some(registry), Some(assignment), Some(name)) =
-            (record.get(0), record.get(1), record.get(2))
-        else {
+        let (Some(registry), Some(assignment), Some(name)) = (record.get(0), record.get(1), record.get(2)) else {
             continue;
         };
         let Some(bits) = bits_for(registry) else { continue };
 
-        let prefix: String = assignment
-            .chars()
-            .filter(|c| c.is_ascii_hexdigit())
-            .collect::<String>()
-            .to_uppercase();
+        let prefix: String = assignment.chars().filter(|c| c.is_ascii_hexdigit()).collect::<String>().to_uppercase();
         if prefix.len() != (bits / 4) as usize {
             continue;
         }
 
         // Tab-delimited output, so vendor must be single-line and tab-free.
         let vendor = name.split_whitespace().collect::<Vec<_>>().join(" ");
-        if vendor.is_empty()
-            || vendor.eq_ignore_ascii_case("private")
-            || vendor.chars().all(|c| c.is_ascii_digit())
-        {
+        if vendor.is_empty() || vendor.eq_ignore_ascii_case("private") || vendor.chars().all(|c| c.is_ascii_digit()) {
             continue;
         }
 
@@ -91,9 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.is_empty() {
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(120))
-            .build()?;
+        let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(120)).build()?;
         for url in SOURCES {
             eprintln!("fetching {url}");
             let text = client.get(url).send().await?.error_for_status()?.text().await?;
@@ -112,10 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let out = Path::new(env!("CARGO_MANIFEST_DIR")).join("data/oui.tsv");
-    let body: String = rows
-        .iter()
-        .map(|(bits, prefix, vendor)| format!("{bits}\t{prefix}\t{vendor}\n"))
-        .collect();
+    let body: String = rows.iter().map(|(bits, prefix, vendor)| format!("{bits}\t{prefix}\t{vendor}\n")).collect();
     std::fs::write(&out, body)?;
 
     let (mut n24, mut n28, mut n36) = (0u32, 0u32, 0u32);
@@ -127,10 +110,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         }
     }
-    eprintln!(
-        "wrote {} rows to {} (MA-L {n24}, MA-M {n28}, MA-S {n36})",
-        rows.len(),
-        out.display()
-    );
+    eprintln!("wrote {} rows to {} (MA-L {n24}, MA-M {n28}, MA-S {n36})", rows.len(), out.display());
     Ok(())
 }

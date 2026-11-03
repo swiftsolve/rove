@@ -26,8 +26,8 @@ const NBSTAT_QUERY: &[u8] = &[
     0x00, 0x00, // authority RRs
     0x00, 0x00, // additional RRs
     0x20, // name length: 32
-    b'C', b'K', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A',
-    b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', //
+    b'C', b'K', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A',
+    b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', //
     0x00, // name terminator
     0x00, 0x21, // type: NBSTAT
     0x00, 0x01, // class: IN
@@ -100,7 +100,7 @@ mod tests {
     /// entries, so parsing can be tested without a live host.
     fn response(entries: &[(&str, bool)]) -> Vec<u8> {
         let mut pkt = vec![0u8; 12]; // header (contents don't matter for parsing)
-        // Answer NAME: a 32-byte label and the root. The parser skips its content.
+                                     // Answer NAME: a 32-byte label and the root. The parser skips its content.
         pkt.push(0x20);
         pkt.extend_from_slice(&[b'A'; 32]);
         pkt.push(0x00);

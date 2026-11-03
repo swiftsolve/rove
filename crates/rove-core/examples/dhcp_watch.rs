@@ -32,11 +32,7 @@ async fn main() {
     loop {
         for (mac, hit) in dhcp::snapshot() {
             if seen.insert(mac.clone()) {
-                let detail = hit
-                    .vendor_class
-                    .clone()
-                    .or_else(|| hit.fingerprint.clone())
-                    .unwrap_or_else(|| "-".into());
+                let detail = hit.vendor_class.clone().or_else(|| hit.fingerprint.clone()).unwrap_or_else(|| "-".into());
                 println!(
                     "{:<18} {:<24} {:<16} {:<9} {}",
                     mac,

@@ -10,12 +10,12 @@
 //! `docs/networking/device-discovery.md` walks through it.
 mod banner;
 mod classify;
-mod history;
-mod liveness;
-pub mod mdns;
 /// Public for the `rove-dhcp-helper` binary and the examples.
 pub mod dhcp;
+mod history;
 pub mod hostname;
+mod liveness;
+pub mod mdns;
 mod netbios;
 pub mod oui;
 mod probe;
@@ -110,10 +110,8 @@ pub async fn scan() -> LanDeviceScan {
             (mdns_hits, ssdp_hits, ping_live, probed.open_ports, probed.responsive)
         }
         None => {
-            let (mdns_hits, ssdp_hits) = tokio::join!(
-                mdns::discover(DISCOVERY_WINDOW),
-                ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
-            );
+            let (mdns_hits, ssdp_hits) =
+                tokio::join!(mdns::discover(DISCOVERY_WINDOW), ssdp::discover(DISCOVERY_WINDOW, local_ipv4),);
             (
                 mdns_hits,
                 ssdp_hits,
@@ -212,14 +210,7 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
 
     let mut devices: Vec<LanDevice> = in_scope
         .filter_map(|neighbor| {
-            build_passive_device(
-                neighbor,
-                &mdns_hits,
-                &ssdp_hits,
-                &dhcp_hits,
-                gateway.as_deref(),
-                self_ip.as_deref(),
-            )
+            build_passive_device(neighbor, &mdns_hits, &ssdp_hits, &dhcp_hits, gateway.as_deref(), self_ip.as_deref())
         })
         .collect();
 
@@ -268,8 +259,7 @@ fn build_passive_device(
         .or_else(|| dhcp_hit.and_then(|h| h.hostname.clone()));
 
     // Withhold a kind-ambiguous OUI's vote, as the full scan does.
-    let classify_vendor =
-        if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
+    let classify_vendor = if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
     let verdict = classify::classify(&classify::Signals {
         vendor: classify_vendor,
         hostname: hostname.as_deref(),
@@ -313,19 +303,11 @@ pub struct GatewayIdentity {
 /// The gateway's make, model and product name without a full scan. Ping the
 /// gateway first so its neighbor-table entry is fresh. `local_ip`, when known,
 /// is the active interface address SNMP and SSDP bind to.
-pub async fn gateway_identity(
-    gateway: Option<&str>,
-    local_ip: Option<std::net::Ipv4Addr>,
-) -> GatewayIdentity {
+pub async fn gateway_identity(gateway: Option<&str>, local_ip: Option<std::net::Ipv4Addr>) -> GatewayIdentity {
     let Some(gw) = gateway else {
         return GatewayIdentity { mac: None, vendor: None, model: None, name: None };
     };
-    let mac = neighbor_table()
-        .await
-        .into_iter()
-        .find(|n| n.ip == gw)
-        .map(|n| n.mac)
-        .filter(|m| !m.is_empty());
+    let mac = neighbor_table().await.into_iter().find(|n| n.ip == gw).map(|n| n.mac).filter(|m| !m.is_empty());
     let vendor = mac.as_deref().and_then(lookup_vendor);
 
     // SNMP names the model on gear that speaks it; most consumer routers
@@ -334,10 +316,7 @@ pub async fn gateway_identity(
         tokio::join!(snmp::discover(gateway, local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
     let ssdp_hit = ssdp_hits.get(gw);
     let name = ssdp_hit.and_then(|hit| hit.name.clone());
-    let model = snmp_hits
-        .get(gw)
-        .and_then(|hit| hit.model())
-        .or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
+    let model = snmp_hits.get(gw).and_then(|hit| hit.model()).or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
     GatewayIdentity { mac, vendor, model, name }
 }
 
@@ -385,11 +364,7 @@ fn build_device(
         snmp: enrichment.snmp.get(&neighbor.ip).cloned().unwrap_or_default(),
         ports: enrichment.open_ports.get(&neighbor.ip).cloned().unwrap_or_default(),
     };
-    let evidence = if neighbor.mac.is_empty() {
-        fresh
-    } else {
-        history::merge_and_snapshot(&neighbor.mac, fresh)
-    };
+    let evidence = if neighbor.mac.is_empty() { fresh } else { history::merge_and_snapshot(&neighbor.mac, fresh) };
 
     // An Amazon OUI advertising Spotify Connect is an Echo: Fire TVs and other
     // Amazon gear don't announce `_spotify-connect._tcp`. It names and types the
@@ -424,12 +399,7 @@ fn build_device(
 
     // mDNS TXT is the most precise; SNMP is the only source for routers that
     // announce on neither mDNS nor SSDP.
-    let model = evidence
-        .mdns
-        .model
-        .clone()
-        .or_else(|| evidence.ssdp.model.clone())
-        .or_else(|| evidence.snmp.model());
+    let model = evidence.mdns.model.clone().or_else(|| evidence.ssdp.model.clone()).or_else(|| evidence.snmp.model());
 
     // An Echo is a speaker even when it also acts as a Matter or Thread hub,
     // whose strong `iot` vote would otherwise win.
@@ -438,8 +408,7 @@ fn build_device(
     } else {
         // A kind-ambiguous OUI (see `is_kind_ambiguous_vendor`) is shown but
         // doesn't vote.
-        let classify_vendor =
-            if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
+        let classify_vendor = if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
         classify::classify(&classify::Signals {
             vendor: classify_vendor,
             hostname: hostname.as_deref(),
@@ -550,10 +519,8 @@ fn humanize_model(model: &str) -> String {
 /// A hostname naming an Apple product, matched as a substring so personalized
 /// forms ("Janes-iPad") count.
 fn is_apple_hostname(hostname: &str) -> bool {
-    const MARKERS: [&str; 10] = [
-        "iphone", "ipad", "ipod", "macbook", "imac", "macmini", "mac-mini", "airpods",
-        "apple-watch", "apple watch",
-    ];
+    const MARKERS: [&str; 10] =
+        ["iphone", "ipad", "ipod", "macbook", "imac", "macmini", "mac-mini", "airpods", "apple-watch", "apple watch"];
     let lower = hostname.to_ascii_lowercase();
     MARKERS.iter().any(|marker| lower.contains(marker))
 }
@@ -601,14 +568,8 @@ mod tests {
     fn device_with_mdns(mac: &str, ip: &str, mdns: mdns::MdnsHit) -> LanDevice {
         let mut mdns_map = HashMap::new();
         mdns_map.insert(ip.to_string(), mdns);
-        let (ssdp, banner, snmp, netbios, dhcp, ports) = (
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-        );
+        let (ssdp, banner, snmp, netbios, dhcp, ports) =
+            (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
         let ping_live = std::collections::HashSet::new();
         let tcp_live = std::collections::HashSet::new();
         let enrichment = Enrichment {
@@ -623,8 +584,7 @@ mod tests {
             tcp_live: &tcp_live,
             was_probed: true,
         };
-        let neighbor =
-            RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), is_reachable: true, is_stateful: true };
+        let neighbor = RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), is_reachable: true, is_stateful: true };
         build_device(neighbor, None, &enrichment, None, None)
     }
 
@@ -654,8 +614,7 @@ mod tests {
     fn passive_does_not_trust_a_stateless_arp_entry_without_an_announcement() {
         // macOS/Windows `arp -a` reports reachable=true, stateful=false: a
         // placeholder, not liveness. A departed device lingers ~20 min.
-        let (mut mdns, ssdp, dhcp) =
-            (HashMap::new(), HashMap::<String, ssdp::SsdpHit>::new(), HashMap::new());
+        let (mut mdns, ssdp, dhcp) = (HashMap::new(), HashMap::<String, ssdp::SsdpHit>::new(), HashMap::new());
         let bare = RawNeighbor {
             ip: "192.168.1.7".into(),
             mac: "aa:bb:cc:dd:ee:03".into(),
@@ -668,18 +627,14 @@ mod tests {
         );
 
         // The same kind of host announcing over mDNS is confirmed, with its name.
-        mdns.insert(
-            "192.168.1.8".into(),
-            mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() },
-        );
+        mdns.insert("192.168.1.8".into(), mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() });
         let announcing = RawNeighbor {
             ip: "192.168.1.8".into(),
             mac: "aa:bb:cc:dd:ee:04".into(),
             is_reachable: true,
             is_stateful: false,
         };
-        let dev = build_passive_device(announcing, &mdns, &ssdp, &dhcp, None, None)
-            .expect("announced host");
+        let dev = build_passive_device(announcing, &mdns, &ssdp, &dhcp, None, None).expect("announced host");
         assert!(dev.is_reachable);
         assert_eq!(dev.hostname.as_deref(), Some("Living Room TV"));
     }
