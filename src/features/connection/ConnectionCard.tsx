@@ -18,7 +18,7 @@ export function ConnectionCard({ info }: ConnectionCardProps) {
   const [isExpanded, toggleExpanded] = useDetailsExpanded()
   // Fetched here rather than in the details, which unmount while closed, so
   // the row is ready when they open.
-  const { publicIp, isLoading: isPublicIpLoading } = usePublicIp(isConnectedNetwork(info), info.ipAddress)
+  const { publicIp, isLoading: isPublicIpLoading } = usePublicIp(isConnectedNetwork(info))
   const titleId = useId()
 
   return (
