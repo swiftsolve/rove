@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority'
 
 import { releaseNoteItems } from '@/app/utils/release-notes'
 import type { PendingUpdate } from '@/app/utils/updater'
-import { ArrowRightIcon, Button, Dialog, DownloadIcon } from '@/ui'
+import { ArrowRightIcon, Button, Dialog, DownloadIcon, ScreenReaderStatus } from '@/ui'
 
 function installLabel(isInstalling: boolean, hasFailed: boolean): string {
   if (isInstalling) return 'Installing…'
@@ -46,9 +46,9 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
             {installLabel(isInstalling, hasFailed)}
           </Button>
           {/* In the footer, not the body, so a release without notes gets no empty well. */}
-          <p className="sr-only" role="status">
+          <ScreenReaderStatus>
             {isInstalling ? 'Installing the update. Rove will restart when it’s done.' : ''}
-          </p>
+          </ScreenReaderStatus>
         </>
       }
     >

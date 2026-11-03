@@ -19,6 +19,7 @@ import {
   MoonIcon,
   PageHeader,
   RefreshIcon,
+  ScreenReaderStatus,
   SegmentedControl,
   type SegmentedOption,
   SettingsIcon,
@@ -224,9 +225,7 @@ export function SettingsView() {
 
       {/* The update check's outcome, announced as it changes. Last in the page
           so it doesn't shift the entrance stagger of the cards above. */}
-      <p className="sr-only" role="status">
-        {checkStatusText(check)}
-      </p>
+      <ScreenReaderStatus>{checkStatusText(check)}</ScreenReaderStatus>
     </div>
   )
 }

@@ -25,6 +25,7 @@ import {
   Link,
   PlayIcon,
   RefreshIcon,
+  ScreenReaderStatus,
   Tooltip,
   ZapIcon,
 } from '@/ui'
@@ -74,7 +75,7 @@ export function CapabilitiesCard() {
               ))}
         </ul>
         <CapabilitiesFooter hasResults={hasResults} />
-        <TestStatusAnnouncement />
+        <ScreenReaderTestStatus />
       </CardBody>
     </Card>
   )
@@ -205,16 +206,12 @@ function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: Rea
   )
 }
 
-/** The Speed page's announcements, for a test run from here. Home shows no failure, so the error is read out too. */
-function TestStatusAnnouncement() {
+/** Screen-reader only: reads out a test run from here, as the Speed page does. Home shows no failure, so the error is read out too. */
+function ScreenReaderTestStatus() {
   const isTesting = useSpeedTest((test) => test.isTesting)
   const progress = useSpeedTest((test) => test.progress)
   const internetSpeed = useSpeedTest((test) => test.internetSpeed)
   const error = useSpeedTest((test) => test.error)
 
-  return (
-    <p className="sr-only" role="status">
-      {error ?? testStatusText(isTesting, progress, internetSpeed)}
-    </p>
-  )
+  return <ScreenReaderStatus>{error ?? testStatusText(isTesting, progress, internetSpeed)}</ScreenReaderStatus>
 }

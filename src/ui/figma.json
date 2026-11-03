@@ -53,6 +53,7 @@
     "WindowButton": { "name": "Window button", "node": "35:1664" },
     "NavItem": { "name": "Nav item", "node": "4:12" },
     "NavRail": { "name": "Nav rail", "node": "41:892" },
-    "PageHeader": { "name": "Page header", "node": "542:10510" }
+    "PageHeader": { "name": "Page header", "node": "542:10510" },
+    "ScreenReaderStatus": null
   }
 }

@@ -47,6 +47,9 @@ export { TitleBar, TitleBarStatus, WindowButton } from './title-bar/TitleBar'
 export { NavItem, NavRail } from './nav-rail/NavRail'
 export { PageHeader } from './page-header/PageHeader'
 
+// Accessibility
+export { ScreenReaderStatus } from './screen-reader/ScreenReaderStatus'
+
 export * from './icons/Icons'
 export { BrandIcon } from './icons/BrandIcon'
 export { CloudGamingIcon } from './icons/CloudGamingIcon'

@@ -327,6 +327,7 @@ Components v1.0.0"). Raise it when the library's API changes.
     list-row, icon-tile and timeline
   - Containers: card, collapsible and separator
   - App frame: title-bar, nav-rail and page-header
+  - Accessibility: screen-reader
 
   Figma has one more page after them, Patterns: the cards, charts and
   content that features build from the library.
@@ -443,6 +444,7 @@ writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
 | Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between that runs end to end: place it flush to the card's sides (`CardBody layout="flush"`), and it insets each group. |
 | List row | `ListRow` | A whole-row button that opens something, with a chevron on the right. Right-aligned content (a meter) is its last child. Disabled, the whole row fades. |
 | None | `StretchedLink` | A transparent link over a whole row, so a click anywhere opens its view. A Card draws its own with `onOpen`. |
+| None | `ScreenReaderStatus` | A live region only screen readers hear: hidden, kept mounted, it reads out its text as it changes ("Testing download…"). Pass empty text when there's nothing to say. Other hidden words stay a plain `sr-only` span. |
 | Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
 | Status dot | `StatusDot` | A 5px dot beside status words, in their colour or `tone="positive"`; `pulse` calm, live or busy. |
 | Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`icon`, `size`, `color`): any colour, usually a token (`var(--series-down)`), or `neutral`, the sunken fill for something uncategorised. The button form opens something. |

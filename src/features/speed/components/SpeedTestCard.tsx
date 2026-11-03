@@ -19,6 +19,7 @@ import {
   DirectionIcon,
   InlineMeta,
   NoValue,
+  ScreenReaderStatus,
   SpeedIcon,
   type SpeedSeries,
   useCountUp,
@@ -106,11 +107,7 @@ function TestProgress() {
 /** Each phase and the result, for screen readers. Reads the test itself, like `TestProgress`. */
 function TestStatus() {
   const text = useSpeedTest((test) => testStatusText(test.isTesting, test.progress, test.internetSpeed))
-  return (
-    <p className="sr-only" role="status">
-      {text}
-    </p>
-  )
+  return <ScreenReaderStatus>{text}</ScreenReaderStatus>
 }
 
 function HeroCell({

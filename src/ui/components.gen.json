@@ -1860,6 +1860,18 @@
         "app-frame-pageheader--title-only",
         "app-frame-pageheader--all-states"
       ]
+    },
+    "ScreenReaderStatus": {
+      "group": "Accessibility",
+      "source": "src/ui/screen-reader/ScreenReaderStatus.tsx",
+      "description": "A status only a screen reader hears: hidden on screen, and read out each\ntime its text changes (\"Testing download…\"). Keep it mounted and pass empty\ntext when there's nothing to say: a region that mounts already holding its\ntext often isn't announced.",
+      "figma": null,
+      "props": {},
+      "hasElementProps": true,
+      "stories": [
+        "accessibility-screenreaderstatus--default",
+        "accessibility-screenreaderstatus--announces-a-change"
+      ]
     }
   },
   "icons": [

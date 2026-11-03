@@ -3,7 +3,16 @@ import { IspCard } from '@/features/diagnostics/components/IspCard'
 import { RouterCard } from '@/features/diagnostics/components/RouterCard'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 import { runStatusText } from '@/features/diagnostics/utils/diagnostics-display'
-import { Banner, ConnectionIcon, HelpIcon, IconButton, LoadingState, PageHeader, RefreshIcon } from '@/ui'
+import {
+  Banner,
+  ConnectionIcon,
+  HelpIcon,
+  IconButton,
+  LoadingState,
+  PageHeader,
+  RefreshIcon,
+  ScreenReaderStatus,
+} from '@/ui'
 
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'
@@ -31,9 +40,7 @@ export function DiagnosticsView() {
         }
       />
 
-      <p className="sr-only" role="status">
-        {runStatusText(isRunning, hasDiagnostics)}
-      </p>
+      <ScreenReaderStatus>{runStatusText(isRunning, hasDiagnostics)}</ScreenReaderStatus>
 
       {error && (
         <Banner

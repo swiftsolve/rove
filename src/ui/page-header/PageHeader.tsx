@@ -2,6 +2,7 @@ import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
 import { ArrowLeftIcon } from '../icons/Icons'
+import { ScreenReaderStatus } from '../screen-reader/ScreenReaderStatus'
 import { Tooltip } from '../tooltip/Tooltip'
 import { LAYER_RAISED } from '../utils/layers'
 import { PRESS } from '../utils/pressable'
@@ -90,9 +91,7 @@ export function PageHeader({ title, description, status, actions, icon, onBack }
         )}
         {/* Always mounted, so a status that appears is announced: a region that
             mounts already holding its text often isn't. */}
-        <span className="sr-only" role="status">
-          {status}
-        </span>
+        <ScreenReaderStatus>{status}</ScreenReaderStatus>
       </div>
       {actions !== undefined && <div className="flex shrink-0 items-center gap-6">{actions}</div>}
     </header>
