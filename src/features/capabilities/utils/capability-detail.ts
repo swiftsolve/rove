@@ -1,13 +1,15 @@
 import { formatLatencyMs, formatSpeedMbps } from '@/lib/format'
 import type { CapabilityId, CapabilityLevel, CapabilityRequirement, SpeedResult } from '@/types'
-import { CAPABILITY_DEFINITIONS } from '@/types'
+import { CAPABILITY_DEFINITIONS, isMeasuredLatency } from '@/types'
 
 export type RequirementCheck = {
   label: string
   need: string
-  /** The measured figure, or null when it isn't a real one. */
+  /** The measured figure, or null when it isn't a real one (a failed ping). */
   have: string | null
   isMet: boolean
+  /** A speed falls short by being too slow; a delay by being too high. */
+  kind: 'speed' | 'delay'
 }
 
 export type CapabilityExplanation = {
@@ -36,7 +38,18 @@ function metricPhrase(words: string[]): string {
   return phrase.charAt(0).toUpperCase() + phrase.slice(1)
 }
 
-function summarize(level: CapabilityLevel, label: string, failing: string[]): string {
+/** What falls short, each kind in its own words: "download too slow and latency too high". */
+function shortfallPhrase(failing: RequirementCheck[], words: { speed: string; delay: string }): string {
+  const phrases = (['speed', 'delay'] as const)
+    .map((kind) => {
+      const labels = failing.filter((check) => check.kind === kind).map((check) => check.label.toLowerCase())
+      return labels.length > 0 ? `${listPhrase(labels)} ${words[kind]}` : null
+    })
+    .filter((phrase) => phrase != null)
+  return metricPhrase(phrases)
+}
+
+function summarize(level: CapabilityLevel, label: string, failing: RequirementCheck[]): string {
   const activity = activityPhrase(label)
 
   switch (level) {
@@ -45,9 +58,13 @@ function summarize(level: CapabilityLevel, label: string, failing: string[]): st
     case 'good':
       return `Meets ${activity} requirements.`
     case 'fair':
-      return failing.length > 0 ? `${metricPhrase(failing)} below recommended.` : `Works, but with little headroom.`
+      return failing.length > 0
+        ? `${shortfallPhrase(failing, { speed: 'below recommended', delay: 'above recommended' })}.`
+        : `Works, but with little headroom.`
     case 'poor':
-      return failing.length > 0 ? `${metricPhrase(failing)} too low for ${activity}.` : `Below what ${activity} needs.`
+      return failing.length > 0
+        ? `${shortfallPhrase(failing, { speed: 'too slow', delay: 'too high' })} for ${activity}.`
+        : `Below what ${activity} needs.`
     case 'unsupported':
       return `Not enough for ${activity}.`
   }
@@ -64,33 +81,39 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
       need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.downloadMbps),
       isMet: speed.downloadMbps >= requirements.minDownloadMbps,
+      kind: 'speed',
     },
     {
       label: 'Upload',
       need: `≥ ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.uploadMbps),
       isMet: speed.uploadMbps >= requirements.minUploadMbps,
+      kind: 'speed',
     },
   ]
+  // A failed ping reports a sentinel, not a delay, so neither figure is shown.
+  const hasPing = isMeasuredLatency(speed.latencyMs)
   // A limit left out doesn't affect this capability, so it gets no row.
   if (requirements.maxLatencyMs !== null) {
     checks.push({
       label: 'Latency',
       need: `≤ ${requirements.maxLatencyMs} ms`,
-      have: formatLatencyMs(speed.latencyMs),
-      isMet: speed.latencyMs <= requirements.maxLatencyMs,
+      have: hasPing ? formatLatencyMs(speed.latencyMs) : null,
+      isMet: hasPing && speed.latencyMs <= requirements.maxLatencyMs,
+      kind: 'delay',
     })
   }
   if (requirements.maxJitterMs !== null) {
     checks.push({
       label: 'Jitter',
       need: `≤ ${requirements.maxJitterMs} ms`,
-      have: formatLatencyMs(speed.jitterMs),
-      isMet: speed.jitterMs <= requirements.maxJitterMs,
+      have: hasPing ? formatLatencyMs(speed.jitterMs) : null,
+      isMet: hasPing && speed.jitterMs <= requirements.maxJitterMs,
+      kind: 'delay',
     })
   }
 
-  const failing = checks.filter((check) => !check.isMet).map((check) => check.label.toLowerCase())
+  const failing = checks.filter((check) => !check.isMet)
 
   return { summary: summarize(level, definition.label, failing), checks }
 }
