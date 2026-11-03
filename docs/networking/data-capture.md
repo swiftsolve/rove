@@ -25,7 +25,7 @@ it runs them and reads what they print. Two reasons:
 
 The one exception is **byte counters** (data usage + live throughput), which come
 from the cross-platform [`sysinfo`](https://docs.rs/sysinfo) crate instead of
-shelling out — more on that in §7.
+shelling out — more on that in §6.
 
 ### The command runner
 
@@ -44,15 +44,15 @@ Three things to notice, each a deliberate design choice:
   *"callers treat missing tools as 'no data'."* This is what makes the fallback
   chains in §3 possible — a failed probe just returns `None` and the caller tries
   the next option.
-- **It's `async` with a timeout** (`tokio::time::timeout`, `util/shell.rs:54`). A hung
+- **It's `async` with a timeout** (`tokio::time::timeout`, in `capture` in `util/shell.rs`). A hung
   `nmcli` can't freeze the app; after 15s it's abandoned.
-- **It picks the right shell per OS** (`util/shell.rs:25`): `cmd /C` on Windows, `sh -c`
+- **It picks the right shell per OS** (`shell` in `util/shell.rs`): `cmd /C` on Windows, `sh -c`
   everywhere else. On Windows there's a separate `try_run_powershell` because most
   Windows probes are PowerShell, not `cmd`.
 
 There's also a Windows-only detail: `hide_window` sets the `CREATE_NO_WINDOW`
 flag (`0x0800_0000`) so spawning `powershell`/`netsh` doesn't flash a black
-console window on screen (`util/shell.rs:6-16`). No-op on Unix.
+console window on screen (`CREATE_NO_WINDOW` in `util/shell.rs`). No-op on Unix.
 
 ---
 
@@ -62,17 +62,17 @@ Because Rove builds shell command strings that sometimes contain values from
 the network (interface names, neighbor IPs), it has to guard against injection.
 Two gatekeepers in `crates/rove-core/src/util/net.rs`:
 
-- **`is_shell_safe_ip`** (`util/net.rs:213`) — an address is safe to interpolate
+- **`is_shell_safe_ip`** (in `util/net.rs`) — an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
   contain `[0-9a-fA-F:.]` — never a `;`, `|`, `$`, or backtick. Guards the
   `ping`/`getent` call sites that take an IP straight from the ARP table.
-- **`is_shell_safe_iface`** (`util/net.rs:220`) — interface names are bounded to
+- **`is_shell_safe_iface`** (in `util/net.rs`) — interface names are bounded to
   ≤40 chars of a safe alphabet. It deliberately *allows spaces* (Windows really
   has interfaces named `"Ethernet 2"` and `"Local Area Connection"`) but rejects
   every genuine metacharacter.
 
-And **`sanitize_display`** (`util/net.rs:243`) strips control characters and
-Unicode bidi overrides from names that come off the network (mDNS TXT records,
+And **`sanitize_display`** (in `util/net.rs`) strips control characters and
+Unicode bidi overrides (and caps the length at 64 characters) from names that come off the network (mDNS TXT records,
 reverse DNS) before they're stored or rendered — so a malicious neighbour can't
 inject terminal escape sequences or right-to-left overrides into your device
 list.
@@ -93,8 +93,13 @@ pub async fn default_gateway() -> Option<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::default_gateway().await;
     }
-    // Linux: ip route ...   then fall through to  macOS: route -n get default
-    if let Some(out) = try_run("ip route show default ... | awk '{print $3; exit}'").await {
+    if cfg!(target_os = "macos") {
+        if let Some((_, Some(gw))) = platform::macos::best_default_route().await {
+            return Some(gw);
+        }
+    }
+    // Linux: ip route ...   then fall through to  route -n get default
+    if let Some(out) = try_run("ip route show default ... | awk '!/linkdown/ {print $3; exit}'").await {
         ...
     }
     let out = try_run("route -n get default ... | grep gateway ...").await?;
@@ -102,19 +107,21 @@ pub async fn default_gateway() -> Option<String> {
 }
 ```
 
-Notice the **fallback chain**: try `ip route` (Linux), and if that returns `None`
-(iproute2 not installed, or we're on macOS), fall through to `route -n get`
-(the BSD/macOS tool). One function, two platforms, graceful degradation.
+Notice the **fallback chain**: on macOS, try the ranked physical route first;
+then `ip route` (Linux), and if that returns `None` (iproute2 not installed, or
+we're on macOS without a physical route), fall through to `route -n get` (the
+BSD/macOS tool). One function, three platforms, graceful degradation.
 
 **Compile-time dispatch with `match` on `std::env::consts::OS`** —
-`connection_details` (`connection/mod.rs:120`) routes to a different probe per
+`connection_details` (in `connection/mod.rs`) routes to a different probe per
 (OS, connection-type) pair:
 
 ```rust
 match (std::env::consts::OS, connection_type) {
     ("linux",   "wifi") => platform::linux::wifi_details(iface).await,
     ("linux",   _)      => platform::linux::ethernet_details(iface).await,
-    ("macos",   "wifi") => platform::macos::wifi_details().await,
+    ("macos",   "wifi") => platform::macos::wifi_details(iface).await,
+    ("macos",   _)      => platform::macos::ethernet_details(iface).await,
     ("windows", "wifi") => platform::windows::wifi_details().await,
     ("windows", _)      => platform::windows::ethernet_details(iface).await,
     _ => ConnectionDetails::default(),
@@ -122,7 +129,7 @@ match (std::env::consts::OS, connection_type) {
 ```
 
 The ultimate fallback for the interface list is `generic_interface_list()`
-(`platform/mod.rs:61`), which uses the cross-platform `sysinfo` crate — used when
+(in `platform/mod.rs`), which uses the cross-platform `sysinfo` crate — used when
 a native probe fails *and* as the whole implementation on any OS without a
 dedicated path.
 
@@ -135,75 +142,81 @@ actual command run on each OS.
 
 | Data | Linux | Windows | macOS |
 |------|-------|---------|-------|
-| **Default gateway** | `ip route show default` | `Find-NetRoute -RemoteIPAddress 8.8.8.8` → `.NextHop` | `route -n get default` |
-| **Default interface** | `ip route show default` (`dev` field) | `Find-NetRoute` → `.InterfaceAlias` | `route -n get default` |
+| **Default gateway** | `ip route show default` | ranked `Get-NetRoute -DestinationPrefix 0.0.0.0/0` → `.NextHop` | `netstat -rn -f inet`, then `route -n get default` |
+| **Default interface** | `ip route show default` (`dev` field) | same ranking → `.InterfaceAlias` | `netstat -rn -f inet`, then `route -n get default` |
 | **DNS servers** | `/etc/resolv.conf` (`nameserver` lines) | `Get-DnsClientServerAddress` | `/etc/resolv.conf` |
 | **Interface list** | `ip -j addr` (JSON) + `/sys/class/net/*/speed` | `Get-NetAdapter` + `Get-NetIPAddress` | `sysinfo` + `ifconfig -a` states |
 | **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | `netsh wlan show interfaces` | CoreWLAN (in-process) + `system_profiler` |
-| **Ethernet details** | `ethtool`, then `/sys/.../speed`, then `nmcli` | `Get-NetAdapter` (LinkSpeed/Duplex) | — |
-| **Link speed** | `/sys/class/net/<if>/speed` | `Get-NetAdapter.LinkSpeed` | CoreWLAN transmit rate (Wi-Fi) |
+| **Ethernet details** | `ethtool`, then `/sys/.../speed`, then `nmcli` | `Get-NetAdapter` (LinkSpeed/Duplex) | `ifconfig <if>` (`media:` line) |
+| **Link speed** | `/sys/class/net/<if>/speed` | `Get-NetAdapter.LinkSpeed` | CoreWLAN transmit rate (Wi-Fi), `ifconfig` media (Ethernet) |
 | **Subnet / CIDR** | `ip -j addr show <if>` | `Get-NetIPAddress` | (subnet module) |
-| **Neighbor/ARP table** | `ip neigh show` (has state) | `arp -a` | `arp -a` |
+| **Neighbor/ARP table** | `ip neigh show` (has state) | `arp -a` | `arp -an` |
 | **Byte counters** | `/sys/class/net/*/statistics` + `sysinfo` | `sysinfo` | `sysinfo` |
-| **Timezone offset** | `date +%z` | `(Get-TimeZone).BaseUtcOffset` | `date +%z` |
-| **Ping** | `ping -c N -i 0.2 -W 1` | `ping -n N -w <ms>` | `ping -c N -i 0.2 -W 1` |
+| **Timezone offset** | `date +%z` | `[TimeZoneInfo]::Local.GetUtcOffset([DateTime]::Now)` | `date +%z` |
+| **Ping** | `ping -c N -i 0.2 -W 1` | `ping -n N -w <ms>` | `ping -c N -i 0.2 -W <ms>` |
 | **Public IP** | `https://api.ipify.org` (reqwest) | same | same |
 
 The rest of this section walks the interesting ones.
 
 ### Routing: gateway & default interface
 
-The **Windows** approach is subtle and worth calling out (`platform/windows.rs:16`).
-The naive way — list all `0.0.0.0/0` routes and pick the lowest metric — is
-*wrong*, because an unplugged Ethernet adapter can leave a stale metric-0 default
-route behind, so you'd report a dead link while actually on Wi-Fi. Rove instead
-asks `Find-NetRoute -RemoteIPAddress 8.8.8.8`, which returns the route Windows
-would *actually* use to reach the internet — only over a live interface.
+The **Windows** approach is subtle and worth calling out (`default_route_field`
+in `platform/windows.rs`). The naive way, picking the lowest-metric `0.0.0.0/0`
+route, is *wrong*: an unplugged Ethernet adapter can leave a stale metric-0
+default route behind. Asking for the effective route (`Find-NetRoute`) is wrong
+too, because once a VPN is up that's the tunnel, and discovery would scan the
+tunnel's range. So Rove lists every `Get-NetRoute` default route and ranks them:
+adapter `Up` only, then hardware NICs above virtual ones, then lowest route plus
+interface metric. Gateway and interface come from the same ranking, so they
+can't disagree.
 
-Linux and macOS read the routing table directly (`ip route` / `route -n get`).
+Linux reads the routing table directly (`ip route`, skipping `linkdown` routes
+and confirming carrier in sysfs). macOS ranks `netstat -rn -f inet` the same way
+(`pick_default_route` in `platform/macos.rs`), skipping tunnels and bridges, and
+falls back to `route -n get default`.
 
 ### Interface list
 
-- **Linux** (`platform/linux.rs:32`): `ip -j addr` gives JSON, parsed with serde.
+- **Linux** (`interface_list` in `platform/linux.rs`): `ip -j addr` gives JSON, parsed with serde.
   Link speed comes from reading the file `/sys/class/net/<name>/speed` directly —
   no command needed, `/sys` is a virtual filesystem the kernel exposes.
-- **Windows** (`platform/windows.rs:48`): one PowerShell one-liner enumerates
+- **Windows** (`WINDOWS_ADAPTERS` in `platform/windows.rs`): one PowerShell one-liner enumerates
   every adapter and emits pipe-delimited rows (`Name|Status|LinkSpeed|Mac|Virtual|IPv4`).
   There's real domain logic here: it drops all-zero-MAC filter miniports (Npcap,
   WFP), and hides *virtual* adapters (Hyper-V switches, VPN tunnels) unless
   they're actually carrying an IP or serving as the default route — so idle WAN
   miniports and Bluetooth PAN don't clutter the list.
 - **macOS**: uses the generic `sysinfo` list, enriched with per-interface up/down
-  state parsed from `ifconfig -a` (`platform/macos.rs:27`).
+  state parsed from `ifconfig -a` (`interface_info` in `platform/macos.rs`).
 
 ### Wi‑Fi details — the messiest per-OS divergence
 
 Each OS reports Wi-Fi completely differently, and Rove normalizes them all into
 one `ConnectionDetails` struct:
 
-- **Linux** (`platform/linux.rs:103`) layers *three* tools because no single one
+- **Linux** (`wifi_details` in `platform/linux.rs`) layers *three* tools because no single one
   is complete: `nmcli` (SSID, signal %, frequency, channel, security), then
   `iw dev link`/`info` (signal in dBm, tx bitrate, channel), then `iwgetid` as a
   last-ditch SSID source. Each fills only the gaps the previous left (`d.frequency
   = d.frequency.or(...)`).
-- **Windows** (`platform/windows.rs:120`): parses `netsh wlan show interfaces`.
+- **Windows** (`parse_netsh_wifi` in `platform/windows.rs`): parses `netsh wlan show interfaces`.
   This has a genuinely tricky bug baked into the fix — Wi-Fi 6E/7 access points
   print a "Colocated APs" block whose `Channel:`/`Band:` values appear *before*
   the real connection's, so a naive first-match grabs the wrong channel. The
   parser keys off whole-line `Key : Value` labels to avoid it (there's a unit test
-  for exactly this at `windows.rs:298`). netsh doesn't report centre frequency, so
-  Rove derives it from band + channel using the 802.11 channel plan
-  (`channel_to_frequency`, `windows.rs:166`).
-- **macOS** (`platform/macos.rs:12`, `platform/mac_native.rs`): Apple gutted the
+  for exactly this, `parses_connected_radio_not_colocated_aps` in `windows.rs`).
+  netsh doesn't report centre frequency, so Rove derives it from band + channel
+  using the 802.11 channel plan (`channel_to_frequency` in `platform/mod.rs`).
+- **macOS** (`wifi_details` in `platform/macos.rs`, `platform/mac_native.rs`): Apple gutted the
   private `airport -I` tool on macOS 14.4+ (it prints only a deprecation notice)
   and every shell tool now returns `<redacted>` for the SSID. So Rove reads Wi-Fi
   *in-process* via **CoreWLAN**: the SSID (gated behind Location Services, which
   Rove requests once at startup through CoreLocation) and the transmit rate —
   CoreWLAN is the only remaining source of Wi-Fi link speed. `system_profiler`
   fills in RSSI/channel/security (cached off the hot path since it takes seconds),
-  with `airport`/`networksetup` kept only as legacy fallbacks.
+  with `networksetup` kept only as a legacy SSID fallback.
 
-A shared post-step, `finalize_wifi` (`platform/mod.rs:50`), converts a dBm RSSI
+A shared post-step, `finalize_wifi` (in `platform/mod.rs`), converts a dBm RSSI
 into a 0–100% bar whenever the OS only gave dBm — so the signal meter looks the
 same everywhere.
 
@@ -219,7 +232,8 @@ The device scanner (`crates/rove-core/src/devices/mod.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
 LAN" is the kernel's neighbor table** (the ARP cache on IPv4) — the map of IP →
 MAC the kernel has already resolved. Rove reads it via `ip neigh show` on Linux
-(which includes a reachability state) or `arp -a` elsewhere (`platform/mod.rs:122`).
+(which includes a reachability state) or `arp -a` elsewhere (`neighbor_table` in
+`platform/mod.rs`).
 
 But the ARP cache only holds hosts the machine has *recently talked to* — idle
 devices won't be there. So before reading it, Rove **actively wakes every host
@@ -227,18 +241,22 @@ in the subnet** (`devices/sweep.rs`):
 
 ```rust
 // ping every address in the /24..30, 64 at a time
-futures_util::stream::iter(hosts)
+futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
     .map(|ip| async move {
         let cmd = crate::platform::ping_command(&ip, 1, 700);
-        let _ = crate::shell::try_run_timeout(&cmd, Duration::from_secs(3)).await;
+        let replied = crate::util::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+            .await
+            .is_some();
+        replied.then_some(ip)
     })
     .buffer_unordered(CONCURRENT_PROBES)   // 64 concurrent
-    .collect::<Vec<()>>()
-    .await;
+    .filter_map(|replied| async move { replied })
+    .collect::<HashSet<String>>()
+    .await
 ```
 
-The clever part (comment at `sweep.rs:1`): **we don't care whether the ping
-succeeds.** The point is that sending *any* packet forces the kernel to do an ARP
+The clever part (the `//!` header of `sweep.rs`): **discovery doesn't need the
+ping to succeed.** (The replies are kept only as a liveness signal.) The point is that sending *any* packet forces the kernel to do an ARP
 exchange to find the target's MAC — which populates the neighbor table *even for
 hosts that silently drop the ping*. The ping is bait; the ARP entry is the catch.
 A TCP port probe runs alongside to reach ICMP-filtering hosts, plus two passive
@@ -246,12 +264,14 @@ listeners — **mDNS** and **SSDP/UPnP** — that catch devices announcing their
 friendly names and models.
 
 Everything then gets enriched: vendor from the MAC's OUI prefix; hostname from
-whichever source is friendliest (mDNS → SSDP → NetBIOS → reverse DNS); a hardware
-model from mDNS/SSDP; and a device `kind` from a 13-way weighted-vote classifier
-that also folds in HTTP-banner hints. The local machine is added manually because
-it never appears in its own neighbor table (`add_self_if_missing`,
-`devices/mod.rs:174`). The full pipeline — SSDP, HTTP banners, NetBIOS, and the
-classifier — is covered in the [device-discovery page](device-discovery.md).
+whichever source is friendliest (mDNS → SSDP → NetBIOS → DHCP → reverse DNS); a
+hardware model from mDNS/SSDP/SNMP; an OS family from a passive DHCP
+fingerprint; and a device `kind` from a weighted-vote classifier that also folds
+in HTTP-banner hints. The local machine is added manually because it never
+appears in its own neighbor table (`add_self_if_missing` in `devices/mod.rs`),
+then the list is deduped by MAC. The full pipeline — SSDP, HTTP banners,
+NetBIOS, SNMP, DHCP, and the classifier — is covered in the
+[device-discovery page](device-discovery.md).
 
 ---
 
@@ -273,7 +293,7 @@ the `sysinfo` crate, which is cross-platform, so there's very little per-OS code
 
 The one per-OS wrinkle is the "since-boot total": on **Linux**, Rove prefers
 reading `/sys/class/net/*/statistics/{rx,tx}_bytes` directly
-(`platform/linux.rs:220`, `boot_totals`) because `/sys` is authoritative; on
+(`boot_totals` in `platform/linux.rs`) because `/sys` is authoritative; on
 Windows/macOS it falls back to summing `sysinfo`'s totals.
 
 ---
@@ -285,8 +305,9 @@ times and parsing the RTT out of each reply line with a regex
 (`time=12.3 ms`). From those samples it computes average latency, **jitter**
 (mean absolute difference between consecutive RTTs), and **packet loss**
 (replies received vs. probes sent). The `ping` flags differ per OS — Windows uses
-`-n <count> -w <ms>`, Unix uses `-c <count> -i 0.2 -W 1` — abstracted behind
-`ping_command` (`platform/mod.rs:154`).
+`-n <count> -w <ms>`, Linux `-c <count> -i 0.2 -W 1`, macOS `-W <ms>` (its `-W`
+takes milliseconds) — abstracted behind
+`ping_command` (in `platform/mod.rs`).
 
 ---
 

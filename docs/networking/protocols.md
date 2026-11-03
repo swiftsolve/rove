@@ -74,6 +74,11 @@ friendly name, model, manufacturer, and `deviceType`.
 file-sharing machines. Rove sends an **NBSTAT** query to UDP port 137 to get the
 real Windows computer name.
 
+**SNMP (Simple Network Management Protocol)**: how network gear reports on
+itself. Rove asks only the gateway, on UDP port 161 with the read-only `public`
+community, for `sysDescr`: a text banner that usually names the router's exact
+model.
+
 **DHCP (Dynamic Host Configuration Protocol)** — how devices *get* an IP address
 when they join a network. When a phone connects to Wi-Fi, it broadcasts a DHCP
 request carrying a **fingerprint**: Option 55 (the list of settings it asks for)
@@ -103,11 +108,12 @@ What a listening port tells Rove:
 | SSH | 22 | A computer, NAS, or Raspberry Pi |
 | IPP / JetDirect | 631 / 9100 | A printer |
 | RTSP (Real-Time Streaming) | 554 | An IP camera |
-| Chromecast / Roku | 8009 / 8060 | A TV or streaming box |
-| lockdownd | 62078 | An iPhone/iPad (Apple-only) |
+| Chromecast / Roku | 8009 / 8060 | A TV or streaming box (8009 only weakly: Cast speakers use it too) |
+| lockdownd | 62078 | An iPhone, iPad or Apple Watch (Apple-only) |
 | SMB | 445 | Windows file sharing — computer or NAS |
 | Plex | 32400 | A media server (NAS-class box) |
 | Sonos | 1400 | A speaker |
+| Kasa / Tuya local API | 9999 / 6668 | A smart plug |
 
 ---
 
@@ -117,7 +123,7 @@ Rove combines these because **no single protocol sees everything**:
 
 - **ARP / neighbor table** answers *who exists*.
 - **ICMP + TCP** force silent devices to reveal themselves to ARP.
-- **mDNS, SSDP/UPnP, NetBIOS, DHCP, reverse DNS** each answer *what is this
+- **mDNS, SSDP/UPnP, NetBIOS, SNMP, DHCP, reverse DNS** each answer *what is this
   device* from a different angle — and a trust-weighted vote reconciles them (a
   mDNS "Sonos speaker" announcement is trusted far more than a guess from an open
   port).
