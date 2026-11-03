@@ -8,9 +8,9 @@ Working on Rove's code.
   checklists for common changes, and which component to use for what.
 - [How Rove Is Put Together](develop/architecture.md): the bridge between the
   UI and the backend, commands and events.
-- [Learning Rust & Tauri through Rove](develop/learning-rust-and-tauri.md): the
+- [Learning Rust & Tauri through Rove](develop/learning/rust-and-tauri/README.md): the
   same boundary from the language side, and adding a command end to end.
-- [Learning TanStack Query & Tailwind through Rove](develop/learning-react-query-and-tailwind.md):
+- [Learning TanStack Query & Tailwind through Rove](develop/learning/react-query-and-tailwind/README.md):
   why backend data goes through TanStack Query, and how styling goes from a
   Figma token to a class, with `cva`, `cx` and `cn`.
 

@@ -453,7 +453,7 @@ Finally (the end of `scan()`):
 - **Dedupe by MAC** so a host with two IPs shows once.
 
 The result is a `LanDeviceScan` that serializes across the IPC bridge (see the
-[main learning doc](../develop/learning-rust-and-tauri.md)) to the Devices screen.
+[main learning doc](../develop/learning/rust-and-tauri/README.md)) to the Devices screen.
 
 ---
 

@@ -1,0 +1,95 @@
+# `cva`, `cx` and `cn`
+
+Part 3 of [Learning TanStack Query & Tailwind through Rove](README.md).
+
+[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [Contents →](README.md)
+
+Three small helpers for building `className` strings.
+
+## `cva`: a component's variants
+
+`cva` (from `class-variance-authority`) describes a component's looks as data:
+the classes every version shares, plus the classes for each option. From
+[Badge.tsx](../../../../src/ui/badge/Badge.tsx):
+
+```ts
+const badgeVariants = cva('inline-flex items-center rounded-full px-8 py-4 type-badge', {
+  variants: {
+    tone: {
+      positive: 'bg-status-positive/(--opacity-tint-md) text-positive',
+      warning: 'bg-status-warning/(--opacity-tint-md) text-warning',
+      negative: 'bg-status-negative/(--opacity-tint-md) text-negative',
+    },
+  },
+})
+
+badgeVariants({ tone: 'warning' })
+// → 'inline-flex items-center rounded-full px-8 py-4 type-badge bg-status-warning/… text-warning'
+```
+
+Why bother: every option is listed in one place, TypeScript knows the allowed
+values (`'positive' | 'warning' | 'negative'`), and the props match the Figma
+component's variants one to one. Rove's catalogue
+([components.json](../../../../src/ui/components.json)) reads these to document every
+component.
+
+## `cx`: just join
+
+`cx` glues class names together and skips anything falsy:
+
+```ts
+cx('rounded-md p-12', isOpen && 'bg-raised')
+// isOpen true  → 'rounded-md p-12 bg-raised'
+// isOpen false → 'rounded-md p-12'
+```
+
+It doesn't understand what the classes do. `cx('px-12', 'px-8')` gives you
+both, and which one wins depends on the order in the generated CSS, not on
+which you wrote last.
+
+## `cn`: join, and let the last one win
+
+[`cn`](../../../../src/ui/foundations/cn.ts) is `cx` plus **tailwind-merge**, which
+knows that `px-12` and `px-8` both set horizontal padding and keeps only the
+last:
+
+```ts
+cn('px-12 py-4', 'px-8')  // → 'py-4 px-8'
+```
+
+This matters when a component accepts a `className` from outside:
+
+```tsx
+function Badge({ tone, className }) {
+  return <span className={cn(badgeVariants({ tone }), className)} />
+}
+
+<Badge tone="warning" className="px-12" />  // the caller's px-12 replaces px-8
+```
+
+With `cx` instead, the element would get both `px-8` and `px-12`, and the
+result would depend on CSS order.
+
+`cn` has one catch. tailwind-merge has to know Rove's custom names, or it
+mixes them up: it would read `text-md` (a size) and `text-secondary` (a colour)
+as two colours and drop one. So `cn.ts` lists every theme name and every
+`type-*` class, and `scripts/checks/cn-theme.mjs` fails if the lists fall
+behind `tailwind.css` or rove-tokens. A later `type-*` class replaces an earlier
+one, and any size, weight or spacing before it; a utility after it tweaks it.
+
+## Which one when
+
+| You're writing | Use |
+| --- | --- |
+| A component with options (size, tone, layout) | `cva` |
+| A component that takes `className` from outside | `cn(ownClasses, className)` |
+| Fixed classes, maybe with a condition, nothing from outside | `cx` |
+
+`cn` everywhere would work, but it costs a parse on every render, and seeing
+`cn` should tell a reader "this component accepts overrides".
+
+---
+
+---
+
+[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [Contents →](README.md)

@@ -63,7 +63,7 @@ Check: `npm run check`, `npm run dev` in both themes, and `npm run a11y`.
 ### Show new backend data
 
 The six steps are in
-[Learning Rust and Tauri](learning-rust-and-tauri.md#12-build--run-it--add-a-command-end-to-end):
+[Learning Rust and Tauri](learning/rust-and-tauri/05-in-practice.md#12-build--run-it-add-a-command-end-to-end):
 the logic in `rove-core`, a command in `src-tauri`, the type in `src/types`,
 both bridges (Tauri and the dev mock), then a hook. The hook goes in the
 feature's `hooks/`, on `useBackendQuery`, keyed by the data plus

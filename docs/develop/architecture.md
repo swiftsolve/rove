@@ -5,7 +5,7 @@ and the backend starts, which direction data moves, and what a call across that
 gap actually is.
 
 > **Companion pages:**
-> - [Learning Rust & Tauri through Rove](learning-rust-and-tauri.md): the same
+> - [Learning Rust & Tauri through Rove](learning/rust-and-tauri/README.md): the same
 >   boundary from the language side, with the Rust concepts spelled out.
 > - [How Rove Captures Network Data (per OS)](../networking/data-capture.md): the
 >   per-OS probes behind every command below.

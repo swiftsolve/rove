@@ -50,7 +50,7 @@ Rove is two programs talking over a thin, typed bridge:
 >   which component to use for what.
 > - [How Rove Is Put Together](docs/develop/architecture.md): the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
-> - [Learning Rust & Tauri through Rove](docs/develop/learning-rust-and-tauri.md): the
+> - [Learning Rust & Tauri through Rove](docs/develop/learning/rust-and-tauri/README.md): the
 >   same boundary from the language side.
 > - [How Rove Captures Network Data (per OS)](docs/networking/data-capture.md)
 > - [How Rove Discovers & Identifies LAN Devices](docs/networking/device-discovery.md)
