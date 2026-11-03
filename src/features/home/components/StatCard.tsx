@@ -1,14 +1,8 @@
 import type { ReactNode } from 'react'
-import { cx } from 'class-variance-authority'
 import { Card, CardBody, CardHeader, DirectionIcon, Readout, StatusDot } from '@/ui'
 
-// The text settings of the <button> this card once was (a button resets
-// them), kept so the readouts render as before. The content fills the body's
-// height, so a control can sit at its foot.
-const READOUT_AREA = cx(
-  'flex h-full flex-col',
-  'leading-[normal] whitespace-nowrap [font-feature-settings:normal] [text-rendering:auto]',
-)
+// The content fills the body's height, so a control can sit at its foot.
+const READOUT_AREA = 'flex h-full flex-col whitespace-nowrap'
 
 type StatCardProps = {
   icon: ReactNode
