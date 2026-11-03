@@ -1,18 +1,21 @@
+import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { queryClient } from '@/app/utils/query-client'
 import { getNetworkApi, NO_BRIDGE_MESSAGE } from '@/bridge/network-api'
 import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
 import type { NetworkInfo } from '@/types'
-import { useLatestRef } from '@/ui'
+
+const NETWORK_INFO_KEY = ['network', 'info']
 
 const REFRESH_INTERVAL_MS = 15_000
 // Above the backend's 15s per-command budget (crates/rove-core/src/util/shell.rs),
 // so a slow but healthy probe never trips an error here first.
 const NETWORK_INFO_TIMEOUT_MS = 20_000
-// Consecutive failed polls before the error shows; until then the last good
-// reading stays on screen.
+// Failed reads in a row before the error shows over a good reading, one poll
+// apart; until then the last good reading stays on screen.
 const FAILURES_BEFORE_ERROR = 3
 
 /**
@@ -31,7 +34,7 @@ export type NetworkState = {
   error: NetworkError | null
   /**
    * When the last good reading landed, as of the latest error: the age of the
-   * `info` an error banner sits over. Set only when an error is raised, so a
+   * `info` an error banner sits over. Null while there's no error, so a
    * successful poll doesn't re-render every reader.
    */
   lastReadAt: number | null
@@ -57,94 +60,82 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
   })
 }
 
+function readNetworkInfo(): Promise<NetworkInfo> {
+  return withTimeout(getNetworkApi().getNetworkInfo(), NETWORK_INFO_TIMEOUT_MS, 'Network detection timed out.')
+}
+
+function toNetworkError(error: Error): NetworkError {
+  return {
+    kind: error instanceof TimeoutError ? 'timeout' : 'offline',
+    message: error.message || 'Failed to read network information',
+  }
+}
+
 /**
  * Creates the app's network state: reads network info on mount, polls it while
  * the window is visible and refreshes on the backend's network-changed nudge.
  * Called once, by `NetworkProvider`; components read it with `useNetwork()`.
  */
 export function useNetworkInfoSource(): NetworkState {
-  const [info, setInfo] = useState<NetworkInfo | null>(null)
-  const [error, setError] = useState<NetworkError | null>(null)
-  const [lastReadAt, setLastReadAt] = useState<number | null>(null)
-  const lastReadAtRef = useRef<number | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const infoRef = useLatestRef(info)
-  const failuresRef = useRef(0)
-  // Stops network-changed nudges (fired repeatedly while Wi-Fi roams) from
-  // stacking polls on one already in flight.
-  const isInFlightRef = useRef(false)
-  // Bumped on each resume from the background. A suspended webview fires a frozen
-  // poll's timeout the instant it resumes; the generation check ignores it.
-  const generationRef = useRef(0)
+  const hasBridge = window.networkAPI !== undefined
+  const query = useQuery({
+    queryKey: NETWORK_INFO_KEY,
+    queryFn: readNetworkInfo,
+    enabled: hasBridge,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    // A failed poll over a good reading tries again a poll later, so the error
+    // shows only once FAILURES_BEFORE_ERROR reads in a row have failed. The
+    // first read has nothing to fall back on, so it reports at once.
+    retry: (failureCount) =>
+      queryClient.getQueryData(NETWORK_INFO_KEY) !== undefined && failureCount < FAILURES_BEFORE_ERROR - 1,
+    retryDelay: REFRESH_INTERVAL_MS,
+    // An unchanged reading keeps its identity, so readers don't re-render.
+    structuralSharing: (previous, next) =>
+      isNetworkInfoEqual((previous as NetworkInfo | undefined) ?? null, next as NetworkInfo) ? previous : next,
+    // Not `dataUpdatedAt` or `isFetching`: a quiet poll that changes nothing
+    // re-renders nothing.
+    notifyOnChangeProps: ['data', 'error', 'status'],
+  })
+  const { data, dataUpdatedAt, refetch, status } = query
+  const queryError = query.error
+
+  // Reads the user asked for (or a resume) in flight: they show the spinner
+  // while there's no reading yet. A poll or nudge never does.
+  const [reloadCount, setReloadCount] = useState(0)
+  const reload = useCallback(async (): Promise<void> => {
+    if (!hasBridge) return
+    setReloadCount((count) => count + 1)
+    try {
+      // Drops a read in flight rather than join it: after the window resumes
+      // from the background, that's a frozen read whose timeout fires at once.
+      await queryClient.cancelQueries({ queryKey: NETWORK_INFO_KEY })
+      await refetch()
+    } finally {
+      setReloadCount((count) => count - 1)
+    }
+  }, [hasBridge, refetch])
+
   const isVisible = usePageVisible()
-
-  const refresh = useCallback(
-    async (isSilent = false): Promise<void> => {
-      if (!window.networkAPI) {
-        setError({ kind: 'backend', message: NO_BRIDGE_MESSAGE })
-        setIsLoading(false)
-        return
-      }
-
-      if (isInFlightRef.current) return
-      isInFlightRef.current = true
-      const generation = generationRef.current
-
-      const isInitial = infoRef.current === null
-      if (!isSilent && isInitial) setIsLoading(true)
-
-      try {
-        const nextInfo = await withTimeout(
-          getNetworkApi().getNetworkInfo(),
-          NETWORK_INFO_TIMEOUT_MS,
-          'Network detection timed out.',
-        )
-
-        if (generation !== generationRef.current) return
-        failuresRef.current = 0
-        lastReadAtRef.current = Date.now()
-        setInfo((previous) => (isNetworkInfoEqual(previous, nextInfo) ? previous : nextInfo))
-        setError(null)
-      } catch (unknownError) {
-        if (generation !== generationRef.current) return
-        failuresRef.current += 1
-        const message = unknownError instanceof Error ? unknownError.message : 'Failed to read network information'
-        if (infoRef.current === null || failuresRef.current >= FAILURES_BEFORE_ERROR) {
-          setError({ kind: unknownError instanceof TimeoutError ? 'timeout' : 'offline', message })
-          setLastReadAt(lastReadAtRef.current)
-        }
-      } finally {
-        // Only the current generation owns the in-flight slot and the loading
-        // flag; a superseded poll must not clear what a fresh post-resume poll holds.
-        if (generation === generationRef.current) {
-          isInFlightRef.current = false
-          if (!isSilent || isInitial) setIsLoading(false)
-        }
-      }
-    },
-    [infoRef],
-  )
-
+  const wasVisibleRef = useRef(isVisible)
   useEffect(() => {
-    // On resume, drop any frozen poll and the failure streak before reading again.
-    if (!isVisible) return
-    generationRef.current += 1
-    isInFlightRef.current = false
-    failuresRef.current = 0
-    // Deliberate: a non-silent read raises the loading flag before it awaits, so
-    // a resume after a failed first load shows the spinner instead of the error.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh(false)
-    const intervalId = window.setInterval(() => void refresh(true), REFRESH_INTERVAL_MS)
-    return () => window.clearInterval(intervalId)
-  }, [isVisible, refresh])
+    // The first read is TanStack's own; this is each resume after it.
+    const wasVisible = wasVisibleRef.current
+    wasVisibleRef.current = isVisible
+    if (isVisible && !wasVisible) void reload()
+  }, [isVisible, reload])
 
-  useOnNetworkChanged(() => void refresh(true))
+  useOnNetworkChanged(() => void refetch({ cancelRefetch: false }), hasBridge)
 
-  // Stable identities, so `useNetwork()` readers re-render only when a value changes.
-  const refreshNow = useCallback((): Promise<void> => refresh(false), [refresh])
+  const info = data ?? null
+  const error = useMemo<NetworkError | null>(() => {
+    if (!hasBridge) return { kind: 'backend', message: NO_BRIDGE_MESSAGE }
+    return queryError ? toNetworkError(queryError) : null
+  }, [hasBridge, queryError])
+  const lastReadAt = error && dataUpdatedAt > 0 ? dataUpdatedAt : null
+  const isLoading = hasBridge && info === null && (status === 'pending' || reloadCount > 0)
+
   return useMemo(
-    () => ({ info, error, lastReadAt, isLoading, refresh: refreshNow }),
-    [info, error, lastReadAt, isLoading, refreshNow],
+    () => ({ info, error, lastReadAt, isLoading, refresh: reload }),
+    [info, error, lastReadAt, isLoading, reload],
   )
 }

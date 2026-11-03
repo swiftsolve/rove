@@ -89,7 +89,11 @@ the mock.
   `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
   `useBackendQuery`, and the components that show the data call it directly.
   Callers of the same hook share one cache entry, so `DevicesView` and
-  `DevicesCard` see the same scan.
+  `DevicesCard` see the same scan. Network info and internet status are
+  app-wide rather than per screen: `NetworkProvider` reads them with `useQuery`
+  directly and components get them from `useNetwork()` and
+  `useInternetStatus()`. Live throughput and the speed test are event streams,
+  not reads, so each keeps a module store read with `useSyncExternalStore`.
 - A query key names the data, plus the network for data that belongs to one
   (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
   fresh results. A query fetches while a screen that shows it is open and polls

@@ -1,6 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 
+import { queryClient } from '@/app/utils/query-client'
+import { getNetworkApi } from '@/bridge/network-api'
 import type { InternetStatus } from '@/types'
+
+const INTERNET_STATUS_KEY = ['network', 'internet-status']
+
+async function readInternetStatus(): Promise<InternetStatus | null> {
+  const startedAt = Date.now()
+  const cached = (): InternetStatus | null =>
+    queryClient.getQueryData<InternetStatus | null>(INTERNET_STATUS_KEY) ?? null
+  try {
+    const status = await getNetworkApi().getInternetStatus()
+    // A heartbeat that landed while this read was in flight is newer than it.
+    const updatedAt = queryClient.getQueryState(INTERNET_STATUS_KEY)?.dataUpdatedAt ?? 0
+    return updatedAt >= startedAt ? cached() : status
+  } catch {
+    // No verdict yet: callers defer to the local link, and the next heartbeat brings one.
+    return cached()
+  }
+}
 
 /**
  * Public-internet reachability, kept live off the backend's heartbeat. Separate
@@ -10,31 +30,28 @@ import type { InternetStatus } from '@/types'
  * local link. Called once, by `NetworkProvider`; read it with `useInternetStatus()`.
  */
 export function useInternetStatusSource(): InternetStatus | null {
-  const [status, setStatus] = useState<InternetStatus | null>(null)
+  const hasBridge = window.networkAPI !== undefined
+  const { data } = useQuery({
+    queryKey: INTERNET_STATUS_KEY,
+    queryFn: readInternetStatus,
+    enabled: hasBridge,
+    // Read once; from then on the heartbeat keeps it current.
+    staleTime: Infinity,
+  })
 
   useEffect(() => {
     const api = window.networkAPI
     if (!api) return
-    // Drops a read or event that lands after teardown (e.g. an HMR remount).
+    // The bridge's unsubscribe is async, so an event can still arrive after cleanup.
     let isActive = true
-    // An event is newer than the opening read, so once one lands the read is stale.
-    let hasEvent = false
-    const detach = api.onInternetStatus((nextStatus) => {
-      hasEvent = true
-      if (isActive) setStatus(nextStatus)
+    const detach = api.onInternetStatus((status) => {
+      if (isActive) queryClient.setQueryData(INTERNET_STATUS_KEY, status)
     })
-    api.getInternetStatus().then(
-      (nextStatus) => {
-        if (isActive && !hasEvent) setStatus(nextStatus)
-      },
-      // No verdict yet: callers defer to the local link, and the next heartbeat brings one.
-      () => undefined,
-    )
     return () => {
       isActive = false
       detach()
     }
   }, [])
 
-  return status
+  return data ?? null
 }
