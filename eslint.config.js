@@ -26,15 +26,6 @@ const APP_CODE = {
 // Like the import patterns, `no-restricted-syntax` doesn't merge across
 // blocks, so the raw-button block repeats these.
 
-const NO_READONLY_MESSAGE = 'No readonly: use the plain type (T[], Map, Set, Record).'
-const NO_READONLY = [
-  "TSTypeOperator[operator='readonly']",
-  'TSPropertySignature[readonly=true]',
-  'TSIndexSignature[readonly=true]',
-  'PropertyDefinition[readonly=true]',
-  'TSParameterProperty[readonly=true]',
-  'TSTypeReference[typeName.name=/^Readonly(Array|Map|Set)?$/]',
-].map((selector) => ({ selector, message: NO_READONLY_MESSAGE }))
 // A typed dot sits on the baseline and scales with the font, so it never
 // matches the designed one.
 const NO_DOT_GLYPH_MESSAGE = 'Separate inline items with DotSeparator or InlineMeta from @/ui, not a typed "·" or "•".'
@@ -56,7 +47,7 @@ const NO_EM_DASH = [
   'TemplateElement[value.raw=/—/]',
   'JSXText[value=/(?=[\\s\\S]*[^\\s—])[\\s\\S]*—/]',
 ].map((selector) => ({ selector, message: NO_EM_DASH_MESSAGE }))
-const CODE_STYLE = [...NO_READONLY, ...NO_DOT_GLYPH, ...NO_DASH_VALUE, ...NO_EM_DASH]
+const CODE_STYLE = [...NO_DOT_GLYPH, ...NO_DASH_VALUE, ...NO_EM_DASH]
 
 // ── Boolean names ──────────────────────────────────────────────────────────
 

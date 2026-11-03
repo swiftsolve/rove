@@ -37,8 +37,8 @@ cargo test -p rove-core      # when Rust changed
 cargo clippy --workspace --all-targets -- -D warnings   # likewise
 ```
 
-Lint enforces the house rules (no readonly, boolean prefixes, no em dash in
-copy, library imports, raw values); each check in `scripts/checks/` says what
+Lint enforces the house rules (boolean prefixes, no em dash in copy,
+library imports, raw values); each check in `scripts/checks/` says what
 it guards. Hooks run some of it for you:
 
 - **Git** (`scripts/hooks/git/`, on after `npm install`): `pre-commit` lints

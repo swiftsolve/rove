@@ -157,8 +157,9 @@ the mock.
   (`[isOpen, setIsOpen]`), params, fields and module constants (`IS_MAC`).
   Names the DOM or a library picks keep theirs: alias Recharts' `active` to
   `isActive` where you read it.
-- No `readonly`, `Readonly<>`, `ReadonlyArray`, `ReadonlyMap` or
-  `ReadonlySet`; use the plain type.
+- Data that's shared and must not change (a context value, a list passed
+  down as a prop, a module-level table) can be typed `readonly T[]`,
+  `ReadonlyMap` or `Readonly<…>`, so the compiler catches a stray mutation.
 - An object shape is a `type`, never an `interface`, so a shape that grows
   into a union or an intersection keeps its keyword. A prop it redeclares from
   a base is omitted from the base
@@ -286,7 +287,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Rule | Enforced by |
 | --- | --- |
 | Library and context import boundaries, no raw `<button>` | ESLint, `no-restricted-imports` and `no-restricted-syntax` |
-| No `readonly`, typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
+| No typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
 | Boolean prefixes, `type` over `interface`, import order, jsx-a11y | ESLint |
 | Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
