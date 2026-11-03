@@ -30,6 +30,7 @@
 //!
 //! Classification comes from `data/dhcp_fingerprints.tsv`, a curated,
 //! license-clean table embedded like the OUI list: no key, no network.
+use crate::devices::DeviceKind;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU8, Ordering};
@@ -67,7 +68,7 @@ pub struct DhcpHit {
     /// and present on non-Windows hosts NetBIOS misses.
     pub hostname: Option<String>,
     /// Best-effort device kind from the local fingerprint table.
-    pub kind: Option<&'static str>,
+    pub kind: Option<DeviceKind>,
     /// Best-effort OS family from the local fingerprint table.
     pub os: Option<&'static str>,
 }
@@ -123,12 +124,24 @@ const STATUS_STARTING: u8 = 0;
 const STATUS_ACTIVE: u8 = 1;
 const STATUS_UNAVAILABLE: u8 = 2;
 
-/// "starting" until the bind resolves, then "active" or "unavailable".
-pub fn status() -> &'static str {
+/// Passive DHCP fingerprinting's state. Mirrors `DhcpStatus` in
+/// `src/types/devices.ts`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DhcpStatus {
+    /// The listener hasn't bound yet.
+    Starting,
+    Active,
+    /// No privilege to bind :67.
+    Unavailable,
+}
+
+/// `Starting` until the bind resolves, then `Active` or `Unavailable`.
+pub fn status() -> DhcpStatus {
     match STATUS.load(Ordering::Relaxed) {
-        STATUS_ACTIVE => "active",
-        STATUS_UNAVAILABLE => "unavailable",
-        _ => "starting",
+        STATUS_ACTIVE => DhcpStatus::Active,
+        STATUS_UNAVAILABLE => DhcpStatus::Unavailable,
+        _ => DhcpStatus::Starting,
     }
 }
 
@@ -327,7 +340,7 @@ struct FingerprintRow {
     matcher: Matcher,
     pattern: &'static str,
     os: Option<&'static str>,
-    kind: Option<&'static str>,
+    kind: Option<DeviceKind>,
 }
 
 /// Parsed once. Fields borrow the `'static` embedded string, so kinds and OS
@@ -356,7 +369,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
                 };
                 // "-" means the row says nothing about that field.
                 let field = |s: &'static str| (s != "-").then_some(s);
-                Some(FingerprintRow { matcher, pattern, os: field(os), kind: field(kind) })
+                Some(FingerprintRow { matcher, pattern, os: field(os), kind: DeviceKind::parse(kind) })
             })
             .collect()
     })
@@ -364,7 +377,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
 
 /// Best-effort `(kind, os)` for a fingerprint. The first matching row wins, and
 /// vendor-class rows come before the version-sensitive PRL rows.
-fn classify_fingerprint(vendor_class: Option<&str>, prl: Option<&str>) -> (Option<&'static str>, Option<&'static str>) {
+fn classify_fingerprint(vendor_class: Option<&str>, prl: Option<&str>) -> (Option<DeviceKind>, Option<&'static str>) {
     let vendor_lc = vendor_class.map(|v| v.to_ascii_lowercase());
     for row in fingerprint_table() {
         let matched = match row.matcher {
@@ -410,7 +423,7 @@ mod tests {
         assert_eq!(hit.fingerprint.as_deref(), Some("1,3,6,15"));
         assert_eq!(hit.vendor_class.as_deref(), Some("MSFT 5.0"));
         assert_eq!(hit.hostname.as_deref(), Some("my-pc"));
-        assert_eq!(hit.kind, Some("computer"));
+        assert_eq!(hit.kind, Some(DeviceKind::Computer));
         assert_eq!(hit.os, Some("Windows"));
     }
 
@@ -419,7 +432,7 @@ mod tests {
         let opts =
             [53, 1, 1, 60, 14, b'a', b'n', b'd', b'r', b'o', b'i', b'd', b'-', b'd', b'h', b'c', b'p', b'-', b'9'];
         let (_, hit) = parse_packet(&packet(&opts)).expect("valid");
-        assert_eq!(hit.kind, Some("phone"));
+        assert_eq!(hit.kind, Some(DeviceKind::Phone));
         assert_eq!(hit.os, Some("Android"));
     }
 
@@ -450,11 +463,11 @@ mod tests {
     #[test]
     fn vendor_class_table_lookups() {
         // Substring + case-insensitive: "Hewlett-Packard JetDirect" → printer.
-        assert_eq!(classify_fingerprint(Some("Hewlett-Packard JetDirect"), None), (Some("printer"), None));
+        assert_eq!(classify_fingerprint(Some("Hewlett-Packard JetDirect"), None), (Some(DeviceKind::Printer), None));
         // Router vendor, no OS implied.
-        assert_eq!(classify_fingerprint(Some("ubnt"), None), (Some("router"), None));
+        assert_eq!(classify_fingerprint(Some("ubnt"), None), (Some(DeviceKind::Router), None));
         // Android vendor class → phone / Android.
-        assert_eq!(classify_fingerprint(Some("android-dhcp-14"), None), (Some("phone"), Some("Android")));
+        assert_eq!(classify_fingerprint(Some("android-dhcp-14"), None), (Some(DeviceKind::Phone), Some("Android")));
     }
 
     #[test]
@@ -467,26 +480,29 @@ mod tests {
         // Trailing options still match the prefix.
         assert_eq!(
             classify_fingerprint(None, Some("1,15,3,6,44,46,47,31,33,121,249,43,252")),
-            (Some("computer"), Some("Windows")),
+            (Some(DeviceKind::Computer), Some("Windows")),
         );
         // Android that omits the Option 60 vendor class is still caught by its
         // PRL prefix (trailing options drift across versions).
         assert_eq!(
             classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,43,114")),
-            (Some("phone"), Some("Android")),
+            (Some(DeviceKind::Phone), Some("Android")),
         );
         // The bare 26,28,51,58,59 signature (no trailing 43) and newer builds
         // that extend the tail differently both resolve off the shortened prefix.
-        assert_eq!(classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59")), (Some("phone"), Some("Android")),);
+        assert_eq!(
+            classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59")),
+            (Some(DeviceKind::Phone), Some("Android")),
+        );
         assert_eq!(
             classify_fingerprint(None, Some("1,3,6,15,26,28,51,58,59,108,109,114,252")),
-            (Some("phone"), Some("Android")),
+            (Some(DeviceKind::Phone), Some("Android")),
         );
         // A build that requests the classless-static-route option (33) up front
         // before the same Android run.
         assert_eq!(
             classify_fingerprint(None, Some("1,33,3,6,15,26,28,51,58,59,43,114")),
-            (Some("phone"), Some("Android")),
+            (Some(DeviceKind::Phone), Some("Android")),
         );
     }
 
@@ -494,7 +510,7 @@ mod tests {
     fn vendor_class_wins_over_prl() {
         // A device sending both: the vendor-class row is ordered first.
         let (kind, os) = classify_fingerprint(Some("android-dhcp-14"), Some("1,121,3,6,15,119,252"));
-        assert_eq!((kind, os), (Some("phone"), Some("Android")));
+        assert_eq!((kind, os), (Some(DeviceKind::Phone), Some("Android")));
     }
 
     #[test]

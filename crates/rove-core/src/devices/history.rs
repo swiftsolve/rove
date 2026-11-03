@@ -119,8 +119,9 @@ pub fn stable_name(mac: &str, candidate: Option<(String, NameRank)>) -> Option<S
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::devices::DeviceKind;
 
-    fn mdns_kind(kind: &'static str) -> MdnsHit {
+    fn mdns_kind(kind: DeviceKind) -> MdnsHit {
         MdnsHit { kind: Some(kind), ..Default::default() }
     }
 
@@ -129,9 +130,9 @@ mod tests {
         // A TV whose `_googlecast` lands one scan and is missed the next keeps
         // its kind.
         let mut acc = DeviceEvidence::default();
-        acc.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
+        acc.absorb(&DeviceEvidence { mdns: mdns_kind(DeviceKind::Tv), ..Default::default() });
         acc.absorb(&DeviceEvidence::default()); // a lossy window with no mDNS
-        assert_eq!(acc.mdns.kind, Some("tv"));
+        assert_eq!(acc.mdns.kind, Some(DeviceKind::Tv));
     }
 
     #[test]
@@ -139,15 +140,15 @@ mod tests {
         // A Cast and HomeKit TV announces both tv and iot. Whatever order they
         // land in, the merge settles on iot, which outranks tv.
         let mut tv_first = DeviceEvidence::default();
-        tv_first.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
-        tv_first.absorb(&DeviceEvidence { mdns: mdns_kind("iot"), ..Default::default() });
+        tv_first.absorb(&DeviceEvidence { mdns: mdns_kind(DeviceKind::Tv), ..Default::default() });
+        tv_first.absorb(&DeviceEvidence { mdns: mdns_kind(DeviceKind::Iot), ..Default::default() });
 
         let mut iot_first = DeviceEvidence::default();
-        iot_first.absorb(&DeviceEvidence { mdns: mdns_kind("iot"), ..Default::default() });
-        iot_first.absorb(&DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
+        iot_first.absorb(&DeviceEvidence { mdns: mdns_kind(DeviceKind::Iot), ..Default::default() });
+        iot_first.absorb(&DeviceEvidence { mdns: mdns_kind(DeviceKind::Tv), ..Default::default() });
 
-        assert_eq!(tv_first.mdns.kind, Some("iot"));
-        assert_eq!(iot_first.mdns.kind, Some("iot"));
+        assert_eq!(tv_first.mdns.kind, Some(DeviceKind::Iot));
+        assert_eq!(iot_first.mdns.kind, Some(DeviceKind::Iot));
         assert_eq!(tv_first.mdns.kind, iot_first.mdns.kind);
     }
 
@@ -176,9 +177,9 @@ mod tests {
     #[test]
     fn cache_accumulates_across_calls_for_one_mac() {
         let mac = "aa:bb:cc:00:00:01";
-        merge_and_snapshot(mac, DeviceEvidence { mdns: mdns_kind("tv"), ..Default::default() });
+        merge_and_snapshot(mac, DeviceEvidence { mdns: mdns_kind(DeviceKind::Tv), ..Default::default() });
         let merged = merge_and_snapshot(mac, DeviceEvidence::default());
-        assert_eq!(merged.mdns.kind, Some("tv"));
+        assert_eq!(merged.mdns.kind, Some(DeviceKind::Tv));
     }
 
     #[test]

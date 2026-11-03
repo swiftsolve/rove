@@ -2,6 +2,7 @@
 //! ones about this machine's own connection and internet.
 use super::devices::KnownDevice;
 use super::Store;
+use crate::devices::DeviceKind;
 use crate::devices::LanDevice;
 use crate::diagnostics::InternetStatus;
 use rusqlite::{params, Connection, OptionalExtension};
@@ -27,7 +28,7 @@ pub struct NetworkEvent {
     /// The device's kind slug ("phone", "tv"), read live from the roster so the
     /// timeline shows the same category as the Devices view. `None` when unknown
     /// or when the event isn't about one device.
-    pub kind: Option<String>,
+    pub kind: Option<DeviceKind>,
     /// For change events: the value before and after (e.g. old/new IP).
     pub old_value: Option<String>,
     pub new_value: Option<String>,
@@ -232,13 +233,13 @@ impl Store {
         if device.is_gateway {
             return Some("Router".to_string());
         }
-        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), &device.kind)
+        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), device.kind)
     }
 
     /// Best-effort label from the stored row, for departures. Matches
     /// `device_name` so a device reads the same leaving as joining.
     pub(super) fn known_name(device: &KnownDevice) -> Option<String> {
-        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), &device.kind)
+        Self::compose_name(device.hostname.as_deref(), device.vendor.as_deref(), device.os.as_deref(), device.kind)
     }
 
     /// The feed's device label, mirroring `deviceName`/`describeUnnamed` in
@@ -246,7 +247,12 @@ impl Store {
     /// maker (vendor or OS) with the kind ("Android phone", "Phone").
     /// `None` only when nothing is known; the UI then says "Private device" or
     /// "Unknown device".
-    fn compose_name(hostname: Option<&str>, vendor: Option<&str>, os: Option<&str>, kind: &str) -> Option<String> {
+    fn compose_name(
+        hostname: Option<&str>,
+        vendor: Option<&str>,
+        os: Option<&str>,
+        kind: DeviceKind,
+    ) -> Option<String> {
         // A hostname is the name the user gave the device, so it always wins.
         if let Some(hostname) = hostname {
             return Some(hostname.to_string());
@@ -258,7 +264,7 @@ impl Store {
         if let Some(vendor) = vendor {
             // The kind label beside the name already says "Smart home", so the
             // verbose noun would repeat it.
-            if kind == "iot" {
+            if kind == DeviceKind::Iot {
                 return Some(vendor.to_string());
             }
             return Some(match noun {
@@ -276,21 +282,21 @@ impl Store {
 
     /// The noun for a device kind, mirroring `KIND_NOUNS` in
     /// `device-display.ts`. `None` for "unknown".
-    fn kind_noun(kind: &str) -> Option<&'static str> {
+    fn kind_noun(kind: DeviceKind) -> Option<&'static str> {
         Some(match kind {
-            "router" => "router",
-            "nas" => "NAS",
-            "computer" => "computer",
-            "tablet" => "tablet",
-            "phone" => "phone",
-            "watch" => "watch",
-            "console" => "game console",
-            "tv" => "TV",
-            "printer" => "printer",
-            "camera" => "camera",
-            "speaker" => "speaker",
-            "iot" => "smart home device",
-            _ => return None,
+            DeviceKind::Router => "router",
+            DeviceKind::Nas => "NAS",
+            DeviceKind::Computer => "computer",
+            DeviceKind::Tablet => "tablet",
+            DeviceKind::Phone => "phone",
+            DeviceKind::Watch => "watch",
+            DeviceKind::Console => "game console",
+            DeviceKind::Tv => "TV",
+            DeviceKind::Printer => "printer",
+            DeviceKind::Camera => "camera",
+            DeviceKind::Speaker => "speaker",
+            DeviceKind::Iot => "smart home device",
+            DeviceKind::Unknown => return None,
         })
     }
 
@@ -392,14 +398,14 @@ impl Store {
             let in_roster = row.get::<_, Option<String>>(10)?.is_some();
             let (name, randomized, kind) = if is_device_subject && in_roster {
                 // Keep the snapshot if the roster can't name it any better.
-                let kd_kind: String = row.get(14)?;
+                let kd_kind: DeviceKind = row.get(14)?;
                 let live = Self::compose_name(
                     row.get::<_, Option<String>>(11)?.as_deref(),
                     row.get::<_, Option<String>>(12)?.as_deref(),
                     row.get::<_, Option<String>>(13)?.as_deref(),
-                    &kd_kind,
+                    kd_kind,
                 );
-                let kind = (kd_kind != "unknown").then_some(kd_kind);
+                let kind = (kd_kind != DeviceKind::Unknown).then_some(kd_kind);
                 (live.or(stored_name), row.get::<_, i64>(15)? != 0, kind)
             } else {
                 (stored_name, stored_randomized, None)

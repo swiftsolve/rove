@@ -7,11 +7,11 @@ fn devices_upsert_preserves_first_seen_and_hostname() {
         ip: "192.168.1.5".into(),
         mac: "aa:bb:cc:dd:ee:ff".into(),
         vendor: Some("Acme".into()),
-        hostname: Some("nas".into()),
+        hostname: Some("nas".to_string()),
         model: None,
         os: None,
-        kind: "computer".into(),
-        kind_confidence: "high",
+        kind: DeviceKind::Computer,
+        kind_confidence: KindConfidence::High,
         is_randomized_mac: false,
         is_gateway: false,
         is_self: false,
@@ -34,25 +34,25 @@ fn devices_upsert_preserves_first_seen_and_hostname() {
 #[test]
 fn a_silent_scan_does_not_erase_a_known_kind() {
     let store = Store::open_in_memory().unwrap();
-    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "phone");
+    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", DeviceKind::Phone);
     phone.os = Some("Android".into());
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
 
     // A later scan can't classify it (asleep, announcing nothing) so it comes
     // back as a bare unknown. The remembered "phone"/"Android" must survive.
-    let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "unknown");
+    let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", DeviceKind::Unknown);
     silent.os = None;
     store.record_devices(std::slice::from_ref(&silent), 2_000).unwrap();
 
     let known = store.known_devices().unwrap();
-    assert_eq!(known[0].kind, "phone", "a failed classify keeps the settled kind");
+    assert_eq!(known[0].kind, DeviceKind::Phone, "a failed classify keeps the settled kind");
     assert_eq!(known[0].os.as_deref(), Some("Android"), "and the stored OS");
 }
 
 #[test]
 fn an_unreachable_live_device_keeps_its_last_known_identity() {
     let store = Store::open_in_memory().unwrap();
-    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "phone");
+    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", DeviceKind::Phone);
     phone.os = Some("Android".into());
     phone.hostname = Some("Janes-Phone".into());
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
@@ -60,7 +60,7 @@ fn an_unreachable_live_device_keeps_its_last_known_identity() {
     // Still in the ARP table but no longer answering, so the fresh scan rebuilt
     // it as a bare "Generic device". The merge must restore its remembered
     // identity.
-    let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "unknown");
+    let mut silent = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", DeviceKind::Unknown);
     silent.hostname = None;
     silent.os = None;
     silent.is_reachable = false;
@@ -69,7 +69,7 @@ fn an_unreachable_live_device_keeps_its_last_known_identity() {
     let merged = store.devices_with_offline(std::slice::from_ref(&silent), 2_000, OFFLINE_LIST_KEEP_MS).unwrap();
     let row = merged.iter().find(|d| d.mac == "bb:bb:bb:bb:bb:bb").unwrap();
     assert!(!row.is_reachable, "it still reads offline");
-    assert_eq!(row.kind, "phone", "with its remembered kind, not unknown");
+    assert_eq!(row.kind, DeviceKind::Phone, "with its remembered kind, not unknown");
     assert_eq!(row.os.as_deref(), Some("Android"), "its remembered OS");
     assert_eq!(row.hostname.as_deref(), Some("Janes-Phone"), "and its remembered name");
 }
@@ -81,7 +81,7 @@ fn an_offline_row_with_an_unknown_kind_is_not_guessed_from_the_vendor() {
     // must stay unknown, not become a "phone" from the vendor alone. An Apple
     // host could be a Mac, iPad, TV or watch.
     let store = Store::open_in_memory().unwrap();
-    let mut vendor_only = device("ae:4a:06:fe:b5:37", "192.168.2.14", "unknown");
+    let mut vendor_only = device("ae:4a:06:fe:b5:37", "192.168.2.14", DeviceKind::Unknown);
     vendor_only.vendor = Some("Apple".into());
     vendor_only.is_randomized_mac = true;
     store.record_devices(std::slice::from_ref(&vendor_only), 1_000).unwrap();
@@ -89,10 +89,10 @@ fn an_offline_row_with_an_unknown_kind_is_not_guessed_from_the_vendor() {
     let merged = store.devices_with_offline(&[], 2_000, OFFLINE_LIST_KEEP_MS).unwrap();
     let row = merged.iter().find(|d| d.mac == "ae:4a:06:fe:b5:37").unwrap();
     assert_eq!(row.vendor.as_deref(), Some("Apple"), "the vendor is remembered");
-    assert_eq!(row.kind, "unknown", "but the kind is not invented from it");
+    assert_eq!(row.kind, DeviceKind::Unknown, "but the kind is not invented from it");
 }
 
-fn device(mac: &str, ip: &str, kind: &str) -> LanDevice {
+fn device(mac: &str, ip: &str, kind: DeviceKind) -> LanDevice {
     LanDevice {
         ip: ip.into(),
         mac: mac.into(),
@@ -100,8 +100,8 @@ fn device(mac: &str, ip: &str, kind: &str) -> LanDevice {
         hostname: None,
         model: None,
         os: None,
-        kind: kind.into(),
-        kind_confidence: "high",
+        kind,
+        kind_confidence: KindConfidence::High,
         is_randomized_mac: false,
         is_gateway: false,
         is_self: false,
@@ -113,9 +113,9 @@ fn device(mac: &str, ip: &str, kind: &str) -> LanDevice {
 #[test]
 fn derives_join_change_offline_and_gateway_events() {
     let store = Store::open_in_memory().unwrap();
-    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
+    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", DeviceKind::Router);
     gw.is_gateway = true;
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
 
     // First scan seeds the feed with a single baseline summary ("2 devices"),
     // not a per-device burst.
@@ -126,7 +126,7 @@ fn derives_join_change_offline_and_gateway_events() {
     assert_eq!(seeded[0].new_value.as_deref(), Some("2"));
 
     // A new laptop arrives → one join event, on top of the baseline.
-    let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
     laptop.hostname = Some("laptop-01".into());
     store.record_devices(&[gw.clone(), phone.clone(), laptop.clone()], 2_000).unwrap();
     let latest = store.network_events(1).unwrap();
@@ -168,7 +168,7 @@ fn derives_join_change_offline_and_gateway_events() {
 #[test]
 fn touch_devices_no_ops_until_an_active_scan_seeds_the_roster() {
     let store = Store::open_in_memory().unwrap();
-    let seen = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "unknown");
+    let seen = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Unknown);
     // No baseline yet: a passive pass must not seed the roster (that's the
     // first active scan's job), or that scan would report every silent host
     // it finds as a fresh arrival.
@@ -180,7 +180,7 @@ fn touch_devices_no_ops_until_an_active_scan_seeds_the_roster() {
 #[test]
 fn touch_devices_bumps_last_seen_without_touching_identity() {
     let store = Store::open_in_memory().unwrap();
-    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", "phone");
+    let mut phone = device("bb:bb:bb:bb:bb:bb", "192.168.2.14", DeviceKind::Phone);
     phone.hostname = Some("Janes-Phone".into());
     phone.vendor = Some("Apple".into());
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
@@ -188,7 +188,7 @@ fn touch_devices_bumps_last_seen_without_touching_identity() {
     // A passive sighting carries only thin evidence (no hostname, kind
     // unknown). It must advance last_seen/ip yet leave the richer identity an
     // active scan resolved exactly as it was.
-    let mut passive = device("bb:bb:bb:bb:bb:bb", "192.168.2.20", "unknown");
+    let mut passive = device("bb:bb:bb:bb:bb:bb", "192.168.2.20", DeviceKind::Unknown);
     passive.hostname = None;
     passive.vendor = None;
     store.touch_devices(std::slice::from_ref(&passive), 5_000).unwrap();
@@ -198,15 +198,15 @@ fn touch_devices_bumps_last_seen_without_touching_identity() {
     assert_eq!(known[0].last_seen, 5_000, "last_seen advances");
     assert_eq!(known[0].ip.as_deref(), Some("192.168.2.20"), "and so does the IP");
     assert_eq!(known[0].hostname.as_deref(), Some("Janes-Phone"), "identity untouched");
-    assert_eq!(known[0].kind, "phone");
+    assert_eq!(known[0].kind, DeviceKind::Phone);
     assert_eq!(known[0].vendor.as_deref(), Some("Apple"));
 }
 
 #[test]
 fn touch_devices_never_marks_an_absent_device_offline() {
     let store = Store::open_in_memory().unwrap();
-    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
-    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
+    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
+    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", DeviceKind::Computer);
     store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
     let before = store.network_events(100).unwrap().len();
 
@@ -221,8 +221,8 @@ fn touch_devices_never_marks_an_absent_device_offline() {
 #[test]
 fn touch_devices_re_flags_a_returning_device_online() {
     let store = Store::open_in_memory().unwrap();
-    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
-    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
+    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
+    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", DeviceKind::Computer);
     store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&a), 2_000).unwrap(); // b drops → offline
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_offline");
@@ -236,11 +236,11 @@ fn touch_devices_re_flags_a_returning_device_online() {
 #[test]
 fn touch_devices_records_a_genuinely_new_arrival() {
     let store = Store::open_in_memory().unwrap();
-    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
     store.record_devices(std::slice::from_ref(&a), 1_000).unwrap(); // baseline exists
 
     // A device that joined while the app sat in the tray, caught passively.
-    let mut newcomer = device("cc:cc:cc:cc:cc:cc", "192.168.1.42", "unknown");
+    let mut newcomer = device("cc:cc:cc:cc:cc:cc", "192.168.1.42", DeviceKind::Unknown);
     newcomer.hostname = Some("new-tv".into());
     store.touch_devices(std::slice::from_ref(&newcomer), 2_000).unwrap();
 
@@ -251,13 +251,13 @@ fn touch_devices_records_a_genuinely_new_arrival() {
 #[test]
 fn touch_devices_flags_a_new_router_as_an_ap_appeared_warning() {
     let store = Store::open_in_memory().unwrap();
-    let baseline = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
+    let baseline = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
     store.record_devices(std::slice::from_ref(&baseline), 1_000).unwrap();
 
     // A router-kind arrival caught passively (the classify pass typed it as a
     // router, not left it unknown) must land as the higher-severity
     // ap_appeared warning, not a plain join.
-    let ap = device("dd:dd:dd:dd:dd:dd", "192.168.1.2", "router");
+    let ap = device("dd:dd:dd:dd:dd:dd", "192.168.1.2", DeviceKind::Router);
     store.touch_devices(std::slice::from_ref(&ap), 2_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "ap_appeared");
@@ -267,8 +267,8 @@ fn touch_devices_flags_a_new_router_as_an_ap_appeared_warning() {
 #[test]
 fn offline_is_not_re_emitted_and_stale_devices_never_fire() {
     let store = Store::open_in_memory().unwrap();
-    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "phone");
-    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", "computer");
+    let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
+    let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", DeviceKind::Computer);
 
     store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&a), 2_000).unwrap(); // b drops → offline
@@ -279,7 +279,7 @@ fn offline_is_not_re_emitted_and_stale_devices_never_fire() {
 
     // A device last seen beyond the recency window is history, not a fresh
     // drop, so a scan without it stays quiet.
-    let stale = device("cc:cc:cc:cc:cc:cc", "192.168.1.12", "tv");
+    let stale = device("cc:cc:cc:cc:cc:cc", "192.168.1.12", DeviceKind::Tv);
     let long_ago = 10_000;
     store.record_devices(&[a.clone(), stale], long_ago).unwrap();
     let much_later = long_ago + OFFLINE_RECENCY_MS + 60_000;
@@ -295,10 +295,10 @@ fn offline_is_not_re_emitted_and_stale_devices_never_fire() {
 #[test]
 fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
     let store = Store::open_in_memory().unwrap();
-    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
+    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", DeviceKind::Router);
     gw.is_gateway = true;
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
-    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
+    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
 
     store.record_devices(&[gw.clone(), phone.clone(), laptop.clone()], 1_000).unwrap(); // baseline
 
@@ -320,9 +320,9 @@ fn an_offline_scan_does_not_fire_a_departure_for_every_device() {
     // Back online: everyone answers again. They were never marked offline, so
     // there's no spurious reconnect flurry either.
     let back = [
-        device("00:00:00:00:00:01", "192.168.1.1", "router"),
-        device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone"),
-        device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer"),
+        device("00:00:00:00:00:01", "192.168.1.1", DeviceKind::Router),
+        device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone),
+        device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer),
     ];
     store.record_devices(&back, 3_000).unwrap();
     let online = store.network_events(100).unwrap().into_iter().filter(|e| e.event_type == "device_online").count();
@@ -337,10 +337,10 @@ fn a_disconnected_host_does_not_fire_departures_for_peers() {
     // `connection_lost` stands in for the drop.
     let store = Store::open_in_memory().unwrap();
     store.record_connection("wifi", Some("home"), None, None, None, 500).unwrap();
-    let mut me = device("00:00:00:00:00:0a", "192.168.1.5", "computer");
+    let mut me = device("00:00:00:00:00:0a", "192.168.1.5", DeviceKind::Computer);
     me.is_self = true;
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
-    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
+    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
 
     store.record_devices(&[me.clone(), phone.clone(), laptop.clone()], 1_000).unwrap(); // baseline
 
@@ -361,9 +361,9 @@ fn a_real_departure_still_fires_when_others_remain_reachable() {
     // answers (here the gateway), an absent device is a real departure and must
     // fire.
     let store = Store::open_in_memory().unwrap();
-    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", "router");
+    let mut gw = device("00:00:00:00:00:01", "192.168.1.1", DeviceKind::Router);
     gw.is_gateway = true;
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
 
     store.record_devices(&[gw.clone(), phone.clone()], 1_000).unwrap(); // baseline
     store.record_devices(&[gw], 2_000).unwrap(); // phone leaves, gateway stays
@@ -375,9 +375,9 @@ fn a_real_departure_still_fires_when_others_remain_reachable() {
 #[test]
 fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
     let store = Store::open_in_memory().unwrap();
-    let here = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
-    let recent = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", "phone");
-    let ancient = device("cc:cc:cc:cc:cc:cc", "192.168.1.30", "tv");
+    let here = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
+    let recent = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", DeviceKind::Phone);
+    let ancient = device("cc:cc:cc:cc:cc:cc", "192.168.1.30", DeviceKind::Tv);
 
     // Seed the roster: the TV was last seen two days ago, the phone a minute
     // ago, and the computer is here now.
@@ -397,7 +397,7 @@ fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
 
     let offline = by_mac("bb:bb:bb:bb:bb:bb").expect("recent departure is kept");
     assert!(!offline.is_reachable, "a merged roster device reads offline");
-    assert_eq!(offline.kind, "phone", "carrying its stored identity");
+    assert_eq!(offline.kind, DeviceKind::Phone, "carrying its stored identity");
     assert_eq!(offline.last_seen, Some(now - 60_000), "with its real last-seen time");
 
     assert!(by_mac("cc:cc:cc:cc:cc:cc").is_none(), "a device gone > 24h drops off the list");
@@ -410,8 +410,8 @@ fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
 #[test]
 fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
-    let phone = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", "phone");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
+    let phone = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", DeviceKind::Phone);
 
     store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
 
@@ -444,8 +444,8 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
 #[test]
 fn a_device_back_in_arp_but_still_silent_is_not_a_reconnect() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
-    let phone = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", "phone");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
+    let phone = device("bb:bb:bb:bb:bb:bb", "192.168.1.20", DeviceKind::Phone);
 
     store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // vanishes → offline
@@ -467,12 +467,12 @@ fn a_device_back_in_arp_but_still_silent_is_not_a_reconnect() {
 #[test]
 fn a_departed_randomized_device_keeps_its_live_label() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
 
     // A randomized-MAC phone with no hostname or vendor, but the DHCP
     // fingerprint gave up its OS and the classifier its kind: the signals the
     // Devices view stitches into "Android phone".
-    let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", "phone");
+    let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Phone);
     phone.is_randomized_mac = true;
     phone.os = Some("Android".into());
 
@@ -491,11 +491,11 @@ fn a_departed_randomized_device_keeps_its_live_label() {
 #[test]
 fn a_vendor_known_device_keeps_its_kind_in_the_name() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
 
     // An Apple phone with no hostname: the vendor used to swallow the kind,
     // reading "Apple" without "Phone".
-    let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", "phone");
+    let mut phone = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Phone);
     phone.vendor = Some("Apple".into());
     phone.is_randomized_mac = true;
 
@@ -514,11 +514,11 @@ fn a_vendor_known_device_keeps_its_kind_in_the_name() {
 #[test]
 fn a_departed_anonymous_randomized_device_still_reads_private() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
 
     // Nothing was ever learned. The name stays null so the UI falls back to
     // "Private device" from the randomized flag, as when the device joined.
-    let mut ghost = device("1a:78:49:c6:0d:df", "192.168.1.20", "unknown");
+    let mut ghost = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Unknown);
     ghost.is_randomized_mac = true;
 
     store.record_devices(&[keep.clone(), ghost.clone()], 1_000).unwrap();
@@ -533,12 +533,12 @@ fn a_departed_anonymous_randomized_device_still_reads_private() {
 #[test]
 fn a_past_offline_relabels_once_the_classifier_catches_up() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
 
     // First sight of a randomized phone is thin: no hostname, vendor, OS or
     // kind. It joins, then drops off, recording an offline row with no
     // identity ("Private device" in the UI).
-    let mut thin = device("1a:78:49:c6:0d:df", "192.168.1.20", "unknown");
+    let mut thin = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Unknown);
     thin.is_randomized_mac = true;
     store.record_devices(&[keep.clone(), thin.clone()], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // drops off, thin
@@ -552,7 +552,7 @@ fn a_past_offline_relabels_once_the_classifier_catches_up() {
 
     // It returns and this scan's evidence pins it: Android, a phone. The
     // roster now carries that identity…
-    let mut pinned = device("1a:78:49:c6:0d:df", "192.168.1.20", "phone");
+    let mut pinned = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Phone);
     pinned.is_randomized_mac = true;
     pinned.os = Some("Android".into());
     store.record_devices(&[keep.clone(), pinned.clone()], 3_000).unwrap();
@@ -567,12 +567,12 @@ fn a_past_offline_relabels_once_the_classifier_catches_up() {
 #[test]
 fn a_departed_device_keeps_its_snapshot_label() {
     let store = Store::open_in_memory().unwrap();
-    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", "computer");
+    let keep = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Computer);
 
     // A named laptop joins, then leaves the network for good (beyond any
     // future scan). Its offline row must keep the snapshot label, since the
     // roster row is the only place a live identity could come from.
-    let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
     laptop.hostname = Some("laptop-01".into());
     store.record_devices(&[keep.clone(), laptop.clone()], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // laptop departs
@@ -593,7 +593,7 @@ fn a_connection_event_keeps_its_ssid_despite_a_matching_mac() {
     // The machine's own MAC is in the roster, so a wifi_connected event (its
     // `name` is the SSID, and it carries that same MAC) must NOT be relabeled
     // by the roster join.
-    let mut selfd = device("aa:bb:cc:dd:ee:ff", "192.168.1.5", "computer");
+    let mut selfd = device("aa:bb:cc:dd:ee:ff", "192.168.1.5", DeviceKind::Computer);
     selfd.hostname = Some("my-macbook".into());
     selfd.is_self = true;
     store.record_devices(&[selfd.clone()], 500).unwrap();
@@ -620,7 +620,7 @@ fn a_connection_event_before_the_first_scan_still_gets_the_baseline() {
     store.record_connection("wifi", Some("Cafe"), Some("wlan0"), None, None, 200).unwrap();
     assert_eq!(store.network_events(10).unwrap().len(), 1, "a joined-Wi-Fi event lands first");
 
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "initial_scan");
 }
@@ -628,7 +628,7 @@ fn a_connection_event_before_the_first_scan_still_gets_the_baseline() {
 #[test]
 fn a_feed_pruned_empty_is_not_seeded_again() {
     let store = Store::open_in_memory().unwrap();
-    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", "phone");
+    let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
     store.record_devices(std::slice::from_ref(&phone), 1_000).unwrap();
 
     // Past the retention window: this scan prunes the baseline away.
@@ -636,7 +636,7 @@ fn a_feed_pruned_empty_is_not_seeded_again() {
     store.record_devices(std::slice::from_ref(&phone), later).unwrap();
     assert!(store.network_events(10).unwrap().is_empty());
 
-    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", "computer");
+    let laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
     store.record_devices(&[phone, laptop], later + 1_000).unwrap();
     let events = store.network_events(10).unwrap();
     assert_eq!(events.len(), 1);

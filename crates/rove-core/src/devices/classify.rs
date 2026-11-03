@@ -15,13 +15,14 @@
 //!   not a wearable), so a lone vendor guess can't drag a general-purpose
 //!   machine into a handheld kind.
 //!
-//! The [`Verdict`]'s [`Confidence`] is `Low` when the winner leads by less than
+//! The [`Verdict`]'s [`KindConfidence`] is `Low` when the winner leads by less than
 //! one vendor-grade signal and nothing hostname-grade anchors it, so the UI can
 //! hedge the label.
 use crate::devices::banner::BannerHit;
 use crate::devices::dhcp::DhcpHit;
 use crate::devices::mdns::MdnsHit;
 use crate::devices::ssdp::SsdpHit;
+use crate::devices::{DeviceKind, KindConfidence};
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
@@ -42,10 +43,10 @@ pub struct Signals<'a> {
     pub is_self: bool,
 }
 
-struct KindPatterns(Vec<(Regex, &'static str)>);
+struct KindPatterns(Vec<(Regex, DeviceKind)>);
 
 impl KindPatterns {
-    fn new(table: &[(&str, &'static str)]) -> Self {
+    fn new(table: &[(&str, DeviceKind)]) -> Self {
         Self(
             table
                 .iter()
@@ -54,7 +55,7 @@ impl KindPatterns {
         )
     }
 
-    fn matches(&self, text: &str) -> Option<&'static str> {
+    fn matches(&self, text: &str) -> Option<DeviceKind> {
         self.0.iter().find(|(pattern, _)| pattern.is_match(text)).map(|(_, kind)| *kind)
     }
 }
@@ -66,53 +67,53 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (
             r"(?i)synology|diskstation|\bqnap\b|truenas|freenas|unraid|openmediavault|\bnas\b|nas-|-nas\b|asustor|terramaster|\bdrobo\b|mycloud|readynas",
-            "nas",
+            DeviceKind::Nas,
         ),
         (
             r"(?i)macbook|imac|mac-?mini|mac-?pro|mac-?studio|\bpc\b|-pc\b|desktop|laptop|thinkpad|ideapad|thinkcentre|optiplex|latitude|inspiron|\bxps\b|alienware|elitebook|probook|\bomen\b|pavilion|zenbook|vivobook|surface|chromebook|chromebox|pixelbook|workstation|\bnuc\b|raspberry|\brpi\b|pi-?hole|steam-?deck|ubuntu|fedora|debian|archlinux|framework|system76|-server\b|server-|\bwin-[0-9a-z]|esxi|proxmox|vmware",
-            "computer",
+            DeviceKind::Computer,
         ),
         (
             r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle|fire-?hd|fire-?tablet|-tablet\b|\btablet\b|lenovo-?tab|\btab-[a-z0-9]|mi-?pad|mediapad",
-            "tablet",
+            DeviceKind::Tablet,
         ),
         // Before the phone row, so brand tokens shared with phones ("galaxy
         // watch", "pixel watch") land here.
         (
             r"(?i)\bwatch\b|-watch\b|watch-|apple-?watch|galaxy-?watch|pixel-?watch|smart-?watch|\bsm-r\d|\bgizmo\b|fitbit|charge-?[2-6]\b|inspire-?[23]\b|\bversa\b|amazfit|ticwatch|wear-?os|mi-?band|\bfenix\b|forerunner|vivoactive|vivomove|\bvenu\b|instinct|\bgarmin\b",
-            "watch",
+            DeviceKind::Watch,
         ),
         (
             r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]\d|nexus|xperia|oneplus|redmi|\bpoco\b|\biqoo\b|realme|\brmx\d{4}|\bcph\d{4}|\boppo\b|\bvivo\b|\bhonor\b|\bmate-?[1-9]\d?\b|moto[- ]?[ge]|motorola|nokia-?\d|infinix|\btecno\b|zenfone|-phone\b|phone-|android-[0-9a-f]",
-            "phone",
+            DeviceKind::Phone,
         ),
         (
             r"(?i)\bxbox\b|playstation|\bps[345]\b|psvita|nintendo|-switch\b|switch-|\bwii\b|steam-?link|rog-?ally",
-            "console",
+            DeviceKind::Console,
         ),
         (
             r"(?i)appletv|apple-tv|android-?tv|google-?tv|chromecast|nvidia-?shield|\bshield\b|firetv|fire-?tv|fire-?stick|firestick|roku|bravia|aquos|webos|\blg-?tv|samsung-?tv|\btv\b|vizio|\btivo\b|mi-?box|set-?top|projector",
-            "tv",
+            DeviceKind::Tv,
         ),
         (
             r"(?i)printer|officejet|laserjet|deskjet|\benvy\b|pixma|imageclass|maxify|workforce|ecotank|expression|brother|hl-l|\bmfc-|\bdcp-|epson|\bcanon\b|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|scanner|octoprint|\bender-?\d|prusa|bambu-?lab",
-            "printer",
+            DeviceKind::Printer,
         ),
         (
             r"(?i)camera|webcam|ipcam|\bcam-?\d|-cam\b|doorbell|reolink|amcrest|hikvision|\bdahua\b|\barlo\b|blink-?(cam|mini)|eufycam|nest-?cam|wyze-?cam|wyzecam|ring-doorbell|foscam|ezviz|\bannke\b|\bnvr\b|tapo-?c\d",
-            "camera",
+            DeviceKind::Camera,
         ),
         (
             r"(?i)\bsonos\b|homepod|\becho\b|\balexa\b|echo-?dot|nest-?mini|nest-?hub|nest-?audio|sound-?bar|\bheos\b|speaker|\bbose\b|\bdenon\b|\bjbl\b|klipsch|bluesound|\bwiim\b|marantz|soundtouch|musiccast|symfonisk",
-            "speaker",
+            DeviceKind::Speaker,
         ),
         (
             r"(?i)esp-?\d|esp32|esp8266|tasmota|shelly|sonoff|tuya|smartlife|kasa|\btapo\b|tapo-|\bhs\d{3}|\bks\d{3}|\bkp\d{3}|\bp1\d{2}\b|wemo|meross|govee|lifx|nanoleaf|\bwiz-|yeelight|tradfri|\bhue\b|philips-?hue|lutron|caseta|ecobee|\bnest\b|thermostat|sensi|wyze|eufy|\bring\b|smartplug|-plug\b|plug-?\d|smartbulb|-bulb\b|light-?\d|smartswitch|vacuum|roborock|roomba|neato|deebot|ecovacs|airfryer|cosori|purifier|humidifier|dishwasher|\bwasher\b|\bdryer\b|fridge|refrigerator|\boven\b|microwave|smartthings|zigbee|z-?wave|\baqara\b|switchbot|\bmyq\b|\bwled\b|broadlink|netatmo|schlage|kwikset|\bnuki\b|door-?lock|doorlock|deadbolt|garage|sprinkler|irrigation|rachio|wallbox|chargepoint|juicebox|\bevse\b|solaredge|enphase|litter-?robot|petcube|blinds|curtain|weather-?station|awair|airthings|-sensor\b|sensor-|smoke-?alarm",
-            "iot",
+            DeviceKind::Iot,
         ),
         (
             r"(?i)router|gateway|\bap-?\d|access-?point|unifi|\budm\b|\buap\b|openwrt|dd-wrt|mikrotik|\beero\b|\borbi\b|nighthawk|fritz|\bomada\b|\bdeco\b|\bvelop\b|repeater|\bmodem\b|\bont\b|linksys|airport|time-?capsule|extender|\barcher\b|tplink|starlink|gl-?inet|livebox|freebox|xfinity",
-            "router",
+            DeviceKind::Router,
         ),
     ])
 });
@@ -127,46 +128,49 @@ static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// `kasa` or `tapo` hostname, or an SSDP type.
 static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (r"(?i)synology|\bqnap\b|western digital|seagate|\bdrobo\b|terramaster|asustor", "nas"),
+        (r"(?i)synology|\bqnap\b|western digital|seagate|\bdrobo\b|terramaster|asustor", DeviceKind::Nas),
         (
             r"(?i)hikvision|\bdahua\b|reolink|amcrest|\blorex\b|axis comm|\bwyze\b|\barlo\b|\bswann\b|uniview|ezviz|foscam|vivotek|hanwha|annke",
-            "camera",
+            DeviceKind::Camera,
         ),
         (
             r"(?i)sonos|\bbose\b|\bdenon\b|marantz|\bheos\b|sonance|harman|\bjbl\b|bang & olufsen|klipsch|yamaha|\bonkyo\b|bluesound|devialet|\bpolk\b",
-            "speaker",
+            DeviceKind::Speaker,
         ),
         // PlayStation OUIs register as "Sony Interactive Entertainment"; before
         // the TV row, whose broad \bsony\b would claim them.
-        (r"(?i)nintendo|sony interactive", "console"),
+        (r"(?i)nintendo|sony interactive", DeviceKind::Console),
         // Transsion (Tecno, Infinix, itel) registers as "Shenzhen Transsion …",
         // which the IoT row's shenzhen catch-all would swallow.
-        (r"(?i)transsion|hmd global", "phone"),
+        (r"(?i)transsion|hmd global", DeviceKind::Phone),
         (
             r"(?i)espressif|\btuya\b|sonoff|itead|shelly|allterco|\bnest\b|\bring\b|\beufy\b|philips lighting|signify|ecobee|\blifx\b|nanoleaf|govee|yeelight|roborock|ecovacs|irobot|\bneato\b|tradfri|\bikea\b|lutron|leviton|sengled|meross|switchbot|aqara|lumi|\bwiz\b|vesync|cosori|broadlink|netatmo|\bsomfy\b|resideo|honeywell|chamberlain|liftmaster|rachio|rain bird|ledvance|osram|\bmidea\b|\bdyson\b|\bgree\b|daikin|smartthings|samjin|emporia|enphase|solaredge|fronius|growatt|wallbox|chargepoint|ecoflow|\bnuki\b|august home|allegion|schlage|kwikset|shenzhen.*(smart|iot|tech)",
-            "iot",
+            DeviceKind::Iot,
         ),
-        (r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum|oki electric", "printer"),
+        (
+            r"(?i)brother|\bcanon\b|epson|lexmark|kyocera|\bxerox\b|ricoh|\bzebra\b|pantum|oki electric",
+            DeviceKind::Printer,
+        ),
         (
             r"(?i)roku|vizio|lg elec|hisense|\btcl\b|skyworth|funai|\bonn\b|\bsony\b|amlogic|insignia|panasonic|xgimi",
-            "tv",
+            DeviceKind::Tv,
         ),
         // "Compal Broadband" (cable modems) precedes the computer row's bare
         // "compal", the laptop ODM. Bare "Nokia" OUIs are ISP gateways and ONTs;
         // Nokia phones register as HMD Global.
         (
             r"(?i)zyxel|ubiquiti|netgear|mikrotik|\basus\b|d-link|\baruba\b|\bcisco\b|ruckus|meraki|juniper|fortinet|sonicwall|\barris\b|technicolor|sagemcom|actiontec|\bcalix\b|adtran|\beero\b|turris|\bzte\b|sagem|\btenda\b|hitron|commscope|cambium|engenius|sercomm|\baskey\b|\bhumax\b|vantiva|airties|plume design|compal broadband|\bnokia\b",
-            "router",
+            DeviceKind::Router,
         ),
         (
             r"(?i)raspberry|\bintel\b|\bdell\b|lenovo|hp inc|hewlett|framework|gigabyte|\bmsi\b|micro-star|asrock|super ?micro|supermicro|elitegroup|pegatron|\bquanta\b|compal|wistron|\bclevo\b|tuxedo|beelink|minisforum|\bchuwi\b|system76|\bacer\b|fujitsu|lite-?on|azurewave|vmware|parallels|pcs systemtechnik|\bzotac\b",
-            "computer",
+            DeviceKind::Computer,
         ),
         // Before the phone row, so a Garmin or Fitbit OUI reads as a watch.
-        (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b|polar electro", "watch"),
+        (r"(?i)\bgarmin\b|\bfitbit\b|amazfit|\bhuami\b|mobvoi|\bwithings\b|polar electro", DeviceKind::Watch),
         (
             r"(?i)\bapple\b|samsung|xiaomi|oneplus|huawei|\bhonor\b|\boppo\b|\bvivo\b|realme|motorola|\bhtc\b|nothing tech|fairphone",
-            "phone",
+            DeviceKind::Phone,
         ),
     ])
 });
@@ -175,21 +179,21 @@ static VENDOR_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// are near-definitive product identifiers.
 static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (r"(?i)synology|diskstation|\bqnap\b", "nas"),
+        (r"(?i)synology|diskstation|\bqnap\b", DeviceKind::Nas),
         (
             r"(?i)macbook|imac|macmini|mac-?mini|macpro|mac-?studio|macstudio|windows|surface|thinkpad|optiplex|latitude",
-            "computer",
+            DeviceKind::Computer,
         ),
-        (r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle", "tablet"),
+        (r"(?i)ipad|galaxy-?tab|\bsm-t\d|kindle", DeviceKind::Tablet),
         // Apple Watch reports "Watch6,1" and Samsung watches SM-R models; both
         // must beat the phone row's broader patterns.
-        (r"(?i)\bwatch\d|\bsm-r\d", "watch"),
-        (r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]", "phone"),
-        (r"(?i)playstation|\bps[45]\b|\bxbox\b|nintendo", "console"),
-        (r"(?i)audioaccessory|homepod|sonos|\bspeaker\b|soundbar", "speaker"),
-        (r"(?i)\bcamera\b|\bcam\b|doorbell|hikvision|reolink", "camera"),
-        (r"(?i)appletv|apple-?tv|shield|chromecast|bravia|roku|firetv|fire-?tv|android-?tv|vizio", "tv"),
-        (r"(?i)\bhue\b|bridge|\bplug\b|bulb|sensor|thermostat|roomba|robovac|vacuum", "iot"),
+        (r"(?i)\bwatch\d|\bsm-r\d", DeviceKind::Watch),
+        (r"(?i)iphone|ipod|pixel|galaxy|sm-[a-z]", DeviceKind::Phone),
+        (r"(?i)playstation|\bps[45]\b|\bxbox\b|nintendo", DeviceKind::Console),
+        (r"(?i)audioaccessory|homepod|sonos|\bspeaker\b|soundbar", DeviceKind::Speaker),
+        (r"(?i)\bcamera\b|\bcam\b|doorbell|hikvision|reolink", DeviceKind::Camera),
+        (r"(?i)appletv|apple-?tv|shield|chromecast|bravia|roku|firetv|fire-?tv|android-?tv|vizio", DeviceKind::Tv),
+        (r"(?i)\bhue\b|bridge|\bplug\b|bulb|sensor|thermostat|roomba|robovac|vacuum", DeviceKind::Iot),
     ])
 });
 
@@ -198,14 +202,17 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// router (usually already decided by the gateway flag); MediaServer leans NAS.
 static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
-        (r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice|WLANAccessPointDevice", "router"),
-        (r"(?i)Printer", "printer"),
-        (r"(?i)ZonePlayer", "speaker"),
+        (
+            r"(?i)InternetGatewayDevice|WANDevice|WANConnectionDevice|LANDevice|WLANAccessPointDevice",
+            DeviceKind::Router,
+        ),
+        (r"(?i)Printer", DeviceKind::Printer),
+        (r"(?i)ZonePlayer", DeviceKind::Speaker),
         // Belkin Wemo plugs/switches announce vendor URNs like
         // "urn:Belkin:device:controllee:1".
-        (r"(?i)urn:belkin:device", "iot"),
-        (r"(?i)MediaRenderer|dial", "tv"),
-        (r"(?i)MediaServer", "nas"),
+        (r"(?i)urn:belkin:device", DeviceKind::Iot),
+        (r"(?i)MediaRenderer|dial", DeviceKind::Tv),
+        (r"(?i)MediaServer", DeviceKind::Nas),
     ])
 });
 
@@ -217,21 +224,21 @@ static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 /// Chromecast's 8009 isn't here: the whole Cast family uses it, audio-only
 /// speakers included, so it's only a weak TV lean (see [`weak_port_votes`]) and
 /// the mDNS `ca` capabilities make the call.
-fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
+fn strong_port_kind(ports: &[u16]) -> Option<DeviceKind> {
     if ports.iter().any(|&p| matches!(p, 9100 | 631)) {
-        return Some("printer");
+        return Some(DeviceKind::Printer);
     }
     if ports.contains(&8060) {
-        return Some("tv");
+        return Some(DeviceKind::Tv);
     }
     if ports.contains(&1400) {
-        return Some("speaker");
+        return Some(DeviceKind::Speaker);
     }
     if ports.contains(&32400) {
-        return Some("nas");
+        return Some(DeviceKind::Nas);
     }
     if ports.iter().any(|&p| matches!(p, 9999 | 6668)) {
-        return Some("iot");
+        return Some(DeviceKind::Iot);
     }
     None
 }
@@ -240,9 +247,9 @@ fn strong_port_kind(ports: &[u16]) -> Option<&'static str> {
 /// votes a distribution: mostly phone, at a weight a tablet or watch hostname
 /// or model still outranks, with minor shares that corroborate it. An Apple
 /// Watch that only reverse-resolves to "Watch" isn't flipped to a phone.
-fn apple_mobile_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
+fn apple_mobile_port_votes(ports: &[u16]) -> &'static [(DeviceKind, i32)] {
     if ports.contains(&62078) {
-        &[("phone", W_LOCKDOWND), ("tablet", 12), ("watch", 8)]
+        &[(DeviceKind::Phone, W_LOCKDOWND), (DeviceKind::Tablet, 12), (DeviceKind::Watch, 8)]
     } else {
         &[]
     }
@@ -252,15 +259,15 @@ fn apple_mobile_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
 /// computer or NAS. Cast's 8009 is mostly TVs but also audio-only speakers, so
 /// it votes a TV-leaning split that lifts a device out of "unknown" without
 /// outweighing a definitive mDNS speaker verdict.
-fn weak_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
+fn weak_port_votes(ports: &[u16]) -> &'static [(DeviceKind, i32)] {
     if ports.contains(&554) {
-        return &[("camera", W_WEAK_PORT)];
+        return &[(DeviceKind::Camera, W_WEAK_PORT)];
     }
     if ports.iter().any(|&p| matches!(p, 22 | 445)) {
-        return &[("computer", W_WEAK_PORT)];
+        return &[(DeviceKind::Computer, W_WEAK_PORT)];
     }
     if ports.contains(&8009) {
-        return &[("tv", W_WEAK_PORT), ("speaker", 6)];
+        return &[(DeviceKind::Tv, W_WEAK_PORT), (DeviceKind::Speaker, 6)];
     }
     &[]
 }
@@ -268,9 +275,9 @@ fn weak_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
 /// Negative evidence. No watch, phone or tablet serves SSH, SMB or RDP on a LAN,
 /// so those kinds lose enough to cancel a lone vendor guess (an Apple OUI plus
 /// SSH reads "computer") but not a handheld hostname or model.
-fn implausible_port_votes(ports: &[u16]) -> &'static [(&'static str, i32)] {
+fn implausible_port_votes(ports: &[u16]) -> &'static [(DeviceKind, i32)] {
     if ports.iter().any(|&p| matches!(p, 22 | 445 | 3389)) {
-        &[("watch", -30), ("phone", -20), ("tablet", -15)]
+        &[(DeviceKind::Watch, -30), (DeviceKind::Phone, -20), (DeviceKind::Tablet, -15)]
     } else {
         &[]
     }
@@ -304,35 +311,16 @@ const W_WEAK_PORT: i32 = 12;
 const CONFIDENCE_MARGIN: i32 = W_VENDOR;
 const CONFIDENCE_ANCHOR: i32 = W_HOSTNAME;
 
-// Most specific first, so a full tie resolves toward the narrower kind: nas
-// over computer, camera or speaker over iot, console over tv.
-const KIND_NAMES: [&str; 12] =
-    ["router", "nas", "computer", "tablet", "watch", "phone", "console", "tv", "printer", "camera", "speaker", "iot"];
-const KIND_COUNT: usize = KIND_NAMES.len();
+/// Tally slots: one per votable kind, in [`DeviceKind::VOTABLE`]'s tie-break order.
+const KIND_COUNT: usize = DeviceKind::VOTABLE.len();
 
-fn kind_index(kind: &str) -> Option<usize> {
-    KIND_NAMES.iter().position(|&k| k == kind)
-}
-
-/// `Low` is a thin-margin guess the UI hedges ("Phone?").
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Confidence {
-    High,
-    Low,
-}
-
-impl Confidence {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Confidence::High => "high",
-            Confidence::Low => "low",
-        }
-    }
+fn kind_index(kind: DeviceKind) -> Option<usize> {
+    DeviceKind::VOTABLE.iter().position(|&k| k == kind)
 }
 
 pub struct Verdict {
-    pub kind: &'static str,
-    pub confidence: Confidence,
+    pub kind: DeviceKind,
+    pub confidence: KindConfidence,
 }
 
 /// Votes per kind. `best_single` holds each kind's strongest positive signal, to
@@ -344,7 +332,7 @@ struct Tally {
 }
 
 impl Tally {
-    fn cast(&mut self, kind: Option<&str>, weight: i32) {
+    fn cast(&mut self, kind: Option<DeviceKind>, weight: i32) {
         if let Some(i) = kind.and_then(kind_index) {
             self.total[i] += weight;
             if weight > 0 {
@@ -353,7 +341,7 @@ impl Tally {
         }
     }
 
-    fn cast_all(&mut self, votes: &[(&str, i32)]) {
+    fn cast_all(&mut self, votes: &[(DeviceKind, i32)]) {
         for &(kind, weight) in votes {
             self.cast(Some(kind), weight);
         }
@@ -375,11 +363,14 @@ impl Tally {
             }
         }
         let Some(w) = winner else {
-            return Verdict { kind: "unknown", confidence: Confidence::Low };
+            return Verdict { kind: DeviceKind::Unknown, confidence: KindConfidence::Low };
         };
         let runner_up = (0..KIND_COUNT).filter(|&i| i != w).map(|i| self.total[i].max(0)).max().unwrap_or(0);
         let decisive = self.total[w] - runner_up >= CONFIDENCE_MARGIN || self.best_single[w] >= CONFIDENCE_ANCHOR;
-        Verdict { kind: KIND_NAMES[w], confidence: if decisive { Confidence::High } else { Confidence::Low } }
+        Verdict {
+            kind: DeviceKind::VOTABLE[w],
+            confidence: if decisive { KindConfidence::High } else { KindConfidence::Low },
+        }
     }
 }
 
@@ -409,10 +400,10 @@ impl<'a> TextChannel<'a> {
 
 pub fn classify(s: &Signals) -> Verdict {
     if s.is_gateway {
-        return Verdict { kind: "router", confidence: Confidence::High };
+        return Verdict { kind: DeviceKind::Router, confidence: KindConfidence::High };
     }
     if s.is_self {
-        return Verdict { kind: "computer", confidence: Confidence::High };
+        return Verdict { kind: DeviceKind::Computer, confidence: KindConfidence::High };
     }
 
     let Signals { vendor, hostname, mdns, ssdp, banner, dhcp, open_ports, .. } = *s;

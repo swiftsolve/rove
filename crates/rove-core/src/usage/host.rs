@@ -30,7 +30,7 @@
 //! once.
 
 use crate::usage::app::CounterSemantics;
-use crate::usage::ByteCounts;
+use crate::usage::{ByteCounts, Support};
 use crate::util::net::{peer_port, routable_peer_ip};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
@@ -80,7 +80,7 @@ pub struct AppHosts {
 pub struct HostUsageSummary {
     pub apps: Vec<AppHosts>,
     /// See [`platform_support`].
-    pub support: &'static str,
+    pub support: Support,
     pub tracking_since: Option<u64>,
 }
 
@@ -106,16 +106,16 @@ pub struct TrafficUsageSummary {
     /// Per-kind totals, busiest first. Empty before the first sample.
     pub types: Vec<TrafficType>,
     /// See [`platform_support`].
-    pub support: &'static str,
+    pub support: Support,
     pub tracking_since: Option<u64>,
 }
 
-/// `"supported"` on Linux and macOS, and on Windows while the ETW session is up
-/// (so a runtime check there); `"unsupported"` otherwise.
-pub fn platform_support() -> &'static str {
+/// `Supported` on Linux and macOS, and on Windows while the ETW session is up
+/// (so a runtime check there); `Unsupported` otherwise.
+pub fn platform_support() -> Support {
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
-        "supported"
+        Support::Supported
     }
     // Same ETW session as per-app bytes, so both views need Rove run as
     // administrator and light up together.
@@ -125,7 +125,7 @@ pub fn platform_support() -> &'static str {
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
     {
-        "unsupported"
+        Support::Unsupported
     }
 }
 

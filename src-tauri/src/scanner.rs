@@ -44,7 +44,7 @@ impl DeviceScanner {
                             subnet: None,
                             interface_name: None,
                             scanned_at: rove_core::util::net::now_ms(),
-                            dhcp_status: "unavailable",
+                            dhcp_status: rove_core::devices::DhcpStatus::Unavailable,
                         }
                     }
                 }
@@ -95,7 +95,7 @@ mod tests {
             subnet: None,
             interface_name: None,
             scanned_at: 0,
-            dhcp_status: "unavailable",
+            dhcp_status: rove_core::devices::DhcpStatus::Unavailable,
         }
     }
 

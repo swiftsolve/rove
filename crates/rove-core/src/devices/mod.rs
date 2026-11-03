@@ -14,6 +14,7 @@ mod classify;
 pub mod dhcp;
 mod history;
 pub mod hostname;
+mod kind;
 mod liveness;
 pub mod mdns;
 mod netbios;
@@ -23,6 +24,9 @@ mod snmp;
 mod ssdp;
 mod subnet;
 mod sweep;
+
+pub use dhcp::DhcpStatus;
+pub use kind::{DeviceKind, KindConfidence};
 
 use crate::connection::{default_gateway, default_interface};
 use crate::devices::oui::{is_kind_ambiguous_vendor, is_randomized_mac, lookup_vendor};
@@ -43,10 +47,10 @@ pub struct LanDevice {
     /// OS family from the passive DHCP fingerprint ("Android", "Windows",
     /// "Apple").
     pub os: Option<String>,
-    pub kind: String,
+    pub kind: DeviceKind,
     /// "high" when the classifier's verdict was decisive, "low" when it's a
     /// thin-margin best guess the UI hedges (e.g. "Phone?").
-    pub kind_confidence: &'static str,
+    pub kind_confidence: KindConfidence,
     pub is_randomized_mac: bool,
     pub is_gateway: bool,
     pub is_self: bool,
@@ -63,9 +67,8 @@ pub struct LanDeviceScan {
     pub subnet: Option<String>,
     pub interface_name: Option<String>,
     pub scanned_at: u64,
-    /// Passive DHCP fingerprinting state: "starting", "active", or
-    /// "unavailable" (no privilege to bind :67).
-    pub dhcp_status: &'static str,
+    /// Passive DHCP fingerprinting's state.
+    pub dhcp_status: DhcpStatus,
 }
 
 /// The probe and listen window. Sweep, TCP probe, mDNS and SSDP run
@@ -272,8 +275,8 @@ fn build_passive_device(
     });
 
     Some(LanDevice {
-        kind: verdict.kind.to_string(),
-        kind_confidence: verdict.confidence.as_str(),
+        kind: verdict.kind,
+        kind_confidence: verdict.confidence,
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         os: dhcp_hit.and_then(|hit| hit.os).map(String::from),
         vendor,
@@ -404,7 +407,7 @@ fn build_device(
     // An Echo is a speaker even when it also acts as a Matter or Thread hub,
     // whose strong `iot` vote would otherwise win.
     let verdict = if is_echo {
-        classify::Verdict { kind: "speaker", confidence: classify::Confidence::High }
+        classify::Verdict { kind: DeviceKind::Speaker, confidence: KindConfidence::High }
     } else {
         // A kind-ambiguous OUI (see `is_kind_ambiguous_vendor`) is shown but
         // doesn't vote.
@@ -456,8 +459,8 @@ fn build_device(
     };
 
     LanDevice {
-        kind: verdict.kind.to_string(),
-        kind_confidence: verdict.confidence.as_str(),
+        kind: verdict.kind,
+        kind_confidence: verdict.confidence,
         is_randomized_mac: is_randomized_mac(&neighbor.mac),
         os: dhcp.and_then(|hit| hit.os).map(String::from),
         vendor,
@@ -549,8 +552,8 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
         hostname: hostname::local_machine_name(),
         model: None,
         os: None,
-        kind: "computer".into(),
-        kind_confidence: "high",
+        kind: DeviceKind::Computer,
+        kind_confidence: KindConfidence::High,
         is_randomized_mac: is_randomized_mac(mac),
         is_gateway: false,
         is_self: true,
@@ -663,7 +666,7 @@ mod tests {
         let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
         dhcp.insert(
             crate::util::net::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
-            dhcp::DhcpHit { kind: Some("router"), ..Default::default() },
+            dhcp::DhcpHit { kind: Some(DeviceKind::Router), ..Default::default() },
         );
         let ap = RawNeighbor {
             ip: "192.168.1.9".into(),
@@ -672,7 +675,7 @@ mod tests {
             is_stateful: true,
         };
         let dev = build_passive_device(ap, &mdns, &ssdp, &dhcp, None, None).expect("present");
-        assert_eq!(dev.kind, "router", "a router fingerprint types the arrival as router");
+        assert_eq!(dev.kind, DeviceKind::Router, "a router fingerprint types the arrival as router");
         assert!(!dev.is_gateway, "and not the gateway → emit_new_device raises ap_appeared");
     }
 
@@ -720,7 +723,7 @@ mod tests {
         // 08:12:A5 is an Amazon OUI; with Spotify Connect that's an Echo.
         let hit = mdns::MdnsHit { spotify_connect: true, ..Default::default() };
         let echo = device_with_mdns("08:12:a5:00:00:11", "192.168.2.20", hit);
-        assert_eq!(echo.kind, "speaker");
+        assert_eq!(echo.kind, DeviceKind::Speaker);
         assert_eq!(echo.hostname.as_deref(), Some("Amazon Echo"));
     }
 
@@ -729,7 +732,7 @@ mod tests {
         // A Fire TV: Amazon OUI, no Spotify Connect.
         let echo = device_with_mdns("08:12:a5:00:00:12", "192.168.2.21", mdns::MdnsHit::default());
         assert_ne!(echo.hostname.as_deref(), Some("Amazon Echo"));
-        assert_ne!(echo.kind, "speaker");
+        assert_ne!(echo.kind, DeviceKind::Speaker);
     }
 
     #[test]
@@ -738,14 +741,14 @@ mod tests {
         // "Motorola" but, with no other signal, must not be typed a phone.
         let device = device_with_mdns("08:38:e6:d8:df:23", "192.168.2.19", mdns::MdnsHit::default());
         assert_eq!(device.vendor.as_deref(), Some("Motorola"));
-        assert_ne!(device.kind, "phone");
-        assert_eq!(device.kind, "unknown");
+        assert_ne!(device.kind, DeviceKind::Phone);
+        assert_eq!(device.kind, DeviceKind::Unknown);
 
         // The 00:62:01 Motorola Mobility phone block tidies the same but stays a
         // phone.
         let phone = device_with_mdns("00:62:01:00:00:22", "192.168.2.29", mdns::MdnsHit::default());
         assert_eq!(phone.vendor.as_deref(), Some("Motorola"));
-        assert_eq!(phone.kind, "phone");
+        assert_eq!(phone.kind, DeviceKind::Phone);
     }
 
     #[test]

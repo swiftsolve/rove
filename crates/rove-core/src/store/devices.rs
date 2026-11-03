@@ -6,6 +6,7 @@ use super::events::{
 };
 use super::Store;
 use crate::devices::LanDevice;
+use crate::devices::{DeviceKind, KindConfidence};
 use rusqlite::{params, Connection, Row};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
@@ -22,7 +23,7 @@ pub struct KnownDevice {
     /// departed device with no hostname or vendor still reads "Android device"
     /// in the feed (see `known_name`).
     pub os: Option<String>,
-    pub kind: String,
+    pub kind: DeviceKind,
     /// Whether the MAC is privacy-randomized. Kept because a departure only has
     /// this row: without it a randomized phone joins as "Private device" but
     /// leaves as "Unknown device".
@@ -301,7 +302,7 @@ impl Store {
     /// A router that isn't our gateway is a new AP or mesh node, a
     /// higher-signal security event; anything else is a plain arrival.
     fn emit_new_device(conn: &Connection, device: &LanDevice, ts: i64) -> rusqlite::Result<()> {
-        let (event_type, severity) = if device.kind == "router" && !device.is_gateway {
+        let (event_type, severity) = if device.kind == DeviceKind::Router && !device.is_gateway {
             (EVENT_AP_APPEARED, "warning")
         } else {
             (EVENT_DEVICE_JOINED, "info")
@@ -367,12 +368,12 @@ impl Store {
                         d.hostname = d.hostname.take().or_else(|| kd.hostname.clone());
                         d.vendor = d.vendor.take().or_else(|| kd.vendor.clone());
                         d.os = d.os.take().or_else(|| kd.os.clone());
-                        if d.kind == "unknown" && kd.kind != "unknown" {
-                            d.kind = kd.kind.clone();
+                        if d.kind == DeviceKind::Unknown && kd.kind != DeviceKind::Unknown {
+                            d.kind = kd.kind;
                         }
                         // A remembered kind is settled, not a thin-margin guess,
                         // so don't hedge it with a "?" while the device is away.
-                        d.kind_confidence = "high";
+                        d.kind_confidence = KindConfidence::High;
                     }
                 }
                 d
@@ -394,7 +395,7 @@ impl Store {
                 os: kd.os,
                 kind: kd.kind,
                 // Settled, as above.
-                kind_confidence: "high",
+                kind_confidence: KindConfidence::High,
                 is_randomized_mac: kd.randomized,
                 is_gateway: false,
                 is_self: false,

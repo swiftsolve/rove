@@ -1,5 +1,6 @@
 //! mDNS service discovery: devices advertise what they are, which beats any
 //! vendor-table guess. Pure Rust (`mdns-sd`), so no platform branch.
+use crate::devices::DeviceKind;
 use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -10,42 +11,42 @@ const IDLE_POLL: Duration = Duration::from_millis(100);
 /// `(service, kind, strong)`. Strong types state the kind outright; weak ones
 /// (AirPlay, AirTunes, Spotify) run on TVs and computers alike, so they apply
 /// only when nothing better is known. The TXT model usually settles it.
-const SERVICE_KINDS: &[(&str, &str, bool)] = &[
-    ("_ipp._tcp.local.", "printer", true),
-    ("_ipps._tcp.local.", "printer", true),
-    ("_printer._tcp.local.", "printer", true),
-    ("_pdl-datastream._tcp.local.", "printer", true),
-    ("_scanner._tcp.local.", "printer", true),
-    ("_uscan._tcp.local.", "printer", true),
-    ("_uscans._tcp.local.", "printer", true),
-    ("_googlecast._tcp.local.", "tv", true),
-    ("_androidtvremote2._tcp.local.", "tv", true),
-    ("_androidtvremote._tcp.local.", "tv", true),
-    ("_roku-rcp._tcp.local.", "tv", true),
-    ("_nvstream._tcp.local.", "tv", true),
-    ("_hap._tcp.local.", "iot", true),
-    ("_matter._tcp.local.", "iot", true),
-    ("_esphomelib._tcp.local.", "iot", true),
-    ("_shelly._tcp.local.", "iot", true),
-    ("_hue._tcp.local.", "iot", true),
-    ("_ewelink._tcp.local.", "iot", true),
-    ("_wled._tcp.local.", "iot", true),
-    ("_elg._tcp.local.", "iot", true),
-    ("_octoprint._tcp.local.", "printer", true),
-    ("_sonos._tcp.local.", "speaker", true),
-    ("_soundtouch._tcp.local.", "speaker", true),
-    ("_axis-video._tcp.local.", "camera", true),
-    ("_workstation._tcp.local.", "computer", true),
-    ("_smb._tcp.local.", "computer", true),
-    ("_afpovertcp._tcp.local.", "computer", true),
-    ("_sftp-ssh._tcp.local.", "computer", true),
-    ("_raop._tcp.local.", "tv", false),
-    ("_airplay._tcp.local.", "tv", false),
-    ("_spotify-connect._tcp.local.", "tv", false),
-    ("_amzn-wplay._tcp.local.", "tv", false),
-    ("_ssh._tcp.local.", "computer", false),
-    ("_daap._tcp.local.", "computer", false),
-    ("_rfb._tcp.local.", "computer", false),
+const SERVICE_KINDS: &[(&str, DeviceKind, bool)] = &[
+    ("_ipp._tcp.local.", DeviceKind::Printer, true),
+    ("_ipps._tcp.local.", DeviceKind::Printer, true),
+    ("_printer._tcp.local.", DeviceKind::Printer, true),
+    ("_pdl-datastream._tcp.local.", DeviceKind::Printer, true),
+    ("_scanner._tcp.local.", DeviceKind::Printer, true),
+    ("_uscan._tcp.local.", DeviceKind::Printer, true),
+    ("_uscans._tcp.local.", DeviceKind::Printer, true),
+    ("_googlecast._tcp.local.", DeviceKind::Tv, true),
+    ("_androidtvremote2._tcp.local.", DeviceKind::Tv, true),
+    ("_androidtvremote._tcp.local.", DeviceKind::Tv, true),
+    ("_roku-rcp._tcp.local.", DeviceKind::Tv, true),
+    ("_nvstream._tcp.local.", DeviceKind::Tv, true),
+    ("_hap._tcp.local.", DeviceKind::Iot, true),
+    ("_matter._tcp.local.", DeviceKind::Iot, true),
+    ("_esphomelib._tcp.local.", DeviceKind::Iot, true),
+    ("_shelly._tcp.local.", DeviceKind::Iot, true),
+    ("_hue._tcp.local.", DeviceKind::Iot, true),
+    ("_ewelink._tcp.local.", DeviceKind::Iot, true),
+    ("_wled._tcp.local.", DeviceKind::Iot, true),
+    ("_elg._tcp.local.", DeviceKind::Iot, true),
+    ("_octoprint._tcp.local.", DeviceKind::Printer, true),
+    ("_sonos._tcp.local.", DeviceKind::Speaker, true),
+    ("_soundtouch._tcp.local.", DeviceKind::Speaker, true),
+    ("_axis-video._tcp.local.", DeviceKind::Camera, true),
+    ("_workstation._tcp.local.", DeviceKind::Computer, true),
+    ("_smb._tcp.local.", DeviceKind::Computer, true),
+    ("_afpovertcp._tcp.local.", DeviceKind::Computer, true),
+    ("_sftp-ssh._tcp.local.", DeviceKind::Computer, true),
+    ("_raop._tcp.local.", DeviceKind::Tv, false),
+    ("_airplay._tcp.local.", DeviceKind::Tv, false),
+    ("_spotify-connect._tcp.local.", DeviceKind::Tv, false),
+    ("_amzn-wplay._tcp.local.", DeviceKind::Tv, false),
+    ("_ssh._tcp.local.", DeviceKind::Computer, false),
+    ("_daap._tcp.local.", DeviceKind::Computer, false),
+    ("_rfb._tcp.local.", DeviceKind::Computer, false),
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -53,9 +54,9 @@ pub struct MdnsHit {
     /// Friendly device name (TXT `fn`/`md` or the service instance name).
     pub name: Option<String>,
     /// Definite kind from a strong service type.
-    pub kind: Option<&'static str>,
+    pub kind: Option<DeviceKind>,
     /// Fallback kind from a weak service type (AirPlay and the like).
-    pub kind_hint: Option<&'static str>,
+    pub kind_hint: Option<DeviceKind>,
     /// Hardware model from TXT (`am`/`model`/`md`), e.g. "MacBookPro18,3".
     pub model: Option<String>,
     /// Host advertises `_spotify-connect._tcp`. Alone a weak hint, as many
@@ -117,15 +118,15 @@ fn is_human_name(name: &str) -> bool {
 /// stays "tv". `md` is an opaque codename on many units (a Lenovo Smart Clock
 /// reports `LenovoCD-24502F`), so it's only a keyword fallback when `ca` is
 /// missing.
-fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> &'static str {
+fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> DeviceKind {
     const VIDEO_OUT: u32 = 0x01;
     const AUDIO_OUT: u32 = 0x04;
     if let Some(ca) = ca {
         if ca & VIDEO_OUT != 0 {
-            return "tv";
+            return DeviceKind::Tv;
         }
         if ca & AUDIO_OUT != 0 {
-            return "speaker";
+            return DeviceKind::Speaker;
         }
     }
     // Only unambiguous audio-device names, so a codename or a video model can't
@@ -142,21 +143,21 @@ fn refine_cast_kind(ca: Option<u32>, model: Option<&str>) -> &'static str {
             "speaker",
         ];
         if SPEAKER_HINTS.iter().any(|hint| m.contains(hint)) {
-            return "speaker";
+            return DeviceKind::Speaker;
         }
     }
-    "tv"
+    DeviceKind::Tv
 }
 
-fn kind_rank(kind: &str) -> u8 {
+fn kind_rank(kind: DeviceKind) -> u8 {
     match kind {
-        "printer" => 0,
-        "camera" => 1,
-        "speaker" => 2,
-        "nas" => 3,
-        "iot" => 4,
-        "computer" => 5, // beats tv: a Mac advertising AirPlay is a computer
-        "tv" => 6,
+        DeviceKind::Printer => 0,
+        DeviceKind::Camera => 1,
+        DeviceKind::Speaker => 2,
+        DeviceKind::Nas => 3,
+        DeviceKind::Iot => 4,
+        DeviceKind::Computer => 5, // beats tv: a Mac advertising AirPlay is a computer
+        DeviceKind::Tv => 6,
         _ => 9,
     }
 }
@@ -205,7 +206,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                 let ServiceEvent::ServiceResolved(info) = event else {
                     continue;
                 };
-                let sighting = sighting(&info, service, kind, *is_strong);
+                let sighting = sighting(&info, service, *kind, *is_strong);
                 for addr in info.get_addresses() {
                     if addr.is_ipv4() {
                         hits.entry(addr.to_string()).or_default().absorb(&sighting);
@@ -224,7 +225,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
 }
 
 /// What one resolved announcement of `service` says about its host.
-fn sighting(info: &ServiceInfo, service: &str, kind: &'static str, is_strong: bool) -> MdnsHit {
+fn sighting(info: &ServiceInfo, service: &str, kind: DeviceKind, is_strong: bool) -> MdnsHit {
     let name = info
         .get_property_val_str("fn")
         .map(String::from)
@@ -274,20 +275,20 @@ mod tests {
     fn cast_capabilities_split_speakers_from_tvs() {
         // A real Lenovo Smart Clock capture: ca=231940 has audio out (0x04) set
         // and video out (0x01) clear, though its `md` codename names nothing.
-        assert_eq!(refine_cast_kind(Some(231940), Some("LenovoCD-24502F")), "speaker");
+        assert_eq!(refine_cast_kind(Some(231940), Some("LenovoCD-24502F")), DeviceKind::Speaker);
         // A Chromecast (ca=4101) sets the video-out bit.
-        assert_eq!(refine_cast_kind(Some(4101), Some("Chromecast")), "tv");
+        assert_eq!(refine_cast_kind(Some(4101), Some("Chromecast")), DeviceKind::Tv);
         // A Google Home speaker (ca=2052): audio-out, no video-out.
-        assert_eq!(refine_cast_kind(Some(2052), None), "speaker");
+        assert_eq!(refine_cast_kind(Some(2052), None), DeviceKind::Speaker);
     }
 
     #[test]
     fn cast_without_ca_falls_back_to_model_keywords_then_tv() {
         // No `ca`: only unambiguous audio names become speakers.
-        assert_eq!(refine_cast_kind(None, Some("Nest Audio")), "speaker");
+        assert_eq!(refine_cast_kind(None, Some("Nest Audio")), DeviceKind::Speaker);
         // An opaque codename with no `ca` can't be trusted as audio.
-        assert_eq!(refine_cast_kind(None, Some("LenovoCD-24502F")), "tv");
-        assert_eq!(refine_cast_kind(None, None), "tv");
+        assert_eq!(refine_cast_kind(None, Some("LenovoCD-24502F")), DeviceKind::Tv);
+        assert_eq!(refine_cast_kind(None, None), DeviceKind::Tv);
     }
 
     #[test]

@@ -42,7 +42,7 @@
 #[cfg(windows)]
 mod etw;
 
-use crate::usage::ByteCounts;
+use crate::usage::{ByteCounts, Support};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
@@ -67,31 +67,31 @@ pub struct AppUsage {
 pub struct AppUsageSummary {
     /// Per-app totals, busiest first. Empty before the first sample.
     pub apps: Vec<AppUsage>,
-    /// See [`platform_support`]. When `"unsupported"` the UI explains why
+    /// See [`platform_support`]. When `Unsupported` the UI explains why
     /// instead of showing an empty list.
-    pub support: &'static str,
+    pub support: Support,
     /// Epoch ms of the first sample, or null before then.
     pub tracking_since: Option<u64>,
 }
 
-/// `"supported"` on Linux and macOS, and on Windows while the ETW session is up
-/// (it needs admin, so a runtime check there); `"unsupported"` otherwise.
-pub fn platform_support() -> &'static str {
+/// `Supported` on Linux and macOS, and on Windows while the ETW session is up
+/// (it needs admin, so a runtime check there); `Unsupported` otherwise.
+pub fn platform_support() -> Support {
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
-        "supported"
+        Support::Supported
     }
     #[cfg(windows)]
     {
         if etw::is_active() {
-            "supported"
+            Support::Supported
         } else {
-            "unsupported"
+            Support::Unsupported
         }
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
     {
-        "unsupported"
+        Support::Unsupported
     }
 }
 

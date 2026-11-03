@@ -5,7 +5,7 @@
 //! cap_net_bind_service on Linux). It starts the same background listener the
 //! app uses, then prints each device's fingerprint as it broadcasts a DHCP
 //! DISCOVER/REQUEST. Reconnect a device's Wi-Fi to force one immediately.
-use rove_core::devices::dhcp;
+use rove_core::devices::{dhcp, DhcpStatus};
 use std::collections::HashSet;
 use std::time::Duration;
 
@@ -16,13 +16,13 @@ async fn main() {
     tokio::time::sleep(Duration::from_millis(400)).await;
 
     match dhcp::status() {
-        "active" => println!("DHCP listener: active (bound :67).\n"),
-        "unavailable" => {
+        DhcpStatus::Active => println!("DHCP listener: active (bound :67).\n"),
+        DhcpStatus::Unavailable => {
             eprintln!("DHCP listener: unavailable — could not bind :67.");
             eprintln!("Re-run with elevated privileges, e.g. `sudo cargo run -p rove-core --example dhcp_watch`.");
             return;
         }
-        other => println!("DHCP listener: {other}\n"),
+        DhcpStatus::Starting => println!("DHCP listener: starting\n"),
     }
 
     println!("Watching for DHCP broadcasts. Reconnect a device's Wi-Fi to force one. Ctrl-C to stop.\n");
@@ -38,7 +38,7 @@ async fn main() {
                     mac,
                     hit.hostname.as_deref().unwrap_or("-"),
                     hit.os.unwrap_or("-"),
-                    hit.kind.unwrap_or("-"),
+                    hit.kind.map_or("-", |kind| kind.as_str()),
                     detail,
                 );
             }
