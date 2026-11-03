@@ -14,7 +14,7 @@ const WAVE_SPEED = 40 // px/second: Android moves the wave one wavelength per se
 const WAVE_MIN_FRACTION = 0.03 // draw a small sliver even at 0% so the bar reads as live
 const WAVE_SAMPLE_STEP = 3 // px between the points the squiggle path is built through
 const TRACK_GAP = 4 // px gap between the active tip and the track (Android LinearIndicatorTrackGapSize = 4dp)
-const LEAD_DOT_R = WAVE_STROKE + 2 // dot rides the leading edge of the wave
+const LEAD_DOT_RADIUS = WAVE_STROKE + 2 // dot rides the leading edge of the wave
 const MIN_REDRAW_PX = 0.25 // skip DOM writes for moves smaller than this
 const MIN_TRACK_PX = 0.5 // hide the track once less than this is left of it
 
@@ -98,7 +98,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
       // Track runs to just inside the right edge (round cap unclipped),
       // starting a gap past the active tip.
       const trackEnd = width - WAVE_STROKE / 2
-      const trackStart = Math.min(fillEnd + LEAD_DOT_R + TRACK_GAP, trackEnd)
+      const trackStart = Math.min(fillEnd + LEAD_DOT_RADIUS + TRACK_GAP, trackEnd)
       if (Math.abs(trackStart - lastTrackStart) < MIN_REDRAW_PX) return
       lastTrackStart = trackStart
       if (trackEnd - trackStart > MIN_TRACK_PX) {
@@ -162,7 +162,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
           y2={WAVE_MID}
           style={{ display: 'none' }}
         />
-        <circle ref={dotRef} className="fill-accent" cy={WAVE_MID} r={LEAD_DOT_R} />
+        <circle ref={dotRef} className="fill-accent" cy={WAVE_MID} r={LEAD_DOT_RADIUS} />
       </svg>
     </div>
   )

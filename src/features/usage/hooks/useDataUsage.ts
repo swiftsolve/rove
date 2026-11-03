@@ -2,7 +2,7 @@ import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { DataUsageSummary } from '@/types'
 
 // Slower than the per-app breakdowns: the daily totals are a summary.
-const REFRESH_INTERVAL_MS = 10_000
+const POLL_INTERVAL_MS = 10_000
 
 const EMPTY_USAGE: DataUsageSummary = { days: [], bootRxBytes: 0, bootTxBytes: 0, trackingSince: null }
 
@@ -14,6 +14,6 @@ export function useDataUsage(): UsageQuery<DataUsageSummary> {
     empty: EMPTY_USAGE,
     errorMessage: 'Couldn’t load data usage',
     isEmpty: (usage) => usage.days.length === 0,
-    pollIntervalMs: REFRESH_INTERVAL_MS,
+    pollIntervalMs: POLL_INTERVAL_MS,
   })
 }

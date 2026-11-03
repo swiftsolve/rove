@@ -109,14 +109,14 @@ export function SpeedView(): JSX.Element | null {
   if (!info) return null
 
   // Owned by the app's navigation stack, so Back pops the right screen.
-  const sub = location.speedSub ?? null
+  const subpage = location.speedSub ?? null
 
-  if (sub?.view === 'history') {
+  if (subpage?.view === 'history') {
     return <SpeedHistoryView />
   }
 
-  if (sub?.view === 'details' && internetSpeed) {
-    return <CapabilityDetailsView targetId={sub.target} />
+  if (subpage?.view === 'details' && internetSpeed) {
+    return <CapabilityDetailsView targetId={subpage.target} />
   }
 
   return (

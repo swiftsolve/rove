@@ -197,8 +197,8 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
   const hasResults = internetSpeed != null
   // The connection the result was measured on, else the live one before any test.
   const connection = hasResults && runConnection != null ? runConnection : connectionFromNetworkInfo(info)
-  const linkCapacityMbps =
-    hasResults && testLinkCapacityMbps != null ? testLinkCapacityMbps : info ? getLinkCapacityMbps(info) : null
+  const liveLinkCapacityMbps = info ? getLinkCapacityMbps(info) : null
+  const linkCapacityMbps = hasResults && testLinkCapacityMbps != null ? testLinkCapacityMbps : liveLinkCapacityMbps
   // Still lays out the full grid with placeholders, so empty and filled match.
   const isEmpty = !hasResults && !isTesting
   const hasFooterInfo = connection != null || linkCapacityMbps != null

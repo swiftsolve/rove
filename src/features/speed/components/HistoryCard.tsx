@@ -70,6 +70,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
   const upload = splitSpeedMbps(entry.uploadMbps)
   const hasValidPing = isMeasuredLatency(entry.latencyMs)
   const ping = hasValidPing ? splitLatencyMs(entry.latencyMs) : null
+  const jitter = hasValidPing ? formatLatencyMs(entry.jitterMs) : null
 
   return (
     // No bottom padding: the footer bleeds to the card's rounded bottom edge.
@@ -91,12 +92,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
         <div className={CARD_FOOTER}>
           <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
             <InlineMeta
-              items={[
-                <>
-                  Jitter {(hasValidPing ? formatLatencyMs(entry.jitterMs) : null) ?? <NoValue label="Not measured" />}
-                </>,
-                <>{entry.packetLoss}% loss</>,
-              ]}
+              items={[<>Jitter {jitter ?? <NoValue label="Not measured" />}</>, <>{entry.packetLoss}% loss</>]}
             />
             {entry.linkSpeedMbps != null && (
               <span className="ml-auto shrink-0">

@@ -13,8 +13,8 @@ function dayKey(ts: number): string {
 
 // The user's locale orders the parts: "Monday, January 12" in the US,
 // "Monday 12 January" in the UK.
-const DAY = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
-const DAY_IN_YEAR = new Intl.DateTimeFormat(undefined, {
+const DAY_FORMAT = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+const DAY_WITH_YEAR_FORMAT = new Intl.DateTimeFormat(undefined, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
@@ -25,15 +25,15 @@ const DAY_IN_YEAR = new Intl.DateTimeFormat(undefined, {
 export function formatDayHeading(ts: number, nowMs: number): string {
   const date = new Date(ts)
   const now = new Date(nowMs)
-  if (dayKey(ts) === dayKey(now.getTime())) return 'Today'
+  if (dayKey(ts) === dayKey(nowMs)) return 'Today'
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
   if (dayKey(ts) === dayKey(yesterday.getTime())) return 'Yesterday'
 
-  return (date.getFullYear() === now.getFullYear() ? DAY : DAY_IN_YEAR).format(date)
+  return (date.getFullYear() === now.getFullYear() ? DAY_FORMAT : DAY_WITH_YEAR_FORMAT).format(date)
 }
 
 /** Consecutive same-day runs of the already-ordered feed, order kept. */
-export function groupByDay<T extends { ts: number }>(events: T[], now: number): DayGroup<T>[] {
+export function groupByDay<T extends { ts: number }>(events: T[], nowMs: number): DayGroup<T>[] {
   const groups: DayGroup<T>[] = []
   for (const event of events) {
     const key = dayKey(event.ts)
@@ -41,7 +41,7 @@ export function groupByDay<T extends { ts: number }>(events: T[], now: number): 
     if (last?.key === key) {
       last.events.push(event)
     } else {
-      groups.push({ key, heading: formatDayHeading(event.ts, now), events: [event] })
+      groups.push({ key, heading: formatDayHeading(event.ts, nowMs), events: [event] })
     }
   }
   return groups

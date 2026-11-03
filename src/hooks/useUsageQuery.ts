@@ -3,14 +3,14 @@ import type { NetworkAPI } from '@/types'
 
 // The per-app breakdowns' poll, faster than the daily summary's: their totals
 // climb continuously.
-const DEFAULT_REFRESH_INTERVAL_MS = 5_000
+const DEFAULT_POLL_INTERVAL_MS = 5_000
 
 type UsageQueryOptions<T> = {
   /** The cache key, one per breakdown. */
   queryKey: string
-  /** Reads the breakdown off the bridge. */
+  /** Reads the breakdown from the backend. */
   read: (api: NetworkAPI) => Promise<T>
-  /** What the view shows before the first answer, or with no bridge. */
+  /** What the view shows before the first answer, or with no backend. */
   empty: T
   /** The error text for a failure that isn't an `Error`. */
   errorMessage: string
@@ -34,8 +34,8 @@ export type UsageQuery<T> = {
 }
 
 /**
- * A usage summary or breakdown, polled while its view is open. A missing bridge
- * gives a clear error rather than a hung spinner.
+ * A usage summary or breakdown, polled while its view is open. A missing backend
+ * (a plain web build) gives a clear error rather than a hung spinner.
  */
 export function useUsageQuery<T>({
   queryKey,
@@ -43,7 +43,7 @@ export function useUsageQuery<T>({
   empty,
   errorMessage,
   isEmpty,
-  pollIntervalMs = DEFAULT_REFRESH_INTERVAL_MS,
+  pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
 }: UsageQueryOptions<T>): UsageQuery<T> {
   const api = window.networkAPI
   const fetchUsage = api ? () => read(api) : undefined
