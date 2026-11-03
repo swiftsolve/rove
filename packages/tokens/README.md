@@ -74,7 +74,7 @@ Under each file is what writes it: a script in `scripts/tokens/`, [Style Diction
 npm install @swiftsolve/rove-tokens
 ```
 
-The package ships `tokens.css`, `text-styles.css` and `tokens/` built. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v1.1.0`); then npm builds them on install, which needs Node 22 (see `.nvmrc`).
+The package ships them built, in `dist/`; the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v1.1.0`); then npm builds them on install, which needs Node 22 (see `.nvmrc`).
 
 ```css
 @import '@swiftsolve/rove-tokens/tokens.css';
@@ -91,7 +91,7 @@ Each Figma text style becomes four tokens: `--type-<style>-size`, `-weight`, `-l
 
 ### 🧩 DTCG
 
-`tokens/` holds the same tokens in the [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (2025.10), for Style Dictionary, Tokens Studio and similar tools:
+`dist/tokens/` (imported as `@swiftsolve/rove-tokens/tokens/*`) holds the same tokens in the [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (2025.10), for Style Dictionary, Tokens Studio and similar tools:
 
 | File | What |
 | --- | --- |
@@ -120,7 +120,7 @@ To run Rove Tokens locally:
 npm run storybook
 ```
 
-It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `tokens/` and are styled with `tokens.css`, so a new build shows up without editing them.
+It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `dist/tokens/` and are styled with `dist/tokens.css`, so a new build shows up without editing them.
 
 ## 🛠️ Scripts
 
@@ -136,7 +136,7 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 
 1. Change the variables or text styles in Figma.
 2. Export them to `src/figma/variables.json` and `src/figma/text-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or by asking Claude to export them through the Figma connection.
-3. Run `npm run build` (Node 22) and check `tokens.css`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
+3. Run `npm run build` (Node 22) and check `dist/tokens.css`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
 4. Commit the change.
 
 ## 🚀 Release
@@ -171,8 +171,8 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 
 | Path | What |
 | --- | --- |
-| `scripts/tokens/build.mjs` | `npm run build`: runs the steps below and writes `tokens.css` and `text-styles.css` at the package root, where the import paths point. |
-| `scripts/tokens/figma-to-dtcg.mjs` | Figma export → the DTCG files in `tokens/`, checking that every reference resolves in both themes. |
+| `scripts/tokens/build.mjs` | `npm run build`: runs the steps below, writing everything to `dist/`, where `package.json`'s `exports` points the import paths. |
+| `scripts/tokens/figma-to-dtcg.mjs` | Figma export → the DTCG files in `dist/tokens/`, checking that every reference resolves in both themes. |
 | `scripts/tokens/dtcg-to-css.mjs` | DTCG files → `tokens.css`, with Style Dictionary and a `rove/css` format: Dark on `:root`, what differs in Light on `:root.theme-light`, each text style as four `--type-*` variables (letter spacing included). |
 | `scripts/tokens/dtcg-to-text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
 | `scripts/tokens/token-reference.mjs` | Figma export and `tokens.css` → the token reference in `DESIGN.md`: every token by name and Figma description, with values for the scales (spacing, radius, type, opacity) but not the colours, so nobody copies a hex. |

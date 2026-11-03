@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react'
 
 // A Storybook of the tokens: every page is styled with tokens.css and lists
-// the tokens from the DTCG files in tokens/, so it follows each build.
+// the tokens from the DTCG files in dist/tokens/, so it follows each build.
 /** @type {import('@storybook/react-vite').StorybookConfig} */
 const config = {
   stories: ['../stories/*.stories.jsx'],

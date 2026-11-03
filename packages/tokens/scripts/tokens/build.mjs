@@ -1,9 +1,9 @@
 /**
  * Build the tokens in these steps:
  *
- *   1. Figma export -> DTCG files in tokens/ (scripts/tokens/figma-to-dtcg.mjs)
- *   2. DTCG files -> tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
- *   3. DTCG text styles -> text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
+ *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.mjs)
+ *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
+ *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
  *   4. The token reference at the end of DESIGN.md (scripts/tokens/token-reference.mjs)
  *
  * so the CSS is generated from the same files other tools read.
@@ -68,7 +68,8 @@ function interpolate(template, mode) {
   })
 }
 
-const dir = resolve(ROOT, 'tokens')
+const DIST = resolve(ROOT, 'dist')
+const dir = resolve(DIST, 'tokens')
 const { written, cssOnly } = await writeDtcg({
   dir,
   variables: figma.variables,
@@ -76,18 +77,17 @@ const { written, cssOnly } = await writeDtcg({
   code,
   figmaOverride: (v, mode) => code.figma[v.name] && interpolate(code.figma[v.name], mode),
 })
-console.log(`tokens/: ${written.join(', ')}`)
+console.log(`dist/tokens/: ${written.join(', ')}`)
 
 const header = `/* ${pkg.name} ${pkg.version}. Generated from Figma by scripts/tokens/build.mjs; do not edit. */`
 const { css, count, overrides } = await buildCss({ dir, header, cssOnly })
-// At the package root, where `@swiftsolve/rove-tokens/tokens.css` points, so
-// every tool (bundlers and editors alike) finds the same file.
-await writeFile(resolve(ROOT, 'tokens.css'), css)
-console.log(`tokens.css: ${count} tokens, ${overrides} light overrides`)
+// package.json's `exports` maps `@swiftsolve/rove-tokens/tokens.css` here.
+await writeFile(resolve(DIST, 'tokens.css'), css)
+console.log(`dist/tokens.css: ${count} tokens, ${overrides} light overrides`)
 
 const textStylesCss = await buildTextStylesCss({ dir, header })
-await writeFile(resolve(ROOT, 'text-styles.css'), textStylesCss.css)
-console.log(`text-styles.css: ${textStylesCss.count} classes`)
+await writeFile(resolve(DIST, 'text-styles.css'), textStylesCss.css)
+console.log(`dist/text-styles.css: ${textStylesCss.count} classes`)
 
 const design = await writeDesign({
   path: resolve(ROOT, 'DESIGN.md'),

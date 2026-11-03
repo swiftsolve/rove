@@ -31,7 +31,7 @@ jobs:
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
 
       # npm ci builds the tokens through `prepare`, and npm publish builds them
-      # again before packing, so the package ships tokens.css and tokens/.
+      # again before packing, so the package ships dist/.
       - run: npm ci
 
       - run: npm publish

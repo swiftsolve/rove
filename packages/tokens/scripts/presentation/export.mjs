@@ -634,7 +634,7 @@ if (bitmaps.length > 0) {
 
 // This package's own tokens, so the presentation chrome matches the app, and
 // its version, so the page always names the release it shows.
-const tokens = await readFile(join(ROOT, 'tokens.css'), 'utf8')
+const tokens = await readFile(join(ROOT, 'dist/tokens.css'), 'utf8')
 const { version } = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'))
 await writeFile(join(out, 'index.html'), renderHtml(file, groups, tokens, version))
 console.log(`Wrote ${join(out, 'index.html')}`)

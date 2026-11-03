@@ -1,5 +1,5 @@
-import '../tokens.css'
-import '../text-styles.css'
+import '../dist/tokens.css'
+import '../dist/text-styles.css'
 import './preview.css'
 import '../stories/stories.css'
 

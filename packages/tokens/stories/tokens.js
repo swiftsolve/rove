@@ -1,13 +1,13 @@
-import code from '../tokens/code.tokens.json'
-import colorDark from '../tokens/color.dark.tokens.json'
-import colorLight from '../tokens/color.light.tokens.json'
-import layout from '../tokens/layout.tokens.json'
-import motion from '../tokens/motion.tokens.json'
-import opacity from '../tokens/opacity.tokens.json'
-import palette from '../tokens/palette.tokens.json'
-import spacing from '../tokens/spacing.tokens.json'
-import textStyles from '../tokens/text-styles.tokens.json'
-import typography from '../tokens/typography.tokens.json'
+import code from '../dist/tokens/code.tokens.json'
+import colorDark from '../dist/tokens/color.dark.tokens.json'
+import colorLight from '../dist/tokens/color.light.tokens.json'
+import layout from '../dist/tokens/layout.tokens.json'
+import motion from '../dist/tokens/motion.tokens.json'
+import opacity from '../dist/tokens/opacity.tokens.json'
+import palette from '../dist/tokens/palette.tokens.json'
+import spacing from '../dist/tokens/spacing.tokens.json'
+import textStyles from '../dist/tokens/text-styles.tokens.json'
+import typography from '../dist/tokens/typography.tokens.json'
 
 export { palette, colorDark, colorLight, spacing, typography, opacity, layout, motion, textStyles, code }
 

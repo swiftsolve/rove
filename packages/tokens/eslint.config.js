@@ -17,7 +17,7 @@ const NO_EM_DASH = [
 export default [
   // ── Not ours to lint ─────────────────────────────────────────────────────
   // Build outputs, and .claude's agent worktrees (other checkouts).
-  { ignores: ['tokens', 'storybook-static', 'presentation', '.claude'] },
+  { ignores: ['dist', 'storybook-static', 'presentation', '.claude'] },
 
   // ── Presets ──────────────────────────────────────────────────────────────
   js.configs.recommended,

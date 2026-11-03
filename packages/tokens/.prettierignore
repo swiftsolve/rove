@@ -3,9 +3,7 @@
 
 # Build outputs: rewritten by npm run build, npm run build:storybook and
 # npm run present.
-/tokens.css
-/text-styles.css
-/tokens/
+/dist/
 /storybook-static/
 /presentation/
 
