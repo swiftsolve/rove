@@ -119,8 +119,12 @@ export async function writeDesign({ path, variables, textStyles, code: codeToken
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
     const numeric = s.boundVariables?.fontFamily === 'font-family/numeric' ? ', Questrial' : ''
+    // Figma's description ends in a "Code:" handoff note; it's kept only when
+    // it says more than the Class column.
+    const [use, handoff] = s.description.split(/\s*Code:\s*/)
+    const inCode = handoff && handoff !== `.type-${slug}` ? ` In code: ${handoff}` : ''
     out.push(
-      `| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${s.description.replace(/\|/g, '\\|')} |`,
+      `| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${`${use}${inCode}`.replace(/\|/g, '\\|')} |`,
     )
   }
 

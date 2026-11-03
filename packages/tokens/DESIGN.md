@@ -20,7 +20,7 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 - Three backgrounds: `--bg-base` for the backdrop, `--bg-surface` for content that sits on it (cards, dialogs), `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons). `--bg-chrome` is the title bar and rail, a half step off the backdrop. `--bg-popover` is a step lighter in Dark, for tooltips and menus. `--bg-hover` is a hovered surface, `--bg-scrim` goes behind dialogs.
 - Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use `--shadow-raised`.
 - Every line is `--border-default`: hairlines, and the edges of menus, tooltips and dialogs.
-- For hovers, chips and tracks on a surface, use the `--fill-*` overlays, by strength: `--fill-faint` (3%), `--fill-subtle` (5%), `--fill-default` (7%), `--fill-strong` (16%). They flip with the theme, so they stay visible on both. A hovered row or expandable header uses `--fill-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it.
+- For hovers, chips and tracks on a surface, use the `--fill-*` overlays, by strength: `--fill-faint` (3%), `--fill-subtle` (5%), `--fill-default` (7%), `--fill-strong` (16%). They flip with the theme, so they stay visible on both. A hovered row or expandable header uses `--fill-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it. Selected text is `--fill-selection`.
 
 ### Text and icons
 
@@ -31,6 +31,7 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 ### Accent and buttons
 
 - `--accent-default` is for accent icons and lines. It's too light for words in Light mode, and under a white label.
+- An accent icon or line that responds to the pointer uses `--accent-hover` and `--accent-press`. They aren't for fills: a solid button has its own pair.
 - Solid buttons use `--accent-fill`, hovering to `--accent-fill-hover`. Hovers deepen, never lighten, so the white label keeps its contrast.
 - A solid red control (a solid negative button, the window close hover) uses `--status-negative-fill` and `--status-negative-fill-hover`.
 
@@ -48,12 +49,21 @@ Tints are a colour mixed with transparent at one of the shared strengths, so a t
 background: color-mix(in srgb, var(--status-positive) var(--opacity-tint-md), transparent);
 ```
 
-Disabled controls use `--opacity-disabled`.
+Pick the strength by the tint's size and job:
+
+- `--opacity-tint-xs`: a wide, faint wash, such as the top of a chart's area fill.
+- `--opacity-tint-sm`: a panel or banner in a status colour.
+- `--opacity-tint-md`: chips, badges and tiles at rest, and the edge of an `sm` panel.
+- `--opacity-tint-lg`: an `md` tint hovered, and unlit meter bars.
+- `--opacity-tint-xl`: the strongest wash, the download series' area fill.
+
+Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that should stay nearly solid, like a chart line behind another.
 
 ### Spacing and shape
 
 - Every gap, padding and margin is a `--spacing-*` step.
 - Cards use `--card-padding` on every side. The rail and the content column share the side inset `--spacing-12`.
+- A card header is `--card-header-height` tall. A header-like strip that can grow with its content takes `--card-header-min-height` as its minimum instead.
 - Corners are `--radius-*`. `--radius-md` is for nav items and the page-header chip, a step rounder than `--radius-sm`; `--radius-full` makes pills.
 
 ### Type
@@ -74,7 +84,7 @@ Disabled controls use `--opacity-disabled`.
 
 ## Changing the design
 
-Figma is the source of truth. Change a token in the Rove Design System Figma file, export it with the plugin in `figma-plugin/` into `src/figma/`, then run `npm run build` (see the [README](README.md#update-the-tokens)). Don't edit `tokens.css`, `tokens/` or the values in `src/figma/` by hand. What Figma can't hold (shadows, easing curves, the focus outline) lives in `src/code-tokens.json`.
+Figma is the source of truth. Change a token in the Rove Design System Figma file, export it with the plugin in `figma-plugin/` into `src/figma/`, then run `npm run build` (see the [README](README.md#update-the-tokens)). Don't edit `tokens.css`, `tokens/` or the values in `src/figma/` by hand. What Figma can't hold (shadows, easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
@@ -114,20 +124,20 @@ Apply a style with its class from `text-styles.css`. Each class reads four varia
 
 | Style | Class | Size, weight | Use |
 | --- | --- | --- | --- |
-| Heading/Large | `.type-heading-large` | 17px 600 | Page titles, the wordmark. Code: .type-heading-large |
-| Heading/Medium | `.type-heading-medium` | 15px 600 | Dialog titles. Code: .type-heading-medium |
-| Heading/Small | `.type-heading-small` | 14px 600 | Card headings. Code: .type-heading-small |
-| Body/Default | `.type-body-default` | 13px 400 | Body text. Code: .type-body-default |
-| Overline | `.type-overline` | 11px 500 | Uppercase labels above values. Code: .type-overline |
-| Caption | `.type-caption` | 11px 400 | Badges, captions, footer hints. Code: .type-caption |
-| Label/Large | `.type-label-large` | 12px 600 | Solid button labels. Code: Button variant=solid |
-| Number/Display | `.type-number-display` | 28px 400, Questrial | Live speeds. Add a 0.43px outside stroke. Code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
-| Number/Large | `.type-number-large` | 17px 400, Questrial | Stat totals. Add a 0.26px outside stroke. Code: Readout size=compact |
-| Number/Default | `.type-number-default` | 13px 400, Questrial | Data row values. Code: .type-number-default |
-| Number/Small | `.type-number-small` | 10px 400, Questrial | Chart axes and scale. Code: .type-number-small |
-| Label/Default | `.type-label-default` | 11px 600 | Bold small labels on tinted chips. Code: .type-label-default |
-| Label/Small | `.type-label-small` | 11px 500 | Soft buttons, title bar status. Code: .type-label-small |
-| Body/Small | `.type-body-small` | 12px 400 | Helper text, hints and units. Code: .type-body-small |
+| Heading/Large | `.type-heading-large` | 17px 600 | Page titles, the wordmark. |
+| Heading/Medium | `.type-heading-medium` | 15px 600 | Dialog titles. |
+| Heading/Small | `.type-heading-small` | 14px 600 | Card headings. |
+| Body/Default | `.type-body-default` | 13px 400 | Body text. |
+| Overline | `.type-overline` | 11px 500 | Uppercase labels above values. |
+| Caption | `.type-caption` | 11px 400 | Badges, captions, footer hints. |
+| Label/Large | `.type-label-large` | 12px 600 | Solid button labels. In code: Button variant=solid |
+| Number/Display | `.type-number-display` | 28px 400, Questrial | Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
+| Number/Large | `.type-number-large` | 17px 400, Questrial | Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact |
+| Number/Default | `.type-number-default` | 13px 400, Questrial | Data row values. |
+| Number/Small | `.type-number-small` | 10px 400, Questrial | Chart axes and scale. |
+| Label/Default | `.type-label-default` | 11px 600 | Bold small labels on tinted chips. |
+| Label/Small | `.type-label-small` | 11px 500 | Soft buttons, title bar status. |
+| Body/Small | `.type-body-small` | 12px 400 | Helper text, hints and units. |
 
 ### Code-only tokens
 
