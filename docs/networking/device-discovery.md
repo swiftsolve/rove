@@ -116,8 +116,8 @@ Ping every address in the subnet, 64 at a time:
 ```rust
 futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
     .map(|ip| async move {
-        let cmd = crate::platform::ping_command(&ip, 1, 700);
-        let replied = crate::util::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+        let cmd = crate::platform::ping_command(&ip, 1, PING_WAIT_MS); // 700 ms
+        let replied = crate::util::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT)
             .await
             .is_some();
         replied.then_some(ip)
@@ -441,7 +441,7 @@ after missing `MISS_LIMIT` (3) scans in a row *and* staying silent for
 
 ## Stage 5: Assembly
 
-Finally (the end of `scan()`):
+Finally (`assemble`, at the end of `scan()` and the passive refresh):
 
 - **Add this machine.** The local host never appears in its own neighbor table,
   so `add_self_if_missing` injects it, with the hostname from

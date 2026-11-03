@@ -56,9 +56,7 @@ impl DeviceEvidence {
 /// Keeps the first-seen value; a later absence never erases it.
 fn fill(dst: &mut Option<String>, src: &Option<String>) {
     if dst.is_none() {
-        if let Some(value) = src {
-            *dst = Some(value.clone());
-        }
+        dst.clone_from(src);
     }
 }
 

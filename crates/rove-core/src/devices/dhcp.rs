@@ -45,6 +45,14 @@ const BOOTP_MIN_LEN: usize = 240;
 /// Precedes the DHCP options (RFC 2131).
 const MAGIC_COOKIE: [u8; 4] = [99, 130, 83, 99];
 
+/// DHCP option codes (RFC 2132) the parser reads.
+const OPT_PAD: u8 = 0;
+const OPT_HOSTNAME: u8 = 12;
+const OPT_MESSAGE_TYPE: u8 = 53;
+const OPT_PARAMETER_REQUEST_LIST: u8 = 55;
+const OPT_VENDOR_CLASS: u8 = 60;
+const OPT_END: u8 = 255;
+
 /// What a device's DHCP solicitation reveals. Mirrors
 /// [`crate::devices::mdns::MdnsHit`] and `ssdp::SsdpHit` so the
 /// classifier treats it as one more weighted signal.
@@ -111,14 +119,17 @@ static CACHE: LazyLock<Mutex<HashMap<String, DhcpHit>>> =
 static START: Once = Once::new();
 
 /// Lets the UI tell "no fingerprints yet" from "can't fingerprint at all".
-/// 0 = starting, 1 = active, 2 = unavailable.
-static STATUS: AtomicU8 = AtomicU8::new(0);
+/// One of the `STATUS_*` values.
+static STATUS: AtomicU8 = AtomicU8::new(STATUS_STARTING);
+const STATUS_STARTING: u8 = 0;
+const STATUS_ACTIVE: u8 = 1;
+const STATUS_UNAVAILABLE: u8 = 2;
 
 /// "starting" until the bind resolves, then "active" or "unavailable".
 pub fn status() -> &'static str {
     match STATUS.load(Ordering::Relaxed) {
-        1 => "active",
-        2 => "unavailable",
+        STATUS_ACTIVE => "active",
+        STATUS_UNAVAILABLE => "unavailable",
         _ => "starting",
     }
 }
@@ -153,11 +164,11 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
 async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Result<()> {
     let socket = match UdpSocket::bind(("0.0.0.0", DHCP_SERVER_PORT)).await {
         Ok(socket) => {
-            STATUS.store(1, Ordering::Relaxed);
+            STATUS.store(STATUS_ACTIVE, Ordering::Relaxed);
             socket
         }
         Err(e) => {
-            STATUS.store(2, Ordering::Relaxed);
+            STATUS.store(STATUS_UNAVAILABLE, Ordering::Relaxed);
             return Err(e);
         }
     };
@@ -253,14 +264,14 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
     let mut hostname: Option<String> = None;
     let mut msg_type: Option<u8> = None;
 
-    // Options are code, length, value, except Pad (0, one byte) and End (255).
+    // Options are code, length, value, except the one-byte Pad and End.
     let mut i = BOOTP_MIN_LEN;
     while i < buf.len() {
         let code = buf[i];
-        if code == 255 {
+        if code == OPT_END {
             break;
         }
-        if code == 0 {
+        if code == OPT_PAD {
             i += 1;
             continue;
         }
@@ -275,10 +286,12 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
         }
         let val = &buf[start..end];
         match code {
-            53 => msg_type = val.first().copied(),
-            55 => prl = Some(val.iter().map(u8::to_string).collect::<Vec<_>>().join(",")),
-            60 => vendor_class = clean_str(val),
-            12 => hostname = clean_str(val),
+            OPT_MESSAGE_TYPE => msg_type = val.first().copied(),
+            OPT_PARAMETER_REQUEST_LIST => {
+                prl = Some(val.iter().map(u8::to_string).collect::<Vec<_>>().join(","))
+            }
+            OPT_VENDOR_CLASS => vendor_class = clean_str(val),
+            OPT_HOSTNAME => hostname = clean_str(val),
             _ => {}
         }
         i = end;
@@ -334,12 +347,12 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
                     return None;
                 }
                 let mut fields = line.splitn(4, '\t');
-                let (Some(kind), Some(pattern), Some(os), Some(device)) =
+                let (Some(match_type), Some(pattern), Some(os), Some(kind)) =
                     (fields.next(), fields.next(), fields.next(), fields.next())
                 else {
                     return None;
                 };
-                let matcher = match kind {
+                let matcher = match match_type {
                     "vendor" => Matcher::Vendor,
                     "prl" => Matcher::Prl,
                     "prl_prefix" => Matcher::PrlPrefix,
@@ -347,7 +360,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
                 };
                 // "-" means the row says nothing about that field.
                 let field = |s: &'static str| (s != "-").then_some(s);
-                Some(FingerprintRow { matcher, pattern, os: field(os), kind: field(device) })
+                Some(FingerprintRow { matcher, pattern, os: field(os), kind: field(kind) })
             })
             .collect()
     })

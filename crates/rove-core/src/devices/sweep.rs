@@ -6,6 +6,12 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 const CONCURRENT_PROBES: usize = 64;
+/// One echo request per host, waiting this long for the reply. A LAN host
+/// answers in single-digit ms, and the ARP exchange the ping triggers is what
+/// discovery needs.
+const PING_WAIT_MS: u32 = 700;
+/// Kills a `ping` process that hangs past its own wait.
+const PING_PROCESS_TIMEOUT: Duration = Duration::from_secs(3);
 
 /// Ping every host in the subnet and return the IPs that replied. `ping` exits
 /// non-zero without a reply, so `Some` is a positive liveness signal: the scan
@@ -17,8 +23,8 @@ pub async fn sweep(subnet: &str) -> HashSet<String> {
 
     futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
         .map(|ip| async move {
-            let cmd = crate::platform::ping_command(&ip, 1, 700);
-            let replied = crate::util::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+            let cmd = crate::platform::ping_command(&ip, 1, PING_WAIT_MS);
+            let replied = crate::util::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT)
                 .await
                 .is_some();
             replied.then_some(ip)

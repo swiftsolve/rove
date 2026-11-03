@@ -100,19 +100,27 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
         if let Some(out) =
             try_run_timeout(&script, Duration::from_millis(UNIX_BATCH_BUDGET_MS)).await
         {
-            for line in out.lines() {
-                let Some((ip, host)) = line.split_once('\t') else {
-                    continue;
-                };
-                let host = trim_suffix(host.trim());
-                if is_valid_hostname(&host) && is_meaningful(&host) {
-                    resolved.insert(ip.trim().to_string(), host);
-                }
-            }
+            resolved = parse_lookup_output(&out);
         }
     }
 
     ips.iter().map(|ip| resolved.get(ip).cloned()).collect()
+}
+
+/// The `ip<TAB>hostname` lines both batch scripts print, keeping only names
+/// worth showing.
+fn parse_lookup_output(out: &str) -> HashMap<String, String> {
+    let mut resolved = HashMap::new();
+    for line in out.lines() {
+        let Some((ip, host)) = line.split_once('\t') else {
+            continue;
+        };
+        let host = trim_suffix(host.trim());
+        if is_valid_hostname(&host) && is_meaningful(&host) {
+            resolved.insert(ip.trim().to_string(), host);
+        }
+    }
+    resolved
 }
 
 /// Total wall-clock budget for a Windows batch of concurrent reverse lookups.
@@ -139,15 +147,7 @@ async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
              $t|%{{$n=if($_.T.Status -eq 'RanToCompletion'){{$_.T.Result.HostName}}else{{''}};\"$($_.I)`t$n\"}}"
         );
         if let Some(out) = try_run_powershell(&script).await {
-            for line in out.lines() {
-                let Some((ip, host)) = line.split_once('\t') else {
-                    continue;
-                };
-                let host = trim_suffix(host.trim());
-                if is_valid_hostname(&host) && is_meaningful(&host) {
-                    resolved.insert(ip.trim().to_string(), host);
-                }
-            }
+            resolved = parse_lookup_output(&out);
         }
     }
 

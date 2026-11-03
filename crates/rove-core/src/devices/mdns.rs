@@ -1,8 +1,11 @@
 //! mDNS service discovery: devices advertise what they are, which beats any
 //! vendor-table guess. Pure Rust (`mdns-sd`), so no platform branch.
-use mdns_sd::{ServiceDaemon, ServiceEvent};
+use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::collections::HashMap;
 use std::time::Duration;
+
+/// How long the browse loop sleeps when no receiver had an event.
+const IDLE_POLL: Duration = Duration::from_millis(100);
 
 /// `(service, kind, strong)`. Strong types state the kind outright; weak ones
 /// (AirPlay, AirTunes, Spotify) run on TVs and computers alike, so they apply
@@ -62,14 +65,16 @@ pub struct MdnsHit {
 }
 
 impl MdnsHit {
-    /// Fold another sighting of the same device into this one, by the same rule
-    /// as the merge in [`discover`]: the lowest-`kind_rank` strong kind wins and
-    /// every other field only fills a gap. Accumulating across scans means a
-    /// service seen once survives a later lossy window that misses it.
+    /// Fold another sighting of the same device into this one: the
+    /// lowest-`kind_rank` strong kind wins and every other field only fills a
+    /// gap. [`discover`] merges a window's sightings with it, and `history`
+    /// merges across scans, so a service seen once survives a later lossy
+    /// window that misses it.
     pub(crate) fn absorb(&mut self, other: &MdnsHit) {
         if let Some(kind) = other.kind {
-            let better = self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
-            if better {
+            let is_better =
+                self.kind.map(|current| kind_rank(kind) < kind_rank(current)).unwrap_or(true);
+            if is_better {
                 self.kind = Some(kind);
             }
         }
@@ -164,7 +169,8 @@ fn instance_name(fullname: &str) -> Option<String> {
     if let Some((_, suffix)) = name.split_once('@') {
         name = suffix.to_string();
     }
-    (!name.is_empty() && name.len() > 1).then_some(name)
+    // A one-character instance name is a placeholder, not a name.
+    (name.len() > 1).then_some(name)
 }
 
 /// Browse the known service types for `window`, keyed by IPv4. `mdns-sd`
@@ -182,8 +188,8 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
 
     let receivers: Vec<_> = SERVICE_KINDS
         .iter()
-        .filter_map(|(service, kind, strong)| {
-            daemon.browse(service).ok().map(|rx| (rx, *service, *kind, *strong))
+        .filter_map(|(service, kind, is_strong)| {
+            daemon.browse(service).ok().map(|rx| (rx, *service, *kind, *is_strong))
         })
         .collect();
 
@@ -197,69 +203,59 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
         }
         let mut got_any = false;
 
-        for (rx, service, kind, strong) in &receivers {
-            let is_spotify = *service == "_spotify-connect._tcp.local.";
+        for (rx, service, kind, is_strong) in &receivers {
             while let Ok(event) = rx.try_recv() {
                 got_any = true;
                 let ServiceEvent::ServiceResolved(info) = event else {
                     continue;
                 };
-                let name = info
-                    .get_property_val_str("fn")
-                    .map(String::from)
-                    .or_else(|| instance_name(info.get_fullname()))
-                    .map(|n| crate::util::net::sanitize_display(&n))
-                    .filter(|n| is_human_name(n) && !is_generic_service_name(n));
-                let model = info
-                    .get_property_val_str("am")
-                    .or_else(|| info.get_property_val_str("model"))
-                    .or_else(|| info.get_property_val_str("md"))
-                    .map(crate::util::net::sanitize_display)
-                    .filter(|m| !m.is_empty());
-
-                let effective_kind: &'static str = if *service == "_googlecast._tcp.local." {
-                    let ca = info
-                        .get_property_val_str("ca")
-                        .and_then(|s| s.trim().parse::<u32>().ok());
-                    refine_cast_kind(ca, model.as_deref())
-                } else {
-                    kind
-                };
-
+                let sighting = sighting(&info, service, *kind, *is_strong);
                 for addr in info.get_addresses() {
-                    if !addr.is_ipv4() {
-                        continue;
+                    if addr.is_ipv4() {
+                        hits.entry(addr.to_string()).or_default().absorb(&sighting);
                     }
-                    let entry = hits.entry(addr.to_string()).or_default();
-                    if *strong {
-                        let better = entry
-                            .kind
-                            .map(|current| kind_rank(effective_kind) < kind_rank(current))
-                            .unwrap_or(true);
-                        if better {
-                            entry.kind = Some(effective_kind);
-                        }
-                    } else if entry.kind_hint.is_none() {
-                        entry.kind_hint = Some(effective_kind);
-                    }
-                    if entry.name.is_none() {
-                        entry.name = name.clone();
-                    }
-                    if entry.model.is_none() {
-                        entry.model = model.clone();
-                    }
-                    entry.spotify_connect |= is_spotify;
                 }
             }
         }
 
         if !got_any {
-            std::thread::sleep(Duration::from_millis(100));
+            std::thread::sleep(IDLE_POLL);
         }
     }
 
     let _ = daemon.shutdown();
     hits
+}
+
+/// What one resolved announcement of `service` says about its host.
+fn sighting(info: &ServiceInfo, service: &str, kind: &'static str, is_strong: bool) -> MdnsHit {
+    let name = info
+        .get_property_val_str("fn")
+        .map(String::from)
+        .or_else(|| instance_name(info.get_fullname()))
+        .map(|n| crate::util::net::sanitize_display(&n))
+        .filter(|n| is_human_name(n) && !is_generic_service_name(n));
+    let model = info
+        .get_property_val_str("am")
+        .or_else(|| info.get_property_val_str("model"))
+        .or_else(|| info.get_property_val_str("md"))
+        .map(crate::util::net::sanitize_display)
+        .filter(|m| !m.is_empty());
+
+    let kind = if service == "_googlecast._tcp.local." {
+        let ca = info.get_property_val_str("ca").and_then(|s| s.trim().parse::<u32>().ok());
+        refine_cast_kind(ca, model.as_deref())
+    } else {
+        kind
+    };
+
+    MdnsHit {
+        name,
+        model,
+        kind: is_strong.then_some(kind),
+        kind_hint: (!is_strong).then_some(kind),
+        spotify_connect: service == "_spotify-connect._tcp.local.",
+    }
 }
 
 #[cfg(test)]

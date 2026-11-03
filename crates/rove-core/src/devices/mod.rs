@@ -156,7 +156,7 @@ pub async fn scan() -> LanDeviceScan {
         open_ports: &open_ports,
         ping_live: &ping_live,
         tcp_live: &tcp_live,
-        active_probe: subnet.is_some(),
+        was_probed: subnet.is_some(),
     };
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()
@@ -166,10 +166,7 @@ pub async fn scan() -> LanDeviceScan {
         })
         .collect();
 
-    add_self_if_missing(&mut devices, self_ip.as_deref(), self_mac.as_deref());
-
-    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, subnet::ip_sort_key(&d.ip)));
-    devices.dedup_by(|a, b| a.mac == b.mac);
+    assemble(&mut devices, self_ip.as_deref(), self_mac.as_deref());
 
     LanDeviceScan {
         devices,
@@ -226,9 +223,7 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
         })
         .collect();
 
-    add_self_if_missing(&mut devices, self_ip.as_deref(), self_mac.as_deref());
-    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, subnet::ip_sort_key(&d.ip)));
-    devices.dedup_by(|a, b| a.mac == b.mac);
+    assemble(&mut devices, self_ip.as_deref(), self_mac.as_deref());
     devices
 }
 
@@ -254,12 +249,12 @@ fn build_passive_device(
     let is_self = self_ip == Some(neighbor.ip.as_str());
     let mdns_hit = mdns.get(&neighbor.ip);
     let ssdp_hit = ssdp.get(&neighbor.ip);
-    let present = is_self
+    let is_present = is_self
         || is_gateway
         || (neighbor.stateful && neighbor.reachable)
         || mdns_hit.is_some()
         || ssdp_hit.is_some();
-    if !present {
+    if !is_present {
         return None;
     }
 
@@ -364,7 +359,7 @@ struct Enrichment<'a> {
     tcp_live: &'a std::collections::HashSet<String>,
     /// False when the subnet is unknown and no sweep or probe ran, so liveness
     /// falls back to the neighbor table's own state.
-    active_probe: bool,
+    was_probed: bool,
 }
 
 fn build_device(
@@ -470,13 +465,13 @@ fn build_device(
     // read Online for ~20 min. Any answer this scan (ICMP, TCP accept or RST,
     // an announcement) or a Linux REACHABLE counts as live, debounced per MAC
     // (see `liveness`) so one dropped probe doesn't flip it to Offline.
-    let reachable = if is_self || is_gateway {
+    let is_reachable = if is_self || is_gateway {
         true
-    } else if !enrichment.active_probe {
+    } else if !enrichment.was_probed {
         neighbor.reachable
     } else {
         let ip = neighbor.ip.as_str();
-        let live_now = (neighbor.stateful && neighbor.reachable)
+        let is_live_now = (neighbor.stateful && neighbor.reachable)
             || enrichment.ping_live.contains(ip)
             || enrichment.tcp_live.contains(ip)
             || enrichment.mdns.contains_key(ip)
@@ -485,9 +480,9 @@ fn build_device(
             || enrichment.snmp.contains_key(ip)
             || enrichment.banner.contains_key(ip);
         if neighbor.mac.is_empty() {
-            live_now // no stable key to debounce against
+            is_live_now // no stable key to debounce against
         } else {
-            liveness::reachable(&neighbor.mac, live_now)
+            liveness::reachable(&neighbor.mac, is_live_now)
         }
     };
 
@@ -501,7 +496,7 @@ fn build_device(
         model,
         is_gateway,
         is_self,
-        is_reachable: reachable,
+        is_reachable,
         ip: neighbor.ip,
         mac: neighbor.mac,
         // Stamped by the store's roster merge (see `devices_with_offline`).
@@ -563,6 +558,15 @@ fn is_apple_hostname(hostname: &str) -> bool {
     MARKERS.iter().any(|marker| lower.contains(marker))
 }
 
+/// The finishing pass both scans share: add this machine, sort gateway first,
+/// then self, then by address (`false` sorts before `true`), and drop a second
+/// IP for the same MAC.
+fn assemble(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
+    add_self_if_missing(devices, self_ip, self_mac);
+    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, subnet::ip_sort_key(&d.ip)));
+    devices.dedup_by(|a, b| a.mac == b.mac);
+}
+
 /// The neighbor table never lists the local machine.
 fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
     let (Some(ip), Some(mac)) = (self_ip, self_mac) else {
@@ -617,7 +621,7 @@ mod tests {
             open_ports: &ports,
             ping_live: &ping_live,
             tcp_live: &tcp_live,
-            active_probe: true,
+            was_probed: true,
         };
         let neighbor =
             RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), reachable: true, stateful: true };
@@ -744,7 +748,7 @@ mod tests {
             open_ports: &ports,
             ping_live: &ping_live,
             tcp_live: &tcp_live,
-            active_probe: true,
+            was_probed: true,
         };
         let neighbor = RawNeighbor {
             ip: "192.168.2.35".to_string(),

@@ -18,6 +18,7 @@ use std::net::Ipv4Addr;
 use std::time::Duration;
 use tokio::net::UdpSocket;
 
+const SNMP_PORT: u16 = 161;
 const COMMUNITY: &[u8] = b"public";
 /// `sysDescr.0` (1.3.6.1.2.1.1.1.0) as BER OID content bytes; the first two
 /// arcs `1.3` collapse to `1*40+3 = 43 = 0x2b`.
@@ -91,7 +92,7 @@ pub async fn discover(gateway: Option<&str>, local_ip: Option<Ipv4Addr>) -> Hash
 async fn query_one(ip: Ipv4Addr, local_ip: Option<Ipv4Addr>) -> Option<SnmpHit> {
     let bind_ip = local_ip.unwrap_or(Ipv4Addr::UNSPECIFIED);
     let socket = UdpSocket::bind((bind_ip, 0)).await.ok()?;
-    socket.connect((ip, 161)).await.ok()?;
+    socket.connect((ip, SNMP_PORT)).await.ok()?;
 
     let request = encode_get(OID_SYS_DESCR, COMMUNITY, REQUEST_ID);
     let mut buf = [0u8; 2048];

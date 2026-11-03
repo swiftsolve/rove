@@ -33,11 +33,12 @@ const MISS_LIMIT: u32 = 3;
 /// lets a device that's really gone read Offline promptly.
 const MIN_ABSENCE: Duration = Duration::from_secs(90);
 
-/// Per-MAC miss streak. A live scan removes the entry, so `last_live` is set at
-/// the first miss after it: the absence floor runs from there.
+/// Per-MAC miss streak. A live scan removes the entry, so the next miss starts
+/// a fresh one and the absence floor runs from `silent_since`.
 struct Streak {
     misses: u32,
-    last_live: Instant,
+    /// The first miss of this streak.
+    silent_since: Instant,
 }
 
 static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> =
@@ -45,23 +46,24 @@ static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> =
 
 /// Fold this scan's result for `mac` into its miss streak and return whether
 /// the device still reads as reachable.
-pub fn reachable(mac: &str, live_now: bool) -> bool {
-    reachable_at(mac, live_now, Instant::now())
+pub fn reachable(mac: &str, is_live_now: bool) -> bool {
+    reachable_at(mac, is_live_now, Instant::now())
 }
 
 /// [`reachable`] with the clock injected, so tests advance time without sleeping.
-fn reachable_at(mac: &str, live_now: bool, now: Instant) -> bool {
+fn reachable_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
     let mut streaks = crate::util::net::lock(&STREAKS);
-    if live_now {
+    if is_live_now {
         streaks.remove(mac);
         return true;
     }
     let streak = streaks
         .entry(mac.to_string())
-        .or_insert(Streak { misses: 0, last_live: now });
+        .or_insert(Streak { misses: 0, silent_since: now });
     streak.misses += 1;
-    let long_enough = now.duration_since(streak.last_live) >= MIN_ABSENCE;
-    !(streak.misses >= MISS_LIMIT && long_enough)
+    let is_gone = streak.misses >= MISS_LIMIT
+        && now.duration_since(streak.silent_since) >= MIN_ABSENCE;
+    !is_gone
 }
 
 #[cfg(test)]

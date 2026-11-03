@@ -104,9 +104,10 @@ async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
 fn extract_title(html: &str) -> Option<String> {
     let lower = html.to_ascii_lowercase();
     let open = lower.find("<title")?;
-    let gt = lower[open..].find('>')? + open + 1;
-    let close = lower[gt..].find("</title>")? + gt;
-    let raw = html[gt..close].trim();
+    // Past the opening tag's `>`, which may follow attributes.
+    let text_start = lower[open..].find('>')? + open + 1;
+    let text_end = lower[text_start..].find("</title>")? + text_start;
+    let raw = html[text_start..text_end].trim();
     let title = crate::util::net::sanitize_display(raw);
     (!title.is_empty()).then_some(title)
 }
