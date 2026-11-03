@@ -4,6 +4,8 @@
 //! the window is open.
 use crate::AppState;
 use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
+use futures_util::FutureExt;
+use std::panic::AssertUnwindSafe;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
@@ -50,12 +52,18 @@ const APP_USAGE_INTERVAL: Duration = Duration::from_secs(4);
 pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
-            // A failed sample is skipped, not ingested as an empty one: the
-            // tracker would read that as every unit having vanished, drop its
-            // baselines, and re-credit the world on the next good tick.
-            if let Some(units) = rove_core::usage::app::sample_units().await {
-                let state = handle.state::<AppState>();
-                lock(&state.app_usage).ingest(units);
+            let tick = async {
+                // A failed sample is skipped, not ingested as an empty one: the
+                // tracker would read that as every unit having vanished, drop its
+                // baselines, and re-credit the world on the next good tick.
+                if let Some(units) = rove_core::usage::app::sample_units().await {
+                    let state = handle.state::<AppState>();
+                    lock(&state.app_usage).ingest(units);
+                }
+            };
+            // A panic here must not end per-app tracking for the session.
+            if AssertUnwindSafe(tick).catch_unwind().await.is_err() {
+                tracing::error!("app usage sampler tick panicked; continuing");
             }
             tokio::time::sleep(APP_USAGE_INTERVAL).await;
         }
@@ -74,49 +82,54 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     use std::collections::HashMap;
     tauri::async_runtime::spawn(async move {
         loop {
-            let sampled = rove_core::usage::host::sample().await;
+            let tick = async {
+                let sampled = rove_core::usage::host::sample().await;
 
-            // Scoped so the std Mutex is released before any await.
-            let (need_hosts, need_countries) = {
-                let state = handle.state::<AppState>();
-                let mut tracker = lock(&state.host_usage);
-                // A failed sample is skipped, not ingested as an empty one the
-                // tracker would read as every socket closing. Enrichment still
-                // runs on the peers already pending.
-                if let Some(readings) = sampled {
-                    tracker.ingest(readings);
+                // Scoped so the std Mutex is released before any await.
+                let (need_hosts, need_countries) = {
+                    let state = handle.state::<AppState>();
+                    let mut tracker = lock(&state.host_usage);
+                    // A failed sample is skipped, not ingested as an empty one the
+                    // tracker would read as every socket closing. Enrichment still
+                    // runs on the peers already pending.
+                    if let Some(readings) = sampled {
+                        tracker.ingest(readings);
+                    }
+                    (tracker.pending_hostnames(), tracker.pending_countries())
+                };
+
+                // Misses are recorded too, so each peer resolves once.
+                if !need_hosts.is_empty() {
+                    let names = rove_core::devices::hostname::resolve_many(&need_hosts).await;
+                    let resolved: HashMap<String, Option<String>> =
+                        need_hosts.into_iter().zip(names).collect();
+                    let state = handle.state::<AppState>();
+                    lock(&state.host_usage).record_hostnames(resolved);
                 }
-                (tracker.pending_hostnames(), tracker.pending_countries())
+
+                // No per-tick cap: local table reads clear the whole backlog in one
+                // pass. Blocking thread, since the first read decodes the ~8 MB
+                // table.
+                if !need_countries.is_empty() {
+                    let resolved = tauri::async_runtime::spawn_blocking(move || {
+                        need_countries
+                            .into_iter()
+                            .map(|ip| {
+                                let code = rove_core::util::geoip::country_code(&ip);
+                                (ip, code)
+                            })
+                            .collect::<HashMap<String, Option<String>>>()
+                    })
+                    .await
+                    .unwrap_or_default();
+                    let state = handle.state::<AppState>();
+                    lock(&state.host_usage).record_countries(resolved);
+                }
             };
-
-            // Misses are recorded too, so each peer resolves once.
-            if !need_hosts.is_empty() {
-                let names = rove_core::devices::hostname::resolve_many(&need_hosts).await;
-                let resolved: HashMap<String, Option<String>> =
-                    need_hosts.into_iter().zip(names).collect();
-                let state = handle.state::<AppState>();
-                lock(&state.host_usage).record_hostnames(resolved);
+            // A panic here must not end host tracking for the session.
+            if AssertUnwindSafe(tick).catch_unwind().await.is_err() {
+                tracing::error!("host usage sampler tick panicked; continuing");
             }
-
-            // No per-tick cap: local table reads clear the whole backlog in one
-            // pass. Blocking thread, since the first read decodes the ~8 MB
-            // table; it also keeps a panic here from killing the loop.
-            if !need_countries.is_empty() {
-                let resolved = tauri::async_runtime::spawn_blocking(move || {
-                    need_countries
-                        .into_iter()
-                        .map(|ip| {
-                            let code = rove_core::util::geoip::country_code(&ip);
-                            (ip, code)
-                        })
-                        .collect::<HashMap<String, Option<String>>>()
-                })
-                .await
-                .unwrap_or_default();
-                let state = handle.state::<AppState>();
-                lock(&state.host_usage).record_countries(resolved);
-            }
-
             tokio::time::sleep(HOST_USAGE_INTERVAL).await;
         }
     });
