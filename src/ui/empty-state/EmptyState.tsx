@@ -38,7 +38,7 @@ export function EmptyState({ isLocked = false, title, description, actions }: Em
     <div className="page-empty gap-8 pb-[56px] text-center">
       <PlaceholderRows isLocked={isLocked} />
       {/* An h2 for the page outline. */}
-      <h2 className="text-md font-semibold text-primary">{title}</h2>
+      <h2 className="type-heading-xsmall text-primary">{title}</h2>
       {description != null && <EmptyStateDescription>{description}</EmptyStateDescription>}
       {actions != null && <div className="mt-8">{actions}</div>}
     </div>
