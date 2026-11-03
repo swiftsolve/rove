@@ -1,10 +1,8 @@
 import { cx } from 'class-variance-authority'
 import { type JSX, useState } from 'react'
 
-// Suffixes that only ever name something on the local network, so the public
-// icon service has nothing to serve for them and answers 404.
-const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', '.localdomain']
-const IPV4_LITERAL = /^\d{1,3}(\.\d{1,3}){3}$/
+import { faviconUrl, mayHaveFavicon } from '@/features/services/utils/favicon'
+
 // No backing chip, so logos with transparent padding blend into the panel
 // instead of showing a white square.
 const ICON = 'shrink-0 rounded-xs object-contain'
@@ -13,25 +11,6 @@ const MONOGRAM = cx(
   'inline-flex items-center justify-center bg-hover',
   'text-2xs font-semibold leading-none text-secondary',
 )
-
-// Well above the rendered size, so it stays crisp on high-DPI screens.
-const FAVICON_REQUEST_PX = 64
-
-/** Whether a public favicon could exist for `host`. LAN names and IP literals
- *  only ever get a 404 from the icon service, so they aren't asked for. */
-function mayHaveFavicon(host: string): boolean {
-  const normalized = host.trim().toLowerCase().replace(/\.$/, '')
-  if (!normalized) return false
-  // An IPv6 literal, bracketed or bare.
-  if (normalized.includes(':')) return false
-  if (IPV4_LITERAL.test(normalized)) return false
-  if (!normalized.includes('.')) return false
-  return !PRIVATE_SUFFIXES.some((suffix) => normalized.endsWith(suffix))
-}
-
-function faviconUrl(host: string): string {
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=${FAVICON_REQUEST_PX}`
-}
 
 // Hosts whose favicon has already 404'd, remembered for the session so remounts
 // (list polls, page switches) don't re-request an icon we know isn't there.

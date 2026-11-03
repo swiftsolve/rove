@@ -1,13 +1,8 @@
+import { isIpv4 } from '@/lib/ip'
 import type { ServiceDefinition } from '@/types'
 
-/** A dotted-quad IPv4 literal, e.g. "192.168.1.1". */
-const IPV4 = /^(\d{1,3})(\.\d{1,3}){3}$/
 /** A plausible DNS hostname: dot-separated labels of letters/digits/hyphens. */
 const HOSTNAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
-
-function isIpv4(host: string): boolean {
-  return IPV4.test(host) && host.split('.').every((o) => Number(o) <= 255)
-}
 
 /** A display label from a host, e.g. api.github.com → "Github". An IP stays as-is.
  *  Best-effort: good enough for a label, not a public-suffix parser. */
