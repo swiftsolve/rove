@@ -1,5 +1,4 @@
-// What counts as a control the user could have opened a screen from.
-const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+import { FOCUSABLE } from '@/lib/highlight'
 
 /**
  * Where the user was on a screen when they opened another from it: the control
@@ -9,8 +8,7 @@ const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tab
 export type ReturnPoint = {
   /** The opener's tag, name and text, to find it again in the re-rendered page. */
   signature: string
-  /** Its place among the page's controls, for when its text changed meanwhile
-   *  ("Updated 6 min ago"). */
+  /** Its place among the page's controls, for when its text changed meanwhile ("Updated 6 min ago"). */
   index: number
   tagName: string
   /** Whether its focus ring showed: a keyboard user's press, not a click. */
@@ -39,8 +37,10 @@ export function trackClicks(): () => void {
   return () => document.removeEventListener('click', onClick, true)
 }
 
-/** The return point for the screen being left, or null when what opened the
- *  next one isn't a control on the page (the nav rail). */
+/**
+ * The return point for the screen being left, or null when what opened the
+ * next one isn't a control on the page (the nav rail).
+ */
 export function captureReturnPoint(): ReturnPoint | null {
   const main = document.querySelector('main')
   const scroller = document.querySelector<HTMLElement>('[data-scroll-root]')
@@ -56,8 +56,10 @@ export function captureReturnPoint(): ReturnPoint | null {
   }
 }
 
-/** The control a return point names: the same one by its text, the nearest to
- *  its old place if several match, else the one in its old place. */
+/**
+ * The control a return point names: the same one by its text, the nearest to
+ * its old place if several match, else the one in its old place.
+ */
 function findOpener(main: HTMLElement, point: ReturnPoint): HTMLElement | null {
   const controls = Array.from(main.querySelectorAll<HTMLElement>(FOCUSABLE))
   let match: HTMLElement | null = null
@@ -83,7 +85,7 @@ export function restoreReturnPoint(main: HTMLElement, scroller: HTMLElement, poi
   scroller.scrollTo({ top: point.scrollTop })
   // The page may have grown or shrunk meanwhile: bring the control into view.
   // The scroller is moved directly, not with focus()'s own scroll, which would
-  // also scroll a host page around the embedded demo (see scrollCardToTop).
+  // also scroll a host page around the embedded demo (see scrollToTopAndFlash).
   const box = opener.getBoundingClientRect()
   const view = scroller.getBoundingClientRect()
   if (box.top < view.top) scroller.scrollTop -= view.top - box.top

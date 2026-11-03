@@ -1,4 +1,4 @@
-import { formatCount } from '@/lib/format'
+import { countTitle } from '@/lib/format'
 import type { NetworkInterfaceSummary } from '@/types'
 
 /** Per-category counts, e.g. ["1 Wi‑Fi", "1 Ethernet", "2 Virtual"]. */
@@ -21,6 +21,5 @@ export function interfaceTypeSummaryParts(interfaces: NetworkInterfaceSummary[])
 
 /** "2 interfaces" once some are listed, else the plain page name. */
 export function interfacesTitle(count: number): string {
-  if (count === 0) return 'Interfaces'
-  return formatCount(count, 'interface')
+  return countTitle(count, 'interface', 'Interfaces')
 }

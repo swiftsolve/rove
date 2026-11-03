@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  countTitle,
   formatBand,
   formatCount,
   formatDuration,
@@ -104,5 +105,13 @@ describe('formatLatencyMs / splitLatencyMs', () => {
       expect(formatLatencyMs(ms)).toBeNull()
       expect(splitLatencyMs(ms)).toBeNull()
     }
+  })
+})
+
+describe('countTitle', () => {
+  it('counts once there are some, and names the page when there are none', () => {
+    expect(countTitle(3, 'device', 'Devices')).toBe('3 devices')
+    expect(countTitle(1, 'interface', 'Interfaces')).toBe('1 interface')
+    expect(countTitle(0, 'device', 'Devices')).toBe('Devices')
   })
 })

@@ -1,4 +1,5 @@
-const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+/** What takes focus: the selector for a control, shared with navigation's return point. */
+export const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 /**
  * Briefly ring an element just scrolled to after a navigation, and move focus

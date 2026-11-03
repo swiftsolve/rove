@@ -5,7 +5,7 @@ import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { sortDevices } from '@/features/devices/utils/device-display'
-import { formatCount } from '@/lib/format'
+import { countTitle } from '@/lib/format'
 import { IS_MAC } from '@/lib/platform'
 import type { LanDevice } from '@/types'
 import {
@@ -27,12 +27,6 @@ const NO_DEVICES_HINT = 'Nothing answered on this network. Check you’re on the
 
 const LOCAL_NETWORK_HINT =
   'Missing devices? Allow Rove in System Settings › Privacy & Security › Local Network, then scan again.'
-
-/** "3 devices" once some are listed, else the plain page name. */
-function headerTitle(count: number): string {
-  if (count === 0) return 'Devices'
-  return formatCount(count, 'device')
-}
 
 /** The header's description once the scan has a subnet; until then the scan's
  *  status fills the line. A plain function rather than a component: PageHeader
@@ -115,7 +109,7 @@ export function DevicesView() {
     <div className="page">
       <PageHeader
         icon={<DevicesIcon size={18} />}
-        title={headerTitle(devices.length)}
+        title={countTitle(devices.length, 'device', 'Devices')}
         description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
         status={isScanning && !(hasDevices && subnet) ? <ScanStatus isActive isLiveRegion /> : undefined}
         actions={
