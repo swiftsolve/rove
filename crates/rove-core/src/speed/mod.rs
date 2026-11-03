@@ -266,8 +266,10 @@ async fn upload_worker(
 }
 
 pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
+    // HTTP/1.1 only, as for download: one connection per worker.
     let Ok(client) = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
+        .http1_only()
         .build()
     else {
         tracing::error!("could not build HTTP client for upload test");
