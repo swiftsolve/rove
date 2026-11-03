@@ -17,12 +17,19 @@ export function useInternetStatusSource(): InternetStatus | null {
     if (!api) return
     // Drops a read or event that lands after teardown (e.g. an HMR remount).
     let isActive = true
-    void api.getInternetStatus().then((nextStatus) => {
-      if (isActive) setStatus(nextStatus)
-    })
+    // An event is newer than the opening read, so once one lands the read is stale.
+    let hasEvent = false
     const detach = api.onInternetStatus((nextStatus) => {
+      hasEvent = true
       if (isActive) setStatus(nextStatus)
     })
+    api.getInternetStatus().then(
+      (nextStatus) => {
+        if (isActive && !hasEvent) setStatus(nextStatus)
+      },
+      // No verdict yet: callers defer to the local link, and the next heartbeat brings one.
+      () => undefined,
+    )
     return () => {
       isActive = false
       detach()

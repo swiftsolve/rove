@@ -111,10 +111,12 @@ export function useNetworkInfoSource(): NetworkState {
           setLastReadAt(lastReadAtRef.current)
         }
       } finally {
-        // Only the current generation owns the in-flight slot; a superseded poll
-        // must not clear a flag a fresh post-resume poll may already hold.
-        if (generation === generationRef.current) isInFlightRef.current = false
-        if (!isSilent || isInitial) setIsLoading(false)
+        // Only the current generation owns the in-flight slot and the loading
+        // flag; a superseded poll must not clear what a fresh post-resume poll holds.
+        if (generation === generationRef.current) {
+          isInFlightRef.current = false
+          if (!isSilent || isInitial) setIsLoading(false)
+        }
       }
     },
     [infoRef],
