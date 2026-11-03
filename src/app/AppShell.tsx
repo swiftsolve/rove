@@ -1,6 +1,7 @@
 import { cx } from 'class-variance-authority'
 import { useState } from 'react'
 
+import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'
 import { AppTitleBar } from '@/app/components/AppTitleBar'
 import { CurrentScreen } from '@/app/components/CurrentScreen'
 import { NetworkErrorBanner } from '@/app/components/NetworkInfoStates'
@@ -57,7 +58,9 @@ export function AppShell() {
                 <NetworkErrorBanner />
 
                 <main ref={mainRef} className="flex flex-1 flex-col gap-10">
-                  <CurrentScreen />
+                  <AppErrorBoundary key={locationKey(location)}>
+                    <CurrentScreen />
+                  </AppErrorBoundary>
                 </main>
               </div>
             </div>

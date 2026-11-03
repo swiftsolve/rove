@@ -26,7 +26,7 @@ if (!root) throw new Error('index.html has no #root element.')
 
 createRoot(root).render(
   <React.StrictMode>
-    <AppErrorBoundary>
+    <AppErrorBoundary isApp>
       <App />
     </AppErrorBoundary>
   </React.StrictMode>,
