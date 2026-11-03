@@ -52,7 +52,7 @@ function isWithin(value: number, limit: number | null, factor: number): boolean 
   return limit === null || value <= limit * factor
 }
 
-/** Mirrors `rate` in crates/rove-core/src/speed/capabilities.rs so mock ratings match production. */
+/** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
   const requirements: CapabilityRequirement = definition.requirements
   const { downloadMbps, uploadMbps, latencyMs, jitterMs } = speed

@@ -29,7 +29,7 @@ shelling out (more on that in §6).
 
 ### The command runner
 
-Every shell-out goes through `crates/rove-core/src/util/shell.rs`:
+Every shell-out goes through `crates/rove-core/src/utils/shell.rs`:
 
 ```rust
 pub async fn try_run(command: &str) -> Option<String> {
@@ -60,7 +60,7 @@ console window on screen (`CREATE_NO_WINDOW` in `util/shell.rs`). No-op on Unix.
 
 Because Rove builds shell command strings that sometimes contain values from
 the network (interface names, neighbor IPs), it has to guard against injection.
-Two gatekeepers in `crates/rove-core/src/util/net.rs`:
+Two gatekeepers in `crates/rove-core/src/utils/net.rs`:
 
 - **`is_shell_safe_ip`** (in `util/net.rs`): an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
@@ -244,7 +244,7 @@ in the subnet** (`devices/sweep.rs`):
 futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
     .map(|ip| async move {
         let cmd = crate::platform::ping_command(&ip, 1, 700);
-        let replied = crate::util::shell::try_run_timeout(&cmd, Duration::from_secs(3))
+        let replied = crate::utils::shell::try_run_timeout(&cmd, Duration::from_secs(3))
             .await
             .is_some();
         replied.then_some(ip)
@@ -280,13 +280,13 @@ NetBIOS, SNMP, DHCP, and the classifier) is covered in the
 These two are the exception to "shell out": they read kernel byte counters via
 the `sysinfo` crate, which is cross-platform, so there's very little per-OS code.
 
-- **Live throughput** (`crates/rove-core/src/usage/live.rs`): a stateful
+- **Live throughput** (`crates/rove-core/src/live_throughput.rs`): a stateful
   1 Hz sampler. `sysinfo`'s `received()`/`transmitted()` return the *delta* since
   the last refresh, so throughput is `bytes * 8 / 1e6 / elapsed_secs` = Mbps,
   then exponentially smoothed (`SMOOTH_ALPHA = 0.35`) so the chart isn't jagged.
   It sums only physical interfaces (skipping `veth`/`docker`/`tun`/… via
   `is_virtual_interface`).
-- **Data usage** (`crates/rove-core/src/usage/data.rs`): accumulates those
+- **Data usage** (`crates/rove-core/src/usage.rs`): accumulates those
   deltas into daily buckets. It uses `saturating_sub` on the counters so a counter
   *reset* (reboot, driver reload) credits zero rather than dumping a phantom
   multi-GB spike.

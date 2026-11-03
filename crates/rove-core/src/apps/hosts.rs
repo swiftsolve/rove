@@ -1,5 +1,5 @@
 //! Per-app remote hosts and traffic kinds: which hosts each app talks to, and
-//! how much. [`crate::usage::app`] keeps one total per process; this keeps the
+//! how much. [`crate::apps`] keeps one total per process; this keeps the
 //! same traffic split by the peer on the other end of each connection, for the
 //! Hosts view (hostname, country flag, bytes) and, bucketed by peer port, the
 //! Traffic Types view.
@@ -14,14 +14,14 @@
 //!     connection's cumulative bytes.
 //!   * **Windows**: the Kernel-Network ETW events carry the remote address next
 //!     to the PID and size, so the admin-only session behind
-//!     [`crate::usage::app`] feeds this view too. TCP and UDP alike.
+//!     [`crate::apps`] feeds this view too. TCP and UDP alike.
 //!   * **other**: no per-connection source, so unsupported.
 //!
 //! Every source gives a cumulative counter per connection, so
 //! [`HostUsageTracker`] banks each connection's delta into a per-`(app, peer
 //! ip)` total.
 //!
-//! Hostnames (reverse DNS) and countries ([`crate::util::geoip`], a bundled
+//! Hostnames (reverse DNS) and countries ([`crate::utils::geoip`], a bundled
 //! table, so no per-peer network call) are resolved outside the tracker. It
 //! lists the IPs still waiting ([`HostUsageTracker::pending_hostnames`],
 //! [`HostUsageTracker::pending_countries`]) and caches the answers, misses
@@ -29,8 +29,9 @@
 //! [`HostUsageTracker::record_countries`]), so each peer is resolved at most
 //! once.
 
-use crate::usage::app::CounterSemantics;
-use crate::usage::{ByteCounts, Support};
+use crate::apps::CounterSemantics;
+use crate::apps::Support;
+use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -54,9 +55,9 @@ pub struct HostUsage {
 
 /// One application with the remote hosts it has talked to, busiest host first.
 /// `rx_bytes`/`tx_bytes` sum its hosts. They track the same app's
-/// [`AppUsage`](crate::usage::app::AppUsage) closely: both bank per-socket
+/// [`AppUsage`](crate::apps::AppUsage) closely: both bank per-socket
 /// deltas from the same protocols and drop the same peers
-/// (`util::net::routable_peer_ip`). They differ slightly while traffic flows,
+/// (`utils::net::routable_peer_ip`). They differ slightly while traffic flows,
 /// because the two samplers run on their own intervals, and converge when it's
 /// quiet.
 #[derive(Debug, Clone, Serialize)]
@@ -64,7 +65,7 @@ pub struct HostUsage {
 pub struct AppHosts {
     pub name: String,
     /// The app's OS icon as a `data:` URI; see
-    /// [`AppUsage::icon`](crate::usage::app::AppUsage::icon).
+    /// [`AppUsage::icon`](crate::apps::AppUsage::icon).
     pub icon: Option<String>,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
@@ -72,7 +73,7 @@ pub struct AppHosts {
 }
 
 /// Per-app remote hosts for the Hosts view. Same shape as
-/// [`AppUsageSummary`](crate::usage::app::AppUsageSummary) (busiest first,
+/// [`AppUsageSummary`](crate::apps::AppUsageSummary) (busiest first,
 /// `support`, `tracking_since`) so the frontend treats them alike.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -109,11 +110,11 @@ pub struct TrafficUsageSummary {
     pub tracking_since: Option<u64>,
 }
 
-/// The same as [`crate::usage::app::platform_support`]: on Windows both views
+/// The same as [`crate::apps::platform_support`]: on Windows both views
 /// read the one ETW session, so they need administrator rights and light up
 /// together.
 pub fn platform_support() -> Support {
-    crate::usage::sys::support()
+    crate::apps::sys::support()
 }
 
 /// One snapshot of per-connection cumulative byte counters, tagged with the
@@ -121,11 +122,11 @@ pub fn platform_support() -> Support {
 ///
 /// `None` means no sample was taken (tool missing, failed, timed out, or an
 /// unsupported platform); `Some(vec![])` means no connected sockets. Keep them
-/// apart, as in [`crate::usage::app::sample_units`]: ingesting a failure as
+/// apart, as in [`crate::apps::sample_units`]: ingesting a failure as
 /// empty would drop every baseline and re-credit each counter in full next
 /// tick.
 pub async fn sample() -> Option<Vec<PeerReading>> {
-    crate::usage::sys::sample_peers().await
+    crate::apps::sys::sample_peers().await
 }
 
 /// One cumulative reading for a single connection. `conn_key` identifies the
@@ -249,7 +250,7 @@ pub struct HostUsageTracker {
     by_traffic_type: HashMap<&'static str, (TrafficClass, ByteCounts)>,
     /// Epoch ms of the first snapshot; `None` until one arrives.
     tracking_since: Option<u64>,
-    /// App icon per app name, misses cached as `None` (as in [`crate::usage::app`]).
+    /// App icon per app name, misses cached as `None` (as in [`crate::apps`]).
     icons: HashMap<String, Option<String>>,
     /// Reverse-DNS hostname per peer IP. A key means "already tried"; `None` is
     /// a cached miss (no PTR), so it isn't retried every tick.
@@ -296,7 +297,7 @@ impl HostUsageTracker {
     pub fn ingest(&mut self, readings: Vec<PeerReading>) {
         let first_snapshot = self.tracking_since.is_none();
         if first_snapshot {
-            self.tracking_since = Some(crate::util::net::now_ms());
+            self.tracking_since = Some(crate::utils::net::now_ms());
         }
         let semantics = peer_counter_semantics();
         let priming = first_snapshot && semantics.primes_on_first_snapshot();
@@ -353,7 +354,7 @@ impl HostUsageTracker {
     }
 
     /// Public peer IPs not yet geolocated, for the caller to resolve via
-    /// [`crate::util::geoip`] and hand back via [`Self::record_countries`].
+    /// [`crate::utils::geoip`] and hand back via [`Self::record_countries`].
     pub fn pending_countries(&self) -> Vec<String> {
         self.known_ips().filter(|ip| !self.countries.contains_key(*ip)).cloned().collect()
     }
@@ -435,7 +436,7 @@ impl HostUsageTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::usage::macos::parse_nettop_peers;
+    use crate::apps::macos::parse_nettop_peers;
 
     #[test]
     fn nettop_ipv6_peer_port_stripped() {
@@ -606,7 +607,7 @@ time,,interface,state,bytes_in,bytes_out
             .pending_countries()
             .into_iter()
             .map(|ip| {
-                let code = crate::util::geoip::country_code(&ip);
+                let code = crate::utils::geoip::country_code(&ip);
                 (ip, code)
             })
             .collect();

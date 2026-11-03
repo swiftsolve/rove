@@ -1,8 +1,8 @@
 //! The Diagnostics view's checks: gateway ping, DNS servers, router and ISP
 //! identity, and whether this machine has internet at all.
 use crate::connection::{default_gateway, default_interface, dns_servers};
-use crate::util::shell::try_run_any_status;
-use crate::util::tls::handshake_latency;
+use crate::utils::shell::try_run_any_status;
+use crate::utils::tls::handshake_latency;
 use regex_lite::Regex;
 use serde::Serialize;
 use std::sync::LazyLock;
@@ -82,7 +82,7 @@ pub struct IspInfo {
     pub public_ip: Option<String>,
     /// Our public IP's ASN is a hosting network, so we're behind a VPN or proxy
     /// and the fields above describe the exit node. Resolved on-device
-    /// ([`crate::util::geoip::is_hosting_asn`]), so it holds when the enrichment
+    /// ([`crate::utils::geoip::is_hosting_asn`]), so it holds when the enrichment
     /// is rate-limited.
     pub is_vpn: bool,
 }
@@ -113,7 +113,7 @@ const PING_RUN_TIMEOUT: Duration = Duration::from_secs(20);
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     // `host` goes into a shell command. Callers pass addresses from the kernel,
     // but validate all the same.
-    if !crate::util::net::is_shell_safe_ip(host) {
+    if !crate::utils::net::is_shell_safe_ip(host) {
         return None;
     }
     let cmd = crate::platform::ping_command(host, count, PING_REPLY_TIMEOUT_MS);
@@ -146,7 +146,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 /// The ISP card's WAN identity, from two sources so it stays populated
 /// whenever we're online:
 ///
-///   * **On-device** ([`crate::util::geoip`]): ASN, operator and country from
+///   * **On-device** ([`crate::utils::geoip`]): ASN, operator and country from
 ///     our public IP against the bundled tables. No network, no quota.
 ///   * **Live enrichment** ([`ipwho_enrich`]): website, city, region and a
 ///     friendlier ISP name, *when* ipwho.is answers. A rate limit or outage
@@ -161,14 +161,14 @@ pub async fn isp_info() -> Option<IspInfo> {
     // ipify preferred as the quota-free anchor. Neither means we're offline.
     let public_ip = public_ip.or_else(|| live.and_then(|e| e.public_ip.clone()))?;
 
-    let asn = crate::util::geoip::asn_info(&public_ip);
+    let asn = crate::utils::geoip::asn_info(&public_ip);
     let local_name = asn.as_ref().and_then(|a| a.org.clone());
     let local_asn = asn.as_ref().and_then(|a| a.number).map(|n| format!("AS{n}"));
-    let local_country = crate::util::geoip::country_name(&public_ip);
+    let local_country = crate::utils::geoip::country_name(&public_ip);
 
     // Decided from the local AS number so it holds when ipwho.is is throttled,
     // which is exactly what a VPN user often hits.
-    let is_vpn = asn.as_ref().and_then(|a| a.number).is_some_and(crate::util::geoip::is_hosting_asn);
+    let is_vpn = asn.as_ref().and_then(|a| a.number).is_some_and(crate::utils::geoip::is_hosting_asn);
 
     // Prefer ipwho.is where it answered: its ISP name is often friendlier than
     // the raw AS org, and taking its whole identity keeps name and ASN
@@ -250,7 +250,7 @@ async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
 /// Hosts probed only to answer "does this machine have internet?". Independent
 /// operators with near-total uptime, so only a real outage of the path fails
 /// them all. Probed by *hostname* over full TLS like services
-/// ([`crate::util::tls`]), so a captive portal, whose certificate won't
+/// ([`crate::utils::tls`]), so a captive portal, whose certificate won't
 /// validate, reads as no internet rather than a false "online".
 const INTERNET_ANCHORS: [&str; 2] = ["cloudflare.com", "www.google.com"];
 
@@ -301,9 +301,7 @@ pub async fn run() -> NetworkDiagnostics {
     // The Router card is named from the gateway's OUI and SNMP, since this view
     // never runs a device scan.
     let local_ipv4 = match &iface {
-        Some(name) => {
-            crate::connection::interfaces::address_of(name).await.0.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok())
-        }
+        Some(name) => crate::interfaces::address_of(name).await.0.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok()),
         None => None,
     };
 

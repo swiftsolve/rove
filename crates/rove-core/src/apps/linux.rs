@@ -1,14 +1,14 @@
-//! Linux's per-socket source for [`crate::usage::app`] and [`crate::usage::host`]:
+//! Linux's per-socket source for [`crate::apps`] and [`crate::apps::hosts`]:
 //! `ss -tinHp`, which reads each TCP socket's `TCP_INFO` byte counters with its
 //! owning process. Unprivileged for your own sockets. Compiled into every test
 //! build, so the parsers are tested on any OS.
+use super::hosts::PeerReading;
 #[cfg(target_os = "linux")]
-use super::app::CounterSemantics;
-use super::app::UsageUnit;
-use super::host::PeerReading;
+use super::CounterSemantics;
 #[cfg(target_os = "linux")]
 use super::Support;
-use crate::util::net::{peer_port, routable_peer_ip};
+use super::UsageUnit;
+use crate::utils::net::{peer_port, routable_peer_ip};
 
 #[cfg(target_os = "linux")]
 pub(super) const SEMANTICS: CounterSemantics = CounterSemantics::Socket;
@@ -30,12 +30,12 @@ const SS: &str = "ss -tinHp";
 
 #[cfg(target_os = "linux")]
 pub(super) async fn sample_units() -> Option<Vec<UsageUnit>> {
-    crate::util::shell::try_run(SS).await.map(|out| parse_ss(&out))
+    crate::utils::shell::try_run(SS).await.map(|out| parse_ss(&out))
 }
 
 #[cfg(target_os = "linux")]
 pub(super) async fn sample_peers() -> Option<Vec<PeerReading>> {
-    crate::util::shell::try_run(SS).await.map(|out| parse_ss_peers(&out))
+    crate::utils::shell::try_run(SS).await.map(|out| parse_ss_peers(&out))
 }
 
 /// The number after `key` in a line, e.g. `5231` from `bytes_sent:5231`.
@@ -66,7 +66,7 @@ fn ss_proc_pid(line: &str) -> Option<u32> {
 /// Parse `ss -tinHp` into per-socket readings. Each socket is a header line
 /// (`STATE recvq sendq LOCAL PEER users:((...))`) then an indented info line
 /// with `bytes_sent:`/`bytes_received:`. Sockets with no process (TIME-WAIT),
-/// no counters, or no routable peer ([`crate::util::net::routable_peer_ip`])
+/// no counters, or no routable peer ([`crate::utils::net::routable_peer_ip`])
 /// are skipped. Loopback matters most: the kernel lists both ends of a
 /// `127.0.0.1` connection as sockets, so an app talking to itself would be
 /// billed twice.
@@ -101,7 +101,7 @@ pub(super) fn parse_ss(output: &str) -> Vec<UsageUnit> {
                 let peer = cols.next();
                 // A non-routable peer (loopback, listener) drops the pairing so
                 // its info line isn't banked.
-                pending = match (local, peer, peer.and_then(crate::util::net::routable_peer_ip)) {
+                pending = match (local, peer, peer.and_then(crate::utils::net::routable_peer_ip)) {
                     (Some(local), Some(peer), Some(_)) => Some((name, format!("{local}|{peer}"), ss_proc_pid(trimmed))),
                     _ => None,
                 };

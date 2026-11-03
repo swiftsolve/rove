@@ -2,8 +2,8 @@
 //! `system_profiler` and the Keychain via `security`. CoreWLAN reads live in
 //! [`super::mac_native`].
 use crate::connection::ConnectionDetails;
-use crate::util::net::is_virtual_interface;
-use crate::util::shell::{trimmed_non_empty, try_run};
+use crate::utils::net::is_virtual_interface;
+use crate::utils::shell::{trimmed_non_empty, try_run};
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -16,7 +16,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails { ssid: super::mac_native::current_ssid(), ..Default::default() };
     // `networksetup` is redacted too without Location access, but harmless to
     // try.
-    if d.ssid.is_none() && crate::util::net::is_shell_safe_iface(iface) {
+    if d.ssid.is_none() && crate::utils::net::is_shell_safe_iface(iface) {
         if let Some(out) = try_run(&format!("networksetup -getairportnetwork {iface}")).await {
             // Success: "Current Wi-Fi Network: <SSID>". Otherwise a message with
             // no colon ("You are not associated with an AirPort network.").
@@ -43,7 +43,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 /// the standard Keychain authorisation dialog (Allow / Always Allow / Deny);
 /// declining, or a Keychain that has no entry, yields `None`.
 pub async fn wifi_password(ssid: &str) -> Option<String> {
-    let quoted = crate::util::net::shell_single_quote(ssid);
+    let quoted = crate::utils::net::shell_single_quote(ssid);
     let out = try_run(&format!("security find-generic-password -w -a {quoted} 2>/dev/null")).await?;
     trimmed_non_empty(&out)
 }
@@ -57,7 +57,7 @@ pub async fn wifi_password(ssid: &str) -> Option<String> {
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
     // `connection_details` already validates `iface`, but this is pub.
-    if !crate::util::net::is_shell_safe_iface(iface) {
+    if !crate::utils::net::is_shell_safe_iface(iface) {
         return d;
     }
     if let Some(out) = try_run(&format!("ifconfig {iface} 2>/dev/null")).await {
@@ -90,7 +90,7 @@ const SIGNAL_TTL: Duration = Duration::from_secs(12);
 /// background refresh. Never blocks: a cold cache just means the signal shows
 /// one poll later.
 fn apply_cached_signal(d: &mut ConnectionDetails) {
-    let cached = crate::util::net::lock(&SIGNAL_CACHE).clone();
+    let cached = crate::utils::net::lock(&SIGNAL_CACHE).clone();
     let stale = cached.as_ref().is_none_or(|s| s.at.elapsed() > SIGNAL_TTL);
     if stale {
         // The `swap` in the task dedupes concurrent refreshes. `tokio::spawn`
@@ -113,7 +113,7 @@ async fn refresh_signal_cache() {
         return; // another refresh is already running
     }
     if let Some(signal) = query_wifi_signal().await {
-        *crate::util::net::lock(&SIGNAL_CACHE) = Some(signal);
+        *crate::utils::net::lock(&SIGNAL_CACHE) = Some(signal);
     }
     REFRESH_IN_FLIGHT.store(false, Ordering::Release);
 }
@@ -263,9 +263,9 @@ pub async fn wifi_devices() -> Vec<String> {
     // A failed probe and an empty parse (unexpected output) both keep the last
     // good map.
     if devices.is_empty() {
-        return crate::util::net::lock(&WIFI_DEVICES_CACHE).clone().unwrap_or_default();
+        return crate::utils::net::lock(&WIFI_DEVICES_CACHE).clone().unwrap_or_default();
     }
-    *crate::util::net::lock(&WIFI_DEVICES_CACHE) = Some(devices.clone());
+    *crate::utils::net::lock(&WIFI_DEVICES_CACHE) = Some(devices.clone());
     devices
 }
 

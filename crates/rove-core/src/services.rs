@@ -1,7 +1,7 @@
 //! Reachability of the user's service list (Google, Netflix, …): each service's
 //! TLS latency and HTTP health, paired with whether this machine had internet.
 use crate::diagnostics::{self, InternetStatus};
-use crate::util::tls::handshake_latency;
+use crate::utils::tls::handshake_latency;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 

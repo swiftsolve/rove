@@ -43,7 +43,7 @@ impl DeviceScanner {
                             devices: Vec::new(),
                             subnet: None,
                             interface_name: None,
-                            scanned_at: rove_core::util::net::now_ms(),
+                            scanned_at: rove_core::utils::net::now_ms(),
                             dhcp_status: rove_core::devices::DhcpStatus::Unavailable,
                         }
                     }

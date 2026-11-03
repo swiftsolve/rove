@@ -167,7 +167,7 @@ fn tag_text(xml: &str, tag: &str) -> Option<String> {
     let start = xml.find(&open)? + open.len();
     let end = xml[start..].find(&close)? + start;
     let raw = xml[start..end].trim();
-    let value = crate::util::net::sanitize_display(raw);
+    let value = crate::utils::net::sanitize_display(raw);
     (!value.is_empty()).then_some(value)
 }
 

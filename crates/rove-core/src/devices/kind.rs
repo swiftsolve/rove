@@ -119,6 +119,6 @@ mod tests {
         assert_eq!(serde_json::to_string(&DeviceKind::Iot).unwrap(), "\"iot\"");
         assert_eq!(serde_json::to_string(&super::KindConfidence::Low).unwrap(), "\"low\"");
         assert_eq!(serde_json::to_string(&crate::devices::DhcpStatus::Unavailable).unwrap(), "\"unavailable\"");
-        assert_eq!(serde_json::to_string(&crate::usage::Support::Supported).unwrap(), "\"supported\"");
+        assert_eq!(serde_json::to_string(&crate::apps::Support::Supported).unwrap(), "\"supported\"");
     }
 }

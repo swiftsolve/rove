@@ -95,7 +95,7 @@ pub async fn scan() -> LanDeviceScan {
     // Up front so SSDP and SNMP can bind to the active interface's address
     // (the right adapter on multi-homed and Windows hosts).
     let (self_ip, self_mac) = match &interface {
-        Some(name) => crate::connection::interfaces::address_of(name).await,
+        Some(name) => crate::interfaces::address_of(name).await,
         None => (None, None),
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
@@ -173,7 +173,7 @@ pub async fn scan() -> LanDeviceScan {
         devices,
         subnet,
         interface_name: interface,
-        scanned_at: crate::util::net::now_ms(),
+        scanned_at: crate::utils::net::now_ms(),
         dhcp_status: dhcp::status(),
     }
 }
@@ -193,7 +193,7 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
     };
 
     let (self_ip, self_mac) = match &interface {
-        Some(name) => crate::connection::interfaces::address_of(name).await,
+        Some(name) => crate::interfaces::address_of(name).await,
         None => (None, None),
     };
     let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
@@ -253,7 +253,7 @@ fn build_passive_device(
     }
 
     let vendor = lookup_vendor(&neighbor.mac);
-    let dhcp_hit = dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
+    let dhcp_hit = dhcp.get(&crate::utils::net::normalize_mac_bare(&neighbor.mac));
 
     // The full scan's name order, minus the active-only NetBIOS and reverse DNS.
     let hostname = mdns_hit
@@ -354,7 +354,7 @@ fn build_device(
     let vendor = lookup_vendor(&neighbor.mac);
     let is_gateway = gateway == Some(neighbor.ip.as_str());
     let is_self = self_ip == Some(neighbor.ip.as_str());
-    let dhcp = enrichment.dhcp.get(&crate::util::net::normalize_mac_bare(&neighbor.mac));
+    let dhcp = enrichment.dhcp.get(&crate::utils::net::normalize_mac_bare(&neighbor.mac));
 
     // One lossy window can miss a signal an earlier scan caught, which flipped
     // the kind, so classify from the per-MAC union of everything seen (see
@@ -685,7 +685,7 @@ mod tests {
         let (mdns, ssdp) = (HashMap::new(), HashMap::new());
         let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
         dhcp.insert(
-            crate::util::net::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
+            crate::utils::net::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
             dhcp::DhcpHit { kind: Some(DeviceKind::Router), ..Default::default() },
         );
         let ap = RawNeighbor {

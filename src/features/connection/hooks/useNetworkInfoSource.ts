@@ -11,7 +11,7 @@ import type { NetworkInfo } from '@/types'
 const NETWORK_INFO_KEY = ['network', 'info']
 
 const REFRESH_INTERVAL_MS = 15_000
-// Above the backend's 15s per-command budget (crates/rove-core/src/util/shell.rs),
+// Above the backend's 15s per-command budget (crates/rove-core/src/utils/shell.rs),
 // so a slow but healthy probe never trips an error here first.
 const NETWORK_INFO_TIMEOUT_MS = 20_000
 // Failed reads in a row before the error shows over a good reading, one poll

@@ -167,7 +167,7 @@ pub(super) fn snap_desktop_id(cgroup: &str) -> Option<String> {
 /// [`INDEX_TTL`]. An id found in an earlier data dir hides the same id in a
 /// later one, as the XDG spec has it.
 fn desktop_entries() -> Arc<Vec<DesktopEntry>> {
-    let mut index = crate::util::net::lock(&INDEX);
+    let mut index = crate::utils::net::lock(&INDEX);
     if let Some(index) = index.as_ref().filter(|index| index.built.elapsed() < INDEX_TTL) {
         return Arc::clone(&index.entries);
     }

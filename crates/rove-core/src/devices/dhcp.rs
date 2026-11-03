@@ -156,7 +156,7 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
             let _ = listen_forever().await;
         });
     });
-    let mut map = crate::util::net::lock(&CACHE).clone();
+    let mut map = crate::utils::net::lock(&CACHE).clone();
     // A root `rove-dhcp-helper` covers setups where the in-process bind is
     // denied (older macOS reserving low ports, or :67 held by another daemon).
     // The file is usually absent. In-process wins on conflict.
@@ -195,7 +195,7 @@ async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Resul
 /// The in-process listener, capturing into the shared cache.
 async fn listen_forever() -> std::io::Result<()> {
     capture_loop(|mac, hit| {
-        crate::util::net::lock(&CACHE).insert(mac, hit);
+        crate::utils::net::lock(&CACHE).insert(mac, hit);
     })
     .await
 }
@@ -318,7 +318,7 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
 
 fn clean_str(bytes: &[u8]) -> Option<String> {
     let raw = String::from_utf8_lossy(bytes);
-    let value = crate::util::net::sanitize_display(raw.trim());
+    let value = crate::utils::net::sanitize_display(raw.trim());
     (!value.is_empty()).then_some(value)
 }
 

@@ -79,7 +79,7 @@ async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
         .headers()
         .get(reqwest::header::SERVER)
         .and_then(|v| v.to_str().ok())
-        .map(crate::util::net::sanitize_display)
+        .map(crate::utils::net::sanitize_display)
         .filter(|s| !s.is_empty());
 
     let mut body = String::new();
@@ -104,7 +104,7 @@ fn extract_title(html: &str) -> Option<String> {
     let text_start = lower[open..].find('>')? + open + 1;
     let text_end = lower[text_start..].find("</title>")? + text_start;
     let raw = html[text_start..text_end].trim();
-    let title = crate::util::net::sanitize_display(raw);
+    let title = crate::utils::net::sanitize_display(raw);
     (!title.is_empty()).then_some(title)
 }
 

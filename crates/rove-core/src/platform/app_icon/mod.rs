@@ -1,6 +1,6 @@
 //! Real per-application icons on macOS, Windows and Linux.
 //!
-//! The usage views ([`crate::usage::app`], [`crate::usage::host`]) know only a
+//! The usage views ([`crate::apps`], [`crate::apps::hosts`]) know only a
 //! process name and pid. This resolves that to the icon the Dock, Finder or
 //! Explorer would show, as a small PNG (or SVG) `data:` URI. The pid is tried
 //! first, being the exact process that moved the bytes; the name catches a pid

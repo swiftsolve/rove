@@ -21,20 +21,20 @@ pub mod macos;
 pub mod windows;
 
 use crate::connection::infer_connection_type;
-use crate::connection::interfaces::InterfaceSummary;
 use crate::connection::ConnectionDetails;
-use crate::util::net::is_virtual_interface;
-use crate::util::shell::try_run;
+use crate::interfaces::InterfaceSummary;
+use crate::utils::net::is_virtual_interface;
+use crate::utils::shell::try_run;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
 /// Stop a console child process flashing a terminal window on Windows; a no-op
 /// elsewhere. For the synchronous [`std::process::Command`] call sites (the
-/// timezone probe, `hostname`); [`crate::util::shell`] has its own.
+/// timezone probe, `hostname`); [`crate::utils::shell`] has its own.
 #[cfg(windows)]
 pub fn hide_console(cmd: &mut std::process::Command) {
     use std::os::windows::process::CommandExt;
-    cmd.creation_flags(crate::util::shell::CREATE_NO_WINDOW);
+    cmd.creation_flags(crate::utils::shell::CREATE_NO_WINDOW);
 }
 #[cfg(not(windows))]
 pub fn hide_console(_cmd: &mut std::process::Command) {}
@@ -137,7 +137,7 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
     out.lines()
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
-            let mac = crate::util::net::normalize_mac_colons(&c[2]);
+            let mac = crate::utils::net::normalize_mac_colons(&c[2]);
             // Broadcast and multicast (IPv4 01:00:5e, IPv6 33:33) aren't devices.
             if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33") {
                 return None;

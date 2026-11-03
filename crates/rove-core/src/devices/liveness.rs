@@ -51,7 +51,7 @@ pub fn record_and_check(mac: &str, is_live_now: bool) -> bool {
 
 /// [`record_and_check`] with the clock injected, so tests advance time without sleeping.
 fn record_and_check_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
-    let mut streaks = crate::util::net::lock(&STREAKS);
+    let mut streaks = crate::utils::net::lock(&STREAKS);
     if is_live_now {
         streaks.remove(mac);
         return true;

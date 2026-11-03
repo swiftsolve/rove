@@ -1,5 +1,5 @@
+//! Data usage: per-interface daily totals in the store, and the bytes since boot.
 use crate::store::Store;
-use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -40,7 +40,7 @@ const OFFSET_TTL_SECS: u64 = 3600;
 
 fn local_offset_secs() -> i64 {
     let now = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-    let mut cached = crate::util::net::lock(&LOCAL_OFFSET);
+    let mut cached = crate::utils::net::lock(&LOCAL_OFFSET);
     if let Some((offset, computed_at)) = *cached {
         if now.saturating_sub(computed_at) < OFFSET_TTL_SECS {
             return offset;
@@ -114,7 +114,7 @@ impl UsageTracker {
         let mut tx_delta = 0u64;
 
         for (name, data) in networks.iter() {
-            if crate::util::net::is_virtual_interface(name) {
+            if crate::utils::net::is_virtual_interface(name) {
                 continue;
             }
             let rx = data.total_received();
@@ -130,10 +130,10 @@ impl UsageTracker {
         }
         // Forget interfaces that disappeared (Docker/VPN churn) so `last_bytes`
         // stays bounded over a long session.
-        self.last_bytes.retain(|name, _| networks.contains_key(name) && !crate::util::net::is_virtual_interface(name));
+        self.last_bytes.retain(|name, _| networks.contains_key(name) && !crate::utils::net::is_virtual_interface(name));
 
         if !self.first_sample_recorded {
-            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::util::net::now_ms()) {
+            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::utils::net::now_ms()) {
                 tracing::warn!("failed to record first-sample timestamp: {e}");
             }
             self.first_sample_recorded = true;
@@ -162,7 +162,7 @@ impl UsageTracker {
         let mut rx = 0u64;
         let mut tx = 0u64;
         for (name, data) in networks.iter() {
-            if crate::util::net::is_virtual_interface(name) {
+            if crate::utils::net::is_virtual_interface(name) {
                 continue;
             }
             rx += data.total_received();
@@ -189,4 +189,11 @@ impl UsageTracker {
             tracking_since: self.store.get_meta_u64(FIRST_SAMPLE_KEY).ok().flatten(),
         }
     }
+}
+
+/// A received/sent byte pair: a counter reading or a running total.
+#[derive(Default, Clone, Copy)]
+pub(crate) struct ByteCounts {
+    pub(crate) rx: u64,
+    pub(crate) tx: u64,
 }

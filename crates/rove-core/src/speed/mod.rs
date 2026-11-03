@@ -1,10 +1,9 @@
 //! The speed test: adaptive download and upload against Cloudflare, plus what
 //! the result is good enough for.
-pub mod capabilities;
 
+use crate::capabilities::{assess, CapabilityRating};
 use crate::diagnostics::{ping, PingStats};
 use bytes::Bytes;
-use capabilities::{assess, CapabilityRating};
 use futures_util::{stream, StreamExt};
 use serde::Serialize;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};

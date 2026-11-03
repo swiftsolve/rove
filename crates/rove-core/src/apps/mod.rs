@@ -1,6 +1,7 @@
-//! Per-app network usage: how many bytes each app has moved.
+//! Per-app network usage: how many bytes each app has moved, and (in `hosts`)
+//! which hosts and traffic types they moved it to.
 //!
-//! [`crate::usage::data`] meters the interface as a whole. This attributes
+//! [`crate::usage`] meters the interface as a whole. This attributes
 //! bytes to the process that moved them, without packet capture (no
 //! libpcap/Npcap):
 //!
@@ -10,7 +11,7 @@
 //!   * **macOS**: `nettop` lists each process's sockets beneath it with
 //!     cumulative bytes, TCP and UDP alike. Sockets whose peer isn't a host on
 //!     the network (unconnected mDNS, loopback) are dropped by
-//!     `util::net::routable_peer_ip`.
+//!     `utils::net::routable_peer_ip`.
 //!   * **Windows**: an ETW consumer of `Microsoft-Windows-Kernel-Network` (see
 //!     `etw`) folds every send/receive event into a per-process total.
 //!     Starting the session needs administrator rights, so the platform reads
@@ -39,14 +40,72 @@
 //! exactly their sum, and a close shows as one key going away rather than an
 //! unattributable dip.
 
-use crate::usage::{ByteCounts, Support};
+pub mod hosts;
+
+use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
+// One source per OS behind the same `sys` API (`SEMANTICS`, `support`,
+// `support_detail`, `sample_units`, `sample_peers`), so this module and `hosts`
+// carry no per-OS branches. The Linux and macOS parsers build in every test run.
+#[cfg(windows)]
+mod etw;
+#[cfg(any(target_os = "linux", test))]
+mod linux;
+#[cfg(any(target_os = "macos", test))]
+mod macos;
+#[cfg(windows)]
+mod windows;
+
+#[cfg(target_os = "linux")]
+use linux as sys;
+#[cfg(target_os = "macos")]
+use macos as sys;
+#[cfg(windows)]
+use windows as sys;
+
+/// No per-process source here, so every view reads as unsupported.
+#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+mod sys {
+    use super::hosts::PeerReading;
+    use super::Support;
+    use super::{CounterSemantics, UsageUnit};
+
+    // Nothing is ever sampled, so the choice doesn't matter.
+    pub(super) const SEMANTICS: CounterSemantics = CounterSemantics::Socket;
+
+    pub(super) fn support() -> Support {
+        Support::Unsupported
+    }
+
+    pub(super) fn support_detail() -> Option<String> {
+        None
+    }
+
+    pub(super) async fn sample_units() -> Option<Vec<UsageUnit>> {
+        None
+    }
+
+    pub(super) async fn sample_peers() -> Option<Vec<PeerReading>> {
+        None
+    }
+}
+
+/// Whether this platform can meter per-app traffic right now. Mirrors
+/// `AppUsageSupport` in `src/types/app-usage.ts`: when `Unsupported` the UI
+/// explains why instead of showing an empty list.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Support {
+    Supported,
+    Unsupported,
+}
+
 /// One app's network usage since Rove started watching, summed over every
 /// process with that name. Traffic to a loopback or wildcard peer is excluded,
-/// the rule the Hosts view uses (`util::net::routable_peer_ip`). The same
-/// traffic by remote host is [`AppHosts`](crate::usage::host::AppHosts).
+/// the rule the Hosts view uses (`utils::net::routable_peer_ip`). The same
+/// traffic by remote host is [`AppHosts`](crate::apps::hosts::AppHosts).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppUsage {
@@ -74,14 +133,14 @@ pub struct AppUsageSummary {
 /// `Supported` on Linux and macOS, and on Windows while the ETW session is up
 /// (it needs admin, so a runtime check there); `Unsupported` otherwise.
 pub fn platform_support() -> Support {
-    crate::usage::sys::support()
+    crate::apps::sys::support()
 }
 
 /// Why per-app usage (and, on the same session, Hosts and Traffic) is
 /// unavailable, for the UI's unsupported state: the last ETW start error on
 /// Windows; `None` once it's running, and on every other platform.
 pub fn support_detail() -> Option<String> {
-    crate::usage::sys::support_detail()
+    crate::apps::sys::support_detail()
 }
 
 /// One snapshot of per-unit cumulative byte counters: a socket's on Linux and
@@ -93,7 +152,7 @@ pub fn support_detail() -> Option<String> {
 /// good tick would re-credit each unit's whole counter. Whether the platform
 /// can meter at all is [`platform_support`]'s answer.
 pub async fn sample_units() -> Option<Vec<UsageUnit>> {
-    crate::usage::sys::sample_units().await
+    crate::apps::sys::sample_units().await
 }
 
 /// One cumulative reading for a unit of accounting. `key` identifies the unit
@@ -160,7 +219,7 @@ impl CounterSemantics {
 
 impl Default for CounterSemantics {
     fn default() -> Self {
-        crate::usage::sys::SEMANTICS
+        crate::apps::sys::SEMANTICS
     }
 }
 
@@ -205,7 +264,7 @@ impl AppUsageTracker {
     pub fn ingest(&mut self, units: Vec<UsageUnit>) {
         let first_snapshot = self.tracking_since.is_none();
         if first_snapshot {
-            self.tracking_since = Some(crate::util::net::now_ms());
+            self.tracking_since = Some(crate::utils::net::now_ms());
         }
         let priming = first_snapshot && self.semantics.primes_on_first_snapshot();
 
@@ -263,8 +322,8 @@ impl AppUsageTracker {
 
 #[cfg(test)]
 mod tests {
+    use super::macos::parse_nettop_sockets;
     use super::*;
-    use crate::usage::macos::parse_nettop_sockets;
 
     /// The same output, driven through the tracker across ticks: the wildcard
     /// sockets are inert, so a genuinely idle app banks nothing rather than

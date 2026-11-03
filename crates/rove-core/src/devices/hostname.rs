@@ -1,5 +1,5 @@
 //! Reverse hostname resolution and hostname hygiene.
-use crate::util::shell::{try_run_powershell, try_run_timeout};
+use crate::utils::shell::{try_run_powershell, try_run_timeout};
 use regex_lite::Regex;
 use std::collections::HashMap;
 use std::sync::LazyLock;
@@ -65,7 +65,7 @@ const UNIX_BATCH_BUDGET_MS: u64 = 4000;
 
 async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
     // Only validated IPs reach the script; the rest stay `None`.
-    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::util::net::is_shell_safe_ip(ip)).collect();
+    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::utils::net::is_shell_safe_ip(ip)).collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {
@@ -119,7 +119,7 @@ const WINDOWS_BATCH_BUDGET_MS: u32 = 2000;
 
 async fn resolve_many_windows(ips: &[String]) -> Vec<Option<String>> {
     // Only validated IPs reach the script; the rest stay `None`.
-    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::util::net::is_shell_safe_ip(ip)).collect();
+    let safe: Vec<&str> = ips.iter().map(String::as_str).filter(|ip| crate::utils::net::is_shell_safe_ip(ip)).collect();
 
     let mut resolved: HashMap<String, String> = HashMap::new();
     if !safe.is_empty() {

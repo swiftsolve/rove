@@ -205,10 +205,12 @@ rove/
 │   └── dev/                    browser mock bridge (npm run dev without Tauri)
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per
-│   │                           domain: connection/, devices/, diagnostics/,
-│   │                           services, speed/, usage/; plus platform/ (per-OS
-│   │                           probes), store/ (SQLite, a file per domain) and
-│   │                           util/ (net, shell, geoip, tls)
+│   │                           domain, named as in src/features: apps/,
+│   │                           capabilities, connection/, devices/, diagnostics/,
+│   │                           interfaces, live_throughput, services, speed/,
+│   │                           usage; plus platform/ (per-OS probes), store/
+│   │                           (SQLite, a file per domain) and utils/ (net,
+│   │                           shell, geoip, tls)
 │   └── data/                   bundled lookup tables (OUI, IP-to-country)
 ├── src-tauri/                  thin Tauri shell: one #[tauri::command] per
 │   │                           service, events, capabilities, window config

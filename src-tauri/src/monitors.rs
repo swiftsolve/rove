@@ -4,7 +4,7 @@
 //! the window is open.
 use crate::AppState;
 use futures_util::FutureExt;
-use rove_core::{store::Store, usage::live::ThroughputSampler, util::net::lock};
+use rove_core::{live_throughput::ThroughputSampler, store::Store, utils::net::lock};
 use std::panic::AssertUnwindSafe;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -59,7 +59,7 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
                 // A failed sample is skipped, not ingested as an empty one: the
                 // tracker would read that as every unit having vanished, drop its
                 // baselines, and re-credit the world on the next good tick.
-                if let Some(units) = rove_core::usage::app::sample_units().await {
+                if let Some(units) = rove_core::apps::sample_units().await {
                     let state = handle.state::<AppState>();
                     lock(&state.app_usage).ingest(units);
                 }
@@ -86,7 +86,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             let tick = async {
-                let sampled = rove_core::usage::host::sample().await;
+                let sampled = rove_core::apps::hosts::sample().await;
 
                 // Scoped so the std Mutex is released before any await.
                 let (need_hosts, need_countries) = {
@@ -117,7 +117,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                         need_countries
                             .into_iter()
                             .map(|ip| {
-                                let code = rove_core::util::geoip::country_code(&ip);
+                                let code = rove_core::utils::geoip::country_code(&ip);
                                 (ip, code)
                             })
                             .collect::<HashMap<String, Option<String>>>()
@@ -178,7 +178,7 @@ pub fn spawn_device_refresh(handle: tauri::AppHandle) {
         tokio::time::sleep(PASSIVE_REFRESH_WARMUP).await;
         loop {
             let present = rove_core::devices::passive_refresh().await;
-            let now = rove_core::util::net::now_ms() as i64;
+            let now = rove_core::utils::net::now_ms() as i64;
             let store = handle.state::<Arc<Store>>();
             if let Err(e) = store.touch_devices(&present, now) {
                 tracing::warn!("passive device refresh failed to persist: {e}");
@@ -201,7 +201,7 @@ pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
         let mut last: Option<rove_core::diagnostics::InternetStatus> = None;
         loop {
             let status = rove_core::diagnostics::check_internet().await;
-            let now = rove_core::util::net::now_ms() as i64;
+            let now = rove_core::utils::net::now_ms() as i64;
             {
                 let state = handle.state::<AppState>();
                 *lock(&state.internet) = Some(status);
@@ -243,7 +243,7 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
             };
             if !services.is_empty() {
                 let report = rove_core::services::run_services(&services).await;
-                let now = rove_core::util::net::now_ms() as i64;
+                let now = rove_core::utils::net::now_ms() as i64;
                 let store = handle.state::<Arc<Store>>();
                 match store.record_services(&report, now) {
                     // So an outage lands on a timeline already on screen.
@@ -285,7 +285,7 @@ pub fn spawn_route_monitor(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(monitor_connectivity(handle, || {
         let mut cmd = tokio::process::Command::new("powershell");
         cmd.args(["-NoProfile", "-NonInteractive", "-Command", WINDOWS_NET_MONITOR]);
-        cmd.creation_flags(rove_core::util::shell::CREATE_NO_WINDOW);
+        cmd.creation_flags(rove_core::utils::shell::CREATE_NO_WINDOW);
         cmd
     }));
 

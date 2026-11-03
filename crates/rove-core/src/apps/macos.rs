@@ -1,14 +1,14 @@
-//! macOS's per-socket source for [`crate::usage::app`] and [`crate::usage::host`]:
+//! macOS's per-socket source for [`crate::apps`] and [`crate::apps::hosts`]:
 //! `nettop`, which lists each process's sockets beneath it with cumulative bytes,
 //! TCP and UDP alike. Compiled into every test build, so the parsers are tested
 //! on any OS.
+use super::hosts::PeerReading;
 #[cfg(target_os = "macos")]
-use super::app::CounterSemantics;
-use super::app::UsageUnit;
-use super::host::PeerReading;
+use super::CounterSemantics;
 #[cfg(target_os = "macos")]
 use super::Support;
-use crate::util::net::{peer_port, routable_peer_ip};
+use super::UsageUnit;
+use crate::utils::net::{peer_port, routable_peer_ip};
 use std::collections::HashMap;
 
 #[cfg(target_os = "macos")]
@@ -24,12 +24,12 @@ pub(super) fn support_detail() -> Option<String> {
     None
 }
 
-/// No -P: its per-process row can't be accumulated (see `usage::app`'s docs).
+/// No -P: its per-process row can't be accumulated (see `apps`'s docs).
 /// No -m, so UDP is listed too. -L 1 one sample, -x raw bytes, -n no DNS, -J
 /// only our columns.
 #[cfg(target_os = "macos")]
 pub(super) async fn sample_units() -> Option<Vec<UsageUnit>> {
-    crate::util::shell::try_run("nettop -L 1 -x -n -J bytes_in,bytes_out").await.map(|out| parse_nettop_sockets(&out))
+    crate::utils::shell::try_run("nettop -L 1 -x -n -J bytes_in,bytes_out").await.map(|out| parse_nettop_sockets(&out))
 }
 
 /// No -P, so each process row is followed by its connections. No -m, so UDP
@@ -38,7 +38,7 @@ pub(super) async fn sample_units() -> Option<Vec<UsageUnit>> {
 /// raw bytes, -n no DNS (we resolve names ourselves).
 #[cfg(target_os = "macos")]
 pub(super) async fn sample_peers() -> Option<Vec<PeerReading>> {
-    crate::util::shell::try_run("nettop -L 1 -x -n").await.map(|out| parse_nettop_peers(&out))
+    crate::utils::shell::try_run("nettop -L 1 -x -n").await.map(|out| parse_nettop_peers(&out))
 }
 
 /// Parse `nettop -L 1 -x -n -J bytes_in,bytes_out` into per-socket readings. A
@@ -48,8 +48,8 @@ pub(super) async fn sample_peers() -> Option<Vec<PeerReading>> {
 /// gauge over open sockets (see the module docs).
 ///
 /// Listeners (empty byte columns) and sockets with a wildcard or loopback peer
-/// are skipped, via [`crate::util::net::routable_peer_ip`], the same rule
-/// [`crate::usage::host`] applies to the same sockets.
+/// are skipped, via [`crate::utils::net::routable_peer_ip`], the same rule
+/// [`crate::apps::hosts`] applies to the same sockets.
 pub(super) fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
     let mut units: Vec<UsageUnit> = Vec::new();
     // (`name.pid`, name, pid) of the process whose rows we're reading.
@@ -66,7 +66,7 @@ pub(super) fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
 
         if let Some((_, peer)) = label.split_once("<->") {
             let Some((owner, name, pid)) = &current else { continue };
-            if crate::util::net::routable_peer_ip(peer).is_none() {
+            if crate::utils::net::routable_peer_ip(peer).is_none() {
                 continue;
             }
             let rx = fields.next().and_then(|f| f.trim().parse::<u64>().ok());
@@ -237,7 +237,7 @@ tcp4 192.168.2.16:5:1<->17.248.1.1:443,4096,128,";
 
     /// Loopback is excluded on macOS just as on Linux and in the hosts view: a
     /// process talking to `127.0.0.1` isn't using the network. (The peer-rule
-    /// unit tests live with the rule, in `util::net`; this pins that the parser
+    /// unit tests live with the rule, in `utils::net`; this pins that the parser
     /// actually applies it.)
     #[test]
     fn nettop_loopback_sockets_are_not_metered() {

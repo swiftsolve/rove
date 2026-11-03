@@ -117,7 +117,7 @@ Ping every address in the subnet, 64 at a time:
 futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
     .map(|ip| async move {
         let cmd = crate::platform::ping_command(&ip, 1, PING_WAIT_MS); // 700 ms
-        let replied = crate::util::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT)
+        let replied = crate::utils::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT)
             .await
             .is_some();
         replied.then_some(ip)

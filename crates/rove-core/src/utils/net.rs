@@ -19,7 +19,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 ///     of a loopback connection are sockets, so every byte would count twice.
 ///
 /// Private/LAN peers *are* routable: a NAS on the subnet is a real host over a
-/// real link. It just has no country (see `usage::host::ip_is_public`).
+/// real link. It just has no country (see `apps::hosts::ip_is_public`).
 pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {

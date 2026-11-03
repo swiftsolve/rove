@@ -1,3 +1,4 @@
+//! The live download and upload rate, sampled once a second.
 use serde::Serialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 use sysinfo::Networks;
@@ -71,7 +72,7 @@ impl ThroughputSampler {
         let mut rx = 0u64;
         let mut tx = 0u64;
         for (name, data) in self.networks.iter() {
-            if crate::util::net::is_virtual_interface(name) {
+            if crate::utils::net::is_virtual_interface(name) {
                 continue;
             }
             rx += data.received();

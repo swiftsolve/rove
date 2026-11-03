@@ -1,10 +1,10 @@
 //! Linux host/network probes: `ip`, `iw`, `ethtool`, `nmcli`, `/sys`.
 use super::RawNeighbor;
 use crate::connection::infer_connection_type;
-use crate::connection::interfaces::InterfaceSummary;
 use crate::connection::ConnectionDetails;
-use crate::util::net::is_virtual_interface;
-use crate::util::shell::{first_int, first_match, trimmed_non_empty, try_run};
+use crate::interfaces::InterfaceSummary;
+use crate::utils::net::is_virtual_interface;
+use crate::utils::shell::{first_int, first_match, trimmed_non_empty, try_run};
 use regex_lite::Regex;
 use std::net::Ipv4Addr;
 use std::sync::LazyLock;
@@ -117,7 +117,7 @@ fn parse_nmcli_wifi_line(line: &str) -> ConnectionDetails {
 pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
     // `connection_details` already validates `iface`, but this is pub.
-    if !crate::util::net::is_shell_safe_iface(iface) {
+    if !crate::utils::net::is_shell_safe_iface(iface) {
         return d;
     }
 
@@ -165,7 +165,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 /// connection name, which is usually but not always the SSID.
 pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
     let profile = active_connection_name(iface).await.unwrap_or_else(|| ssid.to_string());
-    let quoted = crate::util::net::shell_single_quote(&profile);
+    let quoted = crate::utils::net::shell_single_quote(&profile);
     let out =
         try_run(&format!("nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null")).await?;
     trimmed_non_empty(&out)
@@ -174,7 +174,7 @@ pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
 /// The connection profile active on `iface`, so the secret read is for the
 /// network actually joined rather than a guess from the SSID.
 async fn active_connection_name(iface: &str) -> Option<String> {
-    if !crate::util::net::is_shell_safe_iface(iface) {
+    if !crate::utils::net::is_shell_safe_iface(iface) {
         return None;
     }
     let out = try_run(&format!("nmcli -t -f GENERAL.CONNECTION device show {iface} 2>/dev/null")).await?;
@@ -187,7 +187,7 @@ async fn active_connection_name(iface: &str) -> Option<String> {
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     let mut d = ConnectionDetails::default();
     // `connection_details` already validates `iface`, but this is pub.
-    if !crate::util::net::is_shell_safe_iface(iface) {
+    if !crate::utils::net::is_shell_safe_iface(iface) {
         return d;
     }
 
@@ -218,7 +218,7 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
 /// The interface's IPv4 address and prefix length via `ip -j addr show`. `None`
 /// when `ip` is missing or the interface has no IPv4.
 pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
-    if !crate::util::net::is_shell_safe_iface(interface) {
+    if !crate::utils::net::is_shell_safe_iface(interface) {
         return None;
     }
     let out = try_run(&format!("ip -j addr show {interface} 2>/dev/null")).await?;

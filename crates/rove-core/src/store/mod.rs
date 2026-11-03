@@ -143,7 +143,7 @@ impl Store {
     /// Lock the connection, recovering from poison: one panicked holder must not
     /// wedge every later query for the app's lifetime.
     fn lock(&self) -> std::sync::MutexGuard<'_, Connection> {
-        crate::util::net::lock(&self.conn)
+        crate::utils::net::lock(&self.conn)
     }
 
     /// Open (creating if needed) the database at `path` and apply migrations.

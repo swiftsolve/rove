@@ -1,10 +1,10 @@
-//! Windows's source for [`crate::usage::app`] and [`crate::usage::host`]: the
+//! Windows's source for [`crate::apps`] and [`crate::apps::hosts`]: the
 //! in-process ETW session in [`super::etw`]. Starting it needs administrator
 //! rights, so support is a runtime check.
-use super::app::{CounterSemantics, UsageUnit};
 use super::etw;
-use super::host::PeerReading;
+use super::hosts::PeerReading;
 use super::Support;
+use super::{CounterSemantics, UsageUnit};
 
 pub(super) const SEMANTICS: CounterSemantics = CounterSemantics::PidAccumulator;
 

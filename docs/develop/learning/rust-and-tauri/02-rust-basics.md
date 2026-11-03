@@ -90,7 +90,7 @@ boilerplate.
 
 ## 5. Ownership: the concept that makes Rust *Rust*
 
-This is the big one, and `crates/rove-core/src/usage/data.rs` shows it
+This is the big one, and `crates/rove-core/src/usage.rs` shows it
 beautifully. Rust has **no garbage collector** and yet is memory-safe. How?
 Three rules enforced at compile time:
 
@@ -101,7 +101,7 @@ Three rules enforced at compile time:
    so a reference can never outlive the thing it points to (no dangling
    pointers, ever).
 
-Watch the `&` in `summary` (`usage/data.rs:189`):
+Watch the `&` in `summary` (`usage.rs:189`):
 
 ```rust
 pub fn summary(&self, networks: &sysinfo::Networks) -> DataUsageSummary {

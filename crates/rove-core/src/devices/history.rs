@@ -90,7 +90,7 @@ static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> = LazyLock::n
 /// Merge this scan's `fresh` signals for `mac` and return the union to
 /// classify from.
 pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
-    let mut cache = crate::util::net::lock(&CACHE);
+    let mut cache = crate::utils::net::lock(&CACHE);
     let entry = cache.entry(mac.to_string()).or_default();
     entry.absorb(&fresh);
     entry.clone()
@@ -101,7 +101,7 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
 /// stronger (an upgrade); a weaker one is ignored. With no candidate, the last
 /// name stands, so the device doesn't revert to a bare vendor label.
 pub fn stable_name(mac: &str, candidate: Option<(String, NameRank)>) -> Option<String> {
-    let mut names = crate::util::net::lock(&NAMES);
+    let mut names = crate::utils::net::lock(&NAMES);
     match candidate {
         Some((name, rank)) => {
             if let Some((stored, stored_rank)) = names.get(mac) {

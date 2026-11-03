@@ -4,7 +4,7 @@
 //!
 //! A residential connection's public IP is on an *access* network (Bell,
 //! Comcast, …); a VPN or proxy puts it on a *hosting* network (AWS, OVH, M247,
-//! …). So membership in this list, tested against the ASN [`crate::util::geoip`]
+//! …). So membership in this list, tested against the ASN [`crate::utils::geoip`]
 //! already resolves for our public IP, is the signal: in the list ⇒ we're behind
 //! a VPN/proxy, and the card says so rather than naming the datacenter as an ISP.
 //!

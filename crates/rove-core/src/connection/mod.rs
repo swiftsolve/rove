@@ -1,10 +1,9 @@
 //! This machine's own connection: the default route, DNS, the active link's
 //! Wi-Fi or Ethernet details, its interfaces, and the "join this Wi-Fi" share.
-pub mod interfaces;
 pub mod wifi_share;
 
 use crate::platform;
-use crate::util::shell::{trimmed_non_empty, try_run};
+use crate::utils::shell::{trimmed_non_empty, try_run};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -109,7 +108,7 @@ pub async fn dns_servers() -> Vec<String> {
 pub async fn connection_details(iface: &str, connection_type: &str) -> ConnectionDetails {
     // Every platform probe below interpolates `iface` into a shell command;
     // refuse anything that isn't a well-formed interface name.
-    if !crate::util::net::is_shell_safe_iface(iface) {
+    if !crate::utils::net::is_shell_safe_iface(iface) {
         return ConnectionDetails::default();
     }
     match (std::env::consts::OS, connection_type) {
@@ -170,7 +169,7 @@ pub async fn network_info() -> NetworkInfo {
         };
     };
 
-    let (ip, mac) = crate::connection::interfaces::address_of(&iface).await;
+    let (ip, mac) = crate::interfaces::address_of(&iface).await;
     // macOS names Wi-Fi `enN`, which the name heuristic reads as Ethernet, so
     // ask the hardware-port map instead.
     let connection_type = if cfg!(target_os = "macos") {

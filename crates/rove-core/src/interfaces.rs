@@ -1,3 +1,4 @@
+//! Every network interface on this machine, for the Interfaces view.
 use crate::connection::default_interface;
 use crate::platform;
 use serde::Serialize;

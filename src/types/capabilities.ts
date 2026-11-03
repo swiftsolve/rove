@@ -19,7 +19,7 @@ export type CapabilityRequirement = {
 // Each speed comes from the provider or guide named beside it. Providers don't
 // publish latency or jitter limits (bar GeForce NOW's latency), and few publish
 // upload, so those are Rove's own rules of thumb unless noted. Keep in step with
-// CAPABILITY_DEFS in crates/rove-core/src/speed/capabilities.rs.
+// CAPABILITY_DEFS in crates/rove-core/src/capabilities.rs.
 export const CAPABILITY_DEFINITIONS = [
   {
     id: 'browsing',

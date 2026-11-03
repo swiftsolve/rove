@@ -4,18 +4,19 @@
 use crate::scanner::DeviceScanner;
 use crate::AppState;
 use rove_core::{
-    connection::{interfaces::InterfaceSummary, NetworkInfo},
+    apps::{
+        hosts::{HostUsageSummary, TrafficUsageSummary},
+        AppUsageSummary,
+    },
+    connection::NetworkInfo,
     devices::LanDeviceScan,
     diagnostics::{InternetStatus, LiveDiagnostics, NetworkDiagnostics},
+    interfaces::InterfaceSummary,
     services::{ServiceEvent, ServicesReport},
     speed::SpeedTestResult,
     store::{NetworkEvent, SpeedHistoryRecord, Store},
-    usage::{
-        app::AppUsageSummary,
-        data::DataUsageSummary,
-        host::{HostUsageSummary, TrafficUsageSummary},
-    },
-    util::net::lock,
+    usage::DataUsageSummary,
+    utils::net::lock,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -45,7 +46,7 @@ pub async fn get_network_info(store: tauri::State<'_, Arc<Store>>) -> Result<Net
         info.interface_name.as_deref(),
         info.ip_address.as_deref(),
         info.mac_address.as_deref(),
-        rove_core::util::net::now_ms() as i64,
+        rove_core::utils::net::now_ms() as i64,
     );
     Ok(info)
 }
@@ -60,7 +61,7 @@ pub async fn get_wifi_share() -> Result<rove_core::connection::wifi_share::WifiS
 pub async fn get_interfaces() -> Vec<InterfaceSummary> {
     tracing::info!("interfaces requested");
     let started = std::time::Instant::now();
-    let list = rove_core::connection::interfaces::list().await;
+    let list = rove_core::interfaces::list().await;
     tracing::info!(count = list.len(), elapsed_ms = started.elapsed().as_millis() as u64, "interfaces resolved");
     list
 }
@@ -80,7 +81,7 @@ pub async fn get_devices(
         elapsed_ms = started.elapsed().as_millis() as u64,
         "device scan finished"
     );
-    let now = rove_core::util::net::now_ms() as i64;
+    let now = rove_core::utils::net::now_ms() as i64;
     let _ = store.record_devices(&scan.devices, now);
     // Keep recently seen devices listed as Offline instead of vanishing when
     // the OS ages their ARP entries out.
@@ -94,7 +95,7 @@ pub async fn get_devices(
 pub async fn run_diagnostics(store: tauri::State<'_, Arc<Store>>) -> Result<NetworkDiagnostics, String> {
     let diagnostics = rove_core::diagnostics::run().await;
     // Best-effort: a database hiccup must not fail the diagnostics read.
-    let _ = store.record_internet(diagnostics.internet, rove_core::util::net::now_ms() as i64);
+    let _ = store.record_internet(diagnostics.internet, rove_core::utils::net::now_ms() as i64);
     Ok(diagnostics)
 }
 
@@ -103,7 +104,7 @@ pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> Result
     let live = rove_core::diagnostics::run_live().await;
     // The view's 15 s poll catches a WAN crossing sooner than the heartbeat.
     // Idempotent, so every poll can record.
-    let _ = store.record_internet(live.internet, rove_core::util::net::now_ms() as i64);
+    let _ = store.record_internet(live.internet, rove_core::utils::net::now_ms() as i64);
     Ok(live)
 }
 
@@ -113,7 +114,7 @@ pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> Result
 pub async fn run_services(store: tauri::State<'_, Arc<Store>>) -> Result<ServicesReport, String> {
     let services = store.services().unwrap_or_else(|_| rove_core::services::default_service_list());
     let report = rove_core::services::run_services(&services).await;
-    let now = rove_core::util::net::now_ms() as i64;
+    let now = rove_core::utils::net::now_ms() as i64;
     let _ = store.record_internet(report.internet, now);
     // The heartbeat keeps the log complete but ticks only each minute; folding
     // in the view's 15 s poll puts a crossing the user is watching on the
@@ -284,7 +285,7 @@ pub fn get_traffic_usage(state: tauri::State<'_, AppState>) -> TrafficUsageSumma
 /// administrator" state show the real cause when elevation isn't the problem.
 #[tauri::command]
 pub fn usage_support_detail() -> Option<String> {
-    rove_core::usage::app::support_detail()
+    rove_core::apps::support_detail()
 }
 
 /// Relaunch Rove elevated so the ETW session behind the Apps, Hosts and Traffic
@@ -295,7 +296,7 @@ pub fn usage_support_detail() -> Option<String> {
 pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
     #[cfg(windows)]
     {
-        use rove_core::util::shell::CREATE_NO_WINDOW;
+        use rove_core::utils::shell::CREATE_NO_WINDOW;
         use std::os::windows::process::CommandExt;
 
         let exe = std::env::current_exe().map_err(err_str)?;

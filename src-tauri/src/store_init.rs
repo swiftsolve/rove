@@ -1,6 +1,6 @@
 //! Opening the durable store.
 use crate::AppState;
-use rove_core::{store::Store, usage::data::UsageTracker, util::net::lock};
+use rove_core::{store::Store, usage::UsageTracker, utils::net::lock};
 use std::sync::Arc;
 use tauri::Manager;
 
