@@ -22,13 +22,13 @@ mod imp {
         unsafe {
             let manager = CLLocationManager::new();
             manager.requestWhenInUseAuthorization();
-            let status = simplify(manager.authorizationStatus());
+            let status = status_label(manager.authorizationStatus());
             std::mem::forget(manager);
             status
         }
     }
 
-    fn simplify(status: CLAuthorizationStatus) -> &'static str {
+    fn status_label(status: CLAuthorizationStatus) -> &'static str {
         match status {
             CLAuthorizationStatus::NotDetermined => "prompt",
             CLAuthorizationStatus::Restricted | CLAuthorizationStatus::Denied => "denied",
@@ -56,7 +56,6 @@ mod imp {
     /// bare "autoselect", so this is the interface list's only Wi-Fi link speed.
     /// Not gated by Location Services. `None` when not associated (the accessor
     /// returns 0).
-
     pub fn wifi_tx_rate() -> Option<i64> {
         // SAFETY: CoreWLAN accessors; `interface()` is null with no Wi-Fi.
         unsafe {

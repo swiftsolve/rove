@@ -16,12 +16,18 @@ fn hide_window(cmd: &mut Command) {
 #[cfg(not(windows))]
 fn hide_window(_cmd: &mut Command) {}
 
+/// How long a probe may run before it's abandoned, so a hung tool (`nmcli`
+/// waiting on a dead daemon, say) can't stall the view that asked.
+const DEFAULT_TIMEOUT: Duration = Duration::from_secs(15);
+
 /// Run a shell command, capturing stdout. None on failure, timeout or empty
 /// output, so callers treat a missing tool as "no data".
 pub async fn try_run(command: &str) -> Option<String> {
-    try_run_timeout(command, Duration::from_secs(15)).await
+    try_run_timeout(command, DEFAULT_TIMEOUT).await
 }
 
+/// [`try_run`] with a caller-chosen timeout, for probes that need longer or
+/// must give up sooner.
 pub async fn try_run_timeout(command: &str, timeout: Duration) -> Option<String> {
     capture(shell(command), timeout, true).await
 }
@@ -56,7 +62,7 @@ pub async fn try_run_powershell(script: &str) -> Option<String> {
     let mut cmd = Command::new("powershell");
     cmd.args(["-NoProfile", "-NonInteractive", "-Command", script]);
     hide_window(&mut cmd);
-    capture(cmd, Duration::from_secs(15), true).await
+    capture(cmd, DEFAULT_TIMEOUT, true).await
 }
 
 async fn capture(mut cmd: Command, timeout: Duration, needs_success: bool) -> Option<String> {
@@ -70,6 +76,13 @@ async fn capture(mut cmd: Command, timeout: Duration, needs_success: bool) -> Op
     } else {
         Some(text)
     }
+}
+
+/// `text` trimmed, or None when nothing is left: how a probe reads a command
+/// that prints one value, or a blank line when it has none.
+pub fn trimmed_non_empty(text: &str) -> Option<String> {
+    let trimmed = text.trim();
+    (!trimmed.is_empty()).then(|| trimmed.to_string())
 }
 
 pub fn first_match(text: &str, re: &regex_lite::Regex) -> Option<String> {

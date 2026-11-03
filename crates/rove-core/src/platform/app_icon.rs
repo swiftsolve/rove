@@ -662,7 +662,7 @@ mod imp {
     /// [`INDEX_TTL`]. An id found in an earlier data dir hides the same id in a
     /// later one, as the XDG spec has it.
     fn desktop_entries() -> Arc<Vec<DesktopEntry>> {
-        let mut index = INDEX.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        let mut index = crate::util::net::lock(&INDEX);
         if let Some(index) = index.as_ref().filter(|index| index.built.elapsed() < INDEX_TTL) {
             return Arc::clone(&index.entries);
         }
@@ -979,7 +979,6 @@ mod imp {
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 mod imp {
     /// No icon source on this platform; the UI shows a favicon or monogram.
-
     pub fn app_icon_data_uri(_name: &str, _pid: Option<u32>) -> Option<String> {
         None
     }

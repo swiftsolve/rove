@@ -105,8 +105,8 @@ pub fn run() {
         .setup(|app| {
             // macOS 14+ withholds the SSID without Location authorisation. Asked
             // here because CoreLocation needs the main thread; a no-op elsewhere.
-            let loc_status = rove_core::platform::mac_native::request_location_permission();
-            tracing::info!(status = loc_status, "location authorization");
+            let location_status = rove_core::platform::mac_native::request_location_permission();
+            tracing::info!(status = location_status, "location authorization");
 
             let handle = app.handle().clone();
             store_init::init_store(app);

@@ -40,8 +40,7 @@ pub fn hide_console(cmd: &mut std::process::Command) {
 #[cfg(not(windows))]
 pub fn hide_console(_cmd: &mut std::process::Command) {}
 
-/// dBm RSSI to a rough 0-100% bar (-100 dBm is 0, -50 is 100), the curve the
-/// Electron app used.
+/// dBm RSSI to a rough 0-100% bar: linear from -100 dBm (0) to -50 dBm (100).
 fn dbm_to_percent(dbm: i64) -> i64 {
     (2 * (dbm + 100)).clamp(0, 100)
 }
@@ -186,9 +185,8 @@ pub fn ping_command(host: &str, count: u32, timeout_ms: u32) -> String {
     if cfg!(target_os = "windows") {
         format!("ping -n {count} -w {timeout_ms} {host}")
     } else if cfg!(target_os = "macos") {
-        // The Linux `-W 1` here is a 1 ms wait: every reply arrives too late,
-        // so diagnostics read 100% loss and every capability "unsupported".
-
+        // Not Linux's `-W 1`: on macOS that's a 1 ms wait, so every reply
+        // arrives too late and diagnostics read 100% loss.
         format!("ping -c {count} -i 0.2 -W {timeout_ms} {host} 2>/dev/null")
     } else {
         format!("ping -c {count} -i 0.2 -W 1 {host} 2>/dev/null")

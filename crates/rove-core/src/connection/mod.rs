@@ -4,7 +4,7 @@ pub mod interfaces;
 pub mod wifi_share;
 
 use crate::platform;
-use crate::util::shell::try_run;
+use crate::util::shell::{trimmed_non_empty, try_run};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -52,17 +52,13 @@ pub async fn default_gateway() -> Option<String> {
     // `!/linkdown/` drops the stale gateway of a just-unplugged NIC, so
     // diagnostics read Offline rather than a misleading NoInternet. Same filter
     // as `default_interface`.
-    if let Some(out) =
-        try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await
-    {
-        let ip = out.trim().to_string();
-        if !ip.is_empty() {
-            return Some(ip);
-        }
+    let ip_route =
+        try_run("ip route show default 2>/dev/null | awk '!/linkdown/ {print $3; exit}'").await;
+    if let Some(ip) = ip_route.as_deref().and_then(trimmed_non_empty) {
+        return Some(ip);
     }
     let out = try_run("route -n get default 2>/dev/null | grep gateway | awk '{print $2}'").await?;
-    let ip = out.trim().to_string();
-    if ip.is_empty() { None } else { Some(ip) }
+    trimmed_non_empty(&out)
 }
 
 /// The interface the kernel routes default traffic through, read from the
@@ -82,22 +78,20 @@ pub async fn default_interface() -> Option<String> {
     // `!/linkdown/` skips a default route the kernel has flagged dead (an
     // unplugged NIC whose route the network manager hasn't torn down yet), so a
     // live higher-metric route wins over the stale one.
-    if let Some(out) = try_run(
+    let ip_route = try_run(
         "ip route show default 2>/dev/null | awk '!/linkdown/ {for (i = 1; i < NF; i++) if ($i == \"dev\") { print $(i + 1); exit }}'",
     )
-    .await
-    {
-        let name = out.trim().to_string();
+    .await;
+    if let Some(name) = ip_route.as_deref().and_then(trimmed_non_empty) {
         // A stale route isn't always flagged `linkdown` (that depends on the
         // network manager), so also confirm the hardware carrier. `carrier_up`
         // reads sysfs, hence Linux only.
-        if !name.is_empty() && (!cfg!(target_os = "linux") || platform::linux::carrier_up(&name)) {
+        if !cfg!(target_os = "linux") || platform::linux::carrier_up(&name) {
             return Some(name);
         }
     }
     let out = try_run("route -n get default 2>/dev/null | grep interface | awk '{print $2}'").await?;
-    let name = out.trim().to_string();
-    if name.is_empty() { None } else { Some(name) }
+    trimmed_non_empty(&out)
 }
 
 pub async fn dns_servers() -> Vec<String> {

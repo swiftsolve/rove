@@ -20,12 +20,15 @@ const PASSIVE_REFRESH_INTERVAL: Duration = Duration::from_secs(5 * 60);
 /// no-op until it has.
 const PASSIVE_REFRESH_WARMUP: Duration = Duration::from_secs(60);
 
-/// Accumulate data usage into daily buckets every 30s.
+/// How often the interface byte counters are folded into the daily totals.
+const USAGE_SAMPLE_INTERVAL: Duration = Duration::from_secs(30);
+
+/// Accumulate data usage into daily buckets every [`USAGE_SAMPLE_INTERVAL`].
 pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             // A panic here must not end usage tracking for the session.
-            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let outcome = std::panic::catch_unwind(AssertUnwindSafe(|| {
                 let state = handle.state::<AppState>();
                 let mut networks = lock(&state.networks);
                 networks.refresh(true);
@@ -37,7 +40,7 @@ pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
             if outcome.is_err() {
                 tracing::error!("usage sampler tick panicked; continuing");
             }
-            tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+            tokio::time::sleep(USAGE_SAMPLE_INTERVAL).await;
         }
     });
 }
@@ -135,13 +138,16 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
     });
 }
 
-/// Emit live throughput at 1 Hz while the UI is subscribed.
+/// The live-throughput cadence (1 Hz).
+const THROUGHPUT_INTERVAL: Duration = Duration::from_secs(1);
+
+/// Emit live throughput every [`THROUGHPUT_INTERVAL`] while the UI is subscribed.
 pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         let mut sampler = ThroughputSampler::new();
         let mut was_active = false;
         loop {
-            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            tokio::time::sleep(THROUGHPUT_INTERVAL).await;
             let state = handle.state::<AppState>();
             let active = state.throughput_active.load(Ordering::Relaxed);
             if !active {
@@ -298,17 +304,26 @@ Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]
 Register-ObjectEvent -InputObject ([System.Net.NetworkInformation.NetworkChange]) -EventName NetworkAvailabilityChanged -SourceIdentifier RoveAvail | Out-Null; \
 while ($true) { Wait-Event | Out-Null; Get-Event | Remove-Event; [Console]::Out.WriteLine('network-changed'); [Console]::Out.Flush() }";
 
-/// Emit `network-changed` for a monitor child's output, at most once per 800 ms,
-/// and respawn the child with backoff if it dies.
+/// At most one `network-changed` per this window: one change can print several
+/// lines (macOS prints a block per routing change), and the UI needs one nudge.
+const NETWORK_CHANGE_THROTTLE: Duration = Duration::from_millis(800);
+/// Respawn backoff for a monitor child that dies: starts here, doubles on each
+/// rapid crash up to the max, and resets once a child stays up a minute.
+const MONITOR_MIN_BACKOFF: Duration = Duration::from_secs(1);
+const MONITOR_MAX_BACKOFF: Duration = Duration::from_secs(30);
+const MONITOR_STABLE_UPTIME: Duration = Duration::from_secs(60);
+
+/// Emit `network-changed` for a monitor child's output, at most once per
+/// [`NETWORK_CHANGE_THROTTLE`], and respawn the child with backoff if it dies.
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 async fn monitor_connectivity<F>(handle: tauri::AppHandle, spawn: F)
 where
     F: Fn() -> tokio::process::Command,
 {
-    use std::time::Duration;
+    use std::time::Instant;
     use tokio::io::{AsyncBufReadExt, BufReader};
 
-    let mut backoff = Duration::from_secs(1);
+    let mut backoff = MONITOR_MIN_BACKOFF;
     loop {
         let spawned = {
             let mut cmd = spawn();
@@ -325,13 +340,13 @@ where
             return;
         };
 
-        let started = std::time::Instant::now();
+        let started = Instant::now();
         let mut lines = BufReader::new(stdout).lines();
-        let mut last_emit = started - Duration::from_secs(10);
+        let mut last_emit: Option<Instant> = None;
 
         while let Ok(Some(_)) = lines.next_line().await {
-            if last_emit.elapsed() >= Duration::from_millis(800) {
-                last_emit = std::time::Instant::now();
+            if last_emit.is_none_or(|at| at.elapsed() >= NETWORK_CHANGE_THROTTLE) {
+                last_emit = Some(Instant::now());
                 let _ = handle.emit("network-changed", &());
             }
         }
@@ -339,11 +354,11 @@ where
         // One that stayed up a while resets the backoff; rapid crashes escalate
         // it so we don't spin respawning.
         let _ = child.kill().await;
-        if started.elapsed() >= Duration::from_secs(60) {
-            backoff = Duration::from_secs(1);
+        if started.elapsed() >= MONITOR_STABLE_UPTIME {
+            backoff = MONITOR_MIN_BACKOFF;
         } else {
             tokio::time::sleep(backoff).await;
-            backoff = (backoff * 2).min(Duration::from_secs(30));
+            backoff = (backoff * 2).min(MONITOR_MAX_BACKOFF);
         }
     }
 }

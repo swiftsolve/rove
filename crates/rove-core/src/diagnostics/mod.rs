@@ -16,6 +16,13 @@ pub struct PingStats {
     pub packet_loss: f64,
 }
 
+impl PingStats {
+    /// No replies at all: 100% loss, with latency and jitter at the 9999 ms
+    /// sentinel the UI reads as "Down".
+    pub(crate) const UNREACHABLE: PingStats =
+        PingStats { avg_ms: 9999.0, jitter_ms: 9999.0, packet_loss: 100.0 };
+}
+
 /// Whether this machine can reach the public internet: the context a service
 /// verdict needs. A silent service reads "Down" only when the internet is up;
 /// otherwise the failure is ours, and the UI says "can't check" instead.
@@ -95,17 +102,24 @@ pub struct LiveDiagnostics {
 static PING_TIME: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"time[=<]([\d.]+)\s*ms").unwrap());
 
+/// How long each reply is waited for before it counts as lost.
+const PING_REPLY_TIMEOUT_MS: u32 = 1000;
+
+/// Ceiling on the whole `ping` run, well past `count` replies at their
+/// interval, so a wedged `ping` can't hang the caller.
+const PING_RUN_TIMEOUT: Duration = Duration::from_secs(20);
+
 /// Ping a host and derive average, jitter and loss. None when `ping` can't run;
-/// no replies at all is 100% loss with the 9999 ms "Down" sentinel. `ping`
-/// exits non-zero then, so its output is read whatever the status.
+/// no replies at all is [`PingStats::UNREACHABLE`]. `ping` exits non-zero then,
+/// so its output is read whatever the status.
 pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     // `host` goes into a shell command. Callers pass addresses from the kernel,
     // but validate all the same.
     if !crate::util::net::is_shell_safe_ip(host) {
         return None;
     }
-    let cmd = crate::platform::ping_command(host, count, 1000);
-    let out = try_run_any_status(&cmd, Duration::from_secs(20)).await?;
+    let cmd = crate::platform::ping_command(host, count, PING_REPLY_TIMEOUT_MS);
+    let out = try_run_any_status(&cmd, PING_RUN_TIMEOUT).await?;
 
     let times: Vec<f64> = out
         .lines()
@@ -118,7 +132,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
         .collect();
 
     if times.is_empty() {
-        return Some(PingStats { avg_ms: 9999.0, jitter_ms: 9999.0, packet_loss: 100.0 });
+        return Some(PingStats::UNREACHABLE);
     }
 
     let avg = times.iter().sum::<f64>() / times.len() as f64;
@@ -148,10 +162,11 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
 /// `None` only when we can't learn our own public IP, i.e. we're offline.
 pub async fn isp_info() -> Option<IspInfo> {
     // Independent (ipwho.is resolves our address server-side), so concurrent.
-    let (public_ip, enrich) = tokio::join!(crate::connection::public_ip(), ipwho_enrich());
+    let (public_ip, enrichment) = tokio::join!(crate::connection::public_ip(), ipwho_enrich());
+    let live = enrichment.as_ref();
 
     // ipify preferred as the quota-free anchor. Neither means we're offline.
-    let public_ip = public_ip.or_else(|| enrich.as_ref().and_then(|e| e.public_ip.clone()))?;
+    let public_ip = public_ip.or_else(|| live.and_then(|e| e.public_ip.clone()))?;
 
     let asn = crate::util::geoip::asn_info(&public_ip);
     let local_name = asn.as_ref().and_then(|a| a.org.clone());
@@ -168,14 +183,13 @@ pub async fn isp_info() -> Option<IspInfo> {
     // Prefer ipwho.is where it answered: its ISP name is often friendlier than
     // the raw AS org, and taking its whole identity keeps name and ASN
     // consistent.
-    let e = enrich.as_ref();
     Some(IspInfo {
-        name: e.and_then(|e| e.name.clone()).or(local_name),
-        asn: e.and_then(|e| e.asn.clone()).or(local_asn),
-        domain: e.and_then(|e| e.domain.clone()),
-        city: e.and_then(|e| e.city.clone()),
-        region: e.and_then(|e| e.region.clone()),
-        country: e.and_then(|e| e.country.clone()).or(local_country),
+        name: live.and_then(|e| e.name.clone()).or(local_name),
+        asn: live.and_then(|e| e.asn.clone()).or(local_asn),
+        domain: live.and_then(|e| e.domain.clone()),
+        city: live.and_then(|e| e.city.clone()),
+        region: live.and_then(|e| e.region.clone()),
+        country: live.and_then(|e| e.country.clone()).or(local_country),
         public_ip: Some(public_ip),
         is_vpn,
     })
@@ -252,10 +266,7 @@ async fn ipwho_enrich() -> Option<IspInfo> {
 
 /// Ten pings to the gateway, or None when there's no default gateway.
 async fn gateway_ping(gateway: Option<&str>) -> Option<PingStats> {
-    match gateway {
-        Some(gw) => ping(gw, 10).await,
-        None => None,
-    }
+    ping(gateway?, 10).await
 }
 
 /// Hosts probed only to answer "does this machine have internet?". Independent

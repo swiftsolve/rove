@@ -37,14 +37,14 @@ pub async fn list() -> Vec<InterfaceSummary> {
     }
     // macOS and any other OS: sysinfo for names, MACs and IPs, with oper-state
     // and the default flag from `ifconfig` and the routing table.
-    let (mut list, info, default, wifi_devices) = tokio::join!(
+    let (mut list, ifconfig_info, default_iface, wifi_devices) = tokio::join!(
         async { platform::generic_interface_list() },
         platform::macos::interface_info(),
         default_interface(),
         platform::macos::wifi_devices(),
     );
     for iface in &mut list {
-        if let Some(detail) = info.get(&iface.name) {
+        if let Some(detail) = ifconfig_info.get(&iface.name) {
             if let Some(state) = &detail.oper_state {
                 iface.oper_state = state.clone();
             }
@@ -56,7 +56,7 @@ pub async fn list() -> Vec<InterfaceSummary> {
             // has none). Wi-Fi is filled from CoreWLAN below.
             iface.speed_mbps = detail.speed_mbps;
         }
-        iface.is_default = default.as_deref() == Some(iface.name.as_str());
+        iface.is_default = default_iface.as_deref() == Some(iface.name.as_str());
         // macOS names Wi-Fi `enN` like Ethernet, so the name heuristic in
         // `generic_interface_list` misreads it. Correct it from the hardware-port
         // map (empty without `networksetup`, which leaves the guess in place).

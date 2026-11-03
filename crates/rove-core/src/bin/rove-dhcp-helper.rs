@@ -17,12 +17,9 @@ async fn main() {
         .unwrap_or_else(dhcp::helper_cache_path);
 
     eprintln!("rove-dhcp-helper: capturing DHCP fingerprints to {}", path.display());
-    match dhcp::run_capture_to_file(&path).await {
-        Ok(()) => {}
-        Err(e) => {
-            eprintln!("rove-dhcp-helper: could not start capture: {e}");
-            eprintln!("(binding UDP :67 needs root: run it under sudo, or as a LaunchDaemon)");
-            std::process::exit(1);
-        }
+    if let Err(e) = dhcp::run_capture_to_file(&path).await {
+        eprintln!("rove-dhcp-helper: could not start capture: {e}");
+        eprintln!("(binding UDP :67 needs root: run it under sudo, or as a LaunchDaemon)");
+        std::process::exit(1);
     }
 }

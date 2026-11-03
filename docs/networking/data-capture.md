@@ -33,7 +33,7 @@ Every shell-out goes through `crates/rove-core/src/util/shell.rs`:
 
 ```rust
 pub async fn try_run(command: &str) -> Option<String> {
-    try_run_timeout(command, Duration::from_secs(15)).await
+    try_run_timeout(command, DEFAULT_TIMEOUT).await // 15 s
 }
 ```
 

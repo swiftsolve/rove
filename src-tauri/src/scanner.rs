@@ -3,8 +3,10 @@ use futures_util::future::FutureExt;
 use rove_core::devices::LanDeviceScan;
 use std::sync::atomic::Ordering;
 
-type SharedScan =
-    futures_util::future::Shared<std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>>;
+/// A scan in progress, boxed so the real scan and the tests' stubs share a type.
+type ScanFuture = std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>;
+/// A [`ScanFuture`] every concurrent caller can await.
+type SharedScan = futures_util::future::Shared<ScanFuture>;
 
 /// Hard ceiling on one LAN scan. A healthy scan takes ~6 s; this is the
 /// backstop for a wedged probe or a host that stalls enrichment. Overlapping
@@ -55,7 +57,7 @@ impl DeviceScanner {
     /// producer runs only when no scan is in flight.
     async fn scan_with<F>(&self, produce: F) -> LanDeviceScan
     where
-        F: FnOnce() -> std::pin::Pin<Box<dyn std::future::Future<Output = LanDeviceScan> + Send>>,
+        F: FnOnce() -> ScanFuture,
     {
         let (id, fut) = {
             let mut guard = self.inflight.lock().await;

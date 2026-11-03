@@ -2,7 +2,7 @@
 //! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and `netsh wlan`.
 use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
-use crate::util::shell::{try_run, try_run_powershell};
+use crate::util::shell::{trimmed_non_empty, try_run, try_run_powershell};
 use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
 use std::net::Ipv4Addr;
@@ -47,16 +47,14 @@ fn default_route_field(field: &str) -> String {
 /// picks. See `default_route_field` for the ranking.
 pub async fn default_gateway() -> Option<String> {
     let out = try_run_powershell(&default_route_field("NextHop")).await?;
-    let ip = out.trim().to_string();
-    if ip.is_empty() { None } else { Some(ip) }
+    trimmed_non_empty(&out)
 }
 
 /// The interface Windows forwards through: a live physical NIC over a VPN
 /// tunnel or a stale route on an unplugged adapter. See `default_route_field`.
 pub async fn default_interface() -> Option<String> {
     let out = try_run_powershell(&default_route_field("InterfaceAlias")).await?;
-    let name = out.trim().to_string();
-    if name.is_empty() { None } else { Some(name) }
+    trimmed_non_empty(&out)
 }
 
 pub async fn dns_servers() -> Vec<String> {
@@ -158,13 +156,13 @@ fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
         let Some((key, value)) = line.split_once(':') else { continue };
         let (key, value) = (key.trim(), value.trim());
         match key {
-            "SSID" => d.ssid = non_empty(value),
+            "SSID" => d.ssid = trimmed_non_empty(value),
             "Signal" => d.signal_strength = value.trim_end_matches('%').trim().parse().ok(),
             "Rssi" => d.signal_dbm = value.parse().ok(),
             "Channel" => d.channel = value.parse().ok(),
             "Band" => band_ghz = value.split_whitespace().next().and_then(|n| n.parse().ok()),
-            "Authentication" => d.security = non_empty(value),
-            "Radio type" => d.wifi_standard = non_empty(value),
+            "Authentication" => d.security = trimmed_non_empty(value),
+            "Radio type" => d.wifi_standard = trimmed_non_empty(value),
             _ => {}
         }
     }
@@ -175,10 +173,6 @@ fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
         d.frequency = channel_to_frequency(band, channel);
     }
     super::finalize_wifi(d)
-}
-
-fn non_empty(s: &str) -> Option<String> {
-    Some(s.to_string()).filter(|s| !s.is_empty())
 }
 
 /// The saved passphrase for the `ssid` profile via `netsh wlan show profile …

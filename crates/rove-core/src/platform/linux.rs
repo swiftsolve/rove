@@ -2,22 +2,20 @@
 use super::RawNeighbor;
 use crate::util::net::is_virtual_interface;
 use crate::connection::infer_connection_type;
-use crate::util::shell::{first_int, first_match, try_run};
+use crate::util::shell::{first_int, first_match, trimmed_non_empty, try_run};
 use crate::connection::ConnectionDetails;
 use crate::connection::interfaces::InterfaceSummary;
 use regex_lite::Regex;
 use std::net::Ipv4Addr;
 use std::sync::LazyLock;
 
-static LINUX_NEIGHBOR: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^([\d.]+)\s+dev\s+\S+\s+lladdr\s+([0-9a-f:]{17})\s+(\S+)").unwrap()
-});
-
 macro_rules! static_regex {
     ($name:ident, $pattern:literal) => {
         static $name: LazyLock<Regex> = LazyLock::new(|| Regex::new($pattern).unwrap());
     };
 }
+
+static_regex!(LINUX_NEIGHBOR, r"^([\d.]+)\s+dev\s+\S+\s+lladdr\s+([0-9a-f:]{17})\s+(\S+)");
 
 /// Negotiated link speed (Mbps) from `/sys/class/net/<iface>/speed`. `None`
 /// when unreadable or non-positive (a down link or virtual interface prints
@@ -63,7 +61,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
         return super::generic_interface_list();
     };
 
-    let default = crate::connection::default_interface().await;
+    let default_iface = crate::connection::default_interface().await;
     let mut result = Vec::new();
 
     for entry in parsed {
@@ -95,7 +93,7 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             } else {
                 infer_connection_type(&name).into()
             },
-            is_default: default.as_deref() == Some(name.as_str()),
+            is_default: default_iface.as_deref() == Some(name.as_str()),
             is_virtual,
             oper_state,
             ip_address: ip,
@@ -162,12 +160,8 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     }
 
     if d.ssid.is_none() {
-        if let Some(out) = try_run(&format!("iwgetid {iface} -r 2>/dev/null")).await {
-            let ssid = out.trim().to_string();
-            if !ssid.is_empty() {
-                d.ssid = Some(ssid);
-            }
-        }
+        let iwgetid = try_run(&format!("iwgetid {iface} -r 2>/dev/null")).await;
+        d.ssid = iwgetid.as_deref().and_then(trimmed_non_empty);
     }
 
     super::finalize_wifi(d)
@@ -187,12 +181,7 @@ pub async fn wifi_password(iface: &str, ssid: &str) -> Option<String> {
         "nmcli -s -g 802-11-wireless-security.psk connection show {quoted} 2>/dev/null"
     ))
     .await?;
-    let psk = out.trim();
-    if psk.is_empty() {
-        None
-    } else {
-        Some(psk.to_string())
-    }
+    trimmed_non_empty(&out)
 }
 
 /// The connection profile active on `iface`, so the secret read is for the
@@ -287,7 +276,6 @@ pub async fn neighbors() -> Option<Vec<RawNeighbor>> {
 /// Byte totals since boot across physical interfaces, from
 /// `/sys/class/net/*/statistics`. `None` when `/sys` can't be listed, so the
 /// caller falls back to sysinfo.
-
 pub fn boot_totals() -> Option<(u64, u64)> {
     let entries = std::fs::read_dir("/sys/class/net").ok()?;
     let mut rx = 0u64;

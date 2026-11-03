@@ -7,6 +7,10 @@ use tokio_rustls::rustls::pki_types::ServerName;
 use tokio_rustls::rustls::{ClientConfig, RootCertStore};
 use tokio_rustls::TlsConnector;
 
+/// How long a probe waits for the connection before calling the host
+/// unreachable.
+const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
+
 /// Client config for the probes: bundled webpki-roots, and aws-lc-rs (which
 /// reqwest already compiles in) chosen explicitly, so the probe never depends on
 /// a process-wide default provider being installed.
@@ -40,18 +44,24 @@ pub async fn handshake_latency(host: &str) -> Option<f64> {
         let tcp = tokio::net::TcpStream::connect((host, 443)).await.ok()?;
         connector.connect(server_name, tcp).await.ok()
     };
-    let tls = tokio::time::timeout(Duration::from_secs(5), handshake).await.ok()??;
-    let ms = start.elapsed().as_secs_f64() * 1000.0;
+    let tls = tokio::time::timeout(PROBE_TIMEOUT, handshake).await.ok()??;
+    let ms = elapsed_ms(start);
     drop(tls);
-    Some((ms * 10.0).round() / 10.0)
+    Some(ms)
 }
 
 /// Time to open a TCP connection to `host:443` in ms, or None on failure.
 async fn tcp_connect_latency(host: &str) -> Option<f64> {
     let start = Instant::now();
     let connect = tokio::net::TcpStream::connect((host, 443));
-    let stream = tokio::time::timeout(Duration::from_secs(5), connect).await.ok()?.ok()?;
-    let ms = start.elapsed().as_secs_f64() * 1000.0;
+    let stream = tokio::time::timeout(PROBE_TIMEOUT, connect).await.ok()?.ok()?;
+    let ms = elapsed_ms(start);
     drop(stream);
-    Some((ms * 10.0).round() / 10.0)
+    Some(ms)
+}
+
+/// Milliseconds since `start`, to one decimal place.
+fn elapsed_ms(start: Instant) -> f64 {
+    let ms = start.elapsed().as_secs_f64() * 1000.0;
+    (ms * 10.0).round() / 10.0
 }

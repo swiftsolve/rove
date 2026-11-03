@@ -2,7 +2,7 @@
 //! `system_profiler` and the Keychain via `security`. CoreWLAN reads live in
 //! [`super::mac_native`].
 use crate::util::net::is_virtual_interface;
-use crate::util::shell::try_run;
+use crate::util::shell::{trimmed_non_empty, try_run};
 use crate::connection::ConnectionDetails;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
@@ -49,12 +49,7 @@ pub async fn wifi_password(ssid: &str) -> Option<String> {
         "security find-generic-password -w -a {quoted} 2>/dev/null"
     ))
     .await?;
-    let pw = out.trim();
-    if pw.is_empty() {
-        None
-    } else {
-        Some(pw.to_string())
-    }
+    trimmed_non_empty(&out)
 }
 
 /// Ethernet link facts for `iface` from a single `ifconfig <iface>`: the
@@ -148,8 +143,16 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
         .find(|l| l.trim() == "Current Network Information:")?;
     let base = indent(header);
 
-    let (mut ssid, mut signal_dbm, mut channel, mut frequency, mut security, mut wifi_standard, mut link_speed_mbps) =
-        (None, None, None, None, None, None, None);
+    let mut reading = WifiSignal {
+        ssid: None,
+        signal_dbm: None,
+        channel: None,
+        frequency: None,
+        security: None,
+        wifi_standard: None,
+        link_speed_mbps: None,
+        at: Instant::now(),
+    };
     for line in lines {
         if line.trim().is_empty() {
             continue;
@@ -165,42 +168,33 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
             // The network name line ("<SSID>:"); first one wins. Skip
             // "<redacted>" (no Location permission) but keep the stats below.
             let name = key.trim();
-            if ssid.is_none() && name != "<redacted>" {
-                ssid = Some(name.to_string());
+            if reading.ssid.is_none() && name != "<redacted>" {
+                reading.ssid = Some(name.to_string());
             }
         } else {
             match key.trim() {
                 // "Signal / Noise: -45 dBm / -80 dBm" → -45
                 "Signal / Noise" => {
-                    signal_dbm = value.split_whitespace().next().and_then(|v| v.parse().ok());
+                    reading.signal_dbm = value.split_whitespace().next().and_then(|v| v.parse().ok());
                 }
                 // "Channel: 44 (5GHz, 80MHz)" → 44, plus the centre frequency
                 // the frontend labels the band from.
                 "Channel" => {
-                    channel = value.split_whitespace().next().and_then(|v| v.parse().ok());
-                    frequency = channel.and_then(|ch| channel_to_frequency(ch, value));
+                    reading.channel = value.split_whitespace().next().and_then(|v| v.parse().ok());
+                    reading.frequency = reading.channel.and_then(|ch| channel_to_frequency(ch, value));
                 }
                 // "PHY Mode: 802.11ax" → the frontend maps this to "Wi‑Fi 6".
-                "PHY Mode" => wifi_standard = Some(value.to_string()),
-                "Security" => security = Some(value.to_string()),
-                "Transmit Rate" => link_speed_mbps = value.parse().ok(),
+                "PHY Mode" => reading.wifi_standard = Some(value.to_string()),
+                "Security" => reading.security = Some(value.to_string()),
+                "Transmit Rate" => reading.link_speed_mbps = value.parse().ok(),
                 _ => {}
             }
         }
     }
 
     // Without a signal the reading is worthless, even with an SSID.
-    signal_dbm?;
-    Some(WifiSignal {
-        ssid,
-        signal_dbm,
-        channel,
-        frequency,
-        security,
-        wifi_standard,
-        link_speed_mbps,
-        at: Instant::now(),
-    })
+    reading.signal_dbm?;
+    Some(reading)
 }
 
 /// Wi-Fi channel to centre frequency (MHz). Channel numbers repeat across

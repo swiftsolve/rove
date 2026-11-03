@@ -2,7 +2,7 @@
 //! the result is good enough for.
 pub mod capabilities;
 
-use crate::diagnostics::ping;
+use crate::diagnostics::{ping, PingStats};
 use bytes::Bytes;
 use capabilities::{assess, CapabilityRating};
 use futures_util::{stream, StreamExt};
@@ -79,6 +79,16 @@ const WARMUP: Duration = Duration::from_secs(3);
 const WINDOW: Duration = Duration::from_secs(6);
 /// Idle gap between phases so the link settles before the next measurement.
 const SETTLE: Duration = Duration::from_secs(1);
+
+/// Per-request ceiling for the transfer clients. Longer than a whole phase
+/// (warmup plus window), so it only catches a request that hangs.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+/// A download stream that delivers nothing for this long is dropped and
+/// refetched, so a stalled connection can't sit out the window.
+const STALL_TIMEOUT: Duration = Duration::from_secs(3);
+/// Pause after an endpoint refuses a download, so a worker neither hammers a
+/// rate-limited origin nor spins.
+const REFUSAL_BACKOFF: Duration = Duration::from_millis(250);
 
 fn round1(v: f64) -> f64 {
     (v * 10.0).round() / 10.0
@@ -175,18 +185,16 @@ async fn download_worker(
         let url = DOWNLOAD_URLS[url_index % DOWNLOAD_URLS.len()];
         let response = match client.get(url).send().await {
             Ok(r) if r.status().is_success() => r,
-            // A refusal's tiny error body mustn't count as throughput. Back off
-            // briefly so we neither hammer a rate-limited origin nor spin.
+            // A refusal's tiny error body mustn't count as throughput.
             _ => {
                 url_index += 1;
-                tokio::time::sleep(Duration::from_millis(250)).await;
+                tokio::time::sleep(REFUSAL_BACKOFF).await;
                 continue;
             }
         };
         let mut stream = response.bytes_stream();
 
-        while let Ok(Some(chunk)) =
-            tokio::time::timeout(Duration::from_secs(3), stream.next()).await
+        while let Ok(Some(chunk)) = tokio::time::timeout(STALL_TIMEOUT, stream.next()).await
         {
             let Ok(chunk) = chunk else { break };
             let now = Instant::now();
@@ -203,7 +211,7 @@ pub async fn measure_download(cancel: &Arc<AtomicBool>) -> f64 {
     // connection, whose shared flow-control window collapses the measured rate.
     // HTTP/1.1 can't multiplex, so each worker gets its own connection.
     let Ok(client) = reqwest::Client::builder()
-        .timeout(Duration::from_secs(15))
+        .timeout(REQUEST_TIMEOUT)
         .http1_only()
         .build()
     else {
@@ -268,7 +276,7 @@ async fn upload_worker(
 pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
     // HTTP/1.1 only, as for download: one connection per worker.
     let Ok(client) = reqwest::Client::builder()
-        .timeout(Duration::from_secs(15))
+        .timeout(REQUEST_TIMEOUT)
         .http1_only()
         .build()
     else {
@@ -314,7 +322,7 @@ pub async fn run<F: Fn(SpeedTestProgress)>(
     cancel: Arc<AtomicBool>,
     report: F,
 ) -> Result<SpeedTestResult, String> {
-    let check = || {
+    let ensure_not_cancelled = || {
         if cancel.load(Ordering::Relaxed) {
             Err(CANCELLED.to_string())
         } else {
@@ -324,29 +332,25 @@ pub async fn run<F: Fn(SpeedTestProgress)>(
 
     report(SpeedTestProgress { phase: "internet".into(), message: "Testing download speed…".into(), progress: 15 });
     let download = measure_download(&cancel).await;
-    check()?;
+    ensure_not_cancelled()?;
 
     tokio::time::sleep(SETTLE).await;
-    check()?;
+    ensure_not_cancelled()?;
 
     report(SpeedTestProgress { phase: "internet".into(), message: "Testing upload speed…".into(), progress: 55 });
     let upload = measure_upload(&cancel).await;
-    check()?;
+    ensure_not_cancelled()?;
 
     report(SpeedTestProgress { phase: "internet".into(), message: "Measuring latency…".into(), progress: 85 });
-    let ping_stats = ping(PING_HOST, 10).await;
-    check()?;
-
-    let (latency, jitter, loss) = ping_stats
-        .map(|p| (p.avg_ms, p.jitter_ms, p.packet_loss))
-        .unwrap_or((9999.0, 9999.0, 100.0));
+    let ping_stats = ping(PING_HOST, 10).await.unwrap_or(PingStats::UNREACHABLE);
+    ensure_not_cancelled()?;
 
     let internet = SpeedResult {
         download_mbps: round1(download),
         upload_mbps: round1(upload),
-        latency_ms: round1(latency),
-        jitter_ms: round1(jitter),
-        packet_loss: loss,
+        latency_ms: round1(ping_stats.avg_ms),
+        jitter_ms: round1(ping_stats.jitter_ms),
+        packet_loss: ping_stats.packet_loss,
     };
 
     report(SpeedTestProgress { phase: "complete".into(), message: "Speed test complete".into(), progress: 100 });

@@ -102,10 +102,10 @@ pub async fn get_devices(
 pub async fn run_diagnostics(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<NetworkDiagnostics, String> {
-    let diag = rove_core::diagnostics::run().await;
+    let diagnostics = rove_core::diagnostics::run().await;
     // Best-effort: a database hiccup must not fail the diagnostics read.
-    let _ = store.record_internet(diag.internet, rove_core::util::net::now_ms() as i64);
-    Ok(diag)
+    let _ = store.record_internet(diagnostics.internet, rove_core::util::net::now_ms() as i64);
+    Ok(diagnostics)
 }
 
 #[tauri::command]
@@ -143,13 +143,13 @@ pub async fn run_services(
 pub fn get_service_history(
     store: tauri::State<'_, Arc<Store>>,
 ) -> Result<Vec<ServiceEvent>, String> {
-    store.service_events().map_err(|e| e.to_string())
+    store.service_events().map_err(err_str)
 }
 
 /// Wipe the timeline and its baseline (see `Store::clear_service_events`).
 #[tauri::command]
 pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
-    store.clear_service_events().map_err(|e| e.to_string())
+    store.clear_service_events().map_err(err_str)
 }
 
 /// The heartbeat's last internet status, or None before its first probe. A
@@ -158,7 +158,7 @@ pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), 
 pub fn get_internet_status(
     state: tauri::State<'_, AppState>,
 ) -> Option<InternetStatus> {
-    *rove_core::util::net::lock(&state.internet)
+    *lock(&state.internet)
 }
 
 #[tauri::command]
@@ -362,11 +362,14 @@ pub fn get_speed_history(
     store.speed_history().map_err(err_str)
 }
 
+/// How many of the newest network events the feed shows.
+const NETWORK_EVENTS_LIMIT: i64 = 200;
+
 /// The network-change feed, newest first. Written as a side effect of scans,
 /// network-info reads and internet checks, so this is only a read.
 #[tauri::command]
 pub fn get_network_events(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<NetworkEvent>, String> {
-    store.network_events(200).map_err(err_str)
+    store.network_events(NETWORK_EVENTS_LIMIT).map_err(err_str)
 }
 
 #[tauri::command]

@@ -37,22 +37,22 @@ pub fn init_logging() -> Option<tracing_appender::non_blocking::WorkerGuard> {
     let filter = tracing_subscriber::EnvFilter::try_from_env("ROVE_LOG")
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
 
-    let ok = tracing_subscriber::fmt()
+    let is_installed = tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_writer(writer)
         .with_ansi(false)
         .with_target(false)
         .try_init()
         .is_ok();
-    ok.then_some(guard)
+    is_installed.then_some(guard)
 }
 
 /// Also log panics to the file, so a crash leaves a trace when launched from a
 /// desktop menu with no console.
 pub fn install_panic_logger() {
-    let default = std::panic::take_hook();
+    let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         tracing::error!(target: "panic", "{info}");
-        default(info);
+        default_hook(info);
     }));
 }
