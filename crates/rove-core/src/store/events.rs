@@ -269,9 +269,10 @@ impl Store {
         }
         let noun = Self::kind_noun(kind);
         // A vendor is a brand, so it stands beside the kind as a separate part
-        // rather than in a phrase, as an OS does below.
+        // rather than in a phrase, as an OS does below. The UI splits on " · "
+        // (`subjectParts` in event-copy.ts) and draws a real dot there.
         if let Some(vendor) = vendor {
-            // The kind chip beside the name already says "Smart home", so the
+            // The kind label beside the name already says "Smart home", so the
             // verbose noun would repeat it.
             if kind == "iot" {
                 return Some(vendor.to_string());

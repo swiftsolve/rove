@@ -8,6 +8,7 @@ import {
   INTERNET_SUBTITLES,
   isInternetEvent,
   subjectKind,
+  subjectParts,
 } from '@/features/events/utils/event-copy'
 import { EventHeading } from '@/features/timeline/components/EventHeading'
 import { formatDuration, formatMac } from '@/lib/format'
@@ -120,7 +121,9 @@ export function TimelineItem({
       <EventHeading title={title} ts={event.ts} />
       {subject && (
         <div className={SUBJECT}>
-          <InlineMeta items={[subject, kindLabel && <span className="text-tertiary">{kindLabel}</span>]} />
+          <InlineMeta
+            items={[...subjectParts(subject), kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
+          />
         </div>
       )}
       {isInternet && INTERNET_SUBTITLES[event.type] && (

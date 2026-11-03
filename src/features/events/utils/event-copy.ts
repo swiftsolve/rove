@@ -72,6 +72,16 @@ export function isInternetEvent(event: NetworkEvent): boolean {
   return event.type === 'internet_lost' || event.type === 'internet_restored'
 }
 
+// The backend joins a maker and kind with this ("Apple · Phone"), and stored
+// rows already have it, so the UI splits there and draws a real dot instead.
+// eslint-disable-next-line no-restricted-syntax -- parsed, never shown
+const BACKEND_NAME_SEPARATOR = ' · '
+
+/** A subject's parts, for InlineMeta to set apart with dots. */
+export function subjectParts(subject: string): string[] {
+  return subject.split(BACKEND_NAME_SEPARATOR)
+}
+
 /** The device, a fixed line for the network-wide baseline, none for internet events. */
 export function eventSubject(event: NetworkEvent): string | null {
   if (event.type === 'initial_scan') return 'Tracking changes from here on'

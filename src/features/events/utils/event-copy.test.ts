@@ -6,6 +6,7 @@ import {
   isKnownEvent,
   offlineDurations,
   subjectKind,
+  subjectParts,
 } from '@/features/events/utils/event-copy'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 
@@ -81,5 +82,13 @@ describe('isKnownEvent', () => {
   it('rejects a type the UI has no copy for', () => {
     expect(isKnownEvent(event(1, 'device_joined'))).toBe(true)
     expect(isKnownEvent(event(1, 'retired_type' as NetworkEventType))).toBe(false)
+  })
+})
+
+describe('subjectParts', () => {
+  it("splits the backend's maker and kind so each gets a real dot between", () => {
+    // eslint-disable-next-line no-restricted-syntax -- the backend's delimiter, as input
+    expect(subjectParts('Apple · Phone')).toEqual(['Apple', 'Phone'])
+    expect(subjectParts('pixel-8')).toEqual(['pixel-8'])
   })
 })
