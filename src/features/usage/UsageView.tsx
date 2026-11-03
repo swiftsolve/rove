@@ -203,6 +203,10 @@ function WeekChart({ days }: { days: DailyUsage[] }): JSX.Element {
     <div className="relative" role="group" aria-label="Data used per day, last 7 days">
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <BarChart
+          // Once a day has been hovered, Recharts keeps showing that day and
+          // ignores the tooltip's defaultIndex, so a focus change starts the
+          // chart afresh to let the tooltip follow the focused day.
+          key={focusedIndex ?? 'pointer'}
           data={data}
           // The day stops below are the keyboard layer, a tab stop per day;
           // Recharts' own would add one more stop that arrows between them.
