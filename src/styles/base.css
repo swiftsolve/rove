@@ -144,6 +144,15 @@
 
   /* The content column's right inset is 12px like the left, its always-on
      scrollbar included: padding makes up what the bar doesn't. */
+  /* Native controls, carets and autofill follow the theme, not index.html's dark. */
+  :root {
+    color-scheme: dark;
+  }
+
+  :root.theme-light {
+    color-scheme: light;
+  }
+
   :root {
     --scrollbar-size: 5px;
     --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));

@@ -1,39 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 
+import {
+  isResolvedLight,
+  LEGACY_SETTING,
+  LIGHT_QUERY,
+  MODE_SETTING,
+  systemPrefersLight,
+  type ThemeMode,
+  themeModeFrom,
+} from '@/app/utils/theme-mode'
 import { applyThemeClass, swapResolvedTheme } from '@/app/utils/theme-transition'
 import { useSetting } from '@/hooks/useSetting'
-
-/**
- * The colour-theme preference: an explicit choice, or `system` to follow the
- * OS's `prefers-color-scheme`. Stored as a setting, so every window agrees.
- */
-export type ThemeMode = 'dark' | 'light' | 'system'
-
-const MODE_SETTING = 'themeMode'
-const LEGACY_SETTING = 'lightMode'
-const LIGHT_QUERY = '(prefers-color-scheme: light)'
-
-/** The stored mode, given the stored text of the mode and the old setting ('' when unset). */
-function themeModeFrom(stored: string, legacy: string): ThemeMode {
-  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
-  // Migrate the old boolean-only preference: an explicit lightMode becomes an
-  // explicit light/dark choice. Its absence means the user never chose, so a
-  // fresh install falls through to the default below.
-  if (legacy === 'true') return 'light'
-  if (legacy === 'false') return 'dark'
-  // Dark matches what index.html declares and the first paint shows, so there's
-  // no flash. 'system' is opt-in from Settings.
-  return 'dark'
-}
-
-function systemPrefersLight(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia(LIGHT_QUERY).matches
-}
-
-/** Resolve the mode to a concrete light(true)/dark(false) boolean. */
-function isResolvedLight(mode: ThemeMode, isSystemLight: boolean): boolean {
-  return mode === 'light' || (mode === 'system' && isSystemLight)
-}
 
 export type Theme = {
   /** The user's stored preference: 'dark' | 'light' | 'system'. */
@@ -63,8 +40,9 @@ export function useThemeState(): Theme {
   const isLight = isResolvedLight(mode, isSystemLight)
 
   // Also covers changes that skip the animated setMode path: an OS flip while
-  // on 'system', or another window's choice.
-  useEffect(() => {
+  // on 'system', or another window's choice. Before paint, so no frame shows
+  // the other theme.
+  useLayoutEffect(() => {
     applyThemeClass(isLight)
   }, [isLight])
 

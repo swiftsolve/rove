@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 
 import { App } from '@/app/App'
 import { AppErrorBoundary } from '@/app/components/AppErrorBoundary'
+import { isStoredThemeLight } from '@/app/utils/theme-mode'
 import { installTauriBridge, isTauri } from '@/bridge/tauri-network-api'
 import { migrateLegacySpeedHistory } from '@/features/speed/utils/speed-history'
 
@@ -20,6 +21,9 @@ if (isTauri()) {
 
 // Move any speed-test history left in localStorage into the database, once.
 void migrateLegacySpeedHistory()
+
+// The stored theme, before the first paint: a light-theme user never sees a dark frame.
+document.documentElement.classList.toggle('theme-light', isStoredThemeLight())
 
 const root = document.getElementById('root')
 if (!root) throw new Error('index.html has no #root element.')

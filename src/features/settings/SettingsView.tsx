@@ -3,7 +3,7 @@ import { type ReactNode, useId } from 'react'
 
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useTheme } from '@/app/hooks/useTheme'
-import type { ThemeMode } from '@/app/hooks/useThemeState'
+import type { ThemeMode } from '@/app/utils/theme-mode'
 import { InstallUpdateButton } from '@/features/settings/components/InstallUpdateButton'
 import { type UpdateCheckState, useManualUpdateCheck } from '@/features/settings/hooks/useManualUpdateCheck'
 import { useSetting } from '@/hooks/useSetting'
