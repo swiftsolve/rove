@@ -7,7 +7,6 @@ import { IconButton } from '../button/IconButton'
 import { useContentHeight } from '../hooks/useContentHeight'
 import { usePortalContainer } from '../hooks/usePortalContainer'
 import { cn } from '../foundations/cn'
-import { SPRING } from '../foundations/motion'
 
 interface DialogState {
   /** False while the Dialog plays its leave animation. */
@@ -60,7 +59,7 @@ const PANEL = cx(
 // Clips the panel's contents while it springs to their height, so a body that
 // swaps state (a spinner for a QR code) or a description that comes and goes
 // resizes the panel instead of snapping.
-const SIZER_TRANSITION = `height ${SPRING}`
+const SIZER = 'overflow-hidden transition-[height] duration-(--duration-spring) ease-spring'
 
 const HEADER = 'flex items-start justify-between gap-8 p-16'
 
@@ -138,7 +137,7 @@ export function Dialog({
         <BaseDialog.Backdrop className={cn(LAYER, 'bg-scrim')} />
         <BaseDialog.Viewport className={cn(LAYER, 'flex items-center justify-center p-20')}>
           <BaseDialog.Popup className={PANEL} finalFocus={() => (opener?.isConnected ? opener : true)}>
-            <div className="overflow-hidden" style={{ height: contentHeight ?? undefined, transition: SIZER_TRANSITION }}>
+            <div className={SIZER} style={{ height: contentHeight ?? undefined }}>
               <div ref={setContent}>
                 <div className={HEADER}>
                   <div className="min-w-0">

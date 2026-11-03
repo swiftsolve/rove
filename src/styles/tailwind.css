@@ -166,6 +166,7 @@
   --shadow-popover: var(--shadow-popover);
   --ease-out: var(--ease-out);
   --ease-in-out: var(--ease-in-out);
+  --ease-spring: var(--ease-spring);
 }
 
 /* Entrance and exit animations (`animate-*`), with their keyframes. */

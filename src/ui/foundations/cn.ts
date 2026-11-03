@@ -39,7 +39,7 @@ const mergeClasses = extendTailwindMerge({
       tracking: TYPE_STYLES,
       radius: ['xs', 'sm', 'md', 'lg', 'full'],
       shadow: ['panel', 'raised', 'popover'],
-      ease: ['out', 'in-out'],
+      ease: ['out', 'in-out', 'spring'],
       animate: [
         'overlay-in', 'dialog-in', 'overlay-out', 'dialog-out', 'fade-in', 'menu-in',
         'pulse-calm', 'pulse-live', 'pulse-busy',
