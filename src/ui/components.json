@@ -172,7 +172,6 @@
         },
         "isDisabled": {
           "type": "boolean",
-          "default": "false",
           "description": "Drops input and dims the link. It stays focusable, so a tooltip can say why."
         },
         "onClick": {

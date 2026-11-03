@@ -14,9 +14,12 @@ export function useContentHeight(content: HTMLElement | null): number | null {
 
   useLayoutEffect(() => {
     if (!content) return
-    const measure = (): void => setHeight(content.getBoundingClientRect().height)
+    // Layout sizes, not getBoundingClientRect: a dialog measured while its entry
+    // animation scales it would be read short, and clipped.
+    const measure = (entry?: ResizeObserverEntry): void =>
+      setHeight(entry?.borderBoxSize[0]?.blockSize ?? content.offsetHeight)
     measure()
-    const resizes = new ResizeObserver(measure)
+    const resizes = new ResizeObserver(([entry]) => measure(entry))
     resizes.observe(content)
     return () => resizes.disconnect()
   }, [content])

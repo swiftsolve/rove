@@ -59,7 +59,8 @@ type DataRowProps = {
 
 /** One label and value. Render it in a DataList, which sets its spacing. */
 export function DataRow({ label, value, children, align = 'baseline' }: DataRowProps): JSX.Element | null {
-  if (value == null && !children) return null
+  // `== null`, not falsy: a 0 is a value to show.
+  if (value == null && children == null) return null
   return (
     <div className={rowVariants({ align })}>
       <dt className={LABEL}>{label}</dt>

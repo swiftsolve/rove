@@ -2,14 +2,17 @@ import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
 import { LAYER_RAISED } from '../foundations/layers'
+import { PRESS } from '../foundations/pressable'
 import { ArrowLeftIcon } from '../icons/Icons'
+import { Tooltip } from '../tooltip/Tooltip'
 
 // The back button in the icon chip's slot: the same box (a rail item's, 10px
 // radius), so a subpage's header reads like a top-level page's.
 const BACK = cx(
   'inline-flex size-(--rail-item-size) shrink-0 items-center justify-center rounded-md',
   'bg-fill-subtle text-secondary hover:bg-hover hover:text-primary',
-  'transition-[color,background] duration-(--duration-fast) ease-in-out',
+  'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
+  PRESS,
 )
 
 // Reserves a line's height even while it's empty, so the title above never
@@ -57,9 +60,12 @@ export function PageHeader({ title, description, status, actions, icon, onBack }
   return (
     <header className={cx('page-header relative flex items-center gap-12', LAYER_RAISED)}>
       {onBack ? (
-        <button type="button" className={BACK} onClick={onBack} aria-label="Back">
-          <ArrowLeftIcon size={18} />
-        </button>
+        // Like every icon-only button: a tooltip names it, and it presses in.
+        <Tooltip content="Back">
+          <button type="button" className={BACK} onClick={onBack} aria-label="Back">
+            <ArrowLeftIcon size={18} />
+          </button>
+        </Tooltip>
       ) : (
         <span className="page-header-icon" aria-hidden>
           {icon}
@@ -71,7 +77,10 @@ export function PageHeader({ title, description, status, actions, icon, onBack }
           <div className={LINE}>
             {/* Keyed, so the description mounts afresh (and fades in) when the status clears. */}
             {status !== undefined ? (
-              <span key="status">{status}</span>
+              // Shown, not announced: the status region below says it.
+              <span key="status" aria-hidden>
+                {status}
+              </span>
             ) : (
               <div key="description" className="animate-fade-in">
                 {description}
@@ -79,6 +88,11 @@ export function PageHeader({ title, description, status, actions, icon, onBack }
             )}
           </div>
         )}
+        {/* Always mounted, so a status that appears is announced: a region that
+            mounts already holding its text often isn't. */}
+        <span className="sr-only" role="status">
+          {status}
+        </span>
       </div>
       {actions !== undefined && <div className="flex shrink-0 items-center gap-6">{actions}</div>}
     </header>

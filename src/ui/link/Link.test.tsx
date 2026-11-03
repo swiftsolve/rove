@@ -6,9 +6,9 @@ import { GlobeIcon } from '../icons/Icons'
 import { Link } from './Link'
 
 describe('Link', () => {
-  it('opens a view as a button named by its label, ending in a caret', () => {
+  it('opens a view as a link named by its label, ending in a caret', () => {
     const { container } = render(<Link icon={GlobeIcon}>All hosts</Link>)
-    expect(screen.getByRole('button', { name: 'All hosts' })).toHaveAttribute('type', 'button')
+    expect(screen.getByRole('link', { name: 'All hosts' })).toHaveAttribute('type', 'button')
     expect(container.querySelectorAll('svg')).toHaveLength(2)
   })
 
@@ -35,7 +35,7 @@ describe('Link', () => {
         All hosts
       </Link>,
     )
-    const link = screen.getByRole('button', { name: 'All hosts' })
+    const link = screen.getByRole('link', { name: 'All hosts' })
     await userEvent.tab()
     expect(link).toHaveFocus()
     await userEvent.click(link)

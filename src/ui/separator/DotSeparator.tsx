@@ -36,7 +36,8 @@ type InlineMetaProps = {
 
 /** Inline metadata chunks separated by a tertiary dot, in the type of the line it sits in. */
 export function InlineMeta({ items, className, shouldTruncate = false }: InlineMetaProps) {
-  const visibleItems = items.filter((item): item is ReactNode => Boolean(item))
+  // A 0 is a value to show; only nothing, false or an empty string drops out.
+  const visibleItems = items.filter((item): item is ReactNode => item != null && item !== false && item !== '')
   if (visibleItems.length === 0) return <></>
   if (visibleItems.length === 1) {
     return className ? <span className={className}>{visibleItems[0]}</span> : <>{visibleItems[0]}</>

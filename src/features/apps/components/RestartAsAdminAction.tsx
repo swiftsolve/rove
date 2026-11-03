@@ -31,7 +31,10 @@ export function RestartAsAdminAction(): JSX.Element | null {
       <Button onClick={() => relaunch.mutate()} isLoading={isBusy}>
         {isBusy ? 'Waiting for confirmation…' : 'Restart as administrator'}
       </Button>
-      {wasDeclined && <EmptyStateDescription role="status">Elevation was declined.</EmptyStateDescription>}
+      {/* Always mounted, so the note is announced when it appears. */}
+      <EmptyStateDescription role="status" className="empty:hidden">
+        {wasDeclined ? 'Elevation was declined.' : null}
+      </EmptyStateDescription>
       {detail && <EmptyStateDescription>Details: {detail}</EmptyStateDescription>}
     </>
   )

@@ -41,10 +41,7 @@ type SharedProps = {
 type ViewProps = SharedProps &
   Omit<ComponentProps<'button'>, 'disabled' | 'type' | 'onClick'> & {
     href?: never
-    /**
-     * Drops input and dims the link. It stays focusable, so a tooltip can say why.
-     * @default false
-     */
+    /** Drops input and dims the link. It stays focusable, so a tooltip can say why. */
     isDisabled?: boolean
     /** Opens the view. Not called while disabled. */
     onClick?: MouseEventHandler<HTMLButtonElement>
@@ -76,9 +73,16 @@ export function Link(props: LinkProps) {
       </a>
     )
   }
-  const { icon: Icon, isDisabled, className, onClick, children, ...buttonProps } = props
+  const { icon: Icon, isDisabled = false, className, onClick, children, ...buttonProps } = props
   return (
-    <button type="button" className={cn(LINK, className)} {...pressableProps({ isDisabled, onClick })} {...buttonProps}>
+    <button
+      type="button"
+      // It moves to another view rather than acting, like StretchedLink and a card's link.
+      role="link"
+      className={cn(LINK, className)}
+      {...pressableProps({ isDisabled, onClick })}
+      {...buttonProps}
+    >
       {Icon && <Icon size={ICON_SIZE} className={ICON} />}
       <span className={LABEL}>{children}</span>
       <ChevronRightIcon size={ICON_SIZE} className={cx(ICON, '-mx-4')} />

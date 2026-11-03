@@ -98,11 +98,11 @@ export function TextField({
           {action}
         </div>
       )}
-      {feedback !== undefined && (
-        <Field.Description render={<div role="status" />} className={feedbackVariants({ isInvalid })}>
-          {feedback}
-        </Field.Description>
-      )}
+      {/* Always mounted, so the first message is announced: a region that mounts
+          already holding its text often isn't. Empty, it takes no space. */}
+      <Field.Description render={<div role="status" />} className={cn(feedbackVariants({ isInvalid }), 'empty:mt-0')}>
+        {feedback}
+      </Field.Description>
     </Field.Root>
   )
 }
