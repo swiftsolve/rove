@@ -1,3 +1,4 @@
+use crate::usage::ByteCounts;
 use crate::store::Store;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -21,8 +22,12 @@ pub struct DataUsageSummary {
     pub tracking_since: Option<u64>,
 }
 
+/// Daily buckets kept in the store; older days are pruned on each write.
 const RETAIN_DAYS: usize = 30;
+/// Days the summary reports, today included.
 const SUMMARY_DAYS: i64 = 7;
+
+const SECS_PER_DAY: i64 = 86_400;
 
 /// `meta` key holding the epoch-ms of the first-ever usage sample.
 const FIRST_SAMPLE_KEY: &str = "usage_first_sample_at";
@@ -74,8 +79,8 @@ pub fn local_date_key(offset_days: i64) -> String {
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0)
         + local_offset_secs()
-        + offset_days * 86_400;
-    let days = secs.div_euclid(86_400);
+        + offset_days * SECS_PER_DAY;
+    let days = secs.div_euclid(SECS_PER_DAY);
     civil_from_days(days)
 }
 
@@ -92,12 +97,6 @@ fn civil_from_days(z: i64) -> String {
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = if m <= 2 { y + 1 } else { y };
     format!("{y:04}-{m:02}-{d:02}")
-}
-
-#[derive(Default, Clone, Copy)]
-struct ByteCounts {
-    rx: u64,
-    tx: u64,
 }
 
 /// Turns per-interface cumulative counters into daily deltas, persisted each

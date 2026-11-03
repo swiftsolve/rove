@@ -236,13 +236,11 @@ fn on_event(record: &EventRecord, locator: &SchemaLocator) {
         _ => return,
     };
     let parser = Parser::create(record, &schema);
-    let pid: u32 = match parser.try_parse("PID") {
-        Ok(v) => v,
-        Err(_) => return,
+    let Ok(pid) = parser.try_parse::<u32>("PID") else {
+        return;
     };
-    let size: u32 = match parser.try_parse("size") {
-        Ok(v) => v,
-        Err(_) => return,
+    let Ok(size) = parser.try_parse::<u32>("size") else {
+        return;
     };
 
     let inst = current_instance(pid);

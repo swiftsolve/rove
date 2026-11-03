@@ -1,12 +1,12 @@
 //! The roster of LAN devices seen across scans, and the feed events a scan
 //! diff derives from it: joins, departures, returns and gateway changes.
 use super::events::{
-    EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE, EVENT_DEVICE_ONLINE,
-    EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
+    is_connected_identity, EVENT_AP_APPEARED, EVENT_DEVICE_JOINED, EVENT_DEVICE_OFFLINE,
+    EVENT_DEVICE_ONLINE, EVENT_GATEWAY_CHANGED, EVENT_INITIAL_SCAN, META_CONNECTION_IDENTITY,
 };
 use super::Store;
 use crate::devices::LanDevice;
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{params, Connection, Row};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
@@ -40,6 +40,34 @@ const OFFLINE_RECENCY_MS: i64 = 15 * 60 * 1000;
 /// long enough to cover a phone asleep overnight, short enough that one gone for
 /// good clears on its own. Its roster row stays in the database.
 pub const OFFLINE_LIST_KEEP_MS: i64 = 24 * 60 * 60 * 1000;
+
+/// `meta` key for the gateway's MAC as last seen, the baseline
+/// `detect_gateway_change` diffs against.
+const META_GATEWAY_MAC: &str = "gateway_mac";
+
+/// The `known_devices` columns in the order `known_device_from_row` reads them.
+const KNOWN_DEVICE_COLUMNS: &str =
+    "mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized";
+
+fn known_device_from_row(row: &Row) -> rusqlite::Result<KnownDevice> {
+    Ok(KnownDevice {
+        mac: row.get(0)?,
+        ip: row.get(1)?,
+        hostname: row.get(2)?,
+        vendor: row.get(3)?,
+        kind: row.get(4)?,
+        first_seen: row.get(5)?,
+        last_seen: row.get(6)?,
+        os: row.get(7)?,
+        randomized: row.get(8)?,
+    })
+}
+
+/// Whether the newest event for `mac` is its departure, so it reads offline
+/// until it returns.
+fn is_marked_offline(last_event: &HashMap<String, String>, mac: &str) -> bool {
+    last_event.get(mac).map(String::as_str) == Some(EVENT_DEVICE_OFFLINE)
+}
 
 impl Store {
     /// Upsert one device row. A field this scan lacks keeps its earlier value,
@@ -113,9 +141,7 @@ impl Store {
                 Some(_) => {
                     // Mirror `record_devices`' online transition, so a device
                     // returning while the window is hidden still lands on the feed.
-                    if last_event.get(&device.mac).map(String::as_str)
-                        == Some(EVENT_DEVICE_OFFLINE)
-                    {
+                    if is_marked_offline(&last_event, &device.mac) {
                         Self::record_event(
                             &tx,
                             now_ms,
@@ -149,12 +175,12 @@ impl Store {
         // "offline" row until it returns.
         let last_event = Self::load_last_event_types(&tx)?;
         // An empty roster makes this scan a baseline, not a wall of "joined" rows.
-        let bootstrap = prior.is_empty();
+        let is_roster_empty = prior.is_empty();
         // The first scan to write to the feed summarises the roster as one
         // "N devices discovered" row and skips the per-device diff this once,
         // rather than leaving the page blank or bursting events at an existing
         // user upgrading into the feature.
-        let seed = !Self::is_feed_seeded(&tx)?;
+        let is_seeding_feed = !Self::is_feed_seeded(&tx)?;
 
         // Present only if it answered this scan. One still in the ARP table but
         // failing liveness reads "Offline" in the Devices view, so it's gone here
@@ -169,20 +195,17 @@ impl Store {
             .collect();
 
         for device in devices.iter().filter(|d| !d.mac.is_empty()) {
-            if !seed {
+            if !is_seeding_feed {
                 match prior.get(&device.mac) {
                     None => {
-                        if !bootstrap {
+                        if !is_roster_empty {
                             Self::emit_new_device(&tx, device, now_ms)?;
                         }
                     }
                     Some(_) => {
                         // Gate on `is_reachable` so a device back in the ARP
                         // table but not answering doesn't read as reconnected.
-                        if device.is_reachable
-                            && last_event.get(&device.mac).map(String::as_str)
-                                == Some(EVENT_DEVICE_OFFLINE)
-                        {
+                        if device.is_reachable && is_marked_offline(&last_event, &device.mac) {
                             Self::record_event(
                                 &tx,
                                 now_ms,
@@ -205,14 +228,8 @@ impl Store {
         // every peer stops answering at once; that's our link dropping, not the
         // LAN emptying. Never polled reads as connected, so real departures
         // aren't suppressed.
-        let host_connected: bool = tx
-            .query_row(
-                "SELECT value FROM meta WHERE key = ?1",
-                [META_CONNECTION_IDENTITY],
-                |row| row.get::<_, String>(0),
-            )
-            .optional()?
-            .map(|id| id.starts_with("wifi|") || id.starts_with("ethernet|"))
+        let host_connected = Self::read_meta(&tx, META_CONNECTION_IDENTITY)?
+            .map(|identity| is_connected_identity(&identity))
             .unwrap_or(true);
 
         // Departures: recently seen devices that didn't answer this scan, unless
@@ -223,7 +240,7 @@ impl Store {
         //   * The host is disconnected: on macOS a downed link still lists self
         //     as reachable, so `live` isn't empty; the stored identity catches it.
         // The one `connection_lost` from `record_connection` stands in instead.
-        if !seed && !live.is_empty() && host_connected {
+        if !is_seeding_feed && !live.is_empty() && host_connected {
             for (mac, prev) in &prior {
                 if live.contains(mac.as_str()) {
                     continue;
@@ -231,7 +248,7 @@ impl Store {
                 if now_ms - prev.last_seen > OFFLINE_RECENCY_MS {
                     continue;
                 }
-                if last_event.get(mac).map(String::as_str) == Some(EVENT_DEVICE_OFFLINE) {
+                if is_marked_offline(&last_event, mac) {
                     continue;
                 }
                 Self::record_event_raw(
@@ -253,7 +270,7 @@ impl Store {
         // ARP-spoof signal. With no stored baseline it only records one.
         Self::detect_gateway_change(&tx, devices, now_ms)?;
 
-        if seed {
+        if is_seeding_feed {
             let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
             if count > 0 {
                 Self::record_event_raw(
@@ -279,23 +296,8 @@ impl Store {
 
     /// The roster keyed by MAC: a scan's diff baseline.
     fn load_known_map(conn: &Connection) -> rusqlite::Result<HashMap<String, KnownDevice>> {
-        let mut stmt = conn.prepare(
-            "SELECT mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized \
-             FROM known_devices",
-        )?;
-        let rows = stmt.query_map([], |row| {
-            Ok(KnownDevice {
-                mac: row.get(0)?,
-                ip: row.get(1)?,
-                hostname: row.get(2)?,
-                vendor: row.get(3)?,
-                kind: row.get(4)?,
-                first_seen: row.get(5)?,
-                last_seen: row.get(6)?,
-                os: row.get(7)?,
-                randomized: row.get(8)?,
-            })
-        })?;
+        let mut stmt = conn.prepare(&format!("SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices"))?;
+        let rows = stmt.query_map([], known_device_from_row)?;
         let mut map = HashMap::new();
         for row in rows {
             let device = row?;
@@ -339,11 +341,7 @@ impl Store {
         let Some(gateway) = devices.iter().find(|d| d.is_gateway && !d.mac.is_empty()) else {
             return Ok(());
         };
-        let prev: Option<String> = conn
-            .query_row("SELECT value FROM meta WHERE key = 'gateway_mac'", [], |row| {
-                row.get(0)
-            })
-            .optional()?;
+        let prev = Self::read_meta(conn, META_GATEWAY_MAC)?;
         if let Some(old) = prev.as_deref() {
             if old != gateway.mac {
                 Self::record_event(
@@ -357,34 +355,16 @@ impl Store {
                 )?;
             }
         }
-        conn.execute(
-            "INSERT INTO meta (key, value) VALUES ('gateway_mac', ?1)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![gateway.mac],
-        )?;
-        Ok(())
+        Self::write_meta(conn, META_GATEWAY_MAC, &gateway.mac)
     }
 
     /// Every device we've ever recorded, most-recently-seen first.
     pub fn known_devices(&self) -> rusqlite::Result<Vec<KnownDevice>> {
         let conn = self.lock();
-        let mut stmt = conn.prepare(
-            "SELECT mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized
-             FROM known_devices ORDER BY last_seen DESC",
-        )?;
-        let rows = stmt.query_map([], |row| {
-            Ok(KnownDevice {
-                mac: row.get(0)?,
-                ip: row.get(1)?,
-                hostname: row.get(2)?,
-                vendor: row.get(3)?,
-                kind: row.get(4)?,
-                first_seen: row.get(5)?,
-                last_seen: row.get(6)?,
-                os: row.get(7)?,
-                randomized: row.get(8)?,
-            })
-        })?;
+        let mut stmt = conn.prepare(&format!(
+            "SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices ORDER BY last_seen DESC"
+        ))?;
+        let rows = stmt.query_map([], known_device_from_row)?;
         rows.collect()
     }
 

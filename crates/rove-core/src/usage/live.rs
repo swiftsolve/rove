@@ -23,6 +23,10 @@ pub struct ThroughputSampler {
     last_sample: Option<std::time::Instant>,
 }
 
+fn megabits(bytes: u64) -> f64 {
+    bytes as f64 * 8.0 / 1_000_000.0
+}
+
 impl Default for ThroughputSampler {
     fn default() -> Self {
         Self::new()
@@ -47,14 +51,16 @@ impl ThroughputSampler {
         self.last_sample = Some(std::time::Instant::now());
     }
 
+    /// The new moving average, rounded to 0.1 Mbps.
     fn smooth(previous: f64, next: f64) -> f64 {
         // From zero (first sample, or after idle) jump straight to the reading
         // rather than ramping up to it.
-        if previous <= 0.0 {
-            (next * 10.0).round() / 10.0
+        let average = if previous <= 0.0 {
+            next
         } else {
-            ((previous * (1.0 - SMOOTH_ALPHA) + next * SMOOTH_ALPHA) * 10.0).round() / 10.0
-        }
+            previous * (1.0 - SMOOTH_ALPHA) + next * SMOOTH_ALPHA
+        };
+        (average * 10.0).round() / 10.0
     }
 
     /// Refresh the counters and return the smoothed rates. sysinfo's
@@ -81,8 +87,8 @@ impl ThroughputSampler {
             tx += data.transmitted();
         }
 
-        let raw_down = rx as f64 * 8.0 / 1_000_000.0 / elapsed;
-        let raw_up = tx as f64 * 8.0 / 1_000_000.0 / elapsed;
+        let raw_down = megabits(rx) / elapsed;
+        let raw_up = megabits(tx) / elapsed;
         self.smoothed_down = Self::smooth(self.smoothed_down, raw_down);
         self.smoothed_up = Self::smooth(self.smoothed_up, raw_up);
 

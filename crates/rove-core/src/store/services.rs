@@ -5,7 +5,7 @@ use crate::diagnostics::InternetStatus;
 use crate::services::{
     ConnectionChange, ServiceDef, ServiceEvent, ServiceReachability, ServiceStatus, ServicesReport,
 };
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{params, Connection};
 
 /// `meta` key for whether the services timeline sits inside a recorded
 /// connection drop ("lost"/"restored"). Separate from `META_INTERNET_STATUS` in
@@ -44,15 +44,8 @@ impl Store {
         let offline = !matches!(report.internet, InternetStatus::Online);
 
         let mut conn = self.lock();
-        let was_offline = conn
-            .query_row(
-                "SELECT value FROM meta WHERE key = ?1",
-                [META_SERVICE_CONNECTION],
-                |row| row.get::<_, String>(0),
-            )
-            .optional()?
-            .as_deref()
-            == Some("lost");
+        let was_offline =
+            Self::read_meta(&conn, META_SERVICE_CONNECTION)?.as_deref() == Some("lost");
 
         let tx = conn.transaction()?;
 
@@ -64,7 +57,7 @@ impl Store {
                     &tx,
                     &ServiceEvent::Connection { status: ConnectionChange::Lost, ts: now_ms },
                 )?;
-                Self::set_service_connection(&tx, "lost")?;
+                Self::write_meta(&tx, META_SERVICE_CONNECTION, "lost")?;
                 Self::prune_service_events(&tx, now_ms)?;
                 tx.commit()?;
             }
@@ -77,7 +70,7 @@ impl Store {
         // timeline reads as one outage rather than a gap.
         if was_offline {
             events.push(ServiceEvent::Connection { status: ConnectionChange::Restored, ts: now_ms });
-            Self::set_service_connection(&tx, "restored")?;
+            Self::write_meta(&tx, META_SERVICE_CONNECTION, "restored")?;
         }
 
         let previous = Self::service_state(&tx)?;
@@ -155,15 +148,6 @@ impl Store {
         }
     }
 
-    fn set_service_connection(conn: &Connection, value: &str) -> rusqlite::Result<()> {
-        conn.execute(
-            "INSERT INTO meta (key, value) VALUES (?1, ?2)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![META_SERVICE_CONNECTION, value],
-        )?;
-        Ok(())
-    }
-
     fn set_service_state(
         conn: &Connection,
         host: &str,
@@ -186,7 +170,7 @@ impl Store {
         let rows = stmt.query_map([], |row| {
             let host: String = row.get(0)?;
             let status: String = row.get(1)?;
-            Ok((host, if status == "down" { ServiceStatus::Down } else { ServiceStatus::Up }))
+            Ok((host, Self::parse_status(Some(&status))))
         })?;
         rows.collect()
     }
@@ -195,6 +179,16 @@ impl Store {
         match status {
             ServiceStatus::Up => "up",
             ServiceStatus::Down => "down",
+        }
+    }
+
+    /// The inverse of `status_str`. Anything but "down" reads as up, so a
+    /// missing or unexpected value never invents an outage.
+    fn parse_status(stored: Option<&str>) -> ServiceStatus {
+        if stored == Some("down") {
+            ServiceStatus::Down
+        } else {
+            ServiceStatus::Up
         }
     }
 
@@ -278,11 +272,7 @@ impl Store {
                     (Some(host), Some(name)) => Some(ServiceEvent::Transition {
                         host,
                         name,
-                        status: if status.as_deref() == Some("down") {
-                            ServiceStatus::Down
-                        } else {
-                            ServiceStatus::Up
-                        },
+                        status: Self::parse_status(status.as_deref()),
                         ts,
                     }),
                     _ => None,

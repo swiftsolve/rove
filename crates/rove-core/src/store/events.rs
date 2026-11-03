@@ -73,8 +73,15 @@ const EVENT_INTERNET_LOST: &str = "internet_lost";
 const EVENT_INTERNET_RESTORED: &str = "internet_restored";
 
 /// `meta` key for the last connection this machine was on, so a network change
-/// is caught across `network_info` polls.
+/// is caught across `network_info` polls. The value is `"<type>|<label>"`, as
+/// built in `record_connection`.
 pub(super) const META_CONNECTION_IDENTITY: &str = "connection_identity";
+
+/// Whether a stored connection identity is a Wi-Fi or Ethernet link, rather
+/// than disconnected, VPN or cellular.
+pub(super) fn is_connected_identity(identity: &str) -> bool {
+    identity.starts_with("wifi|") || identity.starts_with("ethernet|")
+}
 
 /// Set once a device scan has written the feed's baseline. A flag, not "the
 /// feed is empty": a connection event can land before the first scan, and
@@ -122,13 +129,7 @@ impl Store {
         let identity = format!("{connection_type}|{}", label.unwrap_or(""));
 
         let mut conn = self.lock();
-        let prev: Option<String> = conn
-            .query_row(
-                "SELECT value FROM meta WHERE key = ?1",
-                [META_CONNECTION_IDENTITY],
-                |row| row.get(0),
-            )
-            .optional()?;
+        let prev = Self::read_meta(&conn, META_CONNECTION_IDENTITY)?;
 
         if prev.as_deref() == Some(identity.as_str()) {
             return Ok(());
@@ -139,8 +140,7 @@ impl Store {
         if let Some(prev) = prev.as_deref() {
             // `prev_connected` keeps a loss from firing when we were already
             // off-network (VPN to disconnected, say).
-            let prev_connected =
-                prev.starts_with("wifi|") || prev.starts_with("ethernet|");
+            let prev_connected = is_connected_identity(prev);
             let event: Option<(&str, &str, &str)> = match connection_type {
                 "wifi" => Some((EVENT_WIFI_CONNECTED, "info", network_name.unwrap_or("Wi-Fi"))),
                 "ethernet" => {
@@ -172,11 +172,7 @@ impl Store {
             }
         }
 
-        tx.execute(
-            "INSERT INTO meta (key, value) VALUES (?1, ?2)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![META_CONNECTION_IDENTITY, identity],
-        )?;
+        Self::write_meta(&tx, META_CONNECTION_IDENTITY, &identity)?;
         tx.commit()?;
         Ok(())
     }
@@ -191,13 +187,7 @@ impl Store {
         let value = if online { "online" } else { "offline" };
 
         let mut conn = self.lock();
-        let prev: Option<String> = conn
-            .query_row(
-                "SELECT value FROM meta WHERE key = ?1",
-                [META_INTERNET_STATUS],
-                |row| row.get(0),
-            )
-            .optional()?;
+        let prev = Self::read_meta(&conn, META_INTERNET_STATUS)?;
 
         if prev.as_deref() == Some(value) {
             return Ok(());
@@ -216,11 +206,7 @@ impl Store {
             Self::prune_events(&tx, now_ms)?;
         }
 
-        tx.execute(
-            "INSERT INTO meta (key, value) VALUES (?1, ?2)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![META_INTERNET_STATUS, value],
-        )?;
+        Self::write_meta(&tx, META_INTERNET_STATUS, value)?;
         tx.commit()?;
         Ok(())
     }

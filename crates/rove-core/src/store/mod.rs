@@ -279,20 +279,27 @@ impl Store {
     /// A small key/value table for one-off markers, such as when usage tracking
     /// began.
     pub fn get_meta_u64(&self, key: &str) -> rusqlite::Result<Option<u64>> {
-        let conn = self.lock();
-        let value = conn
-            .query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| {
-                row.get::<_, String>(0)
-            })
-            .optional()?;
+        let value = Self::read_meta(&self.lock(), key)?;
         Ok(value.and_then(|s| s.parse().ok()))
     }
 
     pub fn set_meta_u64(&self, key: &str, value: u64) -> rusqlite::Result<()> {
-        self.lock().execute(
+        Self::write_meta(&self.lock(), key, &value.to_string())
+    }
+
+    /// The `meta` value under `key`, on a connection or transaction the caller
+    /// already holds.
+    pub(super) fn read_meta(conn: &Connection, key: &str) -> rusqlite::Result<Option<String>> {
+        conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| row.get(0))
+            .optional()
+    }
+
+    /// Insert or overwrite the `meta` value under `key`.
+    pub(super) fn write_meta(conn: &Connection, key: &str, value: &str) -> rusqlite::Result<()> {
+        conn.execute(
             "INSERT INTO meta (key, value) VALUES (?1, ?2)
              ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            params![key, value.to_string()],
+            params![key, value],
         )?;
         Ok(())
     }

@@ -29,6 +29,7 @@
 //! [`HostUsageTracker::record_countries`]), so each peer is resolved at most
 //! once.
 
+use crate::usage::ByteCounts;
 use crate::usage::app::CounterSemantics;
 use crate::util::net::{peer_port, routable_peer_ip};
 use serde::Serialize;
@@ -382,12 +383,6 @@ fn classify_port(port: Option<u16>) -> TrafficClass {
     }
 }
 
-#[derive(Default, Clone, Copy)]
-struct ByteCounts {
-    rx: u64,
-    tx: u64,
-}
-
 /// Turns per-connection cumulative counters into per-`(app, peer ip)` running
 /// totals. `last` is the previous reading per connection, to diff against;
 /// `totals` is bytes per app, then per peer. The hostname and country caches
@@ -399,8 +394,9 @@ pub struct HostUsageTracker {
     /// Totals by traffic type ([`classify_port`]), banked from the same deltas
     /// as `totals` so the Traffic Types and Hosts views agree. Keyed by class
     /// `id`.
-    protocols: HashMap<&'static str, (TrafficClass, ByteCounts)>,
-    since: Option<u64>,
+    by_traffic_type: HashMap<&'static str, (TrafficClass, ByteCounts)>,
+    /// Epoch ms of the first snapshot; `None` until one arrives.
+    tracking_since: Option<u64>,
     /// App icon per app name, misses cached as `None` (as in [`crate::usage::app`]).
     icons: HashMap<String, Option<String>>,
     /// Reverse-DNS hostname per peer IP. A key means "already tried"; `None` is
@@ -446,9 +442,9 @@ impl HostUsageTracker {
     ///
     /// Only pass a snapshot that was actually taken; see [`sample`].
     pub fn ingest(&mut self, readings: Vec<PeerReading>) {
-        let first_snapshot = self.since.is_none();
+        let first_snapshot = self.tracking_since.is_none();
         if first_snapshot {
-            self.since = Some(crate::util::net::now_ms());
+            self.tracking_since = Some(crate::util::net::now_ms());
         }
         let semantics = peer_counter_semantics();
         let priming = first_snapshot && semantics.primes_on_first_snapshot();
@@ -456,7 +452,7 @@ impl HostUsageTracker {
         let mut seen = HashSet::with_capacity(readings.len());
         for reading in readings {
             let prev = self.last.get(&reading.conn_key).copied();
-            let (drx, dtx) = if priming {
+            let (rx_delta, tx_delta) = if priming {
                 (0, 0)
             } else {
                 (
@@ -489,14 +485,15 @@ impl HostUsageTracker {
             // The same delta, by traffic type, so the two views can't disagree
             // about how much moved.
             let class = classify_port(reading.port);
-            let proto = self.protocols.entry(class.id).or_insert((class, ByteCounts::default()));
-            proto.1.rx = proto.1.rx.saturating_add(drx);
-            proto.1.tx = proto.1.tx.saturating_add(dtx);
+            let (_, by_type) =
+                self.by_traffic_type.entry(class.id).or_insert((class, ByteCounts::default()));
+            by_type.rx = by_type.rx.saturating_add(rx_delta);
+            by_type.tx = by_type.tx.saturating_add(tx_delta);
 
             let by_ip = self.totals.entry(reading.app).or_default();
             let entry = by_ip.entry(reading.ip).or_default();
-            entry.rx = entry.rx.saturating_add(drx);
-            entry.tx = entry.tx.saturating_add(dtx);
+            entry.rx = entry.rx.saturating_add(rx_delta);
+            entry.tx = entry.tx.saturating_add(tx_delta);
         }
         self.last.retain(|key, _| seen.contains(key));
     }
@@ -573,13 +570,13 @@ impl HostUsageTracker {
                 .then_with(|| a.name.cmp(&b.name))
         });
 
-        HostUsageSummary { apps, support: platform_support(), tracking_since: self.since }
+        HostUsageSummary { apps, support: platform_support(), tracking_since: self.tracking_since }
     }
 
     /// Traffic by kind, busiest first, without empty buckets.
     pub fn traffic_summary(&self) -> TrafficUsageSummary {
         let mut types: Vec<TrafficType> = self
-            .protocols
+            .by_traffic_type
             .values()
             .filter(|(_, b)| b.rx > 0 || b.tx > 0)
             .map(|(class, b)| TrafficType {
@@ -594,7 +591,7 @@ impl HostUsageTracker {
                 .cmp(&(a.rx_bytes + a.tx_bytes))
                 .then_with(|| a.label.cmp(b.label))
         });
-        TrafficUsageSummary { types, support: platform_support(), tracking_since: self.since }
+        TrafficUsageSummary { types, support: platform_support(), tracking_since: self.tracking_since }
     }
 }
 

@@ -5,3 +5,10 @@ pub mod app;
 pub mod data;
 pub mod host;
 pub mod live;
+
+/// A received/sent byte pair: a counter reading or a running total.
+#[derive(Default, Clone, Copy)]
+struct ByteCounts {
+    rx: u64,
+    tx: u64,
+}

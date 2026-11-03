@@ -42,6 +42,7 @@
 #[cfg(windows)]
 mod etw;
 
+use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
@@ -158,11 +159,7 @@ impl CounterSemantics {
 
 /// The semantics of this platform's source (see [`sample_units`]).
 const fn platform_semantics() -> CounterSemantics {
-    #[cfg(target_os = "linux")]
-    {
-        CounterSemantics::Socket
-    }
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
         CounterSemantics::Socket
     }
@@ -367,13 +364,6 @@ fn parse_nettop_sockets(output: &str) -> Vec<UsageUnit> {
     units
 }
 
-
-#[derive(Default, Clone, Copy)]
-struct ByteCounts {
-    rx: u64,
-    tx: u64,
-}
-
 /// Turns per-unit cumulative counters into per-app totals. `last` is the
 /// previous reading per unit, to diff against; `totals` is bytes per app name.
 /// All in memory, so totals cover only this run of Rove.
@@ -381,7 +371,8 @@ struct ByteCounts {
 pub struct AppUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, ByteCounts>,
-    since: Option<u64>,
+    /// Epoch ms of the first snapshot; `None` until one arrives.
+    tracking_since: Option<u64>,
     /// How to read the counters: the platform's, or any in tests.
     semantics: CounterSemantics,
     /// OS icon per app name, as a `data:` URI. Cached because the lookup is
@@ -412,16 +403,16 @@ impl AppUsageTracker {
     ///
     /// Only pass a snapshot that was actually taken; see [`sample_units`].
     pub fn ingest(&mut self, units: Vec<UsageUnit>) {
-        let first_snapshot = self.since.is_none();
+        let first_snapshot = self.tracking_since.is_none();
         if first_snapshot {
-            self.since = Some(crate::util::net::now_ms());
+            self.tracking_since = Some(crate::util::net::now_ms());
         }
         let priming = first_snapshot && self.semantics.primes_on_first_snapshot();
 
         let mut seen = HashSet::with_capacity(units.len());
         for unit in units {
             let prev = self.last.get(&unit.key).copied();
-            let (drx, dtx) = if priming {
+            let (rx_delta, tx_delta) = if priming {
                 (0, 0)
             } else {
                 (
@@ -445,8 +436,8 @@ impl AppUsageTracker {
             }
 
             let entry = self.totals.entry(unit.name).or_default();
-            entry.rx = entry.rx.saturating_add(drx);
-            entry.tx = entry.tx.saturating_add(dtx);
+            entry.rx = entry.rx.saturating_add(rx_delta);
+            entry.tx = entry.tx.saturating_add(tx_delta);
         }
         self.last.retain(|key, _| seen.contains(key));
     }
@@ -471,7 +462,7 @@ impl AppUsageTracker {
                 .then_with(|| a.name.cmp(&b.name))
         });
 
-        AppUsageSummary { apps, support: platform_support(), tracking_since: self.since }
+        AppUsageSummary { apps, support: platform_support(), tracking_since: self.tracking_since }
     }
 }
 
