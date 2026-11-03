@@ -2,6 +2,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '../foundations/cn'
+import { type TintColor, tintStyle } from '../foundations/tint'
 
 // A marker column and the content beside it, nudged 5px in so the markers
 // aren't flush with the edge. The line to the next node runs from 2px below
@@ -33,7 +34,7 @@ const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-c
 const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
 
 /** A TimelineNode colour: any CSS colour, usually a token (`var(--status-positive)`), or `neutral`. */
-export type TimelineNodeColor = 'neutral' | (string & {})
+export type TimelineNodeColor = TintColor
 
 type TimelineNodeProps = Omit<ComponentProps<'li'>, 'color'> & {
   /** The marker's icon, sized by the caller: `<ArrowRightIcon size={15} />`. */
@@ -53,10 +54,9 @@ type TimelineNodeProps = Omit<ComponentProps<'li'>, 'color'> & {
  * beside it, and a line down to the next node. An `<li>`: put nodes in a list.
  */
 export function TimelineNode({ icon, color, className, children, ...props }: TimelineNodeProps) {
-  const isNeutral = color === 'neutral'
   return (
     <li className={cn(NODE, className)} {...props}>
-      <span className={markerVariants({ isNeutral })} style={isNeutral ? undefined : { color }} aria-hidden>
+      <span className={markerVariants({ isNeutral: color === 'neutral' })} style={tintStyle(color)} aria-hidden>
         {icon}
       </span>
       <div className={CONTENT}>{children}</div>

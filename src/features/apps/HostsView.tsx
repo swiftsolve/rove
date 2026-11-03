@@ -14,6 +14,7 @@ import { countryCodeToFlag, countryCodeToName } from '@/features/apps/utils/flag
 import { appGroupLabel, hostIconLabel } from '@/features/apps/utils/host-labels'
 import { isPrivateIp } from '@/features/apps/utils/ip'
 import { totalBytes } from '@/features/apps/utils/transfer'
+import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { AppHosts, HostConn } from '@/types'
 import {
   Banner,
@@ -27,7 +28,6 @@ import {
   IconButton,
   IpIcon,
   PageHeader,
-  POLLING_DESCRIPTION,
   Tooltip as UiTooltip,
 } from '@/ui'
 

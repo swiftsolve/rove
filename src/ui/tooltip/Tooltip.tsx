@@ -21,7 +21,11 @@ const VIEWPORT_PAD = 8
 type TooltipProps = {
   /** Shown on hover and keyboard focus. */
   content: ReactNode
-  /** The trigger: one element that takes a ref and props (a button, an icon's span). */
+  /**
+   * The trigger: one element that takes a ref and props. Keyboard and screen
+   * reader users reach the tip only on a focusable one (a button). Over plain
+   * text, set `shouldDescribe={false}` and put the hint in sr-only text too.
+   */
   children: ReactElement<{ 'aria-label'?: string; 'aria-describedby'?: string }>
   /**
    * The trigger's side the bubble opens on, centred on the trigger: `bottom`
@@ -63,7 +67,8 @@ export function Tooltip({
   const isDescribing = shouldDescribe && !isDisabled && !isLabelRepeat
   const ownDescription = children.props['aria-describedby']
   // Base UI lets the trigger's own props win, so a trigger that already has a
-  // description gets the joined one set on it directly.
+  // description gets the joined one set on it directly: the library's one
+  // cloneElement (docs/frontend.md).
   const trigger =
     isDescribing && ownDescription
       ? cloneElement(children, { 'aria-describedby': `${ownDescription} ${descriptionId}` })

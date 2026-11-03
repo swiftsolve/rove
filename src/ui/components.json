@@ -525,10 +525,6 @@
           "type": "ReactNode",
           "description": "The footer's buttons, main action last."
         },
-        "bodyClassName": {
-          "type": "string",
-          "description": "The body well's layout and insets."
-        },
         "cancelLabel": {
           "type": "string",
           "description": "Label for a button before the actions that closes the dialog."
@@ -611,7 +607,7 @@
         "children": {
           "type": "ReactElement<{ 'aria-label'?: string | undefined; 'aria-describedby'?: string | undefined; }, string | JSXElementConstructor<any>>",
           "isRequired": true,
-          "description": "The trigger: one element that takes a ref and props (a button, an icon's span)."
+          "description": "The trigger: one element that takes a ref and props. Keyboard and screen\nreader users reach the tip only on a focusable one (a button). Over plain\ntext, set `shouldDescribe={false}` and put the hint in sr-only text too."
         },
         "content": {
           "type": "ReactNode",
@@ -774,7 +770,7 @@
     "ButtonSpinner": {
       "group": "Status and feedback",
       "source": "src/ui/spinner/ButtonSpinner.tsx",
-      "description": "A button's busy indicator: an ldrs ring in the button's text colour, so it\nsuits a solid, soft or icon button alike.",
+      "description": "A button's busy indicator: a ring in the button's text colour, so it suits\na solid, soft or icon button alike. Drawn inline (an `<svg>`, phrasing\ncontent) so it's valid inside a `<button>`, where a `<div>` isn't.",
       "figma": {
         "name": "Button spinner",
         "node": "104:5176"
@@ -1266,7 +1262,7 @@
           "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
-          "type": "IconTileColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
         },
@@ -1310,7 +1306,7 @@
           "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
-          "type": "IconTileColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
         },
@@ -1365,7 +1361,7 @@
       },
       "props": {
         "color": {
-          "type": "TimelineNodeColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the marker: any CSS colour, usually a\nstatus token (`var(--status-positive)`). `neutral` is a hollow ring with a\ntertiary icon, for something quiet that left."
         },
@@ -1945,14 +1941,12 @@
     "ZapIcon"
   ],
   "helpers": {
-    "POLLING_DESCRIPTION": "The second line for a page whose data polls: a failure there heals itself.",
     "PortalProvider": "Sets where the library's dialogs inside it portal to.",
     "UI_LIBRARY_VERSION": "The library's own version, apart from the design system's: Storybook's name shows it. Raise it when the library's API changes.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
-    "usePortalContainer": "The element a PortalProvider above names for overlays, or null for in place.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount."
   }
 }

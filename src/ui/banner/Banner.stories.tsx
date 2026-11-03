@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
-import { Banner, POLLING_DESCRIPTION } from './Banner'
+import { Banner } from './Banner'
 
 const meta = {
   title: 'Status and feedback/Banner',
   component: Banner,
-  args: { variant: 'error', title: "Couldn't load devices", description: POLLING_DESCRIPTION },
+  args: { variant: 'error', title: "Couldn't load devices", description: 'Rove keeps trying in the background.' },
   argTypes: { variant: { control: 'inline-radio', options: ['error'] }, onRetry: { control: false } },
   // It runs the width of the page's content area.
   decorators: [

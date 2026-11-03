@@ -1,6 +1,7 @@
 import { InterfacePanel } from '@/features/interfaces/components/InterfacePanel'
 import { useNetworkInterfaces } from '@/features/interfaces/hooks/useNetworkInterfaces'
 import { interfacesTitle, interfaceTypeSummaryParts } from '@/features/interfaces/utils/interface-summary'
+import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { NetworkInterfaceSummary } from '@/types'
 import {
   Banner,
@@ -11,7 +12,6 @@ import {
   LayersIcon,
   LoadingState,
   PageHeader,
-  POLLING_DESCRIPTION,
   RefreshIcon,
 } from '@/ui'
 

@@ -2,6 +2,7 @@ import { BytesMetric } from '@/features/usage/components/BytesMetric'
 import { TotalsFooter } from '@/features/usage/components/TotalsFooter'
 import { WeekChart } from '@/features/usage/components/WeekChart'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
+import { POLLING_DESCRIPTION } from '@/lib/copy'
 import { todaysUsage } from '@/types'
 import {
   Banner,
@@ -12,7 +13,6 @@ import {
   IconButton,
   LoadingState,
   PageHeader,
-  POLLING_DESCRIPTION,
   TodayIcon,
   UsageIcon,
   WeekIcon,

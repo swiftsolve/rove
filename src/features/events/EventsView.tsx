@@ -7,6 +7,7 @@ import { isKnownEvent, offlineDurations } from '@/features/events/utils/event-co
 import { TimelineDay, TimelineDayList } from '@/features/timeline/components/TimelineDay'
 import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useNow } from '@/hooks/useNow'
+import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { NetworkEvent } from '@/types'
 import {
   Banner,
@@ -17,7 +18,6 @@ import {
   IconButton,
   LoadingState,
   PageHeader,
-  POLLING_DESCRIPTION,
   RefreshIcon,
 } from '@/ui'
 

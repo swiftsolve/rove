@@ -3,6 +3,7 @@ import type { ComponentProps, CSSProperties, MouseEventHandler, ReactNode } from
 
 import { cn } from '../foundations/cn'
 import { pressableProps } from '../foundations/pressable'
+import { type TintColor, tintStyle } from '../foundations/tint'
 import type { VariantOf } from '../foundations/variants'
 
 const tileVariants = cva('inline-flex shrink-0 items-center justify-center rounded-sm', {
@@ -15,7 +16,7 @@ const tileVariants = cva('inline-flex shrink-0 items-center justify-center round
 })
 
 /** An IconTile colour: any CSS colour, usually a token (`var(--series-down)`), or `neutral`. */
-export type IconTileColor = 'neutral' | (string & {})
+export type IconTileColor = TintColor
 
 type TileLookProps = {
   /** 30, 32 or 36px square. */
@@ -34,8 +35,7 @@ type TileLookProps = {
 
 /** The tile's classes, and the icon colour its wash follows. */
 function tileLook(size: TileLookProps['size'], color: IconTileColor): { className: string; style?: CSSProperties } {
-  const isNeutral = color === 'neutral'
-  return { className: tileVariants({ size, isNeutral }), style: isNeutral ? undefined : { color } }
+  return { className: tileVariants({ size, isNeutral: color === 'neutral' }), style: tintStyle(color) }
 }
 
 type IconTileProps = TileLookProps & Omit<ComponentProps<'span'>, keyof TileLookProps | 'children'>

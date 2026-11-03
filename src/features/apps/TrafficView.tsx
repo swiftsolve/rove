@@ -5,6 +5,7 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
+import { POLLING_DESCRIPTION } from '@/lib/copy'
 import type { TrafficType } from '@/types'
 import {
   Banner,
@@ -25,7 +26,6 @@ import {
   NasIcon,
   PageHeader,
   PlayIcon,
-  POLLING_DESCRIPTION,
   PulseIcon,
   ShareIcon,
   TerminalIcon,

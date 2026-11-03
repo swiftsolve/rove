@@ -355,7 +355,9 @@ Every component follows the same rules:
 - Styles are CVA recipes, with variant, tone and size as separate axes.
 - State is exposed as data attributes.
 - Composition happens through compound parts and slots, never `cloneElement`
-  or reaching into a child's DOM.
+  or reaching into a child's DOM. The one exception is Tooltip, which joins
+  its own description to one its trigger already has: Base UI lets the
+  trigger's props win, so there's no other way to set both.
 - Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
   styled with our tokens: focus traps, positioning, roving focus, dismissal,
   ARIA wiring. The library wraps it, so features never import Base UI directly.

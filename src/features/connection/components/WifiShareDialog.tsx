@@ -86,7 +86,6 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
       // Only true of the QR code, so a notice goes without it.
       description={notice ? undefined : 'Scan with a phone camera to join'}
       onClose={onClose}
-      bodyClassName="flex flex-col items-center text-center"
       footnote={
         qr ? (
           <p className="animate-fade-in text-center text-lg font-semibold text-primary wrap-anywhere">{qr.ssid}</p>
@@ -94,7 +93,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
       }
     >
       {/* Announces the QR code or notice when it replaces the loading state. */}
-      <div className="flex w-full flex-col items-center" aria-live="polite" aria-busy={isLoading}>
+      <div className="flex w-full flex-col items-center text-center" aria-live="polite" aria-busy={isLoading}>
         {isLoading ? (
           <div className={STATE}>
             <Spinner />

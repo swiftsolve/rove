@@ -2,7 +2,7 @@
 // Grouped by what a component is for; the folders under `src/ui` are flat.
 
 // Actions
-export { Button, type ButtonAppearance, type ButtonProps } from './button/Button'
+export { Button } from './button/Button'
 export { IconButton } from './button/IconButton'
 export { Link } from './link/Link'
 export { StretchedLink } from './link/StretchedLink'
@@ -23,7 +23,7 @@ export { StatusDot } from './status-dot/StatusDot'
 export { Spinner } from './spinner/Spinner'
 export { ButtonSpinner } from './spinner/ButtonSpinner'
 export { LoadingState } from './loading-state/LoadingState'
-export { Banner, POLLING_DESCRIPTION } from './banner/Banner'
+export { Banner } from './banner/Banner'
 export { EmptyState, EmptyStateDescription } from './empty-state/EmptyState'
 
 // Data display
@@ -60,7 +60,6 @@ export type { VariantOf } from './foundations/variants'
 export { useCountUp } from './hooks/useCountUp'
 export { useLatestRef } from './hooks/useLatestRef'
 export { usePresence } from './hooks/usePresence'
-export { usePortalContainer } from './hooks/usePortalContainer'
 export { PortalProvider } from './context/PortalProvider'
 
 export { UI_LIBRARY_VERSION } from './version'

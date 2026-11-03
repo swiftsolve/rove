@@ -211,6 +211,21 @@
     }
   }
 
+  /* The arc of ButtonSpinner's ring, on a 100-unit path. */
+  @keyframes ring-stretch {
+    0% {
+      stroke-dasharray: 0, 150;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 75, 150;
+      stroke-dashoffset: -25;
+    }
+    100% {
+      stroke-dashoffset: -99;
+    }
+  }
+
   @keyframes status-pulse {
     0%,
     100% {

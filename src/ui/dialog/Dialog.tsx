@@ -74,8 +74,6 @@ type DialogProps = {
   description?: ReactNode
   /** The body, in a recessed well. Omit for a dialog that's only a header and actions. */
   children?: ReactNode
-  /** The body well's layout and insets. */
-  bodyClassName?: string
   /** A line under the body, on the panel: a caption or status. */
   footnote?: ReactNode
   /** The footer's buttons, main action last. */
@@ -104,7 +102,6 @@ export function Dialog({
   title,
   description,
   children,
-  bodyClassName,
   footnote,
   actions,
   cancelLabel,
@@ -162,7 +159,7 @@ export function Dialog({
                   />
                 </div>
 
-                {children != null && <div className={cn('bg-base p-16', bodyClassName)}>{children}</div>}
+                {children != null && <div className="bg-base p-16">{children}</div>}
 
                 {footnote != null && <div className="px-16 py-12">{footnote}</div>}
 
