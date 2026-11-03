@@ -2,6 +2,7 @@ import { skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
+import { overlayLiveMetrics } from '@/features/diagnostics/utils/live-metrics'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
 
@@ -16,14 +17,6 @@ type UseDiagnosticsResult = {
   isRunning: boolean
   error: string | null
   run: () => Promise<void>
-}
-
-// Once a live reading lands it owns latency outright: its null ping means
-// unreachable and must win over the full run's stale value.
-function overlayLiveMetrics(full: NetworkDiagnostics | null, live: LiveDiagnostics | null): NetworkDiagnostics | null {
-  if (full == null) return null
-  if (live == null) return full
-  return { ...full, gatewayPing: live.gatewayPing, internet: live.internet }
 }
 
 /**
@@ -69,7 +62,10 @@ export function useDiagnostics(): UseDiagnosticsResult {
     isFirstLoad || live.error == null ? null : live.error instanceof Error ? live.error.message : ERROR_MESSAGE
 
   return {
-    diagnostics: overlayLiveMetrics(full.data ?? null, live.data ?? null),
+    diagnostics: overlayLiveMetrics(
+      { data: full.data ?? null, updatedAt: full.dataUpdatedAt },
+      { data: live.data ?? null, updatedAt: live.dataUpdatedAt },
+    ),
     isRunning: full.isBusy,
     error: full.error ?? liveError,
     run,

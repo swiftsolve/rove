@@ -14,7 +14,7 @@ type UseNetworkInterfacesResult = {
 
 export function useNetworkInterfaces(): UseNetworkInterfacesResult {
   const api = window.networkAPI
-  const { data, isBusy, error, reload } = useBackendQuery({
+  const { data, isBusy, error, reload, refresh } = useBackendQuery({
     queryKey: ['interfaces'],
     queryFn: api ? () => api.getInterfaces() : undefined,
     isEnabled: true,
@@ -22,7 +22,9 @@ export function useNetworkInterfaces(): UseNetworkInterfacesResult {
     pollIntervalMs: POLL_INTERVAL_MS,
   })
 
-  useOnNetworkChanged(() => void reload())
+  // Quietly: macOS sends bursts of these while Wi-Fi roams, and a manual reload
+  // would spin the Refresh button and cancel the read in flight on each one.
+  useOnNetworkChanged(() => void refresh())
 
   return { interfaces: data ?? [], isLoading: isBusy, error, refresh: reload }
 }

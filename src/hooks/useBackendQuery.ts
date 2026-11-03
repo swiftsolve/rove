@@ -27,6 +27,10 @@ export type BackendQuery<T> = {
   error: string | null
   /** Fetch now and show the busy state, cancelling any background poll in flight. */
   reload: () => Promise<void>
+  /** Fetch now quietly, like a poll, joining any fetch in flight. For a nudge the user didn't ask for. */
+  refresh: () => Promise<void>
+  /** When `data` last landed, in ms since the epoch; 0 before it has. */
+  dataUpdatedAt: number
 }
 
 // How many mounted, enabled callers hold each query open, by query hash.
@@ -102,7 +106,7 @@ export function useBackendQuery<T>({
     notifyOnChangeProps: () =>
       isOpenedRef.current ? ['data', 'error'] : ['data', 'error', 'isFetching', 'isFetchedAfterMount'],
   })
-  const { data, isFetching, isFetchedAfterMount, refetch } = query
+  const { data, dataUpdatedAt, isFetching, isFetchedAfterMount, refetch } = query
   useLayoutEffect(() => {
     isOpenedRef.current = isFetchedAfterMount
   })
@@ -129,11 +133,15 @@ export function useBackendQuery<T>({
     }
   }, [canFetch, refetch])
 
+  const refresh = useCallback(async (): Promise<void> => {
+    if (canFetch) await refetch({ cancelRefetch: false })
+  }, [canFetch, refetch])
+
   // The first fetch since this screen mounted is the first load or the
   // open-time refetch. Any later one without a reload is a poll.
   const isOpeningFetch = isFetching && !isFetchedAfterMount
   const isBusy = isOpeningFetch || reloadCount > 0
   const error = isOpeningFetch || query.error == null ? null : errorText(query.error, errorMessage)
 
-  return { data, isBusy, error, reload }
+  return { data, isBusy, error, reload, refresh, dataUpdatedAt }
 }
