@@ -2,26 +2,23 @@
 
 How the React UI in `src/` is organised, styled and tested. `src/AGENTS.md`
 imports it with rove-tokens' `DESIGN.md`, so Claude Code loads both with the
-first file under `src/`. Which component to use is in the catalogue and
-Storybook ([Components](#components)); how the library itself is built is in
-[ui-library.md](ui-library.md), which loads with files under `src/ui/`. For
-where files live, see [Layout](../../README.md#layout) in the README.
+first file under `src/`; how the library itself is built is
+[ui-library.md](ui-library.md), which loads with files under `src/ui/`. A rule
+marked *Checked* fails `npm run check`, and [What's enforced](#whats-enforced)
+names the check.
 
-A rule marked *Checked* fails `npm run check`, and
-[What's enforced](#whats-enforced) names the check. The rest is for review.
-
-- [Checklists](#checklists) for the common changes
-- Rules: [State](#state-context-not-prop-drilling),
+- [Procedures](#procedures): add a screen or tab, show new backend data
+- [Rules](#rules): [State](#state-context-not-prop-drilling),
   [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
-  [Styles](#styles-tailwind-utilities-from-the-design-tokens),
-  [Tests](#tests), and [What's enforced](#whats-enforced)
-- [Components](#components): which one to use, and where that's written
+  [Styles](#styles-tailwind-utilities-from-the-design-tokens) and
+  [Tests](#tests)
+- [Reference](#reference): [What's enforced](#whats-enforced) and
+  [Components](#components)
 
-## Checklists
+## Procedures
 
-Each list ends in the checks for it. After the commit, a change a user would
-see needs the sites resynced: the `resync-sites` skill
-(`.claude/skills/resync-sites/SKILL.md`).
+The library and design procedures are skills (AGENTS.md: Procedures). These
+two have none.
 
 ### Add a screen or tab
 
@@ -47,7 +44,9 @@ feature's `hooks/`, on `useBackendQuery`, keyed by the data plus
 Check: `cargo test -p rove-core`, `npm run check`, and `npm run dev` against
 the mock.
 
-## State: context, not prop drilling
+## Rules
+
+### State: context, not prop drilling
 
 - No component takes a prop only to pass it down. App-wide state comes from
   context, read where it's used: `useNavigation()` (location, `navigate`,
@@ -77,7 +76,7 @@ the mock.
   `onClose`. The UI library in `src/ui` takes only props and never reads app
   context (see [ui-library.md](ui-library.md)).
 
-## Where code goes
+### Where code goes
 
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
@@ -122,7 +121,7 @@ the mock.
   comments, and a lint exception says why after `--`. *Checked*, except
   whether it says why.
 
-## Names and copy
+### Names and copy
 
 - A boolean reads as a yes/no question: `isOpen`, `areEventsLoading`,
   `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
@@ -148,34 +147,30 @@ the mock.
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
 
-## Styles: Tailwind utilities from the design tokens
+### Styles: Tailwind utilities from the design tokens
 
-The tokens come from `@swiftsolve/rove-tokens`, and its `DESIGN.md` says which
-one to use for what. A token is changed in Figma, never here (AGENTS.md: Keep
-Figma and code in sync). The published slideshow shows them without Figma:
-<https://swiftsolve.github.io/rove-tokens/>.
+DESIGN.md says which token to use for what, and its rules (a token, never a
+raw value; the spacing and radius scales; a text style, never a size alone)
+apply here. This section is how they're written as Tailwind utilities.
 
 - Components are styled with Tailwind v4 utilities in the TSX. The theme in
   `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
   `--spacing-12`, `text-md` is `--font-size-md` and `bg-surface` is
   `--bg-surface`; there are no Tailwind defaults to reach for. There's no
   preflight: `styles/base.css` is the reset.
-- Colours and easings are always tokens, and so is any length, weight or
-  duration a token has: `p-12`, not `p-[12px]`. Every gap, padding and margin
-  is a spacing step, or a `calc()` of tokens, and every corner a radius token
-  (a thin bar takes `rounded-full`, which rounds to half its width). A value
-  that has to stay (the QR code's white plate, a gap set by an icon's ink, the
-  About tile's app-icon corner) goes in `scripts/checks/raw-values.mjs`'s
-  `ALLOWED` list, with why. DESIGN.md's Spacing and shape says which reasons
-  count. *Checked.*
+- A token is its utility: `p-12`, not `p-[12px]`; `rounded-sm`, not
+  `rounded-[8px]`; `duration-(--duration-fast)`. A gap built from tokens is a
+  `calc()` of them. A raw value that has to stay (the QR code's white plate, a
+  gap set by an icon's ink, the About tile's app-icon corner) goes in
+  `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why; DESIGN.md's
+  Spacing and shape says which reasons count. *Checked.*
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
   under every utility, so `font-medium`, `leading-[1.2]` or the `num` face
-  beside one wins. The size always comes from the style: no `text-sm` alone,
-  and no style with its size overridden. Text with no matching style (13px at
-  500 is Body/Default plus `font-medium`) takes the nearest style at its size
-  and a utility for the rest. A style sets its own line height, so text
+  beside one wins; a size utility never goes beside one. Text with no
+  matching style (13px at 500 is Body/Default plus `font-medium`) takes the
+  nearest style at its size and a utility for the rest. A style sets its own line height, so text
   that should keep its line's (a timeline row's `*:leading-[1.3]`, a
   button's) adds `leading-[inherit]`. A stylesheet sets all four of a style's
   `--type-<style>-*` variables. Text no style fits at all goes in
@@ -239,7 +234,7 @@ Figma and code in sync). The published slideshow shows them without Figma:
   their keyframes. A `.module.css` file is only for what utilities can't say:
   selectors into another component's DOM keyed on `:has()`.
 
-## Tests
+### Tests
 
 - Pure logic in a `utils/` folder has unit tests beside it, named after its
   module plus `.test` (`chart-scale.test.ts`). They run in Node and never touch
@@ -253,22 +248,16 @@ Figma and code in sync). The published slideshow shows them without Figma:
   (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
   sidebar; `npx vitest --project=storybook` runs them alone. A new machine
   needs `npx playwright install chromium` once.
-- While working on a component, run just its folder, in seconds:
-  `npx vitest run --project=storybook --project=dom src/ui/<folder>` runs its
-  stories and DOM tests. Then look at it in Storybook in both themes: no test
-  sees a wrong shade or a cramped gap.
-- All three kinds run with `npm test`, part of `npm run check`, which CI
-  runs on every push and pull request (`.github/workflows/test.yml`).
-- Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
-  fake clock, seeded randomness and paused animations, so two runs of the same
-  code match exactly. Diff a run against one from before a change to prove a
-  refactor changed nothing on screen. With `--stable` it also shoots the open
-  menus, dialogs, tooltips, a focus ring, and every component's All States
-  story from Storybook (`25-library/`).
-- `npm run a11y` runs axe on every screen, subpage and dialog in both themes,
-  and fails on any violation.
+- All three kinds run with `npm test`, part of `npm run check`.
+- Looks are checked by pixels, and every screen and dialog by axe, outside
+  `npm test`. `npm run screenshots -- --stable` pauses the clock, randomness
+  and animations, so two runs of the same code match exactly, and also shoots
+  open menus, dialogs, tooltips, a focus ring and every component's All States
+  story. AGENTS.md's Check your work has the commands for each change.
 
-## What's enforced
+## Reference
+
+### What's enforced
 
 `npm run check` fails on these, so a rule here needs no review. Each check in
 `scripts/checks/` says what it guards.
@@ -303,13 +292,13 @@ Review still has to catch:
 - Figma out of sync beyond its variants and guides (a token, a spacing, a
   guide line's wording), and major or minor for a version.
 
-## Components
+### Components
 
 Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
-are in `src/ui/components.gen.json` (read it first) and on each component's
-Docs page in Storybook (`npm run storybook`, or the
-[hosted copy](https://rove.swiftsolve.net/storybook/)).
+are in `src/ui/components.gen.json`: read it first, not the sources. Each
+component's Docs page in Storybook shows the same, with its stories
+(ui-library.md: Storybook).
 
 - Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
   Don't draw new ones inline.

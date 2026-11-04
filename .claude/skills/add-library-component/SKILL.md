@@ -5,8 +5,8 @@ description: Add a new component to Rove's UI library in src/ui, in code and in 
 
 # Add or change a library component
 
-The library's rules (stories, docs pages, the rules every component follows)
-are in `docs/develop/ui-library.md`, which loads with any file under
+The library's rules (stories, docs pages, what every component does) are in
+`docs/develop/ui-library.md`, which loads with any file under
 `src/ui/`. These are the steps.
 
 ## Before you start
@@ -14,8 +14,8 @@ are in `docs/develop/ui-library.md`, which loads with any file under
 - Read `src/ui/components.gen.json` for a component that already fits, or one
   that needs only a variant. A variant on an existing component beats a new one.
 - Name it, and its props, the way the library does (`variant`, `tone`,
-  `isDisabled`, `description`, `actions`; ui-library.md: Rules every component
-  follows). The Figma component takes the same name, in sentence case.
+  `isDisabled`, `description`, `actions`; ui-library.md: Every component). The
+  Figma component takes the same name, in sentence case.
 
 ## Add one: the code side
 

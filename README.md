@@ -276,9 +276,10 @@ cargo fmt --all              # the Rust layout (rustfmt.toml)
 CI runs `npm run check` on every push and pull request, and clippy on all
 three OSes. Rust comments follow the UI's rules (no em dash, a `//`
 note in 6 lines, a `///` doc in 10), checked by a `cargo test`
-(`crates/rove-core/tests/comments.rs`). What runs at each stage (edit,
-commit, push, release) and what to run for each kind of change, screenshots
-included, is in [AGENTS.md: Check your work](AGENTS.md#check-your-work).
+(`crates/rove-core/tests/comments.rs`). What to run for each kind of change,
+screenshots included, is in [AGENTS.md: Check your work](AGENTS.md#check-your-work),
+and what runs on its own at each stage (edit, commit, push, release) in
+[What runs on its own](AGENTS.md#what-runs-on-its-own).
 
 > **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
 > VS Code from snap), unset its library path first or the binary picks up

@@ -7,11 +7,11 @@ styles, tests and which component to use. A rule marked *Checked* fails
 `npm run check`; frontend.md's [What's enforced](frontend.md#whats-enforced)
 names the check.
 
-- [Procedures](#procedures), [The library](#the-library),
-  [Stories](#stories),
+- [Procedures](#procedures): add or change a component, resync the Storybooks
+- [Rules](#rules): [The library](#the-library), [Stories](#stories),
   [Docs pages and the catalogue](#docs-pages-and-the-catalogue),
-  [Rules every component follows](#rules-every-component-follows) and
-  [Buttons](#buttons)
+  [Every component](#every-component) and [Buttons](#buttons)
+- [Reference](#reference): [Storybook](#storybook)
 
 ## Procedures
 
@@ -23,11 +23,13 @@ agents and people, open the file.
 | Add a library component, or change one's API or look, in code and Figma | `.claude/skills/add-library-component/SKILL.md` |
 | Resync the Storybooks (and the sites, if a screen changed) after committing | `.claude/skills/resync-sites/SKILL.md` |
 
-## The library
+## Rules
 
-`src/ui` is the component library: the Figma components in code. Features
-import it from `@/ui` and nothing else under `src/ui`. The library imports only
-itself (by relative path) and packages, never app code. *Checked.*
+### The library
+
+Features import the library from `@/ui` and nothing else under `src/ui`. The
+library imports only itself (by relative path) and packages, never app code.
+*Checked.*
 
 The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows after "Rove
@@ -60,7 +62,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   `context/` (where dialogs portal), `icons/`, and `testing/` (the DOM tests'
   setup).
 
-## Stories
+### Stories
 
 - Each component has stories beside it (`Button.stories.tsx`), titled by its
   group (`Actions/Button`), in the same change as the component. Stories
@@ -78,16 +80,8 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   `!autodocs`, since moving focus would scroll its Docs page. A play that
   leaves the story as it found it (`DisabledOff`) can stay on the Docs page.
   *Checked.*
-- `npm run storybook` serves them at `localhost:6006`, with a Theme switch in
-  the toolbar (Docs pages follow it) and an accessibility check on every
-  story. Its Figma tab embeds the component from the design file: a story
-  title's last part is its key in `figma.json`, so a new component's stories
-  find it with nothing set. `npm run build:storybook` writes a static copy to
-  `storybook-static/`. Master's is hosted at
-  <https://rove.swiftsolve.net/storybook/> (synced by hand: the `resync-sites` skill),
-  and every push publishes to Chromatic for visual tests.
 
-## Docs pages and the catalogue
+### Docs pages and the catalogue
 
 - A component's intro is one sentence on what it is, with no rules: the
   stories' `docs.subtitle` ("A headline number and its unit, with an optional
@@ -114,14 +108,12 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   prevents; code covers that in its props table and doc comments.
 - `components.gen.json` is the library's API in one file, for agents and
   people: each component's group, doc comment, props (type, variant values,
-  default), Figma component, story ids and usage guide. Read it, not the
-  sources, to learn the API or pick a component. `npm run catalogue` writes it
+  default), Figma component, story ids and usage guide. `npm run catalogue` writes it
   from the code and `figma.json`, which names each component's Figma
   component and node (`null` when Figma has none).
 
-## Rules every component follows
+### Every component
 
-- It takes `className` for its place in a layout.
 - A component that renders one element takes its element's props
   (`ComponentProps<'button'>`) and passes `ref` and the rest through, so any
   can be a Tooltip's trigger or take an `aria-*`. No `forwardRef`: in React 19
@@ -146,7 +138,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   `tone` (`positive`, `warning`, `negative`, `neutral`); a quality rating is
   `level` (`excellent`, `good`, `fair`, `poor`).
 
-## Buttons
+### Buttons
 
 Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 `<button>`. *Checked.*
@@ -157,3 +149,16 @@ Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 - Everything pressable shares that behaviour through `ui/utils/pressable.ts`,
   and styles a hover or press that only applies while usable with the
   `usable:` variant (`usable:hover:bg-hover`).
+
+## Reference
+
+### Storybook
+
+`npm run storybook` serves the stories at `localhost:6006`, with a Theme switch
+in the toolbar (Docs pages follow it) and an accessibility check on every
+story. Its Figma tab embeds the component from the design file: a story
+title's last part is its key in `figma.json`, so a new component's stories find
+it with nothing set. `npm run build:storybook` writes a static copy to
+`storybook-static/`. Master's is hosted at
+<https://rove.swiftsolve.net/storybook/>, synced by hand (the `resync-sites`
+skill), and every push publishes to Chromatic for visual tests.
