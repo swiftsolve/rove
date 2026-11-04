@@ -1,4 +1,5 @@
 import designPackage from '../package.json'
+import { BRAND_ICONS } from './brand-icons'
 import { colorDark, flatten, group, palette, spacing, textStyles } from './tokens'
 
 export default { title: 'Introduction' }
@@ -49,7 +50,17 @@ function RoveAppIcon() {
           <stop offset="1" stopColor="#5484f5" />
         </linearGradient>
       </defs>
-      <rect width="48" height="48" rx="11" fill="url(#intro-rove-tile)" />
+      {/* The app icon's faint edge, so the tile holds its shape on a dark card. */}
+      <rect
+        x="0.5"
+        y="0.5"
+        width="47"
+        height="47"
+        rx="10.5"
+        fill="url(#intro-rove-tile)"
+        stroke="#ffffff"
+        strokeOpacity="0.1"
+      />
       <g transform="translate(24 25) scale(0.8) translate(-24 -24)">
         <circle cx="24" cy="24" r="7.5" fill="url(#intro-rove-mark)" />
         <path
@@ -66,27 +77,6 @@ function RoveAppIcon() {
 
 const LINE_ICONS = {
   plugin: ['M12 22v-5', 'M9 8V2', 'M15 8V2', 'M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z'],
-  json: [
-    'M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1',
-    'M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1',
-  ],
-  terminal: ['m4 17 6-6-6-6', 'M12 19h8'],
-  check: [
-    'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z',
-    'm9 12 2 2 4-4',
-  ],
-  package: [
-    'M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z',
-    'M12 22V12',
-    'M3.29 7 12 12l8.71-5',
-  ],
-  document: [
-    'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z',
-    'M14 2v4a2 2 0 0 0 2 2h4',
-    'M16 13H8',
-    'M16 17H8',
-  ],
-  slides: ['M2 3h20', 'M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3', 'm7 21 5-5 5 5'],
   tag: [
     'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z',
     'M7.5 7.5h.01',
@@ -100,16 +90,19 @@ const LINE_ICONS = {
     'M15 13v2',
     'M9 13v2',
   ],
-  book: [
-    'M12 7v14',
-    'M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z',
-  ],
   arrow: ['M5 12h14', 'm12 5 7 7-7 7'],
 }
 
 function Icon({ name, label }) {
   if (name === 'figma') return <FigmaMark />
   if (name === 'rove') return <RoveAppIcon />
+  const brand = BRAND_ICONS[name]
+  if (brand)
+    return (
+      <svg className="intro-icon" viewBox="0 0 24 24" fill={brand.color} role="img" aria-label={brand.title}>
+        <path d={brand.path} />
+      </svg>
+    )
   return (
     <svg
       className="intro-icon"
@@ -164,7 +157,7 @@ const PIPELINES = [
       },
       {
         column: 3,
-        icons: ['terminal', 'check'],
+        icons: ['node', 'css'],
         items: [
           {
             name: '`npm run build`',
@@ -174,7 +167,7 @@ const PIPELINES = [
       },
       {
         column: 4,
-        icons: ['package', 'document'],
+        icons: ['npm', 'markdown'],
         items: [
           { name: '`@swiftsolve/rove-tokens`', body: '`tokens.css`, `text-styles.css` and the DTCG files, on npm.' },
           { name: '`DESIGN.md`', body: 'Which token to use for what, in the package.' },
@@ -193,14 +186,14 @@ const PIPELINES = [
       },
       {
         column: 3,
-        icons: ['terminal'],
+        icons: ['node'],
         items: [
           { name: '`npm run present`', body: 'Exports each page, styled with the tokens. Runs on every release tag.' },
         ],
       },
       {
         column: 4,
-        icons: ['slides'],
+        icons: ['github'],
         items: [{ name: 'Slideshow', body: 'On GitHub Pages.', href: 'https://swiftsolve.github.io/rove-tokens/' }],
       },
     ],
@@ -215,12 +208,12 @@ const CONSUMERS = [
     href: 'https://rove.swiftsolve.net/storybook/',
   },
   {
-    icon: 'agent',
+    icon: 'claude',
     name: 'Coding agents',
     body: 'Read `DESIGN.md` from `node_modules`, so they reach for a token, not a hex.',
   },
   {
-    icon: 'book',
+    icon: 'storybook',
     name: 'This Storybook',
     body: 'Reads the DTCG files in `dist/tokens/`, so it follows every build.',
   },
