@@ -36,7 +36,7 @@ marker. Its top half is written by hand.
 ## Check your work
 
 ```bash
-npm run check                # build, lint (ESLint + Prettier), DESIGN.md up to date
+npm run check                # build, lint (ESLint + Prettier), DESIGN.md up to date, descriptions, WCAG AA contrast
 npm run format               # Prettier, when lint says a file isn't formatted
 ```
 

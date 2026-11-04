@@ -546,7 +546,7 @@
           "alias": "status/good"
         },
         "Light": {
-          "alias": "status/good"
+          "alias": "lime/520"
         }
       }
     },
@@ -586,7 +586,7 @@
           "alias": "status/poor"
         },
         "Light": {
-          "alias": "status/poor"
+          "alias": "orange/500"
         }
       }
     },
@@ -2489,6 +2489,38 @@
       ],
       "values": {
         "Value": 40
+      }
+    },
+    {
+      "name": "lime/520",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light good text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.21569,
+          "g": 0.43137,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light poor text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.61569,
+          "g": 0.27451,
+          "b": 0,
+          "a": 1
+        }
       }
     }
   ]

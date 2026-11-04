@@ -37,7 +37,8 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **Green moves from the dark theme's mint toward pure green** in light mode, where the gamut has more room.
 - **Red stays a step below the sRGB edge,** where it would turn neon beside the other hues. Its hue sits a touch toward orange: at 0° or below, a light red reads salmon or pink.
 - **Status words need 4.5:1, which the light-mode icon shades miss (3.5–4.4:1).** `text/positive`, `text/warning` and `text/negative` are the same hues, darkened just enough to clear it on every surface, including the 14% tint of their own hue that a badge sits on. Dark mode uses the icon shades, which already pass.
-- **The capability scale's in-between steps** (good, poor) follow the same rules, with their hues pulled apart from their neighbours (good is yellow-green, poor is orange) so the four levels stay distinct.
+- **The capability scale's in-between steps** (good, poor) follow the same rules, with their hues pulled apart from their neighbours (good is yellow-green, poor is orange) so the four levels stay distinct. Their words take darkened light-mode shades too (`lime/520`, `orange/500`).
+- **`scripts/checks/contrast.mjs` measures every pair above** in both themes, so a shade under its target fails the build instead of waiting for review.
 
 ## Opacity
 

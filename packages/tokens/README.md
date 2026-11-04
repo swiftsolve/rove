@@ -104,7 +104,7 @@ A theme is every file plus one of the two color files. Paths follow the Figma na
 
 ## ♿ Contrast
 
-The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both themes, on the surfaces they sit on: text clears 4.5:1 ([1.4.3 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)), and icons, bars and dots 3:1 ([1.4.11 Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)). AAA (7:1) isn't a target. [Rationale](docs/rationale.md) has the close calls.
+The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both themes, on the surfaces they sit on: text clears 4.5:1 ([1.4.3 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)), and icons, bars and dots 3:1 ([1.4.11 Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)). AAA (7:1) isn't a target. [Rationale](docs/rationale.md) has the close calls. `scripts/checks/contrast.mjs` measures every pair, so a release can't break this.
 
 ## 📖 Storybook
 
@@ -204,7 +204,8 @@ A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git 
 
 | Path | What |
 | --- | --- |
-| `.github/workflows/build.yml` | On each release tag, builds the tokens and checks `DESIGN.md` was rebuilt and committed. Run it by hand from Actions to check `main`. |
+| `.github/workflows/build.yml` | On each release tag, builds the tokens, checks `DESIGN.md` was rebuilt and committed, and checks contrast. Run it by hand from Actions to check `main`. |
+| `scripts/checks/contrast.mjs` | Part of `npm run check` and the build workflow: measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#-contrast)'s targets. |
 | `scripts/checks/figma-plugin.mjs` | Part of `npm run check`: runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
 | `.github/workflows/publish.yml` | On each release tag, publishes that version to npm with trusted publishing, so the repo holds no npm token. |
 | `.github/workflows/presentation.yml` | On each release tag, or by hand from Actions, exports the slideshow from Figma and publishes it. Needs the `FIGMA_TOKEN` repository secret. |
