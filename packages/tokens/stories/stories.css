@@ -533,16 +533,17 @@
 .intro-package {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 16px 0 0;
+  font-size: var(--font-size-xl);
 }
 
 .intro-version {
-  padding: 1px 8px;
+  padding: 2px 10px;
   border-radius: var(--radius-full);
   background: var(--accent-muted);
   color: var(--text-accent);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
 }
 
