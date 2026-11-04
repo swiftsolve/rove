@@ -301,14 +301,9 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale | `checks/raw-values.mjs` |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
-| CSS Module classes match their use | `checks/css-modules.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
 | Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
-
-`checks/escapes.mjs` never fails: it counts the ways around these rules (lint
-disables, allowed raw values, Figma exceptions) in every run and in CI's job
-summary, so a rise shows. `--list` names each one.
 
 Review still has to catch: props passed only to pass down, hints over two
 sentences, focus or presence handled by hand, a view reaching into a
