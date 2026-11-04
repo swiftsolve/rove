@@ -438,11 +438,45 @@ function ContainersScene(): JSX.Element {
   )
 }
 
-/** Accessibility: the accessibility mark on an accent tile, as the Principles cards draw their icons. */
+// Lucide's line icons, drawn as the library's are: seeing, the accessibility
+// mark, and a voice, for the ways a page reaches someone.
+const A11Y_MARKS = [
+  {
+    name: 'eye',
+    paths: [
+      'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0',
+      'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+    ],
+  },
+  {
+    name: 'accessibility',
+    paths: [
+      'M17 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z',
+      'm18 19 1-7-6 1',
+      'm5 8 3-3 5.5 3-2.36 3.5',
+      'M4.24 14.5a5 5 0 0 0 6.88 6',
+      'M13.76 17.5a5 5 0 0 0-6.88-6',
+    ],
+  },
+  {
+    name: 'speaker',
+    paths: [
+      'M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z',
+      'M16 9a5 5 0 0 1 0 6',
+      'M19.364 18.364a9 9 0 0 0 0-12.728',
+    ],
+  },
+]
+
+/** Accessibility: one mark on an accent tile, changing a beat at a time: seeing, the accessibility mark, a voice. */
 function AccessibilityScene(): JSX.Element {
+  const { name, paths } = A11Y_MARKS[useStep(A11Y_MARKS.length, BEAT)]
   return (
     <span className="intro-a11y-mark">
+      {/* Keyed by mark, so each new one rises in. */}
       <svg
+        key={name}
+        className="intro-swap"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -451,11 +485,9 @@ function AccessibilityScene(): JSX.Element {
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path d="M17 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
-        <path d="m18 19 1-7-6 1" />
-        <path d="m5 8 3-3 5.5 3-2.36 3.5" />
-        <path d="M4.24 14.5a5 5 0 0 0 6.88 6" />
-        <path d="M13.76 17.5a5 5 0 0 0-6.88-6" />
+        {paths.map((d) => (
+          <path key={d} d={d} />
+        ))}
       </svg>
     </span>
   )
