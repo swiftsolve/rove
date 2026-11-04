@@ -1,59 +1,128 @@
 {
-  "description": "Written by hand. Each library component's Figma component: its name and the node id from its link's node-id (- as :), or null when Figma has none. npm run catalogue copies it into components.gen.json.",
+  "description": "Written by hand. Each library component's Figma component: its name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. codeOnly lists props with values Figma has no variant for, figmaOnly the Figma variants code derives from other props, valuesDiffer props whose values differ on purpose, each with why; checks/figma.mjs holds the rest to Figma. npm run catalogue copies it into components.gen.json.",
   "file": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": { "name": "Button", "node": "42:189" },
-    "IconButton": { "name": "Icon button", "node": "13:629" },
-    "Link": { "name": "Link", "node": "505:845" },
+    "IconButton": {
+      "name": "Icon button",
+      "node": "13:629",
+      "codeOnly": { "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own." }
+    },
+    "Link": {
+      "name": "Link",
+      "node": "505:845",
+      "figmaOnly": { "Type": "External is a link with href, View one with onClick." }
+    },
     "StretchedLink": null,
     "Menu": { "name": "Menu", "node": "498:719" },
     "MenuContent": { "name": "Menu", "node": "498:719" },
     "MenuItem": { "name": "Menu item", "node": "498:718" },
     "MenuTrigger": { "name": "Menu trigger", "node": "498:675" },
-    "TextField": { "name": "Text field", "node": "500:810" },
+    "TextField": {
+      "name": "Text field",
+      "node": "500:810",
+      "figmaOnly": { "Action": "Whether action holds a TextFieldAction." }
+    },
     "TextFieldAction": { "name": "Text field", "node": "500:810" },
     "Toggle": { "name": "Toggle", "node": "42:198" },
     "SegmentedControl": { "name": "Segmented control", "node": "499:758" },
     "Dialog": { "name": "Dialog", "node": "372:235" },
     "DialogRoot": null,
-    "Tooltip": { "name": "Tooltip", "node": "43:7" },
+    "Tooltip": {
+      "name": "Tooltip",
+      "node": "43:7",
+      "codeOnly": { "side": "Where it opens beside its trigger." }
+    },
     "Badge": { "name": "Badge", "node": "497:650" },
     "LiveBadge": { "name": "Live badge", "node": "4:41" },
-    "StatusDot": { "name": "Status dot", "node": "494:735" },
+    "StatusDot": {
+      "name": "Status dot",
+      "node": "494:735",
+      "codeOnly": { "pulse": "An animation: Figma draws the dot at rest." },
+      "valuesDiffer": { "tone": "current takes its words' colour, which Figma draws as each status." }
+    },
     "Spinner": { "name": "Spinner", "node": "43:40" },
     "ButtonSpinner": { "name": "Button spinner", "node": "104:5176" },
     "LoadingState": { "name": "Loading state", "node": "500:357" },
     "Banner": { "name": "Banner", "node": "374:1346" },
     "EmptyState": { "name": "Empty state", "node": "356:175" },
     "EmptyStateDescription": { "name": "Empty state", "node": "356:175" },
-    "DataList": { "name": "Data row", "node": "15:642" },
+    "DataList": {
+      "name": "Data row",
+      "node": "15:642",
+      "codeOnly": { "density": "Figma has the row, not the list: a list's spacing is its frame's gap." }
+    },
     "DataListStack": { "name": "Data row", "node": "15:642" },
-    "DataRow": { "name": "Data row", "node": "15:642" },
-    "Readout": { "name": "Readout", "node": "4:106" },
+    "DataRow": {
+      "name": "Data row",
+      "node": "15:642",
+      "codeOnly": { "align": "Not in Figma yet: a value with no text baseline sits on the row's middle." }
+    },
+    "Readout": {
+      "name": "Readout",
+      "node": "4:106",
+      "figmaOnly": { "Has label": "Whether label is set." }
+    },
     "MetricValue": { "name": "Metric value", "node": "38:360" },
-    "BarMeter": { "name": "Bar meter", "node": "495:1044" },
-    "SplitBar": { "name": "Split bar", "node": "556:619" },
+    "BarMeter": {
+      "name": "Bar meter",
+      "node": "495:1044",
+      "figmaOnly": { "Value": "value, a number from 0 to 4." }
+    },
+    "SplitBar": {
+      "name": "Split bar",
+      "node": "556:619",
+      "figmaOnly": { "Mix": "Sample down and up values." }
+    },
     "ListRow": { "name": "List row", "node": "496:745" },
-    "IconTile": { "name": "Icon tile", "node": "495:585" },
+    "IconTile": {
+      "name": "Icon tile",
+      "node": "495:585",
+      "figmaOnly": { "Neutral": "color=\"neutral\"; any other colour is a tint." }
+    },
     "IconTileButton": { "name": "Icon tile", "node": "495:585" },
-    "TimelineNode": { "name": "Timeline node", "node": "580:539" },
-    "Card": { "name": "Card", "node": "543:62" },
-    "CardBody": { "name": "Card", "node": "543:62" },
-    "CardFooter": { "name": "Card", "node": "543:62" },
+    "TimelineNode": {
+      "name": "Timeline node",
+      "node": "580:539",
+      "figmaOnly": {
+        "Neutral": "color=\"neutral\", the hollow ring.",
+        "Last": "The list's last node, with no line down: CSS finds it."
+      }
+    },
+    "Card": {
+      "name": "Card",
+      "node": "565:7535",
+      "codeOnly": { "as": "The HTML element: it looks the same." },
+      "figmaOnly": { "Openable": "Whether onOpen is set." }
+    },
+    "CardBody": { "name": "Card", "node": "565:7535" },
+    "CardFooter": { "name": "Card", "node": "565:7535" },
     "CardHeader": { "name": "Card header", "node": "4:65" },
     "CardList": { "name": "Card list", "node": "555:132" },
     "Collapsible": null,
     "CollapsiblePanel": null,
     "CollapsibleTrigger": null,
-    "NoValue": { "name": "No value", "node": "708:667" },
+    "NoValue": {
+      "name": "No value",
+      "node": "708:667",
+      "figmaOnly": { "Size": "It sizes to its line in em: Figma draws a hero line's and a row's." }
+    },
     "DotSeparator": { "name": "Dot separator", "node": "452:9524" },
     "InlineMeta": { "name": "Dot separator", "node": "452:9524" },
     "TitleBar": { "name": "Title bar", "node": "41:63" },
     "TitleBarStatus": { "name": "Title bar status", "node": "4:40" },
     "WindowButton": { "name": "Window button", "node": "35:1664" },
     "NavItem": { "name": "Nav item", "node": "4:12" },
-    "NavRail": { "name": "Nav rail", "node": "41:892" },
-    "PageHeader": { "name": "Page header", "node": "542:10510" },
+    "NavRail": {
+      "name": "Nav rail",
+      "node": "41:892",
+      "figmaOnly": { "Page": "The page whose NavItem has isActive." }
+    },
+    "PageHeader": {
+      "name": "Page header",
+      "node": "542:10510",
+      "figmaOnly": { "Back": "Whether onBack is set." }
+    },
     "ScreenReaderStatus": null
   }
 }

@@ -108,7 +108,10 @@
       "description": "A square, icon-only button with a tooltip. Disabled and loading work as on\nButton. Extra props pass straight to the `<button>`.",
       "figma": {
         "name": "Icon button",
-        "node": "13:629"
+        "node": "13:629",
+        "codeOnly": {
+          "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own."
+        }
       },
       "props": {
         "icon": {
@@ -212,7 +215,10 @@
       "description": "A link at the size of the text it sits in. With `onClick` it opens another\nview in the app (All results, View timeline) and ends in a caret; with\n`href` it opens a real address in a new window, ends in an arrow, and says\nso to a screen reader.",
       "figma": {
         "name": "Link",
-        "node": "505:845"
+        "node": "505:845",
+        "figmaOnly": {
+          "Type": "External is a link with href, View one with onClick."
+        }
       },
       "props": {
         "children": {
@@ -472,7 +478,10 @@
       "description": "A labelled single-line text input.",
       "figma": {
         "name": "Text field",
-        "node": "500:810"
+        "node": "500:810",
+        "figmaOnly": {
+          "Action": "Whether action holds a TextFieldAction."
+        }
       },
       "props": {
         "action": {
@@ -848,7 +857,10 @@
       "description": "A short hint on hover and keyboard focus, portalled so a card's clipping\nnever cuts it. A click hides it. Screen readers get the content as the\ntrigger's description, unless it repeats the trigger's name.",
       "figma": {
         "name": "Tooltip",
-        "node": "43:7"
+        "node": "43:7",
+        "codeOnly": {
+          "side": "Where it opens beside its trigger."
+        }
       },
       "props": {
         "children": {
@@ -1012,7 +1024,13 @@
       "description": "A small dot that marks a status beside its words; decorative, so the words carry it.",
       "figma": {
         "name": "Status dot",
-        "node": "494:735"
+        "node": "494:735",
+        "codeOnly": {
+          "pulse": "An animation: Figma draws the dot at rest."
+        },
+        "valuesDiffer": {
+          "tone": "current takes its words' colour, which Figma draws as each status."
+        }
       },
       "props": {
         "pulse": {
@@ -1355,7 +1373,10 @@
       "description": "A `<dl>` of DataRows: each row is a `<div>` holding a `<dt>` label and a\n`<dd>` value, so the pairs read as a description list.",
       "figma": {
         "name": "Data row",
-        "node": "15:642"
+        "node": "15:642",
+        "codeOnly": {
+          "density": "Figma has the row, not the list: a list's spacing is its frame's gap."
+        }
       },
       "props": {
         "children": {
@@ -1443,7 +1464,10 @@
       "description": "One label and value. Render it in a DataList, which sets its spacing.",
       "figma": {
         "name": "Data row",
-        "node": "15:642"
+        "node": "15:642",
+        "codeOnly": {
+          "align": "Not in Figma yet: a value with no text baseline sits on the row's middle."
+        }
       },
       "props": {
         "align": {
@@ -1482,7 +1506,10 @@
       "description": "A short drawn bar where a value would be but there's none, never a typed\ndash. It's sized in em, so it scales with the line it sits in, from a data\nrow to a hero number, and sits on that line's middle.",
       "figma": {
         "name": "No value",
-        "node": "708:667"
+        "node": "708:667",
+        "figmaOnly": {
+          "Size": "It sizes to its line in em: Figma draws a hero line's and a row's."
+        }
       },
       "props": {
         "label": {
@@ -1526,7 +1553,10 @@
       "description": "A number and its unit (live speed, data used), with an optional label and\nicon. A labelled readout is a term and its description, so it goes inside a\n`<dl>`; without a label, the icon sits inline with the figure.",
       "figma": {
         "name": "Readout",
-        "node": "4:106"
+        "node": "4:106",
+        "figmaOnly": {
+          "Has label": "Whether label is set."
+        }
       },
       "props": {
         "className": {
@@ -1668,7 +1698,10 @@
       "description": "Four rising bars, some lit: signal strength or a rating at a glance. Visual\nonly; whatever it sits in says the value in words or with role=\"meter\".",
       "figma": {
         "name": "Bar meter",
-        "node": "495:1044"
+        "node": "495:1044",
+        "figmaOnly": {
+          "Value": "value, a number from 0 to 4."
+        }
       },
       "props": {
         "className": {
@@ -1739,7 +1772,10 @@
       "description": "A 3px track holding a download and an upload segment side by side, each\nscaled against `max`, for comparing rows' traffic at a glance.",
       "figma": {
         "name": "Split bar",
-        "node": "556:619"
+        "node": "556:619",
+        "figmaOnly": {
+          "Mix": "Sample down and up values."
+        }
       },
       "props": {
         "className": {
@@ -1862,7 +1898,10 @@
       "description": "A rounded square holding an item's icon, tinted by what the item is. It\ntakes a ref and extra props, so it can be a Tooltip's trigger.",
       "figma": {
         "name": "Icon tile",
-        "node": "495:585"
+        "node": "495:585",
+        "figmaOnly": {
+          "Neutral": "color=\"neutral\"; any other colour is a tint."
+        }
       },
       "props": {
         "className": {
@@ -1996,7 +2035,11 @@
       "description": "One event on a timeline: a round marker tinted by what happened, its lines\nbeside it, and a line down to the next node. An `<li>`: put nodes in a list.",
       "figma": {
         "name": "Timeline node",
-        "node": "580:539"
+        "node": "580:539",
+        "figmaOnly": {
+          "Neutral": "color=\"neutral\", the hollow ring.",
+          "Last": "The list's last node, with no line down: CSS finds it."
+        }
       },
       "props": {
         "color": {
@@ -2047,7 +2090,13 @@
       "description": "The panel surface, clipped to its rounded corners. Build it from a\nCardHeader, a CardBody and an optional CardFooter, or lay out your own\ncontent in an element of your own inside it. With `onOpen` the whole card\nis a link; a control inside it raises itself above the link (`relative z-2`).",
       "figma": {
         "name": "Card",
-        "node": "543:62"
+        "node": "565:7535",
+        "codeOnly": {
+          "as": "The HTML element: it looks the same."
+        },
+        "figmaOnly": {
+          "Openable": "Whether onOpen is set."
+        }
       },
       "props": {
         "as": {
@@ -2124,7 +2173,7 @@
       "description": "The padded body. A little top padding gives the content more room below the title than above it.",
       "figma": {
         "name": "Card",
-        "node": "543:62"
+        "node": "565:7535"
       },
       "props": {
         "children": {
@@ -2155,7 +2204,7 @@
       "description": "A sunken band below the body, flush to the card's edges: a footnote or status.",
       "figma": {
         "name": "Card",
-        "node": "543:62"
+        "node": "565:7535"
       },
       "props": {
         "children": {
@@ -2556,7 +2605,10 @@
       "description": "The narrow icon-only rail down the window's left side. It stays above the content column, like the title bar.",
       "figma": {
         "name": "Nav rail",
-        "node": "41:892"
+        "node": "41:892",
+        "figmaOnly": {
+          "Page": "The page whose NavItem has isActive."
+        }
       },
       "props": {
         "footer": {
@@ -2611,7 +2663,10 @@
       "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, and actions at the end, over a full-width divider. It\nsits above the page content (`LAYER_RAISED`), so its tooltips aren't painted\nover by the content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
       "figma": {
         "name": "Page header",
-        "node": "542:10510"
+        "node": "542:10510",
+        "figmaOnly": {
+          "Back": "Whether onBack is set."
+        }
       },
       "props": {
         "actions": {

@@ -32,8 +32,11 @@ after a commit (syncing the sites and Storybook).
 6. Its entry in `src/ui/figma.json` (`null` when Figma has none) and its row in
    the [Components](#components) table. The entry's `name` and `node` are the
    Figma component's (or component set's) name and the id in its link's
-   `node-id`, with `-` as `:`; never guess one. With `FIGMA_TOKEN` in
-   `.env.local`, `npm run check` checks them against the file.
+   `node-id`, with `-` as `:`; never guess one. Map the component set, not
+   one of its variants. A prop with values Figma has no variant for goes in
+   the entry's `codeOnly`, a Figma variant code derives from other props in
+   `figmaOnly`, each with why. With `FIGMA_TOKEN` in `.env.local` (or in CI),
+   `npm run check` holds the names, variants and values to the file.
 7. `npm run catalogue`. Raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
    when the library's API changes, this included.
 8. The Figma side: the component on its group's page in the Figma file, with
@@ -297,12 +300,13 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | CSS Module classes match their use | `checks/css-modules.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
-| `figma.json`'s nodes exist in Figma under their names (skipped without `FIGMA_TOKEN`) | `checks/figma-nodes.mjs` |
+| Figma and the library agree: `figma.json`'s nodes and names, and every variant property and its values (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
 Review still has to catch: props passed only to pass down, hints over two
 sentences, focus or presence handled by hand, a view reaching into a
-component's DOM, and Figma left out of sync.
+component's DOM, and Figma out of sync beyond its variants (a token, a
+spacing, copy).
 
 ## The UI library
 

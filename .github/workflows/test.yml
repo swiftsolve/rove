@@ -29,4 +29,8 @@ jobs:
       # The story tests' browser.
       - run: npx playwright install --with-deps chromium
 
+      # FIGMA_TOKEN lets checks/figma.mjs hold the library to the Figma file; it
+      # skips while the secret isn't set.
       - run: npm run check
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
