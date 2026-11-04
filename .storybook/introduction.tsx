@@ -1,52 +1,46 @@
-import type { JSX, ReactNode } from 'react'
-import { SELECT_STORY } from 'storybook/internal/core-events'
-import { addons } from 'storybook/preview-api'
+import { type JSX, useEffect, useId, useRef, useState } from 'react'
 
 import {
-  AlertIcon,
   AppsIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   Badge,
   BarMeter,
-  BrandIcon,
   BrowsingIcon,
-  Button,
   Card,
   CardBody,
   CardHeader,
   CheckIcon,
-  ChevronRightIcon,
   CloudIcon,
-  ComputerIcon,
   DevicesIcon,
   EditIcon,
   EventsIcon,
   GamepadIcon,
   HdStreamIcon,
+  HelpIcon,
   HomeIcon,
   IconTile,
+  InlineMeta,
   LayersIcon,
   Link,
   LiveBadge,
+  LockIcon,
   MessageIcon,
   NavItem,
   NavRail,
   PlayIcon,
+  PulseIcon,
   Readout,
-  SearchIcon,
-  SegmentedControl,
   SettingsIcon,
-  ShieldAlertIcon,
   SpeedIcon,
-  Spinner,
-  SplitBar,
   StatusDot,
+  SunIcon,
   TitleBar,
   TitleBarStatus,
-  Toggle,
   UI_LIBRARY_VERSION,
+  UsageIcon,
   VideoCallIcon,
+  WifiIcon,
   WindowButton,
 } from '../src/ui'
 import catalogue from '../src/ui/components.gen.json'
@@ -55,46 +49,63 @@ import figma from '../src/ui/figma.json'
 const TOKENS_STORYBOOK = 'https://rove.swiftsolve.net/storybook/tokens/'
 const noop = (): void => {}
 
-type Component = { group: string; figma: unknown; stories: string[]; guidance?: unknown }
+type Component = { group: string; figma: { node: string } | null; stories: string[] }
 const components = Object.entries(catalogue.components as Record<string, Component>)
 
 // Every figure on the page is counted from the catalogue, so none can go stale.
 const storyCount = components.reduce((sum, [, { stories }]) => sum + stories.length, 0)
 const inFigma = components.filter(([, component]) => component.figma !== null).length
-const withGuide = components.filter(([, component]) => component.guidance).length
-const figmaExceptions = Object.values(figma.components as Record<string, Record<string, object> | null>).reduce(
-  (sum, entry) =>
-    sum + ['codeOnly', 'figmaOnly', 'valuesDiffer'].reduce((n, kind) => n + Object.keys(entry?.[kind] ?? {}).length, 0),
-  0,
-)
+const figmaNodes = new Set(components.flatMap(([, component]) => (component.figma ? [component.figma.node] : []))).size
 
-/** The groups in the library's order, each with its components and the Docs page of its first. */
+/** A Docs page's address, from inside Storybook's preview frame. */
+const docsHref = (id: string): string => `./?path=/docs/${id}`
+
+/** What each group holds, in a line; a group added later falls back to its members' names. */
+const GROUP_COPY: Record<string, { icon: JSX.Element; blurb: string }> = {
+  Actions: { icon: <PlayIcon size={18} />, blurb: 'Buttons and links: run a test, open a view.' },
+  Inputs: { icon: <EditIcon size={18} />, blurb: 'Fields, switches and segmented choices.' },
+  Overlays: { icon: <MessageIcon size={18} />, blurb: 'Dialogs, menus and tooltips, portalled.' },
+  'Status and feedback': { icon: <PulseIcon size={18} />, blurb: 'Badges, dots, spinners and banners.' },
+  'Data display': { icon: <UsageIcon size={18} />, blurb: 'Readouts, meters and data rows.' },
+  Containers: { icon: <LayersIcon size={18} />, blurb: 'Cards, collapsibles and separators.' },
+  'App frame': { icon: <HomeIcon size={18} />, blurb: 'Title bar, nav rail and page header.' },
+  Accessibility: { icon: <HelpIcon size={18} />, blurb: 'What screen readers hear as things change.' },
+}
+
 const groups = [...new Set(components.map(([, { group }]) => group))].map((group) => {
   const members = components.filter(([, component]) => component.group === group)
   const firstStory = members.find(([, { stories }]) => stories.length > 0)?.[1].stories[0]
-  return { group, count: members.length, docsId: firstStory?.replace(/--.*$/, '--docs') }
+  return {
+    group,
+    count: members.length,
+    docsId: firstStory?.replace(/--.*$/, '--docs') ?? 'introduction--docs',
+    icon: GROUP_COPY[group]?.icon ?? <AppsIcon size={18} />,
+    blurb: GROUP_COPY[group]?.blurb ?? members.map(([name]) => name).join(', '),
+  }
 })
+const half = Math.ceil(groups.length / 2)
 
-/** Opens another Docs page in Storybook, as a sidebar click does. */
-function openDocs(id: string): void {
-  addons.getChannel().emit(SELECT_STORY, { storyId: id, viewMode: 'docs' })
-}
-
-/** `code` in backticks. */
-function Prose({ text }: { text: string }): JSX.Element {
-  return <>{text.split('`').map((part, i) => (i % 2 === 1 ? <code key={i}>{part}</code> : part))}</>
-}
-
-/** A slice of the Rove window, live: every piece is a library component. */
-function AppWindow(): JSX.Element {
-  const brand = (
-    <>
-      <span className="intro-brand-mark" aria-hidden>
-        <BrandIcon size={20} />
-      </span>
-      <span className="type-heading-medium intro-brand-name">Rove</span>
-    </>
+/** The Rove mark in the app icon's gradient, its dot breathing and a glint running the arc. */
+function AnimatedMark({ size }: { size: number }): JSX.Element {
+  const id = useId()
+  const arc = 'M 11.98 36.02 A 17 17 0 1 1 36.02 36.02'
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="var(--series-down)" />
+          <stop offset="1" stopColor="var(--accent-default)" />
+        </linearGradient>
+      </defs>
+      <circle className="intro-mark-dot" cx="24" cy="24" r="7.5" fill={`url(#${id})`} />
+      <path d={arc} stroke={`url(#${id})`} strokeWidth="5" strokeLinecap="round" />
+      <path className="intro-mark-glint" d={arc} pathLength={100} strokeWidth="5" strokeLinecap="round" />
+    </svg>
   )
+}
+
+/** The Rove window, drawn with the library: the title bar, the rail and Home's cards. */
+function AppWindow(): JSX.Element {
   const pages = [
     { label: 'Home', icon: HomeIcon },
     { label: 'Speed', icon: SpeedIcon },
@@ -106,13 +117,20 @@ function AppWindow(): JSX.Element {
   const capabilities = [
     { label: 'Browsing', icon: <BrowsingIcon size={17} />, bars: 4 },
     { label: 'HD video', icon: <HdStreamIcon size={17} />, bars: 4 },
-    { label: 'Video calls', icon: <VideoCallIcon size={17} />, bars: 3 },
+    { label: 'Calls', icon: <VideoCallIcon size={17} />, bars: 3 },
     { label: 'Gaming', icon: <GamepadIcon size={17} />, bars: 2 },
   ]
   return (
-    <figure className="intro-window" aria-label="A slice of the Rove app, built from these components">
+    <figure className="intro-window" aria-label="Rove's Home screen, drawn with these components">
       <TitleBar
-        brand={brand}
+        brand={
+          <>
+            <span className="intro-window-mark" aria-hidden>
+              <AnimatedMark size={22} />
+            </span>
+            <span className="type-heading-medium intro-window-name">Rove</span>
+          </>
+        }
         status={<TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>}
         controls={
           <>
@@ -127,21 +145,46 @@ function AppWindow(): JSX.Element {
           main={pages.map(({ label, icon }) => (
             <NavItem key={label} label={label} icon={icon} isActive={label === 'Home'} onClick={noop} />
           ))}
-          footer={<NavItem label="Settings" icon={SettingsIcon} onClick={noop} />}
+          footer={
+            <>
+              <NavItem label="Theme" icon={SunIcon} onClick={noop} />
+              <NavItem label="Settings" icon={SettingsIcon} onClick={noop} />
+            </>
+          }
         />
         <div className="intro-window-content">
           <Card>
-            <CardHeader title="Live traffic" icon={<SpeedIcon size={16} />} actions={<LiveBadge />} />
             <CardBody>
-              <dl className="intro-window-readouts">
-                <Readout label="Download" value="182" unit="Mbps" icon={<ArrowDownIcon size={13} />} />
-                <Readout label="Upload" value="24.6" unit="Mbps" icon={<ArrowUpIcon size={13} />} />
-              </dl>
-              <SplitBar down={182} up={24.6} max={240} label="182 Mbps down, 24.6 up" />
+              <div className="intro-window-network">
+                <IconTile icon={<WifiIcon size={18} />} color="var(--accent-default)" size="lg" />
+                <div className="intro-window-network-copy">
+                  <p className="type-heading-medium">Starlight_5G</p>
+                  <InlineMeta
+                    className="type-body-small"
+                    items={[
+                      '192.168.1.42',
+                      '5 GHz',
+                      <span key="security" className="intro-window-secure">
+                        <LockIcon size={12} /> WPA3
+                      </span>,
+                    ]}
+                  />
+                </div>
+                <BarMeter value={4} size="md" color="var(--status-positive)" />
+              </div>
             </CardBody>
           </Card>
           <Card>
-            <CardHeader title="Capabilities" icon={<LayersIcon size={16} />} />
+            <CardHeader title="Live traffic" icon={<PulseIcon size={16} />} actions={<LiveBadge />} />
+            <CardBody>
+              <dl className="intro-window-pair">
+                <Readout label="Download" value="182" unit="Mbps" icon={<ArrowDownIcon size={13} />} />
+                <Readout label="Upload" value="24.6" unit="Mbps" icon={<ArrowUpIcon size={13} />} />
+              </dl>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader title="Capabilities" icon={<SpeedIcon size={16} />} />
             <CardBody>
               <ul className="intro-window-capabilities">
                 {capabilities.map(({ label, icon, bars }) => (
@@ -156,22 +199,25 @@ function AppWindow(): JSX.Element {
           </Card>
           <div className="intro-window-row">
             <Card>
-              <CardHeader title="Devices" icon={<DevicesIcon size={16} />} />
+              <CardHeader title="Usage" icon={<UsageIcon size={16} />} />
+              <CardBody>
+                <div className="intro-window-pair">
+                  <Readout value="4.90" unit="GB" size="compact" icon={<ArrowDownIcon size={13} />} />
+                  <Readout value="600" unit="MB" size="compact" icon={<ArrowUpIcon size={13} />} />
+                </div>
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader
+                title="Devices"
+                icon={<DevicesIcon size={16} />}
+                actions={<Badge tone="positive">New</Badge>}
+              />
               <CardBody>
                 <p className="intro-window-online">
                   <StatusDot tone="positive" pulse="calm" />
                   <span className="type-number-default">16</span> online
                 </p>
-              </CardBody>
-            </Card>
-            <Card>
-              <CardHeader
-                title="Security"
-                icon={<ShieldAlertIcon size={16} />}
-                actions={<Badge tone="positive">VPN</Badge>}
-              />
-              <CardBody>
-                <p className="type-body-small">WPA3, behind a VPN.</p>
               </CardBody>
             </Card>
           </div>
@@ -181,277 +227,232 @@ function AppWindow(): JSX.Element {
   )
 }
 
-/** A live sample of each group, inert so the card around it stays one link. */
-const PREVIEWS: Record<string, ReactNode> = {
-  Actions: (
-    <>
-      <Button variant="solid" icon={PlayIcon} onClick={noop}>
-        Run test
-      </Button>
-      <Button onClick={noop}>Reset</Button>
-    </>
-  ),
-  Inputs: (
-    <>
-      <SegmentedControl
-        label="Range"
-        value="day"
-        onChange={noop}
-        options={[
-          { value: 'day', label: 'Day' },
-          { value: 'week', label: 'Week' },
-        ]}
-      />
-      <Toggle label="Alerts" isChecked onChange={noop} />
-    </>
-  ),
-  Overlays: <IconTile icon={<MessageIcon size={17} />} color="var(--accent-default)" size="lg" />,
-  'Status and feedback': (
-    <>
-      <LiveBadge />
-      <Badge tone="positive">VPN</Badge>
-      <Badge tone="warning">Slow</Badge>
-      <Spinner size={22} />
-    </>
-  ),
-  'Data display': (
-    <>
-      <Readout value="182" unit="Mbps" size="compact" />
-      <BarMeter value={3} size="md" color="var(--status-positive)" />
-    </>
-  ),
-  Containers: (
-    <div className="intro-preview-card">
-      <Card>
-        <CardHeader title="Devices" icon={<DevicesIcon size={16} />} />
-      </Card>
-    </div>
-  ),
-  'App frame': (
-    <>
-      <NavItem label="Home" icon={HomeIcon} isActive onClick={noop} />
-      <NavItem label="Speed" icon={SpeedIcon} onClick={noop} />
-      <TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>
-    </>
-  ),
-  Accessibility: <IconTile icon={<CheckIcon size={17} />} color="var(--status-positive)" size="lg" />,
-}
-
-const STEPS = [
-  { name: 'Figma', line: 'Variables, text styles and every component.', icon: <EditIcon size={18} />, to: 'exported' },
-  {
-    name: 'rove-tokens',
-    line: 'CSS variables, the theme and `DESIGN.md`.',
-    icon: <LayersIcon size={18} />,
-    to: 'the only theme',
-  },
-  {
-    name: 'Rove Components',
-    line: 'React, styled only with tokens.',
-    icon: <AppsIcon size={18} />,
-    to: 'imported from `@/ui`',
-  },
-  { name: 'Rove', line: 'Every screen, built from the library.', icon: <ComputerIcon size={18} /> },
-]
-
-const LAYERS = [
-  {
-    name: 'Context',
-    line: 'So agents know what exists.',
-    color: 'var(--accent-default)',
-    icon: <SearchIcon size={17} />,
-    points: ['`AGENTS.md` routes each task', '`DESIGN.md` loads with UI work', 'A catalogue generated from code'],
-  },
-  {
-    name: 'Constraint',
-    line: 'So drift fails as it’s written.',
-    color: 'var(--status-warning)',
-    icon: <AlertIcon size={17} />,
-    points: ['A theme with only tokens', 'No raw values, spacing on the scale', 'A `className` places, never restyles'],
-  },
-  {
-    name: 'Checks',
-    line: 'So the system stays true.',
-    color: 'var(--status-positive)',
-    icon: <CheckIcon size={17} />,
-    points: [
-      `${storyCount} stories, each run through axe`,
-      'Figma variants held to the props',
-      `${figmaExceptions} Figma differences, each with why`,
-    ],
-  },
-]
-
-const OFF_SYSTEM = `<div className="rounded-[8px] bg-[#f3f4f6] p-[12px]">
-  <button onClick={retry}>Retry</button>
-</div>`
-
-// The checks' own words, from raw-values.mjs and eslint.config.js.
-const ERRORS = [
-  'rounded-[8px] is --radius-sm; use rounded-sm',
-  '#f3f4f6 is a raw colour; use a colour token',
-  'p-[12px] is --spacing-12; use p-12',
-  'Use a button from @/ui (Button, IconButton, ListRow, StretchedLink…), not a raw <button>.',
-]
-
-const ON_SYSTEM = `<Card>
-  <CardBody>
-    <Button onClick={retry}>Retry</Button>
-  </CardBody>
-</Card>`
-
-function SectionHead({ id, overline, title, intro }: { id: string; overline: string; title: string; intro?: string }) {
+function Stop({ group, count, docsId, icon, blurb, isActive }: (typeof groups)[number] & { isActive: boolean }) {
   return (
-    <header className="intro-section-head">
-      <p className="type-overline intro-overline">{overline}</p>
-      <h2 id={id} className="intro-h2">
-        {title}
-      </h2>
-      {intro && <p className="intro-section-intro">{intro}</p>}
-    </header>
+    <a className={`intro-stop${isActive ? ' is-active' : ''}`} href={docsHref(docsId)} target="_top">
+      <span className="intro-stop-title">
+        {icon}
+        {group}
+        <span className="intro-stop-count">{count}</span>
+      </span>
+      <span className="intro-stop-blurb">{blurb}</span>
+    </a>
   )
 }
 
-/** The library's front page, built from its own components. */
+type Line = { key: string; value: string; tone?: 'negative' | 'positive' }
+
+// An agent's off-system card, then the fixed one: the checks answer in their
+// own words (raw-values.mjs, eslint.config.js, checks/figma.mjs).
+const SESSION: { command: string; lines: Line[] }[] = [
+  {
+    command: 'npm run check',
+    lines: [
+      { key: 'raw-values', value: 'rounded-[8px] is --radius-sm; use rounded-sm', tone: 'negative' },
+      { key: 'raw-values', value: '#f3f4f6 is a raw colour; use a colour token', tone: 'negative' },
+      { key: 'raw-values', value: 'p-[12px] is --spacing-12; use p-12', tone: 'negative' },
+      {
+        key: 'eslint',
+        value: 'Use a button from @/ui (Button, IconButton, ListRow, StretchedLink…), not a raw <button>.',
+        tone: 'negative',
+      },
+    ],
+  },
+  {
+    command: 'npm run check',
+    lines: [
+      { key: 'raw-values', value: 'OK' },
+      { key: 'figma', value: `OK (${figmaNodes} nodes, their names and variants)` },
+      { key: 'stories', value: `${storyCount} passed, axe at zero`, tone: 'positive' },
+    ],
+  },
+]
+const LINE_COUNT = SESSION.reduce((sum, { lines }) => sum + lines.length + 1, 0)
+
+/** The checks, played as a session once the card is on screen; reduced motion shows it finished. */
+function CheckTerminal(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null)
+  // Reduced motion: no session, just the finished output.
+  const [shown, setShown] = useState(() =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? LINE_COUNT : 0,
+  )
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let timer: ReturnType<typeof setInterval> | undefined
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        timer = setInterval(() => {
+          setShown((count) => {
+            if (count + 1 >= LINE_COUNT) clearInterval(timer)
+            return count + 1
+          })
+        }, 260)
+      },
+      { threshold: 0.35 },
+    )
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+      clearInterval(timer)
+    }
+  }, [])
+
+  let index = 0
+  const isShown = (): boolean => index++ < shown
+  return (
+    <div className="intro-terminal" ref={ref}>
+      <div className="intro-terminal-bar" aria-hidden>
+        <span className="intro-terminal-light is-red" />
+        <span className="intro-terminal-light is-amber" />
+        <span className="intro-terminal-light is-green" />
+        <span className="intro-terminal-title">src/features/retry</span>
+      </div>
+      <div className="intro-terminal-body">
+        {SESSION.map(({ command, lines }, run) => (
+          <div key={run} className="intro-terminal-run">
+            <p className={`intro-terminal-prompt${isShown() ? ' is-shown' : ''}`}>
+              <span className="intro-terminal-mark">$</span> {command}
+            </p>
+            {lines.map(({ key, value, tone }) => (
+              <p key={value} className={`intro-terminal-line${isShown() ? ' is-shown' : ''}`}>
+                <span className="intro-terminal-key">{key}</span>
+                <span className={tone ? `intro-terminal-value is-${tone}` : 'intro-terminal-value'}>{value}</span>
+              </p>
+            ))}
+          </div>
+        ))}
+        <p className="intro-terminal-prompt is-shown">
+          <span className="intro-terminal-mark">$</span>
+          <span className="intro-terminal-cursor" />
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/** The library's front page, in the Rove landing page's design, built from the library itself. */
 export function Introduction(): JSX.Element {
   return (
     <div className="intro sb-unstyled">
-      <section className="intro-hero" aria-labelledby="intro-title">
-        <div className="intro-hero-copy">
-          <p className="intro-pill">Rove Design System</p>
-          <h1 id="intro-title">Rove Components</h1>
-          <p className="intro-lead">
-            Rove&rsquo;s interface as a React library, built so people and agents make the same UI, from Figma to the
-            app.
-          </p>
-          <p className="intro-hero-links">
-            <Link onClick={() => openDocs('actions-button--docs')}>Start with Button</Link>
-            <Link href={figma.file}>Open the Figma file</Link>
-            <Link href={TOKENS_STORYBOOK}>Rove Tokens</Link>
-          </p>
-          <dl className="intro-stats">
-            <Readout label="Components" value={String(components.length)} />
-            <Readout label="Stories" value={String(storyCount)} />
-            <Readout label="In Figma" value={String(inFigma)} unit={`/ ${components.length}`} />
-            <Readout label="Usage guides" value={String(withGuide)} unit={`/ ${components.length}`} />
-          </dl>
+      <header className="intro-hero">
+        <div className="intro-radar" aria-hidden>
+          {Array.from({ length: 12 }, (_, i) => (
+            <span key={i} className="intro-blip" />
+          ))}
         </div>
-        <AppWindow />
+        <div className="intro-wrap">
+          <span className="intro-logo" aria-hidden>
+            <AnimatedMark size={90} />
+          </span>
+          <h1>
+            One design system,
+            <br />
+            <span className="intro-accent">for people and agents</span>
+          </h1>
+          <p className="intro-sub">
+            Rove Components is Rove&rsquo;s interface as a React library. A designer in Figma, a developer and a coding
+            agent build with the same components, tokens and rules, and the checks keep it that way.
+          </p>
+          <div className="intro-ctas">
+            <a className="intro-cta" href={docsHref('actions-button--docs')} target="_top">
+              Explore the components
+            </a>
+            <Link href={figma.file}>Open the Figma file</Link>
+          </div>
+          <ul className="intro-meta">
+            <li>
+              <CheckIcon size={14} /> {components.length} components
+            </li>
+            <li>
+              <CheckIcon size={14} /> {storyCount} stories, each run through axe
+            </li>
+            <li>
+              <CheckIcon size={14} /> {inFigma} in Figma
+            </li>
+          </ul>
+        </div>
+      </header>
+
+      <section className="intro-showcase" aria-labelledby="intro-live">
+        <div className="intro-wrap">
+          <div className="intro-section-head">
+            <span className="intro-kicker">Live</span>
+            <h2 id="intro-live">Every piece is the real thing</h2>
+            <p>This is Rove&rsquo;s Home screen, drawn with the library. Pick a group to open its docs.</p>
+          </div>
+          <div className="intro-showcase-grid">
+            <div className="intro-rail">
+              {groups.slice(0, half).map((group, i) => (
+                <Stop key={group.group} {...group} isActive={i === 0} />
+              ))}
+            </div>
+            <AppWindow />
+            <div className="intro-rail">
+              {groups.slice(half).map((group) => (
+                <Stop key={group.group} {...group} isActive={false} />
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
-      <div className="intro-body">
-        <section className="intro-section" aria-labelledby="intro-how">
-          <SectionHead
-            id="intro-how"
-            overline="How it works"
-            title="One source, four steps"
-            intro="Figma is the source of truth. Each step takes only what the one before it made."
-          />
-          <ol className="intro-pipeline">
-            {STEPS.map(({ name, line, icon, to }) => (
-              <li key={name}>
-                <div className="intro-step">
-                  <IconTile icon={icon} color="var(--accent-default)" size="lg" />
-                  <strong className="type-heading-small">{name}</strong>
-                  <span className="type-body-small">
-                    <Prose text={line} />
-                  </span>
-                </div>
-                {to && (
-                  <span className="intro-connector type-caption">
-                    <span className="intro-connector-line" aria-hidden />
-                    <span>
-                      <Prose text={to} />
-                    </span>
-                    <ChevronRightIcon size={14} />
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="intro-section" aria-labelledby="intro-drift">
-          <SectionHead
-            id="intro-drift"
-            overline="Why it matters"
-            title="Agents drift. Rove catches it."
-            intro="An agent can read every token and still write from its training data. Here the checks answer in their own words."
-          />
-          <div className="intro-compare">
-            <figure className="intro-panel intro-panel-off">
-              <figcaption className="type-label-default">
-                <AlertIcon size={15} /> What an agent writes
-              </figcaption>
-              <pre>
-                <code>{OFF_SYSTEM}</code>
-              </pre>
-              <ul className="intro-errors" aria-label="npm run check">
-                {ERRORS.map((error) => (
-                  <li key={error}>{error}</li>
-                ))}
-              </ul>
-            </figure>
-            <figure className="intro-panel intro-panel-on">
-              <figcaption className="type-label-default">
-                <CheckIcon size={15} /> What lands
-              </figcaption>
-              <pre>
-                <code>{ON_SYSTEM}</code>
-              </pre>
-              <div className="intro-panel-render" inert>
-                <Card>
-                  <CardBody>
-                    <Button onClick={noop}>Retry</Button>
-                  </CardBody>
-                </Card>
-              </div>
-            </figure>
+      <section className="intro-hood" aria-labelledby="intro-hood">
+        <div className="intro-wrap intro-hood-grid">
+          <div className="intro-hood-copy">
+            <span className="intro-kicker">How agents stay on-system</span>
+            <h2 id="intro-hood">
+              Context, constraint,
+              <br />
+              and checks
+            </h2>
+            <p>
+              Agents fail two ways. They don&rsquo;t know a component exists, so they write their own. Or they know, and
+              drift anyway: a 5px gap with the tokens in plain view.
+            </p>
+            <p>
+              So <code>AGENTS.md</code> routes each task, <code>DESIGN.md</code> loads with UI work, and a catalogue
+              generated from the code lists every prop. The theme holds only tokens, so a raw value has nowhere to go.
+              And every edit is linted as it&rsquo;s written, every story runs through axe, and every Figma variant is
+              held to its prop.
+            </p>
           </div>
-        </section>
+          <CheckTerminal />
+        </div>
+      </section>
 
-        <section className="intro-section" aria-labelledby="intro-layers">
-          <SectionHead id="intro-layers" overline="How agents stay on-system" title="Context, constraint, checks" />
-          <ul className="intro-layers">
-            {LAYERS.map(({ name, line, color, icon, points }) => (
-              <li key={name} className="intro-layer">
-                <IconTile icon={icon} color={color} size="lg" />
-                <h3 className="type-heading-small">{name}</h3>
-                <p className="type-body-small">{line}</p>
-                <ul>
-                  {points.map((point) => (
-                    <li key={point}>
-                      <Prose text={point} />
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </section>
+      <section className="intro-close" aria-labelledby="intro-close">
+        <div className="intro-wrap">
+          <h2 id="intro-close">Build it once. Build it on-system.</h2>
+          <p>Open a component, or the Figma file it comes from.</p>
+          <div className="intro-ctas">
+            <a className="intro-cta" href={docsHref('actions-button--docs')} target="_top">
+              Explore the components
+            </a>
+            <Link href={TOKENS_STORYBOOK}>Rove Tokens</Link>
+          </div>
+        </div>
+        <span className="intro-wordmark" aria-hidden>
+          Rove
+        </span>
+      </section>
 
-        <section className="intro-section" aria-labelledby="intro-components">
-          <SectionHead id="intro-components" overline="Components" title="Every group, live" />
-          <ul className="intro-gallery">
-            {groups.map(({ group, count, docsId }) => (
-              <li key={group}>
-                <Card onOpen={docsId ? () => openDocs(docsId) : undefined} linkLabel={`${group} components`}>
-                  <div className="intro-preview" inert>
-                    {PREVIEWS[group]}
-                  </div>
-                  <CardHeader title={group} actions={<span className="type-caption">{count}</span>} />
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <footer className="intro-footer">
-          <span>Version {UI_LIBRARY_VERSION}</span>
-          <Link href={figma.file}>Figma file</Link>
-          <Link href={TOKENS_STORYBOOK}>Rove Tokens</Link>
-        </footer>
-      </div>
+      <footer className="intro-footer">
+        <div className="intro-wrap intro-footer-inner">
+          <span className="intro-footer-brand">
+            <AnimatedMark size={24} />
+            Rove Components
+            <span className="intro-version">v{UI_LIBRARY_VERSION}</span>
+          </span>
+          <span className="intro-footer-links">
+            <Link href={figma.file}>Figma file</Link>
+            <Link href={TOKENS_STORYBOOK}>Rove Tokens</Link>
+          </span>
+        </div>
+      </footer>
     </div>
   )
 }
