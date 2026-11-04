@@ -11,7 +11,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 [![Build](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/build.yml?label=build&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/build.yml)
 [![Slideshow](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/presentation.yml?label=slideshow&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/presentation.yml)
 [![Version](https://img.shields.io/github/package-json/v/swiftsolve/rove-tokens?label=version&labelColor=17181b&color=5b8cff)](https://github.com/swiftsolve/rove-tokens/tags)
-[![Figma](https://img.shields.io/badge/Figma-source_of_truth-5b8cff?logo=figma&logoColor=white&labelColor=17181b)](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
+[![Figma](https://img.shields.io/badge/Figma-two--way_sync-5b8cff?logo=figma&logoColor=white&labelColor=17181b)](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 
 [![DTCG](https://img.shields.io/badge/DTCG-2025.10-5b8cff?labelColor=17181b)](https://www.designtokens.org/tr/2025.10/format/)
 [![Style Dictionary](https://img.shields.io/badge/Style_Dictionary-5-5b8cff?labelColor=17181b)](https://styledictionary.com/)
@@ -31,7 +31,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 ---
 
-Figma is the source of truth. A [Figma plugin](figma-plugin/) exports its variables and text styles, and this package turns them into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/).
+Tokens are designed in Figma and released from git. A [Figma plugin](figma-plugin/) exports the file's variables and text styles, and this package turns them into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/). A change made here goes back the other way: the plugin's Sync makes the file match the repo, and its check lists anything that still differs. Either way, a token ships only through a commit, the build and a release.
 
 > [!TIP]
 > **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, with every value. It ships in the package, so coding agents in Rove can read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`.
@@ -57,6 +57,8 @@ flowchart TD
   storybook("<b>Storybook</b><br/>both themes"):::ship
 
   figma --> exports & slides
+  exports -.->|Sync| figma
+  code -.->|Sync| figma
   exports & code --> dtcg
   dtcg --> css & textCss & design
   build --> pkg & storybook
@@ -66,7 +68,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. The dotted arrows are the plugin's Sync, which writes the repo's tokens back into Figma. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
@@ -129,15 +131,28 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 | `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css` and the `DESIGN.md` reference. `npm install` and `npm publish` run it too. |
 | `npm run storybook` | The Rove Tokens Storybook on port 6007 |
 | `npm run build:storybook` | A static copy of it in `storybook-static/` |
+| `npm run figma -- check` | A script for the Figma MCP's `use_figma` that lists every difference between the Figma file and the repo. `apply` makes the file match, `export` reads it, and `save <result.json>` writes an export into `src/figma/`. |
 | `npm run present` | Builds, then exports the Figma file's pages to the slideshow in `presentation/`. Needs `FIGMA_TOKEN` in `.env.local`. |
 | `npm run present:publish` | Pushes that slideshow to GitHub Pages |
 
 ## 🔄 Update the tokens
 
+A change can start in Figma or here. It ships only once it's committed, and Figma and the repo agree.
+
+**In Figma**
+
 1. Change the variables or text styles in Figma.
-2. Export them to `src/figma/variables.json` and `src/figma/text-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or by asking Claude to export them through the Figma connection.
+2. Export them to `src/figma/variables.json` and `src/figma/text-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma -- export`, then `npm run figma -- save <result.json>`).
 3. Run `npm run build` (Node 22) and check `dist/tokens.css`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
 4. Commit the change.
+
+**Here**
+
+1. Edit `src/figma/*.json`, or the shadows in `src/code-tokens.json`, and run `npm run build`.
+2. Make Figma match: in the plugin, open **Sync**, choose the three files from your checkout and **Apply**; or pass `npm run figma -- apply` to the Figma MCP's `use_figma`. Shadows become the `Shadow/*` effect styles. **Remove extras** (`--prune`) also deletes what the repo doesn't have.
+3. Commit the change.
+
+**Then check.** The plugin's **Sync** tab (against your files, or the latest release) or `npm run figma -- check` lists every difference: values, code syntax, descriptions, scopes, text styles and shadows. A few it can only report, because Figma's API can't change them: mode order, and a variable's collection or type. Fix those by hand.
 
 ## 🚀 Release
 
@@ -158,13 +173,14 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 
 ## 🗂️ What's where
 
-**From Figma**
+**Sources and the sync**
 
 | Path | What |
 | --- | --- |
 | `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
-| `figma-plugin/` | Rove Tokens Export, the Figma plugin that writes the two exports: every local variable by collection and mode, aliases kept, in the variables panel's order, and every local text style with the variables bound to it. It previews both files, then downloads them; it has no network access. |
+| `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the two exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), and every local text style with the variables bound to it. **Sync** compares the file with the latest release (fetched from unpkg, its only network access) or with files you choose, lists every difference, and applies the repo's tokens to the file. |
+| `scripts/figma/script.mjs` | `npm run figma`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent checks, applies and exports the same way. |
 | `src/code-tokens.json` | What Figma variables can't hold: font stacks for the font-family variables, shadows, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 
 **Build**
@@ -194,6 +210,7 @@ A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git 
 | Path | What |
 | --- | --- |
 | `.github/workflows/build.yml` | On each release tag, builds the tokens and checks `DESIGN.md` was rebuilt and committed. Run it by hand from Actions to check `main`. |
+| `scripts/checks/figma-sync.mjs` | Part of `npm run check`: runs the plugin's sync against a stand-in Figma file made from the repo. Check must find nothing, then find planted differences, and Apply must fix them. |
 | `.github/workflows/publish.yml` | On each release tag, publishes that version to npm with trusted publishing, so the repo holds no npm token. |
 | `.github/workflows/presentation.yml` | On each release tag, or by hand from Actions, exports the slideshow from Figma and publishes it. Needs the `FIGMA_TOKEN` repository secret. |
 | `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |

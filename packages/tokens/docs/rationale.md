@@ -53,3 +53,11 @@ The reasons behind the token values. The values themselves live in Figma (and in
 ## Type sizes
 
 - **`font-size/xl` is for Heading/Medium,** a step under Heading/Large.
+
+## Where a change is made
+
+- **Figma is where tokens are designed; git is the record.** Designers work in Figma, so it stays their library. But a release needs what Figma lacks: review on a diff, a build that refuses a broken reference, a version number. So a token ships only once it's in this repo, whichever side it started on.
+- **Changes flow both ways, and a check proves they agree.** The plugin exports Figma into `src/figma/`. Its Sync writes the repo back into Figma, so a change made in code reaches designers too, and its check lists anything that still differs. One piece of code does all three, for the plugin and for agents through the Figma MCP, so the two can't disagree about what in sync means.
+- **The check runs in Figma, not in CI.** Figma's REST API reads and writes variables only on the Enterprise plan, so nothing outside Figma can read them here. `npm run check` tests the sync against a stand-in file instead, and the plugin or an agent runs the real check.
+- **Shadows sync; easings don't.** A shadow is a Figma effect style bound to the shadow colour variables, so `src/code-tokens.json` drives the `Shadow/*` styles. Figma has no token for an easing curve, so those stay in code.
+- **Components start in code.** Each component's props, variants and usage guide come from `src/ui` in Rove (`components.gen.json`), and the Figma component mirrors them.

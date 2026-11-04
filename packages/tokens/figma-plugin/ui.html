@@ -29,6 +29,9 @@
   * {
     box-sizing: border-box;
   }
+  [hidden] {
+    display: none !important;
+  }
   body {
     margin: 0;
     height: 100vh;
@@ -228,6 +231,71 @@
   .primary:hover:not(:disabled) {
     background: var(--accent-fill-hover);
   }
+  .secondary {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .secondary:hover:not(:disabled) {
+    background: var(--bg-secondary);
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  /* Sync: the list of differences. */
+  .diff {
+    height: 100%;
+    overflow: auto;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+  }
+  .diff li {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .diff li:last-child {
+    border-bottom: 0;
+  }
+  .diff .what {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+  }
+  .diff .kind {
+    color: var(--text-tertiary);
+  }
+  .diff .name {
+    font-weight: 500;
+  }
+  .diff .field {
+    color: var(--text-secondary);
+  }
+  .diff .values {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    margin-top: 2px;
+    color: var(--text-secondary);
+    font:
+      11px/16px 'SF Mono',
+      ui-monospace,
+      Menlo,
+      Consolas,
+      monospace;
+    word-break: break-word;
+  }
+  .diff .values span:nth-child(odd) {
+    color: var(--text-tertiary);
+  }
+  .diff .manual {
+    margin-top: 2px;
+    color: var(--text-danger);
+  }
 </style>
 
 <header>
@@ -248,7 +316,7 @@
     />
   </svg>
   <div>
-    <h1 id="title">Rove Tokens Export</h1>
+    <h1 id="title">Rove Tokens</h1>
     <div class="meta" id="meta">Reading the file…</div>
   </div>
 </header>
@@ -259,6 +327,7 @@
   <button role="tab" data-file="text-styles.json" aria-selected="false">
     Text styles<span class="count" id="count-text-styles.json"></span>
   </button>
+  <button role="tab" data-file="sync" aria-selected="false">Sync<span class="count" id="count-sync"></span></button>
 </nav>
 <main id="view">
   <div class="state">
@@ -266,9 +335,19 @@
     Reading variables and text styles…
   </div>
 </main>
-<footer>
+<footer id="export-footer">
   <span class="hint">Save to <code>src/figma/</code></span>
   <button class="btn primary" id="export" disabled>Export</button>
+</footer>
+<footer id="sync-footer" hidden>
+  <span class="hint" id="source"></span>
+  <button class="btn secondary" id="release">Latest release</button>
+  <button class="btn secondary" id="choose">Choose files</button>
+  <input type="file" id="files" accept=".json" multiple hidden />
+  <label class="check" title="Also remove what the repo doesn't have">
+    <input type="checkbox" id="prune" />Remove extras
+  </label>
+  <button class="btn primary" id="apply" disabled>Apply</button>
 </footer>
 
 <script>
@@ -289,9 +368,49 @@
           : `<span class="n">${match}</span>`,
     )
 
+  // Sync: the repo's tokens to compare with, where they came from, and the last Check or Apply.
+  let repo = null
+  let source = ''
+  let result = null
+  let busy = false
+  let syncError = ''
+
+  const state = (html, spinner) =>
+    `<div class="state">${spinner ? '<div class="spinner"></div>' : ''}<div>${html}</div></div>`
+
+  function showSync() {
+    if (syncError) return `<div class="state error">${escape(syncError)}</div>`
+    if (busy) return state('Comparing with the repo…', true)
+    if (!result) return state('Compare this file with the latest release, or with the token files from a checkout.')
+    const n = result.done?.length ?? 0
+    const done = n
+      ? `<li><b>Applied ${n} ${n === 1 ? 'change' : 'changes'}.</b> ${result.diff.length ? '' : `In sync with ${escape(source)}.`} Undo with ⌘Z.<div class="values">${result.done.map((d) => `<span></span><span>${escape(d)}</span>`).join('')}</div></li>`
+      : ''
+    if (!result.diff.length) return done ? `<ul class="diff">${done}</ul>` : state(`In sync with ${escape(source)}.`)
+    const items = result.diff.map((d) => {
+      const values =
+        d.change === 'differs'
+          ? `<div class="values"><span>Figma</span><span>${escape(String(d.figma))}</span><span>Repo</span><span>${escape(String(d.repo))}</span></div>`
+          : `<div class="values"><span></span><span>${d.change === 'missing' ? 'Only in the repo' : 'Only in Figma'}</span></div>`
+      const manual = d.fixable ? '' : '<div class="manual">Fix this by hand in Figma.</div>'
+      return `<li><div class="what"><span class="kind">${d.kind}</span><span class="name">${escape(d.name)}</span><span class="field">${escape(d.field || '')}</span></div>${values}${manual}</li>`
+    })
+    return `<ul class="diff">${done}${items.join('')}</ul>`
+  }
+
   function show() {
     for (const tab of document.querySelectorAll('[role=tab]'))
       tab.setAttribute('aria-selected', tab.dataset.file === current)
+    const syncing = current === 'sync'
+    $('export-footer').hidden = syncing
+    $('sync-footer').hidden = !syncing
+    if (syncing) {
+      $('view').innerHTML = showSync()
+      const canApply = result?.diff.some((d) => d.fixable && (d.change !== 'extra' || $('prune').checked))
+      $('apply').disabled = busy || !repo || !canApply
+      $('count-sync').textContent = result ? result.diff.length : ''
+      return
+    }
     if (!files) return
     $('view').innerHTML = `<pre>${files[current]
       .split('\n')
@@ -299,14 +418,94 @@
       .join('')}</pre>`
   }
 
+  /** Ask code.js to check or apply `repo`. */
+  function run(type) {
+    busy = true
+    syncError = ''
+    parent.postMessage({ pluginMessage: { type, repo, prune: $('prune').checked } }, '*')
+    show()
+  }
+
+  /** Take the repo's tokens, say where they came from, and check. */
+  function load(tokens, from) {
+    repo = tokens
+    source = from
+    $('source').textContent = from
+    run('check')
+  }
+
+  // The latest release, from npm through unpkg: the package ships src/.
+  const PACKAGE = 'https://unpkg.com/@swiftsolve/rove-tokens'
+  $('release').onclick = async () => {
+    busy = true
+    syncError = ''
+    show()
+    try {
+      const get = async (url) => {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error(`${url}: ${response.status}`)
+        return response.json()
+      }
+      const { version } = await get(`${PACKAGE}@latest/package.json`)
+      const at = `${PACKAGE}@${version}/src`
+      const [variables, textStyles, codeTokens] = await Promise.all(
+        ['figma/variables.json', 'figma/text-styles.json', 'code-tokens.json'].map((f) => get(`${at}/${f}`)),
+      )
+      load({ variables, textStyles, codeTokens }, `v${version}`)
+    } catch (error) {
+      busy = false
+      syncError = `Couldn't fetch the release. ${error.message}`
+      show()
+    }
+  }
+
+  // Files from a checkout: src/figma/variables.json, src/figma/text-styles.json and src/code-tokens.json.
+  $('choose').onclick = () => $('files').click()
+  $('files').onchange = async () => {
+    const chosen = {}
+    for (const f of $('files').files) chosen[f.name] = JSON.parse(await f.text())
+    $('files').value = ''
+    const missing = ['variables.json', 'text-styles.json', 'code-tokens.json'].filter((n) => !chosen[n])
+    if (missing.length) {
+      syncError = `Choose all three files; missing ${missing.join(', ')}.`
+      show()
+      return
+    }
+    load(
+      {
+        variables: chosen['variables.json'],
+        textStyles: chosen['text-styles.json'],
+        codeTokens: chosen['code-tokens.json'],
+      },
+      'the chosen files',
+    )
+  }
+
+  $('apply').onclick = () => run('apply')
+  $('prune').onchange = show
+
   onmessage = (event) => {
-    const message = event.data.pluginMessage
-    if (message.error) {
+    // Only the plugin's own message (code.js) concerns this page.
+    const message = event.data?.pluginMessage
+    if (!message) return
+    if (message.type === 'error') {
+      if (busy || current === 'sync') {
+        busy = false
+        syncError = message.error
+        show()
+        return
+      }
       $('meta').textContent = 'Export failed'
       $('view').innerHTML = `<div class="state error">${escape(message.error)}</div>`
       return
     }
-    files = message
+    if (message.type === 'check' || message.type === 'apply') {
+      busy = false
+      result = message
+      show()
+      return
+    }
+    files = message.files
     const variables = JSON.parse(files['variables.json'])
     const styles = JSON.parse(files['text-styles.json'])
     if (variables.file?.name) $('title').textContent = variables.file.name

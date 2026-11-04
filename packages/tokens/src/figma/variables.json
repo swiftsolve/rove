@@ -26,13 +26,13 @@
     {
       "name": "Icon tone",
       "modes": [
-        "Tertiary",
+        "Primary",
         "Secondary",
+        "Tertiary",
         "Accent",
         "Positive",
-        "Primary",
-        "On fill",
-        "Negative"
+        "Negative",
+        "On fill"
       ]
     },
     {
@@ -77,6 +77,10 @@
       "type": "COLOR",
       "code": "var(--bg-base)",
       "description": "Backdrop",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/850"
@@ -92,6 +96,10 @@
       "type": "COLOR",
       "code": "var(--bg-surface)",
       "description": "Content on the backdrop",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/800"
@@ -107,6 +115,10 @@
       "type": "COLOR",
       "code": "var(--bg-hover)",
       "description": "Hovered rows and buttons",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/750"
@@ -122,6 +134,11 @@
       "type": "COLOR",
       "code": "var(--border-default)",
       "description": "Hairlines",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a7"
@@ -137,6 +154,10 @@
       "type": "COLOR",
       "code": "var(--fill-default)",
       "description": "Overlay",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a7"
@@ -152,6 +173,10 @@
       "type": "COLOR",
       "code": "var(--fill-subtle)",
       "description": "Light overlay",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a5"
@@ -167,6 +192,11 @@
       "type": "COLOR",
       "code": "var(--text-primary)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/50"
@@ -182,6 +212,11 @@
       "type": "COLOR",
       "code": "var(--text-secondary)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/250"
@@ -197,6 +232,11 @@
       "type": "COLOR",
       "code": "var(--text-tertiary)",
       "description": "Default icon colour",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/350"
@@ -212,6 +252,12 @@
       "type": "COLOR",
       "code": "var(--accent-default)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/340"
@@ -227,6 +273,12 @@
       "type": "COLOR",
       "code": "var(--accent-hover)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/300"
@@ -242,6 +294,12 @@
       "type": "COLOR",
       "code": "var(--accent-press)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/380"
@@ -257,6 +315,10 @@
       "type": "COLOR",
       "code": "var(--accent-muted)",
       "description": "Tinted accent background",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/340-a14"
@@ -272,6 +334,11 @@
       "type": "COLOR",
       "code": "var(--text-accent)",
       "description": "Accent words, also on accent/muted",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "accent/default"
@@ -287,6 +354,10 @@
       "type": "COLOR",
       "code": "var(--accent-fill)",
       "description": "Fill under white labels",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/450"
@@ -302,6 +373,10 @@
       "type": "COLOR",
       "code": "var(--accent-fill-hover)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/480"
@@ -317,6 +392,12 @@
       "type": "COLOR",
       "code": "var(--status-positive)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "green/210"
@@ -332,6 +413,12 @@
       "type": "COLOR",
       "code": "var(--status-good)",
       "description": "Between positive and warning",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "lime/190"
@@ -347,6 +434,12 @@
       "type": "COLOR",
       "code": "var(--status-warning)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "amber/160"
@@ -362,6 +455,12 @@
       "type": "COLOR",
       "code": "var(--status-poor)",
       "description": "Between warning and negative",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "orange/220"
@@ -377,6 +476,12 @@
       "type": "COLOR",
       "code": "var(--status-negative)",
       "description": "",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "red/310"
@@ -392,6 +497,10 @@
       "type": "COLOR",
       "code": "var(--status-negative-fill)",
       "description": "Solid negative under white labels",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "red/470"
@@ -407,6 +516,11 @@
       "type": "COLOR",
       "code": "var(--text-positive)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "status/positive"
@@ -422,6 +536,11 @@
       "type": "COLOR",
       "code": "var(--text-good)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "status/good"
@@ -437,6 +556,11 @@
       "type": "COLOR",
       "code": "var(--text-warning)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "status/warning"
@@ -452,6 +576,11 @@
       "type": "COLOR",
       "code": "var(--text-poor)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "status/poor"
@@ -467,6 +596,11 @@
       "type": "COLOR",
       "code": "var(--text-negative)",
       "description": "",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "status/negative"
@@ -482,6 +616,12 @@
       "type": "COLOR",
       "code": "var(--series-down)",
       "description": "Download",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/300"
@@ -497,6 +637,12 @@
       "type": "COLOR",
       "code": "var(--series-up)",
       "description": "Upload",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "violet/250"
@@ -512,6 +658,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-2)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 2
       }
@@ -522,6 +671,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-4)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 4
       }
@@ -532,6 +684,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-6)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 6
       }
@@ -542,6 +697,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-8)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 8
       }
@@ -552,6 +710,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-10)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 10
       }
@@ -562,6 +723,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-12)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 12
       }
@@ -572,6 +736,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-14)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 14
       }
@@ -582,6 +749,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-16)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 16
       }
@@ -592,6 +762,9 @@
       "type": "FLOAT",
       "code": "var(--spacing-20)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 20
       }
@@ -602,6 +775,9 @@
       "type": "FLOAT",
       "code": "var(--radius-xs)",
       "description": "",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
       "values": {
         "Value": 5
       }
@@ -612,6 +788,9 @@
       "type": "FLOAT",
       "code": "var(--radius-sm)",
       "description": "",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
       "values": {
         "Value": 8
       }
@@ -622,6 +801,9 @@
       "type": "FLOAT",
       "code": "var(--radius-md)",
       "description": "",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
       "values": {
         "Value": 10
       }
@@ -632,6 +814,9 @@
       "type": "FLOAT",
       "code": "var(--radius-lg)",
       "description": "",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
       "values": {
         "Value": 13
       }
@@ -642,6 +827,9 @@
       "type": "FLOAT",
       "code": "var(--radius-full)",
       "description": "",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
       "values": {
         "Value": 999
       }
@@ -652,6 +840,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-2xs)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 10
       }
@@ -662,6 +853,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-xs)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 11
       }
@@ -672,6 +866,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-sm)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 12
       }
@@ -682,6 +879,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-md)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 13
       }
@@ -692,6 +892,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-lg)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 14
       }
@@ -702,6 +905,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-xl)",
       "description": "Dialog titles",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 15
       }
@@ -712,6 +918,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-2xl)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 17
       }
@@ -722,6 +931,9 @@
       "type": "FLOAT",
       "code": "var(--font-size-3xl)",
       "description": "",
+      "scopes": [
+        "FONT_SIZE"
+      ],
       "values": {
         "Value": 28
       }
@@ -732,6 +944,9 @@
       "type": "STRING",
       "code": "var(--font-family-sans)",
       "description": "",
+      "scopes": [
+        "FONT_FAMILY"
+      ],
       "values": {
         "Value": "Inter"
       }
@@ -742,6 +957,9 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a22"
@@ -757,6 +975,9 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a10"
@@ -772,6 +993,9 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a22"
@@ -787,12 +1011,19 @@
       "type": "COLOR",
       "code": null,
       "description": "Every icon stroke. Set by Icon tone mode.",
+      "scopes": [
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
-        "Tertiary": {
-          "alias": "text/tertiary"
+        "Primary": {
+          "alias": "text/primary"
         },
         "Secondary": {
           "alias": "text/secondary"
+        },
+        "Tertiary": {
+          "alias": "text/tertiary"
         },
         "Accent": {
           "alias": "accent/default"
@@ -800,14 +1031,11 @@
         "Positive": {
           "alias": "status/positive"
         },
-        "Primary": {
-          "alias": "text/primary"
+        "Negative": {
+          "alias": "status/negative"
         },
         "On fill": {
           "alias": "text/on-fill"
-        },
-        "Negative": {
-          "alias": "status/negative"
         }
       }
     },
@@ -817,6 +1045,12 @@
       "type": "COLOR",
       "code": "var(--text-on-fill)",
       "description": "Labels and icons on solid fills",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0"
@@ -832,6 +1066,10 @@
       "type": "COLOR",
       "code": "var(--status-negative-fill-hover)",
       "description": "Negative fill hover",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "red/540"
@@ -847,6 +1085,9 @@
       "type": "COLOR",
       "code": "var(--focus-ring)",
       "description": "Keyboard focus ring",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "accent/default"
@@ -862,6 +1103,7 @@
       "type": "FLOAT",
       "code": "var(--focus-offset)",
       "description": "Focus ring offset",
+      "scopes": [],
       "values": {
         "Value": 2
       }
@@ -872,6 +1114,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-tint-xs)",
       "description": "Faintest tint",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 8
       }
@@ -882,6 +1127,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-tint-sm)",
       "description": "Light tint",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 10
       }
@@ -892,6 +1140,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-tint-md)",
       "description": "Tint",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 14
       }
@@ -902,6 +1153,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-tint-lg)",
       "description": "Strong tint",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 22
       }
@@ -912,6 +1166,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-tint-xl)",
       "description": "Strongest tint",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 28
       }
@@ -922,6 +1179,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-high)",
       "description": "Nearly opaque",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 80
       }
@@ -932,6 +1192,11 @@
       "type": "COLOR",
       "code": null,
       "description": "Capability level colour. Capability glyphs bind to it.",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
       "values": {
         "Excellent": {
           "alias": "status/positive"
@@ -956,6 +1221,9 @@
       "type": "FLOAT",
       "code": "var(--opacity-disabled)",
       "description": "Disabled controls",
+      "scopes": [
+        "OPACITY"
+      ],
       "values": {
         "Value": 40
       }
@@ -966,6 +1234,10 @@
       "type": "COLOR",
       "code": "var(--fill-faint)",
       "description": "Faintest overlay",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a3"
@@ -981,6 +1253,10 @@
       "type": "COLOR",
       "code": "var(--fill-strong)",
       "description": "Strong overlay",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a16"
@@ -996,6 +1272,10 @@
       "type": "COLOR",
       "code": "var(--fill-selection)",
       "description": "Text selection",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "blue/340-a35"
@@ -1011,6 +1291,10 @@
       "type": "COLOR",
       "code": "var(--bg-scrim)",
       "description": "Behind dialogs",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a50"
@@ -1026,6 +1310,9 @@
       "type": "STRING",
       "code": "var(--font-family-numeric)",
       "description": "",
+      "scopes": [
+        "FONT_FAMILY"
+      ],
       "values": {
         "Value": "Questrial"
       }
@@ -1036,6 +1323,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 1,
@@ -1051,6 +1339,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.93333,
@@ -1066,6 +1355,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.86667,
@@ -1081,6 +1371,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.67843,
@@ -1096,6 +1387,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.55686,
@@ -1111,6 +1403,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.38431,
@@ -1126,6 +1419,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.32941,
@@ -1141,6 +1435,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.12941,
@@ -1156,6 +1451,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.08235,
@@ -1171,6 +1467,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1186,6 +1483,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.96471,
@@ -1201,6 +1499,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.81176,
@@ -1216,6 +1515,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.67451,
@@ -1231,6 +1531,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.69804,
@@ -1246,6 +1547,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.56863,
@@ -1261,6 +1563,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.94118,
@@ -1276,6 +1579,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.79608,
@@ -1291,6 +1595,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.96078,
@@ -1306,6 +1611,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.66275,
@@ -1321,6 +1627,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.50196,
@@ -1336,6 +1643,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.49804,
@@ -1351,6 +1659,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.28627,
@@ -1366,6 +1675,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.26275,
@@ -1381,6 +1691,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0,
@@ -1396,6 +1707,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0,
@@ -1411,6 +1723,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.43529,
@@ -1426,6 +1739,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.35686,
@@ -1441,6 +1755,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.30196,
@@ -1456,6 +1771,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.22745,
@@ -1471,6 +1787,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.2,
@@ -1486,6 +1803,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.18431,
@@ -1501,6 +1819,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.17255,
@@ -1516,6 +1835,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.70196,
@@ -1531,6 +1851,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.44314,
@@ -1546,6 +1867,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 1,
@@ -1561,6 +1883,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 1,
@@ -1576,6 +1899,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 1,
@@ -1591,6 +1915,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 1,
@@ -1606,6 +1931,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0,
@@ -1621,6 +1947,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0,
@@ -1636,6 +1963,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1651,6 +1979,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1666,6 +1995,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1681,6 +2011,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1696,6 +2027,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.04314,
@@ -1711,6 +2043,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.35686,
@@ -1726,6 +2059,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.35686,
@@ -1741,6 +2075,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.22745,
@@ -1756,6 +2091,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.96471,
@@ -1771,6 +2107,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.06275,
@@ -1786,6 +2123,10 @@
       "type": "COLOR",
       "code": "var(--bg-inset)",
       "description": "Sunken areas inside a surface",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/825"
@@ -1801,6 +2142,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0,
@@ -1816,6 +2158,7 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [],
       "values": {
         "Value": {
           "r": 0.11373,
@@ -1826,26 +2169,15 @@
       }
     },
     {
-      "name": "neutral/850-a2",
-      "collection": "Palette",
-      "type": "COLOR",
-      "code": null,
-      "description": "",
-      "values": {
-        "Value": {
-          "r": 0.04314,
-          "g": 0.04314,
-          "b": 0.04706,
-          "a": 0.02
-        }
-      }
-    },
-    {
       "name": "bg/popover",
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--bg-popover)",
       "description": "Tooltips and menus",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/775"
@@ -1861,6 +2193,9 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a22"
@@ -1876,6 +2211,9 @@
       "type": "COLOR",
       "code": null,
       "description": "",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/1000-a22"
@@ -1891,6 +2229,10 @@
       "type": "COLOR",
       "code": "var(--bg-chrome)",
       "description": "Title bar and rail",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/825"
@@ -1901,11 +2243,31 @@
       }
     },
     {
+      "name": "neutral/850-a2",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.02
+        }
+      }
+    },
+    {
       "name": "fill/hover",
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--fill-hover)",
       "description": "Hovered rows and headers",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
       "values": {
         "Dark": {
           "alias": "neutral/0-a3"
@@ -1921,6 +2283,9 @@
       "type": "FLOAT",
       "code": "var(--titlebar-height)",
       "description": "Title bar",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
       "values": {
         "Value": 56
       }
@@ -1931,6 +2296,9 @@
       "type": "FLOAT",
       "code": "var(--rail-item-size)",
       "description": "Rail items",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
       "values": {
         "Value": 38
       }
@@ -1941,6 +2309,9 @@
       "type": "FLOAT",
       "code": "var(--card-padding)",
       "description": "Card inset",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": {
           "alias": "spacing/14"
@@ -1953,6 +2324,9 @@
       "type": "FLOAT",
       "code": "var(--card-header-padding-y)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": {
           "alias": "card/padding"
@@ -1965,6 +2339,9 @@
       "type": "FLOAT",
       "code": "var(--card-header-padding-x)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": {
           "alias": "card/padding"
@@ -1977,6 +2354,9 @@
       "type": "FLOAT",
       "code": "var(--card-header-min-height)",
       "description": "Compact card header",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
       "values": {
         "Value": 42
       }
@@ -1987,6 +2367,9 @@
       "type": "FLOAT",
       "code": "var(--card-header-height)",
       "description": "Card header",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
       "values": {
         "Value": 44
       }
@@ -1997,6 +2380,9 @@
       "type": "FLOAT",
       "code": "var(--card-body-padding)",
       "description": "",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": {
           "alias": "card/padding"
@@ -2009,6 +2395,9 @@
       "type": "FLOAT",
       "code": "var(--row-padding-y)",
       "description": "Data row, above and below",
+      "scopes": [
+        "GAP"
+      ],
       "values": {
         "Value": 8
       }
@@ -2019,6 +2408,9 @@
       "type": "FLOAT",
       "code": "var(--focus-ring-width)",
       "description": "Focus ring stroke",
+      "scopes": [
+        "STROKE_FLOAT"
+      ],
       "values": {
         "Value": 1
       }
@@ -2029,6 +2421,9 @@
       "type": "FLOAT",
       "code": "var(--weight-regular)",
       "description": "",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
       "values": {
         "Value": 400
       }
@@ -2039,6 +2434,9 @@
       "type": "FLOAT",
       "code": "var(--weight-medium)",
       "description": "",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
       "values": {
         "Value": 500
       }
@@ -2049,6 +2447,9 @@
       "type": "FLOAT",
       "code": "var(--weight-semibold)",
       "description": "",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
       "values": {
         "Value": 600
       }
@@ -2059,6 +2460,7 @@
       "type": "FLOAT",
       "code": "var(--duration-fast)",
       "description": "Hovers, small changes",
+      "scopes": [],
       "values": {
         "Value": 140
       }
@@ -2069,6 +2471,7 @@
       "type": "FLOAT",
       "code": "var(--duration-normal)",
       "description": "Panels, page changes",
+      "scopes": [],
       "values": {
         "Value": 220
       }
@@ -2079,6 +2482,7 @@
       "type": "FLOAT",
       "code": "var(--duration-spring)",
       "description": "A spring’s full run",
+      "scopes": [],
       "values": {
         "Value": 450
       }

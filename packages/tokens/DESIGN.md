@@ -84,7 +84,7 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ## Changing the design
 
-Figma is the source of truth. Change a token in the Rove Design System Figma file, export it with the plugin in `figma-plugin/` into `src/figma/`, then run `npm run build` (see the [README](README.md#update-the-tokens)). Don't edit `tokens.css`, `tokens/` or the values in `src/figma/` by hand. What Figma can't hold (shadows, easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
+Tokens are designed in Figma and released from the rove-tokens repo. A change can start on either side: export a Figma change with the plugin in `figma-plugin/` into `src/figma/`, or edit `src/figma/` or `src/code-tokens.json` and apply it to Figma with the plugin's Sync (`npm run figma -- apply` through the Figma MCP). Then run `npm run build`, and check Figma and the repo agree (`npm run figma -- check`). The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css` or `tokens/` by hand. What Figma can't hold (easing curves, the focus outline) lives only in `src/code-tokens.json`; its shadows are Figma's `Shadow/*` effect styles. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
