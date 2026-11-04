@@ -31,11 +31,6 @@ const meta = {
         'A width, or an inset to line up with an icon, from its row.',
       ],
       avoid: ['A rating or signal: use `BarMeter`.', 'The amount itself: use `Readout`, or figures beside the bar.'],
-      states: [
-        'Download first, then upload, each scaled against `max`.',
-        'Nothing moved: just the empty track.',
-        'Widths ease to each new value, in step with the figures beside them.',
-      ],
       accessibility: {
         builtIn: ['An image to screen readers (`role="img"`), named by `label`.', 'Widths snap under reduced motion.'],
         yours: [

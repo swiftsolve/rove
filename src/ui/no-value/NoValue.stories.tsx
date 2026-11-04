@@ -22,11 +22,6 @@ const meta = {
         'A page still loading: use `LoadingState`.',
         'A zero: it’s a value, so show it.',
       ],
-      states: [
-        'One look: a short bar in the tertiary colour.',
-        'Sized in em, so it scales with its line and sits on its middle.',
-        '`label` sets what screen readers hear: “None” by default.',
-      ],
       accessibility: {
         builtIn: [
           'The bar is hidden. Screen readers hear `label` in its place.',

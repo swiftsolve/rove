@@ -84,12 +84,6 @@ const meta = {
         'A task that needs the user’s full attention: use `Dialog`.',
         'Switching between views of one thing: use `SegmentedControl`.',
       ],
-      states: [
-        'Closed: only the trigger shows.',
-        'Open: the panel grows to its content’s height, and shrinks back on close.',
-        'The trigger has `data-panel-open` while open, for a chevron that turns.',
-        'Focus frame: keyboard focus rings the whole collapsible, not the trigger.',
-      ],
       accessibility: {
         builtIn: [
           'The trigger is a native `<button>`: Enter and Space toggle it.',
@@ -99,7 +93,7 @@ const meta = {
         ],
         yours: [
           'Trigger text that names what it shows: “Connection details”.',
-          'The trigger’s look: hover and focus styles, and a chevron.',
+          'The trigger’s look: hover and focus styles, and a chevron that turns on `data-panel-open`.',
           'With `hasFocusFrame`, the header’s hover look on focus too.',
         ],
       },

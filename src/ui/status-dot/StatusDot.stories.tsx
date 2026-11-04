@@ -27,11 +27,6 @@ const meta = {
         'Live data in a card header: use `LiveBadge`.',
         'A page’s first load: use `LoadingState`.',
       ],
-      states: [
-        'Still, by default.',
-        'Pulses: `calm`, `live` and `busy`, each a little faster.',
-        'Tones: `current`, its words’ colour and the default, or `positive`, green.',
-      ],
       accessibility: {
         builtIn: [
           'Hidden from screen readers (`aria-hidden`): the words carry the status.',

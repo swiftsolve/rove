@@ -15,18 +15,13 @@ const meta = {
         '`InlineMeta` for a list of items, some maybe empty.',
         '`shouldTruncate` to keep them on one line.',
         'A bare `DotSeparator` between two items you lay out yourself.',
+        'Empty items drop out with their dots, so pass every field. A `0` stays.',
       ],
       avoid: [
         'Labels and their values: use `DataRow`s in a `DataList`.',
         'A status beside its words: use `StatusDot`.',
         'A missing value that should show: use `NoValue`.',
         'A line between rows: `CardList` and `DataListStack` draw it.',
-      ],
-      states: [
-        'Wrapping, the default: items flow onto the next line.',
-        'Truncating: one line, each item ellipsizing as space runs out.',
-        'Empty items drop out with their dots. A `0` stays.',
-        'One item: no dot. None: nothing.',
       ],
       accessibility: {
         builtIn: ['The dot is hidden from screen readers.', 'A truncated item keeps its full text for screen readers.'],

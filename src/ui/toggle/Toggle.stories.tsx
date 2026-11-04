@@ -23,12 +23,6 @@ const meta = {
         'An action that runs once, like Check now: use `Button`.',
         'A status the user can’t change: use `Badge` or `StatusDot`.',
       ],
-      states: [
-        'On: an accent track, the knob to the right.',
-        'Off: an inset track, the knob to the left.',
-        'Flipping slides the knob across.',
-        '`isDisabled` dims it, on or off.',
-      ],
       accessibility: {
         builtIn: [
           'A native `<button>` with `role="switch"`: a click or Space flips it.',

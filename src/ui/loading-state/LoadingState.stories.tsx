@@ -22,10 +22,6 @@ const meta = {
         'A wait inside a dialog or panel: use `Spinner`.',
         'A button’s wait: set `isLoading` on `Button`.',
       ],
-      states: [
-        'One state: the spinner over the label, until the data or an error arrives.',
-        'The spinner stands still under reduced motion.',
-      ],
       accessibility: {
         builtIn: [
           'A status region (`role="status"`), so the label is announced.',

@@ -59,11 +59,6 @@ const meta = {
         'A row that opens something: use `ListRow`.',
         'A message about the whole page: use `Banner`.',
       ],
-      states: [
-        'Any colour washes the marker in the icon’s own colour.',
-        '`neutral` is a hollow ring, with a tertiary icon.',
-        'A line runs down to the next node. The last node drops it.',
-      ],
       accessibility: {
         builtIn: [
           'An `<li>`, so the nodes read as a list with a count.',

@@ -92,12 +92,6 @@ const meta = {
         'Picking one of a few options on a page: use `SegmentedControl`.',
         'An icon action anywhere else: use `IconButton`.',
       ],
-      states: [
-        'Active: the current page’s item, tinted, with an accent bar on the edge.',
-        'On a page change, the bar slides to the new item while the tints cross-fade.',
-        'Hover brightens an item over a faint fill.',
-        'A focus ring on keyboard focus.',
-      ],
       accessibility: {
         builtIn: [
           'A `<nav>` landmark named by `label`, its items in lists.',

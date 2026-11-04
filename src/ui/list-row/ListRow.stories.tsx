@@ -79,11 +79,6 @@ const meta = {
         'Opening another view from a line of text: use `Link`.',
         'An action on the page: use `Button`.',
       ],
-      states: [
-        'The chevron is always faintly there, brighter on hover and focus.',
-        'Hover washes the row, bleeding 8px into the card’s padding.',
-        '`isDisabled` fades the whole row, with no hover and no action: results being replaced.',
-      ],
       accessibility: {
         builtIn: [
           'A native `<button>`, `type="button"`: Enter and Space press it.',

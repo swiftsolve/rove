@@ -35,12 +35,6 @@ const meta = {
         'A value that doesn’t change: use `DataRow`.',
         'A rating at a glance: use `BarMeter`.',
       ],
-      states: [
-        'The first paint shows the value outright. Each later change eases to it.',
-        'No `status`: the text colour around it.',
-        '`status` `positive`, `warning` or `negative`.',
-        'A `format` that returns null draws `NoValue`.',
-      ],
       accessibility: {
         builtIn: [
           'Snaps to each new value under reduced motion.',

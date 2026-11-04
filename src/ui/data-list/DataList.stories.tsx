@@ -42,17 +42,14 @@ const meta = {
         'Each fact a `DataRow`: its label on the left, its value on the right.',
         '`compact` for a short list, or one repeated down a page.',
         'Several topics in one card: a `DataList` each, in a `DataListStack`.',
+        'A row with no value and no children isn’t drawn, so a list can name every field it might have.',
+        'A value that isn’t text (a meter, a badge) in the row’s children, with `align="center"`.',
+        'A missing value that still needs its row: `NoValue` as the children.',
       ],
       avoid: [
         'A card’s headline figure: use `Readout`.',
         'Rows that open something: use `ListRow`.',
         'A list of items, each its own row: use `CardList`.',
-      ],
-      states: [
-        'Density: `default` puts 8px between rows, `compact` 4px.',
-        'A row with no value and no children isn’t drawn, so a list can name every field it might have.',
-        'A value that isn’t text (a meter, a badge) goes in the row’s children, with `align="center"`.',
-        'A missing value that still needs its row: `NoValue` as the children.',
       ],
       accessibility: {
         builtIn: [

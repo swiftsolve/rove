@@ -17,17 +17,13 @@ const meta = {
         'A failure above a page: a load, refresh or action that didn’t work.',
         'A title for what failed, and a line on how old the data is or what happens next.',
         '`onRetry` when trying again can help. Leave it out when the page polls and heals itself.',
+        'A new title brings back a banner the user dismissed.',
       ],
       avoid: [
         'Loaded, with nothing to show: use `EmptyState`.',
         'Still loading: use `LoadingState`.',
         'A short flag beside a title: use `Badge`.',
         'A choice to make before going on: use `Dialog`.',
-      ],
-      states: [
-        '`variant="error"`: a red wash, a red Dismiss and a neutral Retry.',
-        'Retry reads “Retrying…” until its promise settles. A failed retry leaves the banner up.',
-        'Dismiss hides it until the title changes.',
       ],
       accessibility: {
         builtIn: [

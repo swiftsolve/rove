@@ -14,7 +14,8 @@ body {
 }
 
 /* A component's usage guide on its Docs page, laid out as Figma's Guidance
-   block: four sections in a 2×2 grid, each under a hairline. */
+   block: two sections side by side, then Accessibility across both with its
+   two lists in the same columns, each section under a hairline. */
 .guidance {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -41,8 +42,14 @@ body {
   color: var(--text-primary);
 }
 
-.guidance-group + .guidance-group {
-  margin-top: 20px;
+.guidance section:last-child {
+  grid-column: 1 / -1;
+}
+
+.guidance-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px 48px;
 }
 
 .guidance .guidance-label {

@@ -7,7 +7,9 @@
  *   - its description and props (type, variant values, default), read from
  *     the code with react-docgen-typescript, as Storybook's docs tables are;
  *   - its Figma component, from `src/ui/figma.json`;
- *   - its stories' ids, for `localhost:6006/?path=/story/<id>`.
+ *   - its stories' ids, for `localhost:6006/?path=/story/<id>`;
+ *   - its usage guide (when to use it, when not, accessibility), from its
+ *     stories' `guidance` parameter, as its Docs page shows it.
  *
  * Icons, hooks and helpers follow, by name and doc comment.
  *
@@ -18,7 +20,9 @@
  * own props has no doc comment, a prop has a default the Default column misses
  * (one in a recipe's `defaultVariants`, or only in its words), or a component
  * has no entry in figma.json (`null` says it has no Figma counterpart) or no
- * row in docs/develop/frontend.md's Components table.
+ * row in docs/develop/frontend.md's Components table, or a component with a
+ * Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
+ * `Containers/Card/CardHeader`) has no usage guide.
  */
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
@@ -104,16 +108,48 @@ function describeProp(prop) {
   return entry
 }
 
+// The `guidance` object literal in a stories file, as plain data: its string
+// arrays and nested objects. Null when the file sets none.
+function readGuidance(file, text) {
+  const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  const toData = (node) => {
+    if (ts.isSatisfiesExpression(node) || ts.isAsExpression(node)) return toData(node.expression)
+    if (ts.isStringLiteralLike(node)) return node.text
+    if (ts.isArrayLiteralExpression(node)) return node.elements.map(toData)
+    if (ts.isObjectLiteralExpression(node)) {
+      return Object.fromEntries(
+        node.properties.map((property) => [property.name.getText(), toData(property.initializer)]),
+      )
+    }
+    throw new Error(`${rel(file)}: guidance holds only strings, arrays and objects`)
+  }
+  let guidance = null
+  const visit = (node) => {
+    if (ts.isPropertyAssignment(node) && node.name.getText() === 'guidance') guidance = toData(node.initializer)
+    else ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return guidance
+}
+
 // Story ids, from a component's own stories file beside its module
 // (card/CardBody.stories.tsx), or else the module's (Badge.tsx ↔ Badge.stories.tsx).
+// A component whose Docs page it is (the title ends in its name, and isn't a
+// part's under its parent) also takes the file's usage guide.
 async function readStories(source, name) {
   const own = join(dirname(source), `${name}.stories.tsx`)
   const file = existsSync(own) ? own : source.replace(/\.tsx$/, '.stories.tsx')
   const text = await readFile(file, 'utf8').catch(() => null)
-  if (text === null) return []
+  if (text === null) return { ids: [] }
   const title = text.match(/title: '(.+?)'/)?.[1]
-  if (!title) return []
-  return [...text.matchAll(/^export const (\w+)/gm)].map(([, name]) => toId(title, storyNameFromExport(name)))
+  if (!title) return { ids: [] }
+  const ids = [...text.matchAll(/^export const (\w+)/gm)].map(([, name]) => toId(title, storyNameFromExport(name)))
+  const parts = title.split('/')
+  const hasOwnPage = parts.at(-1) === name && (parts.length === 2 || parts.at(-2) === name)
+  if (!hasOwnPage) return { ids }
+  const guidance = readGuidance(file, text)
+  if (!guidance) problems.push(`${rel(file)}: ${name}'s Docs page needs a usage guide (a \`guidance\` parameter)`)
+  return { ids, guidance }
 }
 
 // Every other export of the index, with its doc comment, through the compiler.
@@ -186,7 +222,8 @@ for (const { name, group, source } of components) {
         .map((prop) => [prop.name, describeProp(prop)]),
     ),
     ...(elementProps.has(name) && { hasElementProps: true }),
-    stories: storiesByName.get(name),
+    stories: storiesByName.get(name).ids,
+    ...(storiesByName.get(name).guidance && { guidance: storiesByName.get(name).guidance }),
   }
 }
 for (const name of Object.keys(figma.components)) {

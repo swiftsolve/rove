@@ -25,11 +25,6 @@ const meta = {
         'A page’s first load: use `LoadingState`.',
         'A wait with room for the full indicator: use `Spinner`.',
       ],
-      states: [
-        'One state: a ring that stretches as it spins, until it’s removed.',
-        'The text colour around it, unless `color` sets one.',
-        'Still under reduced motion.',
-      ],
       accessibility: {
         builtIn: [
           'Hidden from screen readers (`aria-hidden`).',

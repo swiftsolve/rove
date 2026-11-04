@@ -34,17 +34,12 @@ const meta = {
         'Every option in view at once, each a word or two.',
         'A choice that applies at once, with no save.',
         'An icon before each word when it helps, as the theme’s do.',
+        'Options that are always available: there’s no disabled state.',
       ],
       avoid: [
         'Turning a setting on or off: use `Toggle`.',
         'Running an action: use `Button`.',
         'Opening another view: use `Link`.',
-      ],
-      states: [
-        'The chosen segment sits on an accent thumb.',
-        'Hover tints an unchosen segment.',
-        'Picking another slides the thumb across.',
-        'Two options or more, with or without icons. No disabled state.',
       ],
       accessibility: {
         builtIn: [

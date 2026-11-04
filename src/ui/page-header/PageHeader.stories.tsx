@@ -45,17 +45,12 @@ const meta = {
         '`onBack` on a page layered over a tab, like Hosts.',
         '`status` while something runs (“Scanning…”).',
         '`actions` for the page’s controls: help, refresh, its main `Button`.',
+        '`description={null}` to hold the line’s height while there’s nothing to show.',
       ],
       avoid: [
         'A card’s title: use `CardHeader`.',
         'The window’s top edge: use `TitleBar`.',
         'A message about the page, like an error: use `Banner`.',
-      ],
-      states: [
-        'Top level: the icon in a chip. Subpage: a back button in its place.',
-        '`status` takes the description’s place. The description fades back in when it clears.',
-        '`description={null}` holds the line’s height while there’s nothing to show.',
-        'Title only: leave `description` out.',
       ],
       accessibility: {
         builtIn: [

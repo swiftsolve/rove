@@ -24,12 +24,6 @@ const meta = {
         'A whole row that opens a view: use `ListRow`, or `StretchedLink` for richer rows.',
         'A whole card that opens a view: use `Card` with `onOpen`.',
       ],
-      states: [
-        'Muted at rest. Hover and keyboard focus turn it accent and underline the label.',
-        'In the app (`onClick`) it ends in a caret; outside it (`href`), in an arrow.',
-        '`isDisabled` dims it, for a link in the app.',
-        'An optional `icon` before the label.',
-      ],
       accessibility: {
         builtIn: [
           'In the app, a `<button>` with `role="link"`: Enter opens its view.',

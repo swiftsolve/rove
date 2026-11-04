@@ -31,12 +31,6 @@ const meta = {
         'A value to read, not edit: use `DataRow`.',
         'Submitting the form: use a `Button` outside the field.',
       ],
-      states: [
-        'Empty, showing the `placeholder`, or filled.',
-        'Focus turns the border accent.',
-        '`isInvalid` turns the border and the `feedback` red.',
-        'The action can be disabled until there’s a value, or loading: only a spinner.',
-      ],
       accessibility: {
         builtIn: [
           'A native `<input>`, named by its `label`.',

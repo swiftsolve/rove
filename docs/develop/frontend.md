@@ -365,14 +365,15 @@ Components v1.0.0"). Raise it when the library's API changes.
   found it (`DisabledOff`) can stay on the Docs page.
 - A component's usage guide sits on its Docs page: the stories' `guidance`
   parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use, When
-  not to use, States, and Accessibility split into Built in and Up to you, a
-  few words a line. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
+  not to use, and Accessibility split into Built in and Up to you, a few words
+  a line. What the stories and props table already show (each state, each
+  variant) stays out. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
   contents. Every component has one, written for its whole family (Card's
   covers CardHeader and the rest), and Figma's docs section carries the same
   guide as a Guidance block under its intro.
 - `components.gen.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
-  Figma component and story ids. `npm run catalogue` writes it from the code
+  Figma component, story ids and usage guide. `npm run catalogue` writes it from the code
   and `figma.json`, which names each component's Figma component and node
   (`null` when Figma has none).
 

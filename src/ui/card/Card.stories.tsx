@@ -35,12 +35,6 @@ const meta = {
         'Details shown only on request: a `Collapsible` inside the card.',
         'A row in a card’s list that opens a view: use `ListRow`.',
       ],
-      states: [
-        'A header, a body, and an optional footer band.',
-        'Body layouts: `default` pads all round, `rows` drops the top padding, `flush` the sides.',
-        'Openable: its header ends in a caret. It lifts on hover and presses in.',
-        '`as="div"` or `"li"`: a bare surface with no header, like a card in a list.',
-      ],
       accessibility: {
         builtIn: [
           'A `section` card is a region named by its header’s title.',

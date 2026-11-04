@@ -20,11 +20,6 @@ const meta = {
         'A failure the user should act on: use `Banner`.',
         'Something to press: use `Button`.',
       ],
-      states: [
-        'Tones: `positive`, `warning` and `negative`.',
-        '`LiveBadge`: the dark pill with a pulsing dot, “Live” unless given words.',
-        'Set in capitals, whatever its words’ case.',
-      ],
       accessibility: {
         builtIn: [
           'Plain text: screen readers read its words.',

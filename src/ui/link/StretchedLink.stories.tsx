@@ -22,11 +22,6 @@ const meta = {
         'A link beside text: use `Link`.',
         'An action rather than a view: use `Button`.',
       ],
-      states: [
-        'Invisible: the container’s content shows through.',
-        'Hover is the container’s to draw, like a row’s tint.',
-        'Keyboard focus rings the whole container, just inside its edge.',
-      ],
       accessibility: {
         builtIn: [
           'A `<button>` with `role="link"`, as it opens a view: Enter opens it.',

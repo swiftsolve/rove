@@ -25,12 +25,6 @@ const meta = {
         'Anything to click or act on: use `Dialog` or `Menu`.',
         'A message the user must see: use `Banner`.',
       ],
-      states: [
-        'Opens at once on hover and keyboard focus. A click hides it.',
-        'Below its trigger by default. `side` puts it above or beside, and it flips and slides to stay in the window.',
-        'Wraps past `maxWidth`, 260px by default.',
-        '`isDisabled` never opens it, for content that would be stale.',
-      ],
       accessibility: {
         builtIn: [
           'Opens on keyboard focus, not only on hover.',

@@ -32,17 +32,12 @@ const meta = {
         '`lg` for a list row’s rating, `sm` in a data row.',
         '`md` beside a title, `xs` in a dense strip like Home’s.',
         'A status token as `color`, matching how many bars are lit.',
+        '`value={0}` before there’s a rating, and `isDimmed` for a stale one waiting on a new test.',
       ],
       avoid: [
         'An exact figure: use `Readout` or `MetricValue`.',
         'Comparing traffic between rows: use `SplitBar`.',
         'A status in words: use `Badge` or `StatusDot`.',
-      ],
-      states: [
-        '`value` lights 0 to 4 bars. The rest are a faint tint of `color`.',
-        'Nothing lit (`value={0}`): no rating yet.',
-        '`isDimmed` greys the bars but keeps the count: a stale rating waiting on a new test.',
-        'Sizes `xs`, `sm`, `md` and `lg`, the default.',
       ],
       accessibility: {
         builtIn: [

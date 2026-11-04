@@ -52,12 +52,6 @@ const meta = {
         'An event on a timeline: use `TimelineNode`.',
         'A status beside words: use `StatusDot`.',
       ],
-      states: [
-        'Any colour washes the tile in the icon’s own colour.',
-        '`neutral` is the sunken fill, with a secondary icon.',
-        'Sizes: 30, 32 (the default) and 36px.',
-        'The button form: hover and keyboard focus deepen the tint and lift it. `isDisabled` makes it inert, with the same look.',
-      ],
       accessibility: {
         builtIn: [
           'The plain tile is decoration: library icons are hidden from screen readers.',

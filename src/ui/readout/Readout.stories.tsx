@@ -35,12 +35,6 @@ const meta = {
         'A number inside a line of text that eases itself: use `MetricValue`.',
         'A rating at a glance: use `BarMeter`.',
       ],
-      states: [
-        'Sizes: `large`, the display figure, and `compact`.',
-        'Labelled: the icon and label above the figure.',
-        'Unlabelled: the icon inline, before the figure.',
-        'While the digits count up, `spokenValue` holds the settled value.',
-      ],
       accessibility: {
         builtIn: [
           'Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.',

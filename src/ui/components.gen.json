@@ -72,7 +72,35 @@
         "actions-button--loading",
         "actions-button--disabled",
         "actions-button--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "An action on this page: running a test, adding a device, retrying.",
+          "Solid for the page’s main action, with `tone=\"negative\"` to stop what it started.",
+          "Soft for everything else, like a card’s Reset.",
+          "Soft with `tone=\"negative\"` on a red surface, like an error Banner’s Dismiss.",
+          "A form’s submit button, with `type=\"submit\"`."
+        ],
+        "avoid": [
+          "Opening another view or an address: use `Link`.",
+          "An icon with no words: use `IconButton`.",
+          "Picking one of a few options: use `SegmentedControl`.",
+          "Turning a setting on or off: use `Toggle`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>`, `type=\"button\"` unless set: Enter and Space press it.",
+            "A focus ring on keyboard focus.",
+            "Disabled and loading stay focusable, so a tooltip can say why. Both ignore every press, a submit included, and tell screen readers (`aria-disabled`, `aria-busy`).",
+            "The icon is hidden from screen readers. The label names the button."
+          ],
+          "yours": [
+            "A label that says what happens: “Run test”, not “OK”.",
+            "On a disabled button, a tooltip that says why.",
+            "A `loadingLabel` when the wait needs words."
+          ]
+        }
+      }
     },
     "IconButton": {
       "group": "Actions",
@@ -147,7 +175,36 @@
         "actions-iconbutton--loading",
         "actions-iconbutton--disabled",
         "actions-iconbutton--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A frequent action an icon says on its own: refresh, help, close.",
+          "Soft, the default, as a chip in a header or a toolbar.",
+          "`variant=\"ghost\"` where a chip would be heavy, like a dialog’s close.",
+          "A help button, with the hint in `tooltip`.",
+          "`iconSize={14}` for an icon that reads large, like Play. 16 otherwise."
+        ],
+        "avoid": [
+          "An action that needs words: use `Button`.",
+          "Several actions behind one icon: use `Menu`.",
+          "Opening another view: use `Link`.",
+          "An item’s tile that opens it: use `IconTileButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>`, `type=\"button\"` unless set: Enter and Space press it.",
+            "`label` names it and is its tooltip. The icon is hidden from screen readers.",
+            "The tooltip opens on hover and keyboard focus. A `tooltip` that says more is read as its description.",
+            "A focus ring on keyboard focus.",
+            "Disabled and loading stay focusable, ignore every press and tell screen readers (`aria-disabled`, `aria-busy`)."
+          ],
+          "yours": [
+            "A `label` that says what happens: “Close”, not “X”.",
+            "An icon that means that action at a glance.",
+            "On a disabled button, a `tooltip` that says why."
+          ]
+        }
+      }
     },
     "Link": {
       "group": "Actions",
@@ -188,7 +245,32 @@
         "actions-link--disabled",
         "actions-link--small-text",
         "actions-link--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Opening another view from a card or a row: “All hosts”, “View timeline”.",
+          "An address outside the app, with `href`. It opens in a new window.",
+          "Beside text, at the size of the text around it."
+        ],
+        "avoid": [
+          "An action that changes something: use `Button`.",
+          "A whole row that opens a view: use `ListRow`, or `StretchedLink` for richer rows.",
+          "A whole card that opens a view: use `Card` with `onOpen`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "In the app, a `<button>` with `role=\"link\"`: Enter opens its view.",
+            "Outside it, an `<a>` that opens a new window and tells screen readers so.",
+            "Keyboard focus looks like hover, accent and underline, in place of a ring.",
+            "Disabled stays focusable, ignores every press and tells screen readers (`aria-disabled`).",
+            "Its icons are hidden from screen readers."
+          ],
+          "yours": [
+            "Words that name where it goes: “All hosts”, not “Click here”.",
+            "On a disabled link, a tooltip that says why."
+          ]
+        }
+      }
     },
     "StretchedLink": {
       "group": "Actions",
@@ -209,7 +291,34 @@
       "stories": [
         "actions-stretchedlink--over-row",
         "actions-stretchedlink--focused"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A row that opens its view, when its content can’t sit in a button (a bar, figures).",
+          "A container that also holds a control of its own."
+        ],
+        "avoid": [
+          "A simple row with a chevron: use `ListRow`.",
+          "A whole card: use `Card` with `onOpen`, which draws its own.",
+          "A link beside text: use `Link`.",
+          "An action rather than a view: use `Button`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `<button>` with `role=\"link\"`, as it opens a view: Enter opens it.",
+            "Covers its container, so a click anywhere opens it.",
+            "Its focus ring follows the container’s corners.",
+            "`data-stretched-link`, so the container can style itself while it has focus."
+          ],
+          "yours": [
+            "A `label`, or `aria-labelledby` pointing at a heading.",
+            "A positioned container (`relative`) for it to cover.",
+            "Controls raised above it (`relative z-2`), as siblings, never nested.",
+            "A cue that the row opens, like a caret.",
+            "A rounded ring where the corners aren’t (a list’s first and last rows), with `className`."
+          ]
+        }
+      }
     },
     "Menu": {
       "group": "Actions",
@@ -240,7 +349,33 @@
         "actions-menu--single-action",
         "actions-menu--keyboard",
         "actions-menu--choosing-an-item"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A few secondary actions on a row or a page header: Edit, Remove.",
+          "Keeping a destructive action out of the way, like Speed history’s Delete.",
+          "`tone=\"negative\"` on an item that deletes or clears."
+        ],
+        "avoid": [
+          "The page’s main action: use `Button`.",
+          "One frequent action: use `IconButton`.",
+          "Picking one of a few options: use `SegmentedControl`.",
+          "Opening another view: use `Link`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The kebab is a menu button: screen readers hear it opens a menu, and whether it’s open.",
+            "Enter opens it on its first item. The arrow keys move between items.",
+            "Escape, a click outside or an item closes it, and focus returns to the kebab.",
+            "Not modal: a click outside still lands where it was aimed.",
+            "The highlight is the items’ focus indicator. Their icons are hidden from screen readers."
+          ],
+          "yours": [
+            "A kebab `label` that names what it’s for: “Options for Google”.",
+            "Short item labels that say what happens: Edit, Remove."
+          ]
+        }
+      }
     },
     "MenuContent": {
       "group": "Actions",
@@ -387,7 +522,36 @@
         "inputs-textfield--typing-turns-on-test",
         "inputs-textfield--action-loading",
         "inputs-textfield--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Typing a short value, like an address or a name.",
+          "In a `<form>`, so Enter submits it.",
+          "With a `TextFieldAction` inside its border to check the value, like Test.",
+          "`feedback` under it for a hint, a result or an error."
+        ],
+        "avoid": [
+          "Picking one of a few known options: use `SegmentedControl`.",
+          "Turning a setting on or off: use `Toggle`.",
+          "A value to read, not edit: use `DataRow`.",
+          "Submitting the form: use a `Button` outside the field."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<input>`, named by its `label`.",
+            "The `feedback` is its description and a live region, so each change is announced.",
+            "`isInvalid` sets `aria-invalid`.",
+            "Focus shows as the accent border.",
+            "The action works as `Button` does: disabled and loading stay focusable, ignore presses, and tell screen readers."
+          ],
+          "yours": [
+            "A `label` that names the value: “Address”, not “Enter an address”.",
+            "A `placeholder` with sample input, never the only hint.",
+            "An error in words in `feedback`, so red isn’t the only cue.",
+            "A `loadingLabel` on a loading action, since only a spinner shows."
+          ]
+        }
+      }
     },
     "TextFieldAction": {
       "group": "Inputs",
@@ -474,7 +638,33 @@
         "inputs-toggle--flipping",
         "inputs-toggle--in-setting-row",
         "inputs-toggle--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A setting that’s on or off, in a setting row.",
+          "A change that applies at once, with no save.",
+          "Beside the setting’s title and description, which explain it."
+        ],
+        "avoid": [
+          "Picking one of a few options: use `SegmentedControl`.",
+          "An action that runs once, like Check now: use `Button`.",
+          "A status the user can’t change: use `Badge` or `StatusDot`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>` with `role=\"switch\"`: a click or Space flips it.",
+            "Screen readers hear whether it’s on.",
+            "A focus ring on keyboard focus.",
+            "Disabled stays focusable, so a tooltip can say why. It ignores every flip and tells screen readers (`aria-disabled`).",
+            "With reduced motion, the knob jumps instead of sliding."
+          ],
+          "yours": [
+            "A `label` naming the setting, as the row’s title does. The switch shows no text.",
+            "`aria-describedby` pointing at the row’s description.",
+            "On a disabled switch, a tooltip that says why."
+          ]
+        }
+      }
     },
     "SegmentedControl": {
       "group": "Inputs",
@@ -511,7 +701,35 @@
         "inputs-segmentedcontrol--text-only",
         "inputs-segmentedcontrol--two-options",
         "inputs-segmentedcontrol--choosing"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Picking one of a few exclusive options, like the theme.",
+          "Every option in view at once, each a word or two.",
+          "A choice that applies at once, with no save.",
+          "An icon before each word when it helps, as the theme’s do.",
+          "Options that are always available: there’s no disabled state."
+        ],
+        "avoid": [
+          "Turning a setting on or off: use `Toggle`.",
+          "Running an action: use `Button`.",
+          "Opening another view: use `Link`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A radio group: each segment a radio on a native `<button>`.",
+            "One Tab stop. The arrow keys move and choose.",
+            "A focus ring inside the focused segment.",
+            "The thumb is hidden from screen readers. Each label names its radio.",
+            "With reduced motion, the thumb jumps instead of sliding."
+          ],
+          "yours": [
+            "A name for the group: `label`, or `aria-labelledby` pointing at a title on screen.",
+            "Short labels that tell the options apart.",
+            "`aria-describedby` pointing at the row’s description, when it has one."
+          ]
+        }
+      }
     },
     "Dialog": {
       "group": "Overlays",
@@ -569,7 +787,35 @@
         "overlays-dialog--busy",
         "overlays-dialog--with-trigger",
         "overlays-dialog--escape-closes"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A short task to finish before going on: adding a service.",
+          "Confirming what can’t be undone, with only a header and actions (“Clear history?”).",
+          "One thing shown up close, like a Wi‑Fi QR code.",
+          "`isDirty` once the user types, so a backdrop click can’t throw the input away. Escape still closes it."
+        ],
+        "avoid": [
+          "A hint on hover or focus: use `Tooltip`.",
+          "A failure or message about the page: use `Banner`.",
+          "A few actions on one item: use `Menu`.",
+          "Details that can sit on the page: use `Collapsible`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A modal `dialog`, named by its title and described by `description`.",
+            "Focus moves in and stays in. The page behind is inert.",
+            "Escape closes it, and focus goes back to the control that opened it.",
+            "The close button is named “Close”."
+          ],
+          "yours": [
+            "A title that names the task: “Add a service”.",
+            "An `onClose` that closes it, and `canClose={false}` while closing would lose work.",
+            "Focus on the first field (`autoFocus`), so Escape isn’t spent on the close button’s tooltip.",
+            "A live region around a body that swaps state, so the new one is read."
+          ]
+        }
+      }
     },
     "DialogRoot": {
       "group": "Overlays",
@@ -653,7 +899,32 @@
         "overlays-tooltip--left",
         "overlays-tooltip--wrapping",
         "overlays-tooltip--disabled"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A short hint on a control: what a value means, or why a button is off.",
+          "Detail that would crowd the row, like a host’s address.",
+          "`side=\"right\"` beside the nav rail."
+        ],
+        "avoid": [
+          "Naming an icon-only button: use `IconButton`, whose `label` is its tooltip.",
+          "Anything to click or act on: use `Dialog` or `Menu`.",
+          "A message the user must see: use `Banner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Opens on keyboard focus, not only on hover.",
+            "Screen readers hear the content as the trigger’s description, after any it already had.",
+            "No description when it only repeats the trigger’s `aria-label`.",
+            "The bubble itself is hidden from screen readers, so nothing is read twice."
+          ],
+          "yours": [
+            "A focusable trigger, like a `Button`: keyboard users can’t reach a tip on plain text.",
+            "Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text too.",
+            "Two short sentences at most, and nothing needed to finish a task."
+          ]
+        }
+      }
     },
     "Badge": {
       "group": "Status and feedback",
@@ -686,7 +957,30 @@
         "status-and-feedback-badge--negative",
         "status-and-feedback-badge--live",
         "status-and-feedback-badge--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A word or two that flags a title, like the ISP card’s VPN.",
+          "Green for good news, amber for a caveat, red for a fault.",
+          "`LiveBadge` in a card header whose data updates live."
+        ],
+        "avoid": [
+          "A status beside its own words: use `StatusDot`.",
+          "A failure the user should act on: use `Banner`.",
+          "Something to press: use `Button`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Plain text: screen readers read its words.",
+            "Capitals come from the style, so the words are read as written.",
+            "`LiveBadge`’s dot is hidden from screen readers, and stops pulsing under reduced motion."
+          ],
+          "yours": [
+            "Words that say it without the colour: “Down”, not a red blank.",
+            "A word or two, no more."
+          ]
+        }
+      }
     },
     "LiveBadge": {
       "group": "Status and feedback",
@@ -746,7 +1040,29 @@
         "status-and-feedback-statusdot--busy",
         "status-and-feedback-statusdot--current",
         "status-and-feedback-statusdot--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A status beside its words: a device online, a scan running.",
+          "`tone=\"positive\"` when the words stay quiet; otherwise it takes their colour.",
+          "`pulse` at the pace of what it marks: `calm` connected, `live` streaming, `busy` a scan."
+        ],
+        "avoid": [
+          "A flag beside a title: use `Badge`.",
+          "Live data in a card header: use `LiveBadge`.",
+          "A page’s first load: use `LoadingState`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Hidden from screen readers (`aria-hidden`): the words carry the status.",
+            "Its pulse stops under reduced motion."
+          ],
+          "yours": [
+            "Words beside it that say the status on their own.",
+            "Never a meaning only the colour or pulse carries."
+          ]
+        }
+      }
     },
     "Spinner": {
       "group": "Status and feedback",
@@ -766,7 +1082,30 @@
       "stories": [
         "status-and-feedback-spinner--default",
         "status-and-feedback-spinner--small"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A wait inside a dialog or panel, over a line saying what’s coming.",
+          "The one loading indicator, in the accent, so every wait looks alike.",
+          "Small (`size={16}`) beside a line of text."
+        ],
+        "avoid": [
+          "A page’s first load: use `LoadingState`, which holds it.",
+          "A button’s wait: set `isLoading` on `Button` or `IconButton`.",
+          "Inside a `<button>`: use `ButtonSpinner`, which is valid there."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Silent: no role or text, so screen readers skip it.",
+            "Stops moving under reduced motion."
+          ],
+          "yours": [
+            "Words for what’s loading, in a `role=\"status\"` region so they’re announced.",
+            "Keeping it out of a `<button>`: it’s a `<div>`.",
+            "Its centring and spacing."
+          ]
+        }
+      }
     },
     "ButtonSpinner": {
       "group": "Status and feedback",
@@ -792,7 +1131,30 @@
         "status-and-feedback-buttonspinner--default",
         "status-and-feedback-buttonspinner--accent",
         "status-and-feedback-buttonspinner--with-label"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A loading `Button` or `IconButton` draws it for you.",
+          "A small busy mark outside a button, like a card header’s while a test runs.",
+          "`size` in px, to match the icon it stands in for."
+        ],
+        "avoid": [
+          "A button’s own wait: set `isLoading` on `Button` instead.",
+          "A page’s first load: use `LoadingState`.",
+          "A wait with room for the full indicator: use `Spinner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Hidden from screen readers (`aria-hidden`).",
+            "An inline `<svg>`, so it’s valid inside a `<button>`.",
+            "Stops moving under reduced motion."
+          ],
+          "yours": [
+            "Outside a button, a name for the wait: words beside it, or `role=\"img\"` and an `aria-label` on its wrapper.",
+            "Inside a button, a `loadingLabel` when the wait needs words."
+          ]
+        }
+      }
     },
     "LoadingState": {
       "group": "Status and feedback",
@@ -813,7 +1175,30 @@
       "stories": [
         "status-and-feedback-loadingstate--default",
         "status-and-feedback-loadingstate--scanning"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A page’s first load, before there’s anything to show.",
+          "A label for what’s coming, ending in an ellipsis: “Loading usage…”.",
+          "It fills the content area and centres itself."
+        ],
+        "avoid": [
+          "Loaded, with nothing to show: use `EmptyState`.",
+          "A load that failed: use `Banner`.",
+          "A wait inside a dialog or panel: use `Spinner`.",
+          "A button’s wait: set `isLoading` on `Button`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A status region (`role=\"status\"`), so the label is announced.",
+            "The spinner is silent; the label speaks for it."
+          ],
+          "yours": [
+            "A label that names what’s loading: “Scanning your network…”, not “Loading…”.",
+            "Swapping it out once the data or an error arrives."
+          ]
+        }
+      }
     },
     "Banner": {
       "group": "Status and feedback",
@@ -850,7 +1235,33 @@
         "status-and-feedback-banner--stale",
         "status-and-feedback-banner--dismissing",
         "status-and-feedback-banner--retrying"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A failure above a page: a load, refresh or action that didn’t work.",
+          "A title for what failed, and a line on how old the data is or what happens next.",
+          "`onRetry` when trying again can help. Leave it out when the page polls and heals itself.",
+          "A new title brings back a banner the user dismissed."
+        ],
+        "avoid": [
+          "Loaded, with nothing to show: use `EmptyState`.",
+          "Still loading: use `LoadingState`.",
+          "A short flag beside a title: use `Badge`.",
+          "A choice to make before going on: use `Dialog`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "An alert (`role=\"alert\"`): screen readers read it as it appears.",
+            "Dismiss and Retry are `Button`s, with their keyboard, focus ring and busy state.",
+            "The icon is hidden from screen readers."
+          ],
+          "yours": [
+            "A title that says what failed: “Couldn’t load devices”.",
+            "A line that says what’s on screen now: “Showing figures from 5 minutes ago.”",
+            "Rendering it only while there’s an error."
+          ]
+        }
+      }
     },
     "EmptyState": {
       "group": "Status and feedback",
@@ -887,7 +1298,31 @@
         "status-and-feedback-emptystate--locked",
         "status-and-feedback-emptystate--with-note",
         "status-and-feedback-emptystate--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A page with nothing to show yet: no devices, services or events.",
+          "`description` names what will fill it, or why it can’t.",
+          "`actions` for the step that fills it, like Add service.",
+          "`isLocked` when it can’t fill until the user acts outside Rove, like admin access."
+        ],
+        "avoid": [
+          "Still loading: use `LoadingState`.",
+          "A load that failed: use `Banner`.",
+          "One missing value in a row: use `NoValue`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The title is an `<h2>`, so it sits in the page outline.",
+            "The placeholder rows and lock are hidden from screen readers."
+          ],
+          "yours": [
+            "A title that names what’s empty: “No devices yet”.",
+            "A description of two short sentences at most.",
+            "`role=\"status\"` on a note an action adds, so it’s announced."
+          ]
+        }
+      }
     },
     "EmptyStateDescription": {
       "group": "Status and feedback",
@@ -947,7 +1382,33 @@
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
         "data-display-datalist--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Labelled facts in a card: an address, a band, a speed.",
+          "Each fact a `DataRow`: its label on the left, its value on the right.",
+          "`compact` for a short list, or one repeated down a page.",
+          "Several topics in one card: a `DataList` each, in a `DataListStack`.",
+          "A row with no value and no children isn’t drawn, so a list can name every field it might have.",
+          "A value that isn’t text (a meter, a badge) in the row’s children, with `align=\"center\"`.",
+          "A missing value that still needs its row: `NoValue` as the children."
+        ],
+        "avoid": [
+          "A card’s headline figure: use `Readout`.",
+          "Rows that open something: use `ListRow`.",
+          "A list of items, each its own row: use `CardList`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `<dl>`: each row a `<dt>` label and a `<dd>` value, read as a pair.",
+            "A row with nothing to show leaves no empty pair behind."
+          ],
+          "yours": [
+            "Words for a visual value: an `sr-only` word beside a `BarMeter`.",
+            "Short labels that name the value: “Gateway”, not “Your gateway’s address”."
+          ]
+        }
+      }
     },
     "DataListStack": {
       "group": "Data display",
@@ -1034,7 +1495,30 @@
         "data-display-novalue--default",
         "data-display-novalue--in-context",
         "data-display-novalue--all-sizes"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Where a value would be but there’s none: not measured, unknown.",
+          "In place of whatever a formatter returned null for.",
+          "Any size of line: a data row, a substat, a hero number."
+        ],
+        "avoid": [
+          "A field that may not apply at all: leave the `DataRow`’s value null, and the row isn’t drawn.",
+          "A section with nothing to show: use `EmptyState`.",
+          "A page still loading: use `LoadingState`.",
+          "A zero: it’s a value, so show it."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The bar is hidden. Screen readers hear `label` in its place.",
+            "No dash character, so nothing reads out as “dash”."
+          ],
+          "yours": [
+            "A `label` that says why: “Not measured”, “Unknown”.",
+            "A label nearby, like a row’s, that says what’s missing."
+          ]
+        }
+      }
     },
     "Readout": {
       "group": "Data display",
@@ -1088,7 +1572,30 @@
         "data-display-readout--unlabelled",
         "data-display-readout--compact",
         "data-display-readout--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A headline figure and its unit: live speed, data used.",
+          "With a `label` and `icon` above it, side by side in a `<dl>`.",
+          "`compact` for a summary card’s figure, which has no label."
+        ],
+        "avoid": [
+          "A value in a list of facts: use `DataRow`.",
+          "A number inside a line of text that eases itself: use `MetricValue`.",
+          "A rating at a glance: use `BarMeter`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.",
+            "With `spokenValue`, the moving digits are hidden and screen readers hear it instead."
+          ],
+          "yours": [
+            "A `<dl>` around labelled readouts.",
+            "A `spokenValue` while the figure animates.",
+            "Without a label, words nearby that say what the figure is."
+          ]
+        }
+      }
     },
     "MetricValue": {
       "group": "Data display",
@@ -1129,7 +1636,31 @@
         "data-display-metricvalue--negative",
         "data-display-metricvalue--easing",
         "data-display-metricvalue--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A number that changes each poll: latency, a speed.",
+          "`status` once the value has earned a colour: green, amber or red.",
+          "Inside the text that sets its size: a row’s value, a hero figure."
+        ],
+        "avoid": [
+          "A figure with its unit and label: use `Readout`.",
+          "A value that doesn’t change: use `DataRow`.",
+          "A rating at a glance: use `BarMeter`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Snaps to each new value under reduced motion.",
+            "Plain text: screen readers read the number on screen.",
+            "A missing value is a `NoValue`, heard as “None”."
+          ],
+          "yours": [
+            "A label in the line around it that says what it measures.",
+            "The status in words where it matters, not only colour.",
+            "A change worth announcing, through `ScreenReaderStatus`."
+          ]
+        }
+      }
     },
     "BarMeter": {
       "group": "Data display",
@@ -1176,7 +1707,31 @@
         "data-display-barmeter--empty",
         "data-display-barmeter--dimmed",
         "data-display-barmeter--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Signal strength or a rating, at a glance.",
+          "`lg` for a list row’s rating, `sm` in a data row.",
+          "`md` beside a title, `xs` in a dense strip like Home’s.",
+          "A status token as `color`, matching how many bars are lit.",
+          "`value={0}` before there’s a rating, and `isDimmed` for a stale one waiting on a new test."
+        ],
+        "avoid": [
+          "An exact figure: use `Readout` or `MetricValue`.",
+          "Comparing traffic between rows: use `SplitBar`.",
+          "A status in words: use `Badge` or `StatusDot`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Hidden from screen readers: it’s a picture of the value.",
+            "Unlit bars are a faint tint, so the count reads without telling colours apart."
+          ],
+          "yours": [
+            "The value in words: an `sr-only` word beside it (“Good”), or a wrapper with `role=\"meter\"` and a label.",
+            "A colour that matches those words."
+          ]
+        }
+      }
     },
     "SplitBar": {
       "group": "Data display",
@@ -1216,7 +1771,28 @@
         "data-display-splitbar--default",
         "data-display-splitbar--empty",
         "data-display-splitbar--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Download and upload side by side, in a usage row.",
+          "Comparing rows: every row in one list shares a `max`.",
+          "A width, or an inset to line up with an icon, from its row."
+        ],
+        "avoid": [
+          "A rating or signal: use `BarMeter`.",
+          "The amount itself: use `Readout`, or figures beside the bar."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "An image to screen readers (`role=\"img\"`), named by `label`.",
+            "Widths snap under reduced motion."
+          ],
+          "yours": [
+            "A `label` that reads the bar out: “620 MB down, 180 MB up”.",
+            "Figures beside it: colour alone doesn’t say which segment is which."
+          ]
+        }
+      }
     },
     "ListRow": {
       "group": "Data display",
@@ -1251,7 +1827,34 @@
         "data-display-listrow--opening",
         "data-display-listrow--disabled-stays-inert",
         "data-display-listrow--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A row in a card’s list that opens something: a capability, About.",
+          "An `IconTile`, a title and a description, then anything right-aligned last.",
+          "A text column with `flex-1`, so a meter after it sits on the right."
+        ],
+        "avoid": [
+          "A label and value that open nothing: use `DataRow` in a `DataList`.",
+          "A whole card that opens: use `Card` with `onOpen`.",
+          "Opening another view from a line of text: use `Link`.",
+          "An action on the page: use `Button`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>`, `type=\"button\"`: Enter and Space press it.",
+            "Its text names it. The chevron is hidden from screen readers.",
+            "A focus ring, drawn inside the row.",
+            "Disabled, it stays in the Tab order and says so (`aria-disabled`), but ignores every press."
+          ],
+          "yours": [
+            "A list around the rows: `<ul role=\"list\">` and an `<li>` each.",
+            "A title that says what opens.",
+            "Words for a meter: an `sr-only` rating (“Excellent”) beside the `BarMeter`.",
+            "Spans, not divs, inside: a button only holds inline content."
+          ]
+        }
+      }
     },
     "IconTile": {
       "group": "Data display",
@@ -1297,7 +1900,34 @@
         "data-display-icontile--button-opening",
         "data-display-icontile--button-disabled-stays-inert",
         "data-display-icontile--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "The icon that starts an item’s row: a device, a capability.",
+          "A colour for what the item is, usually a token (`var(--series-down)`).",
+          "`neutral` for something uncategorised or not yet rated.",
+          "`IconTileButton` when the tile itself opens something."
+        ],
+        "avoid": [
+          "An icon-only action: use `IconButton`.",
+          "A whole row that opens something: use `ListRow`, with the tile inside.",
+          "An event on a timeline: use `TimelineNode`.",
+          "A status beside words: use `StatusDot`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The plain tile is decoration: library icons are hidden from screen readers.",
+            "`IconTileButton` is a native `<button>` named by `label`: Enter and Space press it.",
+            "A focus ring on keyboard focus.",
+            "Disabled, the button stays focusable and says so (`aria-disabled`), but ignores every press."
+          ],
+          "yours": [
+            "Words beside a plain tile that say what the item is.",
+            "A button `label` that names what it opens and its state: “Video calls: Good”.",
+            "An icon sized for the tile, 16 to 18px."
+          ]
+        }
+      }
     },
     "IconTileButton": {
       "group": "Data display",
@@ -1385,7 +2015,31 @@
         "data-display-timelinenode--default",
         "data-display-timelinenode--neutral",
         "data-display-timelinenode--timeline"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "One event in a feed or timeline: joined, left, went down.",
+          "A colour for what happened, usually a status token.",
+          "`neutral` for something quiet that left.",
+          "Its lines as children: what happened, then what it happened to."
+        ],
+        "avoid": [
+          "An item that isn’t an event in time: use `IconTile` in its row.",
+          "A row that opens something: use `ListRow`.",
+          "A message about the whole page: use `Banner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "An `<li>`, so the nodes read as a list with a count.",
+            "The marker is hidden from screen readers. The lines carry the event."
+          ],
+          "yours": [
+            "An `<ol>` around the nodes.",
+            "Lines that say what happened in words, not only by colour or icon.",
+            "A time in the lines when the order needs one."
+          ]
+        }
+      }
     },
     "Card": {
       "group": "Containers",
@@ -1432,7 +2086,37 @@
         "containers-card-card--opening-and-header-action",
         "containers-card-card--list",
         "containers-card-card--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "A panel of related facts or controls: Wi‑Fi details, DNS, a group of settings.",
+          "A summary that opens its own view, with `onOpen`.",
+          "`CardBody layout=\"rows\"` for setting rows, `\"flush\"` for a `DataListStack`.",
+          "A `CardFooter` for a footnote or status (“Updated 2 min ago”).",
+          "`CardList` for a list that is one card."
+        ],
+        "avoid": [
+          "A message about the whole page, like an error: use `Banner`.",
+          "Nothing to show yet: use `EmptyState`.",
+          "Details shown only on request: a `Collapsible` inside the card.",
+          "A row in a card’s list that opens a view: use `ListRow`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `section` card is a region named by its header’s title.",
+            "Openable: one link over the whole card, named by its title, first in Tab order. Header actions still take their own clicks.",
+            "A focus ring just inside the card while its link has keyboard focus.",
+            "The header’s icon is hidden from screen readers.",
+            "`CardList` is a list, named by its `label`."
+          ],
+          "yours": [
+            "A title that names the card. A `section` needs a `CardHeader`.",
+            "A `linkLabel` when the title doesn’t say enough, or there’s no header.",
+            "On an openable card, raising your own controls above its link (`relative z-2`).",
+            "A `CardList` `label` that names its rows (“Devices”)."
+          ]
+        }
+      }
     },
     "CardBody": {
       "group": "Containers",
@@ -1581,7 +2265,33 @@
         "containers-collapsible--focus-frame",
         "containers-collapsible--toggling",
         "containers-collapsible--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Details most people don’t need, like the connection card’s.",
+          "A group’s rows on request, like an app’s hosts. `as=\"li\"` in a list.",
+          "`hasFocusFrame` when the trigger spans a card’s or group’s header."
+        ],
+        "avoid": [
+          "Content everyone needs: show it in the `Card`.",
+          "A few actions behind a button: use `Menu`.",
+          "A task that needs the user’s full attention: use `Dialog`.",
+          "Switching between views of one thing: use `SegmentedControl`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The trigger is a native `<button>`: Enter and Space toggle it.",
+            "It says whether it’s open (`aria-expanded`) and what it controls.",
+            "A closed panel leaves the page and the accessibility tree.",
+            "With reduced motion, the panel opens without animating."
+          ],
+          "yours": [
+            "Trigger text that names what it shows: “Connection details”.",
+            "The trigger’s look: hover and focus styles, and a chevron that turns on `data-panel-open`.",
+            "With `hasFocusFrame`, the header’s hover look on focus too."
+          ]
+        }
+      }
     },
     "CollapsiblePanel": {
       "group": "Containers",
@@ -1631,7 +2341,33 @@
       "stories": [
         "containers-dotseparator-dotseparator--dot",
         "containers-dotseparator-dotseparator--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Between inline items on one line: an address, a vendor, a time.",
+          "`InlineMeta` for a list of items, some maybe empty.",
+          "`shouldTruncate` to keep them on one line.",
+          "A bare `DotSeparator` between two items you lay out yourself.",
+          "Empty items drop out with their dots, so pass every field. A `0` stays."
+        ],
+        "avoid": [
+          "Labels and their values: use `DataRow`s in a `DataList`.",
+          "A status beside its words: use `StatusDot`.",
+          "A missing value that should show: use `NoValue`.",
+          "A line between rows: `CardList` and `DataListStack` draw it."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The dot is hidden from screen readers.",
+            "A truncated item keeps its full text for screen readers."
+          ],
+          "yours": [
+            "Items that still make sense read in a row, without the dots.",
+            "The full value somewhere else when truncation can hide it.",
+            "Text colour with enough contrast: it takes its line’s."
+          ]
+        }
+      }
     },
     "InlineMeta": {
       "group": "Containers",
@@ -1692,7 +2428,32 @@
         "app-frame-titlebar-titlebar--offline",
         "app-frame-titlebar-titlebar--without-controls",
         "app-frame-titlebar-titlebar--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "The window’s top edge, once: brand, connection status and window controls.",
+          "A `TitleBarStatus` beside the brand: the connection, in words.",
+          "`WindowButton`s for minimise and close, on a frameless window.",
+          "Status tones: `positive` connected, `negative` connected but something’s wrong beyond the link, `neutral` connecting or offline."
+        ],
+        "avoid": [
+          "A page’s title and actions: use `PageHeader`.",
+          "Moving between pages: use `NavRail`.",
+          "A status anywhere else: a `StatusDot` beside its words."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `<header>` landmark, which also drags the window.",
+            "`TitleBarStatus` is a status region: a change is read out.",
+            "The status dot is decorative. The words carry it.",
+            "Each `WindowButton` is a native button named “Minimize” or “Close”, out of the Tab order like a native title bar’s."
+          ],
+          "yours": [
+            "A brand whose name is text, its mark hidden from screen readers.",
+            "Status words that make sense alone: “No internet”, not “Error”."
+          ]
+        }
+      }
     },
     "TitleBarStatus": {
       "group": "App frame",
@@ -1816,7 +2577,33 @@
       },
       "stories": [
         "app-frame-navrail-navrail--default"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "The app’s pages, down the window’s left side. One rail per window.",
+          "One `NavItem` per page in `main`, from the top.",
+          "Settings and app-wide switches, like the theme, in `footer`."
+        ],
+        "avoid": [
+          "A page’s own actions: use `PageHeader`’s `actions`.",
+          "Picking one of a few options on a page: use `SegmentedControl`.",
+          "An icon action anywhere else: use `IconButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `<nav>` landmark named by `label`, its items in lists.",
+            "The active item has `aria-current=\"page\"`.",
+            "Each item is a native `<button>` named by its `label`, which is also its tooltip.",
+            "The sliding bar is hidden from screen readers. Reduced motion stops the slide."
+          ],
+          "yours": [
+            "A `label` for the rail: “Main navigation”.",
+            "A short page name as each item’s `label`.",
+            "`isActive` on the current page’s item, and only that one.",
+            "An action item’s label says what it does: “Switch to light mode”."
+          ]
+        }
+      }
     },
     "PageHeader": {
       "group": "App frame",
@@ -1859,7 +2646,35 @@
         "app-frame-pageheader--subpage",
         "app-frame-pageheader--title-only",
         "app-frame-pageheader--all-states"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "The top of every page but Home.",
+          "`icon`, the page’s rail icon, on a top-level page.",
+          "`onBack` on a page layered over a tab, like Hosts.",
+          "`status` while something runs (“Scanning…”).",
+          "`actions` for the page’s controls: help, refresh, its main `Button`.",
+          "`description={null}` to hold the line’s height while there’s nothing to show."
+        ],
+        "avoid": [
+          "A card’s title: use `CardHeader`.",
+          "The window’s top edge: use `TitleBar`.",
+          "A message about the page, like an error: use `Banner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The title is the page’s `<h1>`, in a `<header>`.",
+            "A new `status` is announced to screen readers.",
+            "The back button is named “Back”, with a tooltip to match.",
+            "The icon chip is hidden from screen readers."
+          ],
+          "yours": [
+            "A title that names the page, as the rail does.",
+            "A short `status` that says what’s running: “Scanning…”.",
+            "Labels and tooltips on the actions you pass."
+          ]
+        }
+      }
     },
     "ScreenReaderStatus": {
       "group": "Accessibility",
@@ -1871,7 +2686,31 @@
       "stories": [
         "accessibility-screenreaderstatus--default",
         "accessibility-screenreaderstatus--announces-a-change"
-      ]
+      ],
+      "guidance": {
+        "use": [
+          "Progress the screen shows without words: “Testing download…”.",
+          "An outcome to announce once it’s in, like an update check’s result.",
+          "A status that changes while focus stays where it is."
+        ],
+        "avoid": [
+          "A page’s status shown on screen too: use `PageHeader`’s `status`, already announced.",
+          "A field’s error or hint: use `TextField`’s `feedback`.",
+          "A failure the user must see: use `Banner`.",
+          "Hidden words that never change: a plain `sr-only` span."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "`role=\"status\"`: a polite live region, read without interrupting.",
+            "Hidden on screen, still in the accessibility tree."
+          ],
+          "yours": [
+            "Keep it mounted, with empty text when there’s nothing to say.",
+            "Short text that makes sense heard alone.",
+            "New text only when the status changes, not on every tick."
+          ]
+        }
+      }
     }
   },
   "icons": [

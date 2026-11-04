@@ -10,8 +10,6 @@ export type Guidance = {
   use: string[]
   /** Where something else is, naming it. */
   avoid: string[]
-  /** What it looks like in each state, and when each applies. */
-  states: string[]
   accessibility: {
     /** What the component does for you. */
     builtIn: string[]
@@ -43,15 +41,15 @@ function Lines({ label, lines }: { label?: string; lines: string[] }): JSX.Eleme
   )
 }
 
-// As in Figma's Guidance block: a 2×2 grid of sections under hairlines.
-// `sb-unstyled` keeps Storybook's prose styles off it (preview.css styles it);
-// the headings stay `<h2>`s for the page's contents.
+// As in Figma's Guidance block: When to use and When not to use side by side,
+// then Accessibility across both, its two lists in the same columns. Sections
+// sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
+// (preview.css styles it); the headings stay `<h2>`s for the page's contents.
 function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
-  const { use, avoid, states, accessibility } = guidance
+  const { use, avoid, accessibility } = guidance
   const sections: { title: string; groups: { label?: string; lines: string[] }[] }[] = [
     { title: 'When to use', groups: [{ lines: use }] },
     { title: 'When not to use', groups: [{ lines: avoid }] },
-    { title: 'States', groups: [{ lines: states }] },
     {
       title: 'Accessibility',
       groups: [
@@ -65,9 +63,11 @@ function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
       {sections.map(({ title, groups }) => (
         <section key={title}>
           <h2>{title}</h2>
-          {groups.map((group) => (
-            <Lines key={group.label ?? title} {...group} />
-          ))}
+          <div className="guidance-groups">
+            {groups.map((group) => (
+              <Lines key={group.label ?? title} {...group} />
+            ))}
+          </div>
         </section>
       ))}
     </div>

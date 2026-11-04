@@ -37,18 +37,13 @@ const meta = {
         'A short task to finish before going on: adding a service.',
         'Confirming what can’t be undone, with only a header and actions (“Clear history?”).',
         'One thing shown up close, like a Wi‑Fi QR code.',
+        '`isDirty` once the user types, so a backdrop click can’t throw the input away. Escape still closes it.',
       ],
       avoid: [
         'A hint on hover or focus: use `Tooltip`.',
         'A failure or message about the page: use `Banner`.',
         'A few actions on one item: use `Menu`.',
         'Details that can sit on the page: use `Collapsible`.',
-      ],
-      states: [
-        'Fades and scales in and out. `DialogRoot` keeps it mounted while it leaves.',
-        'Its height springs to fit when its content changes.',
-        '`canClose={false}` while something runs: Close, Cancel, Escape and the backdrop are all off.',
-        '`isDirty` once the user types: a backdrop click no longer closes it. Escape still does.',
       ],
       accessibility: {
         builtIn: [

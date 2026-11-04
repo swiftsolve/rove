@@ -24,18 +24,13 @@ const meta = {
         'Soft, the default, as a chip in a header or a toolbar.',
         '`variant="ghost"` where a chip would be heavy, like a dialog’s close.',
         'A help button, with the hint in `tooltip`.',
+        '`iconSize={14}` for an icon that reads large, like Play. 16 otherwise.',
       ],
       avoid: [
         'An action that needs words: use `Button`.',
         'Several actions behind one icon: use `Menu`.',
         'Opening another view: use `Link`.',
         'An item’s tile that opens it: use `IconTileButton`.',
-      ],
-      states: [
-        'Hover and press, while usable.',
-        '`isLoading` swaps the icon for a spinner of the same size.',
-        '`isDisabled` dims it.',
-        'Icon sizes: 16, or 14 for an icon that reads large (Play).',
       ],
       accessibility: {
         builtIn: [

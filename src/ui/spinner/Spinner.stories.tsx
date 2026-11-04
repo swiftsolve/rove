@@ -20,15 +20,12 @@ const meta = {
         'A button’s wait: set `isLoading` on `Button` or `IconButton`.',
         'Inside a `<button>`: use `ButtonSpinner`, which is valid there.',
       ],
-      states: [
-        'One state: moving until it’s removed.',
-        '`size` in px, 24 by default. Its centring and spacing are yours.',
-      ],
       accessibility: {
         builtIn: ['Silent: no role or text, so screen readers skip it.', 'Stops moving under reduced motion.'],
         yours: [
           'Words for what’s loading, in a `role="status"` region so they’re announced.',
           'Keeping it out of a `<button>`: it’s a `<div>`.',
+          'Its centring and spacing.',
         ],
       },
     } satisfies Guidance,

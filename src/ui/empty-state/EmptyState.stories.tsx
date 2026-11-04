@@ -25,11 +25,6 @@ const meta = {
         'A load that failed: use `Banner`.',
         'One missing value in a row: use `NoValue`.',
       ],
-      states: [
-        'A title alone, or with a description, actions or both.',
-        'Locked: a lock badge over the placeholder rows.',
-        'A further `EmptyStateDescription` line an action adds, like a note after Try again.',
-      ],
       accessibility: {
         builtIn: [
           'The title is an `<h2>`, so it sits in the page outline.',

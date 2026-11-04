@@ -24,11 +24,6 @@ const meta = {
         'A failure the user must see: use `Banner`.',
         'Hidden words that never change: a plain `sr-only` span.',
       ],
-      states: [
-        'Empty: mounted, saying nothing.',
-        'New text: read out once, after what’s being read.',
-        'Never visible, whatever it holds.',
-      ],
       accessibility: {
         builtIn: [
           '`role="status"`: a polite live region, read without interrupting.',

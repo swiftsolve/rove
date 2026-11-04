@@ -33,12 +33,6 @@ const meta = {
         'Picking one of a few options: use `SegmentedControl`.',
         'Turning a setting on or off: use `Toggle`.',
       ],
-      states: [
-        'Hover and press, while usable.',
-        '`isLoading` swaps the icon for a spinner. `loadingLabel` can swap the words (“Testing…”).',
-        '`isDisabled` dims it.',
-        'Sizes: `md`, solid’s default, and the compact `sm`, soft’s.',
-      ],
       accessibility: {
         builtIn: [
           'A native `<button>`, `type="button"` unless set: Enter and Space press it.',

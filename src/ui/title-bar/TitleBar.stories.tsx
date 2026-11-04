@@ -39,18 +39,12 @@ const meta = {
         'The window’s top edge, once: brand, connection status and window controls.',
         'A `TitleBarStatus` beside the brand: the connection, in words.',
         '`WindowButton`s for minimise and close, on a frameless window.',
+        'Status tones: `positive` connected, `negative` connected but something’s wrong beyond the link, `neutral` connecting or offline.',
       ],
       avoid: [
         'A page’s title and actions: use `PageHeader`.',
         'Moving between pages: use `NavRail`.',
         'A status anywhere else: a `StatusDot` beside its words.',
-      ],
-      states: [
-        'Positive: connected, the dot pulsing green.',
-        'Negative: connected, but something’s wrong beyond the link (“No internet”).',
-        'Neutral: connecting or offline, with a still dot.',
-        'Close turns red on hover. Minimise brightens.',
-        'No window buttons on a window with native decorations.',
       ],
       accessibility: {
         builtIn: [

@@ -46,12 +46,6 @@ const meta = {
         'Picking one of a few options: use `SegmentedControl`.',
         'Opening another view: use `Link`.',
       ],
-      states: [
-        'Closed, the kebab tints on hover. Open, it keeps the tint.',
-        'An item highlights on hover and on the arrow keys alike.',
-        'A negative item is red, with a red tint when highlighted.',
-        'It keeps its own open state, or takes `isOpen` and `onOpenChange`.',
-      ],
       accessibility: {
         builtIn: [
           'The kebab is a menu button: screen readers hear it opens a menu, and whether it’s open.',

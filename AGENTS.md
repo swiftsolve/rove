@@ -17,8 +17,9 @@ The Rove Design System in Figma is the source of truth for tokens and
 components; they arrive through `@swiftsolve/rove-tokens`.
 
 `src/ui/components.gen.json` lists every library component with its group,
-props, variant values, Figma component and stories, generated from the code.
-Read it before `src/ui`'s files when you need the library's API.
+props, variant values, Figma component, stories and usage guide (when to use
+it, when not, accessibility), generated from the code. Read it before
+`src/ui`'s files when you need the library's API or which component to pick.
 
 ## Keep Figma and code in sync
 
