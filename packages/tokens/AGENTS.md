@@ -15,17 +15,17 @@ released. Nothing here writes to Figma.
 
 - **To change a token**, change it in Figma (by hand, or through the Figma
   MCP's `use_figma`), then export it: with the plugin into `src/figma/`, or
-  with `npm run figma -- export` through `use_figma` and then
-  `npm run figma -- save <result.json>`. Then build. Shadows are the file's
+  with `npm run figma:export` through `use_figma` and then
+  `npm run figma:save <result.json>`. Then build. Shadows are the file's
   `Shadow/*` effect styles and export with the rest.
 - **Never edit `src/figma/*.json` by hand**: it's an export. Only what Figma
   can't hold (font stacks, easing curves, the focus expressions) is written
   here, in `src/code-tokens.json`.
-- **Finish with `npm run figma -- check`** through `use_figma`. It must report
+- **Finish with `npm run figma:check`** through `use_figma`. It must report
   `inSync: true`. A difference means the repo is behind Figma (export again) or
   was edited by hand (undo it, and make the change in Figma).
 
-`npm run figma` prints the script to pass to `use_figma` as `code`, with the
+`npm run figma:export` and `figma:check` print the script to pass to `use_figma` as `code`, with the
 file key in `src/figma/variables.json`. The script is the plugin's own code
 (`figma-plugin/code.js`), so the plugin's Check tab and an agent check the same
 way.

@@ -65,7 +65,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Each box says what it holds. Two steps make them: the plugin's Export, and `npm run build`, whose scripts (and [Style Dictionary](https://styledictionary.com/), which writes `tokens.css`) are listed in [What's where](#️-whats-where). Nothing flows back into Figma: to change a token, change it there and export it. `npm run figma -- check` confirms the repo still matches the file. The slideshow (`npm run present`) is separate: it exports the Figma file's pages, styled with `tokens.css`.
+Each box says what it holds. Two steps make them: the plugin's Export, and `npm run build`, whose scripts (and [Style Dictionary](https://styledictionary.com/), which writes `tokens.css`) are listed in [What's where](#️-whats-where). Nothing flows back into Figma: to change a token, change it there and export it. `npm run figma:check` confirms the repo still matches the file. The slideshow (`npm run present`) is separate: it exports the Figma file's pages, styled with `tokens.css`.
 
 ## 📦 Use
 
@@ -128,7 +128,7 @@ It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark
 | `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css` and the `DESIGN.md` reference. `npm install` and `npm publish` run it too. |
 | `npm run storybook` | The Rove Tokens Storybook on port 6007 |
 | `npm run build:storybook` | A static copy of it in `storybook-static/` |
-| `npm run figma -- check` | A script for the Figma MCP's `use_figma` that lists every difference between the Figma file and the repo. `export` reads the file, and `save <result.json>` writes an export into `src/figma/`. |
+| `npm run figma:check` | A script for the Figma MCP's `use_figma` that lists every difference between the Figma file and the repo. `figma:export` reads the file, and `figma:save <result.json>` writes an export into `src/figma/`. |
 | `npm run present` | Builds, then exports the Figma file's pages to the slideshow in `presentation/`. Needs `FIGMA_TOKEN` in `.env.local`. |
 | `npm run present:publish` | Pushes that slideshow to GitHub Pages |
 
@@ -139,13 +139,13 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 **In Figma**
 
 1. Change the variables, text styles or `Shadow/*` effect styles in Figma.
-2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma -- export`, then `npm run figma -- save <result.json>`).
+2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
 3. Run `npm run build` (Node 22) and check `dist/tokens.css`. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve.
 4. Commit the change.
 
 **Only what Figma can't hold** (font stacks, easing curves, the focus expressions) is edited here, in `src/code-tokens.json`; then build and commit. Never edit `src/figma/*.json` by hand: it's an export, and the next one would undo it.
 
-**Then check.** The plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma -- check` lists every difference: values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited by hand (undo it, and make the change in Figma).
+**Then check.** The plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference: values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited by hand (undo it, and make the change in Figma).
 
 ## 🚀 Release
 
@@ -174,7 +174,7 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
 | `src/figma/effect-styles.json` | Raw export of the `Shadow/*` effect styles: each layer's offset, blur, spread and the colour variable bound to it. Each style becomes a `--shadow-*` token. |
 | `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the three files you choose from a checkout and lists every difference. It never writes to the file, and needs no network access. |
-| `scripts/figma/script.mjs` | `npm run figma`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
+| `scripts/figma/script.mjs` | `npm run figma:export` and `figma:check`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
 | `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 
 **Build**

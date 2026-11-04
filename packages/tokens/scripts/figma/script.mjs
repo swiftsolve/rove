@@ -4,19 +4,18 @@
  * and the plugin export and check the same way. Nothing writes to the file:
  * tokens are designed in Figma and only exported from it.
  *
- *   npm run figma -- export              # the file's variables, text styles and Shadow/* effect styles
- *   npm run figma -- save <result.json>  # write an export's result into src/figma/
- *   npm run figma -- check               # list every difference between the file and the repo
- *   npm run figma -- check --ref v1.3.1  # against a tag or commit, not the working tree
+ *   npm run figma:export               # the file's variables, text styles and Shadow/* effect styles
+ *   npm run figma:save <result.json>   # write an export's result into src/figma/
+ *   npm run figma:check                # list every difference between the file and the repo
+ *   npm run figma:check v2.0.0         # against a tag or commit, not the working tree
  *
- * The script goes to stdout, or to a file with --out <path>. Pass it to
- * use_figma as `code`, with the file key from src/figma/variables.json.
+ * The script goes to stdout (add `> file.js` to keep it). Pass it to use_figma
+ * as `code`, with the file key from src/figma/variables.json.
  */
 import { execFileSync } from 'node:child_process'
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs } from 'node:util'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 // use_figma refuses code longer than this.
@@ -27,20 +26,16 @@ const FILES = {
   'effect-styles.json': 'exportEffectStyles',
 }
 
-const { positionals, values } = parseArgs({
-  allowPositionals: true,
-  options: { ref: { type: 'string' }, out: { type: 'string' } },
-})
-const [action, input] = positionals
+// No options, only words, so npm passes them through without `--`.
+const [action, input] = process.argv.slice(2)
 const usage = (message) => {
-  console.error(message ?? 'Usage: npm run figma -- export|save|check [--ref <git ref>] [--out <path>]')
+  console.error(message ?? 'Usage: npm run figma:export | figma:save <result.json> | figma:check [git ref]')
   process.exit(1)
 }
 if (!['check', 'export', 'save'].includes(action)) usage()
-if (values.ref && action !== 'check') usage('--ref only goes with check.')
 
 if (action === 'save') {
-  if (!input) usage('Usage: npm run figma -- save <result.json>')
+  if (!input) usage('Usage: npm run figma:save <result.json>')
   await save(input)
   process.exit(0)
 }
@@ -63,8 +58,8 @@ if (action === 'export') {
   /** A repo file from the working tree, or from a git ref. */
   const source = async (path) =>
     JSON.parse(
-      values.ref
-        ? execFileSync('git', ['show', `${values.ref}:${path}`], { cwd: ROOT, encoding: 'utf8' })
+      input
+        ? execFileSync('git', ['show', `${input}:${path}`], { cwd: ROOT, encoding: 'utf8' })
         : await readFile(resolve(ROOT, path), 'utf8'),
     )
   const repo = {
@@ -85,10 +80,7 @@ if (action === 'export') {
 const script = `${engine}\n${body}\n`
 
 if (script.length > LIMIT) usage(`The script is ${script.length} characters; use_figma takes ${LIMIT}. Use the plugin.`)
-if (values.out) {
-  await writeFile(values.out, script)
-  console.error(`${values.out}: ${script.length} characters`)
-} else process.stdout.write(script)
+process.stdout.write(script)
 
 /**
  * Write an export's result into src/figma/, as the plugin's Export button

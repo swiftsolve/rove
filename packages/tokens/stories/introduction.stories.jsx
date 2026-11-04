@@ -195,7 +195,7 @@ const CHECKS = [
   {
     icon: 'figma',
     name: 'Figma check',
-    body: '`npm run figma -- check` lists every token that differs between the Figma file and the repo.',
+    body: '`npm run figma:check` lists every token that differs between the Figma file and the repo.',
   },
   {
     icon: 'eslint',
