@@ -1,5 +1,5 @@
 // Brand marks for the Introduction's diagram, from Simple Icons 16.30.0 (CC0, simpleicons.org).
-// Copied, not installed, since these few are all the stories need. A black mark (Markdown, JSON) takes
+// Copied, not installed, since these few are all the stories need. A black mark (JSON) takes
 // currentColor so it reads in Dark too.
 export const BRAND_ICONS = {
   json: {
@@ -21,11 +21,6 @@ export const BRAND_ICONS = {
     title: 'npm',
     color: '#CB3837',
     path: 'M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z',
-  },
-  markdown: {
-    title: 'Markdown',
-    color: 'currentColor',
-    path: 'M22.27 19.385H1.73A1.73 1.73 0 010 17.655V6.345a1.73 1.73 0 011.73-1.73h20.54A1.73 1.73 0 0124 6.345v11.308a1.73 1.73 0 01-1.73 1.731zM5.769 15.923v-4.5l2.308 2.885 2.307-2.885v4.5h2.308V8.078h-2.308l-2.307 2.885-2.308-2.885H3.46v7.847zM21.232 12h-2.309V8.077h-2.307V12h-2.308l3.461 4.039z',
   },
   claude: {
     title: 'Claude',
