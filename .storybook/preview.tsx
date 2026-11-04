@@ -19,11 +19,6 @@ function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContai
     context.channel.on(GLOBALS_UPDATED, onGlobalsUpdated)
     return () => context.channel.off(GLOBALS_UPDATED, onGlobalsUpdated)
   }, [context.channel])
-  // A page that renders no story (the Introduction) gets no decorator, so the
-  // container sets the app's theme class too.
-  useEffect(() => {
-    document.documentElement.classList.toggle('theme-light', theme === 'light')
-  }, [theme])
   return (
     <DocsContainer context={context} theme={theme === 'light' ? themes.light : themes.dark}>
       {children}
