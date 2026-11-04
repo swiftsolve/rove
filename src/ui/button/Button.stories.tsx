@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Fragment } from 'react'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { iconArg, iconComponentControl } from '../icons/icon-options'
@@ -69,6 +69,34 @@ export const Loading: Story = {
 
 /** Still focusable, so a tooltip can say why. */
 export const Disabled: Story = { args: { variant: 'solid', icon: iconArg('PlayIcon'), isDisabled: true } }
+
+/** A click, Enter and Space each run the action once. */
+export const Pressing: Story = {
+  args: { variant: 'solid', icon: iconArg('PlayIcon') },
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Run test' })
+    await userEvent.click(button)
+    await expect(args.onClick).toHaveBeenCalledTimes(1)
+    await userEvent.keyboard('{Enter}')
+    await userEvent.keyboard(' ')
+    await expect(args.onClick).toHaveBeenCalledTimes(3)
+  },
+}
+
+/** Disabled, it still takes focus but ignores a press. */
+export const PressingWhileDisabled: Story = {
+  args: { variant: 'solid', icon: iconArg('PlayIcon'), isDisabled: true },
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Run test' })
+    await userEvent.keyboard('{Tab}')
+    await expect(button).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(button)
+    await expect(args.onClick).not.toHaveBeenCalled()
+  },
+}
 
 /** Every variant in every state. */
 export const AllStates: Story = {

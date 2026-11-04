@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ComponentProps, ComponentType, ReactNode } from 'react'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
@@ -88,6 +88,19 @@ export const Subpage: Story = {
     onBack: fn(),
     description: 'Remote hosts by application, busiest first',
     actions: <IconButton label="About per-app hosts" icon={HelpIcon} />,
+  },
+}
+
+/** The back button, named “Back”, returns to the tab, from a click or the keyboard. */
+export const GoingBack: Story = {
+  ...Subpage,
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const back = canvas.getByRole('button', { name: 'Back' })
+    await userEvent.click(back)
+    await expect(args.onBack).toHaveBeenCalledOnce()
+    await userEvent.keyboard('{Enter}')
+    await expect(args.onBack).toHaveBeenCalledTimes(2)
   },
 }
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ChevronRightIcon, SpeedIcon } from '../icons/Icons'
@@ -56,6 +56,20 @@ export const OverRow: Story = {
       <ChevronRightIcon size={16} className="ml-auto text-tertiary group-hover:text-secondary" />
     </div>
   ),
+}
+
+/** The row opens from the keyboard, as a link, and from a click. */
+export const Opening: Story = {
+  ...OverRow,
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const link = canvas.getByRole('link', { name: 'Open speed test' })
+    await userEvent.keyboard('{Tab}')
+    await expect(link).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(link)
+    await expect(args.onClick).toHaveBeenCalledTimes(2)
+  },
 }
 
 /** Focused from the keyboard: the ring shows the area the link covers. */

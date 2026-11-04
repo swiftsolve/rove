@@ -316,6 +316,8 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
+| A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `build-ui-catalogue.mjs --check` |
+| An API change since the last commit raises `UI_LIBRARY_VERSION` | `build-ui-catalogue.mjs --check` |
 | Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 

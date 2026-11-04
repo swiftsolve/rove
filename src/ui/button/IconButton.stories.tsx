@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { iconArg, iconComponentControl } from '../icons/icon-options'
@@ -71,6 +71,19 @@ export const Loading: Story = { args: { isLoading: true } }
 
 /** Still focusable, so its tooltip can say why. */
 export const Disabled: Story = { args: { isDisabled: true, tooltip: 'Already checking.' } }
+
+/** Named by its label, it runs from the keyboard as from a click. */
+export const PressingWithKeyboard: Story = {
+  tags: ['!autodocs'],
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Refresh' })
+    await userEvent.keyboard('{Tab}')
+    await expect(button).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(button)
+    await expect(args.onClick).toHaveBeenCalledTimes(2)
+  },
+}
 
 /** Every state. */
 export const AllStates: Story = {

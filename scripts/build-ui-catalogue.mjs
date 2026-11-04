@@ -23,7 +23,13 @@
  * row in docs/develop/frontend.md's Components table, or a component with a
  * Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
  * `Containers/Card/CardHeader`) has no usage guide.
+ *
+ * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
+ * its stories have none that drives it (a `play` function, tagged
+ * `!autodocs`), and when the API (components, props, icons, helpers) differs
+ * from the last commit's while `UI_LIBRARY_VERSION` in version.ts doesn't.
  */
+import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -39,6 +45,7 @@ const INDEX = join(UI, 'index.ts')
 const CATALOGUE = join(UI, 'components.gen.json')
 const FIGMA = join(UI, 'figma.json')
 const FRONTEND_DOC = join(ROOT, 'docs/develop/frontend.md')
+const VERSION = join(UI, 'version.ts')
 const isCheck = process.argv.includes('--check')
 
 // The Default column shows only a default written into the destructured props
@@ -140,16 +147,81 @@ async function readStories(source, name) {
   const own = join(dirname(source), `${name}.stories.tsx`)
   const file = existsSync(own) ? own : source.replace(/\.tsx$/, '.stories.tsx')
   const text = await readFile(file, 'utf8').catch(() => null)
-  if (text === null) return { ids: [] }
+  if (text === null) return { ids: [], file: null }
   const title = text.match(/title: '(.+?)'/)?.[1]
-  if (!title) return { ids: [] }
+  if (!title) return { ids: [], file }
   const ids = [...text.matchAll(/^export const (\w+)/gm)].map(([, name]) => toId(title, storyNameFromExport(name)))
+  const hasInteraction = hasInteractionStory(file, text)
   const parts = title.split('/')
   const hasOwnPage = parts.at(-1) === name && (parts.length === 2 || parts.at(-2) === name)
-  if (!hasOwnPage) return { ids }
+  if (!hasOwnPage) return { ids, file, hasInteraction }
   const guidance = readGuidance(file, text)
   if (!guidance) problems.push(`${rel(file)}: ${name}'s Docs page needs a usage guide (a \`guidance\` parameter)`)
-  return { ids, guidance }
+  return { ids, file, hasInteraction, guidance }
+}
+
+// Whether a stories file has a story that drives the component: an exported
+// story object with a `play` function, tagged `!autodocs` so it stays off the
+// Docs page.
+function hasInteractionStory(file, text) {
+  const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  return sourceFile.statements.some((statement) => {
+    const isExported = statement.modifiers?.some(({ kind }) => kind === ts.SyntaxKind.ExportKeyword)
+    if (!isExported || !ts.isVariableStatement(statement)) return false
+    return statement.declarationList.declarations.some(({ initializer }) => {
+      if (!initializer || !ts.isObjectLiteralExpression(initializer)) return false
+      const property = (key) => initializer.properties.find((p) => p.name?.getText() === key)
+      const tags = property('tags')
+      return (
+        Boolean(property('play')) &&
+        Boolean(tags) &&
+        ts.isPropertyAssignment(tags) &&
+        ts.isArrayLiteralExpression(tags.initializer) &&
+        tags.initializer.elements.some((tag) => ts.isStringLiteralLike(tag) && tag.text === '!autodocs')
+      )
+    })
+  })
+}
+
+// The API a version number promises: each component's props (type or values,
+// default, whether required) and whether it passes element props, and the
+// icons and helpers by name. Descriptions, stories and guides aren't API.
+const apiOf = (catalogue) =>
+  JSON.stringify({
+    components: Object.fromEntries(
+      Object.entries(catalogue.components ?? {}).map(([name, { props, hasElementProps }]) => [
+        name,
+        {
+          props: Object.fromEntries(
+            Object.entries(props).map(([prop, { type, values, default: initial, isRequired }]) => [
+              prop,
+              { type, values, default: initial, isRequired },
+            ]),
+          ),
+          hasElementProps: Boolean(hasElementProps),
+        },
+      ]),
+    ),
+    icons: catalogue.icons ?? [],
+    helpers: Object.keys(catalogue.helpers ?? {}),
+  })
+const versionIn = (text) => text?.match(/UI_LIBRARY_VERSION = '([^']+)'/)?.[1]
+const atHead = (path) => {
+  const { status, stdout } = spawnSync('git', ['show', `HEAD:${rel(path)}`], { cwd: ROOT, encoding: 'utf8' })
+  return status === 0 ? stdout : null
+}
+
+// A changed API needs a new UI_LIBRARY_VERSION, so one version names one API.
+// Compared with the last commit; without git (a tarball) it's skipped.
+async function checkVersion(catalogue) {
+  const [headCatalogue, headVersion] = [atHead(CATALOGUE), versionIn(atHead(VERSION))]
+  if (!headCatalogue || !headVersion) return
+  const version = versionIn(await readFile(VERSION, 'utf8'))
+  if (apiOf(JSON.parse(headCatalogue)) === apiOf(catalogue) || version !== headVersion) return
+  problems.push(
+    `${rel(VERSION)}: the library's API changed since the last commit, and UI_LIBRARY_VERSION is still ${version}. ` +
+      'Raise it: major for a removed or renamed component or prop, or a narrower type; minor for anything added.',
+  )
 }
 
 // Every other export of the index, with its doc comment, through the compiler.
@@ -211,6 +283,14 @@ for (const { name, group, source } of components) {
     problems.push(`${rel(FIGMA)}: add ${name}, with its Figma component, or null if it has none`)
   }
   if (!documented.has(name)) problems.push(`${rel(FRONTEND_DOC)}: ${name} has no row in the Components table`)
+  const stories = storiesByName.get(name)
+  const handler = Object.keys(doc.props).find((prop) => /^on[A-Z]/.test(prop))
+  if (handler && stories.file && !stories.hasInteraction) {
+    problems.push(
+      `${rel(stories.file)}: ${name} takes ${handler}, so it needs a story that drives it: ` +
+        "a play function, named for the interaction and tagged '!autodocs'",
+    )
+  }
   entries[name] = {
     group,
     source: rel(source),
@@ -247,6 +327,7 @@ const json = `${JSON.stringify(catalogue, null, 2)}\n`
 if (isCheck) {
   const current = await readFile(CATALOGUE, 'utf8').catch(() => '')
   if (current !== json) problems.push(`${rel(CATALOGUE)} is stale: run npm run catalogue`)
+  await checkVersion(catalogue)
 } else {
   await writeFile(CATALOGUE, json)
 }

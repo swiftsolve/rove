@@ -71,6 +71,8 @@
         "actions-button--soft-negative",
         "actions-button--loading",
         "actions-button--disabled",
+        "actions-button--pressing",
+        "actions-button--pressing-while-disabled",
         "actions-button--all-states"
       ],
       "guidance": {
@@ -173,6 +175,7 @@
         "actions-iconbutton--with-hint",
         "actions-iconbutton--loading",
         "actions-iconbutton--disabled",
+        "actions-iconbutton--pressing-with-keyboard",
         "actions-iconbutton--all-states"
       ],
       "guidance": {
@@ -285,6 +288,7 @@
       "hasElementProps": true,
       "stories": [
         "actions-stretchedlink--over-row",
+        "actions-stretchedlink--opening",
         "actions-stretchedlink--focused"
       ],
       "guidance": {
@@ -2447,7 +2451,8 @@
       },
       "stories": [
         "app-frame-titlebar-windowbutton--minimize",
-        "app-frame-titlebar-windowbutton--close"
+        "app-frame-titlebar-windowbutton--close",
+        "app-frame-titlebar-windowbutton--pressing"
       ]
     },
     "NavItem": {
@@ -2583,6 +2588,7 @@
         "app-frame-pageheader--top-level",
         "app-frame-pageheader--status",
         "app-frame-pageheader--subpage",
+        "app-frame-pageheader--going-back",
         "app-frame-pageheader--title-only",
         "app-frame-pageheader--all-states"
       ],
