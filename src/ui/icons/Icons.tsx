@@ -169,7 +169,10 @@ export const TrashIcon = make(Trash2, 16)
 export const PlusIcon = make(Plus, 16)
 export const EditIcon = make(Pencil, 15)
 export const MoreVerticalIcon = make(MoreVertical, 16)
-export const StopIcon = make(Square, 14)
+/** Lucide's Square, filled: the stop symbol, where the outline would read as Maximize. */
+export function StopIcon({ size = 14, className }: IconProps) {
+  return <Square size={size} className={className} strokeWidth={ICON_STROKE_WIDTH} fill="currentColor" aria-hidden />
+}
 export const PlayIcon = make(Play, 16)
 export const RefreshIcon = make(RotateCw, 16)
 export const SearchIcon = make(Search, 16)
