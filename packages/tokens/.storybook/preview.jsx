@@ -33,7 +33,7 @@ const preview = {
     // In the order of the Figma file's Foundations pages, one story each; Motion is code-only.
     options: {
       storySort: {
-        order: ['Colour', 'Typography', 'Spacing, radius & effects', 'Motion'],
+        order: ['Introduction', 'Colour', 'Typography', 'Spacing, radius & effects', 'Motion'],
       },
     },
   },
