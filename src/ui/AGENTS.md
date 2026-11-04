@@ -5,6 +5,9 @@ The component library: the Figma components in code. The rules are in
 most of them. These are the ones it can't check:
 
 - Read `components.gen.json` for the library's API before reading the source.
+- Check a component as you go, in seconds: `npx vitest run --project=storybook
+  --project=dom src/ui/<folder>` runs its stories (play functions, axe) and
+  DOM tests. `npm run check` before you finish.
 - A new component gets its stories, with a usage guide (`guidance`), in the
   same change, and its Figma docs section gets the same guide. A part with props of
   its own gets its own stories file beside its module.
