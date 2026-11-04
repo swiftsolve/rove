@@ -11,8 +11,22 @@ version; this is the whole run.
 
 ## 1. In Figma
 
-Load the `figma-use` and `figma-generate-library` skills before any
-`use_figma` call. The file key is in `src/figma/variables.json`.
+The file key is in `src/figma/variables.json`. What you need:
+
+- **The Figma MCP server**, connected (in Claude Code, the claude.ai Figma
+  connector). Its `use_figma` tool runs Figma Plugin API JavaScript inside the
+  file: that's how an agent changes variables, exports them and runs the sync
+  check. Call its `create_session` with the file key first, and pass the
+  session id to every call after.
+- **Figma's skills** `figma-use` (Plugin API rules; required before any
+  `use_figma` call) and `figma-generate-library` (variables, aliases and
+  scopes). They come with Figma's Claude Code plugin, as `figma:figma-use` and
+  `figma:figma-generate-library`, and the MCP server also serves them
+  (`skill://figma/figma-use/SKILL.md`) when the plugin isn't installed. Load
+  both before the first `use_figma` call.
+
+Without the server, a person makes the Figma change and exports with the
+plugin in `figma-plugin/` (README.md: Update the tokens); continue from step 2.
 
 - Change the variable, text style or `Shadow/*` effect style. A new Palette
   shade follows `docs/rationale.md` (its name, its contrast target) and gets a
