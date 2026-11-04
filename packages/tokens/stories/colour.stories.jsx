@@ -291,7 +291,10 @@ function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
 export const Colour = {
   render: () => (
     <Page title="Colour" intro="Palette shades, and the semantic tokens that point at them, in Dark and Light.">
-      <Section title="Palette" intro="Every colour the tokens point at. Higher numbers are darker; -a is opacity.">
+      <Section
+        title="Palette"
+        intro="The shades the tokens point at. Use a token, never a shade. Higher numbers are darker; -a is opacity."
+      >
         <PaletteGrid />
       </Section>
       {SECTIONS.map(({ title, intro, names, diagram }) => (
