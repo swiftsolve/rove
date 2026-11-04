@@ -195,12 +195,12 @@ const CHECKS = [
   {
     icon: 'figma',
     name: 'Figma check',
-    body: 'Lists every token that differs between the Figma file and the repo.',
+    body: '`npm run figma:check` lists every token that differs between the Figma file and the repo.',
   },
   {
     icon: 'eslint',
     name: 'Rove’s lint',
-    body: 'Fails a raw colour or spacing in place of a token, and a token name that doesn’t exist.',
+    body: 'Fails a raw colour or spacing in place of a token, and a misspelt token name in the app.',
   },
 ]
 
