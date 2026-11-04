@@ -679,29 +679,41 @@
 }
 
 /* The arrow into a step, across the gap before it. */
+/* The arrow into a step: a 1.5px line and an open chevron, level with the icons'
+   centre and inset from both cards, in a quiet grey so the marks lead. */
+.intro-node.has-flow {
+  --intro-arrow-y: calc(1px + var(--intro-card-pad) + 12px); /* border, padding, half the 24px icon */
+}
+
 .intro-node.has-flow::before {
   position: absolute;
-  top: 26px;
-  right: 100%;
-  width: var(--intro-gap);
-  height: 1px;
-  background: var(--accent-default);
+  top: calc(var(--intro-arrow-y) - 0.75px);
+  right: calc(100% + 5px);
+  width: calc(var(--intro-gap) - 11px);
+  height: 1.5px;
+  border-radius: var(--radius-full);
+  background: var(--text-tertiary);
   content: '';
 }
 
 .intro-node.has-flow::after {
   position: absolute;
-  top: 22px;
-  right: calc(100% + 1px);
-  border-block: 4.5px solid transparent;
-  border-left: 6px solid var(--accent-default);
+  top: calc(var(--intro-arrow-y) - 3.5px);
+  right: calc(100% + 5.5px);
+  width: 7px;
+  height: 7px;
+  box-sizing: border-box;
+  border-top: 1.5px solid var(--text-tertiary);
+  border-right: 1.5px solid var(--text-tertiary);
+  border-top-right-radius: 1px;
+  transform: rotate(45deg);
   content: '';
 }
 
 /* A step that skips a stage reaches back across the empty column too. */
 .intro-node.has-skip::before {
-  width: calc(100% + var(--intro-gap) * 2);
-  background: repeating-linear-gradient(90deg, var(--accent-default) 0 4px, transparent 4px 8px);
+  width: calc(100% + var(--intro-gap) * 2 - 11px);
+  background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px);
 }
 
 .intro-item {
@@ -994,20 +1006,19 @@
   .intro-node.has-skip::before {
     top: auto;
     right: auto;
-    bottom: 100%;
-    left: 26px;
-    width: 1px;
-    height: 24px;
-    background: var(--accent-default);
+    bottom: calc(100% + 5px);
+    left: calc(var(--intro-arrow-y) - 0.75px);
+    width: 1.5px;
+    height: 13px;
+    background: var(--text-tertiary);
   }
 
   .intro-node.has-flow::after {
-    top: -7px;
+    top: auto;
     right: auto;
-    left: 22px;
-    border-block: 0;
-    border-top: 6px solid var(--accent-default);
-    border-inline: 4.5px solid transparent;
+    bottom: calc(100% + 5.5px);
+    left: calc(var(--intro-arrow-y) - 3.5px);
+    transform: rotate(135deg);
   }
 }
 
