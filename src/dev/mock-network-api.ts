@@ -121,7 +121,7 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
  * A decorative QR-like SVG. It doesn't scan (the backend makes the real one
  * with the `qrcode` crate), but gives the share dialog a faithful shape.
  */
-function mockQrSvg(): string {
+export function mockQrSvg(): string {
   const size = 25
   // The blank margin a scanner needs around the code.
   const quietZone = 4

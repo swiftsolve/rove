@@ -1,16 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Introduction } from './introduction'
+import { Introduction as IntroductionPage } from './introduction'
 
-// The library's front page. Its Docs page is the page itself; the one story
-// stays out of the sidebar and exists so the page runs through axe like every
-// other story.
+// The library's front page, a full-width story as Rove Tokens' Introduction is,
+// so it takes the whole canvas instead of a Docs page's column. It runs through
+// axe like every other story.
 const meta = {
   title: 'Introduction',
-  component: Introduction,
-  parameters: { layout: 'fullscreen', docs: { page: Introduction } },
-} satisfies Meta<typeof Introduction>
+  component: IntroductionPage,
+  tags: ['!autodocs'],
+  parameters: { layout: 'fullscreen' },
+} satisfies Meta<typeof IntroductionPage>
 
 export default meta
 
-export const Page: StoryObj<typeof meta> = { tags: ['!dev'] }
+export const Introduction: StoryObj<typeof meta> = {}
