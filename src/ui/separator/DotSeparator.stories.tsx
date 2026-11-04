@@ -8,14 +8,14 @@ const meta = {
   component: DotSeparator,
   subcomponents: { InlineMeta },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A small dot between items on one line.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Short facts on one line, like a device’s vendor and model.',
-        '`InlineMeta` when items may be empty: they drop out with their dots.',
-        'A bare `DotSeparator` between parts you lay out, like the Services header’s.',
+        'Facts that may be empty, in `InlineMeta`: they drop out with their dots.',
+        'Parts you lay out yourself, a bare `DotSeparator` between them: the Services header.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Labels with their values: use `DataRow`s.',
         'A status beside its words: use `StatusDot`.',
         'A missing value that should show: use `NoValue`.',

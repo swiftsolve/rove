@@ -11,14 +11,13 @@ const meta = {
   args: { label: 'Start at login', isChecked: true, onChange: fn() },
   argTypes: { isChecked: { control: false } },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'An on/off switch for a setting.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'A setting that’s on or off, like “Check for updates automatically”.',
+      whenToUse: [
+        'A setting that’s on or off, beside its title in a setting row: “Check for updates automatically”.',
         'A change that applies at once, with no save.',
-        'In a setting row, beside its title and description.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Picking one of a few options: use `SegmentedControl`.',
         'An action that runs once, like “Check now”: use `Button`.',
         'A status the user can’t change: use `Badge` or `StatusDot`.',

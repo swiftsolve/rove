@@ -66,13 +66,12 @@ const meta = {
     </Card>
   ),
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A whole row that opens something, ending in a chevron.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'A card’s list row that opens a view: a capability, “About Rove”.',
-        'An `IconTile` first if the item has one; About’s row has none.',
+      whenToUse: [
+        'A card’s row that opens a view, an `IconTile` first if the item has one: a capability, “About Rove”.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A label and value that open nothing: use `DataRow`.',
         'A whole card that opens: use `Card` with `onOpen`.',
         'A row holding a bar or other block content: use `StretchedLink`.',

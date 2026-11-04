@@ -71,15 +71,15 @@ const meta = {
     children: { control: false },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A panel that shows and hides under its trigger.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Details most people don’t need, like Home’s connection card.',
         'A group’s rows on request, like an app’s hosts.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Content everyone needs: show it in the `Card`.',
-        'Details big enough for their own page: a `Card` with `onOpen`.',
+        'Details big enough for their own page: use a `Card` with `onOpen`.',
         'A few actions behind a button: use `Menu`.',
       ],
       accessibility: {

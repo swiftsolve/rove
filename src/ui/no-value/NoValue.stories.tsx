@@ -9,13 +9,13 @@ const meta = {
   component: NoValue,
   args: { label: 'None' },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A short drawn bar where a value is missing.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Where a value would be but there’s none: not measured, unknown.',
-        'In place of a formatter’s null: `?? <NoValue />`.',
+        'A value the formatter returns as null: `?? <NoValue />`.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A field that may not apply: use `DataRow` with a null value.',
         'A section with nothing to show: use `EmptyState`.',
         'A page still loading: use `LoadingState`.',

@@ -35,14 +35,14 @@ const meta = {
     </Card>
   ),
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A list of labelled facts, each a label and its value.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Labelled facts in a card: “Gateway”, “Band”, “Link speed”.',
-        'Several topics in one card: a `DataList` each, in a `DataListStack`.',
-        'A missing value that keeps its row: `NoValue` as the children.',
+        'Facts on several topics in one card: a `DataList` each, in a `DataListStack`.',
+        'A fact with no value that keeps its row: `NoValue` as the children.',
       ],
-      avoid: ['A card’s headline figure: use `Readout`.', 'Rows that open something: use `ListRow`.'],
+      whenNotToUse: ['A card’s headline figure: use `Readout`.', 'Rows that open something: use `ListRow`.'],
       accessibility: {
         builtIn: [
           'A `<dl>`: each row a `<dt>` label and a `<dd>` value.',

@@ -10,10 +10,13 @@
  *     a part's prop takes its part's name (`Body layout` is CardBody's `layout`);
  *   - every prop with a fixed set of values has a Figma variant property;
  *   - every usage guide in the stories (`guidance`) has its twin in the
- *     component's Figma docs section: the same sections, as many lines in each,
- *     and every alternative the code names under Avoid (`use
+ *     component's Figma docs section: When to use and When not to use, as many
+ *     lines in each,
+ *     and every alternative the code names under When not to use (`use
  *     `EmptyState``) named there too ("Empty state"). Figma words its lines for
- *     designers, so the wording itself is left to review.
+ *     designers, so the wording itself is left to review. Accessibility isn't
+ *     compared: Storybook's is for whoever builds with the component, Figma's
+ *     for whoever designs with it, so each says what its reader handles.
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
@@ -57,15 +60,12 @@ const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 // A docs section's guide headings, as Storybook's Docs page has them (.storybook/docs-page.tsx).
 const GUIDE_LABELS = {
-  use: 'Use',
-  avoid: 'Avoid',
+  whenToUse: 'When to use',
+  whenNotToUse: 'When not to use',
+  // Figma only, between the two: how to use it well, for designers.
+  guidelines: 'Guidelines',
   accessibility: 'Accessibility',
-  builtIn: 'Built in',
-  toHandle: 'To handle',
 }
-// What follows the guide in a docs section: the examples and the props table.
-const GUIDE_ENDS = new Set(['Dark', 'Light', 'Property', 'Code'])
-
 /** Lowercase letters and digits only, so `Body layout`, `bodyLayout` and `Down only` compare. */
 const key = (text) =>
   String(text)
@@ -141,7 +141,7 @@ async function readFigma(fileKey, nodeIds, sectionNames) {
   const docs = {}
   for (const { document: section } of Object.values(sections)) {
     const texts = textsOf(section)
-    if (texts.includes(GUIDE_LABELS.use)) docs[section.name] = texts
+    if (texts.includes(GUIDE_LABELS.whenToUse)) docs[section.name] = texts
   }
   return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, node]) => [id, node?.document])), docs }
 }
@@ -149,18 +149,15 @@ async function readFigma(fileKey, nodeIds, sectionNames) {
 /** A Figma guide's lines per section, read off its docs section's text. */
 function figmaGuide(texts) {
   const at = (label, from) => texts.indexOf(label, from)
-  const use = at(GUIDE_LABELS.use, 0)
-  const avoid = at(GUIDE_LABELS.avoid, use)
-  const accessibility = at(GUIDE_LABELS.accessibility, avoid)
-  const builtIn = at(GUIDE_LABELS.builtIn, accessibility)
-  const toHandle = at(GUIDE_LABELS.toHandle, builtIn)
-  if ([use, avoid, accessibility, builtIn, toHandle].includes(-1)) return null
-  const after = texts.findIndex((text, i) => i > toHandle && GUIDE_ENDS.has(text))
+  const whenToUse = at(GUIDE_LABELS.whenToUse, 0)
+  const whenNotToUse = at(GUIDE_LABELS.whenNotToUse, whenToUse)
+  const accessibility = at(GUIDE_LABELS.accessibility, whenNotToUse)
+  if ([whenToUse, whenNotToUse, accessibility].includes(-1)) return null
+  const guidelines = at(GUIDE_LABELS.guidelines, whenNotToUse)
+  const end = guidelines !== -1 && guidelines < accessibility ? guidelines : accessibility
   return {
-    use: texts.slice(use + 1, avoid),
-    avoid: texts.slice(avoid + 1, accessibility),
-    builtIn: texts.slice(builtIn + 1, toHandle),
-    toHandle: texts.slice(toHandle + 1, after === -1 ? texts.length : after),
+    whenToUse: texts.slice(whenToUse + 1, whenNotToUse),
+    whenNotToUse: texts.slice(whenNotToUse + 1, end),
   }
 }
 
@@ -312,10 +309,8 @@ for (const [component, { name }] of docs ? guided : []) {
     continue
   }
   const sections = [
-    ['use', GUIDE_LABELS.use, guide.use],
-    ['avoid', GUIDE_LABELS.avoid, guide.avoid],
-    ['builtIn', GUIDE_LABELS.builtIn, guide.accessibility.builtIn],
-    ['toHandle', GUIDE_LABELS.toHandle, guide.accessibility.toHandle],
+    ['whenToUse', GUIDE_LABELS.whenToUse, guide.whenToUse],
+    ['whenNotToUse', GUIDE_LABELS.whenNotToUse, guide.whenNotToUse],
   ]
   for (const [section, label, lines] of sections) {
     if (lines.length !== figma[section].length) {
@@ -325,11 +320,13 @@ for (const [component, { name }] of docs ? guided : []) {
       )
     }
   }
-  const avoidText = key(figma.avoid.join(' '))
-  const named = new Set(guide.avoid.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, ref]) => ref)))
+  const insteadText = key(figma.whenNotToUse.join(' '))
+  const named = new Set(guide.whenNotToUse.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, ref]) => ref)))
   for (const ref of named) {
-    if (!(ref in catalogue) || avoidText.includes(key(figmaNameOf(ref)))) continue
-    problems.push(`${component}'s usage guide names ${ref} under ${GUIDE_LABELS.avoid}; Figma's "${name}" doesn't`)
+    if (!(ref in catalogue) || insteadText.includes(key(figmaNameOf(ref)))) continue
+    problems.push(
+      `${component}'s usage guide names ${ref} under ${GUIDE_LABELS.whenNotToUse}; Figma's "${name}" doesn't`,
+    )
   }
 }
 

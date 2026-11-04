@@ -11,13 +11,16 @@ const meta = {
   argTypes: { variant: { control: 'inline-radio', options: ['error'] }, onRetry: { control: false } },
   // It runs the width of the page's content area.
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A message across the top of a page, with Dismiss and Retry.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A failure above a page: a load, scan or action that didn’t work.',
         'A line on what’s on screen now: “Showing the last scan.”',
       ],
-      avoid: ['Loaded, with nothing to show: use `EmptyState`.', 'A choice to make before going on: use `Dialog`.'],
+      whenNotToUse: [
+        'A page loaded with nothing to show: use `EmptyState`.',
+        'A choice to make before going on: use `Dialog`.',
+      ],
       accessibility: {
         builtIn: [
           'An alert (`role="alert"`), read as it appears.',

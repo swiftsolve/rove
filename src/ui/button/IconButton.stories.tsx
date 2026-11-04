@@ -17,14 +17,14 @@ const meta = {
     icon: iconComponentControl,
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A square button with an icon instead of words, named by its tooltip.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'An action an icon says on its own, like Refresh.',
         'A help button, with the hint in `tooltip`.',
-        '`variant="ghost"` where a chip is too heavy, like a `Dialog`’s close.',
+        'An action where a chip is too heavy, `variant="ghost"`: a `Dialog`’s close.',
       ],
-      avoid: [
+      whenNotToUse: [
         'An action that needs words: use `Button`.',
         'Several actions behind one icon: use `Menu`.',
         'An item’s tile that opens it: use `IconTileButton`.',

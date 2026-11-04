@@ -38,13 +38,13 @@ const meta = {
     icon: { control: 'select', options: Object.keys(ICONS), mapping: ICONS },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A tinted square holding an item’s icon, in the item’s colour.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'The icon that starts an item’s row: a device, a capability.',
-        '`IconTileButton` when the tile alone opens something: Home’s capability strip.',
+        'A tile that opens something on its own, as `IconTileButton`: Home’s capability strip.',
       ],
-      avoid: [
+      whenNotToUse: [
         'An icon-only action: use `IconButton`.',
         'A whole row that opens something: use `ListRow`, the tile inside.',
         'An event on a timeline: use `TimelineNode`.',

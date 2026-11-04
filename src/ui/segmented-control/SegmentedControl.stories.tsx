@@ -27,14 +27,14 @@ const meta = {
     value: { control: false },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A row of a few options side by side, one chosen at a time.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Picking one of a few exclusive options, like Settings’ Theme.',
-        'Every option in view at once, each a word or two.',
+        'A choice whose options all fit in view, each a word or two.',
         'A choice that applies at once, with no save.',
       ],
-      avoid: ['Turning one setting on or off: use `Toggle`.', 'Running an action: use `Button`.'],
+      whenNotToUse: ['Turning one setting on or off: use `Toggle`.', 'Running an action: use `Button`.'],
       accessibility: {
         builtIn: [
           'A radio group, each segment a radio on a native `<button>`.',

@@ -31,14 +31,18 @@ const meta = {
     layout: 'padded',
     // An open dialog makes the page behind it inert, so on the docs page each
     // story gets a frame of its own.
-    docs: { story: { inline: false, iframeHeight: 340 }, toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'A window over the page: a title, a body, and actions at the foot.',
+      story: { inline: false, iframeHeight: 340 },
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'A short task before going on: Add a service.',
         'One thing up close: the Share Wi‑Fi QR code.',
         'A prompt the user can put off: Update available.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A hint on hover or focus: use `Tooltip`.',
         'A failure on the page: use `Banner`.',
         'A few actions on one item: use `Menu`.',

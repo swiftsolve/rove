@@ -15,13 +15,13 @@ const meta = {
     pulse: { control: 'inline-radio', options: [undefined, 'calm', 'live', 'busy'] },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A small coloured dot beside the words of a status.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'Beside words that state a status: a device’s Online or Offline.',
-        'Pulsing for a live or busy state: the title bar, a running scan.',
+      whenToUse: [
+        'A status in the words beside it: a device’s Online or Offline.',
+        'A live or busy state, pulsing: the title bar, a running scan.',
       ],
-      avoid: ['A flag beside a title: use `Badge`.', 'Live data in a card header: use `LiveBadge`.'],
+      whenNotToUse: ['A flag beside a title: use `Badge`.', 'Live data in a card header: use `LiveBadge`.'],
       accessibility: {
         builtIn: ['Hidden from screen readers (`aria-hidden`).'],
         toHandle: ['Words beside it that say the status on their own.'],

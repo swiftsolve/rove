@@ -13,13 +13,13 @@ const meta = {
   },
   // It takes its colour from the text around it, as it does in a button.
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A small spinning ring for a wait inside a button or a header.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A small wait in a card header: the speed test running.',
         'A small wait in a card body: the home Devices card’s scan.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A button’s wait: set `isLoading` on `Button` or `IconButton`.',
         'A page’s first load: use `LoadingState`.',
         'A wait in a dialog or page area: use `Spinner`.',

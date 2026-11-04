@@ -23,14 +23,14 @@ const meta = {
     </dl>
   ),
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A headline number and its unit, with an optional label and icon.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A headline figure and its unit: live speed, data used.',
         'Labelled pairs side by side: Traffic’s “Download” and “Upload”.',
-        '`compact`, with no label, for a Home stat card’s figure.',
+        'A Home stat card’s figure, `compact` and unlabelled.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A value in a list of facts: use `DataRow`.',
         'A number inside a line of text, easing each poll: use `MetricValue`.',
       ],

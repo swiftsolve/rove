@@ -33,14 +33,13 @@ const meta = {
     children: { control: false },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A short list of actions behind a kebab button.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A few secondary actions on a row, like a service’s Edit and Remove.',
-        'A destructive action kept out of the way, like Clear history.',
-        '`tone="negative"` on an item that deletes or clears.',
+        'A destructive action kept out of the way, its item `tone="negative"`: Clear history.',
       ],
-      avoid: ['The page’s main action: use `Button`.', 'One frequent action: use `IconButton`.'],
+      whenNotToUse: ['The page’s main action: use `Button`.', 'One frequent action: use `IconButton`.'],
       accessibility: {
         builtIn: [
           'The kebab is a menu button that says whether it’s open.',

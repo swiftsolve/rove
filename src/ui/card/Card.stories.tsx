@@ -20,14 +20,14 @@ const meta = {
     children: { control: false },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'The panel that groups content: a header, a body and an optional footer.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Related facts or settings under one title, like DNS or Updates.',
-        'A Home summary that opens its page, with `onOpen`, like Usage.',
-        '`CardList` for a list that is one card, like the tracked services.',
+        'A Home summary that opens its page, with `onOpen`: Usage.',
+        'A list that is one card, as `CardList`: the tracked services.',
       ],
-      avoid: [
+      whenNotToUse: [
         'An error about the whole page: use `Banner`.',
         'Nothing to list yet: use `EmptyState`.',
         'A row in a card that opens a page: use `ListRow`.',

@@ -6,14 +6,21 @@ import type { JSX } from 'react'
  * on its Docs page above the stories. Each line is a few words, with `code` in backticks.
  */
 export type Guidance = {
-  /** Where it's the right choice. */
-  use: string[]
-  /** Where something else is, naming it. */
-  avoid: string[]
+  /**
+   * When to use it: each line a situation, then how if it needs saying, then an
+   * example ("The page’s main action, solid: “Run test”.").
+   */
+  whenToUse: string[]
+  /** When not to use it: each line a situation, then what to use instead ("…: use `Link`."). */
+  whenNotToUse: string[]
+  /**
+   * For whoever builds with it, in code terms. Figma's docs section has its own,
+   * for whoever designs with it, so the two aren't line for line.
+   */
   accessibility: {
-    /** What the component does for you. */
+    /** What the component does for you: its element, roles, names, keyboard. */
     builtIn: string[]
-    /** What it can't do for you. */
+    /** What you pass or write around it: props, labels, wrapping markup. */
     toHandle: string[]
   }
 }
@@ -41,15 +48,15 @@ function Lines({ label, lines }: { label?: string; lines: string[] }): JSX.Eleme
   )
 }
 
-// As in Figma's Guidance block: Use and Avoid side by side,
+// As in Figma's Guidance block: When to use and When not to use side by side,
 // then Accessibility across both, its two lists in the same columns. Sections
 // sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
 // (preview.css styles it); the headings stay `<h2>`s for the page's contents.
 function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
-  const { use, avoid, accessibility } = guidance
+  const { whenToUse, whenNotToUse, accessibility } = guidance
   const sections: { title: string; groups: { label?: string; lines: string[] }[] }[] = [
-    { title: 'Use', groups: [{ lines: use }] },
-    { title: 'Avoid', groups: [{ lines: avoid }] },
+    { title: 'When to use', groups: [{ lines: whenToUse }] },
+    { title: 'When not to use', groups: [{ lines: whenNotToUse }] },
     {
       title: 'Accessibility',
       groups: [

@@ -12,13 +12,16 @@ const meta = {
   args: { children: 'All hosts', icon: iconArg('GlobeIcon'), onClick: fn() },
   argTypes: { icon: iconComponentControl },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'Words that open another view or an address, at the size of the text around them.',
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'Opening another view from a header or a line of text: “All hosts”.',
-        'An address outside the app, with `href`, like About’s Source link.',
+        'An address outside the app, with `href`: About’s Source link.',
       ],
-      avoid: [
+      whenNotToUse: [
         'An action that changes something: use `Button`.',
         'A whole row that opens a view: use `ListRow` or `StretchedLink`.',
         'A whole card that opens a view: use `Card` with `onOpen`.',
@@ -27,7 +30,7 @@ const meta = {
         builtIn: [
           'In the app, a `<button>` with `role="link"`.',
           'With `href`, an `<a>` that opens a new window and says so.',
-          'Focus shows as hover does, accent and underline, in place of a ring.',
+          'Its own focus style, accent and underline, so don’t add a ring.',
         ],
         toHandle: [
           'Words that name where it goes, like “All hosts”.',

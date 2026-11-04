@@ -25,22 +25,25 @@ const meta = {
     color: { control: 'select', options: COLORS },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'Four rising bars, some lit: a rating at a glance.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Signal strength or a rating, at a glance.',
-        'Its colour from the text around it: a status colour per level.',
-        'No rating yet: `value={0}`, every bar unlit.',
+        'A level in its status colour, taken from the text around it.',
+        'A rating not measured yet, `value={0}`: every bar unlit.',
       ],
-      avoid: ['An exact figure: use `MetricValue` or `Readout`.', 'Comparing traffic between rows: use `SplitBar`.'],
+      whenNotToUse: [
+        'An exact figure: use `MetricValue` or `Readout`.',
+        'Comparing traffic between rows: use `SplitBar`.',
+      ],
       accessibility: {
         builtIn: [
           '`aria-hidden`: it’s a picture of the value.',
-          'Unlit bars are a faint tint of the lit colour, not another hue.',
+          'Bars fill with `currentColor`; unlit ones are a faint tint of it.',
         ],
         toHandle: [
           'The value in words: an `sr-only` word or a `role="meter"` wrapper.',
-          'A colour with 3:1 contrast for the bars.',
+          'A text colour on its container with 3:1 contrast, for the bars.',
         ],
       },
     } satisfies Guidance,

@@ -17,14 +17,13 @@ const meta = {
     feedback: { control: 'text' },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A labelled single-line input, with a feedback line under it.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'Typing a short value, like a service’s Address or Name.',
-        'In a `<form>`, so Enter submits it.',
-        'With a `TextFieldAction` to check the value in place, like Test.',
+      whenToUse: [
+        'A short value to type, in a `<form>` so Enter submits it: a service’s Address or Name.',
+        'A value to check in place, with a `TextFieldAction`: Test.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Picking one of a few known options: use `SegmentedControl`.',
         'A value to read, not edit: use `DataRow`.',
         'Submitting the form: use a `Button` outside the field.',

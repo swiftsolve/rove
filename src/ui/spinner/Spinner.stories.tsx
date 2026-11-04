@@ -8,16 +8,16 @@ const meta = {
   component: Spinner,
   args: { size: 24 },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'The loading indicator, in the accent colour.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A wait inside a dialog: “Generating QR code…”.',
         'A wait with more than one line: “Looking for your network…”.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A page’s first load: use `LoadingState`.',
         'A button’s wait: set `isLoading` on `Button` or `IconButton`.',
-        'Inside a `<button>`: use `ButtonSpinner`.',
+        'A wait inside a `<button>`: use `ButtonSpinner`.',
       ],
       accessibility: {
         builtIn: ['Silent: no role or text, so screen readers skip it.'],

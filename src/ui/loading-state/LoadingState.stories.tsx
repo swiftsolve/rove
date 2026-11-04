@@ -9,14 +9,11 @@ const meta = {
   args: { label: 'Loading usage…' },
   // It fills the page's content area, so it gets a box to centre in.
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A page’s first load: the spinner over a line saying what’s coming.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'A page’s first load, before there’s anything to show.',
-        'In place of the content, under the header and any `Banner`.',
-      ],
-      avoid: [
-        'Loaded, with nothing to show: use `EmptyState`.',
+      whenToUse: ['A page’s first load, in place of its content, under the header and any `Banner`.'],
+      whenNotToUse: [
+        'A page loaded with nothing to show: use `EmptyState`.',
         'A load that failed: use `Banner`.',
         'A wait inside a dialog: use `Spinner`.',
       ],

@@ -23,13 +23,13 @@ const meta = {
     up: { control: { type: 'range', min: 0, max: MAX, step: 10 } },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A thin bar split into download and upload, against a shared maximum.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Download and upload in proportion, in a usage row.',
-        'Rows compared: scale every bar to the list’s busiest row.',
+        'Rows compared with each other, every bar scaled to the busiest row.',
       ],
-      avoid: ['A rating or signal: use `BarMeter`.', 'A single headline amount: use `Readout`.'],
+      whenNotToUse: ['A rating or signal: use `BarMeter`.', 'A single headline amount: use `Readout`.'],
       accessibility: {
         builtIn: ['An image to screen readers (`role="img"`), named by `label`.'],
         toHandle: [

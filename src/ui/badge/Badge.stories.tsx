@@ -8,13 +8,16 @@ const meta = {
   component: Badge,
   args: { tone: 'positive', children: 'Up' },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A small tinted flag in capitals, beside a title.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A word or two flagging a title: the ISP card’s VPN.',
-        '`LiveBadge` in a card header whose data updates live: Traffic.',
+        'A card whose data updates live, `LiveBadge` in its header: Traffic.',
       ],
-      avoid: ['A status beside its own words: use `StatusDot`.', 'A failure the user should act on: use `Banner`.'],
+      whenNotToUse: [
+        'A status beside its own words: use `StatusDot`.',
+        'A failure the user should act on: use `Banner`.',
+      ],
       accessibility: {
         builtIn: [
           'Plain text; capitals come from CSS, so it’s read as typed.',

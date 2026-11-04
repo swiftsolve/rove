@@ -10,13 +10,13 @@ const meta = {
   component: StretchedLink,
   args: { label: 'Open speed test', onClick: fn() },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'An invisible link stretched over a row, so the whole row opens a view.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A row that opens a view but holds a bar or figures, like Apps’ rows.',
         'A row or container that also holds a control of its own.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A simple row with a chevron: use `ListRow`.',
         'A whole card: use `Card` with `onOpen`, which draws its own.',
         'A link in a line of text: use `Link`.',

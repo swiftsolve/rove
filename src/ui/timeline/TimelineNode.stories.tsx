@@ -46,13 +46,16 @@ const meta = {
     </ol>
   ),
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'One event on a timeline: a tinted marker, its lines, and a line to the next.',
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'One event in a timeline: “Device left the network”, “Service went down”.',
         'A day’s events in a feed, one node each under its heading.',
       ],
-      avoid: [
+      whenNotToUse: [
         'An item that isn’t an event: use `IconTile` in its row.',
         'A message about the whole page: use `Banner`.',
       ],

@@ -37,14 +37,17 @@ const meta = {
     onBack: { control: false },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'The top of a page: an icon or back button, the title and its line, and actions.',
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'The top of each tab’s page, like Devices or Usage.',
-        '`onBack` in place of `icon` on a page over a tab, like Hosts.',
-        '`status` while something runs: “Checking…”.',
+        'A page over a tab, `onBack` in place of `icon`: Hosts.',
+        'Something running on the page, in `status`: “Checking…”.',
       ],
-      avoid: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
+      whenNotToUse: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
       accessibility: {
         builtIn: [
           'The title is the page’s `<h1>`, in a `<header>`.',

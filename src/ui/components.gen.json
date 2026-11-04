@@ -74,12 +74,13 @@
         "actions-button--all-states"
       ],
       "guidance": {
-        "use": [
-          "Solid for the page’s main action, negative to stop it: “Run test”, “Stop”.",
-          "Soft for everything else: “Scan again”, “Check now”.",
-          "Soft negative only on a red surface, like an error `Banner`’s Dismiss."
+        "whenToUse": [
+          "The page’s main action, solid: “Run test”.",
+          "Stopping that action, solid negative: “Stop”.",
+          "Every other action, soft: “Scan again”, “Check now”.",
+          "An action on a red surface, soft negative: an error `Banner`’s Dismiss."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Opening another view or an address: use `Link`.",
           "An icon with no words: use `IconButton`.",
           "Checking a field’s value, like Test: use `TextFieldAction`."
@@ -175,12 +176,12 @@
         "actions-iconbutton--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "An action an icon says on its own, like Refresh.",
           "A help button, with the hint in `tooltip`.",
-          "`variant=\"ghost\"` where a chip is too heavy, like a `Dialog`’s close."
+          "An action where a chip is too heavy, `variant=\"ghost\"`: a `Dialog`’s close."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An action that needs words: use `Button`.",
           "Several actions behind one icon: use `Menu`.",
           "An item’s tile that opens it: use `IconTileButton`."
@@ -244,11 +245,11 @@
         "actions-link--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Opening another view from a header or a line of text: “All hosts”.",
-          "An address outside the app, with `href`, like About’s Source link."
+          "An address outside the app, with `href`: About’s Source link."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An action that changes something: use `Button`.",
           "A whole row that opens a view: use `ListRow` or `StretchedLink`.",
           "A whole card that opens a view: use `Card` with `onOpen`."
@@ -257,7 +258,7 @@
           "builtIn": [
             "In the app, a `<button>` with `role=\"link\"`.",
             "With `href`, an `<a>` that opens a new window and says so.",
-            "Focus shows as hover does, accent and underline, in place of a ring."
+            "Its own focus style, accent and underline, so don’t add a ring."
           ],
           "toHandle": [
             "Words that name where it goes, like “All hosts”.",
@@ -287,11 +288,11 @@
         "actions-stretchedlink--focused"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A row that opens a view but holds a bar or figures, like Apps’ rows.",
           "A row or container that also holds a control of its own."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A simple row with a chevron: use `ListRow`.",
           "A whole card: use `Card` with `onOpen`, which draws its own.",
           "A link in a line of text: use `Link`."
@@ -342,12 +343,11 @@
         "actions-menu--choosing-an-item"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A few secondary actions on a row, like a service’s Edit and Remove.",
-          "A destructive action kept out of the way, like Clear history.",
-          "`tone=\"negative\"` on an item that deletes or clears."
+          "A destructive action kept out of the way, its item `tone=\"negative\"`: Clear history."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "The page’s main action: use `Button`.",
           "One frequent action: use `IconButton`."
         ],
@@ -514,12 +514,11 @@
         "inputs-textfield--all-states"
       ],
       "guidance": {
-        "use": [
-          "Typing a short value, like a service’s Address or Name.",
-          "In a `<form>`, so Enter submits it.",
-          "With a `TextFieldAction` to check the value in place, like Test."
+        "whenToUse": [
+          "A short value to type, in a `<form>` so Enter submits it: a service’s Address or Name.",
+          "A value to check in place, with a `TextFieldAction`: Test."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Picking one of a few known options: use `SegmentedControl`.",
           "A value to read, not edit: use `DataRow`.",
           "Submitting the form: use a `Button` outside the field."
@@ -625,12 +624,11 @@
         "inputs-toggle--all-states"
       ],
       "guidance": {
-        "use": [
-          "A setting that’s on or off, like “Check for updates automatically”.",
-          "A change that applies at once, with no save.",
-          "In a setting row, beside its title and description."
+        "whenToUse": [
+          "A setting that’s on or off, beside its title in a setting row: “Check for updates automatically”.",
+          "A change that applies at once, with no save."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Picking one of a few options: use `SegmentedControl`.",
           "An action that runs once, like “Check now”: use `Button`.",
           "A status the user can’t change: use `Badge` or `StatusDot`."
@@ -686,12 +684,12 @@
         "inputs-segmentedcontrol--choosing"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Picking one of a few exclusive options, like Settings’ Theme.",
-          "Every option in view at once, each a word or two.",
+          "A choice whose options all fit in view, each a word or two.",
           "A choice that applies at once, with no save."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Turning one setting on or off: use `Toggle`.",
           "Running an action: use `Button`."
         ],
@@ -766,12 +764,12 @@
         "overlays-dialog--escape-closes"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A short task before going on: Add a service.",
           "One thing up close: the Share Wi‑Fi QR code.",
           "A prompt the user can put off: Update available."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A hint on hover or focus: use `Tooltip`.",
           "A failure on the page: use `Banner`.",
           "A few actions on one item: use `Menu`."
@@ -876,12 +874,12 @@
         "overlays-tooltip--disabled"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Why a control is off: “Connect to a network first”.",
           "What a mark means: “Privacy-randomized MAC address”.",
           "Detail that would crowd a row, like a host’s full name and IP."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Naming an icon-only button: use `IconButton`; its `label` is the tooltip.",
           "A message the user must see: use `Banner`.",
           "Anything to click: use `Menu` or `Dialog`."
@@ -932,11 +930,11 @@
         "status-and-feedback-badge--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A word or two flagging a title: the ISP card’s VPN.",
-          "`LiveBadge` in a card header whose data updates live: Traffic."
+          "A card whose data updates live, `LiveBadge` in its header: Traffic."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A status beside its own words: use `StatusDot`.",
           "A failure the user should act on: use `Banner`."
         ],
@@ -1017,11 +1015,11 @@
         "status-and-feedback-statusdot--all-states"
       ],
       "guidance": {
-        "use": [
-          "Beside words that state a status: a device’s Online or Offline.",
-          "Pulsing for a live or busy state: the title bar, a running scan."
+        "whenToUse": [
+          "A status in the words beside it: a device’s Online or Offline.",
+          "A live or busy state, pulsing: the title bar, a running scan."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A flag beside a title: use `Badge`.",
           "Live data in a card header: use `LiveBadge`."
         ],
@@ -1055,14 +1053,14 @@
         "status-and-feedback-spinner--small"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A wait inside a dialog: “Generating QR code…”.",
           "A wait with more than one line: “Looking for your network…”."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A page’s first load: use `LoadingState`.",
           "A button’s wait: set `isLoading` on `Button` or `IconButton`.",
-          "Inside a `<button>`: use `ButtonSpinner`."
+          "A wait inside a `<button>`: use `ButtonSpinner`."
         ],
         "accessibility": {
           "builtIn": [
@@ -1100,11 +1098,11 @@
         "status-and-feedback-buttonspinner--with-label"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A small wait in a card header: the speed test running.",
           "A small wait in a card body: the home Devices card’s scan."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A button’s wait: set `isLoading` on `Button` or `IconButton`.",
           "A page’s first load: use `LoadingState`.",
           "A wait in a dialog or page area: use `Spinner`."
@@ -1141,12 +1139,11 @@
         "status-and-feedback-loadingstate--scanning"
       ],
       "guidance": {
-        "use": [
-          "A page’s first load, before there’s anything to show.",
-          "In place of the content, under the header and any `Banner`."
+        "whenToUse": [
+          "A page’s first load, in place of its content, under the header and any `Banner`."
         ],
-        "avoid": [
-          "Loaded, with nothing to show: use `EmptyState`.",
+        "whenNotToUse": [
+          "A page loaded with nothing to show: use `EmptyState`.",
           "A load that failed: use `Banner`.",
           "A wait inside a dialog: use `Spinner`."
         ],
@@ -1199,12 +1196,12 @@
         "status-and-feedback-banner--retrying"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A failure above a page: a load, scan or action that didn’t work.",
           "A line on what’s on screen now: “Showing the last scan.”"
         ],
-        "avoid": [
-          "Loaded, with nothing to show: use `EmptyState`.",
+        "whenNotToUse": [
+          "A page loaded with nothing to show: use `EmptyState`.",
           "A choice to make before going on: use `Dialog`."
         ],
         "accessibility": {
@@ -1257,13 +1254,13 @@
         "status-and-feedback-emptystate--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A page with nothing to show yet: “No services yet”.",
-          "`actions` for the step that fills it, like Scan again.",
-          "`isLocked` when it waits on the user: “Administrator access needed”."
+          "A page the user can fill, its step in `actions`: Scan again.",
+          "A page waiting on the user, `isLocked`: “Administrator access needed”."
         ],
-        "avoid": [
-          "Still loading: use `LoadingState`.",
+        "whenNotToUse": [
+          "A page still loading: use `LoadingState`.",
           "A load that failed: use `Banner`.",
           "One missing value in a row: use `NoValue`."
         ],
@@ -1342,12 +1339,12 @@
         "data-display-datalist--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Labelled facts in a card: “Gateway”, “Band”, “Link speed”.",
-          "Several topics in one card: a `DataList` each, in a `DataListStack`.",
-          "A missing value that keeps its row: `NoValue` as the children."
+          "Facts on several topics in one card: a `DataList` each, in a `DataListStack`.",
+          "A fact with no value that keeps its row: `NoValue` as the children."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A card’s headline figure: use `Readout`.",
           "Rows that open something: use `ListRow`."
         ],
@@ -1455,11 +1452,11 @@
         "data-display-novalue--all-sizes"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Where a value would be but there’s none: not measured, unknown.",
-          "In place of a formatter’s null: `?? <NoValue />`."
+          "A value the formatter returns as null: `?? <NoValue />`."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A field that may not apply: use `DataRow` with a null value.",
           "A section with nothing to show: use `EmptyState`.",
           "A page still loading: use `LoadingState`."
@@ -1533,12 +1530,12 @@
         "data-display-readout--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A headline figure and its unit: live speed, data used.",
           "Labelled pairs side by side: Traffic’s “Download” and “Upload”.",
-          "`compact`, with no label, for a Home stat card’s figure."
+          "A Home stat card’s figure, `compact` and unlabelled."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A value in a list of facts: use `DataRow`.",
           "A number inside a line of text, easing each poll: use `MetricValue`."
         ],
@@ -1596,12 +1593,12 @@
         "data-display-metricvalue--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A number that changes each poll: latency, packet loss.",
-          "`status` for a value with a healthy range, like latency.",
-          "Inside the text that sets its size: a data row’s value."
+          "A value with a healthy range, coloured by `status`: latency.",
+          "A number inside text that sets its size: a data row’s value."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A headline figure with its unit and label: use `Readout`.",
           "A value that never changes: use `DataRow`’s `value`."
         ],
@@ -1669,23 +1666,23 @@
         "data-display-barmeter--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Signal strength or a rating, at a glance.",
-          "Its colour from the text around it: a status colour per level.",
-          "No rating yet: `value={0}`, every bar unlit."
+          "A level in its status colour, taken from the text around it.",
+          "A rating not measured yet, `value={0}`: every bar unlit."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An exact figure: use `MetricValue` or `Readout`.",
           "Comparing traffic between rows: use `SplitBar`."
         ],
         "accessibility": {
           "builtIn": [
             "`aria-hidden`: it’s a picture of the value.",
-            "Unlit bars are a faint tint of the lit colour, not another hue."
+            "Bars fill with `currentColor`; unlit ones are a faint tint of it."
           ],
           "toHandle": [
             "The value in words: an `sr-only` word or a `role=\"meter\"` wrapper.",
-            "A colour with 3:1 contrast for the bars."
+            "A text colour on its container with 3:1 contrast, for the bars."
           ]
         }
       }
@@ -1733,11 +1730,11 @@
         "data-display-splitbar--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Download and upload in proportion, in a usage row.",
-          "Rows compared: scale every bar to the list’s busiest row."
+          "Rows compared with each other, every bar scaled to the busiest row."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A rating or signal: use `BarMeter`.",
           "A single headline amount: use `Readout`."
         ],
@@ -1787,11 +1784,10 @@
         "data-display-listrow--all-states"
       ],
       "guidance": {
-        "use": [
-          "A card’s list row that opens a view: a capability, “About Rove”.",
-          "An `IconTile` first if the item has one; About’s row has none."
+        "whenToUse": [
+          "A card’s row that opens a view, an `IconTile` first if the item has one: a capability, “About Rove”."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A label and value that open nothing: use `DataRow`.",
           "A whole card that opens: use `Card` with `onOpen`.",
           "A row holding a bar or other block content: use `StretchedLink`."
@@ -1858,11 +1854,11 @@
         "data-display-icontile--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "The icon that starts an item’s row: a device, a capability.",
-          "`IconTileButton` when the tile alone opens something: Home’s capability strip."
+          "A tile that opens something on its own, as `IconTileButton`: Home’s capability strip."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An icon-only action: use `IconButton`.",
           "A whole row that opens something: use `ListRow`, the tile inside.",
           "An event on a timeline: use `TimelineNode`."
@@ -1972,11 +1968,11 @@
         "data-display-timelinenode--timeline"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "One event in a timeline: “Device left the network”, “Service went down”.",
           "A day’s events in a feed, one node each under its heading."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An item that isn’t an event: use `IconTile` in its row.",
           "A message about the whole page: use `Banner`."
         ],
@@ -2046,12 +2042,12 @@
         "containers-card-card--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Related facts or settings under one title, like DNS or Updates.",
-          "A Home summary that opens its page, with `onOpen`, like Usage.",
-          "`CardList` for a list that is one card, like the tracked services."
+          "A Home summary that opens its page, with `onOpen`: Usage.",
+          "A list that is one card, as `CardList`: the tracked services."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "An error about the whole page: use `Banner`.",
           "Nothing to list yet: use `EmptyState`.",
           "A row in a card that opens a page: use `ListRow`."
@@ -2219,13 +2215,13 @@
         "containers-collapsible--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Details most people don’t need, like Home’s connection card.",
           "A group’s rows on request, like an app’s hosts."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Content everyone needs: show it in the `Card`.",
-          "Details big enough for their own page: a `Card` with `onOpen`.",
+          "Details big enough for their own page: use a `Card` with `onOpen`.",
           "A few actions behind a button: use `Menu`."
         ],
         "accessibility": {
@@ -2291,12 +2287,12 @@
         "containers-dotseparator-dotseparator--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "Short facts on one line, like a device’s vendor and model.",
-          "`InlineMeta` when items may be empty: they drop out with their dots.",
-          "A bare `DotSeparator` between parts you lay out, like the Services header’s."
+          "Facts that may be empty, in `InlineMeta`: they drop out with their dots.",
+          "Parts you lay out yourself, a bare `DotSeparator` between them: the Services header."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "Labels with their values: use `DataRow`s.",
           "A status beside its words: use `StatusDot`.",
           "A missing value that should show: use `NoValue`."
@@ -2374,14 +2370,14 @@
         "app-frame-titlebar-titlebar--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "The window’s top edge, once per window.",
-          "`TitleBarStatus` for the connection in words: “Offline”, “No internet”.",
-          "`WindowButton`s only on a frameless window."
+          "The connection in words, in `TitleBarStatus`: “Offline”, “No internet”.",
+          "A frameless window, with `WindowButton`s."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A page’s title and actions: use `PageHeader`.",
-          "A status anywhere else: a `StatusDot` beside its words."
+          "A status anywhere else: use a `StatusDot` beside its words."
         ],
         "accessibility": {
           "builtIn": [
@@ -2523,11 +2519,11 @@
         "app-frame-navrail-navrail--default"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "The app’s pages, down the window’s left side, once.",
-          "Settings and the theme switch in `footer`."
+          "Settings and the theme switch, at the bottom in `footer`."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A page’s own actions: use `PageHeader`’s `actions`.",
           "An icon action anywhere else: use `IconButton`."
         ],
@@ -2591,12 +2587,12 @@
         "app-frame-pageheader--all-states"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "The top of each tab’s page, like Devices or Usage.",
-          "`onBack` in place of `icon` on a page over a tab, like Hosts.",
-          "`status` while something runs: “Checking…”."
+          "A page over a tab, `onBack` in place of `icon`: Hosts.",
+          "Something running on the page, in `status`: “Checking…”."
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A card’s title: use `CardHeader`.",
           "An error about the page: use `Banner` below it."
         ],
@@ -2625,11 +2621,11 @@
         "accessibility-screenreaderstatus--announces-a-change"
       ],
       "guidance": {
-        "use": [
+        "whenToUse": [
           "A run’s steps and result, like the speed test’s.",
           "An outcome the screen shows silently: “You’re on the latest version.”"
         ],
-        "avoid": [
+        "whenNotToUse": [
           "A page’s status: use `PageHeader`’s `status`, already announced.",
           "An error the user must see: use `Banner`, which announces it."
         ],

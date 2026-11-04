@@ -379,14 +379,33 @@ Components v1.0.0"). Raise it when the library's API changes.
   interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
   moving focus would scroll its Docs page. A play that leaves the story as it
   found it (`DisabledOff`) can stay on the Docs page.
+- A component's intro is one sentence on what it is, with no rules: the
+  stories' `docs.subtitle` ("A headline number and its unit, with an optional
+  label and icon."), shown under its name above the doc comment, and the same
+  sentence under its name in Figma's docs section.
 - A component's usage guide sits on its Docs page: the stories' `guidance`
-  parameter (`Guidance` in `.storybook/docs-page.tsx`), with Use, Avoid,
-  and Accessibility split into Built in and To handle, a few words
-  a line. What the stories and props table already show (each state, each
-  variant) stays out. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
-  contents. Every component has one, written for its whole family (Card's
-  covers CardHeader and the rest), and Figma's docs section carries the same
-  guide as a Guidance block under its intro.
+  parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use,
+  When not to use, and Accessibility split into Built in and To handle, a few
+  words a line. Each line finishes its heading: under When to use, a situation,
+  then how if it needs saying, then an example ("The page’s main action, solid:
+  “Run test”."); under When not to use, a situation, then what to use instead
+  ("Opening another view or an address: use `Link`."). A rule that isn't a
+  situation goes in the doc comment instead. What the stories and props table
+  already show (each state, each variant) stays out. Set
+  `docs: { toc: GUIDANCE_TOC }` beside it for the page's contents. Every
+  component has one, written for its whole family (Card's covers CardHeader and
+  the rest), and Figma's docs section carries it as a Guidance block under its
+  intro: When to use and When not to use line for line, worded for designers.
+  Accessibility differs by reader. Storybook's is for developers: Built in
+  names the element, roles and keyboard, To handle the props and markup to
+  supply. Figma's is for designers: Built in is what they needn't draw or note,
+  To handle what they decide or note on the design (label wording, grouping,
+  what's read out). Figma's block also has Guidelines, between When not to use
+  and Accessibility: how to use it well (variants, placement, content) as Do
+  and Don't columns, each Don't the mistake its Do prevents. It's for
+  designers only, as the props table and doc comment cover it in code, and
+  only where there's advice to give: a fact about the component goes in Built
+  in.
 - `components.gen.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component, story ids and usage guide. `npm run catalogue` writes it from the code

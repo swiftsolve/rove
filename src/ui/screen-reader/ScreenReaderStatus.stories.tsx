@@ -11,13 +11,13 @@ const meta = {
   component: ScreenReaderStatus,
   args: { children: 'Testing download…' },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A status only screen readers hear, read out when it changes.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A run’s steps and result, like the speed test’s.',
         'An outcome the screen shows silently: “You’re on the latest version.”',
       ],
-      avoid: [
+      whenNotToUse: [
         'A page’s status: use `PageHeader`’s `status`, already announced.',
         'An error the user must see: use `Banner`, which announces it.',
       ],

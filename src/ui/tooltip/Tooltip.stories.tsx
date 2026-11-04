@@ -13,14 +13,14 @@ const meta = {
     side: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A short hint beside its trigger, on hover and keyboard focus.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'Why a control is off: “Connect to a network first”.',
         'What a mark means: “Privacy-randomized MAC address”.',
         'Detail that would crowd a row, like a host’s full name and IP.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Naming an icon-only button: use `IconButton`; its `label` is the tooltip.',
         'A message the user must see: use `Banner`.',
         'Anything to click: use `Menu` or `Dialog`.',

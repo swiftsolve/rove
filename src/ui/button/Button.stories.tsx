@@ -18,14 +18,15 @@ const meta = {
     icon: iconComponentControl,
   },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A button with a word or two on it, for an action.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'Solid for the page’s main action, negative to stop it: “Run test”, “Stop”.',
-        'Soft for everything else: “Scan again”, “Check now”.',
-        'Soft negative only on a red surface, like an error `Banner`’s Dismiss.',
+      whenToUse: [
+        'The page’s main action, solid: “Run test”.',
+        'Stopping that action, solid negative: “Stop”.',
+        'Every other action, soft: “Scan again”, “Check now”.',
+        'An action on a red surface, soft negative: an error `Banner`’s Dismiss.',
       ],
-      avoid: [
+      whenNotToUse: [
         'Opening another view or an address: use `Link`.',
         'An icon with no words: use `IconButton`.',
         'Checking a field’s value, like Test: use `TextFieldAction`.',

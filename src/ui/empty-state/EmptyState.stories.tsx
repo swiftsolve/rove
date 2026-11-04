@@ -12,15 +12,18 @@ const meta = {
   component: EmptyState,
   args: { title: 'No services yet', description: "Add one to see whether it's up." },
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'A page with nothing to show yet: faded placeholder rows, a title and a way forward.',
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'A page with nothing to show yet: “No services yet”.',
-        '`actions` for the step that fills it, like Scan again.',
-        '`isLocked` when it waits on the user: “Administrator access needed”.',
+        'A page the user can fill, its step in `actions`: Scan again.',
+        'A page waiting on the user, `isLocked`: “Administrator access needed”.',
       ],
-      avoid: [
-        'Still loading: use `LoadingState`.',
+      whenNotToUse: [
+        'A page still loading: use `LoadingState`.',
         'A load that failed: use `Banner`.',
         'One missing value in a row: use `NoValue`.',
       ],

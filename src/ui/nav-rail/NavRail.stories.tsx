@@ -80,10 +80,16 @@ const meta = {
   },
   parameters: {
     layout: 'fullscreen',
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'The icon rail down the window’s left side, one item per page.', toc: GUIDANCE_TOC },
     guidance: {
-      use: ['The app’s pages, down the window’s left side, once.', 'Settings and the theme switch in `footer`.'],
-      avoid: ['A page’s own actions: use `PageHeader`’s `actions`.', 'An icon action anywhere else: use `IconButton`.'],
+      whenToUse: [
+        'The app’s pages, down the window’s left side, once.',
+        'Settings and the theme switch, at the bottom in `footer`.',
+      ],
+      whenNotToUse: [
+        'A page’s own actions: use `PageHeader`’s `actions`.',
+        'An icon action anywhere else: use `IconButton`.',
+      ],
       accessibility: {
         builtIn: [
           'A `<nav>` landmark named by `label`, its items in lists.',

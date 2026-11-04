@@ -33,16 +33,19 @@ const meta = {
   },
   parameters: {
     layout: 'fullscreen',
-    docs: { toc: GUIDANCE_TOC },
+    docs: {
+      subtitle: 'The bar across the window’s top: brand, connection status and window buttons.',
+      toc: GUIDANCE_TOC,
+    },
     guidance: {
-      use: [
+      whenToUse: [
         'The window’s top edge, once per window.',
-        '`TitleBarStatus` for the connection in words: “Offline”, “No internet”.',
-        '`WindowButton`s only on a frameless window.',
+        'The connection in words, in `TitleBarStatus`: “Offline”, “No internet”.',
+        'A frameless window, with `WindowButton`s.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A page’s title and actions: use `PageHeader`.',
-        'A status anywhere else: a `StatusDot` beside its words.',
+        'A status anywhere else: use a `StatusDot` beside its words.',
       ],
       accessibility: {
         builtIn: [

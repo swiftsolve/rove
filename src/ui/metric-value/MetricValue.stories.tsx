@@ -23,14 +23,14 @@ const meta = {
     ),
   ],
   parameters: {
-    docs: { toc: GUIDANCE_TOC },
+    docs: { subtitle: 'A number that eases to each new value, at the size of its line.', toc: GUIDANCE_TOC },
     guidance: {
-      use: [
+      whenToUse: [
         'A number that changes each poll: latency, packet loss.',
-        '`status` for a value with a healthy range, like latency.',
-        'Inside the text that sets its size: a data row’s value.',
+        'A value with a healthy range, coloured by `status`: latency.',
+        'A number inside text that sets its size: a data row’s value.',
       ],
-      avoid: [
+      whenNotToUse: [
         'A headline figure with its unit and label: use `Readout`.',
         'A value that never changes: use `DataRow`’s `value`.',
       ],
