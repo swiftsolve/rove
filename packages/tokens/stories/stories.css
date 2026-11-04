@@ -12,9 +12,10 @@
 .page-overline {
   margin: 0;
   color: var(--text-accent);
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.06em;
+  font-size: var(--type-overline-size);
+  font-weight: var(--type-overline-weight);
+  line-height: var(--type-overline-line-height);
+  letter-spacing: var(--type-overline-letter-spacing);
   text-transform: uppercase;
 }
 
@@ -38,7 +39,7 @@
 }
 
 /* A page's primitive or semantic half: an overline and an intro above the
-   sections it holds. */
+   sections it holds. Its overline is the page's, the Overline text style. */
 .group {
   margin-top: 72px;
 }
@@ -46,9 +47,10 @@
 .group-title {
   margin: 0;
   color: var(--text-accent);
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.06em;
+  font-size: var(--type-overline-size);
+  font-weight: var(--type-overline-weight);
+  line-height: var(--type-overline-line-height);
+  letter-spacing: var(--type-overline-letter-spacing);
   text-transform: uppercase;
 }
 
