@@ -8,7 +8,12 @@
  *     to it, with the same values: `Tone=Accent` is `tone="accent"`, a
  *     `true`/`false` variant is a boolean prop (`Disabled` is `isDisabled`), and
  *     a part's prop takes its part's name (`Body layout` is CardBody's `layout`);
- *   - every prop with a fixed set of values has a Figma variant property.
+ *   - every prop with a fixed set of values has a Figma variant property;
+ *   - every usage guide in the stories (`guidance`) has its twin in the
+ *     component's Figma docs section: the same sections, as many lines in each,
+ *     and every alternative the code names under When not to use (`use
+ *     `EmptyState``) named there too ("Empty state"). Figma words its lines for
+ *     designers, so the wording itself is left to review.
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
@@ -25,10 +30,11 @@
  * the repository secret of the same name.
  *
  * An agent without a token can read the same data through the Figma MCP
- * (`use_figma`: each node's name, type and componentPropertyDefinitions, keyed
- * by id) and pass the file in:
+ * (`use_figma`) and pass it in as `{ nodes, docs }`: `nodes` is each mapped
+ * node's name, type and componentPropertyDefinitions by id, and `docs` each
+ * docs section's text, in order and outside component instances, by its name:
  *
- *   node scripts/checks/figma.mjs [--from figma-nodes.json]
+ *   node scripts/checks/figma.mjs [--from figma.json]
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
@@ -47,6 +53,18 @@ const BOOLEAN_PREFIX = /^(is|has|can|should|was)(?=[A-Z])/
 // Figma's option for an optional prop left unset (Metric value's Status=None).
 const UNSET_OPTION = 'none'
 const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
+// Text inside these is a live component, not the docs around it.
+const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
+// A docs section's guide headings, as Storybook's Docs page has them (.storybook/docs-page.tsx).
+const GUIDE_LABELS = {
+  use: 'When to use',
+  avoid: 'When not to use',
+  accessibility: 'Accessibility',
+  builtIn: 'Built in',
+  youHandle: 'You handle',
+}
+// What follows the guide in a docs section: the examples and the props table.
+const GUIDE_ENDS = new Set(['Dark', 'Light', 'Property', 'Code'])
 
 /** Lowercase letters and digits only, so `Body layout`, `bodyLayout` and `Down only` compare. */
 const key = (text) =>
@@ -61,20 +79,9 @@ async function readToken() {
   return env.match(/^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m)?.[1]
 }
 
-/** Each node by id, as `{ name, type, componentPropertyDefinitions }`, from a file or the REST API. */
-async function readNodes(fileKey, nodeIds) {
-  const fromIndex = process.argv.indexOf('--from')
-  if (fromIndex !== -1) return JSON.parse(await readFile(resolve(process.argv[fromIndex + 1]), 'utf8'))
-
-  const token = await readToken()
-  if (!token) {
-    console.log('Figma skipped: no FIGMA_TOKEN in the shell or .env.local')
-    process.exit(0)
-  }
-  // Offline skips; a bad token or file key answers, and fails.
-  const response = await fetch(`${API}/files/${fileKey}/nodes?ids=${nodeIds.join(',')}&depth=1`, {
-    headers: { 'X-Figma-Token': token },
-  }).catch((error) => {
+/** A REST API answer, as JSON. Offline skips; a bad token or file key answers, and fails. */
+async function get(token, path) {
+  const response = await fetch(`${API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error) => {
     console.log(`Figma skipped: Figma couldn't be reached (${error.cause?.code ?? error.message})`)
     process.exit(0)
   })
@@ -82,8 +89,67 @@ async function readNodes(fileKey, nodeIds) {
     console.error(`Figma answered ${response.status}: ${await response.text()}`)
     process.exit(1)
   }
-  const { nodes } = await response.json()
-  return Object.fromEntries(Object.entries(nodes).map(([id, node]) => [id, node?.document]))
+  return response.json()
+}
+
+/** A node's text in document order, leaving out what's inside a component or its instances. */
+function textsOf(node) {
+  if (INSTANCE_TYPES.has(node.type)) return []
+  if (node.type === 'TEXT') return [node.characters]
+  return (node.children ?? []).flatMap(textsOf)
+}
+
+/**
+ * The mapped nodes by id (`{ name, type, componentPropertyDefinitions }`) and
+ * the docs sections' text by section name, from a file or the REST API.
+ */
+async function readFigma(fileKey, nodeIds, sectionNames) {
+  const fromIndex = process.argv.indexOf('--from')
+  if (fromIndex !== -1) {
+    const data = JSON.parse(await readFile(resolve(process.argv[fromIndex + 1]), 'utf8'))
+    return 'nodes' in data ? data : { nodes: data }
+  }
+
+  const token = await readToken()
+  if (!token) {
+    console.log('Figma skipped: no FIGMA_TOKEN in the shell or .env.local')
+    process.exit(0)
+  }
+  const { nodes } = await get(token, `/files/${fileKey}/nodes?ids=${nodeIds.join(',')}&depth=1`)
+
+  // A docs section is a frame on a page's top frame, named for its component.
+  const { document } = await get(token, `/files/${fileKey}?depth=3`)
+  const sectionIds = document.children
+    .flatMap((page) => page.children ?? [])
+    .flatMap((frame) => frame.children ?? [])
+    .filter((section) => sectionNames.has(section.name))
+    .map((section) => section.id)
+  const sections =
+    sectionIds.length > 0 ? (await get(token, `/files/${fileKey}/nodes?ids=${sectionIds.join(',')}`)).nodes : {}
+  const docs = {}
+  for (const { document: section } of Object.values(sections)) {
+    const texts = textsOf(section)
+    if (texts.includes(GUIDE_LABELS.use)) docs[section.name] = texts
+  }
+  return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, node]) => [id, node?.document])), docs }
+}
+
+/** A Figma guide's lines per section, read off its docs section's text. */
+function figmaGuide(texts) {
+  const at = (label, from) => texts.indexOf(label, from)
+  const use = at(GUIDE_LABELS.use, 0)
+  const avoid = at(GUIDE_LABELS.avoid, use)
+  const accessibility = at(GUIDE_LABELS.accessibility, avoid)
+  const builtIn = at(GUIDE_LABELS.builtIn, accessibility)
+  const youHandle = at(GUIDE_LABELS.youHandle, builtIn)
+  if ([use, avoid, accessibility, builtIn, youHandle].includes(-1)) return null
+  const after = texts.findIndex((text, i) => i > youHandle && GUIDE_ENDS.has(text))
+  return {
+    use: texts.slice(use + 1, avoid),
+    avoid: texts.slice(avoid + 1, accessibility),
+    builtIn: texts.slice(builtIn + 1, youHandle),
+    youHandle: texts.slice(youHandle + 1, after === -1 ? texts.length : after),
+  }
 }
 
 /** A Figma node's variant properties, `{ Tone: ['Accent', …] }`, without the interaction state. */
@@ -127,7 +193,8 @@ const entries = Object.entries(mapping).filter(([, entry]) => entry !== null)
 const byNode = new Map()
 for (const [component, entry] of entries) byNode.set(entry.node, [...(byNode.get(entry.node) ?? []), component])
 
-const nodes = await readNodes(fileKey, [...byNode.keys()])
+const guided = entries.filter(([component]) => catalogue[component]?.guidance)
+const { nodes, docs } = await readFigma(fileKey, [...byNode.keys()], new Set(guided.map(([, { name }]) => name)))
 const problems = []
 
 for (const [nodeId, components] of byNode) {
@@ -218,8 +285,43 @@ for (const [nodeId, components] of byNode) {
   }
 }
 
+// The usage guides. A component the code names is looked for by its Figma
+// name, or its own for one Figma lacks; spaces and case don't count, so
+// StretchedLink is found as "Stretched link".
+const figmaNameOf = (component) => mapping[component]?.name ?? component
+for (const [component, { name }] of docs ? guided : []) {
+  const guide = catalogue[component].guidance
+  const texts = docs[name]
+  const figma = texts && figmaGuide(texts)
+  if (!figma) {
+    problems.push(`${component} has a usage guide, but Figma's "${name}" docs section has none: add it there`)
+    continue
+  }
+  const sections = [
+    ['use', GUIDE_LABELS.use, guide.use],
+    ['avoid', GUIDE_LABELS.avoid, guide.avoid],
+    ['builtIn', GUIDE_LABELS.builtIn, guide.accessibility.builtIn],
+    ['youHandle', GUIDE_LABELS.youHandle, guide.accessibility.youHandle],
+  ]
+  for (const [section, label, lines] of sections) {
+    if (lines.length !== figma[section].length) {
+      problems.push(
+        `${component}'s usage guide has ${lines.length} ${label} lines in code, ${figma[section].length} in Figma's "${name}": ` +
+          `bring the side that's behind up to date`,
+      )
+    }
+  }
+  const avoidText = key(figma.avoid.join(' '))
+  const named = new Set(guide.avoid.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, ref]) => ref)))
+  for (const ref of named) {
+    if (!(ref in catalogue) || avoidText.includes(key(figmaNameOf(ref)))) continue
+    problems.push(`${component}'s usage guide names ${ref} under ${GUIDE_LABELS.avoid}; Figma's "${name}" doesn't`)
+  }
+}
+
 if (problems.length > 0) {
   console.error(`The library and Figma are out of step:\n  ${problems.join('\n  ')}`)
   process.exit(1)
 }
-console.log(`Figma OK (${byNode.size} nodes, their names and variants)`)
+const guides = docs ? `, and ${guided.length} usage guides` : ''
+console.log(`Figma OK (${byNode.size} nodes, their names and variants${guides})`)

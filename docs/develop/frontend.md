@@ -303,7 +303,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | CSS Module classes match their use | `checks/css-modules.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
-| Figma and the library agree: `figma.json`'s nodes and names, and every variant property and its values (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
+| Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
 `checks/escapes.mjs` never fails: it counts the ways around these rules (lint
@@ -312,8 +312,8 @@ summary, so a rise shows. `--list` names each one.
 
 Review still has to catch: props passed only to pass down, hints over two
 sentences, focus or presence handled by hand, a view reaching into a
-component's DOM, and Figma out of sync beyond its variants (a token, a
-spacing, copy).
+component's DOM, and Figma out of sync beyond its variants and guides (a
+token, a spacing, a guide line's wording).
 
 ## The UI library
 

@@ -9,8 +9,9 @@ most of them. These are the ones it can't check:
   --project=dom src/ui/<folder>` runs its stories (play functions, axe) and
   DOM tests. `npm run check` before you finish.
 - A new component gets its stories, with a usage guide (`guidance`), in the
-  same change, and its Figma docs section gets the same guide. A part with props of
-  its own gets its own stories file beside its module.
+  same change, and its Figma docs section gets the same guide, worded for
+  designers but line for line (`checks/figma.mjs` compares them). A part with
+  props of its own gets its own stories file beside its module.
 - An interactive component gets a story that drives it with a `play`
   function, named for the interaction and tagged `!autodocs`.
 - Raise `UI_LIBRARY_VERSION` in `version.ts` when the library's API changes.
