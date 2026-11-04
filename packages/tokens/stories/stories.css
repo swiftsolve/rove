@@ -893,6 +893,41 @@
   fill: var(--accent-default);
 }
 
+/* Hover fills the bar: the clip and the dot run to the end and the track shrinks into it. */
+.intro-wavy-clip,
+.intro-wavy-dot,
+.intro-wavy-track {
+  transition-duration: 0.9s;
+  transition-timing-function: var(--ease-out);
+}
+
+.intro-wavy-clip {
+  transition-property: width;
+}
+
+.intro-wavy-dot {
+  transition-property: cx;
+}
+
+.intro-wavy-track {
+  transform-box: fill-box;
+  transform-origin: right center;
+  transition-property: transform, opacity;
+}
+
+.intro-card:hover .intro-wavy-clip {
+  width: 211px;
+}
+
+.intro-card:hover .intro-wavy-dot {
+  cx: 211px;
+}
+
+.intro-card:hover .intro-wavy-track {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
 /* The principles: cards like the pages', without a link. */
 .intro-principle {
   display: flex;
@@ -907,9 +942,20 @@
 }
 
 .intro-principle-icon {
-  display: flex;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
   margin-bottom: calc(var(--intro-icon-gap) - var(--intro-text-gap));
+  border-radius: var(--radius-md);
+  background: var(--accent-muted);
   color: var(--text-accent);
+}
+
+/* The principles' icons are ideas, not products, so they're one set: line icons on an accent tile. */
+.intro-principle-icon .intro-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .intro-principle-body {
@@ -971,5 +1017,11 @@
 
   .intro-wavy-wave {
     animation: none;
+  }
+
+  .intro-wavy-clip,
+  .intro-wavy-dot,
+  .intro-wavy-track {
+    transition: none;
   }
 }

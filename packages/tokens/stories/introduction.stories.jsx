@@ -52,6 +52,13 @@ function RoveMark() {
 }
 
 const LINE_ICONS = {
+  figmaLine: [
+    'M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z',
+    'M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z',
+    'M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z',
+    'M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z',
+    'M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z',
+  ],
   tag: [
     'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z',
     'M7.5 7.5h.01',
@@ -180,7 +187,7 @@ const CONSUMERS = [
 
 const PRINCIPLES = [
   {
-    icon: 'figma',
+    icon: 'figmaLine',
     lead: 'Figma is the source of truth',
     body: 'Tokens flow one way: designed there, exported, built. Nothing writes back to Figma, and nothing in `dist/` is edited by hand.',
   },
@@ -364,11 +371,12 @@ const EXPLORE = [
     specimen: (
       // Rove's speed test progress bar (WavyProgress, after Material 3's wavy
       // progress), at its own sizes: the squiggle scrolls a wavelength a second
-      // up to the fill, a dot rides its tip, and a dimmed track runs on.
+      // up to the fill, a dot rides its tip, and a dimmed track runs on. On
+      // hover it fills to the end.
       <svg className="intro-wavy" viewBox="0 0 216 16" width="216" height="16">
         <defs>
           <clipPath id="intro-wavy-fill">
-            <rect x="0" y="0" width="129.6" height="16" />
+            <rect className="intro-wavy-clip" x="0" y="0" width="129.6" height="16" />
           </clipPath>
         </defs>
         <g clipPath="url(#intro-wavy-fill)">
