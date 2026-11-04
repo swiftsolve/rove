@@ -195,9 +195,12 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   `styles/base.css` is the reset.
 - Colours and easings are always tokens, and so is any length, weight or
   duration a token has: `p-12`, not `p-[12px]`. Every gap, padding and margin
-  is a spacing step, or a `calc()` of tokens. A value that has to stay (the
-  QR code's white plate, a gap set by an icon's ink) goes in
-  `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why.
+  is a spacing step, or a `calc()` of tokens, and every corner a radius token
+  (a thin bar takes `rounded-full`, which rounds to half its width). A value
+  that has to stay (the QR code's white plate, a gap set by an icon's ink, the
+  About tile's app-icon corner) goes in `scripts/checks/raw-values.mjs`'s
+  `ALLOWED` list, with why. DESIGN.md's Spacing and shape says which reasons
+  count.
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
@@ -306,7 +309,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
 | File names | `checks/file-names.mjs` |
-| Tokens, not raw values; gaps, paddings and margins on the spacing scale | `checks/raw-values.mjs` |
+| Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |

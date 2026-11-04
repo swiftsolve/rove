@@ -13,7 +13,7 @@ const NODE = cx(
   'relative grid grid-cols-[28px_1fr] gap-(--card-padding) pl-[5px] not-last:pb-[22px]',
   "not-last:before:absolute not-last:before:content-['']",
   'not-last:before:top-[30px] not-last:before:bottom-0 not-last:before:left-[18px] not-last:before:w-2',
-  'not-last:before:rounded-[1px] not-last:before:bg-line',
+  'not-last:before:rounded-full not-last:before:bg-line',
 )
 
 // Above the line, so it reads as passing behind the marker.

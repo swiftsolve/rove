@@ -12,7 +12,10 @@
  *     text-styles.mjs's: text takes a text style, not a size);
  *   - spacing: every gap, padding and margin is built from spacing tokens
  *     (`gap-8`, `px-(--card-padding)`, a `calc()` of tokens), so one off the
- *     scale (`gap-[5px]`, `calc(var(--card-padding) - 1px)`) needs a reason.
+ *     scale (`gap-[5px]`, `calc(var(--card-padding) - 1px)`) needs a reason;
+ *   - radius: every corner is a radius token, so one off the scale
+ *     (`rounded-[16px]`) needs a reason. A thin bar takes `rounded-full`,
+ *     which rounds to half its width.
  *
  * Other values off the token scales (`size-[28px]`, `leading-[1.2]`, a 2.4s
  * pulse) aren't flagged: the system has no token for them. The token values are read
@@ -74,6 +77,9 @@ const ALLOWED = [
   { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pb-[22px]' },
   // Lifts the empty state a little above centre, under the page header.
   { file: 'src/ui/empty-state/EmptyState.tsx', value: 'pb-[56px]' },
+
+  // Corners off the scale. The About tile redraws the app icon, whose corner is its own.
+  { file: 'src/features/about/AboutView.tsx', value: 'rounded-[16px]' },
   // No reason recorded yet: check each against Figma, then snap it to a step or say why.
   { file: 'src/features/apps/components/HostRow.tsx', value: 'gap-[7px]' },
   { file: 'src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
@@ -138,6 +144,9 @@ function scaleForProperty(property) {
 const SPACING_UTILITY =
   /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
 const RADIUS_UTILITY = /^rounded(?:-[a-z]{1,2})?$/
+/** A radius built from tokens alone: `var(--radius-sm)`, `inherit`, `0`. */
+const isRadiusValue = (value) =>
+  !/(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/.test(value.replace(/var\(--[\w-]+\)/g, ''))
 // The utilities DESIGN.md holds to the spacing scale: gaps, paddings and margins.
 const SPACE_UTILITY = /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])$/
 const SPACE_PROPERTY = /^(?:padding|margin|gap|row-gap|column-gap)(?:-[a-z-]+)?$/
@@ -222,6 +231,14 @@ for (const file of files) {
         .trim()
         .split(/\s+/)
         .some((part) => fromScale?.has(part))
+      if (RADIUS_PROPERTY.test(property) && !isTokenEqual && !isRadiusValue(value)) {
+        const declaration = `${property}: ${value.trim()}`
+        report(
+          match.index,
+          declaration,
+          `${declaration} is off the radius scale; use a --radius-* token, or say why in ALLOWED`,
+        )
+      }
       if (SPACE_PROPERTY.test(property) && !isTokenEqual && !isSpacingValue(value)) {
         const declaration = `${property}: ${value.trim()}`
         report(
@@ -254,12 +271,15 @@ for (const file of files) {
     }
   }
 
-  // Every gap, padding and margin is a spacing step (DESIGN.md, Spacing and
-  // shape), so one off the scale needs a reason in ALLOWED, token-equal or not.
+  // Every gap, padding and margin is a spacing step and every corner a radius
+  // (DESIGN.md, Spacing and shape), so one off the scale needs a reason in ALLOWED.
   for (const match of code.matchAll(/(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g)) {
     const [whole, utility, value] = match
     if (SPACE_UTILITY.test(utility) && !isSpacingValue(value) && !SPACING.has(value.replace(/^-/, ''))) {
       report(match.index, whole, `${whole} is off the spacing scale; use a --spacing-* step, or say why in ALLOWED`)
+    }
+    if (RADIUS_UTILITY.test(utility) && !isRadiusValue(value) && !RADIUS.has(value)) {
+      report(match.index, whole, `${whole} is off the radius scale; use a --radius-* token, or say why in ALLOWED`)
     }
   }
 
