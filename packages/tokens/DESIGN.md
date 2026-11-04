@@ -12,7 +12,8 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ## Rules
 
-- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code.
+- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape).
+- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value.
 - **Name by job, not by look.** Pick `--bg-surface` because it's content on the backdrop, not because it's the right grey. The Palette shades (`neutral/850`) aren't CSS variables, on purpose.
 
 ### Surfaces
@@ -65,7 +66,14 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 - Every gap, padding and margin is a `--spacing-*` step.
 - Cards use `--card-padding` on every side. The rail and the content column share the side inset `--spacing-12`.
 - A card header is `--card-header-height` tall. A header-like strip that can grow with its content takes `--card-header-min-height` as its minimum instead.
-- Corners are `--radius-*`. `--radius-md` is for nav items and the page-header chip, a step rounder than `--radius-sm`; `--radius-full` makes pills.
+- Corners are `--radius-*`: `xs` for small controls inside others (menu items, segments, window buttons), `sm` for controls, `md` for nav items and the page-header chip, `lg` for cards and dialogs, `full` for pills and dots. A thin bar or line takes `full` too: it rounds to half its width.
+- **Off the scale only when something else sets the length**, and say why where it's used:
+  - spacing that lines up with an icon's ink rather than its box, or gives back a 1px border;
+  - spacing that lines up with something that isn't spacing, like an icon's width or a label column;
+  - a corner that copies a shape from outside the system, like the app icon's.
+
+  A value that's just "a bit more" isn't an exception: take the nearest step, or propose a token in Figma.
+- Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed one is fine.
 
 ### Type
 
@@ -100,22 +108,22 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 - **Backgrounds:** `--bg-base` (backdrop), `--bg-surface` (content on the backdrop), `--bg-hover` (hovered rows and buttons), `--bg-scrim` (behind dialogs), `--bg-inset` (sunken areas inside a surface), `--bg-popover` (tooltips and menus), `--bg-chrome` (title bar and rail)
 - **Lines:** `--border-default` (hairlines)
 - **Overlays:** `--overlay-default` (default strength), `--overlay-subtle` (lighter), `--overlay-faint` (faintest), `--overlay-strong` (strongest), `--overlay-selection` (text selection), `--overlay-hover` (hovered rows and headers)
-- **Text:** `--text-primary`, `--text-secondary`, `--text-tertiary` (default icon colour), `--text-accent` (accent words, also on accent/muted), `--text-positive`, `--text-good`, `--text-warning`, `--text-poor`, `--text-negative`, `--text-on-solid` (labels and icons on solids)
-- **Accent:** `--accent-default`, `--accent-hover`, `--accent-press`, `--accent-muted` (tinted accent background), `--accent-solid` (under white labels), `--accent-solid-hover`
-- **Status:** `--status-positive`, `--status-good` (between positive and warning), `--status-warning`, `--status-poor` (between warning and negative), `--status-negative`, `--status-negative-solid` (solid negative under white labels), `--status-negative-solid-hover` (hover)
+- **Text:** `--text-primary` (content), `--text-secondary` (supporting lines), `--text-tertiary` (default icon colour), `--text-accent` (accent words, also on accent/muted), `--text-positive` (positive words), `--text-good` (good words), `--text-warning` (warning words), `--text-poor` (poor words), `--text-negative` (negative words), `--text-on-solid` (labels and icons on solids)
+- **Accent:** `--accent-default` (accent icons and lines), `--accent-hover` (hovered accent icon or line), `--accent-press` (pressed accent icon or line), `--accent-muted` (tinted accent background), `--accent-solid` (under white labels), `--accent-solid-hover` (hovered solid button)
+- **Status:** `--status-positive` (positive icons, bars, dots), `--status-good` (between positive and warning), `--status-warning` (warning icons, bars, dots), `--status-poor` (between warning and negative), `--status-negative` (negative icons, bars, dots), `--status-negative-solid` (solid negative under white labels), `--status-negative-solid-hover` (hover)
 - **Chart series:** `--series-down` (download), `--series-up` (upload)
 - **Focus:** `--focus-ring` (keyboard focus ring)
 
 ### Scales
 
-- **Spacing:** `--spacing-<n>`, n in px: 2, 4, 6, 8, 10, 12, 14, 16, 20
-- **Radius:** `--radius-xs` 5px, `--radius-sm` 8px, `--radius-md` 10px, `--radius-lg` 13px, `--radius-full` 999px
-- **Font sizes:** `--font-size-2xs` 10px, `--font-size-xs` 11px, `--font-size-sm` 12px, `--font-size-md` 13px, `--font-size-lg` 14px, `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px, `--font-size-3xl` 28px
-- **Font families:** `--font-family-sans` Inter, `--font-family-numeric` Questrial
+- **Spacing:** `--spacing-<n>`, n in px: 2 (meter gaps), 4 (arrow to value, badge padding), 6 (dot to label), 8 (icon to title), 10 (between cards), 12 (side and top inset), 14 (card padding), 16 (between readouts), 20 (content bottom inset)
+- **Radius:** `--radius-xs` 5px (window buttons, menu items, segments), `--radius-sm` 8px (buttons, inputs, tooltips, icon tiles), `--radius-md` 10px (nav items, page-header chip), `--radius-lg` 13px (cards and dialogs), `--radius-full` 999px (badges, pills, dots)
+- **Font sizes:** `--font-size-2xs` 10px (badges, chart axes), `--font-size-xs` 11px (captions, overlines, small labels), `--font-size-sm` 12px (helper text, menus, button labels), `--font-size-md` 13px (body text, data values), `--font-size-lg` 14px (card headings), `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px (page titles, stat totals), `--font-size-3xl` 28px (live speeds)
+- **Font families:** `--font-family-sans` Inter (interface text), `--font-family-numeric` Questrial (numbers)
 - **Opacity:** `--opacity-tint-xs` 8% (faintest tint), `--opacity-tint-sm` 10% (light tint), `--opacity-tint-md` 14% (tint), `--opacity-tint-lg` 22% (strong tint), `--opacity-tint-xl` 28% (strongest tint), `--opacity-high` 80% (nearly opaque), `--opacity-disabled` 40% (disabled controls)
 - **Layout:** `--rail-item-size` 38px (rail items), `--titlebar-height` 56px (title bar)
-- **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)`, `--card-header-padding-x` `var(--card-padding)`, `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)`, `--row-padding-y` `var(--spacing-8)` (data row, above and below)
-- **Font weights:** `--weight-regular` 400, `--weight-medium` 500, `--weight-semibold` 600
+- **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)` (card header, above and below), `--card-header-padding-x` `var(--card-padding)` (card header, sides), `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)` (card body inset), `--row-padding-y` `var(--spacing-8)` (data row, above and below)
+- **Font weights:** `--weight-regular` 400 (body text), `--weight-medium` 500 (labels and menus), `--weight-semibold` 600 (headings and buttons)
 - **Motion:** `--duration-fast` 140ms (hovers, small changes), `--duration-normal` 220ms (panels, page changes), `--duration-spring` 450ms (a spring’s full run)
 - **Focus:** `--focus-offset` `var(--spacing-2)` (focus ring offset), `--focus-ring-width` 1px (focus ring stroke)
 

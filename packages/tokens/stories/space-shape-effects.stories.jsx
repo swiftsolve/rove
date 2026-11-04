@@ -4,27 +4,6 @@ import windowLayout from './window-layout.png'
 
 export default { title: 'Space, shape & effects' }
 
-// The Figma page's notes on each token.
-const SPACING_USES = {
-  2: 'Meter gaps',
-  4: 'Arrow to value, badge padding',
-  6: 'Dot to label',
-  8: 'Icon to title',
-  10: 'Between cards',
-  12: 'Content top inset',
-  14: 'Card padding',
-  16: 'Between readouts',
-  20: 'Content bottom inset',
-}
-
-const RADIUS_USES = {
-  xs: 'Window buttons',
-  sm: 'Buttons, icon tiles, inputs',
-  md: 'Nav items',
-  lg: 'Cards',
-  full: 'Badges and pills',
-}
-
 const FOCUS_ORDER = ['ring-width', 'offset']
 const OPACITY_ORDER = ['tint-xs', 'tint-sm', 'tint-md', 'tint-lg', 'tint-xl', 'disabled', 'high']
 
@@ -107,7 +86,7 @@ function SpacingTable() {
             <Name name={token.path.join('/')} />
             <span className="mono">{token.$value.value}px</span>
             <span className="scale" style={{ width: `var(${name})` }} />
-            <span>{SPACING_USES[token.$value.value]}</span>
+            <span>{token.$description}</span>
             <Code>var({name})</Code>
           </TableRow>
         )
@@ -129,7 +108,7 @@ function Radii() {
             />
             <span className="doc-card-title">{token.path.join('/')}</span>
             <span className="mono">{token.$value.value}px</span>
-            <span className="doc-card-text">{RADIUS_USES[token.path[1]]}</span>
+            <span className="doc-card-text">{token.$description}</span>
             <Code>var({name})</Code>
           </div>
         )
@@ -317,10 +296,19 @@ export const SpaceShapeEffects = {
       title="Space, shape & effects"
       intro="Spacing, radii, opacity, focus, elevation and window layout. Bind to tokens, never type numbers."
     >
-      <Section title="Spacing" intro="Gaps and padding in 2px steps.">
+      <Section
+        title="Spacing"
+        intro={['Gaps and padding in 2px steps.', 'Off the scale only to line up with an icon or a border.']}
+      >
         <SpacingTable />
       </Section>
-      <Section title="Corner radius" intro="Rounded-corner sizes for frames and controls.">
+      <Section
+        title="Corner radius"
+        intro={[
+          'Rounded-corner sizes for frames and controls.',
+          'Off the scale only to copy an outside shape, like the app icon.',
+        ]}
+      >
         <Radii />
       </Section>
       <Section
