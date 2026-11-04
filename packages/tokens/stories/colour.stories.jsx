@@ -300,7 +300,7 @@ export const Colour = {
           title="Palette"
           intro={[
             'The shades the tokens point at.',
-            'Named hue/darkness, where darkness = 1000 − 10 × OKLCH lightness: blue/450 is 55% light.',
+            'The number is how dark it is: blue/450 is 45% dark, so 55% OKLCH lightness.',
             '-a adds opacity: neutral/850-a10 is 10%.',
           ]}
         >

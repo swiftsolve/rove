@@ -37,12 +37,10 @@
   margin-top: 72px;
 }
 
-/* A page's primitive or semantic half: an overline under a rule, so it reads
-   above the sections it holds. */
+/* A page's primitive or semantic half: an overline and an intro above the
+   sections it holds. */
 .group {
-  margin-top: 48px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-default);
+  margin-top: 72px;
 }
 
 .group-title {
