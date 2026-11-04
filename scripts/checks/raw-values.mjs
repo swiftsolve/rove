@@ -8,10 +8,13 @@
  *     `ease-out` utility is the token and stays);
  *   - a length, weight or duration that equals a token on its scale: `p-[12px]`
  *     is `p-12`, `rounded-[8px]` is `rounded-sm`, `text-[13px]` is `text-md`,
- *     `duration-[140ms]` is `duration-(--duration-fast)`, and the same in CSS.
+ *     `duration-[140ms]` is `duration-(--duration-fast)`, and the same in CSS;
+ *   - spacing: every gap, padding and margin is built from spacing tokens
+ *     (`gap-8`, `px-(--card-padding)`, a `calc()` of tokens), so one off the
+ *     scale (`gap-[5px]`, `calc(var(--card-padding) - 1px)`) needs a reason.
  *
- * Values off the token scales (`size-[28px]`, `leading-[1.2]`, a 2.4s pulse)
- * aren't flagged: the system has no token for them. The token values are read
+ * Other values off the token scales (`size-[28px]`, `leading-[1.2]`, a 2.4s
+ * pulse) aren't flagged: the system has no token for them. The token values are read
  * from @swiftsolve/rove-tokens, so a token update moves the rules with it.
  *
  * A raw value that has to stay goes in ALLOWED with its reason. Dev mocks
@@ -44,6 +47,36 @@ const ALLOWED = [
   { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
   { file: 'src/ui/empty-state/EmptyState.tsx', value: '#000' },
+
+  // Spacing off the scale. Set by an icon's ink, not its box: Lucide's arrows
+  // leave ~2px empty each side at 11px, ~3px at 13px.
+  { file: 'src/features/apps/components/TransferFigures.tsx', value: 'gap-[5px]' },
+  { file: 'src/features/apps/components/UsageRow.tsx', value: 'ml-[3px]' },
+  { file: 'src/features/services/components/ServiceTally.tsx', value: 'ml-[-3px]' },
+  { file: 'src/features/services/components/ServiceTally.tsx', value: 'gap-[3px]' },
+  { file: 'src/ui/link/Link.tsx', value: 'gap-[5px]' },
+  { file: 'src/ui/link/Link.tsx', value: '-mx-[3px]' },
+  // The pill's padding hangs outside the words, so they line up with the text around them.
+  { file: 'src/ui/link/Link.tsx', value: 'ml-[-9.5px]' },
+  { file: 'src/ui/link/Link.tsx', value: 'mr-[-9px]' },
+  // A 1px border given back, so the content stays on the grid above.
+  {
+    file: 'src/features/capabilities/components/CapabilityDetailCard.tsx',
+    value: 'px-[calc(var(--card-header-padding-x)-1px)]',
+  },
+  { file: 'src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-body-padding)-1px)]' },
+  // Lined up with something that isn't spacing: an icon's width, a label column.
+  { file: 'src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-body-padding)+21px)]' },
+  { file: 'src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--spacing-12))]' },
+  { file: 'src/features/live-throughput/components/ThroughputChart.tsx', value: 'pr-[26px]' },
+  { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pl-[5px]' },
+  { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pb-[22px]' },
+  // Lifts the empty state a little above centre, under the page header.
+  { file: 'src/ui/empty-state/EmptyState.tsx', value: 'pb-[56px]' },
+  // No reason recorded yet: check each against Figma, then snap it to a step or say why.
+  { file: 'src/features/apps/components/HostRow.tsx', value: 'gap-[7px]' },
+  { file: 'src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
+  { file: 'src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
 ]
 
 async function listFiles(dir) {
@@ -106,6 +139,12 @@ function scaleForProperty(property) {
 const SPACING_UTILITY =
   /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
 const RADIUS_UTILITY = /^rounded(?:-[a-z]{1,2})?$/
+// The utilities DESIGN.md holds to the spacing scale: gaps, paddings and margins.
+const SPACE_UTILITY = /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])$/
+const SPACE_PROPERTY = /^(?:padding|margin|gap|row-gap|column-gap)(?:-[a-z-]+)?$/
+/** A spacing value built from tokens alone: `var(--card-padding)`, `calc(-1 * var(--spacing-12))`, `0`, `auto`. */
+const isSpacingValue = (value) =>
+  !/(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/.test(value.replace(/var\(--[\w-]+\)/g, ''))
 
 // CSS properties by the scale their lengths come from.
 const SPACING_PROPERTY =
@@ -180,6 +219,18 @@ for (const file of files) {
         const token = fromScale?.get(part)
         if (token) report(match.index, part, `${property}: ${part} is ${token}; use var(${token})`)
       }
+      const isTokenEqual = value
+        .trim()
+        .split(/\s+/)
+        .some((part) => fromScale?.has(part))
+      if (SPACE_PROPERTY.test(property) && !isTokenEqual && !isSpacingValue(value)) {
+        const declaration = `${property}: ${value.trim()}`
+        report(
+          match.index,
+          declaration,
+          `${declaration} is off the spacing scale; use --spacing-* steps, or say why in ALLOWED`,
+        )
+      }
     }
     continue
   }
@@ -207,6 +258,15 @@ for (const file of files) {
         whole,
         `${whole} is ${FONT_SIZE.get(length)}; use text-${tokenSuffix(FONT_SIZE.get(length), '--font-size-')}`,
       )
+    }
+  }
+
+  // Every gap, padding and margin is a spacing step (DESIGN.md, Spacing and
+  // shape), so one off the scale needs a reason in ALLOWED, token-equal or not.
+  for (const match of code.matchAll(/(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g)) {
+    const [whole, utility, value] = match
+    if (SPACE_UTILITY.test(utility) && !isSpacingValue(value) && !SPACING.has(value.replace(/^-/, ''))) {
+      report(match.index, whole, `${whole} is off the spacing scale; use a --spacing-* step, or say why in ALLOWED`)
     }
   }
 
