@@ -170,7 +170,7 @@ const PIPELINES = [
         items: [
           {
             name: '`npm run build`',
-            body: 'Writes DTCG, then CSS with Style Dictionary. It fails if a token points at one that doesn’t exist, or its CSS name doesn’t match its Figma name.',
+            body: 'Writes DTCG, then CSS with Style Dictionary.',
           },
         ],
       },
@@ -183,6 +183,24 @@ const PIPELINES = [
         ],
       },
     ],
+  },
+]
+
+const CHECKS = [
+  {
+    icon: 'node',
+    name: 'The build',
+    body: 'Fails if a token points at one that doesn’t exist, or its CSS name doesn’t match its Figma name.',
+  },
+  {
+    icon: 'figma',
+    name: 'Figma check',
+    body: '`npm run figma -- check` lists every token that differs between the Figma file and the repo.',
+  },
+  {
+    icon: 'eslint',
+    name: 'Rove’s lint',
+    body: 'Fails a raw colour or spacing in place of a token, and a token name that doesn’t exist.',
   },
 ]
 
@@ -298,19 +316,24 @@ function Pipelines() {
           </ol>
         </div>
       ))}
-      <div className="intro-pipeline">
-        <div className="intro-pipeline-title">
-          <h3>Used by</h3>
-          <p>What reads the package.</p>
+      {[
+        { title: 'Checked by', summary: 'What fails when a token goes wrong.', cards: CHECKS },
+        { title: 'Used by', summary: 'What reads the package.', cards: CONSUMERS },
+      ].map(({ title, summary, cards }) => (
+        <div key={title} className="intro-pipeline">
+          <div className="intro-pipeline-title">
+            <h3>{title}</h3>
+            <p>{summary}</p>
+          </div>
+          <ul className="intro-consumers">
+            {cards.map(({ icon, icons = [icon], ...item }) => (
+              <Node key={item.name} icons={icons}>
+                <Item {...item} />
+              </Node>
+            ))}
+          </ul>
         </div>
-        <ul className="intro-consumers">
-          {CONSUMERS.map(({ icon, icons = [icon], ...item }) => (
-            <Node key={item.name} icons={icons}>
-              <Item {...item} />
-            </Node>
-          ))}
-        </ul>
-      </div>
+      ))}
     </figure>
   )
 }
