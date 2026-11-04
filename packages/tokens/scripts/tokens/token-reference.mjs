@@ -64,7 +64,7 @@ function groupBy(items, key) {
   return groups
 }
 
-export async function writeDesign({ path, variables, textStyles, code: codeTokens, css }) {
+export async function writeDesign({ path, variables, textStyles, shadows, code: codeTokens, css }) {
   const dark = declarations(css, ':root')
   const light = declarations(css, ':root.theme-light')
   // A font stack reads as its first font.
@@ -127,10 +127,27 @@ export async function writeDesign({ path, variables, textStyles, code: codeToken
     )
   }
 
+  out.push(
+    '',
+    '### Shadows',
+    '',
+    "From Figma's `Shadow/*` effect styles. Each layer's colour is a variable, so the theme sets it.",
+    '',
+  )
+  const shadowName = (style) =>
+    `--shadow-${style.name
+      .replace(/^Shadow\//, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')}`
+  // Figma's effect style descriptions are sentences; in a list they lose the full stop.
+  out.push(
+    `- ${shadows.map((s) => `${code(shadowName(s))}${note({ description: s.description.replace(/\.$/, '') })}`).join(', ')}`,
+  )
+
   const codeNames = Object.keys(codeTokens.tokens)
-  out.push('', '### Code-only tokens', '', "What Figma variables can't hold, from `src/code-tokens.json`.", '')
+  out.push('', '### Code-only tokens', '', "What Figma can't hold, from `src/code-tokens.json`.", '')
   for (const [group, names] of groupBy(codeNames, (n) => heading(n.slice(2).split('-')[0]))) {
-    // Long or per-theme values (shadows, calc()) are named only; tokens.css has them.
+    // Long or per-theme values (calc(), a focus outline) are named only; tokens.css has them.
     const shown = (n) => dark.get(n).length <= 24 && (light.get(n) ?? dark.get(n)) === dark.get(n)
     out.push(`- **${group}:** ${names.map((n) => (shown(n) ? `${code(n)} ${show(dark.get(n))}` : code(n))).join(', ')}`)
   }

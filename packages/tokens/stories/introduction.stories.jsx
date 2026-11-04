@@ -116,8 +116,11 @@ const PIPELINES = [
         column: 2,
         icons: ['plugin', 'json'],
         items: [
-          { name: '`src/figma/*.json`', body: 'Written by the Rove Tokens Export plugin, aliases kept.' },
-          { name: '`src/code-tokens.json`', body: "What Figma can't hold: shadows, easing curves, the focus outline." },
+          {
+            name: '`src/figma/*.json`',
+            body: 'Variables, text styles and shadows, written by the Rove Tokens plugin’s Export, aliases kept.',
+          },
+          { name: '`src/code-tokens.json`', body: "What Figma can't hold: easing curves, the focus outline." },
         ],
       },
       {

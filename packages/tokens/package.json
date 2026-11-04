@@ -23,7 +23,7 @@
     "build": "node scripts/tokens/build.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run build && npm run lint && node scripts/checks/design-md.mjs && node scripts/checks/figma-sync.mjs",
+    "check": "npm run build && npm run lint && node scripts/checks/design-md.mjs && node scripts/checks/figma-plugin.mjs",
     "figma": "node scripts/figma/script.mjs",
     "present": "npm run build && node scripts/presentation/export.mjs",
     "present:publish": "node scripts/presentation/publish.mjs",

@@ -8,9 +8,10 @@
  *
  * so the CSS is generated from the same files other tools read.
  *
- *   src/figma/variables.json    raw export of the Figma variables (see figma-plugin/)
- *   src/figma/text-styles.json  raw export of the Figma text styles
- *   src/code-tokens.json        what Figma variables can't hold, which may pull Figma values in
+ *   src/figma/variables.json      raw export of the Figma variables (see figma-plugin/)
+ *   src/figma/text-styles.json    raw export of the Figma text styles
+ *   src/figma/effect-styles.json  raw export of the Figma Shadow/* effect styles
+ *   src/code-tokens.json          what Figma can't hold, which may pull Figma values in
  *
  * A Figma variable's code syntax must be its name with `/` as `-` (`bg/base`
  * is `--bg-base`); variables without one are inputs only, not CSS variables.
@@ -30,6 +31,7 @@ const read = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf
 
 const figma = await read('src/figma/variables.json')
 const textStyles = await read('src/figma/text-styles.json')
+const effectStyles = await read('src/figma/effect-styles.json')
 const code = await read('src/code-tokens.json')
 const pkg = await read('package.json')
 
@@ -66,13 +68,37 @@ function interpolate(template, mode) {
   })
 }
 
+/** A length as CSS: 0 bare, anything else in px. */
+const px = (n) => (n === 0 ? '0' : `${n}px`)
+
+/**
+ * A Shadow/* effect style as a shadow token: `Shadow/Panel` is `--shadow-panel`,
+ * each layer `x y blur [spread] {colour variable}`, as the build reads code tokens.
+ */
+function shadowToken({ name, layers }) {
+  const token = `--shadow-${name
+    .replace(/^Shadow\//, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')}`
+  const css = layers.map(({ x, y, blur, spread, color }) => {
+    if (typeof color !== 'string') throw new Error(`${name}: bind each layer's colour to a variable in Figma`)
+    return [px(x), px(y), px(blur), ...(spread ? [px(spread)] : []), `{${color}}`].join(' ')
+  })
+  return [token, css.join(', ')]
+}
+
+// Shadows are designed in Figma, so code-tokens.json mustn't define its own.
+const ownShadows = Object.keys(code.tokens).filter((t) => t.startsWith('--shadow-'))
+if (ownShadows.length) throw new Error(`code-tokens.json defines ${ownShadows.join(', ')}; shadows come from Figma`)
+const shadows = Object.fromEntries(effectStyles.styles.map(shadowToken))
+
 const DIST = resolve(ROOT, 'dist')
 const dir = resolve(DIST, 'tokens')
 const { written, cssOnly } = await writeDtcg({
   dir,
   variables: figma.variables,
   textStyles: textStyles.styles,
-  code,
+  code: { ...code, tokens: { ...shadows, ...code.tokens } },
   figmaOverride: (v, mode) => code.figma[v.name] && interpolate(code.figma[v.name], mode),
 })
 console.log(`dist/tokens/: ${written.join(', ')}`)
@@ -91,6 +117,7 @@ const design = await writeDesign({
   path: resolve(ROOT, 'DESIGN.md'),
   variables: figma.variables,
   textStyles: textStyles.styles,
+  shadows: effectStyles.styles,
   code,
   css,
 })

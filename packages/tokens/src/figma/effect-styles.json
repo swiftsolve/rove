@@ -1,0 +1,61 @@
+{
+  "file": {
+    "name": "Rove Design System",
+    "key": "NoICIoyhWNOya9tOnNfEhH"
+  },
+  "styles": [
+    {
+      "name": "Shadow/Panel",
+      "description": "Resting cards.",
+      "layers": [
+        {
+          "x": 0,
+          "y": 1,
+          "blur": 2,
+          "spread": 0,
+          "color": "shadow-color/panel-1"
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "blur": 12,
+          "spread": 0,
+          "color": "shadow-color/panel-2"
+        }
+      ]
+    },
+    {
+      "name": "Shadow/Raised",
+      "description": "Hover, dialogs.",
+      "layers": [
+        {
+          "x": 0,
+          "y": 12,
+          "blur": 32,
+          "spread": 0,
+          "color": "shadow-color/raised"
+        }
+      ]
+    },
+    {
+      "name": "Shadow/Popover",
+      "description": "Tooltips, menus.",
+      "layers": [
+        {
+          "x": 0,
+          "y": 2,
+          "blur": 6,
+          "spread": 0,
+          "color": "shadow-color/popover-1"
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "blur": 16,
+          "spread": 0,
+          "color": "shadow-color/popover-2"
+        }
+      ]
+    }
+  ]
+}

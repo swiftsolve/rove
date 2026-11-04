@@ -1,10 +1,12 @@
 /**
- * Check the plugin's sync (figma-plugin/code.js) against a stand-in Figma file
- * built from this repo's tokens: Check must find no differences, must find
- * planted ones, and Apply must fix them. It also fails when a shadow in
- * src/code-tokens.json can't become a Shadow/* effect style.
+ * Check the Figma plugin (figma-plugin/code.js) against a stand-in Figma file
+ * built from this repo's tokens:
  *
- *   node scripts/checks/figma-sync.mjs
+ *   - Export must give back src/figma/*.json exactly, since the repo only ever
+ *     takes tokens from an export;
+ *   - Check must find no differences, then find each one planted in the file.
+ *
+ *   node scripts/checks/figma-plugin.mjs
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
@@ -15,18 +17,19 @@ const json = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf
 const repo = {
   variables: await json('src/figma/variables.json'),
   textStyles: await json('src/figma/text-styles.json'),
-  codeTokens: await json('src/code-tokens.json'),
+  effectStyles: await json('src/figma/effect-styles.json'),
 }
 const code = await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8')
 
 /** A stand-in for the Plugin API, holding the repo's tokens as a Figma file would. */
-function fakeFigma(engine) {
+function fakeFigma() {
   let next = 0
   const id = () => `id:${next++}`
   const collections = repo.variables.collections.map((c) => ({
     id: id(),
     name: c.name,
     modes: c.modes.map((name) => ({ modeId: id(), name })),
+    variableIds: [],
     get defaultModeId() {
       return this.modes[0].modeId
     },
@@ -53,6 +56,7 @@ function fakeFigma(engine) {
       },
     }
     byName[v.name] = variable
+    collections.find((c) => c.id === variable.variableCollectionId).variableIds.push(variable.id)
     return variable
   })
   const alias = (v) => ({ type: 'VARIABLE_ALIAS', id: v.id })
@@ -77,10 +81,11 @@ function fakeFigma(engine) {
       else delete this.boundVariables[field]
     },
   }))
-  const effectStyles = engine.repoShadows(repo.codeTokens).map((s) => ({
+  const effectStyles = repo.effectStyles.styles.map((s) => ({
     name: s.name,
+    description: s.description,
     effects: s.layers.map((l) => {
-      if (!byName[l.color]) throw new Error(`${s.token}: no Figma variable ${l.color}`)
+      if (!byName[l.color]) throw new Error(`${s.name}: no Figma variable ${l.color}`)
       return {
         type: 'DROP_SHADOW',
         offset: { x: l.x, y: l.y },
@@ -112,43 +117,53 @@ function fakeFigma(engine) {
 
 const load = () => {
   const figma = {}
-  const engine = new Function('figma', `${code}\nreturn { checkTokens, applyTokens, repoShadows }`)(figma)
-  Object.assign(figma, fakeFigma(engine))
+  const engine = new Function(
+    'figma',
+    `${code}\nreturn { checkTokens, exportVariables, exportTextStyles, exportEffectStyles }`,
+  )(figma)
+  Object.assign(figma, fakeFigma())
   return { figma, engine }
 }
 
 const fail = (message, detail) => {
-  console.error(`figma-sync: ${message}`)
+  console.error(`figma-plugin: ${message}`)
   if (detail) console.error(JSON.stringify(detail, null, 2))
   process.exit(1)
 }
 
-// 1. The repo against itself: nothing to report.
-let { figma, engine } = load()
+const { figma, engine } = load()
+
+// 1. Export gives back the repo's files, value for value.
+const exported = {
+  'variables.json': [await engine.exportVariables(), repo.variables],
+  'text-styles.json': [await engine.exportTextStyles(), repo.textStyles],
+  'effect-styles.json': [await engine.exportEffectStyles(), repo.effectStyles],
+}
+for (const [name, [fromFigma, inRepo]] of Object.entries(exported)) {
+  if (JSON.stringify(fromFigma) !== JSON.stringify(inRepo))
+    fail(`Export doesn't give back src/figma/${name}`, { exported: fromFigma, repo: inRepo })
+}
+
+// 2. The repo against itself: nothing to report.
 const clean = await engine.checkTokens(repo)
 if (!clean.inSync) fail('Check reports differences between the repo and a file made from it', clean.diff)
 
-// 2. Plant one difference of each kind in the file, then check and apply.
+// 3. Plant one difference of each kind in the file: Check must find them all.
 const variable = repo.variables.variables.find((v) => v.collection === 'Color' && v.description)
 figma.byName[variable.name].description = 'changed in Figma'
 figma.textStyles[0].fontSize += 1
 figma.effectStyles[0].effects[0] = { ...figma.effectStyles[0].effects[0], radius: 99 }
+figma.effectStyles[1].description = 'changed in Figma'
 const planted = await engine.checkTokens(repo)
 const found = planted.diff.map((d) => `${d.kind} ${d.name} ${d.field}`).sort()
 const expected = [
   `variable ${variable.name} description`,
   `text style ${figma.textStyles[0].name} size`,
   `effect style ${figma.effectStyles[0].name} shadow`,
+  `effect style ${figma.effectStyles[1].name} description`,
 ].sort()
 if (JSON.stringify(found) !== JSON.stringify(expected)) fail('Check missed a planted difference', { found, expected })
-const applied = await engine.applyTokens(repo)
-if (!applied.inSync || applied.done.length !== 3) fail('Apply left differences', applied)
-
-// 3. Apply on a file in sync changes nothing.
-;({ figma, engine } = load())
-const noop = await engine.applyTokens(repo)
-if (noop.done.length) fail('Apply changed a file that was already in sync', noop.done)
 
 console.log(
-  `figma-sync: check and apply agree on ${repo.variables.variables.length} variables, ${repo.textStyles.styles.length} text styles and ${figma.effectStyles.length} shadows`,
+  `figma-plugin: export and check agree on ${repo.variables.variables.length} variables, ${repo.textStyles.styles.length} text styles and ${repo.effectStyles.styles.length} shadows`,
 )

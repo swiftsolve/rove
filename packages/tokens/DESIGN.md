@@ -84,7 +84,7 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ## Changing the design
 
-Tokens are designed in Figma and released from the rove-tokens repo. A change can start on either side: export a Figma change with the plugin in `figma-plugin/` into `src/figma/`, or edit `src/figma/` or `src/code-tokens.json` and apply it to Figma with the plugin's Sync (`npm run figma -- apply` through the Figma MCP). Then run `npm run build`, and check Figma and the repo agree (`npm run figma -- check`). The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css` or `tokens/` by hand. What Figma can't hold (easing curves, the focus outline) lives only in `src/code-tokens.json`; its shadows are Figma's `Shadow/*` effect styles. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
+Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma -- export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma -- check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` by hand. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
@@ -142,10 +142,15 @@ Apply a style with its class from `text-styles.css`. Each class reads four varia
 | Heading/XSmall | `.type-heading-xsmall` | 13px 600 | Empty state titles. |
 | Badge | `.type-badge` | 10px 600 | Badge labels. |
 
+### Shadows
+
+From Figma's `Shadow/*` effect styles. Each layer's colour is a variable, so the theme sets it.
+
+- `--shadow-panel` (resting cards), `--shadow-raised` (hover, dialogs), `--shadow-popover` (tooltips, menus)
+
 ### Code-only tokens
 
-What Figma variables can't hold, from `src/code-tokens.json`.
+What Figma can't hold, from `src/code-tokens.json`.
 
-- **Shadows:** `--shadow-panel`, `--shadow-raised`, `--shadow-popover`
 - **Focus:** `--focus-outline`, `--focus-inset`
 - **Motion:** `--ease-out`, `--ease-in-out`, `--ease-pulse`, `--ease-spring`

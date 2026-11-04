@@ -1,14 +1,13 @@
 /**
- * The plugin's sync, for an agent: writes a script for the Figma MCP's
- * use_figma that runs figma-plugin/code.js against the Rove Design System
- * file, so an agent and the plugin check, apply and export the same way.
+ * The plugin, for an agent: writes a script for the Figma MCP's use_figma that
+ * runs figma-plugin/code.js against the Rove Design System file, so an agent
+ * and the plugin export and check the same way. Nothing writes to the file:
+ * tokens are designed in Figma and only exported from it.
  *
- *   npm run figma -- check               # list every difference, change nothing
- *   npm run figma -- check --ref v1.3.1  # against a tag or commit, not the working tree
- *   npm run figma -- apply               # make the file match the repo
- *   npm run figma -- apply --prune       # and remove what the repo doesn't have
- *   npm run figma -- export              # the file's variables and text styles
+ *   npm run figma -- export              # the file's variables, text styles and Shadow/* effect styles
  *   npm run figma -- save <result.json>  # write an export's result into src/figma/
+ *   npm run figma -- check               # list every difference between the file and the repo
+ *   npm run figma -- check --ref v1.3.1  # against a tag or commit, not the working tree
  *
  * The script goes to stdout, or to a file with --out <path>. Pass it to
  * use_figma as `code`, with the file key from src/figma/variables.json.
@@ -22,19 +21,23 @@ import { parseArgs } from 'node:util'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 // use_figma refuses code longer than this.
 const LIMIT = 50_000
-const FILES = ['variables.json', 'text-styles.json']
+const FILES = {
+  'variables.json': 'exportVariables',
+  'text-styles.json': 'exportTextStyles',
+  'effect-styles.json': 'exportEffectStyles',
+}
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
-  options: { prune: { type: 'boolean' }, ref: { type: 'string' }, out: { type: 'string' } },
+  options: { ref: { type: 'string' }, out: { type: 'string' } },
 })
 const [action, input] = positionals
 const usage = (message) => {
-  console.error(message ?? 'Usage: npm run figma -- check|apply|export [--prune] [--ref <git ref>] [--out <path>]')
+  console.error(message ?? 'Usage: npm run figma -- export|save|check [--ref <git ref>] [--out <path>]')
   process.exit(1)
 }
-if (!['check', 'apply', 'export', 'save'].includes(action)) usage()
-if (values.prune && action !== 'apply') usage('--prune only goes with apply.')
+if (!['check', 'export', 'save'].includes(action)) usage()
+if (values.ref && action !== 'check') usage('--ref only goes with check.')
 
 if (action === 'save') {
   if (!input) usage('Usage: npm run figma -- save <result.json>')
@@ -42,10 +45,10 @@ if (action === 'save') {
   process.exit(0)
 }
 
-// The plugin's code without its UI (or, to export, without Check and Apply),
-// comment lines and indentation, to fit use_figma.
+// The plugin's code without its UI (or, to export, without Check), comment
+// lines and indentation, to fit use_figma.
 const engine = (await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8'))
-  .split(action === 'export' ? "// ── The repo's shadows" : '// ── The plugin')[0]
+  .split(action === 'export' ? '// ── Check' : '// ── The plugin')[0]
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line && !/^(\/\/|\/\*\*|\*)/.test(line))
@@ -53,7 +56,9 @@ const engine = (await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8'))
 
 let body
 if (action === 'export') {
-  body = `return { ${FILES.map((f) => `'${f}': await ${f === 'variables.json' ? 'exportVariables' : 'exportTextStyles'}()`).join(', ')} }`
+  body = `return { ${Object.entries(FILES)
+    .map(([name, exporter]) => `'${name}': await ${exporter}()`)
+    .join(', ')} }`
 } else {
   /** A repo file from the working tree, or from a git ref. */
   const source = async (path) =>
@@ -65,17 +70,16 @@ if (action === 'export') {
   const repo = {
     variables: await source('src/figma/variables.json'),
     textStyles: await source('src/figma/text-styles.json'),
-    codeTokens: await source('src/code-tokens.json'),
+    effectStyles: await source('src/figma/effect-styles.json'),
   }
   // Each variable goes as a tuple, not an object, to save its keys' length;
   // the script turns them back.
   const KEYS = ['name', 'collection', 'type', 'code', 'description', 'scopes', 'values']
   repo.variables = { ...repo.variables, variables: repo.variables.variables.map((v) => KEYS.map((k) => v[k])) }
-  const call = action === 'check' ? 'checkTokens(REPO)' : `applyTokens(REPO, { prune: ${!!values.prune} })`
   body = [
     `const REPO = ${JSON.stringify(repo)}`,
     `REPO.variables.variables = REPO.variables.variables.map((t) => Object.fromEntries(${JSON.stringify(KEYS)}.map((k, i) => [k, t[i]])))`,
-    `return await ${call}`,
+    'return await checkTokens(REPO)',
   ].join('\n')
 }
 const script = `${engine}\n${body}\n`
@@ -95,7 +99,7 @@ async function save(path) {
   let result = JSON.parse(await readFile(path, 'utf8'))
   if (Array.isArray(result)) result = result.find((part) => part.type === 'text')?.text ?? result
   if (typeof result === 'string') result = JSON.parse(result)
-  for (const name of FILES) {
+  for (const name of Object.keys(FILES)) {
     if (!result[name]) usage(`${path} has no ${name}: is it an export's result?`)
     const target = resolve(ROOT, 'src/figma', name)
     // Through use_figma, figma.root.name is "Document", so keep the name the plugin exported.
