@@ -32,7 +32,7 @@
         "Accent",
         "Positive",
         "Negative",
-        "On fill"
+        "On solid"
       ]
     },
     {
@@ -149,11 +149,11 @@
       }
     },
     {
-      "name": "fill/default",
+      "name": "overlay/default",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-default)",
-      "description": "Overlay",
+      "code": "var(--overlay-default)",
+      "description": "Default strength",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -168,11 +168,11 @@
       }
     },
     {
-      "name": "fill/subtle",
+      "name": "overlay/subtle",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-subtle)",
-      "description": "Light overlay",
+      "code": "var(--overlay-subtle)",
+      "description": "Lighter",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -349,11 +349,11 @@
       }
     },
     {
-      "name": "accent/fill",
+      "name": "accent/solid",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--accent-fill)",
-      "description": "Fill under white labels",
+      "code": "var(--accent-solid)",
+      "description": "Under white labels",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -368,10 +368,10 @@
       }
     },
     {
-      "name": "accent/fill-hover",
+      "name": "accent/solid-hover",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--accent-fill-hover)",
+      "code": "var(--accent-solid-hover)",
       "description": "",
       "scopes": [
         "FRAME_FILL",
@@ -492,10 +492,10 @@
       }
     },
     {
-      "name": "status/negative-fill",
+      "name": "status/negative-solid",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--status-negative-fill)",
+      "code": "var(--status-negative-solid)",
       "description": "Solid negative under white labels",
       "scopes": [
         "FRAME_FILL",
@@ -1034,17 +1034,17 @@
         "Negative": {
           "alias": "status/negative"
         },
-        "On fill": {
-          "alias": "text/on-fill"
+        "On solid": {
+          "alias": "text/on-solid"
         }
       }
     },
     {
-      "name": "text/on-fill",
+      "name": "text/on-solid",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--text-on-fill)",
-      "description": "Labels and icons on solid fills",
+      "code": "var(--text-on-solid)",
+      "description": "Labels and icons on solids",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL",
@@ -1061,11 +1061,11 @@
       }
     },
     {
-      "name": "status/negative-fill-hover",
+      "name": "status/negative-solid-hover",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--status-negative-fill-hover)",
-      "description": "Negative fill hover",
+      "code": "var(--status-negative-solid-hover)",
+      "description": "Hover",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -1229,11 +1229,11 @@
       }
     },
     {
-      "name": "fill/faint",
+      "name": "overlay/faint",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-faint)",
-      "description": "Faintest overlay",
+      "code": "var(--overlay-faint)",
+      "description": "Faintest",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -1248,11 +1248,11 @@
       }
     },
     {
-      "name": "fill/strong",
+      "name": "overlay/strong",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-strong)",
-      "description": "Strong overlay",
+      "code": "var(--overlay-strong)",
+      "description": "Strongest",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -1267,10 +1267,10 @@
       }
     },
     {
-      "name": "fill/selection",
+      "name": "overlay/selection",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-selection)",
+      "code": "var(--overlay-selection)",
       "description": "Text selection",
       "scopes": [
         "FRAME_FILL",
@@ -2259,10 +2259,10 @@
       }
     },
     {
-      "name": "fill/hover",
+      "name": "overlay/hover",
       "collection": "Color",
       "type": "COLOR",
-      "code": "var(--fill-hover)",
+      "code": "var(--overlay-hover)",
       "description": "Hovered rows and headers",
       "scopes": [
         "FRAME_FILL",

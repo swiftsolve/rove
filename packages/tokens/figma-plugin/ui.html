@@ -8,18 +8,18 @@
     --text-tertiary: var(--figma-color-text-tertiary, #0000004d);
     --text-danger: var(--figma-color-text-danger, #dc3412);
     --border: var(--figma-color-border, #e6e6e6);
-    /* Rove's accent/fill, accent/fill-hover and text/on-fill. */
-    --accent-fill: #3a69d5;
-    --accent-fill-hover: #2f5bc0;
-    --text-on-fill: #fff;
+    /* Rove's accent/solid, accent/solid-hover and text/on-solid. */
+    --accent-solid: #3a69d5;
+    --accent-solid-hover: #2f5bc0;
+    --text-on-solid: #fff;
     --syntax-key: #7c3aed;
     --syntax-string: #0f7b4f;
     --syntax-number: #c2410c;
     --syntax-literal: #0369a1;
   }
   .figma-dark {
-    --accent-fill: #476ec8;
-    --accent-fill-hover: #3d62b8;
+    --accent-solid: #476ec8;
+    --accent-solid-hover: #3d62b8;
     --syntax-key: #c4a5ff;
     --syntax-string: #7dd3a8;
     --syntax-number: #fdba74;
@@ -181,7 +181,7 @@
     height: 16px;
     border-radius: 50%;
     border: 2px solid var(--border);
-    border-top-color: var(--accent-fill);
+    border-top-color: var(--accent-solid);
     animation: spin 0.7s linear infinite;
   }
   @keyframes spin {
@@ -225,11 +225,11 @@
   }
   .primary {
     border: 0;
-    background: var(--accent-fill);
-    color: var(--text-on-fill);
+    background: var(--accent-solid);
+    color: var(--text-on-solid);
   }
   .primary:hover:not(:disabled) {
-    background: var(--accent-fill-hover);
+    background: var(--accent-solid-hover);
   }
   .secondary {
     border: 1px solid var(--border);

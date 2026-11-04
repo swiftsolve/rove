@@ -7,7 +7,7 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **Every colour lives once, in the Palette.** Color tokens point at Palette shades, and each shade is named by hue and darkness: `hue/N` has OKLCH lightness of about 100 − N/10, so `blue/450` is 55 (higher is darker).
 - **Neutral is one even ramp.** Neutrals sit on 5-steps of OKLCH lightness, and the number says which: `neutral/N` has lightness 100 − N/10, so `neutral/850` is 15, white is `neutral/0` and black would be `neutral/1000`. The one exception is inset, which takes the half step between base and surface (`neutral/25`, `neutral/825`). They share one hue and one chroma curve, so the ramp reads as one family. The chroma stays under 0.007, so the grays read neutral with a hint of cool, not blue; dark shades show a tint most, so they carry the least. Only the steps a token uses are in the Palette. The hues keep their own shades, each tuned for its job.
 - **A see-through shade sits with its base shade.** It takes the base's name plus `-a` and its opacity: `neutral/850-a10` is `neutral/850` at 10%, `blue/340-a14` is `blue/340` at 14%. Black only appears see-through (`neutral/1000-a22`), for dark-mode shadows and the scrim.
-- **Solid shades are layers; see-through shades sit on one.** Backgrounds and text are solid, so they look the same whatever is behind them. Fills, borders, shadows, the scrim and the accent's tints are see-through, so one value reads right on base, surface and popover alike; a solid grey would match only one of them. Light mode tints with `neutral/850` and Dark with white (`neutral/0`), which is why the Palette's second neutral row holds both.
+- **Solid shades are layers; see-through shades sit on one.** Backgrounds and text are solid, so they look the same whatever is behind them. Overlays, borders, shadows, the scrim and the accent's tints are see-through, so one value reads right on base, surface and popover alike; a solid grey would match only one of them. Light mode tints with `neutral/850` and Dark with white (`neutral/0`), which is why the Palette's second neutral row holds both.
 - **CSS names follow Figma names.** `bg/base` is `--bg-base`, `border/default` is `--border-default`; the build refuses a code syntax that doesn't match.
 - **Typography comes from the text styles, not variables.** Figma can't bind a percentage line height to a variable, so line heights and letter spacings live only in the styles; copying them into variables would give the type scale two sources that could drift apart.
 
@@ -25,11 +25,11 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **`text/tertiary` is the quietest ramp step that still clears AA (4.5:1)**: on a hovered row in dark mode, and on the grey backdrop (not just the white cards) in light mode.
 - **`text/accent` is for accent words**, on a surface or on `accent/muted` (a selected segment, a tinted button). Light mode's accent is 4.3:1 on the grey backdrop, and the tint lowers it further, so light mode uses the pressed accent to keep 4.5:1 (5.0:1 on the tint); dark mode's accent already clears it.
 
-## Accent and fills
+## Accent and solids
 
-- **`accent/fill` sits a step darker than the accent.** The bright accent reads well as text but gives a white label only 3.2:1; the fill clears 4.5:1.
-- **Fill hovers deepen rather than brighten:** any lighter fill would drop the white label below 4.5:1.
-- **The negative reds** (negative, fill, fill hover) each step darker and duller, so they read as three reds rather than two. Both themes share the fill and hover, where white labels sit at 5.6:1 and 7.4:1.
+- **`accent/solid` sits a step darker than the accent.** The bright accent reads well as text but gives a white label only 3.2:1; the solid clears 4.5:1.
+- **Solid hovers deepen rather than brighten:** any lighter solid would drop the white label below 4.5:1.
+- **The negative reds** (negative, solid, solid hover) each step darker and duller, so they read as three reds rather than two. Both themes share the solid and hover, where white labels sit at 5.6:1 and 7.4:1.
 
 ## Status
 

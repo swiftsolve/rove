@@ -23,39 +23,46 @@ const SECTIONS = [
     ),
   },
   {
-    title: 'Borders & fills',
-    intro: 'Thin borders and see-through fills.',
-    names: ['border.default', 'fill.default', 'fill.strong', 'fill.selection', 'fill.faint', 'fill.subtle'],
+    title: 'Borders & overlays',
+    intro: 'Thin borders and see-through overlays.',
+    names: [
+      'border.default',
+      'overlay.default',
+      'overlay.strong',
+      'overlay.selection',
+      'overlay.faint',
+      'overlay.subtle',
+    ],
   },
   {
     title: 'Text',
-    intro: 'Three text colours, strongest to faintest, plus on-fill for text on solid buttons.',
-    names: ['text.primary', 'text.secondary', 'text.tertiary', 'text.on-fill'],
+    intro: 'Three text colours, strongest to faintest, plus on-solid for text on solid buttons.',
+    names: ['text.primary', 'text.secondary', 'text.tertiary', 'text.on-solid'],
   },
   {
     title: 'Accent',
-    intro: 'Use accent/fill behind white text, as on filled buttons.',
+    intro: 'Use accent/solid behind white text, as on solid buttons.',
     names: [
       'accent.default',
       'accent.hover',
       'accent.press',
       'accent.muted',
       'text.accent',
-      'accent.fill',
-      'accent.fill-hover',
+      'accent.solid',
+      'accent.solid-hover',
     ],
   },
   {
     title: 'Status',
-    intro: 'Five capability levels, positive to negative. The negative fills are for the Stop button.',
+    intro: 'Five capability levels, positive to negative. The negative solids are for the Stop button.',
     names: [
       'status.positive',
       'status.good',
       'status.warning',
       'status.poor',
       'status.negative',
-      'status.negative-fill',
-      'status.negative-fill-hover',
+      'status.negative-solid',
+      'status.negative-solid-hover',
       'text.positive',
       'text.good',
       'text.warning',
@@ -102,12 +109,12 @@ function ShadeValue({ shade }) {
 }
 
 // A colour in one theme, on that theme's surface. Text shows as text, on the
-// surface it's read on (on-fill on accent/fill); everything else as a fill.
+// surface it's read on (on-solid on accent/solid); everything else as a swatch.
 function ModeCell({ theme, path }) {
   const shade = shadeOf(theme, `{${path.join('.')}}`)
   const color = paletteColor(shade)
   const isText = path[0] === 'text'
-  const surface = path[1] === 'on-fill' ? colorIn(theme, 'accent.fill') : colorIn(theme, 'bg.surface')
+  const surface = path[1] === 'on-solid' ? colorIn(theme, 'accent.solid') : colorIn(theme, 'bg.surface')
   return (
     <span className="mode">
       <span
@@ -119,7 +126,7 @@ function ModeCell({ theme, path }) {
             Aa
           </span>
         ) : (
-          <span className="mode-fill" style={{ background: color }} />
+          <span className="mode-swatch" style={{ background: color }} />
         )}
       </span>
       <span className="mode-value">
@@ -200,7 +207,7 @@ function Family({ name, rows, captions }) {
 
 // What each row is for, in the families that have both, as the Figma page captions them.
 const ROW_CAPTIONS = {
-  neutral: ['Solid: backgrounds, text', 'See-through: fills, borders, shadows, scrim'],
+  neutral: ['Solid: backgrounds, text', 'See-through: overlays, borders, shadows, scrim'],
   blue: ['Solid: accent, chart series', 'See-through: muted accent, selection'],
 }
 
@@ -223,7 +230,7 @@ function PaletteGrid() {
 
 // Figma's Icon tone and Capability level collections: one variable each, a mode
 // per colour. They have no CSS of their own, so they're read from the export.
-const ICON_TONES = ['Primary', 'Secondary', 'Tertiary', 'Accent', 'Positive', 'Negative', 'On fill']
+const ICON_TONES = ['Primary', 'Secondary', 'Tertiary', 'Accent', 'Positive', 'Negative', 'On solid']
 const LEVELS = ['Excellent', 'Good', 'Fair', 'Poor', 'Unsupported']
 
 const modeAliases = (name) => figmaVariables.variables.find((variable) => variable.name === name).values
@@ -261,7 +268,7 @@ const HdIcon = ({ color }) => (
 )
 
 // A mode collection in both themes, as Figma's preview frames show it: each
-// mode's glyph over its name, on the theme's base. On fill sits on a tile.
+// mode's glyph over its name, on the theme's base. On solid sits on a tile.
 function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
   const aliases = modeAliases(variable)
   return (
@@ -276,8 +283,8 @@ function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
               const color = colorIn(theme, aliases[mode].alias.replace('/', '.'))
               return (
                 <div key={mode} className={`mode-example${isLabelClose ? ' is-label-close' : ''}`}>
-                  {mode === 'On fill' ? (
-                    <span className="mode-tile" style={{ background: colorIn(theme, 'accent.fill') }}>
+                  {mode === 'On solid' ? (
+                    <span className="mode-tile" style={{ background: colorIn(theme, 'accent.solid') }}>
                       <Glyph color={color} />
                     </span>
                   ) : (

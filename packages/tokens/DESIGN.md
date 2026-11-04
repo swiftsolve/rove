@@ -17,24 +17,24 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ### Surfaces
 
-- **Backgrounds are layers; fills sit on one.** A `--bg-*` is opaque, and each stacks on the last (base, surface, inset). A `--fill-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--fill-hover`. Two names break the pattern: `--accent-fill` and `--status-negative-fill` are solid, the colour under a white label. Figma calls any paint a fill; in the tokens the word means an overlay. Why: [rationale](docs/rationale.md).
+- **Backgrounds are layers; overlays sit on one.** A `--bg-*` is opaque, and each stacks on the last (base, surface, inset). An `--overlay-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--overlay-hover`. A `*-solid` is the opaque colour under a white label (`--accent-solid`, `--status-negative-solid`). Why: [rationale](docs/rationale.md).
 - Three backgrounds: `--bg-base` for the backdrop, `--bg-surface` for content that sits on it (cards, dialogs), `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons). `--bg-chrome` is the title bar and rail, a half step off the backdrop. `--bg-popover` is a step lighter in Dark, for tooltips and menus. `--bg-hover` is a hovered surface, `--bg-scrim` goes behind dialogs.
 - Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use `--shadow-raised`.
 - Every line is `--border-default`: hairlines, and the edges of menus, tooltips and dialogs.
-- For hovers, chips and tracks on a surface, use the `--fill-*` overlays, by strength: `--fill-faint` (3%), `--fill-subtle` (5%), `--fill-default` (7%), `--fill-strong` (16%). They flip with the theme, so they stay visible on both. A hovered row or expandable header uses `--fill-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it. Selected text is `--fill-selection`.
+- For hovers, chips and tracks on a surface, use the `--overlay-*` tokens, by strength: `--overlay-faint` (3%), `--overlay-subtle` (5%), `--overlay-default` (7%), `--overlay-strong` (16%). They flip with the theme, so they stay visible on both. A hovered row or expandable header uses `--overlay-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it. Selected text is `--overlay-selection`.
 
 ### Text and icons
 
 - `--text-primary` for content, `--text-secondary` for supporting lines, `--text-tertiary` for the quietest text and for icons by default.
-- On a solid fill (accent or negative), labels and icons use `--text-on-fill`.
+- On a solid (accent or negative), labels and icons use `--text-on-solid`.
 - Words in the accent (a link, a highlighted value) use `--text-accent`, on a surface or on `--accent-muted` (a selected item, a tinted button).
 
 ### Accent and buttons
 
 - `--accent-default` is for accent icons and lines. It's too light for words in Light mode, and under a white label.
-- An accent icon or line that responds to the pointer uses `--accent-hover` and `--accent-press`. They aren't for fills: a solid button has its own pair.
-- Solid buttons use `--accent-fill`, hovering to `--accent-fill-hover`. Hovers deepen, never lighten, so the white label keeps its contrast.
-- A solid red control (a solid negative button, the window close hover) uses `--status-negative-fill` and `--status-negative-fill-hover`.
+- An accent icon or line that responds to the pointer uses `--accent-hover` and `--accent-press`. They aren't for solids: a solid button has its own pair.
+- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers deepen, never lighten, so the white label keeps its contrast.
+- A solid red control (a solid negative button, the window close hover) uses `--status-negative-solid` and `--status-negative-solid-hover`.
 
 ### Status
 
@@ -52,11 +52,11 @@ background: color-mix(in srgb, var(--status-positive) var(--opacity-tint-md), tr
 
 Pick the strength by the tint's size and job:
 
-- `--opacity-tint-xs`: a wide, faint wash, such as the top of a chart's area fill.
+- `--opacity-tint-xs`: a wide, faint wash, such as the top of a chart's shaded area.
 - `--opacity-tint-sm`: a panel or banner in a status colour.
 - `--opacity-tint-md`: chips, badges and tiles at rest, and the edge of an `sm` panel.
 - `--opacity-tint-lg`: an `md` tint hovered, and unlit meter bars.
-- `--opacity-tint-xl`: the strongest wash, the download series' area fill.
+- `--opacity-tint-xl`: the strongest wash, the download series' shaded area.
 
 Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that should stay nearly solid, like a chart line behind another.
 
@@ -99,10 +99,10 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 
 - **Backgrounds:** `--bg-base` (backdrop), `--bg-surface` (content on the backdrop), `--bg-hover` (hovered rows and buttons), `--bg-scrim` (behind dialogs), `--bg-inset` (sunken areas inside a surface), `--bg-popover` (tooltips and menus), `--bg-chrome` (title bar and rail)
 - **Lines:** `--border-default` (hairlines)
-- **Fills and overlays:** `--fill-default` (overlay), `--fill-subtle` (light overlay), `--fill-faint` (faintest overlay), `--fill-strong` (strong overlay), `--fill-selection` (text selection), `--fill-hover` (hovered rows and headers)
-- **Text:** `--text-primary`, `--text-secondary`, `--text-tertiary` (default icon colour), `--text-accent` (accent words, also on accent/muted), `--text-positive`, `--text-good`, `--text-warning`, `--text-poor`, `--text-negative`, `--text-on-fill` (labels and icons on solid fills)
-- **Accent:** `--accent-default`, `--accent-hover`, `--accent-press`, `--accent-muted` (tinted accent background), `--accent-fill` (fill under white labels), `--accent-fill-hover`
-- **Status:** `--status-positive`, `--status-good` (between positive and warning), `--status-warning`, `--status-poor` (between warning and negative), `--status-negative`, `--status-negative-fill` (solid negative under white labels), `--status-negative-fill-hover` (negative fill hover)
+- **Overlays:** `--overlay-default` (default strength), `--overlay-subtle` (lighter), `--overlay-faint` (faintest), `--overlay-strong` (strongest), `--overlay-selection` (text selection), `--overlay-hover` (hovered rows and headers)
+- **Text:** `--text-primary`, `--text-secondary`, `--text-tertiary` (default icon colour), `--text-accent` (accent words, also on accent/muted), `--text-positive`, `--text-good`, `--text-warning`, `--text-poor`, `--text-negative`, `--text-on-solid` (labels and icons on solids)
+- **Accent:** `--accent-default`, `--accent-hover`, `--accent-press`, `--accent-muted` (tinted accent background), `--accent-solid` (under white labels), `--accent-solid-hover`
+- **Status:** `--status-positive`, `--status-good` (between positive and warning), `--status-warning`, `--status-poor` (between warning and negative), `--status-negative`, `--status-negative-solid` (solid negative under white labels), `--status-negative-solid-hover` (hover)
 - **Chart series:** `--series-down` (download), `--series-up` (upload)
 - **Focus:** `--focus-ring` (keyboard focus ring)
 

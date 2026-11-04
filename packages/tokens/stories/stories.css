@@ -126,7 +126,7 @@
   padding: 3px 6px;
   border: 0;
   border-radius: 4px;
-  background: var(--fill-default);
+  background: var(--overlay-default);
   color: var(--text-secondary);
   white-space: nowrap;
   cursor: copy;
@@ -140,7 +140,7 @@
 }
 
 .code:hover {
-  background: var(--fill-strong);
+  background: var(--overlay-strong);
   color: var(--text-primary);
 }
 
@@ -267,7 +267,7 @@
   border-radius: 10px;
 }
 
-.mode-fill,
+.mode-swatch,
 .mode-text {
   flex: 1;
   border-radius: 6px;
@@ -413,7 +413,7 @@
   display: block;
   height: 16px;
   border-radius: 2px;
-  background: var(--accent-fill);
+  background: var(--accent-solid);
 }
 
 .radius-sample {
@@ -448,7 +448,7 @@
   width: 64px;
   height: 36px;
   border-radius: 6px;
-  background: var(--accent-fill);
+  background: var(--accent-solid);
 }
 
 /* Motion */
@@ -458,8 +458,8 @@
   padding: 8px 16px;
   border: 0;
   border-radius: var(--radius-sm);
-  background: var(--accent-fill);
-  color: var(--text-on-fill);
+  background: var(--accent-solid);
+  color: var(--text-on-solid);
   font: inherit;
   font-size: var(--type-label-large-size);
   font-weight: var(--type-label-large-weight);
@@ -468,7 +468,7 @@
 }
 
 .motion-play:hover {
-  background: var(--accent-fill-hover);
+  background: var(--accent-solid-hover);
 }
 
 .motion-play:focus-visible {
@@ -482,7 +482,7 @@
   width: 100%;
   height: 12px;
   border-radius: var(--radius-full);
-  background: var(--fill-default);
+  background: var(--overlay-default);
 }
 
 .track-dot {
@@ -583,7 +583,7 @@
 .intro-code {
   padding: 1px 5px;
   border-radius: var(--radius-xs);
-  background: var(--fill-default);
+  background: var(--overlay-default);
   font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: 0.86em;
 }
@@ -637,7 +637,7 @@
 }
 
 .intro-links a:hover {
-  background: var(--fill-hover);
+  background: var(--overlay-hover);
 }
 
 .intro-item-name a:hover {
