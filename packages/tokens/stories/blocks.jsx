@@ -16,19 +16,43 @@ export function Page({ title, intro, children }) {
   )
 }
 
+// A rule to follow, on its own line with the warning icon.
+function Warning({ children }) {
+  return (
+    <p className="section-warning">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      {children}
+    </p>
+  )
+}
+
 // A half of a page: its primitive tokens, named by what they are, or its
 // semantic ones, named for their job. Its sections follow inside it.
-export function Group({ title, intro, children }) {
+export function Group({ title, intro, warning, children }) {
   return (
     <section className="group">
       <h2 className="group-title">{title}</h2>
       {intro && <p className="group-intro">{intro}</p>}
+      {warning && <Warning>{warning}</Warning>}
       {children}
     </section>
   )
 }
 
-// `intro` is a line or a list of lines. `warning` is a rule to follow, on its own line under the intro with the warning icon.
+// `intro` is a line or a list of lines; `warning`, a rule to follow under it.
 export function Section({ title, intro, warning, children }) {
   return (
     <section className="section">
@@ -41,25 +65,7 @@ export function Section({ title, intro, warning, children }) {
             {line}
           </p>
         ))}
-      {warning && (
-        <p className="section-warning">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-          </svg>
-          {warning}
-        </p>
-      )}
+      {warning && <Warning>{warning}</Warning>}
       {children && <div className="section-body">{children}</div>}
     </section>
   )

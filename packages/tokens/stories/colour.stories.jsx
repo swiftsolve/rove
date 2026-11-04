@@ -291,14 +291,18 @@ function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
 export const Colour = {
   render: () => (
     <Page title="Colour" intro="Primitive shades, and the semantic tokens that point at them, in Dark and Light.">
-      <Group title="Primitive tokens" intro="The raw shades, named by hue and darkness.">
+      <Group
+        title="Primitive tokens"
+        intro="The raw shades, named by hue and darkness."
+        warning="Use a semantic token, not a primitive."
+      >
         <Section
           title="Palette"
           intro={[
             'The shades the tokens point at.',
-            'Named hue/darkness, where darkness = 1000 − 10 × OKLCH lightness: blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%.',
+            'Named hue/darkness, where darkness = 1000 − 10 × OKLCH lightness: blue/450 is 55% light.',
+            '-a adds opacity: neutral/850-a10 is 10%.',
           ]}
-          warning="Use a semantic token, not a primitive."
         >
           <PaletteGrid />
         </Section>
