@@ -29,16 +29,23 @@ spacing) lands on both sides in the same task: the Figma file, `rove-tokens`,
 this code, and the docs that describe it (`docs/develop/frontend.md`,
 `docs/develop/ui-library.md`).
 
-- **A token, text style or shadow** starts in Figma: change it there (the
-  Figma MCP's `use_figma` can), then export it into `../rove-tokens` and
-  release; `../rove-tokens/AGENTS.md` has the steps. Nothing writes back to
-  Figma. `npm run figma:check` there must then report `inSync: true`.
+- **A token, text style or shadow** starts in Figma and flows one way, through
+  `../rove-tokens` and a release, to here.
 - **A component** changes here first, then in Figma to match.
-- **Every Figma page that shows a changed token** is updated too: labels,
-  swatches and hard-coded fills.
 
 Say in the summary that both sides changed and how you checked (the sync
 check's result, or an audit).
+
+## Procedures
+
+Each is a skill: Claude Code loads its steps when the task comes up. Other
+agents, open the file.
+
+| Task | Skill |
+| --- | --- |
+| Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
+| Add a library component, or change one's API | `.claude/skills/add-library-component/SKILL.md` |
+| Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Check your work
 
@@ -70,24 +77,6 @@ it guards. Hooks run some of it for you:
   Look at a UI change in both themes.
 - A design change is on both sides, shown by the sync check's `inSync: true`
   or an audit you name.
-- A change a user would see is committed and the sites are resynced (below).
-
-## Keep the sites in sync after a UI change
-
-Two sites embed a static build of this UI, and they don't update on their own.
-After any change a user would see (anything under `src/` that renders, or a
-`@swiftsolve/rove-tokens` bump), commit here, then resync both, in this order:
-
-1. `../rove.swiftsolve.net`: `npm run sync-demo`, then commit `public/app/`
-   as `chore(demo): resync the embedded app for <change>`.
-2. `../nabilr.com`: `npm run import:rove` (it imports from
-   rove.swiftsolve.net, so step 1 comes first), then commit as
-   `Resync /rove for <change>`.
-
-Once a change under `src/ui` (or a `@swiftsolve/rove-tokens` release) is on
-master, also run `npm run sync-storybook` in `../rove.swiftsolve.net` and commit
-`public/storybook/` as `chore(storybook): resync for <change>`. It builds the
-hosted Storybooks from `origin/master` and rove-tokens' `origin/main`, not from
-this checkout.
-
-Backend-only, test or tooling changes don't need a resync.
+- A change a user would see (anything under `src/` that renders, or a
+  `@swiftsolve/rove-tokens` bump) is committed and the sites are resynced: the
+  `resync-sites` skill. Backend, test and tooling changes need no resync.

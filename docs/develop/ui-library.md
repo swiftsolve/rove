@@ -14,8 +14,9 @@ names the check.
   [Rules every component follows](#rules-every-component-follows) and
   [Buttons](#buttons)
 
-Each checklist ends in the checks for it; [AGENTS.md](../../AGENTS.md) has the
-steps after a commit (syncing the sites and Storybook).
+Each checklist ends in the checks for it. After the commit, the Storybooks
+need a resync: the `resync-sites` skill (`.claude/skills/resync-sites/SKILL.md`).
+The `add-library-component` skill runs the whole of the first, Figma included.
 
 ## Add a library component
 
@@ -115,7 +116,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   title's last part is its key in `figma.json`, so a new component's stories
   find it with nothing set. `npm run build:storybook` writes a static copy to
   `storybook-static/`. Master's is hosted at
-  <https://rove.swiftsolve.net/storybook/> (synced by hand; see `AGENTS.md`),
+  <https://rove.swiftsolve.net/storybook/> (synced by hand: the `resync-sites` skill),
   and every push publishes to Chromatic for visual tests.
 
 ## Docs pages and the catalogue

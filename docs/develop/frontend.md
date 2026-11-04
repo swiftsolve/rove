@@ -19,8 +19,9 @@ A rule marked *Checked* fails `npm run check`, and
 
 ## Checklists
 
-Each list ends in the checks for it; [AGENTS.md](../../AGENTS.md) has the steps
-after a commit (syncing the sites and Storybook).
+Each list ends in the checks for it. After the commit, a change a user would
+see needs the sites resynced: the `resync-sites` skill
+(`.claude/skills/resync-sites/SKILL.md`).
 
 ### Add a screen or tab
 
