@@ -155,6 +155,14 @@ function ColourTable({ names }) {
   )
 }
 
+// What a see-through shade does to whatever is under it, as the Figma page
+// captions it: white lightens, near-black and black darken, a hue tints.
+function effectOf(label) {
+  const [base, alpha] = label.split('-a')
+  const verb = base === '0' ? 'Lighten' : ['850', '1000'].includes(base) ? 'Darken' : 'Tint'
+  return `${verb} ${alpha}%`
+}
+
 // A hue's shades: the solid ramp, then the see-through shades on a line of
 // their own. A see-through shade sits on the backdrop of the theme that uses
 // it: dark for Dark only, unless it's black, which only shows on white.
@@ -179,7 +187,7 @@ function Family({ name, rows, captions }) {
                     style={{ background: isAlpha ? `linear-gradient(${color}, ${color}), ${backdrop}` : color }}
                   />
                   <span className="swatch-name">{label}</span>
-                  <span className="swatch-hex">{hexText(token.$value)}</span>
+                  <span className="swatch-hex">{isAlpha ? effectOf(label) : hexText(token.$value)}</span>
                 </div>
               )
             })}
