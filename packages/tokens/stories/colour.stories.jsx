@@ -293,7 +293,8 @@ export const Colour = {
     <Page title="Colour" intro="Palette shades, and the semantic tokens that point at them, in Dark and Light.">
       <Section
         title="Palette"
-        intro="The shades the tokens point at. Use a token, never a shade. Higher numbers are darker; -a is opacity."
+        intro="The shades the tokens point at, each named hue/darkness: darkness is 1000 minus ten times the OKLCH lightness, so blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%."
+        warning="Use a token, never a shade."
       >
         <PaletteGrid />
       </Section>

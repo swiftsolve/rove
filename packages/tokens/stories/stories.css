@@ -51,6 +51,20 @@
   color: var(--text-secondary);
 }
 
+.section-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--text-poor);
+  font-weight: var(--weight-medium);
+}
+
+.section-warning svg {
+  flex: none;
+  stroke: var(--status-poor);
+}
+
 .section-body {
   margin-top: 24px;
 }
