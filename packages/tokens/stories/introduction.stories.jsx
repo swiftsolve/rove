@@ -245,7 +245,7 @@ const PIPELINES = [
       },
       {
         column: 3,
-        icons: ['node', 'dtcg', 'css'],
+        icons: ['node', 'step', 'dtcg', 'step', 'css'],
         items: [
           {
             name: '`npm run build`',
@@ -347,8 +347,9 @@ function Node({ icons, children, style, className = '' }) {
   return (
     <li className={`intro-node ${className}`} style={style}>
       <span className="intro-icons">
-        {icons.map((icon) => (
-          <Icon key={icon} name={icon} />
+        {icons.map((icon, index) => (
+          // A step chevron can repeat, so the key carries its place.
+          <Icon key={`${icon}-${index}`} name={icon} />
         ))}
       </span>
       {children}
