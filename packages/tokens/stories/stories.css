@@ -54,9 +54,10 @@
   text-transform: uppercase;
 }
 
+/* 12px under the overline, as Figma's group headings (spacing/12). */
 .group-intro {
   max-width: 820px;
-  margin: 6px 0 0;
+  margin: 12px 0 0;
   color: var(--text-secondary);
 }
 
