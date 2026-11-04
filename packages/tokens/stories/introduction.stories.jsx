@@ -355,17 +355,12 @@ const EXPLORE = [
     title: 'Motion',
     body: 'Ease out over a fast or normal duration; resizing panels spring.',
     specimen: (
-      <span className="intro-curves">
-        <svg viewBox="0 0 120 56" width="120" height="56">
-          <line className="intro-curve-guide" x1="4" y1="12" x2="116" y2="12" />
-          <line className="intro-curve-axis" x1="4" y1="52" x2="116" y2="52" />
-          <polyline
-            className="intro-curve-spring"
-            points="4.0,52 12.0,44.42 20.0,32.23 28.0,22.6 36.0,16.66 44.0,13.59 52.0,12.26 60.0,11.82 68.0,11.75 76.0,11.81 84.0,11.89 92.0,11.94 100.0,11.98 108.0,12 116.0,12"
-          />
-          <path className="intro-curve-ease" d="M4,52 C21.92,12 37.6,12 116,12" />
-        </svg>
-        <span className="intro-curve-dot" />
+      // Rove's Spinner, the ldrs waveform it shows while a speed test runs:
+      // four bars rising in turn, on the --ease-in-out curve.
+      <span className="intro-wave">
+        {[-0.45, -0.3, -0.15, 0].map((delay) => (
+          <span key={delay} style={{ animationDelay: `${delay}s` }} />
+        ))}
       </span>
     ),
   },

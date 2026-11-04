@@ -707,6 +707,12 @@
   font-weight: var(--weight-semibold);
 }
 
+/* A code chip's box hangs lower than plain text's letters, so a title that's a
+   chip takes 2px more to leave the same visible gap above its description. */
+.intro-item-name:has(> code) {
+  margin-bottom: 2px;
+}
+
 .intro-item-body {
   color: var(--text-secondary);
   font-size: var(--font-size-lg);
@@ -848,59 +854,30 @@
   background: var(--accent-default);
 }
 
-/* The easing curves, value over time: --ease-out solid, --ease-spring dashed with its overshoot.
-   On hover a dot runs the ease-out curve at its own timing. */
-.intro-curves {
-  position: relative;
-  width: 120px;
-  height: 56px;
+/* Rove's waveform Spinner: each bar grows and shrinks a beat after the one before. */
+.intro-wave {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  height: 50px;
 }
 
-.intro-curves svg {
-  display: block;
-  overflow: visible;
-  fill: none;
-}
-
-.intro-curve-axis,
-.intro-curve-guide {
-  stroke: var(--border-default);
-  stroke-width: 1;
-}
-
-.intro-curve-guide {
-  stroke-dasharray: 2 3;
-}
-
-.intro-curve-spring {
-  stroke: var(--text-tertiary);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 3;
-  stroke-linejoin: round;
-}
-
-.intro-curve-ease {
-  stroke: var(--accent-default);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.intro-curve-dot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-full);
+.intro-wave span {
+  width: 7px;
+  height: 100%;
   background: var(--accent-default);
-  offset-path: path('M4,52 C21.92,12 37.6,12 116,12');
-  offset-distance: 0%;
-  offset-rotate: 0deg;
-  transition: offset-distance var(--duration-spring) var(--ease-out);
+  animation: intro-wave 1s var(--ease-in-out) infinite;
 }
 
-.intro-card:hover .intro-curve-dot {
-  offset-distance: 100%;
+@keyframes intro-wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 /* The principles: cards like the pages', without a link. */
@@ -975,8 +952,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-curve-dot,
   .intro-card-arrow {
     transition: none;
+  }
+
+  .intro-wave span {
+    animation: none;
+    transform: scaleY(0.65);
   }
 }
