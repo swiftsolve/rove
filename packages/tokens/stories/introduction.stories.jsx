@@ -35,42 +35,25 @@ function FigmaMark() {
   )
 }
 
-// Rove's app icon, as the app ships it: the mark in its gradient on a dark rounded tile.
-// It's the brand, not a theme colour, so it looks the same in Dark and Light.
-function RoveAppIcon() {
+// The Rove mark in its gradient, bare like the other brands' marks. It's the
+// brand, not a theme colour, so it looks the same in Dark and Light.
+function RoveMark() {
   return (
-    <svg className="intro-icon" viewBox="0 0 48 48" aria-hidden="true">
+    <svg className="intro-icon" viewBox="4.5 4.5 39 34.5" aria-hidden="true">
       <defs>
-        <linearGradient id="intro-rove-tile" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#1f2125" />
-          <stop offset="1" stopColor="#16171a" />
-        </linearGradient>
         <linearGradient id="intro-rove-mark" x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#7aa4ff" />
           <stop offset="1" stopColor="#5484f5" />
         </linearGradient>
       </defs>
-      {/* The app icon's faint edge, so the tile holds its shape on a dark card. */}
-      <rect
-        x="0.5"
-        y="0.5"
-        width="47"
-        height="47"
-        rx="10.5"
-        fill="url(#intro-rove-tile)"
-        stroke="#ffffff"
-        strokeOpacity="0.1"
+      <circle cx="24" cy="24" r="7.5" fill="url(#intro-rove-mark)" />
+      <path
+        d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
+        fill="none"
+        stroke="url(#intro-rove-mark)"
+        strokeWidth="5"
+        strokeLinecap="round"
       />
-      <g transform="translate(24 25) scale(0.8) translate(-24 -24)">
-        <circle cx="24" cy="24" r="7.5" fill="url(#intro-rove-mark)" />
-        <path
-          d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
-          fill="none"
-          stroke="url(#intro-rove-mark)"
-          strokeWidth="5"
-          strokeLinecap="round"
-        />
-      </g>
     </svg>
   )
 }
@@ -94,7 +77,7 @@ const LINE_ICONS = {
 
 function Icon({ name, label }) {
   if (name === 'figma') return <FigmaMark />
-  if (name === 'rove') return <RoveAppIcon />
+  if (name === 'rove') return <RoveMark />
   const brand = BRAND_ICONS[name]
   if (brand)
     return (
@@ -122,8 +105,8 @@ function Icon({ name, label }) {
   )
 }
 
-// The two pipelines, step by step. A step's `column` places it under the stage
-// headings, so the slideshow skips the export and lines up with the tokens.
+// The pipeline, step by step. A step's `column` places it under its stage heading,
+// and a step that skips a stage gets a dashed arrow across it.
 const STAGES = ['In Figma', 'Exported to', 'Built by', 'Ships as']
 
 const PIPELINES = [
@@ -171,29 +154,6 @@ const PIPELINES = [
           { name: '`@swiftsolve/rove-tokens`', body: '`tokens.css`, `text-styles.css` and the DTCG files, on npm.' },
           { name: '`DESIGN.md`', body: 'Which token to use for what, in the package.' },
         ],
-      },
-    ],
-  },
-  {
-    title: 'Slideshow',
-    summary: "The Figma file's pages, to present from.",
-    steps: [
-      {
-        column: 1,
-        icons: ['figma'],
-        items: [{ name: 'Its pages', body: 'Cover, Foundations, Components and Screens.' }],
-      },
-      {
-        column: 3,
-        icons: ['node'],
-        items: [
-          { name: '`npm run present`', body: 'Exports each page, styled with the tokens. Runs on every release tag.' },
-        ],
-      },
-      {
-        column: 4,
-        icons: ['github'],
-        items: [{ name: 'Slideshow', body: 'On GitHub Pages.', href: 'https://swiftsolve.github.io/rove-tokens/' }],
       },
     ],
   },
@@ -395,7 +355,6 @@ const LINKS = [
   { label: 'Figma file', href: FIGMA },
   { label: 'DESIGN.md', href: `${REPO}/blob/main/DESIGN.md` },
   { label: 'Rationale', href: `${REPO}/blob/main/docs/rationale.md` },
-  { label: 'Slideshow', href: 'https://swiftsolve.github.io/rove-tokens/' },
   { label: 'GitHub', href: REPO },
 ]
 
@@ -426,7 +385,7 @@ function IntroductionPage() {
       <section className="section">
         <h2 className="section-title">How it works</h2>
         <p className="section-intro">
-          Two pipelines leave the Figma file: the tokens, which Rove builds with, and a slideshow of its pages.
+          How a token gets from the Figma file to Rove, its coding agents and this Storybook.
         </p>
         <div className="section-body">
           <Pipelines />
