@@ -7,7 +7,7 @@ everything:
 | Task | Read |
 | --- | --- |
 | Any | `README.md`: How it works, Layout, Development |
-| UI | `docs/develop/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what) |
+| UI | `docs/develop/frontend.md` (conventions, component table) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what; `src/AGENTS.md` imports it, so Claude Code loads it with the first file under `src/`) |
 | The UI↔backend boundary, commands, events | `docs/develop/architecture.md` |
 | A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
