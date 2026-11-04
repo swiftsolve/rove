@@ -296,7 +296,7 @@ export const Colour = {
           title="Palette"
           intro={[
             'The shades the tokens point at.',
-            'Named hue/darkness: darkness is 1000 minus ten times the OKLCH lightness, so blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%.',
+            'Named hue/darkness, where darkness = 1000 − 10 × OKLCH lightness: blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%.',
           ]}
           warning="Use a semantic token, not a primitive."
         >
