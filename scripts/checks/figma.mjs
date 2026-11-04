@@ -11,7 +11,7 @@
  *   - every prop with a fixed set of values has a Figma variant property;
  *   - every usage guide in the stories (`guidance`) has its twin in the
  *     component's Figma docs section: the same sections, as many lines in each,
- *     and every alternative the code names under When not to use (`use
+ *     and every alternative the code names under Avoid (`use
  *     `EmptyState``) named there too ("Empty state"). Figma words its lines for
  *     designers, so the wording itself is left to review.
  *
@@ -57,8 +57,8 @@ const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 // A docs section's guide headings, as Storybook's Docs page has them (.storybook/docs-page.tsx).
 const GUIDE_LABELS = {
-  use: 'When to use',
-  avoid: 'When not to use',
+  use: 'Use when',
+  avoid: 'Avoid',
   accessibility: 'Accessibility',
   builtIn: 'Built in',
   toHandle: 'You handle',
