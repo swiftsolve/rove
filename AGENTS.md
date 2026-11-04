@@ -44,7 +44,7 @@ agents, open the file.
 | Task | Skill |
 | --- | --- |
 | Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
-| Add a library component, or change one's API | `.claude/skills/add-library-component/SKILL.md` |
+| Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Check your work

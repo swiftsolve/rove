@@ -7,53 +7,21 @@ styles, tests and which component to use. A rule marked *Checked* fails
 `npm run check`; frontend.md's [What's enforced](frontend.md#whats-enforced)
 names the check.
 
-- [Add a library component](#add-a-library-component) and
-  [change one](#change-a-library-component)
-- [The library](#the-library), [Stories](#stories),
+- [Procedures](#procedures), [The library](#the-library),
+  [Stories](#stories),
   [Docs pages and the catalogue](#docs-pages-and-the-catalogue),
   [Rules every component follows](#rules-every-component-follows) and
   [Buttons](#buttons)
 
-Each checklist ends in the checks for it. After the commit, the Storybooks
-need a resync: the `resync-sites` skill (`.claude/skills/resync-sites/SKILL.md`).
-The `add-library-component` skill runs the whole of the first, Figma included.
+## Procedures
 
-## Add a library component
+Each is a skill: Claude Code loads its steps when the task comes up. Other
+agents and people, open the file.
 
-1. A kebab-case folder at the top of `src/ui` holding `Name.tsx`. A component
-   that renders one element takes `ComponentProps<'div'>` (its element's).
-   Styles are a CVA recipe; its defaults go in `defaultVariants` and in the
-   destructured props.
-2. A doc comment on the component and on each prop of its own.
-3. An export from `src/ui/index.ts`, under its group's comment.
-4. Stories beside it (`Name.stories.tsx`), titled by its group
-   (`Data display/Name`), with an `AllStates` story when it has several states,
-   a usage guide, and a `play` story if it takes a handler.
-5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. Its entry in `src/ui/figma.json` (`null` when Figma has none). The entry's
-   `name` and `node` are the Figma component's (or component set's) name and
-   the id in its link's `node-id`, with `-` as `:`; never guess one. Map the
-   component set, not one of its variants. A prop with values Figma has no
-   variant for goes in the entry's `noFigmaVariant`, a Figma variant code
-   derives from other props in `noCodeProp`, each with why. With `FIGMA_TOKEN`
-   in `.env.local` (or in CI), `npm run check` holds the names, variants and
-   values to the file.
-7. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` (a new component is an
-   API change).
-8. The Figma side: the component on its group's page in the Figma file, with
-   the same props and variants, and its docs section.
-
-Check: `npm run check`, then `npm run storybook` to look at it in both themes.
-
-## Change a library component
-
-1. Change the code, its doc comments, and its stories and usage guide if its
-   use changed.
-2. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` for an API change.
-3. The same change in Figma.
-
-Check: `npm run check`. For a change meant to look the same, diff
-`npm run screenshots -- --stable` from before and after.
+| Task | Skill |
+| --- | --- |
+| Add a library component, or change one's API or look, in code and Figma | `.claude/skills/add-library-component/SKILL.md` |
+| Resync the Storybooks (and the sites, if a screen changed) after committing | `.claude/skills/resync-sites/SKILL.md` |
 
 ## The library
 
