@@ -28,10 +28,10 @@ A design change (a token, text style, component variant or prop, copy,
 spacing) lands on both sides in the same task: the Figma file, `rove-tokens`,
 this code, and `docs/develop/frontend.md`.
 
-- **A token or text style** can start on either side; `../rove-tokens/AGENTS.md`
-  has both paths. A change made in code goes into Figma with
-  `npm run figma -- apply` there, through the Figma MCP's `use_figma`. Either
-  way, `npm run figma -- check` must then report `inSync: true`.
+- **A token, text style or shadow** starts in Figma: change it there (the
+  Figma MCP's `use_figma` can), then export it into `../rove-tokens` and
+  release; `../rove-tokens/AGENTS.md` has the steps. Nothing writes back to
+  Figma. `npm run figma -- check` there must then report `inSync: true`.
 - **A component** changes here first, then in Figma to match.
 - **Every Figma page that shows a changed token** is updated too: labels,
   swatches and hard-coded fills.
