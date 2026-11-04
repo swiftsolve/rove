@@ -304,6 +304,10 @@ export const Colour = {
       >
         <PaletteGrid />
       </Section>
+      <Section
+        title="Semantic tokens"
+        intro="What you use: each named for its job, and pointing at a shade above. The sections below group them."
+      />
       {SECTIONS.map(({ title, intro, names, diagram }) => (
         <Section key={title} title={title} intro={intro}>
           {diagram}
