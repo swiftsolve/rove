@@ -680,7 +680,7 @@
 
 /* The arrow into a step, across the gap before it. */
 /* The arrow into a step: a 1.5px line and an open chevron, level with the icons'
-   centre and inset from both cards, in a quiet grey so the marks lead. */
+   centre, running the whole gap from card to card, in a quiet grey so the marks lead. */
 .intro-node.has-flow {
   --intro-arrow-y: calc(1px + var(--intro-card-pad) + 12px); /* border, padding, half the 24px icon */
 }
@@ -688,8 +688,8 @@
 .intro-node.has-flow::before {
   position: absolute;
   top: calc(var(--intro-arrow-y) - 0.75px);
-  right: calc(100% + 5px);
-  width: calc(var(--intro-gap) - 11px);
+  right: calc(100% + 1px);
+  width: calc(var(--intro-gap) - 1px);
   height: 1.5px;
   border-radius: var(--radius-full);
   background: var(--text-tertiary);
@@ -699,7 +699,7 @@
 .intro-node.has-flow::after {
   position: absolute;
   top: calc(var(--intro-arrow-y) - 3.5px);
-  right: calc(100% + 5.5px);
+  right: calc(100% + 1.5px);
   width: 7px;
   height: 7px;
   box-sizing: border-box;
@@ -712,7 +712,7 @@
 
 /* A step that skips a stage reaches back across the empty column too. */
 .intro-node.has-skip::before {
-  width: calc(100% + var(--intro-gap) * 2 - 11px);
+  width: calc(100% + var(--intro-gap) * 2 - 1px);
   background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px);
 }
 
@@ -1006,17 +1006,17 @@
   .intro-node.has-skip::before {
     top: auto;
     right: auto;
-    bottom: calc(100% + 5px);
+    bottom: calc(100% + 1px);
     left: calc(var(--intro-arrow-y) - 0.75px);
     width: 1.5px;
-    height: 13px;
+    height: 23px;
     background: var(--text-tertiary);
   }
 
   .intro-node.has-flow::after {
     top: auto;
     right: auto;
-    bottom: calc(100% + 5.5px);
+    bottom: calc(100% + 1.5px);
     left: calc(var(--intro-arrow-y) - 3.5px);
     transform: rotate(135deg);
   }
