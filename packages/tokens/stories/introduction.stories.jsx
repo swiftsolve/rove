@@ -92,7 +92,7 @@ function Icon({ name, label }) {
     return (
       <svg
         className="intro-icon"
-        viewBox="0 0 24 24"
+        viewBox={brand.viewBox ?? '0 0 24 24'}
         fill={brand.color}
         role="img"
         aria-label={brand.title}
@@ -155,7 +155,7 @@ const PIPELINES = [
       },
       {
         column: 3,
-        icons: ['node', 'css'],
+        icons: ['node', 'dtcg', 'css'],
         items: [
           {
             name: '`npm run build`',
