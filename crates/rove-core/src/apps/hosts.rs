@@ -258,6 +258,9 @@ pub struct HostUsageTracker {
     by_traffic_type: HashMap<&'static str, (TrafficClass, ByteCounts)>,
     /// Epoch ms of the first snapshot; `None` until one arrives.
     tracking_since: Option<u64>,
+    /// How to read the counters: the platform's ([`peer_counter_semantics`]),
+    /// or any in tests.
+    semantics: CounterSemantics,
     /// App icon per app name, misses cached as `None` (as in [`crate::apps`]).
     icons: HashMap<String, Option<String>>,
     /// Reverse-DNS hostname per peer IP. A key means "already tried"; `None` is
@@ -286,7 +289,14 @@ const fn peer_counter_semantics() -> CounterSemantics {
 
 impl HostUsageTracker {
     pub fn new() -> Self {
-        Self::default()
+        Self { semantics: peer_counter_semantics(), ..Self::default() }
+    }
+
+    /// A tracker with the given semantics, so each platform's banking can be
+    /// tested on any host.
+    #[cfg(test)]
+    fn with_semantics(semantics: CounterSemantics) -> Self {
+        Self { semantics, ..Self::default() }
     }
 
     /// Fold one successful snapshot into the running totals: credit each
@@ -304,7 +314,7 @@ impl HostUsageTracker {
         if first_snapshot {
             self.tracking_since = Some(crate::utils::net::now_ms());
         }
-        let semantics = peer_counter_semantics();
+        let semantics = self.semantics;
         let priming = first_snapshot && semantics.primes_on_first_snapshot();
 
         let mut seen = HashSet::with_capacity(readings.len());
@@ -457,7 +467,7 @@ time,,interface,state,bytes_in,bytes_out
 
     #[test]
     fn accumulates_per_app_per_host_deltas() {
-        let mut t = HostUsageTracker::new();
+        let mut t = HostUsageTracker::with_semantics(CounterSemantics::Socket);
         // First snapshot: baseline only, for both already-open sockets.
         t.ingest(vec![
             PeerReading {
@@ -537,7 +547,7 @@ time,,interface,state,bytes_in,bytes_out
     /// having never appeared on Apps.
     #[test]
     fn primes_on_the_first_snapshot() {
-        let mut t = HostUsageTracker::new();
+        let mut t = HostUsageTracker::with_semantics(CounterSemantics::Socket);
         let tick = |rx: u64, tx: u64| {
             vec![PeerReading {
                 conn_key: "c1".into(),
