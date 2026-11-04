@@ -810,6 +810,32 @@
   line-height: 1;
 }
 
+.intro-effects {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.intro-radii {
+  display: flex;
+  gap: 6px;
+}
+
+.intro-radii span {
+  width: 28px;
+  height: 28px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-default) 35%, transparent);
+}
+
+.intro-raised {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-raised);
+}
+
 .intro-bars {
   display: flex;
   flex-direction: column;

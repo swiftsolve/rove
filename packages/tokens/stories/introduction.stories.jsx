@@ -322,10 +322,31 @@ const EXPLORE = [
     title: 'Spacing, radius & effects',
     body: `A ${group(spacing, 'spacing').length}-step 2px spacing scale, the radii, shadows and opacities.`,
     specimen: (
-      <span className="intro-bars">
-        {['--spacing-4', '--spacing-8', '--spacing-12', '--spacing-16', '--spacing-20'].map((name) => (
-          <span key={name} style={{ width: `calc(var(${name}) * 2)` }} />
-        ))}
+      // The four kinds, left to right: spacing steps, the radii (each tinted at an
+      // opacity token, smallest to largest), and a raised panel's shadow.
+      <span className="intro-effects">
+        <span className="intro-bars">
+          {['--spacing-4', '--spacing-8', '--spacing-12', '--spacing-16', '--spacing-20'].map((name) => (
+            <span key={name} style={{ width: `calc(var(${name}) * 2)` }} />
+          ))}
+        </span>
+        <span className="intro-radii">
+          {[
+            ['--radius-xs', '--opacity-tint-sm'],
+            ['--radius-sm', '--opacity-tint-md'],
+            ['--radius-lg', '--opacity-tint-lg'],
+            ['--radius-full', '--opacity-tint-xl'],
+          ].map(([radius, tint]) => (
+            <span
+              key={radius}
+              style={{
+                borderRadius: `var(${radius})`,
+                background: `color-mix(in srgb, var(--accent-default) var(${tint}), transparent)`,
+              }}
+            />
+          ))}
+        </span>
+        <span className="intro-raised" />
       </span>
     ),
   },
