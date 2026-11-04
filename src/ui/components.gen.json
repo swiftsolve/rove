@@ -104,7 +104,7 @@
       "figma": {
         "name": "Icon button",
         "node": "13:629",
-        "codeOnly": {
+        "noFigmaVariant": {
           "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own."
         }
       },
@@ -207,7 +207,7 @@
       "figma": {
         "name": "Link",
         "node": "505:845",
-        "figmaOnly": {
+        "noCodeProp": {
           "Type": "External is a link with href, View one with onClick."
         }
       },
@@ -460,7 +460,7 @@
       "figma": {
         "name": "Text field",
         "node": "500:810",
-        "figmaOnly": {
+        "noCodeProp": {
           "Action": "Whether action holds a TextFieldAction."
         }
       },
@@ -821,7 +821,7 @@
       "figma": {
         "name": "Tooltip",
         "node": "43:7",
-        "codeOnly": {
+        "noFigmaVariant": {
           "side": "Where it opens beside its trigger."
         }
       },
@@ -982,7 +982,7 @@
       "figma": {
         "name": "Status dot",
         "node": "494:735",
-        "codeOnly": {
+        "noFigmaVariant": {
           "pulse": "An animation: Figma draws the dot at rest."
         },
         "valuesDiffer": {
@@ -1311,7 +1311,7 @@
       "figma": {
         "name": "Data row",
         "node": "15:642",
-        "codeOnly": {
+        "noFigmaVariant": {
           "density": "Figma has the row, not the list: a list's spacing is its frame's gap."
         }
       },
@@ -1396,7 +1396,7 @@
       "figma": {
         "name": "Data row",
         "node": "15:642",
-        "codeOnly": {
+        "noFigmaVariant": {
           "align": "Not in Figma yet: a value with no text baseline sits on the row's middle."
         }
       },
@@ -1438,7 +1438,7 @@
       "figma": {
         "name": "No value",
         "node": "708:667",
-        "figmaOnly": {
+        "noCodeProp": {
           "Size": "It sizes to its line in em: Figma draws a hero line's and a row's."
         }
       },
@@ -1483,7 +1483,7 @@
       "figma": {
         "name": "Readout",
         "node": "4:106",
-        "figmaOnly": {
+        "noCodeProp": {
           "Has label": "Whether label is set."
         }
       },
@@ -1626,7 +1626,7 @@
       "figma": {
         "name": "Bar meter",
         "node": "495:1044",
-        "figmaOnly": {
+        "noCodeProp": {
           "Value": "value, a number from 0 to 4."
         }
       },
@@ -1697,7 +1697,7 @@
       "figma": {
         "name": "Split bar",
         "node": "556:619",
-        "figmaOnly": {
+        "noCodeProp": {
           "Mix": "Sample down and up values."
         }
       },
@@ -1816,7 +1816,7 @@
       "figma": {
         "name": "Icon tile",
         "node": "495:585",
-        "figmaOnly": {
+        "noCodeProp": {
           "Neutral": "color=\"neutral\"; any other colour is a tint."
         }
       },
@@ -1948,7 +1948,7 @@
       "figma": {
         "name": "Timeline node",
         "node": "580:539",
-        "figmaOnly": {
+        "noCodeProp": {
           "Neutral": "color=\"neutral\", the hollow ring.",
           "Last": "The list's last node, with no line down: CSS finds it."
         }
@@ -2000,10 +2000,10 @@
       "figma": {
         "name": "Card",
         "node": "565:7535",
-        "codeOnly": {
+        "noFigmaVariant": {
           "as": "The HTML element: it looks the same."
         },
-        "figmaOnly": {
+        "noCodeProp": {
           "Openable": "Whether onOpen is set."
         }
       },
@@ -2498,7 +2498,7 @@
       "figma": {
         "name": "Nav rail",
         "node": "41:892",
-        "figmaOnly": {
+        "noCodeProp": {
           "Page": "The page whose NavItem has isActive."
         }
       },
@@ -2552,7 +2552,7 @@
       "figma": {
         "name": "Page header",
         "node": "542:10510",
-        "figmaOnly": {
+        "noCodeProp": {
           "Back": "Whether onBack is set."
         }
       },

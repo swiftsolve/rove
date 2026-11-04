@@ -17,8 +17,8 @@
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
- * figma.json entry, with why: `codeOnly` for a prop Figma can't show (where a
- * tooltip opens), `figmaOnly` for a variant code derives from other props (a
+ * figma.json entry, with why: `noFigmaVariant` for a prop Figma can't show (where a
+ * tooltip opens), `noCodeProp` for a variant code derives from other props (a
  * Link is External when it has `href`), and `valuesDiffer`. An exception that
  * no longer applies fails too, so the list stays true.
  *
@@ -218,11 +218,11 @@ for (const [nodeId, components] of byNode) {
   // The shortest name is the whole (Card); the rest are its parts (CardBody).
   const main = [...components].sort((a, b) => a.length - b.length)[0]
   const figmaVariants = variantsOf(found)
-  const figmaOnly = Object.assign({}, ...components.map((component) => mapping[component].figmaOnly))
+  const noCodeProp = Object.assign({}, ...components.map((component) => mapping[component].noCodeProp))
   const matchedFigma = new Set()
 
   for (const component of components) {
-    const { codeOnly = {}, valuesDiffer = {} } = mapping[component]
+    const { noFigmaVariant = {}, valuesDiffer = {} } = mapping[component]
     const props = catalogue[component]?.props ?? {}
 
     for (const [propName, prop] of Object.entries(props)) {
@@ -232,17 +232,19 @@ for (const [nodeId, components] of byNode) {
       const figmaName = Object.keys(figmaVariants).find((name) => keys.has(key(name)))
 
       if (!figmaName) {
-        if (prop.values && !(propName in codeOnly)) {
+        if (prop.values && !(propName in noFigmaVariant)) {
           problems.push(
             `${component}.${propName} (${values.join(', ')}) has no variant property on Figma's "${found.name}": ` +
-              `add one, or list it in figma.json's codeOnly with why`,
+              `add one, or list it in figma.json's noFigmaVariant with why`,
           )
         }
         continue
       }
       matchedFigma.add(figmaName)
-      if (propName in codeOnly) {
-        problems.push(`${component}.${propName} is in codeOnly, but Figma's "${found.name}" has it as ${figmaName}`)
+      if (propName in noFigmaVariant) {
+        problems.push(
+          `${component}.${propName} is in noFigmaVariant, but Figma's "${found.name}" has it as ${figmaName}`,
+        )
       }
 
       const code = values.map(key)
@@ -261,8 +263,8 @@ for (const [nodeId, components] of byNode) {
       }
     }
 
-    for (const propName of Object.keys(codeOnly)) {
-      if (!(propName in props)) problems.push(`${component}: codeOnly names ${propName}, which isn't a prop`)
+    for (const propName of Object.keys(noFigmaVariant)) {
+      if (!(propName in props)) problems.push(`${component}: noFigmaVariant names ${propName}, which isn't a prop`)
     }
     for (const propName of Object.keys(valuesDiffer)) {
       if (!(propName in props)) problems.push(`${component}: valuesDiffer names ${propName}, which isn't a prop`)
@@ -270,17 +272,17 @@ for (const [nodeId, components] of byNode) {
   }
 
   for (const figmaName of Object.keys(figmaVariants)) {
-    if (matchedFigma.has(figmaName) || figmaName in figmaOnly) continue
+    if (matchedFigma.has(figmaName) || figmaName in noCodeProp) continue
     problems.push(
       `Figma's "${found.name}" has a ${figmaName} variant (${figmaVariants[figmaName].join(', ')}) that no prop of ` +
-        `${components.join(', ')} matches: add the prop, or list it in figma.json's figmaOnly with what it stands for`,
+        `${components.join(', ')} matches: add the prop, or list it in figma.json's noCodeProp with what it stands for`,
     )
   }
-  for (const figmaName of Object.keys(figmaOnly)) {
+  for (const figmaName of Object.keys(noCodeProp)) {
     if (!(figmaName in figmaVariants)) {
-      problems.push(`${main}: figmaOnly names ${figmaName}, which Figma's "${found.name}" doesn't have`)
+      problems.push(`${main}: noCodeProp names ${figmaName}, which Figma's "${found.name}" doesn't have`)
     } else if (matchedFigma.has(figmaName)) {
-      problems.push(`${main}: figmaOnly names ${figmaName}, but a prop now matches it`)
+      problems.push(`${main}: noCodeProp names ${figmaName}, but a prop now matches it`)
     }
   }
 }

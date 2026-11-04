@@ -43,7 +43,7 @@ for (const [, file, value] of rawValues.matchAll(/\{\s*file: '([^']+)',\s*value:
 
 const { components } = JSON.parse(await readFile(join(ROOT, 'src/ui/figma.json'), 'utf8'))
 for (const [component, entry] of Object.entries(components)) {
-  for (const kind of ['codeOnly', 'figmaOnly', 'valuesDiffer']) {
+  for (const kind of ['noFigmaVariant', 'noCodeProp', 'valuesDiffer']) {
     for (const name of Object.keys(entry?.[kind] ?? {}))
       escapes['Figma exceptions'].push(`${component} ${kind} ${name}`)
   }

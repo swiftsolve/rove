@@ -34,8 +34,8 @@ after a commit (syncing the sites and Storybook).
    Figma component's (or component set's) name and the id in its link's
    `node-id`, with `-` as `:`; never guess one. Map the component set, not
    one of its variants. A prop with values Figma has no variant for goes in
-   the entry's `codeOnly`, a Figma variant code derives from other props in
-   `figmaOnly`, each with why. With `FIGMA_TOKEN` in `.env.local` (or in CI),
+   the entry's `noFigmaVariant`, a Figma variant code derives from other props in
+   `noCodeProp`, each with why. With `FIGMA_TOKEN` in `.env.local` (or in CI),
    `npm run check` holds the names, variants and values to the file.
 7. `npm run catalogue`. Raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
    when the library's API changes, this included.
