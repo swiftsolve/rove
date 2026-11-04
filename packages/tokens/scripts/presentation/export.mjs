@@ -44,9 +44,16 @@ async function readToken() {
   return env.match(/^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m)?.[1]
 }
 
+/** The value after `--name` on the command line, or the fallback without one. */
 function flag(name, fallback) {
   const at = process.argv.indexOf(`--${name}`)
-  return at === -1 ? fallback : process.argv[at + 1]
+  if (at === -1) return fallback
+  const value = process.argv[at + 1]
+  if (value === undefined || value.startsWith('--')) {
+    console.error(`--${name} needs a value.`)
+    process.exit(1)
+  }
+  return value
 }
 
 const fileKey = flag('file', 'NoICIoyhWNOya9tOnNfEhH')
@@ -410,7 +417,8 @@ ${tokens}
     let after = slide.getBoundingClientRect()
     main.scrollBy(after.left + fx * after.width - x, after.top + fy * after.height - y)
     after = slide.getBoundingClientRect()
-    if (!isAnimated || isReducedMotion || Math.abs(after.width - before.width) < 1 && Math.abs(after.left - before.left) < 1 && Math.abs(after.top - before.top) < 1) return
+    const isUnmoved = Math.abs(after.width - before.width) < 1 && Math.abs(after.left - before.left) < 1 && Math.abs(after.top - before.top) < 1
+    if (!isAnimated || isReducedMotion || isUnmoved) return
     const k = before.width / after.width
     slide.animate([
       { transformOrigin: '0 0', transform: 'translate(' + (before.left - after.left) + 'px, ' + (before.top - after.top) + 'px) scale(' + k + ')' },
@@ -589,8 +597,10 @@ for (const group of groups) {
       return false
     })
     for (const frame of page.frames) {
-      let name = slugify(isSameName(frame.name, page.title) ? page.title : `${page.title}-${frame.name}`) || 'frame'
-      while (taken.has(name)) name += '-1'
+      const base = slugify(isSameName(frame.name, page.title) ? page.title : `${page.title}-${frame.name}`) || 'frame'
+      // Two frames with one name become name, name-2, name-3…
+      let name = base
+      for (let n = 2; taken.has(name); n++) name = `${base}-${n}`
       taken.add(name)
       frame.file = `${name}.${format}`
     }

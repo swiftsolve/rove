@@ -10,10 +10,9 @@ import { readFileSync } from 'node:fs'
 
 const BLOCKED = [
   [/--no-verify\b/, 'skips the git hooks; fix what they report instead'],
-  [
-    /\bgit\s+push\b.*\s(--force(?!-with-lease)\b|-f\b)/,
-    'force-pushes over the remote; use --force-with-lease if you must',
-  ],
+  // A bare --force or -f. The guarded forms (--force-with-lease,
+  // --force-if-includes) only share the prefix, so they pass.
+  [/\bgit\s+push\b.*\s(--force|-f)(?![\w-])/, 'force-pushes over the remote; use --force-with-lease if you must'],
   [/\bgit\s+reset\b.*--hard\b/, "discards uncommitted work, other sessions' included"],
 ]
 
