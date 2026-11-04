@@ -17,6 +17,10 @@ const ICON = 'ml-[-3px] shrink-0 translate-y-[-1px]'
 
 // `nowrap` because as a flex item the text shrinks to min-content, which would
 // break "5 Up" across two lines.
+// The count carries the half's baseline, so the arrow's bottom edge doesn't
+// stand in for it and grow the header line by a descender.
+const COUNT = 'self-baseline'
+
 const halfVariants = cva('inline-flex items-center gap-[3px] whitespace-nowrap', {
   variants: {
     /** The half's text (and arrow) colour: green for up, red for any down. */
@@ -53,12 +57,12 @@ export function serviceTally(
     <span className={ROOT} role="status">
       <span className={halfVariants({ status: 'positive' })}>
         <ArrowUpIcon size={13} className={ICON} />
-        {upCount} Up
+        <span className={COUNT}>{upCount} Up</span>
       </span>
       <DotSeparator />
       <span className={halfVariants({ status: downCount > 0 ? 'negative' : undefined })}>
         <ArrowDownIcon size={13} className={ICON} />
-        {downCount} Down
+        <span className={COUNT}>{downCount} Down</span>
       </span>
     </span>
   )

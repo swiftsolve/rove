@@ -7,10 +7,10 @@ import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 
 // Focus shows the way hover does (accent and underline), not with a ring. The
 // pill's padding hangs outside the text (with the icons' empty edges), so the
-// words line up with the text around them.
+// words line up with the text around them and the link adds no height to its line.
 const LINK = cx(
-  'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 ml-[-9.5px] mr-[-9px]',
-  'text-[length:inherit] font-medium whitespace-nowrap text-secondary no-underline',
+  'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 -my-2 ml-[-9.5px] mr-[-9px]',
+  'text-[length:inherit] leading-[inherit] font-medium whitespace-nowrap text-secondary no-underline',
   'transition-[color] duration-(--duration-fast) ease-in-out',
   'usable:hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
   STATE_CLASSES,
@@ -18,13 +18,19 @@ const LINK = cx(
 
 // The icons take the link's own (animating) colour, a touch dimmer at rest
 // through opacity, so there's one colour animation rather than two that drift.
+// Flex centring sets them on the line box, which keeps descender room the label
+// doesn't use, so 1px up centres them on the text as Figma draws it (as
+// ServiceTally's arrows).
 const ICON = cx(
-  'opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
+  'translate-y-[-1px] opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
   'group-usable/link:group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
 )
 
-// Only the label underlines, not the icons.
+// Only the label underlines, not the icons. It carries the link's baseline:
+// without it the first icon's bottom edge is the baseline, and the line the
+// link sits in grows by a descender.
 const LABEL = cx(
+  'self-baseline',
   'group-usable/link:group-hover/link:underline group-usable/link:group-hover/link:underline-offset-2',
   'group-focus-visible/link:underline group-focus-visible/link:underline-offset-2',
 )
