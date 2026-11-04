@@ -61,6 +61,16 @@ it guards. Hooks run some of it for you:
   refused; generated `*.gen.*` files can't be hand-edited (run
   `npm run catalogue`).
 
+## Done means
+
+- `npm run check` passes, and the Rust commands above when Rust changed.
+- What no check covers is reviewed: `docs/develop/frontend.md`, What's
+  enforced, lists it, and DESIGN.md's rules without *Checked* are judgment.
+  Look at a UI change in both themes.
+- A design change is on both sides, shown by the sync check's `inSync: true`
+  or an audit you name.
+- A change a user would see is committed and the sites are resynced (below).
+
 ## Keep the sites in sync after a UI change
 
 Two sites embed a static build of this UI, and they don't update on their own.

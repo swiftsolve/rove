@@ -312,6 +312,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
+| Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |

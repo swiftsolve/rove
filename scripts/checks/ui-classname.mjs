@@ -221,7 +221,8 @@ if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(
     `\n${problems.length} class${problems.length === 1 ? '' : 'es'} restyling a library component. ` +
-      'className is only for its place in a layout: use a variant, or style an element the view owns.',
+      'className is only for its place in a layout: use a variant, or style an element the view owns. ' +
+      'The rule: docs/develop/frontend.md, Styles.',
   )
   process.exit(1)
 }

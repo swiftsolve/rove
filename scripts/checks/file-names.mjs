@@ -72,6 +72,7 @@ await check(SRC)
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} file name problem${problems.length === 1 ? '' : 's'}`)
+  console.error('The rule: docs/develop/frontend.md, Where code goes.')
   process.exit(1)
 }
 console.log(`File names OK (${checked} in src/)`)

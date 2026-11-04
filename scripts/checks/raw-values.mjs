@@ -300,6 +300,10 @@ for (const entry of ALLOWED) {
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} raw value${problems.length === 1 ? '' : 's'} where a token belongs`)
+  console.error(
+    "Which token, and when a value may leave the scale: DESIGN.md's Rules " +
+      '(node_modules/@swiftsolve/rove-tokens/DESIGN.md). One that has to stay goes in ALLOWED here, with why.',
+  )
   process.exit(1)
 }
 console.log(`Raw values OK (${files.length} files in src/)`)
