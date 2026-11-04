@@ -49,32 +49,33 @@ agents, open the file.
 
 ## Check your work
 
-```bash
-npm run check                # typecheck, lint, the repo's checks, and every Vitest test
-cargo test -p rove-core      # when Rust changed
-cargo clippy --workspace --all-targets -- -D warnings   # likewise
-cargo fmt --all              # likewise (rustfmt.toml)
-```
+What runs on its own, and when. Each stage catches only what it runs, so
+don't leave your change to a later one: run what it needs (the second table)
+before you commit. Never skip a hook with `--no-verify`; fix what it reports.
 
-Lint enforces the house rules (boolean prefixes, no em dash in copy,
-library imports, raw values); each check in `scripts/checks/` says what
-it guards. Hooks run some of it for you:
+| Stage | Runs |
+| --- | --- |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses `--no-verify`, a force push, `git reset --hard`, and a hand edit to a `*.gen.*` file (run `npm run catalogue`) |
+| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
+| Each push and pull request (CI) | `npm run check` (`test.yml`), its API-version check against the push's base; Rust fmt, clippy, tests and the app build on three OSes (`build.yml`); Chromatic's visual snapshots |
+| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness and the Figma plugin test |
 
-- **Git** (`scripts/hooks/git/`, on after `npm install`): `pre-commit` lints
-  and format-checks the staged files, and runs the Rust tests when Rust is
-  staged. `commit-msg` refuses an agent attribution line. Don't skip them
-  with `--no-verify`; fix what they report.
-- **Claude Code** (`.claude/settings.json`): every edited file is formatted and
-  linted on the spot; `--no-verify`, a force push and `git reset --hard` are
-  refused; generated `*.gen.*` files can't be hand-edited (run
-  `npm run catalogue`).
+What you run, by change:
+
+| Changed | Run |
+| --- | --- |
+| Anything | `npm run check`: typecheck, lint, `scripts/checks/`, the catalogue checks, and every Vitest test, the stories with their play functions and axe |
+| Rust | `cargo test -p rove-core`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo fmt --all` |
+| How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: no check sees a wrong shade or a cramped gap. A component's stories are in `25-library/`. Keep `--out` off `docs/screenshots`, which is committed |
+| A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
+| A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
+| A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `change-token` skill) |
 
 ## Done means
 
-- `npm run check` passes, and the Rust commands above when Rust changed.
+- The checks for your change pass (above).
 - What no check covers is reviewed: `docs/develop/frontend.md`, What's
   enforced, lists it, and DESIGN.md's rules without *Checked* are judgment.
-  Look at a UI change in both themes.
 - A design change is on both sides, shown by the sync check's `inSync: true`
   or an audit you name.
 - A change a user would see (anything under `src/` that renders, or a

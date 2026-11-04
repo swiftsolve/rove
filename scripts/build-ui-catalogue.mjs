@@ -26,7 +26,8 @@
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
  * its stories have none that drives it (a `play` function, tagged
  * `!autodocs`), and when the API (components, props, icons, helpers) differs
- * from the last commit's while `UI_LIBRARY_VERSION` in version.ts doesn't.
+ * from the base's (see versionBase) while `UI_LIBRARY_VERSION` in version.ts
+ * doesn't.
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -204,20 +205,33 @@ const apiOf = (catalogue) =>
     helpers: Object.keys(catalogue.helpers ?? {}),
   })
 const versionIn = (text) => text?.match(/UI_LIBRARY_VERSION = '([^']+)'/)?.[1]
-const atHead = (path) => {
-  const { status, stdout } = spawnSync('git', ['show', `HEAD:${rel(path)}`], { cwd: ROOT, encoding: 'utf8' })
+const atRef = (ref, path) => {
+  const { status, stdout } = spawnSync('git', ['show', `${ref}:${rel(path)}`], { cwd: ROOT, encoding: 'utf8' })
   return status === 0 ? stdout : null
 }
 
+// What the API is compared with. CI sets UI_API_BASE to the commit the push or
+// pull request starts from, so a commit that skipped `npm run check` is still
+// caught. Locally it's HEAD while the change is uncommitted, and the commit
+// before once it's committed, so a run after the commit still sees it.
+async function versionBase() {
+  if (process.env.UI_API_BASE) return process.env.UI_API_BASE
+  const isCommitted = await Promise.all(
+    [CATALOGUE, VERSION].map(async (path) => atRef('HEAD', path) === (await readFile(path, 'utf8'))),
+  )
+  return isCommitted.every(Boolean) ? 'HEAD~1' : 'HEAD'
+}
+
 // A changed API needs a new UI_LIBRARY_VERSION, so one version names one API.
-// Compared with the last commit; without git (a tarball) it's skipped.
+// Without git history for the base (a tarball, a new branch) it's skipped.
 async function checkVersion(catalogue) {
-  const [headCatalogue, headVersion] = [atHead(CATALOGUE), versionIn(atHead(VERSION))]
-  if (!headCatalogue || !headVersion) return
+  const base = await versionBase()
+  const [baseCatalogue, baseVersion] = [atRef(base, CATALOGUE), versionIn(atRef(base, VERSION))]
+  if (!baseCatalogue || !baseVersion) return
   const version = versionIn(await readFile(VERSION, 'utf8'))
-  if (apiOf(JSON.parse(headCatalogue)) === apiOf(catalogue) || version !== headVersion) return
+  if (apiOf(JSON.parse(baseCatalogue)) === apiOf(catalogue) || version !== baseVersion) return
   problems.push(
-    `${rel(VERSION)}: the library's API changed since the last commit, and UI_LIBRARY_VERSION is still ${version}. ` +
+    `${rel(VERSION)}: the library's API changed since ${base}, and UI_LIBRARY_VERSION is still ${version}. ` +
       'Raise it: major for a removed or renamed component or prop, or a narrower type; minor for anything added.',
   )
 }
