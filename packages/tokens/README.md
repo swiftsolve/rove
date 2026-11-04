@@ -145,7 +145,7 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 
 **Only what Figma can't hold** (font stacks, easing curves, the focus expressions) is edited here, in `src/code-tokens.json`; then build and commit. Never edit `src/figma/*.json` by hand: it's an export, and the next one would undo it.
 
-**Then check.** The plugin's **Check** tab (against your files, or the latest release) or `npm run figma -- check` lists every difference: values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited by hand (undo it, and make the change in Figma).
+**Then check.** The plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma -- check` lists every difference: values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited by hand (undo it, and make the change in Figma).
 
 ## 🚀 Release
 
@@ -173,7 +173,7 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 | `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
 | `src/figma/effect-styles.json` | Raw export of the `Shadow/*` effect styles: each layer's offset, blur, spread and the colour variable bound to it. Each style becomes a `--shadow-*` token. |
-| `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the latest release (fetched from unpkg, its only network access) or with files you choose, and lists every difference. It never writes to the file. |
+| `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the three files you choose from a checkout and lists every difference. It never writes to the file, and needs no network access. |
 | `scripts/figma/script.mjs` | `npm run figma`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
 | `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 

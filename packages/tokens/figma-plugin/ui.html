@@ -333,7 +333,6 @@
 </footer>
 <footer id="check-footer" hidden>
   <span class="hint" id="source"></span>
-  <button class="btn secondary" id="release">Latest release</button>
   <button class="btn primary" id="choose">Choose files</button>
   <input type="file" id="files" accept=".json" multiple hidden />
 </footer>
@@ -371,7 +370,7 @@
   function showCheck() {
     if (checkError) return `<div class="state error">${escape(checkError)}</div>`
     if (busy) return state('Comparing with the repo…', true)
-    if (!result) return state('Compare this file with the latest release, or with the token files from a checkout.')
+    if (!result) return state('Choose the three files in src/figma/ from a checkout to compare this file with.')
     if (!result.diff.length) return state(`In step with ${escape(source)}.`)
     const items = result.diff.map((d) => {
       const values =
@@ -415,31 +414,6 @@
     source = from
     $('source').textContent = from
     check()
-  }
-
-  // The latest release, from npm through unpkg: the package ships src/.
-  const PACKAGE = 'https://unpkg.com/@swiftsolve/rove-tokens'
-  $('release').onclick = async () => {
-    busy = true
-    checkError = ''
-    show()
-    try {
-      const get = async (url) => {
-        const response = await fetch(url)
-        if (!response.ok) throw new Error(`${url}: ${response.status}`)
-        return response.json()
-      }
-      const { version } = await get(`${PACKAGE}@latest/package.json`)
-      const at = `${PACKAGE}@${version}/src`
-      const [variables, textStyles, effectStyles] = await Promise.all(
-        ['variables.json', 'text-styles.json', 'effect-styles.json'].map((f) => get(`${at}/figma/${f}`)),
-      )
-      load({ variables, textStyles, effectStyles }, `v${version}`)
-    } catch (error) {
-      busy = false
-      checkError = `Couldn't fetch the release. ${error.message}`
-      show()
-    }
   }
 
   // Files from a checkout: the three in src/figma/.

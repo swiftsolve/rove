@@ -7,7 +7,6 @@
   "editorType": ["figma"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["https://unpkg.com"],
-    "reasoning": "Sync compares the file with the latest @swiftsolve/rove-tokens release, fetched from unpkg."
+    "allowedDomains": ["none"]
   }
 }
