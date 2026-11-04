@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { PlusIcon, RefreshIcon } from '../icons/Icons'
 import { EmptyState, EmptyStateDescription } from './EmptyState'
@@ -10,6 +11,38 @@ const meta = {
   title: 'Status and feedback/EmptyState',
   component: EmptyState,
   args: { title: 'No services yet', description: "Add one to see whether it's up." },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A page with nothing to show yet: no devices, services or events.',
+        '`description` names what will fill it, or why it can’t.',
+        '`actions` for the step that fills it, like Add service.',
+        '`isLocked` when it can’t fill until the user acts outside Rove, like admin access.',
+      ],
+      avoid: [
+        'Still loading: use `LoadingState`.',
+        'A load that failed: use `Banner`.',
+        'One missing value in a row: use `NoValue`.',
+      ],
+      states: [
+        'A title alone, or with a description, actions or both.',
+        'Locked: a lock badge over the placeholder rows.',
+        'A further `EmptyStateDescription` line an action adds, like a note after Try again.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The title is an `<h2>`, so it sits in the page outline.',
+          'The placeholder rows and lock are hidden from screen readers.',
+        ],
+        yours: [
+          'A title that names what’s empty: “No devices yet”.',
+          'A description of two short sentences at most.',
+          '`role="status"` on a note an action adds, so it’s announced.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   argTypes: { actions: { control: false } },
   // It fills the page's content area, so it gets a box to centre in.
   render: (args) => (

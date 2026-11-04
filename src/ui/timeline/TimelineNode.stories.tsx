@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, RouterIcon, SearchIcon } from '../icons/Icons'
 import { TimelineNode } from './TimelineNode'
 
@@ -44,6 +45,38 @@ const meta = {
       <TimelineNode {...args} />
     </ol>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'One event in a feed or timeline: joined, left, went down.',
+        'A colour for what happened, usually a status token.',
+        '`neutral` for something quiet that left.',
+        'Its lines as children: what happened, then what it happened to.',
+      ],
+      avoid: [
+        'An item that isn’t an event in time: use `IconTile` in its row.',
+        'A row that opens something: use `ListRow`.',
+        'A message about the whole page: use `Banner`.',
+      ],
+      states: [
+        'Any colour washes the marker in the icon’s own colour.',
+        '`neutral` is a hollow ring, with a tertiary icon.',
+        'A line runs down to the next node. The last node drops it.',
+      ],
+      accessibility: {
+        builtIn: [
+          'An `<li>`, so the nodes read as a list with a count.',
+          'The marker is hidden from screen readers. The lines carry the event.',
+        ],
+        yours: [
+          'An `<ol>` around the nodes.',
+          'Lines that say what happened in words, not only by colour or icon.',
+          'A time in the lines when the order needs one.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof TimelineNode>
 
 export default meta

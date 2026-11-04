@@ -367,7 +367,9 @@ Components v1.0.0"). Raise it when the library's API changes.
   parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use, When
   not to use, States, and Accessibility split into Built in and Up to you, a
   few words a line. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
-  contents. Button has one; the rest follow.
+  contents. Every component has one, written for its whole family (Card's
+  covers CardHeader and the rest), and Figma's docs section carries the same
+  guide as a Guidance block under its intro.
 - `components.gen.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
@@ -406,15 +408,11 @@ in React 19 `ref` is a prop.
 Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 `<button>`.
 
-- Button's Docs page in Storybook says when to use each variant and tone,
-  its states and its accessibility; its props table lists the defaults.
-- Button draws its `icon` at 13px. IconButton draws its icon at 16px
-  (`iconSize={14}` for an icon that reads large).
+- Each one's Docs page in Storybook says when to use it and each variant, its
+  states and its accessibility; its props table lists the defaults.
 - Disabled and loading swallow every activation, a form submit included, and keep the
   button focusable, so a tooltip can say why. They mark the element with
   `data-disabled` and `data-loading`.
-- An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
-  bubble's text when it should say more.
 - Everything pressable shares that behaviour through
   `ui/utils/pressable.ts`, and styles a hover or press that only
   applies while usable with the `usable:` variant (`usable:hover:bg-hover`).

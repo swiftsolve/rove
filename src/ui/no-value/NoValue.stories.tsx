@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { DataList, DataRow } from '../data-list/DataList'
 import { NoValue } from './NoValue'
 
@@ -7,6 +8,37 @@ const meta = {
   title: 'Data display/NoValue',
   component: NoValue,
   args: { label: 'None' },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Where a value would be but there’s none: not measured, unknown.',
+        'In place of whatever a formatter returned null for.',
+        'Any size of line: a data row, a substat, a hero number.',
+      ],
+      avoid: [
+        'A field that may not apply at all: leave the `DataRow`’s value null, and the row isn’t drawn.',
+        'A section with nothing to show: use `EmptyState`.',
+        'A page still loading: use `LoadingState`.',
+        'A zero: it’s a value, so show it.',
+      ],
+      states: [
+        'One look: a short bar in the tertiary colour.',
+        'Sized in em, so it scales with its line and sits on its middle.',
+        '`label` sets what screen readers hear: “None” by default.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The bar is hidden. Screen readers hear `label` in its place.',
+          'No dash character, so nothing reads out as “dash”.',
+        ],
+        yours: [
+          'A `label` that says why: “Not measured”, “Unknown”.',
+          'A label nearby, like a row’s, that says what’s missing.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof NoValue>
 
 export default meta

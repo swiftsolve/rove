@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import * as Icons from '../icons/Icons'
 import { DeviceIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, WifiOffIcon } from '../icons/Icons'
 import { IconTile, IconTileButton } from './IconTile'
@@ -35,6 +36,42 @@ const meta = {
     size: { control: 'inline-radio', options: SIZES },
     color: { control: 'text' },
     icon: { control: 'select', options: Object.keys(ICONS), mapping: ICONS },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'The icon that starts an item’s row: a device, a capability.',
+        'A colour for what the item is, usually a token (`var(--series-down)`).',
+        '`neutral` for something uncategorised or not yet rated.',
+        '`IconTileButton` when the tile itself opens something.',
+      ],
+      avoid: [
+        'An icon-only action: use `IconButton`.',
+        'A whole row that opens something: use `ListRow`, with the tile inside.',
+        'An event on a timeline: use `TimelineNode`.',
+        'A status beside words: use `StatusDot`.',
+      ],
+      states: [
+        'Any colour washes the tile in the icon’s own colour.',
+        '`neutral` is the sunken fill, with a secondary icon.',
+        'Sizes: 30, 32 (the default) and 36px.',
+        'The button form: hover and keyboard focus deepen the tint and lift it. `isDisabled` makes it inert, with the same look.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The plain tile is decoration: library icons are hidden from screen readers.',
+          '`IconTileButton` is a native `<button>` named by `label`: Enter and Space press it.',
+          'A focus ring on keyboard focus.',
+          'Disabled, the button stays focusable and says so (`aria-disabled`), but ignores every press.',
+        ],
+        yours: [
+          'Words beside a plain tile that say what the item is.',
+          'A button `label` that names what it opens and its state: “Video calls: Good”.',
+          'An icon sized for the tile, 16 to 18px.',
+        ],
+      },
+    } satisfies Guidance,
   },
 } satisfies Meta<typeof IconTile>
 

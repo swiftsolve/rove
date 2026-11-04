@@ -1,11 +1,43 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { DotSeparator, InlineMeta } from './DotSeparator'
 
 const meta = {
   title: 'Containers/DotSeparator/DotSeparator',
   component: DotSeparator,
   subcomponents: { InlineMeta },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Between inline items on one line: an address, a vendor, a time.',
+        '`InlineMeta` for a list of items, some maybe empty.',
+        '`shouldTruncate` to keep them on one line.',
+        'A bare `DotSeparator` between two items you lay out yourself.',
+      ],
+      avoid: [
+        'Labels and their values: use `DataRow`s in a `DataList`.',
+        'A status beside its words: use `StatusDot`.',
+        'A missing value that should show: use `NoValue`.',
+        'A line between rows: `CardList` and `DataListStack` draw it.',
+      ],
+      states: [
+        'Wrapping, the default: items flow onto the next line.',
+        'Truncating: one line, each item ellipsizing as space runs out.',
+        'Empty items drop out with their dots. A `0` stays.',
+        'One item: no dot. None: nothing.',
+      ],
+      accessibility: {
+        builtIn: ['The dot is hidden from screen readers.', 'A truncated item keeps its full text for screen readers.'],
+        yours: [
+          'Items that still make sense read in a row, without the dots.',
+          'The full value somewhere else when truncation can hide it.',
+          'Text colour with enough contrast: it takes its line’s.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof DotSeparator>
 
 export default meta

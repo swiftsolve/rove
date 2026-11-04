@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Badge } from '../badge/Badge'
 import { IconButton } from '../button/IconButton'
 import { DataList, DataListStack, DataRow } from '../data-list/DataList'
@@ -17,6 +18,45 @@ const meta = {
     as: { control: 'inline-radio', options: ['section', 'div', 'li'] },
     onOpen: { control: false },
     children: { control: false },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A panel of related facts or controls: Wi‑Fi details, DNS, a group of settings.',
+        'A summary that opens its own view, with `onOpen`.',
+        '`CardBody layout="rows"` for setting rows, `"flush"` for a `DataListStack`.',
+        'A `CardFooter` for a footnote or status (“Updated 2 min ago”).',
+        '`CardList` for a list that is one card.',
+      ],
+      avoid: [
+        'A message about the whole page, like an error: use `Banner`.',
+        'Nothing to show yet: use `EmptyState`.',
+        'Details shown only on request: a `Collapsible` inside the card.',
+        'A row in a card’s list that opens a view: use `ListRow`.',
+      ],
+      states: [
+        'A header, a body, and an optional footer band.',
+        'Body layouts: `default` pads all round, `rows` drops the top padding, `flush` the sides.',
+        'Openable: its header ends in a caret. It lifts on hover and presses in.',
+        '`as="div"` or `"li"`: a bare surface with no header, like a card in a list.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A `section` card is a region named by its header’s title.',
+          'Openable: one link over the whole card, named by its title, first in Tab order. Header actions still take their own clicks.',
+          'A focus ring just inside the card while its link has keyboard focus.',
+          'The header’s icon is hidden from screen readers.',
+          '`CardList` is a list, named by its `label`.',
+        ],
+        yours: [
+          'A title that names the card. A `section` needs a `CardHeader`.',
+          'A `linkLabel` when the title doesn’t say enough, or there’s no header.',
+          'On an openable card, raising your own controls above its link (`relative z-2`).',
+          'A `CardList` `label` that names its rows (“Devices”).',
+        ],
+      },
+    } satisfies Guidance,
   },
   // A card's width in the app; All States, two columns of cards, is wider.
   decorators: [

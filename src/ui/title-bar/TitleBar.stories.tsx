@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BrandIcon } from '../icons/BrandIcon'
 import { TitleBar, TitleBarStatus, WindowButton } from './TitleBar'
 
@@ -30,7 +31,41 @@ const meta = {
     status: { control: false },
     controls: { control: false },
   },
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'The window’s top edge, once: brand, connection status and window controls.',
+        'A `TitleBarStatus` beside the brand: the connection, in words.',
+        '`WindowButton`s for minimise and close, on a frameless window.',
+      ],
+      avoid: [
+        'A page’s title and actions: use `PageHeader`.',
+        'Moving between pages: use `NavRail`.',
+        'A status anywhere else: a `StatusDot` beside its words.',
+      ],
+      states: [
+        'Positive: connected, the dot pulsing green.',
+        'Negative: connected, but something’s wrong beyond the link (“No internet”).',
+        'Neutral: connecting or offline, with a still dot.',
+        'Close turns red on hover. Minimise brightens.',
+        'No window buttons on a window with native decorations.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A `<header>` landmark, which also drags the window.',
+          '`TitleBarStatus` is a status region: a change is read out.',
+          'The status dot is decorative. The words carry it.',
+          'Each `WindowButton` is a native button named “Minimize” or “Close”, out of the Tab order like a native title bar’s.',
+        ],
+        yours: [
+          'A brand whose name is text, its mark hidden from screen readers.',
+          'Status words that make sense alone: “No internet”, not “Error”.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   // The app window's width.
   decorators: [
     (Story) => (

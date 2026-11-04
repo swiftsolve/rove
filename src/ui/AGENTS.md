@@ -5,7 +5,8 @@ The component library: the Figma components in code. The rules are in
 most of them. These are the ones it can't check:
 
 - Read `components.gen.json` for the library's API before reading the source.
-- A new component gets its stories in the same change. A part with props of
+- A new component gets its stories, with a usage guide (`guidance`), in the
+  same change, and its Figma docs section gets the same guide. A part with props of
   its own gets its own stories file beside its module.
 - An interactive component gets a story that drives it with a `play`
   function, named for the interaction and tagged `!autodocs`.

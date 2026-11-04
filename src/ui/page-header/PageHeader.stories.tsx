@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ComponentProps, ComponentType, ReactNode } from 'react'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
 import { iconElementControl } from '../icons/icon-options'
@@ -34,6 +35,42 @@ const meta = {
     icon: iconElementControl(18),
     actions: { control: false },
     onBack: { control: false },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'The top of every page but Home.',
+        '`icon`, the page’s rail icon, on a top-level page.',
+        '`onBack` on a page layered over a tab, like Hosts.',
+        '`status` while something runs (“Scanning…”).',
+        '`actions` for the page’s controls: help, refresh, its main `Button`.',
+      ],
+      avoid: [
+        'A card’s title: use `CardHeader`.',
+        'The window’s top edge: use `TitleBar`.',
+        'A message about the page, like an error: use `Banner`.',
+      ],
+      states: [
+        'Top level: the icon in a chip. Subpage: a back button in its place.',
+        '`status` takes the description’s place. The description fades back in when it clears.',
+        '`description={null}` holds the line’s height while there’s nothing to show.',
+        'Title only: leave `description` out.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The title is the page’s `<h1>`, in a `<header>`.',
+          'A new `status` is announced to screen readers.',
+          'The back button is named “Back”, with a tooltip to match.',
+          'The icon chip is hidden from screen readers.',
+        ],
+        yours: [
+          'A title that names the page, as the rail does.',
+          'A short `status` that says what’s running: “Scanning…”.',
+          'Labels and tooltips on the actions you pass.',
+        ],
+      },
+    } satisfies Guidance,
   },
   render: ({ icon, onBack, ...args }) =>
     onBack ? <PageHeader {...args} onBack={onBack} /> : <PageHeader {...args} icon={icon} />,

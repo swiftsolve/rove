@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, useId, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Toggle } from './Toggle'
 
 const meta = {
@@ -9,6 +10,41 @@ const meta = {
   component: Toggle,
   args: { label: 'Start at login', isChecked: true, onChange: fn() },
   argTypes: { isChecked: { control: false } },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A setting that’s on or off, in a setting row.',
+        'A change that applies at once, with no save.',
+        'Beside the setting’s title and description, which explain it.',
+      ],
+      avoid: [
+        'Picking one of a few options: use `SegmentedControl`.',
+        'An action that runs once, like Check now: use `Button`.',
+        'A status the user can’t change: use `Badge` or `StatusDot`.',
+      ],
+      states: [
+        'On: an accent track, the knob to the right.',
+        'Off: an inset track, the knob to the left.',
+        'Flipping slides the knob across.',
+        '`isDisabled` dims it, on or off.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A native `<button>` with `role="switch"`: a click or Space flips it.',
+          'Screen readers hear whether it’s on.',
+          'A focus ring on keyboard focus.',
+          'Disabled stays focusable, so a tooltip can say why. It ignores every flip and tells screen readers (`aria-disabled`).',
+          'With reduced motion, the knob jumps instead of sliding.',
+        ],
+        yours: [
+          'A `label` naming the setting, as the row’s title does. The switch shows no text.',
+          '`aria-describedby` pointing at the row’s description.',
+          'On a disabled switch, a tooltip that says why.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   render: (args) => <ControlledToggle {...args} />,
 } satisfies Meta<typeof Toggle>
 

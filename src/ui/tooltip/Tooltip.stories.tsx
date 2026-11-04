@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { Tooltip } from './Tooltip'
 
@@ -10,6 +11,40 @@ const meta = {
   argTypes: {
     children: { control: false },
     side: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A short hint on a control: what a value means, or why a button is off.',
+        'Detail that would crowd the row, like a host’s address.',
+        '`side="right"` beside the nav rail.',
+      ],
+      avoid: [
+        'Naming an icon-only button: use `IconButton`, whose `label` is its tooltip.',
+        'Anything to click or act on: use `Dialog` or `Menu`.',
+        'A message the user must see: use `Banner`.',
+      ],
+      states: [
+        'Opens at once on hover and keyboard focus. A click hides it.',
+        'Below its trigger by default. `side` puts it above or beside, and it flips and slides to stay in the window.',
+        'Wraps past `maxWidth`, 260px by default.',
+        '`isDisabled` never opens it, for content that would be stale.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Opens on keyboard focus, not only on hover.',
+          'Screen readers hear the content as the trigger’s description, after any it already had.',
+          'No description when it only repeats the trigger’s `aria-label`.',
+          'The bubble itself is hidden from screen readers, so nothing is read twice.',
+        ],
+        yours: [
+          'A focusable trigger, like a `Button`: keyboard users can’t reach a tip on plain text.',
+          'Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text too.',
+          'Two short sentences at most, and nothing needed to finish a task.',
+        ],
+      },
+    } satisfies Guidance,
   },
   // Room on every side for the bubble.
   decorators: [

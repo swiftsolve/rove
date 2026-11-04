@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { DirectionIcon } from '../icons/DirectionIcon'
 import { iconElementControl } from '../icons/icon-options'
 import { Readout } from './Readout'
@@ -21,6 +22,38 @@ const meta = {
       <Readout {...args} />
     </dl>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A headline figure and its unit: live speed, data used.',
+        'With a `label` and `icon` above it, side by side in a `<dl>`.',
+        '`compact` for a summary card’s figure, which has no label.',
+      ],
+      avoid: [
+        'A value in a list of facts: use `DataRow`.',
+        'A number inside a line of text that eases itself: use `MetricValue`.',
+        'A rating at a glance: use `BarMeter`.',
+      ],
+      states: [
+        'Sizes: `large`, the display figure, and `compact`.',
+        'Labelled: the icon and label above the figure.',
+        'Unlabelled: the icon inline, before the figure.',
+        'While the digits count up, `spokenValue` holds the settled value.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.',
+          'With `spokenValue`, the moving digits are hidden and screen readers hear it instead.',
+        ],
+        yours: [
+          'A `<dl>` around labelled readouts.',
+          'A `spokenValue` while the figure animates.',
+          'Without a label, words nearby that say what the figure is.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof Readout>
 
 export default meta

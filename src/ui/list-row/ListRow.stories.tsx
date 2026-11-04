@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
 import { IconTile } from '../icon-tile/IconTile'
@@ -64,6 +65,41 @@ const meta = {
       </CardBody>
     </Card>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A row in a card’s list that opens something: a capability, About.',
+        'An `IconTile`, a title and a description, then anything right-aligned last.',
+        'A text column with `flex-1`, so a meter after it sits on the right.',
+      ],
+      avoid: [
+        'A label and value that open nothing: use `DataRow` in a `DataList`.',
+        'A whole card that opens: use `Card` with `onOpen`.',
+        'Opening another view from a line of text: use `Link`.',
+        'An action on the page: use `Button`.',
+      ],
+      states: [
+        'The chevron is always faintly there, brighter on hover and focus.',
+        'Hover washes the row, bleeding 8px into the card’s padding.',
+        '`isDisabled` fades the whole row, with no hover and no action: results being replaced.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A native `<button>`, `type="button"`: Enter and Space press it.',
+          'Its text names it. The chevron is hidden from screen readers.',
+          'A focus ring, drawn inside the row.',
+          'Disabled, it stays in the Tab order and says so (`aria-disabled`), but ignores every press.',
+        ],
+        yours: [
+          'A list around the rows: `<ul role="list">` and an `<li>` each.',
+          'A title that says what opens.',
+          'Words for a meter: an `sr-only` rating (“Excellent”) beside the `BarMeter`.',
+          'Spans, not divs, inside: a button only holds inline content.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof ListRow>
 
 export default meta

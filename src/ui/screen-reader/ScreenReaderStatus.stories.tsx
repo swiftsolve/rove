@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { ScreenReaderStatus } from './ScreenReaderStatus'
 
@@ -9,6 +10,38 @@ const meta = {
   title: 'Accessibility/ScreenReaderStatus',
   component: ScreenReaderStatus,
   args: { children: 'Testing download…' },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Progress the screen shows without words: “Testing download…”.',
+        'An outcome to announce once it’s in, like an update check’s result.',
+        'A status that changes while focus stays where it is.',
+      ],
+      avoid: [
+        'A page’s status shown on screen too: use `PageHeader`’s `status`, already announced.',
+        'A field’s error or hint: use `TextField`’s `feedback`.',
+        'A failure the user must see: use `Banner`.',
+        'Hidden words that never change: a plain `sr-only` span.',
+      ],
+      states: [
+        'Empty: mounted, saying nothing.',
+        'New text: read out once, after what’s being read.',
+        'Never visible, whatever it holds.',
+      ],
+      accessibility: {
+        builtIn: [
+          '`role="status"`: a polite live region, read without interrupting.',
+          'Hidden on screen, still in the accessibility tree.',
+        ],
+        yours: [
+          'Keep it mounted, with empty text when there’s nothing to say.',
+          'Short text that makes sense heard alone.',
+          'New text only when the status changes, not on every tick.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof ScreenReaderStatus>
 
 export default meta

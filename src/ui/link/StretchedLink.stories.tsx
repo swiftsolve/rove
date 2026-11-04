@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ChevronRightIcon, SpeedIcon } from '../icons/Icons'
 import { StretchedLink } from './StretchedLink'
 
@@ -8,6 +9,41 @@ const meta = {
   title: 'Actions/StretchedLink',
   component: StretchedLink,
   args: { label: 'Open speed test', onClick: fn() },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A row that opens its view, when its content can’t sit in a button (a bar, figures).',
+        'A container that also holds a control of its own.',
+      ],
+      avoid: [
+        'A simple row with a chevron: use `ListRow`.',
+        'A whole card: use `Card` with `onOpen`, which draws its own.',
+        'A link beside text: use `Link`.',
+        'An action rather than a view: use `Button`.',
+      ],
+      states: [
+        'Invisible: the container’s content shows through.',
+        'Hover is the container’s to draw, like a row’s tint.',
+        'Keyboard focus rings the whole container, just inside its edge.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A `<button>` with `role="link"`, as it opens a view: Enter opens it.',
+          'Covers its container, so a click anywhere opens it.',
+          'Its focus ring follows the container’s corners.',
+          '`data-stretched-link`, so the container can style itself while it has focus.',
+        ],
+        yours: [
+          'A `label`, or `aria-labelledby` pointing at a heading.',
+          'A positioned container (`relative`) for it to cover.',
+          'Controls raised above it (`relative z-2`), as siblings, never nested.',
+          'A cue that the row opens, like a caret.',
+          'A rounded ring where the corners aren’t (a list’s first and last rows), with `className`.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof StretchedLink>
 
 export default meta

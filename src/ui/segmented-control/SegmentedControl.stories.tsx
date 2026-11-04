@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ComputerIcon, MoonIcon, SunIcon } from '../icons/Icons'
 import { SegmentedControl, type SegmentedOption } from './SegmentedControl'
 
@@ -24,6 +25,42 @@ const meta = {
   argTypes: {
     options: { control: false },
     value: { control: false },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Picking one of a few exclusive options, like the theme.',
+        'Every option in view at once, each a word or two.',
+        'A choice that applies at once, with no save.',
+        'An icon before each word when it helps, as the theme’s do.',
+      ],
+      avoid: [
+        'Turning a setting on or off: use `Toggle`.',
+        'Running an action: use `Button`.',
+        'Opening another view: use `Link`.',
+      ],
+      states: [
+        'The chosen segment sits on an accent thumb.',
+        'Hover tints an unchosen segment.',
+        'Picking another slides the thumb across.',
+        'Two options or more, with or without icons. No disabled state.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A radio group: each segment a radio on a native `<button>`.',
+          'One Tab stop. The arrow keys move and choose.',
+          'A focus ring inside the focused segment.',
+          'The thumb is hidden from screen readers. Each label names its radio.',
+          'With reduced motion, the thumb jumps instead of sliding.',
+        ],
+        yours: [
+          'A name for the group: `label`, or `aria-labelledby` pointing at a title on screen.',
+          'Short labels that tell the options apart.',
+          '`aria-describedby` pointing at the row’s description, when it has one.',
+        ],
+      },
+    } satisfies Guidance,
   },
   render: (args) => <ControlledSegmentedControl {...args} />,
 } satisfies Meta<typeof SegmentedControl>

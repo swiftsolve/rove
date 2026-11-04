@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Fragment } from 'react'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { SplitBar } from './SplitBar'
 
 // Rows of one list, every bar scaled against the busiest row's total.
@@ -20,6 +21,29 @@ const meta = {
   argTypes: {
     down: { control: { type: 'range', min: 0, max: MAX, step: 10 } },
     up: { control: { type: 'range', min: 0, max: MAX, step: 10 } },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Download and upload side by side, in a usage row.',
+        'Comparing rows: every row in one list shares a `max`.',
+        'A width, or an inset to line up with an icon, from its row.',
+      ],
+      avoid: ['A rating or signal: use `BarMeter`.', 'The amount itself: use `Readout`, or figures beside the bar.'],
+      states: [
+        'Download first, then upload, each scaled against `max`.',
+        'Nothing moved: just the empty track.',
+        'Widths ease to each new value, in step with the figures beside them.',
+      ],
+      accessibility: {
+        builtIn: ['An image to screen readers (`role="img"`), named by `label`.', 'Widths snap under reduced motion.'],
+        yours: [
+          'A `label` that reads the bar out: “620 MB down, 180 MB up”.',
+          'Figures beside it: colour alone doesn’t say which segment is which.',
+        ],
+      },
+    } satisfies Guidance,
   },
 } satisfies Meta<typeof SplitBar>
 

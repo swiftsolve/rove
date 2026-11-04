@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { StatusDot } from './StatusDot'
 
 // The dot is decorative, so each story shows it beside the words it marks.
@@ -12,6 +13,36 @@ const meta = {
   argTypes: {
     tone: { control: 'inline-radio', options: ['current', 'positive'] },
     pulse: { control: 'inline-radio', options: [undefined, 'calm', 'live', 'busy'] },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A status beside its words: a device online, a scan running.',
+        '`tone="positive"` when the words stay quiet; otherwise it takes their colour.',
+        '`pulse` at the pace of what it marks: `calm` connected, `live` streaming, `busy` a scan.',
+      ],
+      avoid: [
+        'A flag beside a title: use `Badge`.',
+        'Live data in a card header: use `LiveBadge`.',
+        'A page’s first load: use `LoadingState`.',
+      ],
+      states: [
+        'Still, by default.',
+        'Pulses: `calm`, `live` and `busy`, each a little faster.',
+        'Tones: `current`, its words’ colour and the default, or `positive`, green.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Hidden from screen readers (`aria-hidden`): the words carry the status.',
+          'Its pulse stops under reduced motion.',
+        ],
+        yours: [
+          'Words beside it that say the status on their own.',
+          'Never a meaning only the colour or pulse carries.',
+        ],
+      },
+    } satisfies Guidance,
   },
   render: (args) => (
     <span className="inline-flex items-center gap-6 type-caption text-secondary">

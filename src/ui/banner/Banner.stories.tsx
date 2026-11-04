@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, waitFor } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Banner } from './Banner'
 
 const meta = {
@@ -9,6 +10,39 @@ const meta = {
   args: { variant: 'error', title: "Couldn't load devices", description: 'Rove keeps trying in the background.' },
   argTypes: { variant: { control: 'inline-radio', options: ['error'] }, onRetry: { control: false } },
   // It runs the width of the page's content area.
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A failure above a page: a load, refresh or action that didn’t work.',
+        'A title for what failed, and a line on how old the data is or what happens next.',
+        '`onRetry` when trying again can help. Leave it out when the page polls and heals itself.',
+      ],
+      avoid: [
+        'Loaded, with nothing to show: use `EmptyState`.',
+        'Still loading: use `LoadingState`.',
+        'A short flag beside a title: use `Badge`.',
+        'A choice to make before going on: use `Dialog`.',
+      ],
+      states: [
+        '`variant="error"`: a red wash, a red Dismiss and a neutral Retry.',
+        'Retry reads “Retrying…” until its promise settles. A failed retry leaves the banner up.',
+        'Dismiss hides it until the title changes.',
+      ],
+      accessibility: {
+        builtIn: [
+          'An alert (`role="alert"`): screen readers read it as it appears.',
+          'Dismiss and Retry are `Button`s, with their keyboard, focus ring and busy state.',
+          'The icon is hidden from screen readers.',
+        ],
+        yours: [
+          'A title that says what failed: “Couldn’t load devices”.',
+          'A line that says what’s on screen now: “Showing figures from 5 minutes ago.”',
+          'Rendering it only while there’s an error.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   decorators: [
     (Story) => (
       <div className="w-[480px]">

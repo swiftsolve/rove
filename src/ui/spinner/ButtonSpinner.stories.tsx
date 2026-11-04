@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ButtonSpinner } from './ButtonSpinner'
 
 const meta = {
@@ -11,6 +12,37 @@ const meta = {
     color: { control: 'text' },
   },
   // It takes its colour from the text around it, as it does in a button.
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A loading `Button` or `IconButton` draws it for you.',
+        'A small busy mark outside a button, like a card header’s while a test runs.',
+        '`size` in px, to match the icon it stands in for.',
+      ],
+      avoid: [
+        'A button’s own wait: set `isLoading` on `Button` instead.',
+        'A page’s first load: use `LoadingState`.',
+        'A wait with room for the full indicator: use `Spinner`.',
+      ],
+      states: [
+        'One state: a ring that stretches as it spins, until it’s removed.',
+        'The text colour around it, unless `color` sets one.',
+        'Still under reduced motion.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Hidden from screen readers (`aria-hidden`).',
+          'An inline `<svg>`, so it’s valid inside a `<button>`.',
+          'Stops moving under reduced motion.',
+        ],
+        yours: [
+          'Outside a button, a name for the wait: words beside it, or `role="img"` and an `aria-label` on its wrapper.',
+          'Inside a button, a `loadingLabel` when the wait needs words.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   render: (args) => (
     <span className="inline-flex text-secondary">
       <ButtonSpinner {...args} />

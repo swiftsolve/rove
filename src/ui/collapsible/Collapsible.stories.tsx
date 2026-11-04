@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Card } from '../card/Card'
 import { DataList, DataRow } from '../data-list/DataList'
 import { ChevronDownIcon } from '../icons/Icons'
@@ -68,6 +69,41 @@ const meta = {
   argTypes: {
     as: { control: 'inline-radio', options: ['div', 'li'] },
     children: { control: false },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Details most people don’t need, like the connection card’s.',
+        'A group’s rows on request, like an app’s hosts. `as="li"` in a list.',
+        '`hasFocusFrame` when the trigger spans a card’s or group’s header.',
+      ],
+      avoid: [
+        'Content everyone needs: show it in the `Card`.',
+        'A few actions behind a button: use `Menu`.',
+        'A task that needs the user’s full attention: use `Dialog`.',
+        'Switching between views of one thing: use `SegmentedControl`.',
+      ],
+      states: [
+        'Closed: only the trigger shows.',
+        'Open: the panel grows to its content’s height, and shrinks back on close.',
+        'The trigger has `data-panel-open` while open, for a chevron that turns.',
+        'Focus frame: keyboard focus rings the whole collapsible, not the trigger.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The trigger is a native `<button>`: Enter and Space toggle it.',
+          'It says whether it’s open (`aria-expanded`) and what it controls.',
+          'A closed panel leaves the page and the accessibility tree.',
+          'With reduced motion, the panel opens without animating.',
+        ],
+        yours: [
+          'Trigger text that names what it shows: “Connection details”.',
+          'The trigger’s look: hover and focus styles, and a chevron.',
+          'With `hasFocusFrame`, the header’s hover look on focus too.',
+        ],
+      },
+    } satisfies Guidance,
   },
   // Keyed, so changing isOpen in the controls starts it afresh.
   render: (args) => <ControlledCollapsible key={String(args.isOpen)} {...args} />,

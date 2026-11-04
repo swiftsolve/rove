@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ConnectionIcon } from '../icons/ConnectionIcon'
 import {
   AppsIcon,
@@ -77,7 +78,42 @@ const meta = {
     main: { control: false },
     footer: { control: false },
   },
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'The app’s pages, down the window’s left side. One rail per window.',
+        'One `NavItem` per page in `main`, from the top.',
+        'Settings and app-wide switches, like the theme, in `footer`.',
+      ],
+      avoid: [
+        'A page’s own actions: use `PageHeader`’s `actions`.',
+        'Picking one of a few options on a page: use `SegmentedControl`.',
+        'An icon action anywhere else: use `IconButton`.',
+      ],
+      states: [
+        'Active: the current page’s item, tinted, with an accent bar on the edge.',
+        'On a page change, the bar slides to the new item while the tints cross-fade.',
+        'Hover brightens an item over a faint fill.',
+        'A focus ring on keyboard focus.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A `<nav>` landmark named by `label`, its items in lists.',
+          'The active item has `aria-current="page"`.',
+          'Each item is a native `<button>` named by its `label`, which is also its tooltip.',
+          'The sliding bar is hidden from screen readers. Reduced motion stops the slide.',
+        ],
+        yours: [
+          'A `label` for the rail: “Main navigation”.',
+          'A short page name as each item’s `label`.',
+          '`isActive` on the current page’s item, and only that one.',
+          'An action item’s label says what it does: “Switch to light mode”.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   // The app window's height below the title bar.
   decorators: [
     (Story) => (

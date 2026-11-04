@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Fragment } from 'react'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from './BarMeter'
 
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const
@@ -22,6 +23,38 @@ const meta = {
     value: { control: { type: 'range', min: 0, max: 4, step: 1 } },
     size: { control: 'inline-radio', options: SIZES },
     color: { control: 'select', options: COLORS },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Signal strength or a rating, at a glance.',
+        '`lg` for a list row’s rating, `sm` in a data row.',
+        '`md` beside a title, `xs` in a dense strip like Home’s.',
+        'A status token as `color`, matching how many bars are lit.',
+      ],
+      avoid: [
+        'An exact figure: use `Readout` or `MetricValue`.',
+        'Comparing traffic between rows: use `SplitBar`.',
+        'A status in words: use `Badge` or `StatusDot`.',
+      ],
+      states: [
+        '`value` lights 0 to 4 bars. The rest are a faint tint of `color`.',
+        'Nothing lit (`value={0}`): no rating yet.',
+        '`isDimmed` greys the bars but keeps the count: a stale rating waiting on a new test.',
+        'Sizes `xs`, `sm`, `md` and `lg`, the default.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Hidden from screen readers: it’s a picture of the value.',
+          'Unlit bars are a faint tint, so the count reads without telling colours apart.',
+        ],
+        yours: [
+          'The value in words: an `sr-only` word beside it (“Good”), or a wrapper with `role="meter"` and a label.',
+          'A colour that matches those words.',
+        ],
+      },
+    } satisfies Guidance,
   },
 } satisfies Meta<typeof BarMeter>
 

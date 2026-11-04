@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, useState } from 'react'
 import { expect, fn, waitFor } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { PortalProvider } from '../context/PortalProvider'
 import { PlusIcon } from '../icons/Icons'
@@ -30,7 +31,40 @@ const meta = {
     layout: 'padded',
     // An open dialog makes the page behind it inert, so on the docs page each
     // story gets a frame of its own.
-    docs: { story: { inline: false, iframeHeight: 340 } },
+    docs: { story: { inline: false, iframeHeight: 340 }, toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A short task to finish before going on: adding a service.',
+        'Confirming what can’t be undone, with only a header and actions (“Clear history?”).',
+        'One thing shown up close, like a Wi‑Fi QR code.',
+      ],
+      avoid: [
+        'A hint on hover or focus: use `Tooltip`.',
+        'A failure or message about the page: use `Banner`.',
+        'A few actions on one item: use `Menu`.',
+        'Details that can sit on the page: use `Collapsible`.',
+      ],
+      states: [
+        'Fades and scales in and out. `DialogRoot` keeps it mounted while it leaves.',
+        'Its height springs to fit when its content changes.',
+        '`canClose={false}` while something runs: Close, Cancel, Escape and the backdrop are all off.',
+        '`isDirty` once the user types: a backdrop click no longer closes it. Escape still does.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A modal `dialog`, named by its title and described by `description`.',
+          'Focus moves in and stays in. The page behind is inert.',
+          'Escape closes it, and focus goes back to the control that opened it.',
+          'The close button is named “Close”.',
+        ],
+        yours: [
+          'A title that names the task: “Add a service”.',
+          'An `onClose` that closes it, and `canClose={false}` while closing would lose work.',
+          'Focus on the first field (`autoFocus`), so Escape isn’t spent on the close button’s tooltip.',
+          'A live region around a body that swaps state, so the new one is read.',
+        ],
+      },
+    } satisfies Guidance,
   },
 } satisfies Meta<typeof Dialog>
 

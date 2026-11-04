@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { iconArg, iconComponentControl } from '../icons/icon-options'
 import { GlobeIcon, PlayIcon } from '../icons/Icons'
 import { Link } from './Link'
@@ -10,6 +11,40 @@ const meta = {
   component: Link,
   args: { children: 'All hosts', icon: iconArg('GlobeIcon'), onClick: fn() },
   argTypes: { icon: iconComponentControl },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Opening another view from a card or a row: “All hosts”, “View timeline”.',
+        'An address outside the app, with `href`. It opens in a new window.',
+        'Beside text, at the size of the text around it.',
+      ],
+      avoid: [
+        'An action that changes something: use `Button`.',
+        'A whole row that opens a view: use `ListRow`, or `StretchedLink` for richer rows.',
+        'A whole card that opens a view: use `Card` with `onOpen`.',
+      ],
+      states: [
+        'Muted at rest. Hover and keyboard focus turn it accent and underline the label.',
+        'In the app (`onClick`) it ends in a caret; outside it (`href`), in an arrow.',
+        '`isDisabled` dims it, for a link in the app.',
+        'An optional `icon` before the label.',
+      ],
+      accessibility: {
+        builtIn: [
+          'In the app, a `<button>` with `role="link"`: Enter opens its view.',
+          'Outside it, an `<a>` that opens a new window and tells screen readers so.',
+          'Keyboard focus looks like hover, accent and underline, in place of a ring.',
+          'Disabled stays focusable, ignores every press and tells screen readers (`aria-disabled`).',
+          'Its icons are hidden from screen readers.',
+        ],
+        yours: [
+          'Words that name where it goes: “All hosts”, not “Click here”.',
+          'On a disabled link, a tooltip that says why.',
+        ],
+      },
+    } satisfies Guidance,
+  },
   // At the size of the text it sits in.
   render: (args) => (
     <span className="type-caption text-tertiary">

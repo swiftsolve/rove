@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, screen, waitFor, within } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { EditIcon, TrashIcon } from '../icons/Icons'
 import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
 
@@ -30,6 +31,41 @@ const meta = {
   argTypes: {
     isOpen: { control: false },
     children: { control: false },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A few secondary actions on a row or a page header: Edit, Remove.',
+        'Keeping a destructive action out of the way, like Speed history’s Delete.',
+        '`tone="negative"` on an item that deletes or clears.',
+      ],
+      avoid: [
+        'The page’s main action: use `Button`.',
+        'One frequent action: use `IconButton`.',
+        'Picking one of a few options: use `SegmentedControl`.',
+        'Opening another view: use `Link`.',
+      ],
+      states: [
+        'Closed, the kebab tints on hover. Open, it keeps the tint.',
+        'An item highlights on hover and on the arrow keys alike.',
+        'A negative item is red, with a red tint when highlighted.',
+        'It keeps its own open state, or takes `isOpen` and `onOpenChange`.',
+      ],
+      accessibility: {
+        builtIn: [
+          'The kebab is a menu button: screen readers hear it opens a menu, and whether it’s open.',
+          'Enter opens it on its first item. The arrow keys move between items.',
+          'Escape, a click outside or an item closes it, and focus returns to the kebab.',
+          'Not modal: a click outside still lands where it was aimed.',
+          'The highlight is the items’ focus indicator. Their icons are hidden from screen readers.',
+        ],
+        yours: [
+          'A kebab `label` that names what it’s for: “Options for Google”.',
+          'Short item labels that say what happens: Edit, Remove.',
+        ],
+      },
+    } satisfies Guidance,
   },
   // The menu lines up with the kebab's right edge, so it needs room to its
   // left, and room below to open into.

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useEffect, useState } from 'react'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { type MetricStatus, MetricValue } from './MetricValue'
 
 const formatMs = (n: number): string => `${Math.round(n)} ms`
@@ -21,6 +22,39 @@ const meta = {
       </span>
     ),
   ],
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'A number that changes each poll: latency, a speed.',
+        '`status` once the value has earned a colour: green, amber or red.',
+        'Inside the text that sets its size: a row’s value, a hero figure.',
+      ],
+      avoid: [
+        'A figure with its unit and label: use `Readout`.',
+        'A value that doesn’t change: use `DataRow`.',
+        'A rating at a glance: use `BarMeter`.',
+      ],
+      states: [
+        'The first paint shows the value outright. Each later change eases to it.',
+        'No `status`: the text colour around it.',
+        '`status` `positive`, `warning` or `negative`.',
+        'A `format` that returns null draws `NoValue`.',
+      ],
+      accessibility: {
+        builtIn: [
+          'Snaps to each new value under reduced motion.',
+          'Plain text: screen readers read the number on screen.',
+          'A missing value is a `NoValue`, heard as “None”.',
+        ],
+        yours: [
+          'A label in the line around it that says what it measures.',
+          'The status in words where it matters, not only colour.',
+          'A change worth announcing, through `ScreenReaderStatus`.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof MetricValue>
 
 export default meta

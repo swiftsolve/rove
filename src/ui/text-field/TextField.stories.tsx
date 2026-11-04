@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { TextField, TextFieldAction } from './TextField'
 
 const onTest = fn()
@@ -14,6 +15,44 @@ const meta = {
     value: { control: false },
     action: { control: false },
     feedback: { control: 'text' },
+  },
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      use: [
+        'Typing a short value, like an address or a name.',
+        'In a `<form>`, so Enter submits it.',
+        'With a `TextFieldAction` inside its border to check the value, like Test.',
+        '`feedback` under it for a hint, a result or an error.',
+      ],
+      avoid: [
+        'Picking one of a few known options: use `SegmentedControl`.',
+        'Turning a setting on or off: use `Toggle`.',
+        'A value to read, not edit: use `DataRow`.',
+        'Submitting the form: use a `Button` outside the field.',
+      ],
+      states: [
+        'Empty, showing the `placeholder`, or filled.',
+        'Focus turns the border accent.',
+        '`isInvalid` turns the border and the `feedback` red.',
+        'The action can be disabled until there’s a value, or loading: only a spinner.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A native `<input>`, named by its `label`.',
+          'The `feedback` is its description and a live region, so each change is announced.',
+          '`isInvalid` sets `aria-invalid`.',
+          'Focus shows as the accent border.',
+          'The action works as `Button` does: disabled and loading stay focusable, ignore presses, and tell screen readers.',
+        ],
+        yours: [
+          'A `label` that names the value: “Address”, not “Enter an address”.',
+          'A `placeholder` with sample input, never the only hint.',
+          'An error in words in `feedback`, so red isn’t the only cue.',
+          'A `loadingLabel` on a loading action, since only a spinner shows.',
+        ],
+      },
+    } satisfies Guidance,
   },
   render: (args) => <ControlledTextField {...args} />,
   decorators: [
