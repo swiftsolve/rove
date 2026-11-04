@@ -8,6 +8,8 @@ export default { title: 'Introduction' }
 
 const REPO = 'https://github.com/swiftsolve/rove-tokens'
 const FIGMA = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System'
+// The Rove Components Storybook, built from these tokens.
+const COMPONENTS = 'https://rove.swiftsolve.net/storybook/'
 
 // A Storybook page, from inside the preview iframe: `./?path=` is the manager.
 const pageHref = (id) => `./?path=/story/${id}`
@@ -288,7 +290,7 @@ const CONSUMERS = [
     icon: 'rove',
     name: 'Rove',
     body: 'The app and its component library import `tokens.css` and `text-styles.css`, and style with nothing else.',
-    href: 'https://rove.swiftsolve.net/storybook/',
+    href: COMPONENTS,
   },
   {
     icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
@@ -521,6 +523,7 @@ const LINKS = [
   { icon: 'fileText', label: 'DESIGN.md', href: `${REPO}/blob/main/DESIGN.md` },
   { icon: 'lightbulb', label: 'Rationale', href: `${REPO}/blob/main/docs/rationale.md` },
   { icon: 'github', label: 'GitHub', href: REPO },
+  { icon: 'rove', label: 'Rove components', href: COMPONENTS },
 ]
 
 function IntroductionPage() {
