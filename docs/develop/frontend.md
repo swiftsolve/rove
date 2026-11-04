@@ -30,8 +30,7 @@ after a commit (syncing the sites and Storybook).
    (`Data display/Name`), with an `AllStates` story when it has several states.
    One that takes a handler gets a `play` story too.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. Its entry in `src/ui/figma.json` (`null` when Figma has none) and its row in
-   the [Components](#components) table. The entry's `name` and `node` are the
+6. Its entry in `src/ui/figma.json` (`null` when Figma has none). The entry's `name` and `node` are the
    Figma component's (or component set's) name and the id in its link's
    `node-id`, with `-` as `:`; never guess one. Map the component set, not
    one of its variants. A prop with values Figma has no variant for goes in
@@ -47,8 +46,8 @@ Check: `npm run check`, then `npm run storybook` to look at it in both themes.
 
 ### Change a library component
 
-1. Change the code, its doc comments and stories, and the
-   [Components](#components) row if its use changed.
+1. Change the code, its doc comments, and its stories and usage guide if its
+   use changed.
 2. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` for an API change.
 3. The same change in Figma.
 
@@ -320,7 +319,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
-| `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
+| `components.gen.json` fresh; doc comments, defaults and `figma.json` entries present | `build-ui-catalogue.mjs --check` |
 | A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `build-ui-catalogue.mjs --check` |
 | An API change since the last commit raises `UI_LIBRARY_VERSION` | `build-ui-catalogue.mjs --check` |
 | Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
@@ -471,45 +470,16 @@ Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 
 ## Components
 
-Each Figma component has a counterpart in the library; build from these before
-writing new markup. Icons come from `@/ui` (`<HomeIcon />`, the brand mark is
-`<BrandIcon />`); don't draw new ones inline.
+Each Figma component has a counterpart in the library: build from these before
+writing new markup. Which one to use, and its props, variants and usage guide,
+are in `src/ui/components.gen.json` (read it first) and on each component's
+Docs page in Storybook (`npm run storybook`, or the
+[hosted copy](https://rove.swiftsolve.net/storybook/)).
 
-| Figma | Code | Use |
-| --- | --- | --- |
-| Title bar, Title bar status, Window button | `TitleBar`, `TitleBarStatus`, `WindowButton` | Brand, connection status and window controls, on `--bg-chrome`. 56px tall (`--titlebar-height`). `AppTitleBar` fills it from the app. |
-| Nav rail | `NavRail`, `NavItem` | One item per page, on `--bg-chrome`; the current page's is active, with an `--accent-muted` tint and an edge bar. On a page change the bar slides to the new item while the tints cross-fade. `TabBar` fills it from the tab registry. |
-| Page header | `PageHeader` | Top of every page except Home: icon chip, title, `description` and `actions`, over a full-width divider. `status` ("Checking…") takes the description's place while something runs. `onBack` (Back in Figma) puts a back button in the icon's place. |
-| Button | `Button` | `variant` solid (the main action; `tone="negative"` to stop it), soft (everything else; `tone="negative"` on a red surface, like an error Banner's Dismiss). |
-| Icon button | `IconButton` | Icon-only, with a tooltip (`label`, or `tooltip` for a hint), as a soft chip, or `variant="ghost"` with no background until hovered (a dialog's close). |
-| Link | `Link` | A muted link at its text's size. `onClick` opens another view and ends in a caret; `href` opens an address in a new window and ends in an arrow. |
-| Menu, Menu trigger, Menu item | `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem` | An overflow menu behind a kebab, on `bg-popover` with `shadow-popover`; `MenuItem tone="negative"` for a destructive action. |
-| Dialog | `Dialog`, `DialogRoot` | Modal: title, optional description, a recessed body, an optional `footnote` under it, Cancel and the main action. Render the component that holds it inside `<DialogRoot isOpen>`, which mounts it on open and keeps it through the leave animation. Its height springs to fit when its content changes (`ease-spring` over `--duration-spring`); fade a swapped-in state with `animate-fade-in`. |
-| Tooltip | `Tooltip` | Short hint on hover and keyboard focus, on the trigger's `side`, centred on it, on `bg-popover` with `shadow-popover`. Screen readers get it as the trigger's description. |
-| Toggle | `Toggle` | On/off switch for a setting. Disabled, it stays in the Tab order, like a disabled Button. |
-| Segmented control, Segment | `SegmentedControl` | A few exclusive options side by side (the theme picker): a radio group, named by `label` or `aria-labelledby`. |
-| Text field | `TextField`, `TextFieldAction` | A labelled input with an announced `feedback` line and an optional action inside its border (Test). Put fields in a `<form>`. |
-| None | `Collapsible`, `CollapsibleTrigger`, `CollapsiblePanel` | Shows and hides a panel (the connection card's details, an app's hosts). `hasFocusFrame` rings the whole collapsible, not the trigger, whose header takes its hover look on focus; the panel animates its height. |
-| Card, Card header | `Card`, `CardHeader`, `CardBody`, `CardFooter` | A card with a 44px header (icon, title, `actions`), a body and an optional footer band. `CardBody layout`: `default` pads all round, `rows` for rows with their own vertical padding (no top padding, 12px above a footer), `flush` for a `DataListStack`. `onOpen` makes the whole card a link, named by its header's title (`linkLabel` when it should say more): it draws the link, its header ends in a caret, and it lifts on hover and presses in. A control inside raises itself above the link (`relative z-2`); header actions already do. `Card as="li" \| "div"` is a bare surface. It always clips to its corners, so anything that floats out of it portals. |
-| Card list | `CardList` | A list that is one card: its `<li>` rows, with a hairline between them running edge to edge. `label` names it. |
-| Data row | `DataRow`, `DataList`, `DataListStack` | Label and value, the value right-aligned. Rows go in a `DataList`, which makes them a `<dl>` and sets their `density`; `DataListStack` groups several, with a hairline between that runs end to end: place it flush to the card's sides (`CardBody layout="flush"`), and it insets each group. |
-| List row | `ListRow` | A whole-row button that opens something, with a chevron on the right. Right-aligned content (a meter) is its last child. Disabled, the whole row fades. |
-| None | `StretchedLink` | A transparent link over a whole row, so a click anywhere opens its view. A Card draws its own with `onOpen`. |
-| None | `ScreenReaderStatus` | A live region only screen readers hear: hidden, kept mounted, it reads out its text as it changes ("Testing download…"). Pass empty text when there's nothing to say. Other hidden words stay a plain `sr-only` span. |
-| Badge, Live badge | `Badge`, `LiveBadge` | A tinted uppercase flag (`tone`), or the dark Live pill with a pulsing dot. |
-| Status dot | `StatusDot` | A 5px dot beside status words, in their colour or `tone="positive"`; `pulse` calm, live or busy. |
-| Icon tile | `IconTile`, `IconTileButton` | The tinted square behind an item's icon (`icon`, `size`, `color`): any colour, usually a token (`var(--series-down)`), or `neutral`, the sunken background for something uncategorised. The button form opens something. |
-| Timeline node | `TimelineNode` | One event on a timeline, an `<li>`: a round marker (`icon`, `color`: any colour, usually a status token, or `neutral`, a hollow ring for something that left), its lines beside it, and a line down to the next node. The events feed and the services timeline use it. |
-| Bar meter (in Signal bars, Capability cell) | `BarMeter` | Four rising bars, some lit, at four sizes (`value`, `size`, `color`): any colour, usually a status token (`var(--status-good)`), or the text colour around it. `CapabilityMeter` and the connection card's signal use it. |
-| Split bar | `SplitBar` | A 3px track with a download and an upload segment, scaled against `max`. Rows in one list share `max` so their bars compare (a usage row). |
-| Dot separator | `DotSeparator`, `InlineMeta` | A dot between inline items. Never type a middle dot. It takes its type from its line. `shouldTruncate` keeps them on one line, each ellipsizing; otherwise they wrap. |
-| Metric value | `MetricValue` | A number in the numeric face that eases to each new value, coloured by `status` when it's earned. Its size comes from the text around it. A `format` that returns null draws `NoValue`. |
-| No value | `NoValue` | A short drawn bar where a value is missing, never a typed dash. It scales with its line, and screen readers hear `label` ("Not measured"; default "None"). Formatters return null for a missing value; the caller renders `NoValue`. |
-| Readout | `Readout` | A number and its unit (live speed, data used), `size` large or compact (a summary card's figure, with no label), with an optional `label` and `icon`. Labelled, it goes in a `<dl>`; without a label, the icon sits inline with the figure. |
-| Throughput chart | `ThroughputChart` (live-throughput) | Last 60 seconds of download (solid) and upload (dashed), scaled by `maxValue`. |
-| Sparkline | `Sparkline` (services) | Recent latency for a service row. |
-| Connection card, Traffic card, Capabilities card, Stat card | features | Built from the above, on the Patterns page. |
-| Banner | `Banner` | A message above a page: title, a line under it, then Dismiss and Retry. `variant="error"` for a failure: Dismiss is red to match, Retry neutral. |
-| Empty state | `EmptyState`, `EmptyStateDescription` | Blank page: faded placeholder rows (a lock badge when `isLocked`), title, `description` and `actions`. `EmptyStateDescription` is a further line an action adds (`role="status"` to announce it). |
-| Loading state | `LoadingState` | A page's first load: the spinner over a line, announced. |
-| Spinner, Button spinner | `Spinner`, `ButtonSpinner` | Loading indicators. Buttons show the button spinner for `isLoading`; use it directly only outside a button. |
+- Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
+  Don't draw new ones inline.
+- The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
+  the nav rail, from the tab registry.
+- Figma's Patterns page holds what features build from the library, like
+  `ThroughputChart` (`features/live-throughput`) and `Sparkline`
+  (`features/services`). They live with their feature, not in `src/ui`.

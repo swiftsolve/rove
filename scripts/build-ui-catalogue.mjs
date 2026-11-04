@@ -19,9 +19,8 @@
  * `--check`, part of `npm run lint`, also fails when a component or one of its
  * own props has no doc comment, a prop has a default the Default column misses
  * (one in a recipe's `defaultVariants`, or only in its words), or a component
- * has no entry in figma.json (`null` says it has no Figma counterpart) or no
- * row in docs/develop/frontend.md's Components table, or a component with a
- * Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
+ * has no entry in figma.json (`null` says it has no Figma counterpart), or a
+ * component with a Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
  * `Containers/Card/CardHeader`) has no usage guide.
  *
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
@@ -44,7 +43,6 @@ const UI = join(ROOT, 'src/ui')
 const INDEX = join(UI, 'index.ts')
 const CATALOGUE = join(UI, 'components.gen.json')
 const FIGMA = join(UI, 'figma.json')
-const FRONTEND_DOC = join(ROOT, 'docs/develop/frontend.md')
 const VERSION = join(UI, 'version.ts')
 const isCheck = process.argv.includes('--check')
 
@@ -247,17 +245,9 @@ function readOtherExports(componentNames) {
   return { icons: icons.sort(), helpers: Object.fromEntries(Object.entries(helpers).sort()) }
 }
 
-// Every component name in backticks in the Components table.
-async function readDocumentedNames() {
-  const doc = await readFile(FRONTEND_DOC, 'utf8')
-  const table = doc.slice(doc.indexOf('## Components'))
-  return new Set([...table.matchAll(/`([A-Z]\w+)/g)].map(([, name]) => name))
-}
-
 const components = await readIndex()
 const { docs, elementProps } = readProps(components)
 const figma = JSON.parse(await readFile(FIGMA, 'utf8'))
-const documented = await readDocumentedNames()
 const storiesByName = new Map()
 for (const { name, source } of components) storiesByName.set(name, await readStories(source, name))
 
@@ -282,7 +272,6 @@ for (const { name, group, source } of components) {
   if (!(name in figma.components)) {
     problems.push(`${rel(FIGMA)}: add ${name}, with its Figma component, or null if it has none`)
   }
-  if (!documented.has(name)) problems.push(`${rel(FRONTEND_DOC)}: ${name} has no row in the Components table`)
   const stories = storiesByName.get(name)
   const handler = Object.keys(doc.props).find((prop) => /^on[A-Z]/.test(prop))
   if (handler && stories.file && !stories.hasInteraction) {
