@@ -74,7 +74,14 @@ function Icon({ name, label }) {
   const brand = BRAND_ICONS[name]
   if (brand)
     return (
-      <svg className="intro-icon" viewBox="0 0 24 24" fill={brand.color} role="img" aria-label={brand.title}>
+      <svg
+        className="intro-icon"
+        viewBox="0 0 24 24"
+        fill={brand.color}
+        role="img"
+        aria-label={brand.title}
+        style={brand.optical ? { transform: `scale(${brand.optical})` } : undefined}
+      >
         <path d={brand.path} />
       </svg>
     )
@@ -160,7 +167,7 @@ const CONSUMERS = [
     href: 'https://rove.swiftsolve.net/storybook/',
   },
   {
-    icons: ['claude', 'cursor', 'copilot', 'gemini'],
+    icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
     name: 'Coding agents',
     body: 'Read `DESIGN.md` from `node_modules`, so they reach for a token, not a hex.',
   },
@@ -355,11 +362,18 @@ const EXPLORE = [
     title: 'Motion',
     body: 'Ease out over a fast or normal duration; resizing panels spring.',
     specimen: (
-      // Rove's Spinner, the ldrs waveform it shows while a speed test runs:
-      // four bars rising in turn, on the --ease-in-out curve.
+      // Rove's Spinner, the ldrs waveform it shows while a speed test runs, drawn
+      // across the card: each bar rises a beat after the last, on --ease-in-out,
+      // shading from the download colour to the upload one as the test does.
       <span className="intro-wave">
-        {[-0.45, -0.3, -0.15, 0].map((delay) => (
-          <span key={delay} style={{ animationDelay: `${delay}s` }} />
+        {Array.from({ length: 26 }, (_, i) => (
+          <span
+            key={i}
+            style={{
+              animationDelay: `${-0.05 * (25 - i)}s`,
+              background: `color-mix(in oklab, var(--series-down) ${Math.round(100 - (i / 25) * 100)}%, var(--series-up))`,
+            }}
+          />
         ))}
       </span>
     ),

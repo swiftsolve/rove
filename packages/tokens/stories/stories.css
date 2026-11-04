@@ -510,6 +510,13 @@
 
 /* Introduction: the landing page, its pipeline diagram and the page cards. */
 
+/* Every card on the page keeps one rhythm: 20px in, 16px from icon to title, 6px from title to text. */
+.intro {
+  --intro-card-pad: 20px;
+  --intro-icon-gap: 16px;
+  --intro-text-gap: 6px;
+}
+
 /* It's read more than the token pages, so its section intros are a step up. */
 .intro .section-intro {
   font-size: var(--font-size-xl);
@@ -584,8 +591,8 @@
 }
 
 .intro-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex: none;
 }
 
@@ -657,8 +664,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--intro-icon-gap);
+  padding: var(--intro-card-pad);
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--bg-inset);
@@ -666,7 +673,7 @@
 
 .intro-icons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-secondary);
 }
 
@@ -699,7 +706,7 @@
 .intro-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--intro-text-gap);
 }
 
 .intro-item-name {
@@ -736,10 +743,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--intro-text-gap);
   height: 100%;
   box-sizing: border-box;
-  padding: 24px;
+  padding: var(--intro-card-pad);
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--bg-inset);
@@ -759,7 +766,7 @@
   display: flex;
   align-items: center;
   height: 56px;
-  margin-bottom: 12px;
+  margin-bottom: calc(var(--intro-icon-gap) - var(--intro-text-gap));
 }
 
 .intro-card-title {
@@ -776,8 +783,8 @@
 
 .intro-card-arrow {
   position: absolute;
-  top: 24px;
-  right: 24px;
+  top: var(--intro-card-pad);
+  right: var(--intro-card-pad);
   color: var(--text-tertiary);
   transition:
     color var(--duration-fast) var(--ease-out),
@@ -857,15 +864,15 @@
 /* Rove's waveform Spinner: each bar grows and shrinks a beat after the one before. */
 .intro-wave {
   display: flex;
-  gap: 7px;
+  gap: 4px;
   align-items: center;
   height: 50px;
 }
 
 .intro-wave span {
-  width: 7px;
+  width: 4px;
   height: 100%;
-  background: var(--accent-default);
+  border-radius: var(--radius-full);
   animation: intro-wave 1s var(--ease-in-out) infinite;
 }
 
@@ -884,10 +891,10 @@
 .intro-principle {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--intro-text-gap);
   height: 100%;
   box-sizing: border-box;
-  padding: 24px;
+  padding: var(--intro-card-pad);
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--bg-inset);
@@ -895,7 +902,7 @@
 
 .intro-principle-icon {
   display: flex;
-  margin-bottom: 10px;
+  margin-bottom: calc(var(--intro-icon-gap) - var(--intro-text-gap));
   color: var(--text-accent);
 }
 
