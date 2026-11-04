@@ -31,8 +31,23 @@ Follow the checklist. As you go:
 ## The Figma side
 
 The component lives on its group's page in the Rove Design System file
-(`src/ui/figma.json` has the file). Load the `figma-use` and
-`figma-generate-library` skills before any `use_figma` call.
+(`src/ui/figma.json` has its URL; the file key is the part after `/design/`).
+
+What you need:
+
+- **The Figma MCP server**, connected (in Claude Code, the claude.ai Figma
+  connector). Its `use_figma` tool runs Figma Plugin API JavaScript inside the
+  file: that's how an agent builds components and edits doc pages. Call its
+  `create_session` with the file key first, and pass the session id to every
+  call after.
+- **Figma's skills** `figma-use` (Plugin API rules; required before any
+  `use_figma` call) and `figma-generate-library` (components, variants and
+  variable bindings). They come with Figma's Claude Code plugin, as
+  `figma:figma-use` and `figma:figma-generate-library`, and the MCP server also
+  serves them (`skill://figma/figma-use/SKILL.md`) when the plugin isn't
+  installed. Load both before the first `use_figma` call.
+
+Without the server, stop after the code side and say the Figma side is left.
 
 1. Build it from the file's variables and text styles, never raw values, with
    the same props and variants as the code.
