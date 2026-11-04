@@ -1,4 +1,4 @@
-import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
+import { Code, Codes, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { cssName, flatten, group, textStyles, typography } from './tokens'
 
 export default { title: 'Typography' }
@@ -157,15 +157,22 @@ function TextStyles() {
 export const Typography = {
   render: () => (
     <Page title="Typography" intro="Inter for interface text, Questrial for numbers.">
-      <Section title="Families" intro="Inter (font-family/sans) for text, Questrial (font-family/numeric) for numbers.">
-        <Families />
-      </Section>
-      <Section title="Size scale" intro="The font sizes every text style uses.">
-        <SizeScale />
-      </Section>
-      <Section title="Text styles" intro="Apply a style instead of setting fonts by hand. In code, it's one class.">
-        <TextStyles />
-      </Section>
+      <Group title="Primitive tokens" intro="The raw families and sizes, named by what they are.">
+        <Section
+          title="Families"
+          intro="Inter (font-family/sans) for text, Questrial (font-family/numeric) for numbers."
+        >
+          <Families />
+        </Section>
+        <Section title="Size scale" intro="The font sizes every text style uses.">
+          <SizeScale />
+        </Section>
+      </Group>
+      <Group title="Semantic tokens" intro="What you use, each named for its job and built from these.">
+        <Section title="Text styles" intro="Apply a style instead of setting fonts by hand. In code, it's one class.">
+          <TextStyles />
+        </Section>
+      </Group>
     </Page>
   ),
 }

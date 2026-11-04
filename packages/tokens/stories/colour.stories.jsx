@@ -1,6 +1,6 @@
 import figmaVariables from '../src/figma/variables.json'
 import backgrounds from './backgrounds.png'
-import { Code, Joined, Name, Page, Section, Table, TableRow } from './blocks'
+import { Code, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
 
 export default { title: 'Colour' }
@@ -290,40 +290,37 @@ function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
 
 export const Colour = {
   render: () => (
-    <Page
-      title="Colour"
-      intro="Primitive palette shades, and the semantic tokens that point at them, in Dark and Light."
-    >
-      <Section
-        title="Primitive palette"
-        intro={[
-          'The shades the tokens point at.',
-          'Named hue/darkness: darkness is 1000 minus ten times the OKLCH lightness, so blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%.',
-        ]}
-        warning="Use a token, never a shade."
-      >
-        <PaletteGrid />
-      </Section>
-      <Section
-        title="Semantic tokens"
-        intro="What you use: each named for its job, and pointing at a shade above. The sections below group them."
-      />
-      {SECTIONS.map(({ title, intro, names, diagram }) => (
-        <Section key={title} title={title} intro={intro}>
-          {diagram}
-          <ColourTable names={names} />
+    <Page title="Colour" intro="Primitive shades, and the semantic tokens that point at them, in Dark and Light.">
+      <Group title="Primitive tokens" intro="The raw shades, named by hue and darkness.">
+        <Section
+          title="Palette"
+          intro={[
+            'The shades the tokens point at.',
+            'Named hue/darkness: darkness is 1000 minus ten times the OKLCH lightness, so blue/450 is 55% light. -a adds opacity: neutral/850-a10 is 10%.',
+          ]}
+          warning="Use a semantic token, not a primitive."
+        >
+          <PaletteGrid />
         </Section>
-      ))}
-      <Section title="Icon tone" intro="Set the mode on the icon’s parent frame, so swapped icons keep the colour.">
-        <ModePanels variable="icon/color" modes={ICON_TONES} Glyph={ActivityIcon} />
-      </Section>
-      <Section
-        title="Capability level"
-        intro="Colours capability glyphs through level/color. Set it on any frame above the glyph."
-      >
-        <ModePanels variable="level/color" modes={LEVELS} Glyph={HdIcon} isLabelClose />
-      </Section>
-      <Section title="Contrast" intro="WCAG 2.2 AA in both themes: text 4.5:1, icons and bars 3:1." />
+      </Group>
+      <Group title="Semantic tokens" intro="What you use, each named for its job.">
+        {SECTIONS.map(({ title, intro, names, diagram }) => (
+          <Section key={title} title={title} intro={intro}>
+            {diagram}
+            <ColourTable names={names} />
+          </Section>
+        ))}
+        <Section title="Icon tone" intro="Set the mode on the icon’s parent frame, so swapped icons keep the colour.">
+          <ModePanels variable="icon/color" modes={ICON_TONES} Glyph={ActivityIcon} />
+        </Section>
+        <Section
+          title="Capability level"
+          intro="Colours capability glyphs through level/color. Set it on any frame above the glyph."
+        >
+          <ModePanels variable="level/color" modes={LEVELS} Glyph={HdIcon} isLabelClose />
+        </Section>
+        <Section title="Contrast" intro="WCAG 2.2 AA in both themes: text 4.5:1, icons and bars 3:1." />
+      </Group>
     </Page>
   ),
 }

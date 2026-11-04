@@ -16,6 +16,18 @@ export function Page({ title, intro, children }) {
   )
 }
 
+// A half of a page: its primitive tokens, named by what they are, or its
+// semantic ones, named for their job. Its sections follow inside it.
+export function Group({ title, intro, children }) {
+  return (
+    <section className="group">
+      <h2 className="group-title">{title}</h2>
+      {intro && <p className="group-intro">{intro}</p>}
+      {children}
+    </section>
+  )
+}
+
 // `intro` is a line or a list of lines. `warning` is a rule to follow, on its own line under the intro with the warning icon.
 export function Section({ title, intro, warning, children }) {
   return (

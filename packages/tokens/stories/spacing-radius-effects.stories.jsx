@@ -1,4 +1,4 @@
-import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
+import { Code, Codes, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { code, colorIn, cssName, group, layout, opacity, shadowIn, spacing } from './tokens'
 import windowLayout from './window-layout.png'
 
@@ -272,25 +272,29 @@ export const SpacingRadiusEffects = {
       title="Spacing, radius & effects"
       intro="Spacing, radii, elevation, opacity and window layout. Bind to tokens, never type numbers."
     >
-      <Section title="Spacing" intro="Gaps and padding in 2px steps.">
-        <SpacingTable />
-      </Section>
-      <Section title="Corner radius" intro="Rounded-corner sizes for frames and controls.">
-        <Radii />
-      </Section>
-      <Section
-        title="Elevation"
-        intro="Four depth levels, set by shadow. Floating layers also get a border. Softer in Light mode."
-      >
-        <Elevation />
-      </Section>
-      <Section title="Opacity" intro="Bind layer opacity to these, not to typed numbers.">
-        <OpacityTable />
-      </Section>
-      <Section title="Window layout" intro="Sizes of the title bar, rail and content area.">
-        <WindowDiagram />
-        <WindowLayout />
-      </Section>
+      <Group title="Primitive tokens" intro="The raw scales, named by size.">
+        <Section title="Spacing" intro="Gaps and padding in 2px steps.">
+          <SpacingTable />
+        </Section>
+        <Section title="Corner radius" intro="Rounded-corner sizes for frames and controls.">
+          <Radii />
+        </Section>
+        <Section title="Opacity" intro="Bind layer opacity to these, not to typed numbers.">
+          <OpacityTable />
+        </Section>
+      </Group>
+      <Group title="Semantic tokens" intro="What you use, each named for its job.">
+        <Section
+          title="Elevation"
+          intro="Four depth levels, set by shadow. Floating layers also get a border. Softer in Light mode."
+        >
+          <Elevation />
+        </Section>
+        <Section title="Window layout" intro="Sizes of the title bar, rail and content area.">
+          <WindowDiagram />
+          <WindowLayout />
+        </Section>
+      </Group>
     </Page>
   ),
 }
