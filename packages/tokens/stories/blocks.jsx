@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 // The building blocks of every page, laid out as the Figma file's Foundations
 // pages are and styled in stories.css with the tokens themselves.
@@ -126,16 +126,60 @@ async function copyText(text) {
 
 // A code chip that copies itself on click, or `copy` when that differs from
 // what it shows: `.type-heading-large` copies the class name alone.
+// "Copied" stays until the pointer or focus leaves, never flipping back to "Copy"
+// under the pointer; a tap gets it for at least COPIED_MIN_MS. It resets once the
+// tooltip has faded out.
+const COPIED_MIN_MS = 900
+const TIP_FADE_MS = 200
+
 export function Code({ children, copy: copyAs }) {
-  const [isCopied, setIsCopied] = useState(false)
+  // idle, then copied, then leaving (the tooltip fades with "Copied" still in it).
+  const [state, setState] = useState('idle')
+  const copiedAt = useRef(0)
+  const timer = useRef(0)
   const text = [children].flat().join('')
   const copy = async () => {
     await copyText(copyAs ?? text)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 1200)
+    clearTimeout(timer.current)
+    copiedAt.current = Date.now()
+    setState('copied')
   }
+  const leave = () => {
+    if (state !== 'copied') return
+    const wait = Math.max(0, COPIED_MIN_MS - (Date.now() - copiedAt.current))
+    timer.current = setTimeout(() => {
+      setState('leaving')
+      timer.current = setTimeout(() => setState('idle'), TIP_FADE_MS)
+    }, wait)
+  }
+  const isCopied = state !== 'idle'
+  const className = ['code', isCopied && 'is-copied', state === 'leaving' && 'is-leaving'].filter(Boolean).join(' ')
   return (
-    <button type="button" className={isCopied ? 'code is-copied' : 'code'} title="Copy" onClick={copy}>
+    // The tooltip says what a click does, then that it did it: both labels sit in
+    // one place and crossfade, so the text never swaps mid-frame.
+    <button
+      type="button"
+      className={className}
+      aria-label={`Copy ${copyAs ?? text}`}
+      onClick={copy}
+      onPointerLeave={leave}
+      onBlur={leave}
+    >
+      <span className="code-tip" aria-hidden="true">
+        <span className="code-tip-label code-tip-copy">
+          <svg viewBox="0 0 24 24">
+            <rect x="8" y="8" width="14" height="14" rx="2" />
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+          </svg>
+          Copy
+        </span>
+        <span className="code-tip-label code-tip-copied">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          Copied
+        </span>
+      </span>
       <code>{text}</code>
       <span className="visually-hidden" aria-live="polite">
         {isCopied ? 'Copied' : ''}

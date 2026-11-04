@@ -154,6 +154,93 @@
   color: var(--text-accent);
 }
 
+/* The tooltip over a chip, as Rove's: "Copy" on hover or focus, "Copied" after a click.
+   Both labels share one grid cell, so the tooltip keeps its size and they crossfade. */
+.code {
+  position: relative;
+}
+
+.code-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  padding: 3px 7px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  background: var(--bg-popover);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: -50% 2px;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    translate var(--duration-fast) var(--ease-out);
+}
+
+.code:hover .code-tip,
+.code:focus-visible .code-tip,
+.code.is-copied .code-tip {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+/* Leaving after a copy: the tooltip fades out still saying "Copied". */
+.code.is-leaving .code-tip {
+  opacity: 0;
+  translate: -50% 2px;
+}
+
+.code-tip-label {
+  display: flex;
+  grid-area: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    translate var(--duration-normal) var(--ease-out);
+}
+
+.code-tip-label svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.code-tip-copied {
+  color: var(--text-accent);
+  opacity: 0;
+  translate: 0 3px;
+}
+
+.code.is-copied .code-tip-copy {
+  opacity: 0;
+  translate: 0 -3px;
+}
+
+.code.is-copied .code-tip-copied {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-tip,
+  .code-tip-label {
+    transition: none;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -463,7 +550,11 @@
 
 /* Motion */
 
+/* A play or pause icon before the label, in the label's colour. */
 .motion-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 24px;
   padding: 8px 16px;
   border: 0;
@@ -475,6 +566,12 @@
   font-weight: var(--type-label-large-weight);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out);
+}
+
+.motion-play-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
 .motion-play:hover {
@@ -505,7 +602,7 @@
   background: var(--accent-default);
 }
 
-.is-playing .track-dot {
+.is-at-end .track-dot {
   left: calc(100% - 12px);
 }
 
@@ -574,6 +671,8 @@
 
 /* Every card on the page keeps one rhythm: 20px in, 16px from icon to title, 6px from title to text. */
 .intro {
+  /* One gap between every card on the page, and between the diagram's rows. */
+  --intro-gap: 32px;
   --intro-card-pad: 20px;
   --intro-icon-gap: 16px;
   --intro-text-gap: 6px;
@@ -604,6 +703,24 @@
   gap: 10px;
   margin: 16px 0 0;
   font-size: var(--font-size-xl);
+}
+
+/* The package name opens it on npm: the chip as before, in the accent on hover. */
+.intro-package-link {
+  border-radius: var(--radius-xs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.intro-package-link .intro-code {
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.intro-package-link:hover .intro-code {
+  background: var(--accent-muted);
+  color: var(--text-accent);
 }
 
 .intro-version {
@@ -637,17 +754,42 @@
   color: var(--text-accent);
 }
 
+/* The Rove mark beside the page title, as the app's title bar shows it. */
+.intro-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.intro-hero-mark {
+  flex: none;
+  width: 44px;
+  height: 39px;
+}
+
 .intro-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
-  transition: background var(--duration-fast) var(--ease-out);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
 }
 
+/* The accent tint, as the package chip takes; the border fades into it. */
 .intro-links a:hover {
-  background: var(--overlay-hover);
+  border-color: transparent;
+  background: var(--accent-muted);
+}
+
+.intro-links .intro-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .intro-item-name a:hover {
@@ -675,9 +817,8 @@
 
 .intro-diagram {
   --intro-label: 168px;
-  --intro-gap: 32px;
   display: grid;
-  gap: 24px;
+  gap: var(--intro-gap);
   margin: 0;
 }
 
@@ -688,9 +829,9 @@
   column-gap: 24px;
 }
 
-/* The stage labels head their columns, so they sit closer to the cards than the rows sit to each other. */
+/* The stage labels head their columns, so they sit 12px over the cards, closer than the rows sit to each other. */
 .intro-stages {
-  margin-bottom: -12px;
+  margin-bottom: calc(12px - var(--intro-gap));
 }
 
 /* The stage labels sit on the same grid as the cards, so each starts at its column's edge. */
@@ -827,7 +968,7 @@
   display: grid;
   /* Four across, then two, then one, so no card is left alone on a row. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--intro-gap);
   margin: 24px 0 0;
   padding: 0;
   list-style: none;
@@ -883,14 +1024,18 @@
   top: var(--intro-card-pad);
   right: var(--intro-card-pad);
   color: var(--text-tertiary);
+  /* The slide gets the longer duration and its own layer, so 4px glides in sub-pixel
+     steps instead of jumping a pixel a frame. */
   transition:
     color var(--duration-fast) var(--ease-out),
-    translate var(--duration-fast) var(--ease-out);
+    translate var(--duration-normal) var(--ease-out);
+  will-change: translate;
 }
 
-.intro-card:hover .intro-card-arrow {
+.intro-card:hover .intro-card-arrow,
+.intro-card:focus-visible .intro-card-arrow {
   color: var(--text-accent);
-  translate: 3px 0;
+  translate: 4px 0;
 }
 
 /* The cover's palette row, as overlapping circles; the ring is the card, so each reads apart. */
@@ -1065,9 +1210,11 @@
 }
 
 /* The principles' icons are ideas, not products, so they're one set: line icons on an accent tile. */
+/* A heavier line than the cards' icons, so it holds up on the tinted tile. */
 .intro-principle-icon .intro-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
 }
 
 .intro-principle-body {
@@ -1078,6 +1225,10 @@
 
 /* Narrow: the stages stack, each step names its stage, and arrows point down. */
 @media (max-width: 1180px) {
+  .intro {
+    --intro-gap: 24px;
+  }
+
   .intro-stages {
     display: none;
   }
@@ -1090,7 +1241,7 @@
   .intro-steps,
   .intro-consumers {
     grid-template-columns: 1fr;
-    row-gap: 24px;
+    row-gap: var(--intro-gap);
   }
 
   .intro-steps .intro-node {
@@ -1108,7 +1259,7 @@
     bottom: calc(100% + 1px);
     left: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
     width: var(--intro-arrow-weight);
-    height: 23px;
+    height: calc(var(--intro-gap) - 1px);
     background: repeating-linear-gradient(to top, var(--intro-arrow-dash));
   }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'
 import { code, cssName, flatten, motion } from './tokens'
@@ -35,17 +35,50 @@ const track = (transition) => (
   </span>
 )
 
+// While playing, the dots cross every LOOP_MS: longer than the slowest move (the
+// spring's 450ms), so each one rests at the end before it heads back.
+const LOOP_MS = 1100
+
+// The button's icon, as Rove's line icons draw it.
+function PlayIcon({ isPlaying }) {
+  return (
+    <svg className="motion-play-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {isPlaying ? (
+        <>
+          <rect x="6" y="5" width="4" height="14" rx="1" />
+          <rect x="14" y="5" width="4" height="14" rx="1" />
+        </>
+      ) : (
+        <path d="M7 5.5v13a1 1 0 0 0 1.52.85l10.4-6.5a1 1 0 0 0 0-1.7L8.52 4.65A1 1 0 0 0 7 5.5Z" />
+      )}
+    </svg>
+  )
+}
+
 function MotionPage() {
   const [isPlaying, setIsPlaying] = useState(false)
+  // Which end the dots head for. Pausing stops the loop; each dot finishes its move.
+  const [isAtEnd, setIsAtEnd] = useState(false)
+  useEffect(() => {
+    if (!isPlaying) return undefined
+    const timer = setInterval(() => setIsAtEnd((atEnd) => !atEnd), LOOP_MS)
+    return () => clearInterval(timer)
+  }, [isPlaying])
+  // Play sets off the first move at once; the loop takes it from there.
+  const toggle = () => {
+    if (!isPlaying) setIsAtEnd((atEnd) => !atEnd)
+    setIsPlaying(!isPlaying)
+  }
   const tokens = [...flatten(code), ...flatten(motion)]
   const easings = tokens.filter((token) => token.$type === 'cubicBezier')
   const durations = tokens.filter((token) => token.$type === 'duration')
   return (
     <Page title="Motion" intro="Ease out over a fast or normal duration. Resizing panels spring.">
-      <button type="button" className="motion-play" onClick={() => setIsPlaying(!isPlaying)}>
-        {isPlaying ? 'Reset' : 'Play'}
+      <button type="button" className="motion-play" aria-pressed={isPlaying} onClick={toggle}>
+        <PlayIcon isPlaying={isPlaying} />
+        {isPlaying ? 'Pause' : 'Play'}
       </button>
-      <div className={isPlaying ? 'is-playing' : undefined}>
+      <div className={isAtEnd ? 'is-at-end' : undefined}>
         <Section title="Easing" intro="Each over the normal duration; the spring over its own.">
           <Table
             columns={[

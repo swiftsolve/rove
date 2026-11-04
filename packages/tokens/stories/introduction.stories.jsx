@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import designPackage from '../package.json'
 import { BRAND_ICONS } from './brand-icons'
 import { colorDark, flatten, group, palette, spacing, textStyles } from './tokens'
@@ -31,6 +33,61 @@ const withCode = (text) =>
     ),
   )
 
+// Rove's count-up (src/ui/hooks/useCountUp.ts): each frame covers this share of
+// the gap, and the number snaps on once it's this close.
+const EASE_FACTOR = 0.18
+const SNAP_THRESHOLD = 0.05
+
+// A number that counts up to `hover` while its card is hovered or focused, and
+// back down to `to` when it's left, the same way each time, with Rove's readout
+// ease. It holds still under reduced motion.
+function CountUp({ to, hover, className }) {
+  const ref = useRef(null)
+  const [value, setValue] = useState(to)
+  useEffect(() => {
+    const card = ref.current?.closest('.intro-card')
+    if (!card) return undefined
+    let frame = 0
+    let current = to
+    let target = to
+    const step = () => {
+      const remaining = target - current
+      if (Math.abs(remaining) < SNAP_THRESHOLD) {
+        current = target
+        setValue(current)
+        frame = 0
+        return
+      }
+      current += remaining * EASE_FACTOR
+      setValue(current)
+      frame = requestAnimationFrame(step)
+    }
+    const easeTo = (next) => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+      target = next
+      if (!frame) frame = requestAnimationFrame(step)
+    }
+    const up = () => easeTo(hover)
+    const down = () => easeTo(to)
+    card.addEventListener('mouseenter', up)
+    card.addEventListener('mouseleave', down)
+    card.addEventListener('focus', up)
+    card.addEventListener('blur', down)
+    return () => {
+      cancelAnimationFrame(frame)
+      card.removeEventListener('mouseenter', up)
+      card.removeEventListener('mouseleave', down)
+      card.removeEventListener('focus', up)
+      card.removeEventListener('blur', down)
+    }
+  }, [to, hover])
+  return (
+    <span ref={ref} className={className}>
+      {Math.round(value)}
+    </span>
+  )
+}
+
 // The Figma mark in its own colours; the other icons are lines in currentColor.
 function FigmaMark() {
   return (
@@ -45,9 +102,9 @@ function FigmaMark() {
 }
 
 // The Rove mark in the accent, as Rove's own title bar draws it, so it deepens in Light.
-function RoveMark() {
+function RoveMark({ className = 'intro-icon' }) {
   return (
-    <svg className="intro-icon intro-rove-mark" viewBox="4.5 4.5 39 34.5" aria-hidden="true">
+    <svg className={`${className} intro-rove-mark`} viewBox="4.5 4.5 39 34.5" aria-hidden="true">
       <circle cx="24" cy="24" r="7.5" fill="currentColor" />
       <path
         d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
@@ -74,6 +131,12 @@ const LINE_ICONS = {
     'M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1',
     'M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1',
   ],
+  // Primitives under semantic tokens.
+  layers: [
+    'M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z',
+    'm22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65',
+    'm22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65',
+  ],
   tag: [
     'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z',
     'M7.5 7.5h.01',
@@ -93,6 +156,22 @@ const LINE_ICONS = {
     'M5 18H3',
   ],
   arrow: ['M5 12h14', 'm12 5 7 7-7 7'],
+  fileText: [
+    'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z',
+    'M14 2v4a2 2 0 0 0 2 2h4',
+    'M10 9H8',
+    'M16 13H8',
+    'M16 17H8',
+  ],
+  lightbulb: [
+    'M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5',
+    'M9 18h6',
+    'M10 22h4',
+  ],
+  github: [
+    'M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4',
+    'M9 18c-4.51 2-5-2-7-2',
+  ],
 }
 
 function Icon({ name, label }) {
@@ -190,7 +269,7 @@ const CHECKS = [
   {
     icon: 'node',
     name: 'The build',
-    body: 'Fails if a token points at one that doesn’t exist, or its CSS name doesn’t match its Figma name.',
+    body: 'Stops when a token points at one that doesn’t exist, or a variable’s CSS name doesn’t match its Figma name.',
   },
   {
     icon: 'figma',
@@ -200,7 +279,7 @@ const CHECKS = [
   {
     icon: 'eslint',
     name: 'Rove’s lint',
-    body: 'Fails a raw colour or spacing in place of a token, and a misspelt token name in the app.',
+    body: 'Fails the app on a raw colour or spacing where a token belongs, and on a misspelt token name.',
   },
 ]
 
@@ -230,9 +309,9 @@ const PRINCIPLES = [
     body: 'Tokens flow one way: designed there, exported, built. Nothing writes back to Figma, and nothing in `dist/` is edited by hand.',
   },
   {
-    icon: 'tag',
-    lead: 'Named by role',
-    body: '`bg/surface` says what a colour is for, not how it looks, and points at one Palette shade.',
+    icon: 'layers',
+    lead: 'A scale, then a role',
+    body: '`spacing/12` is a step on a scale. `card/padding` names a job and points at a step. Use the job when there is one.',
   },
   {
     icon: 'accessibility',
@@ -242,7 +321,7 @@ const PRINCIPLES = [
   {
     icon: 'sparkles',
     lead: 'Written down for agents',
-    body: '`DESIGN.md` names every token and its use, with no colour values to copy.',
+    body: '`DESIGN.md` names every token and its use, with no colour values to copy. It ships in the package.',
   },
 ]
 
@@ -318,7 +397,7 @@ function Pipelines() {
       ))}
       {[
         { title: 'Checked by', summary: 'What fails when a token goes wrong.', cards: CHECKS },
-        { title: 'Used by', summary: 'What reads the package.', cards: CONSUMERS },
+        { title: 'Used by', summary: 'What a token change reaches.', cards: CONSUMERS },
       ].map(({ title, summary, cards }) => (
         <div key={title} className="intro-pipeline">
           <div className="intro-pipeline-title">
@@ -370,7 +449,7 @@ const EXPLORE = [
     specimen: (
       <span className="intro-type-pair">
         <span className="intro-type type-heading-large">Aa</span>
-        <span className="intro-type type-number-display">182</span>
+        <CountUp className="intro-type type-number-display" to={182} hover={240} />
       </span>
     ),
   },
@@ -435,11 +514,12 @@ const EXPLORE = [
   },
 ]
 
+// Line icons in the link's accent, so the four read as one row.
 const LINKS = [
-  { label: 'Figma file', href: FIGMA },
-  { label: 'DESIGN.md', href: `${REPO}/blob/main/DESIGN.md` },
-  { label: 'Rationale', href: `${REPO}/blob/main/docs/rationale.md` },
-  { label: 'GitHub', href: REPO },
+  { icon: 'figmaLine', label: 'Figma file', href: FIGMA },
+  { icon: 'fileText', label: 'DESIGN.md', href: `${REPO}/blob/main/DESIGN.md` },
+  { icon: 'lightbulb', label: 'Rationale', href: `${REPO}/blob/main/docs/rationale.md` },
+  { icon: 'github', label: 'GitHub', href: REPO },
 ]
 
 function IntroductionPage() {
@@ -447,9 +527,19 @@ function IntroductionPage() {
     <main className="page intro">
       <header className="intro-hero">
         <p className="page-overline">Design tokens</p>
-        <h1 className="page-title">Rove Tokens</h1>
+        <h1 className="page-title intro-title">
+          <RoveMark className="intro-hero-mark" />
+          Rove Tokens
+        </h1>
         <p className="intro-package">
-          <code className="intro-code">{designPackage.name}</code>
+          <a
+            className="intro-package-link"
+            href={`https://www.npmjs.com/package/${designPackage.name}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <code className="intro-code">{designPackage.name}</code>
+          </a>
           <span className="intro-version">v{designPackage.version}</span>
         </p>
         <p className="page-intro">
@@ -457,8 +547,9 @@ function IntroductionPage() {
           token there, export it, and one build carries it to the app, its coding agents and these pages.
         </p>
         <nav className="intro-links" aria-label="Elsewhere">
-          {LINKS.map(({ label, href }) => (
+          {LINKS.map(({ icon, label, href }) => (
             <a key={label} href={href} target="_blank" rel="noreferrer">
+              <Icon name={icon} />
               {label}
             </a>
           ))}
