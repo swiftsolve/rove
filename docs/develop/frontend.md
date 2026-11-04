@@ -1,7 +1,8 @@
 # Rove frontend
 
 How the React UI in `src/` is organised and styled, and which component to use
-for what. Read it before writing or changing UI. For where files live, see
+for what. Read it before writing or changing UI; `src/AGENTS.md` imports it, so
+Claude Code loads it with the first file under `src/`. For where files live, see
 [Layout](../../README.md#layout) in the README.
 
 - [Checklists](#checklists) for the common changes
@@ -27,7 +28,7 @@ after a commit (syncing the sites and Storybook).
 3. An export from `src/ui/index.ts`, under its group's comment.
 4. Stories beside it (`Name.stories.tsx`), titled by its group
    (`Data display/Name`), with an `AllStates` story when it has several states.
-   An interactive one gets a `play` story too.
+   One that takes a handler gets a `play` story too.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
 6. Its entry in `src/ui/figma.json` (`null` when Figma has none) and its row in
    the [Components](#components) table. The entry's `name` and `node` are the
@@ -285,6 +286,10 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
   sidebar; `npx vitest --project=storybook` runs them alone. A new machine
   needs `npx playwright install chromium` once.
+- While working on a component, run just its folder, in seconds:
+  `npx vitest run --project=storybook --project=dom src/ui/<folder>` runs its
+  stories and DOM tests. Then look at it in Storybook in both themes: no test
+  sees a wrong shade or a cramped gap.
 - All three kinds run with `npm test`, part of `npm run check`, which CI
   runs on every push and pull request (`.github/workflows/test.yml`).
 - Looks are checked by pixels. `npm run screenshots -- --stable` uses a paused
@@ -334,7 +339,10 @@ itself (by relative path) and packages, never app code.
 
 The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows ("Rove
-Components v1.0.0"). Raise it when the library's API changes.
+Components v1.0.0"). Raise it when the library's API changes: major for a
+removed or renamed component or prop, or a narrower type; minor for anything
+added. The catalogue check fails an API change on an unchanged version;
+picking major or minor is yours.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are
@@ -379,11 +387,12 @@ Components v1.0.0"). Raise it when the library's API changes.
   lists every part as a tab, for the family's props at a glance. The
   component and its parts share a folder (`Containers/Card/CardBody`),
   ordered in `.storybook/preview.tsx`.
-- An interactive component (Menu, Dialog, Toggle, SegmentedControl,
-  TextField, Collapsible) has a story that drives it with a `play` function
-  and asserts what happens: keyboard, focus, the callbacks. Name it for the
-  interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
-  moving focus would scroll its Docs page. A play that leaves the story as it
+- A component that takes a handler (`onClick`, `onChange`, `onBack`) has a
+  story that drives it with a `play` function and asserts what its guide
+  promises: keyboard, focus, the callbacks, a disabled one ignoring a press.
+  Name it for the interaction (`Pressing`, `EscapeCloses`) and tag it
+  `!autodocs`, since moving focus would scroll its Docs page. The catalogue
+  check fails a handler with no such story. A play that leaves the story as it
   found it (`DisabledOff`) can stay on the Docs page.
 - A component's intro is one sentence on what it is, with no rules: the
   stories' `docs.subtitle` ("A headline number and its unit, with an optional
@@ -414,7 +423,8 @@ Components v1.0.0"). Raise it when the library's API changes.
   in.
 - `components.gen.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
-  Figma component, story ids and usage guide. `npm run catalogue` writes it from the code
+  Figma component, story ids and usage guide. Read it, not the sources, to
+  learn the API or pick a component. `npm run catalogue` writes it from the code
   and `figma.json`, which names each component's Figma component and node
   (`null` when Figma has none).
 
