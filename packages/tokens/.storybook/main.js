@@ -6,6 +6,8 @@ import react from '@vitejs/plugin-react'
 const config = {
   stories: ['../stories/*.stories.jsx'],
   addons: ['@storybook/addon-docs'],
+  // public/favicon.svg, the Rove Mark alone, is the tab's icon in place of Storybook's.
+  staticDirs: [{ from: './public', to: '/' }],
   framework: '@storybook/react-vite',
   core: { disableTelemetry: true, disableWhatsNewNotifications: true },
   // Pages of tokens, not components: no onboarding, "new" badges, or canvas tools that do nothing here.
