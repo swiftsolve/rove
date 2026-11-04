@@ -304,6 +304,10 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Figma and the library agree: `figma.json`'s nodes and names, and every variant property and its values (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
+`checks/escapes.mjs` never fails: it counts the ways around these rules (lint
+disables, allowed raw values, Figma exceptions) in every run and in CI's job
+summary, so a rise shows. `--list` names each one.
+
 Review still has to catch: props passed only to pass down, hints over two
 sentences, focus or presence handled by hand, a view reaching into a
 component's DOM, and Figma out of sync beyond its variants (a token, a
