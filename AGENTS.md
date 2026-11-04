@@ -7,7 +7,7 @@ everything:
 | Task | Read |
 | --- | --- |
 | Any | `README.md`: How it works, Layout, Development |
-| UI | `docs/develop/frontend.md` (conventions, the library, which component) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what). `src/AGENTS.md` imports both, so Claude Code loads them with the first file under `src/`; other agents, read them first |
+| UI | `docs/develop/frontend.md` (conventions, which component) and `node_modules/@swiftsolve/rove-tokens/DESIGN.md` (which token for what), which `src/AGENTS.md` imports; for the library, also `docs/develop/ui-library.md`, which `src/ui/AGENTS.md` imports. Claude Code loads each with the first file under its folder; other agents, read them first |
 | The UI↔backend boundary, commands, events | `docs/develop/architecture.md` |
 | A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
@@ -26,7 +26,8 @@ it, when not, accessibility), generated from the code. Read it before
 
 A design change (a token, text style, component variant or prop, copy,
 spacing) lands on both sides in the same task: the Figma file, `rove-tokens`,
-this code, and `docs/develop/frontend.md`.
+this code, and the docs that describe it (`docs/develop/frontend.md`,
+`docs/develop/ui-library.md`).
 
 - **A token, text style or shadow** starts in Figma: change it there (the
   Figma MCP's `use_figma` can), then export it into `../rove-tokens` and

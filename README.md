@@ -46,8 +46,10 @@ Rove is two programs talking over a thin, typed bridge:
   which is why `npm run dev` works in a plain browser for UI work.
 
 > **Deeper dives**
-> - [Rove frontend](docs/develop/frontend.md): how the UI is organised and styled, and
->   which component to use for what.
+> - [Rove frontend](docs/develop/frontend.md): how the UI is organised, styled and
+>   tested, and where to find which component to use.
+> - [Rove UI library](docs/develop/ui-library.md): how the component library is
+>   built.
 > - [How Rove Is Put Together](docs/develop/architecture.md): the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
 > - [Learning Rust & Tauri through Rove](docs/develop/learning/rust-and-tauri/README.md): the

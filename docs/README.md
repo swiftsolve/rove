@@ -4,8 +4,11 @@
 
 Working on Rove's code.
 
-- [Rove frontend](develop/frontend.md): how the UI is organised and styled,
-  checklists for common changes, and which component to use for what.
+- [Rove frontend](develop/frontend.md): how the UI is organised, styled and
+  tested, checklists for common changes, and where to find which component to
+  use.
+- [Rove UI library](develop/ui-library.md): how `src/ui` is built: adding a
+  component, its stories and docs pages, and the rules every component follows.
 - [How Rove Is Put Together](develop/architecture.md): the bridge between the
   UI and the backend, commands and events.
 - [Learning Rust & Tauri through Rove](develop/learning/rust-and-tauri/README.md): the

@@ -1,6 +1,6 @@
 /**
  * The house rules for comments, as an ESLint plugin, so the editor flags them
- * as you type (docs/develop/frontend.md, Code):
+ * as you type (docs/develop/frontend.md, Where code goes):
  *
  *   - no em dash, as in copy;
  *   - a `/** *\/` that fits on one line is written on one line (`--fix` joins it);
