@@ -375,8 +375,8 @@ Components v1.0.0"). Raise it when the library's API changes.
   moving focus would scroll its Docs page. A play that leaves the story as it
   found it (`DisabledOff`) can stay on the Docs page.
 - A component's usage guide sits on its Docs page: the stories' `guidance`
-  parameter (`Guidance` in `.storybook/docs-page.tsx`), with Use when, Avoid,
-  and Accessibility split into Built in and You handle, a few words
+  parameter (`Guidance` in `.storybook/docs-page.tsx`), with Use, Avoid,
+  and Accessibility split into Built in and To handle, a few words
   a line. What the stories and props table already show (each state, each
   variant) stays out. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
   contents. Every component has one, written for its whole family (Card's

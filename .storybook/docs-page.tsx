@@ -41,20 +41,20 @@ function Lines({ label, lines }: { label?: string; lines: string[] }): JSX.Eleme
   )
 }
 
-// As in Figma's Guidance block: Use when and Avoid side by side,
+// As in Figma's Guidance block: Use and Avoid side by side,
 // then Accessibility across both, its two lists in the same columns. Sections
 // sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
 // (preview.css styles it); the headings stay `<h2>`s for the page's contents.
 function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
   const { use, avoid, accessibility } = guidance
   const sections: { title: string; groups: { label?: string; lines: string[] }[] }[] = [
-    { title: 'Use when', groups: [{ lines: use }] },
+    { title: 'Use', groups: [{ lines: use }] },
     { title: 'Avoid', groups: [{ lines: avoid }] },
     {
       title: 'Accessibility',
       groups: [
         { label: 'Built in', lines: accessibility.builtIn },
-        { label: 'You handle', lines: accessibility.toHandle },
+        { label: 'To handle', lines: accessibility.toHandle },
       ],
     },
   ]

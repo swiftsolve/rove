@@ -57,11 +57,11 @@ const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 // A docs section's guide headings, as Storybook's Docs page has them (.storybook/docs-page.tsx).
 const GUIDE_LABELS = {
-  use: 'Use when',
+  use: 'Use',
   avoid: 'Avoid',
   accessibility: 'Accessibility',
   builtIn: 'Built in',
-  toHandle: 'You handle',
+  toHandle: 'To handle',
 }
 // What follows the guide in a docs section: the examples and the props table.
 const GUIDE_ENDS = new Set(['Dark', 'Light', 'Property', 'Code'])
