@@ -9,6 +9,8 @@ import { GLOBALS_UPDATED } from 'storybook/internal/core-events'
 import type { Globals } from 'storybook/internal/types'
 import { themes } from 'storybook/theming'
 
+import { DocsPage } from './docs-page'
+
 /** A Docs page in the Theme toolbar's theme, not Storybook's own light one. */
 function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContainerProps>): JSX.Element {
   const [theme, setTheme] = useState(() => context.getStoryContext(context.storyById()).globals.theme)
@@ -91,7 +93,7 @@ const preview: Preview = {
       },
     },
     controls: { expanded: true },
-    docs: { container: ThemedDocsContainer },
+    docs: { container: ThemedDocsContainer, page: DocsPage },
     a11y: {
       test: 'error',
       // Base UI's focus guards are hidden yet focusable by design; the app's

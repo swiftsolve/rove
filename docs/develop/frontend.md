@@ -363,6 +363,11 @@ Components v1.0.0"). Raise it when the library's API changes.
   interaction (`Keyboard`, `EscapeCloses`) and tag it `!autodocs`, since
   moving focus would scroll its Docs page. A play that leaves the story as it
   found it (`DisabledOff`) can stay on the Docs page.
+- A component's usage guide sits on its Docs page: the stories' `guidance`
+  parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use, When
+  not to use, States, and Accessibility split into Built in and Up to you, a
+  few words a line. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
+  contents. Button has one; the rest follow.
 - `components.gen.json` is the library's API in one file, for agents and people:
   each component's group, doc comment, props (type, variant values, default),
   Figma component and story ids. `npm run catalogue` writes it from the code
@@ -401,16 +406,11 @@ in React 19 `ref` is a prop.
 Buttons are `Button`, `IconButton` and `Link`, never a hand-written
 `<button>`.
 
-- Button takes three axes:
-  - `variant`: `solid` or `soft`
-  - `tone`, on a solid only: `accent`, or `negative` to stop something
-  - `size`: `sm` or `md`
-- Solid defaults to md, soft to sm.
-- Button takes an `icon` component and draws it at 13px. IconButton draws its
-  icon at 16px (`iconSize={14}` for an icon that reads large).
-- `isLoading` swaps the icon for a spinner (`loadingLabel` can swap the
-  words). `isDisabled` dims.
-- Both states swallow every activation, a form submit included, and keep the
+- Button's Docs page in Storybook says when to use each variant and tone,
+  its states and its accessibility; its props table lists the defaults.
+- Button draws its `icon` at 13px. IconButton draws its icon at 16px
+  (`iconSize={14}` for an icon that reads large).
+- Disabled and loading swallow every activation, a form submit included, and keep the
   button focusable, so a tooltip can say why. They mark the element with
   `data-disabled` and `data-loading`.
 - An IconButton's `label` names it and is its tooltip. `tooltip` replaces the
