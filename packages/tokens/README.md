@@ -204,9 +204,10 @@ A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git 
 
 | Path | What |
 | --- | --- |
-| `.github/workflows/build.yml` | On each release tag, builds the tokens, checks `DESIGN.md` was rebuilt and committed, and checks contrast. Run it by hand from Actions to check `main`. |
-| `scripts/checks/contrast.mjs` | Part of `npm run check` and the build workflow: measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#-contrast)'s targets. |
-| `scripts/checks/figma-plugin.mjs` | Part of `npm run check`: runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
+| `.github/workflows/build.yml` | On each release tag, builds the tokens, lints, and runs every check in `scripts/checks/`. Run it by hand from Actions to check `main`. |
+| `scripts/checks/run.mjs` | Runs every check in its folder and reports them all before failing; `npm run check` and the build workflow call it. A new check there runs without being listed. |
+| `scripts/checks/contrast.mjs` | Measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#-contrast)'s targets. |
+| `scripts/checks/figma-plugin.mjs` | Runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
 | `.github/workflows/publish.yml` | On each release tag, publishes that version to npm with trusted publishing, so the repo holds no npm token. |
 | `.github/workflows/presentation.yml` | On each release tag, or by hand from Actions, exports the slideshow from Figma and publishes it. Needs the `FIGMA_TOKEN` repository secret. |
 | `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |
