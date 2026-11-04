@@ -254,7 +254,8 @@
   gap: var(--intro-icon-gap);
   padding: var(--intro-card-pad);
   border-radius: 12px;
-  background: var(--bg-inset);
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
 }
 
 .intro-icons {
@@ -757,7 +758,8 @@
   box-sizing: border-box;
   padding: var(--intro-card-pad);
   border-radius: 12px;
-  background: var(--bg-inset);
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
 }
 
 /* The principles' icons are ideas, not products: line icons on an accent tile. */
