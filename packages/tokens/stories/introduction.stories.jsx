@@ -442,7 +442,7 @@ function IntroductionPage() {
       </section>
 
       <section className="section">
-        <h2 className="section-title">Why it&rsquo;s built this way</h2>
+        <h2 className="section-title">Principles</h2>
         <ul className="intro-explore">
           {PRINCIPLES.map(({ icon, lead, body }) => (
             <li key={lead}>
