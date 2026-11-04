@@ -17,6 +17,7 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ### Surfaces
 
+- **Backgrounds are layers; fills sit on one.** A `--bg-*` is opaque, and each stacks on the last (base, surface, inset). A `--fill-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--fill-hover`. Two names break the pattern: `--accent-fill` and `--status-negative-fill` are solid, the colour under a white label. Figma calls any paint a fill; in the tokens the word means an overlay. Why: [rationale](docs/rationale.md).
 - Three backgrounds: `--bg-base` for the backdrop, `--bg-surface` for content that sits on it (cards, dialogs), `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons). `--bg-chrome` is the title bar and rail, a half step off the backdrop. `--bg-popover` is a step lighter in Dark, for tooltips and menus. `--bg-hover` is a hovered surface, `--bg-scrim` goes behind dialogs.
 - Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use `--shadow-raised`.
 - Every line is `--border-default`: hairlines, and the edges of menus, tooltips and dialogs.
