@@ -135,7 +135,7 @@ unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Opti
             biHeight: -h,
             biPlanes: 1,
             biBitCount: 32,
-            biCompression: BI_RGB.0 as u32,
+            biCompression: BI_RGB.0,
             ..Default::default()
         },
         ..Default::default()
@@ -150,8 +150,8 @@ unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Opti
         return None;
     }
 
-    let has_alpha = buf.chunks_exact(4).any(|px| px[3] != 0);
-    for px in buf.chunks_exact_mut(4) {
+    let has_alpha = buf.as_chunks::<4>().0.iter().any(|px| px[3] != 0);
+    for px in buf.as_chunks_mut::<4>().0 {
         let (b, g, r, a) = (px[0], px[1], px[2], px[3]);
         if !has_alpha {
             // No alpha channel supplied: keep the colour, force opaque.
@@ -331,7 +331,7 @@ mod trim_tests {
     #[test]
     fn ignores_faint_antialias_fringe() {
         let mut buf = vec![0u8; 40 * 40 * 4];
-        for px in buf.chunks_exact_mut(4) {
+        for px in buf.as_chunks_mut::<4>().0 {
             px[3] = 8; // below ALPHA_THRESHOLD
         }
         for y in 15..25 {

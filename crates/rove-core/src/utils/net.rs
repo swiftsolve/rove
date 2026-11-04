@@ -12,7 +12,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 ///     and on Linux both ends of a loopback connection would count.
 ///
 /// LAN peers *are* routable; they just have no country
-/// (`apps::hosts::ip_is_public`).
+/// (`apps::hosts::ip_is_public`). Not on Windows, whose trackers meter by
+/// process (ETW), not by socket peer.
+#[cfg(not(windows))]
 pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {
@@ -27,6 +29,7 @@ pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
 
 /// Strip the port from a peer token across the formats our sources emit:
 /// `1.2.3.4:443` (both), `[2606::1]:443` (ss IPv6), `2606::1.443` (nettop IPv6).
+#[cfg(not(windows))]
 pub(crate) fn strip_port(addr: &str) -> Option<String> {
     if let Some(rest) = addr.strip_prefix('[') {
         return rest.split(']').next().map(str::to_string).filter(|s| !s.is_empty());
@@ -51,6 +54,7 @@ pub(crate) fn strip_port(addr: &str) -> Option<String> {
 /// when there's no port (a bare address, a `*` wildcard) or it doesn't parse.
 /// The peer port is the *service* end of a client connection (443, 53, …), so
 /// it names the kind of traffic; the local port is ephemeral.
+#[cfg(not(windows))]
 pub(crate) fn peer_port(addr: &str) -> Option<u16> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {
@@ -266,6 +270,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn strips_ports_across_formats() {
         assert_eq!(strip_port("1.2.3.4:443").as_deref(), Some("1.2.3.4"));
         assert_eq!(strip_port("[2606::1]:443").as_deref(), Some("2606::1"));
@@ -273,6 +278,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn reads_peer_port_across_formats() {
         assert_eq!(peer_port("1.2.3.4:443"), Some(443));
         assert_eq!(peer_port("[2606::1]:53"), Some(53));
@@ -284,6 +290,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn routable_peer_ip_rejects_what_isnt_a_host_on_the_network() {
         // Unconnected sockets: no peer, and no identity to meter them by.
         assert_eq!(routable_peer_ip("*:*"), None);

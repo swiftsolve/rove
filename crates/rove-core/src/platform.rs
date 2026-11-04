@@ -28,9 +28,10 @@ use crate::utils::shell::try_run;
 use regex_lite::Regex;
 use std::sync::LazyLock;
 
-/// Stop a console child process flashing a terminal window on Windows; a no-op
-/// elsewhere. For the synchronous [`std::process::Command`] call sites (the
-/// timezone probe, `hostname`); [`crate::utils::shell`] has its own.
+/// Stop a console child process flashing a terminal window on Windows.
+///
+/// A no-op elsewhere. For the synchronous [`std::process::Command`] call sites
+/// (the timezone probe, `hostname`); [`crate::utils::shell`] has its own.
 #[cfg(windows)]
 pub fn hide_console(cmd: &mut std::process::Command) {
     use std::os::windows::process::CommandExt;

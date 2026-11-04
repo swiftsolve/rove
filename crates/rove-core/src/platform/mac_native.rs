@@ -11,11 +11,11 @@ mod imp {
     use objc2_core_location::{CLAuthorizationStatus, CLLocationManager};
     use objc2_core_wlan::CWWiFiClient;
 
-    /// Trigger the Location Services prompt (needs
-    /// `NSLocationWhenInUseUsageDescription` in Info.plist). Called once at
+    /// Trigger the Location Services prompt, returning the current status for logging.
+    ///
+    /// Needs `NSLocationWhenInUseUsageDescription` in Info.plist. Called once at
     /// startup, on the main thread, which CoreLocation asserts. The manager is
-    /// leaked so it outlives the async authorisation. Returns the current status
-    /// for logging.
+    /// leaked so it outlives the async authorisation.
     pub fn request_location_permission() -> &'static str {
         // SAFETY: plain CoreLocation init on the main thread; the manager is
         // leaked on purpose so the authorisation can complete.
@@ -51,10 +51,11 @@ mod imp {
         }
     }
 
-    /// Current Wi-Fi transmit rate in Mbps. `ifconfig` shows Wi-Fi media as a
-    /// bare "autoselect", so this is the interface list's only Wi-Fi link speed.
-    /// Not gated by Location Services. `None` when not associated (the accessor
-    /// returns 0).
+    /// Current Wi-Fi transmit rate in Mbps, or `None` when not associated.
+    ///
+    /// `ifconfig` shows Wi-Fi media as a bare "autoselect", so this is the
+    /// interface list's only Wi-Fi link speed. Not gated by Location Services.
+    /// The accessor returns 0 when not associated.
     pub fn wifi_tx_rate() -> Option<i64> {
         // SAFETY: CoreWLAN accessors; `interface()` is null with no Wi-Fi.
         unsafe {
