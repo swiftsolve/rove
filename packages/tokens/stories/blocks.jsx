@@ -16,12 +16,19 @@ export function Page({ title, intro, children }) {
   )
 }
 
-// `warning` is a rule to follow, on its own line under the intro with the warning icon.
+// `intro` is a line or a list of lines. `warning` is a rule to follow, on its own line under the intro with the warning icon.
 export function Section({ title, intro, warning, children }) {
   return (
     <section className="section">
       <h2 className="section-title">{title}</h2>
-      {intro && <p className="section-intro">{intro}</p>}
+      {[intro]
+        .flat()
+        .filter(Boolean)
+        .map((line) => (
+          <p key={line} className="section-intro">
+            {line}
+          </p>
+        ))}
       {warning && (
         <p className="section-warning">
           <svg
