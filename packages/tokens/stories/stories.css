@@ -669,6 +669,14 @@
 
 /* Introduction: the landing page, its pipeline diagram and the page cards. */
 
+/* The Introduction sits on the app's background, as the Rove Components
+   Storybook does, so its surface cards stand off it; the token pages keep the
+   Figma file's white. */
+html:has(.intro),
+html:has(.intro) body {
+  background: var(--bg-base);
+}
+
 /* Every card on the page keeps one rhythm: 20px in, 16px from icon to title, 6px from title to text. */
 .intro {
   /* One gap between every card on the page, and between the diagram's rows. */
@@ -888,7 +896,8 @@
   gap: var(--intro-icon-gap);
   padding: var(--intro-card-pad);
   border-radius: 12px;
-  background: var(--bg-inset);
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
 }
 
 .intro-icons {
@@ -1209,7 +1218,8 @@
   box-sizing: border-box;
   padding: var(--intro-card-pad);
   border-radius: 12px;
-  background: var(--bg-inset);
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
 }
 
 .intro-principle-icon {
