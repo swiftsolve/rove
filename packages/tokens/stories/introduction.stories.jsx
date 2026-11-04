@@ -309,7 +309,13 @@ const EXPLORE = [
     id: 'typography--typography',
     title: 'Typography',
     body: `${flatten(textStyles).length} text styles, each as four variables and a class.`,
-    specimen: <span className="intro-type type-heading-large">Aa</span>,
+    // Both families: the text face, and the numeric one figures are set in.
+    specimen: (
+      <span className="intro-type-pair">
+        <span className="intro-type type-heading-large">Aa</span>
+        <span className="intro-type type-number-display">182</span>
+      </span>
+    ),
   },
   {
     id: 'spacing-radius-effects--spacing-radius-effects',

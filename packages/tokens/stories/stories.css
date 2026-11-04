@@ -799,6 +799,12 @@
   margin-left: -8px;
 }
 
+.intro-type-pair {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+
 .intro-type {
   font-size: 44px;
   line-height: 1;
