@@ -182,7 +182,7 @@ the mock.
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma, released from rove-tokens, and reach the UI through
 `@swiftsolve/rove-tokens`, one way: a token changes in Figma and is exported
-into rove-tokens, and `npm run figma -- check` confirms the two agree. Components start here in `src/ui`, and their Figma
+into rove-tokens, and `npm run figma:check` confirms the two agree. Components start here in `src/ui`, and their Figma
 components mirror them. Which token to use for what, with every
 value, is in its `DESIGN.md`
 (`node_modules/@swiftsolve/rove-tokens/DESIGN.md`); the published slideshow
