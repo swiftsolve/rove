@@ -112,15 +112,15 @@ const STAGES = ['In Figma', 'Exported to', 'Built by', 'Ships as']
 const PIPELINES = [
   {
     title: 'Tokens',
-    summary: 'Every colour, size, font and duration, named once.',
+    summary: 'Designed in Figma, built and shipped from here.',
     steps: [
       {
         column: 1,
         icons: ['figma'],
         items: [
-          { name: 'Variables', body: 'Palette, Color, Spacing, Typography and the rest, in Dark and Light.' },
+          { name: 'Variables', body: 'Colour, spacing, type and the rest, each in Dark and Light.' },
           { name: 'Text styles', body: 'Headings, body, labels and numbers.' },
-          { name: 'Shadows', body: 'The `Shadow/*` effect styles, their colours bound to variables.' },
+          { name: 'Shadows', body: '`Shadow/*` effect styles, coloured by variables.' },
         ],
       },
       {
@@ -129,11 +129,11 @@ const PIPELINES = [
         items: [
           {
             name: '`src/figma/*.json`',
-            body: 'Variables, text styles and shadows, written by the Rove Tokens plugin’s Export, aliases kept.',
+            body: 'All three, as the Rove Tokens plugin exports them. Never edited by hand.',
           },
           {
             name: '`src/code-tokens.json`',
-            body: "What Figma can't hold: easing curves, the focus outline, font fallbacks.",
+            body: "Only what Figma can't hold: easing curves, the focus outline, font fallbacks.",
           },
         ],
       },
@@ -143,7 +143,7 @@ const PIPELINES = [
         items: [
           {
             name: '`npm run build`',
-            body: "DTCG first, then CSS with Style Dictionary. It stops if a name doesn't match its code syntax or a reference doesn't resolve in both themes.",
+            body: 'Writes DTCG, then CSS with Style Dictionary. It stops on a misnamed token or a broken reference.',
           },
         ],
       },
@@ -152,7 +152,7 @@ const PIPELINES = [
         icons: ['npm'],
         items: [
           { name: '`@swiftsolve/rove-tokens`', body: '`tokens.css`, `text-styles.css` and the DTCG files, on npm.' },
-          { name: '`DESIGN.md`', body: 'Which token to use for what, in the package.' },
+          { name: '`DESIGN.md`', body: 'Which token to use for what, shipped alongside.' },
         ],
       },
     ],
@@ -182,22 +182,22 @@ const PRINCIPLES = [
   {
     icon: 'figma',
     lead: 'Figma is the source of truth',
-    body: 'Tokens flow one way: set there, exported, built. Nothing writes back, and nothing in `dist/` is edited by hand.',
+    body: 'Tokens flow one way: designed there, exported, built. Nothing writes back to Figma, and nothing in `dist/` is edited by hand.',
   },
   {
     icon: 'tag',
     lead: 'Named by role',
-    body: 'A token says what a colour is for (`bg/surface`), not how it looks, and points at one Palette shade.',
+    body: '`bg/surface` says what a colour is for, not how it looks, and points at one Palette shade.',
   },
   {
     icon: 'contrast',
     lead: 'Readable in both themes',
-    body: 'Text clears WCAG 2.2 AA (4.5:1), and icons, bars and dots 3:1, in Dark and Light.',
+    body: 'Text clears WCAG 2.2 AA (4.5:1) and icons, bars and dots 3:1, in Dark and Light.',
   },
   {
     icon: 'agent',
     lead: 'Written down for agents',
-    body: '`DESIGN.md` ships in the package: every token by name, and no colour values to copy.',
+    body: '`DESIGN.md` names every token and its use, with no colour values to copy.',
   },
 ]
 
@@ -274,7 +274,7 @@ function Pipelines() {
       <div className="intro-pipeline">
         <div className="intro-pipeline-title">
           <h3>Used by</h3>
-          <p>Everything that ships from the tokens pipeline.</p>
+          <p>What reads the package.</p>
         </div>
         <ul className="intro-consumers">
           {CONSUMERS.map(({ icon, icons = [icon], ...item }) => (
@@ -315,7 +315,7 @@ const EXPLORE = [
   {
     id: 'typography--typography',
     title: 'Typography',
-    body: `${flatten(textStyles).length} text styles, each as four variables and a class.`,
+    body: `${flatten(textStyles).length} text styles in Inter and Questrial, each four variables and a class.`,
     // Both families: the text face, and the numeric one figures are set in.
     specimen: (
       <span className="intro-type-pair">
@@ -327,7 +327,7 @@ const EXPLORE = [
   {
     id: 'spacing-radius-effects--spacing-radius-effects',
     title: 'Spacing, radius & effects',
-    body: `A ${group(spacing, 'spacing').length}-step 2px spacing scale, the radii, shadows and opacities.`,
+    body: `A ${group(spacing, 'spacing').length}-step spacing scale in 2px steps, with the radii, shadows and opacities.`,
     specimen: (
       // The four kinds, left to right: spacing steps, the radii (each tinted at an
       // opacity token, smallest to largest), and a raised panel's shadow.
@@ -360,22 +360,26 @@ const EXPLORE = [
   {
     id: 'motion--motion',
     title: 'Motion',
-    body: 'Ease out over a fast or normal duration; resizing panels spring.',
+    body: 'Durations and easing curves: most things ease out, panels spring and status dots pulse.',
     specimen: (
-      // Rove's Spinner, the ldrs waveform it shows while a speed test runs, drawn
-      // across the card: each bar rises a beat after the last, on --ease-in-out,
-      // shading from the download colour to the upload one as the test does.
-      <span className="intro-wave">
-        {Array.from({ length: 26 }, (_, i) => (
-          <span
-            key={i}
-            style={{
-              animationDelay: `${-0.05 * (25 - i)}s`,
-              background: `color-mix(in oklab, var(--series-down) ${Math.round(100 - (i / 25) * 100)}%, var(--series-up))`,
-            }}
+      // Rove's speed test progress bar (WavyProgress, after Material 3's wavy
+      // progress), at its own sizes: the squiggle scrolls a wavelength a second
+      // up to the fill, a dot rides its tip, and a dimmed track runs on.
+      <svg className="intro-wavy" viewBox="0 0 216 16" width="216" height="16">
+        <defs>
+          <clipPath id="intro-wavy-fill">
+            <rect x="0" y="0" width="129.6" height="16" />
+          </clipPath>
+        </defs>
+        <g clipPath="url(#intro-wavy-fill)">
+          <path
+            className="intro-wavy-wave"
+            d="M -40.00 8.00 Q -40.00 8.00 -38.50 8.57 Q -37.00 9.13 -35.50 9.58 Q -34.00 10.02 -32.50 10.25 Q -31.00 10.47 -29.50 10.42 Q -28.00 10.38 -26.50 10.07 Q -25.00 9.77 -23.50 9.27 Q -22.00 8.77 -20.50 8.19 Q -19.00 7.61 -17.50 7.07 Q -16.00 6.53 -14.50 6.15 Q -13.00 5.77 -11.50 5.64 Q -10.00 5.50 -8.50 5.64 Q -7.00 5.77 -5.50 6.15 Q -4.00 6.53 -2.50 7.07 Q -1.00 7.61 0.50 8.19 Q 2.00 8.77 3.50 9.27 Q 5.00 9.77 6.50 10.07 Q 8.00 10.38 9.50 10.42 Q 11.00 10.47 12.50 10.25 Q 14.00 10.02 15.50 9.58 Q 17.00 9.13 18.50 8.57 Q 20.00 8.00 21.50 7.43 Q 23.00 6.87 24.50 6.42 Q 26.00 5.98 27.50 5.75 Q 29.00 5.53 30.50 5.58 Q 32.00 5.62 33.50 5.93 Q 35.00 6.23 36.50 6.73 Q 38.00 7.23 39.50 7.81 Q 41.00 8.39 42.50 8.93 Q 44.00 9.47 45.50 9.85 Q 47.00 10.23 48.50 10.36 Q 50.00 10.50 51.50 10.36 Q 53.00 10.23 54.50 9.85 Q 56.00 9.47 57.50 8.93 Q 59.00 8.39 60.50 7.81 Q 62.00 7.23 63.50 6.73 Q 65.00 6.23 66.50 5.93 Q 68.00 5.62 69.50 5.58 Q 71.00 5.53 72.50 5.75 Q 74.00 5.98 75.50 6.42 Q 77.00 6.87 78.50 7.43 Q 80.00 8.00 81.50 8.57 Q 83.00 9.13 84.50 9.58 Q 86.00 10.02 87.50 10.25 Q 89.00 10.47 90.50 10.42 Q 92.00 10.38 93.50 10.07 Q 95.00 9.77 96.50 9.27 Q 98.00 8.77 99.50 8.19 Q 101.00 7.61 102.50 7.07 Q 104.00 6.53 105.50 6.15 Q 107.00 5.77 108.50 5.64 Q 110.00 5.50 111.50 5.64 Q 113.00 5.77 114.50 6.15 Q 116.00 6.53 117.50 7.07 Q 119.00 7.61 120.50 8.19 Q 122.00 8.77 123.50 9.27 Q 125.00 9.77 126.50 10.07 Q 128.00 10.38 129.50 10.42 Q 131.00 10.47 132.50 10.25 Q 134.00 10.02 135.50 9.58 Q 137.00 9.13 138.50 8.57 Q 140.00 8.00 141.50 7.43 Q 143.00 6.87 144.50 6.42 Q 146.00 5.98 147.50 5.75 Q 149.00 5.53 150.50 5.58 Q 152.00 5.62 153.50 5.93 Q 155.00 6.23 156.50 6.73 Q 158.00 7.23 159.50 7.81 Q 161.00 8.39 162.50 8.93 Q 164.00 9.47 165.50 9.85 Q 167.00 10.23 168.50 10.36 Q 170.00 10.50 171.50 10.36 Q 173.00 10.23 174.50 9.85 Q 176.00 9.47 177.50 8.93 Q 179.00 8.39 180.50 7.81 Q 182.00 7.23 183.50 6.73 Q 185.00 6.23 186.50 5.93 Q 188.00 5.62 189.50 5.58 Q 191.00 5.53 192.50 5.75 Q 194.00 5.98 195.50 6.42 Q 197.00 6.87 198.50 7.43 Q 200.00 8.00 201.50 8.57 Q 203.00 9.13 204.50 9.58 Q 206.00 10.02 207.50 10.25 Q 209.00 10.47 210.50 10.42 Q 212.00 10.38 213.50 10.07 Q 215.00 9.77 216.00 9.47"
           />
-        ))}
-      </span>
+        </g>
+        <line className="intro-wavy-track" x1="138.60" y1="8.0" x2="214.50" y2="8.0" />
+        <circle className="intro-wavy-dot" cx="129.6" cy="8.0" r="5" />
+      </svg>
     ),
   },
 ]
@@ -398,9 +402,8 @@ function IntroductionPage() {
           <span className="intro-version">v{designPackage.version}</span>
         </p>
         <p className="page-intro">
-          Every colour, size, font and duration in Rove, set once in the Rove Design System in Figma and shipped as CSS
-          and DTCG. Change a token in Figma, export it, and one build carries it to the app, its coding agents and these
-          pages.
+          Every colour, size, font and duration in Rove, designed once in Figma and shipped as CSS and DTCG. Change a
+          token there, export it, and one build carries it to the app, its coding agents and these pages.
         </p>
         <nav className="intro-links" aria-label="Elsewhere">
           {LINKS.map(({ label, href }) => (
@@ -414,7 +417,7 @@ function IntroductionPage() {
       <section className="section">
         <h2 className="section-title">How it works</h2>
         <p className="section-intro">
-          How a token gets from the Figma file to Rove, its coding agents and this Storybook.
+          A token&rsquo;s path from the Figma file to everything that uses it, in one direction.
         </p>
         <div className="section-body">
           <Pipelines />
@@ -441,7 +444,7 @@ function IntroductionPage() {
       <section className="section">
         <h2 className="section-title">Explore</h2>
         <p className="section-intro">
-          Every token in both themes, laid out as the Figma file&rsquo;s Foundations pages.
+          Every token in both themes, laid out like the Figma file&rsquo;s Foundations pages.
         </p>
         <ul className="intro-explore">
           {EXPLORE.map(({ id, title, body, specimen }) => (

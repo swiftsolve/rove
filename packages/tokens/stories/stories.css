@@ -861,30 +861,36 @@
   background: var(--accent-default);
 }
 
-/* Rove's waveform Spinner: each bar grows and shrinks a beat after the one before. */
-.intro-wave {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  height: 50px;
+/* Rove's speed test progress bar: the accent squiggle scrolls one 40px
+   wavelength a second, as WavyProgress does; the track is the accent at 24%. */
+.intro-wavy {
+  overflow: visible;
 }
 
-.intro-wave span {
-  width: 4px;
-  height: 100%;
-  border-radius: var(--radius-full);
-  animation: intro-wave 1s var(--ease-in-out) infinite;
+.intro-wavy-wave {
+  fill: none;
+  stroke: var(--accent-default);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: intro-wavy-scroll 1s linear infinite;
 }
 
-@keyframes intro-wave {
-  0%,
-  100% {
-    transform: scaleY(0.3);
+@keyframes intro-wavy-scroll {
+  to {
+    transform: translateX(40px);
   }
+}
 
-  50% {
-    transform: scaleY(1);
-  }
+.intro-wavy-track {
+  stroke: var(--accent-default);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.24;
+}
+
+.intro-wavy-dot {
+  fill: var(--accent-default);
 }
 
 /* The principles: cards like the pages', without a link. */
@@ -963,8 +969,7 @@
     transition: none;
   }
 
-  .intro-wave span {
+  .intro-wavy-wave {
     animation: none;
-    transform: scaleY(0.65);
   }
 }
