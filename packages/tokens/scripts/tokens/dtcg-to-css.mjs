@@ -18,7 +18,7 @@ import { basename } from 'node:path'
 
 import StyleDictionary from 'style-dictionary'
 
-import { EXTENSION } from './figma-to-dtcg.mjs'
+import { cssColor, EXTENSION } from './shared.mjs'
 
 /** Source files in output order, with the section comment each opens. */
 const FILES = [
@@ -55,10 +55,6 @@ const fileOf = (token) =>
   basename(token.filePath)
     .replace(/\.tokens\.json$/, '')
     .replace(/\.(dark|light)$/, '')
-const hex = (n) =>
-  Math.round(n * 255)
-    .toString(16)
-    .padStart(2, '0')
 const round = (n) => +n.toFixed(4)
 
 /** A DTCG dimension, or a value already written as CSS, as CSS. */
@@ -66,13 +62,8 @@ const dimension = (d) => (typeof d === 'string' ? d : `${d.value}${d.unit}`)
 /** Zero without a unit, as shadows are written by hand. */
 const length = (d) => (parseFloat(dimension(d)) === 0 ? '0' : dimension(d))
 
-function color(c) {
-  const [r, g, b] = c.components
-  const alpha = c.alpha ?? 1
-  if (alpha >= 1) return `#${hex(r)}${hex(g)}${hex(b)}`
-  const ch = (n) => Math.round(n * 255)
-  return `rgba(${ch(r)}, ${ch(g)}, ${ch(b)}, ${+alpha.toFixed(3)})`
-}
+/** A DTCG colour, or a value already written as CSS, as CSS. */
+const color = (c) => (typeof c === 'string' ? c : cssColor(c.components, c.alpha))
 
 /** A token's type: its own, or (for a bare alias) the type of what it points at. */
 function typeOf(token, byPath) {
@@ -141,7 +132,7 @@ function declarations(token, byPath) {
         length(l.offsetY),
         length(l.blur),
         ...(spread === '0' ? [] : [spread]),
-        refOr(originals[i].color, typeof l.color === 'string' ? l.color : color(l.color)),
+        refOr(originals[i].color, color(l.color)),
       ].join(' ')
     })
     return [[name, css.join(', ')]]
@@ -150,7 +141,7 @@ function declarations(token, byPath) {
     return [
       [
         name,
-        `${refOr(original.width, dimension(value.width))} ${value.style} ${refOr(original.color, typeof value.color === 'string' ? value.color : color(value.color))}`,
+        `${refOr(original.width, dimension(value.width))} ${value.style} ${refOr(original.color, color(value.color))}`,
       ],
     ]
   }
@@ -173,17 +164,23 @@ function format({ dictionary, options }) {
     options.record.set(name, value)
     lines.push(`  ${name}: ${value};${comment ? ` /* ${comment} */` : ''}`)
   }
+  // The CSS-only expressions close the code section: written once, as the
+  // section after it opens, or at the end if nothing follows it.
+  let isCssOnlyWritten = false
+  const declareCssOnly = () => {
+    if (!isCssOnlyWritten) options.cssOnly.forEach(declare)
+    isCssOnlyWritten = true
+  }
   for (const token of dictionary.allTokens.filter(isCss)) {
     const file = fileOf(token)
     if (!options.dark && file !== section) {
-      // CSS-only expressions close the code section.
-      if (section === 'code') options.cssOnly.forEach(declare)
+      if (section === 'code') declareCssOnly()
       section = file
       lines.push(`\n  /* ${FILES.find(([f]) => f === file)[1]} */`)
     }
     declarations(token, byPath).forEach(declare)
   }
-  if (options.dark) options.cssOnly.forEach(declare)
+  declareCssOnly()
   return options.dark
     ? `${options.selector} {\n${lines.join('\n')}\n}\n`
     : `${options.selector} {${lines.join('\n')}\n}\n`

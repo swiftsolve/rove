@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { buildCss } from './dtcg-to-css.mjs'
 import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
 import { writeDtcg } from './figma-to-dtcg.mjs'
+import { cssColor } from './shared.mjs'
 import { writeDesign } from './token-reference.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -39,24 +40,21 @@ for (const v of figma.variables) {
 
 const byName = new Map(figma.variables.map((v) => [v.name, v]))
 
-function hex(n) {
-  return Math.round(n * 255)
-    .toString(16)
-    .padStart(2, '0')
-}
+/** A variable's value in a mode, or in its only mode for a single-mode collection. */
+const valueIn = (v, mode) => v.values[mode] ?? Object.values(v.values)[0]
 
 /** A Figma variable's raw value in a mode, following aliases, as CSS. */
 function rawValue(v, mode) {
-  let value = v.values[mode] ?? Object.values(v.values)[0]
-  for (let hops = 0; value && value.alias && hops < 8; hops++) {
+  let value = valueIn(v, mode)
+  for (let hops = 0; value?.alias; hops++) {
+    if (hops === 8) throw new Error(`${v.name}: its aliases go round in a loop`)
     const target = byName.get(value.alias)
-    value = target.values[mode] ?? Object.values(target.values)[0]
+    if (!target) throw new Error(`${v.name}: alias to unknown Figma variable ${value.alias}`)
+    value = valueIn(target, mode)
   }
   if (v.type !== 'COLOR') return value
   const { r, g, b, a } = value
-  return a >= 1
-    ? `#${hex(r)}${hex(g)}${hex(b)}`
-    : `rgba(${[r, g, b].map((n) => Math.round(n * 255)).join(', ')}, ${+a.toFixed(3)})`
+  return cssColor([r, g, b], a)
 }
 
 /** A code-tokens.json template with `{figma/name}` filled in for a mode. */

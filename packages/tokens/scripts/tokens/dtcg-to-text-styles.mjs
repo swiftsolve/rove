@@ -12,7 +12,7 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-import { EXTENSION } from './figma-to-dtcg.mjs'
+import { EXTENSION } from './shared.mjs'
 
 const CASES = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }
 

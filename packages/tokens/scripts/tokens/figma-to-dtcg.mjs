@@ -16,7 +16,7 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-export const EXTENSION = 'net.swiftsolve.rove-tokens'
+import { cssColor, EXTENSION, slug } from './shared.mjs'
 
 const COLLECTIONS = {
   Palette: 'palette',
@@ -34,15 +34,9 @@ const ref = (figmaName) => `{${path(figmaName).join('.')}}`
 const px = (value) => ({ value, unit: 'px' })
 const round = (n) => +n.toFixed(4)
 
+/** A Figma colour as a DTCG colour; `hex` drops the alpha, as DTCG asks. */
 function color({ r, g, b, a }) {
-  const hex = `#${[r, g, b]
-    .map((n) =>
-      Math.round(n * 255)
-        .toString(16)
-        .padStart(2, '0'),
-    )
-    .join('')}`
-  return { colorSpace: 'srgb', components: [r, g, b], ...(a < 1 ? { alpha: a } : {}), hex }
+  return { colorSpace: 'srgb', components: [r, g, b], ...(a < 1 ? { alpha: a } : {}), hex: cssColor([r, g, b]) }
 }
 
 /** `'Inter', system-ui, sans-serif` as ['Inter', 'system-ui', 'sans-serif']. */
@@ -75,29 +69,37 @@ function figmaToken(v, mode, figmaOverride) {
     if (!v.name.startsWith('font-family/')) throw new Error(`DTCG: no type for the string variable ${v.name}`)
     return { $type: 'fontFamily', $value: override ? fontStack(override) : value, ...description }
   }
-  // Figma numbers carry no unit: Motion is in ms, weight/* is a font weight, the rest are px.
-  const type =
-    v.type === 'COLOR'
-      ? 'color'
-      : v.collection === 'Opacity'
-        ? 'number'
-        : v.collection === 'Motion'
-          ? 'duration'
-          : v.name.startsWith('weight/')
-            ? 'fontWeight'
-            : 'dimension'
+  const type = dtcgType(v)
   if (value.alias) return { $type: type, $value: ref(value.alias), ...description }
-  const converted =
-    type === 'color'
-      ? color(value)
-      : type === 'number'
-        ? value / 100
-        : type === 'duration'
-          ? { value, unit: 'ms' }
-          : type === 'fontWeight'
-            ? value
-            : px(value)
-  return { $type: type, $value: converted, ...description }
+  return { $type: type, $value: dtcgValue(type, value), ...description }
+}
+
+/**
+ * The DTCG type of a colour or number variable. Figma numbers carry no unit,
+ * so the collection or name says what they measure.
+ */
+function dtcgType(v) {
+  if (v.type === 'COLOR') return 'color'
+  if (v.collection === 'Opacity') return 'number' // a percentage in Figma
+  if (v.collection === 'Motion') return 'duration' // in ms
+  if (v.name.startsWith('weight/')) return 'fontWeight'
+  return 'dimension' // in px
+}
+
+/** A raw Figma value as the DTCG value for its type. */
+function dtcgValue(type, value) {
+  switch (type) {
+    case 'color':
+      return color(value)
+    case 'number':
+      return value / 100
+    case 'duration':
+      return { value, unit: 'ms' }
+    case 'fontWeight':
+      return value
+    default:
+      return px(value)
+  }
 }
 
 function textStyleToken(style) {
@@ -173,13 +175,7 @@ export async function writeDtcg({ dir, variables, textStyles, code, figmaOverrid
   }
 
   files['text-styles'] = {}
-  for (const style of textStyles) {
-    const slug = style.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-    place(files['text-styles'], ['type', slug], textStyleToken(style))
-  }
+  for (const style of textStyles) place(files['text-styles'], ['type', slug(style.name)], textStyleToken(style))
 
   // A code-only token is named as in CSS, without the dashes: --card-padding is card-padding.
   const figmaByCss = new Map(variables.filter((v) => v.code).map((v) => [/--[\w-]+/.exec(v.code)[0], v.name]))
