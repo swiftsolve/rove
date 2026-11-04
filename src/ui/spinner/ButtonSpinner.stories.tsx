@@ -31,7 +31,7 @@ const meta = {
           'An inline `<svg>`, so it’s valid inside a `<button>`.',
           'Stops moving under reduced motion.',
         ],
-        yours: [
+        youHandle: [
           'Outside a button, a name for the wait: words beside it, or `role="img"` and an `aria-label` on its wrapper.',
           'Inside a button, a `loadingLabel` when the wait needs words.',
         ],

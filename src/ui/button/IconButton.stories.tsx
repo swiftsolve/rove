@@ -40,7 +40,7 @@ const meta = {
           'A focus ring on keyboard focus.',
           'Disabled and loading stay focusable, ignore every press and tell screen readers (`aria-disabled`, `aria-busy`).',
         ],
-        yours: [
+        youHandle: [
           'A `label` that says what happens: “Close”, not “X”.',
           'An icon that means that action at a glance.',
           'On a disabled button, a `tooltip` that says why.',

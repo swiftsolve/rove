@@ -54,7 +54,7 @@ const meta = {
           'Not modal: a click outside still lands where it was aimed.',
           'The highlight is the items’ focus indicator. Their icons are hidden from screen readers.',
         ],
-        yours: [
+        youHandle: [
           'A kebab `label` that names what it’s for: “Options for Google”.',
           'Short item labels that say what happens: Edit, Remove.',
         ],

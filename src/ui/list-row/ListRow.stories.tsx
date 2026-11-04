@@ -86,7 +86,7 @@ const meta = {
           'A focus ring, drawn inside the row.',
           'Disabled, it stays in the Tab order and says so (`aria-disabled`), but ignores every press.',
         ],
-        yours: [
+        youHandle: [
           'A list around the rows: `<ul role="list">` and an `<li>` each.',
           'A title that says what opens.',
           'Words for a meter: an `sr-only` rating (“Excellent”) beside the `BarMeter`.',

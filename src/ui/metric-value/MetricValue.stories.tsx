@@ -41,7 +41,7 @@ const meta = {
           'Plain text: screen readers read the number on screen.',
           'A missing value is a `NoValue`, heard as “None”.',
         ],
-        yours: [
+        youHandle: [
           'A label in the line around it that says what it measures.',
           'The status in words where it matters, not only colour.',
           'A change worth announcing, through `ScreenReaderStatus`.',

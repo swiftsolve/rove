@@ -25,7 +25,7 @@ const meta = {
       ],
       accessibility: {
         builtIn: ['The dot is hidden from screen readers.', 'A truncated item keeps its full text for screen readers.'],
-        yours: [
+        youHandle: [
           'Items that still make sense read in a row, without the dots.',
           'The full value somewhere else when truncation can hide it.',
           'Text colour with enough contrast: it takes its line’s.',

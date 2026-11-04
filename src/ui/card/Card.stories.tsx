@@ -43,7 +43,7 @@ const meta = {
           'The header’s icon is hidden from screen readers.',
           '`CardList` is a list, named by its `label`.',
         ],
-        yours: [
+        youHandle: [
           'A title that names the card. A `section` needs a `CardHeader`.',
           'A `linkLabel` when the title doesn’t say enough, or there’s no header.',
           'On an openable card, raising your own controls above its link (`relative z-2`).',

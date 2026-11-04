@@ -40,7 +40,7 @@ const meta = {
           'Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.',
           'With `spokenValue`, the moving digits are hidden and screen readers hear it instead.',
         ],
-        yours: [
+        youHandle: [
           'A `<dl>` around labelled readouts.',
           'A `spokenValue` while the figure animates.',
           'Without a label, words nearby that say what the figure is.',

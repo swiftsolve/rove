@@ -32,7 +32,7 @@ const meta = {
           'No description when it only repeats the trigger’s `aria-label`.',
           'The bubble itself is hidden from screen readers, so nothing is read twice.',
         ],
-        yours: [
+        youHandle: [
           'A focusable trigger, like a `Button`: keyboard users can’t reach a tip on plain text.',
           'Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text too.',
           'Two short sentences at most, and nothing needed to finish a task.',

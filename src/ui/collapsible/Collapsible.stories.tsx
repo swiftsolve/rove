@@ -91,7 +91,7 @@ const meta = {
           'A closed panel leaves the page and the accessibility tree.',
           'With reduced motion, the panel opens without animating.',
         ],
-        yours: [
+        youHandle: [
           'Trigger text that names what it shows: “Connection details”.',
           'The trigger’s look: hover and focus styles, and a chevron that turns on `data-panel-open`.',
           'With `hasFocusFrame`, the header’s hover look on focus too.',

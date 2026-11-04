@@ -49,7 +49,7 @@ const meta = {
           'The thumb is hidden from screen readers. Each label names its radio.',
           'With reduced motion, the thumb jumps instead of sliding.',
         ],
-        yours: [
+        youHandle: [
           'A name for the group: `label`, or `aria-labelledby` pointing at a title on screen.',
           'Short labels that tell the options apart.',
           '`aria-describedby` pointing at the row’s description, when it has one.',

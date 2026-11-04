@@ -39,7 +39,7 @@ const meta = {
           'Focus shows as the accent border.',
           'The action works as `Button` does: disabled and loading stay focusable, ignore presses, and tell screen readers.',
         ],
-        yours: [
+        youHandle: [
           'A `label` that names the value: “Address”, not “Enter an address”.',
           'A `placeholder` with sample input, never the only hint.',
           'An error in words in `feedback`, so red isn’t the only cue.',

@@ -31,7 +31,7 @@ const meta = {
           'Dismiss and Retry are `Button`s, with their keyboard, focus ring and busy state.',
           'The icon is hidden from screen readers.',
         ],
-        yours: [
+        youHandle: [
           'A title that says what failed: “Couldn’t load devices”.',
           'A line that says what’s on screen now: “Showing figures from 5 minutes ago.”',
           'Rendering it only while there’s an error.',

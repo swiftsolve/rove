@@ -59,7 +59,7 @@ const meta = {
           'The back button is named “Back”, with a tooltip to match.',
           'The icon chip is hidden from screen readers.',
         ],
-        yours: [
+        youHandle: [
           'A title that names the page, as the rail does.',
           'A short `status` that says what’s running: “Scanning…”.',
           'Labels and tooltips on the actions you pass.',

@@ -29,7 +29,7 @@ const meta = {
           'Its focus ring follows the container’s corners.',
           '`data-stretched-link`, so the container can style itself while it has focus.',
         ],
-        yours: [
+        youHandle: [
           'A `label`, or `aria-labelledby` pointing at a heading.',
           'A positioned container (`relative`) for it to cover.',
           'Controls raised above it (`relative z-2`), as siblings, never nested.',

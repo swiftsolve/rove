@@ -31,7 +31,7 @@ const meta = {
           'Disabled stays focusable, so a tooltip can say why. It ignores every flip and tells screen readers (`aria-disabled`).',
           'With reduced motion, the knob jumps instead of sliding.',
         ],
-        yours: [
+        youHandle: [
           'A `label` naming the setting, as the row’s title does. The switch shows no text.',
           '`aria-describedby` pointing at the row’s description.',
           'On a disabled switch, a tooltip that says why.',

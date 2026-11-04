@@ -56,7 +56,7 @@ const meta = {
           'A `<dl>`: each row a `<dt>` label and a `<dd>` value, read as a pair.',
           'A row with nothing to show leaves no empty pair behind.',
         ],
-        yours: [
+        youHandle: [
           'Words for a visual value: an `sr-only` word beside a `BarMeter`.',
           'Short labels that name the value: “Gateway”, not “Your gateway’s address”.',
         ],

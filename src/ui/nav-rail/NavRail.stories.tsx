@@ -99,7 +99,7 @@ const meta = {
           'Each item is a native `<button>` named by its `label`, which is also its tooltip.',
           'The sliding bar is hidden from screen readers. Reduced motion stops the slide.',
         ],
-        yours: [
+        youHandle: [
           'A `label` for the rail: “Main navigation”.',
           'A short page name as each item’s `label`.',
           '`isActive` on the current page’s item, and only that one.',

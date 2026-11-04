@@ -59,7 +59,7 @@ const meta = {
           'A focus ring on keyboard focus.',
           'Disabled, the button stays focusable and says so (`aria-disabled`), but ignores every press.',
         ],
-        yours: [
+        youHandle: [
           'Words beside a plain tile that say what the item is.',
           'A button `label` that names what it opens and its state: “Video calls: Good”.',
           'An icon sized for the tile, 16 to 18px.',

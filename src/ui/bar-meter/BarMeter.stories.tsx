@@ -44,7 +44,7 @@ const meta = {
           'Hidden from screen readers: it’s a picture of the value.',
           'Unlit bars are a faint tint, so the count reads without telling colours apart.',
         ],
-        yours: [
+        youHandle: [
           'The value in words: an `sr-only` word beside it (“Good”), or a wrapper with `role="meter"` and a label.',
           'A colour that matches those words.',
         ],

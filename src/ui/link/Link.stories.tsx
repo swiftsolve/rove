@@ -32,7 +32,7 @@ const meta = {
           'Disabled stays focusable, ignores every press and tells screen readers (`aria-disabled`).',
           'Its icons are hidden from screen readers.',
         ],
-        yours: [
+        youHandle: [
           'Words that name where it goes: “All hosts”, not “Click here”.',
           'On a disabled link, a tooltip that says why.',
         ],

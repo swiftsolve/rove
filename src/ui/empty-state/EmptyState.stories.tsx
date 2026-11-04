@@ -30,7 +30,7 @@ const meta = {
           'The title is an `<h2>`, so it sits in the page outline.',
           'The placeholder rows and lock are hidden from screen readers.',
         ],
-        yours: [
+        youHandle: [
           'A title that names what’s empty: “No devices yet”.',
           'A description of two short sentences at most.',
           '`role="status"` on a note an action adds, so it’s announced.',

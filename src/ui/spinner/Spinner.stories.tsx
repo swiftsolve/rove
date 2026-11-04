@@ -22,7 +22,7 @@ const meta = {
       ],
       accessibility: {
         builtIn: ['Silent: no role or text, so screen readers skip it.', 'Stops moving under reduced motion.'],
-        yours: [
+        youHandle: [
           'Words for what’s loading, in a `role="status"` region so they’re announced.',
           'Keeping it out of a `<button>`: it’s a `<div>`.',
           'Its centring and spacing.',

@@ -52,7 +52,7 @@ const meta = {
           'Escape closes it, and focus goes back to the control that opened it.',
           'The close button is named “Close”.',
         ],
-        yours: [
+        youHandle: [
           'A title that names the task: “Add a service”.',
           'An `onClose` that closes it, and `canClose={false}` while closing would lose work.',
           'Focus on the first field (`autoFocus`), so Escape isn’t spent on the close button’s tooltip.',

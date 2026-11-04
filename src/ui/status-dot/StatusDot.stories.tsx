@@ -32,7 +32,7 @@ const meta = {
           'Hidden from screen readers (`aria-hidden`): the words carry the status.',
           'Its pulse stops under reduced motion.',
         ],
-        yours: [
+        youHandle: [
           'Words beside it that say the status on their own.',
           'Never a meaning only the colour or pulse carries.',
         ],

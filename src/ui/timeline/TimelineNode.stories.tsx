@@ -64,7 +64,7 @@ const meta = {
           'An `<li>`, so the nodes read as a list with a count.',
           'The marker is hidden from screen readers. The lines carry the event.',
         ],
-        yours: [
+        youHandle: [
           'An `<ol>` around the nodes.',
           'Lines that say what happened in words, not only by colour or icon.',
           'A time in the lines when the order needs one.',

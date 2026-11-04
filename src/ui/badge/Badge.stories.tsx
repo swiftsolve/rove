@@ -26,7 +26,7 @@ const meta = {
           'Capitals come from the style, so the words are read as written.',
           '`LiveBadge`’s dot is hidden from screen readers, and stops pulsing under reduced motion.',
         ],
-        yours: ['Words that say it without the colour: “Down”, not a red blank.', 'A word or two, no more.'],
+        youHandle: ['Words that say it without the colour: “Down”, not a red blank.', 'A word or two, no more.'],
       },
     } satisfies Guidance,
   },

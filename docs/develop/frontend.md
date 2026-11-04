@@ -374,7 +374,7 @@ Components v1.0.0"). Raise it when the library's API changes.
   found it (`DisabledOff`) can stay on the Docs page.
 - A component's usage guide sits on its Docs page: the stories' `guidance`
   parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use, When
-  not to use, and Accessibility split into Built in and Up to you, a few words
+  not to use, and Accessibility split into Built in and You handle, a few words
   a line. What the stories and props table already show (each state, each
   variant) stays out. Set `docs: { toc: GUIDANCE_TOC }` beside it for the page's
   contents. Every component has one, written for its whole family (Card's

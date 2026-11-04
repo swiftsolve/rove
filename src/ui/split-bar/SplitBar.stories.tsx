@@ -33,7 +33,7 @@ const meta = {
       avoid: ['A rating or signal: use `BarMeter`.', 'The amount itself: use `Readout`, or figures beside the bar.'],
       accessibility: {
         builtIn: ['An image to screen readers (`role="img"`), named by `label`.', 'Widths snap under reduced motion.'],
-        yours: [
+        youHandle: [
           'A `label` that reads the bar out: “620 MB down, 180 MB up”.',
           'Figures beside it: colour alone doesn’t say which segment is which.',
         ],

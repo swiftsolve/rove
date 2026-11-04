@@ -27,7 +27,7 @@ const meta = {
           'The bar is hidden. Screen readers hear `label` in its place.',
           'No dash character, so nothing reads out as “dash”.',
         ],
-        yours: [
+        youHandle: [
           'A `label` that says why: “Not measured”, “Unknown”.',
           'A label nearby, like a row’s, that says what’s missing.',
         ],

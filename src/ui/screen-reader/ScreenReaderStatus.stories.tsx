@@ -29,7 +29,7 @@ const meta = {
           '`role="status"`: a polite live region, read without interrupting.',
           'Hidden on screen, still in the accessibility tree.',
         ],
-        yours: [
+        youHandle: [
           'Keep it mounted, with empty text when there’s nothing to say.',
           'Short text that makes sense heard alone.',
           'New text only when the status changes, not on every tick.',

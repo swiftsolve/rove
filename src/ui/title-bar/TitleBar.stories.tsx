@@ -53,7 +53,7 @@ const meta = {
           'The status dot is decorative. The words carry it.',
           'Each `WindowButton` is a native button named “Minimize” or “Close”, out of the Tab order like a native title bar’s.',
         ],
-        yours: [
+        youHandle: [
           'A brand whose name is text, its mark hidden from screen readers.',
           'Status words that make sense alone: “No internet”, not “Error”.',
         ],

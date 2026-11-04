@@ -27,7 +27,7 @@ const meta = {
           'A status region (`role="status"`), so the label is announced.',
           'The spinner is silent; the label speaks for it.',
         ],
-        yours: [
+        youHandle: [
           'A label that names what’s loading: “Scanning your network…”, not “Loading…”.',
           'Swapping it out once the data or an error arrives.',
         ],

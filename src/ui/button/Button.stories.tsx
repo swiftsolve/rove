@@ -40,7 +40,7 @@ const meta = {
           'Disabled and loading stay focusable, so a tooltip can say why. Both ignore every press, a submit included, and tell screen readers (`aria-disabled`, `aria-busy`).',
           'The icon is hidden from screen readers. The label names the button.',
         ],
-        yours: [
+        youHandle: [
           'A label that says what happens: “Run test”, not “OK”.',
           'On a disabled button, a tooltip that says why.',
           'A `loadingLabel` when the wait needs words.',

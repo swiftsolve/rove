@@ -94,7 +94,7 @@
             "Disabled and loading stay focusable, so a tooltip can say why. Both ignore every press, a submit included, and tell screen readers (`aria-disabled`, `aria-busy`).",
             "The icon is hidden from screen readers. The label names the button."
           ],
-          "yours": [
+          "youHandle": [
             "A label that says what happens: “Run test”, not “OK”.",
             "On a disabled button, a tooltip that says why.",
             "A `loadingLabel` when the wait needs words."
@@ -201,7 +201,7 @@
             "A focus ring on keyboard focus.",
             "Disabled and loading stay focusable, ignore every press and tell screen readers (`aria-disabled`, `aria-busy`)."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` that says what happens: “Close”, not “X”.",
             "An icon that means that action at a glance.",
             "On a disabled button, a `tooltip` that says why."
@@ -271,7 +271,7 @@
             "Disabled stays focusable, ignores every press and tells screen readers (`aria-disabled`).",
             "Its icons are hidden from screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "Words that name where it goes: “All hosts”, not “Click here”.",
             "On a disabled link, a tooltip that says why."
           ]
@@ -316,7 +316,7 @@
             "Its focus ring follows the container’s corners.",
             "`data-stretched-link`, so the container can style itself while it has focus."
           ],
-          "yours": [
+          "youHandle": [
             "A `label`, or `aria-labelledby` pointing at a heading.",
             "A positioned container (`relative`) for it to cover.",
             "Controls raised above it (`relative z-2`), as siblings, never nested.",
@@ -376,7 +376,7 @@
             "Not modal: a click outside still lands where it was aimed.",
             "The highlight is the items’ focus indicator. Their icons are hidden from screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "A kebab `label` that names what it’s for: “Options for Google”.",
             "Short item labels that say what happens: Edit, Remove."
           ]
@@ -553,7 +553,7 @@
             "Focus shows as the accent border.",
             "The action works as `Button` does: disabled and loading stay focusable, ignore presses, and tell screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` that names the value: “Address”, not “Enter an address”.",
             "A `placeholder` with sample input, never the only hint.",
             "An error in words in `feedback`, so red isn’t the only cue.",
@@ -667,7 +667,7 @@
             "Disabled stays focusable, so a tooltip can say why. It ignores every flip and tells screen readers (`aria-disabled`).",
             "With reduced motion, the knob jumps instead of sliding."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` naming the setting, as the row’s title does. The switch shows no text.",
             "`aria-describedby` pointing at the row’s description.",
             "On a disabled switch, a tooltip that says why."
@@ -732,7 +732,7 @@
             "The thumb is hidden from screen readers. Each label names its radio.",
             "With reduced motion, the thumb jumps instead of sliding."
           ],
-          "yours": [
+          "youHandle": [
             "A name for the group: `label`, or `aria-labelledby` pointing at a title on screen.",
             "Short labels that tell the options apart.",
             "`aria-describedby` pointing at the row’s description, when it has one."
@@ -817,7 +817,7 @@
             "Escape closes it, and focus goes back to the control that opened it.",
             "The close button is named “Close”."
           ],
-          "yours": [
+          "youHandle": [
             "A title that names the task: “Add a service”.",
             "An `onClose` that closes it, and `canClose={false}` while closing would lose work.",
             "Focus on the first field (`autoFocus`), so Escape isn’t spent on the close button’s tooltip.",
@@ -930,7 +930,7 @@
             "No description when it only repeats the trigger’s `aria-label`.",
             "The bubble itself is hidden from screen readers, so nothing is read twice."
           ],
-          "yours": [
+          "youHandle": [
             "A focusable trigger, like a `Button`: keyboard users can’t reach a tip on plain text.",
             "Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text too.",
             "Two short sentences at most, and nothing needed to finish a task."
@@ -987,7 +987,7 @@
             "Capitals come from the style, so the words are read as written.",
             "`LiveBadge`’s dot is hidden from screen readers, and stops pulsing under reduced motion."
           ],
-          "yours": [
+          "youHandle": [
             "Words that say it without the colour: “Down”, not a red blank.",
             "A word or two, no more."
           ]
@@ -1075,7 +1075,7 @@
             "Hidden from screen readers (`aria-hidden`): the words carry the status.",
             "Its pulse stops under reduced motion."
           ],
-          "yours": [
+          "youHandle": [
             "Words beside it that say the status on their own.",
             "Never a meaning only the colour or pulse carries."
           ]
@@ -1117,7 +1117,7 @@
             "Silent: no role or text, so screen readers skip it.",
             "Stops moving under reduced motion."
           ],
-          "yours": [
+          "youHandle": [
             "Words for what’s loading, in a `role=\"status\"` region so they’re announced.",
             "Keeping it out of a `<button>`: it’s a `<div>`.",
             "Its centring and spacing."
@@ -1167,7 +1167,7 @@
             "An inline `<svg>`, so it’s valid inside a `<button>`.",
             "Stops moving under reduced motion."
           ],
-          "yours": [
+          "youHandle": [
             "Outside a button, a name for the wait: words beside it, or `role=\"img\"` and an `aria-label` on its wrapper.",
             "Inside a button, a `loadingLabel` when the wait needs words."
           ]
@@ -1211,7 +1211,7 @@
             "A status region (`role=\"status\"`), so the label is announced.",
             "The spinner is silent; the label speaks for it."
           ],
-          "yours": [
+          "youHandle": [
             "A label that names what’s loading: “Scanning your network…”, not “Loading…”.",
             "Swapping it out once the data or an error arrives."
           ]
@@ -1273,7 +1273,7 @@
             "Dismiss and Retry are `Button`s, with their keyboard, focus ring and busy state.",
             "The icon is hidden from screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "A title that says what failed: “Couldn’t load devices”.",
             "A line that says what’s on screen now: “Showing figures from 5 minutes ago.”",
             "Rendering it only while there’s an error."
@@ -1334,7 +1334,7 @@
             "The title is an `<h2>`, so it sits in the page outline.",
             "The placeholder rows and lock are hidden from screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "A title that names what’s empty: “No devices yet”.",
             "A description of two short sentences at most.",
             "`role=\"status\"` on a note an action adds, so it’s announced."
@@ -1424,7 +1424,7 @@
             "A `<dl>`: each row a `<dt>` label and a `<dd>` value, read as a pair.",
             "A row with nothing to show leaves no empty pair behind."
           ],
-          "yours": [
+          "youHandle": [
             "Words for a visual value: an `sr-only` word beside a `BarMeter`.",
             "Short labels that name the value: “Gateway”, not “Your gateway’s address”."
           ]
@@ -1540,7 +1540,7 @@
             "The bar is hidden. Screen readers hear `label` in its place.",
             "No dash character, so nothing reads out as “dash”."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` that says why: “Not measured”, “Unknown”.",
             "A label nearby, like a row’s, that says what’s missing."
           ]
@@ -1619,7 +1619,7 @@
             "Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.",
             "With `spokenValue`, the moving digits are hidden and screen readers hear it instead."
           ],
-          "yours": [
+          "youHandle": [
             "A `<dl>` around labelled readouts.",
             "A `spokenValue` while the figure animates.",
             "Without a label, words nearby that say what the figure is."
@@ -1684,7 +1684,7 @@
             "Plain text: screen readers read the number on screen.",
             "A missing value is a `NoValue`, heard as “None”."
           ],
-          "yours": [
+          "youHandle": [
             "A label in the line around it that says what it measures.",
             "The status in words where it matters, not only colour.",
             "A change worth announcing, through `ScreenReaderStatus`."
@@ -1759,7 +1759,7 @@
             "Hidden from screen readers: it’s a picture of the value.",
             "Unlit bars are a faint tint, so the count reads without telling colours apart."
           ],
-          "yours": [
+          "youHandle": [
             "The value in words: an `sr-only` word beside it (“Good”), or a wrapper with `role=\"meter\"` and a label.",
             "A colour that matches those words."
           ]
@@ -1823,7 +1823,7 @@
             "An image to screen readers (`role=\"img\"`), named by `label`.",
             "Widths snap under reduced motion."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` that reads the bar out: “620 MB down, 180 MB up”.",
             "Figures beside it: colour alone doesn’t say which segment is which."
           ]
@@ -1883,7 +1883,7 @@
             "A focus ring, drawn inside the row.",
             "Disabled, it stays in the Tab order and says so (`aria-disabled`), but ignores every press."
           ],
-          "yours": [
+          "youHandle": [
             "A list around the rows: `<ul role=\"list\">` and an `<li>` each.",
             "A title that says what opens.",
             "Words for a meter: an `sr-only` rating (“Excellent”) beside the `BarMeter`.",
@@ -1960,7 +1960,7 @@
             "A focus ring on keyboard focus.",
             "Disabled, the button stays focusable and says so (`aria-disabled`), but ignores every press."
           ],
-          "yours": [
+          "youHandle": [
             "Words beside a plain tile that say what the item is.",
             "A button `label` that names what it opens and its state: “Video calls: Good”.",
             "An icon sized for the tile, 16 to 18px."
@@ -2076,7 +2076,7 @@
             "An `<li>`, so the nodes read as a list with a count.",
             "The marker is hidden from screen readers. The lines carry the event."
           ],
-          "yours": [
+          "youHandle": [
             "An `<ol>` around the nodes.",
             "Lines that say what happened in words, not only by colour or icon.",
             "A time in the lines when the order needs one."
@@ -2158,7 +2158,7 @@
             "The header’s icon is hidden from screen readers.",
             "`CardList` is a list, named by its `label`."
           ],
-          "yours": [
+          "youHandle": [
             "A title that names the card. A `section` needs a `CardHeader`.",
             "A `linkLabel` when the title doesn’t say enough, or there’s no header.",
             "On an openable card, raising your own controls above its link (`relative z-2`).",
@@ -2334,7 +2334,7 @@
             "A closed panel leaves the page and the accessibility tree.",
             "With reduced motion, the panel opens without animating."
           ],
-          "yours": [
+          "youHandle": [
             "Trigger text that names what it shows: “Connection details”.",
             "The trigger’s look: hover and focus styles, and a chevron that turns on `data-panel-open`.",
             "With `hasFocusFrame`, the header’s hover look on focus too."
@@ -2410,7 +2410,7 @@
             "The dot is hidden from screen readers.",
             "A truncated item keeps its full text for screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "Items that still make sense read in a row, without the dots.",
             "The full value somewhere else when truncation can hide it.",
             "Text colour with enough contrast: it takes its line’s."
@@ -2497,7 +2497,7 @@
             "The status dot is decorative. The words carry it.",
             "Each `WindowButton` is a native button named “Minimize” or “Close”, out of the Tab order like a native title bar’s."
           ],
-          "yours": [
+          "youHandle": [
             "A brand whose name is text, its mark hidden from screen readers.",
             "Status words that make sense alone: “No internet”, not “Error”."
           ]
@@ -2648,7 +2648,7 @@
             "Each item is a native `<button>` named by its `label`, which is also its tooltip.",
             "The sliding bar is hidden from screen readers. Reduced motion stops the slide."
           ],
-          "yours": [
+          "youHandle": [
             "A `label` for the rail: “Main navigation”.",
             "A short page name as each item’s `label`.",
             "`isActive` on the current page’s item, and only that one.",
@@ -2723,7 +2723,7 @@
             "The back button is named “Back”, with a tooltip to match.",
             "The icon chip is hidden from screen readers."
           ],
-          "yours": [
+          "youHandle": [
             "A title that names the page, as the rail does.",
             "A short `status` that says what’s running: “Scanning…”.",
             "Labels and tooltips on the actions you pass."
@@ -2759,7 +2759,7 @@
             "`role=\"status\"`: a polite live region, read without interrupting.",
             "Hidden on screen, still in the accessibility tree."
           ],
-          "yours": [
+          "youHandle": [
             "Keep it mounted, with empty text when there’s nothing to say.",
             "Short text that makes sense heard alone.",
             "New text only when the status changes, not on every tick."
