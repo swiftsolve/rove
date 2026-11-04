@@ -11,7 +11,7 @@ import { PRESS } from '../utils/pressable'
 // radius), so a subpage's header reads like a top-level page's.
 const BACK = cx(
   'inline-flex size-(--rail-item-size) shrink-0 items-center justify-center rounded-md',
-  'bg-fill-subtle text-secondary hover:bg-hover hover:text-primary',
+  'bg-overlay-subtle text-secondary hover:bg-hover hover:text-primary',
   'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
   PRESS,
 )

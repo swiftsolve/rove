@@ -18,7 +18,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         /** A solid fill under a white label: a page's main action, or stopping it. */
-        solid: 'text-on-fill',
+        solid: 'text-on-solid',
         /** A quiet tinted chip: everything else. */
         soft: null,
       },
@@ -40,11 +40,11 @@ const buttonVariants = cva(
         class:
           'bg-status-negative/(--opacity-tint-md) text-negative usable:hover:bg-status-negative/(--opacity-tint-lg)',
       },
-      { variant: 'solid', tone: 'accent', class: 'bg-accent-fill usable:hover:bg-accent-fill-hover' },
+      { variant: 'solid', tone: 'accent', class: 'bg-accent-solid usable:hover:bg-accent-solid-hover' },
       {
         variant: 'solid',
         tone: 'negative',
-        class: 'bg-status-negative-fill usable:hover:bg-status-negative-fill-hover',
+        class: 'bg-status-negative-solid usable:hover:bg-status-negative-solid-hover',
       },
     ],
   },

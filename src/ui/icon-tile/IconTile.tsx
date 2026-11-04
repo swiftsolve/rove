@@ -23,7 +23,7 @@ type TileLookProps = {
   size?: VariantOf<typeof tileVariants, 'size'>
   /**
    * The icon's colour, washed across the tile: any CSS colour, usually a token
-   * (`var(--status-positive)`). `neutral` is the sunken fill with a secondary
+   * (`var(--status-positive)`). `neutral` is the sunken background with a secondary
    * icon, for something uncategorised or not yet rated.
    */
   color: IconTileColor

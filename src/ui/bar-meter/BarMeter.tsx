@@ -25,8 +25,8 @@ const barVariants = cva('rounded-full', {
       // rather than colour on grey.
       unlit: 'bg-current/(--opacity-tint-lg)',
       // Dark, dim greys set directly, not tinted from the colour.
-      dimmed: 'bg-fill-default',
-      dimmedLit: 'bg-fill-strong',
+      dimmed: 'bg-overlay-default',
+      dimmedLit: 'bg-overlay-strong',
     },
   },
 })

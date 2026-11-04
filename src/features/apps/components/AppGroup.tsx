@@ -17,7 +17,7 @@ const CHEVRON = cx(
 )
 
 // Matches the card's curve on the edges it touches, so the nav-flash and focus
-// rings aren't shaved square by the card's overflow:hidden. With no fill, the
+// rings aren't shaved square by the card's overflow:hidden. With no background, the
 // radius is otherwise invisible. Scroll margin leaves room above a focused group.
 const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 

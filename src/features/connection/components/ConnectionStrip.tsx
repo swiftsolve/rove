@@ -39,8 +39,8 @@ const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 const STRIP = cx(
   'relative flex items-start gap-12 w-full text-left',
   'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-hover',
-  'has-[[data-collapsible-trigger]:focus-visible]:bg-fill-hover',
+  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-overlay-hover',
+  'has-[[data-collapsible-trigger]:focus-visible]:bg-overlay-hover',
 )
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's

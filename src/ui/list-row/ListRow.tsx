@@ -12,7 +12,7 @@ const ROW = cx(
   '-mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)',
   'transition-[background] duration-(--duration-fast) ease-in-out',
   'focus-visible:outline-offset-(--focus-inset)',
-  'usable:hover:bg-fill-hover',
+  'usable:hover:bg-overlay-hover',
   STATE_CLASSES,
 )
 

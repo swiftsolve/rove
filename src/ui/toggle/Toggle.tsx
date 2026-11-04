@@ -13,7 +13,7 @@ const TRACK = cx(
 )
 
 const KNOB = cx(
-  'absolute top-1/2 left-2 size-14 -translate-y-1/2 rounded-full bg-on-fill',
+  'absolute top-1/2 left-2 size-14 -translate-y-1/2 rounded-full bg-on-solid',
   'transition-transform duration-(--duration-fast) ease-in-out',
   'data-checked:translate-x-16',
 )

@@ -161,7 +161,7 @@
             "ghost"
           ],
           "default": "soft",
-          "description": "`soft`, an inset chip; `ghost`, no fill until hovered."
+          "description": "`soft`, an inset chip; `ghost`, no background until hovered."
         }
       },
       "hasElementProps": true,
@@ -1828,7 +1828,7 @@
         "color": {
           "type": "TintColor",
           "isRequired": true,
-          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken background with a secondary\nicon, for something uncategorised or not yet rated."
         },
         "icon": {
           "type": "ReactNode",
@@ -1896,7 +1896,7 @@
         "color": {
           "type": "TintColor",
           "isRequired": true,
-          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken fill with a secondary\nicon, for something uncategorised or not yet rated."
+          "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken background with a secondary\nicon, for something uncategorised or not yet rated."
         },
         "icon": {
           "type": "ReactNode",

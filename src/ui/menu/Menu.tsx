@@ -91,7 +91,7 @@ const itemVariants = cva(
   {
     variants: {
       tone: {
-        neutral: 'text-secondary data-highlighted:bg-fill-default data-highlighted:text-primary',
+        neutral: 'text-secondary data-highlighted:bg-overlay-default data-highlighted:text-primary',
         negative: 'text-negative data-highlighted:bg-status-negative/(--opacity-tint-md)',
       },
     },

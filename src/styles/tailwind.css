@@ -116,7 +116,7 @@
   --color-secondary: var(--text-secondary);
   --color-tertiary: var(--text-tertiary);
   --color-accent-text: var(--text-accent);
-  --color-on-fill: var(--text-on-fill);
+  --color-on-solid: var(--text-on-solid);
   --color-positive: var(--text-positive);
   --color-good: var(--text-good);
   --color-warning: var(--text-warning);
@@ -131,8 +131,8 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-press: var(--accent-press);
   --color-accent-muted: var(--accent-muted);
-  --color-accent-fill: var(--accent-fill);
-  --color-accent-fill-hover: var(--accent-fill-hover);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-solid-hover: var(--accent-solid-hover);
 
   /* Status, for fills, dots and icons. Text uses the text-* colours above. */
   --color-status-positive: var(--status-positive);
@@ -140,20 +140,20 @@
   --color-status-warning: var(--status-warning);
   --color-status-poor: var(--status-poor);
   --color-status-negative: var(--status-negative);
-  --color-status-negative-fill: var(--status-negative-fill);
-  --color-status-negative-fill-hover: var(--status-negative-fill-hover);
+  --color-status-negative-solid: var(--status-negative-solid);
+  --color-status-negative-solid-hover: var(--status-negative-solid-hover);
 
   /* Data series: download and upload */
   --color-series-down: var(--series-down);
   --color-series-up: var(--series-up);
 
   /* Overlays, by strength */
-  --color-fill-faint: var(--fill-faint);
-  --color-fill-subtle: var(--fill-subtle);
-  --color-fill-hover: var(--fill-hover);
-  --color-fill-default: var(--fill-default);
-  --color-fill-strong: var(--fill-strong);
-  --color-fill-selection: var(--fill-selection);
+  --color-overlay-faint: var(--overlay-faint);
+  --color-overlay-subtle: var(--overlay-subtle);
+  --color-overlay-hover: var(--overlay-hover);
+  --color-overlay-default: var(--overlay-default);
+  --color-overlay-strong: var(--overlay-strong);
+  --color-overlay-selection: var(--overlay-selection);
 
   /* Shape and motion */
   --radius-xs: var(--radius-xs);

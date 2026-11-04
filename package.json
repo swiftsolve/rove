@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
-    "@swiftsolve/rove-tokens": "^2.0.0",
+    "@swiftsolve/rove-tokens": "^3.0.0",
     "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-query": "^5.105.0",
     "@tauri-apps/api": "^2.12.4",

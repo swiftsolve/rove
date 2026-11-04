@@ -85,7 +85,7 @@ const windowButtonVariants = cva(
     variants: {
       action: {
         minimize: 'hover:bg-hover hover:text-primary',
-        close: 'hover:bg-status-negative-fill hover:text-on-fill',
+        close: 'hover:bg-status-negative-solid hover:text-on-solid',
       },
     },
   },

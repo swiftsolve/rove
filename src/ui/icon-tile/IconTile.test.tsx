@@ -13,7 +13,7 @@ describe('IconTile', () => {
     expect(tile).toHaveClass('bg-current/(--opacity-tint-md)')
   })
 
-  it('is the sunken fill when neutral, with no colour of its own', () => {
+  it('is the sunken background when neutral, with no colour of its own', () => {
     render(<IconTile color="neutral" icon={null} data-testid="tile" />)
     const tile = screen.getByTestId('tile')
     expect(tile.style.color).toBe('')

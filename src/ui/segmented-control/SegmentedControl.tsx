@@ -33,7 +33,7 @@ const SEGMENT = cx(
   'type-label-small whitespace-nowrap',
   'transition-[background,color] duration-(--duration-fast) ease-in-out',
   'focus-visible:outline-offset-(--focus-inset)',
-  'bg-transparent text-tertiary hover:bg-fill-subtle hover:text-secondary',
+  'bg-transparent text-tertiary hover:bg-overlay-subtle hover:text-secondary',
   'data-checked:text-accent-text data-checked:hover:bg-transparent data-checked:hover:text-accent-text',
 )
 

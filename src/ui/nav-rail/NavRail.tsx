@@ -29,7 +29,7 @@ const itemVariants = cva(
     variants: {
       isActive: {
         true: ['bg-accent-muted text-accent', ACTIVE_BAR],
-        false: 'text-tertiary hover:text-secondary hover:bg-fill-subtle',
+        false: 'text-tertiary hover:text-secondary hover:bg-overlay-subtle',
       },
     },
     defaultVariants: { isActive: false },

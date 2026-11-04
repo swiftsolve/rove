@@ -34,7 +34,7 @@ type IconButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'aria-label' 
   label: string
   /** The icon. */
   icon: IconComponent
-  /** `soft`, an inset chip; `ghost`, no fill until hovered. */
+  /** `soft`, an inset chip; `ghost`, no background until hovered. */
   variant?: VariantOf<typeof iconButtonVariants, 'variant'>
   /** 16, or 14 for an icon that reads large (Play). The spinner matches it. */
   iconSize?: 16 | 14

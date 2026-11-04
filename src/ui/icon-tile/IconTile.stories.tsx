@@ -75,7 +75,7 @@ export const Disconnected: Story = {
   args: { size: 'lg', color: 'var(--status-negative)', icon: <WifiOffIcon size={18} /> },
 }
 
-/** The sunken fill, for something uncategorised or not yet rated. */
+/** The sunken background, for something uncategorised or not yet rated. */
 export const Neutral: Story = { args: { color: 'neutral', icon: <UnknownDeviceIcon size={16} /> } }
 
 /** The connection strip's tile. */

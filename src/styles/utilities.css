@@ -118,7 +118,7 @@
   width: var(--rail-item-size);
   height: var(--rail-item-size);
   border-radius: var(--radius-md);
-  background: var(--fill-subtle);
+  background: var(--overlay-subtle);
   color: var(--text-secondary);
   flex-shrink: 0;
 }

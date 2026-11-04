@@ -123,7 +123,7 @@
   }
 
   ::selection {
-    background: var(--fill-selection);
+    background: var(--overlay-selection);
   }
 
   /* Firefox only: Chromium honours these too, and either one makes it drop the
@@ -132,7 +132,7 @@
   @supports not selector(::-webkit-scrollbar) {
     * {
       scrollbar-width: thin;
-      scrollbar-color: var(--fill-strong) transparent;
+      scrollbar-color: var(--overlay-strong) transparent;
     }
   }
 
@@ -154,7 +154,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: var(--fill-strong);
+    background: var(--overlay-strong);
     border-radius: var(--radius-full);
   }
 

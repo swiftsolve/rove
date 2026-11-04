@@ -14,7 +14,7 @@ const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
     isLink: {
       true: cx(
         'group/row relative',
-        'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-fill-hover',
+        'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-overlay-hover',
       ),
     },
   },
