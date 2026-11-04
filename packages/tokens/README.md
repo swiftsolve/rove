@@ -41,19 +41,19 @@ Tokens are designed in Figma and released from git. A [Figma plugin](figma-plugi
 ```mermaid
 %%{init: {"themeCSS": ".cluster-label { translate: 236px 0; }", "theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
 flowchart TD
-  figma("<b>Figma file</b><br/>variables, styles, shadows"):::source
-  exports("<b>src/figma/*.json</b><br/>Figma's tokens, in git"):::file
-  code("<b>src/code‑tokens.json</b><br/>easings, focus"):::file
+  figma("<b>Figma file</b><br/>variables, text styles, shadows"):::source
+  exports("<b>src/figma/*.json</b><br/>the same, exported into git"):::file
+  code("<b>src/code‑tokens.json</b><br/>easings, focus, font fallbacks"):::file
 
   subgraph build ["npm run build"]
-    dtcg("<b>tokens/</b><br/>figma‑to‑dtcg.mjs"):::file
-    css("<b>tokens.css</b><br/>Style Dictionary"):::file
-    textCss("<b>text-styles.css</b><br/>dtcg‑to‑text‑styles.mjs"):::file
-    design("<b>DESIGN.md</b><br/>token‑reference.mjs"):::file
+    dtcg("<b>dist/tokens/</b><br/>every token as DTCG JSON"):::file
+    css("<b>dist/tokens.css</b><br/>every token as a CSS variable"):::file
+    textCss("<b>dist/text-styles.css</b><br/>a class per text style"):::file
+    design("<b>DESIGN.md</b><br/>which token for what"):::file
   end
 
-  pkg("<b>npm package</b><br/>for Rove"):::ship
-  storybook("<b>Storybook</b><br/>both themes"):::ship
+  pkg("<b>npm package</b><br/>what Rove installs"):::ship
+  storybook("<b>Storybook</b><br/>every token, both themes"):::ship
 
   figma -->|Export| exports
   exports & code --> dtcg
@@ -65,7 +65,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: the plugin's Export, a script in `scripts/tokens/`, or [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`). Nothing flows back into Figma: to change a token, change it there and export it. `npm run figma -- check` confirms the repo still matches the file. The slideshow (`npm run present`) is separate: it exports the Figma file's pages, styled with `tokens.css`. [What's where](#️-whats-where) has the details.
+Each box says what it holds. Two steps make them: the plugin's Export, and `npm run build`, whose scripts (and [Style Dictionary](https://styledictionary.com/), which writes `tokens.css`) are listed in [What's where](#️-whats-where). Nothing flows back into Figma: to change a token, change it there and export it. `npm run figma -- check` confirms the repo still matches the file. The slideshow (`npm run present`) is separate: it exports the Figma file's pages, styled with `tokens.css`.
 
 ## 📦 Use
 
