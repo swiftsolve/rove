@@ -299,6 +299,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Layout | Prettier |
 | File names | `checks/file-names.mjs` |
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale | `checks/raw-values.mjs` |
+| Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |
