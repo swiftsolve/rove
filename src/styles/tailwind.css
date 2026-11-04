@@ -43,7 +43,7 @@
 @theme inline reference {
   --*: initial;
 
-  /* Spacing: the --space-* scale, plus 0 for resets and 1px for hairlines. */
+  /* Spacing: the --spacing-* scale, plus 0 for resets and 1px for hairlines. */
   --spacing-0: 0px;
   --spacing-px: 1px;
   --spacing-2: var(--spacing-2);
