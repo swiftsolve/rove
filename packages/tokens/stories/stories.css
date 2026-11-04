@@ -614,6 +614,11 @@
   column-gap: 24px;
 }
 
+/* The stage labels head their columns, so they sit closer to the cards than the rows sit to each other. */
+.intro-stages {
+  margin-bottom: -12px;
+}
+
 /* The stage labels sit on the same grid as the cards, so each starts at its column's edge. */
 .intro-stage-columns {
   display: grid;
