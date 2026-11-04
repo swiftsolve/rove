@@ -695,12 +695,14 @@
   color: var(--text-secondary);
 }
 
-/* The arrow into a step: a line and an open chevron, level with the icons'
+/* The arrow into a step: a dashed line and an open chevron, level with the icons'
    centre, running the whole gap from card to card, in the accent. */
 .intro-node.has-flow {
   --intro-arrow-y: calc(1px + var(--intro-card-pad) + 12px); /* border, padding, half the 24px icon */
   --intro-arrow-weight: 1.5px;
-  --intro-arrow-head: 7px;
+  --intro-arrow-head: 8px;
+  --intro-arrow-head-weight: 2px;
+  --intro-arrow-dash: var(--accent-default) 0 4px, transparent 4px 7px;
 }
 
 .intro-node.has-flow::before {
@@ -709,8 +711,7 @@
   right: calc(100% + 1px);
   width: calc(var(--intro-gap) - 1px);
   height: var(--intro-arrow-weight);
-  border-radius: var(--radius-full);
-  background: var(--accent-default);
+  background: repeating-linear-gradient(to left, var(--intro-arrow-dash));
   content: '';
 }
 
@@ -721,8 +722,8 @@
   width: var(--intro-arrow-head);
   height: var(--intro-arrow-head);
   box-sizing: border-box;
-  border-top: var(--intro-arrow-weight) solid var(--accent-default);
-  border-right: var(--intro-arrow-weight) solid var(--accent-default);
+  border-top: var(--intro-arrow-head-weight) solid var(--accent-default);
+  border-right: var(--intro-arrow-head-weight) solid var(--accent-default);
   border-top-right-radius: 1px;
   transform: rotate(45deg);
   content: '';
@@ -731,7 +732,6 @@
 /* A step that skips a stage reaches back across the empty column too. */
 .intro-node.has-skip::before {
   width: calc(100% + var(--intro-gap) * 2 - 1px);
-  background: repeating-linear-gradient(90deg, var(--accent-default) 0 4px, transparent 4px 8px);
 }
 
 .intro-item {
@@ -1047,7 +1047,7 @@
     left: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
     width: var(--intro-arrow-weight);
     height: 23px;
-    background: var(--accent-default);
+    background: repeating-linear-gradient(to top, var(--intro-arrow-dash));
   }
 
   .intro-node.has-flow::after {
