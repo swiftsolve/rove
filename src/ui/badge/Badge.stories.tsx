@@ -11,22 +11,16 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A word or two that flags a title, like the ISP card’s VPN.',
-        'Green for good news, amber for a caveat, red for a fault.',
-        '`LiveBadge` in a card header whose data updates live.',
+        'A word or two flagging a title: the ISP card’s VPN.',
+        '`LiveBadge` in a card header whose data updates live: Traffic.',
       ],
-      avoid: [
-        'A status beside its own words: use `StatusDot`.',
-        'A failure the user should act on: use `Banner`.',
-        'Something to press: use `Button`.',
-      ],
+      avoid: ['A status beside its own words: use `StatusDot`.', 'A failure the user should act on: use `Banner`.'],
       accessibility: {
         builtIn: [
-          'Plain text: screen readers read its words.',
-          'Capitals come from the style, so the words are read as written.',
-          '`LiveBadge`’s dot is hidden from screen readers, and stops pulsing under reduced motion.',
+          'Plain text; capitals come from CSS, so it’s read as typed.',
+          '`LiveBadge`’s dot is hidden from screen readers.',
         ],
-        youHandle: ['Words that say it without the colour: “Down”, not a red blank.', 'A word or two, no more.'],
+        toHandle: ['Words that carry the meaning without the colour.'],
       },
     } satisfies Guidance,
   },

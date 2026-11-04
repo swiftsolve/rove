@@ -23,31 +23,25 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A panel of related facts or controls: Wi‑Fi details, DNS, a group of settings.',
-        'A summary that opens its own view, with `onOpen`.',
-        '`CardBody layout="rows"` for setting rows, `"flush"` for a `DataListStack`.',
-        'A `CardFooter` for a footnote or status (“Updated 2 min ago”).',
-        '`CardList` for a list that is one card.',
+        'Related facts or settings under one title, like DNS or Updates.',
+        'A Home summary that opens its page, with `onOpen`, like Usage.',
+        '`CardList` for a list that is one card, like the tracked services.',
       ],
       avoid: [
-        'A message about the whole page, like an error: use `Banner`.',
-        'Nothing to show yet: use `EmptyState`.',
-        'Details shown only on request: a `Collapsible` inside the card.',
-        'A row in a card’s list that opens a view: use `ListRow`.',
+        'An error about the whole page: use `Banner`.',
+        'Nothing to list yet: use `EmptyState`.',
+        'A row in a card that opens a page: use `ListRow`.',
       ],
       accessibility: {
         builtIn: [
           'A `section` card is a region named by its header’s title.',
-          'Openable: one link over the whole card, named by its title, first in Tab order. Header actions still take their own clicks.',
-          'A focus ring just inside the card while its link has keyboard focus.',
-          'The header’s icon is hidden from screen readers.',
-          '`CardList` is a list, named by its `label`.',
+          'With `onOpen`, one link covers the card, first in Tab order.',
+          '`CardList` is a list named by its `label`.',
         ],
-        youHandle: [
-          'A title that names the card. A `section` needs a `CardHeader`.',
-          'A `linkLabel` when the title doesn’t say enough, or there’s no header.',
-          'On an openable card, raising your own controls above its link (`relative z-2`).',
-          'A `CardList` `label` that names its rows (“Devices”).',
+        toHandle: [
+          'A `CardHeader` on a `section` card, or your own `aria-labelledby`.',
+          'A `linkLabel` when the title doesn’t say what the card shows.',
+          'Body controls on an openable card raised above its link (`relative z-2`).',
         ],
       },
     } satisfies Guidance,

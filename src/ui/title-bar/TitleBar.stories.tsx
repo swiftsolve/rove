@@ -36,26 +36,23 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'The window’s top edge, once: brand, connection status and window controls.',
-        'A `TitleBarStatus` beside the brand: the connection, in words.',
-        '`WindowButton`s for minimise and close, on a frameless window.',
-        'Status tones: `positive` connected, `negative` connected but something’s wrong beyond the link, `neutral` connecting or offline.',
+        'The window’s top edge, once per window.',
+        '`TitleBarStatus` for the connection in words: “Offline”, “No internet”.',
+        '`WindowButton`s only on a frameless window.',
       ],
       avoid: [
         'A page’s title and actions: use `PageHeader`.',
-        'Moving between pages: use `NavRail`.',
         'A status anywhere else: a `StatusDot` beside its words.',
       ],
       accessibility: {
         builtIn: [
-          'A `<header>` landmark, which also drags the window.',
-          '`TitleBarStatus` is a status region: a change is read out.',
-          'The status dot is decorative. The words carry it.',
-          'Each `WindowButton` is a native button named “Minimize” or “Close”, out of the Tab order like a native title bar’s.',
+          'A `<header>` landmark that also drags the window.',
+          '`TitleBarStatus` is `role="status"`, so a change is read out.',
+          '`WindowButton`s are named “Minimize” and “Close”, out of the Tab order.',
         ],
-        youHandle: [
-          'A brand whose name is text, its mark hidden from screen readers.',
-          'Status words that make sense alone: “No internet”, not “Error”.',
+        toHandle: [
+          'A brand with its name as text and its mark hidden.',
+          'Status words that make sense heard alone: “No internet”.',
         ],
       },
     } satisfies Guidance,

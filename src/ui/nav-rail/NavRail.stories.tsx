@@ -82,26 +82,16 @@ const meta = {
     layout: 'fullscreen',
     docs: { toc: GUIDANCE_TOC },
     guidance: {
-      use: [
-        'The app’s pages, down the window’s left side. One rail per window.',
-        'One `NavItem` per page in `main`, from the top.',
-        'Settings and app-wide switches, like the theme, in `footer`.',
-      ],
-      avoid: [
-        'A page’s own actions: use `PageHeader`’s `actions`.',
-        'Picking one of a few options on a page: use `SegmentedControl`.',
-        'An icon action anywhere else: use `IconButton`.',
-      ],
+      use: ['The app’s pages, down the window’s left side, once.', 'Settings and the theme switch in `footer`.'],
+      avoid: ['A page’s own actions: use `PageHeader`’s `actions`.', 'An icon action anywhere else: use `IconButton`.'],
       accessibility: {
         builtIn: [
           'A `<nav>` landmark named by `label`, its items in lists.',
-          'The active item has `aria-current="page"`.',
-          'Each item is a native `<button>` named by its `label`, which is also its tooltip.',
-          'The sliding bar is hidden from screen readers. Reduced motion stops the slide.',
+          'Each item is a native button named by its `label`, also its tooltip.',
+          'The current page’s item has `aria-current="page"`.',
         ],
-        youHandle: [
-          'A `label` for the rail: “Main navigation”.',
-          'A short page name as each item’s `label`.',
+        toHandle: [
+          'A `label` naming the rail: “Main navigation”.',
           '`isActive` on the current page’s item, and only that one.',
           'An action item’s label says what it does: “Switch to light mode”.',
         ],

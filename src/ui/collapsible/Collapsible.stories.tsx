@@ -74,26 +74,22 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Details most people don’t need, like the connection card’s.',
-        'A group’s rows on request, like an app’s hosts. `as="li"` in a list.',
-        '`hasFocusFrame` when the trigger spans a card’s or group’s header.',
+        'Details most people don’t need, like Home’s connection card.',
+        'A group’s rows on request, like an app’s hosts.',
       ],
       avoid: [
         'Content everyone needs: show it in the `Card`.',
+        'Details big enough for their own page: a `Card` with `onOpen`.',
         'A few actions behind a button: use `Menu`.',
-        'A task that needs the user’s full attention: use `Dialog`.',
-        'Switching between views of one thing: use `SegmentedControl`.',
       ],
       accessibility: {
         builtIn: [
-          'The trigger is a native `<button>`: Enter and Space toggle it.',
-          'It says whether it’s open (`aria-expanded`) and what it controls.',
+          'The trigger is a native `<button>` with `aria-expanded`.',
           'A closed panel leaves the page and the accessibility tree.',
-          'With reduced motion, the panel opens without animating.',
         ],
-        youHandle: [
-          'Trigger text that names what it shows: “Connection details”.',
-          'The trigger’s look: hover and focus styles, and a chevron that turns on `data-panel-open`.',
+        toHandle: [
+          'A trigger name that says what it shows: “Connection details”.',
+          'The trigger’s look: hover, focus and any chevron.',
           'With `hasFocusFrame`, the header’s hover look on focus too.',
         ],
       },

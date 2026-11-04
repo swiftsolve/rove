@@ -13,21 +13,19 @@ const meta = {
     guidance: {
       use: [
         'Where a value would be but there’s none: not measured, unknown.',
-        'In place of whatever a formatter returned null for.',
-        'Any size of line: a data row, a substat, a hero number.',
+        'In place of a formatter’s null: `?? <NoValue />`.',
       ],
       avoid: [
-        'A field that may not apply at all: leave the `DataRow`’s value null, and the row isn’t drawn.',
+        'A field that may not apply: use `DataRow` with a null value.',
         'A section with nothing to show: use `EmptyState`.',
         'A page still loading: use `LoadingState`.',
-        'A zero: it’s a value, so show it.',
       ],
       accessibility: {
         builtIn: [
-          'The bar is hidden. Screen readers hear `label` in its place.',
-          'No dash character, so nothing reads out as “dash”.',
+          'The bar is `aria-hidden`; screen readers hear `label` instead.',
+          'A drawn bar, not a dash, so nothing reads as “dash”.',
         ],
-        youHandle: [
+        toHandle: [
           'A `label` that says why: “Not measured”, “Unknown”.',
           'A label nearby, like a row’s, that says what’s missing.',
         ],

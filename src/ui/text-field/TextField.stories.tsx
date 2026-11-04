@@ -20,30 +20,25 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Typing a short value, like an address or a name.',
+        'Typing a short value, like a service’s Address or Name.',
         'In a `<form>`, so Enter submits it.',
-        'With a `TextFieldAction` inside its border to check the value, like Test.',
-        '`feedback` under it for a hint, a result or an error.',
+        'With a `TextFieldAction` to check the value in place, like Test.',
       ],
       avoid: [
         'Picking one of a few known options: use `SegmentedControl`.',
-        'Turning a setting on or off: use `Toggle`.',
         'A value to read, not edit: use `DataRow`.',
         'Submitting the form: use a `Button` outside the field.',
       ],
       accessibility: {
         builtIn: [
           'A native `<input>`, named by its `label`.',
-          'The `feedback` is its description and a live region, so each change is announced.',
+          '`feedback` is its description, announced as it changes.',
           '`isInvalid` sets `aria-invalid`.',
-          'Focus shows as the accent border.',
-          'The action works as `Button` does: disabled and loading stay focusable, ignore presses, and tell screen readers.',
         ],
-        youHandle: [
-          'A `label` that names the value: “Address”, not “Enter an address”.',
-          'A `placeholder` with sample input, never the only hint.',
+        toHandle: [
+          'A `label` that names the value, like “Address”.',
+          'Sample input in `placeholder`, never the only hint.',
           'An error in words in `feedback`, so red isn’t the only cue.',
-          'A `loadingLabel` on a loading action, since only a spinner shows.',
         ],
       },
     } satisfies Guidance,

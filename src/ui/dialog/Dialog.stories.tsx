@@ -34,29 +34,24 @@ const meta = {
     docs: { story: { inline: false, iframeHeight: 340 }, toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A short task to finish before going on: adding a service.',
-        'Confirming what can’t be undone, with only a header and actions (“Clear history?”).',
-        'One thing shown up close, like a Wi‑Fi QR code.',
-        '`isDirty` once the user types, so a backdrop click can’t throw the input away. Escape still closes it.',
+        'A short task before going on: Add a service.',
+        'One thing up close: the Share Wi‑Fi QR code.',
+        'A prompt the user can put off: Update available.',
       ],
       avoid: [
         'A hint on hover or focus: use `Tooltip`.',
-        'A failure or message about the page: use `Banner`.',
+        'A failure on the page: use `Banner`.',
         'A few actions on one item: use `Menu`.',
-        'Details that can sit on the page: use `Collapsible`.',
       ],
       accessibility: {
         builtIn: [
           'A modal `dialog`, named by its title and described by `description`.',
-          'Focus moves in and stays in. The page behind is inert.',
-          'Escape closes it, and focus goes back to the control that opened it.',
-          'The close button is named “Close”.',
+          'Focus stays inside; the page behind is hidden from screen readers.',
+          'Escape closes it, and focus returns to the control that opened it.',
         ],
-        youHandle: [
-          'A title that names the task: “Add a service”.',
-          'An `onClose` that closes it, and `canClose={false}` while closing would lose work.',
-          'Focus on the first field (`autoFocus`), so Escape isn’t spent on the close button’s tooltip.',
-          'A live region around a body that swaps state, so the new one is read.',
+        toHandle: [
+          '`autoFocus` on a form’s first field, as Add a service does.',
+          'A live region around a body that swaps state.',
         ],
       },
     } satisfies Guidance,

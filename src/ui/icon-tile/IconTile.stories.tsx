@@ -42,27 +42,22 @@ const meta = {
     guidance: {
       use: [
         'The icon that starts an item’s row: a device, a capability.',
-        'A colour for what the item is, usually a token (`var(--series-down)`).',
-        '`neutral` for something uncategorised or not yet rated.',
-        '`IconTileButton` when the tile itself opens something.',
+        '`IconTileButton` when the tile alone opens something: Home’s capability strip.',
       ],
       avoid: [
         'An icon-only action: use `IconButton`.',
-        'A whole row that opens something: use `ListRow`, with the tile inside.',
+        'A whole row that opens something: use `ListRow`, the tile inside.',
         'An event on a timeline: use `TimelineNode`.',
-        'A status beside words: use `StatusDot`.',
       ],
       accessibility: {
         builtIn: [
-          'The plain tile is decoration: library icons are hidden from screen readers.',
-          '`IconTileButton` is a native `<button>` named by `label`: Enter and Space press it.',
-          'A focus ring on keyboard focus.',
-          'Disabled, the button stays focusable and says so (`aria-disabled`), but ignores every press.',
+          'The plain tile is a `<span>`; library icons in it are `aria-hidden`.',
+          '`IconTileButton` is a native `<button>` named by `label`.',
+          'Disabled, the button stays focusable and says so, but ignores presses.',
         ],
-        youHandle: [
+        toHandle: [
           'Words beside a plain tile that say what the item is.',
-          'A button `label` that names what it opens and its state: “Video calls: Good”.',
-          'An icon sized for the tile, 16 to 18px.',
+          'A button `label` with the item and its state: “Video Calls: Good”.',
         ],
       },
     } satisfies Guidance,

@@ -14,27 +14,25 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A setting that’s on or off, in a setting row.',
+        'A setting that’s on or off, like “Check for updates automatically”.',
         'A change that applies at once, with no save.',
-        'Beside the setting’s title and description, which explain it.',
+        'In a setting row, beside its title and description.',
       ],
       avoid: [
         'Picking one of a few options: use `SegmentedControl`.',
-        'An action that runs once, like Check now: use `Button`.',
+        'An action that runs once, like “Check now”: use `Button`.',
         'A status the user can’t change: use `Badge` or `StatusDot`.',
       ],
       accessibility: {
         builtIn: [
           'A native `<button>` with `role="switch"`: a click or Space flips it.',
-          'Screen readers hear whether it’s on.',
-          'A focus ring on keyboard focus.',
-          'Disabled stays focusable, so a tooltip can say why. It ignores every flip and tells screen readers (`aria-disabled`).',
-          'With reduced motion, the knob jumps instead of sliding.',
+          'Screen readers hear its `label` and whether it’s on.',
+          'Disabled stays focusable, ignores flips and sets `aria-disabled`.',
         ],
-        youHandle: [
-          'A `label` naming the setting, as the row’s title does. The switch shows no text.',
+        toHandle: [
+          'A `label` that repeats the setting’s title.',
           '`aria-describedby` pointing at the row’s description.',
-          'On a disabled switch, a tooltip that says why.',
+          'On a disabled switch, a `Tooltip` that says why.',
         ],
       },
     } satisfies Guidance,

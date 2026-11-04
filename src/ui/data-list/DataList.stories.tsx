@@ -38,28 +38,17 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Labelled facts in a card: an address, a band, a speed.',
-        'Each fact a `DataRow`: its label on the left, its value on the right.',
-        '`compact` for a short list, or one repeated down a page.',
+        'Labelled facts in a card: “Gateway”, “Band”, “Link speed”.',
         'Several topics in one card: a `DataList` each, in a `DataListStack`.',
-        'A row with no value and no children isn’t drawn, so a list can name every field it might have.',
-        'A value that isn’t text (a meter, a badge) in the row’s children, with `align="center"`.',
-        'A missing value that still needs its row: `NoValue` as the children.',
+        'A missing value that keeps its row: `NoValue` as the children.',
       ],
-      avoid: [
-        'A card’s headline figure: use `Readout`.',
-        'Rows that open something: use `ListRow`.',
-        'A list of items, each its own row: use `CardList`.',
-      ],
+      avoid: ['A card’s headline figure: use `Readout`.', 'Rows that open something: use `ListRow`.'],
       accessibility: {
         builtIn: [
-          'A `<dl>`: each row a `<dt>` label and a `<dd>` value, read as a pair.',
-          'A row with nothing to show leaves no empty pair behind.',
+          'A `<dl>`: each row a `<dt>` label and a `<dd>` value.',
+          'An empty row isn’t rendered, so no label is read alone.',
         ],
-        youHandle: [
-          'Words for a visual value: an `sr-only` word beside a `BarMeter`.',
-          'Short labels that name the value: “Gateway”, not “Your gateway’s address”.',
-        ],
+        toHandle: ['Words for a value that isn’t text, like a meter’s `aria-label`.'],
       },
     } satisfies Guidance,
   },

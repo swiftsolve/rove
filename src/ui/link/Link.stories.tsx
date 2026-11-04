@@ -15,26 +15,23 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Opening another view from a card or a row: “All hosts”, “View timeline”.',
-        'An address outside the app, with `href`. It opens in a new window.',
-        'Beside text, at the size of the text around it.',
+        'Opening another view from a header or a line of text: “All hosts”.',
+        'An address outside the app, with `href`, like About’s Source link.',
       ],
       avoid: [
         'An action that changes something: use `Button`.',
-        'A whole row that opens a view: use `ListRow`, or `StretchedLink` for richer rows.',
+        'A whole row that opens a view: use `ListRow` or `StretchedLink`.',
         'A whole card that opens a view: use `Card` with `onOpen`.',
       ],
       accessibility: {
         builtIn: [
-          'In the app, a `<button>` with `role="link"`: Enter opens its view.',
-          'Outside it, an `<a>` that opens a new window and tells screen readers so.',
-          'Keyboard focus looks like hover, accent and underline, in place of a ring.',
-          'Disabled stays focusable, ignores every press and tells screen readers (`aria-disabled`).',
-          'Its icons are hidden from screen readers.',
+          'In the app, a `<button>` with `role="link"`.',
+          'With `href`, an `<a>` that opens a new window and says so.',
+          'Focus shows as hover does, accent and underline, in place of a ring.',
         ],
-        youHandle: [
-          'Words that name where it goes: “All hosts”, not “Click here”.',
-          'On a disabled link, a tooltip that says why.',
+        toHandle: [
+          'Words that name where it goes, like “All hosts”.',
+          'Screen-reader-only words for where it goes, when the label doesn’t say.',
         ],
       },
     } satisfies Guidance,

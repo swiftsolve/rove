@@ -26,15 +26,14 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Download and upload side by side, in a usage row.',
-        'Comparing rows: every row in one list shares a `max`.',
-        'A width, or an inset to line up with an icon, from its row.',
+        'Download and upload in proportion, in a usage row.',
+        'Rows compared: scale every bar to the list’s busiest row.',
       ],
-      avoid: ['A rating or signal: use `BarMeter`.', 'The amount itself: use `Readout`, or figures beside the bar.'],
+      avoid: ['A rating or signal: use `BarMeter`.', 'A single headline amount: use `Readout`.'],
       accessibility: {
-        builtIn: ['An image to screen readers (`role="img"`), named by `label`.', 'Widths snap under reduced motion.'],
-        youHandle: [
-          'A `label` that reads the bar out: “620 MB down, 180 MB up”.',
+        builtIn: ['An image to screen readers (`role="img"`), named by `label`.'],
+        toHandle: [
+          'A `label` that says both amounts, down then up.',
           'Figures beside it: colour alone doesn’t say which segment is which.',
         ],
       },

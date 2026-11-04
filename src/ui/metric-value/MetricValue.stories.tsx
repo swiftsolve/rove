@@ -26,23 +26,22 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A number that changes each poll: latency, a speed.',
-        '`status` once the value has earned a colour: green, amber or red.',
-        'Inside the text that sets its size: a row’s value, a hero figure.',
+        'A number that changes each poll: latency, packet loss.',
+        '`status` for a value with a healthy range, like latency.',
+        'Inside the text that sets its size: a data row’s value.',
       ],
       avoid: [
-        'A figure with its unit and label: use `Readout`.',
-        'A value that doesn’t change: use `DataRow`.',
-        'A rating at a glance: use `BarMeter`.',
+        'A headline figure with its unit and label: use `Readout`.',
+        'A value that never changes: use `DataRow`’s `value`.',
       ],
       accessibility: {
         builtIn: [
           'Snaps to each new value under reduced motion.',
-          'Plain text: screen readers read the number on screen.',
-          'A missing value is a `NoValue`, heard as “None”.',
+          'Plain text: screen readers read the number shown.',
+          'A null `format` draws `NoValue`, heard as “None”.',
         ],
-        youHandle: [
-          'A label in the line around it that says what it measures.',
+        toHandle: [
+          'A label around it that says what it measures.',
           'The status in words where it matters, not only colour.',
           'A change worth announcing, through `ScreenReaderStatus`.',
         ],

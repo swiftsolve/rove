@@ -15,10 +15,9 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A page with nothing to show yet: no devices, services or events.',
-        '`description` names what will fill it, or why it can’t.',
-        '`actions` for the step that fills it, like Add service.',
-        '`isLocked` when it can’t fill until the user acts outside Rove, like admin access.',
+        'A page with nothing to show yet: “No services yet”.',
+        '`actions` for the step that fills it, like Scan again.',
+        '`isLocked` when it waits on the user: “Administrator access needed”.',
       ],
       avoid: [
         'Still loading: use `LoadingState`.',
@@ -27,12 +26,11 @@ const meta = {
       ],
       accessibility: {
         builtIn: [
-          'The title is an `<h2>`, so it sits in the page outline.',
+          'The title is an `<h2>`, in the page outline.',
           'The placeholder rows and lock are hidden from screen readers.',
         ],
-        youHandle: [
-          'A title that names what’s empty: “No devices yet”.',
-          'A description of two short sentences at most.',
+        toHandle: [
+          'A title naming what’s empty: “No devices found”.',
           '`role="status"` on a note an action adds, so it’s announced.',
         ],
       },

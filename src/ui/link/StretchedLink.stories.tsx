@@ -13,28 +13,25 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A row that opens its view, when its content can’t sit in a button (a bar, figures).',
-        'A container that also holds a control of its own.',
+        'A row that opens a view but holds a bar or figures, like Apps’ rows.',
+        'A row or container that also holds a control of its own.',
       ],
       avoid: [
         'A simple row with a chevron: use `ListRow`.',
         'A whole card: use `Card` with `onOpen`, which draws its own.',
-        'A link beside text: use `Link`.',
-        'An action rather than a view: use `Button`.',
+        'A link in a line of text: use `Link`.',
       ],
       accessibility: {
         builtIn: [
-          'A `<button>` with `role="link"`, as it opens a view: Enter opens it.',
+          'A `<button>` with `role="link"`, as it opens a view.',
           'Covers its container, so a click anywhere opens it.',
           'Its focus ring follows the container’s corners.',
-          '`data-stretched-link`, so the container can style itself while it has focus.',
         ],
-        youHandle: [
+        toHandle: [
           'A `label`, or `aria-labelledby` pointing at a heading.',
           'A positioned container (`relative`) for it to cover.',
           'Controls raised above it (`relative z-2`), as siblings, never nested.',
-          'A cue that the row opens, like a caret.',
-          'A rounded ring where the corners aren’t (a list’s first and last rows), with `className`.',
+          'A cue that it opens, like a caret.',
         ],
       },
     } satisfies Guidance,

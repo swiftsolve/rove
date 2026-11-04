@@ -21,29 +21,24 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'An action on this page: running a test, adding a device, retrying.',
-        'Solid for the page’s main action, with `tone="negative"` to stop what it started.',
-        'Soft for everything else, like a card’s Reset.',
-        'Soft with `tone="negative"` on a red surface, like an error Banner’s Dismiss.',
-        'A form’s submit button, with `type="submit"`.',
+        'Solid for the page’s main action, negative to stop it: “Run test”, “Stop”.',
+        'Soft for everything else: “Scan again”, “Check now”.',
+        'Soft negative only on a red surface, like an error `Banner`’s Dismiss.',
       ],
       avoid: [
         'Opening another view or an address: use `Link`.',
         'An icon with no words: use `IconButton`.',
-        'Picking one of a few options: use `SegmentedControl`.',
-        'Turning a setting on or off: use `Toggle`.',
+        'Checking a field’s value, like Test: use `TextFieldAction`.',
       ],
       accessibility: {
         builtIn: [
-          'A native `<button>`, `type="button"` unless set: Enter and Space press it.',
-          'A focus ring on keyboard focus.',
-          'Disabled and loading stay focusable, so a tooltip can say why. Both ignore every press, a submit included, and tell screen readers (`aria-disabled`, `aria-busy`).',
-          'The icon is hidden from screen readers. The label names the button.',
+          'A native `<button>`, `type="button"` unless set.',
+          'Disabled and loading stay focusable, ignore presses and tell screen readers.',
+          'Its icon and spinner are hidden from screen readers.',
         ],
-        youHandle: [
-          'A label that says what happens: “Run test”, not “OK”.',
-          'On a disabled button, a tooltip that says why.',
-          'A `loadingLabel` when the wait needs words.',
+        toHandle: [
+          'A label that says what happens, like “Run test”.',
+          'On a disabled button, a `Tooltip` that says why.',
         ],
       },
     } satisfies Guidance,

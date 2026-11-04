@@ -69,28 +69,23 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A row in a card’s list that opens something: a capability, About.',
-        'An `IconTile`, a title and a description, then anything right-aligned last.',
-        'A text column with `flex-1`, so a meter after it sits on the right.',
+        'A card’s list row that opens a view: a capability, “About Rove”.',
+        'An `IconTile` first if the item has one; About’s row has none.',
       ],
       avoid: [
-        'A label and value that open nothing: use `DataRow` in a `DataList`.',
+        'A label and value that open nothing: use `DataRow`.',
         'A whole card that opens: use `Card` with `onOpen`.',
-        'Opening another view from a line of text: use `Link`.',
-        'An action on the page: use `Button`.',
+        'A row holding a bar or other block content: use `StretchedLink`.',
       ],
       accessibility: {
         builtIn: [
-          'A native `<button>`, `type="button"`: Enter and Space press it.',
-          'Its text names it. The chevron is hidden from screen readers.',
-          'A focus ring, drawn inside the row.',
-          'Disabled, it stays in the Tab order and says so (`aria-disabled`), but ignores every press.',
+          'A native `<button>` named by its text; the chevron is hidden.',
+          'Disabled, it stays focusable and says so (`aria-disabled`), but ignores presses.',
         ],
-        youHandle: [
-          'A list around the rows: `<ul role="list">` and an `<li>` each.',
-          'A title that says what opens.',
-          'Words for a meter: an `sr-only` rating (“Excellent”) beside the `BarMeter`.',
-          'Spans, not divs, inside: a button only holds inline content.',
+        toHandle: [
+          'A list around the rows: `<ul role="list">`, an `<li>` each.',
+          'Words for a meter: an `sr-only` rating (“Excellent”) beside it.',
+          'Spans, not divs, inside: a button holds only inline content.',
         ],
       },
     } satisfies Guidance,

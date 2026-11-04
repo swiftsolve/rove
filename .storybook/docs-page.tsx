@@ -14,7 +14,7 @@ export type Guidance = {
     /** What the component does for you. */
     builtIn: string[]
     /** What it can't do for you. */
-    youHandle: string[]
+    toHandle: string[]
   }
 }
 
@@ -54,7 +54,7 @@ function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
       title: 'Accessibility',
       groups: [
         { label: 'Built in', lines: accessibility.builtIn },
-        { label: 'You handle', lines: accessibility.youHandle },
+        { label: 'You handle', lines: accessibility.toHandle },
       ],
     },
   ]

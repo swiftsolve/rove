@@ -40,30 +40,18 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'The top of every page but Home.',
-        '`icon`, the page’s rail icon, on a top-level page.',
-        '`onBack` on a page layered over a tab, like Hosts.',
-        '`status` while something runs (“Scanning…”).',
-        '`actions` for the page’s controls: help, refresh, its main `Button`.',
-        '`description={null}` to hold the line’s height while there’s nothing to show.',
+        'The top of each tab’s page, like Devices or Usage.',
+        '`onBack` in place of `icon` on a page over a tab, like Hosts.',
+        '`status` while something runs: “Checking…”.',
       ],
-      avoid: [
-        'A card’s title: use `CardHeader`.',
-        'The window’s top edge: use `TitleBar`.',
-        'A message about the page, like an error: use `Banner`.',
-      ],
+      avoid: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
       accessibility: {
         builtIn: [
           'The title is the page’s `<h1>`, in a `<header>`.',
           'A new `status` is announced to screen readers.',
-          'The back button is named “Back”, with a tooltip to match.',
-          'The icon chip is hidden from screen readers.',
+          'The back button is named “Back”, with a matching tooltip.',
         ],
-        youHandle: [
-          'A title that names the page, as the rail does.',
-          'A short `status` that says what’s running: “Scanning…”.',
-          'Labels and tooltips on the actions you pass.',
-        ],
+        toHandle: ['Labels and tooltips on the actions you pass.', '`status` words that make sense heard alone.'],
       },
     } satisfies Guidance,
   },

@@ -11,24 +11,20 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Between inline items on one line: an address, a vendor, a time.',
-        '`InlineMeta` for a list of items, some maybe empty.',
-        '`shouldTruncate` to keep them on one line.',
-        'A bare `DotSeparator` between two items you lay out yourself.',
-        'Empty items drop out with their dots, so pass every field. A `0` stays.',
+        'Short facts on one line, like a device’s vendor and model.',
+        '`InlineMeta` when items may be empty: they drop out with their dots.',
+        'A bare `DotSeparator` between parts you lay out, like the Services header’s.',
       ],
       avoid: [
-        'Labels and their values: use `DataRow`s in a `DataList`.',
+        'Labels with their values: use `DataRow`s.',
         'A status beside its words: use `StatusDot`.',
         'A missing value that should show: use `NoValue`.',
-        'A line between rows: `CardList` and `DataListStack` draw it.',
       ],
       accessibility: {
         builtIn: ['The dot is hidden from screen readers.', 'A truncated item keeps its full text for screen readers.'],
-        youHandle: [
-          'Items that still make sense read in a row, without the dots.',
-          'The full value somewhere else when truncation can hide it.',
-          'Text colour with enough contrast: it takes its line’s.',
+        toHandle: [
+          'Items that read well in a row, without the dots.',
+          'The full value elsewhere when truncation can cut it off.',
         ],
       },
     } satisfies Guidance,

@@ -61,7 +61,7 @@ const GUIDE_LABELS = {
   avoid: 'When not to use',
   accessibility: 'Accessibility',
   builtIn: 'Built in',
-  youHandle: 'You handle',
+  toHandle: 'You handle',
 }
 // What follows the guide in a docs section: the examples and the props table.
 const GUIDE_ENDS = new Set(['Dark', 'Light', 'Property', 'Code'])
@@ -141,14 +141,14 @@ function figmaGuide(texts) {
   const avoid = at(GUIDE_LABELS.avoid, use)
   const accessibility = at(GUIDE_LABELS.accessibility, avoid)
   const builtIn = at(GUIDE_LABELS.builtIn, accessibility)
-  const youHandle = at(GUIDE_LABELS.youHandle, builtIn)
-  if ([use, avoid, accessibility, builtIn, youHandle].includes(-1)) return null
-  const after = texts.findIndex((text, i) => i > youHandle && GUIDE_ENDS.has(text))
+  const toHandle = at(GUIDE_LABELS.toHandle, builtIn)
+  if ([use, avoid, accessibility, builtIn, toHandle].includes(-1)) return null
+  const after = texts.findIndex((text, i) => i > toHandle && GUIDE_ENDS.has(text))
   return {
     use: texts.slice(use + 1, avoid),
     avoid: texts.slice(avoid + 1, accessibility),
-    builtIn: texts.slice(builtIn + 1, youHandle),
-    youHandle: texts.slice(youHandle + 1, after === -1 ? texts.length : after),
+    builtIn: texts.slice(builtIn + 1, toHandle),
+    toHandle: texts.slice(toHandle + 1, after === -1 ? texts.length : after),
   }
 }
 
@@ -301,7 +301,7 @@ for (const [component, { name }] of docs ? guided : []) {
     ['use', GUIDE_LABELS.use, guide.use],
     ['avoid', GUIDE_LABELS.avoid, guide.avoid],
     ['builtIn', GUIDE_LABELS.builtIn, guide.accessibility.builtIn],
-    ['youHandle', GUIDE_LABELS.youHandle, guide.accessibility.youHandle],
+    ['toHandle', GUIDE_LABELS.toHandle, guide.accessibility.toHandle],
   ]
   for (const [section, label, lines] of sections) {
     if (lines.length !== figma[section].length) {

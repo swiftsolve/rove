@@ -36,27 +36,20 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A few secondary actions on a row or a page header: Edit, Remove.',
-        'Keeping a destructive action out of the way, like Speed history’s Delete.',
+        'A few secondary actions on a row, like a service’s Edit and Remove.',
+        'A destructive action kept out of the way, like Clear history.',
         '`tone="negative"` on an item that deletes or clears.',
       ],
-      avoid: [
-        'The page’s main action: use `Button`.',
-        'One frequent action: use `IconButton`.',
-        'Picking one of a few options: use `SegmentedControl`.',
-        'Opening another view: use `Link`.',
-      ],
+      avoid: ['The page’s main action: use `Button`.', 'One frequent action: use `IconButton`.'],
       accessibility: {
         builtIn: [
-          'The kebab is a menu button: screen readers hear it opens a menu, and whether it’s open.',
-          'Enter opens it on its first item. The arrow keys move between items.',
-          'Escape, a click outside or an item closes it, and focus returns to the kebab.',
-          'Not modal: a click outside still lands where it was aimed.',
-          'The highlight is the items’ focus indicator. Their icons are hidden from screen readers.',
+          'The kebab is a menu button that says whether it’s open.',
+          'Enter opens it on its first item, and the arrows move between items.',
+          'Escape, a click outside or an item closes it, and focus returns.',
         ],
-        youHandle: [
-          'A kebab `label` that names what it’s for: “Options for Google”.',
-          'Short item labels that say what happens: Edit, Remove.',
+        toHandle: [
+          'A kebab `label` that names its subject: “Options for Google”.',
+          'Item labels that say what happens: Edit, Remove.',
         ],
       },
     } satisfies Guidance,

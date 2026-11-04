@@ -30,28 +30,19 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Picking one of a few exclusive options, like the theme.',
+        'Picking one of a few exclusive options, like Settings’ Theme.',
         'Every option in view at once, each a word or two.',
         'A choice that applies at once, with no save.',
-        'An icon before each word when it helps, as the theme’s do.',
-        'Options that are always available: there’s no disabled state.',
       ],
-      avoid: [
-        'Turning a setting on or off: use `Toggle`.',
-        'Running an action: use `Button`.',
-        'Opening another view: use `Link`.',
-      ],
+      avoid: ['Turning one setting on or off: use `Toggle`.', 'Running an action: use `Button`.'],
       accessibility: {
         builtIn: [
-          'A radio group: each segment a radio on a native `<button>`.',
+          'A radio group, each segment a radio on a native `<button>`.',
           'One Tab stop. The arrow keys move and choose.',
-          'A focus ring inside the focused segment.',
-          'The thumb is hidden from screen readers. Each label names its radio.',
-          'With reduced motion, the thumb jumps instead of sliding.',
+          'Each segment is named by its label. The thumb is hidden.',
         ],
-        youHandle: [
-          'A name for the group: `label`, or `aria-labelledby` pointing at a title on screen.',
-          'Short labels that tell the options apart.',
+        toHandle: [
+          'A name for the group: `label`, or `aria-labelledby` at a title.',
           '`aria-describedby` pointing at the row’s description, when it has one.',
         ],
       },

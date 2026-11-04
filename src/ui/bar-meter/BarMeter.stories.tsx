@@ -29,24 +29,18 @@ const meta = {
     guidance: {
       use: [
         'Signal strength or a rating, at a glance.',
-        '`lg` for a list row’s rating, `sm` in a data row.',
-        '`md` beside a title, `xs` in a dense strip like Home’s.',
-        'A status token as `color`, matching how many bars are lit.',
-        '`value={0}` before there’s a rating, and `isDimmed` for a stale one waiting on a new test.',
+        'Its colour from the text around it: a status colour per level.',
+        'No rating yet: `value={0}`, every bar unlit.',
       ],
-      avoid: [
-        'An exact figure: use `Readout` or `MetricValue`.',
-        'Comparing traffic between rows: use `SplitBar`.',
-        'A status in words: use `Badge` or `StatusDot`.',
-      ],
+      avoid: ['An exact figure: use `MetricValue` or `Readout`.', 'Comparing traffic between rows: use `SplitBar`.'],
       accessibility: {
         builtIn: [
-          'Hidden from screen readers: it’s a picture of the value.',
-          'Unlit bars are a faint tint, so the count reads without telling colours apart.',
+          '`aria-hidden`: it’s a picture of the value.',
+          'Unlit bars are a faint tint of the lit colour, not another hue.',
         ],
-        youHandle: [
-          'The value in words: an `sr-only` word beside it (“Good”), or a wrapper with `role="meter"` and a label.',
-          'A colour that matches those words.',
+        toHandle: [
+          'The value in words: an `sr-only` word or a `role="meter"` wrapper.',
+          'A colour with 3:1 contrast for the bars.',
         ],
       },
     } satisfies Guidance,

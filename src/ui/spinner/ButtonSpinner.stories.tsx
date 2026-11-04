@@ -16,25 +16,17 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A loading `Button` or `IconButton` draws it for you.',
-        'A small busy mark outside a button, like a card header’s while a test runs.',
-        '`size` in px, to match the icon it stands in for.',
+        'A small wait in a card header: the speed test running.',
+        'A small wait in a card body: the home Devices card’s scan.',
       ],
       avoid: [
-        'A button’s own wait: set `isLoading` on `Button` instead.',
+        'A button’s wait: set `isLoading` on `Button` or `IconButton`.',
         'A page’s first load: use `LoadingState`.',
-        'A wait with room for the full indicator: use `Spinner`.',
+        'A wait in a dialog or page area: use `Spinner`.',
       ],
       accessibility: {
-        builtIn: [
-          'Hidden from screen readers (`aria-hidden`).',
-          'An inline `<svg>`, so it’s valid inside a `<button>`.',
-          'Stops moving under reduced motion.',
-        ],
-        youHandle: [
-          'Outside a button, a name for the wait: words beside it, or `role="img"` and an `aria-label` on its wrapper.',
-          'Inside a button, a `loadingLabel` when the wait needs words.',
-        ],
+        builtIn: ['Hidden from screen readers (`aria-hidden`).', 'An inline `<svg>`, valid inside a `<button>`.'],
+        toHandle: ['A name for the wait: `role="img"` and an `aria-label` on a wrapper.'],
       },
     } satisfies Guidance,
   },

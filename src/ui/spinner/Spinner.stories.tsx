@@ -11,22 +11,17 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A wait inside a dialog or panel, over a line saying what’s coming.',
-        'The one loading indicator, in the accent, so every wait looks alike.',
-        'Small (`size={16}`) beside a line of text.',
+        'A wait inside a dialog: “Generating QR code…”.',
+        'A wait with more than one line: “Looking for your network…”.',
       ],
       avoid: [
-        'A page’s first load: use `LoadingState`, which holds it.',
+        'A page’s first load: use `LoadingState`.',
         'A button’s wait: set `isLoading` on `Button` or `IconButton`.',
-        'Inside a `<button>`: use `ButtonSpinner`, which is valid there.',
+        'Inside a `<button>`: use `ButtonSpinner`.',
       ],
       accessibility: {
-        builtIn: ['Silent: no role or text, so screen readers skip it.', 'Stops moving under reduced motion.'],
-        youHandle: [
-          'Words for what’s loading, in a `role="status"` region so they’re announced.',
-          'Keeping it out of a `<button>`: it’s a `<div>`.',
-          'Its centring and spacing.',
-        ],
+        builtIn: ['Silent: no role or text, so screen readers skip it.'],
+        toHandle: ['Words for the wait, in a `role="status"` or live region.'],
       },
     } satisfies Guidance,
   },

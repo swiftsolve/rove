@@ -13,23 +13,21 @@ const meta = {
     guidance: {
       use: [
         'A page’s first load, before there’s anything to show.',
-        'A label for what’s coming, ending in an ellipsis: “Loading usage…”.',
-        'It fills the content area and centres itself.',
+        'In place of the content, under the header and any `Banner`.',
       ],
       avoid: [
         'Loaded, with nothing to show: use `EmptyState`.',
         'A load that failed: use `Banner`.',
-        'A wait inside a dialog or panel: use `Spinner`.',
-        'A button’s wait: set `isLoading` on `Button`.',
+        'A wait inside a dialog: use `Spinner`.',
       ],
       accessibility: {
         builtIn: [
           'A status region (`role="status"`), so the label is announced.',
           'The spinner is silent; the label speaks for it.',
         ],
-        youHandle: [
-          'A label that names what’s loading: “Scanning your network…”, not “Loading…”.',
-          'Swapping it out once the data or an error arrives.',
+        toHandle: [
+          'A label naming what’s loading: “Scanning your network…”.',
+          'Swapping it out once data or an error arrives.',
         ],
       },
     } satisfies Guidance,

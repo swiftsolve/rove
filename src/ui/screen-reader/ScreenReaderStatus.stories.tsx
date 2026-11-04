@@ -14,24 +14,18 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'Progress the screen shows without words: “Testing download…”.',
-        'An outcome to announce once it’s in, like an update check’s result.',
-        'A status that changes while focus stays where it is.',
+        'A run’s steps and result, like the speed test’s.',
+        'An outcome the screen shows silently: “You’re on the latest version.”',
       ],
       avoid: [
-        'A page’s status shown on screen too: use `PageHeader`’s `status`, already announced.',
-        'A field’s error or hint: use `TextField`’s `feedback`.',
-        'A failure the user must see: use `Banner`.',
-        'Hidden words that never change: a plain `sr-only` span.',
+        'A page’s status: use `PageHeader`’s `status`, already announced.',
+        'An error the user must see: use `Banner`, which announces it.',
       ],
       accessibility: {
-        builtIn: [
-          '`role="status"`: a polite live region, read without interrupting.',
-          'Hidden on screen, still in the accessibility tree.',
-        ],
-        youHandle: [
-          'Keep it mounted, with empty text when there’s nothing to say.',
-          'Short text that makes sense heard alone.',
+        builtIn: ['`role="status"`: a polite live region.', 'Hidden on screen, still read by screen readers.'],
+        toHandle: [
+          'Keep it mounted; pass empty text when there’s nothing to say.',
+          'Text that makes sense heard alone.',
           'New text only when the status changes, not on every tick.',
         ],
       },

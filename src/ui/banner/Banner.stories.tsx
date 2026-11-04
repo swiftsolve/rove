@@ -14,26 +14,18 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A failure above a page: a load, refresh or action that didn’t work.',
-        'A title for what failed, and a line on how old the data is or what happens next.',
-        '`onRetry` when trying again can help. Leave it out when the page polls and heals itself.',
-        'A new title brings back a banner the user dismissed.',
+        'A failure above a page: a load, scan or action that didn’t work.',
+        'A line on what’s on screen now: “Showing the last scan.”',
       ],
-      avoid: [
-        'Loaded, with nothing to show: use `EmptyState`.',
-        'Still loading: use `LoadingState`.',
-        'A short flag beside a title: use `Badge`.',
-        'A choice to make before going on: use `Dialog`.',
-      ],
+      avoid: ['Loaded, with nothing to show: use `EmptyState`.', 'A choice to make before going on: use `Dialog`.'],
       accessibility: {
         builtIn: [
-          'An alert (`role="alert"`): screen readers read it as it appears.',
-          'Dismiss and Retry are `Button`s, with their keyboard, focus ring and busy state.',
+          'An alert (`role="alert"`), read as it appears.',
+          'Dismiss and Retry are `Button`s; Retry is busy while it runs.',
           'The icon is hidden from screen readers.',
         ],
-        youHandle: [
-          'A title that says what failed: “Couldn’t load devices”.',
-          'A line that says what’s on screen now: “Showing figures from 5 minutes ago.”',
+        toHandle: [
+          'A title that says what failed: “Couldn’t scan for devices”.',
           'Rendering it only while there’s an error.',
         ],
       },

@@ -16,26 +16,24 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A short hint on a control: what a value means, or why a button is off.',
-        'Detail that would crowd the row, like a host’s address.',
-        '`side="right"` beside the nav rail.',
+        'Why a control is off: “Connect to a network first”.',
+        'What a mark means: “Privacy-randomized MAC address”.',
+        'Detail that would crowd a row, like a host’s full name and IP.',
       ],
       avoid: [
-        'Naming an icon-only button: use `IconButton`, whose `label` is its tooltip.',
-        'Anything to click or act on: use `Dialog` or `Menu`.',
+        'Naming an icon-only button: use `IconButton`; its `label` is the tooltip.',
         'A message the user must see: use `Banner`.',
+        'Anything to click: use `Menu` or `Dialog`.',
       ],
       accessibility: {
         builtIn: [
           'Opens on keyboard focus, not only on hover.',
-          'Screen readers hear the content as the trigger’s description, after any it already had.',
-          'No description when it only repeats the trigger’s `aria-label`.',
-          'The bubble itself is hidden from screen readers, so nothing is read twice.',
+          'Its content describes the trigger, after any description it had.',
+          'No description when it repeats the trigger’s `aria-label`.',
         ],
-        youHandle: [
-          'A focusable trigger, like a `Button`: keyboard users can’t reach a tip on plain text.',
-          'Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text too.',
-          'Two short sentences at most, and nothing needed to finish a task.',
+        toHandle: [
+          'A focusable trigger: keyboard users can’t reach a tip on plain text.',
+          'Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text.',
         ],
       },
     } satisfies Guidance,

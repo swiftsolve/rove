@@ -27,23 +27,22 @@ const meta = {
     guidance: {
       use: [
         'A headline figure and its unit: live speed, data used.',
-        'With a `label` and `icon` above it, side by side in a `<dl>`.',
-        '`compact` for a summary card’s figure, which has no label.',
+        'Labelled pairs side by side: Traffic’s “Download” and “Upload”.',
+        '`compact`, with no label, for a Home stat card’s figure.',
       ],
       avoid: [
         'A value in a list of facts: use `DataRow`.',
-        'A number inside a line of text that eases itself: use `MetricValue`.',
-        'A rating at a glance: use `BarMeter`.',
+        'A number inside a line of text, easing each poll: use `MetricValue`.',
       ],
       accessibility: {
         builtIn: [
-          'Labelled, a `<dt>` and `<dd>`: the label and figure read as a pair.',
-          'With `spokenValue`, the moving digits are hidden and screen readers hear it instead.',
+          'Labelled, a `<dt>` and `<dd>`, read as a pair.',
+          'With `spokenValue`, the moving digits are hidden and it’s read instead.',
         ],
-        youHandle: [
+        toHandle: [
           'A `<dl>` around labelled readouts.',
           'A `spokenValue` while the figure animates.',
-          'Without a label, words nearby that say what the figure is.',
+          'With no label, a title nearby that says what the figure is.',
         ],
       },
     } satisfies Guidance,

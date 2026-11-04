@@ -18,24 +18,13 @@ const meta = {
     docs: { toc: GUIDANCE_TOC },
     guidance: {
       use: [
-        'A status beside its words: a device online, a scan running.',
-        '`tone="positive"` when the words stay quiet; otherwise it takes their colour.',
-        '`pulse` at the pace of what it marks: `calm` connected, `live` streaming, `busy` a scan.',
+        'Beside words that state a status: a device’s Online or Offline.',
+        'Pulsing for a live or busy state: the title bar, a running scan.',
       ],
-      avoid: [
-        'A flag beside a title: use `Badge`.',
-        'Live data in a card header: use `LiveBadge`.',
-        'A page’s first load: use `LoadingState`.',
-      ],
+      avoid: ['A flag beside a title: use `Badge`.', 'Live data in a card header: use `LiveBadge`.'],
       accessibility: {
-        builtIn: [
-          'Hidden from screen readers (`aria-hidden`): the words carry the status.',
-          'Its pulse stops under reduced motion.',
-        ],
-        youHandle: [
-          'Words beside it that say the status on their own.',
-          'Never a meaning only the colour or pulse carries.',
-        ],
+        builtIn: ['Hidden from screen readers (`aria-hidden`).'],
+        toHandle: ['Words beside it that say the status on their own.'],
       },
     } satisfies Guidance,
   },
