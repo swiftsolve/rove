@@ -1,9 +1,15 @@
+import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
 import { Card, CardBody, CardHeader, DirectionIcon, NoValue, Readout, StatusDot } from '@/ui'
 
-// The content fills the body's height, so a control can sit at its foot.
-const READOUT_AREA = 'flex h-full flex-col whitespace-nowrap'
+// The content fills the body's height, so a control can sit at its foot. Never
+// shorter than a compact readout (its unit's line is the tallest part), so a
+// spinner or placeholder swapping for the value doesn't resize the card.
+const READOUT_AREA = cx(
+  'flex h-full flex-col whitespace-nowrap',
+  'min-h-[calc(var(--type-body-small-size)*var(--type-body-small-line-height))]',
+)
 
 type StatCardProps = {
   icon: ReactNode
@@ -44,11 +50,11 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
-/** The "no reading" body: a NoValue bar where the value would be. */
+/** The "no reading" body: a NoValue bar where the value would be, at the value's size. */
 export function EmptyStatReadout() {
   return (
-    <div className="metric mt-2" aria-hidden>
-      <span className="type-number-display metric-value">
+    <div className="metric" aria-hidden>
+      <span className="type-number-large metric-value">
         <NoValue />
       </span>
     </div>

@@ -60,13 +60,13 @@ function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBod
 }
 
 /**
- * Centred in the card's remaining height (the grid stretches the card to the
- * Usage card's), nudged down toward the body's centre. No min-height: it would
- * make the grid row taller.
+ * Centred in the readout's space, which is a compact readout's height, so the
+ * card keeps its size when the count replaces it. Anything taller (padding, a
+ * min-height) would make the grid row taller.
  */
 function ScanSpinner() {
   return (
-    <div className="flex flex-1 items-center justify-center pt-6" aria-hidden>
+    <div className="flex flex-1 items-center justify-center" aria-hidden>
       <ButtonSpinner size={14} color="var(--text-secondary)" />
     </div>
   )
