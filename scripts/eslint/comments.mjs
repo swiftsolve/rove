@@ -10,8 +10,8 @@
  */
 
 // Lines of text, not counting blank ones or a block's delimiters.
-export const MAX_NOTE_LINES = 6
-export const MAX_DOC_LINES = 10
+const MAX_NOTE_LINES = 6
+const MAX_DOC_LINES = 10
 // Prettier's printWidth (.prettierrc.json).
 const PRINT_WIDTH = 120
 // Comments that are instructions to a tool, not prose.

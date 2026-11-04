@@ -271,8 +271,8 @@ cargo fmt --all              # the Rust layout (rustfmt.toml)
 
 CI runs `npm run check` on every push and pull request, and clippy on all
 three OSes. Rust comments follow the UI's rules (no em dash, a `//`
-note in 6 lines, a `///` doc in 10), checked by
-`scripts/checks/rust-comments.mjs` within `npm run check`.
+note in 6 lines, a `///` doc in 10), checked by a `cargo test`
+(`crates/rove-core/tests/comments.rs`).
 
 > **Dev note (Linux/snap):** if you launch from a snap-packaged terminal (e.g.
 > VS Code from snap), unset its library path first or the binary picks up

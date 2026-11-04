@@ -55,6 +55,11 @@ jobs:
       - name: Lint service layer
         run: cargo clippy -p rove-core --all-targets -- -D warnings
 
+      # On every OS, so each platform's own code is tested where it compiles.
+      # Includes the comment rules (tests/comments.rs).
+      - name: Test service layer
+        run: cargo test -p rove-core
+
       # Enable macOS code signing only when a certificate secret is present.
       # Otherwise fall back to an unsigned (ad-hoc) build so CI bundling still
       # succeeds. The APPLE_* secrets are exported to $GITHUB_ENV ONLY when

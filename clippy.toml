@@ -11,6 +11,7 @@ doc-valid-idents = [
     "CoreLocation",
     "CoreWLAN",
     "DiskStation",
+    "ESLint",
     "GeoLite2",
     "GLib",
     "HomeKit",
