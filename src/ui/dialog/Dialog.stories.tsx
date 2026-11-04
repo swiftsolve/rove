@@ -51,7 +51,7 @@ const meta = {
         ],
         toHandle: [
           '`autoFocus` on a form’s first field, as Add a service does.',
-          'A live region around a body that swaps state.',
+          'A live region (`aria-live`) around a body that changes while open, as Share Wi‑Fi does.',
         ],
       },
     } satisfies Guidance,
