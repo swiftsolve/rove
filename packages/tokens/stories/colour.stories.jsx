@@ -147,13 +147,7 @@ function ColourTable({ names }) {
             <Name name={path.join('/')} description={token?.$description} />
             <ModeCell theme="dark" path={path} />
             <ModeCell theme="light" path={path} />
-            {path[0] === 'shadow-color' ? (
-              <span className="code-note">
-                Part of <Code>{shadowFor(path)}</Code>
-              </span>
-            ) : (
-              <Code>{`var(${cssName(path)})`}</Code>
-            )}
+            <Code>{path[0] === 'shadow-color' ? shadowFor(path) : `var(${cssName(path)})`}</Code>
           </TableRow>
         )
       })}

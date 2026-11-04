@@ -1073,17 +1073,6 @@
   }
 }
 
-/* A token that isn't a CSS variable of its own points at the one that holds it. */
-.code-note {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-  align-items: center;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-}
-
 @media (max-width: 1180px) {
   .intro-explore {
     grid-template-columns: repeat(2, minmax(0, 1fr));
