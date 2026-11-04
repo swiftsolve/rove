@@ -21,7 +21,6 @@
   "search.exclude": {
     "**/.claude/worktrees": true
   },
-  "explorer.sortOrder": "mixed",
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
