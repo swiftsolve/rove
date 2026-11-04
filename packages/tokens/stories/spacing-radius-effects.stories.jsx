@@ -172,17 +172,27 @@ function ShadowSpec({ name }) {
   )
 }
 
+// A token by its Figma name, with its CSS variable under it.
+function TokenSpec({ name }) {
+  return (
+    <span className="spec">
+      <span>{name}</span>
+      <Code>var(--{name.replace('/', '-')})</Code>
+    </span>
+  )
+}
+
 function Elevation() {
   return (
     <Table
       columns={[
-        ['Level', '1.1fr'],
+        ['Level', '1fr'],
         ['Dark', 'minmax(140px, 1fr)'],
         ['Light', 'minmax(140px, 1fr)'],
-        ['Background', '0.8fr'],
+        ['Background', '1fr'],
         ['Shadow', '1.1fr'],
-        ['Border', '0.7fr'],
-        ['Radius', '0.55fr'],
+        ['Border', '1.05fr'],
+        ['Radius', '0.8fr'],
       ]}
     >
       {LEVELS.map((level) => (
@@ -190,10 +200,10 @@ function Elevation() {
           <Name name={level.name} description={level.use} />
           <LevelSample theme="dark" level={level} />
           <LevelSample theme="light" level={level} />
-          <span className="mono">{level.background}</span>
+          <TokenSpec name={level.background} />
           {level.shadow ? <ShadowSpec name={level.shadow} /> : <span className="mono">—</span>}
-          <span className="mono">{level.border ?? '—'}</span>
-          <span className="mono">{level.radius ? `radius/${level.radius}` : '—'}</span>
+          {level.border ? <TokenSpec name={level.border} /> : <span className="mono">—</span>}
+          {level.radius ? <TokenSpec name={`radius/${level.radius}`} /> : <span className="mono">—</span>}
         </TableRow>
       ))}
     </Table>
