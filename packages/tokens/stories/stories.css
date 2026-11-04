@@ -517,8 +517,9 @@
   --intro-text-gap: 6px;
 }
 
-/* A code chip is one name, so it never breaks inside itself (text-styles.css at its hyphen). */
-.intro code {
+/* A code chip breaks only between its parts, after a slash, never inside a name
+   (text-styles.css at its hyphen). */
+.intro-code-part {
   white-space: nowrap;
 }
 
@@ -633,7 +634,7 @@
 /* The stage labels sit on the same grid as the cards, so each starts at its column's edge. */
 .intro-stage-columns {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   column-gap: var(--intro-gap);
 }
 
@@ -666,7 +667,7 @@
 .intro-steps,
 .intro-consumers {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   column-gap: var(--intro-gap);
   margin: 0;
   padding: 0;
@@ -674,7 +675,7 @@
 }
 
 .intro-consumers {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .intro-node {
@@ -694,19 +695,20 @@
   color: var(--text-secondary);
 }
 
-/* The arrow into a step, across the gap before it. */
-/* The arrow into a step: a 1px line and an open chevron, level with the icons'
+/* The arrow into a step: a line and an open chevron, level with the icons'
    centre, running the whole gap from card to card, in the accent. */
 .intro-node.has-flow {
   --intro-arrow-y: calc(1px + var(--intro-card-pad) + 12px); /* border, padding, half the 24px icon */
+  --intro-arrow-weight: 1.5px;
+  --intro-arrow-head: 7px;
 }
 
 .intro-node.has-flow::before {
   position: absolute;
-  top: calc(var(--intro-arrow-y) - 0.5px);
+  top: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
   right: calc(100% + 1px);
   width: calc(var(--intro-gap) - 1px);
-  height: 1px;
+  height: var(--intro-arrow-weight);
   border-radius: var(--radius-full);
   background: var(--accent-default);
   content: '';
@@ -714,13 +716,13 @@
 
 .intro-node.has-flow::after {
   position: absolute;
-  top: calc(var(--intro-arrow-y) - 3px);
+  top: calc(var(--intro-arrow-y) - var(--intro-arrow-head) / 2);
   right: calc(100% + 1px);
-  width: 6px;
-  height: 6px;
+  width: var(--intro-arrow-head);
+  height: var(--intro-arrow-head);
   box-sizing: border-box;
-  border-top: 1px solid var(--accent-default);
-  border-right: 1px solid var(--accent-default);
+  border-top: var(--intro-arrow-weight) solid var(--accent-default);
+  border-right: var(--intro-arrow-weight) solid var(--accent-default);
   border-top-right-radius: 1px;
   transform: rotate(45deg);
   content: '';
@@ -1013,7 +1015,7 @@
 }
 
 /* Narrow: the stages stack, each step names its stage, and arrows point down. */
-@media (max-width: 960px) {
+@media (max-width: 1180px) {
   .intro-stages {
     display: none;
   }
@@ -1042,8 +1044,8 @@
     top: auto;
     right: auto;
     bottom: calc(100% + 1px);
-    left: calc(var(--intro-arrow-y) - 0.5px);
-    width: 1px;
+    left: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
+    width: var(--intro-arrow-weight);
     height: 23px;
     background: var(--accent-default);
   }
@@ -1052,7 +1054,7 @@
     top: auto;
     right: auto;
     bottom: calc(100% + 1px);
-    left: calc(var(--intro-arrow-y) - 3px);
+    left: calc(var(--intro-arrow-y) - var(--intro-arrow-head) / 2);
     transform: rotate(135deg);
   }
 }

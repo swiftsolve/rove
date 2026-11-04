@@ -11,11 +11,20 @@ const FIGMA = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-S
 const pageHref = (id) => `./?path=/story/${id}`
 
 // Backticks in the copy below become inline code.
+// A code chip may break only after a slash (`src/` | `code-tokens.json`), never
+// at a hyphen, so a narrow column wraps a path without splitting a name.
+const codeParts = (code) =>
+  code.split(/(?<=\/)/).map((segment, index) => (
+    <span key={index} className="intro-code-part">
+      {segment}
+    </span>
+  ))
+
 const withCode = (text) =>
   text.split('`').map((part, index) =>
     index % 2 ? (
       <code key={index} className="intro-code">
-        {part}
+        {codeParts(part)}
       </code>
     ) : (
       part
@@ -161,7 +170,7 @@ const PIPELINES = [
         items: [
           {
             name: '`npm run build`',
-            body: 'Writes DTCG, then CSS with Style Dictionary. It stops on a misnamed token or a broken reference.',
+            body: 'Writes DTCG, then CSS with Style Dictionary. It fails if a token points at one that doesn’t exist, or its CSS name doesn’t match its Figma name.',
           },
         ],
       },
