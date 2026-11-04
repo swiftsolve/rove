@@ -56,9 +56,10 @@ flowchart TD
   pkg("<b>npm package</b><br/>for Rove"):::ship
   storybook("<b>Storybook</b><br/>both themes"):::ship
 
-  figma --> exports & slides
-  exports -.->|Sync| figma
-  code -.->|Sync| figma
+  figma -->|Export: made in Figma| exports
+  figma --> slides
+  exports -.->|Sync: made here| figma
+  code -.->|Sync: shadows| figma
   exports & code --> dtcg
   dtcg --> css & textCss & design
   build --> pkg & storybook
@@ -68,7 +69,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. The dotted arrows are the plugin's Sync, which writes the repo's tokens back into Figma. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. The solid arrow out of Figma is the plugin's Export, for a change made in Figma. The dotted arrows are its Sync, for a change made here: it writes the repo's tokens into Figma, shadows included, since Figma variables can't hold them. Each change takes one path, never both, and `npm run figma -- check` confirms the two sides agree. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
