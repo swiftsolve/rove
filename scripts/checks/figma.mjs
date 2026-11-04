@@ -79,12 +79,24 @@ async function readToken() {
   return env.match(/^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m)?.[1]
 }
 
-/** A REST API answer, as JSON. Offline skips; a bad token or file key answers, and fails. */
+/**
+ * A REST API answer, as JSON. Offline skips, and so does a server error that
+ * outlasts two retries; a bad token or file key answers, and fails.
+ */
 async function get(token, path) {
-  const response = await fetch(`${API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error) => {
-    console.log(`Figma skipped: Figma couldn't be reached (${error.cause?.code ?? error.message})`)
+  let response
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((done) => setTimeout(done, attempt * 2000))
+    response = await fetch(`${API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error) => {
+      console.log(`Figma skipped: Figma couldn't be reached (${error.cause?.code ?? error.message})`)
+      process.exit(0)
+    })
+    if (response.status < 500) break
+  }
+  if (response.status >= 500) {
+    console.log(`Figma skipped: Figma answered ${response.status} three times`)
     process.exit(0)
-  })
+  }
   if (!response.ok) {
     console.error(`Figma answered ${response.status}: ${await response.text()}`)
     process.exit(1)
