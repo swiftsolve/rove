@@ -41,10 +41,9 @@ Tokens are designed in Figma and released from git. A [Figma plugin](figma-plugi
 ```mermaid
 %%{init: {"themeCSS": ".cluster-label { translate: 236px 0; }", "theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
 flowchart TD
-  figma("<b>Figma file</b><br/>variables, styles"):::source
-  exports("<b>src/figma/*.json</b><br/>Figma plugin"):::file
+  figma("<b>Figma file</b><br/>variables, text styles"):::source
+  exports("<b>src/figma/*.json</b><br/>Figma's tokens, in git"):::file
   code("<b>src/code‑tokens.json</b><br/>shadows, easings"):::file
-  slides("<b>Slideshow</b><br/>npm run present"):::ship
 
   subgraph build ["npm run build"]
     dtcg("<b>tokens/</b><br/>figma‑to‑dtcg.mjs"):::file
@@ -56,10 +55,7 @@ flowchart TD
   pkg("<b>npm package</b><br/>for Rove"):::ship
   storybook("<b>Storybook</b><br/>both themes"):::ship
 
-  figma -->|Export: made in Figma| exports
-  figma --> slides
-  exports -.->|Sync: made here| figma
-  code -.->|Sync: shadows| figma
+  figma <-->|Export / Sync| exports
   exports & code --> dtcg
   dtcg --> css & textCss & design
   build --> pkg & storybook
@@ -69,7 +65,7 @@ flowchart TD
   classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
 ```
 
-Under each file is what writes it: a script in `scripts/tokens/`, [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`), or the Figma plugin, which exports the file's variables and text styles. The solid arrow out of Figma is the plugin's Export, for a change made in Figma. The dotted arrows are its Sync, for a change made here: it writes the repo's tokens into Figma, shadows included, since Figma variables can't hold them. Each change takes one path, never both, and `npm run figma -- check` confirms the two sides agree. [What's where](#️-whats-where) has the details.
+Under each file is what writes it: a script in `scripts/tokens/`, or [Style Dictionary](https://styledictionary.com/) (run by `dtcg-to-css.mjs`). The one link with Figma runs both ways, one change at a time: the plugin's Export writes a change made in Figma into `src/figma/*.json`, and its Sync writes a change made here into Figma, the shadows in `src/code-tokens.json` included, as effect styles. `npm run figma -- check` confirms the two agree. The slideshow (`npm run present`) is separate: it exports the Figma file's pages, styled with `tokens.css`. [What's where](#️-whats-where) has the details.
 
 ## 📦 Use
 
