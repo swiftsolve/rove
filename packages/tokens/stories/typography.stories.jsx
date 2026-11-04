@@ -157,7 +157,11 @@ function TextStyles() {
 export const Typography = {
   render: () => (
     <Page title="Typography" intro="Inter for interface text, Questrial for numbers.">
-      <Group title="Primitive tokens" intro="The raw families and sizes, named by what they are.">
+      <Group
+        title="Primitive tokens"
+        intro="The raw families and sizes, named by what they are."
+        warning="Use a text style, not a font size."
+      >
         <Section
           title="Families"
           intro="Inter (font-family/sans) for text, Questrial (font-family/numeric) for numbers."
