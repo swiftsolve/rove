@@ -230,9 +230,11 @@ props passed through; Tailwind utilities built only from the design tokens;
 shared components before new markup. [docs/develop/frontend.md](docs/develop/frontend.md)
 has them all, with checklists for common changes and the component table.
 
-The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma is the source of truth for tokens and components. To browse it without
-Figma, see the [slideshow](https://swiftsolve.github.io/rove-tokens/).
+Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
+in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),
+which syncs them both ways and checks that Figma and the package agree.
+Components start in `src/ui`, and Figma mirrors them. To browse the design
+system without Figma, see the [slideshow](https://swiftsolve.github.io/rove-tokens/).
 
 ## Development
 

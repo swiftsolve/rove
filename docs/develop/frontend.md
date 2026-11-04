@@ -179,9 +179,11 @@ the mock.
 
 ## Styles: Tailwind utilities from the design tokens
 
-The [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma is the source of truth for tokens and components, which reach the UI
-through `@swiftsolve/rove-tokens`. Which token to use for what, with every
+Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
+in Figma, released from rove-tokens, and reach the UI through
+`@swiftsolve/rove-tokens`; the two stay in step through its plugin's Sync and
+`npm run figma -- check`. Components start here in `src/ui`, and their Figma
+components mirror them. Which token to use for what, with every
 value, is in its `DESIGN.md`
 (`node_modules/@swiftsolve/rove-tokens/DESIGN.md`); the published slideshow
 shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.

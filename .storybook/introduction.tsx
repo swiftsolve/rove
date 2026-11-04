@@ -34,15 +34,15 @@ export function Introduction(): JSX.Element {
       <h2>Start here</h2>
       <ul>
         <li>
-          <strong>Designing:</strong> the{' '}
+          <strong>Designing:</strong> tokens are designed in the{' '}
           <a href={figma.file} target="_blank" rel="noreferrer">
             Figma file
           </a>{' '}
-          is the source of truth. The tokens are in{' '}
+          and released in{' '}
           <a href={TOKENS_STORYBOOK} target="_blank" rel="noreferrer">
             Rove Tokens
           </a>
-          .
+          . Components start here, and Figma mirrors them.
         </li>
         <li>
           <strong>Building:</strong> import from <code>@/ui</code>. Each component&rsquo;s Docs page says when to use

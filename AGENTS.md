@@ -13,8 +13,9 @@ everything:
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
 
-The Rove Design System in Figma is the source of truth for tokens and
-components; they arrive through `@swiftsolve/rove-tokens`.
+Tokens are designed in the Rove Design System in Figma and released from
+`../rove-tokens`; they arrive through `@swiftsolve/rove-tokens`. Components
+start here, in `src/ui`, and the Figma components mirror them.
 
 `src/ui/components.gen.json` lists every library component with its group,
 props, variant values, Figma component, stories and usage guide (when to use
@@ -24,11 +25,19 @@ it, when not, accessibility), generated from the code. Read it before
 ## Keep Figma and code in sync
 
 A design change (a token, text style, component variant or prop, copy,
-spacing) lands on both sides in the same task: the Figma file, the
-`rove-tokens` export and build, this code, and `docs/develop/frontend.md`. A
-token change also updates every Figma page that shows it: labels, swatches and
-hard-coded fills. Say in the summary that both sides changed and how you
-checked.
+spacing) lands on both sides in the same task: the Figma file, `rove-tokens`,
+this code, and `docs/develop/frontend.md`.
+
+- **A token or text style** can start on either side; `../rove-tokens/AGENTS.md`
+  has both paths. A change made in code goes into Figma with
+  `npm run figma -- apply` there, through the Figma MCP's `use_figma`. Either
+  way, `npm run figma -- check` must then report `inSync: true`.
+- **A component** changes here first, then in Figma to match.
+- **Every Figma page that shows a changed token** is updated too: labels,
+  swatches and hard-coded fills.
+
+Say in the summary that both sides changed and how you checked (the sync
+check's result, or an audit).
 
 ## Check your work
 
