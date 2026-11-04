@@ -1,5 +1,5 @@
 import designPackage from '../package.json'
-import { colorDark, cssName, flatten, group, isCss, palette, spacing, textStyles } from './tokens'
+import { colorDark, flatten, group, palette, spacing, textStyles } from './tokens'
 
 export default { title: 'Introduction' }
 
@@ -341,14 +341,22 @@ const EXPLORE = [
   {
     id: 'colour--colour',
     title: 'Colour',
-    body: `${flatten(colorDark).filter(isCss).length} colour tokens and ${flatten(colorDark).filter((t) => !isCss(t)).length} shadow colours, on ${flatten(palette).length} palette shades, in Dark and Light.`,
+    body: `${flatten(colorDark).length} colour tokens on ${flatten(palette).length} palette shades, in Dark and Light.`,
     specimen: (
+      // The Figma cover's palette row, in its order: the accent, the two series, then status from best to worst.
       <span className="intro-swatches">
-        {flatten(colorDark)
-          .filter(isCss)
-          .map(({ path }) => (
-            <span key={cssName(path)} style={{ background: `var(${cssName(path)})` }} />
-          ))}
+        {[
+          '--accent-default',
+          '--series-down',
+          '--series-up',
+          '--status-positive',
+          '--status-good',
+          '--status-warning',
+          '--status-poor',
+          '--status-negative',
+        ].map((name) => (
+          <span key={name} style={{ background: `var(${name})` }} />
+        ))}
       </span>
     ),
   },
