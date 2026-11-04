@@ -160,7 +160,7 @@ const CONSUMERS = [
     href: 'https://rove.swiftsolve.net/storybook/',
   },
   {
-    icon: 'claude',
+    icons: ['claude', 'cursor', 'copilot', 'gemini'],
     name: 'Coding agents',
     body: 'Read `DESIGN.md` from `node_modules`, so they reach for a token, not a hex.',
   },
@@ -270,8 +270,8 @@ function Pipelines() {
           <p>Everything that ships from the tokens pipeline.</p>
         </div>
         <ul className="intro-consumers">
-          {CONSUMERS.map(({ icon, ...item }) => (
-            <Node key={item.name} icons={[icon]}>
+          {CONSUMERS.map(({ icon, icons = [icon], ...item }) => (
+            <Node key={item.name} icons={icons}>
               <Item {...item} />
             </Node>
           ))}
