@@ -1,8 +1,8 @@
-import { Code, Codes, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, colorIn, cssName, group, layout, opacity, shadowIn, spacing } from './tokens'
+import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
+import { code, colorIn, cssName, cssValue, group, layout, opacity, refName, shadowIn, spacing } from './tokens'
 import windowLayout from './window-layout.png'
 
-export default { title: 'Spacing, radius & effects' }
+export default { title: 'Space, shape & effects' }
 
 // The Figma page's notes on each token.
 const SPACING_USES = {
@@ -25,6 +25,7 @@ const RADIUS_USES = {
   full: 'Badges and pills',
 }
 
+const FOCUS_ORDER = ['ring-width', 'offset']
 const OPACITY_ORDER = ['tint-xs', 'tint-sm', 'tint-md', 'tint-lg', 'tint-xl', 'disabled', 'high']
 
 // The four depth levels: what each sits on, and the shadow, border and radius it takes.
@@ -211,7 +212,8 @@ function Elevation() {
 }
 
 function OpacityTable() {
-  const tokens = group(opacity, 'opacity')
+  // The scale is in Opacity; disabled, named for its job, is in Layout.
+  const tokens = [...group(opacity, 'opacity'), ...group(layout, 'opacity')]
   return (
     <Table
       columns={[
@@ -231,6 +233,39 @@ function OpacityTable() {
             <span className="mono">{Math.round(token.$value * 100)}%</span>
             <span className="opacity-sample" style={{ opacity: `var(${name})` }} />
             <span>{token.$description}</span>
+            <Code>var({name})</Code>
+          </TableRow>
+        )
+      })}
+    </Table>
+  )
+}
+
+// The focus ring's sizes, in Layout. A token that points at the scale says which step.
+function FocusTable() {
+  return (
+    <Table
+      columns={[
+        ['Token', '1fr'],
+        ['Value', '0.4fr'],
+        ['Sample', '1.3fr'],
+        ['Use', '1.9fr'],
+        ['Code', 'minmax(170px, 1fr)'],
+      ]}
+    >
+      {FOCUS_ORDER.map((key) => {
+        const token = group(layout, 'focus').find((candidate) => candidate.path[1] === key)
+        const name = cssName(token.path)
+        const from = typeof token.$value === 'string' ? `, from ${refName(token.$value)}` : ''
+        return (
+          <TableRow key={name}>
+            <Name name={token.path.join('/')} />
+            <span className="mono">{cssValue(name)}</span>
+            <span className="focus-sample" />
+            <span>
+              {token.$description}
+              {from}
+            </span>
             <Code>var({name})</Code>
           </TableRow>
         )
@@ -275,36 +310,41 @@ function WindowLayout() {
   )
 }
 
-export const SpacingRadiusEffects = {
-  name: 'Spacing, radius & effects',
+export const SpaceShapeEffects = {
+  name: 'Space, shape & effects',
   render: () => (
     <Page
-      title="Spacing, radius & effects"
-      intro="Spacing, radii, elevation, opacity and window layout. Bind to tokens, never type numbers."
+      title="Space, shape & effects"
+      intro="Spacing, radii, opacity, focus, elevation and window layout. Bind to tokens, never type numbers."
     >
-      <Group title="Primitive tokens" intro="The raw scales, named by size.">
-        <Section title="Spacing" intro="Gaps and padding in 2px steps.">
-          <SpacingTable />
-        </Section>
-        <Section title="Corner radius" intro="Rounded-corner sizes for frames and controls.">
-          <Radii />
-        </Section>
-        <Section title="Opacity" intro="Bind layer opacity to these, not to typed numbers.">
-          <OpacityTable />
-        </Section>
-      </Group>
-      <Group title="Semantic tokens" intro="What you use, each named for its job.">
-        <Section
-          title="Elevation"
-          intro="Four depth levels, set by shadow. Floating layers also get a border. Softer in Light mode."
-        >
-          <Elevation />
-        </Section>
-        <Section title="Window layout" intro="Sizes of the title bar, rail and content area.">
-          <WindowDiagram />
-          <WindowLayout />
-        </Section>
-      </Group>
+      <Section title="Spacing" intro="Gaps and padding in 2px steps.">
+        <SpacingTable />
+      </Section>
+      <Section title="Corner radius" intro="Rounded-corner sizes for frames and controls.">
+        <Radii />
+      </Section>
+      <Section
+        title="Opacity"
+        intro="Tints and high are the scale; disabled is named for its job. Bind layer opacity to these, not to typed numbers."
+      >
+        <OpacityTable />
+      </Section>
+      <Section
+        title="Focus"
+        intro="The keyboard focus ring, in the focus/ring colour. Named for their job; the offset points at spacing/2."
+      >
+        <FocusTable />
+      </Section>
+      <Section
+        title="Elevation"
+        intro="Four depth levels, set by shadow. Floating layers also get a border. Softer in Light mode."
+      >
+        <Elevation />
+      </Section>
+      <Section title="Window layout" intro="Sizes of the title bar, rail and content area.">
+        <WindowDiagram />
+        <WindowLayout />
+      </Section>
     </Page>
   ),
 }

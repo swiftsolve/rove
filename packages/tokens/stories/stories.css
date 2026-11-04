@@ -407,7 +407,7 @@
   overflow-wrap: anywhere;
 }
 
-/* Spacing, radius and effects */
+/* Space, shape and effects */
 
 .scale {
   display: block;
@@ -449,6 +449,16 @@
   height: 36px;
   border-radius: 6px;
   background: var(--accent-solid);
+}
+
+.focus-sample {
+  display: block;
+  width: 64px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--accent-solid);
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
 }
 
 /* Motion */

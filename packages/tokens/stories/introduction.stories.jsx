@@ -375,8 +375,8 @@ const EXPLORE = [
     ),
   },
   {
-    id: 'spacing-radius-effects--spacing-radius-effects',
-    title: 'Spacing, radius & effects',
+    id: 'space-shape-effects--space-shape-effects',
+    title: 'Space, shape & effects',
     body: `A ${group(spacing, 'spacing').length}-step spacing scale in 2px steps, with the radii, shadows and opacities.`,
     specimen: (
       // The four kinds, left to right: spacing steps, the radii (each tinted at an
