@@ -28,7 +28,7 @@ const meta = {
         <Card>
           <Story />
           <CardBody>
-            <p className="text-sm text-secondary">The card's content.</p>
+            <p className="type-body-small text-secondary">The card's content.</p>
           </CardBody>
         </Card>
       </div>

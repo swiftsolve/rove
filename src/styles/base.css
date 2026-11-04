@@ -93,9 +93,11 @@
        opaque, with square corners. */
     background: transparent;
     color: var(--text-primary);
-    line-height: 1.45;
-    font-size: var(--font-size-md);
-    font-weight: var(--weight-regular);
+    /* Body/Default. */
+    font-size: var(--type-body-default-size);
+    font-weight: var(--type-body-default-weight);
+    line-height: var(--type-body-default-line-height);
+    letter-spacing: var(--type-body-default-letter-spacing);
     font-optical-sizing: auto;
     font-feature-settings:
       'cv11' 1,

@@ -14,7 +14,7 @@ export function RowName({ icon, name, children }: RowNameProps) {
     <span className="inline-flex min-w-0 items-center gap-8">
       {icon}
       {/* Long names (e.g. macOS bundle identifiers) truncate to keep the row one line. */}
-      <span className="truncate text-sm text-primary" title={name}>
+      <span className="type-body-small truncate text-primary" title={name}>
         {name}
       </span>
       {children}

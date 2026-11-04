@@ -40,7 +40,7 @@ type Story = StoryObj<typeof meta>
 /** In a line of body text. */
 export const Default: Story = {
   render: (args) => (
-    <span className="text-sm text-secondary">
+    <span className="type-body-small text-secondary">
       <NoValue {...args} />
     </span>
   ),
@@ -60,17 +60,17 @@ export const InContext: Story = {
       <dl className="grid grid-cols-3 gap-16">
         <div className="flex flex-col gap-4">
           <dt className="type-overline text-tertiary">Ping</dt>
-          <dd className="num text-md font-medium text-primary">12.4 ms</dd>
+          <dd className="type-number-default num leading-body-default text-primary">12.4 ms</dd>
         </div>
         <div className="flex flex-col gap-4">
           <dt className="type-overline text-tertiary">Jitter</dt>
-          <dd className="num text-md font-medium text-primary">
+          <dd className="type-number-default num leading-body-default text-primary">
             <NoValue label="Not measured" />
           </dd>
         </div>
         <div className="flex flex-col gap-4">
           <dt className="type-overline text-tertiary">Loss</dt>
-          <dd className="num text-md font-medium text-primary">0%</dd>
+          <dd className="type-number-default num leading-body-default text-primary">0%</dd>
         </div>
       </dl>
       <div className="metric">
@@ -86,10 +86,10 @@ export const InContext: Story = {
 export const AllSizes: Story = {
   render: () => (
     <div className="flex items-end gap-16 text-primary">
-      <span className="text-sm">
+      <span className="type-body-small">
         <NoValue />
       </span>
-      <span className="text-md font-medium">
+      <span className="type-number-default leading-body-default">
         <NoValue label="Not measured" />
       </span>
       <span className="type-number-display">

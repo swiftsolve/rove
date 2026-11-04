@@ -135,8 +135,12 @@
   min-height: 140px;
   padding: var(--spacing-16);
 
+  /* Body/Small. */
   & p {
-    font-size: var(--font-size-sm);
+    font-size: var(--type-body-small-size);
+    font-weight: var(--type-body-small-weight);
+    line-height: var(--type-body-small-line-height);
+    letter-spacing: var(--type-body-small-letter-spacing);
     color: var(--text-tertiary);
   }
 }
@@ -170,9 +174,12 @@
   pointer-events: none;
 }
 
+/* Label/Default. */
 @utility chart-tip-title {
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-semibold);
+  font-size: var(--type-label-default-size);
+  font-weight: var(--type-label-default-weight);
+  line-height: var(--type-label-default-line-height);
+  letter-spacing: var(--type-label-default-letter-spacing);
   color: var(--text-secondary);
 }
 
@@ -182,16 +189,23 @@
   gap: var(--spacing-8);
 }
 
+/* Body/Small. */
 @utility chart-tip-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--type-body-small-size);
+  font-weight: var(--type-body-small-weight);
+  line-height: var(--type-body-small-line-height);
+  letter-spacing: var(--type-body-small-letter-spacing);
   color: var(--text-secondary);
 }
 
 @utility chart-tip-value {
   margin-left: auto;
   padding-left: var(--spacing-16);
-  font-size: var(--font-size-sm);
-  font-weight: var(--weight-semibold);
+  /* Label/Large. */
+  font-size: var(--type-label-large-size);
+  font-weight: var(--type-label-large-weight);
+  line-height: var(--type-label-large-line-height);
+  letter-spacing: var(--type-label-large-letter-spacing);
   color: var(--text-primary);
 }
 

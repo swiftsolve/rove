@@ -20,7 +20,7 @@ const METRICS = cx(
   '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
 )
 
-const metricValueVariants = cva('text-md leading-[1.25] font-medium whitespace-nowrap', {
+const metricValueVariants = cva('type-body-default leading-[1.25] font-medium whitespace-nowrap', {
   variants: {
     isUnmet: { true: 'text-negative', false: 'text-primary' },
   },
@@ -40,7 +40,7 @@ const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] 
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
-const verdictStatusVariants = cva('inline-flex shrink-0 items-center gap-6 text-xs font-semibold', {
+const verdictStatusVariants = cva('inline-flex shrink-0 items-center gap-6 type-label-default', {
   variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
 })
 
@@ -64,8 +64,8 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
             icon={<CapabilityIcon id={capability.id} size={16} />}
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <h2 className="text-lg leading-heading-small font-semibold tracking-heading-small">{capability.label}</h2>
-            <span className="text-xs leading-caption text-tertiary">{capability.description}</span>
+            <h2 className="type-heading-small">{capability.label}</h2>
+            <span className="type-caption text-tertiary">{capability.description}</span>
           </div>
           {/* Nudged up to centre optically against the two-line title. */}
           <CapabilityMeter
@@ -82,7 +82,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
-              <dd className="text-xs leading-[1.2] whitespace-nowrap text-tertiary">
+              <dd className="type-caption leading-[1.2] whitespace-nowrap text-tertiary">
                 <span className="sr-only">Needs </span>
                 {check.need}
               </dd>

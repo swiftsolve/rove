@@ -58,8 +58,7 @@ export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <IconTile color={TILE_COLORS[iface.connectionType]} icon={<InterfaceIcon iface={iface} />} />
-          {/* text-lg overrides type-heading-large's size to match the card titles. */}
-          <h2 className="type-heading-large text-primary min-w-0 truncate text-lg">{iface.name}</h2>
+          <h2 className="type-heading-small leading-heading-large text-primary min-w-0 truncate">{iface.name}</h2>
           {iface.isDefault && (
             <Tooltip content="Used for internet traffic" shouldDescribe={false}>
               <span className={tagVariants({ isPositive: true })}>

@@ -9,7 +9,7 @@ const ICON = 'shrink-0 rounded-xs object-contain'
 const MONOGRAM = cx(
   ICON,
   'inline-flex items-center justify-center bg-hover',
-  'text-2xs font-semibold leading-none text-secondary',
+  'type-badge tracking-body-default text-secondary',
 )
 
 // Hosts whose favicon has already 404'd, remembered for the session so remounts

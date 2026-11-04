@@ -18,7 +18,7 @@ const meta = {
           </DataList>
         </CardBody>
         <CardFooter>
-          <span className="text-xs text-tertiary">{args.children}</span>
+          <span className="type-caption text-tertiary">{args.children}</span>
         </CardFooter>
       </Card>
     </div>

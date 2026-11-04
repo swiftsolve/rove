@@ -66,7 +66,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
                 className={cx(
                   'max-h-[168px] list-disc overflow-y-auto py-10 pr-12 pl-[26px]',
                   'rounded-sm border border-line bg-inset',
-                  'text-md leading-body-default text-secondary marker:text-tertiary',
+                  'type-body-default text-secondary marker:text-tertiary',
                 )}
               >
                 {releaseNoteItems(update.notes).map((item, i) => (

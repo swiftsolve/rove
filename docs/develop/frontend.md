@@ -201,7 +201,15 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
-  under every utility, so `text-sm` or `leading-[1.15]` beside one wins.
+  under every utility, so `font-medium`, `leading-[1.2]` or the `num` face
+  beside one wins. The size always comes from the style: no `text-sm` alone,
+  and no style with its size overridden. Text with no matching style (13px at
+  500 is Body/Default plus `font-medium`) takes the nearest style at its size
+  and a utility for the rest. A style sets its own line height, so text
+  that should keep its line's (a timeline row's `*:leading-[1.3]`, a
+  button's) adds `leading-[inherit]`. A stylesheet sets all four of a style's
+  `--type-<style>-*` variables. Text no style fits at all goes in
+  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why.
 - Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
   `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
@@ -300,6 +308,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | File names | `checks/file-names.mjs` |
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
+| Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
 | Every theme name listed in `cn` | `checks/cn-theme.mjs` |
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | `components.gen.json` fresh; doc comments, defaults, `figma.json` and Components rows present | `build-ui-catalogue.mjs --check` |

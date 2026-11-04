@@ -76,7 +76,7 @@ export const Disabled: Story = { args: { isDisabled: true } }
 export const SmallText: Story = {
   args: { icon: iconArg('HistoryIcon'), children: 'History' },
   render: (args) => (
-    <span className="text-xs">
+    <span className="type-caption">
       <Link {...args} />
     </span>
   ),
@@ -94,7 +94,7 @@ export const AllStates: Story = {
           Disabled
         </Link>
       </span>
-      <span className="inline-flex items-center gap-12 text-xs">
+      <span className="inline-flex items-center gap-12 type-caption">
         <Link icon={PlayIcon}>Small text</Link>
         <Link href="https://github.com/swiftsolve/rove">External</Link>
         <Link icon={PlayIcon} isDisabled>

@@ -15,7 +15,7 @@ const meta = {
   args: {
     title: 'Add a service',
     description: 'Track a service by URL or IP address.',
-    children: <p className="text-sm text-secondary">Rove checks it every minute.</p>,
+    children: <p className="type-body-small text-secondary">Rove checks it every minute.</p>,
     cancelLabel: 'Cancel',
     actions: <Button variant="solid">Add</Button>,
     onClose: fn(),

@@ -31,7 +31,7 @@ const GROUP_HEADER = cx(
 
 const HOST_COUNT = cx(
   'min-w-[18px] shrink-0 rounded-full bg-inset px-6 py-px',
-  'text-center text-xs text-tertiary tabular-nums',
+  'type-caption text-center text-tertiary tabular-nums',
 )
 
 // Indented so each 18px flag centres under the 16px app icon: chevron 14 + gap 8

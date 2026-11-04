@@ -53,16 +53,16 @@ const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
 }
 
 /** The Online / Offline status beside a device's name. */
-const stateVariants = cva('inline-flex shrink-0 items-center gap-6 text-sm', {
+const stateVariants = cva('type-body-small inline-flex shrink-0 items-center gap-6', {
   variants: {
     isReachable: { true: 'text-positive', false: 'text-tertiary' },
   },
   defaultVariants: { isReachable: false },
 })
 
-// text-lg overrides type-heading-large's size to match the card titles.
+// On Heading/Small, the card titles' style.
 const DEVICE_NAME = cx(
-  'type-heading-large text-primary min-w-0 flex-1 text-lg',
+  'type-heading-small leading-heading-large text-primary min-w-0 flex-1',
   'line-clamp-2 [line-clamp:2] wrap-anywhere',
 )
 

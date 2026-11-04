@@ -15,7 +15,10 @@ const CONTENT = {
   rows: (
     <>
       {['Check automatically', 'Include betas'].map((title) => (
-        <div key={title} className="flex items-center justify-between gap-12 py-(--row-padding-y) text-sm text-primary">
+        <div
+          key={title}
+          className="flex items-center justify-between gap-12 py-(--row-padding-y) type-body-small text-primary"
+        >
           {title}
           <Toggle isChecked onChange={fn()} label={title} />
         </div>
@@ -51,7 +54,7 @@ const meta = {
         <CardHeader title="Router" />
         <CardBody layout={layout}>{CONTENT[layout]}</CardBody>
         <CardFooter>
-          <span className="text-xs text-tertiary">Updated 2 min ago</span>
+          <span className="type-caption text-tertiary">Updated 2 min ago</span>
         </CardFooter>
       </Card>
     </div>

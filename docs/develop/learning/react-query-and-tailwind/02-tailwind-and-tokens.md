@@ -117,7 +117,9 @@ Also in `tailwind.css`:
 `npm run check` stops you from slipping:
 
 - `scripts/checks/raw-values.mjs` flags a raw colour (`#fff`, `rgb()`) and a
-  value that has a token (`p-[12px]` is `p-12`, `text-[13px]` is `text-md`).
+  value that has a token (`p-[12px]` is `p-12`).
+- `scripts/checks/text-styles.mjs` flags a font size alone (`text-sm`,
+  `text-[13px]`): text takes a `type-*` class.
 - `scripts/checks/ui-classname.mjs` stops a screen restyling a library component
   through `className`. It may place it (margin, width, grid position), not
   change its look. A new look is a new variant in the component.

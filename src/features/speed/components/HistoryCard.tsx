@@ -15,7 +15,7 @@ import {
 } from '@/utils/format'
 
 /** Connection badge; its icon is tinted by medium. */
-const CONNECTION = 'inline-flex min-w-0 items-center gap-6 text-sm font-medium'
+const CONNECTION = 'inline-flex min-w-0 items-center gap-6 type-label-menu'
 
 type MetricProps = {
   label: string
@@ -36,7 +36,7 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
         <>
           <DotSeparator />
           {/* Secondary to the name: the name truncates first, the band holds its width. */}
-          <span className="shrink-0 text-xs font-regular text-tertiary">{band}</span>
+          <span className="type-caption shrink-0 text-tertiary">{band}</span>
         </>
       )}
     </span>
@@ -50,9 +50,9 @@ function Metric({ label, value, unit, series }: MetricProps) {
         {series && <DirectionIcon series={series} size={13} />}
         <span className="type-overline text-tertiary">{label}</span>
       </dt>
-      <dd className="num text-2xl font-semibold text-primary">
+      <dd className="type-number-large metric-value leading-body-default">
         {value}
-        {unit && <span className="font-sans text-xs font-regular text-secondary"> {unit}</span>}
+        {unit && <span className="type-caption text-secondary"> {unit}</span>}
       </dd>
     </div>
   )
@@ -78,7 +78,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
       <div className="px-(--card-body-padding) pt-(--card-body-padding)">
         <div className="mb-12 flex items-center justify-between gap-12">
           <ConnectionBadge entry={entry} />
-          <time className="shrink-0 text-xs text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
+          <time className="type-caption shrink-0 text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
             {formatDateTime(entry.timestamp)}
           </time>
         </div>
@@ -90,7 +90,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
         </dl>
 
         <div className={CARD_FOOTER}>
-          <p className="num flex w-full min-w-0 items-center justify-between gap-12 text-xs text-tertiary">
+          <p className="type-caption num flex w-full min-w-0 items-center justify-between gap-12 text-tertiary">
             <InlineMeta
               items={[<>Jitter {jitter ?? <NoValue label="Not measured" />}</>, <>{entry.packetLoss}% loss</>]}
             />

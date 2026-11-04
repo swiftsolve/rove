@@ -71,7 +71,7 @@ export const WithEverything: Story = {
         </DataList>
       </CardBody>
       <CardFooter>
-        <span className="text-xs text-tertiary">Updated 2 min ago</span>
+        <span className="type-caption text-tertiary">Updated 2 min ago</span>
       </CardFooter>
     </Card>
   ),
@@ -83,7 +83,7 @@ export const HeaderActions: Story = {
     <Card {...args}>
       <CardHeader title="DNS" actions={<IconButton label="Refresh" icon={RefreshIcon} onClick={fn()} />} />
       <CardBody>
-        <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
+        <p className="type-body-small text-secondary">Lookups answer in 14 ms on average.</p>
       </CardBody>
     </Card>
   ),
@@ -99,7 +99,7 @@ export const RowsBody: Story = {
         <SettingRow title="Include betas" />
       </CardBody>
       <CardFooter>
-        <span className="text-xs text-tertiary">You're up to date.</span>
+        <span className="type-caption text-tertiary">You're up to date.</span>
       </CardFooter>
     </Card>
   ),
@@ -131,7 +131,7 @@ export const OpeningAndHeaderAction: Story = {
     <Card {...args}>
       <CardHeader title="DNS" actions={<IconButton label="Refresh" icon={RefreshIcon} onClick={onRefresh} />} />
       <CardBody>
-        <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
+        <p className="type-body-small text-secondary">Lookups answer in 14 ms on average.</p>
       </CardBody>
     </Card>
   ),
@@ -158,7 +158,7 @@ export const List: Story = {
   render: () => (
     <CardList label="Devices">
       {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-        <li key={name} className="px-12 py-10 text-sm text-primary">
+        <li key={name} className="px-12 py-10 type-body-small text-primary">
           {name}
         </li>
       ))}
@@ -168,7 +168,7 @@ export const List: Story = {
 
 function SettingRow({ title }: { title: string }) {
   return (
-    <div className="flex items-center justify-between gap-12 py-(--row-padding-y) text-sm text-primary">
+    <div className="flex items-center justify-between gap-12 py-(--row-padding-y) type-body-small text-primary">
       {title}
       <Toggle isChecked onChange={fn()} label={title} />
     </div>
@@ -201,7 +201,7 @@ function OpenableCard() {
     <Card onOpen={fn()}>
       <CardHeader title="Usage" icon={<TodayIcon size={16} />} />
       <CardBody>
-        <span className="inline-flex items-center gap-6 text-md text-primary" aria-hidden>
+        <span className="inline-flex items-center gap-6 type-body-default text-primary" aria-hidden>
           <ArrowDownIcon size={12} />
           4.9 GB
         </span>
@@ -225,18 +225,18 @@ export const AllStates: Story = {
           </DataList>
         </CardBody>
         <CardFooter>
-          <span className="text-xs text-tertiary">Updated 2 min ago</span>
+          <span className="type-caption text-tertiary">Updated 2 min ago</span>
         </CardFooter>
       </Card>
       <Card>
         <CardHeader title="DNS" actions={<IconButton label="Refresh" icon={RefreshIcon} />} />
         <CardBody>
-          <p className="text-sm text-secondary">Lookups answer in 14 ms on average.</p>
+          <p className="type-body-small text-secondary">Lookups answer in 14 ms on average.</p>
         </CardBody>
       </Card>
       <CardList label="Devices">
         {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-          <li key={name} className="px-12 py-10 text-sm text-primary">
+          <li key={name} className="px-12 py-10 type-body-small text-primary">
             {name}
           </li>
         ))}
@@ -248,7 +248,7 @@ export const AllStates: Story = {
           <SettingRow title="Include betas" />
         </CardBody>
         <CardFooter>
-          <span className="text-xs text-tertiary">You're up to date.</span>
+          <span className="type-caption text-tertiary">You're up to date.</span>
         </CardFooter>
       </Card>
       <RouterCard />

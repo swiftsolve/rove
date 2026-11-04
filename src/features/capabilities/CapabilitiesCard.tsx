@@ -40,7 +40,7 @@ const CAPABILITY_CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
 // the tiles, where CardFooter pads 12px under the body's 14px.
 const footerVariants = cva(
   [
-    'flex items-center justify-end text-xs',
+    'type-caption flex items-center justify-end',
     'w-[calc(100%+2*var(--card-body-padding))]',
     '-mx-(--card-body-padding) -mb-(--card-body-padding)',
     'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',

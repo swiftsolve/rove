@@ -127,10 +127,10 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
         {/* Indent the URL line so it starts under the name, clearing the favicon
             (16px) and its gap that lead the line above. */}
         <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--spacing-12))]')}>
-          <span className="min-w-0 flex-auto truncate text-sm text-tertiary">{service.host}</span>
+          <span className="type-body-small min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}
-          <span className="num min-w-[4.5em] shrink-0 text-right font-numeric text-sm text-secondary">
+          <span className="type-body-small num min-w-[4.5em] shrink-0 text-right text-secondary">
             <LatencyReadout
               latencyMs={latencyMs}
               isErroring={isErroring}

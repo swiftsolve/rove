@@ -12,7 +12,7 @@ export function AppTitleBar() {
           <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
-          <span className="text-2xl font-semibold tracking-heading-large text-primary">Rove</span>
+          <span className="type-heading-large leading-body-default text-primary">Rove</span>
         </>
       }
       status={<TitleBarStatus tone={tone}>{label}</TitleBarStatus>}

@@ -7,8 +7,9 @@
  *     easing (`ease-in-out`) inside an arbitrary value or a stylesheet (the
  *     `ease-out` utility is the token and stays);
  *   - a length, weight or duration that equals a token on its scale: `p-[12px]`
- *     is `p-12`, `rounded-[8px]` is `rounded-sm`, `text-[13px]` is `text-md`,
- *     `duration-[140ms]` is `duration-(--duration-fast)`, and the same in CSS;
+ *     is `p-12`, `rounded-[8px]` is `rounded-sm`, `duration-[140ms]` is
+ *     `duration-(--duration-fast)`, and the same in CSS (font sizes are
+ *     text-styles.mjs's: text takes a text style, not a size);
  *   - spacing: every gap, padding and margin is built from spacing tokens
  *     (`gap-8`, `px-(--card-padding)`, a `calc()` of tokens), so one off the
  *     scale (`gap-[5px]`, `calc(var(--card-padding) - 1px)`) needs a reason.
@@ -120,7 +121,6 @@ function stripComments(code, isCss) {
 const tokens = await readTokens()
 const SPACING = scale(tokens, '--spacing-')
 const RADIUS = scale(tokens, '--radius-')
-const FONT_SIZE = scale(tokens, '--font-size-')
 const WEIGHT = scale(tokens, '--weight-')
 const DURATION = scale(tokens, '--duration-')
 
@@ -130,7 +130,6 @@ const tokenSuffix = (name, prefix) => name.slice(prefix.length)
 function scaleForProperty(property) {
   if (SPACING_PROPERTY.test(property)) return SPACING
   if (RADIUS_PROPERTY.test(property)) return RADIUS
-  if (property === 'font-size') return FONT_SIZE
   if (property === 'font-weight') return WEIGHT
   return null
 }
@@ -251,12 +250,6 @@ for (const file of files) {
         match.index,
         whole,
         `${whole} is ${RADIUS.get(length)}; use ${utility}-${tokenSuffix(RADIUS.get(length), '--radius-')}`,
-      )
-    } else if (utility === 'text' && FONT_SIZE.has(length)) {
-      report(
-        match.index,
-        whole,
-        `${whole} is ${FONT_SIZE.get(length)}; use text-${tokenSuffix(FONT_SIZE.get(length), '--font-size-')}`,
       )
     }
   }

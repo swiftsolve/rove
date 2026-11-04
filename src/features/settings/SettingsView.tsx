@@ -1,4 +1,4 @@
-import { cva } from 'class-variance-authority'
+import { cva, cx } from 'class-variance-authority'
 import { type ReactNode, useId } from 'react'
 
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -38,7 +38,7 @@ const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
   defaultVariants: { isStacked: false },
 })
 
-const statusVariants = cva('flex items-center text-xs', {
+const statusVariants = cva('type-caption flex items-center', {
   variants: {
     kind: {
       'up-to-date': 'gap-6 text-positive',
@@ -49,8 +49,8 @@ const statusVariants = cva('flex items-center text-xs', {
 })
 
 const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
-const ROW_TITLE = 'text-md font-medium text-primary'
-const ROW_DESC = 'text-xs leading-caption text-tertiary'
+const ROW_TITLE = 'type-body-default font-medium text-primary'
+const ROW_DESC = 'type-caption text-tertiary'
 
 const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
@@ -216,7 +216,7 @@ export function SettingsView() {
           {/* Reads like a Speed-page capability row. */}
           <ListRow onClick={() => navigate({ tab: 'about' })}>
             <span className={ROW_TEXT}>
-              <span className={ROW_TITLE}>About Rove</span>
+              <span className={cx(ROW_TITLE, 'leading-[inherit]')}>About Rove</span>
               <span className={ROW_DESC}>Version, platform, and source.</span>
             </span>
           </ListRow>

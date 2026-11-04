@@ -57,7 +57,7 @@ export const AllStates: Story = {
     <div className="grid grid-cols-[max-content_320px] items-center gap-x-16 gap-y-12">
       {ROWS.map(({ name, down, up }) => (
         <Fragment key={name}>
-          <span className="text-xs text-tertiary">{name}</span>
+          <span className="type-caption text-tertiary">{name}</span>
           <SplitBar down={down} up={up} max={MAX} label={`${down} MB down, ${up} MB up`} />
         </Fragment>
       ))}

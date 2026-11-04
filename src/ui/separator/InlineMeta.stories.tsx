@@ -9,7 +9,7 @@ const meta = {
   argTypes: { className: { control: false } },
   // It takes its type from the line it sits in; a narrow one shows truncation.
   render: (args) => (
-    <span className="block w-[200px] text-sm text-secondary">
+    <span className="block w-[200px] type-body-small text-secondary">
       <InlineMeta {...args} />
     </span>
   ),

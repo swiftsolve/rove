@@ -17,7 +17,7 @@ const LEVEL_BAR_COUNT: Record<CapabilityLevel, number> = {
 }
 
 // Muted reuses the unsupported look, so every "no rating now" meter reads the same.
-const rootVariants = cva('inline-flex shrink-0 items-center gap-8 text-xs font-medium', {
+const rootVariants = cva('inline-flex shrink-0 items-center gap-8 type-label-small', {
   variants: {
     tone: { ...CAPABILITY_LEVEL_FILL_COLORS, muted: 'text-tertiary' },
   },

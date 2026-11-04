@@ -69,7 +69,7 @@ export const AllStates: Story = {
     <div className="grid grid-cols-[repeat(7,max-content)] items-end gap-x-16 gap-y-12">
       {SIZES.map((size) => (
         <Fragment key={size}>
-          <span className="w-[24px] text-xs text-tertiary">{size}</span>
+          <span className="type-caption w-[24px] text-tertiary">{size}</span>
           {COLORS.map((color, value) => (
             <BarMeter key={color} value={value} size={size} color={color} />
           ))}

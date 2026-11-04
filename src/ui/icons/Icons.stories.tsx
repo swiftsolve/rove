@@ -52,7 +52,7 @@ export const Catalogue: Story = {
           <span className="flex h-[32px] items-center">
             <Icon size={size} />
           </span>
-          <span className="text-xs text-tertiary">{name}</span>
+          <span className="type-caption text-tertiary">{name}</span>
         </li>
       ))}
     </ul>

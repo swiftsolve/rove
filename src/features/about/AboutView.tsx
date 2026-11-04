@@ -24,10 +24,10 @@ export function AboutView() {
           <BrandIcon size={53} hasGradient />
         </span>
         <h1 className="text-3xl font-semibold tracking-heading-large text-primary">Rove</h1>
-        <p className="max-w-[300px] text-md leading-body-default text-secondary">
+        <p className="type-body-default max-w-[300px] text-secondary">
           A fast, minimal network monitor for your desktop.
         </p>
-        {version && <span className="mt-4 text-xs text-tertiary tabular-nums">Version {version}</span>}
+        {version && <span className="type-caption mt-4 text-tertiary tabular-nums">Version {version}</span>}
       </div>
 
       <Card>

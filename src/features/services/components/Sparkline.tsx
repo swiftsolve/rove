@@ -48,7 +48,7 @@ const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [str
 const TIP = cx(
   'pointer-events-none fixed z-9999 -translate-x-1/2 -translate-y-full whitespace-nowrap',
   'rounded-xs border border-line bg-surface px-6 py-2 shadow-panel',
-  'font-numeric text-2xs leading-[1.2] text-primary tabular-nums',
+  'type-number-small leading-[1.2] text-primary tabular-nums',
 )
 
 // The hovered point, and the chart's top-left corner in the window when it was hovered.

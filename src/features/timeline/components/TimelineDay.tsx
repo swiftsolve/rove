@@ -14,10 +14,7 @@ export function TimelineDay({ heading, children }: { heading: string; children: 
   const headingId = useId()
   return (
     <li className="flex flex-col not-first:mt-[18px]">
-      <h2
-        id={headingId}
-        className="mb-(--card-padding) text-sm font-semibold tracking-[0.04em] text-tertiary uppercase"
-      >
+      <h2 id={headingId} className="type-label-large mb-(--card-padding) tracking-[0.04em] text-tertiary uppercase">
         {heading}
       </h2>
       <ul role="list" className="flex flex-col" aria-labelledby={headingId}>

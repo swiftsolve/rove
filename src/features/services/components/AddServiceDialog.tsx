@@ -15,7 +15,7 @@ import { formatLatencyMs } from '@/utils/format'
 // reads as a same-sized box.
 const RESULT = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
-const resultStatusVariants = cva('shrink-0 font-numeric text-sm', {
+const resultStatusVariants = cva('type-body-small shrink-0 font-numeric', {
   variants: {
     /** The measured latency's health band, or negative when the host was down. */
     status: STATUS_TEXT,
@@ -71,7 +71,7 @@ function AddressFeedback({
     return (
       <div className={RESULT}>
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
-        <span className="min-w-0 flex-auto truncate text-sm text-primary">{shownName}</span>
+        <span className="min-w-0 flex-auto truncate type-body-small text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
           <span className={resultStatusVariants({ status: 'negative' })}>Down</span>
         ) : (
