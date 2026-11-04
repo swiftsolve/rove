@@ -1,5 +1,5 @@
 import designPackage from '../package.json'
-import { colorDark, flatten, group, palette, spacing, textStyles } from './tokens'
+import { colorDark, cssName, flatten, group, isCss, palette, spacing, textStyles } from './tokens'
 
 export default { title: 'Introduction' }
 
@@ -34,6 +34,36 @@ function FigmaMark() {
   )
 }
 
+// Rove's app icon, as the app ships it: the mark in its gradient on a dark rounded tile.
+// It's the brand, not a theme colour, so it looks the same in Dark and Light.
+function RoveAppIcon() {
+  return (
+    <svg className="intro-icon" viewBox="0 0 48 48" aria-hidden="true">
+      <defs>
+        <linearGradient id="intro-rove-tile" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#1f2125" />
+          <stop offset="1" stopColor="#16171a" />
+        </linearGradient>
+        <linearGradient id="intro-rove-mark" x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#7aa4ff" />
+          <stop offset="1" stopColor="#5484f5" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" rx="11" fill="url(#intro-rove-tile)" />
+      <g transform="translate(24 25) scale(0.8) translate(-24 -24)">
+        <circle cx="24" cy="24" r="7.5" fill="url(#intro-rove-mark)" />
+        <path
+          d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
+          fill="none"
+          stroke="url(#intro-rove-mark)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+      </g>
+    </svg>
+  )
+}
+
 const LINE_ICONS = {
   plugin: ['M12 22v-5', 'M9 8V2', 'M15 8V2', 'M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z'],
   json: [
@@ -57,7 +87,11 @@ const LINE_ICONS = {
     'M16 17H8',
   ],
   slides: ['M2 3h20', 'M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3', 'm7 21 5-5 5 5'],
-  app: ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'M2 9h20', 'M9 9v11'],
+  tag: [
+    'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z',
+    'M7.5 7.5h.01',
+  ],
+  contrast: ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M12 18a6 6 0 0 0 0-12v12z'],
   agent: [
     'M12 8V4H8',
     'M6 8h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z',
@@ -75,6 +109,7 @@ const LINE_ICONS = {
 
 function Icon({ name, label }) {
   if (name === 'figma') return <FigmaMark />
+  if (name === 'rove') return <RoveAppIcon />
   return (
     <svg
       className="intro-icon"
@@ -174,7 +209,7 @@ const PIPELINES = [
 
 const CONSUMERS = [
   {
-    icon: 'app',
+    icon: 'rove',
     name: 'Rove',
     body: 'The app and its component library import `tokens.css` and `text-styles.css`, and style with nothing else.',
     href: 'https://rove.swiftsolve.net/storybook/',
@@ -193,20 +228,24 @@ const CONSUMERS = [
 
 const PRINCIPLES = [
   {
-    lead: 'Figma is the source of truth.',
-    body: 'Every value is set there and exported; nothing in `dist/` or the token reference is edited by hand.',
+    icon: 'figma',
+    lead: 'Figma is the source of truth',
+    body: 'Tokens flow one way: set there, exported, built. Nothing writes back, and nothing in `dist/` is edited by hand.',
   },
   {
-    lead: 'Named by role.',
-    body: 'A token says what a colour is for (`bg/surface`, `text/secondary`), and points at one Palette shade, so a new component picks from the same few.',
+    icon: 'tag',
+    lead: 'Named by role',
+    body: 'A token says what a colour is for (`bg/surface`), not how it looks, and points at one Palette shade.',
   },
   {
-    lead: 'Readable in both themes.',
-    body: 'Text clears WCAG 2.2 AA (4.5:1) and icons, bars and dots 3:1, in Dark and Light, on the surfaces they sit on.',
+    icon: 'contrast',
+    lead: 'Readable in both themes',
+    body: 'Text clears WCAG 2.2 AA (4.5:1), and icons, bars and dots 3:1, in Dark and Light.',
   },
   {
-    lead: 'Written down for agents.',
-    body: '`DESIGN.md` ships in the package, with every token by name and no colour values to copy.',
+    icon: 'agent',
+    lead: 'Written down for agents',
+    body: '`DESIGN.md` ships in the package: every token by name, and no colour values to copy.',
   },
 ]
 
@@ -302,19 +341,14 @@ const EXPLORE = [
   {
     id: 'colour--colour',
     title: 'Colour',
-    body: `${flatten(colorDark).length} colour tokens on ${flatten(palette).length} palette shades, in Dark and Light.`,
+    body: `${flatten(colorDark).filter(isCss).length} colour tokens and ${flatten(colorDark).filter((t) => !isCss(t)).length} shadow colours, on ${flatten(palette).length} palette shades, in Dark and Light.`,
     specimen: (
       <span className="intro-swatches">
-        {[
-          '--bg-base',
-          '--bg-surface',
-          '--accent-default',
-          '--status-positive',
-          '--status-warning',
-          '--status-negative',
-        ].map((name) => (
-          <span key={name} style={{ background: `var(${name})` }} />
-        ))}
+        {flatten(colorDark)
+          .filter(isCss)
+          .map(({ path }) => (
+            <span key={cssName(path)} style={{ background: `var(${cssName(path)})` }} />
+          ))}
       </span>
     ),
   },
@@ -341,8 +375,17 @@ const EXPLORE = [
     title: 'Motion',
     body: 'Ease out over a fast or normal duration; resizing panels spring.',
     specimen: (
-      <span className="intro-track">
-        <span />
+      <span className="intro-curves">
+        <svg viewBox="0 0 120 56" width="120" height="56">
+          <line className="intro-curve-guide" x1="4" y1="12" x2="116" y2="12" />
+          <line className="intro-curve-axis" x1="4" y1="52" x2="116" y2="52" />
+          <polyline
+            className="intro-curve-spring"
+            points="4.0,52 12.0,44.42 20.0,32.23 28.0,22.6 36.0,16.66 44.0,13.59 52.0,12.26 60.0,11.82 68.0,11.75 76.0,11.81 84.0,11.89 92.0,11.94 100.0,11.98 108.0,12 116.0,12"
+          />
+          <path className="intro-curve-ease" d="M4,52 C21.92,12 37.6,12 116,12" />
+        </svg>
+        <span className="intro-curve-dot" />
       </span>
     ),
   },
@@ -392,18 +435,19 @@ function IntroductionPage() {
 
       <section className="section">
         <h2 className="section-title">Why it&rsquo;s built this way</h2>
-        <ol className="intro-principles">
-          {PRINCIPLES.map(({ lead, body }, index) => (
+        <ul className="intro-explore">
+          {PRINCIPLES.map(({ icon, lead, body }) => (
             <li key={lead}>
-              <span className="intro-number" aria-hidden="true">
-                {index + 1}
-              </span>
-              <p>
-                <strong>{lead}</strong> {withCode(body)}
-              </p>
+              <div className="intro-principle">
+                <span className="intro-principle-icon" aria-hidden="true">
+                  <Icon name={icon} />
+                </span>
+                <span className="intro-card-title">{lead}</span>
+                <span className="intro-principle-body">{withCode(body)}</span>
+              </div>
             </li>
           ))}
-        </ol>
+        </ul>
       </section>
 
       <section className="section">

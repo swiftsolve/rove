@@ -647,7 +647,6 @@
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--bg-inset);
-  box-shadow: var(--shadow-raised);
 }
 
 .intro-icons {
@@ -700,44 +699,6 @@
 }
 
 /* Why */
-
-.intro-principles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
-  gap: 16px 32px;
-  margin: 24px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.intro-principles li {
-  display: flex;
-  align-items: start;
-  gap: 12px;
-}
-
-.intro-principles p {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.intro-principles strong {
-  color: var(--text-primary);
-  font-weight: var(--weight-semibold);
-}
-
-.intro-number {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  background: var(--accent-muted);
-  color: var(--text-accent);
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-semibold);
-}
 
 /* Explore */
 
@@ -806,19 +767,18 @@
   translate: 3px 0;
 }
 
+/* Every colour token, in this theme: a ring keeps the faint overlays and the surfaces visible. */
 .intro-swatches {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(10, 12px);
+  gap: 2px;
 }
 
 .intro-swatches span {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--bg-inset);
-  border-radius: var(--radius-full);
-}
-
-.intro-swatches span + span {
-  margin-left: -8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--border-default);
 }
 
 .intro-type {
@@ -838,27 +798,83 @@
   background: var(--accent-default);
 }
 
-.intro-track {
+/* The easing curves, value over time: --ease-out solid, --ease-spring dashed with its overshoot.
+   On hover a dot runs the ease-out curve at its own timing. */
+.intro-curves {
   position: relative;
   width: 120px;
-  height: 4px;
-  border-radius: var(--radius-full);
-  background: var(--fill-strong);
+  height: 56px;
 }
 
-.intro-track span {
+.intro-curves svg {
+  display: block;
+  overflow: visible;
+  fill: none;
+}
+
+.intro-curve-axis,
+.intro-curve-guide {
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+
+.intro-curve-guide {
+  stroke-dasharray: 2 3;
+}
+
+.intro-curve-spring {
+  stroke: var(--text-tertiary);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  stroke-linejoin: round;
+}
+
+.intro-curve-ease {
+  stroke: var(--accent-default);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.intro-curve-dot {
   position: absolute;
-  top: -6px;
+  top: 0;
   left: 0;
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
   border-radius: var(--radius-full);
   background: var(--accent-default);
-  transition: left var(--duration-spring) var(--ease-spring);
+  offset-path: path('M4,52 C21.92,12 37.6,12 116,12');
+  offset-distance: 0%;
+  offset-rotate: 0deg;
+  transition: offset-distance var(--duration-spring) var(--ease-out);
 }
 
-.intro-card:hover .intro-track span {
-  left: calc(100% - 16px);
+.intro-card:hover .intro-curve-dot {
+  offset-distance: 100%;
+}
+
+/* The principles: cards like the pages', without a link. */
+.intro-principle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-inset);
+}
+
+.intro-principle-icon {
+  display: flex;
+  margin-bottom: 10px;
+  color: var(--text-accent);
+}
+
+.intro-principle-body {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 /* Narrow: the stages stack, each step names its stage, and arrows point down. */
@@ -908,7 +924,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-track span,
+  .intro-curve-dot,
   .intro-card-arrow {
     transition: none;
   }
