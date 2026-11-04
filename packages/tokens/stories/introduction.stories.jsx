@@ -110,6 +110,7 @@ const PIPELINES = [
         items: [
           { name: 'Variables', body: 'Palette, Color, Spacing, Typography and the rest, in Dark and Light.' },
           { name: 'Text styles', body: 'Headings, body, labels and numbers.' },
+          { name: 'Shadows', body: 'The `Shadow/*` effect styles, their colours bound to variables.' },
         ],
       },
       {
@@ -120,7 +121,10 @@ const PIPELINES = [
             name: '`src/figma/*.json`',
             body: 'Variables, text styles and shadows, written by the Rove Tokens plugin’s Export, aliases kept.',
           },
-          { name: '`src/code-tokens.json`', body: "What Figma can't hold: easing curves, the focus outline." },
+          {
+            name: '`src/code-tokens.json`',
+            body: "What Figma can't hold: easing curves, the focus outline, font fallbacks.",
+          },
         ],
       },
       {
@@ -150,7 +154,7 @@ const PIPELINES = [
       {
         column: 1,
         icons: ['figma'],
-        items: [{ name: 'Foundations pages', body: 'The doc pages this Storybook follows.' }],
+        items: [{ name: 'Its pages', body: 'Cover, Foundations, Components and Screens.' }],
       },
       {
         column: 3,
@@ -172,7 +176,7 @@ const CONSUMERS = [
   {
     icon: 'app',
     name: 'Rove',
-    body: 'The app and its component library import `tokens.css` and style with nothing else.',
+    body: 'The app and its component library import `tokens.css` and `text-styles.css`, and style with nothing else.',
     href: 'https://rove.swiftsolve.net/storybook/',
   },
   {
