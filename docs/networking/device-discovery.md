@@ -40,7 +40,7 @@ identified device. That's the pipeline.
 
 ## The pipeline at a glance
 
-From `scan()` in `crates/rove-core/src/devices/mod.rs`:
+From `scan()` in `crates/rove-core/src/devices.rs`:
 
 <div align="center">
   <img src="../assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
@@ -57,7 +57,7 @@ From `scan()` in `crates/rove-core/src/devices/mod.rs`:
 5. **Assemble**: add this machine, sort gateway→self→by-IP, dedupe by MAC.
 
 The stage-2 probes/listeners all run concurrently, bounded by a single
-`DISCOVERY_WINDOW` of 3.2 seconds (in `devices/mod.rs`), not the sum of
+`DISCOVERY_WINDOW` of 3.2 seconds (in `devices.rs`), not the sum of
 their parts. The stage-4 lookups that hit the network (reverse DNS,
 the HTTP banner grab, the NetBIOS query, and the gateway's SNMP read) are
 likewise fired together in one `tokio::join!` in `scan()`, so their combined
@@ -219,7 +219,7 @@ Like mDNS, it's **pure Rust with no platform branch**: a `tokio` UDP socket plus
 
 ## Stage 3: Reading the ground truth
 
-After the provocation window, `neighbor_table()` (in `platform/mod.rs`) reads
+After the provocation window, `neighbor_table()` (in `platform.rs`) reads
 the now-populated table: `ip neigh show` on Linux (which carries a
 `REACHABLE`/`STALE`/… state) or `arp -a` elsewhere, with no state. Entries are
 filtered to the scan's subnet (the `in_scope` filter in `scan()`). **This list,
@@ -230,7 +230,7 @@ not the ping/probe results, is the authoritative "who exists."** The probes were
 ## Stage 4: Enriching each bare entry
 
 Each neighbor is now `{ip, mac, is_reachable}`. A cluster of enrichments turns that
-into an identified device (`build_device` in `devices/mod.rs`). All the per-scan
+into an identified device (`build_device` in `devices.rs`). All the per-scan
 lookup tables are bundled into one `Enrichment` struct, keyed by device IP (DHCP
 by MAC), so `build_device` draws from a single value rather than an argument list that
 grows with every new discovery source.
@@ -348,7 +348,7 @@ the privileged helper) the cache stays empty.
 
 ### 4h. Choosing the name: the preference chain
 
-With up to five name sources in hand, `build_device` (in `devices/mod.rs`) picks
+With up to five name sources in hand, `build_device` (in `devices.rs`) picks
 the most human-friendly one available, in order:
 
 ```

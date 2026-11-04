@@ -84,7 +84,7 @@ Tauri hides the plumbing behind two directions of message flow:
 Because the data is *copied across a process boundary as text*, both sides only
 ever exchange things that can be turned into JSON and back. This is exactly why:
 
-- Every type a command returns derives `Serialize` (see `NetworkInfo` in `crates/rove-core/src/connection/mod.rs`).
+- Every type a command returns derives `Serialize` (see `NetworkInfo` in `crates/rove-core/src/connection.rs`).
 - Command errors are converted to `String` (`.map_err(|e| e.to_string())`): a
   rich Rust error type can't cross the wire, but a string can.
 - The Rust structs use `#[serde(rename_all = "camelCase")]` so the JSON keys

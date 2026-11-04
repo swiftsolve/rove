@@ -206,8 +206,8 @@ rove/
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per
 │   │                           domain, named as in src/features: apps/,
-│   │                           capabilities, connection/, devices/, diagnostics/,
-│   │                           interfaces, live_throughput, services, speed/,
+│   │                           capabilities, connection, devices/, diagnostics,
+│   │                           interfaces, live_throughput, services, speed,
 │   │                           usage; plus platform/ (per-OS probes), store/
 │   │                           (SQLite, a file per domain) and utils/ (net,
 │   │                           shell, geoip, tls)

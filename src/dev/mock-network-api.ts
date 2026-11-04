@@ -212,7 +212,7 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
 
 // An Apple hardware model identifier: a product family followed by a
 // "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
-// Mirrors is_apple_model in crates/rove-core/src/devices/mod.rs.
+// Mirrors is_apple_model in crates/rove-core/src/devices.rs.
 const APPLE_MODEL_FAMILIES = [
   'iphone',
   'ipad',
@@ -231,7 +231,7 @@ function isAppleModel(model: string): boolean {
 
 // The backend humanizes Apple mDNS/UPnP identifiers before they reach the UI,
 // so the mock does too. Mirrors humanize_model in
-// crates/rove-core/src/devices/mod.rs so the demo reads like production.
+// crates/rove-core/src/devices.rs so the demo reads like production.
 function humanizeModel(model: string | null): string | null {
   if (model === null || !isAppleModel(model)) return model
   // Everything before the "<gen>,<rev>" suffix is the product family.

@@ -82,7 +82,7 @@ list.
 ## 3. Dispatch and fallback chains
 
 The cross-platform *contract* (which probe to call, in what order) lives in the
-feature modules; the OS-specific probes live in `platform/`. `connection/mod.rs`
+feature modules; the OS-specific probes live in `platform/`. `connection.rs`
 shows the dispatch pattern. Two flavours:
 
 **Runtime dispatch with `cfg!`**: a boolean checked at runtime, so all branches
@@ -113,7 +113,7 @@ we're on macOS without a physical route), fall through to `route -n get` (the
 BSD/macOS tool). One function, three platforms, graceful degradation.
 
 **Compile-time dispatch with `match` on `std::env::consts::OS`**:
-`connection_details` (in `connection/mod.rs`) routes to a different probe per
+`connection_details` (in `connection.rs`) routes to a different probe per
 (OS, connection-type) pair:
 
 ```rust
@@ -129,7 +129,7 @@ match (std::env::consts::OS, connection_type) {
 ```
 
 The ultimate fallback for the interface list is `generic_interface_list()`
-(in `platform/mod.rs`), which uses the cross-platform `sysinfo` crate, used when
+(in `platform.rs`), which uses the cross-platform `sysinfo` crate, used when
 a native probe fails *and* as the whole implementation on any OS without a
 dedicated path.
 
@@ -206,7 +206,7 @@ one `ConnectionDetails` struct:
   parser keys off whole-line `Key : Value` labels to avoid it (there's a unit test
   for exactly this, `parses_connected_radio_not_colocated_aps` in `windows.rs`).
   netsh doesn't report centre frequency, so Rove derives it from band + channel
-  using the 802.11 channel plan (`channel_to_frequency` in `platform/mod.rs`).
+  using the 802.11 channel plan (`channel_to_frequency` in `platform.rs`).
 - **macOS** (`wifi_details` in `platform/macos.rs`, `platform/mac_native.rs`): Apple gutted the
   private `airport -I` tool on macOS 14.4+ (it prints only a deprecation notice)
   and every shell tool now returns `<redacted>` for the SSID. So Rove reads Wi-Fi
@@ -216,7 +216,7 @@ one `ConnectionDetails` struct:
   fills in RSSI/channel/security (cached off the hot path since it takes seconds),
   with `networksetup` kept only as a legacy SSID fallback.
 
-A shared post-step, `finalize_wifi` (in `platform/mod.rs`), converts a dBm RSSI
+A shared post-step, `finalize_wifi` (in `platform.rs`), converts a dBm RSSI
 into a 0–100% bar whenever the OS only gave dBm, so the signal meter looks the
 same everywhere.
 
@@ -228,12 +228,12 @@ same everywhere.
 > reverse-DNS batching, and the weighted-vote device classifier), see the
 > dedicated page: [How Rove Discovers & Identifies LAN Devices](device-discovery.md).
 
-The device scanner (`crates/rove-core/src/devices/mod.rs`) is a small pipeline,
+The device scanner (`crates/rove-core/src/devices.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
 LAN" is the kernel's neighbor table** (the ARP cache on IPv4): the map of IP →
 MAC the kernel has already resolved. Rove reads it via `ip neigh show` on Linux
 (which includes a reachability state) or `arp -a` elsewhere (`neighbor_table` in
-`platform/mod.rs`).
+`platform.rs`).
 
 But the ARP cache only holds hosts the machine has *recently talked to*: idle
 devices won't be there. So before reading it, Rove **actively wakes every host
@@ -268,7 +268,7 @@ whichever source is friendliest (mDNS → SSDP → NetBIOS → DHCP → reverse 
 hardware model from mDNS/SSDP/SNMP; an OS family from a passive DHCP
 fingerprint; and a device `kind` from a weighted-vote classifier that also folds
 in HTTP-banner hints. The local machine is added manually because it never
-appears in its own neighbor table (`add_self_if_missing` in `devices/mod.rs`),
+appears in its own neighbor table (`add_self_if_missing` in `devices.rs`),
 then the list is deduped by MAC. The full pipeline (SSDP, HTTP banners,
 NetBIOS, SNMP, DHCP, and the classifier) is covered in the
 [device-discovery page](device-discovery.md).
@@ -300,12 +300,12 @@ Windows/macOS it falls back to summing `sysinfo`'s totals.
 
 ## 7. Diagnostics & ping
 
-`crates/rove-core/src/diagnostics/mod.rs` measures gateway health by pinging it 10
+`crates/rove-core/src/diagnostics.rs` measures gateway health by pinging it 10
 times and parsing the RTT out of each reply line with a regex
 (`time=12.3 ms`). From those samples it computes average latency, **jitter**
 (mean absolute difference between consecutive RTTs), and **packet loss**
 (replies received vs. probes sent). The `ping` flags differ per OS, abstracted
-behind `ping_command` (in `platform/mod.rs`): Windows uses `-n <count> -w <ms>`,
+behind `ping_command` (in `platform.rs`): Windows uses `-n <count> -w <ms>`,
 Linux `-c <count> -i 0.2 -W 1`, macOS `-W <ms>` (its `-W` takes milliseconds).
 
 ---

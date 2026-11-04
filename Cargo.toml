@@ -20,3 +20,6 @@ undocumented_unsafe_blocks = "warn"
 # and a doc opens with a short summary paragraph.
 doc_markdown = "warn"
 too_long_first_doc_paragraph = "warn"
+# A module with children is `foo.rs` beside `foo/`, the Rust 2018 layout, not
+# `foo/mod.rs`.
+mod_module_files = "warn"
