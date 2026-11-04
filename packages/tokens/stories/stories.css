@@ -84,7 +84,6 @@
   gap: 6px;
   margin: 8px 0 0;
   color: var(--text-poor);
-  font-weight: var(--weight-medium);
 }
 
 .section-warning svg {
