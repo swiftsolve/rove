@@ -59,6 +59,8 @@ const LINE_ICONS = {
     'M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z',
     'M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z',
   ],
+  // A small chevron between two marks: the one becomes the other.
+  step: ['m9 18 6-6-6-6'],
   braces: [
     'M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1',
     'M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1',
@@ -103,7 +105,7 @@ function Icon({ name, label }) {
     )
   return (
     <svg
-      className="intro-icon"
+      className={name === 'step' ? 'intro-icon intro-icon-step' : 'intro-icon'}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -141,7 +143,7 @@ const PIPELINES = [
       },
       {
         column: 2,
-        icons: ['braces'],
+        icons: ['figma', 'step', 'braces'],
         items: [
           {
             name: '`src/figma/*.json`',

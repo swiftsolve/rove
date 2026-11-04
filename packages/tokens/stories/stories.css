@@ -597,6 +597,12 @@
   flex: none;
 }
 
+/* The chevron between two marks (Figma, then the JSON it becomes): smaller and quieter. */
+.intro-icon-step {
+  width: 16px;
+  color: var(--text-tertiary);
+}
+
 /* The diagram: a label column, then the four stages; each pipeline is a row. */
 
 .intro-diagram {
