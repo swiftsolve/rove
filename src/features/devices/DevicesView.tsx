@@ -42,7 +42,7 @@ function renderDescription(
   if (hasDevices && subnet) {
     return (
       <span className="inline-flex items-baseline gap-6">
-        <span className="type-overline text-tertiary">Subnet</span>
+        <span>Subnet</span>
         <span className="num">{subnet}</span>
         {/* The tally and the scan status cross-slide in one slot, which is the
             live region for both. ml-2 plus the 6px gap gives the 8px dot spacing. */}
