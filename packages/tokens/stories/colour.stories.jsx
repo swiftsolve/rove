@@ -75,7 +75,7 @@ const SECTIONS = [
   },
   {
     title: 'Shadow colours',
-    intro: 'The colours behind the shadow styles. Softer in Light mode.',
+    intro: 'The colours inside the shadow tokens, softer in Light. They aren’t CSS variables: use the shadow.',
     names: [
       'shadow-color.panel-1',
       'shadow-color.panel-2',
@@ -132,9 +132,8 @@ function ModeCell({ theme, path }) {
   )
 }
 
-// The shadow colours aren't CSS variables; they live inside the shadow tokens.
-const codeFor = (path) =>
-  path[0] === 'shadow-color' ? `in var(--shadow-${path[1].replace(/-\d$/, '')})` : `var(${cssName(path)})`
+// The shadow colours aren't CSS variables; each lives inside a shadow token, which is what code uses.
+const shadowFor = (path) => `var(--shadow-${path[1].replace(/-\d$/, '')})`
 
 function ColourTable({ names }) {
   const tokens = flatten(colorDark)
@@ -148,7 +147,13 @@ function ColourTable({ names }) {
             <Name name={path.join('/')} description={token?.$description} />
             <ModeCell theme="dark" path={path} />
             <ModeCell theme="light" path={path} />
-            <Code copy={codeFor(path).replace(/^in /, '')}>{codeFor(path)}</Code>
+            {path[0] === 'shadow-color' ? (
+              <span className="code-note">
+                Part of <Code>{shadowFor(path)}</Code>
+              </span>
+            ) : (
+              <Code>{`var(${cssName(path)})`}</Code>
+            )}
           </TableRow>
         )
       })}

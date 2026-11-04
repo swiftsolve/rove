@@ -517,6 +517,11 @@
   --intro-text-gap: 6px;
 }
 
+/* A code chip is one name, so it never breaks inside itself (text-styles.css at its hyphen). */
+.intro code {
+  white-space: nowrap;
+}
+
 /* It's read more than the token pages, so its section intros are a step up. */
 .intro .section-intro {
   font-size: var(--font-size-xl);
@@ -690,7 +695,7 @@
 }
 
 /* The arrow into a step, across the gap before it. */
-/* The arrow into a step: a 1.5px line and an open chevron, level with the icons'
+/* The arrow into a step: a 1px line and an open chevron, level with the icons'
    centre, running the whole gap from card to card, in the accent. */
 .intro-node.has-flow {
   --intro-arrow-y: calc(1px + var(--intro-card-pad) + 12px); /* border, padding, half the 24px icon */
@@ -698,10 +703,10 @@
 
 .intro-node.has-flow::before {
   position: absolute;
-  top: calc(var(--intro-arrow-y) - 0.75px);
+  top: calc(var(--intro-arrow-y) - 0.5px);
   right: calc(100% + 1px);
   width: calc(var(--intro-gap) - 1px);
-  height: 1.5px;
+  height: 1px;
   border-radius: var(--radius-full);
   background: var(--accent-default);
   content: '';
@@ -709,13 +714,13 @@
 
 .intro-node.has-flow::after {
   position: absolute;
-  top: calc(var(--intro-arrow-y) - 3.5px);
-  right: calc(100% + 1.5px);
-  width: 7px;
-  height: 7px;
+  top: calc(var(--intro-arrow-y) - 3px);
+  right: calc(100% + 1px);
+  width: 6px;
+  height: 6px;
   box-sizing: border-box;
-  border-top: 1.5px solid var(--accent-default);
-  border-right: 1.5px solid var(--accent-default);
+  border-top: 1px solid var(--accent-default);
+  border-right: 1px solid var(--accent-default);
   border-top-right-radius: 1px;
   transform: rotate(45deg);
   content: '';
@@ -1018,8 +1023,8 @@
     top: auto;
     right: auto;
     bottom: calc(100% + 1px);
-    left: calc(var(--intro-arrow-y) - 0.75px);
-    width: 1.5px;
+    left: calc(var(--intro-arrow-y) - 0.5px);
+    width: 1px;
     height: 23px;
     background: var(--accent-default);
   }
@@ -1027,8 +1032,8 @@
   .intro-node.has-flow::after {
     top: auto;
     right: auto;
-    bottom: calc(100% + 1.5px);
-    left: calc(var(--intro-arrow-y) - 3.5px);
+    bottom: calc(100% + 1px);
+    left: calc(var(--intro-arrow-y) - 3px);
     transform: rotate(135deg);
   }
 }
@@ -1047,4 +1052,15 @@
   .intro-wavy-track {
     transition: none;
   }
+}
+
+/* A token that isn't a CSS variable of its own points at the one that holds it. */
+.code-note {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
 }
