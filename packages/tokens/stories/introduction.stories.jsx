@@ -246,11 +246,13 @@ function Pipelines() {
     <figure className="intro-diagram">
       <div className="intro-stages" aria-hidden="true">
         <span />
-        {STAGES.map((stage) => (
-          <span key={stage} className="intro-stage">
-            {stage}
-          </span>
-        ))}
+        <div className="intro-stage-columns">
+          {STAGES.map((stage) => (
+            <span key={stage} className="intro-stage">
+              {stage}
+            </span>
+          ))}
+        </div>
       </div>
       {PIPELINES.map(({ title, summary, steps }) => (
         <div key={title} className="intro-pipeline">

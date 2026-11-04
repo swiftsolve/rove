@@ -592,18 +592,11 @@
   column-gap: 24px;
 }
 
-.intro-stages {
-  grid-template-columns: var(--intro-label) repeat(4, 1fr);
-  column-gap: 0;
-  padding-left: 24px;
-}
-
-.intro-stages .intro-stage {
-  padding-left: calc(var(--intro-gap) / 2);
-}
-
-.intro-stages > span:first-child {
-  margin-left: -24px;
+/* The stage labels sit on the same grid as the cards, so each starts at its column's edge. */
+.intro-stage-columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--intro-gap);
 }
 
 .intro-stage {
@@ -643,7 +636,6 @@
 
 .intro-consumers {
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
 }
 
 .intro-node {
