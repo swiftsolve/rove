@@ -1,16 +1,20 @@
 # Rove frontend
 
-How the React UI in `src/` is organised and styled, and which component to use
-for what. Read it before writing or changing UI; `src/AGENTS.md` imports it, so
-Claude Code loads it with the first file under `src/`. For where files live, see
-[Layout](../../README.md#layout) in the README.
+How the React UI in `src/` is organised, styled and tested, and how its
+component library is built. `src/AGENTS.md` imports it with rove-tokens'
+`DESIGN.md`, so Claude Code loads both with the first file under `src/`. Which
+component to use is in the catalogue and Storybook ([Components](#components)).
+For where files live, see [Layout](../../README.md#layout) in the README.
+
+A rule marked *Checked* fails `npm run check`, and
+[What's enforced](#whats-enforced) names the check. The rest is for review.
 
 - [Checklists](#checklists) for the common changes
 - Rules: [State](#state-context-not-prop-drilling),
   [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
   [Styles](#styles-tailwind-utilities-from-the-design-tokens),
-  [Tests](#tests), and [what lint enforces](#whats-enforced)
-- The library: [The UI library](#the-ui-library) and its
+  [Tests](#tests), and [What's enforced](#whats-enforced)
+- The library: [The UI library](#the-ui-library) and
   [Components](#components)
 
 ## Checklists
@@ -27,20 +31,21 @@ after a commit (syncing the sites and Storybook).
 2. A doc comment on the component and on each prop of its own.
 3. An export from `src/ui/index.ts`, under its group's comment.
 4. Stories beside it (`Name.stories.tsx`), titled by its group
-   (`Data display/Name`), with an `AllStates` story when it has several states.
-   One that takes a handler gets a `play` story too.
+   (`Data display/Name`), with an `AllStates` story when it has several states,
+   a usage guide, and a `play` story if it takes a handler.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. Its entry in `src/ui/figma.json` (`null` when Figma has none). The entry's `name` and `node` are the
-   Figma component's (or component set's) name and the id in its link's
-   `node-id`, with `-` as `:`; never guess one. Map the component set, not
-   one of its variants. A prop with values Figma has no variant for goes in
-   the entry's `noFigmaVariant`, a Figma variant code derives from other props in
-   `noCodeProp`, each with why. With `FIGMA_TOKEN` in `.env.local` (or in CI),
-   `npm run check` holds the names, variants and values to the file.
-7. `npm run catalogue`. Raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
-   when the library's API changes, this included.
+6. Its entry in `src/ui/figma.json` (`null` when Figma has none). The entry's
+   `name` and `node` are the Figma component's (or component set's) name and
+   the id in its link's `node-id`, with `-` as `:`; never guess one. Map the
+   component set, not one of its variants. A prop with values Figma has no
+   variant for goes in the entry's `noFigmaVariant`, a Figma variant code
+   derives from other props in `noCodeProp`, each with why. With `FIGMA_TOKEN`
+   in `.env.local` (or in CI), `npm run check` holds the names, variants and
+   values to the file.
+7. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` (a new component is an
+   API change).
 8. The Figma side: the component on its group's page in the Figma file, with
-   the same props and variants.
+   the same props and variants, and its docs section.
 
 Check: `npm run check`, then `npm run storybook` to look at it in both themes.
 
@@ -113,10 +118,9 @@ the mock.
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
   Only a context's provider and hook import its object; everything else calls
-  the hook.
-- Each tab's label, rail icon and placement, screen and subpages are one entry
-  in `TABS` (`app/utils/tab-registry.ts`); `TabBar` and `CurrentScreen` read
-  it. A new tab is its id in `app/utils/tabs.ts` plus that entry.
+  the hook. *Checked.*
+- `TABS` (`app/utils/tab-registry.ts`) holds each tab's label, rail icon and
+  placement, screen and subpages; `TabBar` and `CurrentScreen` read it.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
   component file.
 - React 19 idioms: a component's return type is inferred (annotate it only as
@@ -127,30 +131,32 @@ the mock.
   built from go in the feature's `components/`, and the logic behind the copy
   (names, ages, grouping) in `utils/` as plain functions.
 - An element that animates out stays mounted through its leave animation with
-  `usePresence(isActive, exitMs)` from `@/ui`, styled as leaving
-  while `isActive` is false, rather than `{isActive && …}`.
+  `usePresence(isActive, exitMs)` from `@/ui`, styled as leaving while
+  `isActive` is false, rather than `{isActive && …}`.
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
 - The rare stylesheet a component needs sits next to it with the same name:
   `ConnectionStrip.tsx` and `ConnectionStrip.module.css`.
-- File names say what a file is. A component is PascalCase (`ThemeProvider.tsx`),
-  a hook is camelCase starting with `use` (`useTheme.ts`), and everything else
-  is kebab-case: contexts, utils and types (`theme-context.ts`), global
-  stylesheets (`base.css`) and folders (`live-throughput/`).
+- File names say what a file is. A component is PascalCase
+  (`ThemeProvider.tsx`), a hook is camelCase starting with `use`
+  (`useTheme.ts`), and everything else is kebab-case: contexts, utils and
+  types (`theme-context.ts`), global stylesheets (`base.css`) and folders
+  (`live-throughput/`). *Checked.*
 - Prettier lays out the code (`.prettierrc.json`: no semicolons, single
   quotes, 120 columns); `npm run format` applies it. Markdown and generated
-  files are left alone (`.prettierignore`).
+  files are left alone (`.prettierignore`). *Checked.*
 - Imports come in three groups, each sorted: packages, then the app's own
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
-  exception is a line-level disable that says why.
+  exception is a line-level disable that says why. *Checked.*
 - A comment says why: a reason, constraint or trap the code can't show. One
   that restates the code goes. Exports, props and type fields take `/** */`,
   on one line when it fits, else opening on a line of its own; implementation
   notes take `//`. Keep it short: a `//` note in at most 6 lines, a `/** */`
   doc in at most 10, and anything longer in `docs/`. No em dash, no divider
-  comments, and a lint exception says why after `--`.
+  comments, and a lint exception says why after `--`. *Checked*, except
+  whether it says why.
 
 ## Names and copy
 
@@ -159,40 +165,37 @@ the mock.
   phrase (`needsNetworkInfo`). That covers props, `useState` pairs
   (`[isOpen, setIsOpen]`), params, fields and module constants (`IS_MAC`).
   Names the DOM or a library picks keep theirs: alias Recharts' `active` to
-  `isActive` where you read it.
+  `isActive` where you read it. *Checked.*
 - Data that's shared and must not change (a context value, a list passed
   down as a prop, a module-level table) can be typed `readonly T[]`,
   `ReadonlyMap` or `Readonly<…>`, so the compiler catches a stray mutation.
 - An object shape is a `type`, never an `interface`, so a shape that grows
-  into a union or an intersection keeps its keyword. A prop it redeclares from
-  a base is omitted from the base
+  into a union or an intersection keeps its keyword. *Checked.* A prop it
+  redeclares from a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
+  *Checked.*
 - A missing value is `NoValue`, never a typed `—`. A formatter returns null
-  for one, and the caller renders the bar.
+  for one, and the caller renders the bar. *Checked.*
 - Copy never punctuates with an em dash: write two short sentences or
-  rephrase.
+  rephrase. *Checked.*
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
 
 ## Styles: Tailwind utilities from the design tokens
 
-Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma, released from rove-tokens, and reach the UI through
-`@swiftsolve/rove-tokens`, one way: a token changes in Figma and is exported
-into rove-tokens, and `npm run figma:check` confirms the two agree. Components start here in `src/ui`, and their Figma
-components mirror them. Which token to use for what, with every
-value, is in its `DESIGN.md`
-(`node_modules/@swiftsolve/rove-tokens/DESIGN.md`); the published slideshow
-shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
+The tokens come from `@swiftsolve/rove-tokens`, and its `DESIGN.md` says which
+one to use for what. A token is changed in Figma, never here (AGENTS.md: Keep
+Figma and code in sync). The published slideshow shows them without Figma:
+<https://swiftsolve.github.io/rove-tokens/>.
 
 - Components are styled with Tailwind v4 utilities in the TSX. The theme in
   `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
-  `--spacing-12`, `text-md` is `--font-size-md` and `bg-surface` is `--bg-surface`;
-  there are no Tailwind defaults to reach for. There's no preflight:
-  `styles/base.css` is the reset.
+  `--spacing-12`, `text-md` is `--font-size-md` and `bg-surface` is
+  `--bg-surface`; there are no Tailwind defaults to reach for. There's no
+  preflight: `styles/base.css` is the reset.
 - Colours and easings are always tokens, and so is any length, weight or
   duration a token has: `p-12`, not `p-[12px]`. Every gap, padding and margin
   is a spacing step, or a `calc()` of tokens, and every corner a radius token
@@ -200,7 +203,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   that has to stay (the QR code's white plate, a gap set by an icon's ink, the
   About tile's app-icon corner) goes in `scripts/checks/raw-values.mjs`'s
   `ALLOWED` list, with why. DESIGN.md's Spacing and shape says which reasons
-  count.
+  count. *Checked.*
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
@@ -212,7 +215,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   that should keep its line's (a timeline row's `*:leading-[1.3]`, a
   button's) adds `leading-[inherit]`. A stylesheet sets all four of a style's
   `--type-<style>-*` variables. Text no style fits at all goes in
-  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why.
+  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why. *Checked.*
 - Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
   `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
@@ -241,7 +244,8 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
     destructured props (`tone = 'current'`, `isDisabled = false`): that's what
     the docs' Default column reads. A default that depends on another prop
     takes an `@default` tag instead (Button's `size`). A prop's doc comment
-    doesn't repeat its default.
+    doesn't repeat its default. *Checked*: a default the Default column
+    misses.
   - Something that adds no classes is `null`: a recipe with no base is
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
     boolean axis leaves out a branch that adds nothing.
@@ -251,8 +255,8 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   wherever a component merges a `className` from outside, which is how a view
   adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
   and `type-*` class so tailwind-merge can group them; when you add one to
-  `tailwind.css` or rove-tokens adds a text style, add it there too (lint
-  checks).
+  `tailwind.css` or rove-tokens adds a text style, add it there too.
+  *Checked.*
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
@@ -266,7 +270,7 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   they sit in. Icons (coloured by `className`) and the unstyled
   `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in
   a `.module.css` (below); InlineMeta keeps its `inline-meta` and
-  `inline-meta-item` classes for it.
+  `inline-meta-item` classes for it. *Checked.*
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes. A `.module.css` file is only for what utilities can't say:
   selectors into another component's DOM keyed on `:has()`.
@@ -278,8 +282,8 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
   the DOM or the bridge, so keep logic worth testing out of components and
   hooks.
 - Components have DOM tests beside them (`Button.test.tsx`), rendered into
-  happy-dom with Testing Library. They test behaviour and accessibility: roles,
-  names, keyboard, focus, disabled.
+  happy-dom with Testing Library (set up in `src/ui/testing/`). They test
+  behaviour and accessibility: roles, names, keyboard, focus, disabled.
 - Every story is a test too. It renders in headless Chromium with the real
   styles, runs its `play` function and fails on any accessibility violation
   (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
@@ -325,27 +329,31 @@ shows it without Figma: <https://swiftsolve.github.io/rove-tokens/>.
 | Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
-Review still has to catch: props passed only to pass down, hints over two
-sentences, focus or presence handled by hand, a view reaching into a
-component's DOM, and Figma out of sync beyond its variants and guides (a
-token, a spacing, a guide line's wording).
+Review still has to catch:
+
+- a prop passed only to pass down, or focus or presence handled by hand;
+- a view reaching into a component's DOM;
+- a comment that restates the code instead of saying why;
+- a hint over two sentences;
+- how it looks in both themes;
+- Figma out of sync beyond its variants and guides (a token, a spacing, a
+  guide line's wording), and major or minor for a version.
 
 ## The UI library
 
 `src/ui` is the component library: the Figma components in code. Features
 import it from `@/ui` and nothing else under `src/ui`. The library imports only
-itself (by relative path) and packages, never app code.
+itself (by relative path) and packages, never app code. *Checked.*
 
 The library keeps its own version, apart from the design system's:
-`UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows ("Rove
-Components v1.0.0"). Raise it when the library's API changes: major for a
-removed or renamed component or prop, or a narrower type; minor for anything
-added. The catalogue check fails an API change on an unchanged version;
-picking major or minor is yours.
+`UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows after "Rove
+Components". Raise it when the library's API changes: major
+for a removed or renamed component or prop, or a narrower type; minor for
+anything added. *Checked* that it changes; picking major or minor is yours.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
-  its tests (`button/` holds Button and IconButton). There are
-  no tiers: a component that starts using another stays where it is.
+  its tests (`button/` holds Button and IconButton). There are no tiers: a
+  component that starts using another stays where it is.
 - `index.ts`, the stories and the Figma file's component pages group them by
   purpose, in this order:
   - Actions: button, link and menu
@@ -353,88 +361,91 @@ picking major or minor is yours.
   - Overlays: dialog and tooltip
   - Status and feedback: badge, status-dot, spinner, loading-state,
     banner and empty-state
-  - Data display: data-list, readout, metric-value, bar-meter, split-bar,
-    list-row, icon-tile and timeline
+  - Data display: data-list, readout, metric-value, no-value, bar-meter,
+    split-bar, list-row, icon-tile and timeline
   - Containers: card, collapsible and separator
   - App frame: title-bar, nav-rail and page-header
   - Accessibility: screen-reader
 
   Figma has one more page after them, Patterns: the cards, charts and
   content that features build from the library.
-- `utils/` (`cn`; `pressable`, the behaviour everything pressable
-  shares; `layers`, the one stacking order, so an overlay picks a named layer
-  rather than a z-index; and `tint`, the "any colour or neutral" wash IconTile
-  and TimelineNode share), `hooks/` (generic UI hooks), `context/` (where
-  dialogs portal), and `icons/`.
-- Each component has stories beside it (`Button.stories.tsx`), titled by the
-  same groups (`Actions/Button`). A family sits in a folder named for its
-  parent (`Containers/Card/CardHeader`), and the parent's page shows its
-  parts' props as tabs (`subcomponents`). `npm run storybook` serves them at
-  `localhost:6006`, with a Theme switch in the toolbar (Docs pages follow it)
-  and an accessibility check on every story. Its Figma tab embeds the
-  story's component from the design file: a story title's last part is its
-  key in `figma.json`, so a new component's stories find it with nothing
-  set. `npm run build:storybook` writes a static copy to
-  `storybook-static/`. Master's is hosted at
-  <https://rove.swiftsolve.net/storybook/> (synced by hand; see `AGENTS.md`),
-  and every push publishes to Chromatic for visual tests. Stories import the
-  library by relative path, like the library itself. A new component gets its
-  stories in the same change.
-  A part with props of its own (`CardBody`, `NavItem`) gets its own stories
-  file beside its module (`card/CardBody.stories.tsx`), so its props have
-  controls; Storybook's subcomponent tabs can't. The parent's page still
-  lists every part as a tab, for the family's props at a glance. The
-  component and its parts share a folder (`Containers/Card/CardBody`),
-  ordered in `.storybook/preview.tsx`.
+- Beside them: `utils/` (`cn`; `pressable`, the behaviour everything
+  pressable shares; `layers`, the one stacking order, so an overlay picks a
+  named layer rather than a z-index; and `tint`, the "any colour or neutral"
+  wash IconTile and TimelineNode share), `hooks/` (generic UI hooks),
+  `context/` (where dialogs portal), `icons/`, and `testing/` (the DOM tests'
+  setup).
+
+### Stories
+
+- Each component has stories beside it (`Button.stories.tsx`), titled by its
+  group (`Actions/Button`), in the same change as the component. Stories
+  import the library by relative path, like the library itself.
+- A family sits in a folder named for its parent (`Containers/Card/CardHeader`),
+  and the parent's page shows its parts' props as tabs (`subcomponents`). A
+  part with props of its own (`CardBody`, `NavItem`) gets its own stories file
+  beside its module (`card/CardBody.stories.tsx`), so its props have controls,
+  which subcomponent tabs can't give. The order within a folder is set in
+  `.storybook/preview.tsx`.
 - A component that takes a handler (`onClick`, `onChange`, `onBack`) has a
   story that drives it with a `play` function and asserts what its guide
   promises: keyboard, focus, the callbacks, a disabled one ignoring a press.
   Name it for the interaction (`Pressing`, `EscapeCloses`) and tag it
-  `!autodocs`, since moving focus would scroll its Docs page. The catalogue
-  check fails a handler with no such story. A play that leaves the story as it
-  found it (`DisabledOff`) can stay on the Docs page.
+  `!autodocs`, since moving focus would scroll its Docs page. A play that
+  leaves the story as it found it (`DisabledOff`) can stay on the Docs page.
+  *Checked.*
+- `npm run storybook` serves them at `localhost:6006`, with a Theme switch in
+  the toolbar (Docs pages follow it) and an accessibility check on every
+  story. Its Figma tab embeds the component from the design file: a story
+  title's last part is its key in `figma.json`, so a new component's stories
+  find it with nothing set. `npm run build:storybook` writes a static copy to
+  `storybook-static/`. Master's is hosted at
+  <https://rove.swiftsolve.net/storybook/> (synced by hand; see `AGENTS.md`),
+  and every push publishes to Chromatic for visual tests.
+
+### Docs pages and the catalogue
+
 - A component's intro is one sentence on what it is, with no rules: the
   stories' `docs.subtitle` ("A headline number and its unit, with an optional
   label and icon."), shown under its name above the doc comment, and the same
   sentence under its name in Figma's docs section.
-- A component's usage guide sits on its Docs page: the stories' `guidance`
-  parameter (`Guidance` in `.storybook/docs-page.tsx`), with When to use,
-  When not to use, and Accessibility split into Built in and To handle, a few
-  words a line. Each line finishes its heading: under When to use, a situation,
-  then how if it needs saying, then an example ("The page’s main action, solid:
-  “Run test”."); under When not to use, a situation, then what to use instead
-  ("Opening another view or an address: use `Link`."). A rule that isn't a
-  situation goes in the doc comment instead. What the stories and props table
-  already show (each state, each variant) stays out. Set
-  `docs: { toc: GUIDANCE_TOC }` beside it for the page's contents. Every
-  component has one, written for its whole family (Card's covers CardHeader and
-  the rest), and Figma's docs section carries it as a Guidance block under its
-  intro: When to use and When not to use line for line, worded for designers.
-  Accessibility differs by reader. Storybook's is for developers: Built in
-  names the element, roles and keyboard, To handle the props and markup to
-  supply. Figma's is for designers: Built in is what they needn't draw or note,
-  To handle what they decide or note on the design (label wording, grouping,
-  what's read out). Figma's block also has Guidelines, between When not to use
-  and Accessibility: how to use it well (variants, placement, content) as Do
-  and Don't columns, each Don't the mistake its Do prevents. It's for
-  designers only, as the props table and doc comment cover it in code, and
-  only where there's advice to give: a fact about the component goes in Built
-  in.
-- `components.gen.json` is the library's API in one file, for agents and people:
-  each component's group, doc comment, props (type, variant values, default),
-  Figma component, story ids and usage guide. Read it, not the sources, to
-  learn the API or pick a component. `npm run catalogue` writes it from the code
-  and `figma.json`, which names each component's Figma component and node
-  (`null` when Figma has none).
+- Its usage guide is the stories' `guidance` parameter (`Guidance` in
+  `.storybook/docs-page.tsx`), with `docs: { toc: GUIDANCE_TOC }` beside it.
+  Every component has one, written for its whole family (Card's covers
+  CardHeader and the rest). *Checked.* It has three parts, a few words a line:
+  - When to use: a situation, then how if it needs saying, then an example
+    ("The page’s main action, solid: “Run test”.").
+  - When not to use: a situation, then what to use instead ("Opening another
+    view or an address: use `Link`.").
+  - Accessibility, for developers: Built in names the element, roles and
+    keyboard; To handle, the props and markup to supply.
 
-Every component follows the same rules:
+  A rule that isn't a situation goes in the doc comment instead, and what the
+  stories and props table already show (each state, each variant) stays out.
+- Figma's docs section carries the same guide under its intro, worded for
+  designers: When to use and When not to use line for line (*Checked*), and
+  Accessibility as what they needn't draw (Built in) and what they decide or
+  note (To handle). Only Figma has a Guidelines block, Do and Don't columns
+  for placement, variants and content, each Don't the mistake its Do
+  prevents; code covers that in its props table and doc comments.
+- `components.gen.json` is the library's API in one file, for agents and
+  people: each component's group, doc comment, props (type, variant values,
+  default), Figma component, story ids and usage guide. Read it, not the
+  sources, to learn the API or pick a component. `npm run catalogue` writes it
+  from the code and `figma.json`, which names each component's Figma
+  component and node (`null` when Figma has none).
+
+### Rules every component follows
 
 - It takes `className` for its place in a layout.
-- A component that renders one element passes `ref` and that element's other
-  props through, so any can be a Tooltip's trigger or take an `aria-*`.
+- A component that renders one element takes its element's props
+  (`ComponentProps<'button'>`) and passes `ref` and the rest through, so any
+  can be a Tooltip's trigger or take an `aria-*`. No `forwardRef`: in React 19
+  `ref` is a prop.
 - A status line is announced from a region that's always mounted, changing
   only its text: a region that mounts already holding its text often isn't
-  read. TextField's feedback and PageHeader's `status` work this way.
+  read. TextField's feedback and PageHeader's `status` work this way, and
+  `ScreenReaderStatus` is one for words only a screen reader hears.
 - Styles are CVA recipes, with variant, tone and size as separate axes.
 - State is exposed as data attributes.
 - Composition happens through compound parts and slots, never `cloneElement`
@@ -443,30 +454,25 @@ Every component follows the same rules:
   trigger's props win, so there's no other way to set both.
 - Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
   styled with our tokens: focus traps, positioning, roving focus, dismissal,
-  ARIA wiring. The library wraps it, so features never import Base UI directly.
+  ARIA wiring. The library wraps it, so features never import Base UI
+  directly.
 - Props share names across components and with Figma: `variant`, `isLoading`,
   `isDisabled`, `isChecked`; the text under a title is `description` and the
   controls a component holds are `actions`; a colour by role is `status` or
   `tone` (`positive`, `warning`, `negative`, `neutral`); a quality rating is
   `level` (`excellent`, `good`, `fair`, `poor`).
 
-A component that renders one element takes its props as `ComponentProps<'button'>`
-(or its element's), so `ref` and extra props pass through to it. No `forwardRef`:
-in React 19 `ref` is a prop.
-
 ### Buttons
 
 Buttons are `Button`, `IconButton` and `Link`, never a hand-written
-`<button>`.
+`<button>`. *Checked.*
 
-- Each one's Docs page in Storybook says when to use it and each variant, its
-  states and its accessibility; its props table lists the defaults.
-- Disabled and loading swallow every activation, a form submit included, and keep the
-  button focusable, so a tooltip can say why. They mark the element with
-  `data-disabled` and `data-loading`.
-- Everything pressable shares that behaviour through
-  `ui/utils/pressable.ts`, and styles a hover or press that only
-  applies while usable with the `usable:` variant (`usable:hover:bg-hover`).
+- Disabled and loading swallow every activation, a form submit included, and
+  keep the button focusable, so a tooltip can say why. They mark the element
+  with `data-disabled` and `data-loading`.
+- Everything pressable shares that behaviour through `ui/utils/pressable.ts`,
+  and styles a hover or press that only applies while usable with the
+  `usable:` variant (`usable:hover:bg-hover`).
 
 ## Components
 
