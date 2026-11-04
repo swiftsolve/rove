@@ -3,7 +3,7 @@ import type { StorybookConfig } from '@storybook/react-vite'
 // Storybook builds with the app's own vite.config.ts: Tailwind, the `@/` alias
 // and CSS Modules come from there.
 const config: StorybookConfig = {
-  stories: ['../src/ui/**/*.stories.tsx'],
+  stories: ['./introduction.stories.tsx', '../src/ui/**/*.stories.tsx'],
   addons: [
     '@storybook/addon-docs',
     '@storybook/addon-a11y',
