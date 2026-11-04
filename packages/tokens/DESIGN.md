@@ -96,7 +96,7 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ## Changing the design
 
-Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma:export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma:check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` by hand. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove (Rove's `AGENTS.md` has the steps).
+Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma:export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma:check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` by hand. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#-release) a version, update Rove to it, and resync the sites that embed Rove. The `change-token` skill (`.claude/skills/change-token/SKILL.md`) runs it all.
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
