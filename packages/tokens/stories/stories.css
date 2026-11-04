@@ -510,6 +510,11 @@
 
 /* Introduction: the landing page, its pipeline diagram and the page cards. */
 
+/* It's read more than the token pages, so its section intros are a step up. */
+.intro .section-intro {
+  font-size: var(--font-size-xl);
+}
+
 .intro-code {
   padding: 1px 5px;
   border-radius: var(--radius-xs);
@@ -551,7 +556,7 @@
   padding: 6px 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: var(--weight-medium);
   transition: background var(--duration-fast) var(--ease-out);
 }
@@ -601,7 +606,7 @@
 
 .intro-stage {
   color: var(--text-tertiary);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--weight-medium);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -614,14 +619,15 @@
 .intro-pipeline-title h3 {
   margin: 0;
   color: var(--text-accent);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: var(--weight-semibold);
 }
 
 .intro-pipeline-title p {
   margin: 4px 0 0;
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
 }
 
 .intro-steps,
@@ -688,14 +694,14 @@
 }
 
 .intro-item-name {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
   font-weight: var(--weight-semibold);
 }
 
 .intro-item-body {
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
 }
 
 /* Why */
@@ -742,14 +748,15 @@
 }
 
 .intro-card-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: var(--weight-semibold);
 }
 
 .intro-card-body {
   padding-right: 24px;
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
 }
 
 .intro-card-arrow {
@@ -876,7 +883,8 @@
 
 .intro-principle-body {
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
 }
 
 /* Narrow: the stages stack, each step names its stage, and arrows point down. */

@@ -76,7 +76,6 @@ function RoveAppIcon() {
 }
 
 const LINE_ICONS = {
-  plugin: ['M12 22v-5', 'M9 8V2', 'M15 8V2', 'M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z'],
   tag: [
     'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z',
     'M7.5 7.5h.01',
@@ -143,7 +142,7 @@ const PIPELINES = [
       },
       {
         column: 2,
-        icons: ['plugin', 'json'],
+        icons: ['json'],
         items: [
           {
             name: '`src/figma/*.json`',
