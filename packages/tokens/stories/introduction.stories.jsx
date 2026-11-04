@@ -35,22 +35,15 @@ function FigmaMark() {
   )
 }
 
-// The Rove mark in its gradient, bare like the other brands' marks. It's the
-// brand, not a theme colour, so it looks the same in Dark and Light.
+// The Rove mark in the accent, as Rove's own title bar draws it, so it deepens in Light.
 function RoveMark() {
   return (
-    <svg className="intro-icon" viewBox="4.5 4.5 39 34.5" aria-hidden="true">
-      <defs>
-        <linearGradient id="intro-rove-mark" x1="24" y1="7" x2="24" y2="41" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#7aa4ff" />
-          <stop offset="1" stopColor="#5484f5" />
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="7.5" fill="url(#intro-rove-mark)" />
+    <svg className="intro-icon intro-rove-mark" viewBox="4.5 4.5 39 34.5" aria-hidden="true">
+      <circle cx="24" cy="24" r="7.5" fill="currentColor" />
       <path
         d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02"
         fill="none"
-        stroke="url(#intro-rove-mark)"
+        stroke="currentColor"
         strokeWidth="5"
         strokeLinecap="round"
       />

@@ -546,10 +546,19 @@
   margin-top: 24px;
 }
 
-.intro-links a,
-.intro-item-name a {
+.intro-links a {
   color: var(--text-accent);
   text-decoration: none;
+}
+
+/* A linked title reads like the others; the underline on hover says it's a link. */
+.intro-item-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.intro-rove-mark {
+  color: var(--text-accent);
 }
 
 .intro-links a {
