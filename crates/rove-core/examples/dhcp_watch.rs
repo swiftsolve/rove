@@ -1,8 +1,8 @@
-//! `sudo cargo run -p rove-core --example dhcp_watch` — watch passive DHCP
+//! `sudo cargo run -p rove-core --example dhcp_watch`: watch passive DHCP
 //! capture live.
 //!
 //! Binding UDP :67 is privileged, so this needs `sudo` on macOS (or root /
-//! cap_net_bind_service on Linux). It starts the same background listener the
+//! `cap_net_bind_service` on Linux). It starts the same background listener the
 //! app uses, then prints each device's fingerprint as it broadcasts a DHCP
 //! DISCOVER/REQUEST. Reconnect a device's Wi-Fi to force one immediately.
 use rove_core::devices::{dhcp, DhcpStatus};
@@ -18,7 +18,7 @@ async fn main() {
     match dhcp::status() {
         DhcpStatus::Active => println!("DHCP listener: active (bound :67).\n"),
         DhcpStatus::Unavailable => {
-            eprintln!("DHCP listener: unavailable — could not bind :67.");
+            eprintln!("DHCP listener: unavailable, could not bind :67.");
             eprintln!("Re-run with elevated privileges, e.g. `sudo cargo run -p rove-core --example dhcp_watch`.");
             return;
         }

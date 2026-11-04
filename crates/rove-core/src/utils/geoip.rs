@@ -118,9 +118,11 @@ fn hosting_asns() -> &'static [u32] {
 }
 
 /// Whether `asn` belongs to a datacenter, hosting or VPN provider rather than a
-/// consumer access network. A residential IP sits on its ISP's own AS, so a
-/// hosting AS as our egress almost always means a VPN or proxy. The ISP card
-/// flags a VPN from this, offline, via [`asn_info`].
+/// consumer access network.
+///
+/// A residential IP sits on its ISP's own AS, so a hosting AS as our egress
+/// almost always means a VPN or proxy. The ISP card flags a VPN from this,
+/// offline, via [`asn_info`].
 pub fn is_hosting_asn(asn: u32) -> bool {
     hosting_asns().binary_search(&asn).is_ok()
 }

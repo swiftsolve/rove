@@ -169,7 +169,7 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
 /// Bind `:67` and hand each parsed fingerprint to `on_hit`. Shared by the
 /// in-process listener and the helper so both parse identically.
 ///
-/// Binds INADDR_ANY so broadcasts to 255.255.255.255:67 arrive. Renewals a
+/// Binds `INADDR_ANY` so broadcasts to 255.255.255.255:67 arrive. Renewals a
 /// client unicasts to the router aren't seen; the join and rebind broadcasts
 /// carry the fingerprint. A failed bind is the expected unprivileged case.
 async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Result<()> {
@@ -201,8 +201,10 @@ async fn listen_forever() -> std::io::Result<()> {
 }
 
 /// The `rove-dhcp-helper` entry point, for setups where the app can't bind :67
-/// (Linux without the file capability, older macOS reserving low ports). Writes
-/// every capture so far to `path` after each packet; [`snapshot`] reads it.
+/// (Linux without the file capability, older macOS reserving low ports).
+///
+/// Writes every capture so far to `path` after each packet; [`snapshot`] reads
+/// it.
 pub async fn run_capture_to_file(path: impl AsRef<Path>) -> std::io::Result<()> {
     let path = path.as_ref().to_path_buf();
     let mut seen: HashMap<String, DhcpHit> = HashMap::new();

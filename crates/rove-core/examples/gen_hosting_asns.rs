@@ -1,4 +1,4 @@
-//! `cargo run -p rove-core --example gen_hosting_asns` — refresh
+//! `cargo run -p rove-core --example gen_hosting_asns`: refresh
 //! `data/hosting-asns.txt`, the set of datacenter / hosting / VPN autonomous
 //! systems the ISP card uses to tell a VPN exit from a real consumer ISP.
 //!
@@ -10,15 +10,15 @@
 //!
 //! Source: **brianhama/bad-asn-list** (MIT), a maintained CSV of hosting/
 //! datacenter/VPN ASNs assembled for exactly this kind of "is this a real user or
-//! a datacenter?" check. We keep only the numbers — the org name is already in
-//! our own ASN table — and write them sorted, one per line, so the checked-in
+//! a datacenter?" check. We keep only the numbers (the org name is already in
+//! our own ASN table) and write them sorted, one per line, so the checked-in
 //! file diffs cleanly month to month.
 //!
 //! <https://raw.githubusercontent.com/brianhama/bad-asn-list/master/bad-asn-list.csv>
 //!
 //! This catches VPNs that egress through a datacenter, which is essentially all
 //! commercial ones and any personal cloud VPN. A VPN routed out through a
-//! residential ISP's own ASN is invisible to any ASN-based check — detecting
+//! residential ISP's own ASN is invisible to any ASN-based check; detecting
 //! those needs a paid anonymizer database, out of scope for an offline tool.
 
 use std::collections::BTreeSet;

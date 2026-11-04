@@ -1,15 +1,15 @@
-//! `cargo run -p rove-core --example gen_geoip` — refresh the bundled **DB-IP**
+//! `cargo run -p rove-core --example gen_geoip`: refresh the bundled **DB-IP**
 //! Lite databases that `geoip.rs` embeds, from their monthly free releases.
 //!
 //! Two tables are bundled, downloaded verbatim (MMDB format):
 //!
-//!   * `data/dbip-country-lite.mmdb.gz` — IP → country
-//!   * `data/dbip-asn-lite.mmdb.gz` — IP → autonomous system (number + operator)
+//!   * `data/dbip-country-lite.mmdb.gz`: IP → country
+//!   * `data/dbip-asn-lite.mmdb.gz`: IP → autonomous system (number + operator)
 //!
 //! <https://download.db-ip.com/free/dbip-{country,asn}-lite-YYYY-MM.mmdb.gz>
 //!
 //! DB-IP cuts a release at the start of each month and keeps the previous ones
-//! up, so this walks back from the current month until one exists — a fresh
+//! up, so this walks back from the current month until one exists: a fresh
 //! month's file may not be posted on the 1st.
 //!
 //! Nothing is transformed: the download *is* the artifact, and the checked-in
@@ -17,10 +17,10 @@
 //! is an opaque binary either way, so there's no plaintext source of truth to
 //! keep alongside them, and `geoip.rs` embeds these files directly.
 //!
-//! Licensed CC BY 4.0 — attribution is required and lives in the README. Chosen
+//! Licensed CC BY 4.0: attribution is required and lives in the README. Chosen
 //! over MaxMind's GeoLite2, which needs an account and a license key, and whose
 //! EULA obliges you to destroy superseded copies within 30 days of each
-//! twice-weekly release — impossible for a binary already on users' machines.
+//! twice-weekly release, impossible for a binary already on users' machines.
 //!
 //! Usage:
 //!
@@ -46,7 +46,7 @@ struct Db {
     slug: &'static str,
     /// Destination path, relative to the crate root.
     dest: &'static str,
-    /// Substring the MMDB's `database_type` must contain — the coarse guard that
+    /// Substring the MMDB's `database_type` must contain: the coarse guard that
     /// we downloaded the right *kind* of table, not just a valid MMDB.
     type_marker: &'static str,
     /// A sample lookup that must succeed on a known-good address, so a truncated
@@ -150,7 +150,7 @@ async fn refresh(client: &reqwest::Client, db: &Db, local: Option<&str>) -> Resu
         Some(path) => (std::fs::read(path)?, path.to_string()),
         None => {
             let (year, month) = current_year_month();
-            // This month, else the last few — early in a month the new file may
+            // This month, else the last few: early in a month the new file may
             // not be posted yet, and we'd rather ship last month's than nothing.
             let mut found = None;
             for back in 0..3 {
@@ -180,7 +180,7 @@ async fn refresh(client: &reqwest::Client, db: &Db, local: Option<&str>) -> Resu
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // `[<slug>] [<local-path>]` — no args refreshes every bundled table; a slug
+    // `[<slug>] [<local-path>]`: no args refreshes every bundled table; a slug
     // narrows to one; a second arg feeds it a pre-downloaded file.
     let slug = std::env::args().nth(1);
     let local = std::env::args().nth(2);

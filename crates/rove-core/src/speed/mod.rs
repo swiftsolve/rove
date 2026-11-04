@@ -43,11 +43,11 @@ pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
 /// Download endpoints, tried in order. Cloudflare first: its anycast network is
 /// near almost everywhere and built for parallel tests, so stacking connections
 /// measures the link, not an origin cap. Two caveats:
-///   - `__down` caps `bytes` just under 100 MB (100_000_000 returns 403), so we
+///   - `__down` caps `bytes` just under 100 MB (`100_000_000` returns 403), so we
 ///     ask for 90 MB. Workers refetch when a file drains, over a kept-alive
 ///     connection, so a refetch pays no fresh slow-start.
 ///   - Cloudflare rate-limits by request volume and returns 429 under heavy
-///     use. A worker then moves to DataPacket, a CDN test file that doesn't
+///     use. A worker then moves to `DataPacket`, a CDN test file that doesn't
 ///     throttle per connection, so download still reports a real number.
 const DOWNLOAD_URLS: [&str; 2] =
     ["https://speed.cloudflare.com/__down?bytes=90000000", "https://nyc.download.datapacket.com/100mb.bin"];

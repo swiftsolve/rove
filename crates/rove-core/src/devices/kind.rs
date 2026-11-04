@@ -8,7 +8,9 @@ use serde::Serialize;
 
 /// Declared most specific first, so a full tie in the classifier's tally
 /// resolves toward the narrower kind: nas over computer, camera or speaker over
-/// iot, console over tv. `Unknown` is last and never voted for.
+/// iot, console over tv.
+///
+/// `Unknown` is last and never voted for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DeviceKind {

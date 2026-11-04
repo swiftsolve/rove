@@ -39,7 +39,9 @@ const OFFLINE_RECENCY_MS: i64 = 15 * 60 * 1000;
 
 /// How long an offline device stays in the Devices list after it last answered:
 /// long enough to cover a phone asleep overnight, short enough that one gone for
-/// good clears on its own. Its roster row stays in the database.
+/// good clears on its own.
+///
+/// Its roster row stays in the database.
 pub const OFFLINE_LIST_KEEP_MS: i64 = 24 * 60 * 60 * 1000;
 
 /// `meta` key for the gateway's MAC as last seen, the baseline
@@ -201,14 +203,10 @@ impl Store {
             .map(|identity| is_connected_identity(&identity))
             .unwrap_or(true);
 
-        // Departures: recently seen devices that didn't answer this scan, unless
-        // already marked offline. Two conditions suppress the whole burst, both
-        // meaning this machine dropped off:
-        //   * An empty `live` set: not even self or the gateway answered, so the
-        //     scan failed.
-        //   * The host is disconnected: on macOS a downed link still lists self
-        //     as reachable, so `live` isn't empty; the stored identity catches it.
-        // The one `connection_lost` from `record_connection` stands in instead.
+        // Departures, unless this machine itself dropped off: an empty `live`
+        // set (the scan failed) or a disconnected host (macOS still lists self
+        // as reachable on a downed link, so `live` alone can't tell). The one
+        // `connection_lost` from `record_connection` stands in for the burst.
         if !is_seeding_feed && !live.is_empty() && host_connected {
             Self::emit_departures(&tx, &prior, &live, &last_event, now_ms)?;
         }

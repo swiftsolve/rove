@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS known_devices (
 );
 ";
 
-/// v2: speed_history gains the link speed and Wi-Fi band at test time. Dropped
+/// v2: `speed_history` gains the link speed and Wi-Fi band at test time. Dropped
 /// and recreated rather than altered: old rows never had these fields and speed
 /// history is disposable.
 const SCHEMA_V2: &str = "

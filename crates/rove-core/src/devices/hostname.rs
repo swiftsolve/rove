@@ -76,15 +76,11 @@ async fn resolve_many_unix(ips: &[String]) -> Vec<Option<String>> {
         // otherwise `xargs` exits 123 and `capture()` discards the whole batch.
         // Emits `ip<TAB>hostname` per resolved IP.
         let per_ip = if std::env::consts::OS == "macos" {
-            // macOS has no getent. dscacheutil's reverse lookups are
-            // cache-backed and return nothing on a cold cache, so a
-            // randomized-MAC phone known only by its PTR ("iPhone") shows as
-            // Unknown. Fall back to a bounded `dig +short -x`, which asks the
-            // router's resolver directly (it knows the name from the DHCP lease),
-            // stripping the trailing dot. Without `dig` this yields empty.
-            //
-            // `dig` writes diagnostics (";; connection timed out; ...") to stdout,
-            // so take the first line that starts alphanumeric, not `head -n1`.
+            // macOS has no getent, and dscacheutil returns nothing on a cold
+            // cache. So fall back to a bounded `dig +short -x`, which asks the
+            // router's resolver (it knows the DHCP lease names), trailing dot
+            // stripped. `dig` prints diagnostics to stdout, so take the first
+            // line that starts alphanumeric, not `head -n1`.
             r#"n=$(dscacheutil -q host -a ip_address "$1" 2>/dev/null | awk "/^name:/{print \$2; exit}"); if [ -z "$n" ]; then n=$(dig +short +time=1 +tries=1 -x "$1" 2>/dev/null | awk "/^[A-Za-z0-9]/{print; exit}" | sed "s/\.$//"); fi; if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#
         } else {
             r#"h=$(timeout 1 getent hosts "$1" 2>/dev/null); n=$(printf "%s" "$h" | awk "{print \$2; exit}"); if [ -n "$n" ]; then printf "%s\t%s\n" "$1" "$n"; fi"#

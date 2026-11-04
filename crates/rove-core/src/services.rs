@@ -31,9 +31,11 @@ pub fn default_service_list() -> Vec<ServiceDef> {
 }
 
 /// Service reachability plus this machine's internet verdict, probed as one
-/// batch. Pairing them is what lets the Services view tell a real outage from
-/// this machine being offline: then every probe fails at once, and the view
-/// shows one "connection lost" instead of a wall of per-service downs.
+/// batch.
+///
+/// Pairing them is what lets the Services view tell a real outage from this
+/// machine being offline: then every probe fails at once, and the view shows
+/// one "connection lost" instead of a wall of per-service downs.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServicesReport {
@@ -45,9 +47,10 @@ pub struct ServicesReport {
 
 /// Reachability of one service on two independent axes: the network path
 /// (`latency_ms`, a TLS handshake to :443, since many of these block ICMP) and
-/// the application (`http_status`, from a HEAD). They can disagree: a Cloudflare
-/// tunnel failure (Error 1033) completes TLS at the edge in a few ms but returns
-/// HTTP 530.
+/// the application (`http_status`, from a HEAD).
+///
+/// They can disagree: a Cloudflare tunnel failure (Error 1033) completes TLS at
+/// the edge in a few ms but returns HTTP 530.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceReachability {
@@ -132,9 +135,10 @@ async fn service_health(host: &str) -> Option<u16> {
 }
 
 /// Latency in ms when `host` is up, or None when the path failed or the host
-/// answered with a 5xx. Backs "test before add", so it judges on both axes like
-/// the Services list does: the dialog must agree with the list the service will
-/// land in.
+/// answered with a 5xx.
+///
+/// Backs "test before add", so it judges on both axes like the Services list
+/// does: the dialog must agree with the list the service will land in.
 pub async fn probe_service(host: &str) -> Option<f64> {
     let (latency, health) = tokio::join!(handshake_latency(host), service_health(host));
     // An IP literal has no HTTP check (`service_health` is None), so its latency
@@ -156,9 +160,11 @@ pub async fn service_reachability(services: &[ServiceDef]) -> Vec<ServiceReachab
     futures_util::future::join_all(probes).await
 }
 
-/// The Services view's probe: every service plus this machine's internet
-/// verdict from the same batch (see [`ServicesReport`]). The gateway lookup only
-/// lets `classify_internet` tell "WAN down" (still on a LAN) from "no network".
+/// The Services view's probe: every service plus this machine's internet verdict
+/// from the same batch (see [`ServicesReport`]).
+///
+/// The gateway lookup only lets `classify_internet` tell "WAN down" (still on a
+/// LAN) from "no network".
 pub async fn run_services(service_list: &[ServiceDef]) -> ServicesReport {
     let gateway = crate::connection::default_gateway().await;
     let (internet, services) = tokio::join!(diagnostics::internet_reachable(), service_reachability(service_list));

@@ -87,8 +87,9 @@ static INDEX: Mutex<Option<Index>> = Mutex::new(None);
 
 /// A `data:` URI for the icon of the app that owns `pid` (preferred), or of
 /// a live process named `name` (fallback), from its `.desktop` entry and the
-/// icon theme. `None` for processes no installed app claims, such as CLIs
-/// and daemons.
+/// icon theme.
+///
+/// `None` for processes no installed app claims, such as CLIs and daemons.
 pub fn app_icon_data_uri(name: &str, pid: Option<u32>) -> Option<String> {
     let pid = pid.filter(|pid| Path::new(&format!("/proc/{pid}")).exists()).or_else(|| pid_for_name(name));
     let facts = process_facts(name, pid);

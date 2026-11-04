@@ -92,7 +92,7 @@ impl MdnsHit {
 }
 
 /// Instance names that are the service's brand, not the device's: an Amazon
-/// Echo advertises `_spotify-connect._tcp` as the literal "SpotifyConnect".
+/// Echo advertises `_spotify-connect._tcp` as the literal "`SpotifyConnect`".
 /// Rejecting them lets the device fall back to a real name; a user-renamed
 /// endpoint ("Kitchen") won't match.
 fn is_generic_service_name(name: &str) -> bool {

@@ -4,22 +4,15 @@ use std::sync::{Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// The bare IP of a socket's peer, or `None` when that peer isn't a host on the
-/// network. Shared by the per-app and per-host trackers so they agree on what
-/// counts as traffic; they read the same sockets.
+/// network. The Apps and Hosts trackers share it so they agree on what counts.
 ///
-/// `None` covers two problems that want the same answer:
+///   * **A wildcard peer** (`*:*`, `*.*`) is unmeterable: one process can hold
+///     several identical `nettop` labels (nine mDNS sockets, say).
+///   * **A loopback, unspecified or broadcast peer** never reaches the network,
+///     and on Linux both ends of a loopback connection would count.
 ///
-///   * **A wildcard peer** (`*:*`, or `*.*` for v6) is an unconnected socket
-///     with no identity: `nettop` names a socket only by its address pair, so
-///     one process can hold several identical labels with different counters
-///     (nine `udp4 *:5353<->*:*` mDNS sockets, say). Keyed together they
-///     re-bank each other every tick; keyed apart they can't be. Unmeterable.
-///   * **A loopback, unspecified or broadcast peer** never reaches the network.
-///     It would report a local dev server as bandwidth, and on Linux both ends
-///     of a loopback connection are sockets, so every byte would count twice.
-///
-/// Private/LAN peers *are* routable: a NAS on the subnet is a real host over a
-/// real link. It just has no country (see `apps::hosts::ip_is_public`).
+/// LAN peers *are* routable; they just have no country
+/// (`apps::hosts::ip_is_public`).
 pub(crate) fn routable_peer_ip(addr: &str) -> Option<String> {
     let a = addr.trim();
     if a.is_empty() || a.starts_with('*') {
@@ -95,9 +88,11 @@ pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
 }
 
 /// Canonical MAC form: lowercase, colon-separated, zero-padded octets
-/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0"). Accepts Windows' dashes too. BSD
-/// strips leading zeros, so without this its MACs wouldn't match sysinfo or the
-/// OUI table, or dedupe against this machine's own address.
+/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0").
+///
+/// Accepts Windows' dashes too. BSD strips leading zeros, so without this its
+/// MACs wouldn't match sysinfo or the OUI table, or dedupe against this
+/// machine's own address.
 pub fn normalize_mac_colons(raw: &str) -> String {
     raw.split([':', '-']).map(|octet| format!("{:0>2}", octet.to_ascii_lowercase())).collect::<Vec<_>>().join(":")
 }
@@ -193,16 +188,20 @@ pub fn is_shell_safe_iface(s: &str) -> bool {
         && s.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b':' | b'@' | b' '))
 }
 
-/// Single-quote `s` for a `sh -c` command, escaping embedded quotes
-/// (`'` → `'\''`). For values no safe charset can constrain, chiefly SSIDs and
-/// NetworkManager profile names. Not for Windows `cmd`, whose quoting differs.
+/// Single-quote `s` for a `sh -c` command, escaping embedded quotes (`'` →
+/// `'\''`).
+///
+/// For values no safe charset can constrain, chiefly SSIDs and NetworkManager
+/// profile names. Not for Windows `cmd`, whose quoting differs.
 pub fn shell_single_quote(s: &str) -> String {
     format!("'{}'", s.replace('\'', "'\\''"))
 }
 
-/// Strip control characters and bidi overrides from a network-sourced display
-/// string (mDNS TXT, reverse DNS) and cap its length, so a neighbour can't
-/// inject RTL overrides or terminal control sequences into the device list.
+/// A network-sourced display string (mDNS TXT, reverse DNS), safe to show.
+///
+/// Control characters and bidi overrides are stripped and the length capped,
+/// so a neighbour can't inject RTL overrides or terminal control sequences
+/// into the device list.
 pub fn sanitize_display(s: &str) -> String {
     s.chars().filter(|c| !c.is_control() && !is_bidi_control(*c)).take(64).collect::<String>().trim().to_string()
 }

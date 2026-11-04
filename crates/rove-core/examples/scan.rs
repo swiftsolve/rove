@@ -1,4 +1,4 @@
-//! `cargo run -p rove-core --example scan` — prints a live LAN scan.
+//! `cargo run -p rove-core --example scan`: prints a live LAN scan.
 #[tokio::main]
 async fn main() {
     let scan = rove_core::devices::scan().await;

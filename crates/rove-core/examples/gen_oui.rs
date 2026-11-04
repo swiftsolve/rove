@@ -1,4 +1,4 @@
-//! `cargo run -p rove-core --example gen_oui` — regenerate `data/oui.tsv`
+//! `cargo run -p rove-core --example gen_oui`: regenerate `data/oui.tsv`
 //! from the **IEEE public registry** (the authoritative, always-current source).
 //!
 //! The lookup table embedded by `oui.rs` is a compilation of factual MAC-prefix
@@ -13,14 +13,14 @@
 //!
 //! Each CSV has columns `Registry,Assignment,Organization Name,
 //! Organization Address`. We keep only `<bits>\t<hexprefix>\t<vendor>` rows,
-//! sorted for stable diffs — the exact shape `oui.rs` parses.
+//! sorted for stable diffs, in the exact shape `oui.rs` parses.
 //!
 //! Sourcing from IEEE (not Wireshark's GPL-2.0 `manuf` file) keeps the bundled
 //! table free of copyleft obligations, which matters for a redistributable
 //! binary.
 //!
 //! Networks that block `standards-oui.ieee.org` (e.g. a locked-down CI/agent
-//! egress policy) can pass the three CSVs as local paths instead — the registry
+//! egress policy) can pass the three CSVs as local paths instead; the registry
 //! of each is read from its own `Registry` column, so order doesn't matter:
 //!
 //! ```text

@@ -146,17 +146,11 @@ fn prepare_linux_desktop() {
         "linux desktop environment"
     );
 
-    // WebKitGTK on the NVIDIA proprietary driver stalls: the accelerated
-    // compositor paints one frame, then waits on a frame callback the driver
-    // never delivers, so the window repaints only on input and looks hung.
-    //
-    // The old fix forced GDK_BACKEND=x11 and WEBKIT_DISABLE_COMPOSITING_MODE;
-    // dropping both regressed NVIDIA (RTX 20-series, driver 595, WebKitGTK
-    // 2.52.3, Wayland). The halves are separable: forcing x11 is what freezes
-    // on 2.52, so GDK_BACKEND is left alone, and disabling the compositor is
-    // what fixes NVIDIA, since repaints then flush synchronously. Respects a
-    // value the user set. The non-composited path needs the opaque window
-    // (`transparent: false` in tauri.conf.json).
+    // On the NVIDIA driver WebKitGTK's compositor waits on a frame callback
+    // that never comes, so the window looks hung. Disabling compositing fixes
+    // it (repaints flush synchronously); forcing GDK_BACKEND=x11 freezes
+    // WebKitGTK 2.52, so that's left alone. A user's own value wins. Needs the
+    // opaque window (`transparent: false` in tauri.conf.json).
     if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
         std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     }

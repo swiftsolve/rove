@@ -8,27 +8,16 @@ use crate::utils::shell::{trimmed_non_empty, try_run, try_run_powershell};
 use std::net::Ipv4Addr;
 
 /// The default route Windows forwards through, ranked so a VPN tunnel never
-/// passes for the LAN uplink.
+/// passes for the LAN uplink. (`Find-NetRoute` returns the tunnel; VPNs leave
+/// the adapter's `0.0.0.0/0` in place beside their two `/1`s.) Ranked, as in
+/// macOS's `pick_default_route`:
 ///
-/// `Find-NetRoute -RemoteIPAddress 8.8.8.8` gives the *effective* route, which
-/// is the tunnel once a VPN is up, and device discovery would then scan the
-/// tunnel's point-to-point range and find nothing. Modern VPNs (WireGuard,
-/// NordLynx, Mullvad, OpenVPN) route through `0.0.0.0/1` + `128.0.0.0/1` and
-/// leave the adapter's own `0.0.0.0/0` in place, so the LAN route is still
-/// there to find. Every default route is ranked, like macOS's
-/// `pick_default_route`:
+///  1. `Status -eq 'Up'`, past the stale default of an unplugged adapter.
+///  2. `HardwareInterface` first, so a NIC beats any tunnel. A Hyper-V
+///     vEthernet holding the only default still wins from tier two.
+///  3. Lowest route + interface metric: Ethernet over Wi-Fi, as Windows does.
 ///
-///  1. `Status -eq 'Up'`: rejects the stale metric-0 default Windows keeps on
-///     a just-unplugged Ethernet adapter.
-///  2. `HardwareInterface` first: puts a physical NIC above any tunnel without
-///     matching vendor names. A Hyper-V "vEthernet" adapter isn't hardware, but
-///     when it holds the only default route (the NIC is bound to the vSwitch)
-///     it still wins from the second tier.
-///  3. Lowest route + interface metric, which prefers Ethernet over Wi-Fi as
-///     Windows does.
-///
-/// `field` is `InterfaceAlias` or `NextHop`, so the interface and gateway come
-/// from the same ranking and can't disagree.
+/// `field` is `InterfaceAlias` or `NextHop`, from the one ranking.
 fn default_route_field(field: &str) -> String {
     // Safe to splice: `field` is always one of the two literals passed below.
     const SCRIPT: &str = "\
@@ -165,9 +154,10 @@ fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
 
 /// The saved passphrase for the `ssid` profile via `netsh wlan show profile …
 /// key=clear`. netsh only prints "Key Content" to an elevated caller, so
-/// without admin this returns `None`. A double quote can't be escaped inside
-/// a `cmd` argument, so any in the SSID is stripped (real SSIDs rarely have
-/// one).
+/// without admin this returns `None`.
+///
+/// A double quote can't be escaped inside a `cmd` argument, so any in the
+/// SSID is stripped (real SSIDs rarely have one).
 pub async fn wifi_password(ssid: &str) -> Option<String> {
     let safe = ssid.replace('"', "");
     let out = try_run(&format!("netsh wlan show profile name=\"{safe}\" key=clear")).await?;

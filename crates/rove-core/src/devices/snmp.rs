@@ -62,7 +62,7 @@ impl SnmpHit {
     }
 }
 
-/// A token mixing letters and digits, like a model number (TG3452, RB750Gr3).
+/// A token mixing letters and digits, like a model number (TG3452, `RB750Gr3`).
 fn has_model_token(s: &str) -> bool {
     s.split_whitespace().any(|token| {
         let token = token.trim_matches(|c: char| !c.is_ascii_alphanumeric());
@@ -257,7 +257,7 @@ mod tests {
         assert_eq!(encode_get(OID_SYS_DESCR, COMMUNITY, REQUEST_ID), expected);
     }
 
-    /// Build a minimal GetResponse for `descr` to exercise the decoder.
+    /// Build a minimal `GetResponse` for `descr` to exercise the decoder.
     fn response_with_descr(descr: &[u8], error_status: u8) -> Vec<u8> {
         let mut varbind = Vec::new();
         varbind.extend(tlv(0x06, OID_SYS_DESCR));

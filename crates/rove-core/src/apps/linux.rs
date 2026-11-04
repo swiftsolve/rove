@@ -23,7 +23,7 @@ pub(super) fn support_detail() -> Option<String> {
     None
 }
 
-/// -t TCP only (UDP sockets have no byte counters in sock_diag), -i socket
+/// -t TCP only (UDP sockets have no byte counters in `sock_diag`), -i socket
 /// info (the bytes), -n numeric, -H no header, -p process.
 #[cfg(target_os = "linux")]
 const SS: &str = "ss -tinHp";

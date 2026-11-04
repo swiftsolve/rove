@@ -27,9 +27,10 @@ static TLS_CONFIG: LazyLock<Arc<ClientConfig>> = LazyLock::new(|| {
 });
 
 /// Time to a *secure* connection to `host:443` in ms, or None on failure: DNS,
-/// TCP and the full TLS handshake with certificate validation. Unlike a bare
-/// TCP connect it confirms HTTPS works and isn't intercepted or blocked
-/// mid-path, at the cost of about one extra round trip.
+/// TCP and the full TLS handshake with certificate validation.
+///
+/// Unlike a bare TCP connect it confirms HTTPS works and isn't intercepted or
+/// blocked mid-path, at the cost of about one extra round trip.
 pub async fn handshake_latency(host: &str) -> Option<f64> {
     // An IP literal has no certificate name to validate, so TLS would always
     // fail. A TCP connect still measures reachability, just not HTTPS.

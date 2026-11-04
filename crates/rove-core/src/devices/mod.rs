@@ -180,10 +180,12 @@ pub async fn scan() -> LanDeviceScan {
 
 /// A no-probe presence refresh for the background monitor: the neighbor table
 /// plus mDNS and SSDP, with no sweep or TCP probe, so next to no per-host
-/// traffic or battery cost. It returns only devices it can confirm are present
-/// now and never asserts a departure, since passively a silent host looks just
-/// like a departed one. [`crate::store::Store::touch_devices`] bumps
-/// `last_seen` for these and leaves the rest of the roster alone.
+/// traffic or battery cost.
+///
+/// It returns only devices it can confirm are present now and never asserts a
+/// departure, since passively a silent host looks just like a departed one.
+/// [`crate::store::Store::touch_devices`] bumps `last_seen` for these and
+/// leaves the rest of the roster alone.
 pub async fn passive_refresh() -> Vec<LanDevice> {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
 
@@ -303,9 +305,10 @@ pub struct GatewayIdentity {
     pub name: Option<String>,
 }
 
-/// The gateway's make, model and product name without a full scan. Ping the
-/// gateway first so its neighbor-table entry is fresh. `local_ip`, when known,
-/// is the active interface address SNMP and SSDP bind to.
+/// The gateway's make, model and product name without a full scan.
+///
+/// Ping the gateway first so its neighbor-table entry is fresh. `local_ip`,
+/// when known, is the active interface address SNMP and SSDP bind to.
 pub async fn gateway_identity(gateway: Option<&str>, local_ip: Option<std::net::Ipv4Addr>) -> GatewayIdentity {
     let Some(gw) = gateway else {
         return GatewayIdentity { mac: None, vendor: None, model: None, name: None };

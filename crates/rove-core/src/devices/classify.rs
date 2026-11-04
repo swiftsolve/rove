@@ -198,8 +198,8 @@ static MODEL_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
 });
 
 /// UPnP `deviceType` URNs map fairly directly to a kind. MediaRenderer/DIAL are
-/// almost always a TV or AV box; ZonePlayer is Sonos; the WAN/IGD types are the
-/// router (usually already decided by the gateway flag); MediaServer leans NAS.
+/// almost always a TV or AV box; `ZonePlayer` is Sonos; the WAN/IGD types are the
+/// router (usually already decided by the gateway flag); `MediaServer` leans NAS.
 static SSDP_TYPE_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (
@@ -289,7 +289,7 @@ const W_MDNS_STRONG: i32 = 100;
 const W_MDNS_MODEL: i32 = 60;
 const W_STRONG_PORT: i32 = 55;
 /// A UPnP `deviceType` is reliable for printers and routers but ambiguous for
-/// media (a MediaRenderer might be a TV or a soundbar), so it sits below the
+/// media (a `MediaRenderer` might be a TV or a soundbar), so it sits below the
 /// strong-port vote.
 const W_SSDP_TYPE: i32 = 50;
 /// A DHCP fingerprint is a hard-to-spoof OS-family signal that survives MAC

@@ -1,6 +1,7 @@
-//! The "join this Wi-Fi" payload for the current connection: SSID, encryption,
-//! the saved passphrase where the OS allows it, and a QR code of the standard
-//! `WIFI:` URI that iOS and Android cameras offer to join.
+//! The "join this Wi-Fi" payload for the current connection.
+//!
+//! SSID, encryption, the saved passphrase where the OS allows it, and a QR code
+//! of the standard `WIFI:` URI that iOS and Android cameras offer to join.
 //!
 //! The passphrase is best effort. Every OS guards saved Wi-Fi secrets behind a
 //! prompt (polkit on Linux, Keychain on macOS, Administrator elevation on

@@ -39,9 +39,10 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 }
 
 /// The saved Wi-Fi passphrase for `ssid` from the login Keychain, where macOS
-/// stores it as a generic password keyed by the network name. Reading it pops
-/// the standard Keychain authorisation dialog (Allow / Always Allow / Deny);
-/// declining, or a Keychain that has no entry, yields `None`.
+/// stores it as a generic password keyed by the network name.
+///
+/// Reading it pops the standard Keychain authorisation dialog (Allow / Always
+/// Allow / Deny); declining, or a Keychain that has no entry, yields `None`.
 pub async fn wifi_password(ssid: &str) -> Option<String> {
     let quoted = crate::utils::net::shell_single_quote(ssid);
     let out = try_run(&format!("security find-generic-password -w -a {quoted} 2>/dev/null")).await?;
@@ -49,9 +50,11 @@ pub async fn wifi_password(ssid: &str) -> Option<String> {
 }
 
 /// Ethernet link facts for `iface` from a single `ifconfig <iface>`: the
-/// negotiated link speed and duplex from its `media:` descriptor. macOS has no
-/// `ethtool`, but `ifconfig` reports the same rate string it uses for the
-/// interface list, so the connection card and interface list stay consistent.
+/// negotiated link speed and duplex from its `media:` descriptor.
+///
+/// macOS has no `ethtool`, but `ifconfig` reports the same rate string it uses
+/// for the interface list, so the connection card and interface list agree.
+///
 /// Vendor is left to the caller's OUI fallback; `ifconfig` exposes no adapter
 /// vendor/product for the built-in or USB/Thunderbolt NICs.
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
@@ -208,10 +211,11 @@ fn channel_to_frequency(channel: i64, band_hint: &str) -> Option<i64> {
     Some(super::channel_to_frequency(band, channel))
 }
 
-/// The preferred IPv4 default route as `(interface, gateway)`. A VPN tunnel
-/// (`utun*`) or VM bridge can outrank the physical link, so `route -n get
-/// default` alone can land on an interface with no address, no gateway and the
-/// wrong subnet. See `pick_default_route`.
+/// The preferred IPv4 default route as `(interface, gateway)`.
+///
+/// A VPN tunnel (`utun*`) or VM bridge can outrank the physical link, so
+/// `route -n get default` alone can land on an interface with no address, no
+/// gateway and the wrong subnet. See `pick_default_route`.
 pub async fn best_default_route() -> Option<(String, Option<String>)> {
     let out = try_run("netstat -rn -f inet 2>/dev/null").await?;
     pick_default_route(&out)
@@ -298,8 +302,10 @@ pub async fn connection_type_for(iface: &str) -> &'static str {
 }
 
 /// Per-interface facts from one `ifconfig -a`: oper state, first IPv4 and
-/// (Ethernet only) link speed. sysinfo's IPv4 can lag `ifconfig` and it has no
-/// link speed, so the macOS list builder enriches its list from here.
+/// (Ethernet only) link speed.
+///
+/// sysinfo's IPv4 can lag `ifconfig` and it has no link speed, so the macOS list
+/// builder enriches its list from here.
 #[derive(Default, Clone)]
 pub struct IfaceInfo {
     pub oper_state: Option<String>,

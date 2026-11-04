@@ -64,18 +64,23 @@ fn table() -> &'static OuiTable {
     })
 }
 
-/// A MAC's registered vendor, most specific IEEE assignment first, shortened
-/// by `clean_vendor` to a label a user would recognise ("Motorola", not
-/// "Motorola (Wuhan) Mobility Technologies Communication Co., Ltd."). `None`
-/// for unregistered or unparseable prefixes. A randomized MAC will almost never
-/// match, but callers should still gate on [`is_randomized_mac`].
+/// A MAC's registered vendor, as a label a user would recognise.
+///
+/// The most specific IEEE assignment wins, and `clean_vendor` shortens it
+/// ("Motorola", not "Motorola (Wuhan) Mobility Technologies Communication Co.,
+/// Ltd.").
+///
+/// `None` for unregistered or unparseable prefixes. A randomized MAC will
+/// almost never match, but callers should still gate on [`is_randomized_mac`].
 pub fn lookup_vendor(mac: &str) -> Option<String> {
     resolve(table(), mac).map(clean_vendor)
 }
 
 /// True when a MAC's registrant spans too many device kinds for its OUI to name
-/// a type: the vendor is shown but casts no kind vote. TP-Link gets the same
-/// treatment by being left out of the classifier's vendor table.
+/// a type: the vendor is shown but casts no kind vote.
+///
+/// TP-Link gets the same treatment by being left out of the classifier's vendor
+/// table.
 ///
 /// This covers registrants that can't be left out because they tidy to a brand
 /// shared with unambiguous gear. "Motorola (Wuhan) Mobility Technologies

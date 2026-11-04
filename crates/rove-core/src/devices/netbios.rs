@@ -96,7 +96,7 @@ fn parse_node_status(pkt: &[u8]) -> Option<String> {
 mod tests {
     use super::*;
 
-    /// Build a minimal node-status response with the given (name, is_group)
+    /// Build a minimal node-status response with the given (name, `is_group`)
     /// entries, so parsing can be tested without a live host.
     fn response(entries: &[(&str, bool)]) -> Vec<u8> {
         let mut pkt = vec![0u8; 12]; // header (contents don't matter for parsing)

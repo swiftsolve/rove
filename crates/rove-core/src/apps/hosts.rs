@@ -1,8 +1,10 @@
 //! Per-app remote hosts and traffic kinds: which hosts each app talks to, and
-//! how much. [`crate::apps`] keeps one total per process; this keeps the
-//! same traffic split by the peer on the other end of each connection, for the
-//! Hosts view (hostname, country flag, bytes) and, bucketed by peer port, the
-//! Traffic Types view.
+//! how much.
+//!
+//! [`crate::apps`] keeps one total per process; this keeps the same traffic
+//! split by the peer on the other end of each connection, for the Hosts view
+//! (hostname, country flag, bytes) and, bucketed by peer port, the Traffic
+//! Types view.
 //!
 //! The sources are the per-connection ones the OS already exposes:
 //!
@@ -54,6 +56,7 @@ pub struct HostUsage {
 }
 
 /// One application with the remote hosts it has talked to, busiest host first.
+///
 /// `rx_bytes`/`tx_bytes` sum its hosts. They track the same app's
 /// [`AppUsage`](crate::apps::AppUsage) closely: both bank per-socket
 /// deltas from the same protocols and drop the same peers
@@ -97,9 +100,10 @@ pub struct TrafficType {
     pub tx_bytes: u64,
 }
 
-/// Traffic by kind for the Traffic Types view, busiest first. Grouped from the
-/// same per-connection samples as [`HostUsageSummary`], so it covers exactly
-/// the same traffic, bucketed by peer port instead of peer IP.
+/// Traffic by kind for the Traffic Types view, busiest first.
+///
+/// Grouped from the same per-connection samples as [`HostUsageSummary`], so it
+/// covers exactly the same traffic, bucketed by peer port instead of peer IP.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrafficUsageSummary {
@@ -129,9 +133,11 @@ pub async fn sample() -> Option<Vec<PeerReading>> {
     crate::apps::sys::sample_peers().await
 }
 
-/// One cumulative reading for a single connection. `conn_key` identifies the
-/// connection across samples (its address pair) so the tracker can diff it;
-/// `ip` is the peer without its port, the host grouping key.
+/// One cumulative reading for a single connection.
+///
+/// `conn_key` identifies the connection across samples (its address pair) so
+/// the tracker can diff it; `ip` is the peer without its port, the host
+/// grouping key.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PeerReading {
     pub conn_key: String,
@@ -237,9 +243,11 @@ fn classify_port(port: Option<u16>) -> TrafficClass {
 }
 
 /// Turns per-connection cumulative counters into per-`(app, peer ip)` running
-/// totals. `last` is the previous reading per connection, to diff against;
-/// `totals` is bytes per app, then per peer. The hostname and country caches
-/// are filled from outside and joined in at [`summary`](Self::summary) time.
+/// totals.
+///
+/// `last` is the previous reading per connection, to diff against; `totals`
+/// is bytes per app, then per peer. The hostname and country caches are
+/// filled from outside and joined in at [`summary`](Self::summary) time.
 #[derive(Default)]
 pub struct HostUsageTracker {
     last: HashMap<String, ByteCounts>,
@@ -285,13 +293,10 @@ impl HostUsageTracker {
     /// connection's growth since its last reading, and forget connections that
     /// vanished (their bytes are already in `totals`).
     ///
-    /// Every platform keys this per connection (an address pair, or nettop's
-    /// `local<->peer` label), so a decrease means a recycled key, not a closed
-    /// socket. Banking follows `peer_counter_semantics`, the same rule the Apps
-    /// view uses: on Linux and macOS the first snapshot only sets baselines,
-    /// because connections open at launch carry traffic from before Rove was
-    /// watching. Skipping that would bank history the Apps view discards, and an
-    /// app could show here having never appeared there.
+    /// Keys are per connection, so a decrease means a recycled key. Banking
+    /// follows `peer_counter_semantics`, as the Apps view does: on Linux and
+    /// macOS the first snapshot only sets baselines, or an app could show here
+    /// with pre-launch traffic the Apps view discards.
     ///
     /// Only pass a snapshot that was actually taken; see [`sample`].
     pub fn ingest(&mut self, readings: Vec<PeerReading>) {

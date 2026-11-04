@@ -23,8 +23,10 @@ impl PingStats {
 }
 
 /// Whether this machine can reach the public internet: the context a service
-/// verdict needs. A silent service reads "Down" only when the internet is up;
-/// otherwise the failure is ours, and the UI says "can't check" instead.
+/// verdict needs.
+///
+/// A silent service reads "Down" only when the internet is up; otherwise the
+/// failure is ours, and the UI says "can't check" instead.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum InternetStatus {
@@ -89,7 +91,9 @@ pub struct IspInfo {
 
 /// The fast-changing part of diagnostics, polled tightly by the Diagnostics
 /// view without re-running the ISP and SNMP lookups, which don't change between
-/// polls. The UI merges it over the last full [`NetworkDiagnostics`].
+/// polls.
+///
+/// The UI merges it over the last full [`NetworkDiagnostics`].
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LiveDiagnostics {
@@ -275,7 +279,9 @@ pub(crate) fn classify_internet(reachable: bool, gateway: Option<&str>) -> Inter
 }
 
 /// Gateway ping and internet status only, for the Diagnostics view's tight
-/// poll. Skips `run`'s ISP and SNMP lookups: an external HTTP call and an SNMP
+/// poll.
+///
+/// Skips `run`'s ISP and SNMP lookups: an external HTTP call and an SNMP
 /// timeout on routers that don't answer, every poll, for data that doesn't
 /// change.
 pub async fn run_live() -> LiveDiagnostics {
@@ -285,9 +291,10 @@ pub async fn run_live() -> LiveDiagnostics {
 }
 
 /// Internet status and nothing else, for the always-on heartbeat: just the
-/// anchor probe and a gateway lookup. Cheap enough to run on a tight timer
-/// while hidden to the tray, so a crossing is caught whether or not the window
-/// is open.
+/// anchor probe and a gateway lookup.
+///
+/// Cheap enough to run on a tight timer while hidden to the tray, so a
+/// crossing is caught whether or not the window is open.
 pub async fn check_internet() -> InternetStatus {
     let gateway = default_gateway().await;
     let reachable = internet_reachable().await;

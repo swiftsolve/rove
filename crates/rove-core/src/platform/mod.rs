@@ -115,9 +115,11 @@ static ARP_A: LazyLock<Regex> = LazyLock::new(|| {
         .expect("a valid pattern")
 });
 
-/// The kernel neighbor table. Linux's `ip neigh` has a reachability state; the
-/// `arp -a` fallback (macOS, Windows, Linux without `iproute2`) doesn't, so
-/// its entries are marked `is_reachable` but not `is_stateful`.
+/// The kernel neighbor table.
+///
+/// Linux's `ip neigh` has a reachability state; the `arp -a` fallback (macOS,
+/// Windows, Linux without `iproute2`) doesn't, so its entries are marked
+/// `is_reachable` but not `is_stateful`.
 pub async fn neighbor_table() -> Vec<RawNeighbor> {
     if cfg!(target_os = "linux") {
         if let Some(neighbors) = linux::neighbors().await {
@@ -170,6 +172,7 @@ pub(crate) fn channel_to_frequency(band: WifiBand, channel: i64) -> i64 {
 }
 
 /// The `ping` command for this OS, sending `count` probes to `host`.
+///
 /// `timeout_ms` is the per-reply wait: Windows `-w` and macOS `-W` take
 /// milliseconds, but Linux `-W` takes seconds, so Linux gets a fixed `-W 1`.
 /// `host` is spliced into a shell command, so it must be a validated address.

@@ -1,3 +1,30 @@
 # Tests may unwrap: a panic there is the failure report.
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
+
+# Product and protocol names `doc_markdown` would otherwise want in backticks.
+# ".." keeps clippy's own list (macOS, GitHub, …).
+doc-valid-idents = [
+    "..",
+    "AirPlay",
+    "AirTunes",
+    "CoreLocation",
+    "CoreWLAN",
+    "DiskStation",
+    "GeoLite2",
+    "GLib",
+    "HomeKit",
+    "HomePod",
+    "IoT",
+    "LaunchDaemon",
+    "MacBook",
+    "MaxMind",
+    "NetBIOS",
+    "NetworkManager",
+    "RomPager",
+    "SNMPv2c",
+    "SQLite",
+    "StatusNotifier",
+    "UPnP",
+    "WebKitGTK",
+]

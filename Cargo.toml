@@ -16,3 +16,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "ti
 unwrap_used = "warn"
 # Every `unsafe` block says, in a `// SAFETY:` comment, why it's sound.
 undocumented_unsafe_blocks = "warn"
+# Code names in docs go in backticks (product names are listed in clippy.toml),
+# and a doc opens with a short summary paragraph.
+doc_markdown = "warn"
+too_long_first_doc_paragraph = "warn"

@@ -28,6 +28,7 @@ pub fn sysfs_link_speed(iface: &str) -> Option<i64> {
 }
 
 /// Whether `iface` has physical link, from `/sys/class/net/<iface>/carrier`.
+///
 /// An unplugged Ethernet reads `0` here even while the kernel keeps a stale
 /// `linkdown` default route on it, the case `default_interface` must reject.
 ///
@@ -159,6 +160,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
 }
 
 /// The saved passphrase for the Wi-Fi network on `iface`, via NetworkManager.
+///
 /// `-s` includes secrets, which polkit gates: an authorised session gets it
 /// silently, otherwise the user sees a polkit prompt, and declining gives
 /// `None`. `ssid` is only a fallback profile name: secrets are keyed by

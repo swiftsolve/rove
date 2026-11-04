@@ -103,9 +103,11 @@ pub enum Support {
 }
 
 /// One app's network usage since Rove started watching, summed over every
-/// process with that name. Traffic to a loopback or wildcard peer is excluded,
-/// the rule the Hosts view uses (`utils::net::routable_peer_ip`). The same
-/// traffic by remote host is [`AppHosts`](crate::apps::hosts::AppHosts).
+/// process with that name.
+///
+/// Traffic to a loopback or wildcard peer is excluded, the rule the Hosts view
+/// uses (`utils::net::routable_peer_ip`). The same traffic by remote host is
+/// [`AppHosts`](crate::apps::hosts::AppHosts).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppUsage {
@@ -136,9 +138,10 @@ pub fn platform_support() -> Support {
     crate::apps::sys::support()
 }
 
-/// Why per-app usage (and, on the same session, Hosts and Traffic) is
-/// unavailable, for the UI's unsupported state: the last ETW start error on
-/// Windows; `None` once it's running, and on every other platform.
+/// Why per-app usage is unavailable, for the UI's unsupported state.
+///
+/// The last ETW start error on Windows, where Hosts and Traffic share the
+/// session; `None` once it's running, and on every other platform.
 pub fn support_detail() -> Option<String> {
     crate::apps::sys::support_detail()
 }
@@ -155,9 +158,11 @@ pub async fn sample_units() -> Option<Vec<UsageUnit>> {
     crate::apps::sys::sample_units().await
 }
 
-/// One cumulative reading for a unit of accounting. `key` identifies the unit
-/// across samples so [`AppUsageTracker`] can diff it: a socket's address pair on
-/// Linux and macOS, a process instance (PID plus generation) on Windows.
+/// One cumulative reading for a unit of accounting.
+///
+/// `key` identifies the unit across samples so [`AppUsageTracker`] can diff it:
+/// a socket's address pair on Linux and macOS, a process instance (PID plus
+/// generation) on Windows.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UsageUnit {
     pub key: String,
