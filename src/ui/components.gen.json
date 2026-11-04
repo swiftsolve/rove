@@ -1245,7 +1245,7 @@
         "title": {
           "type": "string",
           "isRequired": true,
-          "description": "What's empty: \"No devices yet\"."
+          "description": "What's empty: \"No devices found\"."
         }
       },
       "stories": [

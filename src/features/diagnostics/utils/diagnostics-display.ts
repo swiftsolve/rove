@@ -35,8 +35,11 @@ export function formatLocation(isp: IspInfo): string | null {
   return parts.length > 0 ? parts.join(', ') : null
 }
 
-/** What the screen-reader status line says: each run's start and its end. */
+/**
+ * What the screen-reader status line says: that a run finished. Its start is
+ * the page header's `status`, which announces itself, so saying it here too
+ * would read it twice.
+ */
 export function runStatusText(isRunning: boolean, hasDiagnostics: boolean): string {
-  if (isRunning) return 'Checking your connection…'
-  return hasDiagnostics ? 'Connection checks finished.' : ''
+  return !isRunning && hasDiagnostics ? 'Connection checks finished.' : ''
 }

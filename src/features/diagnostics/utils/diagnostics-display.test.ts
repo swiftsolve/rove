@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { FAILED_PING, isMeasuredLatency, type IspInfo } from '@/types'
 
-import { formatLocation, formatPercent, latencyStatus, lossStatus, sameText } from './diagnostics-display'
+import {
+  formatLocation,
+  formatPercent,
+  latencyStatus,
+  lossStatus,
+  runStatusText,
+  sameText,
+} from './diagnostics-display'
 
 function isp(place: Pick<IspInfo, 'city' | 'region' | 'country'>): IspInfo {
   return { name: null, asn: null, domain: null, publicIp: null, isVpn: false, ...place }
@@ -46,5 +53,12 @@ describe('isMeasuredLatency', () => {
     expect(isMeasuredLatency(23)).toBe(true)
     expect(isMeasuredLatency(FAILED_PING.avgMs)).toBe(false)
     expect(isMeasuredLatency(Number.POSITIVE_INFINITY)).toBe(false)
+  })
+
+  it('announces only a finished run, since the page header announces its start', () => {
+    expect(runStatusText(true, false)).toBe('')
+    expect(runStatusText(true, true)).toBe('')
+    expect(runStatusText(false, true)).toBe('Connection checks finished.')
+    expect(runStatusText(false, false)).toBe('')
   })
 })

@@ -10,7 +10,7 @@ type EmptyStateProps = {
    * the user acts (admin access needed) rather than one waiting for data.
    */
   isLocked?: boolean
-  /** What's empty: "No devices yet". */
+  /** What's empty: "No devices found". */
   title: string
   /** A line or two naming what will fill the page, or why it can't. */
   description?: ReactNode
