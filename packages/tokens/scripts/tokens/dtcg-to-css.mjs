@@ -171,7 +171,11 @@ function format({ dictionary, options }) {
     if (!isCssOnlyWritten) options.cssOnly.forEach(declare)
     isCssOnlyWritten = true
   }
-  for (const token of dictionary.allTokens.filter(isCss)) {
+  // Style Dictionary merges groups across files (focus.ring is Color, focus.offset
+  // Layout), so put each file's tokens back together, in file order.
+  const order = (token) => FILES.findIndex(([f]) => f === fileOf(token))
+  const tokens = dictionary.allTokens.filter(isCss).sort((a, b) => order(a) - order(b))
+  for (const token of tokens) {
     const file = fileOf(token)
     if (!options.dark && file !== section) {
       if (section === 'code') declareCssOnly()

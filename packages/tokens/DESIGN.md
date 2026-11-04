@@ -112,12 +112,12 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 - **Radius:** `--radius-xs` 5px, `--radius-sm` 8px, `--radius-md` 10px, `--radius-lg` 13px, `--radius-full` 999px
 - **Font sizes:** `--font-size-2xs` 10px, `--font-size-xs` 11px, `--font-size-sm` 12px, `--font-size-md` 13px, `--font-size-lg` 14px, `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px, `--font-size-3xl` 28px
 - **Font families:** `--font-family-sans` Inter, `--font-family-numeric` Questrial
-- **Focus:** `--focus-ring-width` 1px (focus ring stroke), `--focus-offset` 2px (focus ring offset)
 - **Opacity:** `--opacity-tint-xs` 8% (faintest tint), `--opacity-tint-sm` 10% (light tint), `--opacity-tint-md` 14% (tint), `--opacity-tint-lg` 22% (strong tint), `--opacity-tint-xl` 28% (strongest tint), `--opacity-high` 80% (nearly opaque), `--opacity-disabled` 40% (disabled controls)
 - **Layout:** `--rail-item-size` 38px (rail items), `--titlebar-height` 56px (title bar)
-- **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)`, `--card-header-padding-x` `var(--card-padding)`, `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)`, `--row-padding-y` 8px (data row, above and below)
+- **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)`, `--card-header-padding-x` `var(--card-padding)`, `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)`, `--row-padding-y` `var(--spacing-8)` (data row, above and below)
 - **Font weights:** `--weight-regular` 400, `--weight-medium` 500, `--weight-semibold` 600
 - **Motion:** `--duration-fast` 140ms (hovers, small changes), `--duration-normal` 220ms (panels, page changes), `--duration-spring` 450ms (a spring’s full run)
+- **Focus:** `--focus-offset` `var(--spacing-2)` (focus ring offset), `--focus-ring-width` 1px (focus ring stroke)
 
 ### Text styles
 

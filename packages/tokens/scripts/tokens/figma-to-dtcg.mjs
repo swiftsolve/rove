@@ -80,7 +80,8 @@ function figmaToken(v, mode, figmaOverride) {
  */
 function dtcgType(v) {
   if (v.type === 'COLOR') return 'color'
-  if (v.collection === 'Opacity') return 'number' // a percentage in Figma
+  // A percentage in Figma. opacity/disabled is in Layout, with the other semantic tokens.
+  if (v.collection === 'Opacity' || v.name.startsWith('opacity/')) return 'number'
   if (v.collection === 'Motion') return 'duration' // in ms
   if (v.name.startsWith('weight/')) return 'fontWeight'
   return 'dimension' // in px

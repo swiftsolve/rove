@@ -1098,17 +1098,6 @@
       }
     },
     {
-      "name": "focus/offset",
-      "collection": "Spacing",
-      "type": "FLOAT",
-      "code": "var(--focus-offset)",
-      "description": "Focus ring offset",
-      "scopes": [],
-      "values": {
-        "Value": 2
-      }
-    },
-    {
       "name": "opacity/tint-xs",
       "collection": "Opacity",
       "type": "FLOAT",
@@ -1174,19 +1163,6 @@
       }
     },
     {
-      "name": "opacity/high",
-      "collection": "Opacity",
-      "type": "FLOAT",
-      "code": "var(--opacity-high)",
-      "description": "Nearly opaque",
-      "scopes": [
-        "OPACITY"
-      ],
-      "values": {
-        "Value": 80
-      }
-    },
-    {
       "name": "level/color",
       "collection": "Capability level",
       "type": "COLOR",
@@ -1216,16 +1192,16 @@
       }
     },
     {
-      "name": "opacity/disabled",
+      "name": "opacity/high",
       "collection": "Opacity",
       "type": "FLOAT",
-      "code": "var(--opacity-disabled)",
-      "description": "Disabled controls",
+      "code": "var(--opacity-high)",
+      "description": "Nearly opaque",
       "scopes": [
         "OPACITY"
       ],
       "values": {
-        "Value": 40
+        "Value": 80
       }
     },
     {
@@ -2399,20 +2375,9 @@
         "GAP"
       ],
       "values": {
-        "Value": 8
-      }
-    },
-    {
-      "name": "focus/ring-width",
-      "collection": "Spacing",
-      "type": "FLOAT",
-      "code": "var(--focus-ring-width)",
-      "description": "Focus ring stroke",
-      "scopes": [
-        "STROKE_FLOAT"
-      ],
-      "values": {
-        "Value": 1
+        "Value": {
+          "alias": "spacing/8"
+        }
       }
     },
     {
@@ -2485,6 +2450,45 @@
       "scopes": [],
       "values": {
         "Value": 450
+      }
+    },
+    {
+      "name": "focus/offset",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--focus-offset)",
+      "description": "Focus ring offset",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "alias": "spacing/2"
+        }
+      }
+    },
+    {
+      "name": "focus/ring-width",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--focus-ring-width)",
+      "description": "Focus ring stroke",
+      "scopes": [
+        "STROKE_FLOAT"
+      ],
+      "values": {
+        "Value": 1
+      }
+    },
+    {
+      "name": "opacity/disabled",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--opacity-disabled)",
+      "description": "Disabled controls",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 40
       }
     }
   ]
