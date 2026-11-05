@@ -1,17 +1,14 @@
 # Rove
 
 A React UI (`src/`) and a Rust backend (`crates/rove-core`, behind a thin Tauri
-shell in `src-tauri/`) over a typed bridge. This file is the map, the
-procedures, the rules for every change and how it's validated. The UI's own
-rules load with its folders: `src/AGENTS.md` imports `src/README.md` and
-rove-tokens' `DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
-Other agents, read the ones your change touches first. In those guides,
-**[✓ CHECKED by `file`]** marks a rule a check enforces and names the check's file,
-so `npm run check` fails when it's broken; a rule without it is judgment.
+shell in `src-tauri/`) over a typed bridge. The UI's guides load with its
+folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens' `DESIGN.md`,
+and `src/ui/AGENTS.md` imports `src/ui/README.md`. An agent that doesn't
+follow imports opens them from the UI row below.
 
 ## What to read
 
-Read what the task needs, not everything:
+Read the rows your task matches:
 
 | Task | Read |
 | --- | --- |
@@ -49,41 +46,37 @@ Figma, `rove-tokens`, this code, and the docs that describe it.
   `../rove-tokens` and a release, to here as `@swiftsolve/rove-tokens`.
 - **A component** starts here, in `src/ui`, and its Figma component follows.
 
+### Commit only your paths
+
+Other sessions work in this checkout and commit to `master` alongside you.
+Stage and commit your own files by name, `git add -A <paths>` then
+`git commit -m "…" -- <paths>`, and leave everyone else's changes where they
+are.
+
 ## Validation
 
 ### Check your work
 
-Each stage in [What runs on its own](#what-runs-on-its-own) catches only what
-it runs, so don't leave your change to a later one: run what it needs before
-you commit. Never skip a hook with `--no-verify`; fix what it reports.
+Run what your change needs before you commit: the hooks and CI run only part
+of it (README.md: Check a change lists each stage). Fix what a hook reports.
 
 | Changed | Run |
 | --- | --- |
 | Anything | `npm run check`: typecheck, lint, `scripts/checks/`, the `scripts/gen/` freshness checks, and every Vitest test, the stories with their play functions and axe |
 | A library component, while you work | `npx vitest run --project=storybook --project=dom src/ui/<folder>`: its stories and DOM tests, in seconds |
 | Rust | `cargo test -p rove-core`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo fmt --all` |
-| How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: no check sees a wrong shade or a cramped gap. Library stories are in `25-library/`. Keep `--out` off `docs/screenshots`, which is committed |
+| How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
 | A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
-### What runs on its own
-
-| Stage | Runs |
-| --- | --- |
-| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a direct edit to a `*.gen.*` file (run `npm run gen`) |
-| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
-| Each push and pull request (CI) | `npm run check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
-| A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
-| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness, and the Figma plugin test |
-
 ### Done means
 
 - The checks for your change pass.
-- The guides' rules without the tag are reviewed: they're judgment, and
+- The guides' judgment rules, those without a ✓ CHECKED tag, are reviewed;
   `src/README.md`'s What review catches names the ones that slip most.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
 - A change a user would see (anything under `src/` that renders, or a
-  `@swiftsolve/rove-tokens` bump) is committed and the sites are resynced: the
-  `resync-sites` skill. Backend, test and tooling changes need no resync.
+  `@swiftsolve/rove-tokens` bump) is committed and resynced: the
+  `resync-sites` skill.

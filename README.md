@@ -184,10 +184,18 @@ cargo clippy --workspace --all-targets -- -D warnings   # the Rust lints (Cargo.
 cargo fmt --all              # the Rust layout (rustfmt.toml)
 ```
 
-CI runs `npm run check` and the service layer's Rust checks on every push and
-pull request, on Linux; a release tag also lints, tests and builds the app on
-all three OSes. What to run for each kind of change, and what runs on
-its own at each stage, are in [AGENTS.md](AGENTS.md#check-your-work).
+Each stage runs part of this on its own:
+
+| Stage | Runs |
+| --- | --- |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a direct edit to a `*.gen.*` file (run `npm run gen`) |
+| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
+| Each push and pull request (CI) | `npm run check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
+| A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
+| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness, and the Figma plugin test |
+
+What to run yourself for each kind of change is in
+[AGENTS.md](AGENTS.md#check-your-work).
 
 ### Release build
 
