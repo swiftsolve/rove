@@ -14,7 +14,7 @@ agents, open the file.
 
 | Task | Skill |
 | --- | --- |
-| Change a token, text style or shadow, release it, and take it up in Rove | `.claude/skills/change-token/SKILL.md` |
+| Add or change a token, text style or shadow, release it, and take it up in Rove | `.claude/skills/update-tokens/SKILL.md` |
 
 README.md's Update the tokens and Release are the same run for people.
 
