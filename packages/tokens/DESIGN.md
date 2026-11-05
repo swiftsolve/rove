@@ -1,8 +1,14 @@
 # Rove design
 
-How to build Rove's interface with these tokens, for anyone writing Rove UI, people and coding agents alike. The [token reference](#token-reference) at the end lists every value; [`docs/rationale.md`](docs/rationale.md) explains why they are what they are.
+How to build Rove's interface with these tokens, for anyone writing Rove UI,
+people and coding agents alike. The [token reference](#token-reference) at the
+end lists every value; [`docs/rationale.md`](docs/rationale.md) explains why
+they are what they are.
 
-**[✓ CHECKED by `file`]** marks a rule a check enforces: break it and `npm run check` fails. The file it names is the check: Rove's are in its `scripts/`, the tokens' own in this repo's. A rule without the tag is judgment: no check catches a slip, so look at the result in both themes.
+**[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
+`npm run check` fails. The file it names is the check: Rove's are in its
+`scripts/`, the tokens' own in this repo's. A rule without the tag is judgment:
+no check catches a slip, so look at the result in both themes.
 
 ## Setup
 
@@ -10,59 +16,95 @@ How to build Rove's interface with these tokens, for anyone writing Rove UI, peo
 @import '@swiftsolve/rove-tokens/tokens.css';
 ```
 
-Dark is the default, on `:root`. Add the `theme-light` class to the root element for Light. Every token has both values, so a screen that only uses tokens themes itself.
+Dark is the default, on `:root`. Add the `theme-light` class to the root element
+for Light. Every token has both values, so a screen that only uses tokens themes
+itself.
 
 ## Rules
 
-- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed in. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`], the second for a misspelt name.
-- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. [✓ CHECKED by `tokens/build.mjs`].
-- **Name by job, not by look.** Pick `--bg-surface` because it's content on the backdrop, not because it's the right grey. The Palette shades (`neutral/850`) aren't CSS variables, on purpose.
+- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font
+  sizes typed in. If nothing fits, the design needs a new token in Figma, not a
+  one-off in code. The only exceptions are the off-scale lengths in [Spacing and
+  shape](#spacing-and-shape).
+  [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`],
+  the second for a misspelt name.
+- **Every token says what it's for.** Its Figma description is its use, listed
+  in the [token reference](#token-reference). Pick by that, not by the value.
+  [✓ CHECKED by `tokens/build.mjs`].
+- **Name by job, not by look.** Pick `--bg-surface` because it's content on the
+  backdrop, not because it's the right grey. The Palette shades (`neutral/850`)
+  aren't CSS variables, on purpose.
 
 ### Surfaces
 
-- **Backgrounds are layers; overlays sit on one.** Why: [rationale](docs/rationale.md).
+- **Backgrounds are layers; overlays sit on one.** Why:
+  [rationale](docs/rationale.md).
   - A `--bg-*` is opaque, and each stacks on the last (base, surface, inset).
-  - An `--overlay-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--overlay-hover`.
-  - A `*-solid` is the opaque colour under a white label (`--accent-solid`, `--status-negative-solid`).
+  - An `--overlay-*` is see-through, laid over whatever background is below, so
+    a hovered row keeps its card's `--bg-surface` and adds `--overlay-hover`.
+  - A `*-solid` is the opaque colour under a white label (`--accent-solid`,
+    `--status-negative-solid`).
 - Three backgrounds:
   - `--bg-base` for the backdrop;
   - `--bg-surface` for content that sits on it (cards, dialogs);
-  - `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons).
+  - `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon
+    buttons).
 - Four more for their one job:
   - `--bg-chrome` is the title bar and rail, a half step off the backdrop;
   - `--bg-popover` is a step lighter in Dark, for tooltips and menus;
   - `--bg-hover` is a hovered surface;
   - `--bg-scrim` goes behind dialogs.
-- Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use `--shadow-raised`.
-- Every line is `--border-default`: hairlines, and the edges of menus, tooltips and dialogs.
-- For hovers, chips and tracks on a surface, use the `--overlay-*` tokens. They flip with the theme, so they stay visible on both.
-  - By strength: `--overlay-faint` (3%), `--overlay-subtle` (5%), `--overlay-default` (7%), `--overlay-strong` (16%).
-  - A hovered row or expandable header uses `--overlay-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it.
+- Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus
+  use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use
+  `--shadow-raised`.
+- Every line is `--border-default`: hairlines, and the edges of menus, tooltips
+  and dialogs.
+- For hovers, chips and tracks on a surface, use the `--overlay-*` tokens. They
+  flip with the theme, so they stay visible on both.
+  - By strength: `--overlay-faint` (3%), `--overlay-subtle` (5%),
+    `--overlay-default` (7%), `--overlay-strong` (16%).
+  - A hovered row or expandable header uses `--overlay-hover`: 3% white in Dark,
+    2% ink in Light, so in Light it stays lighter than an open `--bg-inset`
+    panel below it.
   - Selected text is `--overlay-selection`.
 
 ### Text and icons
 
-- `--text-primary` for content, `--text-secondary` for supporting lines, `--text-tertiary` for the quietest text and for icons by default.
+- `--text-primary` for content, `--text-secondary` for supporting lines,
+  `--text-tertiary` for the quietest text and for icons by default.
 - On a solid (accent or negative), labels and icons use `--text-on-solid`.
-- Words in the accent (a link, a highlighted value) use `--text-accent`, on a surface or on `--accent-muted` (a selected item, a tinted button).
-- Each text, status and accent token clears WCAG AA (words 4.5:1, icons and lines 3:1) on every background this page puts it on, in both themes. [✓ CHECKED by `checks/contrast.mjs`]. Picking the token for the job is still judgment: a `--status-*` shade under words passes no check.
+- Words in the accent (a link, a highlighted value) use `--text-accent`, on a
+  surface or on `--accent-muted` (a selected item, a tinted button).
+- Each text, status and accent token clears WCAG AA (words 4.5:1, icons and
+  lines 3:1) on every background this page puts it on, in both themes.
+  [✓ CHECKED by `checks/contrast.mjs`]. Picking the token for the job is still
+  judgment: a `--status-*` shade under words passes no check.
 
 ### Accent and buttons
 
-- `--accent-default` is for accent icons and lines. It's too light for words in Light mode, and under a white label.
-- An accent icon or line that responds to the pointer uses `--accent-hover` and `--accent-press`. They aren't for solids: a solid button has its own pair.
-- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers deepen, never lighten, so the white label keeps its contrast. [✓ CHECKED by `checks/contrast.mjs`].
-- A solid red control (a solid negative button, the window close hover) uses `--status-negative-solid` and `--status-negative-solid-hover`.
+- `--accent-default` is for accent icons and lines. It's too light for words in
+  Light mode, and under a white label.
+- An accent icon or line that responds to the pointer uses `--accent-hover` and
+  `--accent-press`. They aren't for solids: a solid button has its own pair.
+- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers
+  deepen, never lighten, so the white label keeps its contrast.
+  [✓ CHECKED by `checks/contrast.mjs`].
+- A solid red control (a solid negative button, the window close hover) uses
+  `--status-negative-solid` and `--status-negative-solid-hover`.
 
 ### Status
 
-- `--status-*` (positive, good, warning, poor, negative) colour icons, bars and dots.
-- Words in a status colour use `--text-*` of the same name, which also clear a tint of their hue (a badge). The `--status-*` shades are too light for text in Light mode. [✓ CHECKED by `checks/contrast.mjs`], for the tokens.
+- `--status-*` (positive, good, warning, poor, negative) colour icons, bars and
+  dots.
+- Words in a status colour use `--text-*` of the same name, which also clear a
+  tint of their hue (a badge). The `--status-*` shades are too light for text in
+  Light mode. [✓ CHECKED by `checks/contrast.mjs`], for the tokens.
 - Download and upload in charts are `--series-down` and `--series-up`.
 
 ### Tints and opacity
 
-Tints are a colour mixed with transparent at one of the shared strengths, so a tinted tile reads the same everywhere:
+Tints are a colour mixed with transparent at one of the shared strengths, so a
+tinted tile reads the same everywhere:
 
 ```css
 background: color-mix(in srgb, var(--status-positive) var(--opacity-tint-md), transparent);
@@ -70,44 +112,69 @@ background: color-mix(in srgb, var(--status-positive) var(--opacity-tint-md), tr
 
 Pick the strength by the tint's size and job:
 
-- `--opacity-tint-xs`: a wide, faint wash, such as the top of a chart's shaded area.
+- `--opacity-tint-xs`: a wide, faint wash, such as the top of a chart's shaded
+  area.
 - `--opacity-tint-sm`: a panel or banner in a status colour.
-- `--opacity-tint-md`: chips, badges and tiles at rest, and the edge of an `sm` panel.
+- `--opacity-tint-md`: chips, badges and tiles at rest, and the edge of an `sm`
+  panel.
 - `--opacity-tint-lg`: an `md` tint hovered, and unlit meter bars.
 - `--opacity-tint-xl`: the strongest wash, the download series' shaded area.
 
-Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that should stay nearly solid, like a chart line behind another.
+Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that
+should stay nearly solid, like a chart line behind another.
 
 ### Spacing and shape
 
-- Every gap, padding and margin is a `--spacing-*` step. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
-- Cards use `--card-padding` on every side. The rail and the content column share the side inset `--spacing-12`.
-- A card header is `--card-header-height` tall. A header-like strip that can grow with its content takes `--card-header-min-height` as its minimum instead.
+- Every gap, padding and margin is a `--spacing-*` step.
+  [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+- Cards use `--card-padding` on every side. The rail and the content column
+  share the side inset `--spacing-12`.
+- A card header is `--card-header-height` tall. A header-like strip that can
+  grow with its content takes `--card-header-min-height` as its minimum instead.
 - Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
-  - `xs` for small controls inside others (menu items, segments, window buttons);
+  - `xs` for small controls inside others (menu items, segments, window
+    buttons);
   - `sm` for controls;
   - `md` for nav items and the page-header chip;
   - `lg` for cards and dialogs;
-  - `full` for pills and dots, and for a thin bar or line: it rounds to half its width.
-- **Off the scale only when something else sets the length**, and say why where it's used:
-  - spacing that lines up with an icon's ink rather than its box, or gives back a 1px border;
-  - spacing that lines up with something that isn't spacing, like an icon's width or a label column;
+  - `full` for pills and dots, and for a thin bar or line: it rounds to half its
+    width.
+- **Off the scale only when something else sets the length**, and say why where
+  it's used:
+  - spacing that lines up with an icon's ink rather than its box, or gives back
+    a 1px border;
+  - spacing that lines up with something that isn't spacing, like an icon's
+    width or a label column;
   - a corner that copies a shape from outside the system, like the app icon's.
 
-  A value that's just "a bit more" isn't an exception: take the nearest step, or propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails an off-scale value until its reason is in its `ALLOWED` list.
-- Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed one is fine.
+  A value that's just "a bit more" isn't an exception: take the nearest step, or
+  propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it
+  fails an off-scale value until its reason is in its `ALLOWED` list.
+- Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed
+  one is fine.
 
 ### Type
 
-- Set text with a text style's class from `text-styles.css` (`.type-heading-large`), or all four of its `--type-<style>-*` variables, never a font size alone. Each style's use is in [Text styles](#text-styles). [✓ CHECKED by Rove's `checks/text-styles.mjs`].
-- Numbers that are data (speeds, totals, chart labels) use the Number styles (`number-*`), set in Questrial; everything else is Inter.
+- Set text with a text style's class from `text-styles.css`
+  (`.type-heading-large`), or all four of its `--type-<style>-*` variables,
+  never a font size alone. Each style's use is in [Text styles](#text-styles).
+  [✓ CHECKED by Rove's `checks/text-styles.mjs`].
+- Numbers that are data (speeds, totals, chart labels) use the Number styles
+  (`number-*`), set in Questrial; everything else is Inter.
 
 ### Focus and motion
 
-- Keyboard focus is `outline: var(--focus-outline)` with `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it inside instead, with `--focus-inset`.
-- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a raw curve, and a duration typed where a token has the value.
-  - A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after.
-  - A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike.
+- Keyboard focus is `outline: var(--focus-outline)` with
+  `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it
+  inside instead, with `--focus-inset`.
+- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or
+  `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a
+  raw curve, and a duration typed where a token has the value.
+  - A panel resizing to its content springs, with
+    `var(--duration-spring) var(--ease-spring)`: it arrives within
+    `--duration-normal`, and its slight overshoot settles after.
+  - A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and
+    back in alike.
 
 ### Icons
 
@@ -121,7 +188,17 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ## Changing the design
 
-Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma:export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma:check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` directly. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#release) a version, update Rove to it, and resync the sites that embed Rove. The `update-tokens` skill (`.claude/skills/update-tokens/SKILL.md`) runs it all.
+Tokens are designed in Figma and released from the rove-tokens repo, one way:
+change a token in Figma, export it with the plugin in `figma-plugin/` into
+`src/figma/` (or `npm run figma:export` through the Figma MCP), run
+`npm run build`, and check the repo matches the file (`npm run figma:check`).
+Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the
+steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` directly. Shadows are
+Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't
+hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then
+[release](README.md#release) a version, update Rove to it, and resync the sites
+that embed Rove. The `update-tokens` skill
+(`.claude/skills/update-tokens/SKILL.md`) runs it all.
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
