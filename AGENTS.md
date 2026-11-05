@@ -18,7 +18,7 @@ agents, open the file.
 | --- | --- |
 | Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
 | Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
-| Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
+| Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
@@ -48,7 +48,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 | How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: no check sees a wrong shade or a cramped gap. Library stories are in `25-library/`. Keep `--out` off `docs/screenshots`, which is committed |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
-| A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `change-token` skill) |
+| A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
 ### Done means
 

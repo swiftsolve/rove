@@ -27,7 +27,7 @@ agents and people, open the file.
 | Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
 | Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
 | Add a library component, or change one | `.claude/skills/add-library-component/SKILL.md` |
-| Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
+| Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
 | Resync the sites after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules
