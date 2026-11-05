@@ -8,7 +8,7 @@ export function Page({ title, intro, children }) {
   return (
     <main className="page">
       <header className="page-header">
-        <p className="page-overline">Foundations</p>
+        <p className="page-label">Foundations</p>
         <h1 className="page-title">{title}</h1>
         {intro && <p className="page-intro">{intro}</p>}
       </header>

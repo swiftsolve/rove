@@ -85,8 +85,8 @@
       }
     },
     {
-      "name": "Overline",
-      "description": "Uppercase labels above values. Code: .type-overline",
+      "name": "Label/Field",
+      "description": "Labels naming a value, field or section. Code: .type-label-field",
       "fontFamily": "Inter",
       "fontStyle": "Medium",
       "fontWeight": 500,

@@ -10,13 +10,13 @@
   line-height: 1.45;
 }
 
-.page-overline {
+.page-label {
   margin: 0;
   color: var(--text-accent);
-  font-size: var(--type-overline-size);
-  font-weight: var(--type-overline-weight);
-  line-height: var(--type-overline-line-height);
-  letter-spacing: var(--type-overline-letter-spacing);
+  font-size: var(--type-label-field-size);
+  font-weight: var(--type-label-field-weight);
+  line-height: var(--type-label-field-line-height);
+  letter-spacing: var(--type-label-field-letter-spacing);
   text-transform: uppercase;
 }
 
@@ -39,8 +39,8 @@
   margin-top: 72px;
 }
 
-/* A page's primitive or semantic half: an overline and an intro above the
-   sections it holds. Its overline is the page's, the Overline text style. */
+/* A page's primitive or semantic half: a label and an intro above the
+   sections it holds. Its label is the page's, the Label/Field text style. */
 .group {
   margin-top: 72px;
 }
@@ -48,14 +48,14 @@
 .group-title {
   margin: 0;
   color: var(--text-accent);
-  font-size: var(--type-overline-size);
-  font-weight: var(--type-overline-weight);
-  line-height: var(--type-overline-line-height);
-  letter-spacing: var(--type-overline-letter-spacing);
+  font-size: var(--type-label-field-size);
+  font-weight: var(--type-label-field-weight);
+  line-height: var(--type-label-field-line-height);
+  letter-spacing: var(--type-label-field-letter-spacing);
   text-transform: uppercase;
 }
 
-/* 12px under the overline, as Figma's group headings (spacing/12). */
+/* 12px under the label, as Figma's group headings (spacing/12). */
 .group-intro {
   max-width: 820px;
   margin: 12px 0 0;

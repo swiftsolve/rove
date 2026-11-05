@@ -118,7 +118,7 @@ function textStyleToken(style) {
       lineHeight: bound('lineHeight', lh.unit === 'PERCENT' ? round(lh.value / 100) : round(lh.value / fontSize)),
     },
     ...(style.description ? { $description: style.description } : {}),
-    // DTCG typography has no text case, so Overline's uppercase rides in an extension.
+    // DTCG typography has no text case, so Label/Field's uppercase rides in an extension.
     ...(style.textCase ? { $extensions: { [EXTENSION]: { textCase: style.textCase } } } : {}),
   }
 }

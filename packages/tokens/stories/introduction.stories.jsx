@@ -534,7 +534,7 @@ function IntroductionPage() {
   return (
     <main className="page intro">
       <header className="intro-hero">
-        <p className="page-overline">Design tokens</p>
+        <p className="page-label">Design tokens</p>
         <h1 className="page-title intro-title">
           <RoveMark className="intro-hero-mark" />
           Rove Tokens

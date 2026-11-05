@@ -95,7 +95,7 @@ async function exportTextStyles() {
         fontSize: s.fontSize,
         lineHeight: exportLineHeight(s.lineHeight),
         letterSpacing: exportLetterSpacing(s.letterSpacing),
-        // Only when set, such as Overline's UPPER.
+        // Only when set, such as Label/Field's UPPER.
         ...(s.textCase && s.textCase !== 'ORIGINAL' ? { textCase: s.textCase } : {}),
         boundVariables: await boundNames(s),
       })),

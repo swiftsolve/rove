@@ -839,7 +839,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-2xs)",
-      "description": "Badges, overlines, chart axes",
+      "description": "Badges, field labels, chart axes",
       "scopes": [
         "FONT_SIZE"
       ],

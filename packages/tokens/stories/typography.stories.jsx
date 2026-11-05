@@ -22,7 +22,7 @@ const SPECIMENS = {
   'label-menu': 'Edit',
   'label-default': 'Add service',
   'label-small': 'Wi‑Fi',
-  overline: 'Download',
+  'label-field': 'Download',
   'number-display': '4.4',
   'number-large': '4.90',
   'number-default': 'Wi‑Fi 6 (802.11ax)',

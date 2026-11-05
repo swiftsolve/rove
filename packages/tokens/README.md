@@ -58,7 +58,7 @@ Every colour lives once in the Palette collection (`neutral/850`, `blue/450`; hi
 
 Each Figma text style becomes four tokens: `--type-<style>-size`, `-weight`, `-line-height` (a unitless ratio) and `-letter-spacing` (in `em`). `Number/Display` gives `--type-number-display-size` and so on. A size bound to a variable comes through as that variable (`var(--font-size-3xl)`).
 
-`text-styles.css` applies a style whole: `.type-heading-large` sets the font family and all four, plus the text case (Overline is uppercase). The classes set no colour and sit in `@layer components`, so Tailwind utilities on the same element still win.
+`text-styles.css` applies a style whole: `.type-heading-large` sets the font family and all four, plus the text case (Label/Field is uppercase). The classes set no colour and sit in `@layer components`, so Tailwind utilities on the same element still win.
 
 ### DTCG files
 
