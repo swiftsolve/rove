@@ -121,7 +121,7 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 
 - **Spacing:** `--spacing-<n>`, n in px: 2 (meter gaps), 4 (arrow to value, badge padding), 6 (dot to label), 8 (icon to title), 10 (between cards), 12 (side and top inset), 14 (card padding), 16 (between readouts), 20 (content bottom inset)
 - **Radius:** `--radius-xs` 5px (window buttons, menu items, segments), `--radius-sm` 8px (buttons, inputs, tooltips, icon tiles), `--radius-md` 10px (nav items, page-header chip), `--radius-lg` 13px (cards and dialogs), `--radius-full` 999px (badges, pills, dots)
-- **Font sizes:** `--font-size-2xs` 10px (badges, chart axes), `--font-size-xs` 11px (captions, overlines, small labels), `--font-size-sm` 12px (helper text, menus, button labels), `--font-size-md` 13px (body text, data values), `--font-size-lg` 14px (card headings), `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px (page titles, stat totals), `--font-size-3xl` 28px (live speeds)
+- **Font sizes:** `--font-size-2xs` 10px (badges, overlines, chart axes), `--font-size-xs` 11px (captions, small labels), `--font-size-sm` 12px (helper text, menus, button labels), `--font-size-md` 13px (body text, data values), `--font-size-lg` 14px (card headings), `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px (page titles, stat totals), `--font-size-3xl` 28px (live speeds)
 - **Font families:** `--font-family-sans` Inter (interface text), `--font-family-numeric` Questrial (numbers)
 - **Opacity:** `--opacity-tint-xs` 8% (faintest tint), `--opacity-tint-sm` 10% (light tint), `--opacity-tint-md` 14% (tint), `--opacity-tint-lg` 22% (strong tint), `--opacity-tint-xl` 28% (strongest tint), `--opacity-high` 80% (nearly opaque), `--opacity-disabled` 40% (disabled controls)
 - **Layout:** `--rail-item-size` 38px (rail items), `--titlebar-height` 56px (title bar)
@@ -140,7 +140,7 @@ Apply a style with its class from `text-styles.css`. Each class reads four varia
 | Heading/Medium | `.type-heading-medium` | 15px 600 | Dialog titles. |
 | Heading/Small | `.type-heading-small` | 14px 600 | Card headings. |
 | Body/Default | `.type-body-default` | 13px 400 | Body text. |
-| Overline | `.type-overline` | 11px 500 | Uppercase labels above values. |
+| Overline | `.type-overline` | 10px 500 | Uppercase labels above values. |
 | Caption | `.type-caption` | 11px 400 | Live badge, captions, footer hints. |
 | Label/Large | `.type-label-large` | 12px 600 | Solid button labels. In code: Button variant=solid |
 | Number/Display | `.type-number-display` | 28px 400, Questrial | Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
