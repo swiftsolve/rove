@@ -1,0 +1,658 @@
+/* Introduction: the landing page. */
+
+/* Introduction: the landing page, its pipeline diagram and the page cards. */
+
+/* The Introduction sits on the app's background, as the Rove Components
+   Storybook does, so its surface cards stand off it; the token pages keep the
+   Figma file's white. */
+html:has(.intro),
+html:has(.intro) body {
+  background: var(--bg-base);
+}
+
+/* Every card on the page keeps one rhythm: 20px in, 16px from icon to title, 6px from title to text. */
+.intro {
+  /* One gap between every card on the page, and between the diagram's rows. */
+  --intro-gap: 32px;
+  --intro-card-pad: 20px;
+  --intro-icon-gap: 16px;
+  --intro-text-gap: 6px;
+}
+
+/* A code chip breaks only between its parts, after a slash, never inside a name
+   (text-styles.css at its hyphen). */
+.intro-code-part {
+  white-space: nowrap;
+}
+
+/* It's read more than the token pages, so its section intros are a step up. */
+.intro .section-intro {
+  font-size: var(--font-size-xl);
+}
+
+.intro-code {
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--overlay-default);
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.86em;
+}
+
+.intro-package {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
+  font-size: var(--font-size-xl);
+}
+
+/* The package name opens it on npm: the chip as before, in the accent on hover. */
+.intro-package-link {
+  border-radius: var(--radius-xs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.intro-package-link .intro-code {
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.intro-package-link:hover .intro-code {
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+.intro-version {
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  background: var(--accent-muted);
+  color: var(--text-accent);
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+}
+
+.intro-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.intro-links a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+/* A linked title reads like the others; the underline on hover says it's a link. */
+.intro-item-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.intro-rove-mark {
+  color: var(--text-accent);
+}
+
+/* The Rove mark beside the page title, as the app's title bar shows it. */
+.intro-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.intro-hero-mark {
+  flex: none;
+  width: 44px;
+  height: 39px;
+}
+
+.intro-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+/* The accent tint, as the package chip takes; the border fades into it. */
+.intro-links a:hover {
+  border-color: transparent;
+  background: var(--accent-muted);
+}
+
+.intro-links .intro-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.intro-item-name a:hover {
+  text-decoration: underline;
+}
+
+.intro a:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+.intro-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+/* The chevron between two marks (Figma, then the JSON it becomes): smaller and quieter. */
+.intro-icon-step {
+  width: 16px;
+  color: var(--text-tertiary);
+}
+
+/* The diagram: a label column, then the four stages; each pipeline is a row. */
+
+.intro-diagram {
+  --intro-label: 168px;
+  display: grid;
+  gap: var(--intro-gap);
+  margin: 0;
+}
+
+.intro-stages,
+.intro-pipeline {
+  display: grid;
+  grid-template-columns: var(--intro-label) 1fr;
+  column-gap: 24px;
+}
+
+/* The stage labels head their columns, so they sit 12px over the cards, closer than the rows sit to each other. */
+.intro-stages {
+  margin-bottom: calc(12px - var(--intro-gap));
+}
+
+/* The stage labels sit on the same grid as the cards, so each starts at its column's edge. */
+.intro-stage-columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--intro-gap);
+}
+
+.intro-stage {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.intro-stage-inline {
+  display: none;
+}
+
+.intro-pipeline-title h3 {
+  margin: 0;
+  color: var(--text-accent);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.intro-pipeline-title p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
+}
+
+.intro-steps,
+.intro-consumers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--intro-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intro-consumers {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.intro-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--intro-icon-gap);
+  padding: var(--intro-card-pad);
+  border-radius: 12px;
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
+}
+
+.intro-icons {
+  display: flex;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+
+/* The arrow into a step: a dashed line and an open chevron, level with the icons'
+   centre, running the whole gap from card to card, in the accent. */
+.intro-node.has-flow {
+  --intro-arrow-y: calc(var(--intro-card-pad) + 12px); /* padding, half the 24px icon */
+  --intro-arrow-weight: 1.5px;
+  --intro-arrow-head: 8px;
+  --intro-arrow-head-weight: 2px;
+  --intro-arrow-dash: var(--accent-default) 0 4px, transparent 4px 7px;
+}
+
+.intro-node.has-flow::before {
+  position: absolute;
+  top: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
+  right: 100%;
+  width: var(--intro-gap);
+  height: var(--intro-arrow-weight);
+  background: repeating-linear-gradient(to left, var(--intro-arrow-dash));
+  content: '';
+}
+
+.intro-node.has-flow::after {
+  position: absolute;
+  top: calc(var(--intro-arrow-y) - var(--intro-arrow-head) / 2);
+  right: 100%;
+  width: var(--intro-arrow-head);
+  height: var(--intro-arrow-head);
+  box-sizing: border-box;
+  border-top: var(--intro-arrow-head-weight) solid var(--accent-default);
+  border-right: var(--intro-arrow-head-weight) solid var(--accent-default);
+  border-top-right-radius: 1px;
+  transform: rotate(45deg);
+  content: '';
+}
+
+/* A step that skips a stage reaches back across the empty column too. */
+.intro-node.has-skip::before {
+  width: calc(100% + var(--intro-gap) * 2);
+}
+
+.intro-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--intro-text-gap);
+}
+
+.intro-item-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--weight-semibold);
+}
+
+/* A code chip's box hangs lower than plain text's letters, so a title that's a
+   chip takes 2px more to leave the same visible gap above its description. */
+.intro-item-name:has(> code) {
+  margin-bottom: 2px;
+}
+
+.intro-item-body {
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
+}
+
+/* Why */
+
+/* Explore */
+
+.intro-explore {
+  display: grid;
+  /* Four across, then two, then one, so no card is left alone on a row. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--intro-gap);
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intro-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--intro-text-gap);
+  height: 100%;
+  box-sizing: border-box;
+  /* The stage runs edge to edge across the top; the text keeps the card's padding. */
+  padding: 0 0 var(--intro-card-pad);
+  overflow: hidden;
+  border-radius: 12px;
+  /* A surface card, as Rove's are, with its specimen set into it as an inset well. */
+  background: var(--bg-surface);
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+/* As the Rove Components cards: the panel shadow on hover. */
+.intro-card:hover {
+  box-shadow: var(--shadow-panel);
+}
+
+/* The stage: an inset well across the card's top, the specimen in it. */
+.intro-specimen {
+  display: flex;
+  align-items: center;
+  height: 120px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 var(--intro-card-pad);
+  overflow: hidden;
+  margin-bottom: calc(var(--intro-icon-gap) - var(--intro-text-gap));
+  background: var(--bg-inset);
+}
+
+/* Only the Explore cards' titles: the Principles cards share the class and keep their own padding. */
+.intro-card > .intro-card-title {
+  padding: 0 var(--intro-card-pad);
+}
+
+.intro-card-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.intro-card-body {
+  /* The card's padding, and clear of the arrow beside it. */
+  padding: 0 56px 0 var(--intro-card-pad);
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
+}
+
+/* The arrow at the bottom right, level with the text, as on the Rove Components cards. */
+.intro-card-arrow {
+  position: absolute;
+  right: var(--intro-card-pad);
+  bottom: var(--intro-card-pad);
+  color: var(--text-tertiary);
+  /* The slide gets the longer duration and its own layer, so 4px glides in sub-pixel
+     steps instead of jumping a pixel a frame. */
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    translate var(--duration-normal) var(--ease-out);
+  will-change: translate;
+}
+
+/* A touch under the 24px icons elsewhere on the page. */
+.intro-card-arrow .intro-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.intro-card:hover .intro-card-arrow,
+.intro-card:focus-visible .intro-card-arrow {
+  color: var(--text-accent);
+  translate: 4px 0;
+}
+
+/* The cover's palette row, as overlapping circles; the ring is the card, so each reads apart. */
+.intro-swatches {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.intro-swatches span {
+  flex: 0 1 auto;
+  box-sizing: border-box;
+  width: 36px;
+  min-width: 18px;
+  aspect-ratio: 1;
+  border: 2px solid var(--bg-inset);
+  border-radius: var(--radius-full);
+}
+
+.intro-swatches span + span {
+  margin-left: -8px;
+}
+
+.intro-type-pair {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.intro-type {
+  font-size: 44px;
+  line-height: 1;
+}
+
+.intro-effects {
+  display: flex;
+  min-width: 0;
+  gap: 14px;
+  align-items: center;
+}
+
+.intro-radii {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 6px;
+}
+
+.intro-radii span {
+  flex: 0 1 auto;
+  width: 28px;
+  min-width: 18px;
+  aspect-ratio: 1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-default) 35%, transparent);
+}
+
+.intro-raised {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.intro-bars {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intro-bars span {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent-default);
+}
+
+/* Rove's speed test progress bar: the accent squiggle scrolls one 40px
+   wavelength a second, as WavyProgress does; the track is the accent at 24%. */
+.intro-wavy {
+  overflow: visible;
+  /* Scales as one, so the wave keeps its shape in a narrow card. */
+  max-width: 100%;
+  height: auto;
+}
+
+.intro-wavy-wave {
+  fill: none;
+  stroke: var(--accent-default);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: intro-wavy-scroll 1s linear infinite;
+}
+
+@keyframes intro-wavy-scroll {
+  to {
+    transform: translateX(40px);
+  }
+}
+
+.intro-wavy-track {
+  stroke: var(--accent-default);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.24;
+}
+
+.intro-wavy-dot {
+  fill: var(--accent-default);
+}
+
+/* Hover fills the bar: the clip and the dot run to the end and the track shrinks into it. */
+.intro-wavy-clip,
+.intro-wavy-dot,
+.intro-wavy-track {
+  transition-duration: 0.9s;
+  transition-timing-function: var(--ease-out);
+}
+
+.intro-wavy-clip {
+  transition-property: width;
+}
+
+.intro-wavy-dot {
+  transition-property: cx;
+}
+
+.intro-wavy-track {
+  transform-box: fill-box;
+  transform-origin: right center;
+  transition-property: transform, opacity;
+}
+
+.intro-card:hover .intro-wavy-clip {
+  width: 211px;
+}
+
+.intro-card:hover .intro-wavy-dot {
+  cx: 211px;
+}
+
+.intro-card:hover .intro-wavy-track {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+/* The principles: cards like the pages', without a link. */
+.intro-principle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--intro-text-gap);
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--intro-card-pad);
+  border-radius: 12px;
+  /* Surface, as the Explore cards are, so every card on the page reads alike. */
+  background: var(--bg-surface);
+}
+
+.intro-principle-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: calc(var(--intro-icon-gap) - var(--intro-text-gap));
+  border-radius: var(--radius-md);
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+/* The principles' icons are ideas, not products, so they're one set: line icons on an accent tile. */
+/* A heavier line than the cards' icons, so it holds up on the tinted tile. */
+.intro-principle-icon .intro-icon {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+.intro-principle-body {
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
+}
+
+/* Narrow: the stages stack, each step names its stage, and arrows point down. */
+@media (max-width: 1180px) {
+  .intro {
+    --intro-gap: 24px;
+  }
+
+  .intro-stages {
+    display: none;
+  }
+
+  .intro-pipeline {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+
+  .intro-steps,
+  .intro-consumers {
+    grid-template-columns: 1fr;
+    row-gap: var(--intro-gap);
+  }
+
+  .intro-steps .intro-node {
+    grid-column: auto !important;
+  }
+
+  .intro-stage-inline {
+    display: block;
+  }
+
+  .intro-node.has-flow::before,
+  .intro-node.has-skip::before {
+    top: auto;
+    right: auto;
+    bottom: 100%;
+    left: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
+    width: var(--intro-arrow-weight);
+    height: var(--intro-gap);
+    background: repeating-linear-gradient(to top, var(--intro-arrow-dash));
+  }
+
+  .intro-node.has-flow::after {
+    top: auto;
+    right: auto;
+    bottom: 100%;
+    left: calc(var(--intro-arrow-y) - var(--intro-arrow-head) / 2);
+    transform: rotate(135deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-card-arrow {
+    transition: none;
+  }
+
+  .intro-wavy-wave {
+    animation: none;
+  }
+
+  .intro-wavy-clip,
+  .intro-wavy-dot,
+  .intro-wavy-track {
+    transition: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .intro-explore {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .intro-explore {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

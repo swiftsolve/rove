@@ -1,3 +1,5 @@
+import './introduction.css'
+
 import { useEffect, useRef, useState } from 'react'
 
 import designPackage from '../package.json'

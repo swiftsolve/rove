@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 
 // The building blocks of every page, laid out as the Figma file's Foundations
-// pages are and styled in stories.css with the tokens themselves.
+// pages are and styled with the tokens themselves: stories.css for what pages
+// share, and a CSS file per page beside its stories.
 
 export function Page({ title, intro, children }) {
   return (

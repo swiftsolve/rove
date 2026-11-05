@@ -1,3 +1,5 @@
+import './motion.css'
+
 import { useEffect, useState } from 'react'
 
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'

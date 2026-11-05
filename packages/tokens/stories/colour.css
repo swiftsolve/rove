@@ -1,0 +1,170 @@
+/* Colour: a colour in each theme, the palette families and swatches, and the
+   icon tone and capability level panels. */
+
+/* A colour in one theme: the theme's surface, framing the colour. */
+
+.mode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mode-frame {
+  display: flex;
+  flex: none;
+  width: 76px;
+  height: 48px;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid;
+  border-radius: 10px;
+}
+
+.mode-swatch,
+.mode-text {
+  flex: 1;
+  border-radius: 6px;
+}
+
+/* "Aa" in Heading/Large, as the Figma page's specimens are. */
+.mode-text {
+  display: grid;
+  place-items: center;
+  font-size: var(--type-heading-large-size);
+  font-weight: var(--type-heading-large-weight);
+  line-height: var(--type-heading-large-line-height);
+  letter-spacing: var(--type-heading-large-letter-spacing);
+}
+
+.mode-value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--text-secondary);
+}
+
+.mode-ref {
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* Palette: the Figma page's sizes and gaps. Its text is auto line height, so
+   these are line-height: normal. */
+
+.family + .family {
+  margin-top: 32px;
+}
+
+.family-name {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0 0 10px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--weight-medium);
+  line-height: normal;
+}
+
+.swatch-row + .swatch-row {
+  margin-top: 24px;
+}
+
+.swatch-row-caption {
+  margin: 0 0 8px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  line-height: normal;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 12px;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  /* Wider than the chip, so the longest caption ("Lighten 16%") fits and every
+     column sits on one grid, as on the Figma page. */
+  width: 77px;
+}
+
+.swatch-color {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--border-default);
+}
+
+.swatch-name {
+  margin-top: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  line-height: normal;
+}
+
+.swatch-hex {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* Icon tone and Capability level: a panel per theme, each mode's glyph over
+   its name, as the Figma page's preview frames lay them out. */
+
+.mode-panels {
+  display: grid;
+  gap: 16px;
+}
+
+.mode-panel {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  border-radius: 16px;
+}
+
+.mode-panel-label {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mode-panel-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+}
+
+.mode-example {
+  display: grid;
+  justify-items: start;
+  gap: 24px;
+}
+
+.mode-example.is-label-close {
+  gap: 12px;
+}
+
+.mode-example:has(.mode-tile) {
+  gap: 12px;
+}
+
+.mode-tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+.mode-example-name {
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--font-size-xs);
+}

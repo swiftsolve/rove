@@ -1,0 +1,53 @@
+/* Space, shape and effects: the scale bars, radius, level, opacity and focus samples. */
+
+.scale {
+  display: block;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--accent-solid);
+}
+
+.radius-sample {
+  width: 72px;
+  height: 72px;
+  box-sizing: border-box;
+  border: 1px solid var(--accent-default);
+  background: var(--accent-muted);
+}
+
+.radius-sample-wide {
+  width: 120px;
+}
+
+.level-sample {
+  display: grid;
+  place-items: center;
+  max-width: 184px;
+  height: 80px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px var(--border-default);
+}
+
+.level-surface {
+  width: 64%;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.opacity-sample {
+  display: block;
+  width: 64px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--accent-solid);
+}
+
+.focus-sample {
+  display: block;
+  width: 64px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--accent-solid);
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}

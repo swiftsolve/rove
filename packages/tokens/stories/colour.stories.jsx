@@ -1,5 +1,7 @@
+import './colour.css'
+
 import figmaVariables from '../src/figma/variables.json'
-import backgrounds from './backgrounds.png'
+import backgrounds from './assets/backgrounds.png'
 import { Code, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
 

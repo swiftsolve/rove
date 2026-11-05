@@ -10,7 +10,7 @@
 //
 // Run from Figma desktop: Plugins > Development > Import plugin from manifest.
 // The same functions run through the Figma MCP's use_figma, wrapped by
-// scripts/figma/script.mjs, so an agent can export and check too.
+// scripts/figma/use-figma.mjs, so an agent can export and check too.
 
 const round = (n, places) => +n.toFixed(places)
 // The key is the ID in the file's link (figma.com/design/<key>); Figma can withhold it.
@@ -343,7 +343,7 @@ async function checkTokens(repo) {
 
 // ── The plugin ─────────────────────────────────────────────────────────────
 
-// Through use_figma there's no UI: scripts/figma/script.mjs calls the export or checkTokens itself.
+// Through use_figma there's no UI: scripts/figma/use-figma.mjs calls the export or checkTokens itself.
 if (typeof __html__ === 'string') {
   figma.showUI(__html__, { width: 480, height: 560, themeColors: true })
   const send = (message) => figma.ui.postMessage(message)

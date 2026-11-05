@@ -1,6 +1,8 @@
+import './space-shape-effects.css'
+
+import windowLayout from './assets/window-layout.png'
 import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import { code, colorIn, cssName, cssValue, group, layout, opacity, refName, shadowIn, spacing } from './tokens'
-import windowLayout from './window-layout.png'
 
 export default { title: 'Space, shape & effects' }
 

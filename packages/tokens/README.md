@@ -174,7 +174,7 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
 | `src/figma/effect-styles.json` | Raw export of the `Shadow/*` effect styles: each layer's offset, blur, spread and the colour variable bound to it. Each style becomes a `--shadow-*` token. |
 | `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the three files you choose from a checkout and lists every difference. It never writes to the file, and needs no network access. |
-| `scripts/figma/script.mjs` | `npm run figma:export` and `figma:check`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
+| `scripts/figma/use-figma.mjs` | `npm run figma:export` and `figma:check`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
 | `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 
 **Build**
@@ -194,7 +194,7 @@ A change can start in Figma or here. It ships only once it's committed, and Figm
 | Path | What |
 | --- | --- |
 | `.storybook/` | The Rove Tokens Storybook's config, and the Inter, Questrial and Geist Mono files it bundles. |
-| `stories/` | Its pages, one file per sidebar group. `tokens.js` reads the DTCG files. |
+| `stories/` | Its pages, one file per sidebar group, each with its own CSS (`stories.css` is what they share; images in `assets/`). `tokens.js` reads the DTCG files. |
 | `scripts/presentation/export.mjs` | `npm run present`: exports the Figma file's pages to `presentation/index.html`, a slideshow styled with the tokens. Needs `FIGMA_TOKEN` (a Figma personal access token, `file_content:read`) in `.env.local`. |
 | `scripts/presentation/publish.mjs` | `npm run present:publish`: pushes the exported presentation to the `gh-pages` branch, which GitHub Pages serves at <https://swiftsolve.github.io/rove-tokens/>. Each publish replaces the last. |
 
