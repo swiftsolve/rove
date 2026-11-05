@@ -26,7 +26,7 @@ const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt
   defaultVariants: { align: 'baseline' },
 })
 
-const LABEL = 'type-overline text-tertiary shrink-0'
+const LABEL = 'type-label-field text-tertiary shrink-0'
 const VALUE = 'type-number-default text-primary num text-right'
 
 type DataListProps = {

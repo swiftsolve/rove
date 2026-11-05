@@ -7,7 +7,7 @@ import { cn } from '../utils/cn'
 import { PRESS, pressableProps, STATE_CLASSES } from '../utils/pressable'
 
 // The same 8px above the field as the feedback line below it.
-const LABEL = 'type-overline text-tertiary mb-8 block'
+const LABEL = 'type-label-field text-tertiary mb-8 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
 // 30px action centred beside the text sits 4px from the top and bottom edges.

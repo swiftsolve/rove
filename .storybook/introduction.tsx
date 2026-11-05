@@ -375,7 +375,7 @@ export function Introduction(): JSX.Element {
   return (
     <main className="intro">
       <header className="intro-hero">
-        <p className="intro-overline">Component library</p>
+        <p className="intro-label">Component library</p>
         <h1 className="intro-title">
           <RoveMark className="intro-hero-mark" />
           Rove Components

@@ -151,7 +151,7 @@ apply here. This section is how they're written as Tailwind utilities.
   `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why; DESIGN.md's
   Spacing and shape says which reasons count. [CHECKED]
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
-  (`type-caption`, `type-overline`, `type-number-default`, …) and a colour
+  (`type-caption`, `type-label-field`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
   under every utility, so `font-medium`, `leading-[1.2]` or the `num` face
   beside one wins; a size utility never goes beside one. Text with no

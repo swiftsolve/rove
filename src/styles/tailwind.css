@@ -82,7 +82,7 @@
   --leading-label-large: var(--type-label-large-line-height);
   --leading-label-default: var(--type-label-default-line-height);
   --leading-label-small: var(--type-label-small-line-height);
-  --leading-overline: var(--type-overline-line-height);
+  --leading-label-field: var(--type-label-field-line-height);
   --leading-number-display: var(--type-number-display-line-height);
   --leading-number-large: var(--type-number-large-line-height);
   --leading-number-default: var(--type-number-default-line-height);
@@ -96,7 +96,7 @@
   --tracking-label-large: var(--type-label-large-letter-spacing);
   --tracking-label-default: var(--type-label-default-letter-spacing);
   --tracking-label-small: var(--type-label-small-letter-spacing);
-  --tracking-overline: var(--type-overline-letter-spacing);
+  --tracking-label-field: var(--type-label-field-letter-spacing);
   --tracking-number-display: var(--type-number-display-letter-spacing);
   --tracking-number-large: var(--type-number-large-letter-spacing);
   --tracking-number-default: var(--type-number-default-letter-spacing);

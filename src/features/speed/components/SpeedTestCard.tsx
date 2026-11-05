@@ -127,7 +127,7 @@ function HeroCell({
     <div className="flex flex-col gap-8">
       <dt className="flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="type-overline text-tertiary">{label}</span>
+        <span className="type-label-field text-tertiary">{label}</span>
       </dt>
       <SpeedCell mbps={mbps} isPlaceholder={isPlaceholder} />
     </div>
@@ -137,7 +137,7 @@ function HeroCell({
 function Substat({ label, value, isEmpty }: { label: string; value: ReactNode; isEmpty: boolean }) {
   return (
     <div className="flex flex-col gap-4">
-      <dt className="type-overline text-tertiary">{label}</dt>
+      <dt className="type-label-field text-tertiary">{label}</dt>
       <dd className={substatValueVariants({ isEmpty })}>{value}</dd>
     </div>
   )

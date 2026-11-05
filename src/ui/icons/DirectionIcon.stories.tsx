@@ -34,7 +34,7 @@ export const AllStates: Story = {
         <div key={series} className="flex flex-col gap-8">
           <dt className="flex items-center gap-6">
             <DirectionIcon series={series} />
-            <span className="type-overline text-tertiary">{label}</span>
+            <span className="type-label-field text-tertiary">{label}</span>
           </dt>
           <dd className="type-number-default text-primary">{value}</dd>
         </div>

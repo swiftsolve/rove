@@ -75,7 +75,7 @@ export function Readout({ label, icon, size = 'large', className, ...valueParts 
     <div className={className}>
       <dt className="mb-8 flex items-center gap-6">
         {icon}
-        <span className="type-overline text-tertiary">{label}</span>
+        <span className="type-label-field text-tertiary">{label}</span>
       </dt>
       <dd className={figureClass}>
         <ValueAndUnit size={size} {...valueParts} />

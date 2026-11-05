@@ -59,17 +59,17 @@ export const InContext: Story = {
       </DataList>
       <dl className="grid grid-cols-3 gap-16">
         <div className="flex flex-col gap-4">
-          <dt className="type-overline text-tertiary">Ping</dt>
+          <dt className="type-label-field text-tertiary">Ping</dt>
           <dd className="type-number-default num leading-body-default text-primary">12.4 ms</dd>
         </div>
         <div className="flex flex-col gap-4">
-          <dt className="type-overline text-tertiary">Jitter</dt>
+          <dt className="type-label-field text-tertiary">Jitter</dt>
           <dd className="type-number-default num leading-body-default text-primary">
             <NoValue label="Not measured" />
           </dd>
         </div>
         <div className="flex flex-col gap-4">
-          <dt className="type-overline text-tertiary">Loss</dt>
+          <dt className="type-label-field text-tertiary">Loss</dt>
           <dd className="type-number-default num leading-body-default text-primary">0%</dd>
         </div>
       </dl>

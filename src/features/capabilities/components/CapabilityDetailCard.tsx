@@ -78,7 +78,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         <dl className={METRICS}>
           {checks.map((check) => (
             <div key={check.label} className="flex min-w-0 flex-col gap-6">
-              <dt className="type-overline text-tertiary leading-[1.15]">{check.label}</dt>
+              <dt className="type-label-field text-tertiary leading-[1.15]">{check.label}</dt>
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
