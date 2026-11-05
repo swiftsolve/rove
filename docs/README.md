@@ -5,8 +5,9 @@
 Working on Rove's code.
 
 - [Rove frontend](../src/README.md): how the UI is organised, styled and
-  tested, checklists for common changes, and where to find which component to
-  use.
+  tested, and where to find which component to use. Adding a screen or new
+  backend data are the [add-screen](../.claude/skills/add-screen/SKILL.md) and
+  [add-backend-data](../.claude/skills/add-backend-data/SKILL.md) skills.
 - [Rove UI library](../src/ui/README.md): how `src/ui` is built: its stories,
   docs pages and the rules every component follows. Adding a component is the
   [add-library-component](../.claude/skills/add-library-component/SKILL.md) skill.

@@ -16,6 +16,8 @@ agents, open the file.
 
 | Task | Skill |
 | --- | --- |
+| Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
+| Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
 | Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |

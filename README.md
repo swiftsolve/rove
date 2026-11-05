@@ -230,7 +230,8 @@ rove/
 The UI follows a few conventions: state from context and TanStack Query, never
 props passed through; Tailwind utilities built only from the design tokens;
 shared components before new markup. [src/README.md](src/README.md)
-has them all, with checklists for common changes and the component table.
+has them all; the steps for common changes are skills in
+[.claude/skills/](.claude/skills/).
 
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),

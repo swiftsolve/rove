@@ -19,32 +19,16 @@ tag is judgment: no check catches a slip, so review it yourself.
 
 ## Procedures
 
-The library and design procedures are skills (AGENTS.md: Procedures). These
-two have none.
+Each is a skill: Claude Code loads its steps when the task comes up. Other
+agents and people, open the file.
 
-### Add a screen or tab
-
-1. The view in its feature's folder, rendering with no props (it reads context
-   and its data hooks). Every page but Home starts with a `PageHeader`.
-2. A new tab is its id in `APP_TABS` (`app/utils/tabs.ts`) plus its entry in
-   `TABS` (`app/utils/tab-registry.ts`): label, icon, `Screen`. A subpage is the
-   tab's `subScreen`. Focus and scroll on navigating need no code.
-3. Copy follows [Names and copy](#names-and-copy); an empty, loading and failed
-   state each use the library's (`EmptyState`, `LoadingState`, `Banner`).
-
-Check: `npm run check`, `npm run dev` in both themes, and `npm run a11y`.
-
-### Show new backend data
-
-The six steps are in
-[Learning Rust and Tauri](../docs/develop/learning/rust-and-tauri/05-in-practice.md#12-build--run-it-add-a-command-end-to-end):
-the logic in `rove-core`, a command in `src-tauri`, the type in `src/types`,
-both bridges (Tauri and the dev mock), then a hook. The hook goes in the
-feature's `hooks/`, on `useBackendQuery`, keyed by the data plus
-`useNetworkKey()` when it belongs to one network.
-
-Check: `cargo test -p rove-core`, `npm run check`, and `npm run dev` against
-the mock.
+| Task | Skill |
+| --- | --- |
+| Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
+| Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
+| Add a library component, or change one | `.claude/skills/add-library-component/SKILL.md` |
+| Change a token, text style or shadow | `../rove-tokens/.claude/skills/change-token/SKILL.md` |
+| Resync the sites after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules
 

@@ -50,7 +50,7 @@ Say you want to surface the machine's uptime:
 1. **Write the pure logic** in `crates/rove-core/`: a plain
    `pub async fn uptime_secs() -> Option<u64>`. No Tauri, no `#[command]`; it's
    unit-testable on its own (`cargo test -p rove-core`).
-2. **Wrap it** in `src-tauri/src/lib.rs` with a thin command:
+2. **Wrap it** in `src-tauri/src/commands.rs` with a thin command:
 
    ```rust
    #[tauri::command]
@@ -58,7 +58,7 @@ Say you want to surface the machine's uptime:
        rove_core::uptime_secs().await
    }
    ```
-3. **Register it** in the `tauri::generate_handler![…]` list (`lib.rs:640`) so the
+3. **Register it** in the `tauri::generate_handler![…]` list in `lib.rs` so the
    compile-time dispatcher can route `"get_uptime"` to it. Forgetting this step is
    the classic "command not found" error.
 4. **Declare the type** in `src/types/` and add the method to the `NetworkAPI`
@@ -71,7 +71,9 @@ Say you want to surface the machine's uptime:
 Notice what *doesn't* change: the IPC plumbing, the serialization, the event
 system. The architecture from this whole doc (pure core, thin Tauri shell, typed
 contract, swappable bridge) is exactly what makes step 1 the only place real
-thought goes, and steps 2–6 mechanical.
+thought goes, and steps 2–6 mechanical. The
+[add-backend-data](../../../../.claude/skills/add-backend-data/SKILL.md) skill
+is the same six steps as a checklist.
 
 ```bash
 npm run tauri:dev            # build + run the desktop app, hot-reloading the UI
