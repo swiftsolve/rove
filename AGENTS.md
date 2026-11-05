@@ -7,7 +7,8 @@ folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens'
 `DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
 Other agents, read the ones your change touches first. In those guides,
 **[CHECKED]** marks a rule a check enforces, so `npm run check` fails when
-it's broken; a rule without it is judgment.
+it's broken, and the file beside it is the check; a rule without it is
+judgment.
 
 ## Procedures
 
