@@ -3,7 +3,7 @@
  * `npm run build` rewrites its bottom half, so a difference from the committed
  * file means the rebuilt reference wasn't committed.
  *
- *   npm run build && node scripts/checks/design-md.mjs
+ *   npm run build && node scripts/checks/design-md-fresh.mjs
  */
 import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'

@@ -58,7 +58,7 @@ earn one, create it in Figma like its neighbours:
   result as JSON, and `npm run figma:save <result.json>`. Never hand-edit
   `src/figma/`.
 - `npm run build`, then `npm run check`. Contrast failing means the shade
-  misses WCAG AA: fix it in Figma, not here. `design-md` fails until the
+  misses WCAG AA: fix it in Figma, not here. `design-md-fresh` fails until the
   rebuilt `DESIGN.md` is committed, so commit, then check again.
 - `npm run figma:check` prints the check script; run it through `use_figma`.
   It must return `inSync: true`.

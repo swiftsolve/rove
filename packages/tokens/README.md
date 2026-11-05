@@ -102,7 +102,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 
 1. Change the variables, text styles or `Shadow/*` effect styles in Figma. A new token takes its siblings' collection, modes, scopes and code syntax, and a description.
 2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
-3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. The `design-md` check fails until the rebuilt `DESIGN.md` is committed, so commit, then check again.
+3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. The `design-md-fresh` check fails until the rebuilt `DESIGN.md` is committed, so commit, then check again.
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited by hand (undo it, and make the change in Figma).
 5. Commit the change.
 
@@ -167,7 +167,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 | `scripts/checks/run.mjs` | Runs every check in its folder and reports them all before failing; `npm run check` and the build workflow call it. A new check there runs without being listed. |
 | `scripts/checks/contrast.mjs` | Measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#contrast)'s targets. |
 | `scripts/checks/descriptions.mjs` | Every token has a description in Figma: its use, shown in Figma's picker, the Storybook and DESIGN.md. |
-| `scripts/checks/design-md.mjs` | The committed `DESIGN.md` matches the last build. |
+| `scripts/checks/design-md-fresh.mjs` | The committed `DESIGN.md` matches the last build. |
 | `scripts/checks/checked-tags.mjs` | Every checked tag in `DESIGN.md` names its check, and each of this repo's exists; Rove checks the ones it calls Rove's. |
 | `scripts/checks/figma-plugin.mjs` | Runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
 
