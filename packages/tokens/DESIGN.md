@@ -2,6 +2,8 @@
 
 How to build Rove's interface with these tokens, for anyone writing Rove UI, people and coding agents alike. The [token reference](#token-reference) at the end lists every value; [`docs/rationale.md`](docs/rationale.md) explains why they are what they are.
 
+**[CHECKED]** marks a rule a check enforces: break it and `npm run check` fails. Rove's checks are in its `scripts/checks/`, the tokens' own in this repo's. A rule without the tag is judgment: no check catches a slip, so look at the result in both themes.
+
 ## Setup
 
 ```css
@@ -11,8 +13,6 @@ How to build Rove's interface with these tokens, for anyone writing Rove UI, peo
 Dark is the default, on `:root`. Add the `theme-light` class to the root element for Light. Every token has both values, so a screen that only uses tokens themes itself.
 
 ## Rules
-
-A rule marked [CHECKED] fails a check, so `npm run check` catches a slip: Rove's checks are in its `scripts/checks/`, the tokens' own in this repo's. An unmarked rule is judgment: look at the result in both themes.
 
 - **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). [CHECKED] Rove's `raw-values`, and `custom-properties` for a misspelt name.
 - **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. [CHECKED] `descriptions`.
