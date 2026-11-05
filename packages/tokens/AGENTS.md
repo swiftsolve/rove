@@ -7,6 +7,15 @@ shadows into `src/figma/`, and `npm run build` turns them into `dist/`
 `DESIGN.md`. This file is the procedures, the rules and how a change is
 validated; `README.md` has the details.
 
+## What to read
+
+| Task | Read |
+| --- | --- |
+| Which token to use for what, and every value | `DESIGN.md` |
+| Why a value is what it is | `docs/rationale.md` |
+| How the export, build and checks work, and where each file is | `README.md`: How it works, What's where |
+| Updating and releasing by hand | `README.md`: Update the tokens, Release |
+
 ## Procedures
 
 Each is a skill: Claude Code loads its steps when the task comes up. Other
