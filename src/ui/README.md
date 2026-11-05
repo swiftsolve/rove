@@ -56,7 +56,7 @@ anything added. [CHECKED] that it changes; picking major or minor is yours.
   - App frame: title-bar, nav-rail and page-header
   - Accessibility: screen-reader
 
-  Figma has one more page after them, Patterns: the cards, charts and
+  Figma has one more page after them, Compositions: the cards, charts and
   content that features build from the library.
 - Beside them: `utils/` (`cn`; `pressable`, the behaviour everything
   pressable shares; `layers`, the one stacking order, so an overlay picks a

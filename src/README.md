@@ -290,6 +290,6 @@ component's Docs page in Storybook shows the same, with its stories
   Don't draw new ones inline.
 - The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
   the nav rail, from the tab registry.
-- Figma's Patterns page holds what features build from the library, like
+- Figma's Compositions page holds what features build from the library, like
   `ThroughputChart` (`features/live-throughput`) and `Sparkline`
   (`features/services`). They live with their feature, not in `src/ui`.
