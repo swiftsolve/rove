@@ -302,9 +302,6 @@ Every rule without the tag is judgment. These slip through most often:
 
 - a prop passed only to pass it down, focus code where `navigate` already
   moves it, or an exit animation unmounted early instead of `usePresence`;
-- a view reaching into a component's DOM by a ref, `querySelector` or a
-  margin through a descendant selector (`checks/ui-classname.mjs` catches the
-  rest);
 - a comment that restates the code instead of saying why;
 - a hint over two short sentences, or one that explains how it works;
 - the light theme, and any screen: Chromatic snapshots only stories, in dark,
