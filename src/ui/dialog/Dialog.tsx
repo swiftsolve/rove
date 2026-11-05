@@ -52,8 +52,9 @@ const LAYER = cx(
 // No padding on the shell: the header, body and footer own their insets, and
 // the shell clips the body's square corners to its radius. No lines between
 // the sections; the body's darker well sets them apart.
+// It takes focus itself when no field does, and isn't a control: no ring.
 const PANEL = cx(
-  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised',
+  'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised outline-none',
   'data-open:animate-dialog-in data-closed:animate-dialog-out',
 )
 
@@ -66,6 +67,17 @@ const HEADER = 'flex items-start justify-between gap-8 p-16'
 
 // Pulled toward the panel's corner without cramping the title.
 const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
+
+/**
+ * A field that took focus with `autoFocus` keeps it. Otherwise the panel takes
+ * it, not its first button: that's the close button, whose tooltip would open
+ * over the title and take the first Escape. Tab goes on to the close button.
+ */
+function initialFocus(popup: HTMLElement | null): HTMLElement | true {
+  const active = document.activeElement
+  if (popup == null) return true
+  return active instanceof HTMLElement && popup.contains(active) ? active : popup
+}
 
 type DialogProps = {
   /** Names the dialog. */
@@ -113,6 +125,7 @@ export function Dialog({
   // Whatever had focus as the dialog mounted: the control that opened it, which
   // gets focus back on close. Base UI only knows its own Trigger part.
   const [opener] = useState(() => (document.activeElement instanceof HTMLElement ? document.activeElement : null))
+  const [popup, setPopup] = useState<HTMLDivElement | null>(null)
   const [content, setContent] = useState<HTMLDivElement | null>(null)
   const contentHeight = useContentHeight(content)
   const isClosable = isOpen && canClose
@@ -133,7 +146,12 @@ export function Dialog({
       <BaseDialog.Portal container={portalContainer ?? undefined}>
         <BaseDialog.Backdrop className={cn(LAYER, 'bg-scrim')} />
         <BaseDialog.Viewport className={cn(LAYER, 'flex items-center justify-center p-20')}>
-          <BaseDialog.Popup className={PANEL} finalFocus={() => (opener?.isConnected ? opener : true)}>
+          <BaseDialog.Popup
+            ref={setPopup}
+            className={PANEL}
+            initialFocus={() => initialFocus(popup)}
+            finalFocus={() => (opener?.isConnected ? opener : true)}
+          >
             <div className={SIZER} style={{ height: contentHeight ?? undefined }}>
               <div ref={setContent}>
                 <div className={HEADER}>

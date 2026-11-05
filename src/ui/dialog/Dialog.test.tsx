@@ -46,6 +46,18 @@ describe('Dialog', () => {
     expect(dialog).toBeInTheDocument()
   })
 
+  it('takes focus on its panel when no field does, not on its close button', async () => {
+    render(
+      <DialogRoot isOpen>
+        <Dialog title="Clear history?" cancelLabel="Cancel" onClose={() => {}} />
+      </DialogRoot>,
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Clear history?' })
+    await waitFor(() => expect(dialog).toHaveFocus())
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus()
+  })
+
   it('closes on Escape, gives focus back to its opener, and unmounts', async () => {
     render(<Harness />)
     await open()

@@ -13,7 +13,7 @@ const CUSTOM = {
   BrandIcon,
   CloudGamingIcon,
   ConnectionIcon,
-  // DirectionIcon takes a series, so the catalogue shows both.
+  // DirectionIcon takes a series, so the list shows both.
   'DirectionIcon down': (props: IconProps) => <DirectionIcon series="down" {...props} />,
   'DirectionIcon up': (props: IconProps) => <DirectionIcon series="up" {...props} />,
   HdStreamIcon,
@@ -45,6 +45,8 @@ type Story = StoryObj<IconProps>
 
 /** Every icon, named. Set `size` to see them all at one size. */
 export const Catalogue: Story = {
+  // Centred, the list shrinks to one column; padded, it fills the width.
+  parameters: { layout: 'padded' },
   render: ({ size }) => (
     <ul role="list" className="grid grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-8">
       {ICONS.map(([name, Icon]) => (

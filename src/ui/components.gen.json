@@ -781,7 +781,7 @@
         "accessibility": {
           "builtIn": [
             "A modal `dialog`, named by its title and described by `description`.",
-            "Focus stays inside; the page behind is hidden from screen readers.",
+            "Focus moves in, onto the panel when no field takes it, and stays inside; the page behind is hidden from screen readers.",
             "Escape closes it, and focus returns to the control that opened it."
           ],
           "toHandle": [

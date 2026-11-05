@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { type ComponentProps, useState } from 'react'
+import { type ComponentProps, type ReactNode, useState } from 'react'
 import { expect, fn, waitFor } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
@@ -15,7 +15,7 @@ const meta = {
   args: {
     title: 'Add a service',
     description: 'Track a service by URL or IP address.',
-    children: <p className="type-body-small text-secondary">Rove checks it every minute.</p>,
+    children: <ServiceFields />,
     cancelLabel: 'Cancel',
     actions: <Button variant="solid">Add</Button>,
     onClose: fn(),
@@ -33,7 +33,7 @@ const meta = {
     // story gets a frame of its own.
     docs: {
       subtitle: 'A window over the page: a title, a body, and actions at the foot.',
-      story: { inline: false, iframeHeight: 340 },
+      story: { inline: false, iframeHeight: 460 },
       toc: GUIDANCE_TOC,
     },
     guidance: {
@@ -50,7 +50,7 @@ const meta = {
       accessibility: {
         builtIn: [
           'A modal `dialog`, named by its title and described by `description`.',
-          'Focus stays inside; the page behind is hidden from screen readers.',
+          'Focus moves in, onto the panel when no field takes it, and stays inside; the page behind is hidden from screen readers.',
           'Escape closes it, and focus returns to the control that opened it.',
         ],
         toHandle: [
@@ -65,10 +65,10 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Title, description, a recessed body, and Cancel beside the main action. */
+/** Title, description, a recessed body of fields, and Cancel beside the main action. The first field takes focus. */
 export const Open: Story = {}
 
-/** Only a header and actions: a confirmation. */
+/** Only a header and actions: a confirmation. With no field, the panel takes focus, and Tab goes on to its buttons. */
 export const Confirmation: Story = {
   args: {
     title: 'Clear history?',
@@ -102,10 +102,6 @@ export const WithTrigger: Story = {
 /** Opening puts focus on the field; Escape closes it and gives focus back to the button. */
 export const EscapeCloses: Story = {
   tags: ['!autodocs'],
-  // As in the app's add dialog, the field takes focus. On the close button,
-  // the first Escape would close its tooltip instead.
-  // eslint-disable-next-line jsx-a11y-x/no-autofocus -- as in the app's add dialog.
-  args: { children: <TextField label="Address" value="" onChange={() => {}} autoFocus /> },
   render: (args) => <DialogWithTrigger {...args} />,
   play: async ({ args, canvas, userEvent }) => {
     const trigger = canvas.getByRole('button', { name: 'Add service' })
@@ -120,8 +116,34 @@ export const EscapeCloses: Story = {
 
 type DialogProps = ComponentProps<typeof Dialog>
 
+/** Add a service's fields, as in the app: the address takes focus. */
+function ServiceFields(): ReactNode {
+  const [address, setAddress] = useState('')
+  const [name, setName] = useState('')
+  return (
+    <>
+      <TextField
+        label="Address"
+        value={address}
+        onChange={setAddress}
+        placeholder="example.com or 192.168.1.1"
+        feedback="Tested when you add it."
+        // eslint-disable-next-line jsx-a11y-x/no-autofocus -- a dialog's first field takes focus, as in the app's add dialog.
+        autoFocus
+      />
+      <TextField
+        className="mt-16"
+        label="Name"
+        value={name}
+        onChange={setName}
+        placeholder="Auto-detected from the address"
+      />
+    </>
+  )
+}
+
 // A box of its own, the way the app opens a dialog over its content column.
-const FRAME = 'relative h-[300px] overflow-hidden rounded-lg'
+const FRAME = 'relative h-[420px] overflow-hidden rounded-lg'
 
 /** The dialog open in its frame. */
 function DialogFrame(args: DialogProps) {

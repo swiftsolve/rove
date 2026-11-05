@@ -236,7 +236,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           onChange={onAddressChange}
           placeholder="example.com or 192.168.1.1"
           isInvalid={error != null}
-          // eslint-disable-next-line jsx-a11y-x/no-autofocus -- a dialog's field takes focus; on the close button, the first Escape would close its tooltip.
+          // eslint-disable-next-line jsx-a11y-x/no-autofocus -- a dialog's first field takes focus; without it, the panel would.
           autoFocus
           action={
             <TextFieldAction
