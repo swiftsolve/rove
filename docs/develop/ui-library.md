@@ -140,7 +140,8 @@ anything added. *Checked* that it changes; picking major or minor is yours.
 
 ### Buttons
 
-Buttons are `Button`, `IconButton` and `Link`, never a hand-written
+Outside the library, a button is one of its components (`Button`,
+`IconButton`, `Link`, `ListRow`, `StretchedLink`), never a hand-written
 `<button>`. *Checked.*
 
 - Disabled and loading swallow every activation, a form submit included, and

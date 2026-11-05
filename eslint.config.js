@@ -218,8 +218,8 @@ export default tseslint.config(
   // ── Library components only ──────────────────────────────────────────────
   {
     // Every button outside the library is one of its components (Button,
-    // IconButton, ListRow, StretchedLink…), so focus, disabled and loading
-    // behave the same everywhere.
+    // IconButton, Link, ListRow, StretchedLink), so focus, disabled and
+    // loading behave the same everywhere.
     files: ['src/**/*.tsx'],
     // Tests build their own harnesses.
     ignores: ['src/ui/**', 'src/**/*.test.tsx'],
@@ -228,7 +228,7 @@ export default tseslint.config(
         'error',
         {
           selector: "JSXOpeningElement[name.name='button']",
-          message: 'Use a button from @/ui (Button, IconButton, ListRow, StretchedLink…), not a raw <button>.',
+          message: 'Use a button from @/ui (Button, IconButton, Link, ListRow, StretchedLink), not a raw <button>.',
         },
         ...CODE_STYLE,
       ],
