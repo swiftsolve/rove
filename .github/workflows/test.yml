@@ -1,8 +1,10 @@
 name: test
 
 # The UI's checks: typecheck, lint, and every test, the stories included (each
-# renders in headless Chromium, runs its play function and the a11y checks).
-# One Linux runner is enough; build.yml proves the app builds on all three OSes.
+# renders in headless Chromium, runs its play function and the a11y checks),
+# then the service layer's Rust format, lints and tests. One Linux runner on
+# each push; build.yml runs the Rust on all three OSes and builds the app, for
+# a release tag or by hand, since macOS and Windows minutes cost 10x and 2x.
 on:
   push:
     branches: [master]
@@ -40,3 +42,19 @@ jobs:
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
           UI_API_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+      # Linux only here; each platform's cfg-gated code is linted and tested on
+      # its own OS by build.yml. Lints: Cargo.toml.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Rust format
+        run: cargo fmt --all -- --check
+
+      - name: Lint service layer
+        run: cargo clippy -p rove-core --all-targets -- -D warnings
+
+      - name: Test service layer
+        run: cargo test -p rove-core

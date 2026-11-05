@@ -184,8 +184,9 @@ cargo clippy --workspace --all-targets -- -D warnings   # the Rust lints (Cargo.
 cargo fmt --all              # the Rust layout (rustfmt.toml)
 ```
 
-CI runs `npm run check` on every push and pull request, and clippy and the app
-build on all three OSes. What to run for each kind of change, and what runs on
+CI runs `npm run check` and the service layer's Rust checks on every push and
+pull request, on Linux; a release tag also lints, tests and builds the app on
+all three OSes. What to run for each kind of change, and what runs on
 its own at each stage, are in [AGENTS.md](AGENTS.md#check-your-work).
 
 ### Release build

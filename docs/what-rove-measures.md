@@ -94,7 +94,8 @@ for the job and degrades gracefully (a missing value shows as a short bar):
 | mDNS, sweep, speed test, throughput, usage | pure Rust everywhere | ✓ | ✓ |
 
 Platform branches are runtime `cfg!()` checks, so every path typechecks on
-every OS; CI (`.github/workflows/build.yml`) builds all three bundles. The
+every OS; CI (`.github/workflows/build.yml`) builds all three bundles for
+each release tag. The
 instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
 Windows fall back to the 15 s poll.
 
