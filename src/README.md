@@ -1,7 +1,8 @@
 # Rove frontend
 
 How the React UI in `src/` is organised, styled and tested. Which token to use
-is in rove-tokens' DESIGN.md, and the library has its own guide,
+is in rove-tokens'
+[DESIGN.md](../node_modules/@swiftsolve/rove-tokens/DESIGN.md), and the library has its own guide,
 [src/ui/README.md](ui/README.md). Step-by-step tasks are skills, listed in
 [AGENTS.md](../AGENTS.md).
 
