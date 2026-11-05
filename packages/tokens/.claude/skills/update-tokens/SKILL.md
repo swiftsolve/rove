@@ -41,8 +41,8 @@ earn one, create it in Figma like its neighbours:
   WEB code syntax set to its path as a CSS variable (`radius/xs` takes
   `var(--radius-xs)`). Without code syntax it stays out of `tokens.css`, and
   the build refuses one that doesn't match the path.
-- A description saying what it's for, in the words its siblings use;
-  `scripts/checks/descriptions.mjs` fails without one.
+- A description saying what it's for, in the words its siblings use; the
+  build refuses a token without one.
 
 - Change the variable, text style or `Shadow/*` effect style. A new Palette
   shade follows `docs/rationale.md` (its name, its contrast target) and gets a
@@ -58,8 +58,8 @@ earn one, create it in Figma like its neighbours:
   result as JSON, and `npm run figma:save <result.json>`. Never edit
   `src/figma/` directly.
 - `npm run build`, then `npm run check`. Contrast failing means the shade
-  misses WCAG AA: fix it in Figma, not here. `design-md-fresh` fails until the
-  rebuilt `DESIGN.md` is committed, so commit, then check again.
+  misses WCAG AA: fix it in Figma, not here. Commit the rebuilt `DESIGN.md`
+  with the change.
 - `npm run figma:check` prints the check script; run it through `use_figma`.
   It must return `inSync: true`.
 - Commit only your paths: `git commit -m "…" -- <paths>`.
@@ -76,8 +76,8 @@ unreleased, unless Rove needs it now or the user asks for a release.
 - Pick the bump by what Rove sees: patch when no CSS variable is added,
   removed or renamed; minor for a new token; major for a rename or removal.
   Say which and why, then `npm version <bump>` and
-  `git push --follow-tags`. The tag's workflows build, check and publish to
-  npm; `gh run list` shows them.
+  `git push --follow-tags`. The tag's workflow checks, then publishes to
+  npm; `gh run list` shows it.
 
 ## 4. In Rove
 

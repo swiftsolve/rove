@@ -15,7 +15,7 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 ## Rules
 
 - **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed in. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`], the second for a misspelt name.
-- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. [✓ CHECKED by `checks/descriptions.mjs`].
+- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. [✓ CHECKED by `tokens/build.mjs`].
 - **Name by job, not by look.** Pick `--bg-surface` because it's content on the backdrop, not because it's the right grey. The Palette shades (`neutral/850`) aren't CSS variables, on purpose.
 
 ### Surfaces

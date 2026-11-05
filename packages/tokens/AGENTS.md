@@ -48,9 +48,10 @@ released, and taken up by Rove. Nothing here writes to Figma.
 
 ### Check your work
 
-Run `npm run check` before you commit: the build, lint (ESLint and Prettier),
-then every check in `scripts/checks/` (DESIGN.md up to date, descriptions,
-WCAG AA contrast) and the Figma plugin's test (`npm test`). `npm run format` fixes what Prettier reports.
+Run `npm run check` before you commit: the build (which refuses a token
+without a description), lint (ESLint and Prettier), the WCAG AA contrast check
+and the Figma plugin's test (`npm test`). Commit the rebuilt `DESIGN.md` with
+the change. `npm run format` fixes what Prettier reports.
 Fix what a hook reports; never skip one. Other sessions share this checkout, so
 commit only your paths (`git commit -m "…" -- <paths>`).
 
@@ -60,4 +61,4 @@ commit only your paths (`git commit -m "…" -- <paths>`).
 | --- | --- |
 | Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
-| Each release tag (CI) | Build, lint, `scripts/checks/` and the plugin test (`build.yml`); publish to npm (`publish.yml`) |
+| Each release tag (CI, `publish.yml`) | `npm run check`, then publish to npm only if it passes |

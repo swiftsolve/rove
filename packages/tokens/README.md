@@ -8,7 +8,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 [`@swiftsolve/rove-tokens`](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
 
-[![Build](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/build.yml?label=build&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/publish.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/publish.yml)
 [![npm](https://img.shields.io/npm/v/@swiftsolve/rove-tokens?logo=npm&logoColor=white&label=npm&labelColor=17181b&color=5b8cff)](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
 [![Figma](https://img.shields.io/badge/Figma-source_of_truth-5b8cff?logo=figma&logoColor=white&labelColor=17181b)](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 
@@ -102,7 +102,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 
 1. Change the variables, text styles or `Shadow/*` effect styles in Figma. A new token takes its siblings' collection, modes, scopes and code syntax, and a description.
 2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
-3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. The `design-md-fresh` check fails until the rebuilt `DESIGN.md` is committed, so commit, then check again.
+3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites the token reference in `DESIGN.md`: commit that with the change.
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
 5. Commit the change.
 
@@ -121,7 +121,7 @@ Changes collect on `main` and go out together, when Rove needs them.
    ```
 
    Pick the bump by what Rove sees: `patch` when no CSS variable is added, removed or renamed; `minor` for a new token; `major` for a rename or removal.
-3. The tag runs two workflows: **Build** checks the tokens, and **Publish** puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens) through npm trusted publishing (`npx npm@11 trust list @swiftsolve/rove-tokens` shows the link to `publish.yml`; if Publish fails, `npm publish` from a checkout works too).
+3. The tag runs the **Release** workflow: it runs `npm run check`, and only if that passes puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens) through npm trusted publishing (`npx npm@11 trust list @swiftsolve/rove-tokens` shows the link to `publish.yml`; if it fails to publish, `npm publish` from a checkout works too).
 4. In Rove, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`, run its `npm run check`, and commit. Then resync the sites that embed Rove, as Rove's `AGENTS.md` (Keep the sites in sync) says.
 
 ## Scripts
@@ -129,7 +129,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 | Script | What it does |
 | --- | --- |
 | `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css` and the `DESIGN.md` reference. `npm install` and `npm publish` run it too. |
-| `npm run check` | Builds, lints, then runs every check in `scripts/checks/` and `npm test`. Run it before every commit; CI runs it on every release tag. |
+| `npm run check` | Builds, lints, then runs the contrast check and `npm test`. Run it before every commit; CI runs it on every release tag, before publishing. |
 | `npm test` | The Figma plugin's test: Export and Check against a stand-in file made from the repo. |
 | `npm run lint` | ESLint and Prettier over the repo. `npm run format` fixes what Prettier reports. |
 | `npm run figma:export` | Prints a script for the Figma MCP's `use_figma` that exports the file; `figma:save <result.json>` writes its result into `src/figma/`. |
@@ -165,10 +165,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 
 | Path | What |
 | --- | --- |
-| `scripts/checks/run.mjs` | Runs every check in its folder and reports them all before failing; `npm run check` and the build workflow call it. A new check there runs without being listed. |
 | `scripts/checks/contrast.mjs` | Measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#contrast)'s targets. |
-| `scripts/checks/descriptions.mjs` | Every token has a description in Figma: its use, shown in Figma's picker, the Storybook and DESIGN.md. |
-| `scripts/checks/design-md-fresh.mjs` | The committed `DESIGN.md` matches the last build. |
 | `figma-plugin/code.test.mjs` | `npm test`: runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
 
 **Storybook**
@@ -184,8 +181,7 @@ A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git 
 
 | Path | What |
 | --- | --- |
-| `.github/workflows/build.yml` | On each release tag, builds the tokens, lints, runs every check in `scripts/checks/` and the plugin test. Run it on demand from Actions to check `main`. |
-| `.github/workflows/publish.yml` | On each release tag, publishes that version to npm with trusted publishing, so the repo holds no npm token. |
+| `.github/workflows/publish.yml` | On each release tag, runs `npm run check`, then publishes that version to npm with trusted publishing, so the repo holds no npm token. Run it on demand from Actions to check `main`: it publishes only from a tag. |
 | `scripts/hooks/git/` | Git hooks, on after `npm install`: `pre-commit` lints and format-checks the staged files, `commit-msg` refuses an agent attribution line. |
 | `scripts/hooks/claude/`, `.claude/settings.json` | Claude Code hooks: each edited file is formatted and linted, and commands that skip a hook or throw away work are refused. |
 | `AGENTS.md`, `.claude/skills/` | The rules and procedures for coding agents. |

@@ -23,7 +23,7 @@
     "build": "node scripts/tokens/build.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run build && npm run lint && node scripts/checks/run.mjs && npm test",
+    "check": "npm run build && npm run lint && node scripts/checks/contrast.mjs && npm test",
     "test": "node --test figma-plugin/code.test.mjs",
     "figma:export": "node scripts/figma/use-figma.mjs export",
     "figma:save": "node scripts/figma/use-figma.mjs save",

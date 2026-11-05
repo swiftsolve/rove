@@ -40,6 +40,13 @@ for (const v of figma.variables) {
   if (v.code && v.code !== expected) throw new Error(`${v.name} has code syntax ${v.code}; it must be ${expected}`)
 }
 
+// A token's description is its use, shown in Figma's picker, the Storybook and
+// DESIGN.md, so a token without one can't be chosen by its job. Add it in Figma.
+const undescribed = [...figma.variables, ...textStyles.styles, ...effectStyles.styles]
+  .filter((token) => !token.description?.trim())
+  .map((token) => token.name)
+if (undescribed.length) throw new Error(`No description in Figma: ${undescribed.join(', ')}`)
+
 const byName = new Map(figma.variables.map((v) => [v.name, v]))
 
 /** A variable's value in a mode, or in its only mode for a single-mode collection. */

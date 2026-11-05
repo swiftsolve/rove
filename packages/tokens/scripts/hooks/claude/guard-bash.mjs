@@ -10,7 +10,7 @@
  * is read on its own.
  *
  * Wired up in .claude/settings.json; reads the hook's JSON on stdin. The same
- * file is in rove-tokens; keep the two alike.
+ * file is in Rove; keep the two alike.
  *
  *   node scripts/hooks/claude/guard-bash.mjs --test   # check the cases below
  */
