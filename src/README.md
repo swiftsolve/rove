@@ -291,10 +291,10 @@ apply here. This section is how they're written as Tailwind utilities.
 | Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
 | Every theme name known to `cn` | `gen/cn-theme.mjs --check`: `cn-theme.gen.json` fresh |
 | `className` only places a library component | `checks/ui-classname.mjs` |
-| `components.gen.json` fresh; doc comments, defaults and `figma.json` entries present | `gen/components.mjs --check` |
+| `components.gen.json` fresh; doc comments, defaults and `figma-components.json` entries present | `gen/components.mjs --check` |
 | A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `gen/components.mjs --check` |
 | An API change raises `UI_LIBRARY_VERSION` (against the last commit locally, the push's base in CI) | `gen/components.mjs --check` |
-| Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma-library.mjs` |
+| Figma and the library agree: `figma-components.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma-library.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
 Review still has to catch:

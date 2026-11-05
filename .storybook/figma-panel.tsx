@@ -3,12 +3,12 @@ import React from 'react'
 import { AddonPanel, EmptyTabContent, Link } from 'storybook/internal/components'
 import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 
-import figma from '../src/ui/figma.json'
+import figma from '../src/ui/figma-components.json'
 
 type FigmaNode = { name: string; node: string }
 
 // A story's title ends in its component's name ('Containers/Card/CardHeader'),
-// which is figma.json's key, so every story finds its Figma component with
+// which is figma-components.json's key, so every story finds its Figma component with
 // nothing set on the story itself.
 const COMPONENTS: Record<string, FigmaNode | null> = figma.components
 const FILE = new URL(figma.file)
@@ -47,7 +47,7 @@ export function FigmaPanel({ isActive }: { isActive: boolean }): JSX.Element {
         </div>
       ) : (
         <EmptyTabContent
-          title={component === null ? `${name} has no Figma component` : `${name} isn't in figma.json`}
+          title={component === null ? `${name} has no Figma component` : `${name} isn't in figma-components.json`}
           description="It's built from other components, or lives only in code."
         />
       )}

@@ -26,7 +26,7 @@ it yourself.
 | Which components exist, and their props and guides | `components.gen.json`, generated from the code |
 | How the app uses them: styles, state, copy, tests | [src/README.md](../README.md) |
 | Which token, text style, spacing or radius | DESIGN.md, loaded with src/README.md |
-| A component's Figma counterpart | `figma.json`, which maps each one to its node in the Rove Design System file |
+| A component's Figma counterpart | `figma-components.json`, which maps each one to its node in the Rove Design System file |
 
 ## Procedures
 
@@ -36,7 +36,7 @@ agents and people, open the file.
 | Task | Skill |
 | --- | --- |
 | Add a library component, or change one's API or look, in code and Figma | `.claude/skills/add-library-component/SKILL.md` |
-| Map a component to its Figma component in `figma.json`, or fix a stale entry | `.claude/skills/map-figma-component/SKILL.md` |
+| Map a component to its Figma component in `figma-components.json`, or fix a stale entry | `.claude/skills/map-figma-component/SKILL.md` |
 | Resync the Storybooks (and the sites, if a screen changed) after committing | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules
@@ -127,7 +127,7 @@ major or minor is yours.
 - `components.gen.json` is the library's API in one file, for agents and
   people: each component's group, doc comment, props (type, variant values,
   default), Figma component, story ids and usage guide. `npm run gen` writes it
-  from the code and `figma.json`, which names each component's Figma
+  from the code and `figma-components.json`, which names each component's Figma
   component and node (`null` when Figma has none).
 
 ### Every component
@@ -180,7 +180,7 @@ lists every check, the library's included.
 `npm run storybook` serves the stories at `localhost:6006`, with a Theme switch
 in the toolbar (Docs pages follow it) and an accessibility check on every
 story. Its Figma tab embeds the component from the design file: a story
-title's last part is its key in `figma.json`, so a new component's stories find
+title's last part is its key in `figma-components.json`, so a new component's stories find
 it with nothing set. `npm run build:storybook` writes a static copy to
 `storybook-static/`. Master's is hosted at
 <https://rove.swiftsolve.net/storybook/>, synced on demand (the `resync-sites`

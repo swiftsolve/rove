@@ -6,7 +6,7 @@
  *   - its group, from the comment above it in `src/ui/index.ts`;
  *   - its description and props (type, variant values, default), read from
  *     the code with react-docgen-typescript, as Storybook's docs tables are;
- *   - its Figma component, from `src/ui/figma.json`;
+ *   - its Figma component, from `src/ui/figma-components.json`;
  *   - its stories' ids, for `localhost:6006/?path=/story/<id>`;
  *   - its usage guide (when to use it, when not, accessibility), from its
  *     stories' `guidance` parameter, as its Docs page shows it.
@@ -19,7 +19,7 @@
  * `--check`, part of `npm run lint`, also fails when a component or one of its
  * own props has no doc comment, a prop has a default the Default column misses
  * (one in a recipe's `defaultVariants`, or only in its words), or a component
- * has no entry in figma.json (`null` says it has no Figma counterpart), or a
+ * has no entry in figma-components.json (`null` says it has no Figma counterpart), or a
  * component with a Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
  * `Containers/Card/CardHeader`) has no usage guide.
  *
@@ -43,7 +43,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const UI = join(ROOT, 'src/ui')
 const INDEX = join(UI, 'index.ts')
 const COMPONENT_LIST = join(UI, 'components.gen.json')
-const FIGMA = join(UI, 'figma.json')
+const FIGMA = join(UI, 'figma-components.json')
 const VERSION = join(UI, 'version.ts')
 const isCheck = process.argv.includes('--check')
 

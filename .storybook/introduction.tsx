@@ -4,7 +4,7 @@ import type { CSSProperties, JSX, ReactNode } from 'react'
 
 import { DotSeparator, UI_LIBRARY_VERSION } from '../src/ui'
 import componentList from '../src/ui/components.gen.json'
-import figma from '../src/ui/figma.json'
+import figma from '../src/ui/figma-components.json'
 import { BRAND_ICONS } from './brand-icons'
 import { GROUPS } from './introduction-specimens'
 

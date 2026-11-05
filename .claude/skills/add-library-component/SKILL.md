@@ -53,7 +53,7 @@ The library's rules (stories, docs pages, what every component does) are in
 ## The Figma side
 
 The component lives on its group's page in the Rove Design System file
-(`src/ui/figma.json` has its URL; the file key is the part after `/design/`).
+(`src/ui/figma-components.json` has its URL; the file key is the part after `/design/`).
 
 What you need:
 
@@ -77,7 +77,7 @@ Without the server, stop after the code side and say the Figma side is left.
    `docs.subtitle`), Guidance (the stories' guide, worded for designers, line
    for line), Dark and Light previews, and a properties table. A changed one's
    section changes with it.
-3. Its entry in `src/ui/figma.json`: the `map-figma-component` skill
+3. Its entry in `src/ui/figma-components.json`: the `map-figma-component` skill
    (`.claude/skills/map-figma-component/SKILL.md`).
 
 ## Done

@@ -5,7 +5,7 @@
  *     CSS Module takes its name (`ConnectionStrip.module.css`);
  *   - hooks are camelCase starting with `use` (`useTheme.ts`, `.tsx` if it renders);
  *   - everything else is kebab-case: modules (`theme-context.ts`), global
- *     stylesheets (`base.css`), data (`figma.json`, or `components.gen.json`
+ *     stylesheets (`base.css`), data (`figma-components.json`, or `components.gen.json`
  *     when generated) and folders (`live-throughput/`);
  *   - a test takes its module's name plus `.test` (`chart-scale.test.ts`,
  *     `Button.test.tsx`, `usePresence.test.tsx`);

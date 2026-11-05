@@ -1,11 +1,11 @@
 ---
 name: map-figma-component
-description: Write or fix a library component's entry in src/ui/figma.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.mjs reports a missing entry, when checks/figma-library.mjs reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
+description: Write or fix a library component's entry in src/ui/figma-components.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.mjs reports a missing entry, when checks/figma-library.mjs reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
 ---
 
 # Map a component to Figma
 
-`src/ui/figma.json` maps each library component to its Figma component. It's
+`src/ui/figma-components.json` maps each library component to its Figma component. It's
 edited directly, and `npm run gen` copies each entry into
 `components.gen.json`. Two checks hold it true:
 
@@ -18,7 +18,7 @@ edited directly, and `npm run gen` copies each entry into
 
 The Figma MCP server (the claude.ai Figma connector) and Figma's `figma-use`
 skill, loaded before the first `use_figma` call. Call `create_session` with the
-file key first (the part after `/design/` in figma.json's `file`), and pass
+file key first (the part after `/design/` in figma-components.json's `file`), and pass
 its session id to every call after. Without the server, stop and say the entry
 is left: never guess a node id.
 
@@ -70,4 +70,4 @@ is left: never guess a node id.
   skips: with `FIGMA_TOKEN`, or with `--from` data you read through
   `use_figma`. The summary says which.
 - `npm run check` passes, and `components.gen.json` is committed with
-  `figma.json`.
+  `figma-components.json`.

@@ -2,7 +2,7 @@
  * Check the library against the Figma file, so a design change that lands on
  * one side only fails here instead of waiting for review:
  *
- *   - every node src/ui/figma.json names exists and is still called the name
+ *   - every node src/ui/figma-components.json names exists and is still called the name
  *     written beside it, and is a component or component set, not one variant;
  *   - every Figma variant property (Tone, Size) is a prop of a component mapped
  *     to it, with the same values: `Tone=Accent` is `tone="accent"`, a
@@ -20,7 +20,7 @@
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
- * figma.json entry, with why: `noFigmaVariant` for a prop Figma can't show (where a
+ * figma-components.json entry, with why: `noFigmaVariant` for a prop Figma can't show (where a
  * tooltip opens), `noCodeProp` for a variant code derives from other props (a
  * Link is External when it has `href`), and `valuesDiffer`. An exception that
  * no longer applies fails too, so the list stays true.
@@ -37,14 +37,14 @@
  * node's name, type and componentPropertyDefinitions by id, and `docs` each
  * docs section's text, in order and outside component instances, by its name:
  *
- *   node scripts/checks/figma-library.mjs [--from figma.json]
+ *   node scripts/checks/figma-library.mjs [--from figma-data.json]
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const FIGMA = join(ROOT, 'src/ui/figma.json')
+const FIGMA = join(ROOT, 'src/ui/figma-components.json')
 const COMPONENT_LIST = join(ROOT, 'src/ui/components.gen.json')
 const API = 'https://api.figma.com/v1'
 const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
@@ -192,7 +192,7 @@ const { file, components: mapping } = JSON.parse(await readFile(FIGMA, 'utf8'))
 const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8'))
 const fileKey = file.match(/figma\.com\/design\/([^/]+)/)?.[1]
 if (!fileKey) {
-  console.error(`figma.json's file isn't a figma.com/design URL: ${file}`)
+  console.error(`figma-components.json's file isn't a figma.com/design URL: ${file}`)
   process.exit(1)
 }
 
@@ -244,7 +244,7 @@ for (const [nodeId, components] of byNode) {
         if (prop.values && !(propName in noFigmaVariant)) {
           problems.push(
             `${component}.${propName} (${values.join(', ')}) has no variant property on Figma's "${found.name}": ` +
-              `add one, or list it in figma.json's noFigmaVariant with why`,
+              `add one, or list it in figma-components.json's noFigmaVariant with why`,
           )
         }
         continue
@@ -284,7 +284,7 @@ for (const [nodeId, components] of byNode) {
     if (matchedFigma.has(figmaName) || figmaName in noCodeProp) continue
     problems.push(
       `Figma's "${found.name}" has a ${figmaName} variant (${figmaVariants[figmaName].join(', ')}) that no prop of ` +
-        `${components.join(', ')} matches: add the prop, or list it in figma.json's noCodeProp with what it stands for`,
+        `${components.join(', ')} matches: add the prop, or list it in figma-components.json's noCodeProp with what it stands for`,
     )
   }
   for (const figmaName of Object.keys(noCodeProp)) {
