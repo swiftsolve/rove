@@ -8,7 +8,7 @@ const READOUTS = [
 ] as const
 
 const meta = {
-  title: 'Foundations/DirectionIcon',
+  title: 'Icons/DirectionIcon',
   component: DirectionIcon,
   args: { series: 'down' },
   argTypes: {

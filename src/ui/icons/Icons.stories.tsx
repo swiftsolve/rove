@@ -26,7 +26,7 @@ const ICONS = Object.entries({ ...Icons, ...CUSTOM })
   .sort(([a], [b]) => a.localeCompare(b))
 
 const meta = {
-  title: 'Foundations/Icons',
+  title: 'Icons/All icons',
   argTypes: {
     size: {
       control: { type: 'range', min: 12, max: 32, step: 1 },
