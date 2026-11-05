@@ -12,10 +12,10 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ## Rules
 
-A rule marked *Checked* fails a check, so `npm run check` catches a slip: Rove's checks are in its `scripts/checks/`, the tokens' own in this repo's. An unmarked rule is judgment: look at the result in both themes.
+A rule marked ✓ *Checked* fails a check, so `npm run check` catches a slip: Rove's checks are in its `scripts/checks/`, the tokens' own in this repo's. An unmarked rule is judgment: look at the result in both themes.
 
-- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). *Checked: Rove's `raw-values`, and `custom-properties` for a misspelt name.*
-- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. *Checked: `descriptions`.*
+- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). ✓ *Checked: Rove's `raw-values`, and `custom-properties` for a misspelt name.*
+- **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. ✓ *Checked: `descriptions`.*
 - **Name by job, not by look.** Pick `--bg-surface` because it's content on the backdrop, not because it's the right grey. The Palette shades (`neutral/850`) aren't CSS variables, on purpose.
 
 ### Surfaces
@@ -31,19 +31,19 @@ A rule marked *Checked* fails a check, so `npm run check` catches a slip: Rove's
 - `--text-primary` for content, `--text-secondary` for supporting lines, `--text-tertiary` for the quietest text and for icons by default.
 - On a solid (accent or negative), labels and icons use `--text-on-solid`.
 - Words in the accent (a link, a highlighted value) use `--text-accent`, on a surface or on `--accent-muted` (a selected item, a tinted button).
-- Each text, status and accent token clears WCAG AA (words 4.5:1, icons and lines 3:1) on every background this page puts it on, in both themes. *Checked: `contrast`.* Picking the token for the job is still judgment: a `--status-*` shade under words passes no check.
+- Each text, status and accent token clears WCAG AA (words 4.5:1, icons and lines 3:1) on every background this page puts it on, in both themes. ✓ *Checked: `contrast`.* Picking the token for the job is still judgment: a `--status-*` shade under words passes no check.
 
 ### Accent and buttons
 
 - `--accent-default` is for accent icons and lines. It's too light for words in Light mode, and under a white label.
 - An accent icon or line that responds to the pointer uses `--accent-hover` and `--accent-press`. They aren't for solids: a solid button has its own pair.
-- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers deepen, never lighten, so the white label keeps its contrast. *Checked: `contrast`.*
+- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers deepen, never lighten, so the white label keeps its contrast. ✓ *Checked: `contrast`.*
 - A solid red control (a solid negative button, the window close hover) uses `--status-negative-solid` and `--status-negative-solid-hover`.
 
 ### Status
 
 - `--status-*` (positive, good, warning, poor, negative) colour icons, bars and dots.
-- Words in a status colour use `--text-*` of the same name, which also clear a tint of their hue (a badge). The `--status-*` shades are too light for text in Light mode. *Checked: `contrast`, for the tokens.*
+- Words in a status colour use `--text-*` of the same name, which also clear a tint of their hue (a badge). The `--status-*` shades are too light for text in Light mode. ✓ *Checked: `contrast`, for the tokens.*
 - Download and upload in charts are `--series-down` and `--series-up`.
 
 ### Tints and opacity
@@ -66,27 +66,27 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ### Spacing and shape
 
-- Every gap, padding and margin is a `--spacing-*` step. *Checked: `raw-values`.*
+- Every gap, padding and margin is a `--spacing-*` step. ✓ *Checked: `raw-values`.*
 - Cards use `--card-padding` on every side. The rail and the content column share the side inset `--spacing-12`.
 - A card header is `--card-header-height` tall. A header-like strip that can grow with its content takes `--card-header-min-height` as its minimum instead.
-- Corners are `--radius-*`: `xs` for small controls inside others (menu items, segments, window buttons), `sm` for controls, `md` for nav items and the page-header chip, `lg` for cards and dialogs, `full` for pills and dots. A thin bar or line takes `full` too: it rounds to half its width. *Checked: `raw-values`.*
+- Corners are `--radius-*`: `xs` for small controls inside others (menu items, segments, window buttons), `sm` for controls, `md` for nav items and the page-header chip, `lg` for cards and dialogs, `full` for pills and dots. A thin bar or line takes `full` too: it rounds to half its width. ✓ *Checked: `raw-values`.*
 - **Off the scale only when something else sets the length**, and say why where it's used:
   - spacing that lines up with an icon's ink rather than its box, or gives back a 1px border;
   - spacing that lines up with something that isn't spacing, like an icon's width or a label column;
   - a corner that copies a shape from outside the system, like the app icon's.
 
-  A value that's just "a bit more" isn't an exception: take the nearest step, or propose a token in Figma. *Checked: `raw-values` fails an off-scale value until its reason is in its `ALLOWED` list.*
+  A value that's just "a bit more" isn't an exception: take the nearest step, or propose a token in Figma. ✓ *Checked: `raw-values` fails an off-scale value until its reason is in its `ALLOWED` list.*
 - Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed one is fine.
 
 ### Type
 
-- Set text with a text style's class from `text-styles.css` (`.type-heading-large`), or all four of its `--type-<style>-*` variables, never a font size alone. Each style's use is in [Text styles](#text-styles). *Checked: `text-styles`.*
+- Set text with a text style's class from `text-styles.css` (`.type-heading-large`), or all four of its `--type-<style>-*` variables, never a font size alone. Each style's use is in [Text styles](#text-styles). ✓ *Checked: `text-styles`.*
 - Numbers that are data (speeds, totals, chart labels) use the Number styles (`number-*`), set in Questrial; everything else is Inter.
 
 ### Focus and motion
 
 - Keyboard focus is `outline: var(--focus-outline)` with `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it inside instead, with `--focus-inset`.
-- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after. A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike. *Checked: `raw-values` fails a raw curve, and a duration typed where a token has the value.*
+- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after. A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike. ✓ *Checked: `raw-values` fails a raw curve, and a duration typed where a token has the value.*
 
 ### Icons
 
