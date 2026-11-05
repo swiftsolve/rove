@@ -82,9 +82,11 @@ unreleased, unless Rove needs it now or the user asks for a release.
 ## 4. In Rove
 
 - In `../rove`, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`,
-  then `npm run check`, and commit `package.json` and `package-lock.json`.
+  then `npm run gen` and `npm run check`, and commit `package.json`,
+  `package-lock.json` and any `*.gen.*` file that changed.
 - A token Rove's code names (a new one, or a rename) needs its uses and
-  `src/styles/tailwind.css`'s theme updated in the same commit.
+  `src/styles/tailwind.css`'s theme updated in the same commit, then
+  `npm run gen` again: `cn` reads its names from the theme.
 - Then run Rove's `resync-sites` skill (`../rove/.claude/skills/resync-sites/`).
 
 ## Done
