@@ -5,7 +5,7 @@ name: Build
 # doesn't resolve, which would otherwise first show up when Rove installs the
 # package. Then lint, and run every check in scripts/checks (DESIGN.md rebuilt
 # and committed, descriptions, WCAG AA contrast, the plugin), as npm run check
-# does. Run it by hand to check main between releases.
+# does. Run it on demand to check main between releases.
 on:
   push:
     tags: ['v*']

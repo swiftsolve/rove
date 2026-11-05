@@ -1,7 +1,7 @@
 /**
  * The token reference at the end of DESIGN.md, rewritten on every build.
  *
- * Everything above the marker is written by hand; everything below it comes
+ * Everything above the marker is edited directly; everything below it comes
  * from the Figma export and tokens.css, so it can't drift from them. It's a
  * guide to choosing a token, not a copy of tokens.css: colours are listed by
  * name and use only, so nobody copies a hex value; scales keep their values,

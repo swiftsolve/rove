@@ -5,7 +5,7 @@
 //   in the shapes src/figma/variables.json, src/figma/text-styles.json and
 //   src/figma/effect-styles.json hold.
 // - Check lists every difference between the file and a copy of those files,
-//   so a repo that's behind Figma, or was edited by hand, shows up. Nothing
+//   so a repo that's behind Figma, or was edited directly, shows up. Nothing
 //   here writes to the file.
 //
 // Run from Figma desktop: Plugins > Development > Import plugin from manifest.

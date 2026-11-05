@@ -14,7 +14,7 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ## Rules
 
-- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed by hand. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`], the second for a misspelt name.
+- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font sizes typed in. If nothing fits, the design needs a new token in Figma, not a one-off in code. The only exceptions are the off-scale lengths in [Spacing and shape](#spacing-and-shape). [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`], the second for a misspelt name.
 - **Every token says what it's for.** Its Figma description is its use, listed in the [token reference](#token-reference). Pick by that, not by the value. [✓ CHECKED by `checks/descriptions.mjs`].
 - **Name by job, not by look.** Pick `--bg-surface` because it's content on the backdrop, not because it's the right grey. The Palette shades (`neutral/850`) aren't CSS variables, on purpose.
 
@@ -96,7 +96,7 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 
 ## Changing the design
 
-Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma:export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma:check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` by hand. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#release) a version, update Rove to it, and resync the sites that embed Rove. The `update-tokens` skill (`.claude/skills/update-tokens/SKILL.md`) runs it all.
+Tokens are designed in Figma and released from the rove-tokens repo, one way: change a token in Figma, export it with the plugin in `figma-plugin/` into `src/figma/` (or `npm run figma:export` through the Figma MCP), run `npm run build`, and check the repo matches the file (`npm run figma:check`). Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` directly. Shadows are Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then [release](README.md#release) a version, update Rove to it, and resync the sites that embed Rove. The `update-tokens` skill (`.claude/skills/update-tokens/SKILL.md`) runs it all.
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 

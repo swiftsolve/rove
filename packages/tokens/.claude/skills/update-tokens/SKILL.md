@@ -55,8 +55,8 @@ earn one, create it in Figma like its neighbours:
 ## 2. Into this repo
 
 - `npm run figma:export` prints a script; run it through `use_figma`, save the
-  result as JSON, and `npm run figma:save <result.json>`. Never hand-edit
-  `src/figma/`.
+  result as JSON, and `npm run figma:save <result.json>`. Never edit
+  `src/figma/` directly.
 - `npm run build`, then `npm run check`. Contrast failing means the shade
   misses WCAG AA: fix it in Figma, not here. `design-md-fresh` fails until the
   rebuilt `DESIGN.md` is committed, so commit, then check again.
@@ -64,7 +64,7 @@ earn one, create it in Figma like its neighbours:
   It must return `inSync: true`.
 - Commit only your paths: `git commit -m "…" -- <paths>`.
 
-- A new token: if DESIGN.md's hand-written top half says which token to use
+- A new token: if DESIGN.md's top half, edited directly, says which token to use
   for what in its area, add it there too.
 
 ## 3. Release

@@ -59,7 +59,7 @@ const round = (n) => +n.toFixed(4)
 
 /** A DTCG dimension, or a value already written as CSS, as CSS. */
 const dimension = (d) => (typeof d === 'string' ? d : `${d.value}${d.unit}`)
-/** Zero without a unit, as shadows are written by hand. */
+/** Zero without a unit, as a shadow is written in CSS. */
 const length = (d) => (parseFloat(dimension(d)) === 0 ? '0' : dimension(d))
 
 /** A DTCG colour, or a value already written as CSS, as CSS. */
