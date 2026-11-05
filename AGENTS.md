@@ -3,7 +3,7 @@
 A React UI (`src/`) and a Rust backend (`crates/rove-core`, behind a thin Tauri
 shell in `src-tauri/`) over a typed bridge. Claude Code loads the UI's guides
 the first time it reads a file in their folder: `src/AGENTS.md` imports
-`src/README.md` and rove-tokens' `DESIGN.md`, and `src/ui/AGENTS.md` imports
+`src/README.md` and `rove-tokens`' `DESIGN.md`, and `src/ui/AGENTS.md` imports
 `src/ui/README.md`. Before then, or in another agent, open them from the UI
 row below.
 
@@ -69,7 +69,7 @@ of it (README.md: Check a change lists each stage). Fix what a hook reports.
 | How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
-| A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
+| A token | `rove-tokens`' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
 ### Done means
 

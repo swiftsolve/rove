@@ -1,7 +1,7 @@
 # Rove frontend
 
 How the React UI in `src/` is organised, styled and tested. Which token to use
-is in rove-tokens'
+is in `rove-tokens`'
 [DESIGN.md](../node_modules/@swiftsolve/rove-tokens/DESIGN.md), and the library has its own guide,
 [src/ui/README.md](ui/README.md). Step-by-step tasks are skills, listed in
 [AGENTS.md](../AGENTS.md).
@@ -138,7 +138,7 @@ apply here. This section is how they're written as Tailwind utilities.
   gap set by an icon's ink, the About tile's app-icon corner) goes in
   `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why; DESIGN.md's
   Spacing and shape says which reasons count. [✓ CHECKED by `checks/raw-values.mjs`]
-- Text takes a Figma text style's class from rove-tokens' `text-styles.css`
+- Text takes a Figma text style's class from `rove-tokens`' `text-styles.css`
   (`type-caption`, `type-label-field`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
   under every utility, so `font-medium`, `leading-[1.2]` or the `num` face
@@ -246,7 +246,7 @@ apply here. This section is how they're written as Tailwind utilities.
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
-| Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
+| Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | `rove-tokens`' `checks/contrast.mjs`, before a release |
 | Every theme name known to `cn` | `gen/cn-theme.mjs --check`: `cn-theme.gen.json` fresh |
 | `className` only places a library component | `checks/ui-classname.mjs` |
 | `components.gen.json` fresh; doc comments and `figma-components.json` entries present | `gen/components.mjs --check` |
