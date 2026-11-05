@@ -1,14 +1,14 @@
 /**
  * Check that every checked tag in the guides names the check behind it,
- * `[CHECKED - checks/raw-values.mjs]`, and that the check still exists, so a
- * renamed or deleted script can't leave a rule pointing at nothing.
+ * [✓ CHECKED by `checks/raw-values.mjs`], and that the check still exists, so
+ * a renamed or deleted script can't leave a rule pointing at nothing.
  *
- * A tag lists its checks after ` - `, split by commas: a path under `scripts/`
+ * A tag lists its checks after `by`, each in backticks: a path under `scripts/`
  * (`checks/raw-values.mjs`), one at the root (`eslint.config.js`), or a
- * command in COMMANDS. A bare tag fails; the bold one that explains the tag is
- * skipped. In rove-tokens' DESIGN.md only the checks it calls "Rove's" are
- * this repo's; the rest are rove-tokens' own, so they're left to it. A
- * DESIGN.md from before its tags named files (4.0.1 and older) is skipped.
+ * command in COMMANDS. A tag without the tick or a check fails; the bold one
+ * that explains the tag is skipped. In rove-tokens' DESIGN.md only the checks
+ * it calls "Rove's" are this repo's; the rest are rove-tokens' own, so they're
+ * left to it. A DESIGN.md from before this form (4.0.2 and older) is skipped.
  *
  *   node scripts/checks/checked-tags.mjs
  */
@@ -23,8 +23,9 @@ const SCRIPT_FOLDERS = ['checks/', 'gen/', 'eslint/']
 const COMMANDS = ['prettier --check']
 const ROVE_PREFIX = "Rove's "
 
-// A tag outside bold, with what follows its ` - ` if anything does.
-const TAG = /(?<!\*)\[CHECKED(?:\s+-\s+([^\]]*))?\](?!\*)/g
+// A tag outside bold: its tick, and what follows its `by` if anything does.
+const TAG = /(?<!\*)\[(✓ )?CHECKED(?:\s+by\s+([^\]]*))?\](?!\*)/g
+const FORM = '[✓ CHECKED by `its/file.mjs`]'
 
 const exists = (name) =>
   COMMANDS.includes(name) ||
@@ -35,20 +36,18 @@ let checked = 0
 
 function checkFile(path, isDesignMd) {
   const text = readFileSync(join(ROOT, path), 'utf8')
-  if (isDesignMd && !text.includes('[CHECKED - ')) return
+  if (isDesignMd && !text.includes('[✓ CHECKED by ')) return
   for (const match of text.matchAll(TAG)) {
     const line = text.slice(0, match.index).split('\n').length
-    const list = match[1]?.trim() ?? ''
+    const [, tick, rest] = match
+    const list = rest?.trim() ?? ''
     if (isDesignMd && !list.startsWith(ROVE_PREFIX)) continue
     checked += 1
-    const names = list
-      .replace(ROVE_PREFIX, '')
-      .split(',')
-      .map((name) => name.trim())
-      .filter(Boolean)
-    if (names.length === 0) problems.push(`${path}:${line}: name the check in the tag, [CHECKED - its/file.mjs]`)
+    const names = [...list.matchAll(/`([^`]+)`/g)].map(([, name]) => name)
+    if (!tick) problems.push(`${path}:${line}: start the tag with its tick, ${FORM}`)
+    if (names.length === 0) problems.push(`${path}:${line}: name the check in backticks, ${FORM}`)
     for (const name of names.filter((n) => !exists(n))) {
-      problems.push(`${path}:${line}: [CHECKED - ${name}] names a check that doesn't exist`)
+      problems.push(`${path}:${line}: \`${name}\` names a check that doesn't exist`)
     }
   }
 }
