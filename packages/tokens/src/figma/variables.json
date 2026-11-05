@@ -839,7 +839,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-2xs)",
-      "description": "Badges, field labels, chart axes",
+      "description": "Badges, chart axes",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -852,7 +852,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-xs)",
-      "description": "Captions, small labels",
+      "description": "Captions, field labels, small labels",
       "scopes": [
         "FONT_SIZE"
       ],

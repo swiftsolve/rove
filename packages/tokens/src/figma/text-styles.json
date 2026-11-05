@@ -90,7 +90,7 @@
       "fontFamily": "Inter",
       "fontStyle": "Medium",
       "fontWeight": 500,
-      "fontSize": 10,
+      "fontSize": 11,
       "lineHeight": {
         "unit": "PERCENT",
         "value": 120
@@ -102,7 +102,7 @@
       "textCase": "UPPER",
       "boundVariables": {
         "fontFamily": "font-family/sans",
-        "fontSize": "font-size/2xs"
+        "fontSize": "font-size/xs"
       }
     },
     {
