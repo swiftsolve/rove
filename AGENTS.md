@@ -75,7 +75,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
 | Each push and pull request (CI) | `npm run check` (`test.yml`), its API-version check against the push's base; `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
 | A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
-| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness and checked tags, and the Figma plugin test |
+| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness, and the Figma plugin test |
 
 ### Done means
 

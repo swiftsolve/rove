@@ -284,7 +284,6 @@ apply here. This section is how they're written as Tailwind utilities.
 | Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
 | File names | `checks/file-names.mjs` |
-| Every checked tag in a guide names its check, and that file exists | `checks/checked-tags.mjs` |
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |

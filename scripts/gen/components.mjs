@@ -337,7 +337,9 @@ if (isCheck) {
 
 if (problems.length > 0) {
   console.error(problems.join('\n'))
-  console.error(`\n${problems.length} components.gen.json problem${problems.length === 1 ? '' : 's'}`)
+  console.error(
+    `\n${problems.length} UI library problem${problems.length === 1 ? '' : 's'} (the library's docs, stories, Figma map or version; or a stale components.gen.json)`,
+  )
   process.exit(1)
 }
 console.log(`components.gen.json ${isCheck ? 'OK' : 'written'} (${components.length} components)`)
