@@ -99,3 +99,10 @@ body {
   font-size: 12.5px;
   color: var(--text-primary);
 }
+
+/* The contents list (GUIDANCE_TOC) nests the sections under the title; keep
+   them level with it, on the one line. Doubled classes outrank Storybook's. */
+.toc-wrapper .toc-list-item.toc-list-item > .toc-list.toc-list {
+  margin-left: -20px;
+  border-left: 0;
+}
