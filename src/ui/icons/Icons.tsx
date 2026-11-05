@@ -38,8 +38,8 @@ import {
   Laptop,
   Layers,
   LayoutGrid,
-  LockKeyhole,
-  LockKeyholeOpen,
+  Lock,
+  LockOpen,
   Mail,
   MessageSquare,
   Minus,
@@ -162,8 +162,8 @@ export const CameraIcon = make(Cctv, 16)
 export const SpeakerIcon = make(Speaker, 16)
 export const UnknownDeviceIcon = make(HelpCircle, 16)
 export const TagIcon = make(Tag, 16)
-export const LockIcon = make(LockKeyhole, 14)
-export const UnlockIcon = make(LockKeyholeOpen, 14)
+export const LockIcon = make(Lock, 14)
+export const UnlockIcon = make(LockOpen, 14)
 export const ShieldAlertIcon = make(ShieldAlert, 16)
 export const TrashIcon = make(Trash2, 16)
 export const PlusIcon = make(Plus, 16)
