@@ -2,7 +2,7 @@ import './introduction.css'
 
 import type { CSSProperties, JSX, ReactNode } from 'react'
 
-import { DotSeparator, UI_LIBRARY_VERSION } from '../src/ui'
+import { DotSeparator } from '../src/ui'
 import componentList from '../src/ui/components.gen.json'
 import figma from '../src/ui/figma-components.json'
 import { BRAND_ICONS } from './brand-icons'
@@ -384,7 +384,6 @@ export function Introduction(): JSX.Element {
           <a className="intro-package-link" href={`${REPO}/tree/master/src/ui`} target="_blank" rel="noreferrer">
             <code className="intro-code">@/ui</code>
           </a>
-          <span className="intro-version">v{UI_LIBRARY_VERSION}</span>
         </p>
         <p className="intro-lead">
           Rove&rsquo;s interface as a React library: {components.length} components, each with its stories, props and a

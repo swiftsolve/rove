@@ -47,13 +47,6 @@ Features import the library from `@/ui` and nothing else under `src/ui`. The
 library imports only itself (by relative path) and packages, never app code.
 [✓ CHECKED by `eslint.config.js`]
 
-The library keeps its own version, apart from the design system's:
-`UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows after "Rove
-Components". Raise it when the library's API changes: major
-for a removed or renamed component or prop, or a narrower type; minor for
-anything added. [✓ CHECKED by `gen/components.mjs`], that it changes; picking
-major or minor is yours.
-
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are no tiers: a
   component that starts using another stays where it is.

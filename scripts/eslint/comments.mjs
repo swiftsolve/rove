@@ -1,19 +1,13 @@
 /**
- * The house rules for comments, as an ESLint plugin, so the editor flags them
- * as you type (src/README.md, Where code goes):
- *
- *   - no em dash, as in copy;
- *   - a `/** *\/` that fits on one line is written on one line (`--fix` joins it);
- *   - short: a `//` note says why in at most 6 lines, a `/** *\/` doc in at
- *     most 10, and anything longer belongs in docs/. A file's opening comment,
- *     which documents the whole module, is exempt.
+ * The house rule for comments, as an ESLint plugin, so the editor flags it as
+ * you type (src/README.md, Where code goes): short, a `//` note says why in at
+ * most 6 lines, a `/** *\/` doc in at most 10, and anything longer belongs in
+ * docs/. A file's opening comment, which documents the whole module, is exempt.
  */
 
 // Lines of text, not counting blank ones or a block's delimiters.
 const MAX_NOTE_LINES = 6
 const MAX_DOC_LINES = 10
-// Prettier's printWidth (.prettierrc.json).
-const PRINT_WIDTH = 120
 // Comments that are instructions to a tool, not prose.
 const DIRECTIVE = /^\s*(eslint|prettier-ignore|@ts-|global\s|istanbul|c8|v8)/
 
@@ -55,56 +49,6 @@ function textLineCount(group) {
   return blockLines(group[0]).filter((line) => line.trim() !== '').length
 }
 
-const noEmDash = {
-  meta: { type: 'suggestion', docs: { description: 'No em dash in a comment.' }, schema: [] },
-  create(context) {
-    return {
-      Program() {
-        for (const comment of context.sourceCode.getAllComments()) {
-          if (comment.value.includes('—')) {
-            context.report({
-              loc: comment.loc,
-              message: 'No em dash in a comment: use a colon, a comma or two sentences.',
-            })
-          }
-        }
-      },
-    }
-  },
-}
-
-const singleLineJsDoc = {
-  meta: {
-    type: 'layout',
-    fixable: 'code',
-    docs: { description: 'A `/** */` comment that fits on one line is written on one line.' },
-    schema: [],
-  },
-  create(context) {
-    return {
-      Program() {
-        for (const comment of context.sourceCode.getAllComments()) {
-          if (!isJsDoc(comment) || comment.loc.start.line === comment.loc.end.line) continue
-          const lines = blockLines(comment).filter((line) => line.trim() !== '')
-          // Several paragraphs, a list, a code sample or a tag keep their shape.
-          const hasStructure =
-            blockLines(comment)
-              .slice(1, -1)
-              .some((line) => line.trim() === '') || lines.some((line) => /^(\s|[-*+] |\d+\. |```|@)/.test(line))
-          if (hasStructure || lines.length === 0) continue
-          const joined = `/** ${lines.join(' ')} */`
-          if (comment.loc.start.column + joined.length > PRINT_WIDTH) continue
-          context.report({
-            loc: comment.loc,
-            message: 'This comment fits on one line: write it as `/** … */`.',
-            fix: (fixer) => fixer.replaceTextRange(comment.range, joined),
-          })
-        }
-      },
-    }
-  },
-}
-
 const maxLines = {
   meta: {
     type: 'suggestion',
@@ -133,5 +77,5 @@ const maxLines = {
 
 export default {
   meta: { name: 'rove-comments' },
-  rules: { 'no-em-dash': noEmDash, 'single-line-jsdoc': singleLineJsDoc, 'max-lines': maxLines },
+  rules: { 'max-lines': maxLines },
 }

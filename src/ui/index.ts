@@ -65,5 +65,3 @@ export { useCountUp } from './hooks/useCountUp'
 export { useLatestRef } from './hooks/useLatestRef'
 export { usePresence } from './hooks/usePresence'
 export { PortalProvider } from './context/PortalProvider'
-
-export { UI_LIBRARY_VERSION } from './version'

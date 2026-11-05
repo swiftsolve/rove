@@ -1,10 +1,8 @@
-//! The house rules for comments, as the UI's ESLint rules hold them
+//! The house rule for comments, as the UI's ESLint rule holds it
 //! (`scripts/eslint/comments.mjs`), over every `.rs` file in the workspace:
-//!
-//!   - no em dash;
-//!   - short: a `//` note in at most 6 lines of text, a `///` doc in at most
-//!     10, and anything longer belongs in `docs/`. A module's `//!` header,
-//!     which documents the whole file, is exempt.
+//! short, a `//` note in at most 6 lines of text, a `///` doc in at most 10,
+//! and anything longer belongs in `docs/`. A module's `//!` header, which
+//! documents the whole file, is exempt.
 //!
 //! clippy can't take house rules, so this runs with `cargo test`.
 
@@ -156,11 +154,7 @@ fn comments(source: &str) -> Vec<Comment> {
 /// The problems in one file's source, as `line: message`.
 fn problems(source: &str) -> Vec<String> {
     let found = comments(source);
-    let mut problems: Vec<String> = found
-        .iter()
-        .filter(|c| c.text.contains('\u{2014}'))
-        .map(|c| format!("{}: no em dash in a comment: use a colon, a comma or two sentences", c.line))
-        .collect();
+    let mut problems = Vec::new();
 
     // Consecutive whole-line comments of one kind in one column read as one.
     let mut groups: Vec<Vec<&Comment>> = Vec::new();
@@ -228,12 +222,11 @@ fn every_comment_follows_the_house_rules() {
 }
 
 #[test]
-fn flags_an_em_dash_and_an_overlong_note_but_not_strings_or_headers() {
+fn flags_an_overlong_note_but_not_strings_or_headers() {
     let source = "//! A header may run long.\n//! Two.\n//! Three.\n//! Four.\n//! Five.\n//! Six.\n//! Seven.\n\
-        fn f() {\n    let s = \"// not \u{2014} a comment\";\n    // one\n    // two\n    // three\n    // four\n    \
-        // five\n    // six\n    // seven\n}\n/// Fine \u{2014} not.\n";
+        fn f() {\n    let s = \"// not a comment\";\n    // one\n    // two\n    // three\n    // four\n    \
+        // five\n    // six\n    // seven\n}\n";
     let found = problems(source);
-    assert_eq!(found.len(), 2, "{found:?}");
+    assert_eq!(found.len(), 1, "{found:?}");
     assert!(found[0].starts_with("10: keep this // comment to 6 lines"), "{found:?}");
-    assert!(found[1].starts_with("18: no em dash"), "{found:?}");
 }

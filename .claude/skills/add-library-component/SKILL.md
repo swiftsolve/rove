@@ -29,14 +29,13 @@ The library's rules (stories, docs pages, what every component does) are in
    (`Data display/Name`), with an `AllStates` story when it has several states,
    a usage guide, and a `play` story if it takes a handler.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. `npm run gen`, and raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
-   (a new component is an API change).
+6. `npm run gen`.
 
 ## Change one: the code side
 
 1. Change the code, its doc comments, and its stories and usage guide if its
    use changed.
-2. `npm run gen`, and raise `UI_LIBRARY_VERSION` for an API change.
+2. `npm run gen`.
 3. For a change meant to look the same, diff `npm run screenshots -- --stable`
    from before and after.
 

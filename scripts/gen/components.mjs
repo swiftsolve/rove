@@ -17,19 +17,14 @@
  *   node scripts/gen/components.mjs --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
- * own props has no doc comment, a prop has a default the Default column misses
- * (one in a recipe's `defaultVariants`, or only in its words), or a component
- * has no entry in figma-components.json (`null` says it has no Figma counterpart), or a
+ * own props has no doc comment, or a component has no entry in figma-components.json (`null` says it has no Figma counterpart), or a
  * component with a Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
  * `Containers/Card/CardHeader`) has no usage guide.
  *
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
  * its stories have none that drives it (a `play` function, tagged
- * `!autodocs`), and when the API (components, props, icons, helpers) differs
- * from the base's (see versionBase) while `UI_LIBRARY_VERSION` in version.ts
- * doesn't.
+ * `!autodocs`).
  */
-import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -44,19 +39,7 @@ const UI = join(ROOT, 'src/ui')
 const INDEX = join(UI, 'index.ts')
 const COMPONENT_LIST = join(UI, 'components.gen.json')
 const FIGMA = join(UI, 'figma-components.json')
-const VERSION = join(UI, 'version.ts')
 const isCheck = process.argv.includes('--check')
-
-// The Default column shows only a default written into the destructured props
-// (or an @default tag). These find one it would miss: a prop doc that states
-// its default, or a recipe's `defaultVariants` axis named like the prop.
-const NAMES_A_DEFAULT = /\(the default\)|\bby default\b|\bdefaults to\b/i
-
-async function readRecipeDefaults(source) {
-  const text = await readFile(source, 'utf8')
-  const blocks = [...text.matchAll(/defaultVariants: \{([^}]*)\}/g)].map(([, axes]) => axes)
-  return new Set(blocks.flatMap((axes) => [...axes.matchAll(/(\w+):/g)].map(([, axis]) => axis)))
-}
 
 const problems = []
 const rel = (path) => relative(ROOT, path)
@@ -182,60 +165,6 @@ function hasInteractionStory(file, text) {
   })
 }
 
-// The API a version number promises: each component's props (type or values,
-// default, whether required) and whether it passes element props, and the
-// icons and helpers by name. Descriptions, stories and guides aren't API.
-const apiOf = (componentList) =>
-  JSON.stringify({
-    components: Object.fromEntries(
-      Object.entries(componentList.components ?? {}).map(([name, { props, hasElementProps }]) => [
-        name,
-        {
-          props: Object.fromEntries(
-            Object.entries(props).map(([prop, { type, values, default: initial, isRequired }]) => [
-              prop,
-              { type, values, default: initial, isRequired },
-            ]),
-          ),
-          hasElementProps: Boolean(hasElementProps),
-        },
-      ]),
-    ),
-    icons: componentList.icons ?? [],
-    helpers: Object.keys(componentList.helpers ?? {}),
-  })
-const versionIn = (text) => text?.match(/UI_LIBRARY_VERSION = '([^']+)'/)?.[1]
-const atRef = (ref, path) => {
-  const { status, stdout } = spawnSync('git', ['show', `${ref}:${rel(path)}`], { cwd: ROOT, encoding: 'utf8' })
-  return status === 0 ? stdout : null
-}
-
-// What the API is compared with. CI sets UI_API_BASE to the commit the push or
-// pull request starts from, so a commit that skipped `npm run check` is still
-// caught. Locally it's HEAD while the change is uncommitted, and the commit
-// before once it's committed, so a run after the commit still sees it.
-async function versionBase() {
-  if (process.env.UI_API_BASE) return process.env.UI_API_BASE
-  const isCommitted = await Promise.all(
-    [COMPONENT_LIST, VERSION].map(async (path) => atRef('HEAD', path) === (await readFile(path, 'utf8'))),
-  )
-  return isCommitted.every(Boolean) ? 'HEAD~1' : 'HEAD'
-}
-
-// A changed API needs a new UI_LIBRARY_VERSION, so one version names one API.
-// Without git history for the base (a tarball, a new branch) it's skipped.
-async function checkVersion(componentList) {
-  const base = await versionBase()
-  const [baseComponentList, baseVersion] = [atRef(base, COMPONENT_LIST), versionIn(atRef(base, VERSION))]
-  if (!baseComponentList || !baseVersion) return
-  const version = versionIn(await readFile(VERSION, 'utf8'))
-  if (apiOf(JSON.parse(baseComponentList)) === apiOf(componentList) || version !== baseVersion) return
-  problems.push(
-    `${rel(VERSION)}: the library's API changed since ${base}, and UI_LIBRARY_VERSION is still ${version}. ` +
-      'Raise it: major for a removed or renamed component or prop, or a narrower type; minor for anything added.',
-  )
-}
-
 // Every other export of the index, with its doc comment, through the compiler.
 function readOtherExports(componentNames) {
   const program = ts.createProgram([INDEX], {
@@ -272,16 +201,9 @@ for (const { name, group, source } of components) {
     problems.push(`${rel(source)}: react-docgen-typescript found no component named ${name}`)
     continue
   }
-  const recipeDefaults = await readRecipeDefaults(source)
   if (!doc.description) problems.push(`${rel(source)}: ${name} needs a doc comment saying what it's for`)
   for (const prop of Object.values(doc.props)) {
     if (!prop.description) problems.push(`${rel(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
-    const hasDefault = prop.defaultValue?.value !== undefined
-    if (!prop.required && !hasDefault && (recipeDefaults.has(prop.name) || NAMES_A_DEFAULT.test(prop.description))) {
-      problems.push(
-        `${rel(source)}: ${name}'s ${prop.name} prop has a default the docs' Default column misses: write it into the destructured props`,
-      )
-    }
   }
   if (!(name in figma.components)) {
     problems.push(`${rel(FIGMA)}: add ${name}, with its Figma component, or null if it has none`)
@@ -330,7 +252,6 @@ const json = `${JSON.stringify(componentList, null, 2)}\n`
 if (isCheck) {
   const current = await readFile(COMPONENT_LIST, 'utf8').catch(() => '')
   if (current !== json) problems.push(`${rel(COMPONENT_LIST)} is stale: run npm run gen`)
-  await checkVersion(componentList)
 } else {
   await writeFile(COMPONENT_LIST, json)
 }
@@ -338,7 +259,7 @@ if (isCheck) {
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(
-    `\n${problems.length} UI library problem${problems.length === 1 ? '' : 's'} (the library's docs, stories, Figma map or version; or a stale components.gen.json)`,
+    `\n${problems.length} UI library problem${problems.length === 1 ? '' : 's'} (the library's docs, stories or Figma map; or a stale components.gen.json)`,
   )
   process.exit(1)
 }

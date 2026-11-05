@@ -120,7 +120,7 @@ component's Docs page in Storybook shows the same, with its stories
   (`ThemeProvider.tsx`), a hook is camelCase starting with `use`
   (`useTheme.ts`), and everything else is kebab-case: contexts, utils and
   types (`theme-context.ts`), global stylesheets (`base.css`) and folders
-  (`live-throughput/`). [✓ CHECKED by `checks/file-names.mjs`]
+  (`live-throughput/`).
 - Prettier lays out the code (`.prettierrc.json`: no semicolons, single
   quotes, 120 columns); `npm run format` applies it. Markdown and generated
   files are left alone (`.prettierignore`). [✓ CHECKED by `prettier --check`]
@@ -129,11 +129,10 @@ component's Docs page in Storybook shows the same, with its stories
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
   exception is a line-level disable that says why. [✓ CHECKED by `eslint.config.js`]
 - A comment says why: a reason, constraint or trap the code can't show. One
-  that restates the code goes. Exports, props and type fields take `/** */`,
-  on one line when it fits, else opening on a line of its own; implementation
-  notes take `//`. Keep it short: a `//` note in at most 6 lines, a `/** */`
-  doc in at most 10, and anything longer in `docs/`. No em dash, no divider
-  comments, and a lint exception says why after `--`. [✓ CHECKED by `eslint/comments.mjs`, `eslint.config.js`], except whether it says why.
+  that restates the code goes. Exports, props and type fields take `/** */`;
+  implementation notes take `//`. Keep it short: a `//` note in at most 6
+  lines, a `/** */` doc in at most 10, and anything longer in `docs/`. No
+  divider comments, and a lint exception says why after `--`. [✓ CHECKED by `eslint/comments.mjs`, `eslint.config.js`], except whether it says why.
 
 ### Names and copy
 
@@ -217,8 +216,7 @@ apply here. This section is how they're written as Tailwind utilities.
     destructured props (`tone = 'current'`, `isDisabled = false`): that's what
     the docs' Default column reads. A default that depends on another prop
     takes an `@default` tag instead (Button's `size`). A prop's doc comment
-    doesn't repeat its default. [✓ CHECKED by `gen/components.mjs`]: a default
-    the Default column misses.
+    doesn't repeat its default.
   - Something that adds no classes is `null`: a recipe with no base is
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
     boolean axis leaves out a branch that adds nothing.
@@ -281,18 +279,16 @@ apply here. This section is how they're written as Tailwind utilities.
 | Library and context import boundaries, no raw `<button>` | ESLint, `no-restricted-imports` and `no-restricted-syntax` |
 | No typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
 | Boolean prefixes, `type` over `interface`, import order, jsx-a11y | ESLint |
-| Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
+| Comments: length, and a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
-| File names | `checks/file-names.mjs` |
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
 | Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
 | Every theme name known to `cn` | `gen/cn-theme.mjs --check`: `cn-theme.gen.json` fresh |
 | `className` only places a library component | `checks/ui-classname.mjs` |
-| `components.gen.json` fresh; doc comments, defaults and `figma-components.json` entries present | `gen/components.mjs --check` |
+| `components.gen.json` fresh; doc comments and `figma-components.json` entries present | `gen/components.mjs --check` |
 | A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `gen/components.mjs --check` |
-| An API change raises `UI_LIBRARY_VERSION` (against the last commit locally, the push's base in CI) | `gen/components.mjs --check` |
 | Figma and the library agree: `figma-components.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma-library.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
@@ -308,4 +304,4 @@ Every rule without the tag is judgment. These slip through most often:
   so read `npm run screenshots` in both themes;
 - a screen, subpage or dialog without `npm run a11y`, which no check runs;
 - Figma out of sync beyond its variants and guides (a component's spacing, a
-  guide line's wording), and major or minor for a version.
+  guide line's wording).

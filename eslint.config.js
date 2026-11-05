@@ -94,12 +94,10 @@ export default tseslint.config(
     rules: { 'simple-import-sort/imports': 'error' },
   },
   {
-    // Comments: short, no em dash, one line when they fit
-    // (scripts/eslint/comments.mjs), and a lint exception says why.
+    // Comments: short (scripts/eslint/comments.mjs), and a lint exception says
+    // why.
     plugins: { comments, 'eslint-comments': eslintComments },
     rules: {
-      'comments/no-em-dash': 'error',
-      'comments/single-line-jsdoc': 'error',
       'comments/max-lines': 'error',
       'eslint-comments/require-description': 'error',
     },
