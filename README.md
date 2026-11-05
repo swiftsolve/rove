@@ -238,7 +238,7 @@ Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoI
 in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),
 which exports them from Figma, one way, and checks that Figma and the package agree.
 Components start in `src/ui`, and Figma mirrors them. To browse the design
-system without Figma, see the [slideshow](https://swiftsolve.github.io/rove-tokens/).
+system without Figma, see the [Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/).
 
 ## Development
 
