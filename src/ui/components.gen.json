@@ -1367,10 +1367,7 @@
       "group": "Data display",
       "source": "src/ui/data-list/DataList.tsx",
       "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
-      "figma": {
-        "name": "Data row",
-        "node": "15:642"
-      },
+      "figma": null,
       "props": {
         "children": {
           "type": "ReactNode",

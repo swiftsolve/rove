@@ -52,7 +52,7 @@
       "node": "15:642",
       "noFigmaVariant": { "density": "Figma has the row, not the list: a list's spacing is its frame's gap." }
     },
-    "DataListStack": { "name": "Data row", "node": "15:642" },
+    "DataListStack": null,
     "DataRow": {
       "name": "Data row",
       "node": "15:642",
