@@ -56,8 +56,6 @@ const ALLOWED = [
   // leave ~2px empty each side at 11px, ~3px at 13px.
   { file: 'src/features/apps/components/TransferFigures.tsx', value: 'gap-[5px]' },
   { file: 'src/features/apps/components/UsageRow.tsx', value: 'ml-[3px]' },
-  { file: 'src/features/services/components/ServiceTally.tsx', value: 'ml-[-3px]' },
-  { file: 'src/features/services/components/ServiceTally.tsx', value: 'gap-[3px]' },
   { file: 'src/ui/link/Link.tsx', value: 'gap-[5px]' },
   { file: 'src/ui/link/Link.tsx', value: '-mx-[3px]' },
   // The pill's padding hangs outside the words, so they line up with the text around them.
