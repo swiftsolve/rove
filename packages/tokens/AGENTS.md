@@ -4,8 +4,8 @@
 `figma-plugin/` exports the Rove Design System's variables, text styles and
 shadows into `src/figma/`, and `npm run build` turns them into `dist/`
 (`tokens/` in DTCG, `tokens.css`, `text-styles.css`) and the token reference in
-`DESIGN.md`. This file is the procedures and the rules; `README.md` has the
-details.
+`DESIGN.md`. This file is the procedures, the rules and how a change is
+validated; `README.md` has the details.
 
 ## Procedures
 
@@ -35,6 +35,8 @@ released, and taken up by Rove. Nothing here writes to Figma.
   agent check the same way. A difference means the repo is behind Figma
   (export again) or was edited by hand (undo it, and change Figma).
 
+## Validation
+
 ### Check your work
 
 Run `npm run check` before you commit: the build, lint (ESLint and Prettier),
@@ -42,8 +44,6 @@ then every check in `scripts/checks/` (DESIGN.md up to date, descriptions, WCAG
 AA contrast, the Figma plugin). `npm run format` fixes what Prettier reports.
 Fix what a hook reports; never skip one. Other sessions share this checkout, so
 commit only your paths (`git commit -m "…" -- <paths>`).
-
-## Reference
 
 ### What runs on its own
 
