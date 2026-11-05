@@ -1,10 +1,9 @@
 # Rove frontend
 
 How the React UI in `src/` is organised, styled and tested. Which token to use
-is in `rove-tokens`'
-[DESIGN.md](../node_modules/@swiftsolve/rove-tokens/DESIGN.md), and the library has its own guide,
-[src/ui/README.md](ui/README.md). Step-by-step tasks are skills, listed in
-[AGENTS.md](../AGENTS.md).
+is in `rove-tokens`' [DESIGN.md](../node_modules/@swiftsolve/rove-tokens/DESIGN.md),
+and the library has its own guide, [src/ui/README.md](ui/README.md).
+Step-by-step tasks are skills, listed in [AGENTS.md](../AGENTS.md).
 
 **[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
 `npm run check` fails. The file it names is the check: `checks/` and `gen/` are
@@ -32,25 +31,29 @@ component's Docs page in Storybook shows the same, with its stories
 ### State: context, not prop drilling
 
 - Props are a component's own inputs: the item a row shows, a dialog's
-  `onClose`. App-wide state comes from context, read where it's used: `useNavigation()` (location, `navigate`,
-  `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()`
-  and `useConnectionStatus()` (the title bar's verdict). Each has its own small
-  context, so a reader re-renders only when its value changes. That's why every
-  view renders with no props.
-- A screen change moves focus to the new page's h1. Going back (the Back
-  button or history) lands on the control that opened the next screen instead,
-  scrolled to where it was, ringed only if it was reached by keyboard:
-  `navigate` saves it on the history entry it leaves. So a row, card or link
-  that opens a screen just calls `navigate`, with no focus code of its own.
-- Backend data comes from TanStack Query. Each feature owns its data hook in
-  `hooks/` (`useDevices`, `useDataUsage`, …), built on `useQuery` through
-  `useBackendQuery`, and the components that show the data call it directly.
-  Callers of the same hook share one cache entry, so `DevicesView` and
-  `DevicesCard` see the same scan. Network info and internet status are
-  app-wide rather than per screen: `NetworkProvider` reads them with `useQuery`
-  directly and components get them from `useNetwork()` and
-  `useInternetStatus()`. Live throughput and the speed test are event streams,
-  not reads, so each keeps a module store read with `useSyncExternalStore`.
+  `onClose`. Every view renders with no props.
+- App-wide state comes from context, read where it's used: `useNavigation()`
+  (location, `navigate`, `back`), `useTheme()`, `useNetwork()` (network info),
+  `useInternetStatus()` and `useConnectionStatus()` (the title bar's verdict).
+  Each has its own small context, so a reader re-renders only when its value
+  changes.
+- `navigate` handles focus, so a row, card or link that opens a screen just
+  calls it:
+  - a new screen focuses its h1;
+  - going back (the Back button or history) lands on the control that opened
+    the screen, scrolled to where it was, ringed only if it was reached by
+    keyboard.
+- Backend data comes from TanStack Query:
+  - each feature owns its data hooks in `hooks/` (`useDevices`,
+    `useDataUsage`, …), built on `useBackendQuery`, and the components that
+    show the data call them directly;
+  - callers of one hook share its cache entry, so `DevicesView` and
+    `DevicesCard` see the same scan;
+  - network info and internet status are app-wide: `NetworkProvider` reads
+    them, and components get them from `useNetwork()` and
+    `useInternetStatus()`;
+  - live throughput and the speed test are event streams, not reads, so each
+    keeps a module store read with `useSyncExternalStore`.
 - A query key names the data, plus the network for data that belongs to one
   (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
   fresh results. A query fetches while a screen that shows it is open and polls
@@ -67,10 +70,12 @@ component's Docs page in Storybook shows the same, with its stories
 - `TABS` (`app/utils/tab-registry.ts`) holds each tab's label, rail icon and
   placement, screen and subpages; `TabBar` and `CurrentScreen` read it.
 - A custom hook lives in its own file in a `hooks/` folder.
-- React 19 idioms: a component's return type is inferred (annotate it only as
-  `JSX.Element | null`, when it can render nothing); a context is read with
-  `use(SomeContext)` and provided as `<SomeContext value={…}>`; an effect reads
-  fresh props through `useEffectEvent`.
+- React 19 idioms:
+  - a component's return type is inferred, annotated only as
+    `JSX.Element | null` when it can render nothing;
+  - a context is read with `use(SomeContext)` and provided as
+    `<SomeContext value={…}>`;
+  - an effect reads fresh props through `useEffectEvent`.
 - A view file holds the page and its layout; the rows, cards and widgets it is
   built from go in the feature's `components/`, and the logic behind the copy
   (names, ages, grouping) in `utils/` as plain functions.
@@ -87,28 +92,34 @@ component's Docs page in Storybook shows the same, with its stories
   (`live-throughput/`).
 - Imports come in three groups, each sorted: packages, then the app's own
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
-  JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
-  exception is a line-level disable that says why. [✓ CHECKED by `eslint.config.js`]
-- A comment says why: a reason, constraint or trap the code can't show. One
-  that restates the code goes. Exports, props and type fields take `/** */`;
-  implementation notes take `//`. Keep it short: a `//` note in at most 6
-  lines, a `/** */` doc in at most 10, and anything longer in `docs/`. No
-  divider comments, and a lint exception says why after `--`. [✓ CHECKED by `eslint/comments.mjs`, `eslint.config.js`], except whether it says why.
+  [✓ CHECKED by `eslint.config.js`]
+- JSX is linted for accessibility (jsx-a11y's strict set).
+  [✓ CHECKED by `eslint.config.js`]
+- A comment says why: a reason, constraint or trap the code can't show.
+  - Exports, props and type fields take `/** */`; implementation notes take
+    `//`.
+  - A `//` note runs at most 6 lines and a `/** */` doc at most 10; anything
+    longer goes in `docs/`. [✓ CHECKED by `eslint/comments.mjs`]
+  - A lint exception is a line-level disable that says why after `--`.
+    [✓ CHECKED by `eslint.config.js`]
+  - No divider comments.
 
 ### Names and copy
 
 - A boolean reads as a yes/no question: `isOpen`, `areEventsLoading`,
   `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
-  phrase (`needsNetworkInfo`). That covers props, `useState` pairs
-  (`[isOpen, setIsOpen]`), params, fields and module constants (`IS_MAC`).
-  Names the DOM or a library picks keep theirs: alias Recharts' `active` to
-  `isActive` where you read it. [✓ CHECKED by `eslint.config.js`]
+  phrase (`needsNetworkInfo`). [✓ CHECKED by `eslint.config.js`]
+  - It covers props, `useState` pairs (`[isOpen, setIsOpen]`), params, fields
+    and module constants (`IS_MAC`).
+  - A name the DOM or a library picks keeps its name: alias Recharts' `active`
+    to `isActive` where you read it.
 - Data that's shared and must not change (a context value, a list passed
   down as a prop, a module-level table) can be typed `readonly T[]`,
   `ReadonlyMap` or `Readonly<…>`, so the compiler catches a stray mutation.
 - An object shape is a `type`, never an `interface`, so a shape that grows
-  into a union or an intersection keeps its keyword. [✓ CHECKED by `eslint.config.js`]. A prop it
-  redeclares from a base is omitted from the base
+  into a union or an intersection keeps its keyword.
+  [✓ CHECKED by `eslint.config.js`]
+- A prop a type redeclares from a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
@@ -134,21 +145,24 @@ apply here. This section is how they're written as Tailwind utilities.
   preflight: `styles/base.css` is the reset.
 - A token is its utility: `p-12`, not `p-[12px]`; `rounded-sm`, not
   `rounded-[8px]`; `duration-(--duration-fast)`. A gap built from tokens is a
-  `calc()` of them. A raw value that has to stay (the QR code's white plate, a
-  gap set by an icon's ink, the About tile's app-icon corner) goes in
-  `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why; DESIGN.md's
-  Spacing and shape says which reasons count. [✓ CHECKED by `checks/raw-values.mjs`]
-- Text takes a Figma text style's class from `rove-tokens`' `text-styles.css`
-  (`type-caption`, `type-label-field`, `type-number-default`, …) and a colour
-  utility: `type-caption text-tertiary`. The classes set no colour and sit
-  under every utility, so `font-medium`, `leading-[1.2]` or the `num` face
-  beside one wins; a size utility never goes beside one. Text with no
-  matching style (13px at 500 is Body/Default plus `font-medium`) takes the
-  nearest style at its size and a utility for the rest. A style sets its own line height, so text
-  that should keep its line's (a timeline row's `*:leading-[1.3]`, a
-  button's) adds `leading-[inherit]`. A stylesheet sets all four of a style's
-  `--type-<style>-*` variables. Text no style fits at all goes in
-  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why. [✓ CHECKED by `checks/text-styles.mjs`]
+  `calc()` of them. [✓ CHECKED by `checks/raw-values.mjs`]
+  - A raw value that has to stay (the QR code's white plate, a gap set by an
+    icon's ink, the About tile's app-icon corner) goes in
+    `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why. DESIGN.md's
+    Spacing and shape says which reasons count.
+- Text takes a text style's class and a colour utility:
+  `type-caption text-tertiary`. [✓ CHECKED by `checks/text-styles.mjs`]
+  - The classes (`type-caption`, `type-label-field`, `type-number-default`, …)
+    come from `rove-tokens`' `text-styles.css`, set no colour, and sit under
+    every utility, so `font-medium`, `leading-[1.2]` or the `num` face beside
+    one wins. A size utility stays off them.
+  - Text with no matching style takes the nearest style at its size and a
+    utility for the rest: 13px at 500 is Body/Default plus `font-medium`.
+  - A style sets its own line height, so text that keeps its line's (a
+    timeline row's `*:leading-[1.3]`, a button's) adds `leading-[inherit]`.
+  - A stylesheet sets all four of a style's `--type-<style>-*` variables.
+  - Text no style fits at all goes in `scripts/checks/text-styles.mjs`'s
+    `ALLOWED` list, with why.
 - Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
   `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
@@ -192,16 +206,18 @@ apply here. This section is how they're written as Tailwind utilities.
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
   variant.
-- `className` on a library component is only for its place in a layout:
-  margin, position, z-index, size, flex or grid item, its own text alignment,
-  rounding to fit its container, showing or hiding it. Padding, inner layout,
-  type, colour or surface is a missing variant, or a style for an element the
-  view owns: a card that lays out its own content does it in a `<div>`
-  inside the Card; InlineMeta and MetricValue take their type from the line
-  they sit in. Icons (coloured by `className`) and the unstyled
-  `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in
-  a `.module.css` (below); InlineMeta keeps its `inline-meta` and
-  `inline-meta-item` classes for it. [✓ CHECKED by `checks/ui-classname.mjs`]
+- `className` on a library component places it in a layout: margin,
+  position, z-index, size, flex or grid item, its own text alignment, rounding
+  to fit its container, showing or hiding it.
+  [✓ CHECKED by `checks/ui-classname.mjs`]
+  - Padding, inner layout, type, colour or surface is a missing variant, or a
+    style for an element the view owns: a card that lays out its own content
+    does it in a `<div>` inside the Card. InlineMeta and MetricValue take
+    their type from the line they sit in.
+  - Icons (coloured by `className`) and the unstyled `CollapsibleTrigger` are
+    exempt.
+  - A `:has()` selector in a `.module.css` (below) may reach in; InlineMeta
+    keeps its `inline-meta` and `inline-meta-item` classes for it.
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes.
 - A `.module.css` file holds only what utilities can't say, selectors into
@@ -219,9 +235,9 @@ apply here. This section is how they're written as Tailwind utilities.
   behaviour and accessibility: roles, names, keyboard, focus, disabled.
 - Every story is a test too. It renders in headless Chromium with the real
   styles, runs its `play` function and fails on any accessibility violation
-  (`@storybook/addon-vitest`). Storybook's testing widget runs them from the
-  sidebar; `npx vitest --project=storybook` runs them alone. A new machine
-  needs `npx playwright install chromium` once.
+  (`@storybook/addon-vitest`). `npx vitest --project=storybook` runs them
+  alone, as does Storybook's testing widget; a new machine needs
+  `npx playwright install chromium` once.
 - All three kinds run with `npm test`, part of `npm run check`.
 - Looks are checked by pixels, and every screen and dialog by axe, outside
   `npm test`. `npm run screenshots -- --stable` pauses the clock, randomness
