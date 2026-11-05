@@ -137,8 +137,8 @@ check, the library's included.
 `npm run storybook` serves the stories at `localhost:6006`, with a Theme switch
 in the toolbar (Docs pages follow it) and an accessibility check on every
 story. Its Figma tab embeds the component from the design file: a story
-title's last part is its key in `figma-components.json`, so a new component's stories find
-it with nothing set. `npm run build:storybook` writes a static copy to
+title's last part is its key in `figma-components.json`, so a new component's
+stories find it with nothing set. `npm run build:storybook` writes a static copy to
 `storybook-static/`. Master's is hosted at
 <https://rove.swiftsolve.net/storybook/>, synced on demand (the `resync-sites`
 skill), and every push publishes to Chromatic for visual tests.
