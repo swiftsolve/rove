@@ -174,3 +174,66 @@ nothing in the type system would warn you.
 Tauri owns the container and the pipe; serde owns the translation; the bridge
 owns the naming. Keeping a seam of our own *above* the framework's seam is what
 makes the mock (and therefore the browser demo) possible at all.
+
+---
+
+## Where everything lives
+
+The whole repository, folder by folder.
+
+```
+rove/
+├── src/                        React UI (Vite)
+│   ├── main.tsx                entry: installs the bridge, mounts the app
+│   ├── app/                    the shell, laid out like a feature: App.tsx
+│   │                           (providers) and AppShell.tsx at the top, then
+│   │                           components/ (title bar, nav rail,
+│   │                           CurrentScreen), context/ (navigation, theme,
+│   │                           network), hooks/ (useNetwork,
+│   │                           useInternetStatus, useConnectionStatus, …)
+│   │                           and utils/ (incl. the TanStack query client)
+│   ├── features/               one folder per area: home, speed,
+│   │   │                       capabilities, connection, live-throughput,
+│   │   │                       interfaces, devices, events, usage, apps,
+│   │   │                       diagnostics, services, settings, about
+│   │   └── <area>/             its views at the top
+│   │       ├── components/     parts of those views, when a view has them
+│   │       ├── context/        its own context, if it ever needs one
+│   │       ├── hooks/          that area's data and state hooks
+│   │       └── utils/          its plain helpers (no React)
+│   │                           (capabilities, connection and live-throughput
+│   │                           have no view, so their parts sit at the top)
+│   ├── ui/                     the component library, imported from @/ui:
+│   │                           a folder per component (with its stories)
+│   │                           and icons
+│   ├── hooks/                  shared hooks (useBackendQuery is the
+│   │                           useQuery shape every data hook builds on)
+│   ├── utils/                  shared helpers (format, platform, highlight)
+│   ├── styles/                 the global CSS: tailwind.css (the theme from
+│   │                           the tokens; imports the rest), base.css
+│   │                           (fonts, resets) and utilities.css (shared
+│   │                           type styles and layout, as utilities)
+│   ├── types/                  the UI↔backend contract (mirrored in Rust)
+│   └── bridge/                 the contract's two implementations: Tauri, and
+│                               the browser mock (npm run dev without Tauri)
+├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
+│   │                           deps, so it compiles and tests anywhere), a module per
+│   │                           domain, named as in src/features: apps/,
+│   │                           capabilities, connection, devices/, diagnostics,
+│   │                           interfaces, live_throughput, services, speed,
+│   │                           usage; plus platform/ (per-OS probes), store/
+│   │                           (SQLite, a file per domain) and utils/ (net,
+│   │                           shell, geoip, tls)
+│   └── data/                   bundled lookup tables (OUI, IP-to-country)
+├── src-tauri/                  thin Tauri shell: one #[tauri::command] per
+│   │                           service, events, capabilities, window config
+│   ├── linux/                  .deb install/remove scripts, AppArmor profile
+│   └── macos/                  the optional root DHCP helper's LaunchDaemon
+├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
+│                               runs), gen/ (the *.gen.* files `npm run gen`
+│                               writes), hooks/ (git and Claude Code), eslint/,
+│                               screenshots and the a11y audit
+└── docs/                       the deeper dives (index in docs/README.md),
+                                diagrams and screenshots
+```
+

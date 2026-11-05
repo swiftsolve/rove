@@ -69,11 +69,11 @@ Read what the task needs, not everything:
 
 | Task | Read |
 | --- | --- |
-| Any | `README.md`: How it works, Layout, Development |
+| Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
 | UI | `src/README.md` and DESIGN.md; for the library, also `src/ui/README.md` |
 | Which library component, and its props | `src/ui/components.gen.json`, generated from the code (`src/README.md`: Components) |
 | The UI↔backend boundary, commands, events | `docs/architecture.md` |
-| A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking/data-capture.md` |
+| A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
 

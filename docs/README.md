@@ -23,6 +23,8 @@ Working on Rove's code.
 
 How the features measure what they show.
 
+- [What Rove Measures, and How](what-rove-measures.md): each feature's source
+  of truth, what it can miss, and the tool on each OS.
 - [How Rove Captures Network Data (per OS)](networking/data-capture.md)
 - [How Rove Discovers & Identifies LAN Devices](networking/device-discovery.md)
 - [The Networking Protocols Behind Rove's Device Discovery](networking/protocols.md)

@@ -3,6 +3,7 @@ name = "rove"
 version = "0.0.3"
 description = "Rove — network monitor"
 edition = "2021"
+license = "MIT"
 
 [lints]
 workspace = true
