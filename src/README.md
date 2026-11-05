@@ -5,8 +5,8 @@ imports it with rove-tokens' `DESIGN.md`, so Claude Code loads both with the
 first file under `src/`; how the library itself is built is
 [src/ui/README.md](ui/README.md), which loads with files under `src/ui/`.
 
-**[CHECKED]** marks a rule a check enforces: break it and `npm run check`
-fails. The file beside it is the check: `checks/` and `gen/` are in `scripts/`,
+**[CHECKED - file]** marks a rule a check enforces: break it and
+`npm run check` fails. The file it names is the check: `checks/` and `gen/` are in `scripts/`,
 and [What's enforced](#whats-enforced) lists them all. A rule without the
 tag is judgment: no check catches a slip, so review it yourself.
 
@@ -68,7 +68,7 @@ agents and people, open the file.
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
   Only a context's provider and hook import its object; everything else calls
-  the hook. [CHECKED] `eslint.config.js`
+  the hook. [CHECKED - eslint.config.js]
 - `TABS` (`app/utils/tab-registry.ts`) holds each tab's label, rail icon and
   placement, screen and subpages; `TabBar` and `CurrentScreen` read it.
 - A custom hook lives in its own file in a `hooks/` folder, never inside a
@@ -92,21 +92,20 @@ agents and people, open the file.
   (`ThemeProvider.tsx`), a hook is camelCase starting with `use`
   (`useTheme.ts`), and everything else is kebab-case: contexts, utils and
   types (`theme-context.ts`), global stylesheets (`base.css`) and folders
-  (`live-throughput/`). [CHECKED] `checks/file-names.mjs`
+  (`live-throughput/`). [CHECKED - checks/file-names.mjs]
 - Prettier lays out the code (`.prettierrc.json`: no semicolons, single
   quotes, 120 columns); `npm run format` applies it. Markdown and generated
-  files are left alone (`.prettierignore`). [CHECKED] `prettier --check`
+  files are left alone (`.prettierignore`). [CHECKED - prettier --check]
 - Imports come in three groups, each sorted: packages, then the app's own
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
-  exception is a line-level disable that says why. [CHECKED] `eslint.config.js`
+  exception is a line-level disable that says why. [CHECKED - eslint.config.js]
 - A comment says why: a reason, constraint or trap the code can't show. One
   that restates the code goes. Exports, props and type fields take `/** */`,
   on one line when it fits, else opening on a line of its own; implementation
   notes take `//`. Keep it short: a `//` note in at most 6 lines, a `/** */`
   doc in at most 10, and anything longer in `docs/`. No em dash, no divider
-  comments, and a lint exception says why after `--`. [CHECKED]
-  `eslint/comments.mjs` and `eslint.config.js`, except whether it says why.
+  comments, and a lint exception says why after `--`. [CHECKED - eslint/comments.mjs, eslint.config.js], except whether it says why.
 
 ### Names and copy
 
@@ -115,22 +114,21 @@ agents and people, open the file.
   phrase (`needsNetworkInfo`). That covers props, `useState` pairs
   (`[isOpen, setIsOpen]`), params, fields and module constants (`IS_MAC`).
   Names the DOM or a library picks keep theirs: alias Recharts' `active` to
-  `isActive` where you read it. [CHECKED] `eslint.config.js`
+  `isActive` where you read it. [CHECKED - eslint.config.js]
 - Data that's shared and must not change (a context value, a list passed
   down as a prop, a module-level table) can be typed `readonly T[]`,
   `ReadonlyMap` or `Readonly<…>`, so the compiler catches a stray mutation.
 - An object shape is a `type`, never an `interface`, so a shape that grows
-  into a union or an intersection keeps its keyword. [CHECKED]
-  `eslint.config.js`. A prop it
+  into a union or an intersection keeps its keyword. [CHECKED - eslint.config.js]. A prop it
   redeclares from a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
 - Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
   `·` or `•`. A string that would join parts with ` · ` returns the parts.
-  [CHECKED] `eslint.config.js`
+  [CHECKED - eslint.config.js]
 - A missing value is `NoValue`, never a typed `—`. A formatter returns null
-  for one, and the caller renders the bar. [CHECKED] `eslint.config.js`
+  for one, and the caller renders the bar. [CHECKED - eslint.config.js]
 - Copy never punctuates with an em dash: write two short sentences or
-  rephrase. [CHECKED] `eslint.config.js`
+  rephrase. [CHECKED - eslint.config.js]
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
   the one or two limits that matter. How it works belongs in the README.
@@ -151,7 +149,7 @@ apply here. This section is how they're written as Tailwind utilities.
   `calc()` of them. A raw value that has to stay (the QR code's white plate, a
   gap set by an icon's ink, the About tile's app-icon corner) goes in
   `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why; DESIGN.md's
-  Spacing and shape says which reasons count. [CHECKED] `checks/raw-values.mjs`
+  Spacing and shape says which reasons count. [CHECKED - checks/raw-values.mjs]
 - Text takes a Figma text style's class from rove-tokens' `text-styles.css`
   (`type-caption`, `type-label-field`, `type-number-default`, …) and a colour
   utility: `type-caption text-tertiary`. The classes set no colour and sit
@@ -162,8 +160,7 @@ apply here. This section is how they're written as Tailwind utilities.
   that should keep its line's (a timeline row's `*:leading-[1.3]`, a
   button's) adds `leading-[inherit]`. A stylesheet sets all four of a style's
   `--type-<style>-*` variables. Text no style fits at all goes in
-  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why. [CHECKED]
-  `checks/text-styles.mjs`
+  `scripts/checks/text-styles.mjs`'s `ALLOWED` list, with why. [CHECKED - checks/text-styles.mjs]
 - Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
   `page-header`, `banner`, …) are `@utility` definitions in
   `styles/utilities.css`. They take variants and sort with the other
@@ -192,7 +189,7 @@ apply here. This section is how they're written as Tailwind utilities.
     destructured props (`tone = 'current'`, `isDisabled = false`): that's what
     the docs' Default column reads. A default that depends on another prop
     takes an `@default` tag instead (Button's `size`). A prop's doc comment
-    doesn't repeat its default. [CHECKED] `gen/ui-catalogue.mjs`: a default
+    doesn't repeat its default. [CHECKED - gen/ui-catalogue.mjs]: a default
     the Default column misses.
   - Something that adds no classes is `null`: a recipe with no base is
     `cva(null, …)`, and a value with nothing of its own is `neutral: null`. A
@@ -204,7 +201,7 @@ apply here. This section is how they're written as Tailwind utilities.
   adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
   and `type-*` class so tailwind-merge can group them; when you add one to
   `tailwind.css` or rove-tokens adds a text style, add it there too.
-  [CHECKED] `gen/cn-theme.mjs`
+  [CHECKED - gen/cn-theme.mjs]
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
@@ -218,7 +215,7 @@ apply here. This section is how they're written as Tailwind utilities.
   they sit in. Icons (coloured by `className`) and the unstyled
   `CollapsibleTrigger` are exempt. The one exception is a `:has()` selector in
   a `.module.css` (below); InlineMeta keeps its `inline-meta` and
-  `inline-meta-item` classes for it. [CHECKED] `checks/ui-classname.mjs`
+  `inline-meta-item` classes for it. [CHECKED - checks/ui-classname.mjs]
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes. A `.module.css` file is only for what utilities can't say:
   selectors into another component's DOM keyed on `:has()`.
@@ -259,6 +256,7 @@ apply here. This section is how they're written as Tailwind utilities.
 | Comments: length, one-line `/** */`, no em dash, a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
 | Layout | Prettier |
 | File names | `checks/file-names.mjs` |
+| Every checked tag in a guide names its check, and that file exists | `checks/checked-tags.mjs` |
 | Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |

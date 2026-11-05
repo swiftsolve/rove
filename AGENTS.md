@@ -6,9 +6,8 @@ procedures, and the rules for every change. The UI's own rules load with its
 folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens'
 `DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
 Other agents, read the ones your change touches first. In those guides,
-**[CHECKED]** marks a rule a check enforces, so `npm run check` fails when
-it's broken, and the file beside it is the check; a rule without it is
-judgment.
+**[CHECKED - file]** marks a rule a check enforces and names the check's file,
+so `npm run check` fails when it's broken; a rule without it is judgment.
 
 ## Procedures
 
@@ -55,7 +54,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 
 - The checks for your change pass.
 - What no check covers is reviewed: `src/README.md`'s What's enforced lists it,
-  and DESIGN.md's rules without [CHECKED] are judgment.
+  and DESIGN.md's rules without the tag are judgment.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
 - A change a user would see (anything under `src/` that renders, or a
