@@ -29,7 +29,7 @@ badgeVariants({ tone: 'warning' })
 
 Why bother: every option is listed in one place, TypeScript knows the allowed
 values (`'positive' | 'warning' | 'negative'`), and the props match the Figma
-component's variants one to one. Rove's catalogue
+component's variants one to one. Rove's component list
 ([components.gen.json](../../../src/ui/components.gen.json)) reads these to document every
 component.
 

@@ -3,7 +3,7 @@ import './introduction.css'
 import type { CSSProperties, JSX, ReactNode } from 'react'
 
 import { DotSeparator, UI_LIBRARY_VERSION } from '../src/ui'
-import catalogue from '../src/ui/components.gen.json'
+import componentList from '../src/ui/components.gen.json'
 import figma from '../src/ui/figma.json'
 import { BRAND_ICONS } from './brand-icons'
 import { GROUPS } from './introduction-specimens'
@@ -13,8 +13,8 @@ const REPO = 'https://github.com/swiftsolve/rove'
 const TOKENS = 'https://rove.swiftsolve.net/storybook/tokens/'
 
 type Component = { group: string; stories: string[]; figma: unknown }
-const components = Object.values(catalogue.components as Record<string, Component>)
-// Every figure on the page is counted from the catalogue, so none can go stale.
+const components = Object.values(componentList.components as Record<string, Component>)
+// Every figure on the page is counted from the component list, so none can go stale.
 const storyCount = components.reduce((sum, { stories }) => sum + stories.length, 0)
 const inFigma = components.filter((component) => component.figma !== null).length
 
@@ -157,7 +157,7 @@ function Icon({ name }: { name: IconName }): JSX.Element {
 }
 
 // The pipeline, step by step: a step's `column` places it under its stage heading.
-const STAGES = ['Written in', 'Read by', 'Catalogued as', 'Mirrored in']
+const STAGES = ['Written in', 'Read by', 'Listed in', 'Mirrored in']
 
 type Item = { name: string; body: string; href?: string }
 type Step = { column: number; icons: IconName[]; items: Item[] }

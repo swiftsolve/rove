@@ -45,7 +45,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const FIGMA = join(ROOT, 'src/ui/figma.json')
-const CATALOGUE = join(ROOT, 'src/ui/components.gen.json')
+const COMPONENT_LIST = join(ROOT, 'src/ui/components.gen.json')
 const API = 'https://api.figma.com/v1'
 const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
 // One variant of a set is a component named for its values: `Size=Md, State=Hover`.
@@ -174,7 +174,7 @@ function variantsOf(node) {
 function valuesOf(prop) {
   if (prop.values) return prop.values
   if (prop.type === 'boolean') return ['false', 'true']
-  // A single literal (`variant: 'error'`) reaches the catalogue as its type.
+  // A single literal (`variant: 'error'`) reaches the component list as its type.
   if (LITERAL_UNION.test(prop.type ?? '')) return prop.type.split(' | ').map((literal) => literal.slice(1, -1))
   return null
 }
@@ -189,7 +189,7 @@ function keysFor(component, main, propName) {
 const sameSet = (a, b) => a.length === b.length && a.every((value) => b.includes(value))
 
 const { file, components: mapping } = JSON.parse(await readFile(FIGMA, 'utf8'))
-const { components: catalogue } = JSON.parse(await readFile(CATALOGUE, 'utf8'))
+const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8'))
 const fileKey = file.match(/figma\.com\/design\/([^/]+)/)?.[1]
 if (!fileKey) {
   console.error(`figma.json's file isn't a figma.com/design URL: ${file}`)
@@ -202,7 +202,7 @@ const entries = Object.entries(mapping).filter(([, entry]) => entry !== null)
 const byNode = new Map()
 for (const [component, entry] of entries) byNode.set(entry.node, [...(byNode.get(entry.node) ?? []), component])
 
-const guided = entries.filter(([component]) => catalogue[component]?.guidance)
+const guided = entries.filter(([component]) => componentList[component]?.guidance)
 const { nodes, docs } = await readFigma(fileKey, [...byNode.keys()], new Set(guided.map(([, { name }]) => name)))
 const problems = []
 
@@ -232,7 +232,7 @@ for (const [nodeId, components] of byNode) {
 
   for (const component of components) {
     const { noFigmaVariant = {}, valuesDiffer = {} } = mapping[component]
-    const props = catalogue[component]?.props ?? {}
+    const props = componentList[component]?.props ?? {}
 
     for (const [propName, prop] of Object.entries(props)) {
       const values = valuesOf(prop)
@@ -301,7 +301,7 @@ for (const [nodeId, components] of byNode) {
 // StretchedLink is found as "Stretched link".
 const figmaNameOf = (component) => mapping[component]?.name ?? component
 for (const [component, { name }] of docs ? guided : []) {
-  const guide = catalogue[component].guidance
+  const guide = componentList[component].guidance
   const texts = docs[name]
   const figma = texts && figmaGuide(texts)
   if (!figma) {
@@ -323,7 +323,7 @@ for (const [component, { name }] of docs ? guided : []) {
   const insteadText = key(figma.whenNotToUse.join(' '))
   const named = new Set(guide.whenNotToUse.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, ref]) => ref)))
   for (const ref of named) {
-    if (!(ref in catalogue) || insteadText.includes(key(figmaNameOf(ref)))) continue
+    if (!(ref in componentList) || insteadText.includes(key(figmaNameOf(ref)))) continue
     problems.push(
       `${component}'s usage guide names ${ref} under ${GUIDE_LABELS.whenNotToUse}; Figma's "${name}" doesn't`,
     )

@@ -15,7 +15,7 @@ it yourself.
   tokens, the Figma file
 - [Procedures](#procedures): add or change a component, resync the Storybooks
 - [Rules](#rules): [The library](#the-library), [Stories](#stories),
-  [Docs pages and the catalogue](#docs-pages-and-the-catalogue),
+  [Docs pages and the component list](#docs-pages-and-the-component-list),
   [Every component](#every-component) and [Buttons](#buttons)
 - [Validation](#validation): [Storybook](#storybook)
 
@@ -97,7 +97,7 @@ major or minor is yours.
   leaves the story as it found it (`DisabledOff`) can stay on the Docs page.
   [✓ CHECKED by `gen/components.mjs`]
 
-### Docs pages and the catalogue
+### Docs pages and the component list
 
 - A component's intro is one sentence on what it is, with no rules: the
   stories' `docs.subtitle` ("A headline number and its unit, with an optional
