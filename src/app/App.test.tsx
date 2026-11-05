@@ -4,7 +4,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { App } from '@/app/App'
 import { queryClient } from '@/app/utils/query-client'
-import { installMockNetworkApiIfNeeded } from '@/dev/mock-network-api'
+import { installMockNetworkApiIfNeeded } from '@/bridge/mock-network-api'
 
 // The whole app against the dev mock bridge, as the screenshots run it: these
 // check what a user does, across views, providers and the query cache.

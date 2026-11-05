@@ -173,7 +173,7 @@ export default tseslint.config(
   {
     // The dev mock implements the async bridge with synchronous bodies, and its
     // flags flip inside callbacks that narrowing can't see.
-    files: ['src/dev/**'],
+    files: ['src/bridge/mock-network-api.ts'],
     rules: {
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',

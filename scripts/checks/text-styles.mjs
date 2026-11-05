@@ -17,7 +17,8 @@
  * is covered without editing this.
  *
  * Text no style fits goes in ALLOWED, with why; each entry is a gap to settle
- * in Figma. Dev mocks (src/dev), tests and assets aren't checked.
+ * in Figma. The dev mock
+ * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
  *   node scripts/checks/text-styles.mjs
  */
@@ -27,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
-const SKIPPED = [join(SRC, 'assets'), join(SRC, 'dev')]
+const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
 const THEME = join(SRC, 'styles', 'tailwind.css')
 
 /** Sizes that stay, by file and the exact text flagged. */
@@ -47,7 +48,7 @@ async function listFiles(dir) {
   const nested = await Promise.all(
     entries.map((entry) => (entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)])),
   )
-  return nested.flat()
+  return nested.flat().filter((path) => !SKIPPED.includes(path))
 }
 
 /** Blank out comments, keeping line numbers. `//` after a `:` is a URL, not a comment. */

@@ -42,7 +42,7 @@ Rove is two programs talking over a thin, typed bridge:
   Rust structs in `crates/rove-core` mirror them field-for-field, each in the
   module that produces it (serde renames everything to camelCase on the wire). The UI never knows it's
   talking to Rust: `src/bridge/tauri-network-api.ts` implements the same
-  `window.networkAPI` interface that a browser mock (`src/dev/`) also implements,
+  `window.networkAPI` interface that a browser mock (`src/bridge/mock-network-api.ts`) also implements,
   which is why `npm run dev` works in a plain browser for UI work.
 
 > **Deeper dives**
@@ -50,14 +50,14 @@ Rove is two programs talking over a thin, typed bridge:
 >   tested, and where to find which component to use.
 > - [Rove UI library](src/ui/README.md): how the component library is
 >   built.
-> - [How Rove Is Put Together](docs/develop/architecture.md): the swap seam, pull vs
+> - [How Rove Is Put Together](docs/architecture.md): the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
-> - [Learning Rust & Tauri through Rove](docs/develop/learning/rust-and-tauri/README.md): the
+> - [Learning Rust & Tauri through Rove](docs/learning/rust-and-tauri/README.md): the
 >   same boundary from the language side.
 > - [How Rove Captures Network Data (per OS)](docs/networking/data-capture.md)
 > - [How Rove Discovers & Identifies LAN Devices](docs/networking/device-discovery.md)
 > - [The Networking Protocols Behind Rove's Device Discovery](docs/networking/protocols.md)
-> - [Why "Rove"?](docs/project/why-rove.md)
+> - [Why "Rove"?](docs/why-rove.md)
 >
 > All of them, grouped: [docs/](docs/README.md).
 

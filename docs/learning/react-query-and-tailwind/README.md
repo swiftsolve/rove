@@ -6,9 +6,9 @@ token to a class like `p-12`, plus the three helpers `cva`, `cx` and `cn`.
 Every example is real code you can open.
 
 > **Companion pages:**
-> - [Rove frontend](../../../../src/README.md): the rules, checklists and component table.
+> - [Rove frontend](../../../src/README.md): the rules, checklists and component table.
 > - [How Rove Is Put Together](../../architecture.md): the bridge the data comes over.
-> - [`DESIGN.md`](../../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md) in
+> - [`DESIGN.md`](../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md) in
 >   rove-tokens: which token to use for what.
 
 ## Contents

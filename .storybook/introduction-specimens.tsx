@@ -1,6 +1,6 @@
 import { type JSX, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
-import { mockQrSvg } from '../src/dev/mock-network-api'
+import { mockQrSvg } from '../src/bridge/mock-network-api'
 import { ConnectionDetailsPanel } from '../src/features/connection/components/ConnectionDetailsPanel'
 import { ConnectionStrip } from '../src/features/connection/components/ConnectionStrip'
 import { ShareWifiButton } from '../src/features/connection/components/ShareWifiButton'
@@ -400,7 +400,7 @@ function StatusScene(): JSX.Element {
   )
 }
 
-// Home's Wi‑Fi connection, as the dev mock (src/dev/mock-network-api.ts) reports it.
+// Home's Wi‑Fi connection, as the dev mock (src/bridge/mock-network-api.ts) reports it.
 const NETWORK: NetworkInfo = {
   connectionType: 'wifi',
   interfaceName: 'en0',

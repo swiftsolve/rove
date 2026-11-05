@@ -10,7 +10,7 @@
  *   npm run screenshots -- --stable --storybook-url http://127.0.0.1:6006   # reuse a running Storybook
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
- * (src/dev/mock-network-api.ts), so the shots show the mock's network, not
+ * (src/bridge/mock-network-api.ts), so the shots show the mock's network, not
  * yours. That's the point: they're reproducible, and they don't leak the SSID
  * and devices of whoever ran the script.
  *

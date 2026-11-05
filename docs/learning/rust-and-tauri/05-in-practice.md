@@ -65,14 +65,14 @@ Say you want to surface the machine's uptime:
    interface: the contract both bridge implementations must satisfy.
 5. **Implement the bridge** in `src/bridge/tauri-network-api.ts`
    (`() => invoke<number | null>('get_uptime')`) *and* mirror it in
-   `src/dev/mock-network-api.ts` so `npm run dev` keeps working in a plain browser.
+   `src/bridge/mock-network-api.ts` so `npm run dev` keeps working in a plain browser.
 6. **Consume it** from a hook via `useBackendQuery` and render it in a view.
 
 Notice what *doesn't* change: the IPC plumbing, the serialization, the event
 system. The architecture from this whole doc (pure core, thin Tauri shell, typed
 contract, swappable bridge) is exactly what makes step 1 the only place real
 thought goes, and steps 2–6 mechanical. The
-[add-backend-data](../../../../.claude/skills/add-backend-data/SKILL.md) skill
+[add-backend-data](../../../.claude/skills/add-backend-data/SKILL.md) skill
 is the same six steps as a checklist.
 
 ```bash
@@ -86,8 +86,8 @@ That's the full tour: IPC, ownership, `Option`/`Result`, structs/traits/derive,
 async and tokio, generics, shared-state concurrency, and the complete round-trip
 across the process boundary, every concept anchored in code you can open and
 run. The companion pages go deeper on the two richest subsystems: the
-[per-OS data capture](../../../networking/data-capture.md) and the
-[device-discovery pipeline](../../../networking/device-discovery.md).
+[per-OS data capture](../../networking/data-capture.md) and the
+[device-discovery pipeline](../../networking/device-discovery.md).
 
 ---
 

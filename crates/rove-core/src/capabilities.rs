@@ -140,7 +140,7 @@ fn within(value: f64, limit: Option<f64>, factor: f64) -> bool {
     limit.is_none_or(|limit| value <= limit * factor)
 }
 
-/// `rateCapability` in `src/dev/mock-network-api.ts` mirrors this by hand, so
+/// `rateCapability` in `src/bridge/mock-network-api.ts` mirrors this by hand, so
 /// demo ratings match; change both together.
 fn rate(speed: &SpeedResult, def: &CapabilityDef) -> &'static str {
     let is_unusable = speed.download_mbps < def.min_down * 0.5 || !within(speed.latency_ms, def.max_latency, 2.0);

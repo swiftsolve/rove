@@ -14,7 +14,7 @@ if (isTauri()) {
   installTauriBridge()
 } else if (import.meta.env.DEV) {
   // The Vite dev server in a plain browser gets a mock bridge for design work.
-  const { installMockNetworkApiIfNeeded } = await import('./dev/mock-network-api')
+  const { installMockNetworkApiIfNeeded } = await import('./bridge/mock-network-api')
   installMockNetworkApiIfNeeded()
 }
 

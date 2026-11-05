@@ -21,8 +21,8 @@
  * pulse) aren't flagged: the system has no token for them. The token values are read
  * from @swiftsolve/rove-tokens, so a token update moves the rules with it.
  *
- * A raw value that has to stay goes in ALLOWED with its reason. Dev mocks
- * (src/dev), tests and assets aren't checked.
+ * A raw value that has to stay goes in ALLOWED with its reason. The dev mock
+ * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
  *   node scripts/checks/raw-values.mjs
  */
@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
-const SKIPPED = [join(SRC, 'assets'), join(SRC, 'dev')]
+const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
 const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
 
 /** Raw values that stay, by file and the exact text flagged. */
@@ -95,7 +95,7 @@ async function listFiles(dir) {
       return entry.isDirectory() ? listFiles(path) : [path]
     }),
   )
-  return nested.flat()
+  return nested.flat().filter((path) => !SKIPPED.includes(path))
 }
 
 /** Each `--name: value` the tokens define, plain values only (not `var()`). */

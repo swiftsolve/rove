@@ -9,7 +9,7 @@ Part 1 of [Learning Rust & Tauri through Rove](README.md).
 A Tauri app is two worlds glued together:
 
 <div align="center">
-  <img src="../../../assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
+  <img src="../../assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
 </div>
 
 The frontend is literally a web page. It can't open a socket or read `/sys`.

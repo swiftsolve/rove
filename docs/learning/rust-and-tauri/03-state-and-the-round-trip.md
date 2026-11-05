@@ -65,7 +65,7 @@ Notice that Rove's React components **never call `invoke` directly.** They call
 `window.networkAPI.getDataUsage()`. That `window.networkAPI` object is installed
 at startup by `src/bridge/tauri-network-api.ts` (`installTauriBridge`), and it's the
 *only* file that imports `invoke`. Why the indirection? Because there's a second
-implementation, `src/dev/mock-network-api.ts`, used when the UI runs in a plain
+implementation, `src/bridge/mock-network-api.ts`, used when the UI runs in a plain
 browser (no Rust backend). The components are written against an interface
 (`NetworkAPI`); at runtime either the real Tauri bridge or the mock is slotted in.
 This is the same "program to an interface" idea as `rove-core` staying

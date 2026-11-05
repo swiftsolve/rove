@@ -19,7 +19,7 @@ Tailwind utilities       p-12   bg-surface   rounded-md
 **Tokens** are named design values: `--spacing-12` is 12px, `--bg-surface` is
 the card background. They live in Figma. The `@swiftsolve/rove-tokens` package
 turns them into CSS variables in
-[`tokens.css`](../../../../node_modules/@swiftsolve/rove-tokens/dist/tokens.css). Nobody
+[`tokens.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tokens.css). Nobody
 edits that file by hand; it's generated.
 
 **Tailwind** gives you small single-purpose classes: `p-12` means
@@ -28,7 +28,7 @@ writing a CSS file per component.
 
 ## Joining the two: `@theme`
 
-[tailwind.css](../../../../src/styles/tailwind.css) tells Tailwind which classes
+[tailwind.css](../../../src/styles/tailwind.css) tells Tailwind which classes
 exist, using the tokens:
 
 ```css
@@ -89,7 +89,7 @@ rather than combining `text-md leading-… tracking-…` by hand.
 
 Some layouts repeat across screens, like a page's column with its gap and
 entrance animation. Those live in
-[utilities.css](../../../../src/styles/utilities.css) as Tailwind utilities:
+[utilities.css](../../../src/styles/utilities.css) as Tailwind utilities:
 
 ```css
 @utility page {

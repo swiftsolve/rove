@@ -21,14 +21,14 @@ eye on what's happening.
 pull a cable, join a new SSID, drift between bands, walk from one router to
 another. Rove is built around that motion: the backend watches `ip monitor route`
 and re-reads the kernel routing table so the UI follows your *real* path within a
-second of any change (see the connection-card section in the [README](../../README.md)
-and [How Rove Captures Network Data](../networking/data-capture.md)). The name
+second of any change (see the connection-card section in the [README](../README.md)
+and [How Rove Captures Network Data](networking/data-capture.md)). The name
 names that behaviour: the app doesn't assume a static setup, it **roves** with
 you.
 
 **A roving eye over the LAN.** Beyond your own link, Rove sweeps the local
 network, discovering and identifying every device on the subnet without admin
-rights (see [How Rove Discovers & Identifies LAN Devices](../networking/device-discovery.md)).
+rights (see [How Rove Discovers & Identifies LAN Devices](networking/device-discovery.md)).
 "Rove" carries that sense of *ranging over an area to see what's there*.
 
 **Light-footed, not anchored.** A *beacon* is a fixed point that sits still and

@@ -11,11 +11,11 @@ Working on Rove's code.
 - [Rove UI library](../src/ui/README.md): how `src/ui` is built: its stories,
   docs pages and the rules every component follows. Adding a component is the
   [add-library-component](../.claude/skills/add-library-component/SKILL.md) skill.
-- [How Rove Is Put Together](develop/architecture.md): the bridge between the
+- [How Rove Is Put Together](architecture.md): the bridge between the
   UI and the backend, commands and events.
-- [Learning Rust & Tauri through Rove](develop/learning/rust-and-tauri/README.md): the
+- [Learning Rust & Tauri through Rove](learning/rust-and-tauri/README.md): the
   same boundary from the language side, and adding a command end to end.
-- [Learning TanStack Query & Tailwind through Rove](develop/learning/react-query-and-tailwind/README.md):
+- [Learning TanStack Query & Tailwind through Rove](learning/react-query-and-tailwind/README.md):
   why backend data goes through TanStack Query, and how styling goes from a
   Figma token to a class, with `cva`, `cx` and `cn`.
 
@@ -31,7 +31,7 @@ How the features measure what they show.
 
 Background.
 
-- [Why "Rove"?](project/why-rove.md)
+- [Why "Rove"?](why-rove.md)
 
 `assets/` holds the docs' diagrams, and `screenshots/` the app's screens
 (`npm run screenshots`).

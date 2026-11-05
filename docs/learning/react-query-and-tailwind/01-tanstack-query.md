@@ -10,8 +10,8 @@ The UI asks the Rust backend for data: the devices on your network, your
 services, your data usage. Each ask is an `invoke` over the bridge and takes a
 moment. Take the device list. Two places show it:
 
-- the **Devices card** on Home ([DevicesCard.tsx](../../../../src/features/home/components/DevicesCard.tsx))
-- the **Devices screen** ([DevicesView.tsx](../../../../src/features/devices/DevicesView.tsx))
+- the **Devices card** on Home ([DevicesCard.tsx](../../../src/features/home/components/DevicesCard.tsx))
+- the **Devices screen** ([DevicesView.tsx](../../../src/features/devices/DevicesView.tsx))
 
 Both call the same hook, `useDevices()`. Without a shared cache, each would
 keep its own copy in `useState` and you'd hit these problems:
@@ -46,7 +46,7 @@ shows at once while a fresh one loads. A rescan updates both.
 | What | Where you see it |
 | --- | --- |
 | One shared result per key | `DevicesCard` and `DevicesView` share `['devices', networkKey]` |
-| Results kept between visits | `gcTime: Infinity` in [query-client.ts](../../../../src/app/utils/query-client.ts): nothing is thrown away while the app runs |
+| Results kept between visits | `gcTime: Infinity` in [query-client.ts](../../../src/app/utils/query-client.ts): nothing is thrown away while the app runs |
 | No duplicate requests | A rescan that lands during a poll joins the one already in flight |
 | Polling that pauses when hidden | `pollIntervalMs` on events, interfaces, service reachability and usage |
 | "Same answer, same object" | Network info keeps its old object when a poll reads the same thing, so nothing re-renders |
@@ -57,7 +57,7 @@ shows at once while a fresh one loads. A rescan updates both.
 
 TanStack is built for websites talking to servers over the internet. Rove talks
 to its own backend on the same machine, so some defaults make no sense here.
-[query-client.ts](../../../../src/app/utils/query-client.ts) turns them off:
+[query-client.ts](../../../src/app/utils/query-client.ts) turns them off:
 
 - **`retry: false`.** A failed local read is a real answer. Show it; the next
   poll or the Retry button tries again.
@@ -69,7 +69,7 @@ to its own backend on the same machine, so some defaults make no sense here.
 ## Rove's wrapper: `useBackendQuery`
 
 Most hooks don't call `useQuery` directly. They go through
-[useBackendQuery.ts](../../../../src/hooks/useBackendQuery.ts), which adds the app's
+[useBackendQuery.ts](../../../src/hooks/useBackendQuery.ts), which adds the app's
 rules on top:
 
 - **Open.** Data refetches when a screen showing it opens, but only if it's
@@ -83,7 +83,7 @@ rules on top:
   error beside it. An old error is hidden while the screen's opening fetch runs.
 
 A feature's hook stays tiny. Here is all of
-[useNetworkInterfaces.ts](../../../../src/features/interfaces/hooks/useNetworkInterfaces.ts)'s
+[useNetworkInterfaces.ts](../../../src/features/interfaces/hooks/useNetworkInterfaces.ts)'s
 data logic:
 
 ```ts
@@ -107,8 +107,8 @@ aren't that:
   live peaks, and it must survive you switching tabs mid-test.
 
 Each of those keeps a small store of its own
-([useLiveThroughput.ts](../../../../src/features/live-throughput/hooks/useLiveThroughput.ts),
-[useSpeedTest.ts](../../../../src/features/speed/hooks/useSpeedTest.ts)), read with
+([useLiveThroughput.ts](../../../src/features/live-throughput/hooks/useLiveThroughput.ts),
+[useSpeedTest.ts](../../../src/features/speed/hooks/useSpeedTest.ts)), read with
 React's `useSyncExternalStore`.
 
 The backend pushes three more events, and those do go through queries, because
@@ -116,13 +116,13 @@ each one updates data you can also ask for:
 
 - **Internet status** sends a new verdict. It's written straight into its
   query's cache with `setQueryData`
-  ([useInternetStatusSource.ts](../../../../src/features/connection/hooks/useInternetStatusSource.ts)):
+  ([useInternetStatusSource.ts](../../../src/features/connection/hooks/useInternetStatusSource.ts)):
   the query reads once, and the pushes keep it current.
 - **Services timeline** and **network changed** carry nothing. They're nudges:
   the timeline invalidates its query
-  ([useServiceHistory.ts](../../../../src/features/services/hooks/useServiceHistory.ts)),
+  ([useServiceHistory.ts](../../../src/features/services/hooks/useServiceHistory.ts)),
   and a network change reruns the reads that already exist
-  ([useOnNetworkChanged.ts](../../../../src/hooks/useOnNetworkChanged.ts)).
+  ([useOnNetworkChanged.ts](../../../src/hooks/useOnNetworkChanged.ts)).
 
 ## Was it worth it?
 

@@ -6,7 +6,7 @@ description: Show new data from Rove's Rust backend in the UI, end to end - the 
 # Show new backend data
 
 Every command is the same six edits across the boundary.
-`docs/develop/architecture.md` explains the boundary; these are the steps.
+`docs/architecture.md` explains the boundary; these are the steps.
 
 ## Before you start
 
@@ -28,7 +28,7 @@ Every command is the same six edits across the boundary.
 4. **The type** in `src/types/` (camelCase, as serde sends it), and the method
    on `NetworkAPI` in `src/types/api.ts`.
 5. **Both bridges**: `src/bridge/tauri-network-api.ts` invokes the command;
-   `src/dev/mock-network-api.ts` answers with plausible data, so `npm run dev`
+   `src/bridge/mock-network-api.ts` answers with plausible data, so `npm run dev`
    keeps working in a browser. A value the backend can add to later (a kind,
    an event type) is narrowed in `src/bridge/narrow.ts`.
 6. **The hook** in the feature's `hooks/`, on `useBackendQuery`, keyed by the
