@@ -50,7 +50,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 
 - The checks for your change pass.
 - What no check covers is reviewed: `src/README.md`'s What's enforced lists it,
-  and DESIGN.md's rules without ✓ *Checked* are judgment.
+  and DESIGN.md's rules without [CHECKED] are judgment.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
 - A change a user would see (anything under `src/` that renders, or a
