@@ -203,8 +203,8 @@ rove/
 │   │                           (fonts, resets) and utilities.css (shared
 │   │                           type styles and layout, as utilities)
 │   ├── types/                  the UI↔backend contract (mirrored in Rust)
-│   ├── bridge/                 Tauri implementation of the contract
-│   └── dev/                    browser mock bridge (npm run dev without Tauri)
+│   └── bridge/                 the contract's two implementations: Tauri, and
+│                               the browser mock (npm run dev without Tauri)
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per
 │   │                           domain, named as in src/features: apps/,
@@ -219,8 +219,9 @@ rove/
 │   ├── linux/                  .deb install/remove scripts, AppArmor profile
 │   └── macos/                  the optional root DHCP helper's LaunchDaemon
 ├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
-│                               runs), hooks/ (git and Claude Code), the UI
-│                               catalogue, screenshots and the a11y audit
+│                               runs), gen/ (the *.gen.* files `npm run gen`
+│                               writes), hooks/ (git and Claude Code), eslint/,
+│                               screenshots and the a11y audit
 └── docs/                       the deeper dives (index in docs/README.md),
                                 diagrams and screenshots
 ```
@@ -259,7 +260,7 @@ npm run dev                  # UI only, in a browser, against the mock bridge
 npm run storybook            # the UI library's components, at localhost:6006
 npm run screenshots          # refresh docs/screenshots: every screen, at window size
 npm run format               # lay out the code with Prettier
-npm run catalogue            # regenerate src/ui/components.gen.json after a library change
+npm run gen                  # rewrite the *.gen.* files after a library or theme change
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 

@@ -260,11 +260,11 @@ apply here. This section is how they're written as Tailwind utilities.
 | Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
 | Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
 | Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | rove-tokens' `checks/contrast.mjs`, before a release |
-| Every theme name listed in `cn` | `checks/cn-theme.mjs` |
+| Every theme name known to `cn` | `gen/cn-theme.mjs --check`: `cn-theme.gen.json` fresh |
 | `className` only places a library component | `checks/ui-classname.mjs` |
-| `components.gen.json` fresh; doc comments, defaults and `figma.json` entries present | `build-ui-catalogue.mjs --check` |
-| A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `build-ui-catalogue.mjs --check` |
-| An API change raises `UI_LIBRARY_VERSION` (against the last commit locally, the push's base in CI) | `build-ui-catalogue.mjs --check` |
+| `components.gen.json` fresh; doc comments, defaults and `figma.json` entries present | `gen/ui-catalogue.mjs --check` |
+| A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `gen/ui-catalogue.mjs --check` |
+| An API change raises `UI_LIBRARY_VERSION` (against the last commit locally, the push's base in CI) | `gen/ui-catalogue.mjs --check` |
 | Figma and the library agree: `figma.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 

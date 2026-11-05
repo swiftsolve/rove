@@ -176,7 +176,7 @@ const STEPS: Step[] = [
     icons: ['node', 'step', 'braces'],
     items: [
       {
-        name: '`npm run catalogue`',
+        name: '`npm run gen`',
         body: 'Reads every prop, variant value, story and guide from the code.',
       },
     ],

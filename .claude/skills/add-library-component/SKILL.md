@@ -29,14 +29,14 @@ The library's rules (stories, docs pages, what every component does) are in
    (`Data display/Name`), with an `AllStates` story when it has several states,
    a usage guide, and a `play` story if it takes a handler.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
+6. `npm run gen`, and raise `UI_LIBRARY_VERSION` in `src/ui/version.ts`
    (a new component is an API change).
 
 ## Change one: the code side
 
 1. Change the code, its doc comments, and its stories and usage guide if its
    use changed.
-2. `npm run catalogue`, and raise `UI_LIBRARY_VERSION` for an API change.
+2. `npm run gen`, and raise `UI_LIBRARY_VERSION` for an API change.
 3. For a change meant to look the same, diff `npm run screenshots -- --stable`
    from before and after.
 
@@ -44,7 +44,7 @@ The library's rules (stories, docs pages, what every component does) are in
 
 - Run its folder's tests in seconds:
   `npx vitest run --project=storybook --project=dom src/ui/<folder>`.
-- The catalogue check (`npm run catalogue`, then `npm run check`) says what's
+- The catalogue check (`npm run gen`, then `npm run check`) says what's
   missing: a doc comment, a usage guide, a `play` story for a handler, a
   version bump. Fix what it names rather than guessing.
 - Look at every story in Storybook (`npm run storybook`) in both themes before

@@ -27,7 +27,7 @@ Every example is real code you can open.
   - a new value for data you can also ask for → `setQueryData` on its query;
   - a nudge with no payload → invalidate the query it's about.
 - A new spacing, colour or size → add it in Figma, release rove-tokens, map it
-  in `tailwind.css` (and `cn.ts`). Never a raw value in code.
+  in `tailwind.css`, then `npm run gen`. Never a raw value in code.
 - Text → a `type-*` class.
 - A shared layout → an `@utility` in `utilities.css`.
 - A component's looks → `cva`; merging an outside `className` → `cn`; plain

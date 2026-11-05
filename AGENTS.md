@@ -42,7 +42,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 
 | Changed | Run |
 | --- | --- |
-| Anything | `npm run check`: typecheck, lint, `scripts/checks/`, the catalogue checks, and every Vitest test, the stories with their play functions and axe |
+| Anything | `npm run check`: typecheck, lint, `scripts/checks/`, the `scripts/gen/` freshness checks, and every Vitest test, the stories with their play functions and axe |
 | A library component, while you work | `npx vitest run --project=storybook --project=dom src/ui/<folder>`: its stories and DOM tests, in seconds |
 | Rust | `cargo test -p rove-core`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo fmt --all` |
 | How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: no check sees a wrong shade or a cramped gap. Library stories are in `25-library/`. Keep `--out` off `docs/screenshots`, which is committed |
@@ -81,7 +81,7 @@ Read what the task needs, not everything:
 
 | Stage | Runs |
 | --- | --- |
-| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a hand edit to a `*.gen.*` file (run `npm run catalogue`) |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a hand edit to a `*.gen.*` file (run `npm run gen`) |
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
 | Each push and pull request (CI) | `npm run check` (`test.yml`), its API-version check against the push's base; Rust fmt, clippy, tests and the app build on three OSes (`build.yml`); Chromatic's visual snapshots |
 | A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness and the Figma plugin test |

@@ -11,7 +11,7 @@ dist
 storybook-static
 .claude
 
-# Generated: rewritten by scripts/build-ui-catalogue.mjs, or by npm.
+# Generated: rewritten by scripts/gen/, or by npm.
 *.gen.*
 package-lock.json
 

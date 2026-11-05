@@ -111,7 +111,7 @@ anything added. [CHECKED] that it changes; picking major or minor is yours.
   prevents; code covers that in its props table and doc comments.
 - `components.gen.json` is the library's API in one file, for agents and
   people: each component's group, doc comment, props (type, variant values,
-  default), Figma component, story ids and usage guide. `npm run catalogue` writes it
+  default), Figma component, story ids and usage guide. `npm run gen` writes it
   from the code and `figma.json`, which names each component's Figma
   component and node (`null` when Figma has none).
 
