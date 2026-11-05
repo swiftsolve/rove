@@ -37,11 +37,12 @@ released, and taken up by Rove. Nothing here writes to Figma.
   `DESIGN.md`'s top half is edited directly. Only what Figma can't hold (font
   stacks, easing curves, the focus expressions) is written here, in
   `src/code-tokens.json`.
-- **`npm run figma:check` must report `inSync: true`.** It and
-  `npm run figma:export` print the plugin's own code (`figma-plugin/code.js`)
-  to run through the Figma MCP's `use_figma`, so the plugin's Check tab and an
-  agent check the same way. A difference means the repo is behind Figma
-  (export again) or was edited directly (undo it, and change Figma).
+- **`npm run figma:check` reports `inSync: true`.**
+  - It and `npm run figma:export` print the plugin's own code
+    (`figma-plugin/code.js`) to run through the Figma MCP's `use_figma`, so
+    the plugin's Check tab and an agent check the same way.
+  - A difference means the repo is behind Figma (export again) or was edited
+    directly (undo it, and change Figma).
 
 ### Commit only your paths
 

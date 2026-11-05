@@ -20,11 +20,25 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 
 ### Surfaces
 
-- **Backgrounds are layers; overlays sit on one.** A `--bg-*` is opaque, and each stacks on the last (base, surface, inset). An `--overlay-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--overlay-hover`. A `*-solid` is the opaque colour under a white label (`--accent-solid`, `--status-negative-solid`). Why: [rationale](docs/rationale.md).
-- Three backgrounds: `--bg-base` for the backdrop, `--bg-surface` for content that sits on it (cards, dialogs), `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons). `--bg-chrome` is the title bar and rail, a half step off the backdrop. `--bg-popover` is a step lighter in Dark, for tooltips and menus. `--bg-hover` is a hovered surface, `--bg-scrim` goes behind dialogs.
+- **Backgrounds are layers; overlays sit on one.** Why: [rationale](docs/rationale.md).
+  - A `--bg-*` is opaque, and each stacks on the last (base, surface, inset).
+  - An `--overlay-*` is see-through, laid over whatever background is below, so a hovered row keeps its card's `--bg-surface` and adds `--overlay-hover`.
+  - A `*-solid` is the opaque colour under a white label (`--accent-solid`, `--status-negative-solid`).
+- Three backgrounds:
+  - `--bg-base` for the backdrop;
+  - `--bg-surface` for content that sits on it (cards, dialogs);
+  - `--bg-inset` for areas sunk into a surface (bands, inputs, soft and icon buttons).
+- Four more for their one job:
+  - `--bg-chrome` is the title bar and rail, a half step off the backdrop;
+  - `--bg-popover` is a step lighter in Dark, for tooltips and menus;
+  - `--bg-hover` is a hovered surface;
+  - `--bg-scrim` goes behind dialogs.
 - Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use `--shadow-raised`.
 - Every line is `--border-default`: hairlines, and the edges of menus, tooltips and dialogs.
-- For hovers, chips and tracks on a surface, use the `--overlay-*` tokens, by strength: `--overlay-faint` (3%), `--overlay-subtle` (5%), `--overlay-default` (7%), `--overlay-strong` (16%). They flip with the theme, so they stay visible on both. A hovered row or expandable header uses `--overlay-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it. Selected text is `--overlay-selection`.
+- For hovers, chips and tracks on a surface, use the `--overlay-*` tokens. They flip with the theme, so they stay visible on both.
+  - By strength: `--overlay-faint` (3%), `--overlay-subtle` (5%), `--overlay-default` (7%), `--overlay-strong` (16%).
+  - A hovered row or expandable header uses `--overlay-hover`: 3% white in Dark, 2% ink in Light, so in Light it stays lighter than an open `--bg-inset` panel below it.
+  - Selected text is `--overlay-selection`.
 
 ### Text and icons
 
@@ -69,7 +83,12 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 - Every gap, padding and margin is a `--spacing-*` step. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
 - Cards use `--card-padding` on every side. The rail and the content column share the side inset `--spacing-12`.
 - A card header is `--card-header-height` tall. A header-like strip that can grow with its content takes `--card-header-min-height` as its minimum instead.
-- Corners are `--radius-*`: `xs` for small controls inside others (menu items, segments, window buttons), `sm` for controls, `md` for nav items and the page-header chip, `lg` for cards and dialogs, `full` for pills and dots. A thin bar or line takes `full` too: it rounds to half its width. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+- Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+  - `xs` for small controls inside others (menu items, segments, window buttons);
+  - `sm` for controls;
+  - `md` for nav items and the page-header chip;
+  - `lg` for cards and dialogs;
+  - `full` for pills and dots, and for a thin bar or line: it rounds to half its width.
 - **Off the scale only when something else sets the length**, and say why where it's used:
   - spacing that lines up with an icon's ink rather than its box, or gives back a 1px border;
   - spacing that lines up with something that isn't spacing, like an icon's width or a label column;
@@ -86,12 +105,18 @@ Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that sh
 ### Focus and motion
 
 - Keyboard focus is `outline: var(--focus-outline)` with `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it inside instead, with `--focus-inset`.
-- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after. A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a raw curve, and a duration typed where a token has the value.
+- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a raw curve, and a duration typed where a token has the value.
+  - A panel resizing to its content springs, with `var(--duration-spring) var(--ease-spring)`: it arrives within `--duration-normal`, and its slight overshoot settles after.
+  - A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and back in alike.
 
 ### Icons
 
 - Icons share a 24px grid, a 1.75px stroke and round caps.
-- Icons are `--text-tertiary` by default. The active nav item's is `--accent-default`, an icon button's `--text-secondary`, a download icon `--series-down`, a secured or passing one `--status-positive`.
+- Icons are `--text-tertiary` by default. The exceptions:
+  - the active nav item's is `--accent-default`;
+  - an icon button's is `--text-secondary`;
+  - a download icon is `--series-down`;
+  - a secured or passing one is `--status-positive`.
 - The brand mark is always `--accent-default`, 22px in the title bar.
 
 ## Changing the design
