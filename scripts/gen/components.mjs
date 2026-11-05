@@ -13,8 +13,8 @@
  *
  * Icons, hooks and helpers follow, by name and doc comment.
  *
- *   node scripts/gen/ui-catalogue.mjs           # rewrite components.json
- *   node scripts/gen/ui-catalogue.mjs --check   # fail if it's stale or incomplete
+ *   node scripts/gen/components.mjs           # rewrite components.gen.json
+ *   node scripts/gen/components.mjs --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
  * own props has no doc comment, a prop has a default the Default column misses
@@ -337,7 +337,7 @@ if (isCheck) {
 
 if (problems.length > 0) {
   console.error(problems.join('\n'))
-  console.error(`\n${problems.length} UI catalogue problem${problems.length === 1 ? '' : 's'}`)
+  console.error(`\n${problems.length} components.gen.json problem${problems.length === 1 ? '' : 's'}`)
   process.exit(1)
 }
-console.log(`UI catalogue ${isCheck ? 'OK' : 'written'} (${components.length} components)`)
+console.log(`components.gen.json ${isCheck ? 'OK' : 'written'} (${components.length} components)`)

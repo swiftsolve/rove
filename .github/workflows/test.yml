@@ -20,7 +20,7 @@ jobs:
           # A persisted GITHUB_TOKEN header would override the design-tokens
           # token below for every github.com request git makes in the repo.
           persist-credentials: false
-          # The catalogue check compares the UI library's API with the commit
+          # gen/components.mjs --check compares the UI library's API with the commit
           # the push or pull request starts from, so it needs that history.
           fetch-depth: 0
 
@@ -34,10 +34,10 @@ jobs:
       # The story tests' browser.
       - run: npx playwright install --with-deps chromium
 
-      # FIGMA_TOKEN lets checks/figma.mjs hold the library to the Figma file; it
-      # skips while the secret isn't set. UI_API_BASE is what the catalogue
-      # check compares the library's API with: a pull request's base, or the
-      # commit before the push.
+      # FIGMA_TOKEN lets checks/figma-library.mjs hold the library to the Figma
+      # file; it skips while the secret isn't set. UI_API_BASE is what
+      # gen/components.mjs --check compares the library's API with: a pull
+      # request's base, or the commit before the push.
       - run: npm run check
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}

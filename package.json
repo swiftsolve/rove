@@ -13,7 +13,7 @@
     "build:web": "tsc && vite build",
     "lint": "eslint . && prettier --check . && node scripts/checks/run.mjs",
     "format": "prettier --write .",
-    "gen": "node scripts/gen/ui-catalogue.mjs && node scripts/gen/cn-theme.mjs",
+    "gen": "node scripts/gen/components.mjs && node scripts/gen/cn-theme.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm test",
     "screenshots": "node scripts/screenshots.mjs",

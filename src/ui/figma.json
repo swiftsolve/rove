@@ -1,5 +1,5 @@
 {
-  "description": "Written by hand. Each library component's Figma component: its name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. noFigmaVariant lists props with values Figma has no variant for, noCodeProp the Figma variants code derives from other props, valuesDiffer props whose values differ on purpose, each with why; checks/figma.mjs holds the rest to Figma. npm run catalogue copies it into components.gen.json.",
+  "description": "Written by hand. Each library component's Figma component: its name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. noFigmaVariant lists props with values Figma has no variant for, noCodeProp the Figma variants code derives from other props, valuesDiffer props whose values differ on purpose, each with why; checks/figma-library.mjs holds the rest to Figma. npm run gen copies it into components.gen.json.",
   "file": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": { "name": "Button", "node": "42:189" },

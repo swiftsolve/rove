@@ -37,7 +37,7 @@
  * node's name, type and componentPropertyDefinitions by id, and `docs` each
  * docs section's text, in order and outside component instances, by its name:
  *
- *   node scripts/checks/figma.mjs [--from figma.json]
+ *   node scripts/checks/figma-library.mjs [--from figma.json]
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'

@@ -44,7 +44,7 @@ The library's rules (stories, docs pages, what every component does) are in
 
 - Run its folder's tests in seconds:
   `npx vitest run --project=storybook --project=dom src/ui/<folder>`.
-- The catalogue check (`npm run gen`, then `npm run check`) says what's
+- `gen/components.mjs --check` (`npm run gen`, then `npm run check`) says what's
   missing: a doc comment, a usage guide, a `play` story for a handler, a
   version bump. Fix what it names rather than guessing.
 - Look at every story in Storybook (`npm run storybook`) in both themes before
@@ -87,7 +87,7 @@ Without the server, stop after the code side and say the Figma side is left.
 ## Done
 
 - `npm run check` passes, with `FIGMA_TOKEN` in `.env.local` so
-  `checks/figma.mjs` holds the names, variants, values and guides to the file.
+  `checks/figma-library.mjs` holds the names, variants, values and guides to the file.
 - A screenshot of the Figma docs section matches the stories.
 - Commit, then run the `resync-sites` skill: the Storybooks change, and the
   demo too if a screen uses the component.

@@ -50,7 +50,7 @@ The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows after "Rove
 Components". Raise it when the library's API changes: major
 for a removed or renamed component or prop, or a narrower type; minor for
-anything added. [✓ CHECKED by `gen/ui-catalogue.mjs`], that it changes; picking
+anything added. [✓ CHECKED by `gen/components.mjs`], that it changes; picking
 major or minor is yours.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
@@ -95,7 +95,7 @@ major or minor is yours.
   Name it for the interaction (`Pressing`, `EscapeCloses`) and tag it
   `!autodocs`, since moving focus would scroll its Docs page. A play that
   leaves the story as it found it (`DisabledOff`) can stay on the Docs page.
-  [✓ CHECKED by `gen/ui-catalogue.mjs`]
+  [✓ CHECKED by `gen/components.mjs`]
 
 ### Docs pages and the catalogue
 
@@ -106,7 +106,7 @@ major or minor is yours.
 - Its usage guide is the stories' `guidance` parameter (`Guidance` in
   `.storybook/docs-page.tsx`), with `docs: { toc: GUIDANCE_TOC }` beside it.
   Every component has one, written for its whole family (Card's covers
-  CardHeader and the rest). [✓ CHECKED by `gen/ui-catalogue.mjs`]. It has three
+  CardHeader and the rest). [✓ CHECKED by `gen/components.mjs`]. It has three
   parts, a few words a line:
   - When to use: a situation, then how if it needs saying, then an example
     ("The page’s main action, solid: “Run test”.").
@@ -118,7 +118,7 @@ major or minor is yours.
   A rule that isn't a situation goes in the doc comment instead, and what the
   stories and props table already show (each state, each variant) stays out.
 - Figma's docs section carries the same guide under its intro, worded for
-  designers: When to use and When not to use line for line ([✓ CHECKED by `checks/figma.mjs`]), and
+  designers: When to use and When not to use line for line ([✓ CHECKED by `checks/figma-library.mjs`]), and
   Accessibility as what they needn't draw (Built in) and what they decide or
   note (To handle). Only Figma has a Guidelines block, Do and Don't columns
   for placement, variants and content, each Don't the mistake its Do
