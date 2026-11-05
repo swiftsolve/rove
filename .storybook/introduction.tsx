@@ -366,7 +366,7 @@ const groups = [...new Set(components.map(({ group }) => group))].map((group) =>
 const LINKS: { icon: IconName; label: string; href: string }[] = [
   { icon: 'figmaLine', label: 'Figma file', href: figma.file },
   { icon: 'rove', label: 'Rove Tokens', href: TOKENS },
-  { icon: 'fileText', label: 'Frontend guide', href: `${REPO}/blob/master/docs/develop/frontend.md` },
+  { icon: 'fileText', label: 'Frontend guide', href: `${REPO}/blob/master/src/README.md` },
   { icon: 'github', label: 'GitHub', href: REPO },
 ]
 

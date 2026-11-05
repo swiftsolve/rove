@@ -3,7 +3,7 @@
 How the React UI in `src/` is organised, styled and tested. `src/AGENTS.md`
 imports it with rove-tokens' `DESIGN.md`, so Claude Code loads both with the
 first file under `src/`; how the library itself is built is
-[ui-library.md](ui-library.md), which loads with files under `src/ui/`. A rule
+[src/ui/README.md](ui/README.md), which loads with files under `src/ui/`. A rule
 marked *Checked* fails `npm run check`, and [What's enforced](#whats-enforced)
 names the check.
 
@@ -35,7 +35,7 @@ Check: `npm run check`, `npm run dev` in both themes, and `npm run a11y`.
 ### Show new backend data
 
 The six steps are in
-[Learning Rust and Tauri](learning/rust-and-tauri/05-in-practice.md#12-build--run-it-add-a-command-end-to-end):
+[Learning Rust and Tauri](../docs/develop/learning/rust-and-tauri/05-in-practice.md#12-build--run-it-add-a-command-end-to-end):
 the logic in `rove-core`, a command in `src-tauri`, the type in `src/types`,
 both bridges (Tauri and the dev mock), then a hook. The hook goes in the
 feature's `hooks/`, on `useBackendQuery`, keyed by the data plus
@@ -74,7 +74,7 @@ the mock.
   per its hook; the hooks' comments say when and why.
 - Props are for a component's own inputs: the item a row shows, a dialog's
   `onClose`. The UI library in `src/ui` takes only props and never reads app
-  context (see [ui-library.md](ui-library.md)).
+  context (see [the library guide](ui/README.md)).
 
 ### Where code goes
 
@@ -298,7 +298,7 @@ Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
 are in `src/ui/components.gen.json`: read it first, not the sources. Each
 component's Docs page in Storybook shows the same, with its stories
-(ui-library.md: Storybook).
+(`src/ui/README.md`: Storybook).
 
 - Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
   Don't draw new ones inline.

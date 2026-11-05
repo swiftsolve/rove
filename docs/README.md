@@ -4,10 +4,10 @@
 
 Working on Rove's code.
 
-- [Rove frontend](develop/frontend.md): how the UI is organised, styled and
+- [Rove frontend](../src/README.md): how the UI is organised, styled and
   tested, checklists for common changes, and where to find which component to
   use.
-- [Rove UI library](develop/ui-library.md): how `src/ui` is built: its stories,
+- [Rove UI library](../src/ui/README.md): how `src/ui` is built: its stories,
   docs pages and the rules every component follows. Adding a component is the
   [add-library-component](../.claude/skills/add-library-component/SKILL.md) skill.
 - [How Rove Is Put Together](develop/architecture.md): the bridge between the

@@ -3,8 +3,8 @@
 A React UI (`src/`) and a Rust backend (`crates/rove-core`, behind a thin Tauri
 shell in `src-tauri/`) over a typed bridge. This file is the map, the
 procedures, and the rules for every change. The UI's own rules load with its
-folders: `src/AGENTS.md` imports `docs/develop/frontend.md` and rove-tokens'
-`DESIGN.md`, and `src/ui/AGENTS.md` imports `docs/develop/ui-library.md`.
+folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens'
+`DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
 Other agents, read the ones your change touches first.
 
 ## Procedures
@@ -49,7 +49,7 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 ### Done means
 
 - The checks for your change pass.
-- What no check covers is reviewed: frontend.md's What's enforced lists it,
+- What no check covers is reviewed: `src/README.md`'s What's enforced lists it,
   and DESIGN.md's rules without *Checked* are judgment.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
@@ -66,8 +66,8 @@ Read what the task needs, not everything:
 | Task | Read |
 | --- | --- |
 | Any | `README.md`: How it works, Layout, Development |
-| UI | `docs/develop/frontend.md` and DESIGN.md; for the library, also `docs/develop/ui-library.md` |
-| Which library component, and its props | `src/ui/components.gen.json`, generated from the code (frontend.md: Components) |
+| UI | `src/README.md` and DESIGN.md; for the library, also `src/ui/README.md` |
+| Which library component, and its props | `src/ui/components.gen.json`, generated from the code (`src/README.md`: Components) |
 | The UI↔backend boundary, commands, events | `docs/develop/architecture.md` |
 | A backend service | `README.md`: What each feature actually measures, Platform support; `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |

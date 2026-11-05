@@ -46,9 +46,9 @@ Rove is two programs talking over a thin, typed bridge:
   which is why `npm run dev` works in a plain browser for UI work.
 
 > **Deeper dives**
-> - [Rove frontend](docs/develop/frontend.md): how the UI is organised, styled and
+> - [Rove frontend](src/README.md): how the UI is organised, styled and
 >   tested, and where to find which component to use.
-> - [Rove UI library](docs/develop/ui-library.md): how the component library is
+> - [Rove UI library](src/ui/README.md): how the component library is
 >   built.
 > - [How Rove Is Put Together](docs/develop/architecture.md): the swap seam, pull vs
 >   push, and what an `invoke` is on the wire.
@@ -229,7 +229,7 @@ rove/
 
 The UI follows a few conventions: state from context and TanStack Query, never
 props passed through; Tailwind utilities built only from the design tokens;
-shared components before new markup. [docs/develop/frontend.md](docs/develop/frontend.md)
+shared components before new markup. [src/README.md](src/README.md)
 has them all, with checklists for common changes and the component table.
 
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)

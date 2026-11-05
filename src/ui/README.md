@@ -2,9 +2,9 @@
 
 How `src/ui`, the component library, is built: the Figma components in code.
 `src/ui/AGENTS.md` imports it, so Claude Code loads it with the first file
-under `src/ui/`, beside [frontend.md](frontend.md), which covers the app,
+under `src/ui/`, beside [src/README.md](../README.md), which covers the app,
 styles, tests and which component to use. A rule marked *Checked* fails
-`npm run check`; frontend.md's [What's enforced](frontend.md#whats-enforced)
+`npm run check`; src/README.md's [What's enforced](../README.md#whats-enforced)
 names the check.
 
 - [Procedures](#procedures): add or change a component, resync the Storybooks

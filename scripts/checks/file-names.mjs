@@ -11,8 +11,8 @@
  *     `Button.test.tsx`, `usePresence.test.tsx`);
  *   - a component's stories take its name plus `.stories` (`Button.stories.tsx`).
  *
- * `main.tsx` is Vite's entry point and keeps its name, as does `AGENTS.md`, the
- * name agents look for in a folder. Assets keep the names they came with
+ * `main.tsx` is Vite's entry point and keeps its name, as do `AGENTS.md` and
+ * `README.md`, the names agents and GitHub look for in a folder. Assets keep the names they came with
  * (`InterVariable.woff2`), so `src/assets` isn't checked.
  *
  *   node scripts/checks/file-names.mjs
@@ -25,7 +25,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets')]
 const ENTRY_POINTS = ['main.tsx']
-const AGENT_NOTES = 'AGENTS.md'
+const FOLDER_NOTES = ['AGENTS.md', 'README.md']
 
 const KEBAB = '[a-z0-9]+(?:-[a-z0-9]+)*'
 const PASCAL = '[A-Z][A-Za-z0-9]*'
@@ -55,7 +55,7 @@ async function check(dir) {
     if (entry.isDirectory()) {
       if (!FOLDER.test(entry.name)) problems.push(`${relative(ROOT, path)}/: folders are kebab-case`)
       await check(path)
-    } else if (ENTRY_POINTS.includes(entry.name) || entry.name === AGENT_NOTES) {
+    } else if (ENTRY_POINTS.includes(entry.name) || FOLDER_NOTES.includes(entry.name)) {
       continue
     } else if (entry.name.endsWith('.css')) {
       if (!STYLESHEET.test(entry.name)) problems.push(`${relative(ROOT, path)}: ${STYLESHEET_RULE}`)
@@ -72,7 +72,7 @@ await check(SRC)
 if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} file name problem${problems.length === 1 ? '' : 's'}`)
-  console.error('The rule: docs/develop/frontend.md, Where code goes.')
+  console.error('The rule: src/README.md, Where code goes.')
   process.exit(1)
 }
 console.log(`File names OK (${checked} in src/)`)

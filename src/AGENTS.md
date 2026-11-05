@@ -6,6 +6,6 @@ code goes, styles, tests, the library and which component to use), then the
 design rules (which token for what, and why). A rule either one marks as
 checked fails `npm run check`; the rest are yours to watch.
 
-@../docs/develop/frontend.md
+@README.md
 
 @../node_modules/@swiftsolve/rove-tokens/DESIGN.md
