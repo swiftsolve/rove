@@ -317,8 +317,7 @@ export const Colour = {
           title="Palette"
           intro={[
             'The shades the tokens point at.',
-            'The number is how dark it is: blue/450 is 45% dark, so 55% OKLCH lightness.',
-            '-a adds opacity: neutral/850-a10 is 10%.',
+            'The number is how dark it is: blue/450 is 45% dark, so 55% OKLCH lightness. -a adds opacity: neutral/850-a10 is 10%.',
           ]}
         >
           <PaletteGrid />
