@@ -1,47 +1,15 @@
 # Rove frontend
 
-How the React UI in `src/` is organised, styled and tested. `src/AGENTS.md`
-imports it with rove-tokens' `DESIGN.md`, so Claude Code loads both with the
-first file under `src/`; how the library itself is built is
-[src/ui/README.md](ui/README.md), which loads with files under `src/ui/`.
+How the React UI in `src/` is organised, styled and tested. It loads with
+rove-tokens' DESIGN.md for any file under `src/`; the library's own guide,
+[src/ui/README.md](ui/README.md), adds to it under `src/ui/`. The procedures
+(add a screen, show backend data, add a component) are skills, listed in
+[AGENTS.md](../AGENTS.md).
 
 **[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
-`npm run check` fails. The file it names is the check: `checks/` and `gen/` are in `scripts/`,
-and [What's enforced](#whats-enforced) lists them all. A rule without the
-tag is judgment: no check catches a slip, so review it yourself.
-
-- [What to read](#what-to-read): which component, token or doc
-- [Procedures](#procedures): add a screen or tab, show new backend data
-- [Rules](#rules): [Components](#components),
-  [State](#state-context-not-prop-drilling),
-  [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
-  [Styles](#styles-tailwind-utilities-from-the-design-tokens) and
-  [Tests](#tests)
-- [Validation](#validation): [What's enforced](#whats-enforced) and
-  [What review catches](#what-review-catches)
-
-## What to read
-
-| Task | Read |
-| --- | --- |
-| Which component, and its props, variants and usage guide | `src/ui/components.gen.json` ([Components](#components)) |
-| Which token, text style, spacing or radius | DESIGN.md, loaded with this file |
-| Building or changing a library component | [src/ui/README.md](ui/README.md) |
-| Backend data, commands and events | `docs/architecture.md` |
-| What a screen measures, and how | `docs/what-rove-measures.md` |
-
-## Procedures
-
-Each is a skill: Claude Code loads its steps when the task comes up. Other
-agents and people, open the file.
-
-| Task | Skill |
-| --- | --- |
-| Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
-| Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
-| Add a library component, or change one | `.claude/skills/add-library-component/SKILL.md` |
-| Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
-| Resync the sites after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
+`npm run check` fails. The file it names is the check: `checks/` and `gen/` are
+in `scripts/`, and [What's enforced](#whats-enforced) lists them all. A rule
+without the tag is judgment.
 
 ## Rules
 
@@ -54,7 +22,7 @@ component's Docs page in Storybook shows the same, with its stories
 (`src/ui/README.md`: Storybook).
 
 - Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
-  Don't draw new ones inline.
+  A new one joins the library, in `src/ui/icons/`.
 - The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
   the nav rail, from the tab registry.
 - Figma's Compositions page holds what features build from the library, like
@@ -63,8 +31,8 @@ component's Docs page in Storybook shows the same, with its stories
 
 ### State: context, not prop drilling
 
-- No component takes a prop only to pass it down. App-wide state comes from
-  context, read where it's used: `useNavigation()` (location, `navigate`,
+- Props are a component's own inputs: the item a row shows, a dialog's
+  `onClose`. App-wide state comes from context, read where it's used: `useNavigation()` (location, `navigate`,
   `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()`
   and `useConnectionStatus()` (the title bar's verdict). Each has its own small
   context, so a reader re-renders only when its value changes. That's why every
@@ -87,9 +55,8 @@ component's Docs page in Storybook shows the same, with its stories
   (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
   fresh results. A query fetches while a screen that shows it is open and polls
   per its hook; the hooks' comments say when and why.
-- Props are for a component's own inputs: the item a row shows, a dialog's
-  `onClose`. The UI library in `src/ui` takes only props and never reads app
-  context (see [the library guide](ui/README.md)).
+- The UI library in `src/ui` takes only props, so it reads no app context
+  ([the library guide](ui/README.md)).
 
 ### Where code goes
 
@@ -99,8 +66,7 @@ component's Docs page in Storybook shows the same, with its stories
   the hook. [✓ CHECKED by `eslint.config.js`]
 - `TABS` (`app/utils/tab-registry.ts`) holds each tab's label, rail icon and
   placement, screen and subpages; `TabBar` and `CurrentScreen` read it.
-- A custom hook lives in its own file in a `hooks/` folder, never inside a
-  component file.
+- A custom hook lives in its own file in a `hooks/` folder.
 - React 19 idioms: a component's return type is inferred (annotate it only as
   `JSX.Element | null`, when it can render nothing); a context is read with
   `use(SomeContext)` and provided as `<SomeContext value={…}>`; an effect reads
@@ -114,16 +80,11 @@ component's Docs page in Storybook shows the same, with its stories
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
-- The rare stylesheet a component needs sits next to it with the same name:
-  `ConnectionStrip.tsx` and `ConnectionStrip.module.css`.
 - File names say what a file is. A component is PascalCase
   (`ThemeProvider.tsx`), a hook is camelCase starting with `use`
   (`useTheme.ts`), and everything else is kebab-case: contexts, utils and
   types (`theme-context.ts`), global stylesheets (`base.css`) and folders
   (`live-throughput/`).
-- Prettier lays out the code (`.prettierrc.json`: no semicolons, single
-  quotes, 120 columns); `npm run format` applies it. Markdown and generated
-  files are left alone (`.prettierignore`). [✓ CHECKED by `prettier --check`]
 - Imports come in three groups, each sorted: packages, then the app's own
   modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
   JSX is linted for accessibility (jsx-a11y's strict set); a deliberate
@@ -224,10 +185,9 @@ apply here. This section is how they're written as Tailwind utilities.
 - `cn()` (from `@/ui`, in `ui/utils/cn.ts`) joins classes and lets a
   later utility override an earlier one that sets the same thing; use it
   wherever a component merges a `className` from outside, which is how a view
-  adjusts a child. `cx` only joins fixed classes. `cn` lists every theme name
-  and `type-*` class so tailwind-merge can group them; when you add one to
-  `tailwind.css` or rove-tokens adds a text style, add it there too.
-  [✓ CHECKED by `gen/cn-theme.mjs`]
+  adjusts a child. `cx` only joins fixed classes. tailwind-merge groups the
+  theme's names and `type-*` classes from `cn-theme.gen.json`, so after a new
+  theme name or text style, `npm run gen`. [✓ CHECKED by `gen/cn-theme.mjs`]
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
   its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
@@ -243,8 +203,10 @@ apply here. This section is how they're written as Tailwind utilities.
   a `.module.css` (below); InlineMeta keeps its `inline-meta` and
   `inline-meta-item` classes for it. [✓ CHECKED by `checks/ui-classname.mjs`]
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
-  their keyframes. A `.module.css` file is only for what utilities can't say:
-  selectors into another component's DOM keyed on `:has()`.
+  their keyframes.
+- A `.module.css` file holds only what utilities can't say, selectors into
+  another component's DOM keyed on `:has()`, and sits beside its component
+  with the same name (`ConnectionStrip.module.css`).
 
 ### Tests
 

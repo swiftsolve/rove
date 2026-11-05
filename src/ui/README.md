@@ -1,43 +1,10 @@
 # Rove UI library
 
 How `src/ui`, the component library, is built: the Figma components in code.
-`src/ui/AGENTS.md` imports it, so Claude Code loads it with the first file
-under `src/ui/`, beside [src/README.md](../README.md), which covers the app,
-styles, tests and which component to use.
-
-**[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
-`npm run check` fails. The file it names is the check: `checks/` and `gen/` are in `scripts/`,
-and src/README.md's [What's enforced](../README.md#whats-enforced) lists them
-all. A rule without the tag is judgment: no check catches a slip, so review
-it yourself.
-
-- [What to read](#what-to-read): which component exists, the app's rules, the
-  tokens, the Figma file
-- [Procedures](#procedures): add or change a component, resync the Storybooks
-- [Rules](#rules): [The library](#the-library), [Stories](#stories),
-  [Docs pages and the component list](#docs-pages-and-the-component-list),
-  [Every component](#every-component) and [Buttons](#buttons)
-- [Validation](#validation): [Storybook](#storybook)
-
-## What to read
-
-| Task | Read |
-| --- | --- |
-| Which components exist, and their props and guides | `components.gen.json`, generated from the code |
-| How the app uses them: styles, state, copy, tests | [src/README.md](../README.md) |
-| Which token, text style, spacing or radius | DESIGN.md, loaded with src/README.md |
-| A component's Figma counterpart | `figma-components.json`, which maps each one to its node in the Rove Design System file |
-
-## Procedures
-
-Each is a skill: Claude Code loads its steps when the task comes up. Other
-agents and people, open the file.
-
-| Task | Skill |
-| --- | --- |
-| Add a library component, or change one's API or look, in code and Figma | `.claude/skills/add-library-component/SKILL.md` |
-| Map a component to its Figma component in `figma-components.json`, or fix a stale entry | `.claude/skills/map-figma-component/SKILL.md` |
-| Resync the Storybooks (and the sites, if a screen changed) after committing | `.claude/skills/resync-sites/SKILL.md` |
+It loads under `src/ui/` on top of [src/README.md](../README.md), which covers
+the app, styles, tests and which component to use; its ✓ CHECKED tags mean the
+same. The procedures (add or change a component, map it to Figma, resync the
+Storybooks) are skills, listed in [AGENTS.md](../../AGENTS.md).
 
 ## Rules
 
@@ -50,21 +17,11 @@ library imports only itself (by relative path) and packages, never app code.
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are no tiers: a
   component that starts using another stays where it is.
-- `index.ts`, the stories and the Figma file's component pages group them by
-  purpose, in this order:
-  - Actions: button, link and menu
-  - Inputs: text-field, toggle and segmented-control
-  - Overlays: dialog and tooltip
-  - Status and feedback: badge, status-dot, spinner, loading-state,
-    banner and empty-state
-  - Data display: data-list, readout, metric-value, no-value, bar-meter,
-    split-bar, list-row, icon-tile and timeline
-  - Containers: card, collapsible and separator
-  - App frame: title-bar, nav-rail and page-header
-  - Accessibility: screen-reader
-
-  Figma has one more page after them, Compositions: the cards, charts and
-  content that features build from the library.
+- `index.ts`'s group comments (Actions, Inputs, Overlays…) group them by
+  purpose, and the stories' titles and the Figma file's component pages follow
+  the same groups in the same order. Figma has one more page after them,
+  Compositions: the cards, charts and content that features build from the
+  library.
 - Beside them: `utils/` (`cn`; `pressable`, the behaviour everything
   pressable shares; `layers`, the one stacking order, so an overlay picks a
   named layer rather than a z-index; and `tint`, the "any colour or neutral"
@@ -141,8 +98,8 @@ library imports only itself (by relative path) and packages, never app code.
   trigger's props win, so there's no other way to set both.
 - Behaviour that's hard to get right comes from Base UI (`@base-ui/react`),
   styled with our tokens: focus traps, positioning, roving focus, dismissal,
-  ARIA wiring. The library wraps it, so features never import Base UI
-  directly.
+  ARIA wiring. The library wraps it, so features reach Base UI only through
+  `@/ui`.
 - Props share names across components and with Figma: `variant`, `isLoading`,
   `isDisabled`, `isChecked`; the text under a title is `description` and the
   controls a component holds are `actions`; a colour by role is `status` or
@@ -164,9 +121,8 @@ Outside the library, a button is one of its components (`Button`,
 
 ## Validation
 
-`npm run check` runs every story, with its play function and axe, in
-headless Chromium. src/README.md's [What's enforced](../README.md#whats-enforced)
-lists every check, the library's included.
+src/README.md's [What's enforced](../README.md#whats-enforced) lists every
+check, the library's included.
 
 ### Storybook
 

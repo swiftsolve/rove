@@ -146,7 +146,7 @@ flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter
 
 ### Prerequisites
 
-[Node.js](https://nodejs.org) 18 or later and [Rust](https://rustup.rs), plus
+[Node.js](https://nodejs.org) 20.19 or later (CI uses 22, as `.nvmrc` says) and [Rust](https://rustup.rs), plus
 Tauri's system libraries:
 
 - **Linux** (Debian, Ubuntu):
