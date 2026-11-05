@@ -49,8 +49,8 @@ released, and taken up by Rove. Nothing here writes to Figma.
 ### Check your work
 
 Run `npm run check` before you commit: the build, lint (ESLint and Prettier),
-then every check in `scripts/checks/` (DESIGN.md up to date, descriptions, WCAG
-AA contrast, the Figma plugin). `npm run format` fixes what Prettier reports.
+then every check in `scripts/checks/` (DESIGN.md up to date, its checked tags,
+descriptions, WCAG AA contrast, the Figma plugin). `npm run format` fixes what Prettier reports.
 Fix what a hook reports; never skip one. Other sessions share this checkout, so
 commit only your paths (`git commit -m "…" -- <paths>`).
 

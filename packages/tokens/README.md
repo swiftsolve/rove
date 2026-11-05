@@ -168,6 +168,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 | `scripts/checks/contrast.mjs` | Measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#contrast)'s targets. |
 | `scripts/checks/descriptions.mjs` | Every token has a description in Figma: its use, shown in Figma's picker, the Storybook and DESIGN.md. |
 | `scripts/checks/design-md.mjs` | The committed `DESIGN.md` matches the last build. |
+| `scripts/checks/checked-tags.mjs` | Every checked tag in `DESIGN.md` names its check, and each of this repo's exists; Rove checks the ones it calls Rove's. |
 | `scripts/checks/figma-plugin.mjs` | Runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
 
 **Storybook**
