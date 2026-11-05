@@ -10,7 +10,7 @@ import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 // words line up with the text around them and the link adds no height to its line.
 const LINK = cx(
   'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 -my-2 ml-[-9.5px] mr-[-9px]',
-  'text-[length:inherit] leading-[inherit] font-medium whitespace-nowrap text-secondary no-underline',
+  'text-[length:inherit] leading-[inherit] [font-weight:inherit] whitespace-nowrap text-secondary no-underline',
   'transition-[color] duration-(--duration-fast) ease-in-out',
   'usable:hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
   STATE_CLASSES,
