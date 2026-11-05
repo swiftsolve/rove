@@ -3,9 +3,11 @@
 How the React UI in `src/` is organised, styled and tested. `src/AGENTS.md`
 imports it with rove-tokens' `DESIGN.md`, so Claude Code loads both with the
 first file under `src/`; how the library itself is built is
-[src/ui/README.md](ui/README.md), which loads with files under `src/ui/`. A rule
-marked [CHECKED] fails `npm run check`, and [What's enforced](#whats-enforced)
-names the check.
+[src/ui/README.md](ui/README.md), which loads with files under `src/ui/`.
+
+**[CHECKED]** marks a rule a check enforces: break it and `npm run check`
+fails. [What's enforced](#whats-enforced) names the check. A rule without the
+tag is judgment: no check catches a slip, so review it yourself.
 
 - [Procedures](#procedures): add a screen or tab, show new backend data
 - [Rules](#rules): [State](#state-context-not-prop-drilling),

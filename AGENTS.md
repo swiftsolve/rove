@@ -5,7 +5,9 @@ shell in `src-tauri/`) over a typed bridge. This file is the map, the
 procedures, and the rules for every change. The UI's own rules load with its
 folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens'
 `DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
-Other agents, read the ones your change touches first.
+Other agents, read the ones your change touches first. In those guides,
+**[CHECKED]** marks a rule a check enforces, so `npm run check` fails when
+it's broken; a rule without it is judgment.
 
 ## Procedures
 
