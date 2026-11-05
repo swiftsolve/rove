@@ -39,6 +39,9 @@ const GROUPS = {
   weight: 'Font weights',
 }
 
+/** Text style groups, the first segment of a style's name, in the order the table lists them. */
+const TYPE_GROUPS = ['Heading', 'Body', 'Label', 'Caption', 'Badge', 'Number']
+
 const cssName = (figmaName) => `--${figmaName.replace(/\//g, '-')}`
 const code = (text) => `\`${text}\``
 const heading = (prefix) => GROUPS[prefix] ?? prefix[0].toUpperCase() + prefix.slice(1)
@@ -111,19 +114,29 @@ export async function writeDesign({ path, variables, textStyles, shadows, code: 
     '',
     '### Text styles',
     '',
-    'Apply a style with its class from `text-styles.css`. Each class reads four variables, `--type-<style>-size`, `-weight`, `-line-height` and `-letter-spacing`; set all four if you use them directly.',
+    'Apply a style with its class from `text-styles.css`. Each class reads four variables, `--type-<style>-size`, `-weight`, `-line-height` and `-letter-spacing`; set all four if you use them directly, and `text-transform: uppercase` for an uppercase style, which has no variable.',
     '',
   )
-  out.push('| Style | Class | Size, weight | Use |', '| --- | --- | --- | --- |')
-  for (const s of textStyles) {
+  out.push('| Style | Class | Size, weight | Case, tracking | Use |', '| --- | --- | --- | --- | --- |')
+  // By group, as a type scale reads, then largest first; Figma lists late additions last.
+  const group = (s) => {
+    const at = TYPE_GROUPS.indexOf(s.name.split('/')[0])
+    return at === -1 ? TYPE_GROUPS.length : at
+  }
+  const sorted = [...textStyles].sort(
+    (a, b) => group(a) - group(b) || b.fontSize - a.fontSize || b.fontWeight - a.fontWeight,
+  )
+  for (const s of sorted) {
     const slug = slugOf(s.name)
     const numeric = s.boundVariables?.fontFamily === 'font-family/numeric' ? ', Questrial' : ''
     // Figma's description ends in a "Code:" handoff note; it's kept only when
     // it says more than the Class column.
     const [use, handoff] = s.description.split(/\s*Code:\s*/)
     const inCode = handoff && handoff !== `.type-${slug}` ? ` In code: ${handoff}` : ''
+    const tracking = dark.get(`--type-${slug}-letter-spacing`)
+    const look = [s.textCase === 'UPPER' && 'uppercase', tracking !== '0' && `+${tracking}`].filter(Boolean).join(', ')
     out.push(
-      `| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${`${use}${inCode}`.replace(/\|/g, '\\|')} |`,
+      `| ${s.name} | ${code(`.type-${slug}`)} | ${s.fontSize}px ${dark.get(`--type-${slug}-weight`)}${numeric} | ${look || '–'} | ${`${use}${inCode}`.replace(/\|/g, '\\|')} |`,
     )
   }
 

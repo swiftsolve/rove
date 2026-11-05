@@ -3,14 +3,23 @@
 How to build Rove's interface with these tokens, for anyone writing Rove UI,
 people and coding agents alike. The [token reference](#token-reference) at the
 end lists every value; [`docs/rationale.md`](docs/rationale.md) explains why
-they are what they are.
+they are what they are. The sections follow the
+[DESIGN.md format](https://github.com/google-labs-code/design.md)'s order; the
+values stay in `tokens.css`, not in front matter, so there's no hex to copy.
 
 **[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
 `npm run check` fails. The file it names is the check: Rove's are in its
 `scripts/`, the tokens' own in this repo's. A rule without the tag is judgment:
 no check catches a slip, so look at the result in both themes.
 
-## Setup
+## Overview
+
+Rove is a quiet, neutral interface: greys carry almost everything, with
+`--text-primary` on `--bg-base` and the backgrounds that stack on it. One blue,
+the accent (`--accent-*`), marks the brand and what you act on: the brand mark,
+the active nav item, solid buttons, links and the focus ring. It's the system's
+primary colour; it's named accent because `--text-primary` already means the
+main text. The other colours carry a meaning: status, and the chart series.
 
 ```css
 @import '@swiftsolve/rove-tokens/tokens.css';
@@ -20,20 +29,11 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 for Light. Every token has both values, so a screen that only uses tokens themes
 itself.
 
-## Rules
+Tokens are designed in Figma and only exported here: to change one, follow the
+[README](README.md#update-the-tokens) (or the `update-tokens` skill), never edit
+`tokens.css`, `tokens/` or `src/figma/` directly.
 
-- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font
-  sizes typed in. If nothing fits, the design needs a new token in Figma, not a
-  one-off in code. The only exceptions are the off-scale lengths in [Spacing and
-  shape](#spacing-and-shape).
-  [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`],
-  the second for a misspelt name.
-- **Every token says what it's for.** Its Figma description is its use, listed
-  in the [token reference](#token-reference). Pick by that, not by the value.
-  [✓ CHECKED by `tokens/build.mjs`].
-- **Name by job, not by look.** Pick `--bg-surface` because it's content on the
-  backdrop, not because it's the right grey. The Palette shades (`neutral/850`)
-  aren't CSS variables, on purpose.
+## Colors
 
 ### Surfaces
 
@@ -54,11 +54,6 @@ itself.
   - `--bg-popover` is a step lighter in Dark, for tooltips and menus;
   - `--bg-hover` is a hovered surface;
   - `--bg-scrim` goes behind dialogs.
-- Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus
-  use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use
-  `--shadow-raised`.
-- Every line is `--border-default`: hairlines, and the edges of menus, tooltips
-  and dialogs.
 - For hovers, chips and tracks on a surface, use the `--overlay-*` tokens. They
   flip with the theme, so they stay visible on both.
   - By strength: `--overlay-faint` (3%), `--overlay-subtle` (5%),
@@ -80,17 +75,13 @@ itself.
   [✓ CHECKED by `checks/contrast.mjs`]. Picking the token for the job is still
   judgment: a `--status-*` shade under words passes no check.
 
-### Accent and buttons
+### Accent
 
 - `--accent-default` is for accent icons and lines. It's too light for words in
   Light mode, and under a white label.
 - An accent icon or line that responds to the pointer uses `--accent-hover` and
-  `--accent-press`. They aren't for solids: a solid button has its own pair.
-- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers
-  deepen, never lighten, so the white label keeps its contrast.
-  [✓ CHECKED by `checks/contrast.mjs`].
-- A solid red control (a solid negative button, the window close hover) uses
-  `--status-negative-solid` and `--status-negative-solid-hover`.
+  `--accent-press`. They aren't for solids: a solid button has its own pair
+  ([Buttons](#buttons)).
 
 ### Status
 
@@ -123,37 +114,7 @@ Pick the strength by the tint's size and job:
 Disabled controls use `--opacity-disabled`. `--opacity-high` dims a mark that
 should stay nearly solid, like a chart line behind another.
 
-### Spacing and shape
-
-- Every gap, padding and margin is a `--spacing-*` step.
-  [✓ CHECKED by Rove's `checks/raw-values.mjs`].
-- Cards use `--card-padding` on every side. The rail and the content column
-  share the side inset `--spacing-12`.
-- A card header is `--card-header-height` tall. A header-like strip that can
-  grow with its content takes `--card-header-min-height` as its minimum instead.
-- Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
-  - `xs` for small controls inside others (menu items, segments, window
-    buttons);
-  - `sm` for controls;
-  - `md` for nav items and the page-header chip;
-  - `lg` for cards and dialogs;
-  - `full` for pills and dots, and for a thin bar or line: it rounds to half its
-    width.
-- **Off the scale only when something else sets the length**, and say why where
-  it's used:
-  - spacing that lines up with an icon's ink rather than its box, or gives back
-    a 1px border;
-  - spacing that lines up with something that isn't spacing, like an icon's
-    width or a label column;
-  - a corner that copies a shape from outside the system, like the app icon's.
-
-  A value that's just "a bit more" isn't an exception: take the nearest step, or
-  propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it
-  fails an off-scale value until its reason is in its `ALLOWED` list.
-- Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed
-  one is fine.
-
-### Type
+## Typography
 
 - Set text with a text style's class from `text-styles.css`
   (`.type-heading-large`), or all four of its `--type-<style>-*` variables,
@@ -162,19 +123,57 @@ should stay nearly solid, like a chart line behind another.
 - Numbers that are data (speeds, totals, chart labels) use the Number styles
   (`number-*`), set in Questrial; everything else is Inter.
 
-### Focus and motion
+## Layout
 
-- Keyboard focus is `outline: var(--focus-outline)` with
-  `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it
-  inside instead, with `--focus-inset`.
-- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or
-  `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a
-  raw curve, and a duration typed where a token has the value.
-  - A panel resizing to its content springs, with
-    `var(--duration-spring) var(--ease-spring)`: it arrives within
-    `--duration-normal`, and its slight overshoot settles after.
-  - A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and
-    back in alike.
+- Every gap, padding and margin is a `--spacing-*` step.
+  [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+- Cards use `--card-padding` on every side. The rail and the content column
+  share the side inset `--spacing-12`.
+- A card header is `--card-header-height` tall. A header-like strip that can
+  grow with its content takes `--card-header-min-height` as its minimum instead.
+- **Off the scale only when something else sets the length**, and say why where
+  it's used:
+  - spacing that lines up with an icon's ink rather than its box, or gives back
+    a 1px border;
+  - spacing that lines up with something that isn't spacing, like an icon's
+    width or a label column;
+  - a corner that copies a shape from outside the system, like the app icon's
+    ([Shapes](#shapes)).
+
+  A value that's just "a bit more" isn't an exception: take the nearest step, or
+  propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it
+  fails an off-scale value until its reason is in its `ALLOWED` list.
+- Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed
+  one is fine.
+
+## Elevation & Depth
+
+- Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus
+  use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use
+  `--shadow-raised`.
+- Every line is `--border-default`: hairlines, and the edges of menus, tooltips
+  and dialogs.
+
+## Shapes
+
+- Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+  - `xs` for small controls inside others (menu items, segments, window
+    buttons);
+  - `sm` for controls;
+  - `md` for nav items and the page-header chip;
+  - `lg` for cards and dialogs;
+  - `full` for pills and dots, and for a thin bar or line: it rounds to half its
+    width.
+
+## Components
+
+### Buttons
+
+- Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers
+  deepen, never lighten, so the white label keeps its contrast.
+  [✓ CHECKED by `checks/contrast.mjs`].
+- A solid red control (a solid negative button, the window close hover) uses
+  `--status-negative-solid` and `--status-negative-solid-hover`.
 
 ### Icons
 
@@ -186,19 +185,37 @@ should stay nearly solid, like a chart line behind another.
   - a secured or passing one is `--status-positive`.
 - The brand mark is always `--accent-default`, 22px in the title bar.
 
-## Changing the design
+### Focus
 
-Tokens are designed in Figma and released from the rove-tokens repo, one way:
-change a token in Figma, export it with the plugin in `figma-plugin/` into
-`src/figma/` (or `npm run figma:export` through the Figma MCP), run
-`npm run build`, and check the repo matches the file (`npm run figma:check`).
-Nothing writes back to Figma. The [README](README.md#update-the-tokens) has the
-steps. Don't edit `tokens.css`, `tokens/` or `src/figma/` directly. Shadows are
-Figma's `Shadow/*` effect styles and export with the rest; only what Figma can't
-hold (easing curves, the focus outline) lives in `src/code-tokens.json`. Then
-[release](README.md#release) a version, update Rove to it, and resync the sites
-that embed Rove. The `update-tokens` skill
-(`.claude/skills/update-tokens/SKILL.md`) runs it all.
+- Keyboard focus is `outline: var(--focus-outline)` with
+  `outline-offset: var(--focus-offset)`. Rows flush with a card's edge draw it
+  inside instead, with `--focus-inset`.
+
+## Motion
+
+- Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or
+  `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a
+  raw curve, and a duration typed where a token has the value.
+  - A panel resizing to its content springs, with
+    `var(--duration-spring) var(--ease-spring)`: it arrives within
+    `--duration-normal`, and its slight overshoot settles after.
+  - A looping pulse uses `--ease-pulse`, which is symmetric, so it fades out and
+    back in alike.
+
+## Do's and Don'ts
+
+- **Use a token, never a raw value.** No hex colours, no pixel gaps, no font
+  sizes typed in. If nothing fits, the design needs a new token in Figma, not a
+  one-off in code. The only exceptions are the off-scale lengths in
+  [Layout](#layout).
+  [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`],
+  the second for a misspelt name.
+- **Every token says what it's for.** Its Figma description is its use, listed
+  in the [token reference](#token-reference). Pick by that, not by the value.
+  [✓ CHECKED by `tokens/build.mjs`].
+- **Name by job, not by look.** Pick `--bg-surface` because it's content on the
+  backdrop, not because it's the right grey. The Palette shades (`neutral/850`)
+  aren't CSS variables, on purpose.
 
 Everything below the next line is rewritten by `npm run build`; edit only above it.
 
@@ -234,27 +251,27 @@ Names and uses, from Figma. The values are in `tokens.css`; Dark and Light diffe
 
 ### Text styles
 
-Apply a style with its class from `text-styles.css`. Each class reads four variables, `--type-<style>-size`, `-weight`, `-line-height` and `-letter-spacing`; set all four if you use them directly.
+Apply a style with its class from `text-styles.css`. Each class reads four variables, `--type-<style>-size`, `-weight`, `-line-height` and `-letter-spacing`; set all four if you use them directly, and `text-transform: uppercase` for an uppercase style, which has no variable.
 
-| Style | Class | Size, weight | Use |
-| --- | --- | --- | --- |
-| Heading/Large | `.type-heading-large` | 17px 600 | Page titles, the wordmark. |
-| Heading/Medium | `.type-heading-medium` | 15px 600 | Dialog titles. |
-| Heading/Small | `.type-heading-small` | 14px 600 | Card headings. |
-| Body/Default | `.type-body-default` | 13px 400 | Body text. |
-| Label/Field | `.type-label-field` | 11px 500 | Labels naming a value, field or section. |
-| Caption | `.type-caption` | 11px 400 | Live badge, captions, footer hints. |
-| Label/Large | `.type-label-large` | 12px 600 | Solid button labels. In code: Button variant=solid |
-| Number/Display | `.type-number-display` | 28px 400, Questrial | Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
-| Number/Large | `.type-number-large` | 17px 400, Questrial | Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact |
-| Number/Default | `.type-number-default` | 13px 400, Questrial | Data row values. |
-| Number/Small | `.type-number-small` | 10px 400, Questrial | Chart axes and scale. |
-| Label/Menu | `.type-label-menu` | 12px 500 | Menu items. |
-| Label/Default | `.type-label-default` | 11px 600 | Bold small labels on tinted chips. |
-| Label/Small | `.type-label-small` | 11px 500 | Soft buttons, title bar status. |
-| Body/Small | `.type-body-small` | 12px 400 | Helper text, hints and units. |
-| Heading/XSmall | `.type-heading-xsmall` | 13px 600 | Empty state titles. |
-| Badge | `.type-badge` | 10px 600 | Badge labels. |
+| Style | Class | Size, weight | Case, tracking | Use |
+| --- | --- | --- | --- | --- |
+| Heading/Large | `.type-heading-large` | 17px 600 | – | Page titles, the wordmark. |
+| Heading/Medium | `.type-heading-medium` | 15px 600 | – | Dialog titles. |
+| Heading/Small | `.type-heading-small` | 14px 600 | – | Card headings. |
+| Heading/XSmall | `.type-heading-xsmall` | 13px 600 | – | Empty state titles. |
+| Body/Default | `.type-body-default` | 13px 400 | – | Body text. |
+| Body/Small | `.type-body-small` | 12px 400 | – | Helper text, hints and units. |
+| Label/Large | `.type-label-large` | 12px 600 | – | Solid button labels. In code: Button variant=solid |
+| Label/Menu | `.type-label-menu` | 12px 500 | – | Menu items. |
+| Label/Default | `.type-label-default` | 11px 600 | – | Bold small labels on tinted chips. |
+| Label/Field | `.type-label-field` | 11px 500 | uppercase, +0.06em | Labels naming a value, field or section. |
+| Label/Small | `.type-label-small` | 11px 500 | – | Soft buttons, title bar status. |
+| Caption | `.type-caption` | 11px 400 | – | Live badge, captions, footer hints. |
+| Badge | `.type-badge` | 10px 600 | uppercase, +0.04em | Badge labels. |
+| Number/Display | `.type-number-display` | 28px 400, Questrial | – | Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. |
+| Number/Large | `.type-number-large` | 17px 400, Questrial | – | Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact |
+| Number/Default | `.type-number-default` | 13px 400, Questrial | – | Data row values. |
+| Number/Small | `.type-number-small` | 10px 400, Questrial | – | Chart axes and scale. |
 
 ### Shadows
 
