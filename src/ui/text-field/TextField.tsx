@@ -9,8 +9,8 @@ import { PRESS, pressableProps, STATE_CLASSES } from '../utils/pressable'
 // The same 8px above the field as the feedback line below it.
 const LABEL = 'type-overline text-tertiary mb-8 block'
 
-// Explicit line-height pins the field to an even height (18 + 20 = 38px), so a
-// fixed-height action centred beside the text lands on a symmetric gap.
+// Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
+// 30px action centred beside the text sits 4px from the top and bottom edges.
 const INPUT = cx(
   'w-full rounded-sm px-12 py-10 type-body-default leading-[18px] text-primary placeholder:text-tertiary',
   'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
@@ -26,9 +26,10 @@ const BORDERED_INPUT = cx(
 // borderless, so the two read as one control.
 const GROUPED_INPUT = cx(INPUT, 'min-w-0 flex-auto border-none bg-transparent')
 
-// Invalid reads from the input's `data-invalid`, which Field sets.
+// Invalid reads from the input's `data-invalid`, which Field sets. The right
+// padding matches the action's 4px above and below, so it's inset evenly.
 const GROUP = cx(
-  'flex items-center gap-4 rounded-sm border bg-inset pr-6',
+  'flex items-center gap-4 rounded-sm border bg-inset pr-4',
   'border-line focus-within:border-accent has-data-invalid:border-status-negative',
   'transition-[border-color] duration-(--duration-fast) ease-in-out',
 )
@@ -97,11 +98,12 @@ export function TextField({
 }
 
 // A quiet accent wash with an accent label, so it reads as secondary to the
-// form's solid confirm. Loading, the label is just a spinner, so the button
-// collapses to a square rather than holding its width around it.
+// form's solid confirm. Its corner is a step smaller than the field's, so the
+// two curves stay parallel 4px apart. Loading, the label is just a spinner, so
+// the button collapses to a square rather than holding its width around it.
 const actionVariants = cva(
   [
-    'inline-flex h-[30px] shrink-0 items-center justify-center rounded-sm',
+    'inline-flex h-[30px] shrink-0 items-center justify-center rounded-xs',
     'bg-accent-muted type-label-default text-accent-text',
     'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
     PRESS,
