@@ -187,7 +187,7 @@ const STEPS: Step[] = [
     items: [
       {
         name: '`components.gen.json`',
-        body: 'Every component in one file, with its Figma node. Never edited by hand.',
+        body: 'Every component in one file, with its Figma node. Never edited directly.',
       },
     ],
   },

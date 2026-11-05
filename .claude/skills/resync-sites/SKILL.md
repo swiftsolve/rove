@@ -35,7 +35,7 @@ folder first, `git add -A <folder>`, then `git commit -m "…" -- <folder>`:
 every build gives its files new names, and `git commit -- <folder>` alone
 takes only files git already tracks, so it commits the old files' deletion
 without the new ones and the site loads a script that isn't there. The synced
-folders are build output, and Claude Code's settings refuse a hand edit there.
+folders are build output, and Claude Code's settings refuse a direct edit there.
 
 ## Done
 

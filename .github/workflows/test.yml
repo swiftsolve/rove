@@ -4,7 +4,7 @@ name: test
 # renders in headless Chromium, runs its play function and the a11y checks),
 # then the service layer's Rust format, lints and tests. One Linux runner on
 # each push; build.yml runs the Rust on all three OSes and builds the app, for
-# a release tag or by hand, since macOS and Windows minutes cost 10x and 2x.
+# a release tag or on demand, since macOS and Windows minutes cost 10x and 2x.
 on:
   push:
     branches: [master]

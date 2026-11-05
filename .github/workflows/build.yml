@@ -1,6 +1,6 @@
 name: build
 
-# On a release tag, beside release.yml, and by hand, not on every push: macOS
+# On a release tag, beside release.yml, and on demand, not on every push: macOS
 # and Windows minutes cost 10x and 2x. test.yml runs the Rust on Linux for
 # each push.
 on:

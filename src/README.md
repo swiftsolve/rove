@@ -299,7 +299,7 @@ apply here. This section is how they're written as Tailwind utilities.
 
 Review still has to catch:
 
-- a prop passed only to pass down, or focus or presence handled by hand;
+- a prop passed only to pass down, or focus or presence rebuilt where the library handles it;
 - a view reaching into a component's DOM;
 - a comment that restates the code instead of saying why;
 - a hint over two sentences;

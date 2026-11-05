@@ -46,14 +46,14 @@ a live demo.
 
 Two consequences worth knowing:
 
-- **The two type definitions are kept in sync by hand.** Serde guarantees the
+- **Nothing keeps the two type definitions in sync.** Serde guarantees the
   Rust struct matches the JSON it emits; nothing checks that against the
   TypeScript. Rename a field in Rust and the UI still compiles, then reads
   `undefined` at runtime. `ts-rs` or `specta` would close this by generating one
   side from the other.
 - **The mock re-implements one rule.** `rateCapability` in the mock mirrors
   `rate` in `crates/rove-core/src/capabilities.rs` so demo ratings match
-  production. Two copies of one rule, also synced by hand.
+  production. Two copies of one rule, and nothing checks they agree.
 
 **Not everything goes through the bridge.** Two files call Tauri directly:
 `features/about/hooks/useAppVersion.ts` (app version) and

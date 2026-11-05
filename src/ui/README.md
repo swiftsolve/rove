@@ -158,7 +158,7 @@ major or minor is yours.
 ### Buttons
 
 Outside the library, a button is one of its components (`Button`,
-`IconButton`, `Link`, `ListRow`, `StretchedLink`), never a hand-written
+`IconButton`, `Link`, `ListRow`, `StretchedLink`), never a bare
 `<button>`. [✓ CHECKED by `eslint.config.js`]
 
 - Disabled and loading swallow every activation, a form submit included, and
@@ -182,5 +182,5 @@ story. Its Figma tab embeds the component from the design file: a story
 title's last part is its key in `figma.json`, so a new component's stories find
 it with nothing set. `npm run build:storybook` writes a static copy to
 `storybook-static/`. Master's is hosted at
-<https://rove.swiftsolve.net/storybook/>, synced by hand (the `resync-sites`
+<https://rove.swiftsolve.net/storybook/>, synced on demand (the `resync-sites`
 skill), and every push publishes to Chromatic for visual tests.

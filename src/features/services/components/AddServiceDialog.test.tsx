@@ -7,7 +7,7 @@ import type { NetworkAPI } from '@/types'
 
 import { AddServiceDialog } from './AddServiceDialog'
 
-/** A probe the test settles by hand, to check what happens while it's in flight. */
+/** A probe the test settles itself, to check what happens while it's in flight. */
 function deferred<T>() {
   let resolve!: (value: T) => void
   let reject!: (error: unknown) => void
