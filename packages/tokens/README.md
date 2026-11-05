@@ -90,34 +90,12 @@ To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6
 
 ## How it works
 
-```mermaid
-%%{init: {"themeCSS": ".cluster-label { translate: 236px 0; }", "theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#151618", "primaryTextColor": "#eeeeef", "primaryBorderColor": "#2b2c2f", "lineColor": "#8e8f93", "clusterBkg": "#0b0b0c", "clusterBorder": "#3a69d5", "titleColor": "#5b8cff", "dropShadow": "none"}}}%%
-flowchart TD
-  figma("<b>Figma file</b><br/>variables, text styles, shadows"):::source
-  exports("<b>src/figma/*.json</b><br/>the same, exported into git"):::file
-  code("<b>src/code‑tokens.json</b><br/>easings, focus, font fallbacks"):::file
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.png">
+  <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens and DESIGN.md. Checked by the build, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
+</picture>
 
-  subgraph build ["npm run build"]
-    dtcg("<b>dist/tokens/</b><br/>every token as DTCG JSON"):::file
-    css("<b>dist/tokens.css</b><br/>every token as a CSS variable"):::file
-    textCss("<b>dist/text-styles.css</b><br/>a class per text style"):::file
-    design("<b>DESIGN.md</b><br/>which token for what"):::file
-  end
-
-  pkg("<b>npm package</b><br/>what Rove installs"):::ship
-  storybook("<b>Storybook</b><br/>every token, both themes"):::ship
-
-  figma -->|Export| exports
-  exports & code --> dtcg
-  dtcg --> css & textCss & design
-  build --> pkg & storybook
-
-  classDef source fill:#3a69d5,stroke:#5b8cff,color:#ffffff
-  classDef file fill:#151618,stroke:#2b2c2f,color:#eeeeef
-  classDef ship fill:#20263a,stroke:#5b8cff,color:#eeeeef
-```
-
-Each box says what it holds. Two steps make them: the plugin's Export, and `npm run build`, whose scripts are listed in [What's where](#whats-where).
+The diagram is the [Storybook's Introduction](https://rove.swiftsolve.net/storybook/tokens/). [What's where](#whats-where) lists the scripts behind each step.
 
 ## Update the tokens
 

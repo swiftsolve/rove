@@ -217,6 +217,8 @@ function Icon({ name, label }) {
 
 // The pipeline, step by step. A step's `column` places it under its stage heading,
 // and a step that skips a stage gets a dashed arrow across it.
+// README.md's How it works is a screenshot of this diagram, in each theme
+// (docs/assets/how-it-works-*.png): retake both when it changes.
 const STAGES = ['In Figma', 'Exported to', 'Built by', 'Ships as']
 
 const PIPELINES = [
