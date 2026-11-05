@@ -1,11 +1,9 @@
 # Rove UI library
 
 How `src/ui`, the component library, is built: the Figma components in code.
-`src/ui/AGENTS.md` imports it, so Claude Code loads it the first time it reads
-a file under `src/ui/`, on top of [src/README.md](../README.md), which covers
-the app, styles, tests and which component to use; its ✓ CHECKED tags mean the
-same. The procedures (add or change a component, map it to Figma, resync the
-Storybooks) are skills, listed in [AGENTS.md](../../AGENTS.md).
+The app's rules (styles, tests, which component to use) are in
+[src/README.md](../README.md), and its ✓ CHECKED tags mean the same here.
+Step-by-step tasks are skills, listed in [AGENTS.md](../../AGENTS.md).
 
 ## Rules
 

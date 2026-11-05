@@ -1,10 +1,8 @@
 # Rove frontend
 
-How the React UI in `src/` is organised, styled and tested. `src/AGENTS.md`
-imports it with rove-tokens' DESIGN.md, so Claude Code loads both the first
-time it reads a file under `src/`; the library's own guide,
-[src/ui/README.md](ui/README.md), joins them on a read under `src/ui/`. The procedures
-(add a screen, show backend data, add a component) are skills, listed in
+How the React UI in `src/` is organised, styled and tested. Which token to use
+is in rove-tokens' DESIGN.md, and the library has its own guide,
+[src/ui/README.md](ui/README.md). Step-by-step tasks are skills, listed in
 [AGENTS.md](../AGENTS.md).
 
 **[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
