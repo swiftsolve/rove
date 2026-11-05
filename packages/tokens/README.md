@@ -16,7 +16,6 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 [![Style Dictionary](https://img.shields.io/badge/Style_Dictionary-5-5b8cff?labelColor=17181b)](https://styledictionary.com/)
 [![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](#contrast)
 [![Themes](https://img.shields.io/badge/themes-Dark_·_Light-5b8cff?labelColor=17181b)](#use)
-[![Node](https://img.shields.io/badge/node-%E2%89%A522-5b8cff?logo=nodedotjs&logoColor=white&labelColor=17181b)](.nvmrc)
 
 [🎨 Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
 [📐 DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
