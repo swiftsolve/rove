@@ -3,7 +3,7 @@
 How `src/ui`, the component library, is built: the Figma components in code.
 `src/ui/AGENTS.md` imports it, so Claude Code loads it with the first file
 under `src/ui/`, beside [src/README.md](../README.md), which covers the app,
-styles, tests and which component to use. A rule marked *Checked* fails
+styles, tests and which component to use. A rule marked ✓ *Checked* fails
 `npm run check`; src/README.md's [What's enforced](../README.md#whats-enforced)
 names the check.
 
@@ -29,13 +29,13 @@ agents and people, open the file.
 
 Features import the library from `@/ui` and nothing else under `src/ui`. The
 library imports only itself (by relative path) and packages, never app code.
-*Checked.*
+✓ *Checked.*
 
 The library keeps its own version, apart from the design system's:
 `UI_LIBRARY_VERSION` in `version.ts`, which Storybook's name shows after "Rove
 Components". Raise it when the library's API changes: major
 for a removed or renamed component or prop, or a narrower type; minor for
-anything added. *Checked* that it changes; picking major or minor is yours.
+anything added. ✓ *Checked* that it changes; picking major or minor is yours.
 
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are no tiers: a
@@ -79,7 +79,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   Name it for the interaction (`Pressing`, `EscapeCloses`) and tag it
   `!autodocs`, since moving focus would scroll its Docs page. A play that
   leaves the story as it found it (`DisabledOff`) can stay on the Docs page.
-  *Checked.*
+  ✓ *Checked.*
 
 ### Docs pages and the catalogue
 
@@ -90,7 +90,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
 - Its usage guide is the stories' `guidance` parameter (`Guidance` in
   `.storybook/docs-page.tsx`), with `docs: { toc: GUIDANCE_TOC }` beside it.
   Every component has one, written for its whole family (Card's covers
-  CardHeader and the rest). *Checked.* It has three parts, a few words a line:
+  CardHeader and the rest). ✓ *Checked.* It has three parts, a few words a line:
   - When to use: a situation, then how if it needs saying, then an example
     ("The page’s main action, solid: “Run test”.").
   - When not to use: a situation, then what to use instead ("Opening another
@@ -101,7 +101,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
   A rule that isn't a situation goes in the doc comment instead, and what the
   stories and props table already show (each state, each variant) stays out.
 - Figma's docs section carries the same guide under its intro, worded for
-  designers: When to use and When not to use line for line (*Checked*), and
+  designers: When to use and When not to use line for line (✓ *Checked*), and
   Accessibility as what they needn't draw (Built in) and what they decide or
   note (To handle). Only Figma has a Guidelines block, Do and Don't columns
   for placement, variants and content, each Don't the mistake its Do
@@ -142,7 +142,7 @@ anything added. *Checked* that it changes; picking major or minor is yours.
 
 Outside the library, a button is one of its components (`Button`,
 `IconButton`, `Link`, `ListRow`, `StretchedLink`), never a hand-written
-`<button>`. *Checked.*
+`<button>`. ✓ *Checked.*
 
 - Disabled and loading swallow every activation, a form submit included, and
   keep the button focusable, so a tooltip can say why. They mark the element
