@@ -11,12 +11,13 @@ and [What's enforced](#whats-enforced) lists them all. A rule without the
 tag is judgment: no check catches a slip, so review it yourself.
 
 - [Procedures](#procedures): add a screen or tab, show new backend data
-- [Rules](#rules): [State](#state-context-not-prop-drilling),
+- [Rules](#rules): [Components](#components),
+  [State](#state-context-not-prop-drilling),
   [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
   [Styles](#styles-tailwind-utilities-from-the-design-tokens) and
   [Tests](#tests)
-- [Reference](#reference): [What's enforced](#whats-enforced) and
-  [Components](#components)
+- [Validation](#validation): [What's enforced](#whats-enforced), and what
+  review still has to catch
 
 ## Procedures
 
@@ -32,6 +33,22 @@ agents and people, open the file.
 | Resync the sites after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules
+
+### Components
+
+Each Figma component has a counterpart in the library: build from these before
+writing new markup. Which one to use, and its props, variants and usage guide,
+are in `src/ui/components.gen.json`: read it first, not the sources. Each
+component's Docs page in Storybook shows the same, with its stories
+(`src/ui/README.md`: Storybook).
+
+- Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
+  Don't draw new ones inline.
+- The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
+  the nav rail, from the tab registry.
+- Figma's Compositions page holds what features build from the library, like
+  `ThroughputChart` (`features/live-throughput`) and `Sparkline`
+  (`features/services`). They live with their feature, not in `src/ui`.
 
 ### State: context, not prop drilling
 
@@ -241,7 +258,7 @@ apply here. This section is how they're written as Tailwind utilities.
   open menus, dialogs, tooltips, a focus ring and every component's All States
   story. AGENTS.md's Check your work has the commands for each change.
 
-## Reference
+## Validation
 
 ### What's enforced
 
@@ -278,19 +295,3 @@ Review still has to catch:
 - how it looks in both themes;
 - Figma out of sync beyond its variants and guides (a token, a spacing, a
   guide line's wording), and major or minor for a version.
-
-### Components
-
-Each Figma component has a counterpart in the library: build from these before
-writing new markup. Which one to use, and its props, variants and usage guide,
-are in `src/ui/components.gen.json`: read it first, not the sources. Each
-component's Docs page in Storybook shows the same, with its stories
-(`src/ui/README.md`: Storybook).
-
-- Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
-  Don't draw new ones inline.
-- The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
-  the nav rail, from the tab registry.
-- Figma's Compositions page holds what features build from the library, like
-  `ThroughputChart` (`features/live-throughput`) and `Sparkline`
-  (`features/services`). They live with their feature, not in `src/ui`.

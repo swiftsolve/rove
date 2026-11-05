@@ -2,9 +2,9 @@
 
 A React UI (`src/`) and a Rust backend (`crates/rove-core`, behind a thin Tauri
 shell in `src-tauri/`) over a typed bridge. This file is the map, the
-procedures, and the rules for every change. The UI's own rules load with its
-folders: `src/AGENTS.md` imports `src/README.md` and rove-tokens'
-`DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
+procedures, the rules for every change and how it's validated. The UI's own
+rules load with its folders: `src/AGENTS.md` imports `src/README.md` and
+rove-tokens' `DESIGN.md`, and `src/ui/AGENTS.md` imports `src/ui/README.md`.
 Other agents, read the ones your change touches first. In those guides,
 **[✓ CHECKED by `file`]** marks a rule a check enforces and names the check's file,
 so `npm run check` fails when it's broken; a rule without it is judgment.
@@ -34,6 +34,8 @@ Figma, `rove-tokens`, this code, and the docs that describe it.
   `../rove-tokens` and a release, to here as `@swiftsolve/rove-tokens`.
 - **A component** starts here, in `src/ui`, and its Figma component follows.
 
+## Validation
+
 ### Check your work
 
 Each stage in [What runs on its own](#what-runs-on-its-own) catches only what
@@ -49,6 +51,16 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
 | A token | rove-tokens' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
+
+### What runs on its own
+
+| Stage | Runs |
+| --- | --- |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a hand edit to a `*.gen.*` file (run `npm run gen`) |
+| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
+| Each push and pull request (CI) | `npm run check` (`test.yml`), its API-version check against the push's base; `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
+| A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs by hand |
+| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness and the Figma plugin test |
 
 ### Done means
 
@@ -76,13 +88,3 @@ Read what the task needs, not everything:
 | A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
-
-### What runs on its own
-
-| Stage | Runs |
-| --- | --- |
-| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a hand edit to a `*.gen.*` file (run `npm run gen`) |
-| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
-| Each push and pull request (CI) | `npm run check` (`test.yml`), its API-version check against the push's base; `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
-| A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs by hand |
-| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness and the Figma plugin test |
