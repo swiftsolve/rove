@@ -10,6 +10,7 @@ first file under `src/`; how the library itself is built is
 and [What's enforced](#whats-enforced) lists them all. A rule without the
 tag is judgment: no check catches a slip, so review it yourself.
 
+- [What to read](#what-to-read): which component, token or doc
 - [Procedures](#procedures): add a screen or tab, show new backend data
 - [Rules](#rules): [Components](#components),
   [State](#state-context-not-prop-drilling),
@@ -18,6 +19,16 @@ tag is judgment: no check catches a slip, so review it yourself.
   [Tests](#tests)
 - [Validation](#validation): [What's enforced](#whats-enforced), and what
   review still has to catch
+
+## What to read
+
+| Task | Read |
+| --- | --- |
+| Which component, and its props, variants and usage guide | `src/ui/components.gen.json` ([Components](#components)) |
+| Which token, text style, spacing or radius | DESIGN.md, loaded with this file |
+| Building or changing a library component | [src/ui/README.md](ui/README.md) |
+| Backend data, commands and events | `docs/architecture.md` |
+| What a screen measures, and how | `docs/what-rove-measures.md` |
 
 ## Procedures
 

@@ -11,11 +11,22 @@ and src/README.md's [What's enforced](../README.md#whats-enforced) lists them
 all. A rule without the tag is judgment: no check catches a slip, so review
 it yourself.
 
+- [What to read](#what-to-read): which component exists, the app's rules, the
+  tokens, the Figma file
 - [Procedures](#procedures): add or change a component, resync the Storybooks
 - [Rules](#rules): [The library](#the-library), [Stories](#stories),
   [Docs pages and the catalogue](#docs-pages-and-the-catalogue),
   [Every component](#every-component) and [Buttons](#buttons)
-- [Reference](#reference): [Storybook](#storybook)
+- [Validation](#validation): [Storybook](#storybook)
+
+## What to read
+
+| Task | Read |
+| --- | --- |
+| Which components exist, and their props and guides | `components.gen.json`, generated from the code |
+| How the app uses them: styles, state, copy, tests | [src/README.md](../README.md) |
+| Which token, text style, spacing or radius | DESIGN.md, loaded with src/README.md |
+| A component's Figma counterpart | `figma.json`, which maps each one to its node in the Rove Design System file |
 
 ## Procedures
 
@@ -157,7 +168,11 @@ Outside the library, a button is one of its components (`Button`,
   and styles a hover or press that only applies while usable with the
   `usable:` variant (`usable:hover:bg-hover`).
 
-## Reference
+## Validation
+
+`npm run check` runs every story, with its play function and axe, in
+headless Chromium. src/README.md's [What's enforced](../README.md#whats-enforced)
+lists every check, the library's included.
 
 ### Storybook
 

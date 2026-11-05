@@ -9,6 +9,20 @@ Other agents, read the ones your change touches first. In those guides,
 **[✓ CHECKED by `file`]** marks a rule a check enforces and names the check's file,
 so `npm run check` fails when it's broken; a rule without it is judgment.
 
+## What to read
+
+Read what the task needs, not everything:
+
+| Task | Read |
+| --- | --- |
+| Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
+| UI | `src/README.md` and DESIGN.md; for the library, also `src/ui/README.md` |
+| Which library component, and its props | `src/ui/components.gen.json`, generated from the code (`src/README.md`: Components) |
+| The UI↔backend boundary, commands, events | `docs/architecture.md` |
+| A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
+| Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
+| Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
+
 ## Procedures
 
 Each is a skill: Claude Code loads its steps when the task comes up. Other
@@ -72,19 +86,3 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 - A change a user would see (anything under `src/` that renders, or a
   `@swiftsolve/rove-tokens` bump) is committed and the sites are resynced: the
   `resync-sites` skill. Backend, test and tooling changes need no resync.
-
-## Reference
-
-### What to read
-
-Read what the task needs, not everything:
-
-| Task | Read |
-| --- | --- |
-| Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
-| UI | `src/README.md` and DESIGN.md; for the library, also `src/ui/README.md` |
-| Which library component, and its props | `src/ui/components.gen.json`, generated from the code (`src/README.md`: Components) |
-| The UI↔backend boundary, commands, events | `docs/architecture.md` |
-| A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
-| Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
-| Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
