@@ -17,8 +17,8 @@ tag is judgment: no check catches a slip, so review it yourself.
   [Where code goes](#where-code-goes), [Names and copy](#names-and-copy),
   [Styles](#styles-tailwind-utilities-from-the-design-tokens) and
   [Tests](#tests)
-- [Validation](#validation): [What's enforced](#whats-enforced), and what
-  review still has to catch
+- [Validation](#validation): [What's enforced](#whats-enforced) and
+  [What review catches](#what-review-catches)
 
 ## What to read
 
@@ -296,7 +296,9 @@ apply here. This section is how they're written as Tailwind utilities.
 | Figma and the library agree: `figma-components.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma-library.mjs` |
 | Behaviour, and accessibility per story | `npm test` |
 
-Review still has to catch:
+### What review catches
+
+No check sees these, so a reviewer looks for them:
 
 - a prop passed only to pass down, or focus or presence rebuilt where the library handles it;
 - a view reaching into a component's DOM;
