@@ -1,6 +1,3 @@
 node_modules/
 /dist/
-# Figma token for npm run present, and its output
-.env.local
-/presentation/
 /storybook-static/

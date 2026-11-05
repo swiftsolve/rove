@@ -17,7 +17,7 @@ const NO_EM_DASH = [
 export default [
   // ── Not ours to lint ─────────────────────────────────────────────────────
   // Build outputs, and .claude's agent worktrees (other checkouts).
-  { ignores: ['dist', 'storybook-static', 'presentation', '.claude'] },
+  { ignores: ['dist', 'storybook-static', '.claude'] },
 
   // ── Presets ──────────────────────────────────────────────────────────────
   js.configs.recommended,
@@ -29,7 +29,7 @@ export default [
     rules: { 'simple-import-sort/imports': 'error' },
   },
 
-  // ── Node: the build, the presentation, this config ───────────────────────
+  // ── Node: the build, the checks, this config ──────────────────────────────
   {
     files: ['scripts/**/*.mjs', '*.js'],
     languageOptions: { globals: globals.node },

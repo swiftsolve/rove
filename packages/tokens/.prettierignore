@@ -1,11 +1,9 @@
 # Prettier formats the package's code: JavaScript, JSX, CSS, JSON, YAML and
 # HTML. Everything below is generated, Figma's, or prose.
 
-# Build outputs: rewritten by npm run build, npm run build:storybook and
-# npm run present.
+# Build outputs: rewritten by npm run build and npm run build:storybook.
 /dist/
 /storybook-static/
-/presentation/
 
 # Agent worktrees (other checkouts) and local launch configs; the committed
 # Claude Code settings are ours.

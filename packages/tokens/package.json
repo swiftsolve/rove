@@ -27,8 +27,6 @@
     "figma:export": "node scripts/figma/use-figma.mjs export",
     "figma:save": "node scripts/figma/use-figma.mjs save",
     "figma:check": "node scripts/figma/use-figma.mjs check",
-    "present": "npm run build && node scripts/presentation/export.mjs",
-    "present:publish": "node scripts/presentation/publish.mjs",
     "prepare": "git config core.hooksPath scripts/hooks/git || true; npm run build",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build"

@@ -51,4 +51,4 @@ commit only your paths (`git commit -m "…" -- <paths>`).
 | --- | --- |
 | Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
-| Each release tag (CI) | Build, lint and `scripts/checks/` (`build.yml`); publish to npm (`publish.yml`); the Figma slideshow (`presentation.yml`) |
+| Each release tag (CI) | Build, lint and `scripts/checks/` (`build.yml`); publish to npm (`publish.yml`) |
