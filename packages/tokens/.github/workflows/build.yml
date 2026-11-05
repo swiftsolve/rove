@@ -32,3 +32,6 @@ jobs:
 
       - name: Checks
         run: node scripts/checks/run.mjs
+
+      - name: Plugin test
+        run: npm test

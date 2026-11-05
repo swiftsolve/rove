@@ -1,18 +1,20 @@
 /**
- * Check the Figma plugin (figma-plugin/code.js) against a stand-in Figma file
- * built from this repo's tokens:
+ * Test the Figma plugin (code.js) against a stand-in Figma file built from
+ * this repo's tokens:
  *
  *   - Export must give back src/figma/*.json exactly, since the repo only ever
  *     takes tokens from an export;
  *   - Check must find no differences, then find each one planted in the file.
  *
- *   node scripts/checks/figma-plugin.mjs
+ *   npm test
  */
+import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
+import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const json = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
 const repo = {
   variables: await json('src/figma/variables.json'),
@@ -125,45 +127,37 @@ const load = () => {
   return { figma, engine }
 }
 
-const fail = (message, detail) => {
-  console.error(`figma-plugin: ${message}`)
-  if (detail) console.error(JSON.stringify(detail, null, 2))
-  process.exit(1)
-}
+// Compared as written JSON, so key order counts: the export is the file.
+const asFile = (value) => JSON.stringify(value, null, 2)
 
-const { figma, engine } = load()
+test('Export gives back the repo files, value for value', async () => {
+  const { engine } = load()
+  assert.equal(asFile(await engine.exportVariables()), asFile(repo.variables), 'src/figma/variables.json')
+  assert.equal(asFile(await engine.exportTextStyles()), asFile(repo.textStyles), 'src/figma/text-styles.json')
+  assert.equal(asFile(await engine.exportEffectStyles()), asFile(repo.effectStyles), 'src/figma/effect-styles.json')
+})
 
-// 1. Export gives back the repo's files, value for value.
-const exported = {
-  'variables.json': [await engine.exportVariables(), repo.variables],
-  'text-styles.json': [await engine.exportTextStyles(), repo.textStyles],
-  'effect-styles.json': [await engine.exportEffectStyles(), repo.effectStyles],
-}
-for (const [name, [fromFigma, inRepo]] of Object.entries(exported)) {
-  if (JSON.stringify(fromFigma) !== JSON.stringify(inRepo))
-    fail(`Export doesn't give back src/figma/${name}`, { exported: fromFigma, repo: inRepo })
-}
+test('Check finds nothing between the repo and a file made from it', async () => {
+  const { engine } = load()
+  const { inSync, diff } = await engine.checkTokens(repo)
+  assert.ok(inSync, asFile(diff))
+})
 
-// 2. The repo against itself: nothing to report.
-const clean = await engine.checkTokens(repo)
-if (!clean.inSync) fail('Check reports differences between the repo and a file made from it', clean.diff)
-
-// 3. Plant one difference of each kind in the file: Check must find them all.
-const variable = repo.variables.variables.find((v) => v.collection === 'Color' && v.description)
-figma.byName[variable.name].description = 'changed in Figma'
-figma.textStyles[0].fontSize += 1
-figma.effectStyles[0].effects[0] = { ...figma.effectStyles[0].effects[0], radius: 99 }
-figma.effectStyles[1].description = 'changed in Figma'
-const planted = await engine.checkTokens(repo)
-const found = planted.diff.map((d) => `${d.kind} ${d.name} ${d.field}`).sort()
-const expected = [
-  `variable ${variable.name} description`,
-  `text style ${figma.textStyles[0].name} size`,
-  `effect style ${figma.effectStyles[0].name} shadow`,
-  `effect style ${figma.effectStyles[1].name} description`,
-].sort()
-if (JSON.stringify(found) !== JSON.stringify(expected)) fail('Check missed a planted difference', { found, expected })
-
-console.log(
-  `figma-plugin: export and check agree on ${repo.variables.variables.length} variables, ${repo.textStyles.styles.length} text styles and ${repo.effectStyles.styles.length} shadows`,
-)
+test('Check finds one planted difference of each kind', async () => {
+  const { figma, engine } = load()
+  const variable = repo.variables.variables.find((v) => v.collection === 'Color' && v.description)
+  figma.byName[variable.name].description = 'changed in Figma'
+  figma.textStyles[0].fontSize += 1
+  figma.effectStyles[0].effects[0] = { ...figma.effectStyles[0].effects[0], radius: 99 }
+  figma.effectStyles[1].description = 'changed in Figma'
+  const { diff } = await engine.checkTokens(repo)
+  assert.deepEqual(
+    diff.map((d) => `${d.kind} ${d.name} ${d.field}`).sort(),
+    [
+      `effect style ${figma.effectStyles[0].name} shadow`,
+      `effect style ${figma.effectStyles[1].name} description`,
+      `text style ${figma.textStyles[0].name} size`,
+      `variable ${variable.name} description`,
+    ].sort(),
+  )
+})
