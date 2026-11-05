@@ -80,8 +80,8 @@ you commit. Never skip a hook with `--no-verify`; fix what it reports.
 ### Done means
 
 - The checks for your change pass.
-- What no check covers is reviewed: `src/README.md`'s What review catches lists it,
-  and DESIGN.md's rules without the tag are judgment.
+- The guides' rules without the tag are reviewed: they're judgment, and
+  `src/README.md`'s What review catches names the ones that slip most.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
 - A change a user would see (anything under `src/` that renders, or a

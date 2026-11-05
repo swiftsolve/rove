@@ -298,12 +298,17 @@ apply here. This section is how they're written as Tailwind utilities.
 
 ### What review catches
 
-No check sees these, so a reviewer looks for them:
+Every rule without the tag is judgment. These slip through most often:
 
-- a prop passed only to pass down, or focus or presence rebuilt where the library handles it;
-- a view reaching into a component's DOM;
+- a prop passed only to pass it down, focus code where `navigate` already
+  moves it, or an exit animation unmounted early instead of `usePresence`;
+- a view reaching into a component's DOM by a ref, `querySelector` or a
+  margin through a descendant selector (`checks/ui-classname.mjs` catches the
+  rest);
 - a comment that restates the code instead of saying why;
-- a hint over two sentences;
-- how it looks in both themes;
-- Figma out of sync beyond its variants and guides (a token, a spacing, a
+- a hint over two short sentences, or one that explains how it works;
+- the light theme, and any screen: Chromatic snapshots only stories, in dark,
+  so read `npm run screenshots` in both themes;
+- a screen, subpage or dialog without `npm run a11y`, which no check runs;
+- Figma out of sync beyond its variants and guides (a component's spacing, a
   guide line's wording), and major or minor for a version.
