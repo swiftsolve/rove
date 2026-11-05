@@ -1,7 +1,7 @@
 # src
 
-The React UI. Its two guides load with any file under `src/`: how the UI is
-built, then the design rules.
+The React UI. Claude Code expands the two guides below the first time it reads
+a file under `src/`: how the UI is built, then the design rules.
 
 @README.md
 
