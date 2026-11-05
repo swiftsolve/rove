@@ -34,6 +34,7 @@ agents, open the file.
 | Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
 | Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
+| Map a library component to its Figma component, in `src/ui/figma.json` | `.claude/skills/map-figma-component/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules

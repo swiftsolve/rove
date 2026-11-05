@@ -77,12 +77,8 @@ Without the server, stop after the code side and say the Figma side is left.
    `docs.subtitle`), Guidance (the stories' guide, worded for designers, line
    for line), Dark and Light previews, and a properties table. A changed one's
    section changes with it.
-3. Its entry in `src/ui/figma.json` (`null` when Figma has none): `name` and
-   `node` are the Figma component's (or component set's) name and the id in
-   its link's `node-id`, with `-` as `:`; never guess one. Map the component
-   set, not one of its variants. A prop with values Figma has no variant for
-   goes in the entry's `noFigmaVariant`, a Figma variant code derives from
-   other props in `noCodeProp`, each with why.
+3. Its entry in `src/ui/figma.json`: the `map-figma-component` skill
+   (`.claude/skills/map-figma-component/SKILL.md`).
 
 ## Done
 

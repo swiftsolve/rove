@@ -36,6 +36,7 @@ agents and people, open the file.
 | Task | Skill |
 | --- | --- |
 | Add a library component, or change one's API or look, in code and Figma | `.claude/skills/add-library-component/SKILL.md` |
+| Map a component to its Figma component in `figma.json`, or fix a stale entry | `.claude/skills/map-figma-component/SKILL.md` |
 | Resync the Storybooks (and the sites, if a screen changed) after committing | `.claude/skills/resync-sites/SKILL.md` |
 
 ## Rules
