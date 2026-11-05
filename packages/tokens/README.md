@@ -106,7 +106,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
 5. Commit the change.
 
-**Only what Figma can't hold** (font stacks, easing curves, the focus expressions) is edited here, in `src/code-tokens.json`; then check and commit. Never edit `src/figma/*.json` directly: it's an export, and the next one would undo it.
+**Only what Figma can't hold** (font stacks, easing curves, the focus expressions) is edited here, in `src/code-tokens.json`; then check and commit. `src/figma/*.json` changes only by export, since the next export undoes a direct edit.
 
 ## Release
 
@@ -122,7 +122,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 
    Pick the bump by what Rove sees: `patch` when no CSS variable is added, removed or renamed; `minor` for a new token; `major` for a rename or removal.
 3. The tag runs the **Release** workflow: it runs `npm run check`, and only if that passes puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens) through npm trusted publishing (`npx npm@11 trust list @swiftsolve/rove-tokens` shows the link to `publish.yml`; if it fails to publish, `npm publish` from a checkout works too).
-4. In Rove, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`, run its `npm run check`, and commit. Then resync the sites that embed Rove, as Rove's `AGENTS.md` (Keep the sites in sync) says.
+4. In Rove, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`, run its `npm run check`, and commit. Then resync the sites that embed Rove, with Rove's `resync-sites` skill.
 
 ## Scripts
 
