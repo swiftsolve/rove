@@ -264,7 +264,10 @@ const PIPELINES = [
         icons: ['npm'],
         items: [
           { name: '`@swiftsolve/rove-tokens`', body: '`tokens.css`, `text-styles.css` and the DTCG files, on npm.' },
-          { name: '`DESIGN.md`', body: 'Which token to use for what, shipped alongside.' },
+          {
+            name: '`DESIGN.md`',
+            body: 'Which token to use for what, with `TOKENS.md` listing every one, shipped alongside.',
+          },
         ],
       },
     ],
@@ -327,7 +330,7 @@ const PRINCIPLES = [
   {
     icon: 'sparkles',
     lead: 'Written down for agents',
-    body: '`DESIGN.md` names every token and its use, with no colour values to copy. It ships in the package.',
+    body: '`DESIGN.md` says which token to use for what, and `TOKENS.md` names every one and its use, with no colour values to copy. Both ship in the package.',
   },
 ]
 

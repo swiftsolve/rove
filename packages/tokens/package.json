@@ -17,13 +17,14 @@
   "files": [
     "dist",
     "src",
-    "DESIGN.md"
+    "DESIGN.md",
+    "TOKENS.md"
   ],
   "scripts": {
     "build": "node scripts/tokens/build.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run build && npm run lint && node scripts/checks/contrast.mjs && npm test",
+    "check": "npm run build && npm run lint && node scripts/checks/contrast.mjs && node scripts/checks/design-md-format.mjs && npm test",
     "test": "node --test figma-plugin/code.test.mjs",
     "figma:export": "node scripts/figma/use-figma.mjs export",
     "figma:save": "node scripts/figma/use-figma.mjs save",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@google/design.md": "^0.4.0",
     "@storybook/addon-docs": "^10.6.5",
     "@storybook/react-vite": "^10.6.5",
     "@vitejs/plugin-react": "^5.2.0",

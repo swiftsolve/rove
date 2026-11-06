@@ -58,14 +58,14 @@ earn one, create it in Figma like its neighbours:
   result as JSON, and `npm run figma:save <result.json>`. Never edit
   `src/figma/` directly.
 - `npm run build`, then `npm run check`. Contrast failing means the shade
-  misses WCAG AA: fix it in Figma, not here. Commit the rebuilt `DESIGN.md`
+  misses WCAG AA: fix it in Figma, not here. Commit the rebuilt `TOKENS.md` and `DESIGN.md`
   with the change.
 - `npm run figma:check` prints the check script; run it through `use_figma`.
   It must return `inSync: true`.
 - Commit only your paths: `git commit -m "…" -- <paths>`.
 
-- A new token: if DESIGN.md's top half, edited directly, says which token to use
-  for what in its area, add it there too.
+- A new token: if DESIGN.md (edited directly) says which token to use for what
+  in its area, add it there too. `TOKENS.md` lists it on its own.
 
 ## 3. Release
 

@@ -31,13 +31,14 @@ jobs:
 
       - run: npm ci
 
-      # The build, lint, the contrast check and the plugin test.
+      # The build, lint, the contrast and DESIGN.md format checks, and the
+      # plugin test.
       - run: npm run check
 
-      # The build rewrites DESIGN.md's token reference, so the committed one
-      # must match it.
-      - name: DESIGN.md is up to date
-        run: git diff --exit-code -- DESIGN.md
+      # The build rewrites TOKENS.md and DESIGN.md's front matter, so the
+      # committed ones must match it.
+      - name: TOKENS.md and DESIGN.md are up to date
+        run: git diff --exit-code -- TOKENS.md DESIGN.md
 
   publish:
     needs: check

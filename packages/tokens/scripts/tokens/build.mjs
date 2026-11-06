@@ -4,7 +4,8 @@
  *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.mjs)
  *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
  *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
- *   4. The token reference at the end of DESIGN.md (scripts/tokens/token-reference.mjs)
+ *   4. The token reference, TOKENS.md (scripts/tokens/token-reference.mjs)
+ *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
  *
  * so the CSS is generated from the same files other tools read.
  *
@@ -20,11 +21,12 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { writeFrontMatter } from './design-front-matter.mjs'
 import { buildCss } from './dtcg-to-css.mjs'
 import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
 import { writeDtcg } from './figma-to-dtcg.mjs'
-import { cssColor } from './shared.mjs'
-import { writeDesign } from './token-reference.mjs'
+import { cssColor, slug } from './shared.mjs'
+import { writeReference } from './token-reference.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const read = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
@@ -41,7 +43,7 @@ for (const v of figma.variables) {
 }
 
 // A token's description is its use, shown in Figma's picker, the Storybook and
-// DESIGN.md, so a token without one can't be chosen by its job. Add it in Figma.
+// TOKENS.md, so a token without one can't be chosen by its job. Add it in Figma.
 const undescribed = [...figma.variables, ...textStyles.styles, ...effectStyles.styles]
   .filter((token) => !token.description?.trim())
   .map((token) => token.name)
@@ -120,8 +122,8 @@ const textStylesCss = await buildTextStylesCss({ dir, header })
 await writeFile(resolve(DIST, 'text-styles.css'), textStylesCss.css)
 console.log(`dist/text-styles.css: ${textStylesCss.count} classes`)
 
-const design = await writeDesign({
-  path: resolve(ROOT, 'DESIGN.md'),
+const reference = await writeReference({
+  path: resolve(ROOT, 'TOKENS.md'),
   variables: figma.variables,
   textStyles: textStyles.styles,
   shadows: effectStyles.styles,
@@ -129,5 +131,14 @@ const design = await writeDesign({
   css,
 })
 console.log(
-  `DESIGN.md: ${design.colours} colours, ${design.others} other tokens, ${design.styles} text styles, ${design.code} code-only tokens`,
+  `TOKENS.md: ${reference.colours} colours, ${reference.others} other tokens, ${reference.styles} text styles, ${reference.code} code-only tokens`,
 )
+
+const frontMatter = await writeFrontMatter({
+  path: resolve(ROOT, 'DESIGN.md'),
+  variables: figma.variables,
+  textStyles: textStyles.styles,
+  slugOf: slug,
+  css,
+})
+console.log(`DESIGN.md front matter: ${frontMatter.colors} colours, ${frontMatter.typography} text styles`)
