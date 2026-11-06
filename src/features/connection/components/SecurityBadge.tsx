@@ -21,7 +21,7 @@ const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
 type SecurityBadgeProps = {
   /** The OS's security string, e.g. "WPA3-Personal (H2E)", or "Open". */
   security: string
-  /** For the collapsed strip: "Secured" and the strongest protocol, or "Not secured". */
+  /** For the collapsed strip: just the strongest protocol, or "Open", without the verdict. */
   isShort?: boolean
   className?: string
 }
@@ -38,14 +38,15 @@ export function SecurityBadge({ security, isShort = false, className }: Security
     <Tooltip content={description} shouldDescribe={false}>
       <span className={cx(securityBadgeVariants({ isSecured }), className)}>
         <Icon size={12} className={securityIconVariants({ isSecured })} />
-        {/* The strip has no "Security" label beside it, so it says the verdict. */}
-        {isShort && (
+        {/* The details row says the verdict, then the protocol; the strip, short
+            on room, keeps just the protocol. */}
+        {!isShort && (
           <span className="shrink-0" aria-hidden>
             {isSecured ? 'Secured' : 'Not secured'}
           </span>
         )}
-        {isShort && isSecured && <DotSeparator />}
-        {(!isShort || isSecured) && (
+        {!isShort && isSecured && <DotSeparator />}
+        {(isShort || isSecured) && (
           <span className="min-w-0 overflow-hidden text-ellipsis" aria-hidden>
             {isSecured ? securedLabel : 'Open'}
           </span>

@@ -9,20 +9,20 @@ function visibleWords(container: HTMLElement): string[] {
 }
 
 describe('SecurityBadge', () => {
-  it('says the verdict and the strongest protocol in the strip', () => {
-    const { container } = render(<SecurityBadge security="WPA2 WPA3 Personal" isShort />)
-    expect(visibleWords(container)).toEqual(['Secured', 'WPA3'])
+  it('says the verdict, then the full protocol, in the details', () => {
+    const { container } = render(<SecurityBadge security="WPA3-Personal (H2E)" />)
+    expect(visibleWords(container)).toEqual(['Secured', 'WPA3-Personal (H2E)'])
   })
 
-  it('says an open network is not secured in the strip, with no protocol', () => {
-    const { container } = render(<SecurityBadge security="Open" isShort />)
+  it('says an open network is not secured in the details, with no protocol', () => {
+    const { container } = render(<SecurityBadge security="Open" />)
     expect(visibleWords(container)).toEqual(['Not secured'])
   })
 
-  it('shows the full protocol, or Open, under its Security label', () => {
-    const { container, rerender } = render(<SecurityBadge security="WPA3-Personal (H2E)" />)
-    expect(visibleWords(container)).toEqual(['WPA3-Personal (H2E)'])
-    rerender(<SecurityBadge security="Open" />)
+  it('keeps just the strongest protocol, or Open, in the strip', () => {
+    const { container, rerender } = render(<SecurityBadge security="WPA2 WPA3 Personal" isShort />)
+    expect(visibleWords(container)).toEqual(['WPA3'])
+    rerender(<SecurityBadge security="Open" isShort />)
     expect(visibleWords(container)).toEqual(['Open'])
   })
 })
