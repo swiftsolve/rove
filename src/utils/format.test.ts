@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   countTitle,
   formatBand,
+  formatConnectionType,
   formatCount,
   formatDuration,
   formatLatencyMs,
@@ -13,6 +14,15 @@ import {
   splitLatencyMs,
   splitSpeedMbps,
 } from '@/utils/format'
+
+describe('formatConnectionType', () => {
+  it('names each type the backend reports', () => {
+    expect(formatConnectionType('wifi')).toBe('Wi‑Fi')
+    expect(formatConnectionType('ethernet')).toBe('Ethernet')
+    expect(formatConnectionType('virtual')).toBe('Virtual')
+    expect(formatConnectionType('unknown')).toBe('Other')
+  })
+})
 
 describe('formatSpeedMbps / splitSpeedMbps', () => {
   it('switches to Gbps at 1000 Mbps', () => {

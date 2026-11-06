@@ -18,12 +18,14 @@ import {
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/utils/format'
 
 // Wi-Fi and Ethernet take the accent, as on the connection strip; anything
-// else stays neutral.
+// else stays neutral. Every type needs an entry: a missing one leaves the tile
+// washed in the text colour.
 const TILE_COLORS = {
   wifi: 'var(--accent-default)',
   ethernet: 'var(--accent-default)',
+  virtual: 'neutral',
   unknown: 'neutral',
-} as const satisfies Record<string, IconTileColor>
+} as const satisfies Record<NetworkInterfaceSummary['connectionType'], IconTileColor>
 
 /** A small tag beside the name ("Active", "Virtual"); the default route's turns green. */
 const tagVariants = cva('type-caption', {

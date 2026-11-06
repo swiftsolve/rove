@@ -188,7 +188,7 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   },
   {
     name: 'bridge0',
-    connectionType: 'unknown',
+    connectionType: 'virtual',
     operState: 'down',
     isDefault: false,
     isVirtual: true,
@@ -199,7 +199,7 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   },
   {
     name: 'lo0',
-    connectionType: 'unknown',
+    connectionType: 'virtual',
     operState: 'up',
     isDefault: false,
     isVirtual: true,

@@ -64,6 +64,7 @@ export function formatOperState(state: string): string {
 export function formatConnectionType(type: string): string {
   if (type === 'wifi') return 'Wi‑Fi'
   if (type === 'ethernet') return 'Ethernet'
+  if (type === 'virtual') return 'Virtual'
   if (type === 'unknown') return 'Other'
   return type
 }
