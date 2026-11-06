@@ -67,8 +67,8 @@ type ConnectionStripProps = {
 
 /**
  * The card's always-visible row: the connection's name and icon, a meta line
- * (link speed, then band and security on Wi‑Fi), the Wi‑Fi share button and
- * signal, and the chevron for the details below.
+ * (signal, link speed, band and security on Wi‑Fi; link speed on Ethernet),
+ * the Wi‑Fi share button, and the chevron for the details below.
  */
 export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripProps) {
   const display = getConnectionDisplay(info)
@@ -90,15 +90,10 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
         </div>
       </div>
       {isWifiNetwork(info) && (
-        <>
-          {/* Raised above the toggle, so it takes its own click. */}
-          <span className="relative z-1 inline-flex shrink-0 self-center">
-            <ShareWifiButton />
-          </span>
-          {info.signalStrength != null && (
-            <SignalMeter strength={info.signalStrength} placement="strip" className={ABOVE_TOGGLE} />
-          )}
-        </>
+        // Raised above the toggle, so it takes its own click.
+        <span className="relative z-1 inline-flex shrink-0 self-center">
+          <ShareWifiButton />
+        </span>
       )}
       <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />
     </div>
@@ -106,16 +101,20 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
 }
 
 /**
- * The meta line's items: link speed, then band and security on Wi‑Fi. The IP
- * is in the details below. Missing pieces are dropped.
+ * The meta line's items: the signal first on Wi‑Fi, as it explains the link
+ * speed, then band and security. The IP is in the details below. Missing
+ * pieces are dropped.
  */
 function stripMetaItems(info: NetworkInfo): ReactNode[] {
+  const linkSpeed = formatLinkSpeed(info)
+  const speedItem = linkSpeed && <span className={styles.linkSpeed}>{linkSpeed}</span>
   const items = isWifiNetwork(info)
     ? [
-        formatLinkSpeed(info),
+        info.signalStrength != null && <SignalMeter strength={info.signalStrength} />,
+        speedItem,
         formatBand(info.frequency),
         info.security != null && <SecurityBadge security={info.security} isShort className={styles.securityBadge} />,
       ]
-    : [formatLinkSpeed(info)]
+    : [speedItem]
   return items.filter(Boolean)
 }

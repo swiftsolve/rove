@@ -44,7 +44,7 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
         {/* Block flex: inline-flex adds strut height that misaligns the bars. With
             no text, the bars sit on the baseline and at 10px reach cap height. */}
         <div className="flex items-baseline justify-end gap-6">
-          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} placement="details" />}
+          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
           {formatSignalDetail(info)}
         </div>
       </DataRow>

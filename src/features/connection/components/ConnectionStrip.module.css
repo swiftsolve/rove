@@ -1,5 +1,5 @@
 /* What's left here reaches into the DOM of the shared InlineMeta, keyed on the
-   security badge inside it; everything else is utilities and props in
+   signal, link speed and security badge inside it; everything else is utilities and props in
    ConnectionStrip.tsx. In the utilities layer, so it overrides InlineMeta's own
    utilities. */
 @layer utilities {
@@ -12,7 +12,14 @@
     overflow: hidden;
   }
 
-  .strip-sub :global(.inline-meta):has(.security-badge) :global(.inline-meta-item):first-child {
+  /* The signal and the link speed hold their full width; the signal's item
+     is a flex box so the bars centre on the line rather than its baseline. */
+  .strip-sub :global(.inline-meta) :global(.inline-meta-item):has(:global(.signal-meter)) {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .strip-sub :global(.inline-meta) :global(.inline-meta-item):has(.link-speed) {
     flex-shrink: 0;
   }
 }
