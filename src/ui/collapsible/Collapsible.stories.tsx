@@ -37,7 +37,7 @@ function details() {
         <DataList density="compact" className={DETAILS}>
           <DataRow label="IP address" value="192.168.1.20" />
           <DataRow label="Gateway" value="192.168.1.1" />
-          <DataRow label="DNS" value="1.1.1.1" />
+          <DataRow label="Public IP" value="203.0.113.57" />
         </DataList>
       </CollapsiblePanel>
     </>
