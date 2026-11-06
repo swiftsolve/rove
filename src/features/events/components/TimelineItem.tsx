@@ -33,8 +33,13 @@ import { formatDuration, formatMac } from '@/utils/format'
 
 // The icon says what happened; the tint says how to read it.
 const TONE_COLORS = {
-  /** Arrivals & connections: a device joined, came back, or linked up. */
+  /** Recoveries & connections: a known device came back, or a link came up. */
   join: 'var(--status-positive)',
+  /**
+   * Something new on the network: worth a look, but neither good nor bad, so
+   * the accent rather than a status colour.
+   */
+  arrival: 'var(--accent-default)',
   /**
    * A departure: quiet, not alarming; a known device just dropped off. The
    * hollow ring reads as "gone", set apart from the filled markers.
@@ -61,7 +66,7 @@ type EventStyle = {
 
 const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   initial_scan: { icon: SearchIcon, tone: 'baseline' },
-  device_joined: { icon: ArrowRightIcon, tone: 'join' },
+  device_joined: { icon: ArrowRightIcon, tone: 'arrival' },
   ap_appeared: { icon: RouterIcon, tone: 'alert' },
   device_offline: { icon: ArrowLeftIcon, tone: 'leave' },
   device_online: { icon: RefreshIcon, tone: 'join' },

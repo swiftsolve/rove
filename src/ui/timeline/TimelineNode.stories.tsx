@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
-import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, RouterIcon, SearchIcon } from '../icons/Icons'
+import { ArrowDownIcon, ArrowLeftIcon, CheckIcon, RefreshIcon, RouterIcon, SearchIcon } from '../icons/Icons'
 import { TimelineNode } from './TimelineNode'
 
 // The colours the app's timelines use. The marker takes any CSS colour.
@@ -32,8 +32,8 @@ const meta = {
   component: TimelineNode,
   args: {
     color: 'var(--status-positive)',
-    icon: <ArrowRightIcon size={15} />,
-    children: <Lines title="Device joined" subject="iPhone" />,
+    icon: <RefreshIcon size={15} />,
+    children: <Lines title="Device back online" subject="iPhone" />,
   },
   argTypes: {
     color: { control: 'select', options: COLORS },
@@ -77,7 +77,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** An arrival: the marker washed in the positive colour. */
+/** A recovery: the marker washed in the positive colour. */
 export const Default: Story = {}
 
 /** A departure: a hollow ring, quiet rather than alarming. */
