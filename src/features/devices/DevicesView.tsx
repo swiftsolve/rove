@@ -106,7 +106,14 @@ export function DevicesView() {
         description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
         status={isScanning && !isSubnetShown ? <ScanStatus isActive /> : undefined}
         // Clickable while scanning (busy clicks are ignored) so its tooltip still shows.
-        actions={<IconButton label="Scan again" icon={RefreshIcon} isLoading={isScanning} onClick={onRescan} />}
+        actions={
+          <IconButton
+            label={isScanning ? 'Scanning…' : 'Scan again'}
+            icon={RefreshIcon}
+            isLoading={isScanning}
+            onClick={onRescan}
+          />
+        }
         info={{ label: 'About device scanning', hint: SCAN_HINT }}
       />
 

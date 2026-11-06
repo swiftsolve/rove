@@ -24,7 +24,14 @@ export function DiagnosticsView() {
         // The spinning Run again button shows a check is running, so the
         // description stays put rather than giving way to a status.
         description="Router, DNS, and ISP"
-        actions={<IconButton label="Run again" icon={RefreshIcon} isLoading={isRunning} onClick={runDiagnostics} />}
+        actions={
+          <IconButton
+            label={isRunning ? 'Running…' : 'Run again'}
+            icon={RefreshIcon}
+            isLoading={isRunning}
+            onClick={runDiagnostics}
+          />
+        }
         info={{ label: 'About connection checks', hint: DIAGNOSTICS_HINT }}
       />
 

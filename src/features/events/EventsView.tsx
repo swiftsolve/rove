@@ -79,7 +79,14 @@ export function EventsView() {
         description={
           hasEvents ? <span className="type-caption text-tertiary">What’s changed in the past week</span> : undefined
         }
-        actions={<IconButton label="Scan for changes" icon={RefreshIcon} isLoading={isScanning} onClick={rescan} />}
+        actions={
+          <IconButton
+            label={isScanning ? 'Scanning…' : 'Scan for changes'}
+            icon={RefreshIcon}
+            isLoading={isScanning}
+            onClick={rescan}
+          />
+        }
         info={{ label: 'About network events', hint: FEED_HINT }}
       />
 

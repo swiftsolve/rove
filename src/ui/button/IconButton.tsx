@@ -44,7 +44,7 @@ type IconButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'aria-label' 
   tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
   /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
   isDisabled?: boolean
-  /** Drops input and swaps the icon for a spinner. */
+  /** Drops input and swaps the icon for a spinner. Pair it with a label saying what is under way (“Scanning…”). */
   isLoading?: boolean
   /** Runs the action. Not called while disabled or loading. */
   onClick?: MouseEventHandler<HTMLButtonElement>

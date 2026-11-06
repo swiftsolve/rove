@@ -133,7 +133,7 @@
         "isLoading": {
           "type": "boolean",
           "default": "false",
-          "description": "Drops input and swaps the icon for a spinner."
+          "description": "Drops input and swaps the icon for a spinner. Pair it with a label saying what is under way (“Scanning…”)."
         },
         "label": {
           "type": "string",

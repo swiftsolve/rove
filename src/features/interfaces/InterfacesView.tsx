@@ -54,7 +54,14 @@ export function InterfacesView() {
             <InlineMeta shouldTruncate items={interfaceTypeSummaryParts(interfaces)} />
           ) : undefined
         }
-        actions={<IconButton label="Refresh" icon={RefreshIcon} isLoading={isLoading} onClick={onRefresh} />}
+        actions={
+          <IconButton
+            label={isLoading ? 'Refreshing…' : 'Refresh'}
+            icon={RefreshIcon}
+            isLoading={isLoading}
+            onClick={onRefresh}
+          />
+        }
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
