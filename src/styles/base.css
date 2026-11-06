@@ -85,6 +85,10 @@
   html {
     height: 100%;
     overflow: hidden;
+    /* iOS Safari enlarges some text in a page wider than the phone, like the
+       sites' scaled-down demo iframe, so a 12px day heading outgrew 14px titles. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
