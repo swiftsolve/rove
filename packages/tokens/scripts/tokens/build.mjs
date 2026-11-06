@@ -5,8 +5,7 @@
  *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
  *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
  *   4. DTCG -> dist/tailwind-theme.css, a Tailwind v4 theme of the tokens (scripts/tokens/tailwind-theme.mjs)
- *   5. The token reference, TOKENS.md (scripts/tokens/token-reference.mjs)
- *   6. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
+ *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
  *
  * so the CSS is generated from the same files other tools read.
  *
@@ -28,7 +27,6 @@ import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
 import { writeDtcg } from './figma-to-dtcg.mjs'
 import { cssColor, slug } from './shared.mjs'
 import { writeTailwindTheme } from './tailwind-theme.mjs'
-import { writeReference } from './token-reference.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const read = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
@@ -44,8 +42,8 @@ for (const v of figma.variables) {
   if (v.code && v.code !== expected) throw new Error(`${v.name} has code syntax ${v.code}; it must be ${expected}`)
 }
 
-// A token's description is its use, shown in Figma's picker, the Storybook and
-// TOKENS.md, so a token without one can't be chosen by its job. Add it in Figma.
+// A token's description is its use, shown in Figma's picker, the Storybook,
+// tokens.css and DESIGN.md's front matter, so a token without one can't be chosen by its job. Add it in Figma.
 const undescribed = [...figma.variables, ...textStyles.styles, ...effectStyles.styles]
   .filter((token) => !token.description?.trim())
   .map((token) => token.name)
@@ -134,18 +132,6 @@ const tailwind = await writeTailwindTheme({
   code,
 })
 console.log(`dist/tailwind-theme.css: ${tailwind.count} theme variables`)
-
-const reference = await writeReference({
-  path: resolve(ROOT, 'TOKENS.md'),
-  variables: figma.variables,
-  textStyles: textStyles.styles,
-  shadows: effectStyles.styles,
-  code,
-  css,
-})
-console.log(
-  `TOKENS.md: ${reference.colours} colours, ${reference.others} other tokens, ${reference.styles} text styles, ${reference.code} code-only tokens`,
-)
 
 const frontMatter = await writeFrontMatter({
   path: resolve(ROOT, 'DESIGN.md'),

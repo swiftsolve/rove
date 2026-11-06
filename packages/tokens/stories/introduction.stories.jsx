@@ -269,7 +269,7 @@ const PIPELINES = [
           },
           {
             name: '`DESIGN.md`',
-            body: 'Which token to use for what, with `TOKENS.md` listing every one, shipped alongside.',
+            body: 'Which token to use for what, with every token and its use, shipped alongside.',
           },
         ],
       },
@@ -333,7 +333,7 @@ const PRINCIPLES = [
   {
     icon: 'sparkles',
     lead: 'Written down for agents',
-    body: '`DESIGN.md` says which token to use for what, and `TOKENS.md` names every one and its use, with no colour values to copy. Both ship in the package.',
+    body: '`DESIGN.md` says which token to use for what, and lists every one with its use in the DESIGN.md format. It ships in the package.',
   },
 ]
 

@@ -19,7 +19,6 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 
 [🎨 Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
 [📐 DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
-[🔖 TOKENS.md](TOKENS.md) &nbsp;·&nbsp;
 [💡 Rationale](docs/rationale.md)
 
 [📖 Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
@@ -32,7 +31,7 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 Tokens are designed in the Rove Design System in Figma and released from git, one way. A [Figma plugin](figma-plugin/) exports the file's variables, text styles and shadows into this repo; `npm run build` turns them into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/); a release puts them on npm. Nothing here writes to Figma, and the plugin's check lists anything in the repo that no longer matches the file.
 
 > [!TIP]
-> **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, in the [DESIGN.md format](https://github.com/google-labs-code/design.md), and [`TOKENS.md`](TOKENS.md) lists every token by name and use. Both ship in the package, so coding agents in Rove can read them from `node_modules/@swiftsolve/rove-tokens/`.
+> **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, in the [DESIGN.md format](https://github.com/google-labs-code/design.md), and its front matter lists every colour, text style, radius and spacing token with its use. It ships in the package, so coding agents in Rove can read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`.
 
 ## Use
 
@@ -114,7 +113,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 
 1. Change the variables, text styles or `Shadow/*` effect styles in Figma. A new token takes its siblings' collection, modes, scopes and code syntax, and a description.
 2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
-3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites the token reference, `TOKENS.md`, and `DESIGN.md`'s front matter: commit them with the change.
+3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites `DESIGN.md`'s front matter: commit it with the change.
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
 5. Commit the change.
 
@@ -140,7 +139,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 
 | Script | What it does |
 | --- | --- |
-| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css`, `tailwind-theme.css`, `TOKENS.md` and `DESIGN.md`'s front matter. `npm install` and `npm publish` run it too. |
+| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css`, `tailwind-theme.css` and `DESIGN.md`'s front matter. `npm install` and `npm publish` run it too. |
 | `npm run check` | Builds, lints, then runs the contrast and DESIGN.md format checks and `npm test`. Run it before every commit; CI runs it on every release tag, before publishing. |
 | `npm test` | The Figma plugin's test: Export and Check against a stand-in file made from the repo. |
 | `npm run lint` | ESLint and Prettier over the repo. `npm run format` fixes what Prettier reports. |
@@ -170,11 +169,9 @@ Changes collect on `main` and go out together, when Rove needs them.
 | `scripts/tokens/dtcg-to-css.mjs` | DTCG files → `tokens.css`, with Style Dictionary and a `rove/css` format: Dark on `:root`, what differs in Light on `:root.theme-light`, each text style as four `--type-*` variables (letter spacing included). |
 | `scripts/tokens/tailwind-theme.mjs` | Figma export → `tailwind-theme.css`: the Tailwind v4 `@theme` that maps each token to its utility, with Tailwind's defaults cleared. |
 | `scripts/tokens/dtcg-to-text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
-| `scripts/tokens/token-reference.mjs` | Figma export and `tokens.css` → the token reference, `TOKENS.md`: every token by name and Figma description, with values for the scales (spacing, radius, type, opacity) but not the colours, so nobody copies a hex. |
-| `scripts/tokens/design-front-matter.mjs` | Figma export and `tokens.css` → `DESIGN.md`'s front matter: colours (with the format's `primary`, the accent), text styles, radius and spacing, at their Dark values. |
+| `scripts/tokens/design-front-matter.mjs` | Figma export and `tokens.css` → `DESIGN.md`'s front matter: colours (with the format's `primary`, the accent), text styles, radius and spacing, at their Dark values, each with its Figma description as a comment. |
 | `scripts/tokens/shared.mjs` | Helpers the steps share, so they all write a colour and name a text style the same way. |
 | `DESIGN.md` | How to build Rove UI with the tokens, in the [DESIGN.md format](https://github.com/google-labs-code/design.md). The front matter (the tokens, at their Dark values) is generated by the build; the prose below it is edited directly. |
-| `TOKENS.md` | The token reference: every token by name and use. Generated by the build. |
 
 **Checks and tests**
 

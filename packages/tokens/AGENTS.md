@@ -3,15 +3,14 @@
 `@swiftsolve/rove-tokens`: Rove's design tokens. The Figma plugin in
 `figma-plugin/` exports the Rove Design System's variables, text styles and
 shadows into `src/figma/`, and `npm run build` turns them into `dist/`
-(`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and the token reference,
-`TOKENS.md`.
+(`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and
+`DESIGN.md`'s front matter, every token with its value and use.
 
 ## What to read
 
 | Task | Read |
 | --- | --- |
-| Which token to use for what | `DESIGN.md` |
-| Every token, by name and use | `TOKENS.md` |
+| Which token to use for what, and every value | `DESIGN.md` |
 | Why a value is what it is | `docs/rationale.md` |
 | How the export, build and checks work, and where each file is | `README.md`: How it works, What's where |
 | Updating and releasing, step by step | `README.md`: Update the tokens, Release |
@@ -33,8 +32,8 @@ Tokens flow one way: designed in Figma, exported into this repo, built,
 released, and taken up by Rove. Nothing here writes to Figma.
 
 - **Change a token in Figma, then export and build.** The export writes
-  `src/figma/*.json` and the build writes `dist/`, `TOKENS.md` and
-  `DESIGN.md`'s front matter, so the next run undoes an edit there; the prose
+  `src/figma/*.json` and the build writes `dist/` and `DESIGN.md`'s front
+  matter, so the next run undoes an edit there; the prose
   in `DESIGN.md` below the front matter is edited directly. Only what Figma can't hold (font
   stacks, easing curves, the focus expressions) is written here, in
   `src/code-tokens.json`.
@@ -59,7 +58,7 @@ are.
 Run `npm run check` before you commit: the build (which refuses a token
 without a description), lint (ESLint and Prettier), the WCAG AA contrast check, the
 DESIGN.md format check (Google's linter) and the Figma plugin's test
-(`npm test`). Commit the rebuilt `TOKENS.md` and `DESIGN.md` with the change. Fix what a hook reports.
+(`npm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
 
 ### What runs on its own
 
@@ -67,4 +66,4 @@ DESIGN.md format check (Google's linter) and the Figma plugin's test
 | --- | --- |
 | Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
-| Each release tag (CI, `publish.yml`) | `npm run check` and `TOKENS.md` and `DESIGN.md` committed as built, then publish to npm only if they pass |
+| Each release tag (CI, `publish.yml`) | `npm run check` and `DESIGN.md` committed as built, then publish to npm only if they pass |
