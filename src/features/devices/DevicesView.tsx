@@ -6,17 +6,7 @@ import { ScanStatus } from '@/features/devices/components/ScanStatus'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { sortDevices } from '@/features/devices/utils/device-display'
 import type { LanDevice } from '@/types'
-import {
-  Banner,
-  Button,
-  DevicesIcon,
-  EmptyState,
-  HelpIcon,
-  IconButton,
-  LoadingState,
-  PageHeader,
-  RefreshIcon,
-} from '@/ui'
+import { Banner, Button, DevicesIcon, EmptyState, IconButton, LoadingState, PageHeader, RefreshIcon } from '@/ui'
 import { countTitle } from '@/utils/format'
 import { IS_MAC } from '@/utils/platform'
 
@@ -115,13 +105,9 @@ export function DevicesView() {
         title={countTitle(devices.length, 'device', 'Devices')}
         description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
         status={isScanning && !isSubnetShown ? <ScanStatus isActive isLiveRegion /> : undefined}
-        actions={
-          <>
-            <IconButton label="About device scanning" icon={HelpIcon} tooltip={SCAN_HINT} />
-            {/* Clickable while scanning (busy clicks are ignored) so its tooltip still shows. */}
-            <IconButton label="Scan again" icon={RefreshIcon} isLoading={isScanning} onClick={onRescan} />
-          </>
-        }
+        // Clickable while scanning (busy clicks are ignored) so its tooltip still shows.
+        actions={<IconButton label="Scan again" icon={RefreshIcon} isLoading={isScanning} onClick={onRescan} />}
+        info={{ label: 'About device scanning', hint: SCAN_HINT }}
       />
 
       {error && (

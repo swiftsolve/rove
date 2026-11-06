@@ -61,8 +61,8 @@ export const SmallIcon: Story = { args: { label: 'Run', icon: iconArg('PlayIcon'
 /** The tooltip says more than the label. */
 export const WithHint: Story = {
   args: {
-    label: 'Help',
-    icon: iconArg('HelpIcon'),
+    label: 'About latency',
+    icon: iconArg('InfoIcon'),
     tooltip: 'Latency is the round trip to each service, every minute.',
   },
 }

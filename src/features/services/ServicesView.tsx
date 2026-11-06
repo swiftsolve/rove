@@ -18,8 +18,6 @@ import {
   DotSeparator,
   EmptyState,
   EventsIcon,
-  HelpIcon,
-  IconButton,
   Link,
   PageHeader,
   PlusIcon,
@@ -137,13 +135,8 @@ export function ServicesView() {
             </Link>
           </span>
         }
-        // Beside a full button the help chip takes the 10px step, as on Speed.
-        actions={
-          <div className="flex items-center gap-10">
-            <IconButton label="About service checks" icon={HelpIcon} tooltip={SERVICES_HINT} />
-            <AddServiceButton isOffline={isOfflineNow} onClick={() => openDialog({ mode: 'add' })} />
-          </div>
-        }
+        actions={<AddServiceButton isOffline={isOfflineNow} onClick={() => openDialog({ mode: 'add' })} />}
+        info={{ label: 'About service checks', hint: SERVICES_HINT }}
       />
 
       {error && <Banner variant="error" title={error} description="Your services are as they were." />}

@@ -8,17 +8,7 @@ import { TimelineDay, TimelineDayList } from '@/features/timeline/components/Tim
 import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useNow } from '@/hooks/useNow'
 import type { NetworkEvent } from '@/types'
-import {
-  Banner,
-  Button,
-  EmptyState,
-  EventsIcon,
-  HelpIcon,
-  IconButton,
-  LoadingState,
-  PageHeader,
-  RefreshIcon,
-} from '@/ui'
+import { Banner, Button, EmptyState, EventsIcon, IconButton, LoadingState, PageHeader, RefreshIcon } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const FEED_HINT = 'Devices and access points joining or leaving between scans. Kept for 7 days.'
@@ -89,12 +79,8 @@ export function EventsView() {
         description={
           hasEvents ? <span className="type-caption text-tertiary">What’s changed in the past week</span> : undefined
         }
-        actions={
-          <>
-            <IconButton label="About network events" icon={HelpIcon} tooltip={FEED_HINT} />
-            <IconButton label="Scan for changes" icon={RefreshIcon} isLoading={isScanning} onClick={rescan} />
-          </>
-        }
+        actions={<IconButton label="Scan for changes" icon={RefreshIcon} isLoading={isScanning} onClick={rescan} />}
+        info={{ label: 'About network events', hint: FEED_HINT }}
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}

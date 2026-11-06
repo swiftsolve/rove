@@ -33,4 +33,20 @@ describe('PageHeader', () => {
     expect(region).toBeEmptyDOMElement()
     expect(screen.getByText('7 devices')).toBeInTheDocument()
   })
+
+  it('puts info before the actions’ cell, never in it', () => {
+    const { container } = render(
+      <PageHeader
+        title="Speed"
+        icon={null}
+        info={{ label: 'About speed tests', hint: 'Hint' }}
+        actions={<button type="button">Run test</button>}
+      />,
+    )
+    const info = screen.getByRole('button', { name: 'About speed tests' })
+    const run = screen.getByRole('button', { name: 'Run test' })
+    expect(info.compareDocumentPosition(run) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(run.parentElement).not.toContainElement(info)
+    expect(container.querySelector('header')).toContainElement(info)
+  })
 })

@@ -35,6 +35,7 @@ import {
   HelpCircle,
   History,
   House,
+  Info,
   Laptop,
   Layers,
   LayoutGrid,
@@ -152,7 +153,7 @@ export const ClockIcon = make(Clock, 16)
 export const BellIcon = make(Bell, 16)
 export const FileTransferIcon = make(FolderSync, 16)
 export const ShareIcon = make(Share2, 16)
-export const HelpIcon = make(HelpCircle, 16)
+export const InfoIcon = make(Info, 16)
 export const QrCodeIcon = make(QrCode, 16)
 export const NasIcon = make(HardDrive, 16)
 export const TabletIcon = make(Tablet, 16)

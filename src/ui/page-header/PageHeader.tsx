@@ -1,7 +1,8 @@
 import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { ArrowLeftIcon } from '../icons/Icons'
+import { IconButton } from '../button/IconButton'
+import { ArrowLeftIcon, InfoIcon } from '../icons/Icons'
 import { ScreenReaderStatus } from '../screen-reader/ScreenReaderStatus'
 import { Tooltip } from '../tooltip/Tooltip'
 import { LAYER_RAISED } from '../utils/layers'
@@ -20,6 +21,13 @@ const BACK = cx(
 // shifts as the line fills in.
 const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] type-caption text-tertiary'
 
+// The actions' cell: a hairline from the header's top to its divider, running
+// to the window's right edge. The negative margins cancel the header's padding.
+const ACTIONS = cx(
+  'flex shrink-0 items-center gap-6 self-stretch border-l border-line',
+  '-my-12 -mr-(--content-inset-right) px-12',
+)
+
 type PageHeaderProps = {
   /** The page's name. */
   title: ReactNode
@@ -31,8 +39,10 @@ type PageHeaderProps = {
   description?: ReactNode
   /** Shown in the description's place while something loads or runs ("Checking…"). */
   status?: ReactNode
-  /** Controls at the end of the header (help, refresh, the page's main action). */
+  /** The page's controls (its main action, refresh), in a cell at the header's end. */
   actions?: ReactNode
+  /** An info button just before the actions' cell, never in it: its name and hint. */
+  info?: { label: string; hint: ReactNode }
 } &
   // Exactly one of `icon` or `onBack`: each branch types the other as `never`,
   // so passing both is an error.
@@ -51,12 +61,12 @@ type PageHeaderProps = {
 
 /**
  * The top of every page but Home: an icon chip (or a back button), the title
- * with a line under it, and actions at the end, over a full-width divider. It
- * sits above the page content (`LAYER_RAISED`), so its tooltips aren't painted
- * over by the content they drop into. The actions hold their size, so a long
+ * with a line under it, an info button, and the actions in a cell at the end,
+ * over a full-width divider. It sits above the page content (`LAYER_RAISED`),
+ * so its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long
  * description wraps instead of squeezing them.
  */
-export function PageHeader({ title, description, status, actions, icon, onBack }: PageHeaderProps) {
+export function PageHeader({ title, description, status, actions, info, icon, onBack }: PageHeaderProps) {
   const hasLine = description !== undefined || status !== undefined
   return (
     <header className={cx('page-header relative flex items-center gap-12', LAYER_RAISED)}>
@@ -93,7 +103,8 @@ export function PageHeader({ title, description, status, actions, icon, onBack }
             mounts already holding its text often isn't. */}
         <ScreenReaderStatus>{status}</ScreenReaderStatus>
       </div>
-      {actions !== undefined && <div className="flex shrink-0 items-center gap-6">{actions}</div>}
+      {info && <IconButton label={info.label} icon={InfoIcon} tooltip={info.hint} className="shrink-0" />}
+      {actions !== undefined && <div className={ACTIONS}>{actions}</div>}
     </header>
   )
 }

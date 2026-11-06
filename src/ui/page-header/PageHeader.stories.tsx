@@ -4,9 +4,8 @@ import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
-import { IconButton } from '../button/IconButton'
 import { iconElementControl } from '../icons/icon-options'
-import { GlobeIcon, HelpIcon, PlusIcon, SearchIcon } from '../icons/Icons'
+import { GlobeIcon, PlusIcon, SearchIcon } from '../icons/Icons'
 import { PageHeader } from './PageHeader'
 
 // PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj
@@ -18,13 +17,13 @@ type PageHeaderArgs = Omit<ComponentProps<typeof PageHeader>, 'icon' | 'onBack'>
 }
 
 const actions = (
-  <>
-    <IconButton label="Help" icon={HelpIcon} />
-    <Button variant="solid" icon={PlusIcon} onClick={fn()}>
-      Add service
-    </Button>
-  </>
+  <Button variant="solid" icon={PlusIcon} onClick={fn()}>
+    Add service
+  </Button>
 )
+
+const info = { label: 'About service checks', hint: 'Checks each service every minute.' }
+const hostsInfo = { label: 'About per-app hosts', hint: 'Hosts each app talks to.' }
 
 const meta = {
   title: 'App frame/PageHeader',
@@ -34,11 +33,12 @@ const meta = {
   argTypes: {
     icon: iconElementControl(18),
     actions: { control: false },
+    info: { control: false },
     onBack: { control: false },
   },
   parameters: {
     docs: {
-      subtitle: 'The top of a page: an icon or back button, the title and its line, and actions.',
+      subtitle: 'The top of a page: an icon or back button, the title and its line, info, and actions.',
       toc: GUIDANCE_TOC,
     },
     guidance: {
@@ -46,11 +46,13 @@ const meta = {
         'The top of each tab’s page, like Devices or Usage.',
         'A page over a tab, `onBack` in place of `icon`: Hosts.',
         'Something running on the page, in `status`: “Checking…”.',
+        'A page’s hint, in `info`: it sits before the actions’ cell, never in it.',
       ],
       whenNotToUse: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
       accessibility: {
         builtIn: [
           'The title is the page’s `<h1>`, in a `<header>`.',
+          'The info button is named by `info.label`, its hint in a tooltip.',
           'A new `status` is announced to screen readers.',
           'The back button is named “Back”, with a matching tooltip.',
         ],
@@ -74,20 +76,20 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A top-level page: its nav icon in the chip, and its actions. */
-export const TopLevel: Story = { args: { actions } }
+/** A top-level page: its nav icon in the chip, info, and its actions in their cell. */
+export const TopLevel: Story = { args: { actions, info } }
 
 /** While something runs, the status takes the description's place. */
 export const Status: Story = { args: { title: 'Devices', icon: 'SearchIcon', status: 'Scanning…' } }
 
-/** A page layered over a tab: a back button in the chip's place, and its hint. */
+/** A page layered over a tab: a back button in the chip's place, and info with no cell. */
 export const Subpage: Story = {
   args: {
     title: 'Hosts',
     icon: undefined,
     onBack: fn(),
     description: 'Remote hosts by application, busiest first',
-    actions: <IconButton label="About per-app hosts" icon={HelpIcon} />,
+    info: hostsInfo,
   },
 }
 
@@ -122,13 +124,19 @@ export const AllStates: Story = {
   },
   render: () => (
     <div className="flex flex-col gap-20">
-      <PageHeader title="Services" icon={<GlobeIcon size={18} />} description="12 services, all up" actions={actions} />
+      <PageHeader
+        title="Services"
+        icon={<GlobeIcon size={18} />}
+        description="12 services, all up"
+        actions={actions}
+        info={info}
+      />
       <PageHeader title="Devices" icon={<SearchIcon size={18} />} status="Scanning…" />
       <PageHeader
         title="Hosts"
         onBack={fn()}
         description="Remote hosts by application, busiest first"
-        actions={<IconButton label="About per-app hosts" icon={HelpIcon} />}
+        info={hostsInfo}
       />
       <PageHeader title="Services" icon={<GlobeIcon size={18} />} />
     </div>

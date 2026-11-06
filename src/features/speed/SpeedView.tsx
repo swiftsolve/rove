@@ -9,19 +9,7 @@ import { SpeedTestCard } from '@/features/speed/components/SpeedTestCard'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { SpeedHistoryView } from '@/features/speed/SpeedHistoryView'
-import {
-  Button,
-  DotSeparator,
-  HelpIcon,
-  HistoryIcon,
-  IconButton,
-  Link,
-  PageHeader,
-  PlayIcon,
-  SpeedIcon,
-  StopIcon,
-  Tooltip,
-} from '@/ui'
+import { Button, DotSeparator, HistoryIcon, Link, PageHeader, PlayIcon, SpeedIcon, StopIcon, Tooltip } from '@/ui'
 
 const SPEED_HINT = 'Tests this computer’s connection, Wi-Fi included. One test can use over 1 GB on fast links.'
 
@@ -126,13 +114,8 @@ export function SpeedView(): JSX.Element | null {
         title="Speed"
         description={<HeaderDescription />}
         status={isTesting ? <HeaderStatus /> : undefined}
-        // Wider than the header's 6px icon gap, so the help chip reads apart from the button.
-        actions={
-          <div className="flex items-center gap-10">
-            <IconButton label="About speed tests" icon={HelpIcon} tooltip={SPEED_HINT} />
-            <TestButton />
-          </div>
-        }
+        actions={<TestButton />}
+        info={{ label: 'About speed tests', hint: SPEED_HINT }}
       />
 
       <SpeedTestCard />

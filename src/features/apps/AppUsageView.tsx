@@ -4,18 +4,7 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
-import {
-  AppsIcon,
-  Banner,
-  CardList,
-  DotSeparator,
-  GlobeIcon,
-  HelpIcon,
-  IconButton,
-  LayersIcon,
-  Link,
-  PageHeader,
-} from '@/ui'
+import { AppsIcon, Banner, CardList, DotSeparator, GlobeIcon, LayersIcon, Link, PageHeader } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const APP_USAGE_INFO_HINT = 'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
@@ -58,7 +47,7 @@ export function AppUsageView() {
         title="Apps"
         description={<AppSubtitleLinks />}
         status={isFirstLoad ? 'Loading…' : undefined}
-        actions={<IconButton label="About per-app usage" icon={HelpIcon} tooltip={APP_USAGE_INFO_HINT} />}
+        info={{ label: 'About per-app usage', hint: APP_USAGE_INFO_HINT }}
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}

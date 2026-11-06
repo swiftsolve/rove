@@ -4,7 +4,7 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
-import { Banner, CardList, HelpIcon, IconButton, PageHeader } from '@/ui'
+import { Banner, CardList, PageHeader } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const HOST_USAGE_INFO_HINT =
@@ -33,7 +33,7 @@ export function HostsView() {
         description="Remote hosts by application, busiest first"
         status={isFirstLoad ? 'Loading…' : undefined}
         onBack={back}
-        actions={<IconButton label="About per-app hosts" icon={HelpIcon} tooltip={HOST_USAGE_INFO_HINT} />}
+        info={{ label: 'About per-app hosts', hint: HOST_USAGE_INFO_HINT }}
       />
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 

@@ -4,7 +4,7 @@ import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageB
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
-import { Banner, CardList, HelpIcon, IconButton, PageHeader } from '@/ui'
+import { Banner, CardList, PageHeader } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const TRAFFIC_INFO_HINT =
@@ -30,7 +30,7 @@ export function TrafficView() {
         description="Traffic by kind across every app, busiest first"
         status={isFirstLoad ? 'Loading…' : undefined}
         onBack={back}
-        actions={<IconButton label="About traffic types" icon={HelpIcon} tooltip={TRAFFIC_INFO_HINT} />}
+        info={{ label: 'About traffic types', hint: TRAFFIC_INFO_HINT }}
       />
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 

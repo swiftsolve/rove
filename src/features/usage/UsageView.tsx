@@ -3,19 +3,7 @@ import { TotalsFooter } from '@/features/usage/components/TotalsFooter'
 import { WeekChart } from '@/features/usage/components/WeekChart'
 import { useDataUsage } from '@/features/usage/hooks/useDataUsage'
 import { todaysUsage } from '@/types'
-import {
-  Banner,
-  Card,
-  CardBody,
-  CardHeader,
-  HelpIcon,
-  IconButton,
-  LoadingState,
-  PageHeader,
-  TodayIcon,
-  UsageIcon,
-  WeekIcon,
-} from '@/ui'
+import { Banner, Card, CardBody, CardHeader, LoadingState, PageHeader, TodayIcon, UsageIcon, WeekIcon } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
 
 const USAGE_INFO_HINT = 'Measured while Rove runs, across all physical interfaces.'
@@ -33,7 +21,7 @@ export function UsageView() {
         title="Usage"
         description="Download and upload across all interfaces"
         status={isFirstLoad ? 'Loading…' : undefined}
-        actions={<IconButton label="About usage measurement" icon={HelpIcon} tooltip={USAGE_INFO_HINT} />}
+        info={{ label: 'About usage measurement', hint: USAGE_INFO_HINT }}
       />
 
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
