@@ -270,7 +270,7 @@ for (const file of files) {
   }
 
   // Every gap, padding and margin is a spacing step and every corner a radius
-  // (DESIGN.md, Spacing and shape), so one off the scale needs a reason in ALLOWED.
+  // (DESIGN.md, Layout and Shapes), so one off the scale needs a reason in ALLOWED.
   for (const match of code.matchAll(/(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g)) {
     const [whole, utility, value] = match
     if (SPACE_UTILITY.test(utility) && !isSpacingValue(value) && !SPACING.has(value.replace(/^-/, ''))) {
@@ -299,7 +299,7 @@ if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} raw value${problems.length === 1 ? '' : 's'} where a token belongs`)
   console.error(
-    "Which token, and when a value may leave the scale: DESIGN.md's Rules " +
+    "Which token, and when a value may leave the scale: DESIGN.md's Do's and Don'ts and Layout " +
       '(node_modules/@swiftsolve/rove-tokens/DESIGN.md). One that has to stay goes in ALLOWED here, with why.',
   )
   process.exit(1)

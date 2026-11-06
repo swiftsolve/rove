@@ -138,8 +138,9 @@ DESIGN.md says which token to use for what, and its rules (a token, never a
 raw value; the spacing and radius scales; a text style, never a size alone)
 apply here. This section is how they're written as Tailwind utilities.
 
-- Components are styled with Tailwind v4 utilities in the TSX. The theme in
-  `src/styles/tailwind.css` is built only from the tokens, so `p-12` is
+- Components are styled with Tailwind v4 utilities in the TSX. The theme is
+  `rove-tokens`' `tailwind-theme.css`, generated from the tokens and imported
+  by `src/styles/tailwind.css`, so `p-12` is
   `--spacing-12`, `text-md` is `--font-size-md` and `bg-surface` is
   `--bg-surface`; there are no Tailwind defaults to reach for. There's no
   preflight: `styles/base.css` is the reset.
@@ -149,7 +150,7 @@ apply here. This section is how they're written as Tailwind utilities.
   - A raw value that has to stay (the QR code's white plate, a gap set by an
     icon's ink, the About tile's app-icon corner) goes in
     `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why. DESIGN.md's
-    Spacing and shape says which reasons count.
+    Layout says which reasons count.
 - Text takes a text style's class and a colour utility:
   `type-caption text-tertiary`. [✓ CHECKED by `checks/text-styles.mjs`]
   - The classes (`type-caption`, `type-label-field`, `type-number-default`, …)

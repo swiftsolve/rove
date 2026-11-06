@@ -2,16 +2,13 @@
  * Tailwind v4, built only from Rove's design tokens.
  *
  * The tokens come from @swiftsolve/rove-tokens (Figma is the source of truth)
- * as CSS variables. The theme below maps them onto Tailwind utilities and
- * clears Tailwind's own defaults, so only design-system values exist:
- * `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is
- * `--bg-surface`, and there is no `p-7` or `text-blue-500` to reach for.
- *
- * `inline` makes each utility use the token itself (`padding: var(--spacing-12)`),
- * so a theme switch or a token update flows straight through. `reference`
- * stops Tailwind from also declaring these names on :root: several share a
- * token's own name (`--spacing-12`, `--radius-sm`), and `--radius-sm:
- * var(--radius-sm)` would be a self-reference that invalidates the token.
+ * as CSS variables, and so does the theme that maps them onto Tailwind
+ * utilities (`tailwind-theme.css`, generated from the same tokens). It clears
+ * Tailwind's own defaults, so only design-system values exist: `p-12` is
+ * `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is
+ * `--bg-surface`, and there is no `p-7` or `text-blue-500` to reach for. Its
+ * header says how it's built and how colours are named (`border-line`,
+ * `text-accent-text`).
  *
  * No preflight: base.css is the app's base reset, with the one piece of
  * preflight that border utilities rely on. The text styles are rove-tokens'
@@ -23,6 +20,8 @@
 @import '@swiftsolve/rove-tokens/tokens.css';
 /* A `.type-<style>` class per Figma text style, in the components layer. */
 @import '@swiftsolve/rove-tokens/text-styles.css';
+/* The Tailwind theme: each token as its utility, and nothing else. */
+@import '@swiftsolve/rove-tokens/tailwind-theme.css';
 /* Fonts, resets and app-wide behaviour (the base layer). */
 @import './base.css';
 /* Scan only the app's source for class names, not docs or scripts. */
@@ -39,135 +38,6 @@
    pressables set these attributes (ui/utils/pressable.ts), so a
    hover or press style is `usable:hover:…`. */
 @custom-variant usable (&:not([data-disabled], [data-loading]));
-
-@theme inline reference {
-  --*: initial;
-
-  /* Spacing: the --spacing-* scale, plus 0 for resets and 1px for hairlines. */
-  --spacing-0: 0px;
-  --spacing-px: 1px;
-  --spacing-2: var(--spacing-2);
-  --spacing-4: var(--spacing-4);
-  --spacing-6: var(--spacing-6);
-  --spacing-8: var(--spacing-8);
-  --spacing-10: var(--spacing-10);
-  --spacing-12: var(--spacing-12);
-  --spacing-14: var(--spacing-14);
-  --spacing-16: var(--spacing-16);
-  --spacing-20: var(--spacing-20);
-
-  /* Type */
-  --font-sans: var(--font-family-sans);
-  --font-numeric: var(--font-family-numeric);
-  --text-2xs: var(--font-size-2xs);
-  --text-xs: var(--font-size-xs);
-  --text-sm: var(--font-size-sm);
-  --text-md: var(--font-size-md);
-  --text-lg: var(--font-size-lg);
-  --text-xl: var(--font-size-xl);
-  --text-2xl: var(--font-size-2xl);
-  --text-3xl: var(--font-size-3xl);
-  --font-weight-regular: var(--weight-regular);
-  --font-weight-medium: var(--weight-medium);
-  --font-weight-semibold: var(--weight-semibold);
-  /* Line height and letter spacing by Figma text style (`leading-body-default`,
-     `tracking-heading-large`), for text that matches a style but takes its own
-     colour or size. A style's `.type-*` class sets all of it at once. */
-  --leading-heading-large: var(--type-heading-large-line-height);
-  --leading-heading-medium: var(--type-heading-medium-line-height);
-  --leading-heading-small: var(--type-heading-small-line-height);
-  --leading-body-default: var(--type-body-default-line-height);
-  --leading-body-small: var(--type-body-small-line-height);
-  --leading-caption: var(--type-caption-line-height);
-  --leading-label-large: var(--type-label-large-line-height);
-  --leading-label-default: var(--type-label-default-line-height);
-  --leading-label-small: var(--type-label-small-line-height);
-  --leading-label-field: var(--type-label-field-line-height);
-  --leading-number-display: var(--type-number-display-line-height);
-  --leading-number-large: var(--type-number-large-line-height);
-  --leading-number-default: var(--type-number-default-line-height);
-  --leading-number-small: var(--type-number-small-line-height);
-  --tracking-heading-large: var(--type-heading-large-letter-spacing);
-  --tracking-heading-medium: var(--type-heading-medium-letter-spacing);
-  --tracking-heading-small: var(--type-heading-small-letter-spacing);
-  --tracking-body-default: var(--type-body-default-letter-spacing);
-  --tracking-body-small: var(--type-body-small-letter-spacing);
-  --tracking-caption: var(--type-caption-letter-spacing);
-  --tracking-label-large: var(--type-label-large-letter-spacing);
-  --tracking-label-default: var(--type-label-default-letter-spacing);
-  --tracking-label-small: var(--type-label-small-letter-spacing);
-  --tracking-label-field: var(--type-label-field-letter-spacing);
-  --tracking-number-display: var(--type-number-display-letter-spacing);
-  --tracking-number-large: var(--type-number-large-letter-spacing);
-  --tracking-number-default: var(--type-number-default-letter-spacing);
-  --tracking-number-small: var(--type-number-small-letter-spacing);
-
-  /* Surfaces (bg-*) */
-  --color-base: var(--bg-base);
-  --color-chrome: var(--bg-chrome);
-  --color-surface: var(--bg-surface);
-  --color-popover: var(--bg-popover);
-  --color-inset: var(--bg-inset);
-  --color-hover: var(--bg-hover);
-  --color-scrim: var(--bg-scrim);
-
-  /* Text (text-*) */
-  --color-primary: var(--text-primary);
-  --color-secondary: var(--text-secondary);
-  --color-tertiary: var(--text-tertiary);
-  --color-accent-text: var(--text-accent);
-  --color-on-solid: var(--text-on-solid);
-  --color-positive: var(--text-positive);
-  --color-good: var(--text-good);
-  --color-warning: var(--text-warning);
-  --color-poor: var(--text-poor);
-  --color-negative: var(--text-negative);
-
-  /* Lines (border-*) */
-  --color-line: var(--border-default);
-
-  /* Accent */
-  --color-accent: var(--accent-default);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-press: var(--accent-press);
-  --color-accent-muted: var(--accent-muted);
-  --color-accent-solid: var(--accent-solid);
-  --color-accent-solid-hover: var(--accent-solid-hover);
-
-  /* Status, for fills, dots and icons. Text uses the text-* colours above. */
-  --color-status-positive: var(--status-positive);
-  --color-status-good: var(--status-good);
-  --color-status-warning: var(--status-warning);
-  --color-status-poor: var(--status-poor);
-  --color-status-negative: var(--status-negative);
-  --color-status-negative-solid: var(--status-negative-solid);
-  --color-status-negative-solid-hover: var(--status-negative-solid-hover);
-
-  /* Data series: download and upload */
-  --color-series-down: var(--series-down);
-  --color-series-up: var(--series-up);
-
-  /* Overlays, by strength */
-  --color-overlay-faint: var(--overlay-faint);
-  --color-overlay-subtle: var(--overlay-subtle);
-  --color-overlay-hover: var(--overlay-hover);
-  --color-overlay-default: var(--overlay-default);
-  --color-overlay-strong: var(--overlay-strong);
-  --color-overlay-selection: var(--overlay-selection);
-
-  /* Shape and motion */
-  --radius-xs: var(--radius-xs);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-full: var(--radius-full);
-  --shadow-panel: var(--shadow-panel);
-  --shadow-raised: var(--shadow-raised);
-  --shadow-popover: var(--shadow-popover);
-  --ease-out: var(--ease-out);
-  --ease-in-out: var(--ease-in-out);
-  --ease-spring: var(--ease-spring);
-}
 
 /* Entrance and exit animations (`animate-*`). Their keyframes are in base.css. */
 @theme inline {

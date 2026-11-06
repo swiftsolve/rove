@@ -13,8 +13,9 @@
  *
  * A utility beside the class still adjusts it (`font-medium`, `leading-[1.2]`,
  * `uppercase`, the `num` face); only the size has to come from the style. The
- * size utilities are read from tailwind.css's `--text-*` theme, so a new step
- * is covered without editing this.
+ * size utilities are read from the Tailwind theme's `--text-*` names
+ * (rove-tokens' tailwind-theme.css), so a new step is covered without editing
+ * this.
  *
  * Text no style fits goes in ALLOWED, with why; each entry is a gap to settle
  * in Figma. The dev mock
@@ -23,13 +24,15 @@
  *   node scripts/checks/text-styles.mjs
  */
 import { readdir, readFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
-const THEME = join(SRC, 'styles', 'tailwind.css')
+// The Tailwind theme src/styles/tailwind.css imports.
+const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
 
 /** Sizes that stay, by file and the exact text flagged. */
 const ALLOWED = [
@@ -127,7 +130,7 @@ if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} font size${problems.length === 1 ? '' : 's'} set without a text style`)
   console.error(
-    "Which style: DESIGN.md's Text styles (node_modules/@swiftsolve/rove-tokens/DESIGN.md). " +
+    "Which style: DESIGN.md's typography, each style with its use (node_modules/@swiftsolve/rove-tokens/DESIGN.md). " +
       'Text no style fits goes in ALLOWED here, with why: a gap to settle in Figma.',
   )
   process.exit(1)

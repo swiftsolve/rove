@@ -192,7 +192,7 @@ Each stage runs part of this on its own:
 | Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
 | Each push and pull request (CI) | `npm run check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
 | A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
-| A rove-tokens release (its CI) | Build, lint, contrast, descriptions, DESIGN.md freshness, and the Figma plugin test |
+| A rove-tokens release (its CI) | Its `npm run check` (build, lint, contrast, the DESIGN.md format, the Figma plugin test) and `DESIGN.md` committed as built; it publishes only if they pass |
 
 What to run yourself for each kind of change is in
 [AGENTS.md](AGENTS.md#check-your-work).
