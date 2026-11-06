@@ -19,6 +19,18 @@ describe('SecurityBadge', () => {
     expect(visibleWords(container)).toEqual(['Not secured'])
   })
 
+  it('calls a WEP or WPA network weak, with an amber lock and plain words', () => {
+    const { container, rerender } = render(<SecurityBadge security="WEP" />)
+    expect(visibleWords(container)).toEqual(['Weak', 'WEP'])
+    expect(container.querySelector('svg')).toHaveClass('text-status-warning')
+    expect(container.firstElementChild).not.toHaveClass('text-warning')
+    rerender(<SecurityBadge security="WPA Personal" isShort />)
+    expect(visibleWords(container)).toEqual(['WPA'])
+    expect(container.querySelector('svg')).toHaveClass('text-status-warning')
+    rerender(<SecurityBadge security="WPA/WPA2 Personal" />)
+    expect(visibleWords(container)).toEqual(['Secured', 'WPA/WPA2 Personal'])
+  })
+
   it('keeps just the strongest protocol, or Open, in the strip', () => {
     const { container, rerender } = render(<SecurityBadge security="WPA2 WPA3 Personal" isShort />)
     expect(visibleWords(container)).toEqual(['WPA3'])
