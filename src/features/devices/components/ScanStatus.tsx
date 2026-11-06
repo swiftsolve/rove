@@ -48,16 +48,10 @@ function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
 /**
  * A pulsing dot and a one-word stage. Takes `isActive` rather than being
  * conditionally rendered so it stays mounted for SCAN_EXIT_MS to slide out.
- * `isLiveRegion` is off when it shares the subnet's slot, which is the live
- * region.
+ * It's never its own live region: where it sits (the subnet's slot, PageHeader's
+ * `status`) already is one, and a region nested in another is announced twice.
  */
-export function ScanStatus({
-  isActive,
-  isLiveRegion,
-}: {
-  isActive: boolean
-  isLiveRegion: boolean
-}): JSX.Element | null {
+export function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
   const [phase, setPhase] = useState(0)
   const isMounted = usePresence(isActive, SCAN_EXIT_MS)
   // Rewind once unmounted, so the next scan starts from the first stage word.
@@ -71,11 +65,7 @@ export function ScanStatus({
 
   if (!isMounted) return null
   return (
-    <span
-      className={scanVariants({ isLeaving: !isActive })}
-      role={isLiveRegion ? 'status' : undefined}
-      aria-hidden={isActive ? undefined : true}
-    >
+    <span className={scanVariants({ isLeaving: !isActive })} aria-hidden={isActive ? undefined : true}>
       <StatusDot tone="positive" pulse="busy" className={STATUS_DOT} />
       {/* A hidden sizer (the longest word) keeps the stacked words from reflowing. */}
       <span className="relative inline-block">

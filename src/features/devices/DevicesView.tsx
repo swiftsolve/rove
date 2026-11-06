@@ -38,7 +38,7 @@ function renderDescription(
             live region for both. ml-2 plus the 6px gap gives the 8px dot spacing. */}
         <span className="relative ml-2 inline-block" role="status">
           <OnlineIndicator isActive={!isScanning} count={onlineCount} />
-          <ScanStatus isActive={isScanning} isLiveRegion={false} />
+          <ScanStatus isActive={isScanning} />
         </span>
       </span>
     )
@@ -104,7 +104,7 @@ export function DevicesView() {
         icon={<DevicesIcon size={18} />}
         title={countTitle(devices.length, 'device', 'Devices')}
         description={renderDescription(subnet, hasDevices, isScanning, onlineCount)}
-        status={isScanning && !isSubnetShown ? <ScanStatus isActive isLiveRegion /> : undefined}
+        status={isScanning && !isSubnetShown ? <ScanStatus isActive /> : undefined}
         // Clickable while scanning (busy clicks are ignored) so its tooltip still shows.
         actions={<IconButton label="Scan again" icon={RefreshIcon} isLoading={isScanning} onClick={onRescan} />}
         info={{ label: 'About device scanning', hint: SCAN_HINT }}

@@ -139,8 +139,9 @@ export default tseslint.config(
       '@typescript-eslint/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
       // A boolean reads as a yes/no question (isOpen, canRunTest) or a verb
       // phrase (needsNetworkInfo). It needs types, so it covers src. Left alone:
-      // object keys and destructured names (other APIs' options), `aria-*` and
-      // `data-*`, and useSetting's generic `value` and `fallback`.
+      // object keys and names taken from an object by destructuring (other
+      // APIs' options); array destructuring, like a useState pair, is covered.
+      // Also `aria-*` and `data-*`, and useSetting's generic `value` and `fallback`.
       '@typescript-eslint/naming-convention': [
         'error',
         {
