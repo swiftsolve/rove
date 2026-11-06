@@ -142,5 +142,5 @@ const frontMatter = await writeFrontMatter({
   css,
 })
 console.log(
-  `DESIGN.md front matter: ${frontMatter.total} tokens, ${frontMatter.colors} colours and ${frontMatter.typography} text styles among them`,
+  `DESIGN.md front matter: ${frontMatter.total - frontMatter.light} tokens (${frontMatter.colors} colours, ${frontMatter.typography} text styles), ${frontMatter.light} Light values`,
 )

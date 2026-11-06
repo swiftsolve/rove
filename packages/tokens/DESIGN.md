@@ -3,7 +3,7 @@
 # Every token, at its Dark value, with its use. Each group says how a key names its CSS variable.
 version: "alpha"
 name: "Rove"
-description: "Rove's design tokens, at their Dark theme values; Light, and each token's CSS variable, are in tokens.css. In code, use the variables, never these values."
+description: "Rove's design tokens: each group at its Dark value, the default, and the light group with what changes in Light. Each is a CSS variable in tokens.css; in code, use the variable, never the value."
 colors: # Keys: --<key>
   primary: "#5b8cff" # The accent, --accent-default: the brand and what you act on
   bg-base: "#0b0b0c" # Backdrop
@@ -184,7 +184,7 @@ layout: # Fixed sizes and insets of the shell and cards. Keys: --<key>
   card-header-height: "44px" # Card header
   card-body-padding: "14px" # Card body inset
   row-padding-y: "8px" # Data row, above and below
-shadows: # Box shadows; Light has lighter ones. Keys: --<key>
+shadows: # Box shadows; Light has its own (light group). Keys: --<key>
   shadow-panel: "0 1px 2px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.1)" # Resting cards
   shadow-raised: "0 12px 32px rgba(0, 0, 0, 0.22)" # Hover, dialogs
   shadow-popover: "0 2px 6px rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.22)" # Tooltips, menus
@@ -201,6 +201,43 @@ motion: # Durations and easing curves. Keys: --<key>
   ease-in-out: "cubic-bezier(0.4, 0, 0.2, 1)"
   ease-pulse: "cubic-bezier(0.42, 0, 0.58, 1)"
   ease-spring: "linear(0, 0.1896, 0.4943, 0.7351, 0.8834, 0.9602, 0.9936, 1.0046, 1.0062, 1.0047, 1.0028, 1.0014, 1.0006, 1, 1)"
+light: # The Light theme (theme-light on the root): every token whose value differs from the Dark one above. Keys: --<key>
+  bg-base: "#eeeeef"
+  bg-surface: "#ffffff"
+  bg-hover: "#dddee0"
+  bg-inset: "#f6f7f7"
+  bg-popover: "#ffffff"
+  bg-chrome: "#f6f7f7"
+  border-default: "rgba(11, 11, 12, 0.1)"
+  overlay-default: "rgba(11, 11, 12, 0.07)"
+  overlay-subtle: "rgba(11, 11, 12, 0.05)"
+  overlay-faint: "rgba(11, 11, 12, 0.03)"
+  overlay-strong: "rgba(11, 11, 12, 0.16)"
+  overlay-hover: "rgba(11, 11, 12, 0.02)"
+  text-primary: "#151618"
+  text-secondary: "#545559"
+  text-tertiary: "#626367"
+  text-accent: "#2c55b8"
+  text-positive: "#006d36"
+  text-good: "#376e00"
+  text-warning: "#805700"
+  text-poor: "#9d4600"
+  text-negative: "#ac3227"
+  accent-default: "#3a69d5"
+  accent-hover: "#3360c9"
+  accent-press: "#2c55b8"
+  accent-muted: "rgba(58, 105, 213, 0.12)"
+  accent-solid-hover: "#2f5bc0"
+  status-positive: "#009047"
+  status-good: "#498e00"
+  status-warning: "#a97300"
+  status-poor: "#cb5d00"
+  status-negative: "#cf4134"
+  series-down: "#3a69d5"
+  series-up: "#7154e8"
+  shadow-panel: "0 1px 2px rgba(11, 11, 12, 0.07), 0 4px 12px rgba(11, 11, 12, 0.05)"
+  shadow-raised: "0 12px 32px rgba(11, 11, 12, 0.1)"
+  shadow-popover: "0 2px 6px rgba(11, 11, 12, 0.07), 0 6px 16px rgba(11, 11, 12, 0.1)"
 ---
 
 # Rove design
@@ -209,7 +246,7 @@ How to build Rove's interface with these tokens, for anyone writing Rove UI,
 people and coding agents alike. It follows the
 [DESIGN.md format](https://github.com/google-labs-code/design.md): the build
 writes every token into the front matter above, with its Dark value and its use
-as a comment; `tokens.css` has the Light values.
+as a comment, and the `light` group at its end holds the Light values.
 [`docs/rationale.md`](docs/rationale.md) explains why the values are what they
 are. In code, use the CSS variables, never the values.
 

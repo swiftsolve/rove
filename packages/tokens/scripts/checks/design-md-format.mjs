@@ -4,8 +4,8 @@
  * warning, such as a missing `primary` colour or a section out of order, so
  * this fails on any error or warning and prints what it found. One warning is
  * allowed: that the format's export commands skip a group it doesn't know,
- * for Rove's own groups (EXTRA_GROUPS), which hold the tokens the format has
- * no group for.
+ * for Rove's own groups (OWN_GROUPS): the tokens the format has no group for,
+ * and the Light theme.
  *
  *   npm run build && node scripts/checks/design-md-format.mjs [file]
  *
@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { EXTRA_GROUPS } from '../tokens/design-front-matter.mjs'
+import { OWN_GROUPS } from '../tokens/design-front-matter.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const LINTER = resolve(ROOT, 'node_modules/@google/design.md/dist/index.js')
@@ -33,7 +33,7 @@ try {
   process.exit(1)
 }
 
-const ours = new Set(EXTRA_GROUPS.map(([group]) => group))
+const ours = new Set(OWN_GROUPS)
 const allowed = (f) => f.rule === 'token-like-ignored' && ours.has(f.path)
 const problems = report.findings.filter((f) => (f.severity === 'error' || f.severity === 'warning') && !allowed(f))
 if (problems.length > 0) {
