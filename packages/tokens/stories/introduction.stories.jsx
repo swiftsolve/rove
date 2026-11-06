@@ -255,7 +255,7 @@ const PIPELINES = [
         items: [
           {
             name: '`npm run build`',
-            body: 'Writes DTCG, then CSS with Style Dictionary.',
+            body: 'Writes DTCG, then the CSS with Style Dictionary, the Tailwind theme and DESIGN.md’s token list.',
           },
         ],
       },
@@ -280,8 +280,8 @@ const PIPELINES = [
 const CHECKS = [
   {
     icon: 'node',
-    name: 'The build',
-    body: 'Stops when a token points at one that doesn’t exist, or a variable’s CSS name doesn’t match its Figma name.',
+    name: '`npm run check`',
+    body: 'The build stops on a token that points nowhere, has no description, or a CSS name off its Figma name. Then every colour is held to WCAG AA, and DESIGN.md to its format.',
   },
   {
     icon: 'figma',
@@ -299,13 +299,13 @@ const CONSUMERS = [
   {
     icon: 'rove',
     name: 'Rove',
-    body: 'The app and its component library import `tokens.css` and `text-styles.css`, and style with nothing else.',
+    body: 'The app and its component library import `tokens.css`, `text-styles.css` and the Tailwind theme, and style with nothing else.',
     href: COMPONENTS,
   },
   {
     icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
     name: 'Coding agents',
-    body: 'Read `DESIGN.md` from `node_modules`, so they reach for a token, not a hex.',
+    body: 'Read `DESIGN.md` from `node_modules`: every token with its use, and which to pick for what.',
   },
   {
     icon: 'storybook',

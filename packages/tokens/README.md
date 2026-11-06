@@ -102,7 +102,7 @@ To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.png">
-  <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens and DESIGN.md. Checked by the build, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
+  <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens (tokens.css, text-styles.css, the Tailwind theme and DTCG) and DESIGN.md. Checked by npm run check, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
 </picture>
 
 The diagram is the [Storybook's Introduction](https://rove.swiftsolve.net/storybook/tokens/). [What's where](#whats-where) lists the scripts behind each step.
