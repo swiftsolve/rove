@@ -137,7 +137,10 @@ const frontMatter = await writeFrontMatter({
   path: resolve(ROOT, 'DESIGN.md'),
   variables: figma.variables,
   textStyles: textStyles.styles,
+  shadows: effectStyles.styles,
   slugOf: slug,
   css,
 })
-console.log(`DESIGN.md front matter: ${frontMatter.colors} colours, ${frontMatter.typography} text styles`)
+console.log(
+  `DESIGN.md front matter: ${frontMatter.total} tokens, ${frontMatter.colors} colours and ${frontMatter.typography} text styles among them`,
+)
