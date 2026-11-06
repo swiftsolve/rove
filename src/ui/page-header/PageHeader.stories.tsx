@@ -46,7 +46,7 @@ const meta = {
         'The top of each tab’s page, like Devices or Usage.',
         'A page over a tab, `onBack` in place of `icon`: Hosts.',
         'Something running on the page, in `status`: “Checking…”.',
-        'A page’s hint, in `info`: it sits before the actions’ cell, never in it.',
+        'A page’s hint, in `info`: it sits before the actions’ divider, never after it.',
       ],
       whenNotToUse: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
       accessibility: {
@@ -76,13 +76,13 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A top-level page: its nav icon in the chip, info, and its actions in their cell. */
+/** A top-level page: its nav icon in the chip, info, and its actions after a divider. */
 export const TopLevel: Story = { args: { actions, info } }
 
 /** While something runs, the status takes the description's place. */
 export const Status: Story = { args: { title: 'Devices', icon: 'SearchIcon', status: 'Scanning…' } }
 
-/** A page layered over a tab: a back button in the chip's place, and info with no cell. */
+/** A page layered over a tab: a back button in the chip's place, and info with no divider. */
 export const Subpage: Story = {
   args: {
     title: 'Hosts',

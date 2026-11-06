@@ -21,12 +21,9 @@ const BACK = cx(
 // shifts as the line fills in.
 const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] type-caption text-tertiary'
 
-// The actions' cell: a hairline from the header's top to its divider, running
-// to the window's right edge. The negative margins cancel the header's padding.
-const ACTIONS = cx(
-  'flex shrink-0 items-center gap-6 self-stretch border-l border-line',
-  '-my-12 -mr-(--content-inset-right) px-12',
-)
+// One height on every page, an icon button's: beside a taller button a line
+// its full height reads longer than it, as the button's corners round off.
+const DIVIDER = 'h-[28px] w-px shrink-0 bg-line'
 
 type PageHeaderProps = {
   /** The page's name. */
@@ -39,9 +36,9 @@ type PageHeaderProps = {
   description?: ReactNode
   /** Shown in the description's place while something loads or runs ("Checking…"). */
   status?: ReactNode
-  /** The page's controls (its main action, refresh), in a cell at the header's end. */
+  /** The page's controls (its main action, refresh), at the header's end. */
   actions?: ReactNode
-  /** An info button just before the actions' cell, never in it: its name and hint. */
+  /** An info button before the actions, past a divider, never among them: its name and hint. */
   info?: { label: string; hint: ReactNode }
 } &
   // Exactly one of `icon` or `onBack`: each branch types the other as `never`,
@@ -61,8 +58,8 @@ type PageHeaderProps = {
 
 /**
  * The top of every page but Home: an icon chip (or a back button), the title
- * with a line under it, an info button, and the actions in a cell at the end,
- * over a full-width divider. It sits above the page content (`LAYER_RAISED`),
+ * with a line under it, an info button, then a divider and the actions at the
+ * end, over a full-width divider. It sits above the page content (`LAYER_RAISED`),
  * so its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long
  * description wraps instead of squeezing them.
  */
@@ -104,7 +101,9 @@ export function PageHeader({ title, description, status, actions, info, icon, on
         <ScreenReaderStatus>{status}</ScreenReaderStatus>
       </div>
       {info && <IconButton label={info.label} icon={InfoIcon} tooltip={info.hint} className="shrink-0" />}
-      {actions !== undefined && <div className={ACTIONS}>{actions}</div>}
+      {/* The divider parts info from the actions, so it needs both. */}
+      {info && actions !== undefined && <span aria-hidden className={DIVIDER} />}
+      {actions !== undefined && <div className="flex shrink-0 items-center gap-6">{actions}</div>}
     </header>
   )
 }

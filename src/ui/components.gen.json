@@ -2546,7 +2546,7 @@
     "PageHeader": {
       "group": "App frame",
       "source": "src/ui/page-header/PageHeader.tsx",
-      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, an info button, and the actions in a cell at the end,\nover a full-width divider. It sits above the page content (`LAYER_RAISED`),\nso its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
+      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, an info button, then a divider and the actions at the\nend, over a full-width divider. It sits above the page content (`LAYER_RAISED`),\nso its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
       "figma": {
         "name": "Page header",
         "node": "542:10510",
@@ -2557,7 +2557,7 @@
       "props": {
         "actions": {
           "type": "ReactNode",
-          "description": "The page's controls (its main action, refresh), in a cell at the header's end."
+          "description": "The page's controls (its main action, refresh), at the header's end."
         },
         "description": {
           "type": "ReactNode",
@@ -2569,7 +2569,7 @@
         },
         "info": {
           "type": "{ label: string; hint: ReactNode; }",
-          "description": "An info button just before the actions' cell, never in it: its name and hint."
+          "description": "An info button before the actions, past a divider, never among them: its name and hint."
         },
         "onBack": {
           "type": "(() => void)",
@@ -2598,7 +2598,7 @@
           "The top of each tab’s page, like Devices or Usage.",
           "A page over a tab, `onBack` in place of `icon`: Hosts.",
           "Something running on the page, in `status`: “Checking…”.",
-          "A page’s hint, in `info`: it sits before the actions’ cell, never in it."
+          "A page’s hint, in `info`: it sits before the actions’ divider, never after it."
         ],
         "whenNotToUse": [
           "A card’s title: use `CardHeader`.",

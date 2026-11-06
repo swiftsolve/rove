@@ -34,7 +34,7 @@ describe('PageHeader', () => {
     expect(screen.getByText('7 devices')).toBeInTheDocument()
   })
 
-  it('puts info before the actions’ cell, never in it', () => {
+  it('puts info before the actions, never among them', () => {
     const { container } = render(
       <PageHeader
         title="Speed"
