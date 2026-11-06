@@ -15,9 +15,10 @@ Working on Rove's code.
   UI and the backend, commands and events.
 - [Learning Rust & Tauri through Rove](learning/rust-and-tauri/README.md): the
   same boundary from the language side, and adding a command end to end.
-- [Learning TanStack Query & Tailwind through Rove](learning/react-query-and-tailwind/README.md):
-  why backend data goes through TanStack Query, and how styling goes from a
-  Figma token to a class, with `cva`, `cx` and `cn`.
+- [Learning Rove's UI](learning/react-query-and-tailwind/README.md): the why
+  behind the UI's rules, in plain words: TanStack Query, styling from a Figma
+  token to a class, state and context, how a library component is built, where
+  code goes, accessibility, and what the checks catch.
 
 ## Networking
 

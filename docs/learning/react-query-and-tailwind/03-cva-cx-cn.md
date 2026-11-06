@@ -1,8 +1,8 @@
 # `cva`, `cx` and `cn`
 
-Part 3 of [Learning TanStack Query & Tailwind through Rove](README.md).
+Part 3 of [Learning Rove's UI](README.md).
 
-[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [Contents →](README.md)
+[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [State and context →](04-state-and-context.md)
 
 Three small helpers for building `className` strings.
 
@@ -92,4 +92,4 @@ one, and any size, weight or spacing before it; a utility after it tweaks it.
 
 ---
 
-[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [Contents →](README.md)
+[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [State and context →](04-state-and-context.md)

@@ -1,6 +1,6 @@
 # TanStack Query
 
-Part 1 of [Learning TanStack Query & Tailwind through Rove](README.md).
+Part 1 of [Learning Rove's UI](README.md).
 
 [← Contents](README.md) · [Tailwind and the design tokens →](02-tailwind-and-tokens.md)
 

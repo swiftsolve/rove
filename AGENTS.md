@@ -2,9 +2,8 @@
 
 A React UI (`src/`) and a Rust backend (`crates/rove-core`, behind a thin Tauri
 shell in `src-tauri/`) over a typed bridge. Claude Code loads the UI's guides
-the first time it reads a file in their folder: `src/AGENTS.md` imports
-`src/README.md` and `rove-tokens`' `DESIGN.md`, and `src/ui/AGENTS.md` imports
-`src/ui/README.md`. Before then, or in another agent, open them from the UI
+with the first file it reads in their folder, through `src/AGENTS.md` and
+`src/ui/AGENTS.md`. Before then, or in another agent, open them from the UI
 row below.
 
 ## What to read

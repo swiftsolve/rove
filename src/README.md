@@ -3,12 +3,11 @@
 How the React UI in `src/` is organised, styled and tested. Which token to use
 is in `rove-tokens`' [DESIGN.md](../node_modules/@swiftsolve/rove-tokens/DESIGN.md),
 and the library has its own guide, [src/ui/README.md](ui/README.md).
-Step-by-step tasks are skills, listed in [AGENTS.md](../AGENTS.md).
 
-**[✓ CHECKED by `file`]** marks a rule a check enforces: break it and
-`npm run check` fails. The file it names is the check: `checks/` and `gen/` are
-in `scripts/`, and [What's enforced](#whats-enforced) lists them all. A rule
-without the tag is judgment.
+**[✓ CHECKED by `file`]** marks a rule `npm run check` enforces. The file it
+names is the check (`checks/`, `gen/` and `eslint/` are in `scripts/`), and
+says what it guards. A rule without the tag is judgment:
+[What review catches](#what-review-catches) lists the ones that slip most.
 
 ## Rules
 
@@ -16,9 +15,7 @@ without the tag is judgment.
 
 Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
-are in `src/ui/components.gen.json`: read it first, not the sources. Each
-component's Docs page in Storybook shows the same, with its stories
-(`src/ui/README.md`: Storybook).
+are in `src/ui/components.gen.json`: read it first, not the sources.
 
 - Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
   A new one joins the library, in `src/ui/icons/`.
@@ -35,7 +32,8 @@ component's Docs page in Storybook shows the same, with its stories
 - App-wide state comes from context, read where it's used: `useNavigation()`
   (location, `navigate`, `back`), `useTheme()`, `useNetwork()` (network info),
   `useInternetStatus()` and `useConnectionStatus()` (the title bar's verdict).
-  Each has its own small context, so a reader re-renders only when its value
+  `NetworkProvider` fetches network info and internet status once for the
+  app. Each context is small, so a reader re-renders only when its value
   changes.
 - `navigate` handles focus, so a row, card or link that opens a screen just
   calls it:
@@ -49,15 +47,12 @@ component's Docs page in Storybook shows the same, with its stories
     show the data call them directly;
   - callers of one hook share its cache entry, so `DevicesView` and
     `DevicesCard` see the same scan;
-  - network info and internet status are app-wide: `NetworkProvider` reads
-    them, and components get them from `useNetwork()` and
-    `useInternetStatus()`;
   - live throughput and the speed test are event streams, not reads, so each
     keeps a module store read with `useSyncExternalStore`.
 - A query key names the data, plus the network for data that belongs to one
   (`['devices', networkKey]` from `useNetworkKey()`), so a new network gets
-  fresh results. A query fetches while a screen that shows it is open and polls
-  per its hook; the hooks' comments say when and why.
+  fresh results. A query fetches while a screen that shows it is open; its
+  hook's comment says when it polls and why.
 - The UI library in `src/ui` takes only props, so it reads no app context
   ([the library guide](ui/README.md)).
 
@@ -65,8 +60,9 @@ component's Docs page in Storybook shows the same, with its stories
 
 - `app/` and every feature use the same subfolders: `components/`,
   `context/` (providers and their context objects), `hooks/` and `utils/`.
-  Only a context's provider and hook import its object; everything else calls
-  the hook. [✓ CHECKED by `eslint.config.js`]
+  Code outside a `context/` or `hooks/` folder reads a context through its
+  hook, never its object, and only that context's provider and hook import
+  it. [✓ CHECKED by `eslint.config.js`, outside those folders]
 - `TABS` (`app/utils/tab-registry.ts`) holds each tab's label, rail icon and
   placement, screen and subpages; `TabBar` and `CurrentScreen` read it.
 - A custom hook lives in its own file in a `hooks/` folder.
@@ -75,13 +71,15 @@ component's Docs page in Storybook shows the same, with its stories
     `JSX.Element | null` when it can render nothing;
   - a context is read with `use(SomeContext)` and provided as
     `<SomeContext value={…}>`;
-  - an effect reads fresh props through `useEffectEvent`.
+  - an effect reads fresh props through `useEffectEvent`, so they stay out of
+    its deps (`useOnNetworkChanged`'s callback).
 - A view file holds the page and its layout; the rows, cards and widgets it is
   built from go in the feature's `components/`, and the logic behind the copy
   (names, ages, grouping) in `utils/` as plain functions.
 - An element that animates out stays mounted through its leave animation with
   `usePresence(isActive, exitMs)` from `@/ui`, styled as leaving while
-  `isActive` is false, rather than `{isActive && …}`.
+  `isActive` is false: `ScanStatus` renders while `isMounted`, with
+  `scanVariants({ isLeaving: !isActive })`.
 - `src/types` is only the backend contract, mirrored in Rust. A type only the
   UI uses lives next to the code that owns it, such as
   `features/speed/types.ts`.
@@ -90,19 +88,14 @@ component's Docs page in Storybook shows the same, with its stories
   (`useTheme.ts`), and everything else is kebab-case: contexts, utils and
   types (`theme-context.ts`), global stylesheets (`base.css`) and folders
   (`live-throughput/`).
-- Imports come in three groups, each sorted: packages, then the app's own
-  modules (`@/…`), then relative paths. `npm run lint -- --fix` sorts them.
-  [✓ CHECKED by `eslint.config.js`]
-- JSX is linted for accessibility (jsx-a11y's strict set).
-  [✓ CHECKED by `eslint.config.js`]
-- A comment says why: a reason, constraint or trap the code can't show.
+- A comment says why: a reason, constraint or trap the code can't show, so a
+  divider has nothing to say.
   - Exports, props and type fields take `/** */`; implementation notes take
     `//`.
   - A `//` note runs at most 6 lines and a `/** */` doc at most 10; anything
     longer goes in `docs/`. [✓ CHECKED by `eslint/comments.mjs`]
   - A lint exception is a line-level disable that says why after `--`.
     [✓ CHECKED by `eslint.config.js`]
-  - No divider comments.
 
 ### Names and copy
 
@@ -116,21 +109,24 @@ component's Docs page in Storybook shows the same, with its stories
 - Data that's shared and must not change (a context value, a list passed
   down as a prop, a module-level table) can be typed `readonly T[]`,
   `ReadonlyMap` or `Readonly<…>`, so the compiler catches a stray mutation.
-- An object shape is a `type`, never an `interface`, so a shape that grows
-  into a union or an intersection keeps its keyword.
+- An object shape is a `type`, so a shape that grows into a union or an
+  intersection keeps its keyword.
   [✓ CHECKED by `eslint.config.js`]
 - A prop a type redeclares from a base is omitted from the base
   (`Omit<HTMLAttributes<HTMLElement>, 'children'> & {…}`), or the docs drop it.
-- Inline items are separated by `DotSeparator` or `InlineMeta`, never a typed
-  `·` or `•`. A string that would join parts with ` · ` returns the parts.
+- Inline items are separated by `DotSeparator` or `InlineMeta`, so a string
+  that would join parts with a separator returns the parts:
+  `<InlineMeta items={[name, connection.band]} />`.
   [✓ CHECKED by `eslint.config.js`]
-- A missing value is `NoValue`, never a typed `—`. A formatter returns null
-  for one, and the caller renders the bar. [✓ CHECKED by `eslint.config.js`]
-- Copy never punctuates with an em dash: write two short sentences or
-  rephrase. [✓ CHECKED by `eslint.config.js`]
+- A missing value renders `NoValue`: a formatter returns null for one, and the
+  caller renders it (`ping?.value ?? <NoValue label="Not measured" />`). [✓ CHECKED by `eslint.config.js`]
+- Copy punctuates with full stops, commas and colons: where an em dash would
+  go, write two short sentences or rephrase. [✓ CHECKED by `eslint.config.js`]
 - In-app hints (help tooltips, `*_HINT` constants, empty and unsupported
   states) are two short sentences at most, about 20 words: what's measured and
-  the one or two limits that matter. How it works belongs in the README.
+  the one or two limits that matter: "Tests this computer’s connection, Wi-Fi
+  included. One test can use over 1 GB on fast links." How it works belongs
+  in the README.
 
 ### Styles: Tailwind utilities from the design tokens
 
@@ -204,9 +200,8 @@ apply here. This section is how they're written as Tailwind utilities.
   theme's names and `type-*` classes from `cn-theme.gen.json`, so after a new
   theme name or text style, `npm run gen`. [✓ CHECKED by `gen/cn-theme.mjs`]
 - A view adjusts a shared component through its variants (`density`,
-  `align`, `shouldTruncate`, `CardBody`'s `layout`), never a selector into
-  its DOM (`[&_.some-part]:pt-12`). A tweak more than one view needs becomes a
-  variant.
+  `align`, `shouldTruncate`, `CardBody`'s `layout`); a tweak more than one
+  view needs becomes a new variant.
 - `className` on a library component places it in a layout: margin,
   position, z-index, size, flex or grid item, its own text alignment, rounding
   to fit its container, showing or hiding it.
@@ -236,44 +231,17 @@ apply here. This section is how they're written as Tailwind utilities.
   behaviour and accessibility: roles, names, keyboard, focus, disabled.
 - Every story is a test too. It renders in headless Chromium with the real
   styles, runs its `play` function and fails on any accessibility violation
-  (`@storybook/addon-vitest`). `npx vitest --project=storybook` runs them
-  alone, as does Storybook's testing widget; a new machine needs
+  (`@storybook/addon-vitest`). A new machine needs
   `npx playwright install chromium` once.
-- All three kinds run with `npm test`, part of `npm run check`.
-- Looks are checked by pixels, and every screen and dialog by axe, outside
-  `npm test`. `npm run screenshots -- --stable` pauses the clock, randomness
-  and animations, so two runs of the same code match exactly, and also shoots
-  open menus, dialogs, tooltips, a focus ring and every component's All States
-  story. AGENTS.md's Check your work has the commands for each change.
+- Looks and screen-level axe run outside `npm test`: AGENTS.md's Check your
+  work has the commands. `npm run screenshots` also shoots open menus,
+  dialogs, tooltips, a focus ring and every component's All States story.
 
 ## Validation
 
-### What's enforced
-
-`npm run check` fails on these, so a rule here needs no review. Each check in
-`scripts/checks/` says what it guards.
-
-| Rule | Enforced by |
-| --- | --- |
-| Library and context import boundaries, no raw `<button>` | ESLint, `no-restricted-imports` and `no-restricted-syntax` |
-| No typed `·`, typed `—` or em dash in copy | ESLint, `no-restricted-syntax` |
-| Boolean prefixes, `type` over `interface`, import order, jsx-a11y | ESLint |
-| Comments: length, and a reason on every lint exception | ESLint, `scripts/eslint/comments.mjs` and eslint-comments |
-| Layout | Prettier |
-| Tokens, not raw values; gaps, paddings and margins on the spacing scale, corners on the radius scale | `checks/raw-values.mjs` |
-| Every custom property read (`var(--…)`, `p-(--…)`) is defined: no misspelt token | `checks/custom-properties.mjs` |
-| Text takes a text style (`type-*`, or a style's `--type-*` variables), never a font size alone | `checks/text-styles.mjs` |
-| Every text, status and accent token clears WCAG AA on the backgrounds DESIGN.md puts it on, in both themes | `rove-tokens`' `checks/contrast.mjs`, before a release |
-| Every theme name known to `cn` | `gen/cn-theme.mjs --check`: `cn-theme.gen.json` fresh |
-| `className` only places a library component | `checks/ui-classname.mjs` |
-| `components.gen.json` fresh; doc comments and `figma-components.json` entries present | `gen/components.mjs --check` |
-| A component with a handler prop has a story that drives it (`play`, tagged `!autodocs`) | `gen/components.mjs --check` |
-| Figma and the library agree: `figma-components.json`'s nodes and names, every variant property and its values, and every usage guide's sections, line counts and named alternatives (skipped without `FIGMA_TOKEN`) | `checks/figma-library.mjs` |
-| Behaviour, and accessibility per story | `npm test` |
-
 ### What review catches
 
-Every rule without the tag is judgment. These slip through most often:
+These judgment rules slip through most often:
 
 - a prop passed only to pass it down, focus code where `navigate` already
   moves it, or an exit animation unmounted early instead of `usePresence`;

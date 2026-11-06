@@ -1,6 +1,6 @@
 # Tailwind and the design tokens
 
-Part 2 of [Learning TanStack Query & Tailwind through Rove](README.md).
+Part 2 of [Learning Rove's UI](README.md).
 
 [← TanStack Query](01-tanstack-query.md) · [`cva`, `cx` and `cn` →](03-cva-cx-cn.md)
 

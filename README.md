@@ -254,6 +254,7 @@ and the [Components Storybook](https://rove.swiftsolve.net/storybook/).
 - [Rove frontend](src/README.md) and [Rove UI library](src/ui/README.md): how
   the UI and its components are built.
 - [Learning Rust & Tauri through Rove](docs/learning/rust-and-tauri/README.md)
+  and [Learning Rove's UI](docs/learning/react-query-and-tailwind/README.md)
 - [Why "Rove"?](docs/why-rove.md)
 
 All of them, grouped: [docs/](docs/README.md).

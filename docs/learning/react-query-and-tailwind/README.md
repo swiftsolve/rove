@@ -1,12 +1,15 @@
-# Learning TanStack Query & Tailwind through Rove
+# Learning Rove's UI
 
-A plain-words tour of two choices in Rove's UI: why backend data goes through
-TanStack Query (often called React Query), and how styling works, from a Figma
-token to a class like `p-12`, plus the three helpers `cva`, `cx` and `cn`.
-Every example is real code you can open.
+A plain-words tour of how Rove's React UI is built: why backend data goes
+through TanStack Query (often called React Query), how styling works from a
+Figma token to a class like `p-12`, how state and the library's components are
+put together, where code goes, accessibility, and what the checks do and don't
+catch. Every example is real code you can open. The rules themselves are in the
+two guides below; these chapters explain why.
 
 > **Companion pages:**
 > - [Rove frontend](../../../src/README.md): the rules, and where to find which component to use.
+> - [Rove UI library](../../../src/ui/README.md): the rules every library component follows.
 > - [How Rove Is Put Together](../../architecture.md): the bridge the data comes over.
 > - [`DESIGN.md`](../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md) in
 >   rove-tokens: which token to use for what.
@@ -16,6 +19,11 @@ Every example is real code you can open.
 1. [TanStack Query](01-tanstack-query.md)
 2. [Tailwind and the design tokens](02-tailwind-and-tokens.md)
 3. [`cva`, `cx` and `cn`](03-cva-cx-cn.md)
+4. [State and context](04-state-and-context.md)
+5. [How a library component is built](05-library-components.md)
+6. [Where code goes, and naming](06-where-code-goes.md)
+7. [Accessibility in practice](07-accessibility.md)
+8. [Checks and review](08-checks-and-review.md)
 
 ## Cheat sheet
 
@@ -32,3 +40,14 @@ Every example is real code you can open.
 - A shared layout → an `@utility` in `utilities.css`.
 - A component's looks → `cva`; merging an outside `className` → `cn`; plain
   joins → `cx`.
+- A view needs app state → its hook (`useNetwork()`, `useNavigation()`), not a
+  prop. Opening a screen → `navigate(…)`, which moves focus itself.
+- A library component → its element's props and `ref` passed through; parts
+  and slots, not `cloneElement`; runtime state as `data-*`; a new look is a
+  value on an axis, not a new combined variant.
+- Folders → `components/`, `context/`, `hooks/`, `utils/`. A boolean →
+  `is`/`has`/`can`/`should`…; a shape → `type`; a comment → why.
+- A changing status → a region that's always mounted; a missing value →
+  `NoValue`; parts of a line → `InlineMeta`; an exit animation → `usePresence`.
+- Done → `npm run check`, then what review catches: both themes in
+  `npm run screenshots`, `npm run a11y`, Figma.

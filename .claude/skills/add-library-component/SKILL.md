@@ -73,9 +73,15 @@ Without the server, stop after the code side and say the Figma side is left.
 1. Build or change it from the file's variables and text styles, never raw
    values, with the same props and variants as the code.
 2. Give a new one a docs section like its neighbours': intro (the stories'
-   `docs.subtitle`), Guidance (the stories' guide, worded for designers, line
-   for line), Dark and Light previews, and a properties table. A changed one's
-   section changes with it.
+   `docs.subtitle`, word for word), Guidance, Dark and Light previews, and a
+   properties table. A changed one's section changes with it. Guidance is the
+   stories' guide worded for designers:
+   - When to use and When not to use, line for line with the stories'
+     (`checks/figma-library.mjs` holds them to it).
+   - Accessibility, as what they needn't draw (Built in) and what they decide
+     or note (To handle).
+   - A Guidelines block, only in Figma: Do and Don't columns for placement,
+     variants and content, each Don't the mistake its Do prevents.
 3. Its entry in `src/ui/figma-components.json`: the `map-figma-component` skill
    (`.claude/skills/map-figma-component/SKILL.md`).
 
