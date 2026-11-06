@@ -71,7 +71,7 @@ function AddressFeedback({
     return (
       <div className={RESULT}>
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
-        <span className="min-w-0 flex-auto truncate type-body-small text-primary">{shownName}</span>
+        <span className="type-body-small min-w-0 flex-auto truncate text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
           <span className={resultStatusVariants({ status: 'negative' })}>Down</span>
         ) : (

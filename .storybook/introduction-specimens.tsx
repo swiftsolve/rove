@@ -329,7 +329,7 @@ function OverlaysScene(): JSX.Element {
                   <div className={HEADER}>
                     <div className="min-w-0">
                       <div className="type-heading-medium text-primary">Share Wi‑Fi</div>
-                      <div className="mt-4 type-body-small text-secondary">Scan with a phone camera to join</div>
+                      <div className="type-body-small mt-4 text-secondary">Scan with a phone camera to join</div>
                     </div>
                     <IconButton
                       className="-mt-4 -mr-4 shrink-0 self-start"
@@ -353,7 +353,7 @@ function OverlaysScene(): JSX.Element {
                   </div>
                   {isQrReady && (
                     <div className="px-16 py-12">
-                      <p className="animate-fade-in text-center type-heading-small leading-body-default text-primary wrap-anywhere">
+                      <p className="type-heading-small animate-fade-in text-center leading-body-default wrap-anywhere text-primary">
                         {NETWORK.ssid}
                       </p>
                     </div>

@@ -43,7 +43,7 @@ export function AboutView() {
         </CardBody>
       </Card>
 
-      <p className="type-caption text-tertiary pt-8 pb-12 text-center">
+      <p className="type-caption pt-8 pb-12 text-center text-tertiary">
         © {COPYRIGHT_YEAR} SwiftSolve. All rights reserved.
       </p>
     </div>

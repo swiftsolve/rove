@@ -10,7 +10,7 @@ import type { VariantOf } from '../utils/variants'
 
 const iconButtonVariants = cva(
   [
-    'inline-flex items-center justify-center size-[28px] rounded-sm',
+    'inline-flex size-[28px] items-center justify-center rounded-sm',
     'text-secondary usable:hover:bg-hover usable:hover:text-primary',
     'transition-[color,background,transform] duration-(--duration-fast) ease-in-out',
     STATE_CLASSES,

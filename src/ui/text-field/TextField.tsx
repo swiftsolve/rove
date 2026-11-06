@@ -12,7 +12,7 @@ const LABEL = 'type-label-field text-tertiary mb-8 block'
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
 // 30px action centred beside the text sits 4px from the top and bottom edges.
 const INPUT = cx(
-  'w-full rounded-sm px-12 py-10 type-body-default leading-[18px] text-primary placeholder:text-tertiary',
+  'type-body-default w-full rounded-sm px-12 py-10 leading-[18px] text-primary placeholder:text-tertiary',
   'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
 )
 
@@ -104,7 +104,7 @@ export function TextField({
 const actionVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-xs',
-    'bg-accent-muted type-label-default text-accent-text',
+    'type-label-default bg-accent-muted text-accent-text',
     'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
     PRESS,
     STATE_CLASSES,

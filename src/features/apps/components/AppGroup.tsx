@@ -25,7 +25,7 @@ const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 // is drawn on the group instead.
 const GROUP_HEADER = cx(
   'group/header flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
-  '[font:inherit] text-left text-inherit hover:text-primary focus-visible:text-primary',
+  'text-left text-inherit [font:inherit] hover:text-primary focus-visible:text-primary',
   'transition-[color] duration-(--duration-fast) ease-in-out',
 )
 

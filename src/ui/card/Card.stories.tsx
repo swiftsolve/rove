@@ -158,7 +158,7 @@ export const List: Story = {
   render: () => (
     <CardList label="Devices">
       {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-        <li key={name} className="px-12 py-10 type-body-small text-primary">
+        <li key={name} className="type-body-small px-12 py-10 text-primary">
           {name}
         </li>
       ))}
@@ -168,7 +168,7 @@ export const List: Story = {
 
 function SettingRow({ title }: { title: string }) {
   return (
-    <div className="flex items-center justify-between gap-12 py-(--row-padding-y) type-body-small text-primary">
+    <div className="type-body-small flex items-center justify-between gap-12 py-(--row-padding-y) text-primary">
       {title}
       <Toggle isChecked onChange={fn()} label={title} />
     </div>
@@ -201,7 +201,7 @@ function OpenableCard() {
     <Card onOpen={fn()}>
       <CardHeader title="Usage" icon={<TodayIcon size={16} />} />
       <CardBody>
-        <span className="inline-flex items-center gap-6 type-body-default text-primary" aria-hidden>
+        <span className="type-body-default inline-flex items-center gap-6 text-primary" aria-hidden>
           <ArrowDownIcon size={12} />
           4.9 GB
         </span>
@@ -236,7 +236,7 @@ export const AllStates: Story = {
       </Card>
       <CardList label="Devices">
         {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-          <li key={name} className="px-12 py-10 type-body-small text-primary">
+          <li key={name} className="type-body-small px-12 py-10 text-primary">
             {name}
           </li>
         ))}

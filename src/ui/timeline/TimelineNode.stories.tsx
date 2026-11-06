@@ -19,8 +19,8 @@ function Lines({ title, subject, time = '1:24 PM' }: { title: string; subject: s
   return (
     <>
       <span className="flex items-baseline gap-10">
-        <span className="min-w-0 flex-1 type-heading-small leading-[inherit] text-primary">{title}</span>
-        <span className="type-body-small leading-[inherit] shrink-0 text-tertiary">{time}</span>
+        <span className="type-heading-small min-w-0 flex-1 leading-[inherit] text-primary">{title}</span>
+        <span className="type-body-small shrink-0 leading-[inherit] text-tertiary">{time}</span>
       </span>
       <span className="type-body-default text-secondary">{subject}</span>
     </>

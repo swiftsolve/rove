@@ -56,7 +56,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
           Reload
         </Button>
         {import.meta.env.DEV && (
-          <pre className="type-caption text-tertiary whitespace-pre-wrap select-text max-w-full">
+          <pre className="type-caption max-w-full whitespace-pre-wrap text-tertiary select-text">
             {`${error.message}\n${error.stack ?? ''}`}
           </pre>
         )}

@@ -21,7 +21,7 @@ const ROW = cx(
 const CHEVRON = cx(
   'shrink-0 text-tertiary opacity-30',
   'transition-opacity duration-(--duration-fast) ease-in-out',
-  'group-usable/row:group-hover/row:opacity-70 group-focus-visible/row:opacity-70',
+  'group-focus-visible/row:opacity-70 group-usable/row:group-hover/row:opacity-70',
 )
 
 type ListRowProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'disabled' | 'type'> & {

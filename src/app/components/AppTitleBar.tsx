@@ -9,7 +9,7 @@ export function AppTitleBar() {
     <TitleBar
       brand={
         <>
-          <span className="inline-flex items-center justify-center shrink-0 text-accent" aria-hidden>
+          <span className="inline-flex shrink-0 items-center justify-center text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
           <span className="type-heading-large leading-body-default text-primary">Rove</span>

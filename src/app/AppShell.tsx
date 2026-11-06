@@ -17,9 +17,9 @@ import { PortalProvider } from '@/ui'
 // content overflows. The right inset is 7px of padding plus the 5px scrollbar
 // (base.css), matching the rail's 12px.
 const SCROLL = cx(
-  'flex flex-1 flex-col min-w-0 min-h-0',
+  'flex min-h-0 min-w-0 flex-1 flex-col',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
-  'pl-12 pr-(--content-inset-right) pt-12 pb-20',
+  'pt-12 pr-(--content-inset-right) pb-20 pl-12',
   '[&>.banner]:mb-12',
 )
 
@@ -42,16 +42,16 @@ export function AppShell() {
       {/* Square corners: the window is opaque (Tauri transparent:false, needed by
           WebKitGTK on NVIDIA, see run() in lib.rs), so a radius would expose the
           window's background, not the desktop. */}
-      <div className="flex flex-col h-full bg-base border border-line overflow-hidden" data-app-shell>
+      <div className="flex h-full flex-col overflow-hidden border border-line bg-base" data-app-shell>
         <UpdatePrompt />
         <AppTitleBar />
 
-        <div className="flex flex-1 flex-row min-h-0 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
           <TabBar />
 
           {/* The dialogs' portal container and positioning context. */}
-          <div ref={setContentColumn} className="relative flex flex-1 flex-col min-w-0 overflow-hidden">
-            <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden animate-fade-in">
+          <div ref={setContentColumn} className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 w-full flex-1 animate-fade-in flex-col overflow-hidden">
               {/* A plain div, not a landmark: <main> inside it must be top-level. */}
               <div ref={scrollRef} className={SCROLL} data-scroll-root>
                 <NetworkErrorBanner />

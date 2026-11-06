@@ -15,21 +15,21 @@ const BAR_HEIGHT = 20
 // The active item's own bar, for an item on its own. Inside a rail it hides,
 // and the rail's single bar slides to it instead.
 const ACTIVE_BAR = cx(
-  "before:absolute before:-left-12 before:top-1/2 before:-translate-y-1/2 before:content-['']",
-  'before:w-[3px] before:h-20 before:rounded-r-full before:bg-accent',
+  "before:absolute before:top-1/2 before:-left-12 before:-translate-y-1/2 before:content-['']",
+  'before:h-20 before:w-[3px] before:rounded-r-full before:bg-accent',
   '[[data-nav-rail]_&]:before:hidden',
 )
 
 const itemVariants = cva(
   [
-    'relative inline-flex items-center justify-center size-(--rail-item-size) rounded-md',
+    'relative inline-flex size-(--rail-item-size) items-center justify-center rounded-md',
     'transition-[color,background] duration-(--duration-normal) ease-out',
   ],
   {
     variants: {
       isActive: {
         true: ['bg-accent-muted text-accent', ACTIVE_BAR],
-        false: 'text-tertiary hover:text-secondary hover:bg-overlay-subtle',
+        false: 'text-tertiary hover:bg-overlay-subtle hover:text-secondary',
       },
     },
     defaultVariants: { isActive: false },
@@ -141,8 +141,8 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       ref={railRef}
       data-nav-rail
       className={cx(
-        'relative flex flex-col items-center justify-between gap-12 shrink-0',
-        'px-12 py-12 bg-chrome border-r border-line',
+        'relative flex shrink-0 flex-col items-center justify-between gap-12',
+        'border-r border-line bg-chrome px-12 py-12',
         LAYER_CHROME,
       )}
       aria-label={label}
@@ -150,7 +150,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       <span
         aria-hidden
         className={cx(
-          'absolute left-0 top-0',
+          'absolute top-0 left-0',
           BAR_SHAPE,
           bar.isVisible ? 'opacity-100' : 'opacity-0',
           bar.isSliding
@@ -165,7 +165,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       <NavGroup
         className={cx(
           'relative pt-12',
-          'before:absolute before:top-0 before:-left-12 before:-right-12',
+          'before:absolute before:top-0 before:-right-12 before:-left-12',
           "before:h-px before:bg-line before:content-['']",
         )}
       >

@@ -9,10 +9,10 @@ import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 // pill's padding hangs outside the text (with the icons' empty edges), so the
 // words line up with the text around them and the link adds no height to its line.
 const LINK = cx(
-  'group/link inline-flex items-center gap-[5px] rounded-full px-8 py-2 -my-2 ml-[-9.5px] mr-[-9px]',
+  'group/link -my-2 mr-[-9px] ml-[-9.5px] inline-flex items-center gap-[5px] rounded-full px-8 py-2',
   'text-[length:inherit] leading-[inherit] [font-weight:inherit] whitespace-nowrap text-secondary no-underline',
   'transition-[color] duration-(--duration-fast) ease-in-out',
-  'usable:hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none',
+  'focus-visible:text-accent-text focus-visible:outline-none usable:hover:text-accent-text',
   STATE_CLASSES,
 )
 
@@ -22,7 +22,7 @@ const LINK = cx(
 // doesn't use, so 1px up centres them on the text as Figma draws it.
 const ICON = cx(
   'translate-y-[-1px] opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
-  'group-usable/link:group-hover/link:opacity-100 group-focus-visible/link:opacity-100',
+  'group-focus-visible/link:opacity-100 group-usable/link:group-hover/link:opacity-100',
 )
 
 // Only the label underlines, not the icons. It carries the link's baseline:

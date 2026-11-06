@@ -7,7 +7,7 @@ import { isSecuredWifi } from '@/utils/format'
 type SecurityLevel = 'secured' | 'weak' | 'open'
 
 // Block flex, not inline-flex, which sits the lock on the baseline a little low.
-const securityBadgeVariants = cva('flex items-center gap-6 min-w-0 in-[dl]:justify-end', {
+const securityBadgeVariants = cva('flex min-w-0 items-center gap-6 in-[dl]:justify-end', {
   variants: {
     level: { secured: null, weak: null, open: 'text-negative' },
   },

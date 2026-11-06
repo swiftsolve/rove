@@ -5,8 +5,8 @@ import { formatBytes } from '@/utils/format'
 
 // Full-bleed inset strip; the card's overflow:hidden rounds its bottom corners.
 const TOTALS_FOOTER = cx(
-  'type-caption text-tertiary flex items-center justify-between gap-12',
-  'mt-12 -mx-(--card-body-padding) -mb-(--card-body-padding) p-(--card-body-padding)',
+  'type-caption flex items-center justify-between gap-12 text-tertiary',
+  '-mx-(--card-body-padding) mt-12 -mb-(--card-body-padding) p-(--card-body-padding)',
   'bg-inset',
 )
 

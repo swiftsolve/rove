@@ -130,7 +130,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
           <span className="type-body-small min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}
-          <span className="type-body-small num min-w-[4.5em] shrink-0 text-right text-secondary">
+          <span className="type-body-small min-w-[4.5em] shrink-0 text-right num text-secondary">
             <LatencyReadout
               latencyMs={latencyMs}
               isErroring={isErroring}

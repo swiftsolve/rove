@@ -66,7 +66,7 @@ type PageHeaderProps = {
 export function PageHeader({ title, description, status, actions, info, icon, onBack }: PageHeaderProps) {
   const hasLine = description !== undefined || status !== undefined
   return (
-    <header className={cx('page-header relative flex items-center gap-12', LAYER_RAISED)}>
+    <header className={cx('relative page-header flex items-center gap-12', LAYER_RAISED)}>
       {onBack ? (
         // Like every icon-only button: a tooltip names it, and it presses in.
         <Tooltip content="Back">

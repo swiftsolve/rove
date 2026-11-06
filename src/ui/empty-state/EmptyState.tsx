@@ -82,7 +82,7 @@ export function EmptyStateDescription({
   children: ReactNode
 }) {
   return (
-    <p className={cn('max-w-[34ch] type-body-small text-tertiary', className)} {...props}>
+    <p className={cn('type-body-small max-w-[34ch] text-tertiary', className)} {...props}>
       {children}
     </p>
   )

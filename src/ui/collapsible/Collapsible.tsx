@@ -62,7 +62,7 @@ export function CollapsibleTrigger(props: ComponentProps<'button'>) {
 const PANEL = cx(
   'h-(--collapsible-panel-height) overflow-hidden',
   'transition-[height] duration-(--duration-normal) ease-out',
-  'data-starting-style:h-0 data-ending-style:h-0',
+  'data-ending-style:h-0 data-starting-style:h-0',
 )
 
 type CollapsiblePanelProps = Omit<ComponentProps<'div'>, 'children'> & {

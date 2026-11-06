@@ -9,9 +9,9 @@ function formatTime(ts: number): string {
 export function EventHeading({ title, ts }: { title: string; ts: number }) {
   return (
     <span className="flex items-baseline gap-10">
-      <span className="min-w-0 flex-1 type-heading-small leading-[inherit] text-primary wrap-anywhere">{title}</span>
+      <span className="type-heading-small min-w-0 flex-1 leading-[inherit] wrap-anywhere text-primary">{title}</span>
       <time
-        className="type-body-small leading-[inherit] shrink-0 whitespace-nowrap text-tertiary"
+        className="type-body-small shrink-0 leading-[inherit] whitespace-nowrap text-tertiary"
         dateTime={new Date(ts).toISOString()}
       >
         {formatTime(ts)}

@@ -7,7 +7,7 @@ const signalMeterVariants = cva('flex items-center gap-8', {
   variants: {
     level: { good: 'text-status-positive', fair: 'text-status-warning', poor: 'text-status-negative' },
     /** Beside the strip's title, or inside the expanded Signal row. */
-    placement: { strip: 'self-center shrink-0', details: null },
+    placement: { strip: 'shrink-0 self-center', details: null },
   },
 })
 

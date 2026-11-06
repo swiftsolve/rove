@@ -89,7 +89,7 @@ export const SmallText: Story = {
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
-      <span className="inline-flex items-center gap-12 type-caption text-tertiary">
+      <span className="type-caption inline-flex items-center gap-12 text-tertiary">
         <Link icon={GlobeIcon}>All hosts</Link>
         <Link>View timeline</Link>
         <Link href="https://github.com/swiftsolve/rove">External</Link>
@@ -97,7 +97,7 @@ export const AllStates: Story = {
           Disabled
         </Link>
       </span>
-      <span className="inline-flex items-center gap-12 type-caption">
+      <span className="type-caption inline-flex items-center gap-12">
         <Link icon={PlayIcon}>Small text</Link>
         <Link href="https://github.com/swiftsolve/rove">External</Link>
         <Link icon={PlayIcon} isDisabled>

@@ -152,7 +152,7 @@ function ResultFooter({
 }) {
   return (
     <div className={cx(INSET_PANEL, 'flex items-center')}>
-      <p className="type-caption text-tertiary flex w-full min-w-0 items-center justify-between gap-12">
+      <p className="type-caption flex w-full min-w-0 items-center justify-between gap-12 text-tertiary">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
           <span className="ml-auto shrink-0">

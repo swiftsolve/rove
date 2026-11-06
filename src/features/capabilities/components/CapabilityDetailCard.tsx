@@ -40,7 +40,7 @@ const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] 
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
-const verdictStatusVariants = cva('inline-flex shrink-0 items-center gap-6 type-label-default', {
+const verdictStatusVariants = cva('type-label-default inline-flex shrink-0 items-center gap-6', {
   variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
 })
 
@@ -78,7 +78,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         <dl className={METRICS}>
           {checks.map((check) => (
             <div key={check.label} className="flex min-w-0 flex-col gap-6">
-              <dt className="type-label-field text-tertiary leading-[1.15]">{check.label}</dt>
+              <dt className="type-label-field leading-[1.15] text-tertiary">{check.label}</dt>
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
@@ -91,7 +91,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         </dl>
 
         <div className={VERDICT}>
-          <p className="flex min-w-0 flex-1 items-start gap-4 type-body-small text-secondary">
+          <p className="type-body-small flex min-w-0 flex-1 items-start gap-4 text-secondary">
             <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
               <VerdictIcon level={capability.level} />
             </span>

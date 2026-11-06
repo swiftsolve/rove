@@ -18,7 +18,7 @@ const TRACK =
 // a gap. `data-keeps-transition` lets it slide while a theme switch has
 // transitions off (styles/base.css), since picking a theme moves it.
 const THUMB = cx(
-  'absolute inset-y-2 left-2 rounded-xs bg-accent-muted pointer-events-none',
+  'pointer-events-none absolute inset-y-2 left-2 rounded-xs bg-accent-muted',
   'w-[calc((100%-(var(--count)+1)*var(--spacing-2))/var(--count))]',
   'translate-x-[calc(var(--index)*(100%+var(--spacing-2)))]',
   'transition-[translate] duration-(--duration-normal) ease-out',
@@ -29,7 +29,7 @@ const THUMB = cx(
 // Button, so the two line up side by side. They sit above the thumb, and an
 // unchosen one takes a faint fill on hover.
 const SEGMENT = cx(
-  'relative inline-flex items-center justify-center gap-6 py-6 px-10 border-none rounded-xs cursor-pointer',
+  'relative inline-flex cursor-pointer items-center justify-center gap-6 rounded-xs border-none px-10 py-6',
   'type-label-small whitespace-nowrap',
   'transition-[background,color] duration-(--duration-fast) ease-in-out',
   'focus-visible:outline-offset-(--focus-inset)',

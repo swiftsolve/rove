@@ -8,7 +8,7 @@ describe('cn', () => {
   })
 
   it('drops a size, weight, line height or spacing set before a text style', () => {
-    expect(cn('text-sm font-semibold leading-body-small tracking-caption', 'type-caption')).toBe('type-caption')
+    expect(cn('text-sm leading-body-small font-semibold tracking-caption', 'type-caption')).toBe('type-caption')
   })
 
   it('keeps a utility after a text style, which tweaks it', () => {

@@ -62,8 +62,8 @@ const stateVariants = cva('type-body-small inline-flex shrink-0 items-center gap
 
 // On Heading/Small, the card titles' style.
 const DEVICE_NAME = cx(
-  'type-heading-small leading-heading-large text-primary min-w-0 flex-1',
-  'line-clamp-2 [line-clamp:2] wrap-anywhere',
+  'type-heading-small min-w-0 flex-1 leading-heading-large text-primary',
+  'line-clamp-2 wrap-anywhere [line-clamp:2]',
 )
 
 const DEVICE_META = 'type-caption text-tertiary flex min-w-0 items-baseline gap-8'
@@ -172,7 +172,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
           <DeviceMetaLine device={device} nameParts={nameParts} lastSeenLabel={lastSeenLabel} />
 
           <div className="flex items-baseline justify-between gap-8">
-            <span className="type-caption text-tertiary min-w-0 tabular-nums">
+            <span className="type-caption min-w-0 text-tertiary tabular-nums">
               <InlineMeta
                 items={[
                   <>
@@ -191,7 +191,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
                 ]}
               />
             </span>
-            <span className="num shrink-0 text-secondary">
+            <span className="shrink-0 num text-secondary">
               <span className="sr-only">IP address </span>
               {device.ip}
             </span>

@@ -6,9 +6,9 @@ import { cn } from '../utils/cn'
 import { STATE_CLASSES } from '../utils/pressable'
 
 const TRACK = cx(
-  'relative shrink-0 w-[36px] h-20 rounded-full border',
+  'relative h-20 w-[36px] shrink-0 rounded-full border',
   'transition-[background,border-color] duration-(--duration-fast) ease-in-out',
-  'bg-inset border-line data-checked:bg-accent data-checked:border-accent',
+  'border-line bg-inset data-checked:border-accent data-checked:bg-accent',
   STATE_CLASSES,
 )
 

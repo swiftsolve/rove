@@ -13,8 +13,8 @@ import { ListRow } from './ListRow'
 function RowText({ title, description }: { title: string; description: string }) {
   return (
     <span className="flex min-w-0 flex-1 flex-col">
-      <span className="type-body-default text-primary truncate">{title}</span>
-      <span className="type-body-small text-tertiary truncate">{description}</span>
+      <span className="type-body-default truncate text-primary">{title}</span>
+      <span className="type-body-small truncate text-tertiary">{description}</span>
     </span>
   )
 }

@@ -50,7 +50,7 @@ function Metric({ label, value, unit, series }: MetricProps) {
         {series && <DirectionIcon series={series} size={13} />}
         <span className="type-label-field text-tertiary">{label}</span>
       </dt>
-      <dd className="type-number-large metric-value leading-body-default">
+      <dd className="type-number-large leading-body-default metric-value">
         {value}
         {unit && <span className="type-caption text-secondary"> {unit}</span>}
       </dd>
@@ -90,7 +90,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
         </dl>
 
         <div className={CARD_FOOTER}>
-          <p className="type-caption num flex w-full min-w-0 items-center justify-between gap-12 text-tertiary">
+          <p className="type-caption flex w-full min-w-0 items-center justify-between gap-12 num text-tertiary">
             <InlineMeta
               items={[<>Jitter {jitter ?? <NoValue label="Not measured" />}</>, <>{entry.packetLoss}% loss</>]}
             />

@@ -17,7 +17,7 @@ const CONTENT = {
       {['Check automatically', 'Include betas'].map((title) => (
         <div
           key={title}
-          className="flex items-center justify-between gap-12 py-(--row-padding-y) type-body-small text-primary"
+          className="type-body-small flex items-center justify-between gap-12 py-(--row-padding-y) text-primary"
         >
           {title}
           <Toggle isChecked onChange={fn()} label={title} />

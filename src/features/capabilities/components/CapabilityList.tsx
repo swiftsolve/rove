@@ -39,8 +39,8 @@ function CapabilityRow({
           icon={<CapabilityIcon id={capability.id} size={17} />}
         />
         <span className={ROW_TEXT}>
-          <span className="type-body-default text-primary truncate">{capability.label}</span>
-          <span className="type-body-small text-tertiary truncate">{capability.description}</span>
+          <span className="type-body-default truncate text-primary">{capability.label}</span>
+          <span className="type-body-small truncate text-tertiary">{capability.description}</span>
         </span>
         <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
         {/* The bars carry the rating visually; name it for screen readers. */}
@@ -64,8 +64,8 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
       <div className="flex min-w-0 flex-1 items-center gap-12">
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
-          <span className="type-body-default text-primary truncate">{definition.label}</span>
-          <span className="type-body-small text-tertiary truncate">{definition.description}</span>
+          <span className="type-body-default truncate text-primary">{definition.label}</span>
+          <span className="type-body-small truncate text-tertiary">{definition.description}</span>
         </div>
       </div>
       {/* Where the rating meter will land. */}

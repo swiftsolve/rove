@@ -12,7 +12,7 @@ import { isPrivateIp } from '@/utils/ip'
 // because Windows has no flag emoji (see the @font-face note in styles/base.css).
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
-  "text-md leading-none font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)]",
+  "font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)] text-md leading-none",
 )
 
 /**
@@ -59,7 +59,7 @@ function HostName({ host }: { host: HostUsage }) {
         <span className="flex flex-col gap-2">
           {/* break-all fills each line to the edge, rather than breaking at a
               hyphen and leaving the box padded out to its cap. */}
-          <span className="text-primary break-all">{host.host}</span>
+          <span className="break-all text-primary">{host.host}</span>
           <span className="text-tertiary tabular-nums">{host.ip}</span>
         </span>
       }

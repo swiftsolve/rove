@@ -25,9 +25,9 @@ const scanPhaseVariants = cva(
   {
     variants: {
       state: {
-        past: 'opacity-0 transform-[translateY(-5px)]',
-        current: 'opacity-100 transform-none',
-        next: 'opacity-0 transform-[translateY(5px)]',
+        past: 'transform-[translateY(-5px)] opacity-0',
+        current: 'transform-none opacity-100',
+        next: 'transform-[translateY(5px)] opacity-0',
       },
     },
   },

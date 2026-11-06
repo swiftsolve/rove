@@ -28,7 +28,7 @@ export function UsageCard() {
       isLoading={!hasTotals && isLoading}
     >
       {hasTotals ? (
-        <div className="grid grid-cols-2 gap-8 w-full" aria-hidden>
+        <div className="grid w-full grid-cols-2 gap-8" aria-hidden>
           <StatReadout marker="down" value={downloaded.value} unit={downloaded.unit} />
           <StatReadout marker="up" value={uploaded.value} unit={uploaded.unit} />
         </div>

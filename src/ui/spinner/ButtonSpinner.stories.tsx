@@ -49,7 +49,7 @@ export const Accent: Story = { args: { size: 16, color: 'var(--accent-default)' 
 /** Beside the words it stands for, outside a button. */
 export const WithLabel: Story = {
   render: (args) => (
-    <span className="inline-flex items-center gap-6 type-caption text-secondary">
+    <span className="type-caption inline-flex items-center gap-6 text-secondary">
       <ButtonSpinner {...args} />
       Retrying…
     </span>

@@ -5,7 +5,7 @@ import { StatusDot } from '../status-dot/StatusDot'
 import { cn } from '../utils/cn'
 import type { VariantOf } from '../utils/variants'
 
-const badgeVariants = cva('inline-flex shrink-0 items-center rounded-full px-8 py-4 type-badge', {
+const badgeVariants = cva('type-badge inline-flex shrink-0 items-center rounded-full px-8 py-4', {
   variants: {
     tone: {
       positive: 'bg-status-positive/(--opacity-tint-md) text-positive',

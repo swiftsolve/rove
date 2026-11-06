@@ -33,7 +33,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       footnote={
         qr ? (
-          <p className="animate-fade-in text-center type-heading-small leading-body-default text-primary wrap-anywhere">
+          <p className="type-heading-small animate-fade-in text-center leading-body-default wrap-anywhere text-primary">
             {qr.ssid}
           </p>
         ) : undefined

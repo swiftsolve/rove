@@ -27,13 +27,13 @@ export function TitleBar({ brand, status, controls }: TitleBarProps) {
     // the controls at the standard header edge.
     <header
       className={cx(
-        'relative flex items-center justify-between shrink-0 min-h-(--titlebar-height)',
-        'pl-16 pr-(--card-header-padding-x) bg-chrome border-b border-line [-webkit-app-region:drag]',
+        'relative flex min-h-(--titlebar-height) shrink-0 items-center justify-between',
+        'border-b border-line bg-chrome pr-(--card-header-padding-x) pl-16 [-webkit-app-region:drag]',
         LAYER_CHROME,
       )}
       data-tauri-drag-region
     >
-      <div className="inline-flex items-center gap-12 min-w-0">
+      <div className="inline-flex min-w-0 items-center gap-12">
         <div className="inline-flex items-center gap-8 [-webkit-app-region:drag]">{brand}</div>
         {status}
       </div>
@@ -46,7 +46,7 @@ export function TitleBar({ brand, status, controls }: TitleBarProps) {
 
 // Nudged down a hair so the label optically aligns with the wordmark's centre
 // rather than sitting slightly high next to it.
-const statusVariants = cva(['type-label-small', 'inline-flex items-center gap-6 mt-px [-webkit-app-region:no-drag]'], {
+const statusVariants = cva(['type-label-small', 'mt-px inline-flex items-center gap-6 [-webkit-app-region:no-drag]'], {
   variants: {
     tone: {
       positive: STATUS_TEXT.positive,
@@ -78,7 +78,7 @@ export function TitleBarStatus({ tone, children }: TitleBarStatusProps) {
 
 const windowButtonVariants = cva(
   [
-    'inline-flex items-center justify-center w-[28px] h-[26px] rounded-xs text-tertiary',
+    'inline-flex h-[26px] w-[28px] items-center justify-center rounded-xs text-tertiary',
     'transition-[color,background] duration-(--duration-fast) ease-in-out',
   ],
   {

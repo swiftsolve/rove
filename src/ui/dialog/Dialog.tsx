@@ -46,7 +46,7 @@ export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element |
 const LAYER = cx(
   'absolute inset-0',
   LAYER_DIALOG,
-  'data-open:animate-overlay-in data-closed:pointer-events-none data-closed:animate-overlay-out',
+  'data-closed:pointer-events-none data-closed:animate-overlay-out data-open:animate-overlay-in',
 )
 
 // No padding on the shell: the header, body and footer own their insets, and
@@ -55,7 +55,7 @@ const LAYER = cx(
 // It takes focus itself when no field does, and isn't a control: no ring.
 const PANEL = cx(
   'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised outline-none',
-  'data-open:animate-dialog-in data-closed:animate-dialog-out',
+  'data-closed:animate-dialog-out data-open:animate-dialog-in',
 )
 
 // Clips the panel's contents while it springs to their height, so a body that
@@ -160,7 +160,7 @@ export function Dialog({
                     {description != null && (
                       <BaseDialog.Description
                         render={<div />}
-                        className="mt-4 animate-fade-in type-body-small text-secondary"
+                        className="type-body-small mt-4 animate-fade-in text-secondary"
                       >
                         {description}
                       </BaseDialog.Description>

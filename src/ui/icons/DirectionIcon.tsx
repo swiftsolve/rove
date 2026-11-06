@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '../utils/cn'
 import { ArrowDownIcon, ArrowUpIcon, type IconProps } from './Icons'
 
-const rootVariants = cva('inline-flex items-center shrink-0', {
+const rootVariants = cva('inline-flex shrink-0 items-center', {
   variants: {
     series: { down: 'text-series-down', up: 'text-series-up' },
   },

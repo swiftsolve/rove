@@ -11,7 +11,7 @@ export function DotSeparator() {
   return <span className="sep-dot mx-2 size-[3px] shrink-0 rounded-full bg-tertiary" aria-hidden="true" />
 }
 
-const metaVariants = cva('inline-meta min-w-0 max-w-full items-center gap-6', {
+const metaVariants = cva('inline-meta max-w-full min-w-0 items-center gap-6', {
   variants: {
     shouldTruncate: { true: 'flex overflow-hidden whitespace-nowrap', false: 'inline-flex flex-wrap' },
   },

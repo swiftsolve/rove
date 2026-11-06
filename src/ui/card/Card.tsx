@@ -39,11 +39,11 @@ type CardProps = Omit<ComponentProps<'section'>, 'className' | 'children'> & {
 // height. Hover sets box-shadow directly rather than through `shadow-raised`:
 // that composes a five-layer shadow list, which would cross-fade from the
 // card's shadow instead of morphing into it.
-const cardVariants = cva('surface overflow-hidden contain-content', {
+const cardVariants = cva('overflow-hidden surface contain-content', {
   variants: {
     isOpenable: {
       true: [
-        'group/card relative flex flex-col cursor-pointer',
+        'group/card relative flex cursor-pointer flex-col',
         'transition-[box-shadow,transform] duration-(--duration-fast) ease-in-out',
         'hover:[box-shadow:var(--shadow-raised)] active:transform-[translateY(1px)]',
       ],
@@ -103,7 +103,7 @@ export function CardList({ label, className, ...props }: CardListProps) {
       // Safari drops a list's role when its markers are styled away.
       role="list"
       aria-label={label}
-      className={cn('surface divide-y divide-line overflow-hidden contain-content', className)}
+      className={cn('divide-y divide-line overflow-hidden surface contain-content', className)}
       {...props}
     />
   )
