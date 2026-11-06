@@ -7,14 +7,7 @@ import { signalWord } from '@/features/connection/utils/wifi-signal'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isEthernetNetwork, isWifiNetwork } from '@/types'
 import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
-import {
-  formatBand,
-  formatChannel,
-  formatDisplayValue,
-  formatDuplex,
-  formatMac,
-  formatWifiStandard,
-} from '@/utils/format'
+import { formatBand, formatChannel, formatDisplayValue, formatDuplex, formatWifiStandard } from '@/utils/format'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo
@@ -24,7 +17,7 @@ type ConnectionDetailsPanelProps = {
 
 /**
  * The expanded details, grouped by topic: the link itself, then the addresses
- * from the device outward, then the hardware it runs over.
+ * from the device outward, then, on Ethernet, the adapter it runs over.
  */
 export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
   return (
@@ -35,7 +28,7 @@ export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: Co
         {isWifiNetwork(info) && <WifiLinkRows info={info} />}
         {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
         <AddressRows info={info} publicIp={publicIp} isPublicIpLoading={isPublicIpLoading} />
-        <HardwareRows info={info} />
+        {isEthernetNetwork(info) && <AdapterRows info={info} />}
       </DataListStack>
     </div>
   )
@@ -89,23 +82,18 @@ function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
     <DataList density="compact">
       <DataRow label="IP address">{formatDisplayValue(info.ipAddress) ?? <NoValue />}</DataRow>
       <DataRow label="Gateway">{formatDisplayValue(info.gateway) ?? <NoValue />}</DataRow>
-      {info.dns.length > 0 && <DataRow label="DNS">{formatDisplayValue(info.dns.join(', ')) ?? <NoValue />}</DataRow>}
       <DataRow label="Public IP" value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)} />
     </DataList>
   )
 }
 
-function HardwareRows({ info }: { info: NetworkInfo }) {
+// The interface name and MAC are on the Interfaces screen, so only Ethernet
+// adds a hardware group here.
+function AdapterRows({ info }: { info: EthernetNetworkInfo }) {
   return (
     <DataList density="compact">
-      {isEthernetNetwork(info) && (
-        <>
-          <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
-          <DataRow label="Vendor">{formatDisplayValue(info.vendor) ?? <NoValue />}</DataRow>
-        </>
-      )}
-      <DataRow label="Interface">{formatDisplayValue(info.interfaceName) ?? <NoValue />}</DataRow>
-      <DataRow label="MAC">{formatMac(info.macAddress) ?? <NoValue />}</DataRow>
+      <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
+      <DataRow label="Vendor">{formatDisplayValue(info.vendor) ?? <NoValue />}</DataRow>
     </DataList>
   )
 }
