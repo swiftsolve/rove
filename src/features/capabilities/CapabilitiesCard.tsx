@@ -4,7 +4,6 @@ import type { JSX, ReactNode } from 'react'
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
-import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
 import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { useCanRunSpeedTest } from '@/features/speed/hooks/useCanRunSpeedTest'
@@ -33,7 +32,7 @@ import {
 // Bleeds past the body padding to span the card, like the throughput chart.
 const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body-padding) px-(--card-body-padding)')
 
-const CAPABILITY_CELL = 'flex flex-[0_0_auto] flex-col items-center gap-8'
+const CAPABILITY_CELL = 'flex flex-[0_0_auto]'
 
 // Bleeds to the card's edges; the card's own clip rounds its bottom corners.
 // Hand-built, not CardFooter: this band pads 14px and sits 12 or 16px below
@@ -132,12 +131,11 @@ function RatedCapability({ capability }: { capability: CapabilityRating }) {
           icon={<CapabilityIcon id={capability.id} size={16} />}
         />
       </Tooltip>
-      <CapabilityMeter level={capability.level} shouldShowLabel={false} isCompact isMuted={isTesting} />
     </li>
   )
 }
 
-/** A capability before any test: a greyed-out tile with an empty meter. */
+/** A capability before any test: a greyed-out tile. */
 function UnratedCapability({ capability }: { capability: CapabilityDefinition }) {
   return (
     <li className={CAPABILITY_CELL}>
@@ -149,7 +147,6 @@ function UnratedCapability({ capability }: { capability: CapabilityDefinition })
           icon={<CapabilityIcon id={capability.id} size={16} />}
         />
       </Tooltip>
-      <CapabilityMeter level="unsupported" shouldShowLabel={false} isCompact isMuted />
     </li>
   )
 }

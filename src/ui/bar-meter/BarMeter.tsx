@@ -9,8 +9,6 @@ import type { VariantOf } from '../utils/variants'
 // boxes snap each bar to 3 or 4, so the meter looked jagged: BarMeter rounds
 // them to screen pixels and draws an SVG. The ends round at half the width.
 const SIZES = {
-  /** The Home capability strip. */
-  xs: { width: 2, heights: [3, 5, 7, 9] },
   /** A data row: the tallest rounds the 13px value text's cap height up. */
   sm: { width: 2, heights: [4, 6, 8, 10] },
   /** A list row's rating. */
@@ -43,7 +41,7 @@ function barFill(isLit: boolean, isDimmed: boolean): BarFill {
 type BarMeterProps = {
   /** Lit bars, 0 to 4. */
   value: number
-  /** `xs` for the Home capability strip, `sm` a data row or meta line, `lg` a list row. */
+  /** `sm` for a data row or meta line, `lg` a list row. */
   size?: keyof typeof SIZES
   /** The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`). */
   color?: string

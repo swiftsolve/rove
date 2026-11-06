@@ -1646,11 +1646,10 @@
         "size": {
           "values": [
             "sm",
-            "xs",
             "lg"
           ],
           "default": "lg",
-          "description": "`xs` for the Home capability strip, `sm` a data row or meta line, `lg` a list row."
+          "description": "`sm` for a data row or meta line, `lg` a list row."
         },
         "value": {
           "type": "number",

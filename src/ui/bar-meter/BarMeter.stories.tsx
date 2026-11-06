@@ -4,7 +4,7 @@ import { Fragment } from 'react'
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from './BarMeter'
 
-const SIZES = ['xs', 'sm', 'lg'] as const
+const SIZES = ['sm', 'lg'] as const
 
 // A rating's colour by how many bars it lights.
 const COLORS = [
