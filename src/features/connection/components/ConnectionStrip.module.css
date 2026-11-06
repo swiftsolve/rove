@@ -4,9 +4,9 @@
    utilities. */
 @layer utilities {
   /* The security badge's item is a flex box too, so the strip's centring lines
-     the lock up with the IP and band. When space runs out the protocol text
-     ellipsizes and the IP holds its full width (even a sub-pixel squeeze would
-     otherwise ellipsize it). */
+     the lock up with the band. When space runs out the protocol text
+     ellipsizes and the band holds its full width (even a sub-pixel squeeze
+     would otherwise ellipsize it). */
   .strip-sub :global(.inline-meta) :global(.inline-meta-item):has(.security-badge) {
     display: flex;
     overflow: hidden;

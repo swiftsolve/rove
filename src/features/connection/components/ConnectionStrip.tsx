@@ -65,7 +65,7 @@ type ConnectionStripProps = {
 
 /**
  * The card's always-visible row: the connection's name and icon, a meta line
- * (IP, then band and security or link speed), the Wi‑Fi share button and
+ * (band and security, or link speed), the Wi‑Fi share button and
  * signal, and the chevron for the details below.
  */
 export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripProps) {
@@ -104,16 +104,15 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
 }
 
 /**
- * The meta line's items: the IP, then band and security on Wi‑Fi or link
- * speed otherwise. Missing pieces are dropped.
+ * The meta line's items: band and security on Wi‑Fi, link speed otherwise.
+ * The IP is in the details below. Missing pieces are dropped.
  */
 function stripMetaItems(info: NetworkInfo): ReactNode[] {
   const items = isWifiNetwork(info)
     ? [
-        info.ipAddress,
         formatBand(info.frequency),
         info.security != null && <SecurityBadge security={info.security} isShort className={styles.securityBadge} />,
       ]
-    : [info.ipAddress, formatLinkSpeed(info)]
+    : [formatLinkSpeed(info)]
   return items.filter(Boolean)
 }
