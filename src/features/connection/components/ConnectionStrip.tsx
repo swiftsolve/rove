@@ -26,9 +26,11 @@ import { formatBand } from '@/utils/format'
 
 import styles from './ConnectionStrip.module.css'
 
+// Wi-Fi and Ethernet share the accent, which marks what's yours: a status or
+// series colour would read as one medium being better, or as download.
 const CONNECTION_ICONS = {
-  wifi: { Icon: WifiIcon, color: 'var(--series-down)' },
-  ethernet: { Icon: EthernetIcon, color: 'var(--status-positive)' },
+  wifi: { Icon: WifiIcon, color: 'var(--accent-default)' },
+  ethernet: { Icon: EthernetIcon, color: 'var(--accent-default)' },
   disconnected: { Icon: OfflineIcon, color: 'var(--status-negative)' },
 } as const satisfies Record<ConnectionDisplayVariant, { Icon: IconComponent; color: IconTileColor }>
 
@@ -37,8 +39,8 @@ const CONNECTION_ICONS = {
 const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 
 const STRIP = cx(
-  'relative flex items-start gap-12 w-full text-left',
-  'min-h-(--card-header-min-height) py-(--card-header-padding-y) px-(--card-header-padding-x)',
+  'relative flex w-full items-start gap-12 text-left',
+  'min-h-(--card-header-min-height) px-(--card-header-padding-x) py-(--card-header-padding-y)',
   'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-overlay-hover',
   'has-[[data-collapsible-trigger]:focus-visible]:bg-overlay-hover',
 )
@@ -48,7 +50,7 @@ const STRIP = cx(
 const STRIP_SUB = cx('type-body-default text-secondary', styles.stripSub, 'truncate')
 
 const chevronVariants = cva(
-  [ABOVE_TOGGLE, 'self-center shrink-0 text-tertiary transition-transform duration-(--duration-normal) ease-out'],
+  [ABOVE_TOGGLE, 'shrink-0 self-center text-tertiary transition-transform duration-(--duration-normal) ease-out'],
   {
     variants: {
       isOpen: { true: 'transform-[rotate(180deg)]' },
@@ -79,8 +81,8 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
           is an empty button stretched under the row instead. */}
       <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
       <IconTile size="lg" color={color} className={cx(ABOVE_TOGGLE, 'self-center')} icon={<Icon size={16} />} />
-      <div className={cx(ABOVE_TOGGLE, 'flex flex-1 flex-col gap-2 min-w-0 py-2')}>
-        <h2 id={titleId} className="type-heading-large text-primary truncate">
+      <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
+        <h2 id={titleId} className="type-heading-large truncate text-primary">
           {display.title}
         </h2>
         <div className={STRIP_SUB}>
@@ -90,7 +92,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
       {isWifiNetwork(info) && (
         <>
           {/* Raised above the toggle, so it takes its own click. */}
-          <span className="relative z-1 inline-flex self-center shrink-0">
+          <span className="relative z-1 inline-flex shrink-0 self-center">
             <ShareWifiButton />
           </span>
           {info.signalStrength != null && (

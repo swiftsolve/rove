@@ -17,10 +17,11 @@ import {
 } from '@/ui'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/utils/format'
 
-// Wi-Fi and Ethernet colour the icon tile; anything else stays neutral.
+// Wi-Fi and Ethernet take the accent, as on the connection strip; anything
+// else stays neutral.
 const TILE_COLORS = {
-  wifi: 'var(--series-down)',
-  ethernet: 'var(--status-positive)',
+  wifi: 'var(--accent-default)',
+  ethernet: 'var(--accent-default)',
   unknown: 'neutral',
 } as const satisfies Record<string, IconTileColor>
 
@@ -58,7 +59,7 @@ export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <IconTile color={TILE_COLORS[iface.connectionType]} icon={<InterfaceIcon iface={iface} />} />
-          <h2 className="type-heading-small leading-heading-large text-primary min-w-0 truncate">{iface.name}</h2>
+          <h2 className="type-heading-small min-w-0 truncate leading-heading-large text-primary">{iface.name}</h2>
           {iface.isDefault && (
             <Tooltip content="Used for internet traffic" shouldDescribe={false}>
               <span className={tagVariants({ isPositive: true })}>
