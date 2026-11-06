@@ -13,8 +13,6 @@ const SIZES = {
   xs: { width: 2, heights: [3, 5, 7, 9] },
   /** A data row: the tallest rounds the 13px value text's cap height up. */
   sm: { width: 2, heights: [4, 6, 8, 10] },
-  /** Beside a title. */
-  md: { width: 3, heights: [5, 7, 9, 11] },
   /** A list row's rating. */
   lg: { width: 3, heights: [6, 8, 10, 12] },
 } as const satisfies Record<string, { width: number; heights: readonly [number, number, number, number] }>
@@ -45,7 +43,7 @@ function barFill(isLit: boolean, isDimmed: boolean): BarFill {
 type BarMeterProps = {
   /** Lit bars, 0 to 4. */
   value: number
-  /** `xs` for the Home capability strip, `sm` a data row, `md` beside a title, `lg` a list row. */
+  /** `xs` for the Home capability strip, `sm` a data row or meta line, `lg` a list row. */
   size?: keyof typeof SIZES
   /** The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`). */
   color?: string
