@@ -153,7 +153,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--overlay-default)",
-      "description": "Default strength",
+      "description": "Menu highlights, placeholder shapes, dimmed meter bars",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -172,7 +172,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--overlay-subtle)",
-      "description": "Lighter",
+      "description": "Header chips, rail and segment hovers",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -191,7 +191,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--text-primary)",
-      "description": "Content",
+      "description": "Titles, body text and values",
       "scopes": [
         "SHAPE_FILL",
         "TEXT_FILL",
@@ -1065,7 +1065,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--status-negative-solid-hover)",
-      "description": "Hover",
+      "description": "Hovered negative solid button",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -1102,7 +1102,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xs)",
-      "description": "Faintest tint",
+      "description": "Wide, faint washes: inline errors, the upload series’ fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1115,7 +1115,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-sm)",
-      "description": "Light tint",
+      "description": "Status banners and panels",
       "scopes": [
         "OPACITY"
       ],
@@ -1128,7 +1128,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-md)",
-      "description": "Tint",
+      "description": "Chips, badges and tiles at rest",
       "scopes": [
         "OPACITY"
       ],
@@ -1141,7 +1141,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-lg)",
-      "description": "Strong tint",
+      "description": "Hovered tints, unlit meter bars",
       "scopes": [
         "OPACITY"
       ],
@@ -1154,7 +1154,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xl)",
-      "description": "Strongest tint",
+      "description": "The download series’ fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1196,7 +1196,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-high)",
-      "description": "Nearly opaque",
+      "description": "Chart lines, nearly opaque",
       "scopes": [
         "OPACITY"
       ],
@@ -1209,7 +1209,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--overlay-faint)",
-      "description": "Faintest",
+      "description": "Faintest wash, a hovered card",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"
@@ -1228,7 +1228,7 @@
       "collection": "Color",
       "type": "COLOR",
       "code": "var(--overlay-strong)",
-      "description": "Strongest",
+      "description": "Scrollbars, lit bars in a dimmed meter",
       "scopes": [
         "FRAME_FILL",
         "SHAPE_FILL"

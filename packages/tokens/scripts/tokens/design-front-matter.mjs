@@ -122,7 +122,7 @@ export async function writeFrontMatter({ path, variables, textStyles, shadows, s
     const slug = slugOf(s.name)
     // Figma's description ends in a "Code:" handoff note; it's kept when it says more than the class.
     const [use, handoff] = s.description.split(/\s*Code:\s*/)
-    const inCode = handoff && handoff !== `.type-${slug}` ? ` In code: ${handoff}` : ''
+    const inCode = handoff && handoff !== `.type-${slug}` ? ` In code: ${handoff.replace(/\.?$/, '.')}` : ''
     const upper = s.textCase === 'UPPER' ? ', uppercase' : ''
     notes.set(`typography.${slug}`, `${s.name}: ${use}${inCode} Class .type-${slug}${upper}.`)
     const tracking = value(`type-${slug}-letter-spacing`)

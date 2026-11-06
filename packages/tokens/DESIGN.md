@@ -14,13 +14,13 @@ colors: # Keys: --<key>
   bg-popover: "#1d1e20" # Tooltips and menus
   bg-chrome: "#101012" # Title bar and rail
   border-default: "rgba(255, 255, 255, 0.07)" # Hairlines
-  overlay-default: "rgba(255, 255, 255, 0.07)" # Default strength
-  overlay-subtle: "rgba(255, 255, 255, 0.05)" # Lighter
-  overlay-faint: "rgba(255, 255, 255, 0.03)" # Faintest
-  overlay-strong: "rgba(255, 255, 255, 0.16)" # Strongest
+  overlay-default: "rgba(255, 255, 255, 0.07)" # Menu highlights, placeholder shapes, dimmed meter bars
+  overlay-subtle: "rgba(255, 255, 255, 0.05)" # Header chips, rail and segment hovers
+  overlay-faint: "rgba(255, 255, 255, 0.03)" # Faintest wash, a hovered card
+  overlay-strong: "rgba(255, 255, 255, 0.16)" # Scrollbars, lit bars in a dimmed meter
   overlay-selection: "rgba(91, 140, 255, 0.35)" # Text selection
   overlay-hover: "rgba(255, 255, 255, 0.03)" # Hovered rows and headers
-  text-primary: "#eeeeef" # Content
+  text-primary: "#eeeeef" # Titles, body text and values
   text-secondary: "#adaeb1" # Supporting lines
   text-tertiary: "#8e8f93" # Default icon colour
   text-accent: "#5b8cff" # Accent words, also on accent/muted
@@ -42,7 +42,7 @@ colors: # Keys: --<key>
   status-poor: "#f0a35e" # Between warning and negative
   status-negative: "#f6675a" # Negative icons, bars, dots
   status-negative-solid: "#b24238" # Solid negative under white labels
-  status-negative-solid-hover: "#913930" # Hover
+  status-negative-solid-hover: "#913930" # Hovered negative solid button
   series-down: "#6f9bff" # Download
   series-up: "#b39dff" # Upload
   focus-ring: "#5b8cff" # Keyboard focus ring
@@ -77,7 +77,7 @@ typography: # Keys: the class, .type-<key>
     fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.45
-  label-large: # Label/Large: Solid button labels. In code: Button variant=solid Class .type-label-large.
+  label-large: # Label/Large: Solid button labels. In code: Button variant=solid. Class .type-label-large.
     fontFamily: "Inter"
     fontSize: "12px"
     fontWeight: 600
@@ -119,7 +119,7 @@ typography: # Keys: the class, .type-<key>
     fontSize: "28px"
     fontWeight: 400
     lineHeight: 1
-  number-large: # Number/Large: Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact Class .type-number-large.
+  number-large: # Number/Large: Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact. Class .type-number-large.
     fontFamily: "Questrial"
     fontSize: "17px"
     fontWeight: 400
@@ -167,12 +167,12 @@ font-weight: # Font weights. Keys: --<key>
   weight-medium: "500" # Labels and menus
   weight-semibold: "600" # Headings and buttons
 opacity: # Tint strengths (color-mix with transparent) and dimming. Keys: --<key>
-  opacity-tint-xs: "8%" # Faintest tint
-  opacity-tint-sm: "10%" # Light tint
-  opacity-tint-md: "14%" # Tint
-  opacity-tint-lg: "22%" # Strong tint
-  opacity-tint-xl: "28%" # Strongest tint
-  opacity-high: "80%" # Nearly opaque
+  opacity-tint-xs: "8%" # Wide, faint washes: inline errors, the upload series’ fill
+  opacity-tint-sm: "10%" # Status banners and panels
+  opacity-tint-md: "14%" # Chips, badges and tiles at rest
+  opacity-tint-lg: "22%" # Hovered tints, unlit meter bars
+  opacity-tint-xl: "28%" # The download series’ fill
+  opacity-high: "80%" # Chart lines, nearly opaque
   opacity-disabled: "40%" # Disabled controls
 layout: # Fixed sizes and insets of the shell and cards. Keys: --<key>
   titlebar-height: "56px" # Title bar
