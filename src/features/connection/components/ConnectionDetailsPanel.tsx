@@ -17,7 +17,7 @@ type ConnectionDetailsPanelProps = {
 
 /**
  * The expanded details, grouped by topic: the link itself, then the addresses
- * from the device outward, then, on Ethernet, the adapter it runs over.
+ * from the device outward.
  */
 export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
   return (
@@ -29,7 +29,6 @@ export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: Co
         {isWifiNetwork(info) && <WifiLinkRows info={info} />}
         {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
         <AddressRows info={info} publicIp={publicIp} isPublicIpLoading={isPublicIpLoading} />
-        {isEthernetNetwork(info) && <AdapterRows info={info} />}
       </DataListStack>
     </div>
   )
@@ -70,6 +69,9 @@ function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }) {
   const linkSpeed = formatLinkSpeed(info)
   return (
     <DataList density="compact">
+      {/* First, like Wi-Fi's network name: what this link is. The interface name
+          and MAC are on the Interfaces screen. */}
+      <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Duplex">{formatDisplayValue(formatDuplex(info.duplex)) ?? <NoValue />}</DataRow>
     </DataList>
@@ -84,16 +86,6 @@ function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
       <DataRow label="IP address">{formatDisplayValue(info.ipAddress) ?? <NoValue />}</DataRow>
       <DataRow label="Gateway">{formatDisplayValue(info.gateway) ?? <NoValue />}</DataRow>
       <DataRow label="Public IP" value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)} />
-    </DataList>
-  )
-}
-
-// The interface name and MAC are on the Interfaces screen, so only Ethernet
-// adds a hardware group here: the adapter's name.
-function AdapterRows({ info }: { info: EthernetNetworkInfo }) {
-  return (
-    <DataList density="compact">
-      <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
     </DataList>
   )
 }
