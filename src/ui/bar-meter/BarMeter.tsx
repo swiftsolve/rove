@@ -1,32 +1,36 @@
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 
+import { useDevicePixelRatio } from '../hooks/useDevicePixelRatio'
 import { cn } from '../utils/cn'
 import type { VariantOf } from '../utils/variants'
 
-// Each size's bar width and the four heights, shortest first. Whole pixels, or
-// the thin bars blur across subpixel boundaries and read fuzzy; the ends round
-// at half the width.
+// Each size's bar width and the four heights, shortest first, in CSS px. At
+// 125% or 150% display scaling these fall between screen pixels, and HTML
+// boxes snap each bar to 3 or 4, so the meter looked jagged: BarMeter rounds
+// them to screen pixels and draws an SVG. The ends round at half the width.
 const SIZES = {
   /** The Home capability strip. */
-  xs: { width: 'w-2', heights: ['h-[3px]', 'h-[5px]', 'h-[7px]', 'h-[9px]'] },
+  xs: { width: 2, heights: [3, 5, 7, 9] },
   /** A data row: the tallest rounds the 13px value text's cap height up. */
-  sm: { width: 'w-2', heights: ['h-4', 'h-6', 'h-8', 'h-10'] },
+  sm: { width: 2, heights: [4, 6, 8, 10] },
   /** Beside a title. */
-  md: { width: 'w-[3px]', heights: ['h-[5px]', 'h-[7px]', 'h-[9px]', 'h-[11px]'] },
+  md: { width: 3, heights: [5, 7, 9, 11] },
   /** A list row's rating. */
-  lg: { width: 'w-[3px]', heights: ['h-6', 'h-8', 'h-10', 'h-12'] },
-}
+  lg: { width: 3, heights: [6, 8, 10, 12] },
+} as const satisfies Record<string, { width: number; heights: readonly [number, number, number, number] }>
+// The gap between bars, --spacing-2.
+const GAP = 2
 
-const barVariants = cva('rounded-full', {
+const barVariants = cva(null, {
   variants: {
     fill: {
-      lit: 'bg-current',
+      lit: 'fill-current',
       // A faded tint of the colour, so the meter reads as one monochrome unit
       // rather than colour on grey.
-      unlit: 'bg-current/(--opacity-tint-lg)',
+      unlit: 'fill-current/(--opacity-tint-lg)',
       // Dark, dim greys set directly, not tinted from the colour.
-      dimmed: 'bg-overlay-default',
-      dimmedLit: 'bg-overlay-strong',
+      dimmed: 'fill-overlay-default',
+      dimmedLit: 'fill-overlay-strong',
     },
   },
 })
@@ -56,12 +60,36 @@ type BarMeterProps = {
  * only; whatever it sits in says the value in words or with role="meter".
  */
 export function BarMeter({ value, size = 'lg', color = 'currentColor', isDimmed = false, className }: BarMeterProps) {
-  const { width, heights } = SIZES[size]
+  const ratio = useDevicePixelRatio()
+  // Drawn in whole screen pixels, then scaled back, so every bar is the same
+  // number of pixels wide and none lands between two.
+  const toScreen = (px: number): number => Math.max(1, Math.round(px * ratio))
+  const width = toScreen(SIZES[size].width)
+  const gap = toScreen(GAP)
+  const heights = SIZES[size].heights.map(toScreen)
+  const tallest = Math.max(...heights)
+  const span = heights.length * width + (heights.length - 1) * gap
   return (
-    <span className={cn('inline-flex items-end gap-2', heights[3], className)} style={{ color }} aria-hidden>
+    <svg
+      className={cn('inline-block shrink-0', className)}
+      width={span / ratio}
+      height={tallest / ratio}
+      viewBox={`0 0 ${span} ${tallest}`}
+      style={{ color }}
+      aria-hidden
+    >
       {heights.map((height, i) => (
-        <span key={height} className={cx(barVariants({ fill: barFill(i < value, isDimmed) }), width, height)} />
+        <rect
+          // A fixed set of four that never reorders.
+          key={i}
+          className={barVariants({ fill: barFill(i < value, isDimmed) })}
+          x={i * (width + gap)}
+          y={tallest - height}
+          width={width}
+          height={height}
+          rx={width / 2}
+        />
       ))}
-    </span>
+    </svg>
   )
 }
