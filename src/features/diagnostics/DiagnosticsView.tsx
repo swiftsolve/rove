@@ -30,8 +30,9 @@ export function DiagnosticsView() {
       <PageHeader
         icon={<ConnectionIcon size={18} />}
         title="Connection"
-        description={hasDiagnostics ? 'Router, DNS, and ISP' : null}
-        status={isRunning ? 'Checking…' : undefined}
+        // The spinning Run again button shows a check is running, so the
+        // description stays put rather than giving way to a status.
+        description="Router, DNS, and ISP"
         actions={
           <>
             <IconButton label="About connection checks" icon={HelpIcon} tooltip={DIAGNOSTICS_HINT} />
