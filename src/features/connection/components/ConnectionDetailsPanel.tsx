@@ -22,8 +22,9 @@ type ConnectionDetailsPanelProps = {
 export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
   return (
     // Keeps its padding when closed, so the rows hold their inset through the
-    // height animation; the wrapper does the clipping.
-    <div className="bg-inset py-(--card-header-padding-y)">
+    // height animation; the wrapper does the clipping. 12px, the air around
+    // each divider, so the edges match the gaps between groups.
+    <div className="bg-inset py-12">
       <DataListStack>
         {isWifiNetwork(info) && <WifiLinkRows info={info} />}
         {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
