@@ -3,7 +3,7 @@
 `@swiftsolve/rove-tokens`: Rove's design tokens. The Figma plugin in
 `figma-plugin/` exports the Rove Design System's variables, text styles and
 shadows into `src/figma/`, and `npm run build` turns them into `dist/`
-(`tokens/` in DTCG, `tokens.css`, `text-styles.css`) and the token reference,
+(`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and the token reference,
 `TOKENS.md`.
 
 ## What to read

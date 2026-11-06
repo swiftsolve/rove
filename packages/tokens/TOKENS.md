@@ -6,27 +6,185 @@ Every token by name and use, from Figma. [DESIGN.md](DESIGN.md) says which to us
 
 ## Colour
 
-- **Backgrounds:** `--bg-base` (backdrop), `--bg-surface` (content on the backdrop), `--bg-hover` (hovered rows and buttons), `--bg-scrim` (behind dialogs), `--bg-inset` (sunken areas inside a surface), `--bg-popover` (tooltips and menus), `--bg-chrome` (title bar and rail)
-- **Lines:** `--border-default` (hairlines)
-- **Overlays:** `--overlay-default` (default strength), `--overlay-subtle` (lighter), `--overlay-faint` (faintest), `--overlay-strong` (strongest), `--overlay-selection` (text selection), `--overlay-hover` (hovered rows and headers)
-- **Text:** `--text-primary` (content), `--text-secondary` (supporting lines), `--text-tertiary` (default icon colour), `--text-accent` (accent words, also on accent/muted), `--text-positive` (positive words), `--text-good` (good words), `--text-warning` (warning words), `--text-poor` (poor words), `--text-negative` (negative words), `--text-on-solid` (labels and icons on solids)
-- **Accent:** `--accent-default` (accent icons and lines), `--accent-hover` (hovered accent icon or line), `--accent-press` (pressed accent icon or line), `--accent-muted` (tinted accent background), `--accent-solid` (under white labels), `--accent-solid-hover` (hovered solid button)
-- **Status:** `--status-positive` (positive icons, bars, dots), `--status-good` (between positive and warning), `--status-warning` (warning icons, bars, dots), `--status-poor` (between warning and negative), `--status-negative` (negative icons, bars, dots), `--status-negative-solid` (solid negative under white labels), `--status-negative-solid-hover` (hover)
-- **Chart series:** `--series-down` (download), `--series-up` (upload)
-- **Focus:** `--focus-ring` (keyboard focus ring)
+### Backgrounds
+
+| Token | Use |
+| --- | --- |
+| `--bg-base` | Backdrop |
+| `--bg-surface` | Content on the backdrop |
+| `--bg-hover` | Hovered rows and buttons |
+| `--bg-scrim` | Behind dialogs |
+| `--bg-inset` | Sunken areas inside a surface |
+| `--bg-popover` | Tooltips and menus |
+| `--bg-chrome` | Title bar and rail |
+
+### Lines
+
+| Token | Use |
+| --- | --- |
+| `--border-default` | Hairlines |
+
+### Overlays
+
+| Token | Use |
+| --- | --- |
+| `--overlay-default` | Default strength |
+| `--overlay-subtle` | Lighter |
+| `--overlay-faint` | Faintest |
+| `--overlay-strong` | Strongest |
+| `--overlay-selection` | Text selection |
+| `--overlay-hover` | Hovered rows and headers |
+
+### Text
+
+| Token | Use |
+| --- | --- |
+| `--text-primary` | Content |
+| `--text-secondary` | Supporting lines |
+| `--text-tertiary` | Default icon colour |
+| `--text-accent` | Accent words, also on accent/muted |
+| `--text-positive` | Positive words |
+| `--text-good` | Good words |
+| `--text-warning` | Warning words |
+| `--text-poor` | Poor words |
+| `--text-negative` | Negative words |
+| `--text-on-solid` | Labels and icons on solids |
+
+### Accent
+
+| Token | Use |
+| --- | --- |
+| `--accent-default` | Accent icons and lines |
+| `--accent-hover` | Hovered accent icon or line |
+| `--accent-press` | Pressed accent icon or line |
+| `--accent-muted` | Tinted accent background |
+| `--accent-solid` | Under white labels |
+| `--accent-solid-hover` | Hovered solid button |
+
+### Status
+
+| Token | Use |
+| --- | --- |
+| `--status-positive` | Positive icons, bars, dots |
+| `--status-good` | Between positive and warning |
+| `--status-warning` | Warning icons, bars, dots |
+| `--status-poor` | Between warning and negative |
+| `--status-negative` | Negative icons, bars, dots |
+| `--status-negative-solid` | Solid negative under white labels |
+| `--status-negative-solid-hover` | Hover |
+
+### Chart series
+
+| Token | Use |
+| --- | --- |
+| `--series-down` | Download |
+| `--series-up` | Upload |
+
+### Focus
+
+| Token | Use |
+| --- | --- |
+| `--focus-ring` | Keyboard focus ring |
 
 ## Scales
 
-- **Spacing:** `--spacing-<n>`, n in px: 2 (meter gaps), 4 (arrow to value, badge padding), 6 (dot to label), 8 (icon to title), 10 (between cards), 12 (side and top inset), 14 (card padding), 16 (between readouts), 20 (content bottom inset)
-- **Radius:** `--radius-xs` 5px (window buttons, menu items, segments), `--radius-sm` 8px (buttons, inputs, tooltips, icon tiles), `--radius-md` 10px (nav items, page-header chip), `--radius-lg` 13px (cards and dialogs), `--radius-full` 999px (badges, pills, dots)
-- **Font sizes:** `--font-size-2xs` 10px (badges, chart axes), `--font-size-xs` 11px (captions, field labels, small labels), `--font-size-sm` 12px (helper text, menus, button labels), `--font-size-md` 13px (body text, data values), `--font-size-lg` 14px (card headings), `--font-size-xl` 15px (dialog titles), `--font-size-2xl` 17px (page titles, stat totals), `--font-size-3xl` 28px (live speeds)
-- **Font families:** `--font-family-sans` Inter (interface text), `--font-family-numeric` Questrial (numbers)
-- **Opacity:** `--opacity-tint-xs` 8% (faintest tint), `--opacity-tint-sm` 10% (light tint), `--opacity-tint-md` 14% (tint), `--opacity-tint-lg` 22% (strong tint), `--opacity-tint-xl` 28% (strongest tint), `--opacity-high` 80% (nearly opaque), `--opacity-disabled` 40% (disabled controls)
-- **Layout:** `--rail-item-size` 38px (rail items), `--titlebar-height` 56px (title bar)
-- **Cards:** `--card-padding` `var(--spacing-14)` (card inset), `--card-header-padding-y` `var(--card-padding)` (card header, above and below), `--card-header-padding-x` `var(--card-padding)` (card header, sides), `--card-header-min-height` 42px (compact card header), `--card-header-height` 44px (card header), `--card-body-padding` `var(--card-padding)` (card body inset), `--row-padding-y` `var(--spacing-8)` (data row, above and below)
-- **Font weights:** `--weight-regular` 400 (body text), `--weight-medium` 500 (labels and menus), `--weight-semibold` 600 (headings and buttons)
-- **Motion:** `--duration-fast` 140ms (hovers, small changes), `--duration-normal` 220ms (panels, page changes), `--duration-spring` 450ms (a spring’s full run)
-- **Focus:** `--focus-offset` `var(--spacing-2)` (focus ring offset), `--focus-ring-width` 1px (focus ring stroke)
+### Spacing
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--spacing-2` | 2px | Meter gaps |
+| `--spacing-4` | 4px | Arrow to value, badge padding |
+| `--spacing-6` | 6px | Dot to label |
+| `--spacing-8` | 8px | Icon to title |
+| `--spacing-10` | 10px | Between cards |
+| `--spacing-12` | 12px | Side and top inset |
+| `--spacing-14` | 14px | Card padding |
+| `--spacing-16` | 16px | Between readouts |
+| `--spacing-20` | 20px | Content bottom inset |
+
+### Radius
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--radius-xs` | 5px | Window buttons, menu items, segments |
+| `--radius-sm` | 8px | Buttons, inputs, tooltips, icon tiles |
+| `--radius-md` | 10px | Nav items, page-header chip |
+| `--radius-lg` | 13px | Cards and dialogs |
+| `--radius-full` | 999px | Badges, pills, dots |
+
+### Font sizes
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--font-size-2xs` | 10px | Badges, chart axes |
+| `--font-size-xs` | 11px | Captions, field labels, small labels |
+| `--font-size-sm` | 12px | Helper text, menus, button labels |
+| `--font-size-md` | 13px | Body text, data values |
+| `--font-size-lg` | 14px | Card headings |
+| `--font-size-xl` | 15px | Dialog titles |
+| `--font-size-2xl` | 17px | Page titles, stat totals |
+| `--font-size-3xl` | 28px | Live speeds |
+
+### Font families
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--font-family-sans` | Inter | Interface text |
+| `--font-family-numeric` | Questrial | Numbers |
+
+### Opacity
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--opacity-tint-xs` | 8% | Faintest tint |
+| `--opacity-tint-sm` | 10% | Light tint |
+| `--opacity-tint-md` | 14% | Tint |
+| `--opacity-tint-lg` | 22% | Strong tint |
+| `--opacity-tint-xl` | 28% | Strongest tint |
+| `--opacity-high` | 80% | Nearly opaque |
+| `--opacity-disabled` | 40% | Disabled controls |
+
+### Layout
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--rail-item-size` | 38px | Rail items |
+| `--titlebar-height` | 56px | Title bar |
+
+### Cards
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--card-padding` | `var(--spacing-14)` | Card inset |
+| `--card-header-padding-y` | `var(--card-padding)` | Card header, above and below |
+| `--card-header-padding-x` | `var(--card-padding)` | Card header, sides |
+| `--card-header-min-height` | 42px | Compact card header |
+| `--card-header-height` | 44px | Card header |
+| `--card-body-padding` | `var(--card-padding)` | Card body inset |
+| `--row-padding-y` | `var(--spacing-8)` | Data row, above and below |
+
+### Font weights
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--weight-regular` | 400 | Body text |
+| `--weight-medium` | 500 | Labels and menus |
+| `--weight-semibold` | 600 | Headings and buttons |
+
+### Motion
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--duration-fast` | 140ms | Hovers, small changes |
+| `--duration-normal` | 220ms | Panels, page changes |
+| `--duration-spring` | 450ms | A spring’s full run |
+
+### Focus
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--focus-offset` | `var(--spacing-2)` | Focus ring offset |
+| `--focus-ring-width` | 1px | Focus ring stroke |
 
 ## Text styles
 
@@ -56,11 +214,21 @@ Apply a style with its class from `text-styles.css`. Each class reads four varia
 
 From Figma's `Shadow/*` effect styles. Each layer's colour is a variable, so the theme sets it.
 
-- `--shadow-panel` (resting cards), `--shadow-raised` (hover, dialogs), `--shadow-popover` (tooltips, menus)
+| Token | Use |
+| --- | --- |
+| `--shadow-panel` | Resting cards |
+| `--shadow-raised` | Hover, dialogs |
+| `--shadow-popover` | Tooltips, menus |
 
 ## Code-only tokens
 
 What Figma can't hold, from `src/code-tokens.json`.
 
-- **Focus:** `--focus-outline`, `--focus-inset`
-- **Motion:** `--ease-out`, `--ease-in-out`, `--ease-pulse`, `--ease-spring`
+| Token | Group | Value |
+| --- | --- | --- |
+| `--focus-outline` | Focus | In `tokens.css` |
+| `--focus-inset` | Focus | In `tokens.css` |
+| `--ease-out` | Motion | In `tokens.css` |
+| `--ease-in-out` | Motion | In `tokens.css` |
+| `--ease-pulse` | Motion | In `tokens.css` |
+| `--ease-spring` | Motion | In `tokens.css` |

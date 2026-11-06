@@ -61,6 +61,17 @@ Each Figma text style becomes four tokens: `--type-<style>-size`, `-weight`, `-l
 
 `text-styles.css` applies a style whole: `.type-heading-large` sets the font family and all four, plus the text case (Label/Field is uppercase). The classes set no colour and sit in `@layer components`, so Tailwind utilities on the same element still win.
 
+### Tailwind
+
+`tailwind-theme.css` is a [Tailwind v4](https://tailwindcss.com/docs/theme) theme made of the tokens and nothing else: it clears Tailwind's own scales, so `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is `--bg-surface`, and there's no `p-7` or `text-blue-500` to reach for. Import it with the tokens in the CSS file that sets Tailwind up:
+
+```css
+@import '@swiftsolve/rove-tokens/tokens.css';
+@import '@swiftsolve/rove-tokens/tailwind-theme.css';
+```
+
+Each utility uses the token itself (`padding: var(--spacing-12)`), so the theme switch flows through. Colours drop the group the utility already says: `bg/surface` is `bg-surface`, `text/primary` is `text-primary`, `border/default` is `border-line`, `text/accent` is `text-accent-text`; status, series, overlay and focus keep theirs (`bg-status-positive`). Each text style also gives `leading-<style>` and `tracking-<style>`.
+
 ### DTCG files
 
 `dist/tokens/` (imported as `@swiftsolve/rove-tokens/tokens/*`) holds the same tokens in the [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (2025.10), for Style Dictionary, Tokens Studio and similar tools:
@@ -129,7 +140,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 
 | Script | What it does |
 | --- | --- |
-| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css`, `TOKENS.md` and `DESIGN.md`'s front matter. `npm install` and `npm publish` run it too. |
+| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css`, `tailwind-theme.css`, `TOKENS.md` and `DESIGN.md`'s front matter. `npm install` and `npm publish` run it too. |
 | `npm run check` | Builds, lints, then runs the contrast and DESIGN.md format checks and `npm test`. Run it before every commit; CI runs it on every release tag, before publishing. |
 | `npm test` | The Figma plugin's test: Export and Check against a stand-in file made from the repo. |
 | `npm run lint` | ESLint and Prettier over the repo. `npm run format` fixes what Prettier reports. |
@@ -157,6 +168,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 | `scripts/tokens/build.mjs` | `npm run build`: runs the steps below, writing everything to `dist/`, where `package.json`'s `exports` points the import paths. |
 | `scripts/tokens/figma-to-dtcg.mjs` | Figma export → the DTCG files in `dist/tokens/`, checking that every reference resolves in both themes. |
 | `scripts/tokens/dtcg-to-css.mjs` | DTCG files → `tokens.css`, with Style Dictionary and a `rove/css` format: Dark on `:root`, what differs in Light on `:root.theme-light`, each text style as four `--type-*` variables (letter spacing included). |
+| `scripts/tokens/tailwind-theme.mjs` | Figma export → `tailwind-theme.css`: the Tailwind v4 `@theme` that maps each token to its utility, with Tailwind's defaults cleared. |
 | `scripts/tokens/dtcg-to-text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
 | `scripts/tokens/token-reference.mjs` | Figma export and `tokens.css` → the token reference, `TOKENS.md`: every token by name and Figma description, with values for the scales (spacing, radius, type, opacity) but not the colours, so nobody copies a hex. |
 | `scripts/tokens/design-front-matter.mjs` | Figma export and `tokens.css` → `DESIGN.md`'s front matter: colours (with the format's `primary`, the accent), text styles, radius and spacing, at their Dark values. |

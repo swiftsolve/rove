@@ -11,6 +11,7 @@
   "exports": {
     "./tokens.css": "./dist/tokens.css",
     "./text-styles.css": "./dist/text-styles.css",
+    "./tailwind-theme.css": "./dist/tailwind-theme.css",
     "./tokens/*": "./dist/tokens/*",
     "./package.json": "./package.json"
   },

@@ -263,7 +263,10 @@ const PIPELINES = [
         column: 4,
         icons: ['npm'],
         items: [
-          { name: '`@swiftsolve/rove-tokens`', body: '`tokens.css`, `text-styles.css` and the DTCG files, on npm.' },
+          {
+            name: '`@swiftsolve/rove-tokens`',
+            body: '`tokens.css`, `text-styles.css`, the Tailwind theme and the DTCG files, on npm.',
+          },
           {
             name: '`DESIGN.md`',
             body: 'Which token to use for what, with `TOKENS.md` listing every one, shipped alongside.',

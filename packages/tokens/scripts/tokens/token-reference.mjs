@@ -42,7 +42,6 @@ const TYPE_GROUPS = ['Heading', 'Body', 'Label', 'Caption', 'Badge', 'Number']
 const cssName = (figmaName) => `--${figmaName.replace(/\//g, '-')}`
 const code = (text) => `\`${text}\``
 const heading = (prefix) => GROUPS[prefix] ?? prefix[0].toUpperCase() + prefix.slice(1)
-const lowerFirst = (text) => text[0].toLowerCase() + text.slice(1)
 
 /** `--name: value;` declarations of one rule in tokens.css, trailing comments dropped. */
 function declarations(css, selector) {
@@ -53,6 +52,13 @@ function declarations(css, selector) {
     [...body.matchAll(/^\s*(--[\w-]+):\s*(.+?);(?:\s*\/\*.*\*\/)?$/gm)].map(([, name, value]) => [name, value]),
   )
 }
+
+/** A Markdown table: a header row, then one row per item. */
+const table = (header, rows) => [
+  `| ${header.join(' | ')} |`,
+  `| ${header.map(() => '---').join(' | ')} |`,
+  ...rows.map((cells) => `| ${cells.map((c) => String(c ?? '').replace(/\|/g, '\\|')).join(' | ')} |`),
+]
 
 function groupBy(items, key) {
   const groups = new Map()
@@ -77,7 +83,6 @@ export async function writeReference({ path, variables, textStyles, shadows, cod
 
   // Plain numbers read as text; expressions stay as code.
   const show = (value) => (value.includes('(') ? code(value) : value)
-  const note = (v) => (v.description ? ` (${lowerFirst(v.description)})` : '')
 
   out.push(
     '# Rove tokens',
@@ -89,28 +94,31 @@ export async function writeReference({ path, variables, textStyles, shadows, cod
     '## Colour',
     '',
   )
+  // Colours by name and use only, so nobody copies a hex.
   for (const [prefix, vars] of groupBy(colours, (v) => v.name.split('/')[0])) {
-    out.push(`- **${heading(prefix)}:** ${vars.map((v) => `${code(cssName(v.name))}${note(v)}`).join(', ')}`)
+    out.push(
+      `### ${heading(prefix)}`,
+      '',
+      ...table(
+        ['Token', 'Use'],
+        vars.map((v) => [code(cssName(v.name)), v.description]),
+      ),
+      '',
+    )
   }
 
-  out.push('', '## Scales', '')
-  // Prefixes that share a heading (titlebar/ and rail/ are Layout) share a line.
+  out.push('## Scales', '')
+  // Prefixes that share a heading (titlebar/ and rail/ are Layout) share a table.
   for (const [title, vars] of groupBy(others, (v) => heading(v.name.split('/')[0]))) {
-    const prefix = vars[0].name.split('/')[0]
     const value = (v) => dark.get(cssName(v.name))
     const px = (v) => value(v)?.match(/^([\d.]+)px$/)?.[1]
     // Pixel scales read smallest to largest; Figma lists late additions last.
     if (vars.every(px)) vars.sort((a, b) => px(a) - px(b))
-    // spacing/12 is 12px, so the name already says the value.
-    const numbered = vars.every((v) => v.name.startsWith(`${prefix}/`) && px(v) === v.name.split('/')[1])
-    const list = numbered
-      ? `${code(`--${prefix}-<n>`)}, n in px: ${vars.map((v) => `${px(v)}${note(v)}`).join(', ')}`
-      : vars.map((v) => `${code(cssName(v.name))} ${show(short(value(v)))}${note(v)}`).join(', ')
-    out.push(`- **${title}:** ${list}`)
+    const rows = vars.map((v) => [code(cssName(v.name)), show(short(value(v))), v.description])
+    out.push(`### ${title}`, '', ...table(['Token', 'Value', 'Use'], rows), '')
   }
 
   out.push(
-    '',
     '## Text styles',
     '',
     'Apply a style with its class from `text-styles.css`. Each class reads four variables, `--type-<style>-size`, `-weight`, `-line-height` and `-letter-spacing`; set all four if you use them directly, and `text-transform: uppercase` for an uppercase style, which has no variable.',
@@ -151,18 +159,24 @@ export async function writeReference({ path, variables, textStyles, shadows, cod
       .replace(/^Shadow\//, '')
       .toLowerCase()
       .replace(/\s+/g, '-')}`
-  // Figma's effect style descriptions are sentences; in a list they lose the full stop.
+  // Figma's effect style descriptions are sentences; in a table they lose the full stop.
   out.push(
-    `- ${shadows.map((s) => `${code(shadowName(s))}${note({ description: s.description.replace(/\.$/, '') })}`).join(', ')}`,
+    ...table(
+      ['Token', 'Use'],
+      shadows.map((s) => [code(shadowName(s)), s.description.replace(/\.$/, '')]),
+    ),
   )
 
   const codeNames = Object.keys(codeTokens.tokens)
   out.push('', '## Code-only tokens', '', "What Figma can't hold, from `src/code-tokens.json`.", '')
-  for (const [group, names] of groupBy(codeNames, (n) => heading(n.slice(2).split('-')[0]))) {
-    // Long or per-theme values (calc(), a focus outline) are named only; tokens.css has them.
-    const shown = (n) => dark.get(n).length <= 24 && (light.get(n) ?? dark.get(n)) === dark.get(n)
-    out.push(`- **${group}:** ${names.map((n) => (shown(n) ? `${code(n)} ${show(dark.get(n))}` : code(n))).join(', ')}`)
-  }
+  // Long or per-theme values (calc(), a focus outline) are named only; tokens.css has them.
+  const shown = (n) => dark.get(n).length <= 24 && (light.get(n) ?? dark.get(n)) === dark.get(n)
+  const codeRows = codeNames.map((n) => [
+    code(n),
+    heading(n.slice(2).split('-')[0]),
+    shown(n) ? show(dark.get(n)) : 'In `tokens.css`',
+  ])
+  out.push(...table(['Token', 'Group', 'Value'], codeRows))
 
   await writeFile(path, `${out.join('\n')}\n`)
   return { colours: colours.length, others: others.length, styles: textStyles.length, code: codeNames.length }

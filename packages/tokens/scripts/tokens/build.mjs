@@ -4,8 +4,9 @@
  *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.mjs)
  *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
  *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
- *   4. The token reference, TOKENS.md (scripts/tokens/token-reference.mjs)
- *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
+ *   4. DTCG -> dist/tailwind-theme.css, a Tailwind v4 theme of the tokens (scripts/tokens/tailwind-theme.mjs)
+ *   5. The token reference, TOKENS.md (scripts/tokens/token-reference.mjs)
+ *   6. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
  *
  * so the CSS is generated from the same files other tools read.
  *
@@ -26,6 +27,7 @@ import { buildCss } from './dtcg-to-css.mjs'
 import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
 import { writeDtcg } from './figma-to-dtcg.mjs'
 import { cssColor, slug } from './shared.mjs'
+import { writeTailwindTheme } from './tailwind-theme.mjs'
 import { writeReference } from './token-reference.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -121,6 +123,17 @@ console.log(`dist/tokens.css: ${count} tokens, ${overrides} light overrides`)
 const textStylesCss = await buildTextStylesCss({ dir, header })
 await writeFile(resolve(DIST, 'text-styles.css'), textStylesCss.css)
 console.log(`dist/text-styles.css: ${textStylesCss.count} classes`)
+
+const tailwind = await writeTailwindTheme({
+  path: resolve(DIST, 'tailwind-theme.css'),
+  header,
+  variables: figma.variables,
+  textStyles: textStyles.styles,
+  slugOf: slug,
+  shadows: Object.keys(shadows),
+  code,
+})
+console.log(`dist/tailwind-theme.css: ${tailwind.count} theme variables`)
 
 const reference = await writeReference({
   path: resolve(ROOT, 'TOKENS.md'),
