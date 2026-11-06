@@ -89,12 +89,11 @@ function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
 }
 
 // The interface name and MAC are on the Interfaces screen, so only Ethernet
-// adds a hardware group here.
+// adds a hardware group here: the adapter's name.
 function AdapterRows({ info }: { info: EthernetNetworkInfo }) {
   return (
     <DataList density="compact">
       <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
-      <DataRow label="Vendor">{formatDisplayValue(info.vendor) ?? <NoValue />}</DataRow>
     </DataList>
   )
 }
