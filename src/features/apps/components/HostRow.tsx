@@ -67,7 +67,7 @@ function HostName({ host }: { host: HostUsage }) {
       maxWidth={360}
       isDisabled={!host.host}
     >
-      <span className="type-caption min-w-0 truncate text-secondary">{host.host ?? host.ip}</span>
+      <span className="type-body-small min-w-0 truncate text-secondary">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }

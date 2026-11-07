@@ -112,7 +112,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
       <div className="flex min-w-0 flex-auto flex-col gap-2">
         <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
-          <span className="min-w-0 flex-auto truncate text-primary">{service.name}</span>
+          <span className="type-body-small min-w-0 flex-auto truncate text-primary">{service.name}</span>
           {(samples.length > 0 || isDown) && (
             <Sparkline
               samples={samples}
@@ -127,7 +127,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
         {/* Indent the URL line so it starts under the name, clearing the favicon
             (16px) and its gap that lead the line above. */}
         <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--spacing-12))]')}>
-          <span className="type-body-small min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
+          <span className="type-caption min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}
           <span className="type-body-small min-w-[4.5em] shrink-0 text-right num text-secondary">

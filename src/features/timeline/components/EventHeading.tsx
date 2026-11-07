@@ -11,7 +11,7 @@ export function EventHeading({ title, ts }: { title: string; ts: number }) {
     <span className="flex items-baseline gap-10">
       <span className="type-heading-small min-w-0 flex-1 leading-[inherit] wrap-anywhere text-primary">{title}</span>
       <time
-        className="type-body-small shrink-0 leading-[inherit] whitespace-nowrap text-tertiary"
+        className="type-caption shrink-0 leading-[inherit] whitespace-nowrap text-tertiary"
         dateTime={new Date(ts).toISOString()}
       >
         {formatTime(ts)}

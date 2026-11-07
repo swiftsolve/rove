@@ -53,7 +53,7 @@ const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
 }
 
 /** The Online / Offline status beside a device's name. */
-const stateVariants = cva('type-body-small inline-flex shrink-0 items-center gap-6', {
+const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6', {
   variants: {
     isReachable: { true: 'text-positive', false: 'text-tertiary' },
   },
@@ -191,7 +191,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
                 ]}
               />
             </span>
-            <span className="shrink-0 num text-secondary">
+            <span className="type-caption shrink-0 num text-secondary">
               <span className="sr-only">IP address </span>
               {device.ip}
             </span>

@@ -16,7 +16,7 @@ const UP_COLOR = 'var(--status-positive)'
 
 // The line under the title, as in the events feed: what happened on top, which
 // service beneath.
-const subjectVariants = cva('type-body-default min-w-0 items-center gap-4', {
+const subjectVariants = cva('type-caption min-w-0 items-center gap-4', {
   variants: {
     /** A quiet aside (the running summary, the connection status), not a service name. */
     isMuted: { true: 'text-tertiary', false: 'text-secondary' },
@@ -49,7 +49,7 @@ const TransitionRow = memo(function TransitionRow({
         <ServiceIcon host={event.host} name={event.name} />
         <span className="truncate">{event.name}</span>
       </span>
-      <span className="type-body-small flex items-baseline gap-10 text-tertiary">
+      <span className="type-caption flex items-baseline gap-10 text-tertiary">
         <span className="min-w-0 truncate">{event.host}</span>
         {shouldShowDuration && (
           <span className={DURATION}>Down for {formatDuration(durationMs) ?? <NoValue label="Unknown" />}</span>
@@ -107,7 +107,7 @@ const ConnectionRow = memo(function ConnectionRow({
       <span className={subjectVariants({ isMuted: true, isFullWidth: true })}>
         <span>{isLost ? 'No internet connection detected.' : 'Connection restored.'}</span>
         {shouldShowDuration && (
-          <span className={cx(DURATION, 'type-body-small leading-[inherit]')}>
+          <span className={cx(DURATION, 'type-caption leading-[inherit]')}>
             Offline for {formatDuration(durationMs) ?? <NoValue label="Unknown" />}
           </span>
         )}

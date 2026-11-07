@@ -55,9 +55,9 @@ const TONE_COLORS = {
 
 type EventTone = keyof typeof TONE_COLORS
 
-const SUBJECT = 'type-body-default text-secondary'
+const SUBJECT = 'type-caption text-secondary'
 
-const META = 'type-body-small text-tertiary tabular-nums'
+const META = 'type-caption text-tertiary tabular-nums'
 
 type EventStyle = {
   icon: IconComponent
@@ -134,7 +134,7 @@ export function TimelineItem({
         <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
           <span>{internetSubtitle}</span>
           {offlineMs != null && (
-            <span className="type-body-small ml-auto shrink-0 leading-[inherit] whitespace-nowrap text-tertiary">
+            <span className="type-caption ml-auto shrink-0 leading-[inherit] whitespace-nowrap text-tertiary">
               Offline for {formatDuration(offlineMs) ?? <NoValue label="Unknown" />}
             </span>
           )}
