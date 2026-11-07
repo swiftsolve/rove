@@ -25,7 +25,7 @@ const LIST = 'flex flex-col'
 const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
 
 // Tertiary while a test runs, like the muted tile: the rating is about to change.
-const levelVariants = cva('type-label-default shrink-0', {
+const levelVariants = cva('type-body-small shrink-0', {
   variants: {
     tone: { ...CAPABILITY_LEVEL_TEXT_COLORS, testing: 'text-tertiary' },
   },

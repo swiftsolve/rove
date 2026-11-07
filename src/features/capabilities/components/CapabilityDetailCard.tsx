@@ -39,7 +39,7 @@ const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] 
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
-const levelVariants = cva('type-label-default shrink-0', {
+const levelVariants = cva('type-body-small shrink-0', {
   variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
 })
 
