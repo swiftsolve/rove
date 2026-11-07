@@ -10,7 +10,7 @@ Inter's capitals and which had one weight, so live speeds were faked bold. We
 now set the wordmark, titles and headings in Urbanist Bold, and everything
 else, numbers included, in Hanken Grotesk: its digits are all one width, as
 tall as its capitals and Urbanist's, and it has real weights from 100 to 900.
-The [rationale](../rationale.md#type) has the measurements.
+The [rationale](../../rationale.md#type) has the measurements.
 
 ## Considered options
 
