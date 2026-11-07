@@ -22,4 +22,4 @@ for an app that reads its user's network.
 - **The core is tested without a window** (`cargo test -p rove-core`), and its
   services can move to another shell or a CLI untouched.
 - **Each OS has its own webview** (WebKitGTK, WKWebView, WebView2), so the UI
-  can't assume what a browser does for free ([ADR 0007](0007-history-shortcuts.md)).
+  can't assume what a browser does for free ([ADR 0007](../frontend/0007-history-shortcuts.md)).
