@@ -328,10 +328,9 @@
   list-style: none;
 }
 
-/* Explore: a bento grid. Each group gets room for its scene: the dialog and
-   the card that opens the most, the rows of things (the window's edge, a form)
-   a wide cell, the rest a small one. The cards stay in the library's order;
-   only the areas move. */
+/* Explore: a bento grid. Each group gets room for its scene: the dialog the
+   most, the rows of things (the window's edge, a form, a card) a wide cell, the
+   rest a small one. The cards stay in the library's order; only the areas move. */
 .intro-bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -339,12 +338,11 @@
     'frame frame data data'
     'overlays overlays actions actions'
     'overlays overlays inputs inputs'
-    'containers containers status status'
-    'containers containers a11y a11y';
+    'containers containers status a11y';
   /* The first row is taller, for more of the window; the middle rows are
      shorter: their small scenes need less, and the dialog spanning both still
-     fits. The last two hold the open card whole. */
-  grid-template-rows: 360px 220px 220px 236px 236px;
+     fits. The last shows the open card down to its Wi-Fi rows. */
+  grid-template-rows: 360px 220px 220px 400px;
   gap: var(--intro-gap);
   margin: 24px 0 0;
   padding: 0;
@@ -627,23 +625,42 @@
 }
 
 /* Containers: the card from the top, with room below for its details to open
-   into. On the app's backdrop, as on Home: on the inset fill it barely parts. */
+   into. Dark, as the dialog's scrim leaves the Overlays stage: on the inset
+   fill the card barely parts. Light keeps the app's backdrop, where the scrim
+   would turn the stage grey. */
 .intro-card:has(.intro-mini-card) .intro-preview {
   align-items: flex-start;
   padding-top: 32px;
+  background: linear-gradient(var(--bg-scrim), var(--bg-scrim)), var(--bg-inset);
+}
+
+.theme-light .intro-card:has(.intro-mini-card) .intro-preview {
   background: var(--bg-base);
 }
 
-/* Where the window runs off the bottom, it fades into the stage instead of being cut: the rail's lower half goes fully into the background. */
+/* Where a scene runs off the bottom, it fades into the stage instead of being cut. */
+.intro-card:has(.intro-mini-card) .intro-preview::after,
 .intro-card:has(.intro-window) .intro-preview::after {
   position: absolute;
-  /* Over the scene's own layers (the rail's active marker). */
+  /* Over the scene's own layers (the rail's active marker, the card's trigger). */
   z-index: 2;
   inset: auto 0 0;
-  height: 60%;
-  background: linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
+  height: 32px;
+  /* The card's stage, both its layers fading in together. */
+  background:
+    linear-gradient(to bottom, transparent, var(--bg-scrim)), linear-gradient(to bottom, transparent, var(--bg-inset));
   pointer-events: none;
   content: '';
+}
+
+.theme-light .intro-card:has(.intro-mini-card) .intro-preview::after {
+  background: linear-gradient(to bottom, transparent, var(--bg-base));
+}
+
+/* The window's stage is taller, so its fade covers more: the rail's lower half goes fully into the background. */
+.intro-card:has(.intro-window) .intro-preview::after {
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
 }
 
 /* About as wide as on Home, so its meta line fits as it does there. */
@@ -864,9 +881,9 @@
     grid-row: span 2;
   }
 
-  /* Tall enough for the open card whole, so its row never jumps as it opens. */
+  /* Tall enough for the open card's Wi-Fi rows, so its row never jumps as it opens. */
   .intro-bento > .intro-bento-containers {
-    min-height: 496px;
+    min-height: 400px;
   }
 }
 
