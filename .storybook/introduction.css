@@ -650,6 +650,8 @@
   isolation: isolate;
   width: 100%;
   max-width: 460px;
+  /* Its edge, as the window's: the stage drops the panel shadow, and the card's fill alone barely parts from it. */
+  border: 1px solid var(--border-default);
 }
 
 /* Status: the loading state and the badge share one cell and cross-fade; each new verdict rises in. */
