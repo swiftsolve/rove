@@ -338,11 +338,13 @@
     'frame frame data data'
     'overlays overlays actions actions'
     'overlays overlays inputs inputs'
-    'containers containers status a11y';
+    'containers containers status status'
+    'containers containers a11y a11y';
   /* The first row is taller, for more of the window; the middle rows are
      shorter: their small scenes need less, and the dialog spanning both still
-     fits. The last shows the open card down to its Wi-Fi rows. */
-  grid-template-rows: 360px 220px 220px 400px;
+     fits. The last two hold the open card down to its Wi-Fi rows, beside
+     the two smallest scenes stacked. */
+  grid-template-rows: 360px 220px 220px 188px 188px;
   gap: var(--intro-gap);
   margin: 24px 0 0;
   padding: 0;
