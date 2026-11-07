@@ -113,7 +113,7 @@
       "fontSize": 28,
       "lineHeight": {
         "unit": "PIXELS",
-        "value": 32
+        "value": 28
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -133,7 +133,7 @@
       "fontSize": 17,
       "lineHeight": {
         "unit": "PIXELS",
-        "value": 24
+        "value": 20
       },
       "letterSpacing": {
         "unit": "PERCENT",

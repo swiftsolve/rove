@@ -82,7 +82,7 @@ typography: # Keys: the class, .type-<key>
     fontFamily: "Hanken Grotesk"
     fontSize: "28px"
     fontWeight: 500
-    lineHeight: 1.1429
+    lineHeight: 1
   title: # Title: Page and dialog titles, the wordmark. Class .type-title.
     fontFamily: "Urbanist"
     fontSize: "17px"
@@ -92,7 +92,7 @@ typography: # Keys: the class, .type-<key>
     fontFamily: "Hanken Grotesk"
     fontSize: "17px"
     fontWeight: 500
-    lineHeight: 1.4118
+    lineHeight: 1.1765
 rounded: # Keys: --radius-<key>
   xs: "5px" # Window buttons, menu items, segments
   sm: "8px" # Buttons, inputs, tooltips, icon tiles
@@ -326,7 +326,7 @@ should stay nearly solid, like a chart line behind another.
   for the large figures only: a number anywhere else takes the text style
   around it, with tabular digits.
 - Text is 12px (Body), meta 11px (Caption). Line heights sit on a 4px grid
-  (12, 16, 20, 24, 32px).
+  (12, 16, 20, 24, 28px); a figure's line is its own height..
 
 ## Layout
 
