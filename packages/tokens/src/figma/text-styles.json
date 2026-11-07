@@ -191,7 +191,7 @@
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
-      "fontSize": 13,
+      "fontSize": 11,
       "lineHeight": {
         "unit": "PERCENT",
         "value": 135
@@ -202,7 +202,7 @@
       },
       "boundVariables": {
         "fontFamily": "font-family/numeric",
-        "fontSize": "font-size/md"
+        "fontSize": "font-size/xs"
       }
     },
     {

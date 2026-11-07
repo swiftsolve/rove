@@ -852,7 +852,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-xs)",
-      "description": "Captions, field labels, small labels",
+      "description": "Captions, labels, data row values",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -878,7 +878,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-md)",
-      "description": "Body text, data values",
+      "description": "Body text",
       "scopes": [
         "FONT_SIZE"
       ],

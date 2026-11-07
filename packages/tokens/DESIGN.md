@@ -126,7 +126,7 @@ typography: # Keys: the class, .type-<key>
     lineHeight: 1
   number-default: # Number/Default: Data row values. Class .type-number-default.
     fontFamily: "Hanken Grotesk"
-    fontSize: "13px"
+    fontSize: "11px"
     fontWeight: 400
     lineHeight: 1.35
   number-small: # Number/Small: Chart axes and scale. Class .type-number-small.
@@ -152,9 +152,9 @@ spacing: # Keys: --spacing-<key>
   "20": "20px" # Content bottom inset
 font-size: # Font sizes; a text style sets its own. Keys: --<key>
   font-size-2xs: "10px" # Badges, chart axes
-  font-size-xs: "11px" # Captions, field labels, small labels
+  font-size-xs: "11px" # Captions, labels, data row values
   font-size-sm: "12px" # Helper text, menus, button labels
-  font-size-md: "13px" # Body text, data values
+  font-size-md: "13px" # Body text
   font-size-lg: "14px" # Card headings
   font-size-xl: "15px" # Dialog titles
   font-size-2xl: "17px" # Page titles, stat totals
