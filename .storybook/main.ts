@@ -13,7 +13,11 @@ const config: StorybookConfig = {
   ],
   framework: '@storybook/react-vite',
   // public/favicon.svg, the Rove Mark alone, is the tab's icon in place of Storybook's.
-  staticDirs: [{ from: './public', to: '/' }],
+  staticDirs: [
+    { from: './public', to: '/' },
+    // The faces manager-head.html loads for the sidebar.
+    { from: '../src/assets/fonts', to: '/fonts' },
+  ],
   core: { disableTelemetry: true },
   // Resolves prop types through the compiler, so a VariantOf prop lists its
   // values in the docs table rather than `NonNullable`.

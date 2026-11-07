@@ -20,7 +20,11 @@ function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContai
     return () => context.channel.off(GLOBALS_UPDATED, onGlobalsUpdated)
   }, [context.channel])
   return (
-    <DocsContainer context={context} theme={theme === 'light' ? themes.light : themes.dark}>
+    <DocsContainer
+      context={context}
+      // The page's text in the tokens' sans face (tokens.css is loaded here), not Storybook's.
+      theme={{ ...(theme === 'light' ? themes.light : themes.dark), fontBase: 'var(--font-family-sans)' }}
+    >
       {children}
     </DocsContainer>
   )

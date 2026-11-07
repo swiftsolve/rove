@@ -36,8 +36,9 @@ body {
 
 .guidance h2 {
   margin: 0 0 16px;
+  font-family: var(--font-family-display);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--type-title-weight);
   line-height: 24px;
   color: var(--text-primary);
 }
@@ -105,4 +106,14 @@ body {
 .toc-wrapper .toc-list-item.toc-list-item > .toc-list.toc-list {
   margin-left: -20px;
   border-left: 0;
+}
+
+/* Docs pages in the tokens' faces: Storybook's theme sets the body (preview.tsx),
+   and its headings take the display family, as the app's titles do. */
+.sbdocs-title,
+.sbdocs-h1,
+.sbdocs-h2,
+.sbdocs-h3 {
+  font-family: var(--font-family-display);
+  font-weight: var(--type-title-weight);
 }
