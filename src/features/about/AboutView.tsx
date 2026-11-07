@@ -23,7 +23,9 @@ export function AboutView() {
         <span className={APP_ICON_TILE} aria-hidden>
           <BrandIcon size={53} hasGradient />
         </span>
-        <h1 className="font-display text-3xl font-regular tracking-heading-large text-primary">Rove</h1>
+        <h1 className="font-display text-3xl font-(--type-heading-large-weight) tracking-heading-large text-primary">
+          Rove
+        </h1>
         <p className="type-body-default max-w-[300px] text-secondary">
           A fast, minimal network monitor for your desktop.
         </p>
