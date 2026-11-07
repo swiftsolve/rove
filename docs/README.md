@@ -36,5 +36,11 @@ Background.
 
 - [Why "Rove"?](why-rove.md)
 
+## Decisions
+
+Choices that are costly to undo, and why we made them, in `adr/`.
+
+- [Urbanist headings, Hanken Grotesk for everything else, at two text sizes](adr/0001-type-system.md)
+
 `assets/` holds the docs' diagrams, and `screenshots/` the app's screens
 (`npm run screenshots`).
