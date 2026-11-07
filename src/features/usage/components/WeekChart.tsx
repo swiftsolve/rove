@@ -68,8 +68,8 @@ function DayTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?
       y={y}
       dy={12}
       textAnchor="middle"
+      className="type-caption"
       fill={isToday ? 'var(--text-secondary)' : 'var(--text-tertiary)'}
-      fontSize={10}
       fontWeight={isToday ? 500 : 400}
     >
       {value}

@@ -47,7 +47,7 @@ const STRIP = cx(
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
 // `shouldTruncate`; the security badge's item in ConnectionStrip.module.css).
-const STRIP_SUB = cx('type-body-default text-secondary', styles.stripSub, 'truncate')
+const STRIP_SUB = cx('type-body text-secondary', styles.stripSub, 'truncate')
 
 const chevronVariants = cva(
   [ABOVE_TOGGLE, 'shrink-0 self-center text-tertiary transition-transform duration-(--duration-normal) ease-out'],
@@ -82,7 +82,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
       <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
       <IconTile size="lg" color={color} className={cx(ABOVE_TOGGLE, 'self-center')} icon={<Icon size={16} />} />
       <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
-        <h2 id={titleId} className="type-heading-large truncate text-primary">
+        <h2 id={titleId} className="type-title truncate text-primary">
           {display.title}
         </h2>
         <div className={STRIP_SUB}>

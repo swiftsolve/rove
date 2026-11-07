@@ -7,7 +7,7 @@ import { formatBytes } from '@/utils/format'
  */
 export function ByteTotal({ bytes }: { bytes: number }) {
   return (
-    <span className="type-body-small shrink-0 text-secondary">
+    <span className="type-caption shrink-0 text-secondary">
       <MetricValue value={bytes} format={formatBytes} />
     </span>
   )

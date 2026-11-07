@@ -10,7 +10,7 @@ const CHART_HEIGHT = 80
 // The right margin leaves room for the y-axis labels.
 const CHART_MARGIN = { top: 4, right: 28, bottom: 4, left: 2 }
 
-const AXIS_LABEL_TEXT = 'type-number-small text-tertiary num'
+const AXIS_LABEL_TEXT = 'type-caption text-tertiary num'
 
 // HTML, not recharts ticks, which ghost and duplicate when the domain changes.
 // The 4px inset matches the chart's vertical margin.

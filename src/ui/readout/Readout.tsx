@@ -13,7 +13,7 @@ const figureVariants = cva('metric num', {
 
 const valueVariants = cva('metric-value', {
   variants: {
-    size: { large: 'type-number-display', compact: 'type-number-large' },
+    size: { large: 'type-display', compact: 'type-stat' },
   },
   defaultVariants: { size: 'large' },
 })
@@ -37,7 +37,7 @@ function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<Read
       <span className={valueVariants({ size })} aria-hidden={isSpokenApart || undefined}>
         {value}
       </span>
-      <span className="type-body-small metric-unit" aria-hidden={isSpokenApart || undefined}>
+      <span className="type-body metric-unit" aria-hidden={isSpokenApart || undefined}>
         {unit}
       </span>
       {isSpokenApart && <span className="sr-only">{spokenValue}</span>}
@@ -75,7 +75,7 @@ export function Readout({ label, icon, size = 'large', className, ...valueParts 
     <div className={className}>
       <dt className="mb-8 flex items-center gap-6">
         {icon}
-        <span className="type-label-field text-tertiary">{label}</span>
+        <span className="type-body-medium text-tertiary">{label}</span>
       </dt>
       <dd className={figureClass}>
         <ValueAndUnit size={size} {...valueParts} />

@@ -24,8 +24,8 @@ const buttonVariants = cva(
       },
       tone: { neutral: null, accent: null, negative: null },
       size: {
-        sm: 'type-label-small gap-6 px-10 py-6',
-        md: 'type-label-large gap-6 px-(--card-padding) py-10',
+        sm: 'type-body-medium gap-6 px-10 py-6',
+        md: 'type-body-semibold gap-6 px-(--card-padding) py-10',
       },
     },
     compoundVariants: [

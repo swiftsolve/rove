@@ -139,7 +139,7 @@ export function CardHeader({ title, icon, actions, className, ...props }: CardHe
             {icon}
           </span>
         )}
-        <h2 id={titleId} className="type-heading-small text-primary">
+        <h2 id={titleId} className="type-heading text-primary">
           {title}
         </h2>
       </div>

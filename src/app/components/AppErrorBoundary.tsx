@@ -49,9 +49,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
 
     return (
       <div className={fallbackVariants({ isApp })} role="alert">
-        <p className="type-body-default text-tertiary">
-          {isApp ? 'Something went wrong.' : 'This screen couldn’t load.'}
-        </p>
+        <p className="type-body text-tertiary">{isApp ? 'Something went wrong.' : 'This screen couldn’t load.'}</p>
         <Button icon={RefreshIcon} onClick={() => window.location.reload()}>
           Reload
         </Button>

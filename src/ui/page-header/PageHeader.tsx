@@ -80,7 +80,7 @@ export function PageHeader({ title, description, status, actions, info, icon, on
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <h1 className="type-heading-large text-primary">{title}</h1>
+        <h1 className="type-title text-primary">{title}</h1>
         {hasLine && (
           <div className={LINE}>
             {/* Keyed, so the description mounts afresh (and fades in) when the status clears. */}

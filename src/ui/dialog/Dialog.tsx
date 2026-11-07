@@ -156,11 +156,11 @@ export function Dialog({
               <div ref={setContent}>
                 <div className={HEADER}>
                   <div className="min-w-0">
-                    <BaseDialog.Title className="type-heading-medium text-primary">{title}</BaseDialog.Title>
+                    <BaseDialog.Title className="type-title text-primary">{title}</BaseDialog.Title>
                     {description != null && (
                       <BaseDialog.Description
                         render={<div />}
-                        className="type-body-small mt-4 animate-fade-in text-secondary"
+                        className="type-body mt-4 animate-fade-in text-secondary"
                       >
                         {description}
                       </BaseDialog.Description>

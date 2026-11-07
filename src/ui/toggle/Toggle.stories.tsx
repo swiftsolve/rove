@@ -113,7 +113,7 @@ function SettingRow(args: ToggleProps) {
   return (
     <div className="flex w-[360px] items-center justify-between gap-12">
       <div className="flex min-w-0 flex-col gap-4">
-        <span className="type-body-default font-medium text-primary">Service alerts</span>
+        <span className="type-body font-medium text-primary">Service alerts</span>
         <span id={descriptionId} className="type-caption text-tertiary">
           A notification when a service stops answering.
         </span>

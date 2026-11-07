@@ -8,7 +8,7 @@
  */
 
 @utility num {
-  font-family: var(--font-family-numeric);
+  font-family: var(--font-family-sans);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
@@ -19,13 +19,13 @@
   gap: var(--spacing-4);
 }
 
-/* A figure's digits, on a Number style (`type-number-display metric-value`). */
+/* A figure's digits, on a Number style (`type-display metric-value`). */
 @utility metric-value {
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
-/* A figure's unit, on Body/Small (`type-body-small metric-unit`). */
+/* A figure's unit, on Body (`type-body metric-unit`). */
 @utility metric-unit {
   /* The unit sits on its value's line, and the stat cards set their own
      (StatCard). */
@@ -41,8 +41,8 @@
   display: inline-flex;
   align-items: center;
   height: 1cap;
-  font-family: var(--font-family-numeric);
-  font-size: var(--type-number-display-size);
+  font-family: var(--font-family-sans);
+  font-size: var(--type-display-size);
 
   /* An empty first item, full height, so the span's baseline is its bottom
      edge rather than the bottom of an icon shorter than the cap. */
@@ -53,10 +53,10 @@
 }
 
 /* Stat totals: two numbers share a half-width card, so the value steps down to
-   Number/Large (Readout) to keep both on one line on narrow windows. */
+   Stat (Readout) to keep both on one line on narrow windows. */
 @utility metric-compact {
   & .metric-icon {
-    font-size: var(--type-number-large-size);
+    font-size: var(--type-stat-size);
   }
 }
 
@@ -132,12 +132,12 @@
   min-height: 140px;
   padding: var(--spacing-16);
 
-  /* Body/Small. */
+  /* Body. */
   & p {
-    font-size: var(--type-body-small-size);
-    font-weight: var(--type-body-small-weight);
-    line-height: var(--type-body-small-line-height);
-    letter-spacing: var(--type-body-small-letter-spacing);
+    font-size: var(--type-body-size);
+    font-weight: var(--type-body-weight);
+    line-height: var(--type-body-line-height);
+    letter-spacing: var(--type-body-letter-spacing);
     color: var(--text-tertiary);
   }
 }
@@ -171,12 +171,12 @@
   pointer-events: none;
 }
 
-/* Label/Default. */
+/* Body/SemiBold. */
 @utility chart-tip-title {
-  font-size: var(--type-label-default-size);
-  font-weight: var(--type-label-default-weight);
-  line-height: var(--type-label-default-line-height);
-  letter-spacing: var(--type-label-default-letter-spacing);
+  font-size: var(--type-body-semibold-size);
+  font-weight: var(--type-body-semibold-weight);
+  line-height: var(--type-body-semibold-line-height);
+  letter-spacing: var(--type-body-semibold-letter-spacing);
   color: var(--text-secondary);
 }
 
@@ -186,27 +186,27 @@
   gap: var(--spacing-8);
 }
 
-/* Body/Small. */
+/* Body. */
 @utility chart-tip-label {
-  font-size: var(--type-body-small-size);
-  font-weight: var(--type-body-small-weight);
-  line-height: var(--type-body-small-line-height);
-  letter-spacing: var(--type-body-small-letter-spacing);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-line-height);
+  letter-spacing: var(--type-body-letter-spacing);
   color: var(--text-secondary);
 }
 
 @utility chart-tip-value {
   margin-left: auto;
   padding-left: var(--spacing-16);
-  /* Label/Large. */
-  font-size: var(--type-label-large-size);
-  font-weight: var(--type-label-large-weight);
-  line-height: var(--type-label-large-line-height);
-  letter-spacing: var(--type-label-large-letter-spacing);
+  /* Body/SemiBold. */
+  font-size: var(--type-body-semibold-size);
+  font-weight: var(--type-body-semibold-weight);
+  line-height: var(--type-body-semibold-line-height);
+  letter-spacing: var(--type-body-semibold-letter-spacing);
   color: var(--text-primary);
 }
 
-/* Feedback, on Body/Default (`type-body-default inline-error`): `inline-error`
+/* Feedback, on Body (`type-body inline-error`): `inline-error`
    for a line inside a card, `banner` for the box above a page (Banner lays out
    its parts and colours it by variant, its outline a ring, which costs no
    layout). */

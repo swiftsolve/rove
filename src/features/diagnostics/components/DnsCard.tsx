@@ -12,7 +12,7 @@ export function DnsCard({ servers }: { servers: string[] }) {
             ))}
           </DataList>
         ) : (
-          <p className="type-body-small text-tertiary">No DNS servers found.</p>
+          <p className="type-body text-tertiary">No DNS servers found.</p>
         )}
       </CardBody>
     </Card>

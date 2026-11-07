@@ -5,7 +5,7 @@
  * as CSS variables, and so does the theme that maps them onto Tailwind
  * utilities (`tailwind-theme.css`, generated from the same tokens). It clears
  * Tailwind's own defaults, so only design-system values exist: `p-12` is
- * `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is
+ * `--spacing-12`, `text-sm` is `--font-size-sm`, `bg-surface` is
  * `--bg-surface`, and there is no `p-7` or `text-blue-500` to reach for. Its
  * header says how it's built and how colours are named (`border-line`,
  * `text-accent-text`).

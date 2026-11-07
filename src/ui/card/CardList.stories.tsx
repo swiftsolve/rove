@@ -11,7 +11,7 @@ const meta = {
     <div className="w-[360px]">
       <CardList {...args}>
         {['MacBook Pro', 'Living room TV', 'Pixel 8'].map((name) => (
-          <li key={name} className="type-body-small px-12 py-10 text-primary">
+          <li key={name} className="type-body px-12 py-10 text-primary">
             {name}
           </li>
         ))}

@@ -127,11 +127,11 @@
        opaque, with square corners. */
     background: transparent;
     color: var(--text-primary);
-    /* Body/Default. */
-    font-size: var(--type-body-default-size);
-    font-weight: var(--type-body-default-weight);
-    line-height: var(--type-body-default-line-height);
-    letter-spacing: var(--type-body-default-letter-spacing);
+    /* Body. */
+    font-size: var(--type-body-size);
+    font-weight: var(--type-body-weight);
+    line-height: var(--type-body-line-height);
+    letter-spacing: var(--type-body-letter-spacing);
     font-optical-sizing: auto;
     font-feature-settings:
       'cv11' 1,

@@ -26,8 +26,8 @@ const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt
   defaultVariants: { align: 'baseline' },
 })
 
-const LABEL = 'type-label-field text-tertiary shrink-0'
-const VALUE = 'type-number-default text-primary num text-right'
+const LABEL = 'type-body-medium text-tertiary shrink-0'
+const VALUE = 'type-body text-primary num text-right'
 
 type DataListProps = {
   /** The air between rows: `default` 8px, `compact` 4px for a short or repeated list. */

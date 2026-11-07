@@ -49,9 +49,8 @@ function DevicesCardBody({ onlineCount, isScanning, onDiscover }: DevicesCardBod
   if (isScanning) return <ScanSpinner />
   if (onlineCount !== null) {
     return (
-      // The small dot needs more room before the count than the usage arrows.
       <div aria-hidden>
-        <StatReadout marker="online" value={String(onlineCount)} unit="online" className="gap-8" />
+        <StatReadout marker="online" value={String(onlineCount)} unit="online" />
       </div>
     )
   }

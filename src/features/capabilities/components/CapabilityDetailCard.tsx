@@ -19,7 +19,7 @@ const METRICS = cx(
   '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
 )
 
-const metricValueVariants = cva('type-body-default leading-[1.25] font-medium whitespace-nowrap', {
+const metricValueVariants = cva('type-body leading-[1.25] font-medium whitespace-nowrap', {
   variants: {
     isUnmet: { true: 'text-negative', false: 'text-primary' },
   },
@@ -39,7 +39,7 @@ const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] 
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
-const levelVariants = cva('type-body-small shrink-0', {
+const levelVariants = cva('type-caption shrink-0', {
   variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
 })
 
@@ -63,7 +63,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
             icon={<CapabilityIcon id={capability.id} size={16} />}
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <h2 className="type-heading-small">{capability.label}</h2>
+            <h2 className="type-heading">{capability.label}</h2>
             <span className="type-caption text-tertiary">{capability.description}</span>
           </div>
           <span className={levelVariants({ level: capability.level })}>
@@ -74,7 +74,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         <dl className={METRICS}>
           {checks.map((check) => (
             <div key={check.label} className="flex min-w-0 flex-col gap-6">
-              <dt className="type-label-field leading-[1.15] text-tertiary">{check.label}</dt>
+              <dt className="type-body-medium leading-[1.15] text-tertiary">{check.label}</dt>
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
@@ -87,7 +87,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         </dl>
 
         <div className={VERDICT}>
-          <p className="type-body-small flex min-w-0 flex-1 items-start gap-4 text-secondary">
+          <p className="type-body flex min-w-0 flex-1 items-start gap-4 text-secondary">
             <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
               <VerdictIcon level={capability.level} />
             </span>

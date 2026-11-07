@@ -17,7 +17,7 @@ const meta = {
   // It takes its size and colour from the text it sits in.
   decorators: [
     (Story) => (
-      <span className="type-number-default text-primary">
+      <span className="type-body text-primary">
         <Story />
       </span>
     ),
@@ -79,7 +79,7 @@ function PollingMetric() {
   }, [])
   const value = POLLS[poll] ?? 0
   return (
-    <span className="type-number-display metric-value">
+    <span className="type-display metric-value">
       <MetricValue value={value} status={statusOf(value)} format={formatMs} />
     </span>
   )

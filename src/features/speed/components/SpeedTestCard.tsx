@@ -33,13 +33,13 @@ const CONNECTION = 'inline-flex items-center gap-6 font-medium text-secondary'
  * A hero speed's digits; a muted NoValue bar before any test has run, so the
  * labels lead and the cell reads as empty, not zeroed.
  */
-const speedValueVariants = cva('type-number-display metric-value', {
+const speedValueVariants = cva('type-display metric-value', {
   variants: {
     isPlaceholder: { true: 'text-tertiary' },
   },
 })
 
-const substatValueVariants = cva('type-number-default num leading-body-default', {
+const substatValueVariants = cva('type-body num leading-body', {
   variants: {
     isEmpty: { true: 'text-tertiary', false: 'text-primary' },
   },
@@ -72,7 +72,7 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
       <span className={speedValueVariants({ isPlaceholder })}>
         {isPlaceholder ? <NoValue label="Not tested yet" /> : value}
       </span>
-      {!isPlaceholder && <span className="type-body-small metric-unit">{unit}</span>}
+      {!isPlaceholder && <span className="type-body metric-unit">{unit}</span>}
     </dd>
   )
 }
@@ -87,10 +87,8 @@ function TestProgress() {
   return (
     <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
       <div className="flex items-baseline justify-between gap-12">
-        <span className="type-body-small text-secondary">{progress.message || 'Starting…'}</span>
-        <span className="type-number-default num leading-body-default text-accent-text">
-          {Math.round(progress.progress)}%
-        </span>
+        <span className="type-body text-secondary">{progress.message || 'Starting…'}</span>
+        <span className="type-body num leading-body text-accent-text">{Math.round(progress.progress)}%</span>
       </div>
       <div
         className="w-full"
@@ -127,7 +125,7 @@ function HeroCell({
     <div className="flex flex-col gap-8">
       <dt className="flex items-center gap-6">
         <DirectionIcon series={series} />
-        <span className="type-label-field text-tertiary">{label}</span>
+        <span className="type-body-medium text-tertiary">{label}</span>
       </dt>
       <SpeedCell mbps={mbps} isPlaceholder={isPlaceholder} />
     </div>
@@ -137,7 +135,7 @@ function HeroCell({
 function Substat({ label, value, isEmpty }: { label: string; value: ReactNode; isEmpty: boolean }) {
   return (
     <div className="flex flex-col gap-4">
-      <dt className="type-label-field text-tertiary">{label}</dt>
+      <dt className="type-body-medium text-tertiary">{label}</dt>
       <dd className={substatValueVariants({ isEmpty })}>{value}</dd>
     </div>
   )
@@ -217,7 +215,7 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
       />
       <CardBody>
         {error && (
-          <p className="type-body-default inline-error" role="alert">
+          <p className="type-body inline-error" role="alert">
             {error}
           </p>
         )}

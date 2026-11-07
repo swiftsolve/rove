@@ -35,8 +35,8 @@ export function ErrorNotice({ icon, title, description, size, onRetry }: ErrorNo
         {icon}
       </span>
       <div className="flex flex-col items-center gap-4 text-center">
-        <p className="type-heading-small leading-body-default text-primary">{title}</p>
-        <p className="type-body-small max-w-[260px] text-tertiary">{description}</p>
+        <p className="type-heading leading-body text-primary">{title}</p>
+        <p className="type-body max-w-[260px] text-tertiary">{description}</p>
       </div>
       <Button icon={RefreshIcon} onClick={onRetry}>
         Try again

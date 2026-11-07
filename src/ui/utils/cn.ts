@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge'
 import { textStyleClasses, theme } from './cn-theme.gen.json'
 
 // tailwind-merge must know the theme's names, or it can't tell a font size
-// from a colour: `text-md` and `text-secondary` would look like two text
+// from a colour: `text-sm` and `text-secondary` would look like two text
 // colours, and it would drop one. `npm run gen` writes them from the theme
 // (src/styles/tailwind.css) and rove-tokens' text-styles.css.
 const mergeClasses = extendTailwindMerge<'text-style'>({

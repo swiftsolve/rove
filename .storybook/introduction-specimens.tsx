@@ -126,7 +126,7 @@ function AppFrameScene(): JSX.Element {
             <span className="inline-flex shrink-0 items-center justify-center text-accent" aria-hidden>
               <BrandIcon size={22} />
             </span>
-            <span className="type-heading-large leading-body-default text-primary">Rove</span>
+            <span className="type-title leading-body text-primary">Rove</span>
           </>
         }
         status={<TitleBarStatus tone={tone}>{label}</TitleBarStatus>}
@@ -328,8 +328,8 @@ function OverlaysScene(): JSX.Element {
                 <div ref={setContent}>
                   <div className={HEADER}>
                     <div className="min-w-0">
-                      <div className="type-heading-medium text-primary">Share Wi‑Fi</div>
-                      <div className="type-body-small mt-4 text-secondary">Scan with a phone camera to join</div>
+                      <div className="type-title text-primary">Share Wi‑Fi</div>
+                      <div className="type-body mt-4 text-secondary">Scan with a phone camera to join</div>
                     </div>
                     <IconButton
                       className="-mt-4 -mr-4 shrink-0 self-start"
@@ -347,13 +347,13 @@ function OverlaysScene(): JSX.Element {
                     ) : (
                       <div className="flex animate-fade-in flex-col items-center gap-12 py-16 text-center">
                         <Spinner />
-                        <p className="type-body-small text-tertiary">Generating QR code…</p>
+                        <p className="type-body text-tertiary">Generating QR code…</p>
                       </div>
                     )}
                   </div>
                   {isQrReady && (
                     <div className="px-16 py-12">
-                      <p className="type-heading-small animate-fade-in text-center leading-body-default wrap-anywhere text-primary">
+                      <p className="type-heading animate-fade-in text-center leading-body wrap-anywhere text-primary">
                         {NETWORK.ssid}
                       </p>
                     </div>

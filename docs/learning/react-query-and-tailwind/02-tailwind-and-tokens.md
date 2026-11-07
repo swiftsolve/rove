@@ -78,7 +78,7 @@ a size, weight, line height and letter spacing that belong together.
 rove-tokens ships each as a class in `text-styles.css`:
 
 ```tsx
-<h2 className="type-heading-small">Devices</h2>
+<h2 className="type-heading">Devices</h2>
 <p className="type-caption text-secondary">Updated 2m ago</p>
 ```
 

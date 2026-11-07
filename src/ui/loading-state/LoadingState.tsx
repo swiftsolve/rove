@@ -16,7 +16,7 @@ export function LoadingState({ label, className, ...props }: LoadingStateProps) 
   return (
     <div className={cn('page-empty', className)} role="status" {...props}>
       <Spinner />
-      <p className="type-body-default text-tertiary">{label}</p>
+      <p className="type-body text-tertiary">{label}</p>
     </div>
   )
 }

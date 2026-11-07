@@ -15,7 +15,7 @@ import {
 } from '@/utils/format'
 
 /** Connection badge; its icon is tinted by medium. */
-const CONNECTION = 'inline-flex min-w-0 items-center gap-6 type-label-menu'
+const CONNECTION = 'inline-flex min-w-0 items-center gap-6 type-body-medium'
 
 type MetricProps = {
   label: string
@@ -48,9 +48,9 @@ function Metric({ label, value, unit, series }: MetricProps) {
     <div className="flex min-w-0 flex-col gap-4">
       <dt className="flex items-center gap-6">
         {series && <DirectionIcon series={series} size={13} />}
-        <span className="type-label-field text-tertiary">{label}</span>
+        <span className="type-body-medium text-tertiary">{label}</span>
       </dt>
-      <dd className="type-number-large leading-body-default metric-value">
+      <dd className="type-stat leading-body metric-value">
         {value}
         {unit && <span className="type-caption text-secondary"> {unit}</span>}
       </dd>

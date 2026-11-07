@@ -6,11 +6,7 @@ import { faviconUrl, mayHaveFavicon } from '@/features/services/utils/favicon'
 // No backing chip, so logos with transparent padding blend into the panel
 // instead of showing a white square.
 const ICON = 'shrink-0 rounded-xs object-contain'
-const MONOGRAM = cx(
-  ICON,
-  'inline-flex items-center justify-center bg-hover',
-  'type-badge tracking-body-default text-secondary',
-)
+const MONOGRAM = cx(ICON, 'inline-flex items-center justify-center bg-hover', 'type-badge tracking-body text-secondary')
 
 // Hosts whose favicon has already 404'd, remembered for the session so remounts
 // (list polls, page switches) don't re-request an icon we know isn't there.

@@ -8,7 +8,7 @@ import { Card, CardBody, CardHeader, DirectionIcon, NoValue, Readout, StatusDot 
 // spinner or placeholder swapping for the value doesn't resize the card.
 const READOUT_AREA = cx(
   'flex h-full flex-col whitespace-nowrap',
-  'min-h-[calc(var(--type-body-small-size)*var(--type-body-small-line-height))]',
+  'min-h-[calc(var(--type-body-size)*var(--type-body-line-height))]',
 )
 
 type StatCardProps = {
@@ -46,7 +46,16 @@ type StatReadoutProps = {
 
 /** A compact value behind its marker. */
 export function StatReadout({ marker, value, unit, className }: StatReadoutProps) {
-  const icon = marker === 'online' ? <StatusDot tone="positive" /> : <DirectionIcon series={marker} size={12} />
+  // The small dot needs more room before the count than the arrows do, but
+  // the count and its unit keep the readout's gap.
+  const icon =
+    marker === 'online' ? (
+      <span className="mr-4 inline-flex">
+        <StatusDot tone="positive" />
+      </span>
+    ) : (
+      <DirectionIcon series={marker} size={12} />
+    )
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 
@@ -54,7 +63,7 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
 export function EmptyStatReadout() {
   return (
     <div className="metric" aria-hidden>
-      <span className="type-number-large metric-value">
+      <span className="type-stat metric-value">
         <NoValue />
       </span>
     </div>

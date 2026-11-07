@@ -7,12 +7,12 @@ import { cn } from '../utils/cn'
 import { PRESS, pressableProps, STATE_CLASSES } from '../utils/pressable'
 
 // The same 8px above the field as the feedback line below it.
-const LABEL = 'type-label-field text-tertiary mb-8 block'
+const LABEL = 'type-body-medium text-tertiary mb-8 block'
 
 // Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
 // 30px action centred beside the text sits 4px from the top and bottom edges.
 const INPUT = cx(
-  'type-body-default w-full rounded-sm px-12 py-10 leading-[18px] text-primary placeholder:text-tertiary',
+  'type-body w-full rounded-sm px-12 py-10 leading-[18px] text-primary placeholder:text-tertiary',
   'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
 )
 
@@ -34,7 +34,7 @@ const GROUP = cx(
   'transition-[border-color] duration-(--duration-fast) ease-in-out',
 )
 
-const FEEDBACK = 'mt-8 empty:mt-0 type-body-small text-tertiary data-invalid:text-negative'
+const FEEDBACK = 'mt-8 empty:mt-0 type-body text-tertiary data-invalid:text-negative'
 
 type TextFieldProps = Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'className' | 'placeholder'> & {
   /** Names the field, above it. */
@@ -104,7 +104,7 @@ export function TextField({
 const actionVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-xs',
-    'type-label-default bg-accent-muted text-accent-text',
+    'type-body-semibold bg-accent-muted text-accent-text',
     'transition-[background,color,transform] duration-(--duration-fast) ease-in-out',
     PRESS,
     STATE_CLASSES,

@@ -60,9 +60,9 @@ const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6'
   defaultVariants: { isReachable: false },
 })
 
-// On Heading/Small, the card titles' style.
+// On Heading, the card titles' style.
 const DEVICE_NAME = cx(
-  'type-heading-small min-w-0 flex-1 leading-heading-large text-primary',
+  'type-heading min-w-0 flex-1 leading-title text-primary',
   'line-clamp-2 wrap-anywhere [line-clamp:2]',
 )
 

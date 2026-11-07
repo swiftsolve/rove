@@ -40,7 +40,7 @@ type Story = StoryObj<typeof meta>
 /** In a line of body text. */
 export const Default: Story = {
   render: (args) => (
-    <span className="type-body-small text-secondary">
+    <span className="type-body text-secondary">
       <NoValue {...args} />
     </span>
   ),
@@ -59,22 +59,22 @@ export const InContext: Story = {
       </DataList>
       <dl className="grid grid-cols-3 gap-16">
         <div className="flex flex-col gap-4">
-          <dt className="type-label-field text-tertiary">Ping</dt>
-          <dd className="type-number-default num leading-body-default text-primary">12.4 ms</dd>
+          <dt className="type-body-medium text-tertiary">Ping</dt>
+          <dd className="type-body num leading-body text-primary">12.4 ms</dd>
         </div>
         <div className="flex flex-col gap-4">
-          <dt className="type-label-field text-tertiary">Jitter</dt>
-          <dd className="type-number-default num leading-body-default text-primary">
+          <dt className="type-body-medium text-tertiary">Jitter</dt>
+          <dd className="type-body num leading-body text-primary">
             <NoValue label="Not measured" />
           </dd>
         </div>
         <div className="flex flex-col gap-4">
-          <dt className="type-label-field text-tertiary">Loss</dt>
-          <dd className="type-number-default num leading-body-default text-primary">0%</dd>
+          <dt className="type-body-medium text-tertiary">Loss</dt>
+          <dd className="type-body num leading-body text-primary">0%</dd>
         </div>
       </dl>
       <div className="metric">
-        <span className="type-number-display metric-value">
+        <span className="type-display metric-value">
           <NoValue label="No reading" />
         </span>
       </div>
@@ -86,13 +86,13 @@ export const InContext: Story = {
 export const AllSizes: Story = {
   render: () => (
     <div className="flex items-end gap-16 text-primary">
-      <span className="type-body-small">
+      <span className="type-body">
         <NoValue />
       </span>
-      <span className="type-number-default leading-body-default">
+      <span className="type-body leading-body">
         <NoValue label="Not measured" />
       </span>
-      <span className="type-number-display">
+      <span className="type-display">
         <NoValue label="Not measured" />
       </span>
     </div>

@@ -5,7 +5,7 @@ import { Button } from '../button/Button'
 import { AlertIcon, RefreshIcon } from '../icons/Icons'
 import type { VariantOf } from '../utils/variants'
 
-const bannerVariants = cva('type-body-default banner', {
+const bannerVariants = cva('type-body banner', {
   variants: {
     variant: {
       /** A failure: a red wash and outline. Dismiss is red to match; Retry is neutral, the way out. */
@@ -63,7 +63,7 @@ export function Banner({ variant, title, description, onRetry }: BannerProps): J
       <div className="flex min-w-0 flex-1 flex-col gap-8">
         <div className="flex flex-col gap-2">
           <p className="text-primary">{title}</p>
-          <p className="type-body-small text-secondary">{description}</p>
+          <p className="type-body text-secondary">{description}</p>
         </div>
         <div className="flex justify-end gap-4">
           <Button tone="negative" onClick={() => setDismissedTitle(title)}>

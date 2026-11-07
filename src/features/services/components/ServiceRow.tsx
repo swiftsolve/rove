@@ -49,7 +49,7 @@ export function RowMenu({ service, onEdit, onRemove }: RowMenuProps) {
 /** A glyph standing in for a latency ("…"), read aloud as a word instead. */
 function PlaceholderReadout({ glyph, spoken }: { glyph: string; spoken: string }) {
   return (
-    <span className="type-body-small text-tertiary">
+    <span className="type-caption text-tertiary">
       <span aria-hidden="true">{glyph}</span>
       <span className="sr-only">{spoken}</span>
     </span>
@@ -74,7 +74,7 @@ function LatencyReadout({
     // Path failed. Only a genuine "Down" when we know the internet is up;
     // otherwise the failure is ours, so read it as unknown.
     return isInternetUnreachable ? (
-      <span className="type-body-small text-tertiary">
+      <span className="type-caption text-tertiary">
         <NoValue label="Unknown" />
       </span>
     ) : (
@@ -112,7 +112,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
       <div className="flex min-w-0 flex-auto flex-col gap-2">
         <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
-          <span className="type-body-small min-w-0 flex-auto truncate text-primary">{service.name}</span>
+          <span className="type-body min-w-0 flex-auto truncate text-primary">{service.name}</span>
           {(samples.length > 0 || isDown) && (
             <Sparkline
               samples={samples}
@@ -130,7 +130,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
           <span className="type-caption min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}
-          <span className="type-body-small min-w-[4.5em] shrink-0 text-right num text-secondary">
+          <span className="type-caption min-w-[4.5em] shrink-0 text-right num text-secondary">
             <LatencyReadout
               latencyMs={latencyMs}
               isErroring={isErroring}

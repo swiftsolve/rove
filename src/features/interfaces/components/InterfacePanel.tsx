@@ -61,7 +61,7 @@ export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <div className={PANEL_HEADER}>
         <div className="panel-head-main">
           <IconTile color={TILE_COLORS[iface.connectionType]} icon={<InterfaceIcon iface={iface} />} />
-          <h2 className="type-heading-small min-w-0 truncate leading-heading-large text-primary">{iface.name}</h2>
+          <h2 className="type-heading min-w-0 truncate leading-title text-primary">{iface.name}</h2>
           {iface.isDefault && (
             <Tooltip content="Used for internet traffic" shouldDescribe={false}>
               <span className={tagVariants({ isPositive: true })}>

@@ -20,7 +20,7 @@ const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center',
 
 // The lines under the spinner: the label and, when detection runs slow, a
 // second note in the same style.
-const LOADING_LINE = 'type-body-small text-secondary'
+const LOADING_LINE = 'type-body text-secondary'
 
 type NetworkErrorInfo = {
   kind: NetworkError['kind']

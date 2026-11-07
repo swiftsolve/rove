@@ -33,9 +33,7 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       footnote={
         qr ? (
-          <p className="type-heading-small animate-fade-in text-center leading-body-default wrap-anywhere text-primary">
-            {qr.ssid}
-          </p>
+          <p className="type-heading animate-fade-in text-center leading-body wrap-anywhere text-primary">{qr.ssid}</p>
         ) : undefined
       }
     >
@@ -64,7 +62,7 @@ function ShareState({
       <div className={STATE}>
         <Spinner />
         {/* At the full-page loading label's size, not a step larger. */}
-        <p className="type-body-small text-tertiary">Generating QR code…</p>
+        <p className="type-body text-tertiary">Generating QR code…</p>
       </div>
     )
   }

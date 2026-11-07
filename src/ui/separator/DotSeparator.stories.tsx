@@ -37,7 +37,7 @@ type Story = StoryObj<typeof meta>
 /** A dot between two inline items. */
 export const Dot: Story = {
   render: () => (
-    <span className="type-body-small inline-flex items-center gap-6 text-secondary">
+    <span className="type-body inline-flex items-center gap-6 text-secondary">
       Wi‑Fi <DotSeparator /> 5 GHz
     </span>
   ),
@@ -46,7 +46,7 @@ export const Dot: Story = {
 /** Every form together. */
 export const AllStates: Story = {
   render: () => (
-    <div className="type-body-small flex flex-col items-start gap-12 text-secondary">
+    <div className="type-body flex flex-col items-start gap-12 text-secondary">
       <span className="inline-flex items-center gap-6">
         Wi‑Fi <DotSeparator /> 5 GHz
       </span>

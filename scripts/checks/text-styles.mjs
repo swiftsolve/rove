@@ -4,7 +4,7 @@
  * drifts off the system: it picks up whatever weight and line height it
  * inherits, and no Figma style matches it.
  *
- *   - a class sets type with a `type-*` class (`type-body-small text-tertiary`),
+ *   - a class sets type with a `type-*` class (`type-body text-tertiary`),
  *     not a font size utility: no `text-sm`, `md:text-lg` or `text-[13px]`;
  *   - a stylesheet sets `font-size` from a style's variable,
  *     `var(--type-<style>-size)`, next to its weight, line height and letter
@@ -36,13 +36,10 @@ const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/ta
 
 /** Sizes that stay, by file and the exact text flagged. */
 const ALLOWED = [
-  // The About page's wordmark, at Number/Display's size: no sans style is that large.
+  // The About page's wordmark, at Display's size: no sans style is that large.
   { file: 'src/features/about/AboutView.tsx', value: 'text-3xl' },
   // A flag emoji in a fixed slot, sized like an icon, not text.
-  { file: 'src/features/apps/components/HostRow.tsx', value: 'text-md' },
-  // Day names on the chart's axis, at Number/Small's size: Number/Small is for
-  // figures.
-  { file: 'src/features/usage/components/WeekChart.tsx', value: 'fontSize' },
+  { file: 'src/features/apps/components/HostRow.tsx', value: 'text-sm' },
 ]
 
 async function listFiles(dir) {

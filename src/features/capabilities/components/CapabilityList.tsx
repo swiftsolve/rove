@@ -25,7 +25,7 @@ const LIST = 'flex flex-col'
 const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
 
 // Tertiary while a test runs, like the muted tile: the rating is about to change.
-const levelVariants = cva('type-body-small shrink-0', {
+const levelVariants = cva('type-caption shrink-0', {
   variants: {
     tone: { ...CAPABILITY_LEVEL_TEXT_COLORS, testing: 'text-tertiary' },
   },
@@ -49,8 +49,8 @@ function CapabilityRow({
           icon={<CapabilityIcon id={capability.id} size={17} />}
         />
         <span className={ROW_TEXT}>
-          <span className="type-body-default truncate text-primary">{capability.label}</span>
-          <span className="type-body-small truncate text-tertiary">{capability.description}</span>
+          <span className="type-body truncate text-primary">{capability.label}</span>
+          <span className="type-body truncate text-tertiary">{capability.description}</span>
         </span>
         <span className={levelVariants({ tone: isTesting ? 'testing' : capability.level })}>
           {CAPABILITY_LEVEL_LABELS[capability.level]}
@@ -74,8 +74,8 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
       <div className="flex min-w-0 flex-1 items-center gap-12">
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
-          <span className="type-body-default truncate text-primary">{definition.label}</span>
-          <span className="type-body-small truncate text-tertiary">{definition.description}</span>
+          <span className="type-body truncate text-primary">{definition.label}</span>
+          <span className="type-body truncate text-tertiary">{definition.description}</span>
         </div>
       </div>
       {/* Where the rating will land. */}

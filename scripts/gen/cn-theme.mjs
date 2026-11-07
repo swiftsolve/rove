@@ -5,7 +5,7 @@
  * text-styles.css.
  *
  * tailwind-merge only knows a utility's group from these lists. A theme name
- * missing from them isn't recognised, so `cn('text-md', 'text-lg')` keeps both;
+ * missing from them isn't recognised, so `cn('text-sm', 'text-lg')` keeps both;
  * generating them means a token change can't leave one out.
  *
  *   node scripts/gen/cn-theme.mjs           # rewrite it
@@ -45,7 +45,7 @@ const NAMESPACES = [
 const rel = (path) => relative(ROOT, path)
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
-/** Theme names by namespace, from every `@theme` block: `--text-md` is `text: md`. */
+/** Theme names by namespace, from every `@theme` block: `--text-sm` is `text: sm`. */
 function themeNames(css) {
   const names = Object.fromEntries(NAMESPACES.map((namespace) => [namespace, []]))
   names.color.push(...BUILT_IN_COLORS)

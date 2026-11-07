@@ -74,7 +74,7 @@ export function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | 
       </CardBody>
       {ping && ping.packetLoss > 0 && (
         <CardFooter>
-          <p className="type-body-small text-tertiary">Packet loss can cause slow or unstable connections.</p>
+          <p className="type-body text-tertiary">Packet loss can cause slow or unstable connections.</p>
         </CardFooter>
       )}
     </Card>

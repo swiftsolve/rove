@@ -215,7 +215,7 @@ function Rate({ series, mbps }: { series: SpeedSeries; mbps: number }) {
 function Node({ align, name, detail }: { align: 'start' | 'center' | 'end'; name: string; detail: string | null }) {
   return (
     <div className={columnVariants({ align })}>
-      <span className="type-label-default text-primary">{name}</span>
+      <span className="type-body-semibold text-primary">{name}</span>
       {detail && <span className="type-caption w-full truncate text-tertiary">{detail}</span>}
     </div>
   )

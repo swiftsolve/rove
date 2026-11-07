@@ -114,8 +114,8 @@ Button's recipe has three axes:
       },
       tone: { neutral: null, accent: null, negative: null },
       size: {
-        sm: 'gap-6 px-10 py-6 type-label-small',
-        md: 'gap-6 px-(--card-padding) py-10 type-label-large',
+        sm: 'gap-6 px-10 py-6 type-body-medium',
+        md: 'gap-6 px-(--card-padding) py-10 type-body-semibold',
       },
 ```
 

@@ -49,7 +49,7 @@ const statusVariants = cva('type-caption flex items-center', {
 })
 
 const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
-const ROW_TITLE = 'type-body-default font-medium text-primary'
+const ROW_TITLE = 'type-body font-medium text-primary'
 const ROW_DESC = 'type-caption text-tertiary'
 
 const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [

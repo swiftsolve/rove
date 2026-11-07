@@ -149,12 +149,12 @@ apply here. This section is how they're written as Tailwind utilities.
     Layout says which reasons count.
 - Text takes a text style's class and a colour utility:
   `type-caption text-tertiary`. [✓ CHECKED by `checks/text-styles.mjs`]
-  - The classes (`type-caption`, `type-label-field`, `type-number-default`, …)
+  - The classes (`type-caption`, `type-body-medium`, `type-body`, …)
     come from `rove-tokens`' `text-styles.css`, set no colour, and sit under
     every utility, so `font-medium`, `leading-[1.2]` or the `num` face beside
     one wins. A size utility stays off them.
   - Text with no matching style takes the nearest style at its size and a
-    utility for the rest: 13px at 500 is Body/Default plus `font-medium`.
+    utility for the rest: 11px at 500 is Caption plus `font-medium`.
   - A style sets its own line height, so text that keeps its line's (a
     timeline row's `*:leading-[1.3]`, a button's) adds `leading-[inherit]`.
   - A stylesheet sets all four of a style's `--type-<style>-*` variables.

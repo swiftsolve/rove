@@ -46,7 +46,7 @@ export function TitleBar({ brand, status, controls }: TitleBarProps) {
 
 // Nudged down a hair so the label optically aligns with the wordmark's centre
 // rather than sitting slightly high next to it.
-const statusVariants = cva(['type-label-small', 'mt-px inline-flex items-center gap-6 [-webkit-app-region:no-drag]'], {
+const statusVariants = cva(['type-body-medium', 'mt-px inline-flex items-center gap-6 [-webkit-app-region:no-drag]'], {
   variants: {
     tone: {
       positive: STATUS_TEXT.positive,

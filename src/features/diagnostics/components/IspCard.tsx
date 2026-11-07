@@ -35,7 +35,7 @@ export function IspCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nul
         ) : (
           // Reached only without a public IP, usually offline. The copy checks the
           // internet state so an echo-service blip doesn't claim we're offline.
-          <p className="type-body-small text-tertiary">
+          <p className="type-body text-tertiary">
             {diagnostics?.internet === 'online'
               ? 'Provider details are momentarily unavailable.'
               : 'Provider details are unavailable offline.'}

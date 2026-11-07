@@ -12,7 +12,7 @@ import { isPrivateIp } from '@/utils/ip'
 // because Windows has no flag emoji (see the @font-face note in styles/base.css).
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
-  "font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)] text-md leading-none",
+  "font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)] text-sm leading-none",
 )
 
 /**
@@ -67,7 +67,7 @@ function HostName({ host }: { host: HostUsage }) {
       maxWidth={360}
       isDisabled={!host.host}
     >
-      <span className="type-body-small min-w-0 truncate text-secondary">{host.host ?? host.ip}</span>
+      <span className="type-body min-w-0 truncate text-secondary">{host.host ?? host.ip}</span>
     </UiTooltip>
   )
 }
