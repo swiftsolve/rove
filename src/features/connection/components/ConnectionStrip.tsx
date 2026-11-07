@@ -110,7 +110,12 @@ function stripMetaItems(info: NetworkInfo): ReactNode[] {
   const speedItem = linkSpeed && <span className={styles.linkSpeed}>{linkSpeed}</span>
   const items = isWifiNetwork(info)
     ? [
-        info.signalStrength != null && <SignalMeter strength={info.signalStrength} />,
+        info.signalStrength != null && (
+          <span className="inline-flex items-center gap-4">
+            <SignalMeter strength={info.signalStrength} />
+            {info.signalStrength}%
+          </span>
+        ),
         speedItem,
         formatBand(info.frequency),
         info.security != null && <SecurityBadge security={info.security} isShort className={styles.securityBadge} />,

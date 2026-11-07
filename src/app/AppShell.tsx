@@ -19,7 +19,7 @@ import { PortalProvider } from '@/ui'
 const SCROLL = cx(
   'flex min-h-0 min-w-0 flex-1 flex-col',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
-  'pt-12 pr-(--content-inset-right) pb-20 pl-12',
+  'py-12 pr-(--content-inset-right) pl-12',
   '[&>.banner]:mb-12',
 )
 

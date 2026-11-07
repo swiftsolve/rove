@@ -3,12 +3,11 @@ import type { ReactNode } from 'react'
 
 import { Card, CardBody, CardHeader, DirectionIcon, NoValue, Readout, StatusDot } from '@/ui'
 
-// The content fills the body's height, so a control can sit at its foot. Never
-// shorter than a compact readout (its unit's line is the tallest part), so a
-// spinner or placeholder swapping for the value doesn't resize the card.
+// One figure's line tall whatever it holds (the value, a spinner, a placeholder
+// or a button), so swapping them never resizes the card or the row.
 const READOUT_AREA = cx(
-  'flex h-full flex-col whitespace-nowrap',
-  'min-h-[calc(var(--type-body-size)*var(--type-body-line-height))]',
+  'flex flex-col whitespace-nowrap',
+  'h-[calc(var(--type-stat-size)*var(--type-stat-line-height))]',
 )
 
 type StatCardProps = {

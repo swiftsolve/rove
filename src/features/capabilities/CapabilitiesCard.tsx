@@ -1,4 +1,4 @@
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import type { JSX } from 'react'
 
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
@@ -34,23 +34,16 @@ const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body
 const CAPABILITY_CELL = 'flex flex-[0_0_auto]'
 
 // Bleeds to the card's edges; the card's own clip rounds its bottom corners.
-// Hand-built, not CardFooter: this band pads 14px and sits 12 or 16px below
-// the tiles, where CardFooter pads 12px under the body's 14px.
+// Hand-built, not CardFooter: this band pads 14px and sits 16px below the
+// tiles, where CardFooter pads 12px under the body's 14px. The same before and
+// after a test, so the card keeps its height.
 const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
 
-const footerVariants = cva(
-  [
-    'type-caption flex items-center justify-between gap-12',
-    'w-[calc(100%+2*var(--card-body-padding))]',
-    '-mx-(--card-body-padding) -mb-(--card-body-padding)',
-    'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
-  ],
-  {
-    variants: {
-      isHint: { true: 'mt-12', false: 'mt-16' },
-    },
-    defaultVariants: { isHint: false },
-  },
+const FOOTER = cx(
+  'type-caption mt-16 flex items-center justify-between gap-12',
+  'w-[calc(100%+2*var(--card-body-padding))]',
+  '-mx-(--card-body-padding) -mb-(--card-body-padding)',
+  'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
 )
 
 /**
@@ -159,7 +152,7 @@ function UnratedCapability({ capability }: { capability: CapabilityDefinition })
  */
 function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Element {
   return (
-    <div className={footerVariants({ isHint: !hasResults })}>
+    <div className={FOOTER}>
       <FooterStatus hasResults={hasResults} />
       <OpenSpeedLink />
     </div>

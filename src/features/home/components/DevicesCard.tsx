@@ -82,9 +82,11 @@ function DiscoverButton({ onDiscover }: { onDiscover: () => void }) {
     onDiscover()
   }
   return (
-    // Raised above the card's stretched link so it takes its own clicks.
-    <div className="flex flex-1 items-end justify-center">
-      <Button className="relative z-2 -mb-4" icon={SearchIcon} onClick={handleClick}>
+    // Raised above the card's stretched link so it takes its own clicks. Taller
+    // than the readout, so -my-4 lets it spill into the padding rather than
+    // grow the card.
+    <div className="flex flex-1 items-center justify-center">
+      <Button className="relative z-2 -my-4" icon={SearchIcon} onClick={handleClick}>
         Discover
       </Button>
     </div>
