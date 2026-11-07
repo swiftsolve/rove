@@ -171,7 +171,7 @@ function FooterStatus({ hasResults }: { hasResults: boolean }): JSX.Element | nu
   const completedAt = useSpeedTest((test) => test.completedAt)
 
   if (isTesting) return <span className={FOOTER_STATUS}>Testing…</span>
-  if (!hasResults) return <span className={FOOTER_STATUS}>Available after speed test</span>
+  if (!hasResults) return <span className={FOOTER_STATUS}>Not tested yet</span>
   if (completedAt == null) return null
   return (
     <span className={FOOTER_STATUS}>

@@ -96,7 +96,7 @@ function headerAction(isTesting: boolean, hasRunTest: boolean): JSX.Element | un
       </span>
     )
   }
-  if (!hasRunTest) return <span className="type-caption text-tertiary">Available after speed test</span>
+  if (!hasRunTest) return <span className="type-caption text-tertiary">Not tested yet</span>
   return undefined
 }
 
