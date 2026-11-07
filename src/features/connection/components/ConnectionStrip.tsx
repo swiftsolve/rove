@@ -38,11 +38,21 @@ const CONNECTION_ICONS = {
 // only the share button opts back in.
 const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 
-const STRIP = cx(
-  'relative flex w-full items-start gap-12 text-left',
-  'min-h-(--card-header-min-height) px-(--card-header-padding-x) py-(--card-header-padding-y)',
-  'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-overlay-hover',
-  'has-[[data-collapsible-trigger]:focus-visible]:bg-overlay-hover',
+const stripVariants = cva(
+  [
+    'relative flex w-full items-start gap-12 text-left',
+    'min-h-(--card-header-min-height) px-(--card-header-padding-x) py-(--card-header-padding-y)',
+  ],
+  {
+    variants: {
+      canExpand: {
+        true: [
+          'transition-[background] duration-(--duration-fast) ease-in-out hover:bg-overlay-hover',
+          'has-[[data-collapsible-trigger]:focus-visible]:bg-overlay-hover',
+        ],
+      },
+    },
+  },
 )
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
@@ -62,24 +72,29 @@ type ConnectionStripProps = {
   info: NetworkInfo
   /** Set on the title, which names the whole card. */
   titleId: string
-  isExpanded: boolean
+  /** Unset when there are no details to open, so the strip doesn't expand. */
+  isExpanded?: boolean
 }
 
 /**
  * The card's always-visible row: the connection's name and icon, a meta line
  * (signal, link speed, band and security on Wi‑Fi; link speed on Ethernet),
- * the Wi‑Fi share button, and the chevron for the details below.
+ * the Wi‑Fi share button, and the chevron for the details below, when there
+ * are any.
  */
 export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripProps) {
   const display = getConnectionDisplay(info)
   const { Icon, color } = CONNECTION_ICONS[display.variant]
   const metaItems = stripMetaItems(info)
+  const canExpand = isExpanded !== undefined
 
   return (
-    <div className={STRIP}>
+    <div className={stripVariants({ canExpand })}>
       {/* A button can't hold the share button (invalid HTML), so the toggle
           is an empty button stretched under the row instead. */}
-      <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
+      {canExpand && (
+        <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
+      )}
       <IconTile size="lg" color={color} className={cx(ABOVE_TOGGLE, 'self-center')} icon={<Icon size={16} />} />
       <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
         <h2 id={titleId} className="type-title truncate text-primary">
@@ -95,7 +110,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
           <ShareWifiButton />
         </span>
       )}
-      <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />
+      {canExpand && <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />}
     </div>
   )
 }

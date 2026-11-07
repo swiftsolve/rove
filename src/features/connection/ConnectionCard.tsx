@@ -20,6 +20,15 @@ export function ConnectionCard({ info }: ConnectionCardProps) {
   const { publicIp, isLoading: isPublicIpLoading } = usePublicIp(isConnectedNetwork(info))
   const titleId = useId()
 
+  // Offline, the details would be three empty address rows, so the strip stands alone.
+  if (!isConnectedNetwork(info)) {
+    return (
+      <Card aria-labelledby={titleId}>
+        <ConnectionStrip info={info} titleId={titleId} />
+      </Card>
+    )
+  }
+
   return (
     // Named by its own heading, as it has no CardHeader.
     <Card aria-labelledby={titleId}>
