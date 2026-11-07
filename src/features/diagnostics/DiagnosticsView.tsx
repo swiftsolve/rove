@@ -23,7 +23,7 @@ export function DiagnosticsView() {
         title="Connection"
         // The spinning Run again button shows a check is running, so the
         // description stays put rather than giving way to a status.
-        description="Router, DNS, and ISP"
+        description="Router, ISP, and DNS"
         actions={
           <IconButton
             label={isRunning ? 'Running…' : 'Run again'}
@@ -51,8 +51,8 @@ export function DiagnosticsView() {
       ) : (
         <>
           <RouterCard diagnostics={diagnostics} />
-          <DnsCard servers={diagnostics?.dnsServers ?? []} />
           <IspCard diagnostics={diagnostics} />
+          <DnsCard servers={diagnostics?.dnsServers ?? []} />
         </>
       )}
     </div>
