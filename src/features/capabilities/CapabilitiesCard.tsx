@@ -1,5 +1,5 @@
 import { cva, cx } from 'class-variance-authority'
-import type { JSX, ReactNode } from 'react'
+import type { JSX } from 'react'
 
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -17,7 +17,6 @@ import {
   CardHeader,
   HistoryIcon,
   IconButton,
-  type IconComponent,
   IconTile,
   IconTileButton,
   InlineMeta,
@@ -37,9 +36,11 @@ const CAPABILITY_CELL = 'flex flex-[0_0_auto]'
 // Bleeds to the card's edges; the card's own clip rounds its bottom corners.
 // Hand-built, not CardFooter: this band pads 14px and sits 12 or 16px below
 // the tiles, where CardFooter pads 12px under the body's 14px.
+const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
+
 const footerVariants = cva(
   [
-    'type-caption flex items-center justify-end',
+    'type-caption flex items-center justify-between gap-12',
     'w-[calc(100%+2*var(--card-body-padding))]',
     '-mx-(--card-body-padding) -mb-(--card-body-padding)',
     'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
@@ -152,53 +153,41 @@ function UnratedCapability({ capability }: { capability: CapabilityDefinition })
 }
 
 /**
- * The footer's link to the Speed page: "Testing…" while a test runs, otherwise
- * when the last result landed. Before the first result, a hint instead.
+ * The footer: the results' status on the left ("Updated 5 min ago",
+ * "Testing…", or a hint before the first test) and a link to the Speed page
+ * on the right.
  */
-function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Element | null {
-  const isTesting = useSpeedTest((test) => test.isTesting)
-  const completedAt = useSpeedTest((test) => test.completedAt)
-
-  if (!hasResults) {
-    return (
-      <div className={footerVariants({ isHint: true })}>
-        <OpenSpeedLink>{isTesting ? 'Testing…' : 'Available after speed test'}</OpenSpeedLink>
-      </div>
-    )
-  }
-  if (isTesting) {
-    return (
-      <div className={footerVariants()}>
-        <OpenSpeedLink>Testing…</OpenSpeedLink>
-      </div>
-    )
-  }
-  if (completedAt == null) return null
+function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Element {
   return (
-    <div className={footerVariants()}>
-      <LastUpdatedLink completedAt={completedAt} />
+    <div className={footerVariants({ isHint: !hasResults })}>
+      <FooterStatus hasResults={hasResults} />
+      <OpenSpeedLink />
     </div>
   )
 }
 
-/** "Updated 5 min ago", opening Speed. */
-function LastUpdatedLink({ completedAt }: { completedAt: number }) {
+function FooterStatus({ hasResults }: { hasResults: boolean }): JSX.Element | null {
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const completedAt = useSpeedTest((test) => test.completedAt)
+
+  if (isTesting) return <span className={FOOTER_STATUS}>Testing…</span>
+  if (!hasResults) return <span className={FOOTER_STATUS}>Available after speed test</span>
+  if (completedAt == null) return null
   return (
-    <OpenSpeedLink icon={HistoryIcon}>
+    <span className={FOOTER_STATUS}>
+      <HistoryIcon size={13} aria-hidden />
       <UpdatedAgo timestamp={completedAt} />
-    </OpenSpeedLink>
+    </span>
   )
 }
 
-function OpenSpeedLink({ icon, children }: { icon?: IconComponent; children: ReactNode }) {
+function OpenSpeedLink() {
   const { navigate } = useNavigation()
 
   return (
     // The pill's padding hangs over the footer's own, so the footer keeps its height.
-    <Link className="-my-2" icon={icon} onClick={() => navigate({ tab: 'speed' })}>
-      {children}
-      {/* The visible text leads the name; this says where the link goes. */}
-      <span className="sr-only">, open Speed</span>
+    <Link className="-my-2 ml-auto" onClick={() => navigate({ tab: 'speed' })}>
+      Speed Test
     </Link>
   )
 }
