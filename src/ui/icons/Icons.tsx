@@ -21,7 +21,6 @@ import {
   ChevronRight,
   Clock,
   Cloud,
-  Copy,
   Cpu,
   Database,
   Download,
@@ -62,13 +61,10 @@ import {
   Share2,
   ShieldAlert,
   Smartphone,
-  Sparkles,
   Speaker,
   Square,
-  Stethoscope,
   Sun,
   Tablet,
-  Tag,
   Terminal,
   TextSearch,
   Trash2,
@@ -76,7 +72,6 @@ import {
   Tv,
   Video,
   Watch,
-  Waypoints,
   Wifi,
   WifiOff,
   X,
@@ -122,18 +117,15 @@ export const CheckIcon = make(Check, 16)
 export const HomeIcon = make(House, 18)
 export const LayersIcon = make(Layers, 18)
 export const AppsIcon = make(LayoutGrid, 18)
-export const DiagnosticsIcon = make(Stethoscope, 18)
 export const DeviceIcon = make(Smartphone, 18)
 export const DevicesIcon = make(MonitorSmartphone, 18)
 export const RouterIcon = make(Router, 18)
 export const CloudIcon = make(Cloud, 18)
 export const GlobeIcon = make(Globe, 18)
 export const IpIcon = make(Network, 18)
-export const GatewayIcon = make(Waypoints, 18)
 export const SpeedIcon = make(Gauge, 18)
 export const PulseIcon = make(Activity, 18)
 export const DnsIcon = make(Server, 18)
-export const SparkleIcon = make(Sparkles, 18)
 export const HistoryIcon = make(History, 16)
 export const UsageIcon = make(BarChart3, 18)
 export const SettingsIcon = make(Settings, 18)
@@ -162,7 +154,6 @@ export const ConsoleIcon = make(Gamepad2, 16)
 export const CameraIcon = make(Cctv, 16)
 export const SpeakerIcon = make(Speaker, 16)
 export const UnknownDeviceIcon = make(HelpCircle, 16)
-export const TagIcon = make(Tag, 16)
 export const LockIcon = make(Lock, 14)
 export const UnlockIcon = make(LockOpen, 14)
 export const ShieldAlertIcon = make(ShieldAlert, 16)
@@ -181,8 +172,6 @@ export const AlertIcon = make(TriangleAlert, 16)
 
 // Window controls
 export const MinimizeIcon = make(Minus, 15)
-export const MaximizeIcon = make(Square, 13)
-export const RestoreIcon = make(Copy, 13)
 export const CloseIcon = make(X, 15)
 
 // Capability icons
@@ -191,4 +180,3 @@ export const VideoCallIcon = make(Video, 22)
 export const GamepadIcon = make(Gamepad2, 22)
 export const DownloadIcon = make(Download, 22)
 export const LiveStreamIcon = make(Radio, 22)
-export const GlobeStreamIcon = make(Globe, 22)
