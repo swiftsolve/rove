@@ -5,7 +5,7 @@ export default { title: 'Typography' }
 
 // The Figma page's order: display first.
 const FAMILIES = {
-  display: 'Headings. One weight.',
+  display: 'Headings, in Bold.',
   sans: 'Interface text. Regular, Medium, SemiBold.',
   numeric: 'Numbers, tabular. Live metrics in SemiBold.',
 }
@@ -31,7 +31,7 @@ const SPECIMENS = {
   'number-small': '60s ago',
 }
 
-const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold' }
+const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' }
 
 const fontSizes = Object.fromEntries(
   group(typography, 'font-size').map((token) => [`{${token.path.join('.')}}`, token.$value.value]),
@@ -77,7 +77,7 @@ function Families() {
               className="family-specimen"
               style={{
                 fontFamily: `var(${name})`,
-                fontWeight: token.path[1] === 'sans' ? 'var(--weight-semibold)' : undefined,
+                fontWeight: { sans: 'var(--weight-semibold)', display: 700 }[token.path[1]],
               }}
             >
               Aa 0123456789
@@ -159,7 +159,7 @@ function TextStyles() {
 
 export const Typography = {
   render: () => (
-    <Page title="Typography" intro="Cal Sans for headings, Hanken Grotesk for text and numbers.">
+    <Page title="Typography" intro="Urbanist for headings, Hanken Grotesk for text and numbers.">
       <Group
         title="Primitive tokens"
         intro="The raw families and sizes, named by what they are."
@@ -167,7 +167,7 @@ export const Typography = {
       >
         <Section
           title="Families"
-          intro="Cal Sans (font-family/display) for headings, Hanken Grotesk (font-family/sans and font-family/numeric) for text and numbers."
+          intro="Urbanist (font-family/display) for headings, Hanken Grotesk (font-family/sans and font-family/numeric) for text and numbers."
         >
           <Families />
         </Section>

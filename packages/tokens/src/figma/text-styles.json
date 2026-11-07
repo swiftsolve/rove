@@ -7,9 +7,9 @@
     {
       "name": "Heading/Large",
       "description": "Page titles, the wordmark. Code: .type-heading-large",
-      "fontFamily": "Cal Sans",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
       "fontSize": 17,
       "lineHeight": {
         "unit": "PERCENT",
@@ -27,9 +27,9 @@
     {
       "name": "Heading/Medium",
       "description": "Dialog titles. Code: .type-heading-medium",
-      "fontFamily": "Cal Sans",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
       "fontSize": 15,
       "lineHeight": {
         "unit": "PERCENT",
@@ -47,9 +47,9 @@
     {
       "name": "Heading/Small",
       "description": "Card headings. Code: .type-heading-small",
-      "fontFamily": "Cal Sans",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
       "fontSize": 14,
       "lineHeight": {
         "unit": "PERCENT",
@@ -308,9 +308,9 @@
     {
       "name": "Heading/XSmall",
       "description": "Empty state titles. Code: .type-heading-xsmall",
-      "fontFamily": "Cal Sans",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
       "fontSize": 13,
       "lineHeight": {
         "unit": "PERCENT",

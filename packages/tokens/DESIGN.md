@@ -48,24 +48,24 @@ colors: # Keys: --<key>
   focus-ring: "#5b8cff" # Keyboard focus ring
 typography: # Keys: the class, .type-<key>
   heading-large: # Heading/Large: Page titles, the wordmark. Class .type-heading-large.
-    fontFamily: "Cal Sans"
+    fontFamily: "Urbanist"
     fontSize: "17px"
-    fontWeight: 400
+    fontWeight: 700
     lineHeight: 1.25
   heading-medium: # Heading/Medium: Dialog titles. Class .type-heading-medium.
-    fontFamily: "Cal Sans"
+    fontFamily: "Urbanist"
     fontSize: "15px"
-    fontWeight: 400
+    fontWeight: 700
     lineHeight: 1.45
   heading-small: # Heading/Small: Card headings. Class .type-heading-small.
-    fontFamily: "Cal Sans"
+    fontFamily: "Urbanist"
     fontSize: "14px"
-    fontWeight: 400
+    fontWeight: 700
     lineHeight: 1.2
   heading-xsmall: # Heading/XSmall: Empty state titles. Class .type-heading-xsmall.
-    fontFamily: "Cal Sans"
+    fontFamily: "Urbanist"
     fontSize: "13px"
-    fontWeight: 400
+    fontWeight: 700
     lineHeight: 1.45
   body-default: # Body/Default: Body text. Class .type-body-default.
     fontFamily: "Hanken Grotesk"
@@ -162,7 +162,7 @@ font-size: # Font sizes; a text style sets its own. Keys: --<key>
 font-family: # Font stacks. Keys: --<key>
   font-family-sans: "'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif" # Interface text
   font-family-numeric: "'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif" # Numbers
-  font-family-display: "'Cal Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" # Headings
+  font-family-display: "'Urbanist', system-ui, -apple-system, 'Segoe UI', sans-serif" # Headings
 font-weight: # Font weights. Keys: --<key>
   weight-regular: "400" # Body text
   weight-medium: "500" # Labels and menus
@@ -366,8 +366,8 @@ should stay nearly solid, like a chart line behind another.
   `typography`.
   [✓ CHECKED by Rove's `checks/text-styles.mjs`].
 - Numbers that are data (speeds, totals, chart labels) use the Number styles
-  (`number-*`). Headings (`heading-*`) are set in Cal Sans, which has one
-  weight; everything else is Hanken Grotesk.
+  (`number-*`). Headings (`heading-*`) are set in Urbanist Bold;
+  everything else is Hanken Grotesk.
 
 ## Layout
 

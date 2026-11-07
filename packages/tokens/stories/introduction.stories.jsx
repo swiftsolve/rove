@@ -457,7 +457,7 @@ const EXPLORE = [
   {
     id: 'typography--typography',
     title: 'Typography',
-    body: `${flatten(textStyles).length} text styles in Cal Sans and Hanken Grotesk, each four variables and a class.`,
+    body: `${flatten(textStyles).length} text styles in Urbanist and Hanken Grotesk, each four variables and a class.`,
     // Both families: the text face, and the numeric one figures are set in.
     specimen: (
       <span className="intro-type-pair">

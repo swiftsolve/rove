@@ -185,7 +185,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 
 | Path | What |
 | --- | --- |
-| `.storybook/` | The Rove Tokens Storybook's config, and the Hanken Grotesk, Cal Sans and Geist Mono files it bundles. |
+| `.storybook/` | The Rove Tokens Storybook's config, and the Hanken Grotesk, Urbanist and Geist Mono files it bundles. |
 | `stories/` | Its pages, one file per sidebar group, each with its own CSS (`stories.css` is what they share; images in `assets/`). `tokens.js` reads the DTCG files. |
 
 **Repo**
