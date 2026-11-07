@@ -22,9 +22,6 @@
 /* A figure's digits, on a Number style (`type-number-display metric-value`). */
 @utility metric-value {
   font-variant-numeric: tabular-nums;
-  /* Semibold, where the Figma style is Regular: Questrial has one weight, so
-     the browser emboldens it. Figma draws the same with an outside stroke. */
-  font-weight: var(--weight-semibold);
   color: var(--text-primary);
 }
 

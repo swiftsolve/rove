@@ -40,8 +40,8 @@ const ALLOWED = [
   { file: 'src/features/about/AboutView.tsx', value: 'text-3xl' },
   // A flag emoji in a fixed slot, sized like an icon, not text.
   { file: 'src/features/apps/components/HostRow.tsx', value: 'text-md' },
-  // Day names on the chart's axis, at Number/Small's size in the sans face:
-  // Number/Small is Questrial, for figures.
+  // Day names on the chart's axis, at Number/Small's size: Number/Small is for
+  // figures.
   { file: 'src/features/usage/components/WeekChart.tsx', value: 'fontSize' },
 ]
 

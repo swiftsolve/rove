@@ -9,8 +9,8 @@ import type { VariantOf } from '../utils/variants'
 // boxes snap each bar to 3 or 4, so the meter looked jagged: BarMeter rounds
 // them to screen pixels and draws an SVG. The ends round at half the width.
 const SIZES = {
-  /** A data row: the tallest rounds the 13px value text's cap height up. */
-  sm: { width: 2, heights: [4, 6, 8, 10] },
+  /** A data row: the tallest rounds the 11px value text's cap height up. */
+  sm: { width: 2, heights: [2, 4, 6, 8] },
   /** A list row's rating. */
   lg: { width: 3, heights: [6, 8, 10, 12] },
 } as const satisfies Record<string, { width: number; heights: readonly [number, number, number, number] }>
