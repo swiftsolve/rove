@@ -187,7 +187,7 @@ function OpenSpeedLink() {
   return (
     // The pill's padding hangs over the footer's own, so the footer keeps its height.
     <Link className="-my-2 ml-auto" onClick={() => navigate({ tab: 'speed' })}>
-      Speed Test
+      Speed test
     </Link>
   )
 }
