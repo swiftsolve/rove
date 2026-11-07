@@ -626,14 +626,26 @@
   min-height: 0;
 }
 
+/* The app's own scenes (the window, the dialog, the card) sit on a dark
+   stage, the shade the dialog's scrim leaves: on the inset fill they barely
+   part from it. Light keeps the inset fill. */
+.intro-bento-frame .intro-preview,
+.intro-bento-overlays .intro-preview,
+.intro-bento-containers .intro-preview {
+  background: linear-gradient(var(--bg-scrim), var(--bg-scrim)), var(--bg-inset);
+}
+
+.theme-light .intro-bento-frame .intro-preview,
+.theme-light .intro-bento-overlays .intro-preview {
+  background: var(--bg-inset);
+}
+
 /* Containers: the card from the top, with room below for its details to open
-   into. Dark, as the dialog's scrim leaves the Overlays stage: on the inset
-   fill the card barely parts. Light keeps the app's backdrop, where the scrim
-   would turn the stage grey. */
+   into. In light, on the app's backdrop, as on Home: the white card barely
+   parts from the inset fill. */
 .intro-card:has(.intro-mini-card) .intro-preview {
   align-items: flex-start;
   padding-top: 32px;
-  background: linear-gradient(var(--bg-scrim), var(--bg-scrim)), var(--bg-inset);
 }
 
 .theme-light .intro-card:has(.intro-mini-card) .intro-preview {
@@ -648,7 +660,7 @@
   z-index: 2;
   inset: auto 0 0;
   height: 32px;
-  /* The card's stage, both its layers fading in together. */
+  /* The dark stage, both its layers fading in together. */
   background:
     linear-gradient(to bottom, transparent, var(--bg-scrim)), linear-gradient(to bottom, transparent, var(--bg-inset));
   pointer-events: none;
@@ -662,6 +674,12 @@
 /* The window's stage is taller, so its fade covers more: the rail's lower half goes fully into the background. */
 .intro-card:has(.intro-window) .intro-preview::after {
   height: 60%;
+  background:
+    linear-gradient(to bottom, transparent, var(--bg-scrim) 75%),
+    linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
+}
+
+.theme-light .intro-card:has(.intro-window) .intro-preview::after {
   background: linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
 }
 
