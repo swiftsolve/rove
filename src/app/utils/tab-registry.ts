@@ -50,7 +50,15 @@ export type TabDefinition = {
 export const TABS: Record<AppTab, TabDefinition> = {
   home: { label: 'Home', Icon: HomeIcon, Screen: HomeView, rail: 'main', needsNetworkInfo: true },
   speed: { label: 'Speed', Icon: SpeedIcon, Screen: SpeedView, rail: 'main', needsNetworkInfo: true },
+  diagnostics: { label: 'Connection', Icon: ConnectionIcon, Screen: DiagnosticsView, rail: 'main' },
   devices: { label: 'Devices', Icon: DevicesIcon, Screen: DevicesView, rail: 'main' },
+  services: {
+    label: 'Services',
+    Icon: CloudIcon,
+    Screen: ServicesView,
+    subScreen: ({ servicesSub }) => (servicesSub?.view === 'timeline' ? ServicesTimelineView : null),
+    rail: 'main',
+  },
   apps: {
     label: 'Apps',
     Icon: AppsIcon,
@@ -62,17 +70,9 @@ export const TABS: Record<AppTab, TabDefinition> = {
     },
     rail: 'main',
   },
-  services: {
-    label: 'Services',
-    Icon: CloudIcon,
-    Screen: ServicesView,
-    subScreen: ({ servicesSub }) => (servicesSub?.view === 'timeline' ? ServicesTimelineView : null),
-    rail: 'main',
-  },
+  usage: { label: 'Usage', Icon: UsageIcon, Screen: UsageView, rail: 'main' },
   events: { label: 'Timeline', Icon: EventsIcon, Screen: EventsView, rail: 'main' },
   interfaces: { label: 'Interfaces', Icon: LayersIcon, Screen: InterfacesView, rail: 'main' },
-  diagnostics: { label: 'Connection', Icon: ConnectionIcon, Screen: DiagnosticsView, rail: 'main' },
-  usage: { label: 'Usage', Icon: UsageIcon, Screen: UsageView, rail: 'main' },
   // The gear sits on its own in the rail's footer.
   settings: { label: 'Settings', Icon: SettingsIcon, Screen: SettingsView, rail: 'footer' },
   // Reached from inside Settings rather than the rail, so Settings stays lit.

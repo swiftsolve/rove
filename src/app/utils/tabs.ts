@@ -2,13 +2,13 @@
 export const APP_TABS = [
   'home',
   'speed',
+  'diagnostics',
   'devices',
-  'apps',
   'services',
+  'apps',
+  'usage',
   'events',
   'interfaces',
-  'diagnostics',
-  'usage',
   'settings',
   'about',
 ] as const

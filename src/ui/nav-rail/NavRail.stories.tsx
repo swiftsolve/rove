@@ -27,13 +27,13 @@ type Page = {
 const MAIN_PAGES: Page[] = [
   { label: 'Home', icon: HomeIcon },
   { label: 'Speed', icon: SpeedIcon },
+  { label: 'Connection', icon: ConnectionIcon },
   { label: 'Devices', icon: DevicesIcon },
-  { label: 'Apps', icon: AppsIcon },
   { label: 'Services', icon: CloudIcon },
+  { label: 'Apps', icon: AppsIcon },
+  { label: 'Usage', icon: UsageIcon },
   { label: 'Timeline', icon: EventsIcon },
   { label: 'Interfaces', icon: LayersIcon },
-  { label: 'Connection', icon: ConnectionIcon },
-  { label: 'Usage', icon: UsageIcon },
 ]
 
 const SETTINGS: Page = { label: 'Settings', icon: SettingsIcon }

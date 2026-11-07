@@ -85,13 +85,13 @@ const TICKS_PER_BEAT = BEAT / TYPE_BEAT
 const TABS: { label: string; icon: IconComponent }[] = [
   { label: 'Home', icon: HomeIcon },
   { label: 'Speed', icon: SpeedIcon },
+  { label: 'Connection', icon: ConnectionIcon },
   { label: 'Devices', icon: DevicesIcon },
-  { label: 'Apps', icon: AppsIcon },
   { label: 'Services', icon: CloudIcon },
+  { label: 'Apps', icon: AppsIcon },
+  { label: 'Usage', icon: UsageIcon },
   { label: 'Timeline', icon: EventsIcon },
   { label: 'Interfaces', icon: LayersIcon },
-  { label: 'Connection', icon: ConnectionIcon },
-  { label: 'Usage', icon: UsageIcon },
 ]
 
 // The title bar's verdicts, in the words of src/app/utils/connection-status.ts.
