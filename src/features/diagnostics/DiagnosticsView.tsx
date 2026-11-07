@@ -22,12 +22,12 @@ export function DiagnosticsView() {
       <PageHeader
         icon={<ConnectionIcon size={18} />}
         title="Connection"
-        // The spinning Run again button shows a check is running, so the
+        // The spinning Refresh button shows a check is running, so the
         // description stays put rather than giving way to a status.
         description="Your path to the internet"
         actions={
           <IconButton
-            label={isRunning ? 'Running…' : 'Run again'}
+            label={isRunning ? 'Refreshing…' : 'Refresh'}
             icon={RefreshIcon}
             isLoading={isRunning}
             onClick={runDiagnostics}

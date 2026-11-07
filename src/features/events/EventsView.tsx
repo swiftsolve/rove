@@ -81,7 +81,7 @@ export function EventsView() {
         }
         actions={
           <IconButton
-            label={isScanning ? 'Scanning…' : 'Scan for changes'}
+            label={isScanning ? 'Refreshing…' : 'Refresh'}
             icon={RefreshIcon}
             isLoading={isScanning}
             onClick={rescan}
