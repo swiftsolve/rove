@@ -110,7 +110,8 @@ export function CapabilityList() {
   return (
     <Card>
       <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={headerAction(isTesting, hasRunTest)} />
-      <CardBody>
+      {/* Rows carry their own vertical padding, like Settings' rows. */}
+      <CardBody layout="rows">
         {hasRunTest ? (
           <ul role="list" className={LIST}>
             {capabilities.map((capability) => (
