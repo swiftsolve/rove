@@ -419,6 +419,12 @@
   contain: size;
   padding: 24px;
   overflow: hidden;
+  /* A dark stage, the shade the dialog's scrim leaves: on the inset fill the
+     app's own surfaces barely part from it. Light keeps the inset fill. */
+  background: linear-gradient(var(--bg-scrim), var(--bg-scrim)), var(--bg-inset);
+}
+
+.theme-light .intro-preview {
   background: var(--bg-inset);
 }
 
@@ -624,20 +630,6 @@
   display: flex;
   flex: 1;
   min-height: 0;
-}
-
-/* The app's own scenes (the window, the dialog, the card) sit on a dark
-   stage, the shade the dialog's scrim leaves: on the inset fill they barely
-   part from it. Light keeps the inset fill. */
-.intro-bento-frame .intro-preview,
-.intro-bento-overlays .intro-preview,
-.intro-bento-containers .intro-preview {
-  background: linear-gradient(var(--bg-scrim), var(--bg-scrim)), var(--bg-inset);
-}
-
-.theme-light .intro-bento-frame .intro-preview,
-.theme-light .intro-bento-overlays .intro-preview {
-  background: var(--bg-inset);
 }
 
 /* Containers: the card from the top, with room below for its details to open
