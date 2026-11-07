@@ -9,6 +9,7 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
     tone: {
       current: 'bg-current',
       positive: 'bg-status-positive',
+      accent: 'bg-accent',
     },
     pulse: {
       calm: 'animate-pulse-calm',
@@ -20,7 +21,10 @@ const dotVariants = cva('inline-block size-[5px] shrink-0 rounded-full', {
 })
 
 type StatusDotProps = Omit<ComponentProps<'span'>, 'children'> & {
-  /** Its colour: the text colour (`current`), or `positive` when its words stay quiet. */
+  /**
+   * Its colour: the text colour (`current`), `positive` for a healthy state
+   * whose words stay quiet (online), or `accent` for work under way (a scan).
+   */
   tone?: VariantOf<typeof dotVariants, 'tone'>
   /**
    * A breathing pulse, at the pace of what it marks: `calm` for a steady

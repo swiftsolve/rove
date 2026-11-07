@@ -11,7 +11,7 @@ const meta = {
   component: StatusDot,
   args: { tone: 'positive' },
   argTypes: {
-    tone: { control: 'inline-radio', options: ['current', 'positive'] },
+    tone: { control: 'inline-radio', options: ['current', 'positive', 'accent'] },
     pulse: { control: 'inline-radio', options: [undefined, 'calm', 'live', 'busy'] },
   },
   parameters: {
@@ -48,8 +48,8 @@ export const Calm: Story = { args: { pulse: 'calm' } }
 /** Data streaming in. */
 export const Live: Story = { args: { pulse: 'live' } }
 
-/** Work under way. */
-export const Busy: Story = { args: { pulse: 'busy' } }
+/** Work under way, in the accent: a scan is activity, not health. */
+export const Busy: Story = { args: { tone: 'accent', pulse: 'busy' } }
 
 /** In its words' colour: here, amber words. */
 export const Current: Story = {
@@ -62,19 +62,20 @@ export const Current: Story = {
   ),
 }
 
-/** Every pulse: green beside quiet words, then in the words' own colour. */
+/** Every pulse: green, then the accent, beside quiet words, then in the words' own colour. */
 export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
       {(
         [
           ['positive', 'text-secondary'],
+          ['accent', 'text-secondary'],
           ['current', 'text-positive'],
           ['current', 'text-warning'],
           ['current', 'text-negative'],
         ] as const
       ).map(([tone, words]) => (
-        <div key={words} className={`type-caption flex flex-wrap items-center gap-20 ${words}`}>
+        <div key={tone + words} className={`type-caption flex flex-wrap items-center gap-20 ${words}`}>
           {([undefined, 'calm', 'live', 'busy'] as const).map((pulse) => (
             <span key={pulse ?? 'none'} className="inline-flex items-center gap-6">
               <StatusDot tone={tone} pulse={pulse} />

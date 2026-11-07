@@ -66,7 +66,7 @@ export function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | n
   if (!isMounted) return null
   return (
     <span className={scanVariants({ isLeaving: !isActive })} aria-hidden={isActive ? undefined : true}>
-      <StatusDot tone="positive" pulse="busy" className={STATUS_DOT} />
+      <StatusDot tone="accent" pulse="busy" className={STATUS_DOT} />
       {/* A hidden sizer (the longest word) keeps the stacked words from reflowing. */}
       <span className="relative inline-block">
         <span className="invisible" aria-hidden>
