@@ -168,7 +168,9 @@ function PathLink({
             x2="100%"
             y2="0.5"
             stroke="currentColor"
-            strokeWidth={1}
+            // Dots carry less ink than a solid line, and at 1x a 1px dot smears
+            // across two pixel rows, so they're a touch heavier.
+            strokeWidth={isDotted && !isFlowing ? 1.5 : 1}
             strokeLinecap="round"
             strokeDasharray={isFlowing ? '2 4' : isDotted ? '0.01 4' : undefined}
             className={isFlowing ? 'animate-line-flow' : undefined}
