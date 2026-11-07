@@ -160,19 +160,18 @@ function PathLink({
       </div>
       <div className="flex w-full">
         <svg key={changes} className={lineVariants({ tone, isSweeping: changes > 0 })}>
-          {/* Round 1px dots 4px apart for Wi‑Fi, a solid line for a cable, and
-            2px dashes, one period of the flow, while it flows. */}
+          {/* Square 3px dashes for Wi‑Fi (1px dots smear to grey at 1x), a
+            solid line for a cable, and 2px dashes, one period of the flow,
+            while it flows. */}
           <line
             x1="0.5"
             y1="0.5"
             x2="100%"
             y2="0.5"
             stroke="currentColor"
-            // Dots carry less ink than a solid line, and at 1x a 1px dot smears
-            // across two pixel rows, so they're a touch heavier.
-            strokeWidth={isDotted && !isFlowing ? 1.5 : 1}
-            strokeLinecap="round"
-            strokeDasharray={isFlowing ? '2 4' : isDotted ? '0.01 4' : undefined}
+            strokeWidth={1}
+            strokeLinecap={isDotted && !isFlowing ? 'butt' : 'round'}
+            strokeDasharray={isFlowing ? '2 4' : isDotted ? '3 3' : undefined}
             className={isFlowing ? 'animate-line-flow' : undefined}
           />
         </svg>
