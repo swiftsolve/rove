@@ -21,7 +21,6 @@ import {
   ChevronRight,
   Clock,
   Cloud,
-  Cpu,
   Database,
   Download,
   EthernetPort,
@@ -136,7 +135,6 @@ export const WeekIcon = make(CalendarRange, 18)
 export const ComputerIcon = make(Laptop, 16)
 export const TvIcon = make(Tv, 16)
 export const PrinterIcon = make(Printer, 16)
-export const ChipIcon = make(Cpu, 16)
 export const DatabaseIcon = make(Database, 16)
 export const MailIcon = make(Mail, 16)
 export const MessageIcon = make(MessageSquare, 16)

@@ -7,7 +7,6 @@ import type { LanDevice, LanDeviceKind } from '@/types'
 import {
   CameraIcon,
   Card,
-  ChipIcon,
   ComputerIcon,
   ConsoleIcon,
   DeviceIcon,
@@ -19,6 +18,7 @@ import {
   NoValue,
   PrinterIcon,
   RouterIcon,
+  SmartHomeIcon,
   SpeakerIcon,
   StatusDot,
   TabletIcon,
@@ -82,7 +82,7 @@ const KIND_ICONS: Record<LanDeviceKind, IconComponent> = {
   printer: PrinterIcon,
   camera: CameraIcon,
   speaker: SpeakerIcon,
-  iot: ChipIcon,
+  iot: SmartHomeIcon,
   unknown: UnknownDeviceIcon,
 }
 

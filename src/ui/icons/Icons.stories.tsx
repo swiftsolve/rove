@@ -8,6 +8,7 @@ import { HdStreamIcon } from './HdStreamIcon'
 import type { IconProps } from './Icons'
 import * as Icons from './Icons'
 import { PathIcon } from './PathIcon'
+import { SmartHomeIcon } from './SmartHomeIcon'
 import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
 const CUSTOM = {
@@ -19,6 +20,7 @@ const CUSTOM = {
   'DirectionIcon up': (props: IconProps) => <DirectionIcon series="up" {...props} />,
   HdStreamIcon,
   PathIcon,
+  SmartHomeIcon,
   UltraHdStreamIcon,
 }
 // Every Lucide alias and custom icon, by name (the module's types are gone at

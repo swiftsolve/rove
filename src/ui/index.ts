@@ -56,6 +56,7 @@ export { CloudGamingIcon } from './icons/CloudGamingIcon'
 export { ConnectionIcon } from './icons/ConnectionIcon'
 export { HdStreamIcon } from './icons/HdStreamIcon'
 export { PathIcon } from './icons/PathIcon'
+export { SmartHomeIcon } from './icons/SmartHomeIcon'
 export { UltraHdStreamIcon } from './icons/UltraHdStreamIcon'
 export { DirectionIcon, type SpeedSeries } from './icons/DirectionIcon'
 
