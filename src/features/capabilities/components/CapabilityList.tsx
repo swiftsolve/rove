@@ -22,7 +22,8 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
 // No first/last padding special cases, so every row's hover highlight matches.
 const LIST = 'flex flex-col'
 
-const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
+// Name over description, as in a service row: Body, then Caption 2px below.
+const ROW_TEXT = 'flex min-w-0 flex-1 flex-col gap-2'
 
 // Tertiary while a test runs, like the muted tile: the rating is about to change.
 const levelVariants = cva('type-caption shrink-0', {
@@ -50,7 +51,7 @@ function CapabilityRow({
         />
         <span className={ROW_TEXT}>
           <span className="type-body truncate text-primary">{capability.label}</span>
-          <span className="type-body truncate text-tertiary">{capability.description}</span>
+          <span className="type-caption truncate text-tertiary">{capability.description}</span>
         </span>
         <span className={levelVariants({ tone: isTesting ? 'testing' : capability.level })}>
           {CAPABILITY_LEVEL_LABELS[capability.level]}
@@ -75,7 +76,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
           <span className="type-body truncate text-primary">{definition.label}</span>
-          <span className="type-body truncate text-tertiary">{definition.description}</span>
+          <span className="type-caption truncate text-tertiary">{definition.description}</span>
         </div>
       </div>
       {/* Where the rating will land. */}
