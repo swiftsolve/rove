@@ -21,8 +21,9 @@ are in `src/ui/components.gen.json`: read it first, not the sources.
   A new one joins the library, in `src/ui/icons/`.
 - The app fills the frame's parts: `AppTitleBar` the title bar, and `TabBar`
   the nav rail, from the tab registry.
-- Figma's Compositions page holds what features build from the library, like
-  `ThroughputChart` (`features/live-throughput`) and `Sparkline`
+- Figma's Compositions pages hold what features build from the library, a
+  page per app page that shows them, like `ThroughputChart` on Home
+  (`features/live-throughput`) and `Sparkline` on Services
   (`features/services`). They live with their feature, not in `src/ui`.
 
 ### State: context, not prop drilling
