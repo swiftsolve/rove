@@ -42,7 +42,7 @@ export function SpeedHistoryView() {
   return (
     <div className="page">
       <PageHeader
-        title="Speed Test Results"
+        title="Speed test results"
         description="Results from your past speed tests, newest first."
         onBack={back}
         actions={entries != null && entries.length > 0 ? <HistoryMenu onDelete={clear} /> : undefined}

@@ -18,7 +18,7 @@ function HistoryLink() {
   const { navigate } = useNavigation()
   return (
     <Link icon={HistoryIcon} onClick={() => navigate({ tab: 'speed', speedSub: { view: 'history' } })}>
-      All Results
+      All results
     </Link>
   )
 }
