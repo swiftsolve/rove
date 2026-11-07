@@ -295,6 +295,19 @@
     }
   }
 
+  /* One dash period (2 on, 4 off) per loop, so the flow never jumps. */
+  @keyframes line-flow {
+    to {
+      stroke-dashoffset: -6;
+    }
+  }
+
+  @keyframes line-sweep {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
   @keyframes wavy-scroll {
     to {
       transform: translateX(var(--wave-length));

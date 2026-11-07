@@ -148,7 +148,10 @@
       "scan-slide-out",
       "ring-rotate",
       "ring-stretch",
-      "wavy-scroll"
+      "wavy-scroll",
+      "line-flow",
+      "line-sweep",
+      "fade-up"
     ]
   },
   "textStyleClasses": [

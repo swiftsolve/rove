@@ -64,4 +64,11 @@
   /* The speed test's squiggle scrolls one wavelength (`--wave-length`) per
      loop; the element sets the duration inline, in step with the JS. */
   --animate-wavy-scroll: wavy-scroll linear infinite;
+  /* A Path card link's line: its dashes flow outward while a speed test
+     runs, and a new colour sweeps across it once when the link changes. */
+  --animate-line-flow: line-flow 0.6s linear infinite;
+  --animate-line-sweep: line-sweep var(--duration-spring) var(--ease-out);
+  /* A Path card link's captions rise into place when a result lands, as
+     the page's cards do. */
+  --animate-fade-up: fade-up var(--duration-normal) var(--ease-out) backwards;
 }

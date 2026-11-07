@@ -11,6 +11,7 @@ import { useDevices } from '@/features/devices/hooks/useDevices'
 import { type InternetLinkState, internetLinkState, lastTestOnNetwork } from '@/features/diagnostics/utils/path'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
+import { useChangeCount } from '@/hooks/useChangeCount'
 import type { NetworkDiagnostics, NetworkInfo, SpeedHistoryEntry } from '@/types'
 import { isWifiNetwork } from '@/types'
 import {
@@ -34,10 +35,12 @@ import { formatBand, splitSpeedMbps } from '@/utils/format'
 // The accent marks what's yours: the three ends of the path, and a link that works.
 const NODE_COLOR = 'var(--accent-default)'
 
-// A link's line: the accent when it works, grey before it's known, red when it's down.
+// A link's line: the accent when it works, grey before it's known, red when
+// it's down. A change of state sweeps the new colour across from the computer.
 const lineVariants = cva('h-px w-full overflow-visible', {
   variants: {
     tone: { working: 'text-accent', unknown: 'text-line', down: 'text-status-negative' },
+    isSweeping: { true: 'animate-line-sweep' },
   },
 })
 
@@ -45,7 +48,16 @@ type LineTone = 'working' | 'unknown' | 'down'
 
 // Above and below each line, a row as tall as the caption, so both lines sit
 // at the tiles' centre whatever the rows hold.
-const CAPTION_ROW = 'type-caption flex h-16 items-center gap-2 whitespace-nowrap text-primary'
+const CAPTION_ROW = 'type-caption flex h-16 items-center whitespace-nowrap text-primary'
+
+// The caption itself, inside its row: it rises into place when a result lands.
+const captionVariants = cva('flex items-center gap-2', {
+  variants: {
+    isEntering: { true: 'animate-fade-up' },
+    // The second row trails the first, as the page's cards stagger in.
+    isTrailing: { true: '[animation-delay:45ms]' },
+  },
+})
 
 const columnVariants = cva('flex w-[120px] min-w-0 flex-col gap-4', {
   variants: {
@@ -75,7 +87,7 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
       <CardHeader title="Path" icon={<PathIcon size={15} />} />
       <CardBody>
         <p className="sr-only">{pathSummary(info, internet, lastTest)}</p>
-        <div className="flex flex-col gap-4" aria-hidden>
+        <div className="flex flex-col gap-8" aria-hidden>
           <div className="flex items-center gap-2">
             <IconTile size="lg" color={NODE_COLOR} icon={<ComputerIcon size={16} />} />
             <PathLink
@@ -85,10 +97,17 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
               below={info && isWifiNetwork(info) ? <WifiSignal info={info} /> : null}
             />
             <IconTile size="lg" color={NODE_COLOR} icon={<RouterIcon size={16} />} />
+            {/* While a test runs, its dashes flow outward until the result lands. */}
             <PathLink
-              tone={INTERNET_LINE[internet]}
-              above={internetAbove(internet, lastTest)}
-              below={internet === 'healthy' && lastTest ? <Rate series="up" mbps={lastTest.uploadMbps} /> : null}
+              tone={isTesting ? 'working' : INTERNET_LINE[internet]}
+              isFlowing={isTesting}
+              captionKey={isTesting ? 'testing' : `${internet}-${lastTest?.timestamp ?? 0}`}
+              above={isTesting ? <span className="text-tertiary">Testing…</span> : internetAbove(internet, lastTest)}
+              below={
+                !isTesting && internet === 'healthy' && lastTest ? (
+                  <Rate series="up" mbps={lastTest.uploadMbps} />
+                ) : null
+              }
             />
             <IconTile size="lg" color={NODE_COLOR} icon={<GlobeIcon size={16} />} />
           </div>
@@ -112,31 +131,55 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
 function PathLink({
   tone,
   isDotted = false,
+  isFlowing = false,
+  captionKey = null,
   above,
   below,
 }: {
   tone: LineTone
   isDotted?: boolean
+  /** Dashes flowing outward: work under way on this link. */
+  isFlowing?: boolean
+  /** What the captions show; a change after mount fades them up. */
+  captionKey?: string | null
   above: ReactNode
   below: ReactNode
 }) {
+  // Each keyed element is its wrapper's only child, so it remounts on a change
+  // and replays its animation, and no two keys ever share a parent. Not on the
+  // first render, so opening the page stays still.
+  const changes = useChangeCount(tone)
+  const results = useChangeCount(captionKey)
+  const isEntering = results > 0
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-4">
-      <div className={CAPTION_ROW}>{above}</div>
-      <svg className={lineVariants({ tone })}>
-        {/* Round 1px dots 4px apart for Wi‑Fi, a solid line for a cable. */}
-        <line
-          x1="0.5"
-          y1="0.5"
-          x2="100%"
-          y2="0.5"
-          stroke="currentColor"
-          strokeWidth={1}
-          strokeLinecap="round"
-          strokeDasharray={isDotted ? '0.01 4' : undefined}
-        />
-      </svg>
-      <div className={CAPTION_ROW}>{below}</div>
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-6">
+      <div className={CAPTION_ROW}>
+        <span key={results} className={captionVariants({ isEntering })}>
+          {above}
+        </span>
+      </div>
+      <div className="flex w-full">
+        <svg key={changes} className={lineVariants({ tone, isSweeping: changes > 0 })}>
+          {/* Round 1px dots 4px apart for Wi‑Fi, a solid line for a cable, and
+            2px dashes, one period of the flow, while it flows. */}
+          <line
+            x1="0.5"
+            y1="0.5"
+            x2="100%"
+            y2="0.5"
+            stroke="currentColor"
+            strokeWidth={1}
+            strokeLinecap="round"
+            strokeDasharray={isFlowing ? '2 4' : isDotted ? '0.01 4' : undefined}
+            className={isFlowing ? 'animate-line-flow' : undefined}
+          />
+        </svg>
+      </div>
+      <div className={CAPTION_ROW}>
+        <span key={results} className={captionVariants({ isEntering, isTrailing: isEntering })}>
+          {below}
+        </span>
+      </div>
     </div>
   )
 }
