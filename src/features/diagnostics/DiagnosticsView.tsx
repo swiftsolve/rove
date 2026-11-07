@@ -1,5 +1,6 @@
 import { DnsCard } from '@/features/diagnostics/components/DnsCard'
 import { IspCard } from '@/features/diagnostics/components/IspCard'
+import { PathCard } from '@/features/diagnostics/components/PathCard'
 import { RouterCard } from '@/features/diagnostics/components/RouterCard'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
 import { runStatusText } from '@/features/diagnostics/utils/diagnostics-display'
@@ -23,7 +24,7 @@ export function DiagnosticsView() {
         title="Connection"
         // The spinning Run again button shows a check is running, so the
         // description stays put rather than giving way to a status.
-        description="Router, ISP, and DNS"
+        description="Your path to the internet"
         actions={
           <IconButton
             label={isRunning ? 'Running…' : 'Run again'}
@@ -50,6 +51,7 @@ export function DiagnosticsView() {
         <LoadingState label="Checking your connection…" />
       ) : (
         <>
+          <PathCard diagnostics={diagnostics} />
           <RouterCard diagnostics={diagnostics} />
           <IspCard diagnostics={diagnostics} />
           <DnsCard servers={diagnostics?.dnsServers ?? []} />
