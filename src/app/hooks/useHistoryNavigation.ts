@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { type HistoryStep, historyStepForButton, historyStepForKey } from '@/app/utils/history-shortcuts'
 import { type AppLocation, HOME_LOCATION, isSameLocation, type Navigation, parentLocation } from '@/app/utils/location'
 import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
+import { isTauri } from '@/bridge/tauri-network-api'
+import { IS_MAC } from '@/utils/platform'
 
 // Namespaced, so we don't clobber anything the webview host keeps on `history.state`.
 const LOCATION_KEY = '__roveNav'
@@ -34,6 +37,11 @@ function readReturnPoint(state: unknown): ReturnPoint | null {
 function historyStateFor(location: AppLocation): Record<string, unknown> {
   const { [RETURN_KEY]: _returnPoint, ...current } = (window.history.state as Record<string, unknown> | null) ?? {}
   return { ...current, [LOCATION_KEY]: location }
+}
+
+/** True when focus is in a field where the arrow keys move a caret. */
+function isTextField(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]') != null
 }
 
 /** Saves the screen being left's return point on its own entry. */
@@ -69,7 +77,8 @@ export function useHistoryNavigation(): Navigation {
   // The opener of the next screen is read from the click that opens it.
   useEffect(() => trackClicks(), [])
 
-  // The app's back buttons, the mouse thumb button and Alt+←/→ all arrive here.
+  // Every history step arrives here: the app's back buttons, and a browser's or
+  // the desktop app's back and forward shortcuts (below).
   useEffect(() => {
     const onPop = (event: PopStateEvent): void => {
       applyLocation(readLocation(event.state) ?? HOME_LOCATION, readReturnPoint(event.state))
@@ -103,6 +112,32 @@ export function useHistoryNavigation(): Navigation {
     window.history.replaceState(historyStateFor(parent), '')
     applyLocation(parent)
   }, [applyLocation])
+
+  // A browser maps Alt+←/→ (⌘[ ⌘] on macOS) and the mouse's thumb buttons to
+  // history steps itself; Tauri's webviews don't, so the desktop app does.
+  useEffect(() => {
+    if (!isTauri()) return
+    const step = (to: HistoryStep): void => (to === 'back' ? back() : window.history.forward())
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.defaultPrevented || event.repeat) return
+      const to = historyStepForKey(event, { isMac: IS_MAC, isEditing: isTextField(event.target) })
+      if (!to) return
+      event.preventDefault()
+      step(to)
+    }
+    const onMouseUp = (event: MouseEvent): void => {
+      const to = historyStepForButton(event.button)
+      if (!to) return
+      event.preventDefault()
+      step(to)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [back])
 
   return { location, returnPoint, navigate, back }
 }
