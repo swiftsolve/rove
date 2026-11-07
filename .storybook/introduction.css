@@ -626,10 +626,12 @@
   min-height: 0;
 }
 
-/* Containers: the card from the top, with room below for its details to open into. */
+/* Containers: the card from the top, with room below for its details to open
+   into. On the app's backdrop, as on Home: on the inset fill it barely parts. */
 .intro-card:has(.intro-mini-card) .intro-preview {
   align-items: flex-start;
   padding-top: 32px;
+  background: var(--bg-base);
 }
 
 /* Where the window runs off the bottom, it fades into the stage instead of being cut: the rail's lower half goes fully into the background. */
@@ -650,8 +652,6 @@
   isolation: isolate;
   width: 100%;
   max-width: 460px;
-  /* Its edge, as the window's: the stage drops the panel shadow, and the card's fill alone barely parts from it. */
-  border: 1px solid var(--border-default);
 }
 
 /* Status: the loading state and the badge share one cell and cross-fade; each new verdict rises in. */
