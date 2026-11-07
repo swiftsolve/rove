@@ -809,11 +809,11 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   // Over the same contended 5 GHz channel as the speed test's jitter.
   gatewayPing: { avgMs: 3.8, jitterMs: 2.9, packetLoss: 0 },
   internet: 'online',
-  gatewayVendor: 'Ubiquiti Inc.',
+  gatewayVendor: 'Ubiquiti',
   gatewayModel: 'UniFi Dream Router',
   gatewayName: 'UniFi Dream Router',
   isp: {
-    name: 'Comcast Cable Communications',
+    name: 'Comcast',
     asn: 'AS7922',
     domain: 'xfinity.com',
     city: 'San Francisco',

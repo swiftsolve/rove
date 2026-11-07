@@ -178,7 +178,9 @@ pub async fn isp_info() -> Option<IspInfo> {
     // the raw AS org, and taking its whole identity keeps name and ASN
     // consistent.
     Some(IspInfo {
-        name: live.and_then(|e| e.name.clone()).or(local_name),
+        // Trimmed to the brand like a device vendor ("Comcast", not "Comcast
+        // Cable Communications, LLC"); the ASN beside it stays exact.
+        name: live.and_then(|e| e.name.clone()).or(local_name).map(|name| crate::devices::oui::clean_vendor(&name)),
         asn: live.and_then(|e| e.asn.clone()).or(local_asn),
         domain: live.and_then(|e| e.domain.clone()),
         city: live.and_then(|e| e.city.clone()),

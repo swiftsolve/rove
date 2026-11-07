@@ -156,6 +156,10 @@ const VENDOR_NOISE: &[&str] = &[
     "plc",
     "electric",
     "lighting",
+    // ISP and gateway descriptors: "Sagemcom Broadband SAS" -> "Sagemcom",
+    // "Comcast Cable Communications, LLC" -> "Comcast".
+    "broadband",
+    "cable",
     // Non-English legal-entity suffixes, treated like "Inc"/"Ltd" ("Philips
     // Lighting BV" -> "Philips", "Foo Oy" -> "Foo").
     "bv",
@@ -168,10 +172,12 @@ const VENDOR_NOISE: &[&str] = &[
     "kk",
     "sarl",
     "spa",
+    "sas",
 ];
 
-/// A curated alias when one matches, else the tidied name. Never empty.
-fn clean_vendor(vendor: &str) -> String {
+/// A curated alias when one matches, else the tidied name. Never empty. The
+/// ISP card's provider name goes through it too.
+pub(crate) fn clean_vendor(vendor: &str) -> String {
     if let Some(brand) = alias_vendor(vendor) {
         return brand.to_string();
     }
@@ -312,6 +318,11 @@ mod tests {
         assert_eq!(tidy_vendor("Philips Lighting BV"), "Philips");
         assert_eq!(tidy_vendor("Wibrain Oy"), "Wibrain");
         assert_eq!(tidy_vendor("Sagemcom SA"), "Sagemcom");
+        assert_eq!(tidy_vendor("Sagemcom Broadband SAS"), "Sagemcom");
+        assert_eq!(tidy_vendor("Comcast Cable Communications, LLC"), "Comcast");
+        assert_eq!(tidy_vendor("Charter Communications"), "Charter");
+        // Neither word is a suffix, so a two-word brand stays whole.
+        assert_eq!(tidy_vendor("Bell Canada"), "Bell Canada");
     }
 
     #[test]
