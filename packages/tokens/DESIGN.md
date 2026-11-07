@@ -82,6 +82,11 @@ typography: # Keys: the class, .type-<key>
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 1.45
+  label-field: # Label/Field: Labels naming a value, field or section. Class .type-label-field.
+    fontFamily: "Hanken Grotesk"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.2
   label-menu: # Label/Menu: Menu items. Class .type-label-menu.
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
@@ -92,12 +97,6 @@ typography: # Keys: the class, .type-<key>
     fontSize: "11px"
     fontWeight: 600
     lineHeight: 1.45
-  label-field: # Label/Field: Labels naming a value, field or section. Class .type-label-field, uppercase.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "11px"
-    fontWeight: 500
-    lineHeight: 1.2
-    letterSpacing: "0.06em"
   label-small: # Label/Small: Soft buttons, title bar status. Class .type-label-small.
     fontFamily: "Hanken Grotesk"
     fontSize: "11px"
@@ -126,7 +125,7 @@ typography: # Keys: the class, .type-<key>
     lineHeight: 1
   number-default: # Number/Default: Data row values. Class .type-number-default.
     fontFamily: "Hanken Grotesk"
-    fontSize: "11px"
+    fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.35
   number-small: # Number/Small: Chart axes and scale. Class .type-number-small.
@@ -152,8 +151,8 @@ spacing: # Keys: --spacing-<key>
   "20": "20px" # Content bottom inset
 font-size: # Font sizes; a text style sets its own. Keys: --<key>
   font-size-2xs: "10px" # Badges, chart axes
-  font-size-xs: "11px" # Captions, labels, data row values
-  font-size-sm: "12px" # Helper text, menus, button labels
+  font-size-xs: "11px" # Captions and small labels
+  font-size-sm: "12px" # Helper text, menus, button labels, data rows
   font-size-md: "13px" # Body text
   font-size-lg: "14px" # Card headings
   font-size-xl: "15px" # Dialog titles

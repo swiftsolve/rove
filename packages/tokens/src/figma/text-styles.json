@@ -90,19 +90,18 @@
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Medium",
       "fontWeight": 500,
-      "fontSize": 11,
+      "fontSize": 12,
       "lineHeight": {
         "unit": "PERCENT",
         "value": 120
       },
       "letterSpacing": {
         "unit": "PERCENT",
-        "value": 6
+        "value": 0
       },
-      "textCase": "UPPER",
       "boundVariables": {
         "fontFamily": "font-family/sans",
-        "fontSize": "font-size/xs"
+        "fontSize": "font-size/sm"
       }
     },
     {
@@ -191,7 +190,7 @@
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
-      "fontSize": 11,
+      "fontSize": 12,
       "lineHeight": {
         "unit": "PERCENT",
         "value": 135
@@ -202,7 +201,7 @@
       },
       "boundVariables": {
         "fontFamily": "font-family/numeric",
-        "fontSize": "font-size/xs"
+        "fontSize": "font-size/sm"
       }
     },
     {

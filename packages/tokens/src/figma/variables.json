@@ -852,7 +852,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-xs)",
-      "description": "Captions, labels, data row values",
+      "description": "Captions and small labels",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -865,7 +865,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-sm)",
-      "description": "Helper text, menus, button labels",
+      "description": "Helper text, menus, button labels, data rows",
       "scopes": [
         "FONT_SIZE"
       ],
