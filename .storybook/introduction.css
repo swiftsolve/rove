@@ -328,9 +328,10 @@
   list-style: none;
 }
 
-/* Explore: a bento grid. Each group gets room for its scene: the dialog the
-   most, the rows of things (the window's edge, a form, a card) a wide cell, the
-   rest a small one. The cards stay in the library's order; only the areas move. */
+/* Explore: a bento grid. Each group gets room for its scene: the dialog and
+   the card that opens the most, the rows of things (the window's edge, a form)
+   a wide cell, the rest a small one. The cards stay in the library's order;
+   only the areas move. */
 .intro-bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -338,10 +339,12 @@
     'frame frame data data'
     'overlays overlays actions actions'
     'overlays overlays inputs inputs'
-    'containers containers status a11y';
+    'containers containers status status'
+    'containers containers a11y a11y';
   /* The first row is taller, for more of the window; the middle rows are
-     shorter: their small scenes need less, and the dialog spanning both still fits. */
-  grid-template-rows: 360px 220px 220px 300px;
+     shorter: their small scenes need less, and the dialog spanning both still
+     fits. The last two hold the open card whole. */
+  grid-template-rows: 360px 220px 220px 236px 236px;
   gap: var(--intro-gap);
   margin: 24px 0 0;
   padding: 0;
@@ -412,6 +415,8 @@
   justify-content: center;
   /* Shrinks before the text does, so a short row never crops the card's words. */
   min-height: 0;
+  /* The scene never sizes its row: a tall one, like the window, is cropped instead. */
+  contain: size;
   padding: 24px;
   overflow: hidden;
   background: var(--bg-inset);
@@ -621,34 +626,27 @@
   min-height: 0;
 }
 
-/* Containers: the card from the top; its details open past the bottom edge. */
+/* Containers: the card from the top, with room below for its details to open into. */
 .intro-card:has(.intro-mini-card) .intro-preview {
   align-items: flex-start;
   padding-top: 32px;
 }
 
-/* Where a scene runs off the bottom (the open card, the window), it fades into the stage instead of being cut. */
-.intro-card:has(.intro-mini-card) .intro-preview::after,
+/* Where the window runs off the bottom, it fades into the stage instead of being cut: the rail's lower half goes fully into the background. */
 .intro-card:has(.intro-window) .intro-preview::after {
   position: absolute;
-  /* Over the scene's own layers (the rail's active marker, the card's trigger). */
+  /* Over the scene's own layers (the rail's active marker). */
   z-index: 2;
   inset: auto 0 0;
-  height: 120px;
-  background: linear-gradient(to bottom, transparent, var(--bg-inset) 85%);
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
   pointer-events: none;
   content: '';
 }
 
-/* The window's stage is taller, so its fade covers more: the rail's lower half goes fully into the background. */
-.intro-card:has(.intro-window) .intro-preview::after {
-  height: 60%;
-  background: linear-gradient(to bottom, transparent, var(--bg-inset) 75%);
-}
-
 /* About as wide as on Home, so its meta line fits as it does there. */
 .intro-mini-card {
-  /* The card's own layers stay inside it, under the fade. */
+  /* The card's own layers stay inside it. */
   isolation: isolate;
   width: 100%;
   max-width: 460px;
@@ -841,7 +839,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas: none;
     grid-template-rows: none;
-    grid-auto-rows: 300px;
+    grid-auto-rows: minmax(300px, auto);
     grid-auto-flow: dense;
   }
 
@@ -859,10 +857,14 @@
     grid-column: span 2;
   }
 
-  /* Rows stay fixed, so the card that opens its details crops them instead of
-     growing its row; the dialog keeps two rows to show. */
+  /* The dialog keeps two rows to show. */
   .intro-bento > .intro-bento-overlays {
     grid-row: span 2;
+  }
+
+  /* Tall enough for the open card whole, so its row never jumps as it opens. */
+  .intro-bento > .intro-bento-containers {
+    min-height: 496px;
   }
 }
 
