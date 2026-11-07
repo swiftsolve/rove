@@ -86,7 +86,7 @@ typography: # Keys: the class, .type-<key>
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 500
-    lineHeight: 1.2
+    lineHeight: 1.45
   label-menu: # Label/Menu: Menu items. Class .type-label-menu.
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
@@ -127,7 +127,7 @@ typography: # Keys: the class, .type-<key>
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 400
-    lineHeight: 1.35
+    lineHeight: 1.45
   number-small: # Number/Small: Chart axes and scale. Class .type-number-small.
     fontFamily: "Hanken Grotesk"
     fontSize: "10px"

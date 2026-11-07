@@ -93,7 +93,7 @@
       "fontSize": 12,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 120
+        "value": 145
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -193,7 +193,7 @@
       "fontSize": 12,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 135
+        "value": 145
       },
       "letterSpacing": {
         "unit": "PERCENT",
