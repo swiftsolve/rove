@@ -159,14 +159,22 @@ export function DeviceRow({ device }: { device: LanDevice }) {
             <h2 className={DEVICE_NAME}>
               <InlineMeta items={nameParts} />
             </h2>
-            {/* A span can't take focus, so the hint is spoken from the text, not the tooltip. */}
-            <Tooltip content={device.isReachable ? 'Reachable' : 'No response to recent scans'} shouldDescribe={false}>
-              <span className={stateVariants({ isReachable: device.isReachable })}>
+            {/* "Online" says it all; only "Offline" gets a tooltip, saying why. A span
+                can't take focus, so the reason is spoken from the text, not the tooltip. */}
+            {device.isReachable ? (
+              <span className={stateVariants({ isReachable: true })}>
                 <StatusDot />
-                {device.isReachable ? 'Online' : 'Offline'}
-                <span className="sr-only">{device.isReachable ? ', reachable' : ', no response to recent scans'}</span>
+                Online
               </span>
-            </Tooltip>
+            ) : (
+              <Tooltip content="No response to recent scans" shouldDescribe={false}>
+                <span className={stateVariants({ isReachable: false })}>
+                  <StatusDot />
+                  Offline
+                  <span className="sr-only">, no response to recent scans</span>
+                </span>
+              </Tooltip>
+            )}
           </div>
 
           <DeviceMetaLine device={device} nameParts={nameParts} lastSeenLabel={lastSeenLabel} />
