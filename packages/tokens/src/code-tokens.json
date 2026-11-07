@@ -2,7 +2,8 @@
   "description": "What Figma can't hold. `figma` sets how a Figma variable is written in CSS; `tokens` adds code-only tokens. `{figma/name}` pulls a Figma variable's raw value in for each theme. Shadows aren't here: they're Figma's Shadow/* effect styles, exported to src/figma/effect-styles.json.",
   "figma": {
     "font-family/sans": "'{font-family/sans}', system-ui, -apple-system, 'Segoe UI', sans-serif",
-    "font-family/numeric": "'{font-family/numeric}', ui-sans-serif, system-ui, sans-serif"
+    "font-family/numeric": "'{font-family/numeric}', ui-sans-serif, system-ui, sans-serif",
+    "font-family/display": "'{font-family/display}', system-ui, -apple-system, 'Segoe UI', sans-serif"
   },
   "tokens": {
     "--focus-outline": "var(--focus-ring-width) solid var(--focus-ring)",

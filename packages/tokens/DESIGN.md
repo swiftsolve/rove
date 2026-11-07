@@ -48,89 +48,89 @@ colors: # Keys: --<key>
   focus-ring: "#5b8cff" # Keyboard focus ring
 typography: # Keys: the class, .type-<key>
   heading-large: # Heading/Large: Page titles, the wordmark. Class .type-heading-large.
-    fontFamily: "Inter"
+    fontFamily: "Cal Sans"
     fontSize: "17px"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1.25
   heading-medium: # Heading/Medium: Dialog titles. Class .type-heading-medium.
-    fontFamily: "Inter"
+    fontFamily: "Cal Sans"
     fontSize: "15px"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1.45
   heading-small: # Heading/Small: Card headings. Class .type-heading-small.
-    fontFamily: "Inter"
+    fontFamily: "Cal Sans"
     fontSize: "14px"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1.2
   heading-xsmall: # Heading/XSmall: Empty state titles. Class .type-heading-xsmall.
-    fontFamily: "Inter"
+    fontFamily: "Cal Sans"
     fontSize: "13px"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1.45
   body-default: # Body/Default: Body text. Class .type-body-default.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.45
   body-small: # Body/Small: Helper text, hints and units. Class .type-body-small.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.45
   label-large: # Label/Large: Solid button labels. In code: Button variant=solid. Class .type-label-large.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 1.45
   label-menu: # Label/Menu: Menu items. Class .type-label-menu.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 500
     lineHeight: 1.45
   label-default: # Label/Default: Bold small labels on tinted chips. Class .type-label-default.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "11px"
     fontWeight: 600
     lineHeight: 1.45
   label-field: # Label/Field: Labels naming a value, field or section. Class .type-label-field, uppercase.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "11px"
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: "0.06em"
   label-small: # Label/Small: Soft buttons, title bar status. Class .type-label-small.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "11px"
     fontWeight: 500
     lineHeight: 1.45
   caption: # Caption: Live badge, captions, footer hints. Class .type-caption.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "11px"
     fontWeight: 400
     lineHeight: 1.45
   badge: # Badge: Badge labels. Class .type-badge, uppercase.
-    fontFamily: "Inter"
+    fontFamily: "Hanken Grotesk"
     fontSize: "10px"
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.04em"
-  number-display: # Number/Display: Live speeds. Add a 0.43px outside stroke. In code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it. Class .type-number-display.
-    fontFamily: "Questrial"
+  number-display: # Number/Display: Live speeds. In code: .type-number-display .metric-value. Class .type-number-display.
+    fontFamily: "Hanken Grotesk"
     fontSize: "28px"
-    fontWeight: 400
+    fontWeight: 600
     lineHeight: 1
-  number-large: # Number/Large: Stat totals. Add a 0.26px outside stroke. In code: Readout size=compact. Class .type-number-large.
-    fontFamily: "Questrial"
+  number-large: # Number/Large: Stat totals. In code: Readout size=compact. Class .type-number-large.
+    fontFamily: "Hanken Grotesk"
     fontSize: "17px"
-    fontWeight: 400
+    fontWeight: 600
     lineHeight: 1
   number-default: # Number/Default: Data row values. Class .type-number-default.
-    fontFamily: "Questrial"
+    fontFamily: "Hanken Grotesk"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.35
   number-small: # Number/Small: Chart axes and scale. Class .type-number-small.
-    fontFamily: "Questrial"
+    fontFamily: "Hanken Grotesk"
     fontSize: "10px"
     fontWeight: 400
     lineHeight: 1
@@ -160,8 +160,9 @@ font-size: # Font sizes; a text style sets its own. Keys: --<key>
   font-size-2xl: "17px" # Page titles, stat totals
   font-size-3xl: "28px" # Live speeds
 font-family: # Font stacks. Keys: --<key>
-  font-family-sans: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif" # Interface text
-  font-family-numeric: "'Questrial', ui-sans-serif, system-ui, sans-serif" # Numbers
+  font-family-sans: "'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif" # Interface text
+  font-family-numeric: "'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif" # Numbers
+  font-family-display: "'Cal Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" # Headings
 font-weight: # Font weights. Keys: --<key>
   weight-regular: "400" # Body text
   weight-medium: "500" # Labels and menus
@@ -365,7 +366,8 @@ should stay nearly solid, like a chart line behind another.
   `typography`.
   [✓ CHECKED by Rove's `checks/text-styles.mjs`].
 - Numbers that are data (speeds, totals, chart labels) use the Number styles
-  (`number-*`), set in Questrial; everything else is Inter.
+  (`number-*`). Headings (`heading-*`) are set in Cal Sans, which has one
+  weight; everything else is Hanken Grotesk.
 
 ## Layout
 

@@ -7,9 +7,9 @@
     {
       "name": "Heading/Large",
       "description": "Page titles, the wordmark. Code: .type-heading-large",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
-      "fontWeight": 600,
+      "fontFamily": "Cal Sans",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
       "fontSize": 17,
       "lineHeight": {
         "unit": "PERCENT",
@@ -20,16 +20,16 @@
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/sans",
+        "fontFamily": "font-family/display",
         "fontSize": "font-size/2xl"
       }
     },
     {
       "name": "Heading/Medium",
       "description": "Dialog titles. Code: .type-heading-medium",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
-      "fontWeight": 600,
+      "fontFamily": "Cal Sans",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
       "fontSize": 15,
       "lineHeight": {
         "unit": "PERCENT",
@@ -40,16 +40,16 @@
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/sans",
+        "fontFamily": "font-family/display",
         "fontSize": "font-size/xl"
       }
     },
     {
       "name": "Heading/Small",
       "description": "Card headings. Code: .type-heading-small",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
-      "fontWeight": 600,
+      "fontFamily": "Cal Sans",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
       "fontSize": 14,
       "lineHeight": {
         "unit": "PERCENT",
@@ -60,14 +60,14 @@
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/sans",
+        "fontFamily": "font-family/display",
         "fontSize": "font-size/lg"
       }
     },
     {
       "name": "Body/Default",
       "description": "Body text. Code: .type-body-default",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 13,
@@ -87,7 +87,7 @@
     {
       "name": "Label/Field",
       "description": "Labels naming a value, field or section. Code: .type-label-field",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Medium",
       "fontWeight": 500,
       "fontSize": 11,
@@ -108,7 +108,7 @@
     {
       "name": "Caption",
       "description": "Live badge, captions, footer hints. Code: .type-caption",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 11,
@@ -128,8 +128,8 @@
     {
       "name": "Label/Large",
       "description": "Solid button labels. Code: Button variant=solid",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
       "fontWeight": 600,
       "fontSize": 12,
       "lineHeight": {
@@ -147,10 +147,10 @@
     },
     {
       "name": "Number/Display",
-      "description": "Live speeds. Add a 0.43px outside stroke. Code: .type-number-display .metric-value, at weight 600: Questrial has one weight, so the browser emboldens it.",
-      "fontFamily": "Questrial",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "description": "Live speeds. Code: .type-number-display .metric-value",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
+      "fontWeight": 600,
       "fontSize": 28,
       "lineHeight": {
         "unit": "PERCENT",
@@ -167,10 +167,10 @@
     },
     {
       "name": "Number/Large",
-      "description": "Stat totals. Add a 0.26px outside stroke. Code: Readout size=compact",
-      "fontFamily": "Questrial",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
+      "description": "Stat totals. Code: Readout size=compact",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
+      "fontWeight": 600,
       "fontSize": 17,
       "lineHeight": {
         "unit": "PERCENT",
@@ -188,7 +188,7 @@
     {
       "name": "Number/Default",
       "description": "Data row values. Code: .type-number-default",
-      "fontFamily": "Questrial",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 13,
@@ -208,7 +208,7 @@
     {
       "name": "Number/Small",
       "description": "Chart axes and scale. Code: .type-number-small",
-      "fontFamily": "Questrial",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 10,
@@ -228,7 +228,7 @@
     {
       "name": "Label/Menu",
       "description": "Menu items. Code: .type-label-menu",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Medium",
       "fontWeight": 500,
       "fontSize": 12,
@@ -248,8 +248,8 @@
     {
       "name": "Label/Default",
       "description": "Bold small labels on tinted chips. Code: .type-label-default",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
       "fontWeight": 600,
       "fontSize": 11,
       "lineHeight": {
@@ -268,7 +268,7 @@
     {
       "name": "Label/Small",
       "description": "Soft buttons, title bar status. Code: .type-label-small",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Medium",
       "fontWeight": 500,
       "fontSize": 11,
@@ -288,7 +288,7 @@
     {
       "name": "Body/Small",
       "description": "Helper text, hints and units. Code: .type-body-small",
-      "fontFamily": "Inter",
+      "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 12,
@@ -308,9 +308,9 @@
     {
       "name": "Heading/XSmall",
       "description": "Empty state titles. Code: .type-heading-xsmall",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
-      "fontWeight": 600,
+      "fontFamily": "Cal Sans",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
       "fontSize": 13,
       "lineHeight": {
         "unit": "PERCENT",
@@ -321,15 +321,15 @@
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/sans",
+        "fontFamily": "font-family/display",
         "fontSize": "font-size/md"
       }
     },
     {
       "name": "Badge",
       "description": "Badge labels. Code: .type-badge",
-      "fontFamily": "Inter",
-      "fontStyle": "Semi Bold",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
       "fontWeight": 600,
       "fontSize": 10,
       "lineHeight": {

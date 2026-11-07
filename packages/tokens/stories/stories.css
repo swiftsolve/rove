@@ -344,8 +344,8 @@
   gap: 16px;
 }
 
-.cards-two {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+.cards-three {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .cards-five {
@@ -375,7 +375,7 @@
 }
 
 .family-specimen {
-  font-size: clamp(32px, 4.4vw, 64px);
+  font-size: clamp(28px, 3.2vw, 48px);
   line-height: 1.1;
   white-space: nowrap;
 }

@@ -948,7 +948,7 @@
         "FONT_FAMILY"
       ],
       "values": {
-        "Value": "Inter"
+        "Value": "Hanken Grotesk"
       }
     },
     {
@@ -1290,7 +1290,7 @@
         "FONT_FAMILY"
       ],
       "values": {
-        "Value": "Questrial"
+        "Value": "Hanken Grotesk"
       }
     },
     {
@@ -2521,6 +2521,19 @@
           "b": 0,
           "a": 1
         }
+      }
+    },
+    {
+      "name": "font-family/display",
+      "collection": "Typography",
+      "type": "STRING",
+      "code": "var(--font-family-display)",
+      "description": "Headings",
+      "scopes": [
+        "FONT_FAMILY"
+      ],
+      "values": {
+        "Value": "Cal Sans"
       }
     }
   ]

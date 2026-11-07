@@ -3,9 +3,11 @@ import { cssName, flatten, group, textStyles, typography } from './tokens'
 
 export default { title: 'Typography' }
 
+// The Figma page's order: display first.
 const FAMILIES = {
-  sans: 'Interface text. Regular, Medium, Semi Bold.',
-  numeric: 'Numbers, tabular. Large metrics add a thin stroke (weight 600 in code).',
+  display: 'Headings. One weight.',
+  sans: 'Interface text. Regular, Medium, SemiBold.',
+  numeric: 'Numbers, tabular. Live metrics in SemiBold.',
 }
 
 // The Figma page's specimen for each style, in its order.
@@ -29,7 +31,7 @@ const SPECIMENS = {
   'number-small': '60s ago',
 }
 
-const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'Semi Bold' }
+const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold' }
 
 const fontSizes = Object.fromEntries(
   group(typography, 'font-size').map((token) => [`{${token.path.join('.')}}`, token.$value.value]),
@@ -65,8 +67,9 @@ function Spec({ value, textCase }) {
 
 function Families() {
   return (
-    <div className="cards cards-two">
-      {group(typography, 'font-family').map((token) => {
+    <div className="cards cards-three">
+      {Object.keys(FAMILIES).map((key) => {
+        const token = group(typography, 'font-family').find((t) => t.path[1] === key)
         const name = cssName(token.path)
         return (
           <div key={name} className="doc-card">
@@ -156,7 +159,7 @@ function TextStyles() {
 
 export const Typography = {
   render: () => (
-    <Page title="Typography" intro="Inter for interface text, Questrial for numbers.">
+    <Page title="Typography" intro="Cal Sans for headings, Hanken Grotesk for text and numbers.">
       <Group
         title="Primitive tokens"
         intro="The raw families and sizes, named by what they are."
@@ -164,7 +167,7 @@ export const Typography = {
       >
         <Section
           title="Families"
-          intro="Inter (font-family/sans) for text, Questrial (font-family/numeric) for numbers."
+          intro="Cal Sans (font-family/display) for headings, Hanken Grotesk (font-family/sans and font-family/numeric) for text and numbers."
         >
           <Families />
         </Section>
