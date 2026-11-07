@@ -57,7 +57,7 @@ const meta = {
         ],
         toHandle: [
           'Words beside a plain tile that say what the item is.',
-          'A button `label` with the item and its state: “Video Calls: Good”.',
+          'A button `label` with the item and its state: “Video calls: Good”.',
         ],
       },
     } satisfies Guidance,

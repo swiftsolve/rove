@@ -36,7 +36,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: FCC broadband speed guide, browsing, email and social media (1 Mbps).
     CapabilityDef {
         id: "browsing",
-        label: "Web Browsing",
+        label: "Web browsing",
         description: "General web, email, social media",
         icon: "🌐",
         min_down: 1.0,
@@ -48,7 +48,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: Netflix and YouTube, 1080p (5 Mbps).
     CapabilityDef {
         id: "streaming-hd",
-        label: "HD Streaming",
+        label: "HD streaming",
         description: "1080p video streaming",
         icon: "📺",
         min_down: 5.0,
@@ -60,7 +60,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: YouTube, 4K (20 Mbps); Netflix asks for 15.
     CapabilityDef {
         id: "streaming-4k",
-        label: "4K Streaming",
+        label: "4K streaming",
         description: "Ultra HD video streaming",
         icon: "🎬",
         min_down: 20.0,
@@ -72,7 +72,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down and up: Zoom, 1080p group call (3.0 down, 3.8 up).
     CapabilityDef {
         id: "video-calls",
-        label: "Video Calls",
+        label: "Video calls",
         description: "Zoom, Teams, Google Meet",
         icon: "📹",
         min_down: 3.0,
@@ -84,7 +84,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Up: Twitch's 1080p60 bitrate (6,000 kbps).
     CapabilityDef {
         id: "live-streaming",
-        label: "Live Streaming",
+        label: "Live streaming",
         description: "Twitch, YouTube live broadcasting",
         icon: "📡",
         min_down: 5.0,
@@ -96,7 +96,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: FCC broadband speed guide, online multiplayer (4 Mbps).
     CapabilityDef {
         id: "gaming",
-        label: "Online Gaming",
+        label: "Online gaming",
         description: "Low-latency multiplayer games",
         icon: "🎮",
         min_down: 4.0,
@@ -109,7 +109,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // recommended. It requires under 80 ms, where `rate` calls it unsupported.
     CapabilityDef {
         id: "cloud-gaming",
-        label: "Cloud Gaming",
+        label: "Cloud gaming",
         description: "GeForce NOW, Xbox Cloud",
         icon: "☁️",
         min_down: 25.0,
@@ -124,7 +124,7 @@ const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // (1-2% of the download). A slow line still downloads, so never unsupported.
     CapabilityDef {
         id: "large-downloads",
-        label: "Large Downloads",
+        label: "Large downloads",
         description: "Game updates, file transfers",
         icon: "⬇️",
         min_down: 100.0,

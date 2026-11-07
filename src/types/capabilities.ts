@@ -23,7 +23,7 @@ export type CapabilityRequirement = {
 export const CAPABILITY_DEFINITIONS = [
   {
     id: 'browsing',
-    label: 'Web Browsing',
+    label: 'Web browsing',
     description: 'General web, email, social media',
     icon: '🌐',
     // Down: FCC broadband speed guide, browsing, email and social media (1 Mbps).
@@ -31,7 +31,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'streaming-hd',
-    label: 'HD Streaming',
+    label: 'HD streaming',
     description: '1080p video streaming',
     icon: '📺',
     // Down: Netflix and YouTube, 1080p (5 Mbps).
@@ -39,7 +39,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'streaming-4k',
-    label: '4K Streaming',
+    label: '4K streaming',
     description: 'Ultra HD video streaming',
     icon: '🎬',
     // Down: YouTube, 4K (20 Mbps); Netflix asks for 15.
@@ -47,7 +47,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'video-calls',
-    label: 'Video Calls',
+    label: 'Video calls',
     description: 'Zoom, Teams, Google Meet',
     icon: '📹',
     // Down and up: Zoom, 1080p group call (3.0 down, 3.8 up).
@@ -55,7 +55,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'live-streaming',
-    label: 'Live Streaming',
+    label: 'Live streaming',
     description: 'Twitch, YouTube live broadcasting',
     icon: '📡',
     // Up: Twitch's 1080p60 bitrate (6,000 kbps).
@@ -63,7 +63,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'gaming',
-    label: 'Online Gaming',
+    label: 'Online gaming',
     description: 'Low-latency multiplayer games',
     icon: '🎮',
     // Down: FCC broadband speed guide, online multiplayer (4 Mbps).
@@ -71,7 +71,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'cloud-gaming',
-    label: 'Cloud Gaming',
+    label: 'Cloud gaming',
     description: 'GeForce NOW, Xbox Cloud',
     icon: '☁️',
     // Down and latency: GeForce NOW, 1080p at 60 fps (25 Mbps), under 40 ms
@@ -80,7 +80,7 @@ export const CAPABILITY_DEFINITIONS = [
   },
   {
     id: 'large-downloads',
-    label: 'Large Downloads',
+    label: 'Large downloads',
     description: 'Game updates, file transfers',
     icon: '⬇️',
     // Down: the FCC's broadband benchmark (100 Mbps), a 100 GB game in about two
