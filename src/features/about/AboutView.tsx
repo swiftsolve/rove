@@ -11,7 +11,7 @@ const COPYRIGHT_YEAR = 2026
 const APP_ICON_TILE = cx(
   'mb-8 inline-flex size-[72px] items-center justify-center rounded-[16px]',
   'bg-[radial-gradient(circle_at_50%_56%,rgba(91,140,255,0.22),rgba(91,140,255,0)_68%),linear-gradient(180deg,#1f2125_0%,#16171a_100%)]',
-  'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05),0_6px_16px_rgba(0,0,0,0.35)]',
+  'shadow-[0_6px_16px_rgba(0,0,0,0.35)]',
 )
 
 export function AboutView() {
