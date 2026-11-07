@@ -1,9 +1,12 @@
+import { cva } from 'class-variance-authority'
 import type { JSX } from 'react'
 
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
-import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
-import { CAPABILITY_LEVEL_TILE_COLORS } from '@/features/capabilities/utils/capability-level-colors'
+import {
+  CAPABILITY_LEVEL_TEXT_COLORS,
+  CAPABILITY_LEVEL_TILE_COLORS,
+} from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
@@ -20,6 +23,13 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
 const LIST = 'flex flex-col'
 
 const ROW_TEXT = 'flex min-w-0 flex-1 flex-col'
+
+// Tertiary while a test runs, like the muted tile: the rating is about to change.
+const levelVariants = cva('type-label-default shrink-0', {
+  variants: {
+    tone: { ...CAPABILITY_LEVEL_TEXT_COLORS, testing: 'text-tertiary' },
+  },
+})
 
 function CapabilityRow({
   capability,
@@ -42,9 +52,9 @@ function CapabilityRow({
           <span className="type-body-default truncate text-primary">{capability.label}</span>
           <span className="type-body-small truncate text-tertiary">{capability.description}</span>
         </span>
-        <CapabilityMeter level={capability.level} shouldShowLabel={false} isDimmed={isTesting} />
-        {/* The bars carry the rating visually; name it for screen readers. */}
-        <span className="sr-only">{CAPABILITY_LEVEL_LABELS[capability.level]}</span>
+        <span className={levelVariants({ tone: isTesting ? 'testing' : capability.level })}>
+          {CAPABILITY_LEVEL_LABELS[capability.level]}
+        </span>
       </ListRow>
     </li>
   )
@@ -68,7 +78,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
           <span className="type-body-small truncate text-tertiary">{definition.description}</span>
         </div>
       </div>
-      {/* Where the rating meter will land. */}
+      {/* Where the rating will land. */}
       <span className="shrink-0 font-medium text-tertiary" aria-hidden>
         <NoValue />
       </span>

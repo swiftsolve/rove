@@ -1,7 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 
 import { CapabilityIcon } from '@/features/capabilities/components/CapabilityIcon'
-import { CapabilityMeter } from '@/features/capabilities/components/CapabilityMeter'
 import { explainCapability } from '@/features/capabilities/utils/capability-detail'
 import {
   CAPABILITY_LEVEL_FILL_COLORS,
@@ -10,9 +9,9 @@ import {
 } from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import type { CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
-import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, StatusDot } from '@/ui'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue } from '@/ui'
 
-// Three tiers: an intro row, a metrics grid on an inset panel, then the verdict.
+// Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict.
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
 
 const METRICS = cx(
@@ -30,7 +29,7 @@ const metricValueVariants = cva('type-body-default leading-[1.25] font-medium wh
 // Framed on three sides in the metrics' inset colour, so it sits inside the card
 // edge. The padding gives back the 1px border to stay aligned with the grid.
 const VERDICT = cx(
-  'flex items-center justify-between gap-12',
+  'flex items-center gap-12',
   '-mx-(--card-header-padding-x) px-[calc(var(--card-header-padding-x)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
@@ -40,7 +39,7 @@ const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] 
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
-const verdictStatusVariants = cva('type-label-default inline-flex shrink-0 items-center gap-6', {
+const levelVariants = cva('type-label-default shrink-0', {
   variants: { level: CAPABILITY_LEVEL_TEXT_COLORS },
 })
 
@@ -67,12 +66,9 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
             <h2 className="type-heading-small">{capability.label}</h2>
             <span className="type-caption text-tertiary">{capability.description}</span>
           </div>
-          {/* Nudged up to centre optically against the two-line title. */}
-          <CapabilityMeter
-            level={capability.level}
-            shouldShowLabel={false}
-            barsClassName="[transform:translateY(-1px)]"
-          />
+          <span className={levelVariants({ level: capability.level })}>
+            {CAPABILITY_LEVEL_LABELS[capability.level]}
+          </span>
         </div>
 
         <dl className={METRICS}>
@@ -97,11 +93,6 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
             </span>
             <span>{summary}</span>
           </p>
-          <span className={verdictStatusVariants({ level: capability.level })}>
-            {/* The status dot takes the level colour from the label. */}
-            <StatusDot />
-            {CAPABILITY_LEVEL_LABELS[capability.level]}
-          </span>
         </div>
       </div>
     </Card>
