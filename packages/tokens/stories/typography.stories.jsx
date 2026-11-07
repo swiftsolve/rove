@@ -4,9 +4,10 @@ import { cssName, flatten, group, textStyles, typography } from './tokens'
 export default { title: 'Typography' }
 
 // The Figma page's order: display first.
+// Why each face, in a line; docs/rationale.md has the full case.
 const FAMILIES = {
-  display: 'Headings, in Bold.',
-  sans: 'Text and numbers. Regular, Medium, SemiBold.',
+  display: 'Headings, in Bold. Geometric, so titles and the name stand apart.',
+  sans: 'Text and numbers. Same-width digits, as tall as the capitals.',
 }
 
 // The Figma page's specimen for each style, in its order.

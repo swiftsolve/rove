@@ -9,7 +9,7 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **A see-through shade sits with its base shade.** It takes the base's name plus `-a` and its opacity: `neutral/850-a10` is `neutral/850` at 10%, `blue/340-a14` is `blue/340` at 14%. Black only appears see-through (`neutral/1000-a22`), for dark-mode shadows and the scrim.
 - **Solid shades are layers; see-through shades sit on one.** Backgrounds and text are solid, so they look the same whatever is behind them. Overlays, borders, shadows, the scrim and the accent's tints are see-through, so one value reads right on base, surface and popover alike; a solid grey would match only one of them. Light mode tints with `neutral/850` and Dark with white (`neutral/0`), which is why the Palette's second neutral row holds both.
 - **CSS names follow Figma names.** `bg/base` is `--bg-base`, `border/default` is `--border-default`; the build refuses a code syntax that doesn't match.
-- **Typography comes from the text styles, not variables.** Figma can't bind a percentage line height to a variable, so line heights and letter spacings live only in the styles; copying them into variables would give the type scale two sources that could drift apart.
+- **Typography comes from the text styles, not variables.** Line heights and letter spacings live only in the styles; copying them into variables would give the type scale two sources that could drift apart.
 
 ## Surfaces and lines
 
@@ -51,9 +51,14 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **`radius/md` is for the nav item and page-header chip,** a step rounder than `radius/sm`.
 - **The focus ring is the same 1px accent line as the nav-flash highlight.** Controls get it outside their edge (`focus/offset`). Rows flush in a card draw it just inside (`--focus-inset`), square-cornered like the highlight.
 
-## Type sizes
+## Type
 
-- **`font-size/xl` is for Heading/Medium,** a step under Heading/Large.
+- **Two faces, each with one job.** [Urbanist](https://fonts.google.com/specimen/Urbanist) (`font-family/display`) sets the wordmark, titles and headings; [Hanken Grotesk](https://fonts.google.com/specimen/Hanken+Grotesk) (`font-family/sans`) sets everything else, numbers included. Urbanist is geometric, drawn from circles and straight strokes, so the name and each screen's title carry a distinct identity. Hanken is a quiet grotesque that stays out of the data's way: speeds, latencies, IP and MAC addresses, lists of devices.
+- **Urbanist stays out of figures and small text.** Its digits are proportional and its 1 is narrow, so addresses crowd and a live number shifts sideways each time it updates. At 11–12px its round, open shapes also read less crisply than a grotesque's.
+- **Hanken's figures hold still and sit level.** Every digit is the same width (0.56 of the size), so a counting speed doesn't jitter, and as tall as its own capitals and Urbanist's (71% of the size), so a figure lines up with the heading above it. Questrial, the face it replaced, ran 5% short.
+- **Hanken has real weights from 100 to 900.** Questrial had one, so live speeds were faked bold, with a stroke in Figma and synthetic bold in code. Cal Sans, the first heading candidate, had the same limit and read heavy at small sizes.
+- **Nine styles, two text sizes.** Text is 12px (Body, in Regular, Medium and SemiBold) and meta 11px (Caption). A 13px step sat 1px from both and read as a mistake rather than a level, so it went. A list row's name is Body and the rest of the row Caption; a data row's label and value share Body. Headings step up to 14px (Heading) and 17px (Title), and Display (28px) and Stat (17px) are for large figures only.
+- **Line heights sit on a 4px grid** (12, 16, 20, 24 and 28px), so rows and cards add up to whole steps. A figure never wraps, so its line is as tall as its size.
 
 ## Where a change is made
 
