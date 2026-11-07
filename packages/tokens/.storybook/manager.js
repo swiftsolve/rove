@@ -1,11 +1,19 @@
 import { addons } from 'storybook/manager-api'
 import { themes } from 'storybook/theming'
 
+import typography from '../dist/tokens/typography.tokens.json'
 import designPackage from '../package.json'
 
 // Keeps Storybook's own light or dark, following the system, as it does without a theme.
 const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 const theme = isDark ? themes.dark : themes.light
+
+// The sidebar runs in its own frame without tokens.css, so it takes the font
+// stacks from the token files; manager-head.html loads the two faces.
+// Family names are quoted; generic ones (system-ui, sans-serif) can't be.
+const fontStack = (family) => family.$value.map((name) => (/[A-Z ]/.test(name) ? `'${name}'` : name)).join(', ')
+const SANS = fontStack(typography['font-family'].sans)
+const DISPLAY = fontStack(typography['font-family'].display)
 
 // The Rove Mark (docs/assets/rove-mark.svg) in the accent, which names Rove,
 // then Rove Tokens over the version. With no brandImage, Storybook renders brandTitle as HTML.
@@ -16,14 +24,14 @@ const brandTitle = `
       <path d="M 11.98 36.02 A 17 17 0 1 1 36.02 36.02" stroke="#5b8cff" stroke-width="5" stroke-linecap="round" />
     </svg>
     <span style="display:flex;flex-direction:column;line-height:1.2">
-      <span style="font-size:18px;font-weight:600">Rove Tokens</span>
+      <span style="font-family:${DISPLAY};font-size:18px;font-weight:700">Rove Tokens</span>
       <span style="font-size:12px;font-weight:400;color:${theme.textMutedColor}">v${designPackage.version}</span>
     </span>
   </span>
 `
 
 addons.setConfig({
-  theme: { ...theme, brandTitle, brandImage: null },
+  theme: { ...theme, fontBase: SANS, brandTitle, brandImage: null },
   // The pages have no args, so the addon panel would only say so.
   layoutCustomisations: { showPanel: () => false },
 })

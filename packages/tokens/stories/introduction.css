@@ -198,7 +198,8 @@ html:has(.intro) body {
   margin: 0;
   color: var(--text-accent);
   font-size: var(--font-size-2xl);
-  font-weight: var(--weight-semibold);
+  font-family: var(--font-family-display);
+  font-weight: var(--type-title-weight);
 }
 
 .intro-pipeline-title p {
@@ -286,7 +287,8 @@ html:has(.intro) body {
 
 .intro-item-name {
   font-size: var(--font-size-lg);
-  font-weight: var(--weight-semibold);
+  font-family: var(--font-family-display);
+  font-weight: var(--type-title-weight);
 }
 
 /* A code chip's box hangs lower than plain text's letters, so a title that's a
@@ -358,7 +360,8 @@ html:has(.intro) body {
 
 .intro-card-title {
   font-size: var(--font-size-2xl);
-  font-weight: var(--weight-semibold);
+  font-family: var(--font-family-display);
+  font-weight: var(--type-title-weight);
 }
 
 .intro-card-body {

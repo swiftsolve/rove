@@ -326,7 +326,7 @@ should stay nearly solid, like a chart line behind another.
   for the large figures only: a number anywhere else takes the text style
   around it, with tabular digits.
 - Text is 12px (Body), meta 11px (Caption). Line heights sit on a 4px grid
-  (12, 16, 20, 24, 28px); a figure's line is its own height..
+  (12, 16, 20, 24, 28px); a figure's line is its own height.
 
 ## Layout
 
