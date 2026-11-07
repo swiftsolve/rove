@@ -9,7 +9,9 @@ export function AppTitleBar() {
     <TitleBar
       brand={
         <>
-          <span className="inline-flex shrink-0 items-center justify-center text-accent" aria-hidden>
+          {/* Down 1px: the mark's ink sits high in its box (open at the bottom), so
+              this centres it on the wordmark's capitals. */}
+          <span className="inline-flex shrink-0 translate-y-px items-center justify-center text-accent" aria-hidden>
             <BrandIcon size={22} />
           </span>
           <span className="type-heading-large leading-body-default text-primary">Rove</span>

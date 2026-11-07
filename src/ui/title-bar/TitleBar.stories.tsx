@@ -7,7 +7,7 @@ import { TitleBar, TitleBarStatus, WindowButton } from './TitleBar'
 
 const brand = (
   <>
-    <span className="inline-flex shrink-0 items-center justify-center text-accent" aria-hidden>
+    <span className="inline-flex shrink-0 translate-y-px items-center justify-center text-accent" aria-hidden>
       <BrandIcon size={22} />
     </span>
     <span className="type-heading-large leading-body-default text-primary">Rove</span>
