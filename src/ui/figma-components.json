@@ -1,17 +1,17 @@
 {
-  "description": "Edited directly, not generated: the map-figma-component skill writes an entry. Each library component's Figma component: its name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. noFigmaVariant lists props with values Figma has no variant for, noCodeProp the Figma variants code derives from other props, valuesDiffer props whose values differ on purpose, each with why; checks/figma-library.mjs holds the rest to Figma. npm run gen copies it into components.gen.json.",
+  "description": "Edited directly, not generated: the map-figma-component skill writes an entry. npm run gen copies it into components.gen.json, and checks/figma-library.mjs holds it to Figma. Each entry is the Figma component's name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. Deliberate differences: codeOnly is keyed by a code prop Figma has no variant for, with why. figmaOnly is keyed by a Figma variant code has no prop for, with the props it comes from. valuesDiffer is keyed by a code prop whose values differ from Figma's on purpose, with why.",
   "file": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": { "name": "Button", "node": "42:189" },
     "IconButton": {
       "name": "Icon button",
       "node": "13:629",
-      "noFigmaVariant": { "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own." }
+      "codeOnly": { "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own." }
     },
     "Link": {
       "name": "Link",
       "node": "505:845",
-      "noCodeProp": { "Type": "External is a link with href, View one with onClick." }
+      "figmaOnly": { "Type": "External is a link with href, View one with onClick." }
     },
     "StretchedLink": null,
     "Menu": { "name": "Menu", "node": "498:719" },
@@ -21,7 +21,7 @@
     "TextField": {
       "name": "Text field",
       "node": "500:810",
-      "noCodeProp": { "Action": "Whether action holds a TextFieldAction." }
+      "figmaOnly": { "Action": "Whether action holds a TextFieldAction." }
     },
     "TextFieldAction": { "name": "Text field", "node": "500:810" },
     "Toggle": { "name": "Toggle", "node": "42:198" },
@@ -31,14 +31,14 @@
     "Tooltip": {
       "name": "Tooltip",
       "node": "43:7",
-      "noFigmaVariant": { "side": "Where it opens beside its trigger." }
+      "codeOnly": { "side": "Where it opens beside its trigger." }
     },
     "Badge": { "name": "Badge", "node": "497:650" },
     "LiveBadge": { "name": "Live badge", "node": "4:41" },
     "StatusDot": {
       "name": "Status dot",
       "node": "494:735",
-      "noFigmaVariant": { "pulse": "An animation: Figma draws the dot at rest." },
+      "codeOnly": { "pulse": "An animation: Figma draws the dot at rest." },
       "valuesDiffer": { "tone": "current takes its words' colour, which Figma draws as each status." }
     },
     "Spinner": { "name": "Spinner", "node": "43:40" },
@@ -50,41 +50,41 @@
     "DataList": {
       "name": "Data row",
       "node": "15:642",
-      "noFigmaVariant": { "density": "Figma has the row, not the list: a list's spacing is its frame's gap." }
+      "codeOnly": { "density": "Figma has the row, not the list: a list's spacing is its frame's gap." }
     },
     "DataListStack": null,
     "DataRow": {
       "name": "Data row",
       "node": "15:642",
-      "noFigmaVariant": { "align": "Not in Figma yet: a value with no text baseline sits on the row's middle." }
+      "codeOnly": { "align": "Not in Figma yet: a value with no text baseline sits on the row's middle." }
     },
     "Readout": {
       "name": "Readout",
       "node": "4:106",
-      "noCodeProp": { "Has label": "Whether label is set." }
+      "figmaOnly": { "Has label": "Whether label is set." }
     },
     "MetricValue": { "name": "Metric value", "node": "38:360" },
     "BarMeter": {
       "name": "Bar meter",
       "node": "495:1044",
-      "noCodeProp": { "Value": "value, a number from 0 to 4." }
+      "figmaOnly": { "Value": "value, a number from 0 to 4." }
     },
     "SplitBar": {
       "name": "Split bar",
       "node": "556:619",
-      "noCodeProp": { "Mix": "Sample down and up values." }
+      "figmaOnly": { "Mix": "Sample down and up values." }
     },
     "ListRow": { "name": "List row", "node": "496:745" },
     "IconTile": {
       "name": "Icon tile",
       "node": "495:585",
-      "noCodeProp": { "Neutral": "color=\"neutral\"; any other colour is a tint." }
+      "figmaOnly": { "Neutral": "color=\"neutral\"; any other colour is a tint." }
     },
     "IconTileButton": { "name": "Icon tile", "node": "495:585" },
     "TimelineNode": {
       "name": "Timeline node",
       "node": "580:539",
-      "noCodeProp": {
+      "figmaOnly": {
         "Neutral": "color=\"neutral\", the hollow ring.",
         "Last": "The list's last node, with no line down: CSS finds it."
       }
@@ -92,8 +92,8 @@
     "Card": {
       "name": "Card",
       "node": "565:7535",
-      "noFigmaVariant": { "as": "The HTML element: it looks the same." },
-      "noCodeProp": { "Openable": "Whether onOpen is set." }
+      "codeOnly": { "as": "The HTML element: it looks the same." },
+      "figmaOnly": { "Openable": "Whether onOpen is set." }
     },
     "CardBody": { "name": "Card", "node": "565:7535" },
     "CardFooter": { "name": "Card", "node": "565:7535" },
@@ -105,7 +105,7 @@
     "NoValue": {
       "name": "No value",
       "node": "708:667",
-      "noCodeProp": { "Size": "It sizes to its line in em: Figma draws a hero line's and a row's." }
+      "figmaOnly": { "Size": "It sizes to its line in em: Figma draws a hero line's and a row's." }
     },
     "DotSeparator": { "name": "Dot separator", "node": "452:9524" },
     "InlineMeta": { "name": "Dot separator", "node": "452:9524" },
@@ -116,12 +116,12 @@
     "NavRail": {
       "name": "Nav rail",
       "node": "41:892",
-      "noCodeProp": { "Page": "The page whose NavItem has isActive." }
+      "figmaOnly": { "Page": "The page whose NavItem has isActive." }
     },
     "PageHeader": {
       "name": "Page header",
       "node": "542:10510",
-      "noCodeProp": { "Back": "Whether onBack is set." }
+      "figmaOnly": { "Back": "Whether onBack is set." }
     },
     "ScreenReaderStatus": null
   }

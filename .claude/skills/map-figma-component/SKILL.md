@@ -52,15 +52,19 @@ is left: never guess a node id.
    script's header says how).
 
 4. **Settle each difference it reports.** Fix the side that's wrong, in code
-   or in Figma. Only a difference meant to stay goes in the entry, each with a
-   short reason:
-   - `noFigmaVariant`: a prop with values Figma can't show (`tooltipSide`:
-     "Figma draws the tooltip on its own.").
-   - `noCodeProp`: a Figma variant code derives from other props (`Type`:
-     "External is a link with href.").
-   - `valuesDiffer`: a prop whose values differ on purpose.
+   or in Figma. Only a difference meant to stay goes in the entry, keyed by
+   the side that has it:
+   - `codeOnly`: a code prop Figma has no variant for, with why
+     (`tooltipSide`: "Figma draws the tooltip on its own.").
+   - `figmaOnly`: a Figma variant code has no prop for, with the props it
+     comes from (`Type`: "External is a link with href.").
+   - `valuesDiffer`: a code prop whose values differ from Figma's on purpose,
+     with why.
 
-   An exception that no longer applies fails the check too, so drop it.
+   An exception that no longer applies fails the check too, so drop it. The
+   check reads only the keys, so reread each string already in the entry
+   against the component's current props, and fix one that names a prop or
+   value that's gone.
 
 5. `npm run gen`, so `components.gen.json` takes the entry.
 
