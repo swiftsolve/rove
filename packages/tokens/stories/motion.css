@@ -12,8 +12,8 @@
   background: var(--accent-solid);
   color: var(--text-on-solid);
   font: inherit;
-  font-size: var(--type-label-large-size);
-  font-weight: var(--type-label-large-weight);
+  font-size: var(--type-body-semibold-size);
+  font-weight: var(--type-body-semibold-weight);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out);
 }

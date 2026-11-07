@@ -839,7 +839,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-2xs)",
-      "description": "Badges, chart axes",
+      "description": "Badges",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -852,7 +852,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-xs)",
-      "description": "Captions and small labels",
+      "description": "Captions, hints, chart axes",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -865,25 +865,12 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-sm)",
-      "description": "Helper text, menus, button labels, data rows",
+      "description": "Body text, labels, buttons, data rows",
       "scopes": [
         "FONT_SIZE"
       ],
       "values": {
         "Value": 12
-      }
-    },
-    {
-      "name": "font-size/md",
-      "collection": "Typography",
-      "type": "FLOAT",
-      "code": "var(--font-size-md)",
-      "description": "Body text",
-      "scopes": [
-        "FONT_SIZE"
-      ],
-      "values": {
-        "Value": 13
       }
     },
     {
@@ -900,24 +887,11 @@
       }
     },
     {
-      "name": "font-size/xl",
-      "collection": "Typography",
-      "type": "FLOAT",
-      "code": "var(--font-size-xl)",
-      "description": "Dialog titles",
-      "scopes": [
-        "FONT_SIZE"
-      ],
-      "values": {
-        "Value": 15
-      }
-    },
-    {
       "name": "font-size/2xl",
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--font-size-2xl)",
-      "description": "Page titles, stat totals",
+      "description": "Titles, stat totals",
       "scopes": [
         "FONT_SIZE"
       ],
@@ -943,7 +917,7 @@
       "collection": "Typography",
       "type": "STRING",
       "code": "var(--font-family-sans)",
-      "description": "Interface text",
+      "description": "Text and numbers",
       "scopes": [
         "FONT_FAMILY"
       ],
@@ -1102,7 +1076,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xs)",
-      "description": "Wide, faint washes: inline errors, the upload series’ fill",
+      "description": "Wide, faint washes: inline errors, the upload series\u2019 fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1154,7 +1128,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xl)",
-      "description": "The download series’ fill",
+      "description": "The download series\u2019 fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1278,19 +1252,6 @@
         "Light": {
           "alias": "neutral/1000-a50"
         }
-      }
-    },
-    {
-      "name": "font-family/numeric",
-      "collection": "Typography",
-      "type": "STRING",
-      "code": "var(--font-family-numeric)",
-      "description": "Numbers",
-      "scopes": [
-        "FONT_FAMILY"
-      ],
-      "values": {
-        "Value": "Hanken Grotesk"
       }
     },
     {
@@ -2411,7 +2372,7 @@
       "collection": "Typography",
       "type": "FLOAT",
       "code": "var(--weight-semibold)",
-      "description": "Headings and buttons",
+      "description": "Buttons and chips",
       "scopes": [
         "FONT_WEIGHT"
       ],
@@ -2446,7 +2407,7 @@
       "collection": "Motion",
       "type": "FLOAT",
       "code": "var(--duration-spring)",
-      "description": "A spring’s full run",
+      "description": "A spring\u2019s full run",
       "scopes": [],
       "values": {
         "Value": 450

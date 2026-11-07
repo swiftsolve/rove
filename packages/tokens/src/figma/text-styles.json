@@ -5,15 +5,15 @@
   },
   "styles": [
     {
-      "name": "Heading/Large",
-      "description": "Page titles, the wordmark. Code: .type-heading-large",
+      "name": "Title",
+      "description": "Page and dialog titles, the wordmark. Code: .type-title",
       "fontFamily": "Urbanist",
       "fontStyle": "Bold",
       "fontWeight": 700,
       "fontSize": 17,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 125
+        "unit": "PIXELS",
+        "value": 24
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -25,35 +25,15 @@
       }
     },
     {
-      "name": "Heading/Medium",
-      "description": "Dialog titles. Code: .type-heading-medium",
-      "fontFamily": "Urbanist",
-      "fontStyle": "Bold",
-      "fontWeight": 700,
-      "fontSize": 15,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/display",
-        "fontSize": "font-size/xl"
-      }
-    },
-    {
-      "name": "Heading/Small",
-      "description": "Card headings. Code: .type-heading-small",
+      "name": "Heading",
+      "description": "Card headings and empty states. Code: .type-heading",
       "fontFamily": "Urbanist",
       "fontStyle": "Bold",
       "fontWeight": 700,
       "fontSize": 14,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 120
+        "unit": "PIXELS",
+        "value": 20
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -65,35 +45,15 @@
       }
     },
     {
-      "name": "Body/Default",
-      "description": "Body text. Code: .type-body-default",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
-      "fontSize": 13,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/sans",
-        "fontSize": "font-size/md"
-      }
-    },
-    {
-      "name": "Label/Field",
-      "description": "Labels naming a value, field or section. Code: .type-label-field",
+      "name": "Body/Medium",
+      "description": "Field labels, menus and soft buttons. Code: .type-body-medium",
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Medium",
       "fontWeight": 500,
       "fontSize": 12,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
+        "unit": "PIXELS",
+        "value": 16
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -106,14 +66,14 @@
     },
     {
       "name": "Caption",
-      "description": "Live badge, captions, footer hints. Code: .type-caption",
+      "description": "Captions, hints and chart axes. Code: .type-caption",
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 11,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
+        "unit": "PIXELS",
+        "value": 16
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -125,15 +85,15 @@
       }
     },
     {
-      "name": "Label/Large",
-      "description": "Solid button labels. Code: Button variant=solid",
+      "name": "Body/SemiBold",
+      "description": "Buttons and chip labels. Code: .type-body-semibold",
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "SemiBold",
       "fontWeight": 600,
       "fontSize": 12,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
+        "unit": "PIXELS",
+        "value": 16
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -145,95 +105,55 @@
       }
     },
     {
-      "name": "Number/Display",
-      "description": "Live speeds. Code: .type-number-display .metric-value",
+      "name": "Display",
+      "description": "Live speeds. Code: .type-display .metric-value",
       "fontFamily": "Hanken Grotesk",
-      "fontStyle": "SemiBold",
-      "fontWeight": 600,
+      "fontStyle": "Medium",
+      "fontWeight": 500,
       "fontSize": 28,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 100
+        "unit": "PIXELS",
+        "value": 32
       },
       "letterSpacing": {
         "unit": "PERCENT",
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/numeric",
+        "fontFamily": "font-family/sans",
         "fontSize": "font-size/3xl"
       }
     },
     {
-      "name": "Number/Large",
+      "name": "Stat",
       "description": "Stat totals. Code: Readout size=compact",
       "fontFamily": "Hanken Grotesk",
-      "fontStyle": "SemiBold",
-      "fontWeight": 600,
+      "fontStyle": "Medium",
+      "fontWeight": 500,
       "fontSize": 17,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 100
+        "unit": "PIXELS",
+        "value": 24
       },
       "letterSpacing": {
         "unit": "PERCENT",
         "value": 0
       },
       "boundVariables": {
-        "fontFamily": "font-family/numeric",
+        "fontFamily": "font-family/sans",
         "fontSize": "font-size/2xl"
       }
     },
     {
-      "name": "Number/Default",
-      "description": "Data row values. Code: .type-number-default",
+      "name": "Body",
+      "description": "Body text, row names and values, data rows and units. Code: .type-body",
       "fontFamily": "Hanken Grotesk",
       "fontStyle": "Regular",
       "fontWeight": 400,
       "fontSize": 12,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/numeric",
-        "fontSize": "font-size/sm"
-      }
-    },
-    {
-      "name": "Number/Small",
-      "description": "Chart axes and scale. Code: .type-number-small",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
-      "fontSize": 10,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 100
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/numeric",
-        "fontSize": "font-size/2xs"
-      }
-    },
-    {
-      "name": "Label/Menu",
-      "description": "Menu items. Code: .type-label-menu",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "Medium",
-      "fontWeight": 500,
-      "fontSize": 12,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
+        "unit": "PIXELS",
+        "value": 16
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -242,86 +162,6 @@
       "boundVariables": {
         "fontFamily": "font-family/sans",
         "fontSize": "font-size/sm"
-      }
-    },
-    {
-      "name": "Label/Default",
-      "description": "Bold small labels on tinted chips. Code: .type-label-default",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "SemiBold",
-      "fontWeight": 600,
-      "fontSize": 11,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/sans",
-        "fontSize": "font-size/xs"
-      }
-    },
-    {
-      "name": "Label/Small",
-      "description": "Soft buttons, title bar status. Code: .type-label-small",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "Medium",
-      "fontWeight": 500,
-      "fontSize": 11,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/sans",
-        "fontSize": "font-size/xs"
-      }
-    },
-    {
-      "name": "Body/Small",
-      "description": "Helper text, hints and units. Code: .type-body-small",
-      "fontFamily": "Hanken Grotesk",
-      "fontStyle": "Regular",
-      "fontWeight": 400,
-      "fontSize": 12,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/sans",
-        "fontSize": "font-size/sm"
-      }
-    },
-    {
-      "name": "Heading/XSmall",
-      "description": "Empty state titles. Code: .type-heading-xsmall",
-      "fontFamily": "Urbanist",
-      "fontStyle": "Bold",
-      "fontWeight": 700,
-      "fontSize": 13,
-      "lineHeight": {
-        "unit": "PERCENT",
-        "value": 145
-      },
-      "letterSpacing": {
-        "unit": "PERCENT",
-        "value": 0
-      },
-      "boundVariables": {
-        "fontFamily": "font-family/display",
-        "fontSize": "font-size/md"
       }
     },
     {
@@ -332,8 +172,8 @@
       "fontWeight": 600,
       "fontSize": 10,
       "lineHeight": {
-        "unit": "PERCENT",
-        "value": 100
+        "unit": "PIXELS",
+        "value": 12
       },
       "letterSpacing": {
         "unit": "PERCENT",

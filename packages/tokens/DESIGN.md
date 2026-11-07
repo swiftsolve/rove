@@ -47,92 +47,52 @@ colors: # Keys: --<key>
   series-up: "#b39dff" # Upload
   focus-ring: "#5b8cff" # Keyboard focus ring
 typography: # Keys: the class, .type-<key>
-  heading-large: # Heading/Large: Page titles, the wordmark. Class .type-heading-large.
-    fontFamily: "Urbanist"
-    fontSize: "17px"
-    fontWeight: 700
-    lineHeight: 1.25
-  heading-medium: # Heading/Medium: Dialog titles. Class .type-heading-medium.
-    fontFamily: "Urbanist"
-    fontSize: "15px"
-    fontWeight: 700
-    lineHeight: 1.45
-  heading-small: # Heading/Small: Card headings. Class .type-heading-small.
+  heading: # Heading: Card headings and empty states. Class .type-heading.
     fontFamily: "Urbanist"
     fontSize: "14px"
     fontWeight: 700
-    lineHeight: 1.2
-  heading-xsmall: # Heading/XSmall: Empty state titles. Class .type-heading-xsmall.
-    fontFamily: "Urbanist"
-    fontSize: "13px"
-    fontWeight: 700
-    lineHeight: 1.45
-  body-default: # Body/Default: Body text. Class .type-body-default.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "13px"
-    fontWeight: 400
-    lineHeight: 1.45
-  body-small: # Body/Small: Helper text, hints and units. Class .type-body-small.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "12px"
-    fontWeight: 400
-    lineHeight: 1.45
-  label-large: # Label/Large: Solid button labels. In code: Button variant=solid. Class .type-label-large.
+    lineHeight: 1.4286
+  body-semibold: # Body/SemiBold: Buttons and chip labels. Class .type-body-semibold.
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 600
-    lineHeight: 1.45
-  label-field: # Label/Field: Labels naming a value, field or section. Class .type-label-field.
+    lineHeight: 1.3333
+  body-medium: # Body/Medium: Field labels, menus and soft buttons. Class .type-body-medium.
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
     fontWeight: 500
-    lineHeight: 1.45
-  label-menu: # Label/Menu: Menu items. Class .type-label-menu.
+    lineHeight: 1.3333
+  body: # Body: Body text, row names and values, data rows and units. Class .type-body.
     fontFamily: "Hanken Grotesk"
     fontSize: "12px"
-    fontWeight: 500
-    lineHeight: 1.45
-  label-default: # Label/Default: Bold small labels on tinted chips. Class .type-label-default.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "11px"
-    fontWeight: 600
-    lineHeight: 1.45
-  label-small: # Label/Small: Soft buttons, title bar status. Class .type-label-small.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "11px"
-    fontWeight: 500
-    lineHeight: 1.45
-  caption: # Caption: Live badge, captions, footer hints. Class .type-caption.
+    fontWeight: 400
+    lineHeight: 1.3333
+  caption: # Caption: Captions, hints and chart axes. Class .type-caption.
     fontFamily: "Hanken Grotesk"
     fontSize: "11px"
     fontWeight: 400
-    lineHeight: 1.45
+    lineHeight: 1.4545
   badge: # Badge: Badge labels. Class .type-badge, uppercase.
     fontFamily: "Hanken Grotesk"
     fontSize: "10px"
     fontWeight: 600
-    lineHeight: 1
+    lineHeight: 1.2
     letterSpacing: "0.04em"
-  number-display: # Number/Display: Live speeds. In code: .type-number-display .metric-value. Class .type-number-display.
+  display: # Display: Live speeds. In code: .type-display .metric-value. Class .type-display.
     fontFamily: "Hanken Grotesk"
     fontSize: "28px"
-    fontWeight: 600
-    lineHeight: 1
-  number-large: # Number/Large: Stat totals. In code: Readout size=compact. Class .type-number-large.
+    fontWeight: 500
+    lineHeight: 1.1429
+  title: # Title: Page and dialog titles, the wordmark. Class .type-title.
+    fontFamily: "Urbanist"
+    fontSize: "17px"
+    fontWeight: 700
+    lineHeight: 1.4118
+  stat: # Stat: Stat totals. In code: Readout size=compact. Class .type-stat.
     fontFamily: "Hanken Grotesk"
     fontSize: "17px"
-    fontWeight: 600
-    lineHeight: 1
-  number-default: # Number/Default: Data row values. Class .type-number-default.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "12px"
-    fontWeight: 400
-    lineHeight: 1.45
-  number-small: # Number/Small: Chart axes and scale. Class .type-number-small.
-    fontFamily: "Hanken Grotesk"
-    fontSize: "10px"
-    fontWeight: 400
-    lineHeight: 1
+    fontWeight: 500
+    lineHeight: 1.4118
 rounded: # Keys: --radius-<key>
   xs: "5px" # Window buttons, menu items, segments
   sm: "8px" # Buttons, inputs, tooltips, icon tiles
@@ -150,22 +110,19 @@ spacing: # Keys: --spacing-<key>
   "16": "16px" # Between readouts
   "20": "20px" # Content bottom inset
 font-size: # Font sizes; a text style sets its own. Keys: --<key>
-  font-size-2xs: "10px" # Badges, chart axes
-  font-size-xs: "11px" # Captions and small labels
-  font-size-sm: "12px" # Helper text, menus, button labels, data rows
-  font-size-md: "13px" # Body text
+  font-size-2xs: "10px" # Badges
+  font-size-xs: "11px" # Captions, hints, chart axes
+  font-size-sm: "12px" # Body text, labels, buttons, data rows
   font-size-lg: "14px" # Card headings
-  font-size-xl: "15px" # Dialog titles
-  font-size-2xl: "17px" # Page titles, stat totals
+  font-size-2xl: "17px" # Titles, stat totals
   font-size-3xl: "28px" # Live speeds
 font-family: # Font stacks. Keys: --<key>
-  font-family-sans: "'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif" # Interface text
-  font-family-numeric: "'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif" # Numbers
+  font-family-sans: "'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif" # Text and numbers
   font-family-display: "'Urbanist', system-ui, -apple-system, 'Segoe UI', sans-serif" # Headings
 font-weight: # Font weights. Keys: --<key>
   weight-regular: "400" # Body text
   weight-medium: "500" # Labels and menus
-  weight-semibold: "600" # Headings and buttons
+  weight-semibold: "600" # Buttons and chips
 opacity: # Tint strengths (color-mix with transparent) and dimming. Keys: --<key>
   opacity-tint-xs: "8%" # Wide, faint washes: inline errors, the upload series’ fill
   opacity-tint-sm: "10%" # Status banners and panels
@@ -360,13 +317,16 @@ should stay nearly solid, like a chart line behind another.
 ## Typography
 
 - Set text with a text style's class from `text-styles.css`
-  (`.type-heading-large`), or all four of its `--type-<style>-*` variables,
+  (`.type-title`), or all four of its `--type-<style>-*` variables,
   never a font size alone. Each style's use is beside it in the front matter's
   `typography`.
   [✓ CHECKED by Rove's `checks/text-styles.mjs`].
-- Numbers that are data (speeds, totals, chart labels) use the Number styles
-  (`number-*`). Headings (`heading-*`) are set in Urbanist Bold;
-  everything else is Hanken Grotesk.
+- Nine styles, each with one job. Title and Heading are Urbanist Bold;
+  everything else, numbers included, is Hanken Grotesk. Display and Stat are
+  for the large figures only: a number anywhere else takes the text style
+  around it, with tabular digits.
+- Text is 12px (Body), meta 11px (Caption). Line heights sit on a 4px grid
+  (12, 16, 20, 24, 32px).
 
 ## Layout
 

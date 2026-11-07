@@ -32,7 +32,7 @@ function colourName(figmaName) {
 /** Each theme namespace, the token groups that fill it, and how a token's name maps. */
 const SCALES = [
   ['Spacing (p-*, gap-*, m-*), plus 0 for resets and 1px for hairlines', 'spacing', (n) => `--spacing-${n}`],
-  ['Font families (font-sans, font-numeric, font-display)', 'font-family', (n) => `--font-${n}`],
+  ['Font families (font-sans, font-display)', 'font-family', (n) => `--font-${n}`],
   ['Font sizes (text-*)', 'font-size', (n) => `--text-${n}`],
   ['Font weights (font-*)', 'weight', (n) => `--font-weight-${n}`],
   ['Corners (rounded-*)', 'radius', (n) => `--radius-${n}`],

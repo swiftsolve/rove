@@ -6,29 +6,20 @@ export default { title: 'Typography' }
 // The Figma page's order: display first.
 const FAMILIES = {
   display: 'Headings, in Bold.',
-  sans: 'Interface text. Regular, Medium, SemiBold.',
-  numeric: 'Numbers, tabular. Live metrics in SemiBold.',
+  sans: 'Text and numbers. Regular, Medium, SemiBold.',
 }
 
 // The Figma page's specimen for each style, in its order.
 const SPECIMENS = {
-  'heading-large': 'Starlight_5G',
-  'heading-medium': 'Add a service',
-  'heading-small': 'Capabilities',
-  'heading-xsmall': 'No devices found',
-  'body-default': <Joined parts={['192.168.1.42', '5 GHz']} />,
-  'body-small': 'Devices will appear after a scan.',
+  display: '4.4',
+  title: 'Starlight_5G',
+  stat: '4.90',
+  heading: 'Capabilities',
+  body: <Joined parts={['192.168.1.42', '5 GHz']} />,
+  'body-medium': 'Link speed',
+  'body-semibold': 'Run test',
   caption: 'Live',
   badge: 'VPN',
-  'label-large': 'Run test',
-  'label-menu': 'Edit',
-  'label-default': 'Add service',
-  'label-small': 'Wi‑Fi',
-  'label-field': 'Download',
-  'number-display': '4.4',
-  'number-large': '4.90',
-  'number-default': 'Wi‑Fi 6 (802.11ax)',
-  'number-small': '60s ago',
 }
 
 const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' }
@@ -40,11 +31,11 @@ const families = Object.fromEntries(
   group(typography, 'font-family').map((token) => [`{${token.path.join('.')}}`, token.$value[0]]),
 )
 
-// heading-large is Heading/Large, as Figma names the style; xsmall is XSmall.
+// body-medium is Body/Medium, as Figma names the style; semibold is SemiBold.
 const styleName = (key) =>
   key
     .split('-')
-    .map((word) => (word === 'xsmall' ? 'XSmall' : word[0].toUpperCase() + word.slice(1)))
+    .map((word) => (word === 'semibold' ? 'SemiBold' : word[0].toUpperCase() + word.slice(1)))
     .join('/')
 
 const percent = (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
@@ -52,7 +43,7 @@ const percent = (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
 function Spec({ value, textCase }) {
   const size = fontSizes[value.fontSize]
   const letterSpacing = value.letterSpacing.value / size
-  const metrics = [`${size}px / ${Math.round(value.lineHeight * 100)}%`]
+  const metrics = [`${size}px / ${Math.round(value.lineHeight * size)}px`]
   if (letterSpacing !== 0) metrics.push(percent(letterSpacing))
   return (
     <span className="spec">
@@ -115,7 +106,6 @@ function SizeScale() {
             <span
               style={{
                 fontSize: `var(${name})`,
-                fontFamily: isMetric ? 'var(--font-family-numeric)' : undefined,
                 lineHeight: 1.2,
               }}
             >
@@ -167,7 +157,7 @@ export const Typography = {
       >
         <Section
           title="Families"
-          intro="Urbanist (font-family/display) for headings, Hanken Grotesk (font-family/sans and font-family/numeric) for text and numbers."
+          intro="Urbanist (font-family/display) for headings, Hanken Grotesk (font-family/sans) for text and numbers."
         >
           <Families />
         </Section>
