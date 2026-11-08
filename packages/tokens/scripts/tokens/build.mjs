@@ -97,6 +97,20 @@ function shadowToken({ name, layers }) {
   return [cssName, layersCss.join(', ')]
 }
 
+// code-tokens.json is edited by hand, so a misspelt key fails here rather than being skipped.
+const unknownSections = Object.keys(codeTokens).filter((key) => !['description', 'figma', 'tokens'].includes(key))
+if (unknownSections.length) {
+  throw new Error(`code-tokens.json has ${unknownSections.join(', ')}; it holds only description, figma and tokens`)
+}
+const unknownOverrides = Object.keys(codeTokens.figma).filter((name) => !variableByName.has(name))
+if (unknownOverrides.length) {
+  throw new Error(`code-tokens.json's figma names unknown Figma variables: ${unknownOverrides.join(', ')}`)
+}
+const unprefixedTokens = Object.keys(codeTokens.tokens).filter((name) => !name.startsWith('--'))
+if (unprefixedTokens.length) {
+  throw new Error(`code-tokens.json's tokens must be CSS variables starting --: ${unprefixedTokens.join(', ')}`)
+}
+
 // Shadows are designed in Figma, so code-tokens.json mustn't define its own.
 const ownShadows = Object.keys(codeTokens.tokens).filter((name) => name.startsWith('--shadow-'))
 if (ownShadows.length) throw new Error(`code-tokens.json defines ${ownShadows.join(', ')}; shadows come from Figma`)
