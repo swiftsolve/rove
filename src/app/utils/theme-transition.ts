@@ -97,11 +97,15 @@ function easeInOut(progress: number): number {
 function stepFade(now: number): void {
   if (!runningFade) return
   const root = document.documentElement
-  const delta = (now - runningFade.lastFrameAt) / SWAP_DURATION_MS
+  // The share of the whole fade this frame covers.
+  const frameShare = (now - runningFade.lastFrameAt) / SWAP_DURATION_MS
+  // Progress runs up toward light and down toward dark.
+  const step = runningFade.isTargetLight ? frameShare : -frameShare
+  const targetProgress = runningFade.isTargetLight ? 1 : 0
   runningFade.lastFrameAt = now
-  runningFade.progress = Math.min(1, Math.max(0, runningFade.progress + (runningFade.isTargetLight ? delta : -delta)))
+  runningFade.progress = Math.min(1, Math.max(0, runningFade.progress + step))
 
-  if (runningFade.progress === (runningFade.isTargetLight ? 1 : 0)) {
+  if (runningFade.progress === targetProgress) {
     // Landed: hand the tokens back to the stylesheet, which the theme class
     // already points at the target.
     for (const { name } of runningFade.tokens) root.style.removeProperty(name)

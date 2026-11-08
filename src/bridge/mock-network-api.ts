@@ -164,6 +164,8 @@ const MOCK_QR_ROWS = [
   '82666ebd700',
   'fe15c497850',
 ]
+// Each row's width in bits: its 41 modules, padded.
+const QR_ROW_BITS = 44
 
 /**
  * The mock network's QR code, drawn as the backend draws it: rounded eyes and
@@ -186,13 +188,15 @@ export function mockQrSvg(): string {
   // The dialog's round tile over the centre (WifiQrCode's 36px circle on its
   // 240px image), as the backend clears it: a dot it would cut is left out.
   const dotRadius = 0.42
-  const clear = ((36 / 240) * side) / 2 + dotRadius
-  const isUnderMark = (cx: number, cy: number): boolean => Math.hypot(cx - side / 2, cy - side / 2) < clear
+  const clearRadius = ((36 / 240) * side) / 2 + dotRadius
+  const isUnderMark = (cx: number, cy: number): boolean => Math.hypot(cx - side / 2, cy - side / 2) < clearRadius
   let shapes = eyes.map((eye) => eyeSvg(eye.x + quietZone, eye.y + quietZone, eye.size)).join('')
   MOCK_QR_ROWS.forEach((row, y) => {
     const bits = BigInt(`0x${row}`)
     for (let x = 0; x < size; x++) {
-      const isDark = ((bits >> BigInt(43 - x)) & 1n) === 1n
+      // Module x is bit x counted from the most significant of the row's 44.
+      const shift = BigInt(QR_ROW_BITS - 1 - x)
+      const isDark = ((bits >> shift) & 1n) === 1n
       const cx = x + quietZone + 0.5
       const cy = y + quietZone + 0.5
       if (isDark && !isInEye(x, y) && !isUnderMark(cx, cy)) {

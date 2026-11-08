@@ -26,7 +26,10 @@ export function historyStepForKey(press: ShortcutKey, { isMac, isEditing }: Shor
   if (press.shiftKey || press.ctrlKey) return null
   if (isMac) {
     if (!press.metaKey || press.altKey) return null
-    return BRACKETS[press.key] ?? (isEditing ? null : (ARROWS[press.key] ?? null))
+    const bracketStep = BRACKETS[press.key]
+    if (bracketStep) return bracketStep
+    if (isEditing) return null
+    return ARROWS[press.key] ?? null
   }
   if (!press.altKey || press.metaKey || isEditing) return null
   return ARROWS[press.key] ?? null
