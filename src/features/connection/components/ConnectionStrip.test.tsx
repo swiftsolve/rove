@@ -31,6 +31,17 @@ describe('ConnectionStrip', () => {
     expect(document.querySelector('svg.lucide-chevron-down')).toBeInTheDocument()
   })
 
+  it('puts the toggle after the strip, right before the details it opens', () => {
+    render(
+      <Collapsible isOpen={false} onOpenChange={() => {}}>
+        <ConnectionStrip info={ETHERNET} titleId="title" isExpanded={false} />
+      </Collapsible>,
+    )
+    const title = screen.getByRole('heading')
+    const toggle = screen.getByRole('button', { name: 'Connection details' })
+    expect(title.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('has nothing to open with no details', () => {
     const { container } = render(<ConnectionStrip info={OFFLINE} titleId="title" />)
     expect(screen.queryByRole('button')).not.toBeInTheDocument()

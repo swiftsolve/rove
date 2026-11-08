@@ -90,11 +90,6 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
 
   return (
     <div className={stripVariants({ canExpand })}>
-      {/* A button can't hold the share button (invalid HTML), so the toggle
-          is an empty button stretched under the row instead. */}
-      {canExpand && (
-        <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
-      )}
       <IconTile size="lg" color={color} className={cx(ABOVE_TOGGLE, 'self-center')} icon={<Icon size={16} />} />
       <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
         <h2 id={titleId} className="type-title truncate text-primary">
@@ -109,6 +104,13 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
         <span className="relative z-1 inline-flex shrink-0 self-center">
           <ShareWifiButton />
         </span>
+      )}
+      {/* A button can't hold the share button (invalid HTML), so the toggle
+          is an empty button stretched under the row instead. It comes last,
+          where the chevron is, so a screen reader reaches the details right
+          after it and Tab goes share, then toggle. */}
+      {canExpand && (
+        <CollapsibleTrigger className="absolute inset-0 z-0 cursor-pointer" aria-label="Connection details" />
       )}
       {canExpand && <ChevronDownIcon size={14} className={chevronVariants({ isOpen: isExpanded })} aria-hidden />}
     </div>
