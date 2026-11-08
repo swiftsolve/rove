@@ -1407,7 +1407,12 @@
           mapLink('traffic-card', 'The card and its chart'),
           mapLink('speed-readout', 'One big counting number'),
         ])}
-        ${mapGroup('Capabilities', 'A tile per activity, from the last speed test.', [mapLink('capabilities-card', 'The tiles and footer')])}
+        ${mapGroup('Capabilities', 'A tile per activity, from the last speed test.', [
+          mapLink('capabilities-card', 'The card and its layout'),
+          mapLink('run-test-button', 'The run-test button'),
+          mapLink('capability-tiles', 'The tiles'),
+          mapLink('capabilities-footer', 'The footer'),
+        ])}
         ${mapGroup('Usage and Devices', 'Two small cards side by side.', [mapLink('stat-card', 'The layout both share')])}
       </section>
       <div class="facts">
@@ -1488,7 +1493,7 @@
       what: 'React 19’s way to read a context (or a promise). Like the older useContext.',
       why: 'useNetwork() and useNavigation() are each one line: use(TheirContext). A CardHeader reads what its Card knows the same way.',
       example: `export function useNetwork() {\n  return use(NetworkContext)\n}`,
-      files: ['useNetwork.ts', 'useNavigation.ts', 'Card.tsx'],
+      files: ['useNetwork.ts', 'useNavigation.ts', 'CardHeader.tsx'],
     },
     {
       name: 'useEffectEvent',
@@ -1792,7 +1797,7 @@
       title: 'So a neighbour can adjust',
       text: 'A card body sits closer to a footer below it. The body checks whether the very next element is a footer.',
       code: `<div data-card-footer="">…</div>      // the footer marks itself\n\n'has-[+[data-card-footer]]:pb-12'\n// +[…] means “the element straight after me”:\n// if that's a footer, shrink my bottom padding to 12px`,
-      file: 'Card.tsx',
+      file: 'CardBody.tsx',
     },
     {
       title: 'So code can find an element',
