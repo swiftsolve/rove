@@ -44,6 +44,13 @@ export function SecurityBadge({ security, isShort = false, className }: Security
     weak: `Weak security (${fullLabel}). It's easy to break, so switch the router to WPA2 or WPA3.`,
     open: "Open network. Traffic isn't encrypted.",
   }[level]
+  // Spoken without brackets, which screen readers read out as "left paren".
+  const spokenLabel = fullLabel.replace(/[()]/g, '')
+  const spokenDescription = {
+    secured: `Secured, ${spokenLabel}`,
+    weak: `Weak security, ${spokenLabel}. It's easy to break, so switch the router to WPA2 or WPA3.`,
+    open: description,
+  }[level]
   const Icon = level === 'open' ? UnlockIcon : LockIcon
   const hasProtocol = level !== 'open'
 
@@ -65,7 +72,7 @@ export function SecurityBadge({ security, isShort = false, className }: Security
           </span>
         )}
         {/* The hint isn't announced here; the full description is. */}
-        <span className="sr-only">{description}</span>
+        <span className="sr-only">{spokenDescription}</span>
       </span>
     </Tooltip>
   )

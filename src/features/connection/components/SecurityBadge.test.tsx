@@ -14,6 +14,11 @@ describe('SecurityBadge', () => {
     expect(visibleWords(container)).toEqual(['Secured', 'WPA3-Personal (H2E)'])
   })
 
+  it('tells a screen reader the protocol without brackets, which it would read out', () => {
+    const { container } = render(<SecurityBadge security="WPA3-Personal (H2E)" />)
+    expect(container.querySelector('.sr-only')).toHaveTextContent(/^Secured, WPA3-Personal H2E$/)
+  })
+
   it('says an open network is not secured in the details, with no protocol', () => {
     const { container } = render(<SecurityBadge security="Open" />)
     expect(visibleWords(container)).toEqual(['Not secured'])
