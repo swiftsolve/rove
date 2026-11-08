@@ -56,9 +56,18 @@ comment says which.
 
 Every name (a variable, function, prop, type or file) says what it is in the
 reader's words, however long that makes it: `meterWidth`, not `span`;
-`itemSelector`, not `items`. A function's name says what it returns or does:
-`restyleReason`, not `restyles`. A short name suits only a scope seen at a
+`itemSelector`, not `items`. A short name suits only a scope seen at a
 glance, like `i` in a loop or `x` and `y` in geometry.
+
+A function is named for its effect:
+
+- one that acts (fetches, writes, focuses, schedules) is a verb phrase:
+  `fetchFigmaJson`, `wakeAudioContext`, `flashHighlight`;
+- one that only computes a value is named for the value, with no `get`:
+  `testStatusText`, `restyleReason`, not `restyles`; a conversion keeps its
+  verb, `formatSpeedMbps`, `parseServiceInput`;
+- one that answers yes or no reads as a question: `isSameText`, `hasGradient`;
+- an event handler is `onX`, as a prop and as a local: `onKeyDown`.
 
 ### Commit only your paths
 
