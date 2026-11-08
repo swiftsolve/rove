@@ -135,7 +135,7 @@ export function CardHeader({ title, icon, actions, className, ...props }: CardHe
     <div className={cn(HEADER, className)} {...props}>
       <div className="flex min-w-0 items-center gap-8">
         {icon != null && (
-          <span className="inline-flex shrink-0 items-center justify-center text-tertiary" aria-hidden>
+          <span className="inline-flex shrink-0 text-tertiary" aria-hidden>
             {icon}
           </span>
         )}

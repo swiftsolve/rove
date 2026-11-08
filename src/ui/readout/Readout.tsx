@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { cn } from '../utils/cn'
 import type { VariantOf } from '../utils/variants'
 
-const figureVariants = cva('metric num', {
+const figureVariants = cva('metric', {
   variants: {
     size: { large: null, compact: 'metric-compact' },
   },

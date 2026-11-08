@@ -95,9 +95,7 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
               items={[<>Jitter {jitter ?? <NoValue label="Not measured" />}</>, <>{entry.packetLoss}% loss</>]}
             />
             {entry.linkSpeedMbps != null && (
-              <span className="ml-auto shrink-0">
-                Link speed <span className="num">{formatSpeedMbps(entry.linkSpeedMbps) ?? <NoValue />}</span>
-              </span>
+              <span className="ml-auto shrink-0">Link speed {formatSpeedMbps(entry.linkSpeedMbps) ?? <NoValue />}</span>
             )}
           </p>
         </div>

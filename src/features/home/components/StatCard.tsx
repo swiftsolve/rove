@@ -48,13 +48,7 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
   // The small dot needs more room before the count than the arrows do, but
   // the count and its unit keep the readout's gap.
   const icon =
-    marker === 'online' ? (
-      <span className="mr-4 inline-flex">
-        <StatusDot tone="positive" />
-      </span>
-    ) : (
-      <DirectionIcon series={marker} size={12} />
-    )
+    marker === 'online' ? <StatusDot tone="positive" className="mr-4" /> : <DirectionIcon series={marker} size={12} />
   return <Readout size="compact" icon={icon} value={value} unit={unit} className={className} />
 }
 

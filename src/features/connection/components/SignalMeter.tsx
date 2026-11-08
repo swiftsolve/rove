@@ -25,7 +25,7 @@ export function SignalMeter({ strength, shouldAnnounce = true, className }: Sign
   const meterClassName = cx(signalMeterVariants({ level: signalLevel(strength) }), className)
   if (!shouldAnnounce) {
     return (
-      <span className={meterClassName} aria-hidden>
+      <span className={meterClassName}>
         <BarMeter value={signalBarCount(strength)} />
       </span>
     )

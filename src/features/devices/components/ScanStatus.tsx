@@ -72,9 +72,7 @@ export function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | n
       <StatusDot tone="accent" pulse="busy" className={STATUS_DOT} />
       {/* A hidden sizer (the longest word) keeps the stacked words from reflowing. */}
       <span className="relative inline-block">
-        <span className="invisible" aria-hidden>
-          Identifying
-        </span>
+        <span className="invisible">Identifying</span>
         {SCAN_PHASES.map((label, i) => (
           <span
             key={label}

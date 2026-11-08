@@ -89,10 +89,10 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
 
         <div className={VERDICT}>
           <p className="type-body flex min-w-0 flex-1 items-start gap-6 text-secondary">
-            <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
+            <span className={verdictIconVariants({ level: capability.level })}>
               <VerdictIcon level={capability.level} />
             </span>
-            <span>{summary}</span>
+            {summary}
           </p>
         </div>
       </div>

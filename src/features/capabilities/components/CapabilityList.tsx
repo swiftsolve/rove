@@ -81,7 +81,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
         </div>
       </div>
       {/* Where the rating will land. */}
-      <span className="shrink-0 font-medium text-tertiary" aria-hidden>
+      <span className="shrink-0" aria-hidden>
         <NoValue />
       </span>
     </li>

@@ -57,7 +57,7 @@ export function Banner({ variant, title, description, onRetry }: BannerProps): J
   return (
     <div className={bannerVariants({ variant })} role="alert">
       {/* One title line tall, so the icon sits level with the title. */}
-      <span className="inline-flex h-[19px] shrink-0 items-center text-status-negative" aria-hidden>
+      <span className="inline-flex h-[19px] shrink-0 items-center text-status-negative">
         <AlertIcon size={16} />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-8">

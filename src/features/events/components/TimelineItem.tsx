@@ -140,7 +140,7 @@ export function TimelineItem({
       )}
       {internetSubtitle && (
         <span className={cx(SUBJECT_LINE, 'flex w-full flex-wrap')}>
-          <span>{internetSubtitle}</span>
+          {internetSubtitle}
           {offlineMs != null && (
             <span className="type-caption ml-auto shrink-0 leading-[inherit] whitespace-nowrap text-tertiary">
               Offline for {formatDuration(offlineMs) ?? <NoValue label="Unknown" />}

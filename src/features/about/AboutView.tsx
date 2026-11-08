@@ -20,7 +20,7 @@ export function AboutView() {
   return (
     <div className="page">
       <div className="flex flex-col items-center gap-4 px-12 pt-16 pb-12 text-center">
-        <span className={APP_ICON_TILE} aria-hidden>
+        <span className={APP_ICON_TILE}>
           <BrandIcon size={53} hasGradient />
         </span>
         <h1 className="font-display text-3xl font-(--type-title-weight) tracking-title text-primary">Rove</h1>

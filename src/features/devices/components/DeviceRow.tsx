@@ -199,7 +199,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
                   shouldShowRandomizedTag && (
                     // The hint isn't announced here; the sr-only words say it.
                     <Tooltip content="Privacy-randomized MAC address" shouldDescribe={false}>
-                      <span className="whitespace-nowrap text-tertiary">
+                      <span className="whitespace-nowrap">
                         <span aria-hidden>Randomized</span>
                         <span className="sr-only">, privacy-randomized</span>
                       </span>

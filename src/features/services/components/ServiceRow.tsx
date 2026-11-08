@@ -73,13 +73,7 @@ function LatencyReadout({
   if (latencyMs === null) {
     // Path failed. Only a genuine "Down" when we know the internet is up;
     // otherwise the failure is ours, so read it as unknown.
-    return isInternetUnreachable ? (
-      <span className="type-caption text-tertiary">
-        <NoValue label="Unknown" />
-      </span>
-    ) : (
-      <span className="text-negative">Down</span>
-    )
+    return isInternetUnreachable ? <NoValue label="Unknown" /> : <span className="text-negative">Down</span>
   }
   if (isErroring) return <span className="text-negative">Down</span>
   return <MetricValue value={latencyMs} status={latencyBand(latencyMs)} format={formatLatencyMs} />

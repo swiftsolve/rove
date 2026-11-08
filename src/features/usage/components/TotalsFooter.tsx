@@ -14,7 +14,7 @@ const TOTALS_FOOTER = cx(
 export function TotalsFooter({ label, rxBytes, txBytes }: { label: string; rxBytes: number; txBytes: number }) {
   return (
     <p className={TOTALS_FOOTER}>
-      <span>{label}</span>
+      {label}
       <span className="inline-flex items-center gap-12">
         <span className="inline-flex items-center gap-4">
           <DirectionIcon series="down" size={11} />

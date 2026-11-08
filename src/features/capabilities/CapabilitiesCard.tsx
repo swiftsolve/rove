@@ -172,7 +172,7 @@ function FooterStatus({ hasResults }: { hasResults: boolean }): JSX.Element | nu
   if (completedAt == null) return null
   return (
     <span className={FOOTER_STATUS}>
-      <HistoryIcon size={13} aria-hidden />
+      <HistoryIcon size={13} />
       <UpdatedAgo timestamp={completedAt} />
     </span>
   )

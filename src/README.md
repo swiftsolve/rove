@@ -254,6 +254,11 @@ apply here. This section is how they're written as Tailwind utilities.
     exempt.
   - A `:has()` selector in a `.module.css` (below) may reach in; InlineMeta
     keeps its `inline-meta` and `inline-meta-item` classes for it.
+- An element or class stays only if it changes something where it sits: a
+  wrapper with one child and no layout, ref, role or label goes, and so does a
+  class with nothing to act on (`metric-value` on a drawn bar, `aria-hidden`
+  on an icon that hides itself). A span that sets the font size for an
+  em-sized child (`type-stat` around `NoValue`) changes the child, and stays.
 - Animations are theme entries in `tailwind.css` (`animate-menu-in`), with
   their keyframes.
 - A `.module.css` file holds only what utilities can't say, selectors into

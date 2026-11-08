@@ -30,14 +30,10 @@ import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/utils/format
 const CONNECTION_LABEL = 'inline-flex items-center gap-6 font-medium text-secondary'
 
 /**
- * A hero speed's digits; a muted NoValue bar before any test has run, so the
- * labels lead and the cell reads as empty, not zeroed.
+ * A hero speed's digits; a NoValue bar, muted by its own colour, before any
+ * test has run, so the labels lead and the cell reads as empty, not zeroed.
  */
-const speedValueVariants = cva('type-display metric-value', {
-  variants: {
-    isPlaceholder: { true: 'text-tertiary' },
-  },
-})
+const SPEED_VALUE = 'type-display metric-value'
 
 const substatValueVariants = cva('type-body num leading-body', {
   variants: {
@@ -68,10 +64,8 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
   return (
-    <dd className="metric num">
-      <span className={speedValueVariants({ isPlaceholder })}>
-        {isPlaceholder ? <NoValue label="Not tested yet" /> : value}
-      </span>
+    <dd className="metric">
+      <span className={SPEED_VALUE}>{isPlaceholder ? <NoValue label="Not tested yet" /> : value}</span>
       {!isPlaceholder && <span className="type-body metric-unit">{unit}</span>}
     </dd>
   )
@@ -149,7 +143,7 @@ function ResultFooter({
   linkCapacityMbps: number | null
 }) {
   return (
-    <div className={cx(INSET_PANEL, 'flex items-center')}>
+    <div className={INSET_PANEL}>
       <p className="type-caption flex w-full min-w-0 items-center justify-between gap-12 text-tertiary">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
