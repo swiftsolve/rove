@@ -212,7 +212,7 @@
         "name": "Link",
         "node": "505:845",
         "figmaOnly": {
-          "Type": "External is a link with href, View one with onClick."
+          "Type": "In code, href makes an External link (a web address) and onClick a View link (a screen in the app)."
         }
       },
       "props": {
@@ -465,7 +465,7 @@
         "name": "Text field",
         "node": "500:810",
         "figmaOnly": {
-          "Action": "Whether action holds a TextFieldAction."
+          "Action": "In code, on when the action prop holds a TextFieldAction."
         }
       },
       "props": {
@@ -1439,7 +1439,7 @@
         "name": "No value",
         "node": "708:667",
         "figmaOnly": {
-          "Size": "Display for a hero figure, Compact for a row. Code needs no prop: it sizes in em to its line."
+          "Size": "In code, no prop: it sizes in em to its line. Display is a hero figure's size, Compact a row's."
         }
       },
       "props": {
@@ -1484,7 +1484,7 @@
         "name": "Readout",
         "node": "4:106",
         "figmaOnly": {
-          "Has label": "Whether label is set."
+          "Has label": "In code, on when the label prop is set."
         }
       },
       "props": {
@@ -1627,7 +1627,7 @@
         "name": "Bar meter",
         "node": "495:1044",
         "figmaOnly": {
-          "Value": "value, a number from 0 to 4."
+          "Value": "In code, the value prop, a number from 0 to 4."
         }
       },
       "props": {
@@ -1688,7 +1688,7 @@
         "name": "Split bar",
         "node": "556:619",
         "figmaOnly": {
-          "Mix": "Sample down and up values: Mixed, Down only (up is 0) or Empty (both 0)."
+          "Mix": "In code, the down and up props: Mixed has both, Down only has up at 0, Empty has both at 0."
         }
       },
       "props": {
@@ -1806,7 +1806,7 @@
         "name": "Icon tile",
         "node": "495:585",
         "figmaOnly": {
-          "Neutral": "color=\"neutral\"; any other colour is a tint."
+          "Neutral": "In code, color=\"neutral\"; any other colour is a tint."
         }
       },
       "props": {
@@ -1938,8 +1938,8 @@
         "name": "Timeline node",
         "node": "580:539",
         "figmaOnly": {
-          "Neutral": "color=\"neutral\", the hollow ring.",
-          "Last": "The list's last node, with no line down: CSS finds it."
+          "Neutral": "In code, color=\"neutral\": the hollow ring.",
+          "Last": "In code, no prop: CSS draws a list's last node without its line down."
         }
       },
       "props": {
@@ -1993,7 +1993,7 @@
           "as": "The HTML element: it looks the same."
         },
         "figmaOnly": {
-          "Openable": "Whether onOpen is set."
+          "Openable": "In code, on when the onOpen prop is set."
         }
       },
       "props": {
@@ -2489,7 +2489,7 @@
         "name": "Nav rail",
         "node": "41:892",
         "figmaOnly": {
-          "Page": "The page whose NavItem has isActive."
+          "Page": "In code, the page whose NavItem has isActive."
         }
       },
       "props": {
@@ -2545,7 +2545,7 @@
         "name": "Page header",
         "node": "542:10510",
         "figmaOnly": {
-          "Back": "Whether onBack is set."
+          "Back": "In code, on when the onBack prop is set."
         }
       },
       "props": {

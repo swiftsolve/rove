@@ -56,8 +56,9 @@ is left: never guess a node id.
    the side that has it:
    - `codeOnly`: a code prop Figma has no variant for, with why
      (`tooltipSide`: "Figma draws the tooltip on its own.").
-   - `figmaOnly`: a Figma variant code has no prop for, with the props it
-     comes from (`Type`: "External is a link with href.").
+   - `figmaOnly`: a Figma variant code has no prop for, with how code
+     chooses it, starting "In code" (`Has label`: "In code, on when the
+     label prop is set.").
    - `valuesDiffer`: a code prop whose values differ from Figma's on purpose,
      with why.
 
