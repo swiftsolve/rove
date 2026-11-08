@@ -123,50 +123,54 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
 
   return (
     <div className="relative" role="group" aria-label="Data used per day, last 7 days">
-      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <BarChart
-          // Once a day has been hovered, Recharts keeps showing that day and
-          // ignores the tooltip's defaultIndex, so a focus change starts the
-          // chart afresh to let the tooltip follow the focused day.
-          key={focusedIndex ?? 'pointer'}
-          data={data}
-          // The day stops below are the keyboard layer; Recharts' own would
-          // add a second stop that arrows between the same days.
-          accessibilityLayer={false}
-          margin={{ top: 8, right: CHART_SIDE_MARGIN, bottom: 0, left: CHART_SIDE_MARGIN }}
-          barCategoryGap="26%"
-          barGap={3}
-        >
-          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={<DayTick />} interval={0} />
-          <YAxis hide domain={[0, 'dataMax']} />
-          <Tooltip
-            content={<UsageTooltip />}
-            cursor={false}
-            wrapperStyle={{ outline: 'none' }}
-            isAnimationActive={false}
-            active={focusedIndex === null ? undefined : true}
-            defaultIndex={focusedIndex ?? undefined}
-          />
-          <Bar
-            dataKey="down"
-            fill="var(--series-down)"
-            radius={BAR_RADIUS}
-            maxBarSize={BAR_MAX_WIDTH}
-            isAnimationActive={false}
-            activeBar={renderActiveBar('var(--series-down)')}
-            shape={renderBar('var(--series-down)', focusedIndex)}
-          />
-          <Bar
-            dataKey="up"
-            fill="var(--series-up)"
-            radius={BAR_RADIUS}
-            maxBarSize={BAR_MAX_WIDTH}
-            isAnimationActive={false}
-            activeBar={renderActiveBar('var(--series-up)')}
-            shape={renderBar('var(--series-up)', focusedIndex)}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Hidden from assistive tech: the day stops below say each day's totals,
+          and Recharts' SVG would add an unnamed graphic and empty layers. */}
+      <div aria-hidden>
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <BarChart
+            // Once a day has been hovered, Recharts keeps showing that day and
+            // ignores the tooltip's defaultIndex, so a focus change starts the
+            // chart afresh to let the tooltip follow the focused day.
+            key={focusedIndex ?? 'pointer'}
+            data={data}
+            // The day stops below are the keyboard layer; Recharts' own would
+            // add a second stop that arrows between the same days.
+            accessibilityLayer={false}
+            margin={{ top: 8, right: CHART_SIDE_MARGIN, bottom: 0, left: CHART_SIDE_MARGIN }}
+            barCategoryGap="26%"
+            barGap={3}
+          >
+            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={<DayTick />} interval={0} />
+            <YAxis hide domain={[0, 'dataMax']} />
+            <Tooltip
+              content={<UsageTooltip />}
+              cursor={false}
+              wrapperStyle={{ outline: 'none' }}
+              isAnimationActive={false}
+              active={focusedIndex === null ? undefined : true}
+              defaultIndex={focusedIndex ?? undefined}
+            />
+            <Bar
+              dataKey="down"
+              fill="var(--series-down)"
+              radius={BAR_RADIUS}
+              maxBarSize={BAR_MAX_WIDTH}
+              isAnimationActive={false}
+              activeBar={renderActiveBar('var(--series-down)')}
+              shape={renderBar('var(--series-down)', focusedIndex)}
+            />
+            <Bar
+              dataKey="up"
+              fill="var(--series-up)"
+              radius={BAR_RADIUS}
+              maxBarSize={BAR_MAX_WIDTH}
+              isAnimationActive={false}
+              activeBar={renderActiveBar('var(--series-up)')}
+              shape={renderBar('var(--series-up)', focusedIndex)}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
       {/* An invisible focus stop per day over the plot; mouse events pass through.
           No focus ring: the tooltip and bar marker show the focused day. */}
       <div
