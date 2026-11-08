@@ -357,7 +357,7 @@ function Pipeline(): JSX.Element {
 }
 
 /** The groups in the library's order, each with its size and the Docs page of its first component. */
-const groups = [...new Set(components.map(({ group }) => group))].map((group) => {
+const groups = [...new Set(components.map(({ libraryGroup }) => libraryGroup))].map((group) => {
   const members = components.filter((component) => component.libraryGroup === group)
   const firstStory = members.find(({ storyIds }) => storyIds.length > 0)?.storyIds[0]
   return { group, count: members.length, docsId: firstStory?.replace(/--.*$/, '--docs') }
