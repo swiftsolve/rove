@@ -20,4 +20,11 @@ describe('explainCapability', () => {
     )
     expect(explainCapability('gaming', 'fair', { ...FAST, latencyMs: 60 }).summary).toBe('Latency above recommended.')
   })
+
+  it('shows a row only for each limit the activity has', () => {
+    const labelsOf = (id: 'streaming-4k' | 'video-calls') =>
+      explainCapability(id, 'excellent', FAST).checks.map((check) => check.label)
+    expect(labelsOf('streaming-4k')).toEqual(['Download'])
+    expect(labelsOf('video-calls')).toEqual(['Download', 'Upload', 'Latency', 'Jitter', 'Loss'])
+  })
 })

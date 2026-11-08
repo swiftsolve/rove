@@ -14,8 +14,11 @@ import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, SpokenText } 
 // Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict.
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
 
+// One row whatever the values: each column hugs its text, which never wraps,
+// and the leftover width is shared out as equal gaps. The widest values a
+// check can show (9998.0 ms, 100.0 Gbps) still fit the window.
 const METRICS = cx(
-  'grid grid-cols-4 gap-x-8 gap-y-12',
+  'grid auto-cols-max grid-flow-col justify-between gap-x-8',
   '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
 )
 
@@ -35,7 +38,7 @@ const VERDICT = cx(
 )
 
 /** One summary line tall, so the icon centres on the first line when the summary wraps. */
-const verdictIconVariants = cva('inline-flex h-[calc(var(--font-size-sm)*1.45)] shrink-0 items-center', {
+const verdictIconVariants = cva('inline-flex h-[1lh] shrink-0 items-center', {
   variants: { level: CAPABILITY_LEVEL_FILL_COLORS },
 })
 
@@ -56,7 +59,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
   return (
     <Card as="li" className="scroll-mt-12" data-capability-id={capability.id}>
       <div className={CARD_CONTENT}>
-        <div className="flex items-center gap-8 pb-12">
+        <div className="flex items-center gap-10 pb-12">
           <IconTile
             color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
             icon={<CapabilityIcon id={capability.id} size={17} />}
@@ -73,7 +76,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         <dl className={METRICS}>
           {checks.map((check) => (
             <div key={check.label} className="flex min-w-0 flex-col gap-6">
-              <dt className="type-body-medium leading-[1.15] text-tertiary">{check.label}</dt>
+              <dt className="type-body-medium leading-[1.15] whitespace-nowrap text-tertiary">{check.label}</dt>
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
@@ -85,7 +88,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         </dl>
 
         <div className={VERDICT}>
-          <p className="type-body flex min-w-0 flex-1 items-start gap-4 text-secondary">
+          <p className="type-body flex min-w-0 flex-1 items-start gap-6 text-secondary">
             <span className={verdictIconVariants({ level: capability.level })} aria-hidden>
               <VerdictIcon level={capability.level} />
             </span>

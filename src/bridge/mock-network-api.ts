@@ -47,34 +47,57 @@ const DAY_MS = 24 * HOUR_MS
 const MB = 1_000_000
 const GB = 1_000_000_000
 
-/** Whether `value` is within `limit` scaled by `factor`; no limit always is. */
-function isWithin(value: number, limit: number | null, factor: number): boolean {
-  return limit === null || value <= limit * factor
+// How far one measure is from its limit, worst last so the worst one wins.
+const BANDS = ['meets', 'fair', 'poor', 'unusable'] as const
+type Band = (typeof BANDS)[number]
+
+// A speed or delay within half again of its limit is fair; past double, unusable.
+const FAIR_FACTOR = 1.5
+const UNUSABLE_FACTOR = 2
+// Ten pings measure loss in 10% steps, so one lost ping (10% against a 1%
+// limit) is fair, two poor, and three or more unusable.
+const LOSS_FAIR_FACTOR = 10
+const LOSS_UNUSABLE_FACTOR = 20
+
+/** The band for `factor`, how many times over its limit a measure is (1 or less meets it). */
+function bandOf(factor: number, fairFactor: number, unusableFactor: number): Band {
+  if (factor <= 1) return 'meets'
+  if (factor <= fairFactor) return 'fair'
+  if (factor <= unusableFactor) return 'poor'
+  return 'unusable'
 }
 
 /** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
   const requirements: CapabilityRequirement = definition.requirements
-  const { downloadMbps, uploadMbps, latencyMs, jitterMs } = speed
+  const { downloadMbps, uploadMbps, latencyMs, jitterMs, packetLoss } = speed
 
-  const isUnusable =
-    downloadMbps < requirements.minDownloadMbps * 0.5 || !isWithin(latencyMs, requirements.maxLatencyMs, 2)
-  if ((requirements.canBeUnsupported ?? true) && isUnusable) return 'unsupported'
+  // A speed falls short by its limit over the measure; a delay or loss by the
+  // measure over its limit.
+  const bands: Band[] = []
+  if (requirements.minDownloadMbps !== null)
+    bands.push(bandOf(requirements.minDownloadMbps / downloadMbps, FAIR_FACTOR, UNUSABLE_FACTOR))
+  if (requirements.minUploadMbps !== null)
+    bands.push(bandOf(requirements.minUploadMbps / uploadMbps, FAIR_FACTOR, UNUSABLE_FACTOR))
+  if (requirements.maxLatencyMs !== null)
+    bands.push(bandOf(latencyMs / requirements.maxLatencyMs, FAIR_FACTOR, UNUSABLE_FACTOR))
+  if (requirements.maxJitterMs !== null)
+    bands.push(bandOf(jitterMs / requirements.maxJitterMs, FAIR_FACTOR, UNUSABLE_FACTOR))
+  if (requirements.maxPacketLossPercent !== null)
+    bands.push(bandOf(packetLoss / requirements.maxPacketLossPercent, LOSS_FAIR_FACTOR, LOSS_UNUSABLE_FACTOR))
+  const worst = bands.reduce<Band>(
+    (worstSoFar, band) => (BANDS.indexOf(band) > BANDS.indexOf(worstSoFar) ? band : worstSoFar),
+    'meets',
+  )
 
-  const meetsRequirements =
-    downloadMbps >= requirements.minDownloadMbps &&
-    uploadMbps >= requirements.minUploadMbps &&
-    isWithin(latencyMs, requirements.maxLatencyMs, 1) &&
-    isWithin(jitterMs, requirements.maxJitterMs, 1)
-
-  if (meetsRequirements) {
-    const isExcellent =
-      downloadMbps >= requirements.minDownloadMbps * 2 && isWithin(latencyMs, requirements.maxLatencyMs, 0.5)
-    return isExcellent ? 'excellent' : 'good'
-  }
-
-  if (downloadMbps >= requirements.minDownloadMbps * 0.7) return 'fair'
-  return 'poor'
+  if (worst === 'unusable') return (requirements.canBeUnsupported ?? true) ? 'unsupported' : 'poor'
+  if (worst === 'poor' || worst === 'fair') return worst
+  // Excellent: twice each speed it needs, and half its latency limit.
+  const hasSpeedHeadroom =
+    (requirements.minDownloadMbps === null || downloadMbps >= requirements.minDownloadMbps * 2) &&
+    (requirements.minUploadMbps === null || uploadMbps >= requirements.minUploadMbps * 2)
+  const hasLatencyHeadroom = requirements.maxLatencyMs === null || latencyMs <= requirements.maxLatencyMs * 0.5
+  return hasSpeedHeadroom && hasLatencyHeadroom ? 'excellent' : 'good'
 }
 
 function assessCapabilities(speed: SpeedResult): CapabilityRating[] {
