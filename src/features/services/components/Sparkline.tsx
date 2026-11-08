@@ -45,14 +45,14 @@ const lineVariants = cva('fill-none stroke-current stroke-[1.25] opacity-85 [str
 })
 
 // Centred over the hovered point and lifted above the chart.
-const TIP = cx(
+const TOOLTIP_BUBBLE = cx(
   'pointer-events-none fixed z-9999 -translate-x-1/2 -translate-y-full whitespace-nowrap',
   'rounded-xs border border-line bg-surface px-6 py-2 shadow-panel',
   'type-caption leading-[1.2] text-primary tabular-nums',
 )
 
 // The hovered point, and the chart's top-left corner in the window when it was hovered.
-type Hover = {
+type HoverState = {
   index: number
   left: number
   top: number
@@ -79,15 +79,15 @@ const DOT_RADIUS = 1.5
 const CURSOR_DOT_RADIUS = 2.5
 
 /** Where the pointer is over the chart: its x within it, and the chart's corner in the window. */
-function pointerOver(e: React.MouseEvent<SVGSVGElement>): { x: number; left: number; top: number } {
+function pointerPosition(e: React.MouseEvent<SVGSVGElement>): { x: number; left: number; top: number } {
   const rect = e.currentTarget.getBoundingClientRect()
   return { x: e.clientX - rect.left, left: rect.left, top: rect.top }
 }
 
 /** The value bubble, portalled so the card the row sits in never clips it. */
-function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: ReactNode }) {
+function HoverTip({ hover, x, children }: { hover: HoverState; x: number; children: ReactNode }) {
   return createPortal(
-    <span className={TIP} style={{ left: hover.left + x, top: hover.top - 3 }} aria-hidden="true">
+    <span className={TOOLTIP_BUBBLE} style={{ left: hover.left + x, top: hover.top - 3 }} aria-hidden="true">
       {children}
     </span>,
     document.body,
@@ -100,7 +100,7 @@ function HoverTip({ hover, x, children }: { hover: Hover; x: number; children: R
  * shows a point's value. A down service draws a flat red baseline instead.
  */
 export function Sparkline({ samples, width = 76, height = 22, label, slots, isDown = false }: SparklineProps) {
-  const [hover, setHover] = useState<Hover | null>(null)
+  const [hover, setHover] = useState<HoverState | null>(null)
   const isHovered = hover !== null
   // Per instance, so sparklines on one page don't share a gradient. Colons
   // aren't safe in a `url(#…)` reference.
@@ -133,7 +133,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label={label ? `${label} is down` : 'Down'}
-          onMouseMove={(e) => setHover({ index: 0, ...pointerOver(e) })}
+          onMouseMove={(e) => setHover({ index: 0, ...pointerPosition(e) })}
           onMouseLeave={() => setHover(null)}
         >
           <line className={lineVariants({ isFlat: true })} x1={0} y1={baseline} x2={width} y2={baseline} />
@@ -153,12 +153,12 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
   }
 
   const latestMs = latest.ms
-  const hovered = hover !== null ? points[hover.index] : null
+  const hoveredPoint = hover !== null ? points[hover.index] : null
   const areaRuns = runs.filter((run) => run.length > 1)
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>): void => {
     if (points.length === 0) return
-    const { x, left, top } = pointerOver(e)
+    const { x, left, top } = pointerPosition(e)
     setHover({ index: nearestPointIndex(points, x), left, top })
   }
 
@@ -203,21 +203,27 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
             <circle key={`down-${i}`} className="fill-status-negative" cx={p.x} cy={p.y} r={DOT_RADIUS} />
           ) : null,
         )}
-        {hovered && (
+        {hoveredPoint && (
           <>
-            <line className="stroke-line stroke-1" x1={hovered.x} y1={VERTICAL_PAD} x2={hovered.x} y2={baseline} />
+            <line
+              className="stroke-line stroke-1"
+              x1={hoveredPoint.x}
+              y1={VERTICAL_PAD}
+              x2={hoveredPoint.x}
+              y2={baseline}
+            />
             <circle
               className="fill-current stroke-surface stroke-[1.5]"
-              cx={hovered.x}
-              cy={hovered.y}
+              cx={hoveredPoint.x}
+              cy={hoveredPoint.y}
               r={CURSOR_DOT_RADIUS}
             />
           </>
         )}
       </svg>
-      {hover && hovered && (
-        <HoverTip hover={hover} x={hovered.x}>
-          {hovered.sample.ms === null ? 'Down' : (formatLatencyMs(hovered.sample.ms) ?? <NoValue />)}
+      {hover && hoveredPoint && (
+        <HoverTip hover={hover} x={hoveredPoint.x}>
+          {hoveredPoint.sample.ms === null ? 'Down' : (formatLatencyMs(hoveredPoint.sample.ms) ?? <NoValue />)}
         </HoverTip>
       )}
     </span>

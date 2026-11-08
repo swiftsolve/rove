@@ -1,12 +1,12 @@
 import { cva } from 'class-variance-authority'
 import type { JSX } from 'react'
 
-import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
+import { LEAVING_OVERLAY, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 import { StatusDot, usePresence } from '@/ui'
 
 const onlineVariants = cva('whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
+    isLeaving: { true: LEAVING_OVERLAY, false: 'animate-scan-slide-in' },
   },
   defaultVariants: { isLeaving: false },
 })

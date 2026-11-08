@@ -12,10 +12,10 @@ const HOST_USAGE_INFO_HINT =
   'Hosts each app connected to, named by reverse DNS. Bytes cover TCP only and reset when Rove restarts.'
 
 const BODY_COPY: UsageBodyCopy = {
-  unsupported: 'Run Rove as administrator to attribute hosts to apps on Windows.',
-  loading: 'Measuring per-app hosts…',
+  unsupportedDescription: 'Run Rove as administrator to attribute hosts to apps on Windows.',
+  loadingLabel: 'Measuring per-app hosts…',
   emptyTitle: 'No hosts yet',
-  empty: 'Hosts appear here as your apps connect.',
+  emptyDescription: 'Hosts appear here as your apps connect.',
 }
 
 export function HostsView() {

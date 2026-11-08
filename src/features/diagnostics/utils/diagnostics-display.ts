@@ -8,7 +8,7 @@ const WARN_LATENCY_MAX_MS = 120
 /** Any packet loss is worth flagging; past this it reads as bad, not just amber. */
 const WARN_LOSS_MAX_PCT = 2
 
-export function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
+export function isSameText(a: string | null | undefined, b: string | null | undefined): boolean {
   if (a == null || b == null) return false
   return a.trim().toLowerCase() === b.trim().toLowerCase()
 }

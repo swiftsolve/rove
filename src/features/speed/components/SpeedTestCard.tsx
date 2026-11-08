@@ -27,7 +27,7 @@ import {
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/utils/format'
 
 /** The connection the footer names, its icon tinted by medium. */
-const CONNECTION = 'inline-flex items-center gap-6 font-medium text-secondary'
+const CONNECTION_LABEL = 'inline-flex items-center gap-6 font-medium text-secondary'
 
 /**
  * A hero speed's digits; a muted NoValue bar before any test has run, so the
@@ -56,7 +56,7 @@ function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
 function ConnectionTag({ connection }: { connection: SpeedTestConnection }) {
   const name = connectionName(connection.type, connection.name)
   return (
-    <span className={CONNECTION}>
+    <span className={CONNECTION_LABEL}>
       <ConnectionIcon kind={connection.type} size={12} />
       <InlineMeta items={[name, connection.band]} />
     </span>

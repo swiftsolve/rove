@@ -13,10 +13,10 @@ type Reading<T> = {
  * ping means unreachable, so it wins over the snapshot's value.
  */
 export function overlayLiveMetrics(
-  full: Reading<NetworkDiagnostics>,
+  snapshot: Reading<NetworkDiagnostics>,
   live: Reading<LiveDiagnostics>,
 ): NetworkDiagnostics | null {
-  if (full.data == null) return null
-  if (live.data == null || live.updatedAt <= full.updatedAt) return full.data
-  return { ...full.data, gatewayPing: live.data.gatewayPing, internet: live.data.internet }
+  if (snapshot.data == null) return null
+  if (live.data == null || live.updatedAt <= snapshot.updatedAt) return snapshot.data
+  return { ...snapshot.data, gatewayPing: live.data.gatewayPing, internet: live.data.internet }
 }

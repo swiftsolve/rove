@@ -57,7 +57,7 @@ const stripVariants = cva(
 
 // Keep the subtitle on one line inside the narrow strip (InlineMeta's
 // `shouldTruncate`; the security badge's item in ConnectionStrip.module.css).
-const STRIP_SUB = cx('type-body text-secondary', styles.stripSub, 'truncate')
+const STRIP_SUBTITLE = cx('type-body text-secondary', styles.stripSub, 'truncate')
 
 const chevronVariants = cva(
   [ABOVE_TOGGLE, 'shrink-0 self-center text-tertiary transition-transform duration-(--duration-normal) ease-out'],
@@ -95,7 +95,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
         <h2 id={titleId} className="type-title truncate text-primary">
           {display.title}
         </h2>
-        <div className={STRIP_SUB}>
+        <div className={STRIP_SUBTITLE}>
           {metaItems.length > 0 ? <InlineMeta items={metaItems} shouldTruncate /> : display.subtitle}
         </div>
       </div>

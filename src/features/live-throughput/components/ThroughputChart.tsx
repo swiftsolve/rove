@@ -54,8 +54,8 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
   const clipId = `${idPrefix}-clip`
 
   const [chartElement, setChartElement] = useState<HTMLDivElement | null>(null)
-  const width = useElementWidth(chartElement)
-  const plotWidth = Math.max(0, (width ?? 0) - CHART_MARGIN.left - CHART_MARGIN.right)
+  const chartWidth = useElementWidth(chartElement)
+  const plotWidth = Math.max(0, (chartWidth ?? 0) - CHART_MARGIN.left - CHART_MARGIN.right)
   const scaleMax = useSmoothScale(maxMbps)
 
   // Built once per sample (or scale step); a frame of the scroll only moves

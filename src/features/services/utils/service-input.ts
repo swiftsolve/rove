@@ -15,8 +15,8 @@ function deriveName(host: string): string {
   if (isIpv4(host)) return host
   const labels = host.split('.')
   // Assumes a one-label suffix, so "bbc.co.uk" reads as "Co".
-  const core = (labels.length >= 2 ? labels[labels.length - 2] : labels[0]) ?? host
-  return core.charAt(0).toUpperCase() + core.slice(1)
+  const domainLabel = (labels.length >= 2 ? labels[labels.length - 2] : labels[0]) ?? host
+  return domainLabel.charAt(0).toUpperCase() + domainLabel.slice(1)
 }
 
 /**

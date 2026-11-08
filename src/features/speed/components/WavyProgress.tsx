@@ -54,9 +54,9 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
 
   // useId's colons are brittle inside an SVG url(#…) fragment reference.
   const clipId = `wavy${useId().replace(/:/g, '')}`
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const fillRef = useRef<SVGPathElement>(null)
+  const wavePathRef = useRef<SVGPathElement>(null)
   const clipRef = useRef<SVGRectElement>(null)
   const dotRef = useRef<SVGCircleElement>(null)
   const trackRef = useRef<SVGLineElement>(null)
@@ -64,26 +64,26 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
   // The scroll runs on the compositor (`animate-wavy-scroll`), so the path is
   // rebuilt only on resize, not every frame.
   useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
 
-    let width = wrap.clientWidth
+    let width = wrapper.clientWidth
     const applySize = (): void => {
       const svg = svgRef.current
-      const fill = fillRef.current
-      if (svg && fill && width > 0) {
+      const wavePath = wavePathRef.current
+      if (svg && wavePath && width > 0) {
         svg.setAttribute('width', String(width))
         svg.setAttribute('viewBox', `0 0 ${width} ${WAVE_HEIGHT}`)
-        fill.setAttribute('d', buildStaticWave(width))
+        wavePath.setAttribute('d', buildStaticWave(width))
       }
     }
     const measure = (): void => {
-      width = wrap.clientWidth
+      width = wrapper.clientWidth
       applySize()
     }
     applySize()
     const observer = new ResizeObserver(measure)
-    observer.observe(wrap)
+    observer.observe(wrapper)
 
     // Each frame only grows the clip rect over the drawn wave and moves the dot.
     let fillPct = persistedFill.runId === runId ? persistedFill.pct : 0
@@ -134,7 +134,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
 
   // The lead dot hides the clip rect's straight cut.
   return (
-    <div ref={wrapRef} className="block h-16 w-full leading-[0]" aria-hidden>
+    <div ref={wrapperRef} className="block h-16 w-full leading-[0]" aria-hidden>
       <svg ref={svgRef} height={WAVE_HEIGHT}>
         <defs>
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
@@ -152,7 +152,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
             }
           >
             <path
-              ref={fillRef}
+              ref={wavePathRef}
               className="fill-none stroke-accent stroke-3 [stroke-linecap:round] [stroke-linejoin:round]"
             />
           </g>

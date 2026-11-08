@@ -7,10 +7,10 @@ import { EmptyState, LoadingState } from '@/ui'
 /** What a usage view says in each state before it has rows to show. */
 export type UsageBodyCopy = {
   /** Why the view needs administrator access, on Windows. */
-  unsupported: string
-  loading: string
+  unsupportedDescription: string
+  loadingLabel: string
   emptyTitle: string
-  empty: string
+  emptyDescription: string
 }
 
 type UsageBodyProps = {
@@ -29,16 +29,16 @@ export function UsageBody({ support, isFirstLoad, isEmpty, copy, children }: Usa
       <EmptyState
         isLocked
         title="Administrator access needed"
-        description={copy.unsupported}
+        description={copy.unsupportedDescription}
         actions={<RestartAsAdminAction />}
       />
     )
   }
   if (isFirstLoad) {
-    return <LoadingState label={copy.loading} />
+    return <LoadingState label={copy.loadingLabel} />
   }
   if (isEmpty) {
-    return <EmptyState title={copy.emptyTitle} description={copy.empty} />
+    return <EmptyState title={copy.emptyTitle} description={copy.emptyDescription} />
   }
   return <>{children}</>
 }

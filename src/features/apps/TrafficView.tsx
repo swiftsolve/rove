@@ -14,17 +14,17 @@ const TRAFFIC_INFO_HINT =
   'Traffic by remote port, so :443 is HTTPS and :53 is DNS. TCP and connected UDP only; resets when Rove restarts.'
 
 const BODY_COPY: UsageBodyCopy = {
-  unsupported: 'Run Rove as administrator to break traffic down by protocol on Windows.',
-  loading: 'Measuring traffic types…',
+  unsupportedDescription: 'Run Rove as administrator to break traffic down by protocol on Windows.',
+  loadingLabel: 'Measuring traffic types…',
   emptyTitle: 'No traffic yet',
-  empty: 'Traffic appears here as your apps use the network.',
+  emptyDescription: 'Traffic appears here as your apps use the network.',
 }
 
 export function TrafficView() {
   const { usage, isFirstLoad, error, reload } = useTrafficUsage()
   const { back } = useNavigation()
   const { types } = usage
-  const busiest = busiestTotal(types)
+  const busiestBytes = busiestTotal(types)
   const listRef = useRef<HTMLUListElement>(null)
   useRowGlide(listRef, types.map((type) => type.id).join('\n'))
 
@@ -48,7 +48,7 @@ export function TrafficView() {
               iconKind="line"
               name={type.label}
               transfer={type}
-              busiest={busiest}
+              busiestBytes={busiestBytes}
             />
           ))}
         </CardList>

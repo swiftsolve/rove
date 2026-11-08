@@ -20,7 +20,7 @@ export type CapabilityExplanation = {
   checks: RequirementCheck[]
 }
 
-const DEFINITIONS = new Map(CAPABILITY_DEFINITIONS.map((definition) => [definition.id, definition]))
+const DEFINITIONS_BY_ID = new Map(CAPABILITY_DEFINITIONS.map((definition) => [definition.id, definition]))
 
 function listPhrase(words: string[]): string {
   if (words.length <= 1) return words[0] ?? ''
@@ -42,11 +42,11 @@ function capitalizedListPhrase(words: string[]): string {
 }
 
 /** What falls short, each kind in its own words: "download too slow and latency too high". */
-function shortfallPhrase(failing: RequirementCheck[], words: { speed: string; delay: string }): string {
+function shortfallPhrase(failing: RequirementCheck[], shortfallWordsByKind: { speed: string; delay: string }): string {
   const phrases: string[] = []
   for (const kind of ['speed', 'delay'] as const) {
     const labels = failing.filter((check) => check.kind === kind).map((check) => check.label.toLowerCase())
-    if (labels.length > 0) phrases.push(`${listPhrase(labels)} ${words[kind]}`)
+    if (labels.length > 0) phrases.push(`${listPhrase(labels)} ${shortfallWordsByKind[kind]}`)
   }
   return capitalizedListPhrase(phrases)
 }
@@ -73,7 +73,7 @@ function summarize(level: CapabilityLevel, label: string, failing: RequirementCh
 }
 
 export function explainCapability(id: CapabilityId, level: CapabilityLevel, speed: SpeedResult): CapabilityExplanation {
-  const definition = DEFINITIONS.get(id)
+  const definition = DEFINITIONS_BY_ID.get(id)
   if (!definition) return { summary: '', checks: [] }
 
   const requirements: CapabilityRequirement = definition.requirements

@@ -154,7 +154,7 @@ export function headMbps(samples: readonly number[], progress: number): number {
   return bezierAt(segmentHeights(heights, segment), alongSegment)
 }
 
-function round(value: number): number {
+function roundToHundredths(value: number): number {
   return Math.round(value * 100) / 100
 }
 
@@ -178,19 +178,19 @@ export function buildTrace(samples: readonly number[], size: PlotSize, scaleMax:
   const lastX = firstX + (pointCount - 1) * slot
   const toY = (mbps: number): number => plotY(mbps, size.height, scaleMax)
 
-  const point = (x: number, y: number): string => `${round(x)},${round(y)}`
+  const formatPoint = (x: number, y: number): string => `${roundToHundredths(x)},${roundToHundredths(y)}`
   const curves: string[] = []
   for (let index = 0; index < pointCount - 1; index += 1) {
     const x = firstX + index * slot
     const [, control1, control2, end] = segmentHeights(heights, index).map(toY)
     // Controls a third and two thirds along, so the curve's x runs evenly.
-    const firstControl = point(x + slot / 3, control1 ?? 0)
-    const secondControl = point(x + (2 * slot) / 3, control2 ?? 0)
-    curves.push(`C${firstControl} ${secondControl} ${point(x + slot, end ?? 0)}`)
+    const firstControl = formatPoint(x + slot / 3, control1 ?? 0)
+    const secondControl = formatPoint(x + (2 * slot) / 3, control2 ?? 0)
+    curves.push(`C${firstControl} ${secondControl} ${formatPoint(x + slot, end ?? 0)}`)
   }
-  const start = point(firstX, toY(segmentHeights(heights, 0)[0]))
+  const start = formatPoint(firstX, toY(segmentHeights(heights, 0)[0]))
   const line = `M${start}${curves.join('')}`
-  const area = `${line}L${round(lastX)},${size.height}L${round(firstX)},${size.height}Z`
+  const area = `${line}L${roundToHundredths(lastX)},${size.height}L${roundToHundredths(firstX)},${size.height}Z`
 
   return { line, area }
 }

@@ -42,15 +42,15 @@ export function useTraceScroll(samples: readonly number[], drawFrame: (progress:
     // A new sample shifts every point a slot left, so the scroll starts a slot
     // back to hold them still, then glides on. StrictMode's re-run isn't a new
     // sample, so it carries on where it was.
-    const from = isNewSample ? Math.max(progressRef.current - 1, -MAX_LAG_SLOTS) : progressRef.current
-    draw(from)
-    if (from >= 1) return
+    const startProgress = isNewSample ? Math.max(progressRef.current - 1, -MAX_LAG_SLOTS) : progressRef.current
+    draw(startProgress)
+    if (startProgress >= 1) return
 
-    const start = performance.now()
+    const startTime = performance.now()
     let frameId = 0
     const step = (now: number): void => {
-      const fractionDone = Math.min(1, Math.max(0, (now - start) / SCROLL_MS))
-      draw(from + (1 - from) * fractionDone)
+      const fractionDone = Math.min(1, Math.max(0, (now - startTime) / SCROLL_MS))
+      draw(startProgress + (1 - startProgress) * fractionDone)
       if (fractionDone < 1) frameId = requestAnimationFrame(step)
     }
     frameId = requestAnimationFrame(step)

@@ -15,7 +15,7 @@ import {
 } from '@/utils/format'
 
 /** Connection badge; its icon is tinted by medium. */
-const CONNECTION = 'inline-flex min-w-0 items-center gap-6 type-body-medium'
+const CONNECTION_LABEL = 'inline-flex min-w-0 items-center gap-6 type-body-medium'
 
 type MetricProps = {
   label: string
@@ -29,7 +29,7 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
   const band = formatBand(entry.frequency)
 
   return (
-    <span className={CONNECTION}>
+    <span className={CONNECTION_LABEL}>
       <ConnectionIcon kind={kind} size={13} />
       <span className="min-w-0 truncate text-primary">{connectionName(kind, entry.networkName)}</span>
       {band != null && (

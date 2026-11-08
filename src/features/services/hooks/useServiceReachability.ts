@@ -15,7 +15,7 @@ type UseServiceReachabilityResult = {
   report: ServicesReport | null
   error: string | null
   /** Re-probe now, ahead of the poll, so a just-changed row's latency lands at once. */
-  run: () => Promise<void>
+  reprobe: () => Promise<void>
 }
 
 async function probeServices(api: NetworkAPI): Promise<ServicesReport> {
@@ -43,7 +43,7 @@ export function useServiceReachability(): UseServiceReachabilityResult {
   const {
     data,
     error,
-    reload: run,
+    reload: reprobe,
   } = useBackendQuery({
     queryKey: ['services', 'reachability', networkKey],
     queryFn: api ? () => probeServices(api) : undefined,
@@ -59,8 +59,8 @@ export function useServiceReachability(): UseServiceReachabilityResult {
   useEffect(() => {
     const previous = lastInternetRef.current
     lastInternetRef.current = internet
-    if (isEnabled && previous !== null && previous !== internet) void run()
-  }, [internet, isEnabled, run])
+    if (isEnabled && previous !== null && previous !== internet) void reprobe()
+  }, [internet, isEnabled, reprobe])
 
-  return { report: data ?? null, error, run }
+  return { report: data ?? null, error, reprobe }
 }

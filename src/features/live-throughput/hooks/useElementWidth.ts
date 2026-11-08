@@ -8,9 +8,9 @@ export function useElementWidth(element: HTMLElement | null): number | null {
     if (!element) return
     const measure = (): void => setWidth(element.clientWidth)
     measure()
-    const resizes = new ResizeObserver(measure)
-    resizes.observe(element)
-    return () => resizes.disconnect()
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(element)
+    return () => resizeObserver.disconnect()
   }, [element])
 
   return width

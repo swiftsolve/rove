@@ -5,10 +5,10 @@ import { FAILED_PING, isMeasuredLatency, type IspInfo } from '@/types'
 import {
   formatLocation,
   formatPercent,
+  isSameText,
   latencyStatus,
   lossStatus,
   runStatusText,
-  sameText,
 } from './diagnostics-display'
 
 function isp(place: Pick<IspInfo, 'city' | 'region' | 'country'>): IspInfo {
@@ -37,9 +37,9 @@ describe('diagnostics display', () => {
   })
 
   it('compares names ignoring case and edge spaces, never matching a missing one', () => {
-    expect(sameText(' Archer AX55 ', 'archer ax55')).toBe(true)
-    expect(sameText(null, null)).toBe(false)
-    expect(sameText('Archer', 'Deco')).toBe(false)
+    expect(isSameText(' Archer AX55 ', 'archer ax55')).toBe(true)
+    expect(isSameText(null, null)).toBe(false)
+    expect(isSameText('Archer', 'Deco')).toBe(false)
   })
 
   it('joins the location parts it has', () => {

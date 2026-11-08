@@ -34,22 +34,22 @@ export function placePoints(
 ): Point[] {
   const sampleCount = samples.length
   const innerHeight = height - VERTICAL_PAD * 2
-  const span = Math.max(slots ?? sampleCount, sampleCount)
+  const slotCount = Math.max(slots ?? sampleCount, sampleCount)
 
   // Scaled over the observed range, so small swings still show.
-  const values = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
-  const min = values.length > 0 ? Math.min(...values) : 0
-  const max = values.length > 0 ? Math.max(...values) : 1
+  const latencies = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
+  const min = latencies.length > 0 ? Math.min(...latencies) : 0
+  const max = latencies.length > 0 ? Math.max(...latencies) : 1
   const isFlat = max === min
 
   // Right-aligned, leaving the unfilled part of the window blank.
   const xAt = (i: number): number => {
-    if (span <= 1) return width
-    const slot = span - sampleCount + i
-    return (slot / (span - 1)) * width
+    if (slotCount <= 1) return width
+    const slot = slotCount - sampleCount + i
+    return (slot / (slotCount - 1)) * width
   }
   const yAt = (ms: number): number => {
-    // Identical values have no range to scale over, so they sit on the midline.
+    // Identical latencies have no range to scale over, so they sit on the midline.
     if (isFlat) return VERTICAL_PAD + innerHeight / 2
     const shareOfRange = (ms - min) / (max - min)
     return VERTICAL_PAD + innerHeight - shareOfRange * innerHeight
@@ -97,12 +97,12 @@ export function areaPoints(run: Run, baseline: number): string {
 export function chartDescription(samples: LatencySample[], label: string | undefined): string {
   const subject = label ? `${label} latency` : 'Latency'
   const checks = formatCount(samples.length, 'check')
-  const values = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
-  const failedCount = samples.length - values.length
+  const latencies = samples.map((s) => s.ms).filter((ms): ms is number => ms !== null)
+  const failedCount = samples.length - latencies.length
   const facts: string[] = []
-  if (values.length > 0) {
-    const min = Math.min(...values)
-    const max = Math.max(...values)
+  if (latencies.length > 0) {
+    const min = Math.min(...latencies)
+    const max = Math.max(...latencies)
     const minText = formatLatencyMs(min) ?? 'unknown'
     const maxText = formatLatencyMs(max) ?? 'unknown'
     facts.push(min === max ? minText : `${minText} to ${maxText}`)
@@ -113,14 +113,14 @@ export function chartDescription(samples: LatencySample[], label: string | undef
 
 /** The index of the point nearest `x`, for the hover cursor. */
 export function nearestPointIndex(points: Point[], x: number): number {
-  let nearest = 0
+  let nearestIndex = 0
   let bestDistance = Infinity
   points.forEach((point, i) => {
     const distance = Math.abs(point.x - x)
     if (distance < bestDistance) {
       bestDistance = distance
-      nearest = i
+      nearestIndex = i
     }
   })
-  return nearest
+  return nearestIndex
 }

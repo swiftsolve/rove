@@ -42,11 +42,11 @@ export function readLatencyHistory(): LatencyHistory {
   try {
     const parsed: unknown = JSON.parse(raw)
     if (typeof parsed !== 'object' || parsed == null || Array.isArray(parsed)) return {}
-    const out: Record<string, LatencySample[]> = {}
+    const validHistory: Record<string, LatencySample[]> = {}
     for (const [host, samples] of Object.entries(parsed as Record<string, unknown>)) {
-      if (Array.isArray(samples)) out[host] = samples.filter(isSample)
+      if (Array.isArray(samples)) validHistory[host] = samples.filter(isSample)
     }
-    return out
+    return validHistory
   } catch {
     return {}
   }

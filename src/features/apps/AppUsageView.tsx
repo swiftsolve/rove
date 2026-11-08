@@ -13,10 +13,10 @@ import { POLLING_DESCRIPTION } from '@/utils/copy'
 const APP_USAGE_INFO_HINT = 'Bytes per app from the OS’s per-process counters. Resets when Rove restarts.'
 
 const BODY_COPY: UsageBodyCopy = {
-  unsupported: 'Run Rove as administrator to meter per-app usage on Windows.',
-  loading: 'Measuring per-app usage…',
+  unsupportedDescription: 'Run Rove as administrator to meter per-app usage on Windows.',
+  loadingLabel: 'Measuring per-app usage…',
   emptyTitle: 'No app usage yet',
-  empty: 'Apps appear here as they use the network.',
+  emptyDescription: 'Apps appear here as they use the network.',
 }
 
 /** The header subtitle: links into the per-app host and by-protocol breakdowns. */
@@ -41,7 +41,7 @@ export function AppUsageView() {
   const { usage, isFirstLoad, error, reload } = useAppUsage()
   const { navigate } = useNavigation()
   const { apps } = usage
-  const busiest = busiestTotal(apps)
+  const busiestBytes = busiestTotal(apps)
   const listRef = useRef<HTMLUListElement>(null)
   useRowGlide(listRef, apps.map((app) => app.name).join('\n'))
 
@@ -66,7 +66,7 @@ export function AppUsageView() {
               iconKind="tile"
               name={app.name}
               transfer={app}
-              busiest={busiest}
+              busiestBytes={busiestBytes}
               link={{
                 label: `View hosts for ${app.name}`,
                 onOpen: () => navigate({ tab: 'apps', appsSub: { view: 'hosts', app: app.name } }),

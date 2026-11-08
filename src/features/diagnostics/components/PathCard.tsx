@@ -65,7 +65,11 @@ const columnVariants = cva('flex w-[120px] min-w-0 flex-col gap-4', {
   },
 })
 
-const INTERNET_LINE: Record<InternetLinkState, LineTone> = { healthy: 'working', notTested: 'unknown', offline: 'down' }
+const INTERNET_LINE_TONES: Record<InternetLinkState, LineTone> = {
+  healthy: 'working',
+  notTested: 'unknown',
+  offline: 'down',
+}
 
 /**
  * Home's path to the internet as three nodes joined by two links: this
@@ -79,14 +83,14 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
   const selfVendor = useDevices().lastScan?.devices.find((device) => device.isSelf)?.vendor ?? null
   const lastTest = lastTestOnNetwork(entries, info)
   // The app-wide heartbeat, the same verdict the title bar shows.
-  const internet = internetLinkState(useInternetStatus() ?? undefined, lastTest)
+  const internetState = internetLinkState(useInternetStatus() ?? undefined, lastTest)
   const isConnected = info?.isConnected ?? false
 
   return (
     <Card>
       <CardHeader title="Path" icon={<PathIcon size={15} />} />
       <CardBody>
-        <p className="sr-only">{pathSummary(info, internet, lastTest)}</p>
+        <p className="sr-only">{pathSummary(info, internetState, lastTest)}</p>
         <div className="flex flex-col gap-8" aria-hidden>
           <div className="flex items-center gap-2">
             <IconTile size="lg" color={NODE_COLOR} icon={<ComputerIcon size={16} />} />
@@ -99,12 +103,18 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
             <IconTile size="lg" color={NODE_COLOR} icon={<RouterIcon size={16} />} />
             {/* While a test runs, its dashes flow outward until the result lands. */}
             <PathLink
-              tone={isTesting ? 'working' : INTERNET_LINE[internet]}
+              tone={isTesting ? 'working' : INTERNET_LINE_TONES[internetState]}
               isFlowing={isTesting}
-              captionKey={isTesting ? 'testing' : `${internet}-${lastTest?.timestamp ?? 0}`}
-              above={isTesting ? <span className="text-tertiary">Testing…</span> : internetAbove(internet, lastTest)}
+              captionKey={isTesting ? 'testing' : `${internetState}-${lastTest?.timestamp ?? 0}`}
+              above={
+                isTesting ? (
+                  <span className="text-tertiary">Testing…</span>
+                ) : (
+                  internetLineCaption(internetState, lastTest)
+                )
+              }
               below={
-                !isTesting && internet === 'healthy' && lastTest ? (
+                !isTesting && internetState === 'healthy' && lastTest ? (
                   <Rate series="up" mbps={lastTest.uploadMbps} />
                 ) : null
               }
@@ -202,7 +212,7 @@ function WifiSignal({ info }: { info: Extract<NetworkInfo, { connectionType: 'wi
   return <InlineMeta items={[strength, formatBand(info.frequency)]} />
 }
 
-function internetAbove(state: InternetLinkState, lastTest: SpeedHistoryEntry | null): ReactNode {
+function internetLineCaption(state: InternetLinkState, lastTest: SpeedHistoryEntry | null): ReactNode {
   if (state === 'offline') return <span className="text-negative">No internet</span>
   if (state === 'notTested' || !lastTest) return <span className="text-tertiary">Not tested</span>
   return <Rate series="down" mbps={lastTest.downloadMbps} />
@@ -260,13 +270,13 @@ function localLinkSummary(info: NetworkInfo | null): string {
 /** What the diagram shows, for screen readers, which skip the drawing. */
 function pathSummary(
   info: NetworkInfo | null,
-  internet: InternetLinkState,
+  internetState: InternetLinkState,
   lastTest: SpeedHistoryEntry | null,
 ): string {
-  const local = localLinkSummary(info)
-  if (internet === 'offline') return `${local} No internet.`
-  if (internet === 'notTested' || !lastTest) return `${local} Internet speed not tested yet.`
+  const localSummary = localLinkSummary(info)
+  if (internetState === 'offline') return `${localSummary} No internet.`
+  if (internetState === 'notTested' || !lastTest) return `${localSummary} Internet speed not tested yet.`
   const down = splitSpeedMbps(lastTest.downloadMbps)
   const up = splitSpeedMbps(lastTest.uploadMbps)
-  return `${local} Internet at ${down.value} ${down.unit} down and ${up.value} ${up.unit} up.`
+  return `${localSummary} Internet at ${down.value} ${down.unit} down and ${up.value} ${up.unit} up.`
 }

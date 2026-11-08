@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   deviceMetaParts,
-  deviceName,
+  deviceNameParts,
   gatewayProduct,
   lastSeenAge,
   sortDevices,
@@ -30,30 +30,30 @@ function device(overrides: Partial<LanDevice> = {}): LanDevice {
 
 const MINUTE = 60_000
 
-describe('deviceName', () => {
+describe('deviceNameParts', () => {
   it('names the gateway and this machine by their role', () => {
-    expect(deviceName(device({ isGateway: true, hostname: 'router.lan' }))).toEqual(['Router'])
-    expect(deviceName(device({ isSelf: true, hostname: 'laptop' }))).toEqual(['This device'])
+    expect(deviceNameParts(device({ isGateway: true, hostname: 'router.lan' }))).toEqual(['Router'])
+    expect(deviceNameParts(device({ isSelf: true, hostname: 'laptop' }))).toEqual(['This device'])
   })
 
   it('prefers a hostname over everything else it knows', () => {
-    expect(deviceName(device({ hostname: 'pixel-8', vendor: 'Google', kind: 'phone' }))).toEqual(['pixel-8'])
+    expect(deviceNameParts(device({ hostname: 'pixel-8', vendor: 'Google', kind: 'phone' }))).toEqual(['pixel-8'])
   })
 
   it('pairs a known maker with the kind', () => {
-    expect(deviceName(device({ vendor: 'Apple', kind: 'phone' }))).toEqual(['Apple', 'Phone'])
-    expect(deviceName(device({ vendor: 'Synology' }))).toEqual(['Synology'])
+    expect(deviceNameParts(device({ vendor: 'Apple', kind: 'phone' }))).toEqual(['Apple', 'Phone'])
+    expect(deviceNameParts(device({ vendor: 'Synology' }))).toEqual(['Synology'])
   })
 
   it('names a smart-home device by its maker alone', () => {
-    expect(deviceName(device({ vendor: 'Espressif', kind: 'iot' }))).toEqual(['Espressif'])
+    expect(deviceNameParts(device({ vendor: 'Espressif', kind: 'iot' }))).toEqual(['Espressif'])
   })
 
   it('builds a name from the OS and kind when there is no maker', () => {
-    expect(deviceName(device({ os: 'Android', kind: 'phone' }))).toEqual(['Android phone'])
-    expect(deviceName(device({ os: 'Android' }))).toEqual(['Android device'])
-    expect(deviceName(device({ kind: 'tv' }))).toEqual(['TV'])
-    expect(deviceName(device())).toEqual(['Generic device'])
+    expect(deviceNameParts(device({ os: 'Android', kind: 'phone' }))).toEqual(['Android phone'])
+    expect(deviceNameParts(device({ os: 'Android' }))).toEqual(['Android device'])
+    expect(deviceNameParts(device({ kind: 'tv' }))).toEqual(['TV'])
+    expect(deviceNameParts(device())).toEqual(['Generic device'])
   })
 })
 

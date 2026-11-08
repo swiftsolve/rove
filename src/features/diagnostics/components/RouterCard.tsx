@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { formatPercent, latencyStatus, lossStatus, sameText } from '@/features/diagnostics/utils/diagnostics-display'
+import { formatPercent, isSameText, latencyStatus, lossStatus } from '@/features/diagnostics/utils/diagnostics-display'
 import type { NetworkDiagnostics, PingStats } from '@/types'
 import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {
@@ -36,7 +36,7 @@ export function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | 
   const linkSpeedMbps = info ? getLinkCapacityMbps(info) : null
   const reportedModel = diagnostics?.gatewayModel || null
   // Many routers report their model as their name too; show it once.
-  const model = sameText(reportedModel, diagnostics?.gatewayName) ? null : reportedModel
+  const model = isSameText(reportedModel, diagnostics?.gatewayName) ? null : reportedModel
   const hasDeviceRows = Boolean(diagnostics?.gatewayName || model || diagnostics?.gatewayVendor)
 
   return (

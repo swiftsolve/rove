@@ -2,7 +2,7 @@ import { cva, cx } from 'class-variance-authority'
 import type { JSX } from 'react'
 
 import { SpeakableText } from '@/app/components/SpeakableText'
-import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
+import { deviceMetaParts, deviceNameParts, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
 import { useNow } from '@/hooks/useNow'
 import type { LanDevice, LanDeviceKind } from '@/types'
 import {
@@ -150,7 +150,7 @@ function DeviceMetaLine({
 
 export function DeviceRow({ device }: { device: LanDevice }) {
   const now = useNow(ROW_CLOCK_INTERVAL_MS)
-  const nameParts = deviceName(device)
+  const nameParts = deviceNameParts(device)
   const lastSeenLabel = lastSeenAge(device, now)
   const shouldShowRandomizedTag = device.isRandomizedMac && !device.isGateway && !device.isSelf
 

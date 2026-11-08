@@ -96,8 +96,8 @@ function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
 function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
   const { signalStrength, signalDbm } = info
   if (signalStrength != null && Number.isFinite(signalStrength)) {
-    const percent = signalDbm != null ? `${signalStrength}% (${signalDbm} dBm)` : `${signalStrength}%`
-    return <InlineMeta items={[signalWord(signalStrength), <SpeakableText key="percent" text={percent} />]} />
+    const strengthText = signalDbm != null ? `${signalStrength}% (${signalDbm} dBm)` : `${signalStrength}%`
+    return <InlineMeta items={[signalWord(signalStrength), <SpeakableText key="percent" text={strengthText} />]} />
   }
   if (signalDbm != null && Number.isFinite(signalDbm)) return `${signalDbm} dBm`
   return <NoValue />

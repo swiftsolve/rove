@@ -63,13 +63,13 @@ type UsageRowProps = {
   name: string
   transfer: Transfer
   /** The busiest row's total in the list, which every bar is scaled against. */
-  busiest: number
+  busiestBytes: number
   /** Makes the whole row a link, named by `label`, with a caret to show it. */
   link?: { label: string; onOpen: () => void }
 }
 
 /** A usage row: name and total, then a proportional down/up bar and the figures. */
-export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: UsageRowProps) {
+export function UsageRow({ icon, iconKind, name, transfer, busiestBytes, link }: UsageRowProps) {
   const isLink = link !== undefined
   return (
     <li className={rowVariants({ isLink })}>
@@ -84,7 +84,7 @@ export function UsageRow({ icon, iconKind, name, transfer, busiest, link }: Usag
       <SplitBar
         down={transfer.rxBytes}
         up={transfer.txBytes}
-        max={busiest}
+        max={busiestBytes}
         label={transferLabel(transfer)}
         className={barVariants({ iconKind, isLink })}
       />

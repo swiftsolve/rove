@@ -50,7 +50,7 @@ const statusVariants = cva('type-caption flex items-center', {
 
 const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
 const ROW_TITLE = 'type-body font-medium text-primary'
-const ROW_DESC = 'type-caption text-tertiary'
+const ROW_DESCRIPTION = 'type-caption text-tertiary'
 
 const THEME_OPTIONS: SegmentedOption<ThemeMode>[] = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
@@ -94,7 +94,7 @@ function SettingRow({
         <span id={labelId} className={ROW_TITLE}>
           {title}
         </span>
-        <span id={descriptionId} className={ROW_DESC}>
+        <span id={descriptionId} className={ROW_DESCRIPTION}>
           {description}
         </span>
       </div>
@@ -217,7 +217,7 @@ export function SettingsView() {
           <ListRow onClick={() => navigate({ tab: 'about' })}>
             <span className={ROW_TEXT}>
               <span className={cx(ROW_TITLE, 'leading-[inherit]')}>About Rove</span>
-              <span className={ROW_DESC}>Version, platform, and source.</span>
+              <span className={ROW_DESCRIPTION}>Version, platform, and source.</span>
             </span>
           </ListRow>
         </CardBody>

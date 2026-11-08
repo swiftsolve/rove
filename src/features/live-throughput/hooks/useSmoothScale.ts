@@ -16,32 +16,32 @@ const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
  * reduced motion.
  */
 export function useSmoothScale(target: number): number {
-  const [value, setValue] = useState(target)
-  const currentRef = useRef(target)
+  const [easedScale, setEasedScale] = useState(target)
+  const easedScaleRef = useRef(target)
 
   useEffect(() => {
-    const easeMs = target > currentRef.current ? EASE_UP_MS : EASE_DOWN_MS
-    let lastFrame = performance.now()
+    const easeMs = target > easedScaleRef.current ? EASE_UP_MS : EASE_DOWN_MS
+    let lastFrameTime = performance.now()
     let frameId = 0
     const step = (now: number): void => {
-      const gap = target - currentRef.current
+      const gap = target - easedScaleRef.current
       const shouldSnap =
         !Number.isFinite(gap) || Math.abs(gap) <= target * SETTLE_FRACTION || matchMedia(REDUCED_MOTION).matches
       if (shouldSnap) {
-        currentRef.current = target
-        setValue(target)
+        easedScaleRef.current = target
+        setEasedScale(target)
         return
       }
       // By time, not by frame, so a 120 Hz display eases at the same pace.
-      const elapsed = Math.max(0, now - lastFrame)
-      lastFrame = now
-      currentRef.current += gap * (1 - Math.exp(-elapsed / easeMs))
-      setValue(currentRef.current)
+      const elapsed = Math.max(0, now - lastFrameTime)
+      lastFrameTime = now
+      easedScaleRef.current += gap * (1 - Math.exp(-elapsed / easeMs))
+      setEasedScale(easedScaleRef.current)
       frameId = requestAnimationFrame(step)
     }
     frameId = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frameId)
   }, [target])
 
-  return value
+  return easedScale
 }

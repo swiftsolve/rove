@@ -33,7 +33,7 @@ function kindNoun(device: LanDevice): string | null {
 
 // A privacy-randomized phone often has no vendor or hostname, but the scan may
 // still know its OS or kind (DHCP fingerprint), so name it from those.
-function describeUnnamed(device: LanDevice): string {
+function unnamedDeviceName(device: LanDevice): string {
   const noun = kindNoun(device)
   if (device.os && noun) return `${device.os} ${noun}`
   if (device.os) return `${device.os} device`
@@ -42,12 +42,12 @@ function describeUnnamed(device: LanDevice): string {
 }
 
 /** The name's parts, shown with a dot separator between them (Apple, Phone). */
-export function deviceName(device: LanDevice): string[] {
+export function deviceNameParts(device: LanDevice): string[] {
   if (device.isGateway) return ['Router']
   if (device.isSelf) return ['This device']
   // A hostname is the name the user gave the device, so it always wins.
   if (device.hostname) return [device.hostname]
-  if (!device.vendor) return [describeUnnamed(device)]
+  if (!device.vendor) return [unnamedDeviceName(device)]
   // The meta line already says "Smart home", so the noun would repeat it.
   if (device.kind === 'iot') return [device.vendor]
   const noun = kindNoun(device)

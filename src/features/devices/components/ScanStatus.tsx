@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 import { type JSX, useEffect, useState } from 'react'
 
-import { LEAVING, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
+import { LEAVING_OVERLAY, SCAN_EXIT_MS, STATUS_DOT } from '@/features/devices/utils/status-slot'
 import { StatusDot, usePresence, type VariantOf } from '@/ui'
 
 /**
@@ -11,7 +11,7 @@ import { StatusDot, usePresence, type VariantOf } from '@/ui'
  */
 const scanVariants = cva('inline-block whitespace-nowrap text-tertiary', {
   variants: {
-    isLeaving: { true: LEAVING, false: 'animate-scan-slide-in' },
+    isLeaving: { true: LEAVING_OVERLAY, false: 'animate-scan-slide-in' },
   },
   defaultVariants: { isLeaving: false },
 })
@@ -40,9 +40,9 @@ type ScanPhaseState = VariantOf<typeof scanPhaseVariants, 'state'>
 const SCAN_PHASES = ['Sweeping', 'Listening', 'Identifying'] as const
 const SCAN_PHASE_MS = 1300
 
-function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
-  if (index === currentPhase) return 'current'
-  return index < currentPhase ? 'past' : 'next'
+function scanPhaseState(index: number, currentPhaseIndex: number): ScanPhaseState {
+  if (index === currentPhaseIndex) return 'current'
+  return index < currentPhaseIndex ? 'past' : 'next'
 }
 
 /**
@@ -52,14 +52,17 @@ function scanPhaseState(index: number, currentPhase: number): ScanPhaseState {
  * `status`) already is one, and a region nested in another is announced twice.
  */
 export function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | null {
-  const [phase, setPhase] = useState(0)
+  const [phaseIndex, setPhaseIndex] = useState(0)
   const isMounted = usePresence(isActive, SCAN_EXIT_MS)
   // Rewind once unmounted, so the next scan starts from the first stage word.
-  if (!isMounted && phase !== 0) setPhase(0)
+  if (!isMounted && phaseIndex !== 0) setPhaseIndex(0)
 
   useEffect(() => {
     if (!isActive) return
-    const intervalId = window.setInterval(() => setPhase((p) => Math.min(p + 1, SCAN_PHASES.length - 1)), SCAN_PHASE_MS)
+    const intervalId = window.setInterval(
+      () => setPhaseIndex((index) => Math.min(index + 1, SCAN_PHASES.length - 1)),
+      SCAN_PHASE_MS,
+    )
     return () => window.clearInterval(intervalId)
   }, [isActive])
 
@@ -75,8 +78,8 @@ export function ScanStatus({ isActive }: { isActive: boolean }): JSX.Element | n
         {SCAN_PHASES.map((label, i) => (
           <span
             key={label}
-            className={scanPhaseVariants({ state: scanPhaseState(i, phase) })}
-            aria-hidden={i !== phase}
+            className={scanPhaseVariants({ state: scanPhaseState(i, phaseIndex) })}
+            aria-hidden={i !== phaseIndex}
           >
             {label}
           </span>

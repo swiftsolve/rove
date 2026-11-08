@@ -108,7 +108,7 @@ const renderBar =
     index === focusedIndex ? renderActiveBar(color)(props) : <Rectangle {...props} />
 
 export function WeekChart({ days }: { days: DailyUsage[] }) {
-  const data: UsageDatum[] = days.map((day, index) => ({
+  const chartDays: UsageDatum[] = days.map((day, index) => ({
     key: day.date,
     label: dayLabel(day.date, index === days.length - 1),
     down: day.rxBytes,
@@ -132,7 +132,7 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
             // ignores the tooltip's defaultIndex, so a focus change starts the
             // chart afresh to let the tooltip follow the focused day.
             key={focusedIndex ?? 'pointer'}
-            data={data}
+            data={chartDays}
             // The day stops below are the keyboard layer; Recharts' own would
             // add a second stop that arrows between the same days.
             accessibilityLayer={false}
@@ -178,12 +178,12 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
         className="pointer-events-none absolute inset-y-0 flex"
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
       >
-        {data.map((point, index) => (
+        {chartDays.map((point, index) => (
           // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- focusable to be read, not to act, so no interactive role fits
           <div
             key={point.key}
             role="img"
-            data-today={index === data.length - 1 || undefined}
+            data-today={index === chartDays.length - 1 || undefined}
             aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
             className="flex-1 focus-visible:outline-none"
             onFocus={() => setFocusedIndex(index)}

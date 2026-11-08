@@ -13,7 +13,7 @@ import { formatLatencyMs } from '@/utils/format'
 // The tested result swaps in for the field's hint as a taller inset row, at the
 // address field's outer height (line-height 18 + 20 padding + 2 border), so it
 // reads as a same-sized box.
-const RESULT = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
+const RESULT_ROW = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
 const resultStatusVariants = cva('type-body shrink-0 font-sans', {
   variants: {
@@ -38,13 +38,13 @@ type AddServiceDialogProps = {
    * services poll; undefined when an edit only renamed it and nothing was
    * measured. Resolves once the list is updated.
    */
-  onAdd: (name: string, host: string, latencyMs: number | null | undefined) => Promise<void>
+  onSave: (name: string, host: string, latencyMs: number | null | undefined) => Promise<void>
   onClose: () => void
   /**
    * When editing an existing service, its current name and host to pre-fill.
    * A changed address is re-tested before it saves. Omit for the add flow.
    */
-  editing?: { name: string; host: string }
+  editedService?: { name: string; host: string }
 }
 
 /**
@@ -69,7 +69,7 @@ function AddressFeedback({
   if (phase === 'tested' && outcome) {
     const shownName = name || outcome.name
     return (
-      <div className={RESULT}>
+      <div className={RESULT_ROW}>
         <ServiceIcon host={outcome.host} name={shownName} size={18} />
         <span className="type-body min-w-0 flex-auto truncate text-primary">{shownName}</span>
         {outcome.latencyMs == null ? (
@@ -112,57 +112,57 @@ function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): str
  * the address clears the result, so the confirm reflects what was measured.
  *
  * The name is guessed from the address (github.com → "Github") until the user
- * types their own; clearing it resumes the guess. `editing` pre-fills the
+ * types their own; clearing it resumes the guess. `editedService` pre-fills the
  * fields for "Edit service", where a rename alone saves without a test.
  */
-export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogProps) {
-  const [address, setAddress] = useState(editing?.host ?? '')
-  const [name, setName] = useState(editing?.name ?? '')
+export function AddServiceDialog({ onSave, onClose, editedService }: AddServiceDialogProps) {
+  const [address, setAddress] = useState(editedService?.host ?? '')
+  const [name, setName] = useState(editedService?.name ?? '')
   // A test started by Add confirms after it lands, with the name typed meanwhile.
   const nameRef = useLatestRef(name)
   // In edit mode the name is the user's own from the start, so it's never auto-derived.
-  const [isNameTouched, setIsNameTouched] = useState(editing != null)
+  const [isNameTouched, setIsNameTouched] = useState(editedService != null)
   const [inputError, setInputError] = useState<string | null>(null)
 
   // `reset()` drops a result still in flight: an address edit, or Cancel while
   // the dialog plays its leave animation, must not show or add a stale test.
-  const test = useMutation({
+  const testMutation = useMutation({
     mutationFn: async ({ parsed }: { parsed: ServiceDefinition; shouldConfirm: boolean }): Promise<TestOutcome> => ({
       ...parsed,
       latencyMs: await getNetworkApi().testService(parsed.host),
     }),
   })
-  const save = useMutation({
-    mutationFn: ({ name: finalName, host, latencyMs }: SaveTarget) => onAdd(finalName, host, latencyMs),
+  const saveMutation = useMutation({
+    mutationFn: ({ name: finalName, host, latencyMs }: SaveTarget) => onSave(finalName, host, latencyMs),
   })
 
   const formId = useId()
-  const isEditing = editing != null
-  const outcome = test.isSuccess ? test.data : null
-  const isTesting = test.isPending
+  const isEditing = editedService != null
+  const outcome = testMutation.isSuccess ? testMutation.data : null
+  const isTesting = testMutation.isPending
   const phase = testPhase(isTesting, outcome)
-  const error = errorText(inputError, test.isError, save.isError)
+  const error = errorText(inputError, testMutation.isError, saveMutation.isError)
 
   // An edit that leaves the address alone is just a rename: it saves without a
   // re-test, since the host it would probe is the one already tracked.
   const parsedAddress = parseServiceInput(address)
-  const isSameHost = editing != null && parsedAddress?.host === editing.host
-  const isRenameOnly = isSameHost && name.trim() !== editing.name
-  const isUnchanged = isSameHost && name.trim() === editing.name
+  const isSameHost = editedService != null && parsedAddress?.host === editedService.host
+  const isRenameOnly = isSameHost && name.trim() !== editedService.name
+  const isUnchanged = isSameHost && name.trim() === editedService.name
   const isDown = outcome?.latencyMs === null
-  const isBusy = save.isPending || (isTesting && test.variables.shouldConfirm)
-  const isDirty = address.trim() !== (editing?.host ?? '') || name.trim() !== (editing?.name ?? '')
+  const isBusy = saveMutation.isPending || (isTesting && testMutation.variables.shouldConfirm)
+  const isDirty = address.trim() !== (editedService?.host ?? '') || name.trim() !== (editedService?.name ?? '')
 
   const close = (): void => {
-    test.reset()
-    save.reset()
+    testMutation.reset()
+    saveMutation.reset()
     onClose()
   }
 
-  const confirm = (target: SaveTarget): void => {
+  const saveAndClose = (target: SaveTarget): void => {
     // The typed name wins; a blank field falls back to the derived one.
     const finalName = nameRef.current.trim() || target.name
-    save.mutate({ name: finalName, host: target.host, latencyMs: target.latencyMs }, { onSuccess: close })
+    saveMutation.mutate({ name: finalName, host: target.host, latencyMs: target.latencyMs }, { onSuccess: close })
   }
 
   const runTest = (shouldConfirm: boolean): void => {
@@ -172,13 +172,13 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       return
     }
     setInputError(null)
-    save.reset()
-    test.mutate(
+    saveMutation.reset()
+    testMutation.mutate(
       { parsed, shouldConfirm },
       {
         // A reachable host goes straight in; a down one waits for "Add anyway".
         onSuccess: (tested) => {
-          if (shouldConfirm && tested.latencyMs != null) confirm(tested)
+          if (shouldConfirm && tested.latencyMs != null) saveAndClose(tested)
         },
       },
     )
@@ -186,17 +186,17 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
 
   // Add: save what was tested (or a rename), otherwise test first.
   const submit = (): void => {
-    if (isTesting || save.isPending || isUnchanged) return
-    if (outcome) confirm(outcome)
-    else if (isRenameOnly) confirm({ ...parsedAddress, latencyMs: undefined })
+    if (isTesting || saveMutation.isPending || isUnchanged) return
+    if (outcome) saveAndClose(outcome)
+    else if (isRenameOnly) saveAndClose({ ...parsedAddress, latencyMs: undefined })
     else if (address.trim()) runTest(true)
   }
 
   const onAddressChange = (value: string): void => {
     setAddress(value)
     // Any edit invalidates a prior test, or one still running.
-    test.reset()
-    save.reset()
+    testMutation.reset()
+    saveMutation.reset()
     setInputError(null)
     if (!isNameTouched) setName(parseServiceInput(value)?.name ?? '')
   }
@@ -212,7 +212,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
       title={isEditing ? 'Edit service' : 'Add a service'}
       description="Track a service by URL or IP address."
       onClose={close}
-      canClose={!save.isPending}
+      canClose={!saveMutation.isPending}
       isDirty={isDirty}
       cancelLabel="Cancel"
       actions={
@@ -246,7 +246,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
           action={
             <TextFieldAction
               onClick={() => runTest(false)}
-              isDisabled={!address.trim() || isTesting || save.isPending}
+              isDisabled={!address.trim() || isTesting || saveMutation.isPending}
               isLoading={isTesting}
               loadingLabel="Testing"
             >

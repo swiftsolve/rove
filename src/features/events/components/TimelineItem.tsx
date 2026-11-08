@@ -56,9 +56,9 @@ const TONE_COLORS = {
 
 type EventTone = keyof typeof TONE_COLORS
 
-const SUBJECT = 'type-caption text-secondary'
+const SUBJECT_LINE = 'type-caption text-secondary'
 
-const META = 'type-caption text-tertiary tabular-nums'
+const ADDRESS_LINE = 'type-caption text-tertiary tabular-nums'
 
 type EventStyle = {
   icon: IconComponent
@@ -125,7 +125,7 @@ export function TimelineItem({
     <TimelineNode icon={<EventIcon type={event.type} />} color={TONE_COLORS[EVENT_STYLES[event.type].tone]}>
       <EventHeading title={title} ts={event.ts} />
       {subject && (
-        <div className={SUBJECT}>
+        <div className={SUBJECT_LINE}>
           <InlineMeta
             items={[
               ...subjectParts(subject),
@@ -139,7 +139,7 @@ export function TimelineItem({
         </div>
       )}
       {internetSubtitle && (
-        <span className={cx(SUBJECT, 'flex w-full flex-wrap')}>
+        <span className={cx(SUBJECT_LINE, 'flex w-full flex-wrap')}>
           <span>{internetSubtitle}</span>
           {offlineMs != null && (
             <span className="type-caption ml-auto shrink-0 leading-[inherit] whitespace-nowrap text-tertiary">
@@ -150,7 +150,7 @@ export function TimelineItem({
       )}
 
       {metaItems.length > 0 && (
-        <div className={META}>
+        <div className={ADDRESS_LINE}>
           <InlineMeta items={metaItems} />
         </div>
       )}

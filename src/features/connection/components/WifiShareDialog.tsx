@@ -24,7 +24,7 @@ const NOTICE_ICONS = {
 export function WifiShareDialog({ onClose }: { onClose: () => void }) {
   const { share, error, isLoading, retry } = useWifiShare()
   const notice = isLoading ? null : shareNotice(share, error)
-  const qr = isLoading || notice ? null : share
+  const shareForQrCode = isLoading || notice ? null : share
 
   return (
     <Dialog
@@ -33,14 +33,16 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
       description={notice ? undefined : 'Scan with a phone camera to join'}
       onClose={onClose}
       footnote={
-        qr ? (
-          <p className="type-heading animate-fade-in text-center leading-body wrap-anywhere text-primary">{qr.ssid}</p>
+        shareForQrCode ? (
+          <p className="type-heading animate-fade-in text-center leading-body wrap-anywhere text-primary">
+            {shareForQrCode.ssid}
+          </p>
         ) : undefined
       }
     >
       {/* Announces the QR code or notice when it replaces the loading state. */}
       <div className="flex w-full flex-col items-center text-center" aria-live="polite" aria-busy={isLoading}>
-        <ShareState isLoading={isLoading} notice={notice} qr={qr} onRetry={retry} />
+        <ShareState isLoading={isLoading} notice={notice} shareForQrCode={shareForQrCode} onRetry={retry} />
       </div>
     </Dialog>
   )
@@ -50,12 +52,12 @@ export function WifiShareDialog({ onClose }: { onClose: () => void }) {
 function ShareState({
   isLoading,
   notice,
-  qr,
+  shareForQrCode,
   onRetry,
 }: {
   isLoading: boolean
   notice: ShareNotice | null
-  qr: WifiShare | null
+  shareForQrCode: WifiShare | null
   onRetry: () => void
 }) {
   if (isLoading) {
@@ -80,6 +82,6 @@ function ShareState({
       </div>
     )
   }
-  if (!qr) return null
-  return <WifiQrCode svg={qr.qrSvg} alt={`QR code to join the Wi‑Fi network ${qr.ssid}`} />
+  if (!shareForQrCode) return null
+  return <WifiQrCode svg={shareForQrCode.qrSvg} alt={`QR code to join the Wi‑Fi network ${shareForQrCode.ssid}`} />
 }

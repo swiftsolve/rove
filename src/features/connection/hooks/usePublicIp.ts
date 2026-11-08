@@ -15,20 +15,20 @@ type PublicIpState = {
 export function usePublicIp(isEnabled: boolean): PublicIpState {
   const api = window.networkAPI
   const networkKey = useNetworkKey()
-  const { data, isBusy } = useBackendQuery({
+  const { data: fetchedIp, isBusy } = useBackendQuery({
     queryKey: ['publicIp', networkKey],
     queryFn: api ? () => api.getPublicIp() : undefined,
     isEnabled: isEnabled && networkKey != null,
     errorMessage: 'Failed to fetch the public IP.',
   })
 
-  // A refetch or an empty lookup leaves `data` null; the WAN IP rarely changes,
+  // A refetch or an empty lookup leaves `fetchedIp` null; the WAN IP rarely changes,
   // so show this network's previous one rather than drop the row. Never another
   // network's: that would be wrong data, not stale data.
-  const [last, setLast] = useState<{ networkKey: string | null; ip: string } | null>(null)
-  const isNewReading = data != null && (data !== last?.ip || networkKey !== last.networkKey)
-  if (isNewReading) setLast({ networkKey, ip: data })
-  const lastIp = last?.networkKey === networkKey ? last.ip : null
+  const [lastReading, setLastReading] = useState<{ networkKey: string | null; ip: string } | null>(null)
+  const isNewReading = fetchedIp != null && (fetchedIp !== lastReading?.ip || networkKey !== lastReading.networkKey)
+  if (isNewReading) setLastReading({ networkKey, ip: fetchedIp })
+  const lastIp = lastReading?.networkKey === networkKey ? lastReading.ip : null
 
-  return { publicIp: data ?? lastIp, isLoading: isBusy }
+  return { publicIp: fetchedIp ?? lastIp, isLoading: isBusy }
 }

@@ -28,10 +28,10 @@ export function useRowGlide(listRef: RefObject<HTMLElement | null>, order: strin
 
     for (const row of list.children) {
       const top = row.getBoundingClientRect().top - listTop
-      const before = topsRef.current.get(row)
+      const previousTop = topsRef.current.get(row)
       topsRef.current.set(row, top)
-      if (shouldGlide && before !== undefined && Math.abs(before - top) >= 1) {
-        row.animate([{ transform: `translateY(${before - top}px)` }, { transform: 'none' }], { duration, easing })
+      if (shouldGlide && previousTop !== undefined && Math.abs(previousTop - top) >= 1) {
+        row.animate([{ transform: `translateY(${previousTop - top}px)` }, { transform: 'none' }], { duration, easing })
       }
     }
   })

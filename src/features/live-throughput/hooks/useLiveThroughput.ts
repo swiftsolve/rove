@@ -31,11 +31,11 @@ function setStoreState(next: LiveThroughputState): void {
   for (const listener of listeners) listener()
 }
 
-function ingestSample(update: LiveThroughput): void {
+function ingestSample(sample: LiveThroughput): void {
   const throughput = {
-    downloadMbps: sanitizeRate(update.downloadMbps),
-    uploadMbps: sanitizeRate(update.uploadMbps),
-    timestamp: update.timestamp || Date.now(),
+    downloadMbps: sanitizeRate(sample.downloadMbps),
+    uploadMbps: sanitizeRate(sample.uploadMbps),
+    timestamp: sample.timestamp || Date.now(),
   }
   const history = appendThroughputHistory(storeState.history, throughput.downloadMbps, throughput.uploadMbps)
   setStoreState({ throughput, history })

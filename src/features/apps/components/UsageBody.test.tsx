@@ -7,10 +7,10 @@ import type { AppUsageSupport } from '@/types'
 import { UsageBody, type UsageBodyCopy } from './UsageBody'
 
 const COPY: UsageBodyCopy = {
-  unsupported: 'Run as administrator.',
-  loading: 'Measuring…',
+  unsupportedDescription: 'Run as administrator.',
+  loadingLabel: 'Measuring…',
   emptyTitle: 'Nothing yet',
-  empty: 'Rows appear here.',
+  emptyDescription: 'Rows appear here.',
 }
 
 type BodyState = {

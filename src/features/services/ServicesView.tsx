@@ -60,7 +60,7 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
  */
 export function ServicesView() {
   const { navigate } = useNavigation()
-  const { report, run: reprobe } = useServiceReachability()
+  const { report, reprobe } = useServiceReachability()
   const reachability = report?.services
   // Measured in the same batch as `reachability`. While it isn't online, a failed
   // probe means we couldn't check, so those rows read as unknown, not "Down".
@@ -106,8 +106,8 @@ export function ServicesView() {
     // A rename measured nothing, so the row keeps its live readout.
     if (latencyMs !== undefined) setSeededLatency((prev) => new Map(prev).set(host, latencyMs))
     const oldHost = dialog?.mode === 'edit' ? dialog.service.host : null
-    const persist = oldHost ? update(oldHost, name, host) : add(name, host)
-    return persist.then(refreshServices)
+    const savePromise = oldHost ? update(oldHost, name, host) : add(name, host)
+    return savePromise.then(refreshServices)
   }
 
   const removeService = (host: string): void => {
@@ -146,8 +146,10 @@ export function ServicesView() {
         {dialog && (
           <AddServiceDialog
             key={dialog.openCount}
-            editing={dialog.mode === 'edit' ? { name: dialog.service.name, host: dialog.service.host } : undefined}
-            onAdd={saveService}
+            editedService={
+              dialog.mode === 'edit' ? { name: dialog.service.name, host: dialog.service.host } : undefined
+            }
+            onSave={saveService}
             onClose={() => setIsDialogOpen(false)}
           />
         )}

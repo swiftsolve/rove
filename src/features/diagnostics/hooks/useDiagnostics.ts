@@ -34,7 +34,7 @@ export function useDiagnostics(): UseDiagnosticsResult {
   const api = window.networkAPI
   const networkKey = useNetworkKey()
 
-  const full = useBackendQuery({
+  const snapshotQuery = useBackendQuery({
     queryKey: ['diagnostics', 'snapshot', networkKey],
     queryFn: api ? () => api.runDiagnostics() : undefined,
     isEnabled: networkKey != null,
@@ -43,7 +43,7 @@ export function useDiagnostics(): UseDiagnosticsResult {
 
   // Poll-only: the full run already probes the gateway on open, so null initial
   // data and an infinite stale time keep live from probing it a second time.
-  const live = useQuery<LiveDiagnostics | null>({
+  const liveQuery = useQuery<LiveDiagnostics | null>({
     queryKey: ['diagnostics', 'live', networkKey],
     queryFn: api ? () => api.runDiagnosticsLive() : skipToken,
     enabled: networkKey != null,
@@ -53,26 +53,26 @@ export function useDiagnostics(): UseDiagnosticsResult {
     refetchOnWindowFocus: 'always',
   })
 
-  const { reload: reloadFull } = full
-  const { refetch: refetchLive } = live
+  const { reload: reloadSnapshot } = snapshotQuery
+  const { refetch: refetchLive } = liveQuery
   // Re-runs both so stale live metrics don't sit over a fresh snapshot. Not run on
   // `network-changed` nudges: macOS emits them for routing churn (a probe storm).
   const run = useCallback(async (): Promise<void> => {
-    await Promise.all([reloadFull(), api ? refetchLive() : undefined])
-  }, [api, reloadFull, refetchLive])
+    await Promise.all([reloadSnapshot(), api ? refetchLive() : undefined])
+  }, [api, reloadSnapshot, refetchLive])
 
   // Hidden while the first snapshot loads, like the snapshot's own error. A
   // rerun keeps it until it lands, so the banner can show its Retry running.
-  const isFirstLoad = full.isBusy && full.data === undefined
-  const liveError = isFirstLoad ? null : errorText(live.error)
+  const isFirstLoad = snapshotQuery.isBusy && snapshotQuery.data === undefined
+  const liveError = isFirstLoad ? null : errorText(liveQuery.error)
 
   return {
     diagnostics: overlayLiveMetrics(
-      { data: full.data ?? null, updatedAt: full.dataUpdatedAt },
-      { data: live.data ?? null, updatedAt: live.dataUpdatedAt },
+      { data: snapshotQuery.data ?? null, updatedAt: snapshotQuery.dataUpdatedAt },
+      { data: liveQuery.data ?? null, updatedAt: liveQuery.dataUpdatedAt },
     ),
-    isRunning: full.isBusy,
-    error: full.error ?? liveError,
+    isRunning: snapshotQuery.isBusy,
+    error: snapshotQuery.error ?? liveError,
     run,
   }
 }
