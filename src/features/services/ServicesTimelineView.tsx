@@ -74,7 +74,7 @@ export function ServicesTimelineView() {
   // Prose until the first probes land and there's something to count.
   const description = serviceTally(reachability, liveInternet) ?? 'When your services went down and came back.'
 
-  const handleClear = (): void => {
+  const onClear = (): void => {
     void clear()
   }
 
@@ -84,7 +84,7 @@ export function ServicesTimelineView() {
         title="Online services timeline"
         description={description}
         onBack={back}
-        actions={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}
+        actions={events.length > 0 ? <TimelineMenu onClear={onClear} /> : undefined}
       />
       {clearError && (
         <Banner variant="error" title={clearError} description="The timeline is as it was." onRetry={clear} />

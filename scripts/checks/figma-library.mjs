@@ -189,7 +189,7 @@ function keysFor(component, wholeComponent, propName) {
   ])
 }
 
-const sameSet = (a, b) => a.length === b.length && a.every((value) => b.includes(value))
+const isSameSet = (a, b) => a.length === b.length && a.every((value) => b.includes(value))
 
 const { file, components: mapping } = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8'))
 const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8'))
@@ -267,7 +267,7 @@ for (const [nodeId, components] of componentsByNode) {
       // Figma's None stands for an optional prop left unset, which code has no value for.
       const isUnsetStandIn = (value) => value === UNSET_OPTION && !hasDefault && !codeValues.includes(UNSET_OPTION)
       const figmaValues = figmaVariants[figmaName].map(comparisonKey).filter((value) => !isUnsetStandIn(value))
-      const isSame = sameSet(codeValues, figmaValues)
+      const isSame = isSameSet(codeValues, figmaValues)
       if (!isSame && !(propName in valuesDiffer)) {
         problems.push(
           `${component}.${propName} is ${values.join(' | ')} in code, ` +

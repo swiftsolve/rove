@@ -77,7 +77,7 @@ function ScanSpinner() {
  * rather than being lost.
  */
 function DiscoverButton({ onDiscover }: { onDiscover: () => void }) {
-  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
+  const onClick = (event: MouseEvent<HTMLButtonElement>): void => {
     focusCardLink(event.currentTarget)
     onDiscover()
   }
@@ -86,7 +86,7 @@ function DiscoverButton({ onDiscover }: { onDiscover: () => void }) {
     // than the readout, so -my-4 lets it spill into the padding rather than
     // grow the card.
     <div className="flex flex-1 items-center justify-center">
-      <Button className="relative z-2 -my-4" icon={SearchIcon} onClick={handleClick}>
+      <Button className="relative z-2 -my-4" icon={SearchIcon} onClick={onClick}>
         Discover
       </Button>
     </div>

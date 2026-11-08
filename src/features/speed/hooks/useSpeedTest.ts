@@ -52,7 +52,7 @@ const UNKNOWN_RUN_CONTEXT: SpeedRunContext = {
 }
 
 /** The connection in use right now, to stamp onto the recorded result. */
-async function currentRunContext(): Promise<SpeedRunContext> {
+async function readRunContext(): Promise<SpeedRunContext> {
   try {
     const info = await getNetworkApi().getNetworkInfo()
     return {
@@ -163,7 +163,7 @@ async function runTest(): Promise<void> {
     // Overlap the context read with the test: getNetworkInfo() can take 10s+ on
     // Windows with a VPN and other virtual adapters, and awaiting it first froze
     // the UI at "Starting speed test…".
-    const contextPromise = currentRunContext()
+    const contextPromise = readRunContext()
     const result = await api.runSpeedTest(runToken)
     const context = await contextPromise
     isSettled = true

@@ -114,7 +114,7 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
       }
     }
 
-    const loop = (): void => {
+    const drawFrame = (): void => {
       fillPct = advanceFill(fillPct, readTarget())
       persistedFill.runId = runId
       persistedFill.pct = fillPct
@@ -123,9 +123,9 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
       const dot = dotRef.current
       const track = trackRef.current
       if (width > 0 && clip && dot && track) drawFill(clip, dot, track)
-      frameId = requestAnimationFrame(loop)
+      frameId = requestAnimationFrame(drawFrame)
     }
-    frameId = requestAnimationFrame(loop)
+    frameId = requestAnimationFrame(drawFrame)
     return () => {
       cancelAnimationFrame(frameId)
       observer.disconnect()

@@ -978,7 +978,7 @@ function createMockNetworkApi(): NetworkAPI {
     for (const listener of liveListeners) listener(sample)
   }
 
-  const idleSample = (): { down: number; up: number } => {
+  const takeIdleSample = (): { down: number; up: number } => {
     idleTick += 1
     // Mostly quiet, with a periodic streaming/backup burst so the chart is alive
     // and both idle and active states show.
@@ -1002,7 +1002,7 @@ function createMockNetworkApi(): NetworkAPI {
         emitLive(testTraffic.downloadMbps * jitter, testTraffic.uploadMbps * jitter)
         return
       }
-      const { down, up } = idleSample()
+      const { down, up } = takeIdleSample()
       emitLive(down, up)
     }, 1000)
   }

@@ -156,7 +156,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
   const hoveredPoint = hover !== null ? points[hover.index] : null
   const areaRuns = runs.filter((run) => run.length > 1)
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>): void => {
+  const onMouseMove = (e: React.MouseEvent<SVGSVGElement>): void => {
     if (points.length === 0) return
     const { x, left, top } = pointerPosition(e)
     setHover({ index: nearestPointIndex(points, x), left, top })
@@ -171,7 +171,7 @@ export function Sparkline({ samples, width = 76, height = 22, label, slots, isDo
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={chartDescription(samples, label)}
-        onMouseMove={handleMouseMove}
+        onMouseMove={onMouseMove}
         onMouseLeave={() => setHover(null)}
       >
         {/* Fades the band colour to transparent, as on the Traffic chart. */}

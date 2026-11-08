@@ -10,16 +10,16 @@ const INTERNET_STATUS_KEY = ['network', 'internet-status']
 /** The backend's verdict, or the cached one when a heartbeat beat it or the read failed. */
 async function readInternetStatus(): Promise<InternetStatus | null> {
   const startedAt = Date.now()
-  const cachedStatus = (): InternetStatus | null =>
+  const getCachedStatus = (): InternetStatus | null =>
     queryClient.getQueryData<InternetStatus | null>(INTERNET_STATUS_KEY) ?? null
   try {
     const status = await getNetworkApi().getInternetStatus()
     // A heartbeat that landed while this read was in flight is newer than it.
     const updatedAt = queryClient.getQueryState(INTERNET_STATUS_KEY)?.dataUpdatedAt ?? 0
-    return updatedAt >= startedAt ? cachedStatus() : status
+    return updatedAt >= startedAt ? getCachedStatus() : status
   } catch {
     // No verdict yet: callers defer to the local link, and the next heartbeat brings one.
-    return cachedStatus()
+    return getCachedStatus()
   }
 }
 
