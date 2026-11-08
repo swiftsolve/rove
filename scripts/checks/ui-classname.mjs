@@ -56,9 +56,12 @@ const utilityNames = [...readFileSync(join(ROOT, UTILITIES_CSS), 'utf8').matchAl
   (m) => m[1],
 )
 
-/** Why a class restyles a component, or null when it only places it. */
-function restyles(token) {
-  // The utility itself, after its variants (`group-hover:`, `[@media(…)]:`).
+/**
+ * A class without its variants (`group-hover:`, `[@media(…)]:`), its `!`
+ * important mark or its `-` sign: `md:-mt-4` is `mt-4`. A `:` inside brackets
+ * belongs to the value, so only one outside them ends a variant.
+ */
+function utilityOf(token) {
   let depth = 0
   let start = 0
   for (let i = 0; i < token.length; i++) {
@@ -66,13 +69,24 @@ function restyles(token) {
     else if ('])'.includes(token[i])) depth--
     else if (token[i] === ':' && depth === 0) start = i + 1
   }
-  const utility = token.slice(start).replace(/^!|!$/g, '').replace(/^-/, '')
+  return token.slice(start).replace(/^!|!$/g, '').replace(/^-/, '')
+}
+
+/** Whether `utility` is the @utility `name`, or one of its values when `name` ends in `-*`. */
+function isCustomUtility(utility, name) {
+  if (utility === name) return true
+  return name.endsWith('-*') && utility.startsWith(name.slice(0, -1))
+}
+
+/** Why a class restyles a component, or null when it only places it. */
+function restyleReason(token) {
+  const utility = utilityOf(token)
   if (!utility) return null
   const property = utility.match(/^\[([a-z-]+):/)
-  if (property) return ARBITRARY_PROPERTIES.test(property[1]) ? `${property[1]}` : null
+  if (property) return ARBITRARY_PROPERTIES.test(property[1]) ? property[1] : null
   if (ALIGN.test(utility)) return null
   for (const [reason, pattern] of RULES) if (pattern.test(utility)) return reason
-  const name = utilityNames.find((u) => utility === u || (u.endsWith('-*') && utility.startsWith(u.slice(0, -1))))
+  const name = utilityNames.find((utilityName) => isCustomUtility(utility, utilityName))
   return name ? `the ${name} utility` : null
 }
 
@@ -206,7 +220,7 @@ for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
             .filter(Boolean),
         )
         for (const token of tokens) {
-          const reason = restyles(token)
+          const reason = restyleReason(token)
           if (reason)
             problems.push(`${relative(ROOT, join(ROOT, file))}:${line}  <${tag} className>: '${token}' sets ${reason}`)
         }

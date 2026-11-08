@@ -62,12 +62,10 @@ function themeNames(css) {
   return names
 }
 
-const theme = themeNames(
-  (await Promise.all([TOKENS_THEME_CSS, THEME_CSS].map((path) => readFile(path, 'utf8')))).join('\n'),
-)
-const textStyleClasses = [...(await readFile(TEXT_STYLES_CSS, 'utf8')).matchAll(/^\s*\.(type-[a-z0-9-]+)\s*\{/gm)].map(
-  (match) => match[1],
-)
+const themeCss = await Promise.all([TOKENS_THEME_CSS, THEME_CSS].map((path) => readFile(path, 'utf8')))
+const theme = themeNames(themeCss.join('\n'))
+const textStylesCss = await readFile(TEXT_STYLES_CSS, 'utf8')
+const textStyleClasses = [...textStylesCss.matchAll(/^\s*\.(type-[a-z0-9-]+)\s*\{/gm)].map((match) => match[1])
 const json = `${JSON.stringify(
   {
     $comment:

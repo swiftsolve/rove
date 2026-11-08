@@ -14,14 +14,20 @@ import { readdirSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const HERE = dirname(fileURLToPath(import.meta.url))
+const THIS_FILE = fileURLToPath(import.meta.url)
+const HERE = dirname(THIS_FILE)
 const GEN = join(HERE, '..', 'gen')
-const scripts = (dir) =>
-  readdirSync(dir)
-    .filter((name) => name.endsWith('.mjs') && name !== basename(fileURLToPath(import.meta.url)))
+
+/** Every script in `dir` but this one, in name order. */
+function scriptsIn(dir) {
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.mjs') && name !== basename(THIS_FILE))
     .sort()
     .map((name) => join(dir, name))
-const CHECKS = [...scripts(HERE).map((path) => [path]), ...scripts(GEN).map((path) => [path, '--check'])]
+}
+
+// Each entry is a script and its arguments.
+const CHECKS = [...scriptsIn(HERE).map((path) => [path]), ...scriptsIn(GEN).map((path) => [path, '--check'])]
 
 const failed = []
 for (const [script, ...args] of CHECKS) {

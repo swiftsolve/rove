@@ -142,15 +142,19 @@ function scaleForProperty(property) {
 const SPACING_UTILITY =
   /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
 const RADIUS_UTILITY = /^rounded(?:-[a-z]{1,2})?$/
-/** A radius built from tokens alone: `var(--radius-sm)`, `inherit`, `0`. */
-const isRadiusValue = (value) =>
-  !/(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/.test(value.replace(/var\(--[\w-]+\)/g, ''))
 // The utilities DESIGN.md holds to the spacing scale: gaps, paddings and margins.
 const SPACE_UTILITY = /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])$/
 const SPACE_PROPERTY = /^(?:padding|margin|gap|row-gap|column-gap)(?:-[a-z-]+)?$/
-/** A spacing value built from tokens alone: `var(--card-padding)`, `calc(-1 * var(--spacing-12))`, `0`, `auto`. */
-const isSpacingValue = (value) =>
-  !/(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/.test(value.replace(/var\(--[\w-]+\)/g, ''))
+
+const TOKEN_READ = /var\(--[\w-]+\)/g
+// A number with a unit, not part of a name or a longer number.
+const RAW_LENGTH = /(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/
+/**
+ * A value built from tokens alone, with no raw length once its `var()`s are
+ * set aside: `var(--card-padding)`, `calc(-1 * var(--spacing-12))`, `0`,
+ * `auto`, `inherit`.
+ */
+const isBuiltFromTokens = (value) => !RAW_LENGTH.test(value.replace(TOKEN_READ, ''))
 
 // CSS properties by the scale their lengths come from.
 const SPACING_PROPERTY =
@@ -163,14 +167,21 @@ const COLOUR_FUNCTION = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/g
 const NAMED_COLOUR = /(?<![A-Za-z0-9-])(?:white|black)(?![A-Za-z0-9-])/g
 const EASING_KEYWORD = /(?<![A-Za-z0-9-])(?:ease|ease-in|ease-out|ease-in-out)(?![A-Za-z0-9-])/g
 const LENGTH = /^-?\d*\.?\d+px$/
+// An arbitrary value (`p-[12px]`, `-mt-[3px]`): the utility and the value in its brackets.
+const ARBITRARY_VALUE = /(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g
 const TIME = /(?<![A-Za-z0-9.-])(\d*\.?\d+)(ms|s)(?![A-Za-z0-9-])/g
 
 const toMs = (amount, unit) => (unit === 's' ? Number(amount) * 1000 : Number(amount))
-const durationToken = (amount, unit) =>
-  [...DURATION].find(([value]) => {
-    const [, tokenAmount, tokenUnit] = value.match(/^(\d*\.?\d+)(ms|s)$/) ?? []
-    return tokenAmount !== undefined && toMs(tokenAmount, tokenUnit) === toMs(amount, unit)
-  })?.[1]
+
+/** The duration token equal to `amount` `unit`, in ms or s either side (`0.14s` is `140ms`), if any. */
+function durationToken(amount, unit) {
+  const ms = toMs(amount, unit)
+  for (const [value, name] of DURATION) {
+    const tokenTime = value.match(/^(\d*\.?\d+)(ms|s)$/)
+    if (tokenTime && toMs(tokenTime[1], tokenTime[2]) === ms) return name
+  }
+  return undefined
+}
 
 const files = (await listFiles(SRC)).filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
 const problems = []
@@ -221,15 +232,13 @@ for (const file of files) {
       const [, property, value] = match
       checkValue(match.index, value, (raw) => `${property}: ${raw}`)
       const fromScale = scaleForProperty(property)
-      for (const part of value.trim().split(/\s+/)) {
+      const parts = value.trim().split(/\s+/)
+      for (const part of parts) {
         const token = fromScale?.get(part)
         if (token) report(match.index, part, `${property}: ${part} is ${token}; use var(${token})`)
       }
-      const isTokenEqual = value
-        .trim()
-        .split(/\s+/)
-        .some((part) => fromScale?.has(part))
-      if (RADIUS_PROPERTY.test(property) && !isTokenEqual && !isRadiusValue(value)) {
+      const isTokenEqual = parts.some((part) => fromScale?.has(part))
+      if (RADIUS_PROPERTY.test(property) && !isTokenEqual && !isBuiltFromTokens(value)) {
         const declaration = `${property}: ${value.trim()}`
         report(
           match.index,
@@ -237,7 +246,7 @@ for (const file of files) {
           `${declaration} is off the radius scale; use a --radius-* token, or say why in ALLOWED`,
         )
       }
-      if (SPACE_PROPERTY.test(property) && !isTokenEqual && !isSpacingValue(value)) {
+      if (SPACE_PROPERTY.test(property) && !isTokenEqual && !isBuiltFromTokens(value)) {
         const declaration = `${property}: ${value.trim()}`
         report(
           match.index,
@@ -250,7 +259,7 @@ for (const file of files) {
   }
 
   // Tailwind utilities, with any variants (`hover:`, `not-last:`) and a leading `-`.
-  for (const match of code.matchAll(/(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g)) {
+  for (const match of code.matchAll(ARBITRARY_VALUE)) {
     const [whole, utility, value] = match
     const isTiming = utility === 'duration' || utility === 'delay'
     checkValue(match.index, value, () => whole, isTiming ? (token) => `${utility}-(${token})` : undefined)
@@ -271,12 +280,12 @@ for (const file of files) {
 
   // Every gap, padding and margin is a spacing step and every corner a radius
   // (DESIGN.md, Layout and Shapes), so one off the scale needs a reason in ALLOWED.
-  for (const match of code.matchAll(/(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g)) {
+  for (const match of code.matchAll(ARBITRARY_VALUE)) {
     const [whole, utility, value] = match
-    if (SPACE_UTILITY.test(utility) && !isSpacingValue(value) && !SPACING.has(value.replace(/^-/, ''))) {
+    if (SPACE_UTILITY.test(utility) && !isBuiltFromTokens(value) && !SPACING.has(value.replace(/^-/, ''))) {
       report(match.index, whole, `${whole} is off the spacing scale; use a --spacing-* step, or say why in ALLOWED`)
     }
-    if (RADIUS_UTILITY.test(utility) && !isRadiusValue(value) && !RADIUS.has(value)) {
+    if (RADIUS_UTILITY.test(utility) && !isBuiltFromTokens(value) && !RADIUS.has(value)) {
       report(match.index, whole, `${whole} is off the radius scale; use a --radius-* token, or say why in ALLOWED`)
     }
   }

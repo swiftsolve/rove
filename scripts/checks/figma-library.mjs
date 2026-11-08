@@ -11,12 +11,12 @@
  *   - every prop with a fixed set of values has a Figma variant property;
  *   - every usage guide in the stories (`guidance`) has its twin in the
  *     component's Figma docs section: When to use and When not to use, as many
- *     lines in each,
- *     and every alternative the code names under When not to use (`use
- *     `EmptyState``) named there too ("Empty state"). Figma words its lines for
- *     designers, so the wording itself is left to review. Accessibility isn't
- *     compared: Storybook's is for whoever builds with the component, Figma's
- *     for whoever designs with it, so each says what its reader handles.
+ *     lines in each, and every alternative the code names under When not to
+ *     use (`use `EmptyState``) named there too ("Empty state"). Figma words
+ *     its lines for designers, so the wording itself is left to review.
+ *     Accessibility isn't compared: Storybook's is for whoever builds with the
+ *     component, Figma's for whoever designs with it, so each says what its
+ *     reader handles.
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
@@ -253,9 +253,9 @@ for (const [nodeId, components] of byNode) {
 
       const code = values.map(key)
       const hasDefault = prop.default !== undefined
-      const design = figmaVariants[figmaName]
-        .map(key)
-        .filter((value) => !(value === UNSET_OPTION && !hasDefault && !code.includes(UNSET_OPTION)))
+      // Figma's None stands for an optional prop left unset, which code has no value for.
+      const isUnsetStandIn = (value) => value === UNSET_OPTION && !hasDefault && !code.includes(UNSET_OPTION)
+      const design = figmaVariants[figmaName].map(key).filter((value) => !isUnsetStandIn(value))
       const isSame = sameSet(code, design)
       if (!isSame && !(propName in valuesDiffer)) {
         problems.push(

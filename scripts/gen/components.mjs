@@ -227,8 +227,8 @@ for (const { name, group, source } of components) {
         .map((prop) => [prop.name, describeProp(prop)]),
     ),
     ...(elementProps.has(name) && { hasElementProps: true }),
-    stories: storiesByName.get(name).ids,
-    ...(storiesByName.get(name).guidance && { guidance: storiesByName.get(name).guidance }),
+    stories: stories.ids,
+    ...(stories.guidance && { guidance: stories.guidance }),
   }
 }
 for (const name of Object.keys(figma.components)) {
