@@ -341,14 +341,17 @@ function OverlaysScene(): JSX.Element {
                     />
                   </div>
                   <div className="bg-base p-16">
-                    {isQrReady ? (
-                      <WifiQrCode svg={QR_SVG} alt="" />
-                    ) : (
-                      <div className="flex animate-fade-in flex-col items-center gap-12 py-16 text-center">
-                        <Spinner />
-                        <p className="type-body text-tertiary">Generating QR code…</p>
-                      </div>
-                    )}
+                    {/* Centred as WifiShareDialog centres it, so the plate fits its code. */}
+                    <div className="flex w-full flex-col items-center text-center">
+                      {isQrReady ? (
+                        <WifiQrCode svg={QR_SVG} alt="" />
+                      ) : (
+                        <div className="flex animate-fade-in flex-col items-center gap-12 py-16 text-center">
+                          <Spinner />
+                          <p className="type-body text-tertiary">Generating QR code…</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {isQrReady && (
                     <div className="px-16 py-12">
