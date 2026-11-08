@@ -61,10 +61,8 @@ export function StatReadout({ marker, value, unit, className }: StatReadoutProps
 /** The "no reading" body: a NoValue bar where the value would be, at the value's size. */
 export function EmptyStatReadout() {
   return (
-    <div className="metric" aria-hidden>
-      <span className="type-stat metric-value">
-        <NoValue />
-      </span>
-    </div>
+    <span className="type-stat" aria-hidden>
+      <NoValue />
+    </span>
   )
 }
