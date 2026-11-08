@@ -42,6 +42,15 @@ function isPortalledMenu(ruleId, node) {
 }
 
 /**
+ * Speed's capability rows before any test are faded like disabled controls, on
+ * purpose: they only preview what a test will rate, and a screen reader still
+ * reads them. Only `color-contrast` is waived inside `[data-faded-preview]`.
+ */
+function isFadedPreview(ruleId, node) {
+  return ruleId === 'color-contrast' && node.isInFadedPreview
+}
+
+/**
  * Runs in the page: click the first button whose label or text contains `label`
  * (or, with no label, the first disclosure button). Page functions can't close
  * over script variables, so the label travels as an argument.
@@ -115,15 +124,21 @@ try {
       }
       await page.addScriptTag({ content: AXE_SOURCE })
       const result = await page.evaluate(
-        ({ tags, exclude }) =>
-          window.axe.run({ include: [['html']], exclude }, { runOnly: { type: 'tag', values: tags } }),
+        async ({ tags, exclude }) => {
+          const run = await window.axe.run({ include: [['html']], exclude }, { runOnly: { type: 'tag', values: tags } })
+          // Page functions return plain data, so mark each node here, where the DOM is.
+          for (const node of run.violations.flatMap((violation) => violation.nodes)) {
+            node.isInFadedPreview = Boolean(document.querySelector(node.target[0])?.closest('[data-faded-preview]'))
+          }
+          return run
+        },
         { tags: RULE_TAGS, exclude: EXCLUDED },
       )
       for (const violation of result.violations) {
         const { id, impact, help, helpUrl } = violation
         const entry = violations.get(id) ?? { impact, help, helpUrl, places: new Set() }
         for (const node of violation.nodes) {
-          if (isPortalledMenu(id, node)) continue
+          if (isPortalledMenu(id, node) || isFadedPreview(id, node)) continue
           // Contrast failures carry the measured colours; show them so the fix
           // can go to the right design token.
           const contrast = node.any.find((check) => check.data?.contrastRatio)?.data

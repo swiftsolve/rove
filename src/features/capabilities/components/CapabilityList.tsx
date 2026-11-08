@@ -71,7 +71,8 @@ const PREVIEW_ROW =
  */
 function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   return (
-    <li className={PREVIEW_ROW}>
+    // The a11y audit waives colour contrast inside this attribute: the fade is meant.
+    <li className={PREVIEW_ROW} data-faded-preview>
       <div className="flex min-w-0 flex-1 items-center gap-12">
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
