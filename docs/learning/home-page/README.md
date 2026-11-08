@@ -1,25 +1,26 @@
 # The Home page, line by line
 
-A plain-words walk through every line of the code behind Rove's Home page: the
-page itself, then each card on it, from top to bottom. Each chapter shows a
-file's lines in a table, with what each one does and why.
+Every file behind the Home page, its code beside plain-words notes: the page,
+its cards, the library components they use, and the hooks and React Query
+code that feed them data. Dotted words open a definition; a glossary lists
+them all.
 
-Line numbers match commit `7c2d8fe` (8 November 2026). The code moves on, so
-if a line has shifted, look for the code quoted beside it.
+Run `python3 docs/learning/home-page/build.py`, then open
+`docs/learning/home-page/dist/home-page.html` in a browser. The copy on Claude,
+https://claude.ai/artifact/Sz7j5dNmnHDS5P4Y4s4juL, adds **Ask Claude** on
+every row, answered on the reader's own Claude account; elsewhere that button
+stays hidden.
 
-> **Companion pages:**
-> - [Learning Rove's UI](../react-query-and-tailwind/README.md): why the UI is
->   built the way it is (TanStack Query, Tailwind and tokens, `cva`).
-> - [Rove frontend](../../../src/README.md): the rules the code follows.
-> - [Rove UI library](../../../src/ui/README.md): the components it's built from.
+## Change it
 
-## Contents
+| File | Holds |
+| --- | --- |
+| `page_notes.py`, `library_notes.py`, `hook_notes.py` | The notes: `(line, text)` per file, keyed to the line each explains |
+| `terms.py` | The words that get a definition, and the forms that match them |
+| `codify.py` | Marks code words in a note as code |
+| `reader.template.html` | The page: layout, styles, tooltips, the chat |
+| `build.py` | Reads each file at `HEAD`, joins it to its notes, writes `dist/home-page.html` |
 
-1. [The big picture](01-overview.md)
-2. [`HomeView.tsx`: the page itself](02-home-view.md)
-3. [The network card: `ConnectionCard` and `ConnectionStrip`](03-connection-card.md)
-4. [What opens below it: `ConnectionDetailsPanel` and `SignalMeter`](04-connection-details.md)
-5. [The Traffic card](05-traffic-card.md)
-6. [The Capabilities card](06-capabilities-card.md)
-7. [The Usage and Devices cards](07-usage-and-devices.md)
-8. [Glossary](08-glossary.md)
+Run `python3 docs/learning/home-page/build.py` after a change. Notes point at
+line numbers in the last commit, so when a file they cover changes, check its
+notes still land on the right lines.

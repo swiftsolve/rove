@@ -1,0 +1,1949 @@
+<title>Rove Home, Line by Line</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Urbanist:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+/>
+<style>
+  /* Layout: a file list on the left; each file reads as rows of note (left) beside the code it explains (right). Rove's own palette and faces. */
+  :root {
+    --bg: #eef0f3;
+    --surface: #ffffff;
+    --inset: #f5f6f8;
+    --line: #e2e4e9;
+    --text: #16171a;
+    --text-2: #4f525a;
+    --text-3: #868a93;
+    --accent: #3563d0;
+    --accent-soft: rgba(53, 99, 208, 0.08);
+    --accent-line: rgba(53, 99, 208, 0.45);
+    --code-bg: #f7f8fa;
+    --code-active: #edf2fd;
+    --tok-keyword: #8a3fbf;
+    --tok-string: #2c7a3f;
+    --tok-number: #b35a00;
+    --tok-comment: #8b8f98;
+    --tok-title: #1f5fbf;
+    --tok-attr: #0f7a8a;
+    --tok-type: #a1471d;
+    --tok-punct: #5b5f68;
+    --font-display: 'Urbanist', 'Hanken Grotesk', system-ui, sans-serif;
+    --font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-code: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    --radius: 12px;
+    --tip-bg: #1d1f24;
+    --tip-text: #f1f2f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #0e0f11;
+      --surface: #17181b;
+      --inset: #121315;
+      --line: #25272c;
+      --text: #ececee;
+      --text-2: #a9acb3;
+      --text-3: #6f737b;
+      --accent: #6b97ff;
+      --accent-soft: rgba(107, 151, 255, 0.1);
+      --accent-line: rgba(107, 151, 255, 0.55);
+      --code-bg: #131416;
+      --code-active: #1a2133;
+      --tok-keyword: #c792ea;
+      --tok-string: #8fd18f;
+      --tok-number: #f2a65a;
+      --tok-comment: #6c717a;
+      --tok-title: #82aaff;
+      --tok-attr: #6fd3e0;
+      --tok-type: #f0b37e;
+      --tok-punct: #8b8f98;
+      --tip-bg: #f1f2f4;
+      --tip-text: #16171a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #0e0f11;
+    --surface: #17181b;
+    --inset: #121315;
+    --line: #25272c;
+    --text: #ececee;
+    --text-2: #a9acb3;
+    --text-3: #6f737b;
+    --accent: #6b97ff;
+    --accent-soft: rgba(107, 151, 255, 0.1);
+    --accent-line: rgba(107, 151, 255, 0.55);
+    --code-bg: #131416;
+    --code-active: #1a2133;
+    --tok-keyword: #c792ea;
+    --tok-string: #8fd18f;
+    --tok-number: #f2a65a;
+    --tok-comment: #6c717a;
+    --tok-title: #82aaff;
+    --tok-attr: #6fd3e0;
+    --tok-type: #f0b37e;
+    --tok-punct: #8b8f98;
+    --tip-bg: #f1f2f4;
+    --tip-text: #16171a;
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: inherit;
+  }
+  code {
+    font-family: var(--font-code);
+    font-size: 0.86em;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 252px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .side {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding-block: 28px 40px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 26px;
+    text-decoration: none;
+  }
+  .brand-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    position: relative;
+    flex: none;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .brand-sub {
+    display: block;
+    font-size: 12px;
+    color: var(--text-3);
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+  .navbox > summary {
+    display: none;
+  }
+  .nav-group {
+    margin-top: 20px;
+  }
+  .nav-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin: 0 0 6px 10px;
+  }
+  .nav a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+  .nav a:hover {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+  .nav a[aria-current='page'] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .nav a .count {
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 400;
+  }
+  .nav a:focus-visible,
+  .seg:focus-visible,
+  .map-link:focus-visible,
+  .pager a:focus-visible,
+  .term:focus-visible,
+  .ask:focus-visible,
+  .chat button:focus-visible,
+  .chat textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Main */
+  main {
+    min-width: 0;
+    padding-block: 36px 80px;
+    padding-left: max(32px, env(safe-area-inset-left, 0px));
+    padding-right: max(32px, env(safe-area-inset-right, 0px));
+  }
+  .view {
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: 6px 0 10px;
+    text-wrap: balance;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin: 40px 0 12px;
+  }
+  .lede {
+    color: var(--text-2);
+    font-size: 17px;
+    max-width: 64ch;
+    margin: 0;
+  }
+  .path {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-family: var(--font-code);
+    font-size: 12.5px;
+    color: var(--text-2);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 5px 10px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .path b {
+    font-weight: 500;
+    color: var(--text-3);
+  }
+  .used {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    font-size: 14px;
+    color: var(--text-2);
+    max-width: 70ch;
+  }
+  .used strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .howto {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  /* Reader */
+  .reader {
+    margin-top: 28px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .seg {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.55fr);
+    border-top: 1px solid var(--line);
+    cursor: default;
+  }
+  .seg:first-child {
+    border-top: 0;
+  }
+  .note {
+    padding: 14px 20px 16px;
+    font-size: 14.5px;
+    color: var(--text-2);
+    line-height: 1.6;
+    border-left: 3px solid transparent;
+    transition:
+      border-color 140ms ease,
+      color 140ms ease;
+  }
+  .note p {
+    margin: 0;
+  }
+  .note .range {
+    display: block;
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+  .note code,
+  .lede code,
+  .used code,
+  .flow code {
+    background: var(--inset);
+    border-radius: 5px;
+    padding: 0 4px;
+    color: var(--text);
+  }
+  .note.empty {
+    color: var(--text-3);
+    font-style: italic;
+    font-size: 13px;
+  }
+  .code {
+    background: var(--code-bg);
+    padding: 10px 0;
+    overflow-x: auto;
+    transition: background 140ms ease;
+  }
+  .code table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .code td {
+    padding: 0;
+    vertical-align: top;
+  }
+  .ln {
+    width: 1%;
+    padding: 0 14px 0 16px !important;
+    text-align: right;
+    user-select: none;
+    font-family: var(--font-code);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-3);
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .src {
+    font-family: var(--font-code);
+    font-size: 12.8px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    padding-right: 18px !important;
+  }
+  .seg.is-active .note {
+    border-left-color: var(--accent);
+    color: var(--text);
+  }
+  .seg.is-active .code {
+    background: var(--code-active);
+  }
+
+  /* Code tokens (highlight.js classes) */
+  .hljs-keyword,
+  .hljs-built_in,
+  .hljs-literal {
+    color: var(--tok-keyword);
+  }
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-template-string {
+    color: var(--tok-string);
+  }
+  .hljs-number {
+    color: var(--tok-number);
+  }
+  .hljs-comment {
+    color: var(--tok-comment);
+    font-style: italic;
+  }
+  .hljs-title,
+  .hljs-title.function_ {
+    color: var(--tok-title);
+  }
+  .hljs-attr,
+  .hljs-property {
+    color: var(--tok-attr);
+  }
+  .hljs-type,
+  .hljs-title.class_ {
+    color: var(--tok-type);
+  }
+  .hljs-tag,
+  .hljs-name {
+    color: var(--tok-title);
+  }
+  .hljs-punctuation,
+  .hljs-operator {
+    color: var(--tok-punct);
+  }
+  .hljs-params,
+  .hljs-variable {
+    color: var(--text);
+  }
+  .hljs-subst {
+    color: var(--text);
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .pager a {
+    flex: 1 1 0;
+    min-width: 0;
+    text-decoration: none;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--surface);
+    transition: background 140ms ease;
+  }
+  .pager a:hover {
+    background: var(--code-active);
+  }
+  .pager .dir {
+    display: block;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .pager .name {
+    font-weight: 600;
+  }
+  .pager .next {
+    text-align: right;
+  }
+
+  /* Overview: the page as a plain outline, no boxes */
+  .overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+    margin-top: 36px;
+  }
+  .map-heading {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin: 0 0 10px;
+  }
+  .map-group + .map-group {
+    margin-top: 22px;
+  }
+  .map-group-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .map-group-desc {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+  .map-link {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    text-decoration: none;
+    padding: 6px 10px;
+    margin-inline: -10px;
+    border-radius: 8px;
+    transition: background 140ms ease;
+  }
+  .map-link:hover {
+    background: var(--accent-soft);
+  }
+  .map-link .t {
+    font-family: var(--font-code);
+    font-size: 13.5px;
+    color: var(--accent);
+    flex: none;
+  }
+  .map-link .d {
+    font-size: 14px;
+    color: var(--text-2);
+    min-width: 0;
+  }
+  .facts {
+    display: grid;
+    gap: 28px;
+  }
+  .fact h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    margin: 0 0 6px;
+  }
+  .fact p,
+  .fact li {
+    color: var(--text-2);
+    font-size: 14.5px;
+    margin: 0;
+  }
+  .fact ul {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 6px;
+  }
+  .fact code {
+    background: var(--surface);
+    border-radius: 5px;
+    padding: 0 4px;
+    color: var(--text);
+  }
+
+  /* The connection diagram */
+  .diagram {
+    margin: 32px 0 0;
+  }
+  .diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    color: var(--text-3);
+  }
+  .diagram figcaption {
+    font-size: 13.5px;
+    color: var(--text-3);
+    margin-top: 10px;
+    max-width: 80ch;
+  }
+  .dg-box {
+    fill: var(--surface);
+  }
+  .dg-hold {
+    fill: var(--accent-soft);
+  }
+  .dg-title {
+    fill: var(--text);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .dg-sub {
+    fill: var(--text-3);
+    font-size: 12px;
+  }
+  .dg-lane {
+    fill: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  .dg-code {
+    fill: var(--accent);
+    font-family: var(--font-code);
+    font-size: 12.5px;
+  }
+  .diagram a:hover .dg-code,
+  .diagram a:focus-visible .dg-code {
+    text-decoration: underline;
+  }
+  .dg-line {
+    stroke: currentColor;
+    stroke-width: 1.25;
+    fill: none;
+  }
+  .dg-label {
+    fill: var(--text-2);
+    font-size: 11.5px;
+  }
+  .dg-bridge {
+    stroke: var(--accent);
+    stroke-width: 1.25;
+    stroke-dasharray: 4 4;
+  }
+  .dg-bridge-label {
+    fill: var(--accent);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  /* Data flow explainer */
+  .flow {
+    max-width: 1040px;
+  }
+  .flow > h2,
+  .flow > ol,
+  .flow > p,
+  .flow > .table-wrap {
+    max-width: 760px;
+  }
+  .flow p,
+  .flow li {
+    color: var(--text-2);
+  }
+  .flow ol.steps {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+    counter-reset: step;
+    display: grid;
+    gap: 14px;
+  }
+  .flow ol.steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .flow ol.steps li::before {
+    content: counter(step);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+  }
+  .flow ol.steps b {
+    color: var(--text);
+  }
+  .flow table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  .flow td,
+  .flow th {
+    text-align: left;
+    padding: 9px 12px 9px 0;
+    vertical-align: top;
+  }
+  .flow th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+  }
+  .flow tr + tr td {
+    border-top: 1px solid var(--line);
+  }
+  .flow td:first-child {
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .flow a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .flow a:hover {
+    text-decoration: underline;
+  }
+
+  .flow-code {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    margin: 14px 0 0;
+    max-width: 760px;
+  }
+  .flow-code code {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    background: none;
+    padding: 0;
+  }
+  .flow h2 code {
+    font-size: 0.8em;
+  }
+
+  /* Terms: dotted underline, definition on hover, focus or tap */
+  .term {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: help;
+    text-decoration: underline dotted var(--text-3);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .term:hover,
+  .term[aria-expanded='true'] {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+  .tip {
+    position: fixed;
+    z-index: 30;
+    max-width: 300px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--tip-bg);
+    color: var(--tip-text);
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .tip.is-shown {
+    opacity: 1;
+  }
+  .tip b {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .tip code {
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
+
+  /* Ask Claude */
+  .ask {
+    display: none;
+    margin-top: 8px;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    font-style: normal;
+  }
+  .can-ask .ask {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ask:hover,
+  .seg.is-active .ask {
+    color: var(--accent);
+  }
+  .ask svg {
+    width: 14px;
+    height: 14px;
+  }
+  .chat {
+    position: fixed;
+    z-index: 20;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 100vw);
+    background: var(--surface);
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.22);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(105%);
+    transition: transform 200ms ease;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .chat.is-open {
+    transform: none;
+  }
+  .chat-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px 20px 6px;
+  }
+  .chat-head .where {
+    flex: 1;
+    min-width: 0;
+  }
+  .chat-head .where b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 17px;
+  }
+  .chat-head .where span {
+    font-family: var(--font-code);
+    font-size: 12px;
+    color: var(--text-3);
+    overflow-wrap: anywhere;
+  }
+  .chat-close {
+    border: 0;
+    background: none;
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .chat-close:hover {
+    background: var(--inset);
+  }
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 20px 16px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .chat-context {
+    font-size: 13.5px;
+    color: var(--text-2);
+    background: var(--inset);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .chat-context code {
+    color: var(--text);
+  }
+  .chat-suggest {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chat-suggest button {
+    border: 0;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .chat-suggest button:hover {
+    background: var(--code-active);
+  }
+  .msg {
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .msg.user {
+    justify-self: end;
+    max-width: 85%;
+    background: var(--accent-soft);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 12px 12px 4px 12px;
+    white-space: pre-wrap;
+  }
+  .msg.claude {
+    color: var(--text);
+  }
+  .msg.claude p,
+  .msg.claude ul,
+  .msg.claude ol {
+    margin: 0 0 10px;
+  }
+  .msg.claude ul,
+  .msg.claude ol {
+    padding-left: 20px;
+  }
+  .msg.claude :last-child {
+    margin-bottom: 0;
+  }
+  .msg.claude code {
+    background: var(--inset);
+    border-radius: 5px;
+    padding: 0 4px;
+  }
+  .msg.claude pre {
+    background: var(--code-bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    margin: 0 0 10px;
+  }
+  .msg.claude pre code {
+    background: none;
+    padding: 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .msg .status {
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+  .msg.thinking {
+    color: var(--text-3);
+    font-size: 13.5px;
+  }
+  .chat-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding: 12px 20px 18px;
+  }
+  .chat textarea {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--text);
+    background: var(--inset);
+    border: 0;
+    border-radius: 10px;
+    padding: 9px 12px;
+    max-height: 140px;
+  }
+  .chat-send {
+    border: 0;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+  }
+  .chat-send:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* Glossary */
+  .gloss {
+    margin-top: 8px;
+    display: grid;
+    gap: 28px;
+  }
+  .gloss table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .gloss th,
+  .gloss td {
+    text-align: left;
+    padding: 10px 14px 10px 0;
+    border-top: 1px solid var(--line);
+    vertical-align: top;
+    font-size: 14px;
+  }
+  .gloss tr:first-child td {
+    border-top: 0;
+  }
+  .gloss td:first-child {
+    width: 30%;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .gloss td:last-child {
+    color: var(--text-2);
+  }
+  .gloss td code {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  @media (max-width: 900px) {
+    .shell {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .side {
+      position: static;
+      height: auto;
+      padding-block: 18px 14px;
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+    }
+    .navbox > summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      list-style: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .navbox > summary::-webkit-details-marker {
+      display: none;
+    }
+    .navbox > summary::after {
+      content: 'Show';
+      color: var(--accent);
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .navbox[open] > summary::after {
+      content: 'Hide';
+    }
+    .navbox > summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .brand {
+      margin-bottom: 14px;
+    }
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 2px;
+      margin-top: 6px;
+    }
+    .nav-group {
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      align-items: center;
+    }
+    .nav-label {
+      width: 100%;
+      margin: 0 0 2px 4px;
+    }
+    .nav a .count {
+      display: none;
+    }
+    main {
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-block: 24px 60px;
+    }
+    .overview {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+  }
+  @media (max-width: 760px) {
+    .seg {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .map-link {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+    }
+  }
+</style>
+
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="#overview">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Rove Home<span class="brand-sub">line by line</span></span>
+    </a>
+    <details class="navbox" id="navbox" open>
+      <summary>Files</summary>
+      <nav class="nav" id="nav" aria-label="Files"></nav>
+    </details>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+<aside class="chat" id="chat" aria-label="Ask Claude" aria-hidden="true">
+  <div class="chat-head">
+    <div class="where"><b id="chat-title">Ask Claude</b><span id="chat-where"></span></div>
+    <button class="chat-close" id="chat-close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="chat-body" id="chat-body" aria-live="polite"></div>
+  <form class="chat-form" id="chat-form">
+    <textarea id="chat-input" rows="1" placeholder="Ask about these lines" aria-label="Your question"></textarea>
+    <button class="chat-send" id="chat-send" type="submit">Send</button>
+  </form>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  const FILES = /*__DATA__*/ []
+  const byId = Object.fromEntries(FILES.map((f) => [f.id, f]))
+  const GROUPS = ['The page', 'The cards', 'Library', 'Hooks and data']
+  const TERMS = /*__TERMS__*/ []
+
+  const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Notes use `backticks` for code words.
+  const codeHtml = (s) => escapeHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>')
+  const termByForm = new Map()
+  TERMS.forEach((term, index) => term.forms.forEach((form) => termByForm.set(form.toLowerCase(), index)))
+  const formPattern = [...termByForm.keys()]
+    .sort((a, b) => b.length - a.length)
+    .map((form) => form.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|')
+  const TERM_RE = formPattern ? new RegExp(`\\b(${formPattern})\\b`, 'gi') : null
+  // A note with each term's first use underlined. Code spans are left alone.
+  function noteHtml(s) {
+    const html = codeHtml(s)
+    if (!TERM_RE) return html
+    const used = new Set()
+    return html
+      .split(/(<code>[\s\S]*?<\/code>)/)
+      .map((part) => {
+        if (part.startsWith('<code>')) return part
+        return part.replace(TERM_RE, (word) => {
+          const index = termByForm.get(word.toLowerCase())
+          if (index === undefined || used.has(index)) return word
+          used.add(index)
+          return `<button type="button" class="term" data-term="${index}" aria-expanded="false">${word}</button>`
+        })
+      })
+      .join('')
+  }
+
+  // Highlight a whole file, then split the HTML into lines, closing and
+  // reopening any span that crosses a line break (multi-line comments).
+  function highlightLines(code) {
+    let html
+    try {
+      html = hljs.highlight(code, { language: 'typescript', ignoreIllegals: true }).value
+    } catch (e) {
+      html = escapeHtml(code)
+    }
+    const lines = []
+    const open = []
+    let current = ''
+    const tokens = html.match(/<span[^>]*>|<\/span>|\n|[^<\n]+|</g) || []
+    for (const token of tokens) {
+      if (token === '\n') {
+        current += '</span>'.repeat(open.length)
+        lines.push(current)
+        current = open.join('')
+      } else if (token.startsWith('<span')) {
+        open.push(token)
+        current += token
+      } else if (token === '</span>') {
+        open.pop()
+        current += token
+      } else {
+        current += token
+      }
+    }
+    lines.push(current + '</span>'.repeat(open.length))
+    return lines
+  }
+
+  function navHtml(currentId) {
+    const link = (id, label, count) =>
+      `<a href="#${id}"${id === currentId ? ' aria-current="page"' : ''}><span>${label}</span>${count ? `<span class="count">${count}</span>` : ''}</a>`
+    let html = `<div class="nav-group">${link('overview', 'Overview')}</div>`
+    for (const group of GROUPS) {
+      html += `<div class="nav-group"><div class="nav-label">${group}</div>`
+      if (group === 'Hooks and data') html += link('data-flow', 'How data flows')
+      if (group === 'Hooks and data') html += link('react-hooks', 'React’s own hooks')
+      for (const f of FILES.filter((x) => x.group === group)) html += link(f.id, f.title, f.lineCount)
+      html += '</div>'
+    }
+    html += `<div class="nav-group"><div class="nav-label">Words</div>${link('glossary', 'Glossary')}</div>`
+    return html
+  }
+
+  function fileView(f) {
+    const lines = highlightLines(f.code)
+    currentSegments = []
+    const starts = f.notes.map((n) => n.line)
+    const segments = []
+    if (starts[0] > 1) segments.push({ from: 1, to: starts[0] - 1, text: null })
+    f.notes.forEach((n, i) => {
+      const to = i + 1 < f.notes.length ? f.notes[i + 1].line - 1 : lines.length
+      segments.push({ from: n.line, to, text: n.text })
+    })
+    currentSegments = segments
+    const rows = segments
+      .map((s, i) => {
+        const codeRows = []
+        for (let n = s.from; n <= s.to; n++)
+          codeRows.push(`<tr><td class="ln">${n}</td><td class="src">${lines[n - 1] || ' '}</td></tr>`)
+        const range = s.from === s.to ? `line ${s.from}` : `lines ${s.from}–${s.to}`
+        const ask = `<button type="button" class="ask" data-ask="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg>Ask Claude</button>`
+        const note = s.text
+          ? `<div class="note"><span class="range">${range}</span><p>${noteHtml(s.text)}</p>${ask}</div>`
+          : `<div class="note empty"><span class="range">${range}</span><p>No note: read on from the next one.</p>${ask}</div>`
+        return `<div class="seg" tabindex="0" data-seg="${i}">${note}<div class="code"><table>${codeRows.join('')}</table></div></div>`
+      })
+      .join('')
+
+    const index = FILES.indexOf(f)
+    const prev = FILES[index - 1]
+    const next = FILES[index + 1]
+    let prevLink = prev
+      ? `<a href="#${prev.id}"><span class="dir">Previous</span><span class="name">${prev.title}</span></a>`
+      : `<a href="#overview"><span class="dir">Back to</span><span class="name">Overview</span></a>`
+    let nextLink = next
+      ? `<a class="next" href="#${next.id}"><span class="dir">Next</span><span class="name">${next.title}</span></a>`
+      : `<a class="next" href="#glossary"><span class="dir">Next</span><span class="name">Glossary</span></a>`
+    // The data-flow page sits before the first hook.
+    if (next && next.group === 'Hooks and data' && f.group !== 'Hooks and data')
+      nextLink = `<a class="next" href="#data-flow"><span class="dir">Next</span><span class="name">How data flows</span></a>`
+    if (f.group === 'Hooks and data' && prev && prev.group !== 'Hooks and data')
+      prevLink = `<a href="#data-flow"><span class="dir">Previous</span><span class="name">How data flows</span></a>`
+    const pager = `<nav class="pager" aria-label="Next and previous file">
+    ${prevLink}
+    ${nextLink}
+  </nav>`
+
+    return `<article class="view">
+    <div class="eyebrow">${f.group}</div>
+    <h1>${escapeHtml(f.title)}</h1>
+    <p class="lede">${noteHtml(f.blurb)}</p>
+    <div class="path"><b>file</b>${f.path} · ${f.lineCount} lines</div>
+    ${f.used ? `<div class="used"><strong>On Home:</strong> ${noteHtml(f.used)}</div>` : ''}
+    <p class="howto">Each note on the left explains the code beside it. Hover or focus a row to pair them. Dotted words explain themselves on hover or tap.</p>
+    <div class="reader">${rows}</div>
+    ${pager}
+  </article>`
+  }
+
+  const mapLink = (id, desc) =>
+    `<a class="map-link" href="#${id}"><span class="t">${byId[id].title}</span><span class="d">${desc}</span></a>`
+  const mapGroup = (name, desc, links) =>
+    `<div class="map-group"><div class="map-group-name">${name}</div>${desc ? `<div class="map-group-desc">${desc}</div>` : ''}${links.join('')}</div>`
+
+  // How everything connects: the page, its cards, their hooks, where the data is held, and the backend.
+  function connectionDiagram() {
+    const laneTops = [44, 164, 284]
+    const boxHeight = 64
+    const centerOf = (lane) => laneTops[lane] + boxHeight / 2
+    const box = (x, y, width, height, className = 'dg-box') =>
+      `<rect class="${className}" x="${x}" y="${y}" width="${width}" height="${height}" rx="10"/>`
+    const text = (x, y, content, className, anchor = 'middle') =>
+      `<text class="${className}" x="${x}" y="${y}" text-anchor="${anchor}">${content}</text>`
+    const hook = (x, y, id) => `<a href="#${id}">${text(x, y, `${byId[id].title}()`, 'dg-code')}</a>`
+    const arrow = (x1, x2, y, options = {}) =>
+      `<line class="dg-line" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"${options.end === false ? '' : ' marker-end="url(#dg-arrow)"'}${options.start ? ' marker-start="url(#dg-arrow-back)"' : ''}/>`
+
+    // Columns, left to right.
+    const page = { x: 0, width: 112 }
+    const cards = { x: 150, width: 170 }
+    const hooks = { x: 360, width: 196 }
+    const holders = { x: 596, width: 172 }
+    const bridgeX = 834
+    const backend = { x: 900, width: 140 }
+    const middle = (column) => column.x + column.width / 2
+
+    const lanes = [
+      {
+        name: 'SHARED STATE',
+        cards: ['Network card'],
+        hooks: ['use-network'],
+        holder: ['NetworkProvider', 'context'],
+        holderLink: 'network-provider',
+        wire: 'reads',
+        twoWay: true,
+      },
+      {
+        name: 'REACT QUERY',
+        cards: ['Usage, Devices', 'Network card'],
+        hooks: ['use-data-usage', 'use-devices', 'use-public-ip'],
+        holder: ['queryClient', 'cache, by key'],
+        holderLink: 'query-client',
+        wire: 'command',
+        twoWay: true,
+      },
+      {
+        name: 'LIVE STORE',
+        cards: ['Traffic', 'Capabilities'],
+        hooks: ['use-live-throughput', 'use-speed-test'],
+        holder: ['Stores', 'outlive the screen'],
+        holderLink: null,
+        wire: 'events',
+        twoWay: false,
+      },
+    ]
+
+    let drawing = ''
+    drawing += box(page.x, laneTops[0], page.width, laneTops[2] + boxHeight - laneTops[0])
+    drawing += `<a href="#home-view">${text(middle(page), 186, 'HomeView', 'dg-title')}</a>`
+    drawing += text(middle(page), 204, 'picks the cards', 'dg-sub')
+    drawing += box(backend.x, laneTops[0], backend.width, laneTops[2] + boxHeight - laneTops[0])
+    drawing += text(middle(backend), 186, 'Rust backend', 'dg-title')
+    drawing += text(middle(backend), 204, 'measures', 'dg-sub')
+    drawing += `<line class="dg-bridge" x1="${bridgeX}" y1="${laneTops[0] - 4}" x2="${bridgeX}" y2="${laneTops[2] + boxHeight + 4}"/>`
+    drawing += text(bridgeX, laneTops[0] - 14, 'bridge', 'dg-bridge-label')
+
+    lanes.forEach((lane, index) => {
+      const top = laneTops[index]
+      const center = centerOf(index)
+      drawing += text(cards.x, top - 10, lane.name, 'dg-lane', 'start')
+      drawing += box(cards.x, top, cards.width, boxHeight)
+      lane.cards.forEach((card, line) => {
+        drawing += text(middle(cards), center + 5 + (line - (lane.cards.length - 1) / 2) * 18, card, 'dg-title')
+      })
+      drawing += box(hooks.x, top, hooks.width, boxHeight)
+      lane.hooks.forEach((id, line) => {
+        drawing += hook(middle(hooks), center + 4 + (line - (lane.hooks.length - 1) / 2) * 17, id)
+      })
+      drawing += box(holders.x, top, holders.width, boxHeight, 'dg-hold')
+      const holderTitle = text(middle(holders), center - 2, lane.holder[0], 'dg-title')
+      drawing += lane.holderLink ? `<a href="#${lane.holderLink}">${holderTitle}</a>` : holderTitle
+      drawing += text(middle(holders), center + 16, lane.holder[1], 'dg-sub')
+
+      drawing += arrow(page.x + page.width, cards.x - 2, center)
+      drawing += arrow(cards.x + cards.width, hooks.x - 2, center)
+      drawing += arrow(hooks.x + hooks.width, holders.x - 2, center)
+      // Holder to backend: a request and its answer, or events pushed back.
+      if (lane.twoWay) drawing += arrow(holders.x + holders.width + 2, backend.x - 2, center, { start: true })
+      else drawing += arrow(holders.x + holders.width + 2, backend.x - 2, center, { end: false, start: true })
+      drawing += text((holders.x + holders.width + bridgeX) / 2, center - 8, lane.wire, 'dg-label')
+    })
+    drawing += text((cards.x + cards.width + hooks.x) / 2, centerOf(0) - 8, 'calls', 'dg-label')
+    drawing += text(middle(hooks), laneTops[1] + boxHeight + 18, 'each through useBackendQuery()', 'dg-sub')
+
+    const claim =
+      'How the Home page connects: HomeView picks the cards, each card calls a hook, the hook reads from shared state, the React Query cache or a live store, and those cross the bridge to the Rust backend.'
+    return `<figure class="diagram">
+    <svg viewBox="0 0 1040 362" role="img" aria-label="${claim}">
+      <defs>
+        <marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="currentColor"/></marker>
+        <marker id="dg-arrow-back" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 1 L1 5 L10 9 Z" fill="currentColor"/></marker>
+      </defs>
+      ${drawing}
+    </svg>
+    <figcaption>Each card calls a hook; the hook reads from one of three places, and only those talk to the backend across the bridge. Shared state and React Query ask and get an answer; live stores are pushed events every second. Click a name to read its file.</figcaption>
+  </figure>`
+  }
+
+  function overviewView() {
+    return `<article class="view">
+    <div class="eyebrow">Overview</div>
+    <h1>The Home page, line by line</h1>
+    <p class="lede">Every file behind Rove’s Home page, in plain words: the page, its cards, the library pieces and the hooks that feed them data.</p>
+    ${connectionDiagram()}
+    <div class="overview">
+      <section aria-labelledby="map-heading">
+        <h2 class="map-heading" id="map-heading">Home, top to bottom</h2>
+        ${mapGroup('The page', '', [mapLink('home-view', 'Which cards appear, in order')])}
+        ${mapGroup('Network card', 'Always shown. Click it to open the details.', [
+          mapLink('connection-card', 'The box, and opening it'),
+          mapLink('connection-strip', 'Icon, name, signal, speed, band'),
+          mapLink('connection-details', 'The details list'),
+          mapLink('signal-meter', 'The four signal bars'),
+        ])}
+        ${mapGroup('Traffic card', 'Live download and upload. When connected.', [
+          mapLink('traffic-card', 'The card and its chart'),
+          mapLink('speed-readout', 'One big counting number'),
+        ])}
+        ${mapGroup('Capabilities', 'A tile per activity, from the last speed test.', [mapLink('capabilities-card', 'The tiles and footer')])}
+        ${mapGroup('Usage and Devices', 'Two small cards side by side.', [mapLink('stat-card', 'The layout both share')])}
+      </section>
+      <div class="facts">
+        <div class="fact"><h3>How data reaches the cards</h3><ul>
+          <li><b>Shared app state</b> any screen can read, like the current network: <code>useNetwork()</code>.</li>
+          <li><b>A React Query hook</b> that asks the Rust backend and caches the answer: <code>useDataUsage()</code>.</li>
+          <li><b>A live store</b> for data that streams in: traffic, the speed test.</li>
+        </ul><p style="margin-top:10px"><a class="map-link" href="#data-flow" style="display:inline-flex"><span class="t">How data flows</span></a></p></div>
+        <div class="fact"><h3>The library</h3><p>Cards are built from ready-made pieces in <code>src/ui</code>: <code>Card</code>, <code>IconTile</code>, <code>Readout</code>, <code>DataList</code> and more.</p></div>
+        <div class="fact"><h3>How to read a file</h3><p>Notes on the left, code on the right. Hover a row to pair them. Dotted words explain themselves. Ask Claude about any row, when your viewer allows it.</p></div>
+      </div>
+    </div>
+  </article>`
+  }
+
+  const hookLink = (id) => `<a href="#${id}"><code>${byId[id].title}</code></a>`
+  function codeBlock(code) {
+    let html
+    try {
+      html = hljs.highlight(code, { language: 'typescript', ignoreIllegals: true }).value
+    } catch {
+      html = escapeHtml(code)
+    }
+    return `<pre class="flow-code"><code>${html}</code></pre>`
+  }
+  // Each React hook these files use: what it does, why Rove uses it here, and where.
+  const REACT_HOOKS = [
+    {
+      name: 'useState',
+      what: 'A component’s own memory. It gives the value and a function to change it; changing it re-renders the component.',
+      why: 'For values that change what’s drawn: the number a readout is counting through, how many reloads are running.',
+      example: `const [value, setValue] = useState(target)\nsetValue(42) // re-render showing 42`,
+      files: ['useCountUp.ts', 'useBackendQuery.ts', 'usePublicIp.ts', 'useNetworkInfoSource.ts'],
+    },
+    {
+      name: 'useEffect',
+      what: 'Runs code after the screen updates, to keep something outside React in step: a timer, a listener, the backend. The function it returns is the clean-up, run before the next effect and on unmount.',
+      why: 'Starting and stopping the live traffic feed, running a count-up animation frame by frame, listening for network changes and arrow keys.',
+      example: `useEffect(() => {\n  const id = setInterval(tick, 1000)  // start\n  return () => clearInterval(id)       // clean up\n}, [tick])                             // re-run only when tick changes`,
+      files: [
+        'useLiveThroughput.ts',
+        'useCountUp.ts',
+        'useNetworkInfoSource.ts',
+        'useRovingFocus.ts',
+        'useUsageQuery.ts',
+      ],
+    },
+    {
+      name: 'useRef',
+      what: 'A box that keeps a value between renders without causing one. Also a handle on a real element on the page.',
+      why: 'Remembering where an animation is without re-rendering each frame, remembering whether the window was visible, and holding the Capabilities tile row so arrow keys can move focus inside it.',
+      example: `const rowRef = useRef<HTMLUListElement>(null)\n<ul ref={rowRef}>…</ul>  // rowRef.current is the <ul>`,
+      files: ['useCountUp.ts', 'CapabilitiesCard.tsx', 'useNetworkInfoSource.ts'],
+    },
+    {
+      name: 'useMemo',
+      what: 'Remembers a computed value and recomputes it only when its inputs change.',
+      why: 'NetworkProvider shares one object with every card through context. A new object each render would re-render every card; useMemo keeps the same object until something in it really changes.',
+      example: `const connection = useMemo(\n  () => ({ tone, label, internet: verdict }),\n  [tone, label, verdict],  // inputs\n)`,
+      files: ['NetworkProvider.tsx', 'useThroughputScale.ts', 'useNetworkInfoSource.ts'],
+    },
+    {
+      name: 'useCallback',
+      what: 'useMemo for a function: the same function object across renders, until its inputs change.',
+      why: 'reload() and refresh() are handed to cards and effects. If they were new each render, anything listing them as an input would re-run every time.',
+      example: `const reload = useCallback(async () => {\n  await refetch()\n}, [refetch])`,
+      files: ['useBackendQuery.ts', 'useNetworkInfoSource.ts'],
+    },
+    {
+      name: 'useId',
+      what: 'A unique id, stable for the component’s life.',
+      why: 'To link elements for screen readers: a card’s title gets an id, and the card points at it with aria-labelledby, so it’s announced by name.',
+      example: `const titleId = useId()\n<h2 id={titleId}>Usage</h2>\n<section aria-labelledby={titleId}>…`,
+      files: ['Card.tsx', 'ConnectionCard.tsx', 'Tooltip.tsx'],
+    },
+    {
+      name: 'use',
+      what: 'React 19’s way to read a context (or a promise). Like the older useContext.',
+      why: 'useNetwork() and useNavigation() are each one line: use(TheirContext). A CardHeader reads what its Card knows the same way.',
+      example: `export function useNetwork() {\n  return use(NetworkContext)\n}`,
+      files: ['useNetwork.ts', 'useNavigation.ts', 'Card.tsx'],
+    },
+    {
+      name: 'useEffectEvent',
+      what: 'A function an effect can call that always sees the latest values, without being an input that makes the effect restart.',
+      why: 'When the backend pushes new usage, the effect calls onPushed, which refreshes. The listener stays put instead of being torn down and re-added on every render.',
+      example: `const onPushed = useEffectEvent(() => void refresh())`,
+      files: ['useUsageQuery.ts'],
+    },
+    {
+      name: 'useSyncExternalStore',
+      what: 'Reads a store that lives outside every component: give it a way to subscribe and a way to read the snapshot.',
+      why: 'The speed test and live traffic must survive switching tabs, so they can’t be useState. See How data flows.',
+      example: `useSyncExternalStore(subscribe, () => snapshot)`,
+      files: ['useSpeedTest.ts', 'useLiveThroughput.ts'],
+    },
+  ]
+
+  function fileLinkByName(fileName) {
+    const file = FILES.find((f) => f.path.endsWith('/' + fileName))
+    return file ? `<a href="#${file.id}"><code>${file.title}</code></a>` : `<code>${fileName}</code>`
+  }
+
+  function reactHooksView() {
+    const sections = REACT_HOOKS.map(
+      (hook) => `
+    <section class="hook-entry">
+      <h2><code>${hook.name}</code></h2>
+      <p>${codeHtml(hook.what)}</p>
+      <p><b>Here:</b> ${codeHtml(hook.why)}</p>
+      ${codeBlock(hook.example)}
+      <p class="hook-files">In ${hook.files.map(fileLinkByName).join(', ')}</p>
+    </section>`,
+    ).join('')
+    return `<article class="view flow">
+    <div class="eyebrow">Hooks and data</div>
+    <h1>React’s own hooks</h1>
+    <p class="lede">The nine hooks React provides that these files use: what each does, and why Rove reaches for it.</p>
+    <h2>One rule for all of them</h2>
+    <p>Call hooks at the top of a component or another hook, never inside an <code>if</code> or a loop. React tells them apart only by their order, so the order must be the same every render.</p>
+    ${sections}
+  </article>`
+  }
+
+  function dataFlowView() {
+    const rows = [
+      [
+        'Network card',
+        ['use-network', 'use-public-ip', 'use-details-expanded'],
+        'Shared state, a React Query read, a saved setting',
+      ],
+      [
+        'Traffic card',
+        ['use-live-throughput', 'use-throughput-scale', 'use-speed-history'],
+        'A live store, plus a React Query read for the chart’s top',
+      ],
+      ['Capabilities', ['use-speed-test', 'use-can-run-speed-test'], 'A store that outlives the screen'],
+      ['Usage', ['use-data-usage', 'use-usage-query'], 'A React Query read, polled every 2 seconds'],
+      ['Devices', ['use-devices'], 'A React Query read shared with the Devices tab'],
+    ]
+    return `<article class="view flow">
+    <div class="eyebrow">Hooks and data</div>
+    <h1>How data flows</h1>
+    <p class="lede">A card never talks to the backend itself. It calls a hook, and the hook decides where the data comes from.</p>
+    ${connectionDiagram()}
+
+    <h2>Three ways in</h2>
+    <ol class="steps">
+      <li><div><b>Shared app state.</b> One provider near the top of the app reads the current network once; any card reads it with ${hookLink('use-network')}. Files: ${hookLink('network-provider')}, ${hookLink('use-network-info-source')}.</div></li>
+      <li><div><b>React Query.</b> For data you ask for: usage, devices, public IP, speed history. The answer is cached under a key, so two cards asking share one request.</div></li>
+      <li><div><b>A live store.</b> For data the backend pushes: traffic every second, a running speed test. It lives outside React so it survives switching tabs. Files: ${hookLink('use-live-throughput')}, ${hookLink('use-speed-test')}.</div></li>
+    </ol>
+
+    <h2>React Query, step by step</h2>
+    <ol class="steps">
+      <li><div><b>The card calls a feature hook</b>, like <code>useDataUsage()</code>. It knows nothing about fetching.</div></li>
+      <li><div><b>The feature hook calls ${hookLink('use-backend-query')}</b> with a key, like <code>['usage', network]</code>, and which backend command to run.</div></li>
+      <li><div><b><code>useQuery</code> checks the cache</b> held by ${hookLink('query-client')}. A fresh answer is returned at once; otherwise it asks.</div></li>
+      <li><div><b>The ask crosses the bridge</b> to the Rust backend, which measures and answers.</div></li>
+      <li><div><b>The answer is cached and every card using that key re-renders.</b> Polling repeats the ask on a timer.</div></li>
+    </ol>
+    <p>${hookLink('app')} wraps everything in the provider that holds this cache.</p>
+
+    <h2>Why a store needs <code>useSyncExternalStore</code></h2>
+    <p>React’s own memory, <code>useState</code>, belongs to one component. When you switch tabs, Home unmounts and that memory is gone. A speed test that’s halfway through, or a minute of traffic history, can’t live there.</p>
+    <p>So those live in a plain object at the top of their file, outside React. React can’t see changes to an object like that by itself, so the hook hands it two things:</p>
+    ${codeBlock(`useSyncExternalStore(
+  subscribe,        // "call me when it changes"
+  () => snapshot,   // "here's what it is now"
+)`)}
+    <ol class="steps">
+      <li><div><b>On mount</b>, React calls <code>subscribe</code> with a listener.</div></li>
+      <li><div><b>When the store changes</b>, it builds a new snapshot and calls every listener.</div></li>
+      <li><div><b>React reads the snapshot again</b> and re-renders only if it’s a different object. Unchanged state, no work.</div></li>
+      <li><div><b>On unmount</b>, the function <code>subscribe</code> returned removes the listener. The store keeps going.</div></li>
+    </ol>
+    <p>Files: ${hookLink('use-speed-test')}, ${hookLink('use-live-throughput')}.</p>
+
+    <h2>Promises, <code>async</code> and <code>await</code></h2>
+    <p>Asking the backend takes time. Rather than freeze the app while it waits, a call hands back a <b>promise</b>: a ticket for an answer that arrives later.</p>
+    ${codeBlock(`async function scanDevices(api) {   // async: may wait; returns a promise
+  try {
+    return await api.getDevices()    // await: pause here until the scan is back
+  } finally {
+    refreshNetworkEvents()           // runs after, whether it worked or failed
+  }
+}`)}
+    <ol class="steps">
+      <li><div><b><code>Promise&lt;T&gt;</code></b> is a promise of a <code>T</code>. <code>Promise&lt;void&gt;</code> carries no value; it only says “done”.</div></li>
+      <li><div><b><code>await</code></b> pauses only this function. The rest of the app keeps drawing and responding.</div></li>
+      <li><div><b>Two at once:</b> start one without <code>await</code>, await the other, then await the first. ${hookLink('use-speed-test')} reads the network while the test runs this way.</div></li>
+      <li><div><b><code>void promise</code></b> starts work without waiting for it, on purpose.</div></li>
+    </ol>
+    <p>React Query does the awaiting for the cards: <code>useQuery</code> calls the <code>queryFn</code>, waits for its promise, then re-renders with the data.</p>
+
+    <h2>Card by card</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Card</th><th>Hooks</th><th>Kind</th></tr>
+      ${rows.map(([card, ids, kind]) => `<tr><td>${card}</td><td>${ids.map(hookLink).join(', ')}</td><td>${kind}</td></tr>`).join('')}
+    </table></div>
+  </article>`
+  }
+
+  const GLOSSARY = [
+    [
+      'React',
+      [
+        [
+          'Component',
+          'A function that returns what to draw, like `TrafficCard()`. You use it like a tag: `<TrafficCard />`.',
+        ],
+        ['Props', 'The inputs a component is given, written like attributes: `<ConnectionCard info={info} />`.'],
+        ['`children`', 'Whatever sits between a component’s opening and closing tags.'],
+        ['JSX', 'The HTML-like syntax inside the code. It becomes JavaScript when the app is built.'],
+        ['`{ … }` in JSX', 'Drops a JavaScript value into the page, like `{display.title}`.'],
+        ['`A && <B />`', 'Shows B only if A is true.'],
+        ['`A ? <B /> : <C />`', 'Shows B if A is true, otherwise C.'],
+        ['`list.map(…)`', 'Draws one element per item in a list. Each gets a `key` so React can tell them apart.'],
+        [
+          'Hook',
+          'A function starting with `use` that gives a component data or abilities: `useNetwork()`, `useRef()`.',
+        ],
+        ['Context', 'App-wide state any screen can read without it being passed down.'],
+        ['Store', 'Shared memory for data that streams in. Every screen that reads it sees the same values.'],
+        ['`return null`', '“Draw nothing.”'],
+      ],
+    ],
+    [
+      'TypeScript',
+      [
+        ['`import { X } from …`', 'Brings in X from another file. `@/` means the src folder.'],
+        ['`export`', 'Lets other files import it.'],
+        ['`type X = { … }`', 'Describes the shape of some data.'],
+        ['`string | null`', '“Text, or nothing.” `|` means “or”.'],
+        ['`field?:`', 'An optional field.'],
+        ['`a ?? b`', 'Use a, or b if a is empty.'],
+        ['`a?.b`', 'Read b from a, or nothing if a is empty, without crashing.'],
+        ['`const { a, b } = x`', 'Takes the a and b fields out of x.'],
+      ],
+    ],
+    [
+      'Styling',
+      [
+        ['Utility class', 'One small style per class: `flex`, `gap-12` (12px apart), `text-secondary`, `truncate`.'],
+        [
+          'Token',
+          'A named design value like `--spacing-12` or `--accent-default`, so colours and spacing stay consistent in both themes.',
+        ],
+        ['`cx(…)`', 'Joins class names into one string.'],
+        ['`cva(…)`', 'A style recipe: base classes plus options that add classes.'],
+        ['`sr-only`', 'Hidden on screen, kept for screen readers.'],
+      ],
+    ],
+    [
+      'Accessibility',
+      [
+        ['Screen reader', 'Software that reads the page aloud.'],
+        ['`aria-label`', 'The name a screen reader says for an element.'],
+        ['`aria-hidden`', 'Hides decoration from screen readers.'],
+        ['Focus', 'Which element the keyboard is on. Tab moves it.'],
+        ['Roving focus', 'A group that’s one Tab stop, moved through with the arrow keys.'],
+      ],
+    ],
+  ]
+
+  function glossaryView() {
+    const terms = [...TERMS].sort((a, b) => a.label.localeCompare(b.label))
+    const termSection = `<section><h2>Words in the notes</h2><div class="table-wrap"><table>${terms.map((t) => `<tr><td>${escapeHtml(t.label)}</td><td>${codeHtml(t.def)}</td></tr>`).join('')}</table></div></section>`
+    const sections =
+      termSection +
+      GLOSSARY.map(
+        ([name, rows]) =>
+          `<section><h2>${name}</h2><div class="table-wrap"><table>${rows.map(([t, d]) => `<tr><td>${codeHtml(t)}</td><td>${codeHtml(d)}</td></tr>`).join('')}</table></div></section>`,
+      ).join('')
+    return `<article class="view"><div class="eyebrow">Words</div><h1>Glossary</h1><p class="lede">The terms and symbols these files use, in plain words.</p><div class="gloss">${sections}</div></article>`
+  }
+
+  function render() {
+    const id = (location.hash || '#overview').slice(1)
+    const main = document.getElementById('main')
+    let html
+    if (byId[id]) html = fileView(byId[id])
+    else if (id === 'glossary') html = glossaryView()
+    else if (id === 'data-flow') html = dataFlowView()
+    else if (id === 'react-hooks') html = reactHooksView()
+    else html = overviewView()
+    main.innerHTML = html
+    document.getElementById('nav').innerHTML = navHtml(
+      byId[id] || id === 'glossary' || id === 'data-flow' || id === 'react-hooks' ? id : 'overview',
+    )
+    currentFile = byId[id] || null
+    hideTip()
+    window.scrollTo(0, 0)
+    bindSegments()
+  }
+
+  function bindSegments() {
+    for (const seg of document.querySelectorAll('.seg')) {
+      const on = () => seg.classList.add('is-active')
+      const off = () => seg.classList.remove('is-active')
+      seg.addEventListener('mouseenter', on)
+      seg.addEventListener('mouseleave', off)
+      seg.addEventListener('focus', on)
+      seg.addEventListener('blur', off)
+    }
+  }
+
+  let currentFile = null
+  let currentSegments = []
+
+  // Term definitions: one shared tooltip, shown on hover, focus or tap.
+  const tip = document.getElementById('tip')
+  let tipOwner = null
+  function showTip(button) {
+    const term = TERMS[Number(button.dataset.term)]
+    if (!term) return
+    if (tipOwner && tipOwner !== button) tipOwner.setAttribute('aria-expanded', 'false')
+    tipOwner = button
+    button.setAttribute('aria-expanded', 'true')
+    tip.innerHTML = `<b>${escapeHtml(term.label)}</b>${codeHtml(term.def)}`
+    tip.classList.add('is-shown')
+    const box = button.getBoundingClientRect()
+    const tipBox = tip.getBoundingClientRect()
+    const left = Math.min(Math.max(8, box.left), window.innerWidth - tipBox.width - 8)
+    const below = box.bottom + 8
+    const top = below + tipBox.height > window.innerHeight - 8 ? box.top - tipBox.height - 8 : below
+    tip.style.left = `${left}px`
+    tip.style.top = `${top}px`
+  }
+  function hideTip() {
+    if (tipOwner) tipOwner.setAttribute('aria-expanded', 'false')
+    tipOwner = null
+    tip.classList.remove('is-shown')
+  }
+  document.addEventListener('mouseover', (event) => {
+    const button = event.target.closest?.('.term')
+    if (button) showTip(button)
+    else if (tipOwner && !tipOwner.matches(':focus')) hideTip()
+  })
+  document.addEventListener('focusin', (event) => {
+    if (event.target.matches?.('.term')) showTip(event.target)
+  })
+  document.addEventListener('focusout', (event) => {
+    if (event.target === tipOwner) hideTip()
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return
+    if (tipOwner) hideTip()
+    else if (chat.classList.contains('is-open')) closeChat()
+  })
+  window.addEventListener('scroll', hideTip, { passive: true })
+
+  // Ask Claude: needs the viewer's Claude account, so it only appears inside a Claude viewer.
+  let sample = null
+  const chat = document.getElementById('chat')
+  const chatBody = document.getElementById('chat-body')
+  const chatInput = document.getElementById('chat-input')
+  const chatSend = document.getElementById('chat-send')
+  const conversations = new Map() // "file:segment" -> { context, turns }
+  let activeConversation = null
+  let running = null // the AbortController of the call in flight
+
+  const SUGGESTIONS = [
+    'Explain it more simply',
+    'Walk me through each line',
+    'Why is it written this way?',
+    'What would break without it?',
+  ]
+  const UNAVAILABLE = new Set([
+    'not_granted',
+    'sampling_disabled',
+    'not_declared',
+    'capability_disabled',
+    'capability_removed',
+  ])
+
+  ;(async () => {
+    if (!window.claude) return
+    try {
+      sample = await window.claude.use('sample')
+    } catch {
+      sample = null
+    }
+    if (sample) document.body.classList.add('can-ask')
+  })()
+
+  function contextFor(file, segment) {
+    const codeLines = file.code.split('\n')
+    const part = codeLines.slice(segment.from - 1, segment.to).join('\n')
+    const range = segment.from === segment.to ? `line ${segment.from}` : `lines ${segment.from}–${segment.to}`
+    return {
+      range,
+      note: segment.text,
+      prompt: [
+        'You are helping someone learn React and TypeScript by reading the code of Rove, a desktop app that shows how a home network is doing.',
+        'They are new to this. Answer in plain, simple words and short paragraphs, and explain any jargon you use.',
+        'Use Markdown: `backticks` for code words, fenced code blocks for code. Keep answers under about 200 words unless they ask for more.',
+        `They are reading ${file.path}, ${range}.`,
+        `The whole file:\n\`\`\`tsx\n${file.code}\n\`\`\``,
+        `The part they are asking about (${range}):\n\`\`\`tsx\n${part}\n\`\`\``,
+        segment.text ? `The page's own note on that part: ${segment.text}` : 'That part has no note on the page.',
+      ].join('\n\n'),
+    }
+  }
+
+  function openChat(segmentIndex) {
+    if (!sample || !currentFile) return
+    const segment = currentSegments[segmentIndex]
+    if (!segment) return
+    const key = `${currentFile.id}:${segmentIndex}`
+    if (!conversations.has(key)) conversations.set(key, { ...contextFor(currentFile, segment), turns: [] })
+    activeConversation = conversations.get(key)
+    document.getElementById('chat-title').textContent = currentFile.title
+    document.getElementById('chat-where').textContent = `${currentFile.path} · ${activeConversation.range}`
+    renderChat()
+    chat.classList.add('is-open')
+    chat.setAttribute('aria-hidden', 'false')
+    chatInput.focus()
+  }
+  function closeChat() {
+    running?.abort()
+    chat.classList.remove('is-open')
+    chat.setAttribute('aria-hidden', 'true')
+  }
+  document.getElementById('chat-close').addEventListener('click', closeChat)
+
+  function renderChat() {
+    const conversation = activeConversation
+    let html = conversation.note ? `<div class="chat-context">${codeHtml(conversation.note)}</div>` : ''
+    if (conversation.turns.length === 0) {
+      html += `<div class="chat-suggest">${SUGGESTIONS.map((text) => `<button type="button" data-suggest="${escapeHtml(text)}">${text}</button>`).join('')}</div>`
+    }
+    for (const turn of conversation.turns) {
+      if (turn.role === 'user') html += `<div class="msg user">${escapeHtml(turn.content)}</div>`
+      else
+        html += `<div class="msg claude">${markdownHtml(turn.content)}${turn.status ? `<div class="status">${turn.status}</div>` : ''}</div>`
+    }
+    chatBody.innerHTML = html
+    chatBody.scrollTop = chatBody.scrollHeight
+    chatSend.textContent = running ? 'Stop' : 'Send'
+  }
+  chatBody.addEventListener('click', (event) => {
+    const suggestion = event.target.closest('[data-suggest]')
+    if (suggestion) ask(suggestion.dataset.suggest)
+  })
+
+  // A small Markdown reader for Claude's answers: code blocks, lists, bold, inline code.
+  function markdownHtml(text) {
+    const blocks = text.split(/```/)
+    return blocks
+      .map((block, index) => {
+        if (index % 2 === 1) {
+          const code = block.replace(/^[\w-]*\n/, '')
+          let html
+          try {
+            html = hljs.highlight(code, { language: 'typescript', ignoreIllegals: true }).value
+          } catch {
+            html = escapeHtml(code)
+          }
+          return `<pre><code>${html}</code></pre>`
+        }
+        return block
+          .trim()
+          .split(/\n{2,}/)
+          .filter(Boolean)
+          .map((para) => {
+            const lines = para.split('\n')
+            const inline = (line) => codeHtml(line).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+            if (lines.every((line) => /^\s*[-*]\s+/.test(line)))
+              return `<ul>${lines.map((line) => `<li>${inline(line.replace(/^\s*[-*]\s+/, ''))}</li>`).join('')}</ul>`
+            if (lines.every((line) => /^\s*\d+[.)]\s+/.test(line)))
+              return `<ol>${lines.map((line) => `<li>${inline(line.replace(/^\s*\d+[.)]\s+/, ''))}</li>`).join('')}</ol>`
+            if (/^#{1,4}\s/.test(lines[0]))
+              return `<p><b>${inline(lines[0].replace(/^#+\s/, ''))}</b>${lines.length > 1 ? '<br>' + lines.slice(1).map(inline).join('<br>') : ''}</p>`
+            return `<p>${lines.map(inline).join('<br>')}</p>`
+          })
+          .join('')
+      })
+      .join('')
+  }
+
+  function errorStatus(code) {
+    if (code === 'cancelled') return 'Stopped.'
+    if (code === 'rate_limited') return 'Too many questions right now. Try again in a little while.'
+    if (code === 'session_expired') return 'Sign in to Claude again, then ask.'
+    if (code === 'refused') return 'Claude didn’t answer that. Try asking another way.'
+    if (code === 'prompt_too_large') return 'This chat got too long. Start again from another row.'
+    return 'Something went wrong. Ask again.'
+  }
+
+  async function ask(question) {
+    const conversation = activeConversation
+    if (!sample || !conversation || running || !question.trim()) return
+    conversation.turns.push({ role: 'user', content: question.trim() })
+    const reply = { role: 'assistant', content: '', status: 'Thinking…' }
+    conversation.turns.push(reply)
+    const controller = new AbortController()
+    running = controller
+    chatInput.value = ''
+    renderChat()
+    // Claude remembers nothing between calls: send the context and the chat so far, ending on the new question.
+    const history = conversation.turns
+      .slice(0, -1)
+      .filter((turn) => turn.content)
+      .map(({ role, content }) => ({ role, content }))
+    const input = [{ role: 'user', content: conversation.prompt }, ...history.slice(-12)]
+    try {
+      const result = await sample(input, {
+        cache: false,
+        signal: controller.signal,
+        onText: ({ text }) => {
+          reply.content = text
+          reply.status = ''
+          if (activeConversation === conversation) renderChat()
+        },
+      })
+      reply.content = result.text
+      reply.status = result.truncated ? 'Cut short. Ask for less at a time.' : ''
+    } catch (error) {
+      const code = error?.code || 'upstream_error'
+      if (UNAVAILABLE.has(code)) {
+        sample = null
+        document.body.classList.remove('can-ask')
+      }
+      reply.content = code === 'refused' ? '' : error?.text || reply.content
+      reply.status = UNAVAILABLE.has(code) ? 'Asking Claude isn’t available here.' : errorStatus(code)
+    } finally {
+      running = null
+      if (activeConversation === conversation) renderChat()
+    }
+  }
+
+  document.getElementById('chat-form').addEventListener('submit', (event) => {
+    event.preventDefault()
+    if (running) running.abort()
+    else ask(chatInput.value)
+  })
+  chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      if (!running) ask(chatInput.value)
+    }
+  })
+  chatInput.addEventListener('input', () => {
+    chatInput.style.height = 'auto'
+    chatInput.style.height = `${Math.min(chatInput.scrollHeight, 140)}px`
+  })
+
+  document.getElementById('main').addEventListener('click', (event) => {
+    const askButton = event.target.closest('.ask')
+    if (askButton) {
+      openChat(Number(askButton.dataset.ask))
+      return
+    }
+    const term = event.target.closest('.term')
+    if (term) {
+      event.stopPropagation()
+      if (tipOwner === term) hideTip()
+      else showTip(term)
+    }
+  })
+
+  window.addEventListener('hashchange', () => {
+    render()
+    // On a phone, choosing a file folds the list away.
+    if (matchMedia('(max-width: 900px)').matches) document.getElementById('navbox').open = false
+  })
+  if (matchMedia('(max-width: 900px)').matches) document.getElementById('navbox').open = false
+  render()
+</script>
