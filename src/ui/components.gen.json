@@ -1386,7 +1386,7 @@
       "sourceFile": "src/ui/data-list/DataList.tsx",
       "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
       "figmaComponent": {
-        "whyNoFigmaComponent": "Only arranges Data lists, which are in Figma, with a hairline between groups."
+        "whyNoFigmaComponent": "Only arranges Data lists with a hairline between groups; Figma draws the stack by hand from Data rows and a divider, as in the Router card."
       },
       "props": {
         "children": {

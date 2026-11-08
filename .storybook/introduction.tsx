@@ -16,7 +16,8 @@ type Component = { libraryGroup: string; storyIds: string[]; figmaComponent: { f
 const components = Object.values(componentList.components as Record<string, Component>)
 // Every figure on the page is counted from the component list, so none can go stale.
 const storyCount = components.reduce((sum, { storyIds }) => sum + storyIds.length, 0)
-const inFigma = components.filter((component) => component.figmaComponent?.figmaNodeId).length
+// The rest only add behaviour or layout, so Figma has no component for them.
+const behaviourOnlyCount = components.filter((component) => !component.figmaComponent?.figmaNodeId).length
 
 /** A Docs page, from inside the preview iframe: `./?path=` is the manager. */
 const docsHref = (id: string): string => `./?path=/docs/${id}`
@@ -387,7 +388,8 @@ export function Introduction(): JSX.Element {
         </p>
         <p className="intro-lead">
           Rove&rsquo;s interface as a React library: {components.length} components, each with its stories, props and a
-          usage guide. Built only from Rove Tokens, and {inFigma} of them mirrored in Figma.
+          usage guide. Built only from Rove Tokens and mirrored in Figma, except {behaviourOnlyCount} that only add
+          behaviour or layout.
         </p>
         <nav className="intro-links" aria-label="Elsewhere">
           {LINKS.map(({ icon, label, href }) => (

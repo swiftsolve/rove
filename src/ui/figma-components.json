@@ -126,7 +126,7 @@
       }
     },
     "DataListStack": {
-      "whyNoFigmaComponent": "Only arranges Data lists, which are in Figma, with a hairline between groups."
+      "whyNoFigmaComponent": "Only arranges Data lists with a hairline between groups; Figma draws the stack by hand from Data rows and a divider, as in the Router card."
     },
     "DataRow": {
       "figmaName": "Data row",
