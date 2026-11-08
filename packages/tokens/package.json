@@ -38,7 +38,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

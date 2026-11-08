@@ -41,7 +41,7 @@ Tokens are designed in the Rove Design System in Figma and released from git, on
 npm install @swiftsolve/rove-tokens
 ```
 
-The package ships the tokens built, in `dist/`; the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v3.2.0`); then npm builds them on install, which needs Node 22 (see `.nvmrc`).
+The package ships the tokens built, in `dist/`; the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v3.2.0`); then npm builds them on install, which needs Node 24 (see `.nvmrc`).
 
 ### CSS variables
 
@@ -113,7 +113,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 
 1. Change the variables, text styles or `Shadow/*` effect styles in Figma. A new token takes its siblings' collection, modes, scopes and code syntax, and a description.
 2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
-3. Run `npm run check` (Node 22). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites `DESIGN.md`'s front matter: commit it with the change.
+3. Run `npm run check` (Node 24). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites `DESIGN.md`'s front matter: commit it with the change.
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
 5. Commit the change.
 
