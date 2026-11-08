@@ -61,12 +61,15 @@ export function formatOperState(state: string): string {
   return state
 }
 
+const CONNECTION_TYPE_LABELS: Record<string, string> = {
+  wifi: 'Wi‑Fi',
+  ethernet: 'Ethernet',
+  virtual: 'Virtual',
+  unknown: 'Other',
+}
+
 export function formatConnectionType(type: string): string {
-  if (type === 'wifi') return 'Wi‑Fi'
-  if (type === 'ethernet') return 'Ethernet'
-  if (type === 'virtual') return 'Virtual'
-  if (type === 'unknown') return 'Other'
-  return type
+  return CONNECTION_TYPE_LABELS[type] ?? type
 }
 
 /** The value trimmed, or null when it's blank. */

@@ -55,6 +55,12 @@ earns its place only when the plain version is wrong or too slow, and its
 comment says which. A nested ternary is out: a third case is an `if` or a
 lookup. [✓ CHECKED by `eslint.config.js`]
 
+A block written out for three or more fields that differ only in data becomes
+a table the code loops over, so a new field is one row: `CAPABILITY_MEASURES`
+builds every row of a capability's details card. Two cases stay written out,
+and so do field-by-field copies a language can't loop over (a Rust struct's
+fields).
+
 Every name (a variable, function, prop, type or file) says what it is in the
 reader's words, however long that makes it: `meterWidth`, not `span`;
 `itemSelector`, not `items`. A short name suits only a scope seen at a

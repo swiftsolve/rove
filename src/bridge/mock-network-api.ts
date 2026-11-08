@@ -36,7 +36,7 @@ import type {
   WifiShare,
   WindowControls,
 } from '@/types'
-import { CAPABILITY_DEFINITIONS } from '@/types'
+import { CAPABILITY_DEFINITIONS, CAPABILITY_MEASURES } from '@/types'
 
 type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 
@@ -70,21 +70,18 @@ function bandOf(factor: number, fairFactor: number, unusableFactor: number): Ban
 /** Mirrors `rate` in crates/rove-core/src/capabilities.rs so mock ratings match production. */
 function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntry): CapabilityLevel {
   const requirements: CapabilityRequirement = definition.requirements
-  const { downloadMbps, uploadMbps, latencyMs, jitterMs, packetLoss } = speed
-
-  // A speed falls short by its limit over the measure; a delay or loss by the
-  // measure over its limit.
-  const bands: Band[] = []
-  if (requirements.minDownloadMbps !== null)
-    bands.push(bandOf(requirements.minDownloadMbps / downloadMbps, FAIR_FACTOR, UNUSABLE_FACTOR))
-  if (requirements.minUploadMbps !== null)
-    bands.push(bandOf(requirements.minUploadMbps / uploadMbps, FAIR_FACTOR, UNUSABLE_FACTOR))
-  if (requirements.maxLatencyMs !== null)
-    bands.push(bandOf(latencyMs / requirements.maxLatencyMs, FAIR_FACTOR, UNUSABLE_FACTOR))
-  if (requirements.maxJitterMs !== null)
-    bands.push(bandOf(jitterMs / requirements.maxJitterMs, FAIR_FACTOR, UNUSABLE_FACTOR))
-  if (requirements.maxPacketLossPercent !== null)
-    bands.push(bandOf(packetLoss / requirements.maxPacketLossPercent, LOSS_FAIR_FACTOR, LOSS_UNUSABLE_FACTOR))
+  // A speed falls short by its limit over the reading; a delay or loss by the
+  // reading over its limit. Loss has its own, looser bands.
+  const bands = CAPABILITY_MEASURES.flatMap((measure) => {
+    const limit = requirements[measure.limitKey]
+    if (limit === null) return []
+    const reading = speed[measure.readingKey]
+    const factor = measure.kind === 'minimum' ? limit / reading : reading / limit
+    const isLoss = measure.readingKey === 'packetLoss'
+    return [
+      isLoss ? bandOf(factor, LOSS_FAIR_FACTOR, LOSS_UNUSABLE_FACTOR) : bandOf(factor, FAIR_FACTOR, UNUSABLE_FACTOR),
+    ]
+  })
   const worst = bands.reduce<Band>(
     (worstSoFar, band) => (BANDS.indexOf(band) > BANDS.indexOf(worstSoFar) ? band : worstSoFar),
     'meets',
@@ -94,9 +91,9 @@ function rateCapability(speed: SpeedResult, definition: CapabilityDefinitionEntr
   if (worst === 'poor' || worst === 'fair') return worst
   // Excellent: twice each speed it needs, and half its latency limit.
   const hasSpeedHeadroom =
-    (requirements.minDownloadMbps === null || downloadMbps >= requirements.minDownloadMbps * 2) &&
-    (requirements.minUploadMbps === null || uploadMbps >= requirements.minUploadMbps * 2)
-  const hasLatencyHeadroom = requirements.maxLatencyMs === null || latencyMs <= requirements.maxLatencyMs * 0.5
+    (requirements.minDownloadMbps === null || speed.downloadMbps >= requirements.minDownloadMbps * 2) &&
+    (requirements.minUploadMbps === null || speed.uploadMbps >= requirements.minUploadMbps * 2)
+  const hasLatencyHeadroom = requirements.maxLatencyMs === null || speed.latencyMs <= requirements.maxLatencyMs * 0.5
   return hasSpeedHeadroom && hasLatencyHeadroom ? 'excellent' : 'good'
 }
 

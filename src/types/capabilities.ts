@@ -17,6 +17,55 @@ export type CapabilityRequirement = {
   canBeUnsupported?: boolean
 }
 
+/** A measure a capability can set a limit on: where its limit and its reading live. */
+export type CapabilityMeasure = {
+  label: string
+  limitKey: Exclude<keyof CapabilityRequirement, 'canBeUnsupported'>
+  readingKey: keyof SpeedResult
+  /** A minimum (a speed) falls short by being too low; a maximum (a delay or loss) by being too high. */
+  kind: 'minimum' | 'maximum'
+  unit: 'Mbps' | 'ms' | '%'
+  /** Read from the test's pings, which report a sentinel instead when they fail. */
+  isFromPing: boolean
+}
+
+/** Every measure a requirement can limit, in the order the details card shows them. */
+export const CAPABILITY_MEASURES: readonly CapabilityMeasure[] = [
+  {
+    label: 'Download',
+    limitKey: 'minDownloadMbps',
+    readingKey: 'downloadMbps',
+    kind: 'minimum',
+    unit: 'Mbps',
+    isFromPing: false,
+  },
+  {
+    label: 'Upload',
+    limitKey: 'minUploadMbps',
+    readingKey: 'uploadMbps',
+    kind: 'minimum',
+    unit: 'Mbps',
+    isFromPing: false,
+  },
+  {
+    label: 'Latency',
+    limitKey: 'maxLatencyMs',
+    readingKey: 'latencyMs',
+    kind: 'maximum',
+    unit: 'ms',
+    isFromPing: true,
+  },
+  { label: 'Jitter', limitKey: 'maxJitterMs', readingKey: 'jitterMs', kind: 'maximum', unit: 'ms', isFromPing: true },
+  {
+    label: 'Loss',
+    limitKey: 'maxPacketLossPercent',
+    readingKey: 'packetLoss',
+    kind: 'maximum',
+    unit: '%',
+    isFromPing: true,
+  },
+]
+
 // Each limit comes from the provider or guide named beside it; the rest are
 // Rove's own rules of thumb, marked so. Buffered video and browsing set no
 // latency or jitter limit: a buffer absorbs delay, and no provider names one.

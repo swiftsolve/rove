@@ -1,5 +1,5 @@
-import type { CapabilityId, CapabilityLevel, CapabilityRequirement, SpeedResult } from '@/types'
-import { CAPABILITY_DEFINITIONS, isMeasuredLatency } from '@/types'
+import type { CapabilityId, CapabilityLevel, CapabilityMeasure, CapabilityRequirement, SpeedResult } from '@/types'
+import { CAPABILITY_DEFINITIONS, CAPABILITY_MEASURES, isMeasuredLatency } from '@/types'
 import { formatLatencyMs, formatSpeedMbps } from '@/utils/format'
 
 export type RequirementCheck = {
@@ -11,8 +11,7 @@ export type RequirementCheck = {
   /** The measured figure, or null when it isn't a real one (a failed ping). */
   have: string | null
   isMet: boolean
-  /** A minimum (a speed) falls short by being too low; a maximum (a delay or loss) by being too high. */
-  kind: 'minimum' | 'maximum'
+  kind: CapabilityMeasure['kind']
 }
 
 export type CapabilityExplanation = {
@@ -21,6 +20,20 @@ export type CapabilityExplanation = {
 }
 
 const DEFINITIONS_BY_ID = new Map(CAPABILITY_DEFINITIONS.map((definition) => [definition.id, definition]))
+
+/** A limit as the card writes it: `3.8 Mbps`, `100 ms`, `1%`. */
+const LIMIT_FORMATS: Record<CapabilityMeasure['unit'], (limit: number) => string | null> = {
+  Mbps: formatSpeedMbps,
+  ms: (limit) => `${limit} ms`,
+  '%': (limit) => `${limit}%`,
+}
+
+/** A reading as the card writes it: `186.4 Mbps`, `16.0 ms`, `0%`. */
+const READING_FORMATS: Record<CapabilityMeasure['unit'], (reading: number) => string | null> = {
+  Mbps: formatSpeedMbps,
+  ms: formatLatencyMs,
+  '%': (reading) => `${reading}%`,
+}
 
 function listPhrase(words: string[]): string {
   if (words.length <= 1) return words[0] ?? ''
@@ -80,60 +93,27 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
   if (!definition) return { summary: '', checks: [] }
 
   const requirements: CapabilityRequirement = definition.requirements
-  const checks: RequirementCheck[] = []
-  // A limit left out doesn't affect this capability, so it gets no row.
-  if (requirements.minDownloadMbps !== null) {
-    checks.push({
-      label: 'Download',
-      need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
-      spokenNeed: `at least ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
-      have: formatSpeedMbps(speed.downloadMbps),
-      isMet: speed.downloadMbps >= requirements.minDownloadMbps,
-      kind: 'minimum',
-    })
-  }
-  if (requirements.minUploadMbps !== null) {
-    checks.push({
-      label: 'Upload',
-      need: `≥ ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
-      spokenNeed: `at least ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
-      have: formatSpeedMbps(speed.uploadMbps),
-      isMet: speed.uploadMbps >= requirements.minUploadMbps,
-      kind: 'minimum',
-    })
-  }
   // A failed ping reports a sentinel, not a delay, so none of its figures is shown.
   const hasPing = isMeasuredLatency(speed.latencyMs)
-  if (requirements.maxLatencyMs !== null) {
-    checks.push({
-      label: 'Latency',
-      need: `≤ ${requirements.maxLatencyMs} ms`,
-      spokenNeed: `${requirements.maxLatencyMs} ms or less`,
-      have: hasPing ? formatLatencyMs(speed.latencyMs) : null,
-      isMet: hasPing && speed.latencyMs <= requirements.maxLatencyMs,
-      kind: 'maximum',
-    })
-  }
-  if (requirements.maxJitterMs !== null) {
-    checks.push({
-      label: 'Jitter',
-      need: `≤ ${requirements.maxJitterMs} ms`,
-      spokenNeed: `${requirements.maxJitterMs} ms or less`,
-      have: hasPing ? formatLatencyMs(speed.jitterMs) : null,
-      isMet: hasPing && speed.jitterMs <= requirements.maxJitterMs,
-      kind: 'maximum',
-    })
-  }
-  if (requirements.maxPacketLossPercent !== null) {
-    checks.push({
-      label: 'Loss',
-      need: `≤ ${requirements.maxPacketLossPercent}%`,
-      spokenNeed: `${requirements.maxPacketLossPercent}% or less`,
-      have: hasPing ? `${speed.packetLoss}%` : null,
-      isMet: hasPing && speed.packetLoss <= requirements.maxPacketLossPercent,
-      kind: 'maximum',
-    })
-  }
+  // A limit left out doesn't affect this capability, so it gets no row.
+  const checks = CAPABILITY_MEASURES.flatMap((measure): RequirementCheck[] => {
+    const limit = requirements[measure.limitKey]
+    if (limit === null) return []
+    const reading = speed[measure.readingKey]
+    const isMeasured = !measure.isFromPing || hasPing
+    const limitText = LIMIT_FORMATS[measure.unit](limit) ?? ''
+    const isMinimum = measure.kind === 'minimum'
+    return [
+      {
+        label: measure.label,
+        need: isMinimum ? `≥ ${limitText}` : `≤ ${limitText}`,
+        spokenNeed: isMinimum ? `at least ${limitText}` : `${limitText} or less`,
+        have: isMeasured ? READING_FORMATS[measure.unit](reading) : null,
+        isMet: isMeasured && (isMinimum ? reading >= limit : reading <= limit),
+        kind: measure.kind,
+      },
+    ]
+  })
 
   const failing = checks.filter((check) => !check.isMet)
 
