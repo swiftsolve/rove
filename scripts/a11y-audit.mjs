@@ -7,10 +7,12 @@
  *   CHROME_PATH=/usr/bin/chromium npm run a11y     # no Google Chrome installed
  *   npm run a11y -- --limit all                    # list every place, not the first 12
  *
- * Like the screenshot script, it runs against the Vite dev server and the
- * browser mock bridge, drives a real Chrome (the app pauses while hidden), and
- * moves between screens by writing history state. Exits non-zero when axe
- * reports any violation, so it can gate a commit or CI.
+ * It saves no images: axe reads the live page, colours included. It reaches
+ * each place the way scripts/screenshots.mjs does: the Vite dev server and the
+ * browser mock bridge, a real Chrome (the app pauses while hidden), and history
+ * state to move between screens. Exits non-zero when axe
+ * reports any violation, a tab has no scenario, or a scenario's button isn't
+ * there to open its dialog or menu, so it can gate a commit or CI.
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
@@ -52,8 +54,9 @@ function isFadedPreview(ruleId, node) {
 
 /**
  * Runs in the page: click the first button whose label or text contains `label`
- * (or, with no label, the first disclosure button). Page functions can't close
- * over script variables, so the label travels as an argument.
+ * (or, with no label, the first disclosure button), and say whether one was
+ * found. Page functions can't close over script variables, so the label
+ * travels as an argument.
  */
 function clickButton(label) {
   const buttons = [...document.querySelectorAll('button, [role="button"]')]
@@ -61,11 +64,20 @@ function clickButton(label) {
     ? buttons.find((el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').includes(label))
     : buttons.find((el) => el.hasAttribute('aria-expanded'))
   button?.click()
+  return button !== undefined
+}
+
+/** Runs in the page: every tab id, read from the app's own list through the dev server. */
+async function appTabs() {
+  const { APP_TABS } = await import('/src/app/utils/tabs.ts')
+  return APP_TABS
 }
 
 /**
  * [name, location, optional label of a button to click once it has settled
- * ('' clicks the first disclosure button)].
+ * ('' clicks the first disclosure button)]. Every tab needs one, which the
+ * audit checks against the app's tab list; add a subpage, dialog or menu here
+ * by hand.
  */
 const SCENARIOS = [
   ['home', { tab: 'home' }],
@@ -101,6 +113,8 @@ const browser = await chromium.launch(
 
 /** rule id → { impact, help, helpUrl, places: Set of "scenario: target" } */
 const violations = new Map()
+/** What the audit couldn't check: a tab with no scenario, a button it couldn't find. */
+const gaps = new Set()
 
 try {
   for (const theme of ['dark', 'light']) {
@@ -109,6 +123,10 @@ try {
     await page.goto(server.url, { waitUntil: 'networkidle' })
     await page.waitForSelector('[data-app-shell]')
     await page.waitForTimeout(3000)
+
+    for (const tab of await page.evaluate(appTabs)) {
+      if (!SCENARIOS.some(([, location]) => location.tab === tab)) gaps.add(`no scenario opens the "${tab}" tab`)
+    }
 
     for (const [name, location, buttonLabel] of SCENARIOS) {
       await page.keyboard.press('Escape')
@@ -119,7 +137,8 @@ try {
       }, location)
       await page.waitForTimeout(1500)
       if (buttonLabel !== undefined) {
-        await page.evaluate(clickButton, buttonLabel)
+        const wasFound = await page.evaluate(clickButton, buttonLabel)
+        if (!wasFound) gaps.add(`${name}: no button labelled "${buttonLabel}" to open it`)
         await page.waitForTimeout(800)
       }
       await page.addScriptTag({ content: AXE_SOURCE })
@@ -164,7 +183,8 @@ for (const [id, rule] of sorted) {
   for (const place of [...rule.places].slice(0, placeLimit)) console.log(`  - ${place}`)
   if (rule.places.size > placeLimit) console.log(`  … and ${rule.places.size - placeLimit} more`)
 }
+for (const gap of gaps) console.log(`\n[not checked] ${gap}`)
 console.log(
   `\n${violations.size} rule${violations.size === 1 ? '' : 's'} violated across ${SCENARIOS.length} scenarios × 2 themes`,
 )
-process.exit(violations.size > 0 ? 1 : 0)
+process.exit(violations.size > 0 || gaps.size > 0 ? 1 : 0)
