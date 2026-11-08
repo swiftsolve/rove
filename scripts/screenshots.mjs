@@ -103,9 +103,11 @@ const out = resolve(ROOT, flag('out', 'docs/screenshots'))
 const theme = flag('theme', 'dark')
 const existingUrl = flag('url', null)
 const existingStorybookUrl = flag('storybook-url', null)
-// A fake clock, seeded randomness and paused CSS animations, so two runs of the
-// same code give the same pixels: live charts, relative times and pulses all
-// hold still. The shots then show a fixed moment, not a live app.
+// A fake clock, seeded randomness, paused CSS animations and reduced motion, so
+// two runs of the same code give the same pixels: live charts, relative times
+// and pulses all hold still, and what moves on timers or animation frames (the
+// live chart's glide, the Introduction's looping specimens) rests instead. The
+// shots then show a fixed moment, not a live app.
 const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
@@ -169,7 +171,7 @@ try {
   const page = await browser.newPage({
     viewport: { width, height },
     deviceScaleFactor: 2,
-    ...(isStable && { timezoneId: 'UTC', locale: 'en-US' }),
+    ...(isStable && { timezoneId: 'UTC', locale: 'en-US', reducedMotion: 'reduce' }),
   })
   await page.addInitScript((mode) => {
     localStorage.setItem('rove.setting.themeMode', mode)
@@ -233,17 +235,24 @@ try {
 
     // The UI library, from Storybook: the states no screen shows. Its own page,
     // without the fake clock, which would stall Storybook's startup; paused
-    // animations hold it still.
+    // animations and reduced motion hold it still.
     const storybook = existingStorybookUrl ? { url: existingStorybookUrl, stop: () => {} } : await startStorybook()
     try {
       const stories = await libraryStories(storybook.url)
       await mkdir(`${out}/25-library`, { recursive: true })
-      const libraryPage = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2 })
+      const libraryPage = await browser.newPage({
+        viewport: { width, height },
+        deviceScaleFactor: 2,
+        reducedMotion: 'reduce',
+      })
       for (const story of stories) {
         await libraryPage.goto(`${storybook.url}/iframe.html?id=${story.id}&viewMode=story&globals=theme:${theme}`)
         await libraryPage.waitForSelector('body.sb-show-main')
-        // Fonts, and a play function (a Tooltip story hovers its trigger).
+        // Fonts, and a play function (a Tooltip story hovers its trigger): the
+        // story's render reaches 'finished' once its play function has run,
+        // then a moment for what it opened to place itself.
         await libraryPage.evaluate(() => document.fonts.ready)
+        await libraryPage.waitForFunction(() => window.__STORYBOOK_PREVIEW__?.currentRender?.phase === 'finished')
         await libraryPage.waitForTimeout(600)
         await libraryPage.screenshot({
           path: `${out}/25-library/${story.id}.png`,
